@@ -1,3 +1,10 @@
+## [0.360.1](https://github.com/teamkeel/keel/compare/v0.360.0...v0.360.1) (2023-08-08)
+
+
+### Bug Fixes
+
+* jobs can have schedule and permission ([#1079](https://github.com/teamkeel/keel/issues/1079)) ([ec750be](https://github.com/teamkeel/keel/commit/ec750beddf408cb5cc4671f8e390a8476fa282e8))
+
 # [0.360.0](https://github.com/teamkeel/keel/compare/v0.359.3...v0.360.0) (2023-08-05)
 
 
