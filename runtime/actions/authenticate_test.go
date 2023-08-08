@@ -381,7 +381,6 @@ func TestBearerTokenFromThirdParty(t *testing.T) {
 	ctx := context.Background()
 	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 
-	ctx = runtimectx.WithExternalIssuers(ctx, runtimectx.ExternalIssuersFromEnv())
 	identityId := "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp"
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
