@@ -78,6 +78,14 @@
         },
         {
           "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -94,7 +102,7 @@
         },
         {
           "modelName": "Identity",
-          "name": "createdBy",
+          "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
           },

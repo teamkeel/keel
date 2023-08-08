@@ -113,11 +113,12 @@ var (
 )
 
 const (
-	ImplicitIdentityModelName           = "Identity"
-	ImplicitIdentityFieldNameEmail      = "email"
-	ImplicitIdentityFieldNamePassword   = "password"
-	ImplicitIdentityFieldNameExternalId = "externalId"
-	ImplicitIdentityFieldNameCreatedBy  = "createdBy"
+	ImplicitIdentityModelName              = "Identity"
+	ImplicitIdentityFieldNameEmail         = "email"
+	ImplicitIdentityFieldNameEmailVerified = "emailVerified"
+	ImplicitIdentityFieldNamePassword      = "password"
+	ImplicitIdentityFieldNameExternalId    = "externalId"
+	ImplicitIdentityFieldNameIssuer        = "issuer"
 )
 
 const (

@@ -1,4 +1,4 @@
-import { test, expect, expectTypeOf, beforeEach } from "vitest";
+import { test, expect, beforeEach } from "vitest";
 import { actions, models, resetDatabase } from "@teamkeel/testing";
 
 beforeEach(resetDatabase);
@@ -429,7 +429,7 @@ test("reset password - missing aud claim - cannot be parsed error", async () => 
     })
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
-    message: "cannot be parsed or vertified as a valid JWT",
+    message: "cannot be parsed or verified as a valid JWT",
   });
 });
 
@@ -542,7 +542,9 @@ test("3rd party Clerk token - identity already exists - permission satisfied", a
   const identity = await models.identity.create({
     id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
     externalId: "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp",
-    createdBy: "https://enhanced-osprey-20.clerk.accounts.dev",
+    email: "dave@keel.xyz",
+    emailVerified: true,
+    issuer: "https://enhanced-osprey-20.clerk.accounts.dev",
   });
 
   // {
@@ -599,10 +601,10 @@ test("3rd party Clerk token - identity does not exist - identity created and per
   });
 
   expect(identity?.externalId).equal("user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp");
-  expect(identity?.createdBy).equal(
+  expect(identity?.issuer).equal(
     "https://enhanced-osprey-20.clerk.accounts.dev"
   );
-  expect(identity?.email).toBeNull();
+  expect(identity?.email).not.toBeNull();
   expect(identity?.password).toBeNull();
 
   await expect(
@@ -615,7 +617,9 @@ test("3rd party Clerk token - same external id but different issuer - identity c
   const identity = await models.identity.create({
     id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
     externalId: "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp",
-    createdBy: "https://somewhereelse.com",
+    email: "dave@keel.xyz",
+    emailVerified: true,
+    issuer: "https://somewhereelse.com",
   });
 
   // {

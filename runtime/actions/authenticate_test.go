@@ -17,6 +17,7 @@ import (
 
 func TestBearerTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 	ctx := context.Background()
+	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 	identityId := ksuid.New()
 
 	bearerJwt, err := actions.GenerateBearerToken(ctx, identityId.String())
@@ -201,6 +202,7 @@ func TestExpiredBearerTokenIsInvalid(t *testing.T) {
 
 func TestResetTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 	ctx := context.Background()
+	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 	identityId := ksuid.New()
 
 	bearerJwt, err := actions.GenerateResetToken(ctx, identityId.String())
@@ -360,6 +362,8 @@ func TestResetTokenMissingAudIsInvalid(t *testing.T) {
 
 func TestBearerTokenIssueClaimIsKeel(t *testing.T) {
 	ctx := context.Background()
+	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
+
 	identityId := ksuid.New()
 
 	bearerJwt, err := actions.GenerateBearerToken(ctx, identityId.String())
@@ -372,9 +376,12 @@ func TestBearerTokenIssueClaimIsKeel(t *testing.T) {
 }
 
 func TestBearerTokenFromThirdParty(t *testing.T) {
-	ctx := context.Background()
-	identityId := "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp"
 	issuer := "https://enhanced-osprey-20.clerk.accounts.dev"
+
+	ctx := context.Background()
+	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
+
+	identityId := "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp"
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)

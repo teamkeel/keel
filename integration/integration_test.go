@@ -11,6 +11,7 @@ import (
 
 	cp "github.com/otiai10/copy"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -84,7 +85,8 @@ func TestIntegration(t *gotest.T) {
 				}
 			})
 
-			cfg, _ := config.Load(tmpDir)
+			cfg, err := config.Load(tmpDir)
+			assert.NoError(t, err)
 
 			envVars := cfg.GetEnvVars("test")
 
