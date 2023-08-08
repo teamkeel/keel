@@ -1,3 +1,10 @@
+# [0.361.0](https://github.com/teamkeel/keel/compare/v0.360.1...v0.361.0) (2023-08-08)
+
+
+### Features
+
+* support external jwt issuers ([#1073](https://github.com/teamkeel/keel/issues/1073)) ([00882ab](https://github.com/teamkeel/keel/commit/00882abe97b846fd6ac321af7b4490bf950ba65e))
+
 ## [0.360.1](https://github.com/teamkeel/keel/compare/v0.360.0...v0.360.1) (2023-08-08)
 
 
