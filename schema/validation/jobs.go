@@ -67,17 +67,6 @@ func Jobs(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 					scheduleAttributeNode.Name,
 				))
 			}
-
-			if isScheduledJob && isAdhocJob {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.JobDefinitionError,
-					errorhandling.ErrorDetails{
-						Message: fmt.Sprintf("Job '%s' must be defined with either @schedule or @permission", job.Name.Value),
-					},
-					scheduleAttributeNode.Name,
-				))
-			}
-
 		},
 		LeaveJob: func(n *parser.JobNode) {
 			jobInputs = []string{}
