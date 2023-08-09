@@ -164,6 +164,12 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 		}
 	}
 
+	// We grant jobs permission if they don't have explicit permissions, but do
+	// have a schedule.
+	if permissionState.Status == common.PermissionUnknown && job.Schedule.Expression != "" {
+		permissionState.Grant()
+	}
+
 	return functions.CallJob(
 		ctx,
 		handler.schema,
