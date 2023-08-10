@@ -5,7 +5,7 @@ const {
   PermissionError,
 } = require("./permissions");
 
-// tryExecuteFunction will create a new database transaction around a function call
+// tryExecuteJob will create a new database transaction around a function call
 // and handle any permissions checks. If a permission check fails, then an Error will be thrown and the catch block will be hit.
 function tryExecuteJob({ db, permitted, actionType, request }, cb) {
   return withPermissions(permitted, async ({ getPermissionState }) => {
