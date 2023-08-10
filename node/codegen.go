@@ -998,6 +998,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("}")
 	if len(schema.Jobs) > 0 {
+		w.Writeln("type JobOptions = { scheduled?: boolean } | null")
 		w.Writeln("declare class JobExecutor {")
 		w.Indent()
 		w.Writeln("withIdentity(identity: sdk.Identity): JobExecutor;")
@@ -1015,10 +1016,10 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 					w.Write("?")
 				}
 
-				w.Writef(`: %s): %s`, job.InputMessageName, "Promise<void>")
+				w.Writef(`: %s, o?: JobOptions): %s`, job.InputMessageName, "Promise<void>")
 				w.Writeln(";")
 			} else {
-				w.Writef("%s(): Promise<void>", strcase.ToLowerCamel(job.Name))
+				w.Writef("%s(o?: JobOptions): Promise<void>", strcase.ToLowerCamel(job.Name))
 				w.Writeln(";")
 			}
 

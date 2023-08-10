@@ -141,7 +141,7 @@ func NewJobHandler(currSchema *proto.Schema) JobHandler {
 }
 
 // RunJob will run the job function in the runtime.
-func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map[string]any) error {
+func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map[string]any, trigger functions.TriggerType) error {
 	job := proto.FindJob(handler.schema.Jobs, strcase.ToCamel(jobName))
 	if job == nil {
 		return fmt.Errorf("no job with the name '%s' exists", jobName)
@@ -149,18 +149,21 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 
 	scope := actions.NewJobScope(ctx, job, handler.schema)
 
-	// Check if authorisation can be achieved early.
-	canAuthoriseEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, job.Permissions)
-	if err != nil {
-		return err
-	}
-
 	permissionState := common.NewPermissionState()
-	if canAuthoriseEarly {
-		if authorised {
-			permissionState.Grant()
-		} else {
-			return common.NewPermissionError()
+
+	if trigger == functions.ManualTrigger {
+		// Check if authorisation can be achieved early.
+		canAuthoriseEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, job.Permissions)
+		if err != nil {
+			return err
+		}
+
+		if canAuthoriseEarly {
+			if authorised {
+				permissionState.Grant()
+			} else {
+				return common.NewPermissionError()
+			}
 		}
 	}
 
@@ -172,10 +175,10 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 
 	return functions.CallJob(
 		ctx,
-		handler.schema,
 		job,
 		inputs,
 		permissionState,
+		trigger,
 	)
 }
 

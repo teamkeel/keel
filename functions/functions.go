@@ -43,6 +43,13 @@ const (
 	EventFunction  FunctionType = "event"
 )
 
+type TriggerType string
+
+const (
+	ManualTrigger    TriggerType = "manual"
+	ScheduledTrigger TriggerType = "scheduled"
+)
+
 type Transport func(ctx context.Context, req *FunctionsRuntimeRequest) (*FunctionsRuntimeResponse, error)
 
 type FunctionsRuntimeRequest struct {
@@ -153,7 +160,7 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 }
 
 // CallJob will invoke the job function on the runtime node server.
-func CallJob(ctx context.Context, schema *proto.Schema, job *proto.Job, inputs map[string]any, permissionState *common.PermissionState) error {
+func CallJob(ctx context.Context, job *proto.Job, inputs map[string]any, permissionState *common.PermissionState, trigger TriggerType) error {
 	ctx, span := tracer.Start(ctx, "Call job")
 	defer span.End()
 
@@ -181,6 +188,7 @@ func CallJob(ctx context.Context, schema *proto.Schema, job *proto.Job, inputs m
 		"secrets":         secrets,
 		"tracing":         tracingContext,
 		"permissionState": permissionState,
+		"triggerType":     trigger,
 	}
 
 	req := &FunctionsRuntimeRequest{

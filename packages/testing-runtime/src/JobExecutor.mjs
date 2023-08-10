@@ -27,6 +27,8 @@ export class JobExecutor {
     return new JobExecutor({ authToken: t });
   }
   _execute(method, params) {
+    console.log("BNANANA");
+    console.log(params);
     const headers = { "Content-Type": "application/json" };
 
     // An Identity instance is provided make a JWT
@@ -50,6 +52,13 @@ export class JobExecutor {
     if (this._authToken !== null) {
       headers["Authorization"] = "Bearer " + this._authToken;
     }
+
+    if (params?.scheduled) {
+      headers["X-Trigger-Type"] = "scheduled";
+    } else {
+      headers["X-Trigger-Type"] = "manual";
+    }
+
     return fetch(process.env.KEEL_TESTING_JOBS_URL + "/" + method, {
       method: "POST",
       body: JSON.stringify(params),

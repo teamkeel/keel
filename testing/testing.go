@@ -197,7 +197,9 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 					}
 				}
 
-				err = runtime.NewJobHandler(schema).RunJob(ctx, jobName, inputs)
+				trigger := functions.TriggerType(r.Header.Get("X-Trigger-Type"))
+
+				err = runtime.NewJobHandler(schema).RunJob(ctx, jobName, inputs, trigger)
 
 				if err != nil {
 					response := common.NewJsonErrorResponse(err)
