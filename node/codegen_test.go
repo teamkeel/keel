@@ -1602,12 +1602,13 @@ declare class ActionExecutor {
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }
+type JobOptions = { scheduled?: boolean } | null
 declare class JobExecutor {
 	withIdentity(identity: sdk.Identity): JobExecutor;
 	withAuthToken(token: string): JobExecutor;
-	jobWithoutInputs(): Promise<void>;
-	adHocJobWithInputs(i: AdHocJobWithInputsMessage): Promise<void>;
-	adHocJobWithoutInputs(): Promise<void>;
+	jobWithoutInputs(o?: JobOptions): Promise<void>;
+	adHocJobWithInputs(i: AdHocJobWithInputsMessage, o?: JobOptions): Promise<void>;
+    adHocJobWithoutInputs(o?: JobOptions): Promise<void>;
 }
 export declare const jobs: JobExecutor;
 export declare const actions: ActionExecutor;

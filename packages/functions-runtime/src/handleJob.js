@@ -58,7 +58,7 @@ async function handleJob(request, config) {
 
         // Jobs will have no permission functions yet.
         permissionFns[request.method] = [];
-        
+
         await tryExecuteJob(
           { request, ctx, permissionFns, permitted, db, actionType },
           async () => {
