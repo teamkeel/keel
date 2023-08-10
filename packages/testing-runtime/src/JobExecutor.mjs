@@ -27,8 +27,6 @@ export class JobExecutor {
     return new JobExecutor({ authToken: t });
   }
   _execute(method, params) {
-    console.log("BNANANA");
-    console.log(params);
     const headers = { "Content-Type": "application/json" };
 
     // An Identity instance is provided make a JWT
