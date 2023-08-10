@@ -1,30 +1,27 @@
 job ManualJob {
     inputs {
-        id Id
+        id ID
     }
-
     @permission(roles: [Admin])
 }
 
 job ManualJobMultiRoles {
     inputs {
-        id Id
+        id ID
     }
-
     @permission(roles: [Admin, Developer])
 }
 
 job ManualJobTrueExpression {
     inputs {
-        id Id
+        id ID
     }
-
     @permission(expression: true)
 }
 
 job ManualJobEnvExpression {
     inputs {
-        id Id
+        id ID
     }
 
     @permission(expression: ctx.env.REGION == "za-test")
@@ -32,7 +29,7 @@ job ManualJobEnvExpression {
 
 job ManualJobMultiPermission {
     inputs {
-        id Id
+        id ID
     }
 
     @permission(roles: [Admin, Developer])
@@ -41,18 +38,16 @@ job ManualJobMultiPermission {
 
 job ManualJobDeniedInCode {
     inputs {
-        id Id
+        id ID
         denyIt Boolean
     }
-
     @permission(roles: [Admin])
 }
 
 job ManualJobWithException {
     inputs {
-        id Id
+        id ID
     }
-
     @permission(roles: [Admin])
 }
 
