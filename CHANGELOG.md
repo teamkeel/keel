@@ -1,3 +1,10 @@
+## [0.362.1](https://github.com/teamkeel/keel/compare/v0.362.0...v0.362.1) (2023-08-10)
+
+
+### Bug Fixes
+
+* default to 'test' keel env' ([#1081](https://github.com/teamkeel/keel/issues/1081)) ([ed5f05a](https://github.com/teamkeel/keel/commit/ed5f05a3f5994fc9b32131c52356889ecf00155a))
+
 # [0.362.0](https://github.com/teamkeel/keel/compare/v0.361.0...v0.362.0) (2023-08-09)
 
 
