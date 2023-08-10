@@ -1,5 +1,7 @@
-import { models, CreateProfile } from "@teamkeel/sdk";
+import { CreateProfile } from "@teamkeel/sdk";
 
-export default CreateProfile((ctx, inputs) => {
-  return models.profile.create({ personId: inputs.person.id });
+export default CreateProfile({
+  beforeWrite: async (ctx, inputs, values) => {
+    return { personId: inputs.person.id };
+  },
 });

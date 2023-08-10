@@ -1,8 +1,3 @@
-import { models, GetSecretPost } from "@teamkeel/sdk";
+import { GetSecretPost } from "@teamkeel/sdk";
 
-// shh
-export default GetSecretPost(async (_, inputs) => {
-  const result = await models.post.findOne({ id: inputs.id });
-
-  return result;
-});
+export default GetSecretPost();

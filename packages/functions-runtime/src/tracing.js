@@ -6,7 +6,7 @@ const {
 const { NodeTracerProvider } = require("@opentelemetry/sdk-trace-node");
 const { envDetectorSync } = require("@opentelemetry/resources");
 
-function withSpan(name, fn) {
+async function withSpan(name, fn) {
   return getTracer().startActiveSpan(name, async (span) => {
     try {
       // await the thing (this means we can use try/catch)

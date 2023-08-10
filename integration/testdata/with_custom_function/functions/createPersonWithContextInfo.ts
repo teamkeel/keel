@@ -1,13 +1,14 @@
-import { models, CreatePersonWithContextInfo } from "@teamkeel/sdk";
+import { CreatePersonWithContextInfo } from "@teamkeel/sdk";
 
-export default CreatePersonWithContextInfo((ctx, inputs) => {
-  const { identity } = ctx;
-
-  return models.person.create({
-    name: identity != null ? identity.email! : "none",
-    gender: inputs.gender,
-    niNumber: inputs.niNumber,
-    identityId: identity != null ? identity.id : null,
-    ctxNow: ctx.now(),
-  });
+export default CreatePersonWithContextInfo({
+  beforeWrite: async (ctx, inputs, values) => {
+    const { identity } = ctx;
+    return {
+      name: identity != null ? identity.email! : "none",
+      gender: inputs.gender,
+      niNumber: inputs.niNumber,
+      identityId: identity != null ? identity.id : null,
+      ctxNow: ctx.now(),
+    };
+  },
 });

@@ -1,10 +1,10 @@
-import { models, CreatePost } from "@teamkeel/sdk";
+import { CreatePost } from "@teamkeel/sdk";
 
-export default CreatePost(async (_, inputs) => {
-  const result = await models.post.create({
-    title: inputs.title,
-    businessId: inputs.business.id,
-  });
-
-  return result;
+export default CreatePost({
+  beforeWrite: async (ctx, inputs, values) => {
+    return {
+      title: inputs.title,
+      businessId: inputs.business.id,
+    };
+  },
 });

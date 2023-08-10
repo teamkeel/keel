@@ -3,6 +3,7 @@ package integration_test
 import (
 	"bytes"
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -20,6 +21,8 @@ import (
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/testing"
 )
+
+var pattern = flag.String("pattern", "", "Pattern to match individual test case names")
 
 func TestIntegration(t *gotest.T) {
 	entries, err := os.ReadDir("./testdata")
@@ -126,6 +129,7 @@ func TestIntegration(t *gotest.T) {
 				FunctionsOutput: &functionOutput,
 				EnvVars:         envVars,
 				Secrets:         secrets,
+				Pattern:         *pattern,
 			})
 			require.NoError(t, err)
 

@@ -83,6 +83,7 @@ var visitorFuncs = []VisitorFunc{
 	ScheduleAttributeRule,
 	DuplicateInputsRule,
 	AttributeArgumentsRule,
+	FunctionDisallowedBehavioursRule,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {

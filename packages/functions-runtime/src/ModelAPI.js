@@ -14,6 +14,7 @@ const {
   upperCamelCase,
 } = require("./casing");
 const tracing = require("./tracing");
+const { DatabaseError } = require("./errors");
 
 /**
  * RelationshipConfig is a simple representation of a model field that
@@ -33,13 +34,6 @@ const tracing = require("./tracing");
  * TableConfigMap is mapping of database table names to TableConfig objects
  * @typedef {Object.<string, TableConfig>} TableConfigMap
  */
-
-class DatabaseError extends Error {
-  constructor(error) {
-    super(error.message);
-    this.error = error;
-  }
-}
 
 class ModelAPI {
   /**

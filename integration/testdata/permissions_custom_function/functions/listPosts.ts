@@ -1,7 +1,3 @@
-import { models, ListPosts } from "@teamkeel/sdk";
+import { ListPosts } from "@teamkeel/sdk";
 
-export default ListPosts(async (_, inputs) => {
-  const result = await models.post.findMany();
-
-  return result;
-});
+export default ListPosts();
