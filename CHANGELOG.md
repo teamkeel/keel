@@ -1,3 +1,10 @@
+# [0.363.0](https://github.com/teamkeel/keel/compare/v0.362.1...v0.363.0) (2023-08-10)
+
+
+### Features
+
+* scheduled job permission ([#1083](https://github.com/teamkeel/keel/issues/1083)) ([d3c424b](https://github.com/teamkeel/keel/commit/d3c424bd6175de3d179db9cf26448e2ce54c2bfb))
+
 ## [0.362.1](https://github.com/teamkeel/keel/compare/v0.362.0...v0.362.1) (2023-08-10)
 
 
