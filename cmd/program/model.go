@@ -496,7 +496,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 
-				err = m.JobHandler.RunJob(ctx, jobName, inputs)
+				trigger := functions.TriggerType(r.Header.Get("X-Trigger-Type"))
+
+				err = m.JobHandler.RunJob(ctx, jobName, inputs, trigger)
 				if err != nil {
 					response := common.NewJsonErrorResponse(err)
 					w.WriteHeader(response.Status)

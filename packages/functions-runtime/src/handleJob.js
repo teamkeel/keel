@@ -9,6 +9,7 @@ const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
 const { PROTO_ACTION_TYPES } = require("./consts");
+const { tryExecuteJob } = require("./tryExecuteJob");
 
 // Generic handler function that is agnostic to runtime environment (local or lambda)
 // to execute a job function based on the contents of a jsonrpc-2.0 payload object.
@@ -58,7 +59,7 @@ async function handleJob(request, config) {
         // Jobs will have no permission functions yet.
         permissionFns[request.method] = [];
 
-        const result = await tryExecuteFunction(
+        await tryExecuteJob(
           { request, ctx, permissionFns, permitted, db, actionType },
           async () => {
             // Return the job function to the containing tryExecuteFunction block

@@ -1,4 +1,4 @@
-import { actions, models, jobs, resetDatabase } from "@teamkeel/testing";
+import { models, jobs, resetDatabase } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
 
 beforeEach(resetDatabase);
@@ -157,4 +157,10 @@ test("job - exception - internal error without rollback transaction", async () =
 
   // This would be false if a transaction rolled back.
   expect(await jobRan(id)).toBeTruthy();
+});
+
+test("job - scheduled without permission", async () => {
+  await expect(
+    jobs.scheduledWithoutPermissions({ scheduled: true })
+  ).not.toHaveAuthorizationError();
 });

@@ -50,6 +50,13 @@ export class JobExecutor {
     if (this._authToken !== null) {
       headers["Authorization"] = "Bearer " + this._authToken;
     }
+
+    if (params?.scheduled) {
+      headers["X-Trigger-Type"] = "scheduled";
+    } else {
+      headers["X-Trigger-Type"] = "manual";
+    }
+
     return fetch(process.env.KEEL_TESTING_JOBS_URL + "/" + method, {
       method: "POST",
       body: JSON.stringify(params),
