@@ -269,13 +269,16 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 	var token *jwt.Token
 	claims := &Claims{}
 
-	// keelEnv := runtimectx.GetEnv(ctx)
+	keelEnv := runtimectx.GetEnv(ctx)
 
 	// try to decode the token and validate using our private key as the signing method.
 	// this supports external issued tokens but which are signed with our private key (such as clerk)
 	token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 		if ctxPrivateKey != nil {
 			return &ctxPrivateKey.PublicKey, nil
+		} else if keelEnv == runtimectx.KeelEnvTest {
+			// no private key is set in test env, so in this case allow the "none" algo
+			return jwt.UnsafeAllowNoneSignatureType, nil
 		}
 		return nil, fmt.Errorf("invalid token")
 	})

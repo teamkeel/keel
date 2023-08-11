@@ -89,10 +89,8 @@ func (j *Jwks) PublicKey(tokenKid string) (*rsa.PublicKey, error) {
 func ExternalIssuersFromEnv() (providers []string) {
 	envVar := os.Getenv(ExternalIssuersEnvKey)
 
-	// KEEL_EXTERNAL_ISSUERS=https://auth.keel.xyz
-
 	if envVar == "" {
-		return []string{"https://auth.staging.keel.xyz"}
+		return []string{}
 	}
 
 	for _, uri := range strings.Split(envVar, ",") {
