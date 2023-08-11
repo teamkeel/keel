@@ -17,8 +17,11 @@ Export `useKeelQuery` and `useKeelMutation` by passing in a `useKeel` hook based
 ```ts
 // Follow @teamtkeel/client-react setup instructions
 import { APIClient } from "../keelClient";
-export const { KeelProvider, useKeel } = keel(APIClient);
+import { keel } from "@teamkeel/client-react";
 
+import { keelQuery } from "@teamkeel/client-react-query";
+
+export const { KeelProvider, useKeel } = keel(APIClient);
 export const { useKeelQuery, useKeelMutation } = keelQuery(useKeel);
 
 ```
