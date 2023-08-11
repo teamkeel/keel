@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/segmentio/ksuid"
@@ -94,11 +93,9 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 	return mapToIdentity(result)
 }
 
-func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalId string, iss string, jwt string) (*runtimectx.Identity, error) {
+func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalId string, issuer string, jwt string) (*runtimectx.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Create external identity")
 	defer span.End()
-
-	issuer := strings.TrimSuffix(iss, "/")
 
 	span.SetAttributes(attribute.String("externalId", externalId))
 	span.SetAttributes(attribute.String("issuer", issuer))
