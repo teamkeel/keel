@@ -106,7 +106,7 @@ func generateClientSdkPackage(schema *proto.Schema, api *proto.Api) codegen.Gene
 
 func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 
-	w.Writeln("export class APIClient extends CoreClient {")
+	w.Writeln("export class APIClient extends Core {")
 
 	w.Indent()
 	w.Writeln(`constructor(config: RequestConfig) {
@@ -235,20 +235,21 @@ func toClientActionReturnType(model *proto.Model, op *proto.Operation) string {
 var clientCore = `type RequestHeaders = Record<string, string>;
 
 export type RequestConfig = {
-  endpoint: string;
+  baseUrl: string;
   headers?: RequestHeaders;
 };
 
-export class CoreClient {
-  private token = "";
+class Core {
+  public token = "";
+  public isAuthenticated = false;
   constructor(private config: RequestConfig) {}
 
-  _setHeaders(headers: RequestHeaders): CoreClient {
+  _setHeaders(headers: RequestHeaders): Core {
     this.config.headers = headers;
     return this;
   }
 
-  _setHeader(key: string, value: string): CoreClient {
+  _setHeader(key: string, value: string): Core {
     const { headers } = this.config;
     if (headers) {
       headers[key] = value;
@@ -258,18 +259,20 @@ export class CoreClient {
     return this;
   }
 
-  _setEndpoint(value: string): CoreClient {
-    this.config.endpoint = value;
+  _setBaseUrl(value: string): Core {
+    this.config.baseUrl = value;
     return this;
   }
 
-  _setToken(value: string): CoreClient {
+  _setToken(value: string): Core {
     this.token = value;
+    this.isAuthenticated = true;
     return this;
   }
 
-  _clearToken(): CoreClient {
+  _clearToken(): Core {
     this.token = "";
+    this.isAuthenticated = false;
     return this;
   }
 
