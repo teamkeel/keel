@@ -189,7 +189,12 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 			rightOperand = ExpressionField(fragments[:i], primaryKey)
 		}
 
-		query.InnerJoin(relatedModel, leftOperand, rightOperand)
+		switch query.joinType {
+		case JoinTypeLeft:
+			query.Join(relatedModel, leftOperand, rightOperand, JoinTypeLeft)
+		default:
+			query.Join(relatedModel, leftOperand, rightOperand, JoinTypeInner)
+		}
 
 		model = relatedModelField.Type.ModelName.Value
 	}

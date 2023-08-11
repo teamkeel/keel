@@ -171,7 +171,7 @@ func resolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permis
 
 func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (*Statement, error) {
 	permissions = proto.PermissionsWithExpression(permissions)
-	query := NewQuery(scope.Model)
+	query := NewQuery(scope.Model, WithJoinType(JoinTypeLeft))
 
 	if len(permissions) > 0 {
 		// Append SQL where conditions for each permission attribute.

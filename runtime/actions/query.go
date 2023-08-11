@@ -136,12 +136,26 @@ type QueryBuilder struct {
 	args []any
 	// The graph of rows to be written during an INSERT or UPDATE.
 	writeValues *Row
+
+	joinType JoinType
+}
+
+type JoinType string
+
+const (
+	JoinTypeInner JoinType = "inner"
+	JoinTypeLeft  JoinType = "left"
+)
+
+type JoinOption struct {
+	Type JoinType
 }
 
 type joinClause struct {
 	table     string
 	alias     string
 	condition string
+	joinType  JoinType
 }
 
 type orderClause struct {
@@ -169,8 +183,16 @@ type Relationship struct {
 	foreignKey *proto.Field
 }
 
-func NewQuery(model *proto.Model) *QueryBuilder {
-	return &QueryBuilder{
+type QueryBuilderOption func(qb *QueryBuilder)
+
+func WithJoinType(joinType JoinType) QueryBuilderOption {
+	return func(qb *QueryBuilder) {
+		qb.joinType = joinType
+	}
+}
+
+func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
+	qb := &QueryBuilder{
 		Model:      model,
 		table:      casing.ToSnake(model.Name),
 		selection:  []string{},
@@ -189,6 +211,14 @@ func NewQuery(model *proto.Model) *QueryBuilder {
 			references:   []*Relationship{},
 		},
 	}
+
+	if len(opts) > 0 {
+		for _, o := range opts {
+			o(qb)
+		}
+	}
+
+	return qb
 }
 
 // Creates a copy of the query builder.
@@ -291,11 +321,12 @@ func trimRhsOperators(filters []string) []string {
 }
 
 // Include an INNER JOIN clause.
-func (query *QueryBuilder) InnerJoin(joinModel string, joinField *QueryOperand, modelField *QueryOperand) {
+func (query *QueryBuilder) Join(joinModel string, joinField *QueryOperand, modelField *QueryOperand, joinType JoinType) {
 	join := joinClause{
 		table:     sqlQuote(casing.ToSnake(joinModel)),
 		alias:     sqlQuote(joinField.table),
 		condition: fmt.Sprintf("%s = %s", joinField.toColumnString(query), modelField.toColumnString(query)),
+		joinType:  joinType,
 	}
 
 	if !lo.Contains(query.joins, join) {
@@ -472,7 +503,12 @@ func (query *QueryBuilder) countQuery() string {
 
 	if len(query.joins) > 0 {
 		for _, j := range query.joins {
-			joins += fmt.Sprintf("INNER JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+			switch j.joinType {
+			case JoinTypeLeft:
+				joins += fmt.Sprintf("LEFT JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+			default:
+				joins += fmt.Sprintf("INNER JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+			}
 		}
 	}
 
@@ -511,7 +547,12 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 
 	if len(query.joins) > 0 {
 		for _, j := range query.joins {
-			joins += fmt.Sprintf("INNER JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+			switch j.joinType {
+			case JoinTypeLeft:
+				joins += fmt.Sprintf("LEFT JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+			default:
+				joins += fmt.Sprintf("INNER JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+			}
 		}
 	}
 
@@ -710,7 +751,12 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 
 	if len(query.joins) > 0 {
 		for _, j := range query.joins {
-			joins += fmt.Sprintf("INNER JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+			switch j.joinType {
+			case JoinTypeLeft:
+				joins += fmt.Sprintf("LEFT JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+			default:
+				joins += fmt.Sprintf("INNER JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+			}
 		}
 	}
 
