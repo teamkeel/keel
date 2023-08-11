@@ -1,3 +1,10 @@
+## [0.363.1](https://github.com/teamkeel/keel/compare/v0.363.0...v0.363.1) (2023-08-11)
+
+
+### Bug Fixes
+
+* client error catching and docs fixes ([49e8ad9](https://github.com/teamkeel/keel/commit/49e8ad95b889361997f3979647c5574ba1d88af3))
+
 # [0.363.0](https://github.com/teamkeel/keel/compare/v0.362.1...v0.363.0) (2023-08-10)
 
 
