@@ -1,3 +1,10 @@
+## [0.363.2](https://github.com/teamkeel/keel/compare/v0.363.1...v0.363.2) (2023-08-12)
+
+
+### Bug Fixes
+
+* find public key that matches token kid ([#1089](https://github.com/teamkeel/keel/issues/1089)) ([3758264](https://github.com/teamkeel/keel/commit/3758264d74136885e3b80970a80e4f2a1cdfcb6e))
+
 ## [0.363.1](https://github.com/teamkeel/keel/compare/v0.363.0...v0.363.1) (2023-08-11)
 
 
