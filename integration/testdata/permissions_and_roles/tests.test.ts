@@ -1,5 +1,6 @@
 import { test, expect, beforeEach } from "vitest";
 import { actions, resetDatabase } from "@teamkeel/testing";
+import { models } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
@@ -79,10 +80,19 @@ test("permission role email is authorized", async () => {
   const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
-      email: "editorFred99@agency.org",
+      email: "verified@agency.org",
       password: "1234",
     },
   });
+
+  await models.identity.update(
+    {
+      email: "verified@agency.org",
+    },
+    {
+      emailVerified: true,
+    }
+  );
 
   await expect(
     actions
@@ -91,6 +101,22 @@ test("permission role email is authorized", async () => {
   ).resolves.toMatchObject({
     title: "nothing special about this title",
   });
+});
+
+test("permission role email is authorized but not verified", async () => {
+  const { token } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "notVerified@agency.org",
+      password: "1234",
+    },
+  });
+
+  await expect(
+    actions
+      .withAuthToken(token)
+      .createUsingRole({ title: "nothing special about this title" })
+  ).toHaveAuthorizationError();
 });
 
 test("permission role wrong email is not authorized", async () => {
@@ -117,6 +143,15 @@ test("permission role domain is authorized", async () => {
       password: "1234",
     },
   });
+
+  await models.identity.update(
+    {
+      email: "john.witherow@times.co.uk",
+    },
+    {
+      emailVerified: true,
+    }
+  );
 
   await expect(
     actions

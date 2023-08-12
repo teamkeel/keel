@@ -81,6 +81,8 @@ role Poster {
 
     emails {
         "editorFred99@agency.org"
+        "verified@agency.org"
+        "notVerified@agency.org"
     }
 }
 

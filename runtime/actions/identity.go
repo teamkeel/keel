@@ -187,13 +187,19 @@ func mapToIdentity(values map[string]any) (*auth.Identity, error) {
 		return nil, errors.New("updatedAt for identity is required")
 	}
 
+	verified, ok := values["emailVerified"].(bool)
+	if !ok {
+		verified = false
+	}
+
 	return &auth.Identity{
-		Id:         id,
-		ExternalId: externalId,
-		Email:      email,
-		Password:   password,
-		Issuer:     issuer,
-		CreatedAt:  createdAt,
-		UpdatedAt:  updatedAt,
+		Id:            id,
+		ExternalId:    externalId,
+		Email:         email,
+		Password:      password,
+		Issuer:        issuer,
+		CreatedAt:     createdAt,
+		UpdatedAt:     updatedAt,
+		EmailVerified: verified,
 	}, nil
 }

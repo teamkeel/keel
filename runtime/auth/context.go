@@ -16,7 +16,7 @@ type Identity struct {
 	Id            string    `json:"id"`
 	ExternalId    string    `json:"externalId"`
 	Email         string    `json:"email"`
-	EmailVerified *bool     `json:"email_verified"`
+	EmailVerified bool      `json:"email_verified"`
 	Password      string    `json:"-"`
 	Issuer        string    `json:"issuer"`
 	CreatedAt     time.Time `json:"createdAt"`

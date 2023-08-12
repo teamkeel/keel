@@ -5,6 +5,7 @@ role Admin {
 
     emails {
         "adam@keel.xyz"
+        "verified@keel.xyz"
     }
 }
 

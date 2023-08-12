@@ -248,10 +248,19 @@ test("creating a post with a role based permission rule - email based - permitte
   const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
-      email: "adam@keel.xyz",
+      email: "verified@keel.xyz",
       password: "1234",
     },
   });
+
+  await models.identity.update(
+    {
+      email: "verified@keel.xyz",
+    },
+    {
+      emailVerified: true,
+    }
+  );
 
   const identity = await models.identity.create({
     email: "businessowner@keel.xyz",
@@ -304,6 +313,15 @@ test("creating a post with a role based permission rule - domain based - permitt
       password: "1234",
     },
   });
+
+  await models.identity.update(
+    {
+      email: "adam@abc.com",
+    },
+    {
+      emailVerified: true,
+    }
+  );
 
   const identity = await models.identity.create({
     email: "businessowner@keel.xyz",

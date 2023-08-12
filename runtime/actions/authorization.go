@@ -259,13 +259,9 @@ func getEmailAndDomain(ctx context.Context) (email string, domain string, verifi
 		return "", "", false, nil
 	}
 
-	if identity.EmailVerified != nil {
-		verified = *identity.EmailVerified
-	}
-
 	segments := strings.Split(identity.Email, "@")
 	domain = segments[1]
-	return identity.Email, domain, verified, nil
+	return identity.Email, domain, identity.EmailVerified, nil
 }
 
 func compare(a, b []string) bool {
