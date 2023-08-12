@@ -161,8 +161,13 @@ func resolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permis
 		return false, nil
 	}
 
-	identityEmail, identityDomain, err := getEmailAndDomain(ctx)
+	identityEmail, identityDomain, verified, err := getEmailAndDomain(ctx)
 	if err != nil {
+		return false, err
+	}
+
+	// Can only use the email for roles if it's verified
+	if !verified {
 		return false, err
 	}
 
@@ -239,24 +244,28 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 
 // getEmailAndDomain requires that the the given scope's context
 // contains an authenticated user
-func getEmailAndDomain(ctx context.Context) (string, string, error) {
+func getEmailAndDomain(ctx context.Context) (email string, domain string, verified bool, err error) {
 	// Use the authenticated identity's id to lookup their email address.
 	identity, err := auth.GetIdentity(ctx)
 	if err != nil {
-		return "", "", err
+		return "", "", false, err
 	}
 
 	if identity == nil {
-		return "", "", ErrIdentityNotFound
+		return "", "", false, ErrIdentityNotFound
 	}
 
 	if identity.Email == "" {
-		return "", "", nil
+		return "", "", false, nil
+	}
+
+	if identity.EmailVerified != nil {
+		verified = *identity.EmailVerified
 	}
 
 	segments := strings.Split(identity.Email, "@")
-	domain := segments[1]
-	return identity.Email, domain, nil
+	domain = segments[1]
+	return identity.Email, domain, verified, nil
 }
 
 func compare(a, b []string) bool {
