@@ -6,6 +6,7 @@ import (
 	"fmt"
 	email "net/mail"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -279,7 +280,6 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 			// no private key is set in test env, so in this case allow the "none" algo
 			return jwt.UnsafeAllowNoneSignatureType, nil
 		}
-
 		return nil, fmt.Errorf("invalid token")
 	})
 
@@ -287,17 +287,22 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 	// external issuers can be added by modifying the KEEL_EXTERNAL_ISSUERS env var
 	if err != nil {
 		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-			iss := t.Claims.(*Claims).Issuer
+			iss := strings.TrimSuffix(t.Claims.(*Claims).Issuer, "/")
 
 			issuers := runtimectx.ExternalIssuersFromEnv()
 
 			// check to see if there is a matching issuer for the token issuer in the registry
 			if lo.Contains(issuers, iss) {
-				publicKey, err := runtimectx.PublicKeyForIssuer(iss)
+				if kid, ok := t.Header["kid"]; ok {
+					if kidStr, ok := kid.(string); ok {
+						publicKey, err := runtimectx.PublicKeyForIssuer(iss, kidStr)
 
-				if err == nil {
-					return publicKey, nil
+						if err == nil {
+							return publicKey, nil
+						}
+					}
 				}
+
 			}
 
 			return nil, fmt.Errorf("unexpected issuer in token: %s", iss)

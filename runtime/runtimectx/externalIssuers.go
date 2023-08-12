@@ -29,7 +29,7 @@ type Jwks struct {
 }
 
 func NewJwks(uri string) (*Jwks, error) {
-	jwksUri, err := url.Parse(fmt.Sprintf("%s/.well-known/jwks.json", uri))
+	jwksUri, err := url.Parse(fmt.Sprintf("%s/.well-known/jwks.json", strings.TrimSuffix(uri, "/")))
 
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func NewJwks(uri string) (*Jwks, error) {
 	}, nil
 }
 
-func (j *Jwks) PublicKey() (*rsa.PublicKey, error) {
+func (j *Jwks) PublicKey(tokenKid string) (*rsa.PublicKey, error) {
 	allKeys := j.Set.Keys(context.Background())
 
 	found := false
@@ -58,13 +58,21 @@ func (j *Jwks) PublicKey() (*rsa.PublicKey, error) {
 
 		switch v := curr.Value.(type) {
 		case jwk.RSAPublicKey:
+			kid := v.KeyID()
 
-			found = true
+			if tokenKid == kid {
+				found = true
 
-			err := v.Raw(&publicKey)
+				err := v.Raw(&publicKey)
 
-			if err != nil {
-				found = false
+				if err != nil {
+					found = false
+
+				}
+
+				if found {
+					break
+				}
 			}
 		}
 
@@ -94,14 +102,14 @@ func ExternalIssuersFromEnv() (providers []string) {
 	return providers
 }
 
-func PublicKeyForIssuer(issuerUri string) (*rsa.PublicKey, error) {
+func PublicKeyForIssuer(issuerUri string, tokenKid string) (*rsa.PublicKey, error) {
 	jwks, err := NewJwks(issuerUri)
 
 	if err != nil {
 		return nil, err
 	}
 
-	publicKey, err := jwks.PublicKey()
+	publicKey, err := jwks.PublicKey(tokenKid)
 
 	if err != nil {
 		return nil, err

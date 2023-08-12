@@ -472,7 +472,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 
-				identity, err := runtime.HandleAuthorizationHeader(ctx, m.Schema, r.Header, w)
+				token := r.Header.Get("Authorization")
+
+				identity, err := runtime.HandleBearerToken(ctx, m.Schema, token)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					_, err = w.Write([]byte(err.Error()))
