@@ -707,7 +707,7 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 		}
 	}
 
-	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
+	if decl.Model.Name.Value == parser.ImplicitIdentityModelName && !scm.Config.DisableAuth {
 		protoModel.Operations = append(protoModel.Operations, scm.makeAuthenticate())
 		protoModel.Operations = append(protoModel.Operations, scm.makeRequestPasswordReset())
 		protoModel.Operations = append(protoModel.Operations, scm.makePasswordReset())

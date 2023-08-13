@@ -19,6 +19,7 @@ type Config struct{}
 type ProjectConfig struct {
 	Environment EnvironmentConfig `yaml:"environment"`
 	Secrets     []Input           `yaml:"secrets"`
+	DisableAuth bool              `yaml:"disableKeelAuth"`
 }
 
 func (p *ProjectConfig) GetEnvVars(env string) map[string]string {

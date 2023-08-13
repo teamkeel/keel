@@ -2,19 +2,15 @@ package actions
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"strings"
 	"time"
 
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -106,7 +102,7 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
 	// fetch email and verified email from the openid provider
-	externalUserDetails, err := GetExternalUserDetails(ctx, issuer, jwt)
+	externalUserDetails, err := auth.GetUserInfo(ctx, issuer, jwt)
 
 	// if we can't fetch them, then this indicates the provider isn't configured correctly, so the created identity
 	// won't be much use.
@@ -139,98 +135,6 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 type ExternalUserDetails struct {
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email-verified"`
-}
-
-func GetExternalUserDetails(ctx context.Context, issuer string, jwt string) (*ExternalUserDetails, error) {
-	_, span := tracer.Start(ctx, "Fetch openid userinfo")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("issuer", issuer))
-	span.SetAttributes(attribute.String("token", jwt))
-
-	openIdConfigUrl := fmt.Sprintf("%s/.well-known/openid-configuration", strings.TrimSuffix(issuer, "/"))
-
-	resp, err := otelhttp.Get(ctx, openIdConfigUrl)
-
-	if err != nil {
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
-	}
-
-	openIdResp := map[string]any{}
-
-	err = json.Unmarshal(b, &openIdResp)
-
-	if err != nil {
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
-	}
-
-	if val, ok := openIdResp["userinfo_endpoint"]; ok {
-		if uri, ok := val.(string); ok {
-			span.SetAttributes(attribute.String("userinfo_endpoint", uri))
-
-			otelClient := &http.Client{
-				Transport: otelhttp.NewTransport(
-					http.DefaultTransport,
-				),
-			}
-
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
-			if err != nil {
-				span.RecordError(err, trace.WithStackTrace(true))
-				span.SetStatus(codes.Error, err.Error())
-				return nil, err
-			}
-
-			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", jwt))
-
-			userInfoResp, err := otelClient.Do(req)
-
-			if err != nil {
-				span.RecordError(err, trace.WithStackTrace(true))
-				span.SetStatus(codes.Error, err.Error())
-				return nil, err
-			}
-
-			defer userInfoResp.Body.Close()
-
-			b, err := io.ReadAll(userInfoResp.Body)
-
-			if err != nil {
-				span.RecordError(err, trace.WithStackTrace(true))
-				span.SetStatus(codes.Error, err.Error())
-				return nil, err
-			}
-
-			userDetails := ExternalUserDetails{}
-
-			err = json.Unmarshal(b, &userDetails)
-
-			if err != nil {
-				span.RecordError(err, trace.WithStackTrace(true))
-				span.SetStatus(codes.Error, err.Error())
-				return nil, err
-			}
-
-			return &userDetails, nil
-		}
-	}
-
-	span.RecordError(err, trace.WithStackTrace(true))
-	span.SetStatus(codes.Error, err.Error())
-	return nil, errors.New("could not fetch external user info from openid provider")
 }
 
 func mapToIdentity(values map[string]any) (*runtimectx.Identity, error) {

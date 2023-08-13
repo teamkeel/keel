@@ -182,7 +182,7 @@ func TestExpiredBearerTokenIsInvalid(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create the jwt 1 second expired.
-	now := time.Now().UTC().Add(-actions.BearerTokenExpiry).Add(time.Second * -1)
+	now := time.Now().UTC().Add(-actions.DefaultBearerTokenExpiry).Add(time.Second * -1)
 	claims := actions.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   identityId.String(),

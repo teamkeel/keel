@@ -15,6 +15,7 @@ import (
 
 	"github.com/teamkeel/keel/mail"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
@@ -34,8 +35,8 @@ var (
 )
 
 const (
-	BearerTokenExpiry time.Duration = time.Hour * 24
-	ResetTokenExpiry  time.Duration = time.Minute * 15
+	DefaultBearerTokenExpiry time.Duration = time.Hour * 24
+	ResetTokenExpiry         time.Duration = time.Minute * 15
 )
 
 const (
@@ -201,7 +202,16 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 }
 
 func GenerateBearerToken(ctx context.Context, identityId string) (string, error) {
-	return generateToken(ctx, identityId, []string{}, BearerTokenExpiry)
+
+	expiry := DefaultBearerTokenExpiry
+	config, err := runtimectx.GetAuthConfig(ctx)
+	if err == nil {
+		if config.Keel != nil {
+			expiry = time.Duration(config.Keel.TokenDuration) * time.Second
+		}
+	}
+
+	return generateToken(ctx, identityId, []string{}, expiry)
 }
 
 func GenerateResetToken(ctx context.Context, identityId string) (string, error) {
@@ -260,6 +270,7 @@ func ValidateResetToken(ctx context.Context, tokenString string) (string, error)
 
 func validateToken(ctx context.Context, tokenString string, audienceClaim string) (string, string, error) {
 	ctxPrivateKey, err := runtimectx.GetPrivateKey(ctx)
+	authConfig, _ := runtimectx.GetAuthConfig(ctx)
 
 	if err != nil {
 		return "", "", err
@@ -268,40 +279,74 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 	var token *jwt.Token
 	claims := &Claims{}
 
-	keelEnv := runtimectx.GetEnv(ctx)
-
 	// try to decode the token and validate using our private key as the signing method.
 	// this supports external issued tokens but which are signed with our private key (such as clerk)
 	token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 		if ctxPrivateKey != nil {
 			return &ctxPrivateKey.PublicKey, nil
-		} else if keelEnv == runtimectx.KeelEnvTest {
+		} else if authConfig.AllowUnsigned {
 			// no private key is set in test env, so in this case allow the "none" algo
 			return jwt.UnsafeAllowNoneSignatureType, nil
 		}
 		return nil, fmt.Errorf("invalid token")
 	})
 
-	// if unsuccessful on the first pass, then try and decode/validate the token using the public key that matches the issuer in the token from our external issuers registry
-	// external issuers can be added by modifying the KEEL_EXTERNAL_ISSUERS env var
+	// if unsuccessful using our private key, try to validate against any of the known external issuers if there are any
 	if err != nil {
 		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 			iss := t.Claims.(*Claims).Issuer
 
-			issuers := runtimectx.ExternalIssuersFromEnv()
+			issuers := authConfig.Issuers
 
-			// check to see if there is a matching issuer for the token issuer in the registry
-			if lo.Contains(issuers, iss) {
-				if kid, ok := t.Header["kid"]; ok {
-					if kidStr, ok := kid.(string); ok {
-						publicKey, err := runtimectx.PublicKeyForIssuer(iss, kidStr)
+			if authConfig.AllowAnyIssuers {
+				// In this mode we allow any issuer that is openID connect compatible
+				issuers = auth.CheckIssuers(ctx, &[]auth.ExternalIssuer{
+					{
+						Iss: iss,
+					},
+				})
+			}
 
-						if err == nil {
-							return publicKey, nil
+			if issuers == nil {
+				// If no auth config or no issuers then skip all this
+				return nil, nil
+			}
+
+			for _, issuer := range *issuers {
+				if issuer.Iss != iss {
+					continue
+				}
+				iss := t.Claims.(*Claims).Issuer
+
+				kid := ""
+				if header, ok := t.Header["kid"]; ok {
+					if kidStr, ok := header.(string); ok {
+						kid = kidStr
+					}
+				}
+
+				publicKey, err := auth.PublicKeyForIssuer(ctx, iss, kid)
+
+				// Check the audience matches if set
+				match := true
+				if issuer.Audience != nil {
+					match = false
+					aud := t.Claims.(*Claims).Audience
+					for _, audience := range aud {
+						if audience == *issuer.Audience {
+							match = true
+							break
 						}
 					}
 				}
 
+				if !match {
+					return nil, fmt.Errorf("invalid token")
+				}
+
+				if err == nil {
+					return publicKey, nil
+				}
 			}
 
 			return nil, fmt.Errorf("unexpected issuer in token: %s", iss)
