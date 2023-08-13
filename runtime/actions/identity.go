@@ -146,7 +146,7 @@ func GetExternalUserDetails(ctx context.Context, issuer string, jwt string) (*Ex
 	span.SetAttributes(attribute.String("issuer", issuer))
 	span.SetAttributes(attribute.String("token", jwt))
 
-	openIdConfigUrl := fmt.Sprintf("%s/.well-known/openid-configuration", issuer)
+	openIdConfigUrl := fmt.Sprintf("%s.well-known/openid-configuration", issuer)
 
 	resp, err := http.Get(openIdConfigUrl)
 
