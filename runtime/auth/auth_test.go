@@ -15,6 +15,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/patrickmn/go-cache"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -35,9 +37,15 @@ func init() {
 	privateKey = pk
 }
 
+func NewCache(ctx context.Context) {
+	auth.RequestCache = cache.New(5*time.Minute, 10*time.Minute)
+	auth.JwkCache = jwk.NewCache(ctx)
+}
+
 func TestOIDCConfig(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 
 	issuerUrl := "https://example.com/"
 
@@ -50,10 +58,10 @@ func TestOIDCConfig(t *testing.T) {
 		return OIDCMockResponse(req)
 	}
 
-	issuers := auth.CheckIssuers(ctx, &[]auth.ExternalIssuer{{
+	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{{
 		Iss: issuerUrl,
 	}})
-	require.Equal(t, 1, len(*issuers))
+	require.Equal(t, 1, len(issuers))
 
 	_, err := auth.GetOpenIDConnectConfig(ctx, issuerUrl)
 	require.NoError(t, err)
@@ -67,6 +75,7 @@ func TestOIDCConfig(t *testing.T) {
 func TestMultipleOIDCConfig(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 
 	requests := 0
 
@@ -75,14 +84,14 @@ func TestMultipleOIDCConfig(t *testing.T) {
 		return OIDCMockResponse(req)
 	}
 
-	issuers := auth.CheckIssuers(ctx, &[]auth.ExternalIssuer{
+	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
 		{
 			Iss: "https://example.com/",
 		},
 		{
 			Iss: "https://google.com/",
 		}})
-	require.Equal(t, 2, len(*issuers))
+	require.Equal(t, 2, len(issuers))
 
 	config, err := auth.GetOpenIDConnectConfig(ctx, "https://example.com/")
 	require.NoError(t, err)
@@ -100,6 +109,7 @@ func TestMultipleOIDCConfig(t *testing.T) {
 func TestOIDCConfigNoCache(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 	issuerUrl := "https://example.com/"
 	requests := 0
 
@@ -114,12 +124,12 @@ func TestOIDCConfigNoCache(t *testing.T) {
 		return res, nil
 	}
 
-	issuers := auth.CheckIssuers(ctx, &[]auth.ExternalIssuer{
+	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
 		{
 			Iss: issuerUrl,
 		},
 	})
-	require.Equal(t, 1, len(*issuers))
+	require.Equal(t, 1, len(issuers))
 
 	_, err := auth.GetOpenIDConnectConfig(ctx, issuerUrl)
 	require.NoError(t, err)
@@ -134,18 +144,19 @@ func TestOIDCConfigNoCache(t *testing.T) {
 func TestUserInfo(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 	issuerUrl := "https://example.com/"
 
 	mocks.DoFunc = func(req *http.Request) (*http.Response, error) {
 		return OIDCMockResponse(req)
 	}
 
-	issuers := auth.CheckIssuers(ctx, &[]auth.ExternalIssuer{
+	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
 		{
 			Iss: issuerUrl,
 		},
 	})
-	require.Equal(t, 1, len(*issuers))
+	require.Equal(t, 1, len(issuers))
 
 	requests := 0
 	mocks.DoFunc = func(req *http.Request) (*http.Response, error) {
@@ -186,18 +197,19 @@ func TestUserInfo(t *testing.T) {
 func TestUserInfoCache(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 	issuerUrl := "https://example.com/"
 
 	mocks.DoFunc = func(req *http.Request) (*http.Response, error) {
 		return OIDCMockResponse(req)
 	}
 
-	issuers := auth.CheckIssuers(ctx, &[]auth.ExternalIssuer{
+	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
 		{
 			Iss: issuerUrl,
 		},
 	})
-	require.Equal(t, 1, len(*issuers))
+	require.Equal(t, 1, len(issuers))
 
 	requests := 0
 	mocks.DoFunc = func(req *http.Request) (*http.Response, error) {
@@ -243,6 +255,7 @@ func TestUserInfoCache(t *testing.T) {
 func TestGetJWKS(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 	issuerUrl := "https://example.com/"
 
 	requests := 0
@@ -252,12 +265,12 @@ func TestGetJWKS(t *testing.T) {
 		return OIDCMockResponse(req)
 	}
 
-	issuers := auth.CheckIssuers(ctx, &[]auth.ExternalIssuer{
+	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
 		{
 			Iss: issuerUrl,
 		},
 	})
-	require.Equal(t, 1, len(*issuers))
+	require.Equal(t, 1, len(issuers))
 
 	_, err := auth.GetJWKS(ctx, issuerUrl)
 	require.NoError(t, err)
@@ -269,6 +282,7 @@ func TestGetJWKS(t *testing.T) {
 func TestGetJWKSNoCache(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 	issuerUrl := "https://example.com/"
 
 	requests := 0
@@ -284,12 +298,12 @@ func TestGetJWKSNoCache(t *testing.T) {
 		return res, nil
 	}
 
-	issuers := auth.CheckIssuers(ctx, &[]auth.ExternalIssuer{
+	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
 		{
 			Iss: issuerUrl,
 		},
 	})
-	require.Equal(t, 1, len(*issuers))
+	require.Equal(t, 1, len(issuers))
 
 	_, err := auth.GetJWKS(ctx, issuerUrl)
 	require.NoError(t, err)
@@ -301,6 +315,7 @@ func TestGetJWKSNoCache(t *testing.T) {
 func TestOIDCTokenValidation(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 
 	issuerUrl := "https://example.com/"
 
@@ -309,7 +324,7 @@ func TestOIDCTokenValidation(t *testing.T) {
 	}
 
 	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		Issuers: &[]auth.ExternalIssuer{
+		Issuers: []auth.ExternalIssuer{
 			{
 				Iss: issuerUrl,
 			},
@@ -331,6 +346,7 @@ func TestOIDCTokenValidation(t *testing.T) {
 func TestOIDCTokenValidationIncorrectAudience(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 
 	issuerUrl := "https://example.com/"
 
@@ -341,7 +357,7 @@ func TestOIDCTokenValidationIncorrectAudience(t *testing.T) {
 	aud := "no match"
 
 	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		Issuers: &[]auth.ExternalIssuer{
+		Issuers: []auth.ExternalIssuer{
 			{
 				Iss:      issuerUrl,
 				Audience: &aud,
@@ -360,6 +376,7 @@ func TestOIDCTokenValidationIncorrectAudience(t *testing.T) {
 func TestOIDCTokenValidationCorrectAudience(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 
 	issuerUrl := "https://example.com/"
 
@@ -370,7 +387,7 @@ func TestOIDCTokenValidationCorrectAudience(t *testing.T) {
 	aud := "staff"
 
 	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		Issuers: &[]auth.ExternalIssuer{
+		Issuers: []auth.ExternalIssuer{
 			{
 				Iss:      issuerUrl,
 				Audience: &aud,
@@ -391,6 +408,7 @@ func TestOIDCTokenValidationCorrectAudience(t *testing.T) {
 func TestOIDCTokenValidationInvalidIssuer(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 
 	issuerUrl := "https://exampl"
 
@@ -406,7 +424,7 @@ func TestOIDCTokenValidationInvalidIssuer(t *testing.T) {
 	}
 
 	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		Issuers: &[]auth.ExternalIssuer{
+		Issuers: []auth.ExternalIssuer{
 			{
 				Iss: issuerUrl,
 			},
@@ -416,16 +434,15 @@ func TestOIDCTokenValidationInvalidIssuer(t *testing.T) {
 	token, err := makeJWT(issuerUrl, "user_1", []string{})
 	require.NoError(t, err)
 
-	sub, iss, err := actions.ValidateBearerToken(ctx, token)
-	require.NoError(t, err)
-	require.Equal(t, "user_1", sub)
-	require.Equal(t, issuerUrl, iss)
+	_, _, err = actions.ValidateBearerToken(ctx, token)
+	require.Error(t, err)
 
 }
 
 func TestAllowNoIssuer(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 
 	issuerUrl := "https://example.com/"
 
@@ -445,6 +462,7 @@ func TestAllowNoIssuer(t *testing.T) {
 func TestAllowAllIssuers(t *testing.T) {
 
 	ctx := context.Background()
+	NewCache(ctx)
 
 	issuerUrl := "https://example.com/"
 
@@ -468,7 +486,7 @@ func TestAllowAllIssuers(t *testing.T) {
 
 // SAMPLE DATA
 var sampleOidcConfig = `{
-	"issuer": "https://%s",
+	"issuer": "https://%s/",
 	"authorization_endpoint": "https://%s/oauth2/authorize",
 	"jwks_uri": "https://%s/jwks",
 	"userinfo_endpoint": "https://%s/userinfo",
@@ -526,7 +544,7 @@ func OIDCMockResponse(req *http.Request) (*http.Response, error) {
 		resBody = res
 	}
 
-	fmt.Printf("Request: %s \n Response: %s \n", req.URL.Path, resBody)
+	// fmt.Printf("Request: %s \n Response: %s \n", req.URL.Path, resBody)
 
 	r := io.NopCloser(bytes.NewReader([]byte(resBody)))
 	res := &http.Response{

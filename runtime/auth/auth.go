@@ -15,15 +15,20 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/patrickmn/go-cache"
 	"github.com/pquerna/cachecontrol"
+	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type AuthConfig struct {
 	// If enabled, skips signing validation of tokens
 	AllowUnsigned bool `json:"AllowUnsigned"`
 	// If enabled, will verify tokens using any OIDC compatible issuer
-	AllowAnyIssuers bool              `json:"AllowAllIssuers"`
-	Keel            *KeelAuthConfig   `json:"keel"`
-	Issuers         *[]ExternalIssuer `json:"issuers"`
+	AllowAnyIssuers bool             `json:"AllowAllIssuers"`
+	Issuers         []ExternalIssuer `json:"issuers"`
+	Keel            *KeelAuthConfig  `json:"keel"`
 }
 
 type KeelAuthConfig struct {
@@ -67,10 +72,12 @@ type UserInfo struct {
 	Claims []byte
 }
 
+var tracer = otel.Tracer("github.com/teamkeel/keel/auth")
+
 var (
 	HttpClient   HTTPClient
-	requestCache *cache.Cache
-	jwkCache     *jwk.Cache
+	RequestCache *cache.Cache
+	JwkCache     *jwk.Cache
 )
 
 type HTTPClient interface {
@@ -80,53 +87,93 @@ type HTTPClient interface {
 
 func init() {
 	HttpClient = &http.Client{}
-	requestCache = cache.New(5*time.Minute, 10*time.Minute)
-	jwkCache = jwk.NewCache(context.Background())
+	RequestCache = cache.New(5*time.Minute, 10*time.Minute)
+	JwkCache = jwk.NewCache(context.Background())
 }
 
 // Loads OIDC config and JWKS into cache for each issuer and drops any incompatible provider
-func CheckIssuers(ctx context.Context, issuers *[]ExternalIssuer) *[]ExternalIssuer {
+func CheckIssuers(ctx context.Context, issuers []ExternalIssuer) []ExternalIssuer {
 
-	if issuers == nil {
-		return nil
+	if len(issuers) == 0 {
+		return issuers
 	}
+
+	ctx, span := tracer.Start(ctx, "ODIC")
+	defer span.End()
 
 	validIssuers := []ExternalIssuer{}
 
-	for _, issuer := range *issuers {
+	for _, issuer := range issuers {
+
+		ctx, issSpan := tracer.Start(ctx, issuer.Iss)
+
 		oidc, err := GetOpenIDConnectConfig(ctx, issuer.Iss)
 		if err != nil {
-			// TODO what to do with these errors?
+			logrus.WithFields(logrus.Fields{
+				"issuer": issuer,
+				"error":  err,
+			}).Error("Failed to load OIDC config")
+
+			issSpan.RecordError(err, trace.WithStackTrace(true))
+			issSpan.SetStatus(codes.Error, err.Error())
 			continue
 		}
-		err = jwkCache.Register(oidc.JWKSURL, jwk.WithHTTPClient(HttpClient))
+
+		issSpan.SetAttributes(attribute.String("JWKS url", oidc.JWKSURL))
+
+		err = JwkCache.Register(oidc.JWKSURL, jwk.WithHTTPClient(HttpClient))
 		if err != nil {
-			// TODO what to do with these errors?
+			logrus.WithFields(logrus.Fields{
+				"url":    oidc.JWKSURL,
+				"issuer": issuer,
+				"error":  err,
+			}).Error("Couldn't register JWKS")
+
+			issSpan.RecordError(err, trace.WithStackTrace(true))
+			issSpan.SetStatus(codes.Error, err.Error())
 			continue
 		}
 
 		// Check the url is valid
-		if _, err = jwkCache.Refresh(ctx, oidc.JWKSURL); err != nil {
-			// TODO what to do with these errors?
+		if _, err = JwkCache.Refresh(ctx, oidc.JWKSURL); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"url":    oidc.JWKSURL,
+				"issuer": issuer,
+				"error":  err,
+			}).Error("Couldn't validate JWKS from cache")
+
+			issSpan.RecordError(err, trace.WithStackTrace(true))
+			issSpan.SetStatus(codes.Error, err.Error())
 			continue
 		}
 
 		validIssuers = append(validIssuers, issuer)
+
+		issSpan.End()
 	}
 
-	return &validIssuers
+	return validIssuers
 }
 
 func GetOpenIDConnectConfig(ctx context.Context, issuer string) (*OpenidConfig, error) {
 
+	span := trace.SpanFromContext(ctx)
+
 	trimmed := strings.TrimSuffix(issuer, "/")
 
 	configUrl := trimmed + "/.well-known/openid-configuration"
+
+	span.AddEvent("Fetching OIDC configuration",
+		trace.WithAttributes(
+			attribute.String("issuer", issuer),
+			attribute.String("url", configUrl),
+		))
+
 	req, err := http.NewRequest("GET", configUrl, nil)
 	if err != nil {
 		return nil, err
 	}
-	body, _, err := cachedRequest(req.URL.String(), req)
+	body, _, err := cachedRequest(ctx, req.URL.String(), req)
 	if err != nil {
 		return nil, err
 	}
@@ -137,8 +184,8 @@ func GetOpenIDConnectConfig(ctx context.Context, issuer string) (*OpenidConfig, 
 		return nil, fmt.Errorf("Failed to unmarshal: %s", err)
 	}
 
-	if trimmed != strings.TrimSuffix(config.Issuer, "/") {
-		return nil, fmt.Errorf("oidc issuer did not match the issuer returned by provider, expected %q got %q", trimmed, strings.TrimSuffix(issuer, "/"))
+	if issuer != config.Issuer {
+		return nil, fmt.Errorf("oidc issuer did not match the issuer returned by provider, expected %q got %q", config.Issuer, issuer)
 	}
 
 	return config, nil
@@ -153,6 +200,10 @@ func GetUserInfo(ctx context.Context, issuer string, token string) (*UserInfo, e
 	}
 
 	oidc, err := GetOpenIDConnectConfig(ctx, issuer)
+	if err != nil {
+		return nil, err
+	}
+
 	req, err := http.NewRequest("GET", oidc.UserInfoURL, nil)
 	if err != nil {
 		return nil, err
@@ -160,7 +211,7 @@ func GetUserInfo(ctx context.Context, issuer string, token string) (*UserInfo, e
 
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	body, _, err := cachedRequest(fmt.Sprintf("%s-%s", req.URL.String(), sub), req)
+	body, _, err := cachedRequest(ctx, fmt.Sprintf("%s-%s", req.URL.String(), sub), req)
 	if err != nil {
 		return nil, fmt.Errorf("Fetch failed: %s", err)
 	}
@@ -205,21 +256,31 @@ func GetJWKS(ctx context.Context, issuer string) (jwk.Set, error) {
 		return emptySet, nil
 	}
 
-	return jwkCache.Get(ctx, odic.JWKSURL)
+	return JwkCache.Get(ctx, odic.JWKSURL)
 }
 
-func cachedRequest(key string, req *http.Request) (body []byte, cacheHit bool, err error) {
+func cachedRequest(ctx context.Context, key string, req *http.Request) (body []byte, cacheHit bool, err error) {
 
-	if cached, found := requestCache.Get(key); found {
+	span := trace.SpanFromContext(ctx)
+
+	if cached, found := RequestCache.Get(key); found {
+		span.SetAttributes(attribute.String("cache", "hit"))
 		cachedBody := cached.([]byte)
 		return cachedBody, true, nil
 	}
+
+	span.SetAttributes(attribute.String("cache", "miss"))
 
 	resp, err := HttpClient.Do(req)
 	if err != nil {
 		return []byte{}, cacheHit, err
 	}
 	defer resp.Body.Close()
+
+	span.AddEvent("ODIC request", trace.WithAttributes(
+		attribute.String("url", req.URL.String()),
+		attribute.Int("statusCode", resp.StatusCode),
+	))
 
 	body, err = io.ReadAll(resp.Body)
 	if err != nil {
@@ -237,7 +298,7 @@ func cachedRequest(key string, req *http.Request) (body []byte, cacheHit bool, e
 
 		if shouldCache {
 			duration := time.Until(expires)
-			requestCache.Set(key, body, duration)
+			RequestCache.Set(key, body, duration)
 		}
 	}
 
@@ -265,8 +326,10 @@ func ExtractJWKSPublicKey(ctx context.Context, jwks jwk.Set, tokenKid string) (*
 	found := false
 	var publicKey rsa.PublicKey
 
+	span := trace.SpanFromContext(ctx)
+
 	if jwks.Len() > 1 && tokenKid == "" {
-		return nil, errors.New("Multiple jwks but no kid in token")
+		span.AddEvent("Multiple jwks but no kid in token, using first jwk")
 	}
 
 	for allKeys.Next(ctx) {

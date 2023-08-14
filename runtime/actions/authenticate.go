@@ -12,6 +12,8 @@ import (
 	"github.com/karlseguin/typed"
 	"github.com/samber/lo"
 	"github.com/segmentio/ksuid"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/teamkeel/keel/mail"
 	"github.com/teamkeel/keel/proto"
@@ -91,6 +93,14 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 
 	if !typedInput.Bool("createIfNotExists") {
 		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "failed to authenticate"}
+	}
+
+	config, err := runtimectx.GetAuthConfig(scope.Context)
+	if err == nil {
+		if config != nil && config.Keel != nil && !config.Keel.AllowCreate {
+			// Creating new identities is disabled
+			return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "registration disabled"}
+		}
 	}
 
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(emailPassword.String("password")), bcrypt.DefaultCost)
@@ -206,7 +216,7 @@ func GenerateBearerToken(ctx context.Context, identityId string) (string, error)
 	expiry := DefaultBearerTokenExpiry
 	config, err := runtimectx.GetAuthConfig(ctx)
 	if err == nil {
-		if config.Keel != nil {
+		if config != nil && config.Keel != nil {
 			expiry = time.Duration(config.Keel.TokenDuration) * time.Second
 		}
 	}
@@ -270,21 +280,26 @@ func ValidateResetToken(ctx context.Context, tokenString string) (string, error)
 
 func validateToken(ctx context.Context, tokenString string, audienceClaim string) (string, string, error) {
 	ctxPrivateKey, err := runtimectx.GetPrivateKey(ctx)
-	authConfig, _ := runtimectx.GetAuthConfig(ctx)
-
 	if err != nil {
 		return "", "", err
 	}
+
+	ctx, span := tracer.Start(ctx, "Validate token")
+	defer span.End()
+
+	authConfig, _ := runtimectx.GetAuthConfig(ctx)
 
 	var token *jwt.Token
 	claims := &Claims{}
 
 	// try to decode the token and validate using our private key as the signing method.
 	// this supports external issued tokens but which are signed with our private key (such as clerk)
+	span.AddEvent("Validating with Keel pk")
 	token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 		if ctxPrivateKey != nil {
 			return &ctxPrivateKey.PublicKey, nil
-		} else if authConfig.AllowUnsigned {
+		} else if authConfig != nil && authConfig.AllowUnsigned {
+			span.AddEvent("Accepting unsigned token as AllowUnsigned is enabled")
 			// no private key is set in test env, so in this case allow the "none" algo
 			return jwt.UnsafeAllowNoneSignatureType, nil
 		}
@@ -299,8 +314,9 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 			issuers := authConfig.Issuers
 
 			if authConfig.AllowAnyIssuers {
+				span.AddEvent("Accepting any issuer as AllowAnyIssuers is enabled")
 				// In this mode we allow any issuer that is openID connect compatible
-				issuers = auth.CheckIssuers(ctx, &[]auth.ExternalIssuer{
+				issuers = auth.CheckIssuers(ctx, []auth.ExternalIssuer{
 					{
 						Iss: iss,
 					},
@@ -312,7 +328,9 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 				return nil, nil
 			}
 
-			for _, issuer := range *issuers {
+			span.AddEvent("Validating with external issuers")
+
+			for _, issuer := range issuers {
 				if issuer.Iss != iss {
 					continue
 				}
@@ -338,6 +356,7 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 							break
 						}
 					}
+					span.AddEvent("Validating audience claims", trace.WithAttributes(attribute.Bool("match", match)))
 				}
 
 				if !match {
