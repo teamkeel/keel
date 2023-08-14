@@ -1,3 +1,10 @@
+## [0.364.3](https://github.com/teamkeel/keel/compare/v0.364.2...v0.364.3) (2023-08-14)
+
+
+### Bug Fixes
+
+* issuer suffix ([#1095](https://github.com/teamkeel/keel/issues/1095)) ([88cd7b7](https://github.com/teamkeel/keel/commit/88cd7b7ab4b30ecdb7808fe1989d4fdce8826ecc))
+
 ## [0.364.2](https://github.com/teamkeel/keel/compare/v0.364.1...v0.364.2) (2023-08-14)
 
 
