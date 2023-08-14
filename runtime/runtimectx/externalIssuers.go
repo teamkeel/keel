@@ -29,7 +29,7 @@ type Jwks struct {
 }
 
 func NewJwks(uri string) (*Jwks, error) {
-	jwksUri, err := url.Parse(fmt.Sprintf("%s/.well-known/jwks.json", uri))
+	jwksUri, err := url.Parse(fmt.Sprintf("%s/.well-known/jwks.json", strings.TrimSuffix(uri, "/")))
 
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func ExternalIssuersFromEnv() (providers []string) {
 	envVar := os.Getenv(ExternalIssuersEnvKey)
 
 	if envVar == "" {
-		return []string{}
+		return []string{"https://auth.staging.keel.xyz/"}
 	}
 
 	for _, uri := range strings.Split(envVar, ",") {
