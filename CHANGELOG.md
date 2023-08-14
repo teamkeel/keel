@@ -1,3 +1,11 @@
+# [0.365.0](https://github.com/teamkeel/keel/compare/v0.364.3...v0.365.0) (2023-08-14)
+
+
+### Features
+
+* client improvements ([8c2840a](https://github.com/teamkeel/keel/commit/8c2840acd44061c24b665577ac53378923841905))
+* client namespacing ([3ceca0e](https://github.com/teamkeel/keel/commit/3ceca0e0126f5f2b0fbf9629115d62d13251e70d))
+
 ## [0.364.3](https://github.com/teamkeel/keel/compare/v0.364.2...v0.364.3) (2023-08-14)
 
 
