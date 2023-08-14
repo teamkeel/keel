@@ -12,8 +12,7 @@ function tryExecuteJob({ db, permitted, actionType, request }, cb) {
     return withDatabase(db, actionType, async ({ transaction }) => {
       await cb();
 
-      // we need to check that the final state is permitted or unpermitted. if it's not, then it means that the user has taken no explicit action to permit/deny
-      // and therefore we default to checking the permissions defined in the schema automatically.
+      // we need to check that the final state is unpermitted. if it's not, then it means that the user has taken no explicit action to permit/deny
       if (getPermissionState() === PERMISSION_STATE.UNPERMITTED) {
         throw new PermissionError(`Not permitted to access ${request.method}`);
       }
