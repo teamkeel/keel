@@ -1,3 +1,10 @@
+# [0.364.0](https://github.com/teamkeel/keel/compare/v0.363.2...v0.364.0) (2023-08-14)
+
+
+### Features
+
+* replace 'operations' and 'functions with new 'actions' keyword ([#1077](https://github.com/teamkeel/keel/issues/1077)) ([60d348b](https://github.com/teamkeel/keel/commit/60d348be8361b8438d0897fc25b5682d339fbb6f))
+
 ## [0.363.2](https://github.com/teamkeel/keel/compare/v0.363.1...v0.363.2) (2023-08-12)
 
 
