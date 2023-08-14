@@ -335,6 +335,33 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile rea
 		Optional: true,
 	}
 
+	defaultAttributeArgs := []*parser.AttributeArgumentNode{}
+
+	defaultAttributeArgs = append(defaultAttributeArgs, &parser.AttributeArgumentNode{
+		Expression: &parser.Expression{
+			Or: []*parser.OrExpression{
+				{
+					And: []*parser.ConditionWrap{
+						{
+							Condition: &parser.Condition{
+								LHS: &parser.Operand{
+									False: true,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+
+	defaultAttribute := &parser.AttributeNode{
+		Name: parser.AttributeNameToken{
+			Value: parser.AttributeDefault,
+		},
+		Arguments: defaultAttributeArgs,
+	}
+
 	emailVerifiedField := &parser.FieldNode{
 		BuiltIn: true,
 		Name: parser.NameNode{
@@ -343,7 +370,8 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile rea
 		Type: parser.NameNode{
 			Value: parser.FieldTypeBoolean,
 		},
-		Optional: true,
+		Optional:   true,
+		Attributes: []*parser.AttributeNode{defaultAttribute},
 	}
 
 	passwordField := &parser.FieldNode{

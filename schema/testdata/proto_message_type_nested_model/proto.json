@@ -73,7 +73,12 @@
           "type": {
             "type": "TYPE_BOOL"
           },
-          "optional": true
+          "optional": true,
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
         },
         {
           "modelName": "Identity",
