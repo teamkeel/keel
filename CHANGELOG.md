@@ -1,3 +1,10 @@
+## [0.364.2](https://github.com/teamkeel/keel/compare/v0.364.1...v0.364.2) (2023-08-14)
+
+
+### Bug Fixes
+
+* manual jobs issuer prefix stripping bug ([#1093](https://github.com/teamkeel/keel/issues/1093)) ([59db419](https://github.com/teamkeel/keel/commit/59db4191ff1d703fc56a44b25a886a2434b9f5eb))
+
 ## [0.364.1](https://github.com/teamkeel/keel/compare/v0.364.0...v0.364.1) (2023-08-14)
 
 
