@@ -90,7 +90,7 @@ func ExternalIssuersFromEnv() (providers []string) {
 	envVar := os.Getenv(ExternalIssuersEnvKey)
 
 	if envVar == "" {
-		return []string{"https://auth.staging.keel.xyz/"}
+		return []string{}
 	}
 
 	for _, uri := range strings.Split(envVar, ",") {
