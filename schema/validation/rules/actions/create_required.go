@@ -92,7 +92,7 @@ func checkPlainField(
 
 	if !satisfied(rootModelName, requiredPath, model.Name.Value, op) {
 		errs.Append(
-			errorhandling.ErrorCreateOperationMissingInput,
+			errorhandling.ErrorCreateActionMissingInput,
 			map[string]string{
 				"FieldName": requiredPath,
 			},
@@ -199,7 +199,7 @@ func makeSureReferencedFieldsAreNotGiven(
 		// Note we are making sure the path is NOT satisfied.
 		if satisfied(rootModelName, pathToField, referencedModelName, op) {
 			errs.Append(
-				errorhandling.ErrorCreateOperationAmbiguousRelationship,
+				errorhandling.ErrorCreateActionAmbiguousRelationship,
 				map[string]string{
 					"IdPath":          pathToIgnore,
 					"ConflictingPath": pathToField,

@@ -163,7 +163,7 @@ func UniqueActionNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			if _, ok := actionNames[action.Name.Value]; ok {
-				errs.Append(errorhandling.ErrorOperationsUniqueGlobally,
+				errs.Append(errorhandling.ErrorActionUniqueGlobally,
 					map[string]string{
 						"Model": model.Name.Value,
 						"Name":  action.Name.Value,
@@ -371,7 +371,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 
 					// @where attribute that has a condition on a non-unique field
 					// this is an error
-					errs.Append(errorhandling.ErrorOperationWhereNotUnique,
+					errs.Append(errorhandling.ErrorActionWhereNotUnique,
 						map[string]string{
 							"Ident":      op.Ident.ToString(),
 							"ActionType": action.Type.Value,
@@ -393,7 +393,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 	// action. This might happen if the action is defined with no inputs or
 	// @where clauses e.g. `get getMyThing()`
 	if !hasUniqueLookup && len(errs.Errors) == 0 {
-		errs.Append(errorhandling.ErrorOperationMissingUniqueInput,
+		errs.Append(errorhandling.ErrorActionMissingUniqueInput,
 			map[string]string{
 				"Name": action.Name.Value,
 			},
@@ -424,7 +424,7 @@ func CreateOperationNoReadInputsRule(asts []*parser.AST) (errs errorhandling.Val
 				} else {
 					name = i.Type.ToString()
 				}
-				errs.Append(errorhandling.ErrorCreateOperationNoInputs,
+				errs.Append(errorhandling.ErrorCreateActionNoInputs,
 					map[string]string{
 						"Input": name,
 					},
@@ -456,7 +456,7 @@ func validateInputIsUnique(asts []*parser.AST, action *parser.ActionNode, input 
 		}
 		if !query.FieldIsUnique(field) {
 			// input refers to a non-unique field - this is an error
-			return false, errorhandling.NewValidationError(errorhandling.ErrorOperationInputNotUnique,
+			return false, errorhandling.NewValidationError(errorhandling.ErrorActionInputNotUnique,
 				errorhandling.TemplateLiterals{
 					Literals: map[string]string{
 						"Input":      fragment.Fragment,
