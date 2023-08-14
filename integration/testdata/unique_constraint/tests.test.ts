@@ -3,7 +3,7 @@ import { actions, resetDatabase, models } from "@teamkeel/testing";
 
 beforeEach(resetDatabase);
 
-test("create operation - unique constraint error", async () => {
+test("create action - unique constraint error", async () => {
   await expect(
     actions.createProduct({
       name: "Mountain Bike",
@@ -33,7 +33,7 @@ test("create operation - unique constraint error", async () => {
   });
 });
 
-test("update operation - unique constraint error", async () => {
+test("update action - unique constraint error", async () => {
   await models.product.create({
     name: "Mountain Bike",
     sku: "MB001",
@@ -130,7 +130,7 @@ test("update function - unique constraint error", async () => {
   });
 });
 
-test("create operation - toOne model field - unique constraint error", async () => {
+test("create action - toOne model field - unique constraint error", async () => {
   const uganda = await models.country.create({ name: "Uganda " });
   const canada = await models.country.create({ name: "Canada " });
 
@@ -169,7 +169,7 @@ test("create operation - toOne model field - unique constraint error", async () 
   });
 });
 
-test("update operation - toOne model field - unique constraint error", async () => {
+test("update action - toOne model field - unique constraint error", async () => {
   const uganda = await models.country.create({ name: "Uganda " });
   const canada = await models.country.create({ name: "Canada " });
 

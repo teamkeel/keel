@@ -5,7 +5,7 @@ model Post {
         identity Identity?
     }
 
-    operations {
+    actions {
         create create() with (title, views)
         create createUsingRole() with (title) {
             @permission(roles: [Poster])
@@ -39,7 +39,7 @@ model ModelWithExpressions {
         option Options?
     }
 
-    operations {
+    actions {
         create textsFailedExpressions() with (title) {
             @permission(expression: "hello" == "goodbye")
             @permission(expression: "hello" != "hello")
@@ -90,14 +90,14 @@ api Web {
     }
 }
 
-// The operation in this model has ONLY Role based permission rules - to provide test
+// The action in this model has ONLY Role based permission rules - to provide test
 // regression coverage for this bugfix: https://linear.app/keel/issue/RUN-179/role-based-permission-bug-fix
 model Procedure {
     fields {
         name Text @unique
     }
 
-    operations {
+    actions {
         get getProc(name)
         create doProcedure() with (name) {
             @permission(roles: [Surgeon])

@@ -191,7 +191,7 @@ const basicSchema string = `
 		fields {
 			name Text 
 		}
-		operations {
+		actions {
 			get getPerson(id)
 			create createPerson() with (name)
 			update updatePerson(id) with (name)
@@ -217,7 +217,7 @@ const getWhere string = `
 		fields {
 			name Text @unique
 		}
-		operations {
+		actions {
 			get getPerson(name: Text) {
 				@where(person.name == name)
 			}
@@ -241,7 +241,7 @@ const listImplicitAndExplicitInputs string = `
 			firstName Text
 			secondName Text
 		}
-		operations {
+		actions {
 			list listPeople(firstName, secondName: Text) {
 				@where(person.secondName == secondName)
 			}
@@ -267,7 +267,7 @@ const multiSchema string = `
 			aBool Boolean
 			aNumber Number
 		}
-		operations {
+		actions {
 			get getMulti(id)
 			create createMulti() with (aText, aBool, aNumber)
 			update updateMulti(id) with (aText, aBool, aNumber)
@@ -296,7 +296,7 @@ const fieldTypes string = `
 			number Number
 			enum Enums
 		}
-		operations {
+		actions {
 			list listThings(text?, bool?, date?, timestamp?, number?, enum?)
 		}
 	}
@@ -317,7 +317,7 @@ const relationships string = `
 			title Text
 			author Author
 		}
-		operations {
+		actions {
 			get getPost(id)
 			create createPost() with (title, author.id)
 			update updatePost(id) with (title, author.id)
@@ -334,7 +334,7 @@ const relationships string = `
 			posts BlogPost[]
 			publisher Publisher
 		}
-		operations {
+		actions {
 			get getAuthor(id)
 			list listAuthors(name)
 			update updateAuthor(id) with (name)
@@ -371,7 +371,7 @@ const date_timestamp_parsing = `
 			theDate Date
 			theTimestamp Timestamp
 		}
-		operations {
+		actions {
 			create createThing() with (theDate, theTimestamp)
 			update updateThing(id) with (theDate, theTimestamp)
 			get getThing(id, theDate, theTimestamp)
@@ -393,7 +393,7 @@ const date_timestamp_parsing = `
 // iterate over.
 var testCases = []testCase{
 	{
-		name:       "create_operation_happy",
+		name:       "create_action_happy",
 		keelSchema: basicSchema,
 		gqlOperation: `
 			mutation CreatePerson($name: String!) {
@@ -418,7 +418,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "create_operation_errors",
+		name:       "create_action_errors",
 		keelSchema: basicSchema,
 		gqlOperation: `
 			mutation CreatePerson($name: String!) {
@@ -436,7 +436,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "get_operation_happy",
+		name:       "get_action_happy",
 		keelSchema: basicSchema,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -468,7 +468,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "get_operation_error",
+		name:       "get_action_error",
 		keelSchema: basicSchema,
 		gqlOperation: `
 			query GetPerson($id: ID!) {
@@ -485,7 +485,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "delete_operation_happy",
+		name:       "delete_action_happy",
 		keelSchema: basicSchema,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -517,7 +517,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "update_operation_happy",
+		name:       "update_action_happy",
 		keelSchema: basicSchema,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -558,7 +558,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "update_operation_errors",
+		name:       "update_action_errors",
 		keelSchema: basicSchema,
 		gqlOperation: `
 			mutation UpdatePerson($id: ID!, $name: String!) {
@@ -743,7 +743,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "list_operation_generic_and_paging_logic",
+		name:       "list_action_generic_and_paging_logic",
 		keelSchema: basicSchema,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			for _, nameStub := range []string{"Fred", "Sue"} {
@@ -1029,7 +1029,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name: "operation_create_set_attribute_with_text_literal",
+		name: "action_create_set_attribute_with_text_literal",
 		keelSchema: `
 			model Person {
 
@@ -1041,7 +1041,7 @@ var testCases = []testCase{
 					name Text
 					nickname Text?
 				}
-				operations {
+				actions {
 					get getPerson(id)
 					create createPerson() with (name) {
 						@set(person.nickname = "Joe Soap")
@@ -1078,7 +1078,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name: "operation_create_set_attribute_with_number_literal",
+		name: "action_create_set_attribute_with_number_literal",
 		keelSchema: `
 			model Person {
 
@@ -1090,7 +1090,7 @@ var testCases = []testCase{
 					name Text
 					age Number?
 				}
-				operations {
+				actions {
 					get getPerson(id)
 					create createPerson() with (name) {
 						@set(person.age = 1)
@@ -1127,7 +1127,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name: "operation_create_set_attribute_with_boolean_literal",
+		name: "action_create_set_attribute_with_boolean_literal",
 		keelSchema: `
 			model Person {
 
@@ -1139,7 +1139,7 @@ var testCases = []testCase{
 					name Text
 					hasFriends Boolean?
 				}
-				operations {
+				actions {
 					get getPerson(id)
 					create createPerson() with (name) {
 						@set(person.hasFriends = true)
@@ -1176,7 +1176,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name: "operation_authenticate_new_user",
+		name: "action_authenticate_new_user",
 		keelSchema: `
 			model Person {
 
@@ -1187,7 +1187,7 @@ var testCases = []testCase{
 				fields {
 					name Text
 				}
-				operations {
+				actions {
 					get getPerson(id)
 				}
 			}
@@ -1218,7 +1218,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name: "operation_authenticate_createifnotexists_false",
+		name: "action_authenticate_createifnotexists_false",
 		keelSchema: `
 			model Person {
 
@@ -1229,7 +1229,7 @@ var testCases = []testCase{
 				fields {
 					name Text
 				}
-				operations {
+				actions {
 					get getPerson(id)
 				}
 			}
@@ -1274,7 +1274,7 @@ var testCases = []testCase{
 				date Date
 				number Number
 			}
-			operations {
+			actions {
 				list listThings()
 			}
 		}
@@ -1314,7 +1314,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "get_operation_relationship_belongs_to",
+		name:       "get_action_relationship_belongs_to",
 		keelSchema: relationships,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -1369,7 +1369,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "get_operation_relationships_has_many_page_1",
+		name:       "get_action_relationships_has_many_page_1",
 		keelSchema: relationships,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -1479,7 +1479,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "get_operation_relationships_has_many_page_2",
+		name:       "get_action_relationships_has_many_page_2",
 		keelSchema: relationships,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -1586,7 +1586,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "list_operation_relationships_has_many_page_1",
+		name:       "list_action_relationships_has_many_page_1",
 		keelSchema: relationships,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -1705,7 +1705,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "list_operation_relationships_has_many_page_2",
+		name:       "list_action_relationships_has_many_page_2",
 		keelSchema: relationships,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -1816,7 +1816,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "update_operation_relationships_paging",
+		name:       "update_action_relationships_paging",
 		keelSchema: relationships,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -1931,7 +1931,7 @@ var testCases = []testCase{
 					title Text
 					author Author?
 				}
-				operations {
+				actions {
 					get getPost(id)
 				}
 				@permission(
@@ -2099,7 +2099,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "create_operation_with_date_and_timestamp_implicit_inputs",
+		name:       "create_action_with_date_and_timestamp_implicit_inputs",
 		keelSchema: date_timestamp_parsing,
 		gqlOperation: `
 				mutation CreateThing {
@@ -2121,7 +2121,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "update_operation_with_date_and_timestamp_implicit_inputs",
+		name:       "update_action_with_date_and_timestamp_implicit_inputs",
 		keelSchema: date_timestamp_parsing,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			row := initRow(map[string]any{
@@ -2156,7 +2156,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "get_operation_with_date_and_timestamp_implicit_inputs",
+		name:       "get_action_with_date_and_timestamp_implicit_inputs",
 		keelSchema: date_timestamp_parsing,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			row := initRow(map[string]any{
@@ -2189,7 +2189,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "list_operation_with_date_and_timestamp_implicit_inputs",
+		name:       "list_action_with_date_and_timestamp_implicit_inputs",
 		keelSchema: date_timestamp_parsing,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			row := initRow(map[string]any{
@@ -2353,7 +2353,7 @@ var testCases = []testCase{
 					name Text
 					posts BlogPost[]
 				}
-				operations {
+				actions {
 					get getAuthor(id)
 				}
 				@permission(
@@ -2439,7 +2439,7 @@ var testCases = []testCase{
 					name Text
 					posts BlogPost[]
 				}
-				operations {
+				actions {
 					list listAuthors()
 				}
 				@permission(
@@ -2516,7 +2516,7 @@ var testCases = []testCase{
 					title Text
 					author Author
 				}
-				operations {
+				actions {
 					get getPost(id)
 				}
 				@permission(
@@ -2598,7 +2598,7 @@ var testCases = []testCase{
 					title Text
 					author Author
 				}
-				operations {
+				actions {
 					list listPost()
 				}
 				@permission(

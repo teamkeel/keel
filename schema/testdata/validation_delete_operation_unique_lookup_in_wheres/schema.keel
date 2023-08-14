@@ -4,7 +4,7 @@ model MyModel {
         code Text @unique
     }
 
-    operations {
+    actions {
         delete deleteMyModel(explicitCode: Text) {
             @where(myModel.isLocked == false)
             @where(myModel.code == explicitCode)

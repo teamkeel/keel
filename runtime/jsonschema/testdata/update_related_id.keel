@@ -4,7 +4,7 @@ model Person {
         company Company
     }
 
-    operations {
+    actions {
         update testAction(id) with (company.id)
     }
 }

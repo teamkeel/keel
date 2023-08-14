@@ -6,13 +6,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_relationship_inputs/schema.keel",
-        "offset": 180,
+        "offset": 177,
         "line": 9,
         "column": 46
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_relationship_inputs/schema.keel",
-        "offset": 189,
+        "offset": 186,
         "line": 9,
         "column": 55
       }
@@ -23,13 +23,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_relationship_inputs/schema.keel",
-        "offset": 260,
+        "offset": 257,
         "line": 12,
         "column": 34
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_relationship_inputs/schema.keel",
-        "offset": 269,
+        "offset": 266,
         "line": 12,
         "column": 43
       }

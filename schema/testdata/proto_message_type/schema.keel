@@ -12,7 +12,7 @@ model Post {
     title Text
   }
 
-  functions {
+  actions {
     write createPostSpecial(MyCustomFunctionInput) returns(MyCustomFunctionOutput)
   }
 }

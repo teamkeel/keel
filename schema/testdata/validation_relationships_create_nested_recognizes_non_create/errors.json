@@ -6,13 +6,13 @@
       "code": "E034",
       "pos": {
         "filename": "testdata/validation_relationships_create_nested_recognizes_non_create/schema.keel",
-        "offset": 185,
+        "offset": 182,
         "line": 11,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_relationships_create_nested_recognizes_non_create/schema.keel",
-        "offset": 242,
+        "offset": 239,
         "line": 11,
         "column": 66
       }
@@ -23,13 +23,13 @@
       "code": "E034",
       "pos": {
         "filename": "testdata/validation_relationships_create_nested_recognizes_non_create/schema.keel",
-        "offset": 185,
+        "offset": 182,
         "line": 11,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_relationships_create_nested_recognizes_non_create/schema.keel",
-        "offset": 242,
+        "offset": 239,
         "line": 11,
         "column": 66
       }
@@ -40,13 +40,13 @@
       "code": "E034",
       "pos": {
         "filename": "testdata/validation_relationships_create_nested_recognizes_non_create/schema.keel",
-        "offset": 185,
+        "offset": 182,
         "line": 11,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_relationships_create_nested_recognizes_non_create/schema.keel",
-        "offset": 242,
+        "offset": 239,
         "line": 11,
         "column": 66
       }
@@ -57,13 +57,13 @@
       "code": "E034",
       "pos": {
         "filename": "testdata/validation_relationships_create_nested_recognizes_non_create/schema.keel",
-        "offset": 185,
+        "offset": 182,
         "line": 11,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_relationships_create_nested_recognizes_non_create/schema.keel",
-        "offset": 242,
+        "offset": 239,
         "line": 11,
         "column": 66
       }

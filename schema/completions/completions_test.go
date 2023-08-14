@@ -105,7 +105,7 @@ func TestModelCompletions(t *testing.T) {
 			model A {
               f<Cursor>
             }`,
-			expected: []string{"fields", "functions", "operations"},
+			expected: []string{"fields", "actions"},
 		},
 		{
 			name: "model-block-keywords-whitespace",
@@ -113,7 +113,7 @@ func TestModelCompletions(t *testing.T) {
 			model A {
 			  <Cursor>
 			}`,
-			expected: []string{"@permission", "@unique", "fields", "functions", "operations"},
+			expected: []string{"@permission", "@unique", "fields", "actions"},
 		},
 		// attributes tests
 		{
@@ -122,7 +122,7 @@ func TestModelCompletions(t *testing.T) {
 			model A {
               @<Cursor>
             }`,
-			expected: []string{"@permission", "@unique", "fields", "functions", "operations"},
+			expected: []string{"@permission", "@unique", "fields", "actions"},
 		},
 	}
 
@@ -269,7 +269,7 @@ func TestFieldCompletions(t *testing.T) {
 			model A {
               fi<Cursor>
             }`,
-			expected: []string{"fields", "functions", "operations"},
+			expected: []string{"actions", "fields"},
 		},
 		// type tests
 		{
@@ -446,50 +446,50 @@ func TestFieldCompletions(t *testing.T) {
 	runTestsCases(t, cases)
 }
 
-func TestOperationCompletions(t *testing.T) {
+func TestActionCompletions(t *testing.T) {
 	cases := []testCase{
 		// actions tests
 		{
-			name: "operations-action-type-completions",
+			name: "action-type-completions",
 			schema: `
 			model A {
-				operations {
+				actions {
 					<Cursor>
 				}
 			}`,
-			expected: parser.OperationActionTypes,
+			expected: parser.ActionTypes,
 		},
 		{
 			name: "create-keyword",
 			schema: `
 			model A {
-				operations {
+				actions {
 				c<Cursor>
 				}
 			}`,
-			expected: parser.OperationActionTypes,
+			expected: parser.ActionTypes,
 		},
 		{
 			name: "create-keyword-not-first",
 			schema: `
 			model A {
-				operations {
+				actions {
 				get getA(id)
 				crea<Cursor>
 				}
 			}`,
-			expected: parser.OperationActionTypes,
+			expected: parser.ActionTypes,
 		},
 		{
 			name: "get-keyword",
 			schema: `
 			model A {
-		      operations {
+		      actions {
 		        get getA(id)
 		        g<Cursor>
 			  }
 		    }`,
-			expected: parser.OperationActionTypes,
+			expected: parser.ActionTypes,
 		},
 		// input tests
 		{
@@ -499,7 +499,7 @@ func TestOperationCompletions(t *testing.T) {
 			  fields {
 				something Text
 			  }
-		      operations {
+		      actions {
 		        get getA(<Cursor>)
 			  }
 		    }`,
@@ -517,7 +517,7 @@ func TestOperationCompletions(t *testing.T) {
 			  fields {
 				other B
 			  }
-		      operations {
+		      actions {
 		        get getA(other.<Cursor>)
 			  }
 		    }
@@ -531,7 +531,7 @@ func TestOperationCompletions(t *testing.T) {
 			  fields {
 				other B
 			  }
-		      operations {
+		      actions {
 		        get getA(other.deeper.<Cursor>)
 			  }
 		    }
@@ -555,7 +555,7 @@ func TestOperationCompletions(t *testing.T) {
 			name: "with-keyword",
 			schema: `
 			model A {
-		      operations {
+		      actions {
 		        create createA() wi<Cursor>
 			  }
 		    }`,
@@ -565,7 +565,7 @@ func TestOperationCompletions(t *testing.T) {
 			name: "with-keyword-whitespace",
 			schema: `
 			model A {
-		      operations {
+		      actions {
 		        create createA() <Cursor>
 			  }
 		    }`,
@@ -578,7 +578,7 @@ func TestOperationCompletions(t *testing.T) {
 			  fields {
 				name Text
 			  }
-		      operations {
+		      actions {
 		        create createA() with (name) <Cursor>
 			  }
 		    }`,
@@ -592,7 +592,7 @@ func TestOperationCompletions(t *testing.T) {
 			  fields {
 				name Text
 			  }
-		      operations {
+		      actions {
 		        create createA() with (name) {
 		          @s<Cursor>
 				}
@@ -607,7 +607,7 @@ func TestOperationCompletions(t *testing.T) {
 			  fields {
 				name Text
 			  }
-		      operations {
+		      actions {
 		        create createA() with (name) {
 		          @<Cursor>
 				}
@@ -622,7 +622,7 @@ func TestOperationCompletions(t *testing.T) {
 			  fields {
 				name Text
 			  }
-		      operations {
+		      actions {
 		        create createA() with (name) {
 		          <Cursor>
 				}
@@ -639,7 +639,7 @@ func TestOperationCompletions(t *testing.T) {
 				name Text
 				age Number
 			  }
-		      operations {
+		      actions {
 		        list people() {
 					@where(person.<Cursor>)
 				}
@@ -660,7 +660,7 @@ func TestOperationCompletions(t *testing.T) {
 			  fields {
 				dogs Dog[]
 			  }
-		      operations {
+		      actions {
 		        list people() {
 					@where(person.dogs.<Cursor>)
 				}
@@ -675,7 +675,7 @@ func TestOperationCompletions(t *testing.T) {
 			  fields {
 				dogs Dog[]
 			  }
-		      operations {
+		      actions {
 		        list people() {
 					@where(person.dogs.<Cursor>)
 				}
@@ -698,7 +698,7 @@ func TestOperationCompletions(t *testing.T) {
 			  fields {
 				species Animal
 			  }
-		      operations {
+		      actions {
 		        list pets() {
 					@where(pet.species == <Cursor>)
 				}
@@ -720,7 +720,7 @@ func TestOperationCompletions(t *testing.T) {
 			  fields {
 				species Animal
 			  }
-		      operations {
+		      actions {
 		        list pets() {
 					@where(pet.species == Animal.<Cursor>)
 				}
@@ -741,21 +741,7 @@ func TestOperationCompletions(t *testing.T) {
 }
 
 func TestFunctionCompletions(t *testing.T) {
-
 	cases := []testCase{
-		// block tests
-		{
-			name: "functions-keyword",
-			schema: `
-			model A {
-              fields {
-				name Text
-			  }
-
-              fun<Cursor>
-            }`,
-			expected: []string{"fields", "functions", "operations"},
-		},
 		// name tests
 		{
 			name: "suggested-function-name-completion",
@@ -770,24 +756,12 @@ func TestFunctionCompletions(t *testing.T) {
 					title Text
 				}
 			
-				functions {
+				actions {
 					create c<Cursor>
 				}
 			}
 			`,
 			expected: []string{"createPostExtended"},
-		},
-		// action type tests
-		{
-			name: "arbitrary-function-action-type-completions",
-			schema: `
-			model Person {
-				functions {
-					<Cursor>
-				}
-			}
-			`,
-			expected: parser.FunctionActionTypes,
 		},
 		// input tests
 		{
@@ -795,7 +769,7 @@ func TestFunctionCompletions(t *testing.T) {
 			schema: `
 			message GetPersonInput {}
 			model Person {
-				functions {
+				actions {
 					read getPerson(<Cursor>
 				}
 			}
@@ -806,7 +780,7 @@ func TestFunctionCompletions(t *testing.T) {
 			name: "arbitrary-function-input-completions-multi-file",
 			schema: `
 			model Person {
-				functions {
+				actions {
 					read getPerson(<Cursor>
 				}
 			}
@@ -823,7 +797,7 @@ func TestFunctionCompletions(t *testing.T) {
 			message GetPersonInput {}
 			message GetPersonResponse {}
 			model Person {
-				functions {
+				actions {
 					read getPerson(GetPersonInput) returns(<Cursor>)
 				}
 			}
@@ -836,7 +810,7 @@ func TestFunctionCompletions(t *testing.T) {
 			message GetPersonInput {}
 			message GetPersonResponse {}
 			model Person {
-				functions {
+				actions {
 					read getPerson(GetPersonInput) <Cursor>
 				}
 			}
@@ -848,7 +822,7 @@ func TestFunctionCompletions(t *testing.T) {
 			name: "arbitrary-function-any-completions",
 			schema: `
 			model Person {
-				functions {
+				actions {
 					read getPerson(<Cursor>)
 				}
 			}
@@ -859,7 +833,7 @@ func TestFunctionCompletions(t *testing.T) {
 			name: "arbitrary-function-create-with-completion",
 			schema: `
 			model Person {
-				functions {
+				actions {
 					create createPerson() <Cursor>
 				}
 			}`,
@@ -870,7 +844,7 @@ func TestFunctionCompletions(t *testing.T) {
 			name: "arbitrary-function-create-partial-with-completion",
 			schema: `
 			model Person {
-				functions {
+				actions {
 					create createPerson() w<Cursor>
 				}
 			}`,
@@ -880,7 +854,7 @@ func TestFunctionCompletions(t *testing.T) {
 			name: "arbitrary-function-update-with-completion",
 			schema: `
 			model Person {
-				functions {
+				actions {
 					update updatePerson() <Cursor>
 				}
 			}`,
@@ -890,7 +864,7 @@ func TestFunctionCompletions(t *testing.T) {
 			name: "arbitrary-function-update-partial-with-completion",
 			schema: `
 			model Person {
-				functions {
+				actions {
 					update updatePerson() w<Cursor>
 				}
 			}`,
@@ -909,7 +883,7 @@ func TestPermissionCompletions(t *testing.T) {
 			model A {
               @p<Cursor>
             }`,
-			expected: []string{"@permission", "fields", "functions", "operations"},
+			expected: []string{"@permission", "actions", "fields"},
 		},
 		{
 			name: "model-permission-attribute-labels",
@@ -924,7 +898,7 @@ func TestPermissionCompletions(t *testing.T) {
 			name: "action-permission-attribute-labels",
 			schema: `
 			model Person {
-				operations {
+				actions {
 					create createPerson() {
 						@permission(<Cursor>)
 					}
@@ -986,7 +960,7 @@ func TestPermissionCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: parser.FunctionActionTypes,
+			expected: parser.ActionTypes,
 		},
 		{
 			name: "permission-attribute-actions-many",
@@ -997,7 +971,7 @@ func TestPermissionCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: parser.FunctionActionTypes,
+			expected: parser.ActionTypes,
 		},
 		{
 			name: "permission-attribute-roles",
@@ -1034,7 +1008,7 @@ func TestOrderByCompletions(t *testing.T) {
 					nationality Country
 					employer Company
 				}
-				operations {
+				actions {
 					list people() {
 						@orderBy(<Cursor>)
 					}
@@ -1050,7 +1024,7 @@ func TestOrderByCompletions(t *testing.T) {
 					name Text
 					age Number
 				}
-				operations {
+				actions {
 					list people() {
 						@orderBy(name: asc, <Cursor>
 					}
@@ -1066,7 +1040,7 @@ func TestOrderByCompletions(t *testing.T) {
 					name Text
 					age Number
 				}
-				operations {
+				actions {
 					list people() {
 						@orderBy(name: <Cursor>
 					}
@@ -1082,7 +1056,7 @@ func TestOrderByCompletions(t *testing.T) {
 					name Text
 					age Number
 				}
-				operations {
+				actions {
 					list people() {
 						@orderBy(name: as<Cursor>)
 					}
@@ -1098,7 +1072,7 @@ func TestOrderByCompletions(t *testing.T) {
 					name Text
 					age Number
 				}
-				operations {
+				actions {
 					list people() {
 						@orderBy(name: desc, age: <Cursor>
 					}
@@ -1128,7 +1102,7 @@ func TestSortableCompletions(t *testing.T) {
 					nationality Country
 					employer Company
 				}
-				operations {
+				actions {
 					list people() {
 						@sortable(<Cursor>
 					}
@@ -1144,7 +1118,7 @@ func TestSortableCompletions(t *testing.T) {
 				name Text
 				age Number
 			  }
-		      operations {
+		      actions {
 		        list people() {
 					@sortable(name, <Cursor>
 				}

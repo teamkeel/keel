@@ -6,13 +6,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_message_in_operation/schema.keel",
-        "offset": 82,
+        "offset": 79,
         "line": 7,
         "column": 25
       },
       "endPos": {
         "filename": "testdata/validation_message_in_operation/schema.keel",
-        "offset": 85,
+        "offset": 82,
         "line": 7,
         "column": 28
       }
@@ -23,13 +23,13 @@
       "code": "E033",
       "pos": {
         "filename": "testdata/validation_message_in_operation/schema.keel",
-        "offset": 82,
+        "offset": 79,
         "line": 7,
         "column": 25
       },
       "endPos": {
         "filename": "testdata/validation_message_in_operation/schema.keel",
-        "offset": 85,
+        "offset": 82,
         "line": 7,
         "column": 28
       }

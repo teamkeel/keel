@@ -3,7 +3,7 @@ model MyModel {
         nonUnique Text
     }
 
-    operations {
+    actions {
         delete deleteMyModel() {
             @where(myModel.nonUnique == "something")
         }

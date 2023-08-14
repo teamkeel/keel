@@ -1,18 +1,18 @@
 {
   "errors": [
     {
-      "message": "person.age is not a unique field. update operations can only filter on unique fields",
+      "message": "person.age is not a unique field. update actions can only filter on unique fields",
       "hint": "",
       "code": "E036",
       "pos": {
         "filename": "testdata/validation_actions_update_non_unique_where/schema.keel",
-        "offset": 149,
+        "offset": 146,
         "line": 8,
         "column": 20
       },
       "endPos": {
         "filename": "testdata/validation_actions_update_non_unique_where/schema.keel",
-        "offset": 159,
+        "offset": 156,
         "line": 8,
         "column": 30
       }

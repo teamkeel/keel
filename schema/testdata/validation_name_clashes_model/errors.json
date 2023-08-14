@@ -6,13 +6,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 314,
+        "offset": 309,
         "line": 21,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 330,
+        "offset": 325,
         "line": 21,
         "column": 23
       }
@@ -23,13 +23,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 342,
+        "offset": 337,
         "line": 24,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 356,
+        "offset": 351,
         "line": 24,
         "column": 21
       }
@@ -40,13 +40,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 368,
+        "offset": 363,
         "line": 27,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 387,
+        "offset": 382,
         "line": 27,
         "column": 26
       }
@@ -57,13 +57,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 399,
+        "offset": 394,
         "line": 30,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 412,
+        "offset": 407,
         "line": 30,
         "column": 20
       }
@@ -74,13 +74,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 424,
+        "offset": 419,
         "line": 33,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 440,
+        "offset": 435,
         "line": 33,
         "column": 23
       }
@@ -91,13 +91,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 452,
+        "offset": 447,
         "line": 36,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 469,
+        "offset": 464,
         "line": 36,
         "column": 24
       }
@@ -108,13 +108,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 481,
+        "offset": 476,
         "line": 39,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 501,
+        "offset": 496,
         "line": 39,
         "column": 27
       }
@@ -125,13 +125,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 513,
+        "offset": 508,
         "line": 42,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 533,
+        "offset": 528,
         "line": 42,
         "column": 27
       }
@@ -142,13 +142,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 545,
+        "offset": 540,
         "line": 45,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 568,
+        "offset": 563,
         "line": 45,
         "column": 30
       }
@@ -159,13 +159,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 580,
+        "offset": 575,
         "line": 48,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 605,
+        "offset": 600,
         "line": 48,
         "column": 32
       }
@@ -176,13 +176,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 617,
+        "offset": 612,
         "line": 51,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 645,
+        "offset": 640,
         "line": 51,
         "column": 35
       }
@@ -193,13 +193,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 657,
+        "offset": 652,
         "line": 54,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 665,
+        "offset": 660,
         "line": 54,
         "column": 15
       }
@@ -210,13 +210,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 677,
+        "offset": 672,
         "line": 57,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 683,
+        "offset": 678,
         "line": 57,
         "column": 13
       }
@@ -227,13 +227,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 695,
+        "offset": 690,
         "line": 60,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 701,
+        "offset": 696,
         "line": 60,
         "column": 13
       }
@@ -244,13 +244,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 713,
+        "offset": 708,
         "line": 63,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 720,
+        "offset": 715,
         "line": 63,
         "column": 14
       }
@@ -261,13 +261,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 771,
+        "offset": 766,
         "line": 72,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 776,
+        "offset": 771,
         "line": 72,
         "column": 12
       }
@@ -278,13 +278,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 788,
+        "offset": 783,
         "line": 75,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 794,
+        "offset": 789,
         "line": 75,
         "column": 13
       }
@@ -295,13 +295,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 806,
+        "offset": 801,
         "line": 78,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 811,
+        "offset": 806,
         "line": 78,
         "column": 12
       }
@@ -312,13 +312,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 823,
+        "offset": 818,
         "line": 81,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 831,
+        "offset": 826,
         "line": 81,
         "column": 15
       }
@@ -329,13 +329,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 843,
+        "offset": 838,
         "line": 84,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 848,
+        "offset": 843,
         "line": 84,
         "column": 12
       }
@@ -346,13 +346,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 860,
+        "offset": 855,
         "line": 87,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_model/schema.keel",
-        "offset": 872,
+        "offset": 867,
         "line": 87,
         "column": 19
       }

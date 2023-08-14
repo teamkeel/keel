@@ -3,7 +3,7 @@ model MyModel {
         text Text
     }
 
-    operations {
+    actions {
         get getMyModel(text)
     }
 }

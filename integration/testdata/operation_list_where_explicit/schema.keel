@@ -6,7 +6,7 @@ model Post {
         aTimestamp Timestamp?
     }
 
-    operations {
+    actions {
         create createPost() with (title?, length?, aDate?, aTimestamp?)
         list listPostsEqualString(whereArg: Text) {
             @where(post.title == whereArg)

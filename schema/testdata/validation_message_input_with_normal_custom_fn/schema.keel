@@ -3,7 +3,7 @@ message Foo {
 }
 
 model Person {
-  functions {
+  actions {
     create createPerson() with(Foo)
   }
 }

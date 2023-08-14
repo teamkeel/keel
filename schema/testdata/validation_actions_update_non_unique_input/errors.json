@@ -1,18 +1,18 @@
 {
   "errors": [
     {
-      "message": "age is not a unique field. update operations take only unique inputs",
+      "message": "age is not a unique field. update actions take only unique inputs",
       "hint": "",
       "code": "E035",
       "pos": {
         "filename": "testdata/validation_actions_update_non_unique_input/schema.keel",
-        "offset": 114,
+        "offset": 111,
         "line": 7,
         "column": 27
       },
       "endPos": {
         "filename": "testdata/validation_actions_update_non_unique_input/schema.keel",
-        "offset": 117,
+        "offset": 114,
         "line": 7,
         "column": 30
       }

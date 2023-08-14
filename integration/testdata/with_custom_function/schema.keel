@@ -8,17 +8,17 @@ model Person {
         slackId Text?
     }
 
-    functions {
-        get getPerson(id)
-        get getPersonByNiNumber(niNumber)
-        create createPerson() with (name, gender, niNumber, slackId?)
-        create createPersonWithContextInfo() with (name, gender, niNumber)
-        list listPeople(gender)
-        delete deletePerson(id)
-        update updatePerson(id) with (name, gender, niNumber)
-        create createPersonWithEnvVar() with (name, gender, niNumber)
-        create createPersonWithSecret() with (name, gender, niNumber)
-        create customPermission() with (name, gender, niNumber)
+    actions {
+        get getPerson(id) @function
+        get getPersonByNiNumber(niNumber) @function
+        create createPerson() with (name, gender, niNumber, slackId?) @function
+        create createPersonWithContextInfo() with (name, gender, niNumber) @function
+        list listPeople(gender) @function
+        delete deletePerson(id) @function
+        update updatePerson(id) with (name, gender, niNumber) @function
+        create createPersonWithEnvVar() with (name, gender, niNumber) @function
+        create createPersonWithSecret() with (name, gender, niNumber) @function
+        create customPermission() with (name, gender, niNumber) @function
     }
 
     @permission(
@@ -32,9 +32,9 @@ model Profile {
         person Person
     }
 
-    functions {
-        create createProfile() with (person.id)
-        create createProfileWithNullPerson()
+    actions {
+        create createProfile() with (person.id) @function
+        create createProfileWithNullPerson() @function
     }
 
     @permission(
@@ -49,8 +49,8 @@ model Publisher {
         authors Author[]
     }
 
-    functions {
-        get getPublisherByBook(bookId: ID)
+    actions {
+        get getPublisherByBook(bookId: ID) @function
     }
     
     @permission(
@@ -73,8 +73,8 @@ model Book {
         title Text
     }
 
-    functions {
-        list listBooksByPublisherName(author.publisher.name)
+    actions {
+        list listBooksByPublisherName(author.publisher.name) @function
     }
 
     @permission(

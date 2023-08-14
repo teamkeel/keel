@@ -3,10 +3,9 @@ model Post {
     published Boolean
   }
 
-  operations {
+  actions {
     create publishPost() with (published) {
       @set(true)
     }
   }
 }
-

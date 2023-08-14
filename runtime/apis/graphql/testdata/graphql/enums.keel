@@ -3,7 +3,7 @@ model Person {
         occupation Occupation
     }
 
-    operations {
+    actions {
         get getPerson(id)
         create createPerson() with (occupation)
     }

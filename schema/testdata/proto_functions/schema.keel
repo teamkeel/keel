@@ -1,5 +1,5 @@
 model Foo {
-    functions {
+    actions {
         list operationA()
     }
 }

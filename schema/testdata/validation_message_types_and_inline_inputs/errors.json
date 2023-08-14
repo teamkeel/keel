@@ -6,13 +6,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_message_types_and_inline_inputs/schema.keel",
-        "offset": 106,
+        "offset": 104,
         "line": 11,
         "column": 20
       },
       "endPos": {
         "filename": "testdata/validation_message_types_and_inline_inputs/schema.keel",
-        "offset": 109,
+        "offset": 107,
         "line": 11,
         "column": 23
       }

@@ -1,5 +1,5 @@
 model MyModel {
-  operations {
+  actions {
     get uppercase(UPPERCASE: ID) {
       @where(myModel.id == UPPERCASE)
     }
@@ -14,7 +14,7 @@ model MyModel {
     }
   }
 
-  functions {
+  actions {
     get uppercaseFunction(UPPERCASE: ID)
     get upperCamelCaseFunction(UpperCamelCase: ID)
     get snakeCaseFunction(snake_case: ID)

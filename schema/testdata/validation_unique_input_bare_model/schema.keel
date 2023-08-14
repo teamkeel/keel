@@ -6,7 +6,7 @@ model Book {
         author Author @unique
     }
 
-    operations {
+    actions {
         get getByAuthor(author)
     }
 }

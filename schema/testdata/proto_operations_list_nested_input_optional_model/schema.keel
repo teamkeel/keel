@@ -18,7 +18,7 @@ model Book {
         author Author
     }
 
-    functions {
+    actions {
         list listBooksByPublisherName(author.publisher.name)
     }
 }

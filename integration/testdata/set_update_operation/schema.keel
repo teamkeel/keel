@@ -11,7 +11,7 @@ model Thing {
         parent Parent?
     }
 
-    operations {
+    actions {
         create create()
         get get(id)
         update updateText(id) {

@@ -80,15 +80,15 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		writeModelAPIDeclaration(sdkTypes, model)
 		writeModelQueryBuilderDeclaration(sdkTypes, model)
 
-		for _, op := range model.Operations {
+		for _, action := range model.Actions {
 			// We only care about custom functions for the SDK
-			if op.Implementation != proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+			if action.Implementation != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
 				continue
 			}
 
-			writeCustomFunctionWrapperType(sdkTypes, model, op)
+			writeCustomFunctionWrapperType(sdkTypes, model, action)
 
-			sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(op.Name))
+			sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(action.Name))
 			sdk.Writeln("")
 		}
 	}
@@ -681,7 +681,7 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 	w.Writeln(";")
 }
 
-func writeCustomFunctionWrapperType(w *codegen.Writer, model *proto.Model, op *proto.Operation) {
+func writeCustomFunctionWrapperType(w *codegen.Writer, model *proto.Model, op *proto.Action) {
 	w.Writef("export declare function %s", casing.ToCamel(op.Name))
 
 	inputType := op.InputMessageName
@@ -696,24 +696,24 @@ func writeCustomFunctionWrapperType(w *codegen.Writer, model *proto.Model, op *p
 	w.Writeln(";")
 }
 
-func toCustomFunctionReturnType(model *proto.Model, op *proto.Operation, isTestingPackage bool) string {
+func toCustomFunctionReturnType(model *proto.Model, op *proto.Action, isTestingPackage bool) string {
 	returnType := "Promise<"
 	sdkPrefix := ""
 	if isTestingPackage {
 		sdkPrefix = "sdk."
 	}
 	switch op.Type {
-	case proto.OperationType_OPERATION_TYPE_CREATE:
+	case proto.ActionType_ACTION_TYPE_CREATE:
 		returnType += sdkPrefix + model.Name
-	case proto.OperationType_OPERATION_TYPE_UPDATE:
+	case proto.ActionType_ACTION_TYPE_UPDATE:
 		returnType += sdkPrefix + model.Name
-	case proto.OperationType_OPERATION_TYPE_GET:
+	case proto.ActionType_ACTION_TYPE_GET:
 		returnType += sdkPrefix + model.Name + " | null"
-	case proto.OperationType_OPERATION_TYPE_LIST:
+	case proto.ActionType_ACTION_TYPE_LIST:
 		returnType += sdkPrefix + model.Name + "[]"
-	case proto.OperationType_OPERATION_TYPE_DELETE:
+	case proto.ActionType_ACTION_TYPE_DELETE:
 		returnType += "string"
-	case proto.OperationType_OPERATION_TYPE_READ, proto.OperationType_OPERATION_TYPE_WRITE:
+	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
 		isAny := op.ResponseMessageName == parser.MessageFieldTypeAny
 
 		if isAny {
@@ -740,23 +740,23 @@ func writeJobFunctionWrapperType(w *codegen.Writer, job *proto.Job) {
 	w.Writeln(";")
 }
 
-func toActionReturnType(model *proto.Model, op *proto.Operation) string {
+func toActionReturnType(model *proto.Model, op *proto.Action) string {
 	returnType := "Promise<"
 	sdkPrefix := "sdk."
 
 	switch op.Type {
-	case proto.OperationType_OPERATION_TYPE_CREATE:
+	case proto.ActionType_ACTION_TYPE_CREATE:
 		returnType += sdkPrefix + model.Name
-	case proto.OperationType_OPERATION_TYPE_UPDATE:
+	case proto.ActionType_ACTION_TYPE_UPDATE:
 		returnType += sdkPrefix + model.Name
-	case proto.OperationType_OPERATION_TYPE_GET:
+	case proto.ActionType_ACTION_TYPE_GET:
 		returnType += sdkPrefix + model.Name + " | null"
-	case proto.OperationType_OPERATION_TYPE_LIST:
+	case proto.ActionType_ACTION_TYPE_LIST:
 		returnType += "{results: " + sdkPrefix + model.Name + "[], pageInfo: runtime.PageInfo}"
-	case proto.OperationType_OPERATION_TYPE_DELETE:
+	case proto.ActionType_ACTION_TYPE_DELETE:
 		// todo: create ID type
 		returnType += "string"
-	case proto.OperationType_OPERATION_TYPE_READ, proto.OperationType_OPERATION_TYPE_WRITE:
+	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
 		returnType += op.ResponseMessageName
 	}
 
@@ -770,15 +770,15 @@ func generateDevelopmentServer(schema *proto.Schema) codegen.GeneratedFiles {
 	w.Writeln(`import { createContextAPI, createJobContextAPI, permissionFns } from '@teamkeel/sdk';`)
 	w.Writeln(`import { createServer } from "http";`)
 
-	functions := []*proto.Operation{}
+	functions := []*proto.Action{}
 	for _, model := range schema.Models {
-		for _, op := range model.Operations {
-			if op.Implementation != proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		for _, action := range model.Actions {
+			if action.Implementation != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
 				continue
 			}
-			functions = append(functions, op)
+			functions = append(functions, action)
 			// namespace import to avoid naming clashes
-			w.Writef(`import function_%s from "../functions/%s.ts"`, op.Name, op.Name)
+			w.Writef(`import function_%s from "../functions/%s.ts"`, action.Name, action.Name)
 			w.Writeln(";")
 		}
 	}
@@ -973,10 +973,10 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("withIdentity(identity: sdk.Identity): ActionExecutor;")
 	w.Writeln("withAuthToken(token: string): ActionExecutor;")
 	for _, model := range schema.Models {
-		for _, op := range model.Operations {
-			msg := proto.FindMessage(schema.Messages, op.InputMessageName)
+		for _, action := range model.Actions {
+			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
 
-			w.Writef("%s(i", op.Name)
+			w.Writef("%s(i", action.Name)
 
 			// Check that all of the top level fields in the matching message are optional
 			// If so, then we can make it so you don't even need to specify the key
@@ -991,7 +991,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 				w.Write("?")
 			}
 
-			w.Writef(`: %s): %s`, op.InputMessageName, toActionReturnType(model, op))
+			w.Writef(`: %s): %s`, action.InputMessageName, toActionReturnType(model, action))
 			w.Writeln(";")
 		}
 	}

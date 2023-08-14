@@ -3,7 +3,7 @@ model Something {
         foo Text
     }
 
-    operations {
+    actions {
         create createSomething() with (foo) {
             @permission(expression: something.createdAt == ctx.headers.KEY.KEY2)
         }

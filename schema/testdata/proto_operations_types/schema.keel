@@ -2,7 +2,7 @@ model Foo {
     fields {
         name Text?
     }
-    operations {
+    actions {
         create opA()
         update opB(id) with (name)
         get opC(id)

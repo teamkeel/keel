@@ -3,7 +3,7 @@ model Post {
     status PostStatus
   }
 
-  operations {
+  actions {
     update published(id) {
       @set(post.status = OtherPostStatus.Something)
     }

@@ -1,5 +1,5 @@
 model Person {
-    operations {
+    actions {
         delete deletePerson(id)
     }
 }
