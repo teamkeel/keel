@@ -26,6 +26,7 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
@@ -458,6 +459,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if m.Mode == ModeTest {
+
+			// In test mode we accept any tokens
+			ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+				AllowUnsigned:   true,
+				AllowAnyIssuers: false,
+			})
+
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 
 			switch pathParts[0] {
@@ -515,6 +523,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				w.WriteHeader(http.StatusNotFound)
 			}
 		} else {
+
+			// In run mode we accept any external issuers but the tokens need to be signed correctly
+			ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+				AllowUnsigned:   false,
+				AllowAnyIssuers: true,
+			})
+
 			r = msg.r.WithContext(ctx)
 			m.RuntimeHandler.ServeHTTP(msg.w, r)
 		}

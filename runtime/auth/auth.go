@@ -16,6 +16,7 @@ import (
 	"github.com/patrickmn/go-cache"
 	"github.com/pquerna/cachecontrol"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -86,7 +87,7 @@ type HTTPClient interface {
 }
 
 func init() {
-	HttpClient = &http.Client{}
+	HttpClient = &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
 	RequestCache = cache.New(5*time.Minute, 10*time.Minute)
 	JwkCache = jwk.NewCache(context.Background())
 }
@@ -98,7 +99,7 @@ func CheckIssuers(ctx context.Context, issuers []ExternalIssuer) []ExternalIssue
 		return issuers
 	}
 
-	ctx, span := tracer.Start(ctx, "ODIC")
+	ctx, span := tracer.Start(ctx, "OpenID setup")
 	defer span.End()
 
 	validIssuers := []ExternalIssuer{}
@@ -112,7 +113,7 @@ func CheckIssuers(ctx context.Context, issuers []ExternalIssuer) []ExternalIssue
 			logrus.WithFields(logrus.Fields{
 				"issuer": issuer,
 				"error":  err,
-			}).Error("Failed to load OIDC config")
+			}).Error("Failed to load OpenID config")
 
 			issSpan.RecordError(err, trace.WithStackTrace(true))
 			issSpan.SetStatus(codes.Error, err.Error())
@@ -157,17 +158,16 @@ func CheckIssuers(ctx context.Context, issuers []ExternalIssuer) []ExternalIssue
 
 func GetOpenIDConnectConfig(ctx context.Context, issuer string) (*OpenidConfig, error) {
 
-	span := trace.SpanFromContext(ctx)
+	ctx, span := tracer.Start(ctx, "Fetching OpenID configuration")
+	defer span.End()
 
 	trimmed := strings.TrimSuffix(issuer, "/")
-
 	configUrl := trimmed + "/.well-known/openid-configuration"
 
-	span.AddEvent("Fetching OIDC configuration",
-		trace.WithAttributes(
-			attribute.String("issuer", issuer),
-			attribute.String("url", configUrl),
-		))
+	span.SetAttributes(
+		attribute.String("issuer", issuer),
+		attribute.String("url", configUrl),
+	)
 
 	req, err := http.NewRequest("GET", configUrl, nil)
 	if err != nil {
@@ -194,6 +194,9 @@ func GetOpenIDConnectConfig(ctx context.Context, issuer string) (*OpenidConfig, 
 
 func GetUserInfo(ctx context.Context, issuer string, token string) (*UserInfo, error) {
 
+	ctx, span := tracer.Start(ctx, "Fetch OpenID user info")
+	defer span.End()
+
 	sub, err := extractSubFromToken(token)
 	if err != nil {
 		return nil, err
@@ -204,7 +207,7 @@ func GetUserInfo(ctx context.Context, issuer string, token string) (*UserInfo, e
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", oidc.UserInfoURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", oidc.UserInfoURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -276,11 +279,6 @@ func cachedRequest(ctx context.Context, key string, req *http.Request) (body []b
 		return []byte{}, cacheHit, err
 	}
 	defer resp.Body.Close()
-
-	span.AddEvent("ODIC request", trace.WithAttributes(
-		attribute.String("url", req.URL.String()),
-		attribute.Int("statusCode", resp.StatusCode),
-	))
 
 	body, err = io.ReadAll(resp.Body)
 	if err != nil {

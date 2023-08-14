@@ -18,6 +18,7 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
@@ -146,6 +147,11 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 			ctx = runtimectx.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
+
+			ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+				AllowUnsigned:   true,
+				AllowAnyIssuers: false,
+			})
 
 			if functionsTransport != nil {
 				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)

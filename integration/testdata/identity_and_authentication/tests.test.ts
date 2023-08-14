@@ -604,7 +604,6 @@ test("3rd party Clerk token - identity does not exist - identity created and per
   expect(identity?.issuer).equal(
     "https://enhanced-osprey-20.clerk.accounts.dev"
   );
-  expect(identity?.email).not.toBeNull();
   expect(identity?.password).toBeNull();
 
   await expect(

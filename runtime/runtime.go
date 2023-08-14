@@ -61,6 +61,8 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			return
 		}
 
+		ctx = runtimectx.WithIssuersFromEnv(ctx)
+
 		identity, err := HandleAuthorizationHeader(ctx, currSchema, r.Header, w)
 		if err != nil {
 			return

@@ -97,28 +97,39 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 
 	span.SetAttributes(attribute.String("externalId", externalId))
 	span.SetAttributes(attribute.String("issuer", issuer))
-	span.SetAttributes(attribute.String("token", jwt))
 
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
-	// fetch email and verified email from the openid provider
-	externalUserDetails, err := auth.GetUserInfo(ctx, issuer, jwt)
+	// fetch email and verified email from the openid provider if they are a known issuer
+	config, _ := runtimectx.GetAuthConfig(ctx)
 
-	// if we can't fetch them, then this indicates the provider isn't configured correctly, so the created identity
-	// won't be much use.
-	if err != nil {
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
+	match := false
+	if config != nil {
+		for _, extIss := range config.Issuers {
+			if issuer == extIss.Iss {
+				match = true
+				break
+			}
+		}
 	}
 
 	query := NewQuery(identityModel)
+	// even if we can't fetch the user data, create it with the core information
 	query.AddWriteValues(map[string]any{
-		"externalId":    externalId,
-		"issuer":        issuer,
-		"email":         externalUserDetails.Email,
-		"emailVerified": externalUserDetails.EmailVerified,
+		"externalId": externalId,
+		"issuer":     issuer,
 	})
+
+	if match {
+		externalUserDetails, err := auth.GetUserInfo(ctx, issuer, jwt)
+		if err == nil {
+			query.AddWriteValues(map[string]any{
+				"email":         externalUserDetails.Email,
+				"emailVerified": externalUserDetails.EmailVerified,
+			})
+		}
+	}
+
 	query.AppendSelect(AllFields())
 	query.AppendReturning(IdField())
 

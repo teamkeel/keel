@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -324,6 +325,8 @@ func TestOIDCTokenValidation(t *testing.T) {
 	}
 
 	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+		AllowUnsigned:   false,
+		AllowAnyIssuers: false,
 		Issuers: []auth.ExternalIssuer{
 			{
 				Iss: issuerUrl,
@@ -479,6 +482,30 @@ func TestAllowAllIssuers(t *testing.T) {
 
 	_, _, err = actions.ValidateBearerToken(ctx, token)
 	require.NoError(t, err)
+}
+
+func TestEnVarFallback(t *testing.T) {
+
+	ctx := context.Background()
+	NewCache(ctx)
+
+	mocks.DoFunc = func(req *http.Request) (*http.Response, error) {
+		return OIDCMockResponse(req)
+	}
+
+	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+		AllowUnsigned: true,
+	})
+
+	os.Setenv("KEEL_EXTERNAL_ISSUERS", "https://example.com/,https://google.com/")
+
+	ctx = runtimectx.WithIssuersFromEnv(ctx)
+
+	config, err := runtimectx.GetAuthConfig(ctx)
+	require.NoError(t, err)
+
+	require.Equal(t, 2, len(config.Issuers))
+	require.Equal(t, true, config.AllowUnsigned)
 }
 
 // Test issuer validates token

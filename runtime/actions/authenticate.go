@@ -311,24 +311,38 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 			iss := t.Claims.(*Claims).Issuer
 
+			if authConfig == nil {
+				// If no auth config skip all this
+				return nil, nil
+			}
+
 			issuers := authConfig.Issuers
 
 			if authConfig.AllowAnyIssuers {
 				span.AddEvent("Accepting any issuer as AllowAnyIssuers is enabled")
 				// In this mode we allow any issuer that is openID connect compatible
-				issuers = auth.CheckIssuers(ctx, []auth.ExternalIssuer{
-					{
+				// So if this issuer is new add it to the know issuers and verify
+
+				match := false
+				for _, extIssuers := range issuers {
+					if extIssuers.Iss == iss {
+						match = true
+					}
+				}
+				if !match {
+					issuers = append(issuers, auth.ExternalIssuer{
 						Iss: iss,
-					},
-				})
+					})
+				}
+
+				authConfig.Issuers = issuers
+				ctx = runtimectx.WithAuthConfig(ctx, *authConfig)
+
 			}
 
-			if issuers == nil {
-				// If no auth config or no issuers then skip all this
-				return nil, nil
+			if len(issuers) > 0 {
+				span.AddEvent("Validating with external issuers")
 			}
-
-			span.AddEvent("Validating with external issuers")
 
 			for _, issuer := range issuers {
 				if issuer.Iss != iss {

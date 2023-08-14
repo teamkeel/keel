@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
@@ -19,6 +20,11 @@ func TestBearerTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 	ctx := context.Background()
 	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 	identityId := ksuid.New()
+
+	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+		AllowUnsigned:   true,
+		AllowAnyIssuers: true,
+	})
 
 	bearerJwt, err := actions.GenerateBearerToken(ctx, identityId.String())
 	require.NoError(t, err)
@@ -205,6 +211,11 @@ func TestResetTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 	identityId := ksuid.New()
 
+	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+		AllowUnsigned:   true,
+		AllowAnyIssuers: true,
+	})
+
 	bearerJwt, err := actions.GenerateResetToken(ctx, identityId.String())
 	require.NoError(t, err)
 	require.NotEmpty(t, bearerJwt)
@@ -365,6 +376,11 @@ func TestBearerTokenIssueClaimIsKeel(t *testing.T) {
 	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 
 	identityId := ksuid.New()
+
+	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+		AllowUnsigned:   true,
+		AllowAnyIssuers: true,
+	})
 
 	bearerJwt, err := actions.GenerateBearerToken(ctx, identityId.String())
 	require.NoError(t, err)
