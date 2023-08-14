@@ -6,7 +6,6 @@ import (
 	"fmt"
 	email "net/mail"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -287,7 +286,7 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 	// external issuers can be added by modifying the KEEL_EXTERNAL_ISSUERS env var
 	if err != nil {
 		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-			iss := strings.TrimSuffix(t.Claims.(*Claims).Issuer, "/")
+			iss := t.Claims.(*Claims).Issuer
 
 			issuers := runtimectx.ExternalIssuersFromEnv()
 

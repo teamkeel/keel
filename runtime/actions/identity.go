@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -146,9 +148,9 @@ func GetExternalUserDetails(ctx context.Context, issuer string, jwt string) (*Ex
 	span.SetAttributes(attribute.String("issuer", issuer))
 	span.SetAttributes(attribute.String("token", jwt))
 
-	openIdConfigUrl := fmt.Sprintf("%s/.well-known/openid-configuration", issuer)
+	openIdConfigUrl := fmt.Sprintf("%s/.well-known/openid-configuration", strings.TrimSuffix(issuer, "/"))
 
-	resp, err := http.Get(openIdConfigUrl)
+	resp, err := otelhttp.Get(ctx, openIdConfigUrl)
 
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
@@ -177,8 +179,15 @@ func GetExternalUserDetails(ctx context.Context, issuer string, jwt string) (*Ex
 
 	if val, ok := openIdResp["userinfo_endpoint"]; ok {
 		if uri, ok := val.(string); ok {
-			req, err := http.NewRequest(http.MethodGet, uri, nil)
+			span.SetAttributes(attribute.String("userinfo_endpoint", uri))
 
+			otelClient := &http.Client{
+				Transport: otelhttp.NewTransport(
+					http.DefaultTransport,
+				),
+			}
+
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
 			if err != nil {
 				span.RecordError(err, trace.WithStackTrace(true))
 				span.SetStatus(codes.Error, err.Error())
@@ -187,7 +196,7 @@ func GetExternalUserDetails(ctx context.Context, issuer string, jwt string) (*Ex
 
 			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", jwt))
 
-			userInfoResp, err := http.DefaultClient.Do(req)
+			userInfoResp, err := otelClient.Do(req)
 
 			if err != nil {
 				span.RecordError(err, trace.WithStackTrace(true))

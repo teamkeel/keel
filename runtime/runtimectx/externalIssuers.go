@@ -29,7 +29,7 @@ type Jwks struct {
 }
 
 func NewJwks(uri string) (*Jwks, error) {
-	jwksUri, err := url.Parse(fmt.Sprintf("%s/.well-known/jwks.json", strings.TrimSuffix(uri, "/")))
+	jwksUri, err := url.Parse(fmt.Sprintf("%s/.well-known/jwks.json", uri))
 
 	if err != nil {
 		return nil, err
