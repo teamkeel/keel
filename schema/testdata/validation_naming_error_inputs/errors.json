@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "Operation uppercaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
+      "message": "Action uppercaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
       "hint": "Did you mean to add 'id' as an input?",
       "code": "E008",
       "pos": {
@@ -18,7 +18,7 @@
       }
     },
     {
-      "message": "Operation upperCamelCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
+      "message": "Action upperCamelCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
       "hint": "Did you mean to add 'id' as an input?",
       "code": "E008",
       "pos": {
@@ -35,7 +35,7 @@
       }
     },
     {
-      "message": "Operation snakeCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
+      "message": "Action snakeCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
       "hint": "Did you mean to add 'id' as an input?",
       "code": "E008",
       "pos": {
@@ -52,7 +52,7 @@
       }
     },
     {
-      "message": "Operation screamingSnakeCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
+      "message": "Action screamingSnakeCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
       "hint": "Did you mean to add 'id' as an input?",
       "code": "E008",
       "pos": {

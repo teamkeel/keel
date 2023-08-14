@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "You cannot set values for both owner.pet.favouriteToy.id and owner.pet.favouriteToy.whatIsIt in this Create Operation - because the first one indicates that you want to refer to an existing toy",
+      "message": "You cannot set values for both owner.pet.favouriteToy.id and owner.pet.favouriteToy.whatIsIt in this create action - because the first one indicates that you want to refer to an existing toy",
       "hint": "Either 1) use the .id form, and none of the toy fields, or 2) omit the .id form and specify all of the fields of toy that are needed to create one.",
       "code": "E059",
       "pos": {
