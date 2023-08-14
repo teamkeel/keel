@@ -13,14 +13,14 @@ type FunctionTypes = "queries" | "mutations";
 export const keelQuery = <T extends (...args: any) => any>(useKeel: T) => {
   type KeelType = ReturnType<typeof useKeel>;
 
-  type QueryKeys<F extends FunctionTypes> = keyof KeelType[F];
+  type QueryKeys<F extends FunctionTypes> = keyof KeelType["api"][F];
   type QueryArgs<F extends FunctionTypes, K extends QueryKeys<F>> = Parameters<
-    KeelType[F][K]
+    KeelType["api"][F][K]
   >[0];
   type QueryResult<
     F extends FunctionTypes,
     K extends QueryKeys<F>
-  > = ReturnType<KeelType[F][K]>;
+  > = ReturnType<KeelType["api"][F][K]>;
 
   type Result<F extends FunctionTypes, K extends QueryKeys<F>> = Exclude<
     Awaited<QueryResult<F, K>>["data"],
@@ -41,7 +41,7 @@ export const keelQuery = <T extends (...args: any) => any>(useKeel: T) => {
       return useQuery<Result<F, K>, Error<F, K>>(
         queryKeys(key, args),
         async () => {
-          const res = await keel[key](args);
+          const res = await keel["api"][key](args);
           if (res.error) {
             return Promise.reject(res.error);
           }
@@ -62,7 +62,7 @@ export const keelQuery = <T extends (...args: any) => any>(useKeel: T) => {
       return useInfiniteQuery<Result<F, K>, Error<F, K>>(
         queryKeys(key, args),
         async () => {
-          const res = await keel[key](args);
+          const res = await keel["api"][key](args);
           if (res.error) {
             return Promise.reject(res.error);
           }
@@ -82,7 +82,7 @@ export const keelQuery = <T extends (...args: any) => any>(useKeel: T) => {
       return useMutation<Result<F, K>, Error<F, K>, QueryArgs<F, K>>(
         [key],
         async (args) => {
-          const res = await keel[key](args);
+          const res = await keel["api"][key](args);
           if (res.error) {
             return Promise.reject(res.error);
           }
