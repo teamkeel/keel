@@ -7,7 +7,7 @@ model Author {
         publisher Publisher
     }
 
-    actions {
+    operations {
         list listAuthors() {
             @sortable
         }

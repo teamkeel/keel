@@ -61,8 +61,8 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			}, nil)
 		}
 
-		action := proto.FindAction(p, actionName)
-		if action == nil {
+		op := proto.FindOperation(p, actionName)
+		if op == nil {
 			span.SetStatus(codes.Error, "action not found")
 			return common.NewJsonResponse(http.StatusNotFound, common.HttpJsonErrorResponse{
 				Code:    "ERR_NOT_FOUND",
@@ -70,7 +70,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			}, nil)
 		}
 
-		validation, err := jsonschema.ValidateRequest(ctx, p, action, inputs)
+		validation, err := jsonschema.ValidateRequest(ctx, p, op, inputs)
 		if err != nil {
 			span.RecordError(err, trace.WithStackTrace(true))
 			span.SetStatus(codes.Error, err.Error())
@@ -107,7 +107,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			}, nil)
 		}
 
-		scope := actions.NewScope(ctx, action, p)
+		scope := actions.NewScope(ctx, op, p)
 
 		keelEnv := runtimectx.GetEnv(ctx)
 

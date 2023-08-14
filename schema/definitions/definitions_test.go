@@ -103,7 +103,7 @@ model Post {
 	fields {
 		<Def>title Text
 	}
-	actions {
+	operations {
 		create createPost() with (<Pos>title)
 	}
 }
@@ -127,7 +127,7 @@ model Post {
 	fields {
 		author Author
 	}
-	actions {
+	operations {
 		list listBooks(author.publisher.nam<Pos>e)
 	}
 }
@@ -151,7 +151,7 @@ model Author {
 	fields {
 		<Def>identity Identity
 	}
-	actions {
+	operations {
 		create newAuthor() {
 			@set(author.i<Pos>dentity == ctx.identity)
 		}
@@ -172,7 +172,7 @@ model Book {
 	fields {
 		<Def>published Boolean
 	}
-	actions {
+	operations {
 		list books() {
 			@where(book.p<Pos>ublished == true)
 		}
@@ -213,7 +213,7 @@ model Book {
 	fields {
 		author Author
 	}
-	actions {
+	operations {
 		list books() {
 			@where(book.author.publisher.isActiv<Pos>e == true)
 		}
@@ -231,7 +231,7 @@ model Book {
 					FileName: "schema.keel",
 					Contents: `
 model Book {
-	actions {
+	functions {
 		read get<Pos>Book(Any)
 	}
 }

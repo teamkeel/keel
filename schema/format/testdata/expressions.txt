@@ -2,7 +2,7 @@ model Person {
     fields {
         identity Identity
     }
-    actions {
+    operations {
         create createPerson() {
             @set(
                 person.identity 
@@ -20,7 +20,7 @@ model Person {
         identity Identity
     }
 
-    actions {
+    operations {
         create createPerson() {
             @set(person.identity = ctx.identity)
         }

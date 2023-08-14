@@ -18,14 +18,14 @@ func IsEnabled(dir string, s *proto.Schema) bool {
 
 // HasFunctions returns true if the schema contains any custom functions or jobs.
 func HasFunctions(sch *proto.Schema) bool {
-	var actions []*proto.Action
+	var ops []*proto.Operation
 
 	for _, model := range sch.Models {
-		actions = append(actions, model.Actions...)
+		ops = append(ops, model.Operations...)
 	}
 
-	hasCustomFunctions := lo.SomeBy(actions, func(o *proto.Action) bool {
-		return o.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+	hasCustomFunctions := lo.SomeBy(ops, func(o *proto.Operation) bool {
+		return o.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
 	})
 
 	hasJobs := sch.Jobs != nil && len(sch.Jobs) > 0

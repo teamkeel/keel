@@ -23,7 +23,7 @@ model Person {
         previousCity City?
     }
 
-    actions {
+    operations {
         list testAction(name, preferredName, favouriteNumber, birthday, hobby, secondHobby, isAdmin, lastSeenAt, currentCity.name, previousCity.name)
     }
 }

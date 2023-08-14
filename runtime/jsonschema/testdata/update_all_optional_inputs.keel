@@ -10,7 +10,7 @@ model Person {
         hobby Hobby
     }
 
-    actions {
+    operations {
         update testAction(id) with (name?, birthday?, hobby?)
     }
 }

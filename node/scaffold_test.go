@@ -21,12 +21,12 @@ func TestScaffold(t *testing.T) {
 		fields {
 			title Text
 		}
-		actions {
-			create createPost() with(title) @function
-			list listPosts() @function
-			update updatePost(id) with(title) @function
-			get getPost(id) @function
-			delete deletePost(id) @function
+		functions {
+			create createPost() with(title)
+			list listPosts()
+			update updatePost(id) with(title)
+			get getPost(id)
+			delete deletePost(id)
 			write customFunctionWrite(Any) returns(Any)
 			read customFunctionRead(Any) returns(Any)
 		}
@@ -137,8 +137,8 @@ func TestExistingFunction(t *testing.T) {
 		fields {
 			title Text
 		}
-		actions {
-			create existingCreatePost() with(title) @function
+		functions {
+			create existingCreatePost() with(title)
 		}
 	}
 `

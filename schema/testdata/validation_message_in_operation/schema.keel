@@ -3,7 +3,7 @@ message Foo {
 }
 
 model Person {
-  actions {
+  operations {
     create createPerson(Foo)
   }
 }

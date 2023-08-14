@@ -86,10 +86,10 @@ func TestRuntimeRPC(t *testing.T) {
 				tCase.assertResponse(t, res)
 			}
 
-			action := proto.FindAction(schema, tCase.Path)
+			op := proto.FindOperation(schema, tCase.Path)
 
 			if response.Status == 200 {
-				_, result, err := jsonschema.ValidateResponse(ctx, schema, action, res)
+				_, result, err := jsonschema.ValidateResponse(ctx, schema, op, res)
 				assert.NoError(t, err)
 
 				if !result.Valid() {
@@ -111,7 +111,7 @@ var rpcTestCases = []rpcTestCase{
 		name: "rpc_list_http_get",
 		keelSchema: `
 		model Thing {
-			actions {
+			operations {
 				list listThings()
 			}
 			@permission(
@@ -149,7 +149,7 @@ var rpcTestCases = []rpcTestCase{
 			fields {
 				text Text
 			}
-			actions {
+			operations {
 				list listThings(text)
 			}
 			@permission(
@@ -199,7 +199,7 @@ var rpcTestCases = []rpcTestCase{
 			fields {
 				text Text
 			}
-			actions {
+			operations {
 				list listThings()
 			}
 			@permission(
@@ -257,7 +257,7 @@ var rpcTestCases = []rpcTestCase{
 		name: "rpc_get_http_get",
 		keelSchema: `
 		model Thing {
-			actions {
+			operations {
 				get getThing(id)
 			}
 			@permission(
@@ -288,7 +288,7 @@ var rpcTestCases = []rpcTestCase{
 		name: "rpc_get_http_post",
 		keelSchema: `
 		model Thing {
-			actions {
+			operations {
 				get getThing(id)
 			}
 			@permission(
@@ -322,7 +322,7 @@ var rpcTestCases = []rpcTestCase{
 			fields {
 				text Text
 			}
-			actions {
+			operations {
 				create createThing() with (text)
 			}
 			@permission(
@@ -357,7 +357,7 @@ var rpcTestCases = []rpcTestCase{
 			fields {
 				text Text
 			}
-			actions {
+			operations {
 				update updateThing(id) with (text)
 			}
 			@permission(
@@ -409,7 +409,7 @@ var rpcTestCases = []rpcTestCase{
 		name: "rpc_json_schema_errors",
 		keelSchema: `
 			model Thing {
-				actions {
+				operations {
 					get getThing(id)
 				}
 			}

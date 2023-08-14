@@ -4,7 +4,7 @@ model Foo {
         f2 Number
     }
 
-    actions {
+    operations {
         get opA(id)
         list opB(f1, f2)
         update opC(id) with (f1)

@@ -11,7 +11,7 @@ model Post {
         profile Profile
     }
 
-    actions {
+    operations {
         create createPost() with (body, profile.name)
     }
 }
@@ -21,7 +21,7 @@ model Comment {
         post Post
     }
 
-    actions {
+    operations {
         create createComment() with (post.body, post.profile.name)
     }
 }

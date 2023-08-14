@@ -2,21 +2,24 @@ package parser
 
 // Keywords
 const (
-	KeywordModel   = "model"
-	KeywordModels  = "models"
-	KeywordApi     = "api"
-	KeywordMessage = "message"
-	KeywordField   = "field"
-	KeywordFields  = "fields"
-	KeywordActions = "actions"
-	KeywordDomains = "domains"
-	KeywordEmails  = "emails"
-	KeywordRole    = "role"
-	KeywordEnum    = "enum"
-	KeywordWith    = "with"
-	KeywordReturns = "returns"
-	KeywordJob     = "job"
-	KeywordInput   = "inputs"
+	KeywordModel      = "model"
+	KeywordModels     = "models"
+	KeywordApi        = "api"
+	KeywordMessage    = "message"
+	KeywordField      = "field"
+	KeywordFields     = "fields"
+	KeywordOperations = "operations"
+	KeywordFunctions  = "functions"
+	KeywordOperation  = "operation"
+	KeywordFunction   = "function"
+	KeywordDomains    = "domains"
+	KeywordEmails     = "emails"
+	KeywordRole       = "role"
+	KeywordEnum       = "enum"
+	KeywordWith       = "with"
+	KeywordReturns    = "returns"
+	KeywordJob        = "job"
+	KeywordInput      = "inputs"
 )
 
 // Types are roughly analogous to field types but they are used to type expressions
@@ -66,7 +69,7 @@ func IsBuiltInFieldType(s string) bool {
 	return ok
 }
 
-// All possible action types
+// Possible action types, applies to both "operations" and "functions"
 const (
 	ActionTypeGet    = "get"
 	ActionTypeCreate = "create"
@@ -79,7 +82,15 @@ const (
 	ActionTypeWrite = "write"
 )
 
-var ActionTypes = []string{
+var OperationActionTypes = []string{
+	ActionTypeGet,
+	ActionTypeUpdate,
+	ActionTypeCreate,
+	ActionTypeList,
+	ActionTypeDelete,
+}
+
+var FunctionActionTypes = []string{
 	ActionTypeCreate,
 	ActionTypeGet,
 	ActionTypeDelete,
@@ -111,9 +122,9 @@ const (
 )
 
 const (
-	AuthenticateActionName         = "authenticate"
-	RequestPasswordResetActionName = "requestPasswordReset"
-	PasswordResetActionName        = "resetPassword"
+	AuthenticateOperationName         = "authenticate"
+	RequestPasswordResetOperationName = "requestPasswordReset"
+	PasswordResetOperationName        = "resetPassword"
 )
 
 const (
@@ -128,7 +139,6 @@ const (
 	AttributeOrderBy    = "orderBy"
 	AttributeSortable   = "sortable"
 	AttributeSchedule   = "schedule"
-	AttributeFunction   = "function"
 )
 
 const (

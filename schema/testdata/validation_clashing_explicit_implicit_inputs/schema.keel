@@ -3,7 +3,7 @@ model Post {
         title Text
     }
 
-    actions {
+    operations {
         create createPost() with (title, coolTitle: Text) {
             @set(post.title = coolTitle)
         }

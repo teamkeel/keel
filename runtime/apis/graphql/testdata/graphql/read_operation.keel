@@ -13,7 +13,7 @@ model Person {
         name Text
     }
 
-    actions {
+    functions {
         read readPerson(name) returns (PersonResponse)
         read readPersonWithMessage(PersonInput) returns (PersonResponse)
     }

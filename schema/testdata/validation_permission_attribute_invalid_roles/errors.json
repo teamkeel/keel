@@ -6,13 +6,13 @@
       "code": "E016",
       "pos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
-        "offset": 94,
+        "offset": 97,
         "line": 6,
         "column": 17
       },
       "endPos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
-        "offset": 106,
+        "offset": 109,
         "line": 6,
         "column": 29
       }
@@ -23,13 +23,13 @@
       "code": "E016",
       "pos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
-        "offset": 170,
+        "offset": 173,
         "line": 10,
         "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
-        "offset": 174,
+        "offset": 177,
         "line": 10,
         "column": 20
       }
@@ -40,13 +40,13 @@
       "code": "E016",
       "pos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
-        "offset": 237,
+        "offset": 240,
         "line": 14,
         "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
-        "offset": 243,
+        "offset": 246,
         "line": 14,
         "column": 22
       }
@@ -57,13 +57,13 @@
       "code": "E016",
       "pos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
-        "offset": 307,
+        "offset": 310,
         "line": 18,
         "column": 17
       },
       "endPos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
-        "offset": 323,
+        "offset": 326,
         "line": 18,
         "column": 33
       }

@@ -1,7 +1,7 @@
 model Person {
     @permission(expression: true, actions: [create])
     
-    actions {
+    operations {
         create createPerson(name)
     }
 
@@ -18,7 +18,7 @@ model Person {
         name Text
     }
 
-    actions {
+    operations {
         create createPerson(name)
     }
 

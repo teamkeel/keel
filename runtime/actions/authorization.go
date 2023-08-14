@@ -18,18 +18,18 @@ import (
 // AuthoriseAction checks authorisation for rows using the permission and role rules applicable for an action,
 // which could be defined at model- and action- levels.
 func AuthoriseAction(scope *Scope, rowsToAuthorise []map[string]any) (authorised bool, err error) {
-	if scope.Action == nil {
-		return false, errors.New("cannot authorise with AuthoriseAction if no action is provided in scope")
+	if scope.Operation == nil {
+		return false, errors.New("cannot authorise with AuthoriseAction if no operation is provided in scope")
 	}
 
-	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
 	return authorise(scope, permissions, rowsToAuthorise)
 }
 
-// AuthoriseForActionType checks authorisation for rows using permission and role rules defined for some action type,
+// AuthoriseForActionType checks authorisation for rows using permission and role rules defined for some operation type,
 // i.e. agnostic to any action.
-func AuthoriseForActionType(scope *Scope, opType proto.ActionType, rowsToAuthorise []map[string]any) (authorised bool, err error) {
-	permissions := proto.PermissionsForActionType(scope.Schema, scope.Model.Name, opType)
+func AuthoriseForActionType(scope *Scope, opType proto.OperationType, rowsToAuthorise []map[string]any) (authorised bool, err error) {
+	permissions := proto.PermissionsForOperationType(scope.Schema, scope.Model.Name, opType)
 	return authorise(scope, permissions, rowsToAuthorise)
 }
 
@@ -104,7 +104,7 @@ func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionR
 			}
 
 			// Try resolve the permission early.
-			canResolve, authorised = expressions.TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, expression, map[string]any{})
+			canResolve, authorised = expressions.TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Operation, expression, map[string]any{})
 
 			if !canResolve {
 				hasDatabaseCheck = true

@@ -7,7 +7,7 @@ model Person {
       name Text
     }
 
-    actions {
+    functions {
       write setPersonInterests(PersonInput) returns (Any)
     }
 }
@@ -24,7 +24,7 @@ model Person {
         name Text
     }
 
-    actions {
+    functions {
         write setPersonInterests(PersonInput) returns (Any)
     }
 }

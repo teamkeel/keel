@@ -2,7 +2,7 @@ model Person {
     fields {
         name Text
     }
-    actions {
+    operations {
         update updateName() with (name)
     }
 }

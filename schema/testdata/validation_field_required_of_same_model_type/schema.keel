@@ -3,7 +3,7 @@ model Person {
         person Person
     }
 
-    actions {
+    operations {
         create createPerson()
     }
 }

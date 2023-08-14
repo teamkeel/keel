@@ -1,71 +1,88 @@
 {
   "errors": [
     {
-      "message": "The 'returns' keyword must be specified when using a 'read' or 'write' action type",
-      "hint": "Try to append 'returns(MyMessageType)'",
+      "message": "The 'read' action type can only be used within a function",
+      "hint": "Did you mean to define 'getPerson' as a function?",
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_read_write_in_operation/schema.keel",
-        "offset": 87,
+        "offset": 90,
         "line": 11,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_read_write_in_operation/schema.keel",
-        "offset": 103,
+        "offset": 94,
         "line": 11,
-        "column": 21
+        "column": 9
       }
     },
     {
-      "message": "The 'returns' keyword must be specified when using a 'read' or 'write' action type",
-      "hint": "Try to append 'returns(MyMessageType)'",
+      "message": "The 'write' action type can only be used within a function",
+      "hint": "Did you mean to define 'updatePerson' as a function?",
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_read_write_in_operation/schema.keel",
-        "offset": 108,
+        "offset": 111,
         "line": 12,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_read_write_in_operation/schema.keel",
-        "offset": 131,
+        "offset": 116,
         "line": 12,
-        "column": 28
+        "column": 10
       }
     },
     {
-      "message": "read and write functions must return exactly one message-based response",
-      "hint": "Add a return type to getPerson.",
-      "code": "ActionInputError",
+      "message": "The 'read' action type can only be used within a function",
+      "hint": "Did you mean to define 'getPersonWithReturns' as a function?",
+      "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_read_write_in_operation/schema.keel",
-        "offset": 87,
-        "line": 11,
+        "offset": 139,
+        "line": 13,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_read_write_in_operation/schema.keel",
-        "offset": 103,
-        "line": 11,
-        "column": 21
+        "offset": 143,
+        "line": 13,
+        "column": 9
       }
     },
     {
-      "message": "read and write functions must return exactly one message-based response",
-      "hint": "Add a return type to updatePerson.",
-      "code": "ActionInputError",
+      "message": "The 'write' action type can only be used within a function",
+      "hint": "Did you mean to define 'updatePersonWithReturns' as a function?",
+      "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_read_write_in_operation/schema.keel",
-        "offset": 108,
-        "line": 12,
+        "offset": 184,
+        "line": 14,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_read_write_in_operation/schema.keel",
-        "offset": 131,
+        "offset": 189,
+        "line": 14,
+        "column": 10
+      }
+    },
+    {
+      "message": "You are only allowed to use message Foo in a read or write function",
+      "hint": "Messages can only be used in read/write functions",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 130,
         "line": 12,
-        "column": 28
+        "column": 24
+      },
+      "endPos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 133,
+        "line": 12,
+        "column": 27
       }
     }
   ]

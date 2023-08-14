@@ -12,7 +12,7 @@ model Person {
         name Text
     }
 
-    actions {
+    functions {
         write testAction(PersonInput) returns (PersonResponse)
     }
 }

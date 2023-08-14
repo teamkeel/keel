@@ -6,13 +6,13 @@
       "code": "E005",
       "pos": {
         "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
-        "offset": 95,
+        "offset": 98,
         "line": 7,
         "column": 39
       },
       "endPos": {
         "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
-        "offset": 99,
+        "offset": 102,
         "line": 7,
         "column": 43
       }

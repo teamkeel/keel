@@ -23,7 +23,7 @@ model Person {
         name Text
     }
 
-    actions {
+    functions {
         read readPerson(ReadPersonInput) returns (PersonResponse)
         write writePerson(WritePersonInput) returns (PersonResponse)
     }

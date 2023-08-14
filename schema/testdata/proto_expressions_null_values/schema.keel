@@ -3,7 +3,7 @@ model Post {
         title Text?
     }
 
-    actions {
+    operations {
         update removeTitle(id) {
             @set(post.title = null)
         }

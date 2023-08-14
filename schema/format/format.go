@@ -246,15 +246,19 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 		writer.Block(func() {
 
 			fieldSections := []*parser.ModelSectionNode{}
-			actionSections := []*parser.ModelSectionNode{}
+			operationSections := []*parser.ModelSectionNode{}
+			functionSections := []*parser.ModelSectionNode{}
 			attributeSections := []*parser.ModelSectionNode{}
 
 			for _, section := range model.Sections {
 				if section.Fields != nil {
 					fieldSections = append(fieldSections, section)
 				}
-				if section.Actions != nil {
-					actionSections = append(actionSections, section)
+				if section.Operations != nil {
+					operationSections = append(operationSections, section)
+				}
+				if section.Functions != nil {
+					functionSections = append(functionSections, section)
 				}
 				if section.Attribute != nil {
 					attributeSections = append(attributeSections, section)
@@ -320,7 +324,15 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 				sections++
 			}
 
-			for _, section := range actionSections {
+			for _, section := range operationSections {
+				if sections > 0 {
+					writer.WriteLine("")
+				}
+				printActionsBlock(writer, section)
+				sections++
+			}
+
+			for _, section := range functionSections {
 				if sections > 0 {
 					writer.WriteLine("")
 				}
@@ -344,9 +356,13 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 	writer.Comments(section, func() {
 		actions := []*parser.ActionNode{}
-		if section.Actions != nil {
-			actions = section.Actions
-			writer.Write(parser.KeywordActions)
+		if section.Operations != nil {
+			actions = section.Operations
+			writer.Write("operations")
+		}
+		if section.Functions != nil {
+			actions = section.Functions
+			writer.Write("functions")
 		}
 
 		writer.Block(func() {
@@ -359,16 +375,16 @@ func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 						lowerCamel(op.Name.Value),
 					)
 
-					printActionInputs(writer, op.Inputs, op.IsArbitraryFunction())
+					printOperationInputs(writer, op.Inputs, op.IsArbitraryFunction())
 
 					if len(op.With) > 0 {
 						writer.Write(" with ")
-						printActionInputs(writer, op.With, op.IsArbitraryFunction())
+						printOperationInputs(writer, op.With, op.IsArbitraryFunction())
 					}
 
 					if len(op.Returns) > 0 {
 						writer.Write(" returns ")
-						printActionInputs(writer, op.Returns, op.IsArbitraryFunction())
+						printOperationInputs(writer, op.Returns, op.IsArbitraryFunction())
 					}
 
 					printAttributesBlock(writer, op.Attributes)
@@ -378,7 +394,7 @@ func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 	})
 }
 
-func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbitraryFunction bool) {
+func printOperationInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbitraryFunction bool) {
 	writer.Write("(")
 	writer.Indent()
 

@@ -23,47 +23,64 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_sortable/schema.keel",
-        "offset": 329,
+        "offset": 332,
         "line": 19,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_attribute_sortable/schema.keel",
-        "offset": 338,
+        "offset": 341,
         "line": 19,
         "column": 14
       }
     },
     {
-      "message": "@sortable can only be used on list actions",
+      "message": "function 'listAuthorsFn' has an unrecognised attribute @sortable",
+      "hint": "Did you mean @permission?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 411,
+        "line": 23,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 420,
+        "line": 23,
+        "column": 22
+      }
+    },
+    {
+      "message": "@sortable can only be used on list operations",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_sortable/schema.keel",
-        "offset": 174,
+        "offset": 177,
         "line": 10,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_sortable/schema.keel",
-        "offset": 183,
+        "offset": 186,
         "line": 10,
         "column": 22
       }
     },
     {
-      "message": "@sortable can only be defined once per action",
+      "message": "@sortable can only be defined once per operation",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_sortable/schema.keel",
-        "offset": 289,
+        "offset": 292,
         "line": 15,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_sortable/schema.keel",
-        "offset": 298,
+        "offset": 301,
         "line": 15,
         "column": 22
       }

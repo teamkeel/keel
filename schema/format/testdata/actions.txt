@@ -2,7 +2,7 @@ model Person {
     fields {
         name  Text
     }
-    actions {
+    operations {
         get getPerson(id)
         update updatePerson(id, name)
         list listPeople(name)
@@ -16,7 +16,7 @@ model Person {
         name Text
     }
 
-    actions {
+    operations {
         get getPerson(id)
         update updatePerson(id, name)
         list listPeople(name)

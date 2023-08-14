@@ -6,13 +6,13 @@
       "code": "E005",
       "pos": {
         "filename": "testdata/validation_invalid_arbitrary_function_input_name/schema.keel",
-        "offset": 196,
+        "offset": 198,
         "line": 16,
         "column": 29
       },
       "endPos": {
         "filename": "testdata/validation_invalid_arbitrary_function_input_name/schema.keel",
-        "offset": 216,
+        "offset": 218,
         "line": 16,
         "column": 49
       }

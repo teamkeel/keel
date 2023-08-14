@@ -6,30 +6,30 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
-        "offset": 183,
+        "offset": 186,
         "line": 12,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
-        "offset": 192,
+        "offset": 195,
         "line": 12,
         "column": 22
       }
     },
     {
-      "message": "@sortable can only be defined once per action",
+      "message": "@sortable can only be defined once per operation",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
-        "offset": 279,
+        "offset": 282,
         "line": 17,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
-        "offset": 288,
+        "offset": 291,
         "line": 17,
         "column": 22
       }
@@ -40,13 +40,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
-        "offset": 372,
+        "offset": 375,
         "line": 21,
         "column": 34
       },
       "endPos": {
         "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
-        "offset": 381,
+        "offset": 384,
         "line": 21,
         "column": 43
       }
@@ -57,13 +57,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
-        "offset": 457,
+        "offset": 460,
         "line": 25,
         "column": 34
       },
       "endPos": {
         "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
-        "offset": 466,
+        "offset": 469,
         "line": 25,
         "column": 43
       }
@@ -74,13 +74,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
-        "offset": 531,
+        "offset": 534,
         "line": 29,
         "column": 23
       },
       "endPos": {
         "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
-        "offset": 534,
+        "offset": 537,
         "line": 29,
         "column": 26
       }

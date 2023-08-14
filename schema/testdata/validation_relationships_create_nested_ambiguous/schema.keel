@@ -5,7 +5,7 @@ model House {
         owner Owner
     }
 
-    actions {
+    operations {
         create createHouse() with (
             houseName,
             houseNumber,

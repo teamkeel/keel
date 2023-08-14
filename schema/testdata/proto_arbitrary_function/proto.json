@@ -35,12 +35,12 @@
           }
         }
       ],
-      "actions": [
+      "operations": [
         {
           "modelName": "Post",
           "name": "getPost",
-          "type": "ACTION_TYPE_READ",
-          "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
+          "type": "OPERATION_TYPE_READ",
+          "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
           "inputMessageName": "In",
           "responseMessageName": "Out"
         }
@@ -122,28 +122,28 @@
           }
         }
       ],
-      "actions": [
+      "operations": [
         {
           "modelName": "Identity",
           "name": "authenticate",
-          "type": "ACTION_TYPE_WRITE",
-          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
-          "type": "ACTION_TYPE_WRITE",
-          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "RequestPasswordResetInput",
           "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
-          "type": "ACTION_TYPE_WRITE",
-          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "ResetPasswordInput",
           "responseMessageName": "ResetPasswordResponse"
         }

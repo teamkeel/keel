@@ -6,13 +6,13 @@
       "code": "E061",
       "pos": {
         "filename": "testdata/validation_operation_where_forbidden_value_expression/schema.keel",
-        "offset": 216,
+        "offset": 219,
         "line": 13,
         "column": 20
       },
       "endPos": {
         "filename": "testdata/validation_operation_where_forbidden_value_expression/schema.keel",
-        "offset": 232,
+        "offset": 235,
         "line": 13,
         "column": 36
       }

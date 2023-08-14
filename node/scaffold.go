@@ -40,8 +40,8 @@ func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) 
 
 	generatedFiles := codegen.GeneratedFiles{}
 
-	functions := proto.FilterActions(schema, func(op *proto.Action) bool {
-		return op.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+	functions := proto.FilterOperations(schema, func(op *proto.Operation) bool {
+		return op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
 	})
 
 	for _, fn := range functions {
@@ -82,7 +82,7 @@ func ensureDir(dirName string) error {
 	}
 }
 
-func writeFunctionWrapper(function *proto.Action) string {
+func writeFunctionWrapper(function *proto.Operation) string {
 	functionName := casing.ToCamel(function.Name)
 
 	suggestedImplementation := ""
@@ -91,22 +91,22 @@ func writeFunctionWrapper(function *proto.Action) string {
 	requiresModelsInput := true
 
 	switch function.Type {
-	case proto.ActionType_ACTION_TYPE_CREATE:
+	case proto.OperationType_OPERATION_TYPE_CREATE:
 		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.create(inputs);
 	return %s;`, modelName, modelName, modelName)
-	case proto.ActionType_ACTION_TYPE_LIST:
+	case proto.OperationType_OPERATION_TYPE_LIST:
 		suggestedImplementation = fmt.Sprintf(`const %ss = await models.%s.findMany(inputs);
 	return %ss;`, modelName, modelName, modelName)
-	case proto.ActionType_ACTION_TYPE_GET:
+	case proto.OperationType_OPERATION_TYPE_GET:
 		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.findOne(inputs);
 	return %s;`, modelName, modelName, modelName)
-	case proto.ActionType_ACTION_TYPE_UPDATE:
+	case proto.OperationType_OPERATION_TYPE_UPDATE:
 		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.update(inputs.where, inputs.values);
 	return %s;`, modelName, modelName, modelName)
-	case proto.ActionType_ACTION_TYPE_DELETE:
+	case proto.OperationType_OPERATION_TYPE_DELETE:
 		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.delete(inputs);
 	return %s;`, modelName, modelName, modelName)
-	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
+	case proto.OperationType_OPERATION_TYPE_READ, proto.OperationType_OPERATION_TYPE_WRITE:
 		suggestedImplementation = "// Build something cool"
 		requiresModelsInput = false
 	}

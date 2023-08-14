@@ -4,19 +4,19 @@ import { Status } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
-test("create action - defaults", async () => {
+test("create operation - defaults", async () => {
   const person = await actions.createPersonWithDefaults();
   expect(person.name).toEqual("no name");
   expect(person.status).toEqual(Status.Fired);
 });
 
-test("create action - set to null", async () => {
+test("create operation - set to null", async () => {
   const person = await actions.createPerson();
   expect(person.name).toBeNull();
   expect(person.status).toBeNull();
 });
 
-test("update action - set to null", async () => {
+test("update operation - set to null", async () => {
   const { id } = await models.person.create({
     name: "Arnold",
     status: Status.Fired,
@@ -27,7 +27,7 @@ test("update action - set to null", async () => {
   expect(person.status).toBeNull();
 });
 
-test("list action - filter by null", async () => {
+test("list operation - filter by null", async () => {
   await models.person.create({ name: "Arnold", status: Status.Employed });
   await models.person.create({ name: "Bob", status: Status.Retrenched });
 

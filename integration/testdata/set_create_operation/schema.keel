@@ -11,7 +11,7 @@ model Thing {
         optionalParent Parent?
     }
 
-    actions {
+    operations {
         create createTextOnOptional() {
             @set(thing.optionalText = "goodbye")
         }

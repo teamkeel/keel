@@ -324,8 +324,8 @@ const functions = {
 const jobs = {
 }
 const actionTypes = {
-	createPost: "ACTION_TYPE_CREATE",
-	updatePost: "ACTION_TYPE_UPDATE",
+	createPost: "OPERATION_TYPE_CREATE",
+	updatePost: "OPERATION_TYPE_UPDATE",
 }
 	`
 
@@ -335,9 +335,9 @@ const actionTypes = {
 				title Text
 			}
 
-			actions {
-				create createPost() with(title) @function
-				update updatePost(id) with(title) @function
+			functions {
+				create createPost() with(title)
+				update updatePost(id) with(title)
 			}
 		}
 	`
@@ -448,8 +448,8 @@ export interface JobContextAPI {
 func TestWriteActionInputTypesGet(t *testing.T) {
 	schema := `
 model Person {
-	actions {
-		get getPerson(id) @function
+	functions {
+		get getPerson(id)
 	}
 }
 	`
@@ -469,8 +469,8 @@ model Person {
 	fields {
 		name Text
 	}
-	actions {
-		create createPerson() with (name) @function
+	functions {
+		create createPerson() with (name)
 	}
 }
 	`
@@ -490,8 +490,8 @@ model Person {
 	fields {
 		name Text?
 	}
-	actions {
-		create createPerson() with (name) @function
+	functions {
+		create createPerson() with (name)
 	}
 }
 	`
@@ -511,8 +511,8 @@ model Person {
 	fields {
 		name Text?
 	}
-	actions {
-		create createPerson() with (name?) @function
+	functions {
+		create createPerson() with (name?)
 	}
 }`
 
@@ -538,8 +538,8 @@ model Person {
 		name Text
 		employer Company
 	}
-	actions {
-		create createPerson() with (name, employer.name) @function
+	functions {
+		create createPerson() with (name, employer.name)
 	}
 }`
 
@@ -570,8 +570,8 @@ model Person {
 		name Text
 		contracts Contract[]
 	}
-	actions {
-		create createPerson() with (name, contracts.name) @function
+	functions {
+		create createPerson() with (name, contracts.name)
 	}
 }`
 
@@ -595,8 +595,8 @@ model Person {
 	fields {
 		name Text
 	}
-	actions {
-		update updatePerson(id) with (name) @function
+	functions {
+		update updatePerson(id) with (name)
 	}
 }
 	`
@@ -623,8 +623,8 @@ model Person {
 	fields {
 		name Text?
 	}
-	actions {
-		update updatePerson(id) with (name) @function
+	functions {
+		update updatePerson(id) with (name)
 	}
 }
 	`
@@ -651,8 +651,8 @@ model Person {
 	fields {
 		name Text?
 	}
-	actions {
-		update updatePerson(id) with (name?) @function
+	functions {
+		update updatePerson(id) with (name?)
 	}
 }
 	`
@@ -679,8 +679,8 @@ model Person {
 	fields {
 		name Text
 	}
-	actions {
-		list listPeople(name, some: Boolean?) @function
+	functions {
+		list listPeople(name, some: Boolean?)
 	}
 }
 	`
@@ -710,7 +710,7 @@ export interface ListPeopleInput {
 	})
 }
 
-func TestWriteActionInputTypesListAction(t *testing.T) {
+func TestWriteActionInputTypesListOperation(t *testing.T) {
 	schema := `
 enum Sport {
 	Football
@@ -721,7 +721,7 @@ model Person {
 		name Text
 		favouriteSport Sport
 	}
-	actions {
+	operations {
 		list listPeople(name, favouriteSport)
 	}
 }
@@ -769,8 +769,8 @@ model Person {
 		name Text
 		employer Company
 	}
-	actions {
-		list listPersons(name, employer.name) @function
+	functions {
+		list listPersons(name, employer.name)
 	}
 }`
 
@@ -807,8 +807,8 @@ model Person {
 		name Text
 		contracts Contract
 	}
-	actions {
-		list listPersons(name, contracts.name) @function
+	functions {
+		list listPersons(name, contracts.name)
 	}
 }`
 
@@ -855,8 +855,8 @@ func TestWriteActionInputTypesListRelationshipOptionalFields(t *testing.T) {
 			author Author?
 		}
 	
-		actions {
-			list listBooks(author.publisher.name) @function
+		functions {
+			list listBooks(author.publisher.name)
 		}
 	}`
 
@@ -913,8 +913,8 @@ func TestWriteActionInputTypesListRelationshipOptionalInput(t *testing.T) {
 			author Author
 		}
 	
-		actions {
-			list listBooks(author.publisher.name?) @function
+		functions {
+			list listBooks(author.publisher.name?)
 		}
 	}`
 
@@ -960,7 +960,7 @@ model Person {
 		name Text
 		favouriteSport Sport
 	}
-	actions {
+	operations {
 		list listPeople(name, favouriteSport) {
 			@sortable(name, favouriteSport)
 		}
@@ -1008,8 +1008,8 @@ export interface ListPeopleInput {
 func TestWriteActionInputTypesDelete(t *testing.T) {
 	schema := `
 model Person {
-	actions {
-		delete deletePerson(id) @function
+	functions {
+		delete deletePerson(id)
 	}
 }
 	`
@@ -1030,8 +1030,8 @@ message PersonNameResponse {
 }
 
 model Person {
-	actions {
-		read getPersonName(id) returns (PersonNameResponse) @function
+	functions {
+		read getPersonName(id) returns (PersonNameResponse)
 	}
 }`
 	expected := `
@@ -1055,8 +1055,8 @@ message GetInput {
 }
 
 model Person {
-	actions {
-		read deletePerson(GetInput) returns (PersonNameResponse) @function
+	functions {
+		read deletePerson(GetInput) returns (PersonNameResponse)
 	}
 }
 	`
@@ -1081,8 +1081,8 @@ message GetInput {
 }
 
 model Person {
-	actions {
-		read deletePerson(GetInput) returns (PersonNameResponse) @function
+	functions {
+		read deletePerson(GetInput) returns (PersonNameResponse)
 	}
 }
 	`
@@ -1103,8 +1103,8 @@ message DeleteResponse {
 }
 
 model Person {
-	actions {
-		write deletePerson(id) returns (DeleteResponse) @function
+	functions {
+		write deletePerson(id) returns (DeleteResponse)
 	}
 }`
 	expected := `
@@ -1128,8 +1128,8 @@ message DeleteInput {
 }
 
 model Person {
-	actions {
-		write deletePerson(DeleteInput) returns (DeleteResponse) @function
+	functions {
+		write deletePerson(DeleteInput) returns (DeleteResponse)
 	}
 }
 	`
@@ -1154,8 +1154,8 @@ message DeleteInput {
 }
 
 model Person {
-	actions {
-		read deletePerson(DeleteInput) returns (DeleteResponse) @function
+	functions {
+		read deletePerson(DeleteInput) returns (DeleteResponse)
 	}
 }
 	`
@@ -1180,8 +1180,8 @@ message People {
 }
 
 model Person {
-	actions {
-		read readPerson(PeopleInput) returns (People) @function
+	functions {
+		read readPerson(PeopleInput) returns (People)
 	}
 }`
 	expected := `
@@ -1201,7 +1201,7 @@ func TestMessageFieldAnyType(t *testing.T) {
 	}
 
 	model Person {
-		actions {
+		functions {
 			read getPerson(Foo) returns(Foo)
 		}
 	}
@@ -1230,8 +1230,8 @@ message Response {
 }
 
 model Person {
-	actions {
-		write writeSportInterests(Input) returns (Response) @function
+	functions {
+		write writeSportInterests(Input) returns (Response)
 	}
 }
 
@@ -1267,8 +1267,8 @@ message People {
 }
 
 model Person {
-	actions {
-		read readPerson(name: Text) returns (People) @function
+	functions {
+		read readPerson(name: Text) returns (People)
 	}
 }`
 	expected := `
@@ -1292,8 +1292,8 @@ message Details {
 }
 
 model Person {
-	actions {
-		read readPerson(name: Text) returns (People) @function
+	functions {
+		read readPerson(name: Text) returns (People)
 	}
 }`
 	expected := `
@@ -1319,8 +1319,8 @@ message PersonResponse {
 }
 
 model Person {
-	actions {
-		read readPerson(id) returns (PersonResponse) @function
+	functions {
+		read readPerson(id) returns (PersonResponse)
 	}
 }
 
@@ -1343,8 +1343,8 @@ export interface PersonResponse {
 func TestWriteActionInputTypesNoInputs(t *testing.T) {
 	schema := `
 model Person {
-	actions {
-		read getPersonName() returns (Any) @function
+	functions {
+		read getPersonName() returns (Any)
 	}
 }`
 	expected := `
@@ -1360,8 +1360,8 @@ func TestWriteActionInputTypesEmptyInputs(t *testing.T) {
 	schema := `
 message In {}
 model Person {
-	actions {
-		read getPersonName(In) returns (Any) @function
+	functions {
+		read getPersonName(In) returns (Any)
 	}
 }`
 	expected := `
@@ -1376,12 +1376,12 @@ export interface In {
 func TestWriteCustomFunctionWrapperType(t *testing.T) {
 	schema := `
 model Person {
-	actions {
-		get getPerson(id) @function
-		create createPerson() @function
-		update updatePerson() @function
-		delete deletePerson()	@function
-		list listPeople()	@function
+	functions {
+		get getPerson(id)
+		create createPerson()
+		update updatePerson()
+		delete deletePerson()
+		list listPeople()
 	}
 }
 	`
@@ -1394,9 +1394,8 @@ export declare function ListPeople(fn: (ctx: ContextAPI, inputs: ListPeopleInput
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
-
-		for _, action := range m.Actions {
-			writeCustomFunctionWrapperType(w, m, action)
+		for _, op := range m.Operations {
+			writeCustomFunctionWrapperType(w, m, op)
 		}
 	})
 }
@@ -1461,18 +1460,14 @@ export interface AdHocJobWithInputsMessage {
 func TestWriteTestingTypes(t *testing.T) {
 	schema := `
 model Person {
-	actions {
+	operations {
 		get getPerson(id)
 		create createPerson()
-		update updatePerson() {
-			@function
-		}
-		delete deletePerson() {
-			@function
-		}
-		list listPeople() {
-			@function
-		}
+	}
+	functions {
+		update updatePerson()
+		delete deletePerson()
+		list listPeople()
 	}
 }`
 
@@ -1688,7 +1683,7 @@ model Person {
 	fields {
 		hobby Hobby
 	}
-	actions {
+	operations {
 		list peopleByHobby(hobby)
 	}
 }
@@ -1770,8 +1765,8 @@ func TestTestingActionExecutor(t *testing.T) {
 		{
 			Contents: `
 			model Person {
-				actions {
-					get getPerson(id) @function
+				functions {
+					get getPerson(id)
 				}
 			}
 			`,
@@ -1872,8 +1867,8 @@ func TestSDKTypings(t *testing.T) {
 						name Text
 						lastName Text?
 					}
-					actions {
-						get getPerson(id: Number) @function
+					functions {
+						get getPerson(id: Number)
 					}
 				}`,
 		},

@@ -4,7 +4,7 @@ message Foo {
 }
 
 model Person {
-  actions {
+  functions {
     read testAction(Foo) returns(Foo)
   }
 }

@@ -3,13 +3,13 @@ model Book {
         author Author
     }
     
-    actions {
+    operations {
         create createBooks() with (author)
         update updateBooks(id) with (author)
         list listBooks(author)
     }
 
-    actions {
+    functions {
         create createBooksFunction() with (author)
         update updateBooksFunction(id) with (author)
         list listBooksFunction(author)
