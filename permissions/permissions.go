@@ -35,11 +35,11 @@ type Value struct {
 }
 
 // ToSQL creates a single SQL query that can be run to determine if permission is granted for the
-// given operation and a set of records.
+// given action and a set of records.
 //
 // The returned SQL uses "?" placeholders for values and the returned list of values indicates
 // what values should be provided to the query at runtime.
-func ToSQL(s *proto.Schema, m *proto.Model, op *proto.Operation) (sql string, values []*Value, err error) {
+func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, values []*Value, err error) {
 	tableName := identifier(m.Name)
 	pkField := identifier(proto.PrimaryKeyFieldName(m))
 
@@ -47,7 +47,7 @@ func ToSQL(s *proto.Schema, m *proto.Model, op *proto.Operation) (sql string, va
 		groupBy: []string{fmt.Sprintf("%s.%s", tableName, pkField)},
 	}
 
-	for _, p := range proto.PermissionsForAction(s, op) {
+	for _, p := range proto.PermissionsForAction(s, action) {
 		if p.Expression == nil {
 			continue
 		}

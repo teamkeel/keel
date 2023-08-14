@@ -6,13 +6,13 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_operation_where_expression_unresolvable_rhs/schema.keel",
-        "offset": 239,
+        "offset": 236,
         "line": 13,
         "column": 40
       },
       "endPos": {
         "filename": "testdata/validation_operation_where_expression_unresolvable_rhs/schema.keel",
-        "offset": 246,
+        "offset": 243,
         "line": 13,
         "column": 47
       }

@@ -4,7 +4,7 @@ model MyModel {
         code Text @unique
     }
 
-    operations {
+    actions {
         update updateMyModel(explicitCode: Text) {
             @where(myModel.isActive == true)
             @where(myModel.code == explicitCode)

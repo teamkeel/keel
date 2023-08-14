@@ -6,30 +6,30 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 186,
+        "offset": 183,
         "line": 12,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 194,
+        "offset": 191,
         "line": 12,
         "column": 21
       }
     },
     {
-      "message": "@orderBy can only be defined once per operation",
+      "message": "@orderBy can only be defined once per action",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 207,
+        "offset": 204,
         "line": 13,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 215,
+        "offset": 212,
         "line": 13,
         "column": 21
       }
@@ -40,30 +40,30 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 216,
+        "offset": 213,
         "line": 13,
         "column": 22
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 225,
+        "offset": 222,
         "line": 13,
         "column": 31
       }
     },
     {
-      "message": "@orderBy can only be defined once per operation",
+      "message": "@orderBy can only be defined once per action",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 239,
+        "offset": 236,
         "line": 14,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 247,
+        "offset": 244,
         "line": 14,
         "column": 21
       }
@@ -74,30 +74,30 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 264,
+        "offset": 261,
         "line": 14,
         "column": 38
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 268,
+        "offset": 265,
         "line": 14,
         "column": 42
       }
     },
     {
-      "message": "@orderBy can only be defined once per operation",
+      "message": "@orderBy can only be defined once per action",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 287,
+        "offset": 284,
         "line": 15,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 295,
+        "offset": 292,
         "line": 15,
         "column": 21
       }
@@ -108,30 +108,30 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 312,
+        "offset": 309,
         "line": 15,
         "column": 38
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 321,
+        "offset": 318,
         "line": 15,
         "column": 47
       }
     },
     {
-      "message": "@orderBy can only be defined once per operation",
+      "message": "@orderBy can only be defined once per action",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 340,
+        "offset": 337,
         "line": 16,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 348,
+        "offset": 345,
         "line": 16,
         "column": 21
       }
@@ -142,30 +142,30 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 365,
+        "offset": 362,
         "line": 16,
         "column": 38
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 374,
+        "offset": 371,
         "line": 16,
         "column": 47
       }
     },
     {
-      "message": "@orderBy can only be defined once per operation",
+      "message": "@orderBy can only be defined once per action",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 393,
+        "offset": 390,
         "line": 17,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 401,
+        "offset": 398,
         "line": 17,
         "column": 21
       }
@@ -176,30 +176,30 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 413,
+        "offset": 410,
         "line": 17,
         "column": 33
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 418,
+        "offset": 415,
         "line": 17,
         "column": 38
       }
     },
     {
-      "message": "@orderBy can only be defined once per operation",
+      "message": "@orderBy can only be defined once per action",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 432,
+        "offset": 429,
         "line": 18,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 440,
+        "offset": 437,
         "line": 18,
         "column": 21
       }
@@ -210,30 +210,30 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 452,
+        "offset": 449,
         "line": 18,
         "column": 33
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 455,
+        "offset": 452,
         "line": 18,
         "column": 36
       }
     },
     {
-      "message": "@orderBy can only be defined once per operation",
+      "message": "@orderBy can only be defined once per action",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 469,
+        "offset": 466,
         "line": 19,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 477,
+        "offset": 474,
         "line": 19,
         "column": 21
       }
@@ -244,13 +244,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 489,
+        "offset": 486,
         "line": 19,
         "column": 33
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 492,
+        "offset": 489,
         "line": 19,
         "column": 36
       }

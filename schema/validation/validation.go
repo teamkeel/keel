@@ -32,7 +32,7 @@ type validationFunc func(asts []*parser.AST) errorhandling.ValidationErrors
 
 var validatorFuncs = []validationFunc{
 	actions.ActionTypesRule,
-	actions.UniqueOperationNamesRule,
+	actions.UniqueActionNamesRule,
 	actions.ValidActionInputTypesRule,
 	actions.ValidActionInputLabelRule,
 	actions.ValidArbitraryFunctionReturns,

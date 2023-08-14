@@ -1,5 +1,5 @@
 model Person {
-  functions {
+  actions {
     read getAnything(Any) returns(Any)
   }
 }

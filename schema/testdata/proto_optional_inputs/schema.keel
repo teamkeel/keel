@@ -4,10 +4,9 @@ model Person {
         preferredName Text?
     }
 
-    operations {
+    actions {
         create createPerson() with (name, preferredName)
         update updatePerson(id) with (name, preferredName)
         list listPerson(name, preferredName)
     }
 }
-

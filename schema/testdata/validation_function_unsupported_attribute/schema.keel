@@ -3,7 +3,7 @@ model Profile {
     username Text
   }
 
-  functions {
+  actions {
     create createProfile() with (username) {
       @unknown
     }

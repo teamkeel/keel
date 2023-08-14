@@ -13,7 +13,7 @@ model Person {
         name Text
     }
 
-    functions {
+    actions {
         write writePerson(name) returns (PersonResponse)
         write writePersonWithMessage(PersonInput) returns (PersonResponse)
     }

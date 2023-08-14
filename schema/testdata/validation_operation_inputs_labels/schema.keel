@@ -12,7 +12,7 @@ model Person {
         favFruit Fruit
     }
 
-    operations {
+    actions {
         // ok, because ID is a built in type
         get getPerson1(personId: ID) {
             @where(person.id == personId)
@@ -27,7 +27,7 @@ model Person {
         }
     }
 
-    functions {
+    actions {
         // invalid because you're not allowed to name Message inputs.
         read doSomethingCustom(foo: Message1) returns (Message1)
     }

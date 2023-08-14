@@ -3,7 +3,7 @@ model Person {
         name Text
     }
 
-    operations {
+    actions {
         create createPerson() {
             @set(person.name = ctx.env.PERSON_NAME)
             @permission(expression: true)

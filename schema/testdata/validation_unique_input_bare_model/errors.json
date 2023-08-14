@@ -6,13 +6,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_input_bare_model/schema.keel",
-        "offset": 122,
+        "offset": 119,
         "line": 10,
         "column": 25
       },
       "endPos": {
         "filename": "testdata/validation_unique_input_bare_model/schema.keel",
-        "offset": 128,
+        "offset": 125,
         "line": 10,
         "column": 31
       }

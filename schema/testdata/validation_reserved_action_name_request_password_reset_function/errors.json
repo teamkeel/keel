@@ -6,13 +6,13 @@
       "code": "E042",
       "pos": {
         "filename": "testdata/validation_reserved_action_name_request_password_reset_function/schema.keel",
-        "offset": 83,
+        "offset": 81,
         "line": 7,
         "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_reserved_action_name_request_password_reset_function/schema.keel",
-        "offset": 103,
+        "offset": 101,
         "line": 7,
         "column": 36
       }

@@ -3,7 +3,7 @@ model Person {
         user Identity
     }
 
-    operations {
+    actions {
         get getPerson(id)
     }
 }

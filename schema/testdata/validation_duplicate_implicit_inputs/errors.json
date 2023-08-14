@@ -6,13 +6,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 101,
+        "offset": 98,
         "line": 7,
         "column": 37
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 105,
+        "offset": 102,
         "line": 7,
         "column": 41
       }
@@ -23,13 +23,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 131,
+        "offset": 128,
         "line": 8,
         "column": 25
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 135,
+        "offset": 132,
         "line": 8,
         "column": 29
       }
@@ -40,13 +40,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 157,
+        "offset": 154,
         "line": 9,
         "column": 21
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 159,
+        "offset": 156,
         "line": 9,
         "column": 23
       }
@@ -57,13 +57,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 187,
+        "offset": 184,
         "line": 10,
         "column": 27
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 189,
+        "offset": 186,
         "line": 10,
         "column": 29
       }
@@ -74,13 +74,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 203,
+        "offset": 200,
         "line": 10,
         "column": 43
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 207,
+        "offset": 204,
         "line": 10,
         "column": 47
       }
@@ -91,13 +91,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 235,
+        "offset": 232,
         "line": 11,
         "column": 27
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 237,
+        "offset": 234,
         "line": 11,
         "column": 29
       }
@@ -108,13 +108,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 300,
+        "offset": 295,
         "line": 15,
         "column": 39
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 304,
+        "offset": 299,
         "line": 15,
         "column": 43
       }
@@ -125,13 +125,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 332,
+        "offset": 327,
         "line": 16,
         "column": 27
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 336,
+        "offset": 331,
         "line": 16,
         "column": 31
       }
@@ -142,13 +142,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 360,
+        "offset": 355,
         "line": 17,
         "column": 23
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 362,
+        "offset": 357,
         "line": 17,
         "column": 25
       }
@@ -159,13 +159,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 392,
+        "offset": 387,
         "line": 18,
         "column": 29
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 394,
+        "offset": 389,
         "line": 18,
         "column": 31
       }
@@ -176,13 +176,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 408,
+        "offset": 403,
         "line": 18,
         "column": 45
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 412,
+        "offset": 407,
         "line": 18,
         "column": 49
       }
@@ -193,13 +193,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 442,
+        "offset": 437,
         "line": 19,
         "column": 29
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 444,
+        "offset": 439,
         "line": 19,
         "column": 31
       }
@@ -210,13 +210,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 472,
+        "offset": 467,
         "line": 20,
         "column": 27
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 476,
+        "offset": 471,
         "line": 20,
         "column": 31
       }
@@ -227,13 +227,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 520,
+        "offset": 515,
         "line": 21,
         "column": 29
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
-        "offset": 524,
+        "offset": 519,
         "line": 21,
         "column": 33
       }

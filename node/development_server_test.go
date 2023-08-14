@@ -24,8 +24,8 @@ func TestDevelopmentServerAction(t *testing.T) {
 			Path: "schema.keel",
 			Contents: `
 				model Person {
-					functions {
-						get getPerson(id)
+					actions {
+						get getPerson(id) @function
 					}
 				}
 			`,
@@ -112,8 +112,8 @@ func TestDevelopmentServerStartError(t *testing.T) {
 			Path: "schema.keel",
 			Contents: `
 				model Person {
-					functions {
-						get getPerson(id)
+					actions {
+						get getPerson(id) @function
 					}
 				}
 			`,

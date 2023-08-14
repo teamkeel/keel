@@ -6,13 +6,13 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_arbitrary_function_action_types/schema.keel",
-        "offset": 61,
+        "offset": 59,
         "line": 7,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_arbitrary_function_action_types/schema.keel",
-        "offset": 64,
+        "offset": 62,
         "line": 7,
         "column": 8
       }

@@ -3,7 +3,7 @@ model Person {
         name Text
         age Number
     }
-    operations {
+    actions {
         update updateName() with (name) {
             @where(person.age == 21)
         }

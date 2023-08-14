@@ -5,7 +5,7 @@ model Person {
         birthday Date
     }
 
-    operations {
+    actions {
         create testAction() with (name, nickName, birthday)
     }
 }

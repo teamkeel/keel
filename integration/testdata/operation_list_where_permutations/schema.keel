@@ -12,7 +12,7 @@ model Thing {
         faveFruit FruitT?
     }
 
-    operations {
+    actions {
         create createPost() with (title?, length?, switchIsOn?, eventTime?, birthday?, faveFruit?)
 
         // These are mostly concerned with a Text field and the Equals operator, 

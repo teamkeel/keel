@@ -3,7 +3,7 @@ model Post {
         title Text
     }
 
-    functions {
+    actions {
         list listPosts(
             offset: Number?,
             limit: Number?,
@@ -11,6 +11,7 @@ model Post {
             sortOrder: Text?,
         ) {
             @permission(expression: true)
+            @function
         }
     }
 }

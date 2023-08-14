@@ -11,7 +11,7 @@ model Person {
         name Text
     }
 
-    functions {
+    actions {
         read testAction(PersonInput) returns (PersonResponse)
     }
 }

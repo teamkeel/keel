@@ -127,17 +127,17 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 			continue
 		}
 
-		for _, op := range model.Operations {
+		for _, action := range model.Actions {
 
-			if op.Type == proto.OperationType_OPERATION_TYPE_GET || op.Type == proto.OperationType_OPERATION_TYPE_LIST || op.Type == proto.OperationType_OPERATION_TYPE_READ {
-				queries = append(queries, op.Name)
+			if action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_READ {
+				queries = append(queries, action.Name)
 			} else {
-				mutations = append(queries, op.Name)
+				mutations = append(queries, action.Name)
 			}
 
-			msg := proto.FindMessage(schema.Messages, op.InputMessageName)
+			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
 
-			w.Writef("%s(i", op.Name)
+			w.Writef("%s(i", action.Name)
 
 			// Check that all of the top level fields in the matching message are optional
 			// If so, then we can make it so you don't even need to specify the key
@@ -152,11 +152,11 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 				w.Write("?")
 			}
 
-			w.Writef(`: %s) `, op.InputMessageName)
+			w.Writef(`: %s) `, action.InputMessageName)
 			w.Writeln("{")
 
 			w.Indent()
-			w.Writef(`return this.request<%s>("%s", i)`, toClientActionReturnType(model, op), op.Name)
+			w.Writef(`return this.request<%s>("%s", i)`, toClientActionReturnType(model, action), action.Name)
 			w.Writeln(";")
 			w.Dedent()
 			w.Writeln("}")
@@ -208,23 +208,23 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 
 }
 
-func toClientActionReturnType(model *proto.Model, op *proto.Operation) string {
+func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
 	returnType := ""
 	sdkPrefix := ""
 
 	switch op.Type {
-	case proto.OperationType_OPERATION_TYPE_CREATE:
+	case proto.ActionType_ACTION_TYPE_CREATE:
 		returnType += sdkPrefix + model.Name
-	case proto.OperationType_OPERATION_TYPE_UPDATE:
+	case proto.ActionType_ACTION_TYPE_UPDATE:
 		returnType += sdkPrefix + model.Name
-	case proto.OperationType_OPERATION_TYPE_GET:
+	case proto.ActionType_ACTION_TYPE_GET:
 		returnType += sdkPrefix + model.Name + " | null"
-	case proto.OperationType_OPERATION_TYPE_LIST:
+	case proto.ActionType_ACTION_TYPE_LIST:
 		returnType += "{results: " + sdkPrefix + model.Name + "[], pageInfo: any}"
-	case proto.OperationType_OPERATION_TYPE_DELETE:
+	case proto.ActionType_ACTION_TYPE_DELETE:
 		// todo: create ID type
 		returnType += "string"
-	case proto.OperationType_OPERATION_TYPE_READ, proto.OperationType_OPERATION_TYPE_WRITE:
+	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
 		returnType += op.ResponseMessageName
 	}
 

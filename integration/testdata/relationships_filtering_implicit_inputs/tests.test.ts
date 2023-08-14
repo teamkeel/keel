@@ -3,7 +3,7 @@ import { test, expect, beforeEach } from "vitest";
 
 beforeEach(resetDatabase);
 
-test("get operation implicit inputs with M:1 relations - all models active - model returned", async () => {
+test("get action implicit inputs with M:1 relations - all models active - model returned", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -29,7 +29,7 @@ test("get operation implicit inputs with M:1 relations - all models active - mod
   expect(post!.id).toEqual(firstpost.id);
 });
 
-test("get operation implicit inputs with M:1 relations - post model not active - no records found", async () => {
+test("get action implicit inputs with M:1 relations - post model not active - no records found", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -55,7 +55,7 @@ test("get operation implicit inputs with M:1 relations - post model not active -
   ).toEqual(null);
 });
 
-test("get operation implicit inputs with M:1 relations - nested author model not active - no records found", async () => {
+test("get action implicit inputs with M:1 relations - nested author model not active - no records found", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -81,7 +81,7 @@ test("get operation implicit inputs with M:1 relations - nested author model not
   ).toEqual(null);
 });
 
-test("get operation implicit inputs with M:1 relations - nested nested publisher model not active - no records found", async () => {
+test("get action implicit inputs with M:1 relations - nested nested publisher model not active - no records found", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -107,7 +107,7 @@ test("get operation implicit inputs with M:1 relations - nested nested publisher
   ).toEqual(null);
 });
 
-test("get operation implicit inputs with 1:M relations - all models active - publisher returned", async () => {
+test("get action implicit inputs with 1:M relations - all models active - publisher returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -148,7 +148,7 @@ test("get operation implicit inputs with 1:M relations - all models active - pub
   expect(publisher!.id).toEqual(publisherKeel.id);
 });
 
-test("get operation implicit inputs with 1:M relations - publisher not active - no publisher found", async () => {
+test("get action implicit inputs with 1:M relations - publisher not active - no publisher found", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -189,7 +189,7 @@ test("get operation implicit inputs with 1:M relations - publisher not active - 
   ).toEqual(null);
 });
 
-test("get operation implicit inputs with 1:M relations - one author active - publisher returned", async () => {
+test("get action implicit inputs with 1:M relations - one author active - publisher returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -230,7 +230,7 @@ test("get operation implicit inputs with 1:M relations - one author active - pub
   expect(publisher!.id).toEqual(publisherKeel.id);
 });
 
-test("get operation implicit inputs with 1:M relations - active author with inactive posts and inactive autor with active posts - no publisher found", async () => {
+test("get action implicit inputs with 1:M relations - active author with inactive posts and inactive autor with active posts - no publisher found", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -271,7 +271,7 @@ test("get operation implicit inputs with 1:M relations - active author with inac
   ).toEqual(null);
 });
 
-test("get operation implicit inputs with 1:M relations - no active posts  - publisher returned", async () => {
+test("get action implicit inputs with 1:M relations - no active posts  - publisher returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -312,7 +312,7 @@ test("get operation implicit inputs with 1:M relations - no active posts  - publ
   ).toEqual(null);
 });
 
-test("list operation implicit inputs with M:1 relations - all models active - all models returned", async () => {
+test("list action implicit inputs with M:1 relations - all models active - all models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -360,7 +360,7 @@ test("list operation implicit inputs with M:1 relations - all models active - al
   expect(posts.length).toEqual(3);
 });
 
-test("list operation implicit inputs with M:1 relations - Keel org not active - Weave models returned", async () => {
+test("list action implicit inputs with M:1 relations - Keel org not active - Weave models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -408,7 +408,7 @@ test("list operation implicit inputs with M:1 relations - Keel org not active - 
   expect(posts.length).toEqual(1);
 });
 
-test("list operation implicit inputs with M:1 relations - Keelson author not active - Weaveton models returned", async () => {
+test("list action implicit inputs with M:1 relations - Keelson author not active - Weaveton models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -456,7 +456,7 @@ test("list operation implicit inputs with M:1 relations - Keelson author not act
   expect(posts.length).toEqual(1);
 });
 
-test("list operation implicit inputs with M:1 relations - one Keelson post not active - Weaveton models returned", async () => {
+test("list action implicit inputs with M:1 relations - one Keelson post not active - Weaveton models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -504,7 +504,7 @@ test("list operation implicit inputs with M:1 relations - one Keelson post not a
   expect(posts.length).toEqual(2);
 });
 
-test("list operation implicit inputs with 1:M relations - all models active - all models returned", async () => {
+test("list action implicit inputs with 1:M relations - all models active - all models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org 2",
     isActive: true,
@@ -553,7 +553,7 @@ test("list operation implicit inputs with 1:M relations - all models active - al
   expect(publishers.length).toEqual(2);
 });
 
-test("list operation implicit inputs with 1:M relations - Keel org not active - only Keel returned", async () => {
+test("list action implicit inputs with 1:M relations - Keel org not active - only Keel returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -602,7 +602,7 @@ test("list operation implicit inputs with 1:M relations - Keel org not active - 
   expect(publishers.length).toEqual(1);
 });
 
-test("list operation implicit inputs with 1:M relations - Keel author not active - Weave org returned", async () => {
+test("list action implicit inputs with 1:M relations - Keel author not active - Weave org returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -651,7 +651,7 @@ test("list operation implicit inputs with 1:M relations - Keel author not active
   expect(publishers.length).toEqual(1);
 });
 
-test("list operation implicit inputs with 1:M relations - one Keel post not active - all models returned", async () => {
+test("list action implicit inputs with 1:M relations - one Keel post not active - all models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -700,7 +700,7 @@ test("list operation implicit inputs with 1:M relations - one Keel post not acti
   expect(publishers.length).toEqual(2);
 });
 
-test("list operation implicit inputs with 1:M relations - all Keel posts not active - Weave org returned", async () => {
+test("list action implicit inputs with 1:M relations - all Keel posts not active - Weave org returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -804,7 +804,7 @@ test("implicit inputs which references models multiple times - Keel has active p
   ).toEqual(null);
 });
 
-test("delete operation where expressions with M:1 relations - all models active - model deleted", async () => {
+test("delete action where expressions with M:1 relations - all models active - model deleted", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -830,7 +830,7 @@ test("delete operation where expressions with M:1 relations - all models active 
   expect(deletedId).toEqual(firstpost.id);
 });
 
-test("delete operation where expressions with M:1 relations - post model not active - no records found", async () => {
+test("delete action where expressions with M:1 relations - post model not active - no records found", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -858,7 +858,7 @@ test("delete operation where expressions with M:1 relations - post model not act
   });
 });
 
-test("delete operation where expressions with M:1 relations - publisher model not active - no records found", async () => {
+test("delete action where expressions with M:1 relations - publisher model not active - no records found", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -886,7 +886,7 @@ test("delete operation where expressions with M:1 relations - publisher model no
   });
 });
 
-test("delete operation where expressions with 1:M relations - all models active - publisher deleted", async () => {
+test("delete action where expressions with 1:M relations - all models active - publisher deleted", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -927,7 +927,7 @@ test("delete operation where expressions with 1:M relations - all models active 
   expect(deletedId).toEqual(publisherKeel.id);
 });
 
-test("delete operation where expressions with 1:M relations - publisher not active - no publisher found", async () => {
+test("delete action where expressions with 1:M relations - publisher not active - no publisher found", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -970,7 +970,7 @@ test("delete operation where expressions with 1:M relations - publisher not acti
   });
 });
 
-test("delete operation where expressions with 1:M relations - single post active - publisher deleted", async () => {
+test("delete action where expressions with 1:M relations - single post active - publisher deleted", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -1013,7 +1013,7 @@ test("delete operation where expressions with 1:M relations - single post active
   expect(deletedId).toEqual(publisherKeel.id);
 });
 
-test("delete operation where expressions with 1:M relations - posts not active - no publisher found", async () => {
+test("delete action where expressions with 1:M relations - posts not active - no publisher found", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,

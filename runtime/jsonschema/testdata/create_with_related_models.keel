@@ -4,7 +4,7 @@ model Order {
         customer Customer
         items OrderItem[]
     }
-    operations {
+    actions {
         create testAction() with (customer.name, onPromotion, items.quantity, items.price, items.product.name)
     }
     @permission(expression: true, actions: [create])

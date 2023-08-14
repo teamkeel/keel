@@ -3,7 +3,7 @@ model Person {
         name Text
     }
 
-    operations {
+    actions {
         get getPerson(id)
         delete deletePerson(id)
     }

@@ -9,7 +9,7 @@ en:
     message: "You have duplicate field names {{ .Name }}"
     hint: "Remove '{{ .Name }}' on line {{ .Line }}"
   E004:
-    message: "You have duplicate operations Model:{{ .Model }} Name:{{ .Name }}"
+    message: "You have duplicate actions Model:{{ .Model }} Name:{{ .Name }}"
     hint: "Remove '{{ .Name }}' on line {{ .Line }}"
   E005:
     message: "Action inputs must be one of the fields defined in the model"
@@ -18,7 +18,7 @@ en:
     message: "You have a reserved field name {{ .Name }}"
     hint: "Try '{{ .Suggestion }}' instead"
   E008:
-    message: "Operation {{ .Name }} must either take a unique field as input or filter on a unique field using a @where attribute"
+    message: "Action {{ .Name }} must either take a unique field as input or filter on a unique field using a @where attribute"
     hint: "Did you mean to add 'id' as an input?"
   E009:
     message: "field {{ .Name }} has an unsupported type {{ .Type }}"
@@ -95,16 +95,16 @@ en:
     message: "create actions must accept all required fields that have no default value"
     hint: "maybe add {{ .FieldName }} to the with() inputs or a @set expression"
   E035:
-    message: "{{ .Input }} is not a unique field. {{ .OperationType }} operations take only unique inputs"
+    message: "{{ .Input }} is not a unique field. {{ .ActionType }} actions take only unique inputs"
     hint: ""
   E036:
-    message: "{{ .Ident }} is not a unique field. {{ .OperationType }} operations can only filter on unique fields"
+    message: "{{ .Ident }} is not a unique field. {{ .ActionType }} actions can only filter on unique fields"
     hint: ""
   E037:
-    message: "The {{ .Operator }} operator is not allowed in a {{ .OperationType }} operation, only equality operators ('==' and 'in') are allowed"
+    message: "The {{ .Operator }} operator is not allowed in a {{ .ActionType }} action, only equality operators ('==' and 'in') are allowed"
     hint: ""
   E038:
-    message: "{{ .InputName }} is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute"
+    message: "{{ .InputName }} is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute"
     hint: ""
   E039:
     message: "{{ .ModelA }} and {{ .ModelB }} define a singular relationship with one another"
@@ -166,7 +166,7 @@ en:
     message: "You have already used '{{.RelatedFieldName}}' in a @Relation. Duplicates are not allowed."
     hint: "Did you mean a different related field?"
   E059:
-    message: "You cannot set values for both {{.IdPath}} and {{.ConflictingPath}} in this Create Operation - because the first one indicates that you want to refer to an existing {{.ModelName}}"
+    message: "You cannot set values for both {{.IdPath}} and {{.ConflictingPath}} in this create action - because the first one indicates that you want to refer to an existing {{.ModelName}}"
     hint: "Either 1) use the .id form, and none of the {{.ModelName}} fields, or 2) omit the .id form and specify all of the fields of {{.ModelName}} that are needed to create one."
   E060:
     message: "{{.OperandName}} cannot be null"

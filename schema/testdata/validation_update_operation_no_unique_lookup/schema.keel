@@ -1,5 +1,5 @@
 model MyModel {
-    operations {
+    actions {
         update updateMyModel()
     }
 }

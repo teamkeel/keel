@@ -23,64 +23,47 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 334,
+        "offset": 331,
         "line": 19,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 342,
+        "offset": 339,
         "line": 19,
         "column": 13
       }
     },
     {
-      "message": "function 'listAuthorsFn' has an unrecognised attribute @orderBy",
-      "hint": "Did you mean @permission?",
-      "code": "E011",
-      "pos": {
-        "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 419,
-        "line": 23,
-        "column": 13
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 427,
-        "line": 23,
-        "column": 21
-      }
-    },
-    {
-      "message": "@orderBy can only be used on list operations",
+      "message": "@orderBy can only be used on list actions",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 176,
+        "offset": 173,
         "line": 10,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 184,
+        "offset": 181,
         "line": 10,
         "column": 21
       }
     },
     {
-      "message": "@orderBy can only be defined once per operation",
+      "message": "@orderBy can only be defined once per action",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 290,
+        "offset": 287,
         "line": 15,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 298,
+        "offset": 295,
         "line": 15,
         "column": 21
       }
