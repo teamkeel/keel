@@ -1,7 +1,7 @@
 message In {}
 
 model Person {
-    actions {
+    functions {
         read testAction(In) returns (Any)
     }
 }

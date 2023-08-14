@@ -7,7 +7,7 @@ message Bar {
 }
 
 model Person {
-  actions {
+  operations {
     read getPerson()
     write updatePerson(Foo)
     read getPersonWithReturns() returns(Bar)

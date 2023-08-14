@@ -14,7 +14,7 @@ model Person {
         name Text
     }
 
-    actions {
+    functions {
         write testAction(Input) returns (Response)
     }
 }

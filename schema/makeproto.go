@@ -367,7 +367,7 @@ func makeListOrderByMessages(actionName string, fieldNames []string) []*proto.Me
 }
 
 // Creates a proto.Message from a slice of action inputs.
-func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode, impl proto.ActionImplementation) *proto.Message {
+func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) *proto.Message {
 	fields := []*proto.MessageField{}
 	for _, input := range inputs {
 		typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
@@ -389,7 +389,7 @@ func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parse
 }
 
 // Creates the message structure from an implicit input. For relationships, this will create a nested hierarchy of messages.
-func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Message, input *parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode, impl proto.ActionImplementation) {
+func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Message, input *parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) {
 	target := lo.Map(input.Type.Fragments, func(ident *parser.IdentFragment, _ int) string {
 		return ident.Fragment
 	})
@@ -490,7 +490,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 }
 
 // Adds a set of proto.Messages to top level Messages registry for all inputs of an Action
-func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode, impl proto.ActionImplementation) {
+func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) {
 	switch action.Type.Value {
 	case parser.ActionTypeCreate:
 		rootMessage := &proto.Message{
@@ -551,7 +551,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			}
 		}
 
-		// Create root action message with "where" and "values" fields.
+		// Create root operation message with "where" and "values" fields.
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
 			Name: makeInputMessageName(action.Name.Value),
 			Fields: []*proto.MessageField{
@@ -676,7 +676,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 
 		scm.proto.Messages = append(scm.proto.Messages, inputMessage)
 	default:
-		panic("unhandled action type when creating input message types")
+		panic("unhandled operation type when creating input message types")
 	}
 }
 
@@ -691,9 +691,14 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 			fields := scm.makeFields(section.Fields, protoModel.Name)
 			protoModel.Fields = append(protoModel.Fields, fields...)
 
-		case section.Actions != nil:
-			ops := scm.makeActions(section.Actions, protoModel.Name)
-			protoModel.Actions = append(protoModel.Actions, ops...)
+		case section.Functions != nil:
+			ops := scm.makeActions(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
+			protoModel.Operations = append(protoModel.Operations, ops...)
+
+		case section.Operations != nil:
+			ops := scm.makeActions(section.Operations, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO)
+			protoModel.Operations = append(protoModel.Operations, ops...)
+
 		case section.Attribute != nil:
 			scm.applyModelAttribute(parserModel, protoModel, section.Attribute)
 		default:
@@ -703,24 +708,24 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	}
 
 	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
-		protoModel.Actions = append(protoModel.Actions, scm.makeAuthenticate())
-		protoModel.Actions = append(protoModel.Actions, scm.makeRequestPasswordReset())
-		protoModel.Actions = append(protoModel.Actions, scm.makePasswordReset())
+		protoModel.Operations = append(protoModel.Operations, scm.makeAuthenticate())
+		protoModel.Operations = append(protoModel.Operations, scm.makeRequestPasswordReset())
+		protoModel.Operations = append(protoModel.Operations, scm.makePasswordReset())
 	}
 
 	scm.proto.Models = append(scm.proto.Models, protoModel)
 }
 
-func (scm *Builder) makeAuthenticate() *proto.Action {
-	inputMessageName := makeInputMessageName(parser.AuthenticateActionName)
-	responseMessageName := makeResponseMessageName(parser.AuthenticateActionName)
+func (scm *Builder) makeAuthenticate() *proto.Operation {
+	inputMessageName := makeInputMessageName(parser.AuthenticateOperationName)
+	responseMessageName := makeResponseMessageName(parser.AuthenticateOperationName)
 	emailPasswordMessageName := makeInputMessageName("EmailPassword")
 
-	action := proto.Action{
+	op := proto.Operation{
 		ModelName:           parser.ImplicitIdentityModelName,
-		Name:                parser.AuthenticateActionName,
-		Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
-		Type:                proto.ActionType_ACTION_TYPE_WRITE,
+		Name:                parser.AuthenticateOperationName,
+		Implementation:      proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME,
+		Type:                proto.OperationType_OPERATION_TYPE_WRITE,
 		InputMessageName:    inputMessageName,
 		ResponseMessageName: responseMessageName,
 	}
@@ -779,18 +784,18 @@ func (scm *Builder) makeAuthenticate() *proto.Action {
 		},
 	})
 
-	return &action
+	return &op
 }
 
-func (scm *Builder) makeRequestPasswordReset() *proto.Action {
-	inputMessageName := makeInputMessageName(parser.RequestPasswordResetActionName)
-	responseMessageName := makeResponseMessageName(parser.RequestPasswordResetActionName)
+func (scm *Builder) makeRequestPasswordReset() *proto.Operation {
+	inputMessageName := makeInputMessageName(parser.RequestPasswordResetOperationName)
+	responseMessageName := makeResponseMessageName(parser.RequestPasswordResetOperationName)
 
-	action := proto.Action{
+	op := proto.Operation{
 		ModelName:           parser.ImplicitIdentityModelName,
-		Name:                parser.RequestPasswordResetActionName,
-		Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
-		Type:                proto.ActionType_ACTION_TYPE_WRITE,
+		Name:                parser.RequestPasswordResetOperationName,
+		Implementation:      proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME,
+		Type:                proto.OperationType_OPERATION_TYPE_WRITE,
 		InputMessageName:    inputMessageName,
 		ResponseMessageName: responseMessageName,
 	}
@@ -818,18 +823,18 @@ func (scm *Builder) makeRequestPasswordReset() *proto.Action {
 		Fields: []*proto.MessageField{},
 	})
 
-	return &action
+	return &op
 }
 
-func (scm *Builder) makePasswordReset() *proto.Action {
-	inputMessageName := makeInputMessageName(parser.PasswordResetActionName)
-	responseMessageName := makeResponseMessageName(parser.PasswordResetActionName)
+func (scm *Builder) makePasswordReset() *proto.Operation {
+	inputMessageName := makeInputMessageName(parser.PasswordResetOperationName)
+	responseMessageName := makeResponseMessageName(parser.PasswordResetOperationName)
 
-	action := proto.Action{
+	op := proto.Operation{
 		ModelName:           parser.ImplicitIdentityModelName,
-		Name:                parser.PasswordResetActionName,
-		Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
-		Type:                proto.ActionType_ACTION_TYPE_WRITE,
+		Name:                parser.PasswordResetOperationName,
+		Implementation:      proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME,
+		Type:                proto.OperationType_OPERATION_TYPE_WRITE,
 		InputMessageName:    inputMessageName,
 		ResponseMessageName: responseMessageName,
 	}
@@ -857,7 +862,7 @@ func (scm *Builder) makePasswordReset() *proto.Action {
 		Fields: []*proto.MessageField{},
 	})
 
-	return &action
+	return &op
 }
 
 func (scm *Builder) makeRole(decl *parser.DeclarationNode) {
@@ -1097,32 +1102,23 @@ func attributeFirstArgAsIdentifier(attr *parser.AttributeNode) string {
 	return theString
 }
 
-func (scm *Builder) makeActions(actions []*parser.ActionNode, modelName string) []*proto.Action {
-	protoOps := []*proto.Action{}
+func (scm *Builder) makeActions(actions []*parser.ActionNode, modelName string, impl proto.OperationImplementation) []*proto.Operation {
+	protoOps := []*proto.Operation{}
 
 	for _, action := range actions {
-		protoOp := scm.makeAction(action, modelName)
+		protoOp := scm.makeAction(action, modelName, impl)
 		protoOps = append(protoOps, protoOp)
 	}
 	return protoOps
 }
 
-func (scm *Builder) makeAction(action *parser.ActionNode, modelName string) *proto.Action {
-	var implementation proto.ActionImplementation
-
-	switch {
-	case action.IsFunction():
-		implementation = proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
-	default:
-		implementation = proto.ActionImplementation_ACTION_IMPLEMENTATION_AUTO
-	}
-
-	protoAction := &proto.Action{
+func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, impl proto.OperationImplementation) *proto.Operation {
+	protoOp := &proto.Operation{
 		ModelName:        modelName,
 		InputMessageName: makeInputMessageName(action.Name.Value),
 		Name:             action.Name.Value,
-		Implementation:   implementation,
-		Type:             scm.mapToActionType(action.Type.Value),
+		Implementation:   impl,
+		Type:             scm.mapToOperationType(action.Type.Value),
 	}
 
 	model := query.Model(scm.asts, modelName)
@@ -1145,34 +1141,34 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string) *pro
 
 			switch {
 			case usesAny:
-				protoAction.InputMessageName = action.Inputs[0].Type.ToString()
+				protoOp.InputMessageName = action.Inputs[0].Type.ToString()
 			case usingInlineInputs:
-				scm.makeActionInputMessages(model, action, implementation)
+				scm.makeActionInputMessages(model, action, impl)
 			default:
-				protoAction.InputMessageName = action.Inputs[0].Type.ToString()
+				protoOp.InputMessageName = action.Inputs[0].Type.ToString()
 			}
 		} else {
 			// Create an empty message if there is no input defined.
-			message := &proto.Message{Name: protoAction.InputMessageName}
+			message := &proto.Message{Name: protoOp.InputMessageName}
 			scm.proto.Messages = append(scm.proto.Messages, message)
 		}
 
-		protoAction.ResponseMessageName = action.Returns[0].Type.ToString()
+		protoOp.ResponseMessageName = action.Returns[0].Type.ToString()
 	} else {
 		// we need to generate the messages representing the inputs to the scm.Messages
-		scm.makeActionInputMessages(model, action, implementation)
+		scm.makeActionInputMessages(model, action, impl)
 	}
 
-	scm.applyActionAttributes(action, protoAction, modelName)
+	scm.applyActionAttributes(action, protoOp, modelName)
 
-	return protoAction
+	return protoOp
 }
 
 func (scm *Builder) inferParserInputType(
 	model *parser.ModelNode,
-	action *parser.ActionNode,
+	op *parser.ActionNode,
 	input *parser.ActionInputNode,
-	impl proto.ActionImplementation,
+	impl proto.OperationImplementation,
 ) (t *proto.TypeInfo, target []string, targetsOptionalField bool) {
 	idents := input.Type.Fragments
 	protoType := scm.parserTypeToProtoType(idents[0].Fragment)
@@ -1331,26 +1327,26 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 	}
 }
 
-func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoAction *proto.Action, modelName string) {
+func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoOperation *proto.Operation, modelName string) {
 	for _, attribute := range action.Attributes {
 		switch attribute.Name.Value {
 		case parser.AttributePermission:
 			perm := scm.permissionAttributeToProtoPermission(attribute)
 			perm.ModelName = modelName
-			perm.ActionName = wrapperspb.String(protoAction.Name)
-			protoAction.Permissions = append(protoAction.Permissions, perm)
+			perm.OperationName = wrapperspb.String(protoOperation.Name)
+			protoOperation.Permissions = append(protoOperation.Permissions, perm)
 		case parser.AttributeWhere:
 			expr, _ := attribute.Arguments[0].Expression.ToString()
 			where := &proto.Expression{Source: expr}
-			protoAction.WhereExpressions = append(protoAction.WhereExpressions, where)
+			protoOperation.WhereExpressions = append(protoOperation.WhereExpressions, where)
 		case parser.AttributeSet:
 			expr, _ := attribute.Arguments[0].Expression.ToString()
 			set := &proto.Expression{Source: expr}
-			protoAction.SetExpressions = append(protoAction.SetExpressions, set)
+			protoOperation.SetExpressions = append(protoOperation.SetExpressions, set)
 		case parser.AttributeValidate:
 			expr, _ := attribute.Arguments[0].Expression.ToString()
 			set := &proto.Expression{Source: expr}
-			protoAction.ValidationExpressions = append(protoAction.ValidationExpressions, set)
+			protoOperation.ValidationExpressions = append(protoOperation.ValidationExpressions, set)
 		case parser.AttributeOrderBy:
 			for _, arg := range attribute.Arguments {
 				field := arg.Label.Value
@@ -1359,7 +1355,7 @@ func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoAction
 					FieldName: field,
 					Direction: scm.mapToOrderByDirection(direction),
 				}
-				protoAction.OrderBy = append(protoAction.OrderBy, orderBy)
+				protoOperation.OrderBy = append(protoOperation.OrderBy, orderBy)
 			}
 		}
 	}
@@ -1421,31 +1417,31 @@ func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.AttributeN
 		case "actions":
 			value, _ := arg.Expression.ToValue()
 			for _, v := range value.Array.Values {
-				pr.ActionTypes = append(pr.ActionTypes, scm.mapToActionType(v.Ident.Fragments[0].Fragment))
+				pr.OperationsTypes = append(pr.OperationsTypes, scm.mapToOperationType(v.Ident.Fragments[0].Fragment))
 			}
 		}
 	}
 	return pr
 }
 
-func (scm *Builder) mapToActionType(actionType string) proto.ActionType {
-	switch actionType {
+func (scm *Builder) mapToOperationType(parsedOperation string) proto.OperationType {
+	switch parsedOperation {
 	case parser.ActionTypeCreate:
-		return proto.ActionType_ACTION_TYPE_CREATE
+		return proto.OperationType_OPERATION_TYPE_CREATE
 	case parser.ActionTypeUpdate:
-		return proto.ActionType_ACTION_TYPE_UPDATE
+		return proto.OperationType_OPERATION_TYPE_UPDATE
 	case parser.ActionTypeGet:
-		return proto.ActionType_ACTION_TYPE_GET
+		return proto.OperationType_OPERATION_TYPE_GET
 	case parser.ActionTypeList:
-		return proto.ActionType_ACTION_TYPE_LIST
+		return proto.OperationType_OPERATION_TYPE_LIST
 	case parser.ActionTypeDelete:
-		return proto.ActionType_ACTION_TYPE_DELETE
+		return proto.OperationType_OPERATION_TYPE_DELETE
 	case parser.ActionTypeRead:
-		return proto.ActionType_ACTION_TYPE_READ
+		return proto.OperationType_OPERATION_TYPE_READ
 	case parser.ActionTypeWrite:
-		return proto.ActionType_ACTION_TYPE_WRITE
+		return proto.OperationType_OPERATION_TYPE_WRITE
 	default:
-		return proto.ActionType_ACTION_TYPE_UNKNOWN
+		return proto.OperationType_OPERATION_TYPE_UNKNOWN
 	}
 }
 

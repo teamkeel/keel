@@ -5,7 +5,7 @@ model person {
         ALLCAPS Number
     }
 
-    actions {
+    operations {
         create CreatePerson(Name, FavouriteColour, ALLCAPS)
     }
 }
@@ -37,7 +37,7 @@ model Person {
         allcaps Number
     }
 
-    actions {
+    operations {
         create createPerson(name, favouriteColour, allcaps)
     }
 }

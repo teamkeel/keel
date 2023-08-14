@@ -7,7 +7,7 @@ model Person {
     bar Text
   }
   
-  actions {
+  functions {
     read getPerson()
     write updatePerson()
   }

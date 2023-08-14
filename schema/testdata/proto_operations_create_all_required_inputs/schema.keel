@@ -4,7 +4,7 @@ model Person {
         age Number?
     }
 
-    actions {
+    operations {
         create createPerson() with (name)
     }
 }

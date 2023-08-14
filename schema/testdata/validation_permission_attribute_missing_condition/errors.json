@@ -6,13 +6,13 @@
       "code": "E015",
       "pos": {
         "filename": "testdata/validation_permission_attribute_missing_condition/schema.keel",
-        "offset": 65,
+        "offset": 68,
         "line": 5,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_permission_attribute_missing_condition/schema.keel",
-        "offset": 76,
+        "offset": 79,
         "line": 5,
         "column": 16
       }

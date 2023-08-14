@@ -2,7 +2,7 @@ model Foo {
   fields {
     f1 Boolean
   }
-  actions {
+  operations {
     list opA() {
       @permission(
           expression: foo.f1 == true,

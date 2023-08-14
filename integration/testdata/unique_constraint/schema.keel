@@ -5,11 +5,14 @@ model Product {
         sku Text
     }
 
-    actions {
+    operations {
         create createProduct() with (name, supplierCode, sku)
         update updateProduct(id) with (supplierCode?, sku?)
-        create createProductFn() with (name, supplierCode, sku) @function
-        update updateProductFn(id) with (supplierCode?, sku?) @function
+    }
+
+    functions {
+        create createProductFn() with (name, supplierCode, sku)
+        update updateProductFn(id) with (supplierCode?, sku?)
     }
 
     @unique([name, supplierCode])
@@ -23,7 +26,7 @@ model Publisher {
         country Country
     }
 
-    actions {
+    operations {
         create createPublisher() with (name, registrationNumber, country.id)
         update updatePublisher(id) with (registrationNumber?, country.id?)
     }

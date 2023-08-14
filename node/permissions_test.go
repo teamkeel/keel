@@ -29,8 +29,8 @@ func TestPermissionFnBuilder(t *testing.T) {
 						name Text
 					}
 
-					actions {
-						create createPost() with(name) @function
+					functions {
+						create createPost() with(name)
 					}
 				}
 			`,
@@ -49,8 +49,8 @@ module.exports.permissionFns = permissionFns;
 						name Text
 					}
 
-					actions {
-						create createPost() with(name) @function
+					functions {
+						create createPost() with(name)
 					}
 
 					@permission(expression: true, actions: [list, update, get, create, delete])
@@ -82,8 +82,8 @@ module.exports.permissionFns = permissionFns;
 						publishDate Date
 					}
 
-					actions {
-						get getPost(id) @function
+					functions {
+						get getPost(id)
 					}
 
 					@permission(expression: post.publishDate <= ctx.now , actions: [get])
@@ -115,10 +115,9 @@ module.exports.permissionFns = permissionFns;
 						title Text
 						identity Identity
 					}
-					actions {
+					functions {
 						update updatePost() with(title) {
 							@permission(expression: post.identity.email == "adam@keel.xyz")
-							@function
 						}
 					}
 				}
@@ -149,10 +148,9 @@ module.exports.permissionFns = permissionFns;
 					fields {
 						viewCount Number
 					}
-					actions {
+					functions {
 						get getPost(id) {
 							@permission(expression: post.viewCount < 10)
-							@function
 						}
 					}
 				}
@@ -183,10 +181,9 @@ module.exports.permissionFns = permissionFns;
 						title Text
 						identity Identity
 					}
-					actions {
+					functions {
 						update updatePost() with(title) {
 							@permission(expression: post.identity == ctx.identity)
-							@function
 						}
 					}
 				}
@@ -217,10 +214,9 @@ module.exports.permissionFns = permissionFns;
 						title Text
 						identity Identity
 					}
-					actions {
+					functions {
 						update updatePost() with(title) {
 							@permission(expression: post.identity.email == ctx.identity.email)
-							@function
 						}
 					}
 				}
@@ -252,10 +248,9 @@ module.exports.permissionFns = permissionFns;
 						title Text
 						identity Identity
 					}
-					actions {
+					functions {
 						update createPost() with(title) {
 							@permission(expression: ctx.isAuthenticated)
-							@function
 						}
 					}
 				}
@@ -286,10 +281,9 @@ module.exports.permissionFns = permissionFns;
 					fields {
 						secretKey Text
 					}
-					actions {
+					functions {
 						get getPost(id) {
 							@permission(expression: ctx.headers.secretkey == post.secretKey)
-							@function
 						}
 					}
 				}
@@ -319,10 +313,9 @@ module.exports.permissionFns = permissionFns;
 					fields {
 						secretKey Text
 					}
-					actions {
+					functions {
 						get getPost(id) {
 							@permission(expression: ctx.secrets.SECRET_KEY == post.secretKey)
-							@function
 						}
 					}
 				}

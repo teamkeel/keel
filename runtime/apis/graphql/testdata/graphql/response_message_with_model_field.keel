@@ -9,7 +9,7 @@ model Person {
         name Text
     }
 
-    actions {
+    functions {
         read inClassroom(classId: ID) returns (ClassroomPeople)
     }
 }

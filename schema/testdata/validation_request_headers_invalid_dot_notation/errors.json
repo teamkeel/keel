@@ -6,13 +6,13 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_request_headers_invalid_dot_notation/schema.keel",
-        "offset": 190,
+        "offset": 193,
         "line": 8,
         "column": 76
       },
       "endPos": {
         "filename": "testdata/validation_request_headers_invalid_dot_notation/schema.keel",
-        "offset": 194,
+        "offset": 197,
         "line": 8,
         "column": 80
       }

@@ -3,7 +3,7 @@ model Person {
         name Text
     }
 
-    actions {
+    operations {
         get getPerson(personId: ID) {
             @where(person.id == personId)
         }

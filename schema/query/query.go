@@ -3,6 +3,7 @@ package query
 import (
 	"strings"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -211,35 +212,30 @@ func UserDefinedTypes(asts []*parser.AST) (res []string) {
 	return res
 }
 
-// ModelCreateActions returns all the actions in the given model, which
-// are create-type actions.
-func ModelCreateActions(model *parser.ModelNode, filters ...ModelActionFilter) (res []*parser.ActionNode) {
-	allFilters := []ModelActionFilter{}
-	allFilters = append(allFilters, filters...)
-	allFilters = append(allFilters, func(a *parser.ActionNode) bool {
-		return a.Type.Value == parser.ActionTypeCreate
-	})
-	return ModelActions(model, allFilters...)
+func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
+	return append(ModelOperations(model), ModelFunctions(model)...)
 }
 
-type ModelActionFilter func(a *parser.ActionNode) bool
+// ModelCreateOperations returns all the operations in the given model, which
+// are create-type actions.
+func ModelCreateOperations(model *parser.ModelNode) (res []*parser.ActionNode) {
+	allActions := ModelOperations(model)
+	return lo.Filter(allActions, func(a *parser.ActionNode, _ int) bool {
+		return a.Type.Value == parser.ActionTypeCreate
+	})
+}
 
-func ModelActions(model *parser.ModelNode, filters ...ModelActionFilter) (res []*parser.ActionNode) {
+func ModelOperations(model *parser.ModelNode) (res []*parser.ActionNode) {
 	for _, section := range model.Sections {
-		if section.Actions != nil && len(section.Actions) > 0 {
-		actions:
-			for _, action := range section.Actions {
-				for _, filter := range filters {
-					if !filter(action) {
-						continue actions
-					}
-				}
-
-				res = append(res, action)
-			}
-		}
+		res = append(res, section.Operations...)
 	}
+	return res
+}
 
+func ModelFunctions(model *parser.ModelNode) (res []*parser.ActionNode) {
+	for _, section := range model.Sections {
+		res = append(res, section.Functions...)
+	}
 	return res
 }
 
@@ -266,7 +262,6 @@ func ModelFields(model *parser.ModelNode, filters ...ModelFieldFilter) (res []*p
 			res = append(res, field)
 		}
 	}
-
 	return res
 }
 

@@ -53,13 +53,9 @@ func TestModelWithFunctions(t *testing.T) {
 		  name Text
 		  books Book[]
 		}
-		actions {
-		  create createAuthor(name) {
-				@function
-			}
-		  get author(id) {
-				@function
-			}
+		functions {
+		  create createAuthor(name)
+		  get author(id)
 		}
 	  }`})
 	assert.Equal(t, "Author", schema.Declarations[0].Model.Name.Value)
@@ -71,15 +67,15 @@ func TestModelWithFunctions(t *testing.T) {
 	assert.Equal(t, "Book", schema.Declarations[0].Model.Sections[0].Fields[1].Type.Value)
 	assert.Equal(t, true, schema.Declarations[0].Model.Sections[0].Fields[1].Repeated)
 
-	assert.Equal(t, "create", schema.Declarations[0].Model.Sections[1].Actions[0].Type.Value)
-	assert.Equal(t, "createAuthor", schema.Declarations[0].Model.Sections[1].Actions[0].Name.Value)
-	assert.Len(t, schema.Declarations[0].Model.Sections[1].Actions[0].Inputs, 1)
-	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[1].Actions[0].Inputs[0].Type.Fragments[0].Fragment)
+	assert.Equal(t, "create", schema.Declarations[0].Model.Sections[1].Functions[0].Type.Value)
+	assert.Equal(t, "createAuthor", schema.Declarations[0].Model.Sections[1].Functions[0].Name.Value)
+	assert.Len(t, schema.Declarations[0].Model.Sections[1].Functions[0].Inputs, 1)
+	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[1].Functions[0].Inputs[0].Type.Fragments[0].Fragment)
 
-	assert.Equal(t, "get", schema.Declarations[0].Model.Sections[1].Actions[1].Type.Value)
-	assert.Equal(t, "author", schema.Declarations[0].Model.Sections[1].Actions[1].Name.Value)
-	assert.Len(t, schema.Declarations[0].Model.Sections[1].Actions[1].Inputs, 1)
-	assert.Equal(t, "id", schema.Declarations[0].Model.Sections[1].Actions[1].Inputs[0].Type.Fragments[0].Fragment)
+	assert.Equal(t, "get", schema.Declarations[0].Model.Sections[1].Functions[1].Type.Value)
+	assert.Equal(t, "author", schema.Declarations[0].Model.Sections[1].Functions[1].Name.Value)
+	assert.Len(t, schema.Declarations[0].Model.Sections[1].Functions[1].Inputs, 1)
+	assert.Equal(t, "id", schema.Declarations[0].Model.Sections[1].Functions[1].Inputs[0].Type.Fragments[0].Fragment)
 }
 
 func TestModelWithFieldAttributes(t *testing.T) {
@@ -92,16 +88,10 @@ func TestModelWithFieldAttributes(t *testing.T) {
 		  }
 		  authors Author[]
 		}
-		actions {
-		  create createBook(title, authors) {
-				@function
-			}
-		  get book(id) {
-				@function
-			}
-		  get bookByIsbn(isbn) {
-				@function
-			}
+		functions {
+		  create createBook(title, authors)
+		  get book(id)
+		  get bookByIsbn(isbn)
 		}
 	  }`})
 	assert.Len(t, schema.Declarations[0].Model.Sections[0].Fields[1].Attributes, 1)
@@ -148,13 +138,9 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 		  books Book[]
 		}
 
-		actions {
-		  create createAuthor(name) {
-				@function
-			}
-		  get author(id) {
-				@function
-			}
+		functions {
+		  create createAuthor(name)
+		  get author(id)
 		}
 
 		@permission(
@@ -196,13 +182,9 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 		  books Book[]
 		}
 
-		actions {
-		  create createAuthor(name) {
-				@function
-			}
-		  get author(id) {
-				@function
-			}
+		functions {
+		  create createAuthor(name)
+		  get author(id)
 		}
 
 		@permission(
@@ -236,14 +218,14 @@ model Author {
         surname Text
     }
 
-    actions {
+    operations {
         list listAuthors() {
             @orderBy(firstName: asc, surname: desc)
         }
     }
 }`})
 
-	attribute := schema.Declarations[0].Model.Sections[1].Actions[0].Attributes[0]
+	attribute := schema.Declarations[0].Model.Sections[1].Operations[0].Attributes[0]
 
 	assert.Equal(t, "orderBy", attribute.Name.Value)
 
@@ -272,14 +254,14 @@ model Author {
         surname Text
     }
 
-    actions {
+    operations {
         list listAuthors() {
             @sortable(firstName, surname)
         }
     }
 }`})
 
-	attribute := schema.Declarations[0].Model.Sections[1].Actions[0].Attributes[0]
+	attribute := schema.Declarations[0].Model.Sections[1].Operations[0].Attributes[0]
 
 	assert.Equal(t, "sortable", attribute.Name.Value)
 
@@ -368,10 +350,8 @@ func TestArbitraryFunctions(t *testing.T) {
 		name Text
 	}
 	model Person {
-		actions {
-			read myThing(MyInput) returns (MyOutput) {
-				@function
-			}
+		functions {
+			read myThing(MyInput) returns (MyOutput)
 		}
 	}`})
 
@@ -381,8 +361,8 @@ func TestArbitraryFunctions(t *testing.T) {
 	assert.Equal(t, "MyOutput", myOutput)
 	model := schema.Declarations[2].Model
 	assert.Equal(t, "Person", model.Name.Value)
-	assert.Equal(t, "MyInput", model.Sections[0].Actions[0].Inputs[0].Type.Fragments[0].Fragment)
-	assert.Equal(t, "MyOutput", model.Sections[0].Actions[0].Returns[0].Type.Fragments[0].Fragment)
+	assert.Equal(t, "MyInput", model.Sections[0].Functions[0].Inputs[0].Type.Fragments[0].Fragment)
+	assert.Equal(t, "MyOutput", model.Sections[0].Functions[0].Returns[0].Type.Fragments[0].Fragment)
 }
 
 func TestArbitraryFunctionsNestedMessage(t *testing.T) {
@@ -397,10 +377,8 @@ func TestArbitraryFunctionsNestedMessage(t *testing.T) {
 		name Text
 	}
 	model Person {
-		actions {
-			read myThing(MyInput) returns (MyOutput) {
-				@function
-			}
+		functions {
+			read myThing(MyInput) returns (MyOutput)
 		}
 	}`})
 

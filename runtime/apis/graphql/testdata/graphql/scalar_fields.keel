@@ -5,7 +5,7 @@ model Person {
         someText Text
     }
 
-    actions {
+    operations {
         get getPerson(id)
     }
 }

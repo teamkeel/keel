@@ -3,7 +3,7 @@ message Foo {
 }
 
 model Person {
-  actions {
+  functions {
     read getPerson(id) returns (Foo)
   }
 }

@@ -2,7 +2,7 @@ message Foo {
   bar Text
 }
 model Person {
-  actions {
+  functions {
     read getPerson(Foo)        returns(Foo)
     write        mutatePerson(Foo) returns (           Foo      )
   }
@@ -13,7 +13,7 @@ message Foo {
 }
 
 model Person {
-    actions {
+    functions {
         read getPerson(Foo) returns (Foo)
         write mutatePerson(Foo) returns (Foo)
     }

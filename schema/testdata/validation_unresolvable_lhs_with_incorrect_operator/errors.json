@@ -6,13 +6,13 @@
       "code": "E022",
       "pos": {
         "filename": "testdata/validation_unresolvable_lhs_with_incorrect_operator/schema.keel",
-        "offset": 123,
+        "offset": 126,
         "line": 9,
         "column": 26
       },
       "endPos": {
         "filename": "testdata/validation_unresolvable_lhs_with_incorrect_operator/schema.keel",
-        "offset": 124,
+        "offset": 127,
         "line": 9,
         "column": 27
       }

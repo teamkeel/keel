@@ -6,13 +6,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_create_missing_identity_nested/schema.keel",
-        "offset": 186,
+        "offset": 189,
         "line": 15,
         "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_create_missing_identity_nested/schema.keel",
-        "offset": 196,
+        "offset": 199,
         "line": 15,
         "column": 26
       }
@@ -23,13 +23,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_create_missing_identity_nested/schema.keel",
-        "offset": 317,
+        "offset": 323,
         "line": 25,
         "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_create_missing_identity_nested/schema.keel",
-        "offset": 330,
+        "offset": 336,
         "line": 25,
         "column": 29
       }

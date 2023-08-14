@@ -4,7 +4,7 @@ model Todo {
         identity Identity
     }
 
-    actions {
+    operations {
         create createTodo() with (name)
     }
 }

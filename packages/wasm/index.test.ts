@@ -175,7 +175,7 @@ model Person {
   fields {
     name Text
   }
-  actions {
+  operations {
     list getPeople(name) 
   }
 }

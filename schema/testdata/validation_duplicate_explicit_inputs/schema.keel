@@ -3,13 +3,14 @@ model B {
         name Text
     }
 
-    actions {
+    operations {
         list list(name, name: Text)
         list listExplicits(something: Text, something: Text)
     }
 
-    actions {
+    functions {
         list listFn(name, name: Text)
         list listExplicitsFn(something: Text, something: Text)
     }
 }
+

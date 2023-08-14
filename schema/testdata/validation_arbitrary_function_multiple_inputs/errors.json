@@ -6,13 +6,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_arbitrary_function_multiple_inputs/schema.keel",
-        "offset": 127,
+        "offset": 129,
         "line": 15,
         "column": 20
       },
       "endPos": {
         "filename": "testdata/validation_arbitrary_function_multiple_inputs/schema.keel",
-        "offset": 130,
+        "offset": 132,
         "line": 15,
         "column": 23
       }
@@ -23,13 +23,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_arbitrary_function_multiple_inputs/schema.keel",
-        "offset": 132,
+        "offset": 134,
         "line": 15,
         "column": 25
       },
       "endPos": {
         "filename": "testdata/validation_arbitrary_function_multiple_inputs/schema.keel",
-        "offset": 135,
+        "offset": 137,
         "line": 15,
         "column": 28
       }

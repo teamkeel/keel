@@ -1,5 +1,5 @@
 model Person {
-    actions {
+    operations {
         get testAction(id)
     }
 }

@@ -165,8 +165,8 @@ type graphqlSchemaBuilder struct {
 // build returns a graphql.Schema that implements the given API.
 func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*graphql.Schema, error) {
 	// The graphql top level query contents will be comprised ONLY of the
-	// actions from the keel schema. But to find these we have to traverse the
-	// schema, first by model, then by said model's actions. As a side effect
+	// OPERATIONS from the keel schema. But to find these we have to traverse the
+	// schema, first by model, then by said model's operations. As a side effect
 	// we must define graphl types for the models involved.
 
 	namesOfModelsUsedByAPI := lo.Map(api.ApiModels, func(m *proto.ApiModel, _ int) string {
@@ -176,9 +176,8 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 	modelInstances := proto.FindModels(mk.proto.Models, namesOfModelsUsedByAPI)
 
 	for _, model := range modelInstances {
-		for _, action := range model.Actions {
-			err := mk.addAction(action, schema)
-
+		for _, op := range model.Operations {
+			err := mk.addOperation(op, schema)
 			if err != nil {
 				return nil, err
 			}
@@ -344,7 +343,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						return nil, err
 					}
 
-					authorised, err := actions.AuthoriseForActionType(scope, proto.ActionType_ACTION_TYPE_GET, []map[string]any{result})
+					authorised, err := actions.AuthoriseForActionType(scope, proto.OperationType_OPERATION_TYPE_GET, []map[string]any{result})
 					if err != nil {
 						span.RecordError(err, trace.WithStackTrace(true))
 						span.SetStatus(codes.Error, err.Error())
@@ -388,7 +387,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						return nil, err
 					}
 
-					authorised, err := actions.AuthoriseForActionType(scope, proto.ActionType_ACTION_TYPE_LIST, results)
+					authorised, err := actions.AuthoriseForActionType(scope, proto.OperationType_OPERATION_TYPE_LIST, results)
 					if err != nil {
 						span.RecordError(err, trace.WithStackTrace(true))
 						span.SetStatus(codes.Error, err.Error())
@@ -420,22 +419,22 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 	return object, nil
 }
 
-// addOperation generates the graphql field object to represent the given proto.Action
-func (mk *graphqlSchemaBuilder) addAction(
-	action *proto.Action,
+// addOperation generates the graphql field object to represent the given proto.Operation
+func (mk *graphqlSchemaBuilder) addOperation(
+	op *proto.Operation,
 	schema *proto.Schema) error {
 
-	model := proto.FindModel(schema.Models, action.ModelName)
+	model := proto.FindModel(schema.Models, op.ModelName)
 	modelType, err := mk.addModel(model)
 	if err != nil {
 		return err
 	}
 
 	field := &graphql.Field{
-		Name: action.Name,
+		Name: op.Name,
 	}
 
-	operationInputType, allOptionalInputs, err := mk.makeActionInputType(action)
+	operationInputType, allOptionalInputs, err := mk.makeOperationInputType(op)
 	if err != nil {
 		return err
 	}
@@ -457,7 +456,7 @@ func (mk *graphqlSchemaBuilder) addAction(
 				},
 			}
 		}
-	} else if action.InputMessageName == parser.MessageFieldTypeAny {
+	} else if op.InputMessageName == parser.MessageFieldTypeAny {
 		// Any type
 		field.Args = graphql.FieldConfigArgument{
 			"input": &graphql.ArgumentConfig{
@@ -466,26 +465,26 @@ func (mk *graphqlSchemaBuilder) addAction(
 		}
 	}
 
-	switch action.Type {
-	case proto.ActionType_ACTION_TYPE_GET:
+	switch op.Type {
+	case proto.OperationType_OPERATION_TYPE_GET:
 		field.Type = modelType
-		mk.query.AddFieldConfig(action.Name, field)
-	case proto.ActionType_ACTION_TYPE_CREATE,
-		proto.ActionType_ACTION_TYPE_UPDATE:
+		mk.query.AddFieldConfig(op.Name, field)
+	case proto.OperationType_OPERATION_TYPE_CREATE,
+		proto.OperationType_OPERATION_TYPE_UPDATE:
 		field.Type = graphql.NewNonNull(modelType)
-		mk.mutation.AddFieldConfig(action.Name, field)
-	case proto.ActionType_ACTION_TYPE_DELETE:
+		mk.mutation.AddFieldConfig(op.Name, field)
+	case proto.OperationType_OPERATION_TYPE_DELETE:
 		field.Type = deleteResponseType
-		mk.mutation.AddFieldConfig(action.Name, field)
-	case proto.ActionType_ACTION_TYPE_LIST:
+		mk.mutation.AddFieldConfig(op.Name, field)
+	case proto.OperationType_OPERATION_TYPE_LIST:
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
 		field.Type = mk.makeConnectionType(modelType)
-		mk.query.AddFieldConfig(action.Name, field)
-	case proto.ActionType_ACTION_TYPE_READ:
-		responseMessage := proto.FindMessage(schema.Messages, action.ResponseMessageName)
+		mk.query.AddFieldConfig(op.Name, field)
+	case proto.OperationType_OPERATION_TYPE_READ:
+		responseMessage := proto.FindMessage(schema.Messages, op.ResponseMessageName)
 		if responseMessage == nil {
-			return fmt.Errorf("response message does not exist: %s", action.ResponseMessageName)
+			return fmt.Errorf("response message does not exist: %s", op.ResponseMessageName)
 		}
 
 		if responseMessage.Name == parser.MessageFieldTypeAny {
@@ -497,22 +496,22 @@ func (mk *graphqlSchemaBuilder) addAction(
 			}
 		}
 
-		mk.query.AddFieldConfig(action.Name, field)
-	case proto.ActionType_ACTION_TYPE_WRITE:
-		responseMessage := proto.FindMessage(schema.Messages, action.ResponseMessageName)
+		mk.query.AddFieldConfig(op.Name, field)
+	case proto.OperationType_OPERATION_TYPE_WRITE:
+		responseMessage := proto.FindMessage(schema.Messages, op.ResponseMessageName)
 		if responseMessage == nil {
-			return fmt.Errorf("response message does not exist: %s", action.ResponseMessageName)
+			return fmt.Errorf("response message does not exist: %s", op.ResponseMessageName)
 		}
 		field.Type, err = mk.addMessage(responseMessage)
 		if err != nil {
 			return err
 		}
-		mk.mutation.AddFieldConfig(action.Name, field)
+		mk.mutation.AddFieldConfig(op.Name, field)
 	default:
-		return fmt.Errorf("addAction() does not yet support this action type: %v", action.Type)
+		return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
 	}
 
-	field.Resolve = ActionFunc(schema, action)
+	field.Resolve = ActionFunc(schema, op)
 
 	return nil
 }
@@ -753,7 +752,7 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 }
 
 // inputTypeFromMessageField maps the type in the given proto.MessageField to a suitable graphql.Input type.
-func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageField, action *proto.Action) (graphql.Input, error) {
+func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageField, op *proto.Operation) (graphql.Input, error) {
 	var in graphql.Input
 	var err error
 
@@ -780,7 +779,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		})
 
 		for _, input := range message.Fields {
-			inputField, err := mk.inputTypeFromMessageField(input, action)
+			inputField, err := mk.inputTypeFromMessageField(input, op)
 			if err != nil {
 				return nil, err
 			}
@@ -807,7 +806,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 			for _, typeField := range fieldMessage.Fields {
 				typeField.Optional = true
 				typeField.Nullable = true
-				inputField, err := mk.inputTypeFromMessageField(typeField, action)
+				inputField, err := mk.inputTypeFromMessageField(typeField, op)
 				if err != nil {
 					return nil, err
 				}
@@ -863,10 +862,10 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(field *proto.MessageField) (graphql
 	return in, nil
 }
 
-// makeActionInputType generates an input type to reflect the inputs of the given
-// proto.Action - which can be used as the Args field in a graphql.Field.
-func (mk *graphqlSchemaBuilder) makeActionInputType(action *proto.Action) (*graphql.InputObject, bool, error) {
-	message := proto.FindMessage(mk.proto.Messages, action.InputMessageName)
+// makeOperationInputType generates an input type to reflect the inputs of the given
+// proto.Operation - which can be used as the Args field in a graphql.Field.
+func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*graphql.InputObject, bool, error) {
+	message := proto.FindMessage(mk.proto.Messages, op.InputMessageName)
 	allOptionalInputs := true
 
 	inputType := graphql.NewInputObject(graphql.InputObjectConfig{
@@ -875,7 +874,7 @@ func (mk *graphqlSchemaBuilder) makeActionInputType(action *proto.Action) (*grap
 	})
 
 	for _, field := range message.Fields {
-		fieldType, err := mk.inputTypeFromMessageField(field, action)
+		fieldType, err := mk.inputTypeFromMessageField(field, op)
 		if err != nil {
 			return nil, false, err
 		}

@@ -84,26 +84,26 @@
           }
         }
       ],
-      "actions": [
+      "operations": [
         {
           "modelName": "Person",
           "name": "listByCompany",
-          "type": "ACTION_TYPE_LIST",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "type": "OPERATION_TYPE_LIST",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputMessageName": "ListByCompanyInput"
         },
         {
           "modelName": "Person",
           "name": "listByPreviousCompany",
-          "type": "ACTION_TYPE_LIST",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "type": "OPERATION_TYPE_LIST",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputMessageName": "ListByPreviousCompanyInput"
         },
         {
           "modelName": "Person",
           "name": "listByCompanyOptionalInputs",
-          "type": "ACTION_TYPE_LIST",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "type": "OPERATION_TYPE_LIST",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputMessageName": "ListByCompanyOptionalInputsInput"
         }
       ]
@@ -235,28 +235,28 @@
           }
         }
       ],
-      "actions": [
+      "operations": [
         {
           "modelName": "Identity",
           "name": "authenticate",
-          "type": "ACTION_TYPE_WRITE",
-          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
-          "type": "ACTION_TYPE_WRITE",
-          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "RequestPasswordResetInput",
           "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
-          "type": "ACTION_TYPE_WRITE",
-          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "ResetPasswordInput",
           "responseMessageName": "ResetPasswordResponse"
         }

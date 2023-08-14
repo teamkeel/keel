@@ -5,7 +5,7 @@ model Post {
         theAuthor Author?
     }
 
-    actions {
+    operations {
         get getActivePost(id, theAuthor.thePublisher.isActive, theAuthor.isActive, isActive)
         list listActivePosts(theAuthor.thePublisher.isActive, theAuthor.isActive, isActive)
         get getPostModelsReferencedMoreThanOnce(id, theAuthor.thePublisher.theAuthors.thePosts.isActive)
@@ -34,7 +34,7 @@ model Publisher {
         isActive Boolean
     }
 
-    actions {
+    operations {
         get getActivePublisherWithActivePosts(id, theAuthors.thePosts.isActive, theAuthors.isActive, isActive)
         list listActivePublishersWithActivePosts(theAuthors.thePosts.isActive, theAuthors.isActive, isActive)
         delete deleteActivePublisherWithActivePosts(id, theAuthors.thePosts.isActive, theAuthors.isActive, isActive)

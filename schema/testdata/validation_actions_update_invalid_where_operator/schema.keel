@@ -3,7 +3,7 @@ model Person {
         name Text
         niNumber Number @unique
     }
-    actions {
+    operations {
         update updateName() with (name) {
             @where(person.niNumber > 100)
         }

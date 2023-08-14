@@ -4,7 +4,7 @@ model Post {
         theAuthor Author
     }
 
-    actions {
+    operations {
         create createPost() with (title, theAuthor.id)
         create createPostWithSet() with (title, explicitAuthorId: ID) {
             @set(post.theAuthor.id = explicitAuthorId)
@@ -30,7 +30,7 @@ model Author {
         thePosts Post[]
     }
 
-    actions {
+    operations {
         create createAuthor() with (name)
         get getAuthorByPost(id, thePosts.id)
         list listAuthors(thePosts.id)

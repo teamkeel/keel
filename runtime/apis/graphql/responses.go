@@ -6,7 +6,7 @@ import (
 
 // connectionResponse consumes the raw records returned by actions.List() (and similar),
 // and wraps them into a Node+Edges structure that is good for the connections pattern
-// return type and is expected by the GraphQL schema for the List action.
+// return type and is expected by the GraphQL schema for the List operation.
 // See https://relay.dev/graphql/connections.htm
 func connectionResponse(data map[string]any) (resp any, err error) {
 

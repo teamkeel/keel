@@ -6,13 +6,13 @@ model ModelWithActions {
         foo Text
     }
 
-    actions {
+    operations {
         create createModel() with (foo)
         list listModel()
         update updateModel(id) with (foo)
     }
 
-    actions {
+    functions {
         read readModel(Foo) returns (Foo)
     }
 }

@@ -3,7 +3,7 @@ model MyModel {
         text Text
     }
 
-    actions {
+    operations {
         delete deleteMyModel(text)
     }
 }

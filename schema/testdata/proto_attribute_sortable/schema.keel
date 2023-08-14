@@ -4,7 +4,7 @@ model Author {
         surname Text
     }
 
-    actions {
+    operations {
         list listAuthors() {
             @sortable(firstName, surname)
         }

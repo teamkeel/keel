@@ -6,13 +6,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 36,
+        "offset": 39,
         "line": 3,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 45,
+        "offset": 48,
         "line": 3,
         "column": 18
       }
@@ -23,13 +23,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 58,
+        "offset": 61,
         "line": 4,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 72,
+        "offset": 75,
         "line": 4,
         "column": 23
       }
@@ -40,13 +40,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 85,
+        "offset": 88,
         "line": 5,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 95,
+        "offset": 98,
         "line": 5,
         "column": 19
       }
@@ -57,13 +57,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 108,
+        "offset": 111,
         "line": 6,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 128,
+        "offset": 131,
         "line": 6,
         "column": 29
       }
@@ -74,13 +74,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 158,
+        "offset": 163,
         "line": 10,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 175,
+        "offset": 180,
         "line": 10,
         "column": 26
       }
@@ -91,13 +91,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 188,
+        "offset": 193,
         "line": 11,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 210,
+        "offset": 215,
         "line": 11,
         "column": 31
       }
@@ -108,13 +108,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 223,
+        "offset": 228,
         "line": 12,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 242,
+        "offset": 247,
         "line": 12,
         "column": 28
       }
@@ -125,13 +125,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 255,
+        "offset": 260,
         "line": 13,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_actions/schema.keel",
-        "offset": 284,
+        "offset": 289,
         "line": 13,
         "column": 38
       }

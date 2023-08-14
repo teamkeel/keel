@@ -3,7 +3,7 @@ model Profile {
         status Text
     }
 
-    actions {
+    operations {
         update updateStatus(id) with (status)
     }
 }
@@ -13,7 +13,7 @@ model Order {
         status Text
     }
 
-    actions {
+    operations {
         update updateStatus(id) with (status)
     }
 }

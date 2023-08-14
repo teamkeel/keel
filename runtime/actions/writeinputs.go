@@ -11,9 +11,9 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// Updates the query with all set attributes defined on the action.
+// Updates the query with all set attributes defined on the operation.
 func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
-	for _, setExpression := range scope.Action.SetExpressions {
+	for _, setExpression := range scope.Operation.SetExpressions {
 		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
 			return err
@@ -24,8 +24,8 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
-		lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, assignment.LHS)
-		rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, assignment.RHS)
+		lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Operation, assignment.LHS)
+		rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Operation, assignment.RHS)
 		operandType, err := lhsResolver.GetOperandType()
 		if err != nil {
 			return err
@@ -96,9 +96,9 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 	return nil
 }
 
-// Updates the query with all write inputs defined on the action.
+// Updates the query with all write inputs defined on the operation.
 func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any) error {
-	message := proto.FindValuesInputMessage(scope.Schema, scope.Action.Name)
+	message := proto.FindValuesInputMessage(scope.Schema, scope.Operation.Name)
 	if message == nil {
 		return nil
 	}

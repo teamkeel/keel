@@ -8,7 +8,7 @@ model Profile {
         }
     }
 
-    actions {
+    operations {
         get getProfile(username) {
             @where(profile.identity == ctx.identity, profile.username == "adaam2")
         }

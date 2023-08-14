@@ -6,9 +6,9 @@ model Person {
         number Number
     }
 
-    actions {
-        list listRequiredInputs(text, bool, enum, number) @function
-        list listOptionalInputs(text?, bool?, enum?, number?) @function
+    functions {
+        list listRequiredInputs(text, bool, enum, number)
+        list listOptionalInputs(text?, bool?, enum?, number?)
     }
 
     @permission(
@@ -25,9 +25,9 @@ model PersonOptionalFields {
         number Number?
     }
 
-    actions {
-        list listOptionalFieldsWithRequiredInputs(text, bool, enum, number) @function
-        list listOptionalFieldsWithOptionalInputs(text?, bool?, enum?, number?) @function
+    functions {
+        list listOptionalFieldsWithRequiredInputs(text, bool, enum, number)
+        list listOptionalFieldsWithOptionalInputs(text?, bool?, enum?, number?)
     }
 
     @permission(

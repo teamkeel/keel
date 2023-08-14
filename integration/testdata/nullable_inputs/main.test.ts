@@ -4,7 +4,7 @@ import { Status } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
-test("create action - null values", async () => {
+test("create operation - null values", async () => {
   const identity = await models.identity.create({
     email: "dave@keel.xyz",
     password: "123",
@@ -32,7 +32,7 @@ test("create action - null values", async () => {
   expect(getPerson!.employerId).toBeNull();
 });
 
-test("nested create action - null values", async () => {
+test("nested create operation - null values", async () => {
   const identity = await models.identity.create({
     email: "dave@keel.xyz",
     password: "123",
@@ -54,7 +54,7 @@ test("nested create action - null values", async () => {
   expect(getCompany!.tradingAs).toBeNull();
 });
 
-test("update action - null values", async () => {
+test("update operation - null values", async () => {
   const identity = await models.identity.create({
     email: "dave@keel.xyz",
     password: "123",
@@ -91,7 +91,7 @@ test("update action - null values", async () => {
   expect(updatedPerson!.employerId).toBeNull();
 });
 
-test("list action - null values", async () => {
+test("list operation - null values", async () => {
   const identity = await models.identity.create({
     email: "dave@keel.xyz",
     password: "123",

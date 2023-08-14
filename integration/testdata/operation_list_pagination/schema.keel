@@ -3,7 +3,7 @@ model Post {
         title Text
     }
 
-    actions {
+    operations {
         list listPosts()
     }
 

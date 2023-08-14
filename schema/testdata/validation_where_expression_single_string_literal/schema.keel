@@ -4,9 +4,10 @@ model Post {
     published Boolean
   }
 
-  actions {
+  operations {
     get posts(id) {
       @where("something")
     }
   }
 }
+

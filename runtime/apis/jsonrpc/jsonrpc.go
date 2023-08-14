@@ -78,8 +78,8 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			attribute.String("api.protocol", "RPC"),
 		)
 
-		action := proto.FindAction(p, actionName)
-		if action == nil {
+		op := proto.FindOperation(p, actionName)
+		if op == nil {
 			span.SetStatus(codes.Error, "action not found")
 			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
 				JsonRpc: "2.0",
@@ -91,7 +91,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			}, nil)
 		}
 
-		scope := actions.NewScope(ctx, action, p)
+		scope := actions.NewScope(ctx, op, p)
 
 		response, headers, err := actions.Execute(scope, inputs)
 		if err != nil {
