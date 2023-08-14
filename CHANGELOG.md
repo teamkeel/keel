@@ -1,3 +1,10 @@
+## [0.364.1](https://github.com/teamkeel/keel/compare/v0.364.0...v0.364.1) (2023-08-14)
+
+
+### Bug Fixes
+
+* revert actions schema changes from [#1077](https://github.com/teamkeel/keel/issues/1077) ([#1094](https://github.com/teamkeel/keel/issues/1094)) ([13b3aff](https://github.com/teamkeel/keel/commit/13b3affc5b498c8f808579d9c6048aa746335611))
+
 # [0.364.0](https://github.com/teamkeel/keel/compare/v0.363.2...v0.364.0) (2023-08-14)
 
 
