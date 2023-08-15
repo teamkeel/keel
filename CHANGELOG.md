@@ -1,3 +1,10 @@
+## [0.365.1](https://github.com/teamkeel/keel/compare/v0.365.0...v0.365.1) (2023-08-15)
+
+
+### Bug Fixes
+
+* implement check for unexpected arguments ([#1087](https://github.com/teamkeel/keel/issues/1087)) ([ff55b32](https://github.com/teamkeel/keel/commit/ff55b32e4cd07a51ddd82d0dca56a60d3f09007b))
+
 # [0.365.0](https://github.com/teamkeel/keel/compare/v0.364.3...v0.365.0) (2023-08-14)
 
 
