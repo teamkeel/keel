@@ -279,7 +279,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "unique": true
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -311,7 +313,10 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
