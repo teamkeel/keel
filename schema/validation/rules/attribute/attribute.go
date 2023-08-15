@@ -42,6 +42,14 @@ func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 		}
 	}
 
+	for _, job := range query.Jobs(asts) {
+		for _, section := range job.Sections {
+			if section.Attribute != nil {
+				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, "job", job.Name.Value))
+			}
+		}
+	}
+
 	for _, api := range query.APIs(asts) {
 		for _, section := range api.Sections {
 			if section.Attribute != nil {
@@ -57,6 +65,7 @@ var attributeLocations = map[string][]string{
 	parser.KeywordModel: {
 		parser.AttributePermission,
 		parser.AttributeUnique,
+		parser.AttributeOn,
 	},
 	parser.KeywordField: {
 		parser.AttributeUnique,
@@ -74,6 +83,10 @@ var attributeLocations = map[string][]string{
 	},
 	parser.KeywordFunction: {
 		parser.AttributePermission,
+	},
+	parser.KeywordJob: {
+		parser.AttributePermission,
+		parser.AttributeSchedule,
 	},
 }
 
