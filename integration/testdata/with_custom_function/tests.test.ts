@@ -189,7 +189,7 @@ test("unrecognised value in foreign key column", async () => {
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message: "the relationship lookup for field 'personId' does not exist",
+    message: "the record referenced in field 'personId' does not exist",
   });
 });
 
