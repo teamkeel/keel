@@ -1,0 +1,24 @@
+model Account {
+    fields {
+        name Text @on
+    }
+
+    operations {
+        create createAccount() with (name) {
+            @on([create], sendWelcomeMail)
+        }
+
+        list listAuthors()
+    }
+
+    functions {
+        update updateAuthor() {
+            @on([create], sendWelcomeMail)
+        }
+    }
+}
+
+job CheckAccount {
+    @permission(expression: ctx.isAuthenticated)
+    @on([create], sendWelcomeMail)
+}
