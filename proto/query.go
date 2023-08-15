@@ -416,18 +416,10 @@ func FindSubscriber(subscribers []*Subscriber, name string) *Subscriber {
 	return subscriber
 }
 
-// FindEventByName locates the event of the given name.
-func FindEventByName(subscribers []*Event, name string) *Event {
+// FindEvent locates the event of the given name.
+func FindEvent(subscribers []*Event, name string) *Event {
 	event, _ := lo.Find(subscribers, func(m *Event) bool {
 		return m.Name == name
-	})
-	return event
-}
-
-// FindModelActionEvent locates the event by its subscription parameters.
-func FindModelActionEvent(subscribers []*Event, model string, action OperationType) *Event {
-	event, _ := lo.Find(subscribers, func(m *Event) bool {
-		return m.OperationType == action && m.ModelName == model
 	})
 	return event
 }

@@ -41,7 +41,6 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 				scm.makeEnum(decl)
 			case decl.Job != nil:
 				scm.makeJob(decl)
-
 			case decl.Message != nil:
 				// noop
 			default:
@@ -1331,6 +1330,7 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 		subscriberArg, _ := attribute.Arguments[1].Expression.ToValue()
 		subscriberName := subscriberArg.Ident.Fragments[0].Fragment
 
+		// Create the subscriber if it has not yet been created yet.
 		subscriber := proto.FindSubscriber(scm.proto.Subscribers, subscriberName)
 		if subscriber == nil {
 			subscriber = &proto.Subscriber{
@@ -1341,12 +1341,14 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 			scm.proto.Subscribers = append(scm.proto.Subscribers, subscriber)
 		}
 
+		// For each event, add to the proto schema if it doesn't exist,
+		// and add it to the current subscriber's EventNames field.
 		actionTypesArg, _ := attribute.Arguments[0].Expression.ToValue()
 		for _, arg := range actionTypesArg.Array.Values {
 			actionType := arg.Ident.Fragments[0].Fragment
 			eventName := makeEventName(parserModel.Name.Value, actionType)
 
-			event := proto.FindEventByName(scm.proto.Events, eventName)
+			event := proto.FindEvent(scm.proto.Events, eventName)
 			if event == nil {
 				event = &proto.Event{
 					Name:          eventName,
@@ -1358,7 +1360,6 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 
 			subscriber.EventNames = append(subscriber.EventNames, eventName)
 		}
-
 	}
 }
 
@@ -1384,7 +1385,7 @@ func (scm *Builder) makeSubscriberInputMessages() {
 		scm.proto.Messages = append(scm.proto.Messages, message)
 
 		for _, eventName := range subscriber.EventNames {
-			event := proto.FindEventByName(scm.proto.Events, eventName)
+			event := proto.FindEvent(scm.proto.Events, eventName)
 
 			eventMessage := &proto.Message{
 				Name:   makeSubscriberMessageEventName(subscriber.Name, event.ModelName, mapToParserType(event.OperationType)),
