@@ -35,19 +35,36 @@
       }
     },
     {
-      "message": "function 'updateAuthor' has an unrecognised attribute @on",
+      "message": "function 'updateAccount' has an unrecognised attribute @on",
       "hint": "Did you mean @permission?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 268,
-        "line": 16,
+        "offset": 231,
+        "line": 14,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 271,
-        "line": 16,
+        "offset": 234,
+        "line": 14,
+        "column": 16
+      }
+    },
+    {
+      "message": "function 'updateAccount' has an unrecognised attribute @on",
+      "hint": "Did you mean @permission?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 264,
+        "line": 15,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 267,
+        "line": 15,
         "column": 16
       }
     },
@@ -57,14 +74,14 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 390,
-        "line": 23,
+        "offset": 372,
+        "line": 22,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 393,
-        "line": 23,
+        "offset": 375,
+        "line": 22,
         "column": 8
       }
     }

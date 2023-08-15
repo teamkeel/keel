@@ -5,20 +5,19 @@ model Account {
 
     operations {
         create createAccount() with (name) {
-            @on([create], sendWelcomeMail)
+            @on(sendWelcomeMail)
         }
-
-        list listAuthors()
     }
 
     functions {
-        update updateAuthor() {
-            @on([create], sendWelcomeMail)
+        update updateAccount() {
+            @on(sendWelcomeMail)
+            @on(verifyEmail)
         }
     }
 }
 
 job CheckAccount {
     @permission(expression: ctx.isAuthenticated)
-    @on([create], sendWelcomeMail)
+    @on(sendWelcomeMail)
 }
