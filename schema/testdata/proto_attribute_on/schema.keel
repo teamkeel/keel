@@ -1,0 +1,14 @@
+model Member {
+  fields {
+    name Text
+    email Text
+  }
+
+  operations {
+    create createMember() with (name, email)
+    update updateMember(id) with (email)
+  }
+
+  @on([create], sendWelcomeMail)
+  @on([create, update], verifyEmail)
+}

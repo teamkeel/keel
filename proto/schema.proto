@@ -15,6 +15,8 @@ message Schema {
     repeated Message messages = 6;
     repeated Secret secrets = 7;
     repeated Job jobs = 8;
+    repeated Subscriber subscribers = 9;
+    repeated Event events = 10;
 }
 
 message Model {
@@ -383,4 +385,30 @@ message Job {
 
 message Schedule {
     string expression = 1;
+}
+
+message Subscriber {
+    // The name of the subscriber function. e.g. sendWelcomeMail.
+    string name = 1;
+
+    // The input message for this function.
+    // The structure of this is determined by the events handled by this subscriber.
+    string input_message = 2;
+
+    // The events which are handled by this subscriber.
+    repeated string event_names = 3;
+}
+
+// Events that can be triggered based on what has been defined in the schema.
+// At the moment, we only support model-level events for create, update and delete mutations.
+// This can be extended to support other kinds of events.
+message Event {
+    // The name of this event, for example: account.created
+    string name = 1;
+
+    // The name of the model.
+    string model_name = 2;
+
+    // Action type (create, update or delete).
+    OperationType operation_type = 3;
 }
