@@ -1,3 +1,10 @@
+## [0.365.2](https://github.com/teamkeel/keel/compare/v0.365.1...v0.365.2) (2023-08-15)
+
+
+### Bug Fixes
+
+* foreign key missing error message copy ([#1100](https://github.com/teamkeel/keel/issues/1100)) ([4a17340](https://github.com/teamkeel/keel/commit/4a17340bd80a11730b77e3a474a7aaf715255a2e))
+
 ## [0.365.1](https://github.com/teamkeel/keel/compare/v0.365.0...v0.365.1) (2023-08-15)
 
 
