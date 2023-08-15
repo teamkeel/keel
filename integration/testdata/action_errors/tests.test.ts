@@ -21,8 +21,7 @@ test("create op - permitted, lookup fail - ERR_INVALID_INPUT", async () => {
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message:
-      "the relationship lookup for field 'lastUpdatedById' does not exist",
+    message: "the record referenced in field 'lastUpdatedById' does not exist",
   });
 });
 
@@ -53,8 +52,7 @@ test("create op - database permission, lookup failed - ERR_INVALID_INPUT", async
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message:
-      "the relationship lookup for field 'lastUpdatedById' does not exist",
+    message: "the record referenced in field 'lastUpdatedById' does not exist",
   });
 });
 
@@ -93,8 +91,7 @@ test("create func - permitted, lookup fail - ERR_INVALID_INPUT", async () => {
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message:
-      "the relationship lookup for field 'lastUpdatedById' does not exist",
+    message: "the record referenced in field 'lastUpdatedById' does not exist",
   });
 });
 
@@ -136,8 +133,7 @@ test("create func - database permission, lookup fail - ERR_INVALID_INPUT", async
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message:
-      "the relationship lookup for field 'lastUpdatedById' does not exist",
+    message: "the record referenced in field 'lastUpdatedById' does not exist",
   });
 });
 
@@ -151,8 +147,7 @@ test("create func - database permission, no identity - ERR_INVALID_INPUT", async
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message:
-      "the relationship lookup for field 'lastUpdatedById' does not exist",
+    message: "the record referenced in field 'lastUpdatedById' does not exist",
   });
 });
 
@@ -240,8 +235,7 @@ test("update op - permitted, lookup fail - ERR_INVALID_INPUT", async () => {
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message:
-      "the relationship lookup for field 'lastUpdatedById' does not exist",
+    message: "the record referenced in field 'lastUpdatedById' does not exist",
   });
 });
 
@@ -362,8 +356,7 @@ test("update func - permitted, lookup fail - ERR_INVALID_INPUT", async () => {
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message:
-      "the relationship lookup for field 'lastUpdatedById' does not exist",
+    message: "the record referenced in field 'lastUpdatedById' does not exist",
   });
 });
 
