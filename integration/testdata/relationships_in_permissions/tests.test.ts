@@ -254,6 +254,7 @@ test("permission expression in 1:M relationship - one Keelson post not active - 
   expect(getAuthor2!.id).toEqual(author2.id);
 });
 
+
 test("permission expression in 1:M relationship - all Keelsons post not active - authorization response on Keelson author", async () => {
   const author1 = await models.author.create({
     name: "Keelson",

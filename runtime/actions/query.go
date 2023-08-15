@@ -212,11 +212,13 @@ func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 		},
 	}
 
-	if len(opts) > 0 {
-		for _, o := range opts {
-			o(qb)
-		}
-	}
+	// opts = append(opts, WithJoinType(JoinTypeLeft))
+
+	// if len(opts) > 0 {
+	// 	for _, o := range opts {
+	// 		o(qb)
+	// 	}
+	// }
 
 	return qb
 }
