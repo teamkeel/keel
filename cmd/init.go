@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -12,6 +13,12 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Args:  cobra.RangeArgs(0, 1),
 	Short: "Initializes a new Keel project",
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) > 0 {
+			return fmt.Errorf("unexpected arguments: %v", args)
+		}
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		cwd, err := os.Getwd()
 		if err != nil {
