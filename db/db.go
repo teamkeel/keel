@@ -44,6 +44,8 @@ type Database interface {
 	ExecuteStatement(ctx context.Context, sql string, values ...any) (*ExecuteStatementResult, error)
 	// Runs fn inside a transaction which is commited if fn returns a nil error
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
+	// Enables the capturing of the auditing context
+	WithAuditing() Database
 	Close() error
 	GetDB() *gorm.DB
 }

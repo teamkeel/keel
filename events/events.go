@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -68,8 +68,8 @@ func SendEvents(ctx context.Context) error {
 	traceparent := util.GetTraceparent(spanContext)
 
 	identityId := ""
-	if runtimectx.IsAuthenticated(ctx) {
-		identity, err := runtimectx.GetIdentity(ctx)
+	if auth.IsAuthenticated(ctx) {
+		identity, err := auth.GetIdentity(ctx)
 		if err != nil {
 			return err
 		}

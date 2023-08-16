@@ -24,6 +24,7 @@ import (
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
@@ -161,7 +162,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
-			ctx = runtimectx.WithDatabase(ctx, database)
+			ctx = db.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
 
 			exporter, err := otlptracehttp.New(ctx, otlptracehttp.WithInsecure())
@@ -300,7 +301,7 @@ func HandleJobExecutorRequest(ctx context.Context, schema *proto.Schema, jobName
 	}
 
 	if identity != nil {
-		ctx = runtimectx.WithIdentity(ctx, identity)
+		ctx = auth.WithIdentity(ctx, identity)
 	}
 
 	var inputs map[string]any

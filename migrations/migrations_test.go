@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -44,6 +45,7 @@ func TestMigrations(t *testing.T) {
 	}()
 
 	for _, testCase := range testCases {
+
 		t.Run(strings.TrimSuffix(testCase.Name(), ".txt"), func(t *testing.T) {
 
 			// Make a database name for this test
@@ -84,7 +86,8 @@ func TestMigrations(t *testing.T) {
 				currProto = protoSchema(t, currSchema)
 				m, err := migrations.New(context, currProto, database)
 				require.NoError(t, err)
-				require.NoError(t, m.Apply(context))
+				err = m.Apply(context)
+				require.NoError(t, err)
 			}
 
 			// Create the new proto
@@ -100,6 +103,10 @@ func TestMigrations(t *testing.T) {
 
 			// Assert correct SQL generated
 			assert.Equal(t, expectedSQL, m.SQL)
+
+			if expectedSQL != m.SQL {
+				fmt.Printf("XXXX actual for %s is \n%s\n", testCase.Name(), m.SQL)
+			}
 
 			actualChanges, err := json.Marshal(m.Changes)
 			require.NoError(t, err)

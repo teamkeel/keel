@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
-	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/runtime/auth"
 )
 
 type authorisationTestCase struct {
@@ -45,7 +45,7 @@ func AuthorisationDeniedEarly() *earlyAuthorisationResult {
 	return &earlyAuthorisationResult{authorised: false}
 }
 
-var identity = &runtimectx.Identity{
+var identity = &auth.Identity{
 	Id:    "identityId",
 	Email: "keelson@keel.xyz",
 }
@@ -924,7 +924,7 @@ func TestPermissionQueryBuilder(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 
 			ctx := context.Background()
-			ctx = runtimectx.WithIdentity(ctx, identity)
+			ctx = auth.WithIdentity(ctx, identity)
 
 			scope, _, _, err := generateQueryScope(ctx, testCase.keelSchema, testCase.actionName)
 			if err != nil {

@@ -306,54 +306,10 @@ func (scm *Builder) insertForeignKeyFields(
 }
 
 func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
-	// we need to add a composite unique attribute on email + issuer
-	// unfortunately this is the only way to do it prior to proto generation
-	emailUniqueAttributeNode := &parser.AttributeNode{
-		Name: parser.AttributeNameToken{
-			Value: parser.AttributeUnique,
-		},
-		Arguments: []*parser.AttributeArgumentNode{
-			{
-				Expression: &parser.Expression{
-					Or: []*parser.OrExpression{
-						{
-							And: []*parser.ConditionWrap{
-								{
-									Condition: &parser.Condition{
-										LHS: &parser.Operand{
-											Array: &parser.Array{
-												Values: []*parser.Operand{
-													{
-														Ident: &parser.Ident{
-															Fragments: []*parser.IdentFragment{
-																{
-																	Fragment: "email",
-																},
-															},
-														},
-													},
-													{
-														Ident: &parser.Ident{
-															Fragments: []*parser.IdentFragment{
-																{
-																	Fragment: "issuer",
-																},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
+	scm.insertIdentityModel(declarations, schemaFile)
+}
 
+func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile reader.SchemaFile) {
 	declaration := &parser.DeclarationNode{
 		Model: &parser.ModelNode{
 			BuiltIn: true,
@@ -430,14 +386,20 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 	declaration.Model.Sections = append(declaration.Model.Sections, section)
 
 	uniqueModelSection := &parser.ModelSectionNode{
-		Attribute: emailUniqueAttributeNode,
+		Attribute: emailUniqueAttributeNode(),
 	}
 
 	declaration.Model.Sections = append(declaration.Model.Sections, uniqueModelSection)
 
 	declarations.Declarations = append(declarations.Declarations, declaration)
 
-	// Making the identity model and actions available on all APIs
+	// Making the identity model and operations available on all APIs
+
+	// Note this only applies to API's that the user has defined in their schema.
+	// You could say we "sneak the Identity model in to those APIs"/
+	//
+	// However, if the schema doesn't have any API's defined - there is code elsewhere that creates
+	// a default API for you - and that includes ALL models (which include the new auto generated Audit model.)
 	for _, d := range declarations.Declarations {
 		if d.API != nil {
 			for _, s := range d.API.Sections {
@@ -467,4 +429,54 @@ func (scm *Builder) addSecrets(declarations *parser.AST) {
 	}
 
 	declarations.Secrets = append(declarations.Secrets, scm.Config.AllSecrets()...)
+}
+
+func emailUniqueAttributeNode() *parser.AttributeNode {
+	// we need to add a composite unique attribute on email + issuer
+	// unfortunately this is the only way to do it prior to proto generation
+	return &parser.AttributeNode{
+		Name: parser.AttributeNameToken{
+			Value: parser.AttributeUnique,
+		},
+		Arguments: []*parser.AttributeArgumentNode{
+			{
+				Expression: &parser.Expression{
+					Or: []*parser.OrExpression{
+						{
+							And: []*parser.ConditionWrap{
+								{
+									Condition: &parser.Condition{
+										LHS: &parser.Operand{
+											Array: &parser.Array{
+												Values: []*parser.Operand{
+													{
+														Ident: &parser.Ident{
+															Fragments: []*parser.IdentFragment{
+																{
+																	Fragment: "email",
+																},
+															},
+														},
+													},
+													{
+														Ident: &parser.Ident{
+															Fragments: []*parser.IdentFragment{
+																{
+																	Fragment: "issuer",
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 }
