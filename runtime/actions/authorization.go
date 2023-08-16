@@ -8,8 +8,8 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/expressions"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -157,7 +157,7 @@ func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionR
 // given list of permissions that passes.
 func resolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permission *proto.PermissionRule) (bool, error) {
 	// If there is no authenticated user, then no role permissions can be satisfied.
-	if !runtimectx.IsAuthenticated(ctx) {
+	if !auth.IsAuthenticated(ctx) {
 		return false, nil
 	}
 
@@ -187,7 +187,7 @@ func resolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permis
 
 func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRule, input map[string]any) (*Statement, error) {
 	permissions = proto.PermissionsWithExpression(permissions)
-	query := NewQuery(scope.Model, WithJoinType(JoinTypeLeft))
+	query := NewQuery(scope.Context, scope.Model, WithJoinType(JoinTypeLeft))
 
 	// Implicit and explicit filters need to be included in the permissions query,
 	// otherwise we'll be testing against records which aren't part of the the result set
@@ -241,7 +241,7 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 // contains an authenticated user
 func getEmailAndDomain(ctx context.Context) (string, string, error) {
 	// Use the authenticated identity's id to lookup their email address.
-	identity, err := runtimectx.GetIdentity(ctx)
+	identity, err := auth.GetIdentity(ctx)
 	if err != nil {
 		return "", "", err
 	}

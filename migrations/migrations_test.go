@@ -44,6 +44,7 @@ func TestMigrations(t *testing.T) {
 	}()
 
 	for _, testCase := range testCases {
+
 		t.Run(strings.TrimSuffix(testCase.Name(), ".txt"), func(t *testing.T) {
 
 			// Make a database name for this test
@@ -84,7 +85,8 @@ func TestMigrations(t *testing.T) {
 				currProto = protoSchema(t, currSchema)
 				m, err := migrations.New(context, currProto, database)
 				require.NoError(t, err)
-				require.NoError(t, m.Apply(context))
+				err = m.Apply(context)
+				require.NoError(t, err)
 			}
 
 			// Create the new proto

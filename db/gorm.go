@@ -31,7 +31,7 @@ func (db *GormDB) ExecuteQuery(ctx context.Context, sqlQuery string, values ...a
 	rows := []map[string]any{}
 	conn := db.db.WithContext(ctx)
 
-	// Check for a transaction
+	// Check for an explicit transaction
 	if v, ok := ctx.Value(transactionCtxKey).(*gorm.DB); ok {
 		conn = v
 	}
@@ -55,7 +55,7 @@ func (db *GormDB) ExecuteStatement(ctx context.Context, sqlQuery string, values 
 
 	conn := db.db.WithContext(ctx)
 
-	// Check for a transaction
+	// Check for an explicit transaction
 	if v, ok := ctx.Value(transactionCtxKey).(*gorm.DB); ok {
 		conn = v
 	}

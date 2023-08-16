@@ -110,7 +110,7 @@ func (query *QueryBuilder) applyRequestOrdering(scope *Scope, orderBy []any) err
 }
 
 func List(scope *Scope, input map[string]any) (map[string]any, error) {
-	query := NewQuery(scope.Model)
+	query := NewQuery(scope.Context, scope.Model)
 
 	// Generate the SQL statement.
 	statement, page, err := GenerateListStatement(query, scope, input)
