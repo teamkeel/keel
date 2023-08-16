@@ -26,6 +26,15 @@ var ErrMultipleStoredSchemas = errors.New("more than one schema found in keel_sc
 var (
 	//go:embed ksuid.sql
 	ksuidFunction string
+
+	//go:embed process_audit.sql
+	processAuditFunction string
+
+	//go:embed set_identity_id.sql
+	setIdentityId string
+
+	//go:embed set_trace_id.sql
+	setTraceId string
 )
 
 type DatabaseChange struct {
@@ -66,6 +75,9 @@ func (m *Migrations) Apply(ctx context.Context) error {
 
 	// Functions
 	sql.WriteString(ksuidFunction)
+	sql.WriteString(processAuditFunction)
+	sql.WriteString(setIdentityId)
+	sql.WriteString(setTraceId)
 
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema ( schema TEXT NOT NULL );\n")
 	sql.WriteString("DELETE FROM keel_schema;\n")
@@ -107,6 +119,20 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	modelsAdded := []*proto.Model{}
 	existingModels := []*proto.Model{}
 
+	// We're going to analyse the database changes required using a temporarily mutated schema.
+	// Specifically we're going to inject a fake, hard-coded KeelAudit model into it.
+	//
+	// This mutated copy only lives for the lifespan of this New() function, and does
+	// not interfere with the Migrations.Schema field in the Migration object returned.
+	//
+	// The reasons for this are:
+	// 1) The audit table will get created if it doesn't exist.
+	// 2) If we add a column to our hard-coded definition of the audit table, that will
+	//    trigger a corresponding migration also.
+	//
+	pushAuditModel(schema)
+	defer popAuditModel(schema)
+
 	modelNames := proto.ModelNames(schema)
 
 	// Add any new models
@@ -126,6 +152,16 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				Type:  ChangeTypeAdded,
 			})
 			modelsAdded = append(modelsAdded, model)
+
+			// Add audit logs hooks to every table - excluding of course
+			// the audit table itself.
+			if model.Name != auditModelName {
+				stmt, err = createAuditHookStmt(schema, model)
+				if err != nil {
+					return nil, err
+				}
+				statements = append(statements, stmt)
+			}
 			continue
 		}
 
@@ -258,6 +294,10 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			})
 		}
 	}
+
+	// Make sure the audit model is removed from the schema returned inside the New Migrations
+	// object.
+	popAuditModel(schema)
 
 	return &Migrations{
 		database: database,

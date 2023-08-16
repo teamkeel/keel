@@ -10,6 +10,8 @@ import (
 	"github.com/teamkeel/keel/runtime/auth"
 )
 
+type contextKey string
+
 const (
 	authContextKey        contextKey = "authConfig"
 	ExternalIssuersEnvKey string     = "KEEL_EXTERNAL_ISSUERS"

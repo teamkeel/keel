@@ -440,7 +440,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			ctx = runtimectx.WithPrivateKey(ctx, m.PrivateKey)
 		}
 
-		ctx = runtimectx.WithDatabase(ctx, m.Database)
+		ctx = db.WithDatabase(ctx, m.Database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
 
 		mailClient := mail.NewSMTPClientFromEnv()

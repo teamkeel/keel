@@ -20,8 +20,8 @@ import (
 	"github.com/teamkeel/graphql/gqlerrors"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -60,7 +60,7 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			}, nil)
 		}
 		if identity != nil {
-			ctx = runtimectx.WithIdentity(ctx, identity)
+			ctx = auth.WithIdentity(ctx, identity)
 		}
 
 		// We lazily initialise the GraphQL schema as until there is actually

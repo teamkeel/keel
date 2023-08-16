@@ -114,7 +114,7 @@
             "type": "promptString",
             "id": "testCase",
             "description": "The test case directory to isolate",
-            "default": "identity_and_authentication"
+            "default": "built_in_actions"
         },
         {
             "type": "promptString",
@@ -131,7 +131,7 @@
         {
             "type": "promptString",
             "id": "directory",
-            "default": "",
+            "default": "scratch",
             "description": "Path to directory containing keel schema file."
         },
         {

@@ -71,7 +71,7 @@ func TestRuntimeGraphQL(t *testing.T) {
 			require.NoError(t, err)
 			defer database.Close()
 
-			ctx = runtimectx.WithDatabase(ctx, database)
+			ctx = db.WithDatabase(ctx, database)
 			request = request.WithContext(ctx)
 
 			// Apply the database prior-set up mandated by this test case.

@@ -1,5 +1,9 @@
 lockfileVersion: "6.0"
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
   "@opentelemetry/api":
     specifier: ^1.4.1
@@ -31,6 +35,9 @@ dependencies:
   pg:
     specifier: ^8.8.0
     version: 8.8.0
+  traceparent:
+    specifier: ^1.0.0
+    version: 1.0.0
 
 devDependencies:
   prettier:
@@ -1198,6 +1205,13 @@ packages:
       long: 5.2.3
     dev: false
 
+  /random-poly-fill@1.0.1:
+    resolution:
+      {
+        integrity: sha512-bMOL0hLfrNs52+EHtIPIXxn2PxYwXb0qjnKruTjXiM/sKfYqj506aB2plFwWW1HN+ri724bAVVGparh4AtlJKw==,
+      }
+    dev: false
+
   /resolve@1.22.1:
     resolution:
       {
@@ -1340,6 +1354,15 @@ packages:
       }
     engines: { node: ">=14.0.0" }
     dev: true
+
+  /traceparent@1.0.0:
+    resolution:
+      {
+        integrity: sha512-b/hAbgx57pANQ6cg2eBguY3oxD6FGVLI1CC2qoi01RmHR7AYpQHPXTig9FkzbWohEsVuHENZHP09aXuw3/LM+w==,
+      }
+    dependencies:
+      random-poly-fill: 1.0.1
+    dev: false
 
   /tslib@2.4.1:
     resolution:

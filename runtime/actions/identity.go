@@ -16,15 +16,15 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*runtimectx.Identity, error) {
+func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*auth.Identity, error) {
 	return findSingle(ctx, schema, "id", id)
 }
 
-func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string) (*runtimectx.Identity, error) {
+func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string) (*auth.Identity, error) {
 	return findSingle(ctx, schema, "email", email)
 }
 
-func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (*runtimectx.Identity, error) {
+func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(Field("externalId"), Equals, Value(externalId))
@@ -50,7 +50,7 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 	return mapToIdentity(result)
 }
 
-func findSingle(ctx context.Context, schema *proto.Schema, field string, value string) (*runtimectx.Identity, error) {
+func findSingle(ctx context.Context, schema *proto.Schema, field string, value string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(Field(field), Equals, Value(value))
@@ -71,7 +71,7 @@ func findSingle(ctx context.Context, schema *proto.Schema, field string, value s
 	return mapToIdentity(result)
 }
 
-func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string) (*runtimectx.Identity, error) {
+func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
 	query := NewQuery(identityModel)
@@ -91,7 +91,7 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 	return mapToIdentity(result)
 }
 
-func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalId string, issuer string, jwt string) (*runtimectx.Identity, error) {
+func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalId string, issuer string, jwt string) (*auth.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Create external identity")
 	defer span.End()
 
@@ -148,7 +148,7 @@ type ExternalUserDetails struct {
 	EmailVerified bool   `json:"email-verified"`
 }
 
-func mapToIdentity(values map[string]any) (*runtimectx.Identity, error) {
+func mapToIdentity(values map[string]any) (*auth.Identity, error) {
 	id, ok := values["id"].(string)
 	if !ok {
 		return nil, errors.New("id for identity is required")
@@ -187,7 +187,7 @@ func mapToIdentity(values map[string]any) (*runtimectx.Identity, error) {
 		return nil, errors.New("updatedAt for identity is required")
 	}
 
-	return &runtimectx.Identity{
+	return &auth.Identity{
 		Id:         id,
 		ExternalId: externalId,
 		Email:      email,
