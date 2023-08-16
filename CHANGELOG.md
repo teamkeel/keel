@@ -1,3 +1,10 @@
+## [0.365.5](https://github.com/teamkeel/keel/compare/v0.365.4...v0.365.5) (2023-08-16)
+
+
+### Bug Fixes
+
+* client package building ([#1107](https://github.com/teamkeel/keel/issues/1107)) ([183b2db](https://github.com/teamkeel/keel/commit/183b2db4be66e01d72139904d5af78a57f057297))
+
 ## [0.365.4](https://github.com/teamkeel/keel/compare/v0.365.3...v0.365.4) (2023-08-16)
 
 
