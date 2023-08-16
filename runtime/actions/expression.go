@@ -191,24 +191,7 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 
 		}
 
-		switch query.joinType {
-		case JoinTypeLeft:
-			query.Join(relatedModel, leftOperand, rightOperand, JoinTypeLeft)
-		default:
-			query.Join(relatedModel, leftOperand, rightOperand, JoinTypeInner)
-		}
-
-		// if proto.IsHasMany(relatedModelField) {
-		// 	previousIsRepeated = true
-
-		// 	nextFragment := fragments[i+1]
-		// 	// now we need to fan out
-		// 	if proto.ModelHasField(scope.Schema, model, nextFragment) {
-		// 		leftOperand = ExpressionField(fragments[:i+1], primaryKey)
-		// 		rightOperand = ExpressionField(fragments[:i], primaryKey)
-		// 	}
-
-		// }
+		query.Join(relatedModel, leftOperand, rightOperand)
 
 		model = relatedModelField.Type.ModelName.Value
 	}

@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"errors"
+	"sort"
 	"strings"
 
 	"github.com/samber/lo"
@@ -17,24 +18,32 @@ import (
 
 // AuthoriseAction checks authorisation for rows using the permission and role rules applicable for an action,
 // which could be defined at model- and action- levels.
-func AuthoriseAction(scope *Scope, rowsToAuthorise []map[string]any) (authorised bool, err error) {
+func AuthoriseAction(scope *Scope, input map[string]any, rowsToAuthorise []map[string]any) (authorised bool, err error) {
 	if scope.Operation == nil {
 		return false, errors.New("cannot authorise with AuthoriseAction if no operation is provided in scope")
 	}
 
+	if scope.Operation.Type == proto.OperationType_OPERATION_TYPE_UPDATE || scope.Operation.Type == proto.OperationType_OPERATION_TYPE_LIST {
+		var ok bool
+		input, ok = input["where"].(map[string]any)
+		if !ok {
+			input = map[string]any{}
+		}
+	}
+
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
-	return authorise(scope, permissions, rowsToAuthorise)
+	return authorise(scope, permissions, input, rowsToAuthorise)
 }
 
 // AuthoriseForActionType checks authorisation for rows using permission and role rules defined for some operation type,
 // i.e. agnostic to any action.
 func AuthoriseForActionType(scope *Scope, opType proto.OperationType, rowsToAuthorise []map[string]any) (authorised bool, err error) {
 	permissions := proto.PermissionsForOperationType(scope.Schema, scope.Model.Name, opType)
-	return authorise(scope, permissions, rowsToAuthorise)
+	return authorise(scope, permissions, map[string]any{}, rowsToAuthorise)
 }
 
 // authorise checks authorisation for rows using the slice of permission rules provided.
-func authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (authorised bool, err error) {
+func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[string]any, queryResults []map[string]any) (authorised bool, err error) {
 	ctx, span := tracer.Start(scope.Context, "Check permissions")
 	defer span.End()
 
@@ -61,7 +70,7 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 	}
 
 	// Generate SQL for the permission expressions.
-	stmt, err := GeneratePermissionStatement(scope, permissions, rowsToAuthorise)
+	stmt, err := GeneratePermissionStatement(scope, permissions, input)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -69,15 +78,22 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 	}
 
 	// Execute permission query against the database.
-	results, _, err := stmt.ExecuteToMany(scope.Context, nil)
+	permissionResults, _, err := stmt.ExecuteToMany(scope.Context, nil)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
 		return false, err
 	}
 
-	// TODO: compare ids matching in both slices
-	authorised = len(results) == len(rowsToAuthorise)
+	permissionResultIds := lo.Map(permissionResults, func(row map[string]interface{}, _ int) string {
+		return row["id"].(string)
+	})
+
+	queryResultIds := lo.Map(queryResults, func(row map[string]interface{}, _ int) string {
+		return row["id"].(string)
+	})
+
+	authorised = compare(permissionResultIds, queryResultIds)
 
 	if !authorised {
 		span.SetAttributes(attribute.Bool("result", false))
@@ -86,6 +102,22 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 
 	span.SetAttributes(attribute.Bool("result", authorised))
 	return authorised, nil
+}
+
+func compare(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	sort.Strings(a)
+	sort.Strings(b)
+
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // TryResolveAuthorisationEarly will attempt to check authorisation early without row-based querying.
@@ -169,9 +201,31 @@ func resolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permis
 	return authorised, nil
 }
 
-func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (*Statement, error) {
+func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRule, input map[string]any) (*Statement, error) {
 	permissions = proto.PermissionsWithExpression(permissions)
 	query := NewQuery(scope.Model, WithJoinType(JoinTypeLeft))
+
+	// Implicit and explicit filters need to be included in the permissions query,
+	// otherwise we'll be testing against records which aren't part of the the result set
+	if scope.Operation.Type == proto.OperationType_OPERATION_TYPE_LIST {
+		err := query.applyImplicitFiltersForList(scope, input)
+		if err != nil {
+			return nil, err
+		}
+		query.And()
+	} else {
+		err := query.applyImplicitFilters(scope, input)
+		if err != nil {
+			return nil, err
+		}
+		query.And()
+	}
+
+	err := query.applyExplicitFilters(scope, input)
+	if err != nil {
+		return nil, err
+	}
+	query.And()
 
 	if len(permissions) > 0 {
 		// Append SQL where conditions for each permission attribute.
@@ -190,17 +244,6 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 			query.Or()
 		}
 		query.CloseParenthesis()
-	}
-
-	ids := lo.Map(rowsToAuthorise, func(row map[string]interface{}, _ int) any {
-		return row["id"]
-	})
-
-	// Filter by the IDs of the rows we want to authorise.
-	query.And()
-	err := query.Where(IdField(), OneOf, Value(ids))
-	if err != nil {
-		return nil, err
 	}
 
 	// Select distinct IDs.

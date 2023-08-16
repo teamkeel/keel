@@ -22,7 +22,7 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 		rowsToAuthorise = append(rowsToAuthorise, res)
 	}
 
-	isAuthorised, err := AuthoriseAction(scope, rowsToAuthorise)
+	isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
 	if err != nil {
 		return nil, err
 	}
