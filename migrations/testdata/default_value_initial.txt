@@ -20,6 +20,15 @@ model Person {
 
 ===
 
+CREATE TABLE "audit" (
+"table_name" TEXT NOT NULL,
+"op" TEXT NOT NULL,
+"data" TEXT NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "audit" ADD CONSTRAINT audit_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "identity" (
 "email" TEXT,
 "email_verified" BOOL,
@@ -50,6 +59,8 @@ ALTER TABLE "person" ADD CONSTRAINT person_id_pkey PRIMARY KEY ("id");
 === 
 
 [
-  { "Model": "Identity", "Field": "", "Type": "ADDED" },
-  { "Model": "Person", "Field": "", "Type": "ADDED" }
+{"Model":"Audit","Field":"","Type":"ADDED"},
+{"Model":"Identity","Field":"","Type":"ADDED"},
+{"Model":"Person","Field":"","Type":"ADDED"}
 ]
+

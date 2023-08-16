@@ -119,6 +119,12 @@ const (
 	ImplicitIdentityFieldNamePassword      = "password"
 	ImplicitIdentityFieldNameExternalId    = "externalId"
 	ImplicitIdentityFieldNameIssuer        = "issuer"
+
+	ImplicitAuditTableName          = "Audit"
+	ImplicitAuditFieldNameTableName = "tableName"
+	ImplicitAuditFieldNameOp        = "op"
+	ImplicitAuditFieldNameData      = "data"
+	ImplicitAuditFieldNameTimestamp = "timestamp"
 )
 
 const (

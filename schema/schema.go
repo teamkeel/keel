@@ -306,6 +306,11 @@ func (scm *Builder) insertForeignKeyFields(
 }
 
 func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
+	scm.insertIdentityModel(declarations, schemaFile)
+	scm.insertAuditModel(declarations, schemaFile)
+}
+
+func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile reader.SchemaFile) {
 	declaration := &parser.DeclarationNode{
 		Model: &parser.ModelNode{
 			BuiltIn: true,
@@ -390,6 +395,12 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 	declarations.Declarations = append(declarations.Declarations, declaration)
 
 	// Making the identity model and operations available on all APIs
+
+	// Note this only applies to API's that the user has defined in their schema.
+	// You could say we "sneak the Identity model in to those APIs"/
+	//
+	// However, if the schema doesn't have any API's defined - there is code elsewhere that creates
+	// a default API for you - and that includes ALL models (which include the new auto generated Audit model.)
 	for _, d := range declarations.Declarations {
 		if d.API != nil {
 			for _, s := range d.API.Sections {
@@ -403,6 +414,62 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 			}
 		}
 	}
+}
+
+func (scm *Builder) insertAuditModel(declarations *parser.AST, schemaFile reader.SchemaFile) {
+	declaration := &parser.DeclarationNode{
+		Model: &parser.ModelNode{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitAuditTableName,
+				Node: node.Node{
+					Pos: lexer.Position{
+						Filename: schemaFile.FileName,
+					},
+				},
+			},
+		},
+	}
+
+	tableNameField := &parser.FieldNode{
+		BuiltIn: true,
+		Name: parser.NameNode{
+			Value: parser.ImplicitAuditFieldNameTableName,
+		},
+		Type: parser.NameNode{
+			Value: parser.FieldTypeText,
+		},
+		Optional: false,
+	}
+
+	opField := &parser.FieldNode{
+		BuiltIn: true,
+		Name: parser.NameNode{
+			Value: parser.ImplicitAuditFieldNameOp,
+		},
+		Type: parser.NameNode{
+			Value: parser.FieldTypeText,
+		},
+		Optional: false,
+	}
+
+	dataField := &parser.FieldNode{
+		BuiltIn: true,
+		Name: parser.NameNode{
+			Value: parser.ImplicitAuditFieldNameData,
+		},
+		Type: parser.NameNode{
+			Value: parser.FieldTypeText,
+		},
+		Optional: false,
+	}
+
+	section := &parser.ModelSectionNode{
+		Fields: []*parser.FieldNode{tableNameField, opField, dataField},
+	}
+
+	declaration.Model.Sections = append(declaration.Model.Sections, section)
+	declarations.Declarations = append(declarations.Declarations, declaration)
 }
 
 func (scm *Builder) addEnvironmentVariables(declarations *parser.AST) {
