@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "prepack": "tsc"
+    "build": "tsc",
+    "prepublish": "npm run build"
   },
   "keywords": [],
   "author": "Keel (www.keel.so)",
