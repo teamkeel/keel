@@ -2,7 +2,7 @@ model User {
     fields {
         identity Identity @unique
         name Text
-        userOrgs UserOrganisation[]
+        organisations UserOrganisation[]
     }
 
     operations {
@@ -10,26 +10,17 @@ model User {
             @set(user.identity = ctx.identity)
         }
         get getUser(id)
-        list listUsersByOrganisation(userOrgs.organisation.id) {
-            @permission(expression: ctx.identity in user.userOrgs.organisation.users.user.identity and user.userOrgs.organisation ==  '2U0Xp1TU67hl30hpgoWVB9Cg4I4')
-        }
+        list listUsersByOrganisation(organisations.organisation.id)
     }
-
-    @permission(expression: ctx.isAuthenticated, actions:[create])
 
     @permission(
         expression: user.identity == ctx.identity,
-        actions: [get]
+        actions: [create, get]
     )
 
     @permission(
-        expression: ctx.identity in user.userOrgs.organisation.users.user.identity,
-        actions: [get]
-    )
-
-     @permission(
-        expression: ctx.identity in user.userOrgs.organisation.users.user.identity,
-        actions: [list]
+        expression: ctx.identity in user.organisations.organisation.users.user.identity,
+        actions: [get, list]
     )
 }
 

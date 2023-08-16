@@ -1,20 +1,33 @@
 model Post {
     fields {
         title Text
-        isActive Boolean
+        isActive Boolean @default(true)
         theAuthor Author?
     }
 
     operations {
-        create createPost() with (title, theAuthor.id) {
-            @set(post.isActive = true)
-            @permission(expression: post.theAuthor.isActive == true)
+        // For testing AND conditions
+        create createPost() with (title, theAuthor.id, isActive?) {
+            @permission(expression: post.theAuthor.isActive == true and post.isActive)
         }
         get getPost(id) {
-            @permission(expression: post.theAuthor.isActive == true)
+            @permission(expression: post.theAuthor.isActive == true and post.isActive)
         }
         list listPosts() {
-            @permission(expression: post.theAuthor.isActive == true)
+            @permission(expression: post.theAuthor.isActive == true and post.isActive)
+        }
+        // For testing OR conditions
+        create createPostORed() with (title, theAuthor.id, isActive?) {
+            @permission(expression: post.theAuthor.isActive)
+            @permission(expression: post.isActive)
+        }
+        get getPostORed(id) {
+            @permission(expression: post.theAuthor.isActive)
+            @permission(expression: post.isActive)
+        }
+        list listPostsORed() {
+            @permission(expression: post.theAuthor.isActive)
+            @permission(expression: post.isActive)
         }
     }
 }
@@ -27,11 +40,21 @@ model Author {
     }
 
     operations {
+        // For testing AND conditions
         get getAuthor(id) {
-            @permission(expression: true in author.thePosts.isActive)
+            @permission(expression: true in author.thePosts.isActive and author.isActive)
         }
         list listAuthors() {
+            @permission(expression: true in author.thePosts.isActive and author.isActive)
+        }
+        // For testing OR conditions
+        get getAuthorORed(id) {
             @permission(expression: true in author.thePosts.isActive)
+            @permission(expression: author.isActive)
+        }
+        list listAuthorsORed() {
+            @permission(expression: true in author.thePosts.isActive)
+            @permission(expression: author.isActive)
         }
     }
 }
