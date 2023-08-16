@@ -380,7 +380,6 @@ test("where expression in 1:M relationship - one Keelson post not active - every
   expect(getAuthor2!.id).toEqual(author2.id);
 });
 
-
 test("where expression in 1:M relationship - all Keelsons post not active - Keelson author and posts not returned", async () => {
   const author1 = await models.author.create({
     name: "Keelson",
@@ -523,7 +522,6 @@ test("where expression in 1:M relationship with ORs - one Keelson post not activ
   expect(getAuthor2!.id).toEqual(author2.id);
 });
 
-
 test("where expression in 1:M relationship with ORs - all posts not active - everything returned", async () => {
   const author1 = await models.author.create({
     name: "Keelson",
@@ -558,7 +556,6 @@ test("where expression in 1:M relationship with ORs - all posts not active - eve
   const getAuthor2 = await actions.getAuthorORed({ id: author2.id });
   expect(getAuthor2!.id).toEqual(author2.id);
 });
-
 
 test("where expression in 1:M relationship with ORs - Keelson author and Keelson posts not active - Keelson author and posts not returned", async () => {
   const author1 = await models.author.create({
@@ -609,7 +606,7 @@ test("where expression in 1:M relationship with ORs - no Keelson posts, everythi
     theAuthorId: author1.id,
     isActive: true,
   });
-  
+
   const { results: authors } = await actions.listAuthorsORed({});
   expect(authors.length).toEqual(2);
 

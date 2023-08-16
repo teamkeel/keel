@@ -173,11 +173,10 @@ test("permission expression with create in M:1 relationship with ORs - only this
     isActive: false,
   });
 
-  const createPost = await
-    actions.createPostORed({
-      title: "New Post",
-      theAuthor: { id: author.id },
-    });
+  const createPost = await actions.createPostORed({
+    title: "New Post",
+    theAuthor: { id: author.id },
+  });
 
   const collection = await models.post.findMany();
 
@@ -192,18 +191,17 @@ test("permission expression with create in M:1 relationship with ORs - only rela
     isActive: true,
   });
 
-  const createPost = await
-  actions.createPostORed({
+  const createPost = await actions.createPostORed({
     title: "New Post",
     isActive: false,
     theAuthor: { id: author.id },
   });
 
-const collection = await models.post.findMany();
+  const collection = await models.post.findMany();
 
-expect(createPost.theAuthorId).toEqual(author.id);
-expect(collection[0].id).toEqual(createPost.id);
-expect(collection[0].theAuthorId).toEqual(author.id);
+  expect(createPost.theAuthorId).toEqual(author.id);
+  expect(collection[0].id).toEqual(createPost.id);
+  expect(collection[0].theAuthorId).toEqual(author.id);
 });
 
 test("permission expression with create in M:1 relationship with ORs - neither this or related model satisfy condition - authorization failed", async () => {
@@ -222,7 +220,6 @@ test("permission expression with create in M:1 relationship with ORs - neither t
 
   const collection = await models.post.findMany();
   expect(collection.length).toEqual(0);
-
 });
 
 test("permission expression in M:1 relationship with ORs - all related models satisfy condition - authorization successful", async () => {
@@ -364,7 +361,7 @@ test("permission expression in M:1 relationship with ORs - weave posts and autho
     isActive: false,
   });
 
-   await expect( actions.listPostsORed({})).toHaveAuthorizationError();
+  await expect(actions.listPostsORed({})).toHaveAuthorizationError();
 
   const getPost1 = await actions.getPostORed({ id: post1.id });
   expect(getPost1!.id).toEqual(post1.id);
@@ -372,7 +369,9 @@ test("permission expression in M:1 relationship with ORs - weave posts and autho
   const getPost2 = await actions.getPostORed({ id: post2.id });
   expect(getPost2!.id).toEqual(post2.id);
 
-  await expect( actions.getPostORed({ id: post3.id })).toHaveAuthorizationError();
+  await expect(
+    actions.getPostORed({ id: post3.id })
+  ).toHaveAuthorizationError();
 });
 
 // 1:M with AND conditions
@@ -481,7 +480,6 @@ test("permission expression in 1:M relationship - one Keelson post not active - 
   const getAuthor2 = await actions.getAuthor({ id: author2.id });
   expect(getAuthor2!.id).toEqual(author2.id);
 });
-
 
 test("permission expression in 1:M relationship - all Keelsons post not active - authorization failed on list and Keelson author", async () => {
   const author1 = await models.author.create({
@@ -625,7 +623,6 @@ test("permission expression in 1:M relationship with ORs - one Keelson post not 
   expect(getAuthor2!.id).toEqual(author2.id);
 });
 
-
 test("permission expression in 1:M relationship with ORs - all post not active - authorization successful", async () => {
   const author1 = await models.author.create({
     name: "Keelson",
@@ -661,7 +658,6 @@ test("permission expression in 1:M relationship with ORs - all post not active -
   expect(getAuthor2!.id).toEqual(author2.id);
 });
 
-
 test("permission expression in 1:M relationship with ORs - Keelson author and Keelson posts not active - list and Keelson get authorization failed", async () => {
   const author1 = await models.author.create({
     name: "Keelson",
@@ -689,7 +685,9 @@ test("permission expression in 1:M relationship with ORs - Keelson author and Ke
 
   await expect(actions.listAuthorsORed({})).toHaveAuthorizationError();
 
-  await expect(actions.getAuthorORed({ id: author1.id })).toHaveAuthorizationError();
+  await expect(
+    actions.getAuthorORed({ id: author1.id })
+  ).toHaveAuthorizationError();
 
   const getAuthor2 = await actions.getAuthorORed({ id: author2.id });
   expect(getAuthor2!.id).toEqual(author2.id);
@@ -709,7 +707,7 @@ test("permission expression in 1:M relationship with ORs - no Keelson posts, eve
     theAuthorId: author1.id,
     isActive: true,
   });
-  
+
   const { results: authors } = await actions.listAuthorsORed({});
   expect(authors.length).toEqual(2);
 

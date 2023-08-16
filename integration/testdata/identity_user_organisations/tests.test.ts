@@ -38,7 +38,7 @@ test("user does not have authorisation to read another user's record", async () 
     name: "Dave",
     identityId: identityDave.id,
   });
-  
+
   await expect(
     actions.withIdentity(identityDave).getUser({
       id: userAdam.id,
@@ -48,13 +48,13 @@ test("user does not have authorisation to read another user's record", async () 
 
 test("user in a shared organisation has authorisation to read other user's records from the organisation", async () => {
   const organisationAdam = await models.organisation.create({
-    name: "AdamCo"
+    name: "AdamCo",
   });
   const organisationDave = await models.organisation.create({
-    name: "DaveCo"
+    name: "DaveCo",
   });
   const organisationKeel = await models.organisation.create({
-    name: "Keel"
+    name: "Keel",
   });
 
   const identityAdam = await models.identity.create({
@@ -77,21 +77,21 @@ test("user in a shared organisation has authorisation to read other user's recor
 
   await models.userOrganisation.create({
     organisationId: organisationAdam.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationDave.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
-  
+
   await expect(
     actions.withIdentity(identityDave).getUser({
       id: userAdam.id,
@@ -101,10 +101,10 @@ test("user in a shared organisation has authorisation to read other user's recor
 
 test("user does not have authorisation to read user's records from another organisation", async () => {
   const organisationAdam = await models.organisation.create({
-    name: "AdamCo"
+    name: "AdamCo",
   });
   const organisationDave = await models.organisation.create({
-    name: "DaveCo"
+    name: "DaveCo",
   });
 
   const identityAdam = await models.identity.create({
@@ -127,13 +127,13 @@ test("user does not have authorisation to read user's records from another organ
 
   await models.userOrganisation.create({
     organisationId: organisationAdam.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationDave.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
-  
+
   await expect(
     actions.withIdentity(identityDave).getUser({
       id: userAdam.id,
@@ -143,13 +143,13 @@ test("user does not have authorisation to read user's records from another organ
 
 test("user has authorisation to list records from own organisation", async () => {
   const organisationAdam = await models.organisation.create({
-    name: "AdamCo"
+    name: "AdamCo",
   });
   const organisationDave = await models.organisation.create({
-    name: "DaveCo"
+    name: "DaveCo",
   });
   const organisationKeel = await models.organisation.create({
-    name: "Keel"
+    name: "Keel",
   });
 
   const identityAdam = await models.identity.create({
@@ -172,37 +172,43 @@ test("user has authorisation to list records from own organisation", async () =>
 
   await models.userOrganisation.create({
     organisationId: organisationAdam.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationDave.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
-  
-  const results = await actions.withIdentity(identityDave).listUsersByOrganisation({
-      where: { organisations: { organisation: { id: { equals: organisationDave.id, }}} }
-  });
+
+  const results = await actions
+    .withIdentity(identityDave)
+    .listUsersByOrganisation({
+      where: {
+        organisations: {
+          organisation: { id: { equals: organisationDave.id } },
+        },
+      },
+    });
 
   expect(results.results).toHaveLength(1);
 });
 
 test("user does not have authorisation to list records from another organisation", async () => {
   const organisationAdam = await models.organisation.create({
-    name: "AdamCo"
+    name: "AdamCo",
   });
   const organisationDave = await models.organisation.create({
-    name: "DaveCo"
+    name: "DaveCo",
   });
   const organisationKeel = await models.organisation.create({
-    name: "Keel"
+    name: "Keel",
   });
 
   const identityAdam = await models.identity.create({
@@ -225,24 +231,28 @@ test("user does not have authorisation to list records from another organisation
 
   await models.userOrganisation.create({
     organisationId: organisationAdam.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationDave.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
-  
+
   await expect(
     actions.withIdentity(identityDave).listUsersByOrganisation({
-      where: { organisations: { organisation: { id: { equals: organisationAdam.id, }}} }
+      where: {
+        organisations: {
+          organisation: { id: { equals: organisationAdam.id } },
+        },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -267,15 +277,11 @@ test("not authorised to create organisation with no identity", async () => {
   });
 
   await expect(
-  actions.createOrganisation({ 
-    name: "Keel", 
-    users: [
-      { user: { id: userAdam.id }},
-      { user: { id: userDave.id }}
-    ]
-  })
+    actions.createOrganisation({
+      name: "Keel",
+      users: [{ user: { id: userAdam.id } }, { user: { id: userDave.id } }],
+    })
   ).toHaveAuthorizationError();
-
 });
 
 test("authorised to create organisation when identity belongs to organisation", async () => {
@@ -297,13 +303,12 @@ test("authorised to create organisation when identity belongs to organisation", 
     identityId: identityDave.id,
   });
 
-  const organisation = await actions.withIdentity(identityDave).createOrganisation({ 
-    name: "Keel", 
-    users: [
-      { user: { id: userAdam.id }},
-      { user: { id: userDave.id }}
-    ]
-  });
+  const organisation = await actions
+    .withIdentity(identityDave)
+    .createOrganisation({
+      name: "Keel",
+      users: [{ user: { id: userAdam.id } }, { user: { id: userDave.id } }],
+    });
 });
 
 test("not authorised to create organisation when identity does not belong to organisation", async () => {
@@ -326,24 +331,22 @@ test("not authorised to create organisation when identity does not belong to org
   });
 
   await expect(
-    actions.withIdentity(identityDave).createOrganisation({ 
-      name: "Adam Co", 
-      users: [
-        { user: { id: userAdam.id }},
-      ]
+    actions.withIdentity(identityDave).createOrganisation({
+      name: "Adam Co",
+      users: [{ user: { id: userAdam.id } }],
     })
-    ).toHaveAuthorizationError();
+  ).toHaveAuthorizationError();
 });
 
 test("only list organisations which identity is associated with", async () => {
   const organisationAdam = await models.organisation.create({
-    name: "AdamCo"
+    name: "AdamCo",
   });
   const organisationDave = await models.organisation.create({
-    name: "DaveCo"
+    name: "DaveCo",
   });
   const organisationKeel = await models.organisation.create({
-    name: "Keel"
+    name: "Keel",
   });
 
   const identityAdam = await models.identity.create({
@@ -366,19 +369,19 @@ test("only list organisations which identity is associated with", async () => {
 
   await models.userOrganisation.create({
     organisationId: organisationAdam.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationDave.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
 
   const rows = await actions.withIdentity(identityDave).listOrganisations({});
@@ -387,16 +390,15 @@ test("only list organisations which identity is associated with", async () => {
   expect(rows.results[1].id).not.toEqual(organisationAdam.id);
 });
 
-
 test("list no organisations when there is no identity", async () => {
   const organisationAdam = await models.organisation.create({
-    name: "AdamCo"
+    name: "AdamCo",
   });
   const organisationDave = await models.organisation.create({
-    name: "DaveCo"
+    name: "DaveCo",
   });
   const organisationKeel = await models.organisation.create({
-    name: "Keel"
+    name: "Keel",
   });
 
   const identityAdam = await models.identity.create({
@@ -419,35 +421,34 @@ test("list no organisations when there is no identity", async () => {
 
   await models.userOrganisation.create({
     organisationId: organisationAdam.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationDave.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
 
   const rows = await actions.listOrganisations({});
   expect(rows.results).toHaveLength(0);
 });
 
-
 test("authorised to get an organisations which the identity is associated to", async () => {
   const organisationAdam = await models.organisation.create({
-    name: "AdamCo"
+    name: "AdamCo",
   });
   const organisationDave = await models.organisation.create({
-    name: "DaveCo"
+    name: "DaveCo",
   });
   const organisationKeel = await models.organisation.create({
-    name: "Keel"
+    name: "Keel",
   });
 
   const identityAdam = await models.identity.create({
@@ -470,34 +471,36 @@ test("authorised to get an organisations which the identity is associated to", a
 
   await models.userOrganisation.create({
     organisationId: organisationAdam.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationDave.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
 
-  const row = await actions.withIdentity(identityDave).getOrganisation({ id: organisationKeel.id });
+  const row = await actions
+    .withIdentity(identityDave)
+    .getOrganisation({ id: organisationKeel.id });
   expect(row!.id).toEqual(organisationKeel.id);
 });
 
 test("not authorised to get an organisations which the identity is not associated to", async () => {
   const organisationAdam = await models.organisation.create({
-    name: "AdamCo"
+    name: "AdamCo",
   });
   const organisationDave = await models.organisation.create({
-    name: "DaveCo"
+    name: "DaveCo",
   });
   const organisationKeel = await models.organisation.create({
-    name: "Keel"
+    name: "Keel",
   });
 
   const identityAdam = await models.identity.create({
@@ -520,35 +523,37 @@ test("not authorised to get an organisations which the identity is not associate
 
   await models.userOrganisation.create({
     organisationId: organisationAdam.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationDave.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
 
   await expect(
-    actions.withIdentity(identityDave).getOrganisation({ id: organisationAdam.id })
+    actions
+      .withIdentity(identityDave)
+      .getOrganisation({ id: organisationAdam.id })
   ).toHaveAuthorizationError();
 });
 
 test("not authorised to get an organisations with no identity", async () => {
   const organisationAdam = await models.organisation.create({
-    name: "AdamCo"
+    name: "AdamCo",
   });
   const organisationDave = await models.organisation.create({
-    name: "DaveCo"
+    name: "DaveCo",
   });
   const organisationKeel = await models.organisation.create({
-    name: "Keel"
+    name: "Keel",
   });
 
   const identityAdam = await models.identity.create({
@@ -571,19 +576,19 @@ test("not authorised to get an organisations with no identity", async () => {
 
   await models.userOrganisation.create({
     organisationId: organisationAdam.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationDave.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userDave.id
+    userId: userDave.id,
   });
   await models.userOrganisation.create({
     organisationId: organisationKeel.id,
-    userId: userAdam.id
+    userId: userAdam.id,
   });
 
   await expect(

@@ -104,22 +104,6 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 	return authorised, nil
 }
 
-func compare(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	sort.Strings(a)
-	sort.Strings(b)
-
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
 // TryResolveAuthorisationEarly will attempt to check authorisation early without row-based querying.
 // This will take into account logical conditions and multiple expression and role permission attributes.
 func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionRule) (canResolveAll bool, authorised bool, err error) {
@@ -273,4 +257,20 @@ func getEmailAndDomain(ctx context.Context) (string, string, error) {
 	segments := strings.Split(identity.Email, "@")
 	domain := segments[1]
 	return identity.Email, domain, nil
+}
+
+func compare(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	sort.Strings(a)
+	sort.Strings(b)
+
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }
