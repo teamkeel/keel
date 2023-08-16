@@ -1,3 +1,10 @@
+## [0.365.6](https://github.com/teamkeel/keel/compare/v0.365.5...v0.365.6) (2023-08-16)
+
+
+### Bug Fixes
+
+* package.json ([#1109](https://github.com/teamkeel/keel/issues/1109)) ([e0e6031](https://github.com/teamkeel/keel/commit/e0e603143660b9218e792a04d676137a15529f5d))
+
 ## [0.365.5](https://github.com/teamkeel/keel/compare/v0.365.4...v0.365.5) (2023-08-16)
 
 
