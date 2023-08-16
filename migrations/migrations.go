@@ -26,6 +26,9 @@ var ErrMultipleStoredSchemas = errors.New("more than one schema found in keel_sc
 var (
 	//go:embed ksuid.sql
 	ksuidFunction string
+
+	//go:embed process_audit.sql
+	processAuditFunction string
 )
 
 type DatabaseChange struct {
@@ -66,6 +69,7 @@ func (m *Migrations) Apply(ctx context.Context) error {
 
 	// Functions
 	sql.WriteString(ksuidFunction)
+	sql.WriteString(processAuditFunction)
 
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema ( schema TEXT NOT NULL );\n")
 	sql.WriteString("DELETE FROM keel_schema;\n")
