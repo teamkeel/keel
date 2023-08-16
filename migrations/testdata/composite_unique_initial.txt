@@ -12,7 +12,7 @@ model Person {
     @unique([thingB, thingC, thingA])
 }
 
-===
+=== 
 
 CREATE TABLE "identity" (
 "email" TEXT,
@@ -26,6 +26,19 @@ CREATE TABLE "identity" (
 );
 ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
 ALTER TABLE "identity" ADD CONSTRAINT identity_email_issuer_udx UNIQUE ("email", "issuer");
+CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+CREATE TABLE "keel_audit" (
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"table_name" TEXT NOT NULL,
+"op" TEXT NOT NULL,
+"data" jsonb NOT NULL,
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"identity_id" TEXT,
+"trace_id" TEXT
+);
+ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
 "thing_c" TEXT NOT NULL,
 "thing_b" TEXT NOT NULL,
@@ -36,10 +49,9 @@ CREATE TABLE "person" (
 );
 ALTER TABLE "person" ADD CONSTRAINT person_id_pkey PRIMARY KEY ("id");
 ALTER TABLE "person" ADD CONSTRAINT person_thing_a_thing_b_thing_c_udx UNIQUE ("thing_a", "thing_b", "thing_c");
-
+CREATE TRIGGER person_create AFTER INSERT ON "person" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+CREATE TRIGGER person_update AFTER UPDATE ON "person" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+CREATE TRIGGER person_delete AFTER DELETE ON "person" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 === 
 
-[
-  { "Model": "Identity", "Field": "", "Type": "ADDED" },
-  { "Model": "Person", "Field": "", "Type": "ADDED" }
-]
+[{"Model":"Identity","Field":"","Type":"ADDED"},{"Model":"KeelAudit","Field":"","Type":"ADDED"},{"Model":"Person","Field":"","Type":"ADDED"}]

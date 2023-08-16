@@ -20,8 +20,8 @@ import (
 	"github.com/teamkeel/graphql/gqlerrors"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -60,7 +60,7 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			}, nil)
 		}
 		if identity != nil {
-			ctx = runtimectx.WithIdentity(ctx, identity)
+			ctx = auth.WithIdentity(ctx, identity)
 		}
 
 		// We lazily initialise the GraphQL schema as until there is actually
@@ -312,7 +312,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				relatedModel := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
 
 				// Create a new query for the related model
-				query := actions.NewQuery(relatedModel)
+				query := actions.NewQuery(ctx, relatedModel)
 				query.AppendSelect(actions.AllFields())
 
 				foreignKeyField := proto.GetForignKeyFieldName(mk.proto.Models, field)
@@ -354,7 +354,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 					return nil, err
 				}
 
-				scope := actions.NewModelScope(p.Context, relatedModel, mk.proto)
+				scope := actions.NewModelScope(ctx, relatedModel, mk.proto)
 
 				switch {
 				case proto.IsBelongsTo(field), proto.IsHasOne(field):

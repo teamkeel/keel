@@ -9,7 +9,9 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
+
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -110,9 +112,9 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 		joinedHeaders[k] = strings.Join(v, ", ")
 	}
 
-	var identity *runtimectx.Identity
-	if runtimectx.IsAuthenticated(ctx) {
-		identity, err = runtimectx.GetIdentity(ctx)
+	var identity *auth.Identity
+	if auth.IsAuthenticated(ctx) {
+		identity, err = auth.GetIdentity(ctx)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -171,9 +173,9 @@ func CallJob(ctx context.Context, job *proto.Job, inputs map[string]any, permiss
 	}
 
 	var err error
-	var identity *runtimectx.Identity
-	if runtimectx.IsAuthenticated(ctx) {
-		identity, err = runtimectx.GetIdentity(ctx)
+	var identity *auth.Identity
+	if auth.IsAuthenticated(ctx) {
+		identity, err = auth.GetIdentity(ctx)
 		if err != nil {
 			return err
 		}

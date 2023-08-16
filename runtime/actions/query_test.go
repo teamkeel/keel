@@ -2,6 +2,7 @@ package actions_test
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"strings"
 	"testing"
@@ -11,7 +12,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/schema"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type testCase struct {
@@ -1897,10 +1900,6 @@ func TestQueryBuilder(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			if clean(testCase.expectedTemplate) != clean(statement.SqlTemplate()) {
-				fmt.Printf("XXXX actual sql:\n%s\n", clean(statement.SqlTemplate()))
-			}
-
 			require.Equal(t, clean(testCase.expectedTemplate), clean(statement.SqlTemplate()))
 
 			if testCase.expectedArgs != nil {
@@ -1934,7 +1933,7 @@ func generateQueryScope(ctx context.Context, schemaText string, actionName strin
 	}
 
 	model := proto.FindModel(schema.Models, action.ModelName)
-	query := actions.NewQuery(model)
+	query := actions.NewQuery(context.Background(), model)
 	scope := actions.NewScope(ctx, action, schema)
 
 	return scope, query, action, nil
@@ -1943,4 +1942,184 @@ func generateQueryScope(ctx context.Context, schemaText string, actionName strin
 // Trims and removes redundant spacing
 func clean(sql string) string {
 	return strings.Join(strings.Fields(strings.TrimSpace(sql)), " ")
+}
+
+func TestInsertStatement(t *testing.T) {
+	model := &proto.Model{Name: "Person"}
+	query := actions.NewQuery(context.Background(), model)
+	query.AddWriteValues(map[string]any{"name": "Fred"})
+	query.AppendSelect(actions.AllFields())
+	query.AppendReturning(actions.AllFields())
+	stmt := query.InsertStatement()
+
+	expected := `
+		WITH new_1_person AS (INSERT INTO "person" (name) VALUES (?) RETURNING *) 
+		SELECT * FROM new_1_person`
+
+	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+}
+
+func TestUpdateStatement(t *testing.T) {
+	model := &proto.Model{Name: "Person"}
+	query := actions.NewQuery(context.Background(), model)
+	query.AddWriteValue(actions.Field("name"), "Fred")
+	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
+	require.NoError(t, err)
+	query.AppendSelect(actions.AllFields())
+	query.AppendReturning(actions.AllFields())
+	stmt := query.UpdateStatement()
+
+	expected := `
+		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING "person".*`
+
+	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+}
+
+func TestDeleteStatement(t *testing.T) {
+	model := &proto.Model{Name: "Person"}
+	query := actions.NewQuery(context.Background(), model)
+	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
+	require.NoError(t, err)
+	query.AppendSelect(actions.AllFields())
+	query.AppendReturning(actions.AllFields())
+	stmt := query.DeleteStatement()
+
+	expected := `
+		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING "person".*`
+
+	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+}
+
+func TestInsertStatementWithAuditing(t *testing.T) {
+	ctx := context.Background()
+	ctx, _ = withIdentity(t, ctx)
+	ctx = withTracing(t, ctx)
+
+	model := &proto.Model{Name: "Person"}
+	query := actions.NewQuery(ctx, model)
+	query.AddWriteValues(map[string]any{"name": "Fred"})
+	query.AppendSelect(actions.AllFields())
+	query.AppendReturning(actions.AllFields())
+	stmt := query.InsertStatement()
+
+	expected := `
+		WITH new_1_person AS (INSERT INTO "person" (name) VALUES (?) RETURNING *) 
+		SELECT 
+			*, 
+			set_identity_id('2V1gEtq4GEhvtRofqwiN9ZfapxN') AS __keel_identity_id, 
+			set_trace_id('71f835dc7ac2750bed2135c7b30dc7fe') AS __keel_trace_id
+		FROM new_1_person`
+
+	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+}
+
+func TestUpdateStatementWithAuditing(t *testing.T) {
+	ctx := context.Background()
+	ctx, _ = withIdentity(t, ctx)
+	ctx = withTracing(t, ctx)
+
+	model := &proto.Model{Name: "Person"}
+	query := actions.NewQuery(ctx, model)
+	query.AddWriteValue(actions.Field("name"), "Fred")
+	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
+	require.NoError(t, err)
+	query.AppendSelect(actions.AllFields())
+	query.AppendReturning(actions.AllFields())
+	stmt := query.UpdateStatement()
+
+	expected := `
+		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
+			"person".*, 
+			set_identity_id('2V1gEtq4GEhvtRofqwiN9ZfapxN') AS __keel_identity_id, 
+			set_trace_id('71f835dc7ac2750bed2135c7b30dc7fe') AS __keel_trace_id`
+
+	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+}
+
+func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
+	ctx := context.Background()
+	ctx, _ = withIdentity(t, ctx)
+	ctx = withTracing(t, ctx)
+
+	model := &proto.Model{Name: "Person"}
+	query := actions.NewQuery(ctx, model)
+	query.AddWriteValue(actions.Field("name"), "Fred")
+	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
+	require.NoError(t, err)
+	query.AppendSelect(actions.AllFields())
+	stmt := query.UpdateStatement()
+
+	expected := `
+		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
+			set_identity_id('2V1gEtq4GEhvtRofqwiN9ZfapxN') AS __keel_identity_id, 
+			set_trace_id('71f835dc7ac2750bed2135c7b30dc7fe') AS __keel_trace_id`
+
+	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+}
+
+func TestDeleteStatementWithAuditing(t *testing.T) {
+	ctx := context.Background()
+	ctx, _ = withIdentity(t, ctx)
+	ctx = withTracing(t, ctx)
+
+	model := &proto.Model{Name: "Person"}
+	query := actions.NewQuery(ctx, model)
+	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
+	require.NoError(t, err)
+	query.AppendSelect(actions.AllFields())
+	query.AppendReturning(actions.AllFields())
+	stmt := query.DeleteStatement()
+
+	expected := `
+		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
+			"person".*, 
+			set_identity_id('2V1gEtq4GEhvtRofqwiN9ZfapxN') AS __keel_identity_id, 
+			set_trace_id('71f835dc7ac2750bed2135c7b30dc7fe') AS __keel_trace_id`
+
+	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+}
+
+func TestDeleteStatementNoReturnWithAuditing(t *testing.T) {
+	ctx := context.Background()
+	ctx, _ = withIdentity(t, ctx)
+	ctx = withTracing(t, ctx)
+
+	model := &proto.Model{Name: "Person"}
+	query := actions.NewQuery(ctx, model)
+	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
+	require.NoError(t, err)
+	query.AppendSelect(actions.AllFields())
+	stmt := query.DeleteStatement()
+
+	expected := `
+		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
+			set_identity_id('2V1gEtq4GEhvtRofqwiN9ZfapxN') AS __keel_identity_id, 
+			set_trace_id('71f835dc7ac2750bed2135c7b30dc7fe') AS __keel_trace_id`
+
+	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+}
+
+func withIdentity(t *testing.T, ctx context.Context) (context.Context, *auth.Identity) {
+	identity := &auth.Identity{Id: identityId}
+	return auth.WithIdentity(ctx, identity), identity
+}
+
+const (
+	identityId = "2V1gEtq4GEhvtRofqwiN9ZfapxN"
+	traceId    = "71f835dc7ac2750bed2135c7b30dc7fe"
+	spanId     = "b4c9e2a6a0d84702"
+)
+
+func withTracing(t *testing.T, ctx context.Context) context.Context {
+	traceIdBytes, err := hex.DecodeString(traceId)
+	require.NoError(t, err)
+	spanIdBytes, err := hex.DecodeString(spanId)
+	require.NoError(t, err)
+	spanContext := trace.NewSpanContext(trace.SpanContextConfig{
+		TraceID:    trace.TraceID(traceIdBytes),
+		SpanID:     trace.SpanID(spanIdBytes),
+		TraceFlags: trace.FlagsSampled,
+	})
+	require.True(t, spanContext.IsValid())
+	return trace.ContextWithSpanContext(ctx, spanContext)
 }

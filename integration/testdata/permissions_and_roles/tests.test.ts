@@ -1,6 +1,5 @@
 import { test, expect, beforeEach } from "vitest";
 import { actions, resetDatabase } from "@teamkeel/testing";
-import { Options } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
