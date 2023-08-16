@@ -1,3 +1,10 @@
+## [0.365.3](https://github.com/teamkeel/keel/compare/v0.365.2...v0.365.3) (2023-08-16)
+
+
+### Bug Fixes
+
+* permission relationship fixes ([#1104](https://github.com/teamkeel/keel/issues/1104)) ([a2a2333](https://github.com/teamkeel/keel/commit/a2a233359787d96fc7ac556b987a6514facd58f3))
+
 ## [0.365.2](https://github.com/teamkeel/keel/compare/v0.365.1...v0.365.2) (2023-08-15)
 
 
