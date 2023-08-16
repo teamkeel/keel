@@ -407,3 +407,19 @@ func MessageUsedAsResponse(schema *Schema, msgName string) bool {
 
 	return false
 }
+
+// FindSubscriber locates the subscriber of the given name.
+func FindSubscriber(subscribers []*Subscriber, name string) *Subscriber {
+	subscriber, _ := lo.Find(subscribers, func(m *Subscriber) bool {
+		return m.Name == name
+	})
+	return subscriber
+}
+
+// FindEvent locates the event of the given name.
+func FindEvent(subscribers []*Event, name string) *Event {
+	event, _ := lo.Find(subscribers, func(m *Event) bool {
+		return m.Name == name
+	})
+	return event
+}

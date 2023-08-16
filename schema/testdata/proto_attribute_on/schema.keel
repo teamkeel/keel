@@ -1,0 +1,19 @@
+model Member {
+    fields {
+        name Text
+        email Text
+    }
+
+    @on([create], sendWelcomeMail)
+    @on([create, update], verifyEmail)
+    @on([delete], sendGoodbyeMail)
+}
+
+model Employee {
+    fields {
+        name Text
+        email Text
+    }
+
+    @on([create, update], verifyEmail)
+}
