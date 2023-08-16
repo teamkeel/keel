@@ -901,7 +901,7 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	js.Write("await sql`TRUNCATE TABLE ")
 	tableNames := []string{}
 	for _, model := range schema.Models {
-		tableNames = append(tableNames, casing.ToSnake(model.Name))
+		tableNames = append(tableNames, fmt.Sprintf("\"%s\"", casing.ToSnake(model.Name)))
 	}
 	js.Writef("%s CASCADE", strings.Join(tableNames, ","))
 	js.Writeln("`.execute(db);")

@@ -124,7 +124,7 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	isAuthorised, err := AuthoriseAction(scope, results)
+	isAuthorised, err := AuthoriseAction(scope, input, results)
 	if err != nil {
 		return nil, err
 	}

@@ -162,6 +162,7 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string) error {
 	model := casing.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
+	//previousIsRepeated := false
 
 	for i := 1; i < fragmentCount-1; i++ {
 		currentFragment := fragments[i]
@@ -187,9 +188,10 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 			// In all others the foriegn key is on the _other_ model
 			leftOperand = ExpressionField(fragments[:i+1], foreignKeyField)
 			rightOperand = ExpressionField(fragments[:i], primaryKey)
+
 		}
 
-		query.InnerJoin(relatedModel, leftOperand, rightOperand)
+		query.Join(relatedModel, leftOperand, rightOperand)
 
 		model = relatedModelField.Type.ModelName.Value
 	}

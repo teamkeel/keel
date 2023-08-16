@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/proto"
@@ -19,6 +18,8 @@ type authorisationTestCase struct {
 	keelSchema string
 	// Operation name to run test upon
 	operationName string
+	// Input map for operation
+	input map[string]any
 	// Expected SQL template generated (with ? placeholders for values)
 	expectedTemplate string
 	// OPTIONAL: Expected ordered argument slice
@@ -49,14 +50,6 @@ var identity = &runtimectx.Identity{
 	Email: "keelson@keel.xyz",
 }
 
-var rowsToAuthorise = []map[string]any{
-	{"id": "id1"},
-	{"id": "id2"},
-	{"id": "id3"},
-}
-
-var idsToAuthorise = lo.Map(rowsToAuthorise, func(row map[string]any, _ int) any { return row["id"] })
-
 var authorisationTestCases = []authorisationTestCase{
 	{
 		name: "identity_check",
@@ -78,9 +71,8 @@ var authorisationTestCases = []authorisationTestCase{
 			FROM
 				"thing"
 			WHERE
-				( "thing"."created_by_id" IS NOT DISTINCT FROM ? )
-				AND "thing"."id" IN (?, ?, ?)`,
-		expectedArgs: append([]any{identity.Id}, idsToAuthorise...),
+				( "thing"."created_by_id" IS NOT DISTINCT FROM ? )`,
+		expectedArgs: []any{identity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -107,14 +99,13 @@ var authorisationTestCases = []authorisationTestCase{
 				DISTINCT ON("thing"."id") "thing"."id"
 			FROM
 				"thing"
-			INNER JOIN
+			LEFT JOIN
 				"related" AS "thing$related"
 			ON
 				"thing$related"."id" = "thing"."related_id"
 			WHERE
-				( "thing$related"."created_by_id" IS NOT DISTINCT FROM ? )
-				AND "thing"."id" IN (?, ?, ?)`,
-		expectedArgs: append([]any{identity.Id}, idsToAuthorise...),
+				( "thing$related"."created_by_id" IS NOT DISTINCT FROM ? )`,
+		expectedArgs: []any{identity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -138,9 +129,8 @@ var authorisationTestCases = []authorisationTestCase{
 			FROM
 				"thing"
 			WHERE
-				( "thing"."is_active" IS NOT DISTINCT FROM ? )
-				AND "thing"."id" IN (?, ?, ?)`,
-		expectedArgs: append([]any{true}, idsToAuthorise...),
+				( "thing"."is_active" IS NOT DISTINCT FROM ? )`,
+		expectedArgs: []any{true},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -168,15 +158,13 @@ var authorisationTestCases = []authorisationTestCase{
 				DISTINCT ON("thing"."id") "thing"."id"
 			FROM
 				"thing"
-			INNER JOIN
+			LEFT JOIN
 				"related" AS "thing$related"
 			ON
 				"thing$related"."id" = "thing"."related_id"
 			WHERE
-				( "thing$related"."created_by_id" IS NOT DISTINCT FROM "thing"."created_by_id" )
-				AND "thing"."id" IN (?, ?, ?)`,
-		expectedArgs: idsToAuthorise,
-		earlyAuth:    CouldNotAuthoriseEarly(),
+				( "thing$related"."created_by_id" IS NOT DISTINCT FROM "thing"."created_by_id" )`,
+		earlyAuth: CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "multiple_conditions_and",
@@ -199,9 +187,8 @@ var authorisationTestCases = []authorisationTestCase{
 			FROM
 				"thing"
 			WHERE
-				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )
-				AND "thing"."id" IN (?, ?, ?)`,
-		expectedArgs: append([]any{true, identity.Id}, idsToAuthorise...),
+				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )`,
+		expectedArgs: []any{true, identity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -225,9 +212,8 @@ var authorisationTestCases = []authorisationTestCase{
 			FROM
 				"thing"
 			WHERE
-				( ( "thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )
-				AND "thing"."id" IN (?, ?, ?)`,
-		expectedArgs: append([]any{true, identity.Id}, idsToAuthorise...),
+				( ( "thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )`,
+		expectedArgs: []any{true, identity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -254,9 +240,8 @@ var authorisationTestCases = []authorisationTestCase{
 			WHERE
 				( "thing"."is_active" IS NOT DISTINCT FROM ?
 					OR
-				 "thing"."created_by_id" IS NOT DISTINCT FROM ? )
-				AND "thing"."id" IN (?, ?, ?)`,
-		expectedArgs: append([]any{true, identity.Id}, idsToAuthorise...),
+				 "thing"."created_by_id" IS NOT DISTINCT FROM ? )`,
+		expectedArgs: []any{true, identity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -286,12 +271,11 @@ var authorisationTestCases = []authorisationTestCase{
 				DISTINCT ON("thing"."id") "thing"."id"
 			FROM
 				"thing"
-			INNER JOIN "related" AS
+			LEFT JOIN "related" AS
 				"thing$related" ON "thing$related"."id" = "thing"."related_id"
 			WHERE
-				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) OR "thing"."created_by_id" IS NOT DISTINCT FROM "thing$related"."created_by_id" )
-				AND "thing"."id" IN (?, ?, ?)`,
-		expectedArgs: append([]any{true, identity.Id}, idsToAuthorise...),
+				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) OR "thing"."created_by_id" IS NOT DISTINCT FROM "thing$related"."created_by_id" )`,
+		expectedArgs: []any{true, identity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -403,18 +387,19 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     CouldNotAuthoriseEarly(),
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing"."id"
 			FROM
 				"thing"
-			INNER JOIN "identity" AS "thing$created_by" ON
+			LEFT JOIN "identity" AS "thing$created_by" ON
 				"thing$created_by"."id" = "thing"."created_by_id"
-			WHERE
-				( ( ? IS NOT DISTINCT FROM ? AND "thing$created_by"."id" IS NOT DISTINCT FROM ? ) )
-				AND "thing"."id" IN (?, ?, ?)`,
-		expectedArgs: append([]any{true, true, identity.Id}, idsToAuthorise...),
+			WHERE 
+				"thing"."id" IS NOT DISTINCT FROM ? AND 
+				( ( ? IS NOT DISTINCT FROM ? AND "thing$created_by"."id" IS NOT DISTINCT FROM ? ) )`,
+		expectedArgs: []any{"123", true, true, identity.Id},
 	},
 	{
 		name: "early_evaluate_multiple_conditions_or_with_database",
@@ -633,6 +618,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     CouldNotAuthoriseEarly(),
 	},
 	{
@@ -656,6 +642,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     CouldNotAuthoriseEarly(),
 	},
 	{
@@ -679,6 +666,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     CouldNotAuthoriseEarly(),
 	},
 	{
@@ -702,6 +690,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     AuthorisationGrantedEarly(),
 	},
 	{
@@ -726,6 +715,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     AuthorisationGrantedEarly(),
 	},
 	{
@@ -749,6 +739,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     AuthorisationGrantedEarly(),
 	},
 	{
@@ -772,6 +763,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     AuthorisationGrantedEarly(),
 	},
 	{
@@ -794,6 +786,7 @@ var authorisationTestCases = []authorisationTestCase{
 				@permission(expression: true, actions: [get])
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     CouldNotAuthoriseEarly(),
 	},
 	{
@@ -816,6 +809,7 @@ var authorisationTestCases = []authorisationTestCase{
 				@permission(expression: thing.createdBy.id == ctx.identity.id, actions: [get])
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     AuthorisationGrantedEarly(),
 	},
 	{
@@ -838,6 +832,7 @@ var authorisationTestCases = []authorisationTestCase{
 				@permission(expression: thing.createdBy.id == ctx.identity.id, actions: [get])
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     AuthorisationDeniedEarly(),
 	},
 	{
@@ -855,20 +850,72 @@ var authorisationTestCases = []authorisationTestCase{
 				@permission(expression: thing.updatedBy.id == ctx.identity.id, actions: [get])
 			}`,
 		operationName: "getThing",
+		input:         map[string]any{"id": "123"},
 		earlyAuth:     CouldNotAuthoriseEarly(),
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing"."id" 
 			FROM 
 				"thing" 
-			INNER JOIN 
+			LEFT JOIN 
 				"identity" AS "thing$created_by" ON "thing$created_by"."id" = "thing"."created_by_id" 
-			INNER JOIN 
+			LEFT JOIN 
 				"identity" AS "thing$updated_by" ON "thing$updated_by"."id" = "thing"."updated_by_id" 
 			WHERE 
-				( "thing$created_by"."id" IS NOT DISTINCT FROM ? OR "thing$updated_by"."id" IS NOT DISTINCT FROM ? ) 
-				AND "thing"."id" IN (?, ?, ?)`,
-		expectedArgs: append([]any{identity.Id, identity.Id}, idsToAuthorise...),
+				"thing"."id" IS NOT DISTINCT FROM ? AND 
+				( "thing$created_by"."id" IS NOT DISTINCT FROM ? OR "thing$updated_by"."id" IS NOT DISTINCT FROM ? )`,
+		expectedArgs: []any{"123", identity.Id, identity.Id},
+	},
+	{
+		name: "filters_and_permissions_and_relationships",
+		keelSchema: `
+			model User {
+				fields {
+					identity Identity @unique
+					organisations UserOrganisation[]
+				}
+			
+				operations {
+					list listUsersByOrganisation(organisations.organisation.id) {
+						@permission(expression: ctx.identity in user.organisations.organisation.users.user.identity)
+					}
+				}
+			}
+			model Organisation {
+				fields {
+					users UserOrganisation[]
+				}
+			}
+			model UserOrganisation {
+				fields {
+					user User
+					organisation Organisation
+				}
+			}`,
+		operationName: "listUsersByOrganisation",
+		input: map[string]any{
+			"organisations": map[string]any{
+				"organisation": map[string]any{
+					"id": map[string]any{
+						"equals": "123"}}}},
+		earlyAuth: CouldNotAuthoriseEarly(),
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("user"."id") "user"."id" 
+			FROM 
+				"user" 
+			LEFT JOIN 
+				"user_organisation" AS "user$organisations" ON "user$organisations"."user_id" = "user"."id" 
+			LEFT JOIN 
+				"organisation" AS "user$organisations$organisation" ON "user$organisations$organisation"."id" = "user$organisations"."organisation_id" 
+			LEFT JOIN 
+				"user_organisation" AS "user$organisations$organisation$users" ON "user$organisations$organisation$users"."organisation_id" = "user$organisations$organisation"."id" 
+			LEFT JOIN 
+				"user" AS "user$organisations$organisation$users$user" ON "user$organisations$organisation$users$user"."id" = "user$organisations$organisation$users"."user_id" 
+			WHERE 
+				"user$organisations$organisation"."id" IS NOT DISTINCT FROM ? AND ( ? IS NOT DISTINCT FROM "user$organisations$organisation$users$user"."identity_id" )
+			`,
+		expectedArgs: []any{"123", identity.Id},
 	},
 }
 
@@ -901,7 +948,7 @@ func TestPermissionQueryBuilder(t *testing.T) {
 			if !canResolveEarly {
 				permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
 
-				statement, err := actions.GeneratePermissionStatement(scope, permissions, rowsToAuthorise)
+				statement, err := actions.GeneratePermissionStatement(scope, permissions, testCase.input)
 				if err != nil {
 					require.NoError(t, err)
 				}

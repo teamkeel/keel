@@ -1,0 +1,62 @@
+model User {
+    fields {
+        identity Identity @unique
+        name Text
+        organisations UserOrganisation[]
+    }
+
+    operations {
+        create createUser() with (name) {
+            @set(user.identity = ctx.identity)
+        }
+        get getUser(id)
+        list listUsersByOrganisation(organisations.organisation.id) 
+    }
+
+    @permission(
+        expression: user.identity == ctx.identity,
+        actions: [create, get]
+    )
+
+    @permission(
+        expression: ctx.identity in user.organisations.organisation.users.user.identity,
+        actions: [get, list]
+    )
+}
+
+model Organisation {
+    fields {
+        name Text
+        users UserOrganisation[]
+    }
+
+    operations {
+        create createOrganisation() with (name, users.user.id)
+        list listOrganisations() {
+            @where(ctx.identity in organisation.users.user.identity)
+        }
+        get getOrganisation(id)
+    }
+
+    @permission(
+        expression: ctx.identity in organisation.users.user.identity,
+        actions: [create, list, get]
+    )
+}
+
+model UserOrganisation {
+    fields {
+        user User
+        organisation Organisation
+        isActive Boolean @default(true)
+    }
+}
+
+api Web {
+    models {
+        Identity
+        User
+        Organisation
+        UserOrganisation
+    }
+}
