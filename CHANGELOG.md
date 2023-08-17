@@ -1,3 +1,10 @@
+## [0.365.7](https://github.com/teamkeel/keel/compare/v0.365.6...v0.365.7) (2023-08-17)
+
+
+### Bug Fixes
+
+* scope fetch to globalThis ([#1110](https://github.com/teamkeel/keel/issues/1110)) ([4ff9f56](https://github.com/teamkeel/keel/commit/4ff9f5688a26fb546c58bed4234aedacdb0b9055))
+
 ## [0.365.6](https://github.com/teamkeel/keel/compare/v0.365.5...v0.365.6) (2023-08-16)
 
 
