@@ -7,8 +7,5 @@
         "@semantic-release/github": "^8.0.7",
         "prettier": "^2.7.1"
     },
-    "version": "0.273.3",
-    "release": {
-        "NPM_TOKEN": "063bdee0-66dc-4a7f-afbe-d"
-      }
+    "version": "0.273.3"
 }
