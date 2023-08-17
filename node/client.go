@@ -299,7 +299,7 @@ class Core {
     },
     rawRequest: async <T>(action: string, body: any): Promise<APIResult<T>> => {
       try {
-        const result = await fetch(
+        const result = await globalThis.fetch(
           stripTrailingSlash(this.config.baseUrl) + "/json/" + action,
           {
             method: "POST",
