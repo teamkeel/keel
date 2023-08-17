@@ -1,3 +1,10 @@
+## [0.365.8](https://github.com/teamkeel/keel/compare/v0.365.7...v0.365.8) (2023-08-17)
+
+
+### Bug Fixes
+
+* add line break between test output ([#1111](https://github.com/teamkeel/keel/issues/1111)) ([67f1ddd](https://github.com/teamkeel/keel/commit/67f1ddd74892864313f6a44380212d3e11b38e7c))
+
 ## [0.365.7](https://github.com/teamkeel/keel/compare/v0.365.6...v0.365.7) (2023-08-17)
 
 
