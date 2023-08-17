@@ -50,11 +50,11 @@ jobs:
 
       - name: Install client-react publish dependencies
         working-directory: ./packages/client-react
-        run: pnpm install --frozen-lockfile --production
+        run: pnpm install --frozen-lockfile
 
       - name: Install client-react-query publish dependencies
         working-directory: ./packages/client-react-query
-        run: pnpm install --frozen-lockfile --production
+        run: pnpm install --frozen-lockfile
 
       - name: Semantic release
         env:
