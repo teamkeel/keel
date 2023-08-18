@@ -127,7 +127,8 @@ func Bootstrap(dir string, opts ...BootstrapOption) (codegen.GeneratedFiles, err
 				"skipLibCheck": true,
 				"strictNullChecks": true,
 				"types": ["node"],
-				"allowJs": true
+				"allowJs": true,
+				"resolveJsonModule": true
 			},
 			"include": ["**/*.ts"],
 			"exclude": ["node_modules"]
