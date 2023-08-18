@@ -1,3 +1,10 @@
+## [0.365.10](https://github.com/teamkeel/keel/compare/v0.365.9...v0.365.10) (2023-08-18)
+
+
+### Bug Fixes
+
+* enabling resolveJsonModule in tsconfig ([#1114](https://github.com/teamkeel/keel/issues/1114)) ([5ef5ac4](https://github.com/teamkeel/keel/commit/5ef5ac4fcc04a7a8460cf9393582ee9d4f9c33e7))
+
 ## [0.365.9](https://github.com/teamkeel/keel/compare/v0.365.8...v0.365.9) (2023-08-17)
 
 
