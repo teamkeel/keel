@@ -46,7 +46,7 @@ jobs:
     with:
       version: ${{ needs.setup.outputs.version }}
       publishTag: "next"
-      dryRun: true
+      dryRun: false
     secrets: inherit
 
   github_release:
