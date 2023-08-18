@@ -54,11 +54,11 @@ func GenerateEvents(ctx context.Context) error {
 	handler, _ := GetEventHandler(ctx)
 
 	testEvent := &Event{
-		name:       "member.created",
-		model:      "member",
-		occurredAt: time.Now(),
-		identityId: "",
-		data: map[string]any{
+		Name:       "member.created",
+		Model:      "member",
+		OccurredAt: time.Now(),
+		IdentityId: "",
+		Data: map[string]any{
 			"id":   "123",
 			"name": "Boetie",
 		},
