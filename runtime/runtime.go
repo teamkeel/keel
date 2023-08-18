@@ -97,9 +97,6 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 
 		w.WriteHeader(response.Status)
 		_, _ = w.Write(response.Body)
-
-		// Send any events which may have been created.
-		_ = events.GenerateEvents(ctx)
 	}
 
 	return http.HandlerFunc(httpHandler)
