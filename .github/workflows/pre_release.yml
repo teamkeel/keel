@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      - release_process
-      - BLD-601-create-production-release
     tags-ignore:
       - "*"
 
