@@ -1,3 +1,10 @@
+## [0.365.12](https://github.com/teamkeel/keel/compare/v0.365.11...v0.365.12) (2023-08-18)
+
+
+### Bug Fixes
+
+* change docs link to new doc site ([#1116](https://github.com/teamkeel/keel/issues/1116)) ([cf7a738](https://github.com/teamkeel/keel/commit/cf7a738b201a070329653f0b97fe00c2dbdef932))
+
 ## [0.365.11](https://github.com/teamkeel/keel/compare/v0.365.10...v0.365.11) (2023-08-18)
 
 
