@@ -1,3 +1,10 @@
+## [0.365.11](https://github.com/teamkeel/keel/compare/v0.365.10...v0.365.11) (2023-08-18)
+
+
+### Bug Fixes
+
+* export fields and set json tags ([#1115](https://github.com/teamkeel/keel/issues/1115)) ([b1ab881](https://github.com/teamkeel/keel/commit/b1ab881c47ac0ff663724366a744ff3f379433ce))
+
 ## [0.365.10](https://github.com/teamkeel/keel/compare/v0.365.9...v0.365.10) (2023-08-18)
 
 
