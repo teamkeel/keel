@@ -29,11 +29,11 @@ func GetEventHandler(ctx context.Context) (EventHandler, error) {
 // The event payload.
 // TODO: Iron out the data.
 type Event struct {
-	name       string
-	model      string
-	occurredAt time.Time
-	identityId string
-	data       map[string]any
+	Name       string         `json:"name,omitempty"`
+	Model      string         `json:"model,omitempty"`
+	OccurredAt time.Time      `json:"occurred_at,omitempty"`
+	IdentityId string         `json:"identity_id,omitempty"`
+	Data       map[string]any `json:"data,omitempty"`
 }
 
 // The event handler function to be executed for each event generated.
@@ -54,11 +54,11 @@ func GenerateEvents(ctx context.Context) error {
 	handler, _ := GetEventHandler(ctx)
 
 	testEvent := &Event{
-		name:       "member.created",
-		model:      "member",
-		occurredAt: time.Now(),
-		identityId: "",
-		data: map[string]any{
+		Name:       "member.created",
+		Model:      "member",
+		OccurredAt: time.Now(),
+		IdentityId: "",
+		Data: map[string]any{
 			"id":   "123",
 			"name": "Boetie",
 		},
