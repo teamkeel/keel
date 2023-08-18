@@ -210,6 +210,10 @@ message Message {
 
     // The input or response fields for this message.
     repeated MessageField fields = 2;
+
+    // The message could be a Keel type and not an object.
+    // Cannot be provided along with fields.
+    TypeInfo type = 3;
 }
 
 message MessageField {
@@ -393,7 +397,7 @@ message Subscriber {
 
     // The input message for this function.
     // The structure of this is determined by the events handled by this subscriber.
-    string input_message = 2;
+    string input_message_name = 2;
 
     // The events which are handled by this subscriber.
     repeated string event_names = 3;

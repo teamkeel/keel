@@ -36,8 +36,9 @@ import (
 )
 
 const (
-	ActionApiPath = "testingactionsapi"
-	JobPath       = "testingjobs"
+	ActionApiPath  = "testingactionsapi"
+	JobPath        = "testingjobs"
+	SubscriberPath = "testingsubscribers"
 )
 
 type TestOutput struct {
@@ -153,7 +154,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		os.Setenv(key, value)
 	}
 
-	// Server to handle receiving HTTP requests from the ActionExecutor and JobExecutor.
+	// Server to handle receiving HTTP requests from the ActionExecutor, JobExecutor and SubscriberExecutor.
 	runtimeServer := http.Server{
 		Addr: fmt.Sprintf(":%s", runtimePort),
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -259,7 +260,34 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 				} else {
 					w.WriteHeader(http.StatusOK)
 				}
+			case SubscriberPath:
+				subscriberName := pathParts[2]
+				body, err := io.ReadAll(r.Body)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
 
+				var inputs map[string]any
+				err = json.Unmarshal(body, &inputs)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+
+				err = runtime.NewSubscriberHandler(schema).RunSubscriber(ctx, subscriberName, inputs)
+
+				if err != nil {
+					response := common.NewJsonErrorResponse(err)
+
+					w.WriteHeader(response.Status)
+					_, err = w.Write(response.Body)
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					w.WriteHeader(http.StatusOK)
+				}
 			default:
 				w.WriteHeader(http.StatusNotFound)
 				_, err = w.Write([]byte(fmt.Sprintf("invalid url received on testing server '%s'", r.URL.Path)))
@@ -309,8 +337,9 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	cmd = exec.Command("npx", "vitest", "run", "--color", "--reporter", "verbose", "--config", "./.build/vitest.config.mjs", "--testNamePattern", opts.Pattern)
 	cmd.Dir = opts.Dir
 	cmd.Env = append(os.Environ(), []string{
-		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/testingactionsapi/json", runtimePort),
-		fmt.Sprintf("KEEL_TESTING_JOBS_URL=http://localhost:%s/testingjobs/json", runtimePort),
+		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/%s/json", runtimePort, ActionApiPath),
+		fmt.Sprintf("KEEL_TESTING_JOBS_URL=http://localhost:%s/%s/json", runtimePort, JobPath),
+		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=http://localhost:%s/%s/json", runtimePort, SubscriberPath),
 		"KEEL_DB_CONN_TYPE=pg",
 		fmt.Sprintf("KEEL_DB_CONN=%s", dbConnString),
 		// Disables experimental fetch warning that pollutes console experience when running tests
