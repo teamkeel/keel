@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
@@ -80,7 +81,7 @@ func NewJobScope(
 	}
 }
 
-func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
+func Execute(scope *Scope, inputs any) (result any, headers map[string][]string, err error) {
 	ctx, span := tracer.Start(scope.Context, scope.Operation.Name)
 	defer span.End()
 
@@ -97,7 +98,7 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 
 	switch scope.Operation.Implementation {
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM:
-		return executeCustomFunction(scope, inputs)
+		result, headers, err = executeCustomFunction(scope, inputs)
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME:
 		if !inputWasAMap {
 			if inputs == nil {
@@ -106,7 +107,7 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
 			}
 		}
-		return executeRuntimeOperation(scope, inputsAsMap)
+		result, headers, err = executeRuntimeOperation(scope, inputsAsMap)
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO:
 		if !inputWasAMap {
 			if inputs == nil {
@@ -115,10 +116,18 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
 			}
 		}
-		return executeAutoOperation(scope, inputsAsMap)
+		result, headers, err = executeAutoOperation(scope, inputsAsMap)
 	default:
 		return nil, nil, fmt.Errorf("unhandled unknown operation %s of type %s", scope.Operation.Name, scope.Operation.Implementation)
 	}
+
+	// Generate and send any events for this context.
+	eventsErr := events.GenerateEvents(ctx)
+	if eventsErr != nil {
+		span.RecordError(eventsErr)
+	}
+
+	return
 }
 
 func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, error) {

@@ -10,6 +10,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	log "github.com/sirupsen/logrus"
+	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -142,10 +143,17 @@ func NewJobHandler(currSchema *proto.Schema) JobHandler {
 
 // RunJob will run the job function in the runtime.
 func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map[string]any, trigger functions.TriggerType) error {
+	ctx, span := tracer.Start(ctx, "Run job")
+	defer span.End()
+
 	job := proto.FindJob(handler.schema.Jobs, strcase.ToCamel(jobName))
 	if job == nil {
 		return fmt.Errorf("no job with the name '%s' exists", jobName)
 	}
+
+	span.SetAttributes(
+		attribute.String("job.name", job.Name),
+	)
 
 	scope := actions.NewJobScope(ctx, job, handler.schema)
 
@@ -167,13 +175,21 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 		}
 	}
 
-	return functions.CallJob(
+	err := functions.CallJob(
 		ctx,
 		job,
 		inputs,
 		permissionState,
 		trigger,
 	)
+
+	// Generate and send any events for this context.
+	eventsErr := events.GenerateEvents(ctx)
+	if eventsErr != nil {
+		span.RecordError(eventsErr)
+	}
+
+	return err
 }
 
 func withRequestResponseLogging(handler common.ApiHandlerFunc) common.ApiHandlerFunc {
