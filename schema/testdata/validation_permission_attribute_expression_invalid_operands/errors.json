@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": " unexpected token \".\" (expected \u003cint\u003e)",
+      "hint": "",
+      "code": "E025",
+      "pos": {
+        "filename": "testdata/validation_permission_attribute_expression_invalid_operands/schema.keel",
+        "offset": 596,
+        "line": 36,
+        "column": 21
+      },
+      "endPos": {
+        "filename": "testdata/validation_permission_attribute_expression_invalid_operands/schema.keel",
+        "offset": 596,
+        "line": 36,
+        "column": 21
+      }
+    }
+  ]
+}

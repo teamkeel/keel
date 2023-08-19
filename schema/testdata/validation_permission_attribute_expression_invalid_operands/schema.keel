@@ -1,0 +1,52 @@
+model Person {
+    fields {
+        identity Identity
+        organisation Organisation
+    }
+
+    @permission(
+        expression: invalid,
+        actions: [get]
+    )
+
+    @permission(
+        expression: ct.isAuthenticated,
+        actions: [get]
+    )
+
+    @permission(
+        expression: ctx.invalid,
+        actions: [get]
+    )
+
+    @permission(
+        expression: "true",
+        actions: [get]
+    )
+
+    @permission(
+        expression: true or c.isAuthenticated,
+        actions: [get]
+    )
+
+    @permission(
+        expression: ctx.identity in person.organisation.invalid,
+        actions: [get]
+    )
+
+     @permission(
+        expression: ctx.isAuthenticated and ctx.identity in person.organisation.invalid,
+        actions: [get]
+    )
+
+     @permission(
+        expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid,
+        actions: [get]
+    )
+}
+
+model Organisation {
+    fields {
+        people Person[]
+    }
+}
