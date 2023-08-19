@@ -6,15 +6,15 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 196,
-        "line": 10,
-        "column": 33
+        "offset": 170,
+        "line": 9,
+        "column": 32
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 203,
-        "line": 10,
-        "column": 40
+        "offset": 177,
+        "line": 9,
+        "column": 39
       }
     },
     {
@@ -23,66 +23,49 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 284,
-        "line": 14,
-        "column": 33
+        "offset": 250,
+        "line": 13,
+        "column": 32
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 286,
-        "line": 14,
-        "column": 35
+        "offset": 252,
+        "line": 13,
+        "column": 34
       }
     },
     {
-      "message": "'invalid' not found on 'Context'",
-      "hint": "Did you mean one of identity, isAuthenticated, now, env, headers, or secrets?",
-      "code": "E020",
-      "pos": {
-        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 387,
-        "line": 18,
-        "column": 37
-      },
-      "endPos": {
-        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 394,
-        "line": 18,
-        "column": 44
-      }
-    },
-    {
-      "message": "Non-boolean single operand conditions such as '\"true\"' not permitted on @permission",
-      "hint": "Please add an operator and second operand. Did you mean '\"true\" == xxx'?",
-      "code": "E061",
-      "pos": {
-        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 475,
-        "line": 22,
-        "column": 33
-      },
-      "endPos": {
-        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 481,
-        "line": 22,
-        "column": 39
-      }
-    },
-    {
-      "message": "'c' not found",
+      "message": "'ct' not found",
       "hint": "Did you mean ctx?",
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 570,
-        "line": 26,
-        "column": 41
+        "offset": 367,
+        "line": 17,
+        "column": 32
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 571,
-        "line": 26,
-        "column": 42
+        "offset": 369,
+        "line": 17,
+        "column": 34
+      }
+    },
+    {
+      "message": "Non-boolean single operand conditions such as '\"true\"' not permitted on @where",
+      "hint": "Please add an operator and second operand. Did you mean '\"true\" == xxx'?",
+      "code": "E061",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 469,
+        "line": 21,
+        "column": 32
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 475,
+        "line": 21,
+        "column": 38
       }
     },
     {
@@ -91,15 +74,15 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 704,
-        "line": 30,
-        "column": 69
+        "offset": 599,
+        "line": 25,
+        "column": 68
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 711,
-        "line": 30,
-        "column": 76
+        "offset": 606,
+        "line": 25,
+        "column": 75
       }
     },
     {
@@ -108,15 +91,15 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 852,
-        "line": 34,
-        "column": 93
+        "offset": 739,
+        "line": 29,
+        "column": 92
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 859,
-        "line": 34,
-        "column": 100
+        "offset": 746,
+        "line": 29,
+        "column": 99
       }
     },
     {
@@ -125,15 +108,15 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 960,
-        "line": 38,
-        "column": 53
+        "offset": 839,
+        "line": 33,
+        "column": 52
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 967,
-        "line": 38,
-        "column": 60
+        "offset": 846,
+        "line": 33,
+        "column": 59
       }
     },
     {
@@ -142,15 +125,15 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 1008,
-        "line": 38,
-        "column": 101
+        "offset": 887,
+        "line": 33,
+        "column": 100
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 1015,
-        "line": 38,
-        "column": 108
+        "offset": 894,
+        "line": 33,
+        "column": 107
       }
     }
   ]
