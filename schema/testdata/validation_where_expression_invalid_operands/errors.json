@@ -1,0 +1,157 @@
+{
+  "errors": [
+    {
+      "message": "'invalid' not found",
+      "hint": "Did you mean ctx, or person?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 196,
+        "line": 10,
+        "column": 33
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 203,
+        "line": 10,
+        "column": 40
+      }
+    },
+    {
+      "message": "'ct' not found",
+      "hint": "Did you mean ctx?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 284,
+        "line": 14,
+        "column": 33
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 286,
+        "line": 14,
+        "column": 35
+      }
+    },
+    {
+      "message": "'invalid' not found on 'Context'",
+      "hint": "Did you mean one of identity, isAuthenticated, now, env, headers, or secrets?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 387,
+        "line": 18,
+        "column": 37
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 394,
+        "line": 18,
+        "column": 44
+      }
+    },
+    {
+      "message": "Non-boolean single operand conditions such as '\"true\"' not permitted on @permission",
+      "hint": "Please add an operator and second operand. Did you mean '\"true\" == xxx'?",
+      "code": "E061",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 475,
+        "line": 22,
+        "column": 33
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 481,
+        "line": 22,
+        "column": 39
+      }
+    },
+    {
+      "message": "'c' not found",
+      "hint": "Did you mean ctx?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 570,
+        "line": 26,
+        "column": 41
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 571,
+        "line": 26,
+        "column": 42
+      }
+    },
+    {
+      "message": "'invalid' not found on 'Organisation'",
+      "hint": "Did you mean one of people, id, createdAt, or updatedAt?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 704,
+        "line": 30,
+        "column": 69
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 711,
+        "line": 30,
+        "column": 76
+      }
+    },
+    {
+      "message": "'invalid' not found on 'Organisation'",
+      "hint": "Did you mean one of people, id, createdAt, or updatedAt?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 852,
+        "line": 34,
+        "column": 93
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 859,
+        "line": 34,
+        "column": 100
+      }
+    },
+    {
+      "message": "'invalid' not found on 'Boolean'",
+      "hint": "",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 960,
+        "line": 38,
+        "column": 53
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 967,
+        "line": 38,
+        "column": 60
+      }
+    },
+    {
+      "message": "'invalid' not found on 'Organisation'",
+      "hint": "Did you mean one of people, id, createdAt, or updatedAt?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 1008,
+        "line": 38,
+        "column": 101
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 1015,
+        "line": 38,
+        "column": 108
+      }
+    }
+  ]
+}

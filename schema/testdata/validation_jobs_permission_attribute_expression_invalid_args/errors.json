@@ -135,6 +135,40 @@
         "line": 23,
         "column": 16
       }
+    },
+    {
+      "message": "'invalid' not found on 'Boolean'",
+      "hint": "",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 405,
+        "line": 27,
+        "column": 50
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 412,
+        "line": 27,
+        "column": 57
+      }
+    },
+    {
+      "message": "'person' not found",
+      "hint": "Did you mean ctx?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 433,
+        "line": 27,
+        "column": 78
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 439,
+        "line": 27,
+        "column": 84
+      }
     }
   ]
 }
