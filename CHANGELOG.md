@@ -1,3 +1,10 @@
+## [0.365.14](https://github.com/teamkeel/keel/compare/v0.365.13...v0.365.14) (2023-08-21)
+
+
+### Bug Fixes
+
+* use go 1.20 ([#1120](https://github.com/teamkeel/keel/issues/1120)) ([f460929](https://github.com/teamkeel/keel/commit/f460929e37a86fe2ccf6aff24643aecb46c5ed61))
+
 ## [0.365.13](https://github.com/teamkeel/keel/compare/v0.365.12...v0.365.13) (2023-08-21)
 
 
