@@ -55,7 +55,7 @@ jobs:
     with:
       version: ${{ needs.setup.outputs.version }}
       preRelease: true
-      draft: true
+      draft: false
       makeLatest: false
       generateChangelog: true
       releaseEvent: "new-runtime-pre-release"
