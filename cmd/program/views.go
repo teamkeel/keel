@@ -38,9 +38,9 @@ func renderTest(m *Model) string {
 	} else {
 		switch m.Status {
 		case StatusRunning:
-			b.WriteString("🏃‍♂️ Running tests")
+			b.WriteString("🏃‍♂️ Running tests\n")
 		default:
-			b.WriteString("⏳ Setting up tests")
+			b.WriteString("⏳ Setting up tests\n")
 		}
 	}
 

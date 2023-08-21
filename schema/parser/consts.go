@@ -129,6 +129,7 @@ const (
 	AttributeSortable   = "sortable"
 	AttributeSchedule   = "schedule"
 	AttributeFunction   = "function"
+	AttributeOn         = "on"
 )
 
 const (

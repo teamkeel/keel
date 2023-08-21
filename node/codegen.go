@@ -300,7 +300,7 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 		var tsType string
 
 		switch {
-		case f.Unique || f.PrimaryKey:
+		case f.Unique || f.PrimaryKey || len(f.UniqueWith) > 0:
 			tsType = toTypeScriptType(f.Type, false)
 		case proto.IsHasMany(f):
 			// If a model "has one" of another model then you can
@@ -901,7 +901,7 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	js.Write("await sql`TRUNCATE TABLE ")
 	tableNames := []string{}
 	for _, model := range schema.Models {
-		tableNames = append(tableNames, casing.ToSnake(model.Name))
+		tableNames = append(tableNames, fmt.Sprintf("\"%s\"", casing.ToSnake(model.Name)))
 	}
 	js.Writef("%s CASCADE", strings.Join(tableNames, ","))
 	js.Writeln("`.execute(db);")

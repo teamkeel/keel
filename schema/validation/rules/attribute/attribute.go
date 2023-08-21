@@ -36,6 +36,14 @@ func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 		}
 	}
 
+	for _, job := range query.Jobs(asts) {
+		for _, section := range job.Sections {
+			if section.Attribute != nil {
+				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, "job", job.Name.Value))
+			}
+		}
+	}
+
 	for _, api := range query.APIs(asts) {
 		for _, section := range api.Sections {
 			if section.Attribute != nil {
@@ -51,6 +59,7 @@ var attributeLocations = map[string][]string{
 	parser.KeywordModel: {
 		parser.AttributePermission,
 		parser.AttributeUnique,
+		parser.AttributeOn,
 	},
 	parser.KeywordField: {
 		parser.AttributeUnique,
@@ -66,6 +75,10 @@ var attributeLocations = map[string][]string{
 		parser.AttributeOrderBy,
 		parser.AttributeSortable,
 		parser.AttributeFunction,
+	},
+	parser.KeywordJob: {
+		parser.AttributePermission,
+		parser.AttributeSchedule,
 	},
 }
 
@@ -315,7 +328,10 @@ func validateIdentArray(expr *parser.Expression, allowedIdents []string) (errs e
 func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
-
+		// we dont want to validate built in models
+		if model.BuiltIn {
+			continue
+		}
 		// field level e.g. @unique
 		for _, field := range query.ModelFields(model) {
 			for _, attr := range field.Attributes {

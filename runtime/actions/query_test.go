@@ -589,11 +589,11 @@ var testCases = []testCase{
 				(SELECT COUNT(DISTINCT "thing"."id") 
 					FROM 
 						"thing" 
-					INNER JOIN "repeated_thing" AS "thing$repeated_things" ON 
+					LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
 						"thing$repeated_things"."thing_id" = "thing"."id" 
 					WHERE 
 						"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name") AS totalCount FROM "thing" 
-			INNER JOIN "repeated_thing" AS "thing$repeated_things" ON 
+			LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
 				"thing$repeated_things"."thing_id" = "thing"."id" 
 			WHERE 
 				"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name" 
@@ -711,10 +711,10 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" INNER JOIN "parent" AS "thing$parent" ON "thing$parent"."id" = "thing"."parent_id" WHERE "thing$parent"."name" IS NOT DISTINCT FROM ?) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" LEFT JOIN "parent" AS "thing$parent" ON "thing$parent"."id" = "thing"."parent_id" WHERE "thing$parent"."name" IS NOT DISTINCT FROM ?) AS totalCount
 			FROM 
 				"thing" 
-			INNER JOIN 
+			LEFT JOIN 
 				"parent" AS "thing$parent" 
 					ON "thing$parent"."id" = "thing"."parent_id" 
 			WHERE 
@@ -749,10 +749,10 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" INNER JOIN "parent" AS "thing$parent" ON "thing$parent"."id" = "thing"."parent_id" WHERE "thing$parent"."is_active" IS NOT DISTINCT FROM ?) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" LEFT JOIN "parent" AS "thing$parent" ON "thing$parent"."id" = "thing"."parent_id" WHERE "thing$parent"."is_active" IS NOT DISTINCT FROM ?) AS totalCount
 			FROM 
 				"thing" 
-			INNER JOIN 
+			LEFT JOIN 
 				"parent" AS "thing$parent" 
 					ON "thing$parent"."id" = "thing"."parent_id" 
 			WHERE 

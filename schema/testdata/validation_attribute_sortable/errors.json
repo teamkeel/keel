@@ -19,7 +19,7 @@
     },
     {
       "message": "model 'Author' has an unrecognised attribute @sortable",
-      "hint": "Did you mean @permission, or @unique?",
+      "hint": "Did you mean @permission, @unique, or @on?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_sortable/schema.keel",

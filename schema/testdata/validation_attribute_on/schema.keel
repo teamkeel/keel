@@ -1,0 +1,23 @@
+model Account {
+    fields {
+        name Text @on
+    }
+
+    operations {
+        create createAccount() with (name) {
+            @on(sendWelcomeMail)
+        }
+    }
+
+    functions {
+        update updateAccount() {
+            @on(sendWelcomeMail)
+            @on(verifyEmail)
+        }
+    }
+}
+
+job CheckAccount {
+    @permission(expression: ctx.isAuthenticated)
+    @on(sendWelcomeMail)
+}

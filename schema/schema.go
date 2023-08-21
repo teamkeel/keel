@@ -306,6 +306,54 @@ func (scm *Builder) insertForeignKeyFields(
 }
 
 func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
+	// we need to add a composite unique attribute on email + issuer
+	// unfortunately this is the only way to do it prior to proto generation
+	emailUniqueAttributeNode := &parser.AttributeNode{
+		Name: parser.AttributeNameToken{
+			Value: parser.AttributeUnique,
+		},
+		Arguments: []*parser.AttributeArgumentNode{
+			{
+				Expression: &parser.Expression{
+					Or: []*parser.OrExpression{
+						{
+							And: []*parser.ConditionWrap{
+								{
+									Condition: &parser.Condition{
+										LHS: &parser.Operand{
+											Array: &parser.Array{
+												Values: []*parser.Operand{
+													{
+														Ident: &parser.Ident{
+															Fragments: []*parser.IdentFragment{
+																{
+																	Fragment: "email",
+																},
+															},
+														},
+													},
+													{
+														Ident: &parser.Ident{
+															Fragments: []*parser.IdentFragment{
+																{
+																	Fragment: "issuer",
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	declaration := &parser.DeclarationNode{
 		Model: &parser.ModelNode{
 			BuiltIn: true,
@@ -320,12 +368,6 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 		},
 	}
 
-	uniqueAttributeNode := &parser.AttributeNode{
-		Name: parser.AttributeNameToken{
-			Value: parser.AttributeUnique,
-		},
-	}
-
 	emailField := &parser.FieldNode{
 		BuiltIn: true,
 		Name: parser.NameNode{
@@ -334,8 +376,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 		Type: parser.NameNode{
 			Value: parser.FieldTypeText,
 		},
-		Attributes: []*parser.AttributeNode{uniqueAttributeNode},
-		Optional:   true,
+		Optional: true,
 	}
 
 	emailVerifiedField := &parser.FieldNode{
@@ -387,6 +428,13 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 	}
 
 	declaration.Model.Sections = append(declaration.Model.Sections, section)
+
+	uniqueModelSection := &parser.ModelSectionNode{
+		Attribute: emailUniqueAttributeNode,
+	}
+
+	declaration.Model.Sections = append(declaration.Model.Sections, uniqueModelSection)
+
 	declarations.Declarations = append(declarations.Declarations, declaration)
 
 	// Making the identity model and actions available on all APIs

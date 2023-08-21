@@ -162,6 +162,7 @@ type JobInputNode struct {
 // - @default
 // - @orderBy
 // - @sortable
+// - @on
 type AttributeNode struct {
 	node.Node
 

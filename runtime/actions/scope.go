@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
@@ -80,7 +81,7 @@ func NewJobScope(
 	}
 }
 
-func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
+func Execute(scope *Scope, inputs any) (result any, headers map[string][]string, err error) {
 	ctx, span := tracer.Start(scope.Context, scope.Action.Name)
 	defer span.End()
 
@@ -97,7 +98,7 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 
 	switch scope.Action.Implementation {
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM:
-		return executeCustomFunction(scope, inputs)
+		result, headers, err = executeCustomFunction(scope, inputs)
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME:
 		if !inputWasAMap {
 			if inputs == nil {
@@ -106,7 +107,7 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
 			}
 		}
-		return executeRuntimeAction(scope, inputsAsMap)
+		result, headers, err = executeRuntimeAction(scope, inputsAsMap)
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_AUTO:
 		if !inputWasAMap {
 			if inputs == nil {
@@ -115,10 +116,18 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
 			}
 		}
-		return executeAutoAction(scope, inputsAsMap)
+		result, headers, err = executeAutoAction(scope, inputsAsMap)
 	default:
 		return nil, nil, fmt.Errorf("unhandled unknown action %s of type %s", scope.Action.Name, scope.Action.Implementation)
 	}
+
+	// Generate and send any events for this context.
+	eventsErr := events.GenerateEvents(ctx)
+	if eventsErr != nil {
+		span.RecordError(eventsErr)
+	}
+
+	return
 }
 
 func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, error) {

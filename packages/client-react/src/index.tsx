@@ -13,9 +13,9 @@ interface KeelProviderProps<
   U = Omit<ConstructorParameters<T>[0], "endpoint">
 > {
   /**
-   * The endpoint URL for the client.
+   * The base URL for the client.
    */
-  endpoint: string;
+  baseUrl: string;
   /**
    * Additional config options for the client.
    */
@@ -25,7 +25,7 @@ interface KeelProviderProps<
 
 export const keel = <T extends new (...args: any[]) => any>(Client: T) => {
   function KeelProvider<T extends new (...args: any[]) => any>({
-    endpoint,
+    baseUrl,
     config,
     children,
   }: KeelProviderProps<T>) {
@@ -34,14 +34,14 @@ export const keel = <T extends new (...args: any[]) => any>(Client: T) => {
     }
 
     const clientConstructor = Client as new (args: any) => any;
-    const clientArgs = { endpoint, ...config };
+    const clientArgs = { baseUrl, ...config };
     const clientRef = useRef(new clientConstructor(clientArgs));
 
     const client = clientRef.current;
 
     useEffect(() => {
-      client._setEndpoint(endpoint);
-    }, [endpoint, client]);
+      client.client.setBaseUrl(baseUrl);
+    }, [baseUrl, client]);
 
     return (
       <KeelContext.Provider value={{ client }}>{children}</KeelContext.Provider>

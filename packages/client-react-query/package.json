@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "prepublish": "npm run build"
+    "tsc": "./node_modules/.bin/tsc",
+    "build": "npm run tsc",
+    "prepack": "npm run build"
   },
   "keywords": [],
   "author": "Keel (www.keel.so)",
@@ -22,5 +23,9 @@
     "@types/react-dom": "18.2.0",
     "react": "18.2.0",
     "typescript": "5.1.6"
-  }
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
 }

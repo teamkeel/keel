@@ -430,3 +430,36 @@ func TestJobInputs(t *testing.T) {
 	assert.Equal(t, true, schema.Declarations[0].Job.Sections[0].Inputs[1].Optional)
 	assert.Equal(t, "Text", schema.Declarations[0].Job.Sections[0].Inputs[0].Type.Value)
 }
+
+func TestOnAttributeArgsParsing(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Person {
+		@on([create], sendWelcomeMail)
+		@on([create, update], verifyEmail)
+	}`})
+
+	model := schema.Declarations[0].Model
+	assert.Equal(t, "on", model.Sections[0].Attribute.Name.Value)
+	assert.Equal(t, "on", model.Sections[1].Attribute.Name.Value)
+	assert.Len(t, model.Sections[0].Attribute.Arguments, 2)
+	assert.Len(t, model.Sections[1].Attribute.Arguments, 2)
+
+	on1actiontypes, err := schema.Declarations[0].Model.Sections[0].Attribute.Arguments[0].Expression.ToValue()
+	assert.NoError(t, err)
+	assert.Len(t, on1actiontypes.Array.Values, 1)
+	assert.Equal(t, "create", on1actiontypes.Array.Values[0].Ident.Fragments[0].Fragment)
+
+	on1subscriber, err := schema.Declarations[0].Model.Sections[0].Attribute.Arguments[1].Expression.ToValue()
+	assert.NoError(t, err)
+	assert.Equal(t, "sendWelcomeMail", on1subscriber.Ident.Fragments[0].Fragment)
+
+	on2actiontypes, err := schema.Declarations[0].Model.Sections[1].Attribute.Arguments[0].Expression.ToValue()
+	assert.NoError(t, err)
+	assert.Len(t, on2actiontypes.Array.Values, 2)
+	assert.Equal(t, "create", on2actiontypes.Array.Values[0].Ident.Fragments[0].Fragment)
+	assert.Equal(t, "update", on2actiontypes.Array.Values[1].Ident.Fragments[0].Fragment)
+
+	on2subscriber, err := schema.Declarations[0].Model.Sections[1].Attribute.Arguments[1].Expression.ToValue()
+	assert.NoError(t, err)
+	assert.Equal(t, "verifyEmail", on2subscriber.Ident.Fragments[0].Fragment)
+}

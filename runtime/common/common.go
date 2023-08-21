@@ -152,7 +152,7 @@ func NewForeignKeyConstraintError(column string) RuntimeError {
 
 	return RuntimeError{
 		Code:    ErrInvalidInput,
-		Message: fmt.Sprintf("the relationship lookup for field '%s' does not exist", field),
+		Message: fmt.Sprintf("the record referenced in field '%s' does not exist", field),
 	}
 }
 

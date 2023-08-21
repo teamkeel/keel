@@ -61,6 +61,8 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 		}
 	}
 
+	scm.makeSubscriberInputMessages()
+
 	// If the input schema doesn't specify any APIs, we create a default one.
 	// This is a temporary place holder.
 	// We expect the API block to evolve into something more expressive, and then
@@ -1328,6 +1330,94 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 		perm := scm.permissionAttributeToProtoPermission(attribute)
 		perm.ModelName = protoModel.Name
 		protoModel.Permissions = append(protoModel.Permissions, perm)
+	case parser.AttributeOn:
+		subscriberArg, _ := attribute.Arguments[1].Expression.ToValue()
+		subscriberName := subscriberArg.Ident.Fragments[0].Fragment
+
+		// Create the subscriber if it has not yet been created yet.
+		subscriber := proto.FindSubscriber(scm.proto.Subscribers, subscriberName)
+		if subscriber == nil {
+			subscriber = &proto.Subscriber{
+				Name:         subscriberName,
+				InputMessage: makeSubscriberMessageName(subscriberName),
+				EventNames:   []string{},
+			}
+			scm.proto.Subscribers = append(scm.proto.Subscribers, subscriber)
+		}
+
+		// For each event, add to the proto schema if it doesn't exist,
+		// and add it to the current subscriber's EventNames field.
+		actionTypesArg, _ := attribute.Arguments[0].Expression.ToValue()
+		for _, arg := range actionTypesArg.Array.Values {
+			actionType := arg.Ident.Fragments[0].Fragment
+			eventName := makeEventName(parserModel.Name.Value, actionType)
+
+			event := proto.FindEvent(scm.proto.Events, eventName)
+			if event == nil {
+				event = &proto.Event{
+					Name:       eventName,
+					ModelName:  parserModel.Name.Value,
+					ActionType: scm.mapToActionType(actionType),
+				}
+				scm.proto.Events = append(scm.proto.Events, event)
+			}
+
+			subscriber.EventNames = append(subscriber.EventNames, eventName)
+		}
+	}
+}
+
+// makeSubscriberInputMessages creates the event input messages for the subscriber functions.
+// The signature of these messages depends on which events the subscriber is handling.
+func (scm *Builder) makeSubscriberInputMessages() {
+	for _, subscriber := range scm.proto.Subscribers {
+		message := &proto.Message{
+			Name:   subscriber.InputMessage,
+			Fields: []*proto.MessageField{},
+		}
+
+		eventField := &proto.MessageField{
+			MessageName: message.Name,
+			Name:        "event",
+			Type: &proto.TypeInfo{
+				Type:       proto.Type_TYPE_UNION,
+				UnionNames: []*wrapperspb.StringValue{},
+			},
+		}
+		message.Fields = append(message.Fields, eventField)
+
+		scm.proto.Messages = append(scm.proto.Messages, message)
+
+		for _, eventName := range subscriber.EventNames {
+			event := proto.FindEvent(scm.proto.Events, eventName)
+
+			eventMessage := &proto.Message{
+				Name:   makeSubscriberMessageEventName(subscriber.Name, event.ModelName, mapToParserType(event.ActionType)),
+				Fields: []*proto.MessageField{},
+			}
+
+			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
+				MessageName: eventMessage.Name,
+				Name:        "name",
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+			})
+
+			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
+				MessageName: eventMessage.Name,
+				Name:        "model",
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+			})
+
+			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
+				MessageName: eventMessage.Name,
+				Name:        "occurredAt",
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_TIMESTAMP},
+			})
+
+			scm.proto.Messages = append(scm.proto.Messages, eventMessage)
+
+			eventField.Type.UnionNames = append(eventField.Type.UnionNames, wrapperspb.String(eventMessage.Name))
+		}
 	}
 }
 
@@ -1357,7 +1447,7 @@ func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoAction
 				direction, _ := arg.Expression.ToString()
 				orderBy := &proto.OrderByStatement{
 					FieldName: field,
-					Direction: scm.mapToOrderByDirection(direction),
+					Direction: mapToOrderByDirection(direction),
 				}
 				protoAction.OrderBy = append(protoAction.OrderBy, orderBy)
 			}
@@ -1449,7 +1539,20 @@ func (scm *Builder) mapToActionType(actionType string) proto.ActionType {
 	}
 }
 
-func (scm *Builder) mapToOrderByDirection(parsedDirection string) proto.OrderDirection {
+func mapToParserType(operationType proto.ActionType) string {
+	switch operationType {
+	case proto.ActionType_ACTION_TYPE_CREATE:
+		return parser.ActionTypeCreate
+	case proto.ActionType_ACTION_TYPE_UPDATE:
+		return parser.ActionTypeUpdate
+	case proto.ActionType_ACTION_TYPE_DELETE:
+		return parser.ActionTypeDelete
+	default:
+		panic(fmt.Errorf("unhandled operation type '%s'", operationType))
+	}
+}
+
+func mapToOrderByDirection(parsedDirection string) proto.OrderDirection {
 	switch parsedDirection {
 	case parser.OrderByAscending:
 		return proto.OrderDirection_ORDER_DIRECTION_ASCENDING
@@ -1529,4 +1632,16 @@ func makeResponseMessageName(opName string) string {
 
 func makeJobMessageName(opName string) string {
 	return fmt.Sprintf("%sMessage", casing.ToCamel(opName))
+}
+
+func makeSubscriberMessageName(subscriberName string) string {
+	return fmt.Sprintf("%sEvent", casing.ToCamel(subscriberName))
+}
+
+func makeSubscriberMessageEventName(subscriberName string, modelName string, action string) string {
+	return fmt.Sprintf("%s%s%sEvent", casing.ToCamel(subscriberName), casing.ToCamel(modelName), casing.ToCamel(action))
+}
+
+func makeEventName(modelName string, action string) string {
+	return fmt.Sprintf("%s.%s", casing.ToLowerCamel(modelName), action)
 }

@@ -25,7 +25,7 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		rowsToAuthorise = append(rowsToAuthorise, rowToAuthorise)
 	}
 
-	isAuthorised, err := AuthoriseAction(scope, rowsToAuthorise)
+	isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
 	if err != nil {
 		return nil, err
 	}

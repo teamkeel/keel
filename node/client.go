@@ -106,12 +106,12 @@ func generateClientSdkPackage(schema *proto.Schema, api *proto.Api) codegen.Gene
 
 func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 
-	w.Writeln("export class APIClient extends CoreClient {")
+	w.Writeln("export class APIClient extends Core {")
 
 	w.Indent()
 	w.Writeln(`constructor(config: RequestConfig) {
-		super(config);
-	}`)
+      super(config);
+    }`)
 
 	apiModels := lo.Map(api.ApiModels, func(a *proto.ApiModel, index int) string {
 		return a.ModelName
@@ -119,6 +119,9 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 
 	queries := []string{}
 	mutations := []string{}
+
+	w.Writeln("private actions = {")
+	w.Indent()
 
 	for _, model := range schema.Models {
 
@@ -132,12 +135,12 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 			if action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_READ {
 				queries = append(queries, action.Name)
 			} else {
-				mutations = append(queries, action.Name)
+				mutations = append(mutations, action.Name)
 			}
 
 			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
 
-			w.Writef("%s(i", action.Name)
+			w.Writef("%s : (i", action.Name)
 
 			// Check that all of the top level fields in the matching message are optional
 			// If so, then we can make it so you don't even need to specify the key
@@ -153,33 +156,53 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 			}
 
 			w.Writef(`: %s) `, action.InputMessageName)
-			w.Writeln("{")
+			w.Writeln("=> {")
 
 			w.Indent()
-			w.Writef(`return this.request<%s>("%s", i)`, toClientActionReturnType(model, action), action.Name)
+			w.Writef(`return this.client.rawRequest<%s>("%s", i)`, toClientActionReturnType(model, action), action.Name)
+
+			var setTokenChain = `.then((res) => {
+              if (res.data && res.data.token) this.client.setToken(res.data.token);
+              return res;
+            })`
+
+			if action.Name == "authenticate" {
+				w.Writef(setTokenChain)
+			}
+
 			w.Writeln(";")
 			w.Dedent()
-			w.Writeln("}")
+			w.Writeln("},")
 		}
 	}
+	w.Dedent()
+	w.Writeln("};")
+	w.Writeln("")
 
-	w.Writeln("queries = {")
+	w.Writeln("api = {")
+	w.Indent()
+
+	w.Writeln("queries: {")
 	w.Indent()
 	for _, fn := range queries {
-		w.Writef(`%s: this.%s.bind(this)`, fn, fn)
+		w.Writef(`%s: this.actions.%s.bind(this)`, fn, fn)
+		w.Writeln(",")
+	}
+	w.Dedent()
+	w.Writeln("},")
+
+	w.Writeln("mutations: {")
+	w.Indent()
+	for _, fn := range mutations {
+		w.Writef(`%s: this.actions.%s.bind(this)`, fn, fn)
 		w.Writeln(",")
 	}
 	w.Dedent()
 	w.Writeln("}")
 
-	w.Writeln("mutations = {")
-	w.Indent()
-	for _, fn := range mutations {
-		w.Writef(`%s: this.%s.bind(this)`, fn, fn)
-		w.Writeln(",")
-	}
 	w.Dedent()
-	w.Writeln("}")
+	w.Writeln("};")
+	w.Writeln("")
 
 	w.Dedent()
 	w.Writeln("}")
@@ -193,7 +216,6 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 	for _, enum := range schema.Enums {
 		writeEnum(w, enum)
 		writeEnumWhereCondition(w, enum)
-		writeEnumObject(w, enum)
 	}
 
 	for _, model := range schema.Models {
@@ -235,145 +257,148 @@ func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
 var clientCore = `type RequestHeaders = Record<string, string>;
 
 export type RequestConfig = {
-  endpoint: string;
+  baseUrl: string;
   headers?: RequestHeaders;
 };
 
-export class CoreClient {
-  private token = "";
-  constructor(private config: RequestConfig) {}
+class Core {
+	constructor(private config: RequestConfig) {}
 
-  _setHeaders(headers: RequestHeaders): CoreClient {
-    this.config.headers = headers;
-    return this;
-  }
+	ctx = {
+		token: "",
+		isAuthenticated: false,
+	};
 
-  _setHeader(key: string, value: string): CoreClient {
-    const { headers } = this.config;
-    if (headers) {
-      headers[key] = value;
-    } else {
-      this.config.headers = { [key]: value };
-    }
-    return this;
-  }
+	client = {
+    setHeaders: (headers: RequestHeaders): Core => {
+      this.config.headers = headers;
+      return this;
+    },
+    setHeader: (key: string, value: string): Core => {
+      const { headers } = this.config;
+      if (headers) {
+        headers[key] = value;
+      } else {
+        this.config.headers = { [key]: value };
+      }
+      return this;
+    },
+    setBaseUrl: (value: string): Core => {
+      this.config.baseUrl = value;
+      return this;
+    },
+    setToken: (value: string): Core => {
+      this.ctx.token = value;
+      this.ctx.isAuthenticated = true;
+      return this;
+    },
+    clearToken: (): Core => {
+      this.ctx.token = "";
+      this.ctx.isAuthenticated = false;
+      return this;
+    },
+    rawRequest: async <T>(action: string, body: any): Promise<APIResult<T>> => {
+      try {
+        const result = await globalThis.fetch(
+          stripTrailingSlash(this.config.baseUrl) + "/json/" + action,
+          {
+            method: "POST",
+            cache: "no-cache",
+            headers: {
+              accept: "application/json",
+              "content-type": "application/json",
+              ...this.config.headers,
+              ...(this.ctx.token
+                ? {
+                    Authorization: "Bearer " + this.ctx.token,
+                  }
+                : {}),
+            },
+            body: JSON.stringify(body),
+          }
+        );
 
-  _setEndpoint(value: string): CoreClient {
-    this.config.endpoint = value;
-    return this;
-  }
+        if (result.status >= 200 && result.status < 299) {
+          const rawJson = await result.text();
+          const data = JSON.parse(rawJson, reviver);
 
-  _setToken(value: string): CoreClient {
-    this.token = value;
-    return this;
-  }
-
-  _clearToken(): CoreClient {
-    this.token = "";
-    return this;
-  }
-
-  async request<T>(action: string, body: any): Promise<APIResult<T>> {
-    try {
-      const result = await fetch(
-        stripTrailingSlash(this.config.endpoint) + "/json/" + action,
-        {
-          method: "POST",
-          cache: "no-cache",
-          headers: {
-            accept: "application/json",
-            "content-type": "application/json",
-            ...this.config.headers,
-            ...(this.token
-              ? {
-                  Authorization: "Bearer " + this.token,
-                }
-              : {}),
-          },
-          body: JSON.stringify(body),
+          return {
+            data,
+          };
         }
-      );
 
-      if (result.status >= 200 && result.status < 300) {
-        const rawJson = await result.text();
-        const data = JSON.parse(rawJson, reviver);
+        let errorMessage = "unknown error";
 
+        try {
+          const errorData: {
+            message: string;
+          } = await result.json();
+          errorMessage = errorData.message;
+        } catch (error) {}
+
+        const requestId = result.headers.get("X-Amzn-Requestid") || undefined;
+
+        const errorCommon = {
+          message: errorMessage,
+          requestId,
+        };
+
+        switch (result.status) {
+          case 400:
+            return {
+              error: {
+                ...errorCommon,
+                type: "bad_request",
+              },
+            };
+          case 401:
+            return {
+              error: {
+                ...errorCommon,
+                type: "unauthorized",
+              },
+            };
+          case 403:
+            return {
+              error: {
+                ...errorCommon,
+                type: "forbidden",
+              },
+            };
+          case 404:
+            return {
+              error: {
+                ...errorCommon,
+                type: "not_found",
+              },
+            };
+          case 500:
+            return {
+              error: {
+                ...errorCommon,
+                type: "internal_server_error",
+              },
+            };
+
+          default:
+            return {
+              error: {
+                ...errorCommon,
+                type: "unknown",
+              },
+            };
+        }
+      } catch (error) {
         return {
-          data,
+          error: {
+            type: "unknown",
+            message: "unknown error",
+            error,
+          },
         };
       }
-
-      let errorMessage = "unknown error";
-
-      try {
-        const errorData: {
-          message: string;
-        } = await result.json();
-        errorMessage = errorData.message;
-      } catch (error) {}
-
-      const requestId = result.headers.get("X-Amzn-Requestid") || undefined;
-
-      const errorCommon = {
-        message: errorMessage,
-        requestId,
-      };
-
-      switch (result.status) {
-        case 400:
-          return {
-            error: {
-              ...errorCommon,
-              type: "bad_request",
-            },
-          };
-        case 401:
-          return {
-            error: {
-              ...errorCommon,
-              type: "unauthorized",
-            },
-          };
-        case 403:
-          return {
-            error: {
-              ...errorCommon,
-              type: "forbidden",
-            },
-          };
-        case 404:
-          return {
-            error: {
-              ...errorCommon,
-              type: "not_found",
-            },
-          };
-        case 500:
-          return {
-            error: {
-              ...errorCommon,
-              type: "internal_server_error",
-            },
-          };
-
-        default:
-          return {
-            error: {
-              ...errorCommon,
-              type: "unknown",
-            },
-          };
-      }
-    } catch (error) {
-      return {
-        error: {
-          type: "unknown",
-          message: "unknown error",
-          error,
-        },
-      };
-    }
-  }
+    },
+  };
 }
 
 // Utils
@@ -388,7 +413,7 @@ const RFC3339 = /^(?:\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01]))?(?:[T\s
 function reviver(key: any, value: any) {
   // Convert any ISO8601/RFC3339 strings to dates
   if (typeof value === "string" && RFC3339.test(value)) {
-    return new Date(value);
+	return new Date(value);
   }
   return value;
 }
@@ -398,7 +423,7 @@ function reviver(key: any, value: any) {
 
 var clientTypes = `// Result type
 
-export type APIResult<T> = Promise<Result<T, APIError>>;
+export type APIResult<T> = Result<T, APIError>;
 
 type Data<T> = {
   data: T;

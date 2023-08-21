@@ -103,7 +103,7 @@ func (m *InitModel) renderInit() string {
 
 		b.WriteString("\n")
 
-		b.WriteString(colors.Cyan("Visit https://keel.notaku.site/ to get started.").String())
+		b.WriteString(colors.Cyan("Visit https://docs.keel.so/ to get started.").String())
 
 		b.WriteString("\n")
 	}

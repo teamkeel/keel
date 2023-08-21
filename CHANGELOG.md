@@ -1,3 +1,102 @@
+## [0.365.13](https://github.com/teamkeel/keel/compare/v0.365.12...v0.365.13) (2023-08-21)
+
+
+### Bug Fixes
+
+* add composite unique constraint on identity issuer+email ([#1098](https://github.com/teamkeel/keel/issues/1098)) ([a93f5a1](https://github.com/teamkeel/keel/commit/a93f5a170e8dd60045dff3d513865f63afb4b571))
+
+## [0.365.12](https://github.com/teamkeel/keel/compare/v0.365.11...v0.365.12) (2023-08-18)
+
+
+### Bug Fixes
+
+* change docs link to new doc site ([#1116](https://github.com/teamkeel/keel/issues/1116)) ([cf7a738](https://github.com/teamkeel/keel/commit/cf7a738b201a070329653f0b97fe00c2dbdef932))
+
+## [0.365.11](https://github.com/teamkeel/keel/compare/v0.365.10...v0.365.11) (2023-08-18)
+
+
+### Bug Fixes
+
+* export fields and set json tags ([#1115](https://github.com/teamkeel/keel/issues/1115)) ([b1ab881](https://github.com/teamkeel/keel/commit/b1ab881c47ac0ff663724366a744ff3f379433ce))
+
+## [0.365.10](https://github.com/teamkeel/keel/compare/v0.365.9...v0.365.10) (2023-08-18)
+
+
+### Bug Fixes
+
+* enabling resolveJsonModule in tsconfig ([#1114](https://github.com/teamkeel/keel/issues/1114)) ([5ef5ac4](https://github.com/teamkeel/keel/commit/5ef5ac4fcc04a7a8460cf9393582ee9d4f9c33e7))
+
+## [0.365.9](https://github.com/teamkeel/keel/compare/v0.365.8...v0.365.9) (2023-08-17)
+
+
+### Bug Fixes
+
+* client packages build ([#1112](https://github.com/teamkeel/keel/issues/1112)) ([864a4e0](https://github.com/teamkeel/keel/commit/864a4e0a57af42fe5f90b89df71a0ea2abb8c038))
+
+## [0.365.8](https://github.com/teamkeel/keel/compare/v0.365.7...v0.365.8) (2023-08-17)
+
+
+### Bug Fixes
+
+* add line break between test output ([#1111](https://github.com/teamkeel/keel/issues/1111)) ([67f1ddd](https://github.com/teamkeel/keel/commit/67f1ddd74892864313f6a44380212d3e11b38e7c))
+
+## [0.365.7](https://github.com/teamkeel/keel/compare/v0.365.6...v0.365.7) (2023-08-17)
+
+
+### Bug Fixes
+
+* scope fetch to globalThis ([#1110](https://github.com/teamkeel/keel/issues/1110)) ([4ff9f56](https://github.com/teamkeel/keel/commit/4ff9f5688a26fb546c58bed4234aedacdb0b9055))
+
+## [0.365.6](https://github.com/teamkeel/keel/compare/v0.365.5...v0.365.6) (2023-08-16)
+
+
+### Bug Fixes
+
+* package.json ([#1109](https://github.com/teamkeel/keel/issues/1109)) ([e0e6031](https://github.com/teamkeel/keel/commit/e0e603143660b9218e792a04d676137a15529f5d))
+
+## [0.365.5](https://github.com/teamkeel/keel/compare/v0.365.4...v0.365.5) (2023-08-16)
+
+
+### Bug Fixes
+
+* client package building ([#1107](https://github.com/teamkeel/keel/issues/1107)) ([183b2db](https://github.com/teamkeel/keel/commit/183b2db4be66e01d72139904d5af78a57f057297))
+
+## [0.365.4](https://github.com/teamkeel/keel/compare/v0.365.3...v0.365.4) (2023-08-16)
+
+
+### Bug Fixes
+
+* client building ([#1102](https://github.com/teamkeel/keel/issues/1102)) ([b13e21d](https://github.com/teamkeel/keel/commit/b13e21d81018c3bc60cbf96b2d7c53f273be7b90))
+
+## [0.365.3](https://github.com/teamkeel/keel/compare/v0.365.2...v0.365.3) (2023-08-16)
+
+
+### Bug Fixes
+
+* permission relationship fixes ([#1104](https://github.com/teamkeel/keel/issues/1104)) ([a2a2333](https://github.com/teamkeel/keel/commit/a2a233359787d96fc7ac556b987a6514facd58f3))
+
+## [0.365.2](https://github.com/teamkeel/keel/compare/v0.365.1...v0.365.2) (2023-08-15)
+
+
+### Bug Fixes
+
+* foreign key missing error message copy ([#1100](https://github.com/teamkeel/keel/issues/1100)) ([4a17340](https://github.com/teamkeel/keel/commit/4a17340bd80a11730b77e3a474a7aaf715255a2e))
+
+## [0.365.1](https://github.com/teamkeel/keel/compare/v0.365.0...v0.365.1) (2023-08-15)
+
+
+### Bug Fixes
+
+* implement check for unexpected arguments ([#1087](https://github.com/teamkeel/keel/issues/1087)) ([ff55b32](https://github.com/teamkeel/keel/commit/ff55b32e4cd07a51ddd82d0dca56a60d3f09007b))
+
+# [0.365.0](https://github.com/teamkeel/keel/compare/v0.364.3...v0.365.0) (2023-08-14)
+
+
+### Features
+
+* client improvements ([8c2840a](https://github.com/teamkeel/keel/commit/8c2840acd44061c24b665577ac53378923841905))
+* client namespacing ([3ceca0e](https://github.com/teamkeel/keel/commit/3ceca0e0126f5f2b0fbf9629115d62d13251e70d))
+
 ## [0.364.3](https://github.com/teamkeel/keel/compare/v0.364.2...v0.364.3) (2023-08-14)
 
 
