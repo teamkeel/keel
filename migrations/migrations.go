@@ -11,6 +11,7 @@ import (
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/parser"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -130,6 +131,16 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				Type:  ChangeTypeAdded,
 			})
 			modelsAdded = append(modelsAdded, model)
+
+			// Add audit logs hooks to every table - excluding of course
+			// the audit table itself.
+			if model.Name != parser.ImplicitAuditTableName {
+				stmt, err = createAuditHookStmt(schema, model)
+				if err != nil {
+					return nil, err
+				}
+				statements = append(statements, stmt)
+			}
 			continue
 		}
 
