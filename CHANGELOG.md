@@ -1,3 +1,10 @@
+## [0.365.13](https://github.com/teamkeel/keel/compare/v0.365.12...v0.365.13) (2023-08-21)
+
+
+### Bug Fixes
+
+* add composite unique constraint on identity issuer+email ([#1098](https://github.com/teamkeel/keel/issues/1098)) ([a93f5a1](https://github.com/teamkeel/keel/commit/a93f5a170e8dd60045dff3d513865f63afb4b571))
+
 ## [0.365.12](https://github.com/teamkeel/keel/compare/v0.365.11...v0.365.12) (2023-08-18)
 
 
