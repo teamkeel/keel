@@ -1,20 +1,88 @@
 {
   "errors": [
     {
-      "message": " unexpected token \"operations\" (expected \"}\")",
-      "hint": "",
-      "code": "E025",
+      "message": "field 'name' has an unrecognised attribute @on",
+      "hint": "Did you mean @unique, @default, @primaryKey, or @relation?",
+      "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 62,
-        "line": 6,
+        "offset": 47,
+        "line": 3,
+        "column": 19
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 50,
+        "line": 3,
+        "column": 22
+      }
+    },
+    {
+      "message": "actions 'createAccount' has an unrecognised attribute @on",
+      "hint": "Did you mean @set, @where, @permission, @validate, @orderBy, @sortable, or @function?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 129,
+        "line": 8,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 132,
+        "line": 8,
+        "column": 16
+      }
+    },
+    {
+      "message": "actions 'updateAccount' has an unrecognised attribute @on",
+      "hint": "Did you mean @set, @where, @permission, @validate, @orderBy, @sortable, or @function?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 206,
+        "line": 12,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 209,
+        "line": 12,
+        "column": 16
+      }
+    },
+    {
+      "message": "actions 'updateAccount' has an unrecognised attribute @on",
+      "hint": "Did you mean @set, @where, @permission, @validate, @orderBy, @sortable, or @function?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 239,
+        "line": 13,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 242,
+        "line": 13,
+        "column": 16
+      }
+    },
+    {
+      "message": "job 'CheckAccount' has an unrecognised attribute @on",
+      "hint": "Did you mean @permission, or @schedule?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 369,
+        "line": 21,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 62,
-        "line": 6,
-        "column": 5
+        "offset": 372,
+        "line": 21,
+        "column": 8
       }
     }
   ]
