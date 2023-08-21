@@ -1,0 +1,62 @@
+name: Pre-Release
+
+on:
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - "*"
+
+jobs:
+  setup:
+    name: Generate Version
+    runs-on: ubuntu-latest
+    if: startsWith( github.event.head_commit.message, 'feat' ) || startsWith( github.event.head_commit.message, 'fix' ) || startsWith( github.event.head_commit.message, 'build' ) || contains(github.event.head_commit.message, '!:')
+    steps:
+      - uses: pnpm/action-setup@v2.4.0
+        with:
+          version: 8.5.1
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          fetch-depth: 0
+
+      # generate a new version number based on semantic versioning
+      - name: Generate version
+        id: generate-version
+        uses: paulhatch/semantic-version@v5.0.3
+        with:
+          tag_prefix: "v"
+          major_pattern: "[A-Za-z]+.*!:"
+          major_regexp_flags: "g"
+          minor_pattern: "^(feat|fix)(\\(.*\\))?: .*$"
+          version_format: "${major}.${minor}.${patch}-prerelease${increment}"
+
+      - name: Output release version
+        run: echo "NEW_VERSION=${{ steps.generate-version.outputs.version }}"
+
+    outputs:
+      version: ${{ steps.generate-version.outputs.version }}
+
+  npm_release:
+    needs: [setup]
+    uses: ./.github/workflows/npm_release.yml
+    with:
+      version: ${{ needs.setup.outputs.version }}
+      publishTag: "next"
+      dryRun: false
+    secrets: inherit
+
+  github_release:
+    needs: [setup, npm_release]
+    uses: ./.github/workflows/github_release.yml
+    with:
+      version: ${{ needs.setup.outputs.version }}
+      preRelease: true
+      draft: false
+      makeLatest: false
+      generateChangelog: true
+      releaseEvent: "new-runtime-pre-release"
+    secrets: inherit

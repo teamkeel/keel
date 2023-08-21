@@ -1,0 +1,89 @@
+{
+  "errors": [
+    {
+      "message": "Invalid value, expected any of the following identifiers - Admin, or Developer",
+      "hint": "",
+      "code": "E016",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
+        "offset": 37,
+        "line": 2,
+        "column": 25
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
+        "offset": 47,
+        "line": 2,
+        "column": 35
+      }
+    },
+    {
+      "message": "Invalid value, expected any of the following identifiers - Admin, or Developer",
+      "hint": "",
+      "code": "E016",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
+        "offset": 96,
+        "line": 6,
+        "column": 31
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
+        "offset": 106,
+        "line": 6,
+        "column": 41
+      }
+    },
+    {
+      "message": "Invalid value, expected an array containing any of the following identifiers - Admin, or Developer",
+      "hint": "",
+      "code": "E016",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
+        "offset": 148,
+        "line": 10,
+        "column": 24
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
+        "offset": 153,
+        "line": 10,
+        "column": 29
+      }
+    },
+    {
+      "message": "permission requires all arguments to be named, for example @permission(roles: [MyRole])",
+      "hint": "Valid argument names for permission are 'actions', 'expression', or 'roles'",
+      "code": "E014",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
+        "offset": 187,
+        "line": 14,
+        "column": 17
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
+        "offset": 194,
+        "line": 14,
+        "column": 24
+      }
+    },
+    {
+      "message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
+      "hint": "",
+      "code": "E015",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
+        "offset": 175,
+        "line": 14,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
+        "offset": 186,
+        "line": 14,
+        "column": 16
+      }
+    }
+  ]
+}
