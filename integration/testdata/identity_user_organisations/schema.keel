@@ -5,7 +5,7 @@ model User {
         organisations UserOrganisation[]
     }
 
-    operations {
+    actions {
         create createUser() with (name) {
             @set(user.identity = ctx.identity)
         }
@@ -30,7 +30,7 @@ model Organisation {
         users UserOrganisation[]
     }
 
-    operations {
+    actions {
         create createOrganisation() with (name, users.user.id)
         list listOrganisations() {
             @where(ctx.identity in organisation.users.user.identity)

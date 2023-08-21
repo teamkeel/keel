@@ -5,7 +5,7 @@ model Post {
         theAuthor Author?
     }
 
-    operations {
+    actions {
         // For testing AND conditions
         get getPost(id) {
             @where(expression: post.theAuthor.isActive == true and post.isActive)
@@ -32,7 +32,7 @@ model Author {
         thePosts Post[]
     }
 
-    operations {
+    actions {
         // For testing AND conditions
         get getAuthor(id) {
             @where(expression: true in author.thePosts.isActive and author.isActive)

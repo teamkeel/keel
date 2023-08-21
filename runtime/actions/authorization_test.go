@@ -875,7 +875,7 @@ var authorisationTestCases = []authorisationTestCase{
 					organisations UserOrganisation[]
 				}
 			
-				operations {
+				actions {
 					list listUsersByOrganisation(organisations.organisation.id) {
 						@permission(expression: ctx.identity in user.organisations.organisation.users.user.identity)
 					}
@@ -892,7 +892,7 @@ var authorisationTestCases = []authorisationTestCase{
 					organisation Organisation
 				}
 			}`,
-		operationName: "listUsersByOrganisation",
+		actionName: "listUsersByOrganisation",
 		input: map[string]any{
 			"organisations": map[string]any{
 				"organisation": map[string]any{
