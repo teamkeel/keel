@@ -160,7 +160,13 @@ test("job - exception - internal error without rollback transaction", async () =
 });
 
 test("job - scheduled without permission", async () => {
+  const { id } = await models.trackJob.create({
+    id: "12345",
+    didJobRun: false,
+  });
   await expect(
     jobs.scheduledWithoutPermissions({ scheduled: true })
   ).not.toHaveAuthorizationError();
+
+  expect(await jobRan(id)).toBeTruthy();
 });
