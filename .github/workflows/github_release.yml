@@ -57,7 +57,7 @@ jobs:
         uses: rickstaa/action-create-tag@v1
         id: "tag_create"
         with:
-          tag: ${{ inputs.version }}
+          tag: "v${{ inputs.version }}"
           tag_exists_error: false
           message: "Keel release v${{ inputs.version }}"
 
@@ -76,7 +76,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ inputs.version }}
+          tag: "v${{ inputs.version }}"
           name: "Keel release v${{ inputs.version }}"
           generateReleaseNotes: ${{ inputs.generateChangelog }}
           draft: ${{ inputs.draft }}

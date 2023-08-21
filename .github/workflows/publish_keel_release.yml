@@ -27,7 +27,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ inputs.version }}
+          tag: "v${{ inputs.version }}"
           commit: "release/v${{ inputs.version }}"
           draft: false
           makeLatest: true
