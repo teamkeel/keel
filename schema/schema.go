@@ -536,5 +536,4 @@ func emailUniqueAttributeNode() *parser.AttributeNode {
 			},
 		},
 	}
-
-
+}

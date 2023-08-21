@@ -55,7 +55,7 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 	statements := []string{}
 	output := fmt.Sprintf("CREATE TABLE %s (\n", Identifier(model.Name))
 
-	// This type of field exists only in proto land - and has no corresponding
+	// Exclude fields of type Model - these exists only in proto land - and has no corresponding
 	// column in the database.
 	fields := lo.Filter(model.Fields, func(field *proto.Field, _ int) bool {
 		return field.Type.Type != proto.Type_TYPE_MODEL
@@ -213,7 +213,23 @@ func alterColumnStmt(schema *proto.Schema, modelName string, field *proto.Field,
 
 func fieldDefinition(schema *proto.Schema, field *proto.Field) (string, error) {
 	columnName := Identifier(field.Name)
-	output := fmt.Sprintf("%s %s", columnName, PostgresFieldTypes[field.Type.Type])
+
+	// We don't yet support Postgres JSON field types in Keel schemas.
+	// But we need one for the data column in the special case of the internally generated Audit table.
+	// So we hard code the JSON field type for now, for that special case.
+
+	// specialCaseForAuditTableDataColumn := (field.ModelName == parser.ImplicitAuditTableName) && (field.Name == parser.ImplicitAuditFieldNameData)
+
+	// XXXX remove this maybe - experimenting to see if integration test errors arise from using a json field
+
+	// fieldType := lo.Ternary(
+	// 	specialCaseForAuditTableDataColumn,
+	// 	"jsonb",
+	// 	PostgresFieldTypes[field.Type.Type])
+
+	fieldType := PostgresFieldTypes[field.Type.Type]
+
+	output := fmt.Sprintf("%s %s", columnName, fieldType)
 
 	if !field.Optional {
 		output += " NOT NULL"
@@ -285,4 +301,27 @@ func dropColumnStmt(modelName string, fieldName string) string {
 	output := fmt.Sprintf("ALTER TABLE %s ", Identifier(modelName))
 	output += fmt.Sprintf("DROP COLUMN %s;", Identifier(fieldName))
 	return output
+}
+
+func createAuditHookStmt(schema *proto.Schema, model *proto.Model) (string, error) {
+	// This makes 3 sql statements similar to this:
+	//
+	// CREATE TRIGGER person_create AFTER INSERT ON person
+	// REFERENCING OLD TABLE AS old_table
+	// FOR EACH ROW EXECUTE PROCEDURE process_audit();
+	//
+	tblName := Identifier(model.Name)
+	modelLower := casing.ToSnake(model.Name)
+	statements := []string{}
+
+	statements = append(statements, fmt.Sprintf(
+		`CREATE TRIGGER %s_create AFTER INSERT ON %s REFERENCING NEW TABLE AS new_table FOR EACH ROW EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
+
+	statements = append(statements, fmt.Sprintf(
+		`CREATE TRIGGER %s_update AFTER UPDATE ON %s REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH ROW EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
+
+	statements = append(statements, fmt.Sprintf(
+		`CREATE TRIGGER %s_delete AFTER DELETE ON %s REFERENCING OLD TABLE AS old_table FOR EACH ROW EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
+
+	return strings.Join(statements, "\n"), nil
 }
