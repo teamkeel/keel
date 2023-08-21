@@ -58,7 +58,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			errs.Append(errorhandling.ErrorAttributeRequiresNamedArguments,
 				map[string]string{
 					"AttributeName":      "permission",
-					"ValidArgumentNames": "actions, expression, or roles",
+					"ValidArgumentNames": "'actions', 'expression', or 'roles'",
 				},
 				arg,
 			)
@@ -134,7 +134,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 				map[string]string{
 					"AttributeName":      "permission",
 					"ArgumentName":       arg.Label.Value,
-					"ValidArgumentNames": "actions, expression, or roles",
+					"ValidArgumentNames": "'actions', 'expression', or 'roles'",
 				},
 				arg.Label,
 			)

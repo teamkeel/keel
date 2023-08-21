@@ -53,7 +53,7 @@
     },
     {
       "message": "permission requires all arguments to be named, for example @permission(roles: [MyRole])",
-      "hint": "Valid argument names for permission are actions, expression, or roles",
+      "hint": "Valid argument names for permission are 'actions', 'expression', or 'roles'",
       "code": "E014",
       "pos": {
         "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
