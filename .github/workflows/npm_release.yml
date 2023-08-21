@@ -1,4 +1,4 @@
-name: NPM RC
+name: NPM Release
 
 on:
   workflow_call:
@@ -61,7 +61,7 @@ jobs:
 
       - name: Install ${{ matrix.package }} publish dependencies
         working-directory: ./packages/${{ matrix.package }}
-        run: pnpm install --frozen-lockfile --prod
+        run: pnpm install --frozen-lockfile
 
       - name: "Update NPM version ${{ matrix.package }}"
         if: inputs.publishTag != 'latest'
