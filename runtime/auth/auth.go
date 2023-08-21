@@ -24,8 +24,6 @@ import (
 )
 
 type AuthConfig struct {
-	// If enabled, skips signing validation of tokens
-	AllowUnsigned bool `json:"AllowUnsigned"`
 	// If enabled, will verify tokens using any OIDC compatible issuer
 	AllowAnyIssuers bool             `json:"AllowAllIssuers"`
 	Issuers         []ExternalIssuer `json:"issuers"`
@@ -353,7 +351,7 @@ func ExtractJWKSPublicKey(ctx context.Context, jwks jwk.Set, tokenKid string) (*
 	}
 
 	if !found {
-		return nil, errors.New("No RSA public key found")
+		return nil, errors.New("no RSA public key found")
 	}
 
 	return &publicKey, nil

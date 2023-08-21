@@ -23,6 +23,7 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util/mocks"
 )
 
@@ -38,6 +39,16 @@ func init() {
 	privateKey = pk
 }
 
+func newContext() context.Context {
+	ctx := context.Background()
+	NewCache(ctx)
+
+	pk, _ := testhelpers.GetEmbeddedPrivateKey()
+	ctx = runtimectx.WithPrivateKey(ctx, pk)
+
+	return ctx
+}
+
 func NewCache(ctx context.Context) {
 	auth.RequestCache = cache.New(5*time.Minute, 10*time.Minute)
 	auth.JwkCache = jwk.NewCache(ctx)
@@ -45,8 +56,7 @@ func NewCache(ctx context.Context) {
 
 func TestOIDCConfig(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 
 	issuerUrl := "https://example.com/"
 
@@ -75,8 +85,7 @@ func TestOIDCConfig(t *testing.T) {
 
 func TestMultipleOIDCConfig(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 
 	requests := 0
 
@@ -109,8 +118,7 @@ func TestMultipleOIDCConfig(t *testing.T) {
 
 func TestOIDCConfigNoCache(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 	issuerUrl := "https://example.com/"
 	requests := 0
 
@@ -144,8 +152,7 @@ func TestOIDCConfigNoCache(t *testing.T) {
 
 func TestUserInfo(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 	issuerUrl := "https://example.com/"
 
 	mocks.DoFunc = func(req *http.Request) (*http.Response, error) {
@@ -197,8 +204,7 @@ func TestUserInfo(t *testing.T) {
 
 func TestUserInfoCache(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 	issuerUrl := "https://example.com/"
 
 	mocks.DoFunc = func(req *http.Request) (*http.Response, error) {
@@ -255,8 +261,7 @@ func TestUserInfoCache(t *testing.T) {
 
 func TestGetJWKS(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 	issuerUrl := "https://example.com/"
 
 	requests := 0
@@ -282,8 +287,7 @@ func TestGetJWKS(t *testing.T) {
 
 func TestGetJWKSNoCache(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 	issuerUrl := "https://example.com/"
 
 	requests := 0
@@ -315,8 +319,7 @@ func TestGetJWKSNoCache(t *testing.T) {
 
 func TestOIDCTokenValidation(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 
 	issuerUrl := "https://example.com/"
 
@@ -325,7 +328,6 @@ func TestOIDCTokenValidation(t *testing.T) {
 	}
 
 	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		AllowUnsigned:   false,
 		AllowAnyIssuers: false,
 		Issuers: []auth.ExternalIssuer{
 			{
@@ -348,8 +350,7 @@ func TestOIDCTokenValidation(t *testing.T) {
 
 func TestOIDCTokenValidationIncorrectAudience(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 
 	issuerUrl := "https://example.com/"
 
@@ -378,8 +379,7 @@ func TestOIDCTokenValidationIncorrectAudience(t *testing.T) {
 
 func TestOIDCTokenValidationCorrectAudience(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 
 	issuerUrl := "https://example.com/"
 
@@ -410,8 +410,7 @@ func TestOIDCTokenValidationCorrectAudience(t *testing.T) {
 
 func TestOIDCTokenValidationInvalidIssuer(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 
 	issuerUrl := "https://exampl"
 
@@ -444,8 +443,7 @@ func TestOIDCTokenValidationInvalidIssuer(t *testing.T) {
 
 func TestAllowNoIssuer(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 
 	issuerUrl := "https://example.com/"
 
@@ -464,8 +462,7 @@ func TestAllowNoIssuer(t *testing.T) {
 
 func TestAllowAllIssuers(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 
 	issuerUrl := "https://example.com/"
 
@@ -486,15 +483,14 @@ func TestAllowAllIssuers(t *testing.T) {
 
 func TestEnVarFallback(t *testing.T) {
 
-	ctx := context.Background()
-	NewCache(ctx)
+	ctx := newContext()
 
 	mocks.DoFunc = func(req *http.Request) (*http.Response, error) {
 		return OIDCMockResponse(req)
 	}
 
 	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		AllowUnsigned: true,
+		AllowAnyIssuers: true,
 	})
 
 	os.Setenv("KEEL_EXTERNAL_ISSUERS", "https://example.com/,https://google.com/")
@@ -505,7 +501,6 @@ func TestEnVarFallback(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(config.Issuers))
-	require.Equal(t, true, config.AllowUnsigned)
 }
 
 // Test issuer validates token

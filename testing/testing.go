@@ -2,8 +2,11 @@ package testing
 
 import (
 	"context"
+	"crypto/x509"
 	_ "embed"
+	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io"
@@ -18,12 +21,18 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
-	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	traceSdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
 const (
@@ -43,7 +52,10 @@ type RunnerOpts struct {
 	FunctionsOutput io.Writer
 	EnvVars         map[string]string
 	Secrets         map[string]string
+	TestGroupName   string
 }
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/testing")
 
 func Run(opts *RunnerOpts) (*TestOutput, error) {
 	builder := &schema.Builder{}
@@ -96,8 +108,10 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 
 	if node.HasFunctions(schema) {
 		keelEnvVars := map[string]string{
-			"KEEL_DB_CONN_TYPE": "pg",
-			"KEEL_DB_CONN":      dbConnString,
+			"KEEL_DB_CONN_TYPE":        "pg",
+			"KEEL_DB_CONN":             dbConnString,
+			"KEEL_TRACING_ENABLED":     "true",
+			"OTEL_RESOURCE_ATTRIBUTES": "service.name=functions",
 		}
 
 		for key, value := range keelEnvVars {
@@ -148,10 +162,37 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			ctx = runtimectx.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
 
-			ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-				AllowUnsigned:   true,
-				AllowAnyIssuers: false,
-			})
+			exporter, err := otlptracehttp.New(ctx, otlptracehttp.WithInsecure())
+			if err != nil {
+				panic(err)
+			}
+
+			provider := traceSdk.NewTracerProvider(
+				traceSdk.WithBatcher(exporter),
+				traceSdk.WithResource(
+					resource.NewSchemaless(attribute.String("service.name", "runtime")),
+				),
+			)
+			otel.SetTracerProvider(provider)
+			otel.SetTextMapPropagator(propagation.TraceContext{})
+
+			ctx, span := tracer.Start(ctx, opts.TestGroupName)
+
+			span.SetAttributes(attribute.String("request.url", r.URL.String()))
+
+			defer span.End()
+
+			// Use the embedded private key for the tests
+			pk, err := testhelpers.GetEmbeddedPrivateKey()
+			if err != nil {
+				panic(err)
+			}
+
+			if pk == nil {
+				panic("No private key")
+			}
+
+			ctx = runtimectx.WithPrivateKey(ctx, pk)
 
 			if functionsTransport != nil {
 				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)
@@ -178,7 +219,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 					return
 				}
 
-				identity, err := runtime.HandleAuthorizationHeader(ctx, schema, r.Header, w)
+				identity, err := actions.HandleAuthorizationHeader(ctx, schema, r.Header)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					_, err = w.Write([]byte(err.Error()))
@@ -253,6 +294,18 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		opts.Pattern = "(.*)"
 	}
 
+	pk, _ := testhelpers.GetEmbeddedPrivateKey()
+
+	pkBytes := x509.MarshalPKCS1PrivateKey(pk)
+	pkPem := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "RSA PRIVATE KEY",
+			Bytes: pkBytes,
+		},
+	)
+
+	pkBase64 := base64.StdEncoding.EncodeToString(pkPem)
+
 	cmd = exec.Command("npx", "vitest", "run", "--color", "--reporter", "verbose", "--config", "./.build/vitest.config.mjs", "--testNamePattern", opts.Pattern)
 	cmd.Dir = opts.Dir
 	cmd.Env = append(os.Environ(), []string{
@@ -262,6 +315,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		fmt.Sprintf("KEEL_DB_CONN=%s", dbConnString),
 		// Disables experimental fetch warning that pollutes console experience when running tests
 		"NODE_NO_WARNINGS=1",
+		fmt.Sprintf("KEEL_DEFAULT_PK=%s", pkBase64),
 	}...)
 
 	b, err = cmd.CombinedOutput()

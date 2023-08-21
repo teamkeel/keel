@@ -14,17 +14,22 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/testhelpers"
 )
 
-func TestBearerTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
+func newContextWithPK() context.Context {
 	ctx := context.Background()
+
+	pk, _ := testhelpers.GetEmbeddedPrivateKey()
+	ctx = runtimectx.WithPrivateKey(ctx, pk)
+
+	return ctx
+}
+
+func TestBearerTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
+	ctx := newContextWithPK()
 	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 	identityId := ksuid.New()
-
-	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		AllowUnsigned:   true,
-		AllowAnyIssuers: true,
-	})
 
 	bearerJwt, err := actions.GenerateBearerToken(ctx, identityId.String())
 	require.NoError(t, err)
@@ -36,7 +41,7 @@ func TestBearerTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 }
 
 func TestBearerTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -54,7 +59,7 @@ func TestBearerTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
 }
 
 func TestBearerTokenGenerationWithPrivateKeyAndParsingWithoutPrivateKey(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -66,14 +71,14 @@ func TestBearerTokenGenerationWithPrivateKeyAndParsingWithoutPrivateKey(t *testi
 	require.NoError(t, err)
 	require.NotEmpty(t, bearerJwt)
 
-	ctx = context.Background()
+	ctx = newContextWithPK()
 	parsedId, _, err := actions.ValidateBearerToken(ctx, bearerJwt)
 	require.ErrorIs(t, actions.ErrInvalidToken, err)
 	require.Empty(t, parsedId)
 }
 
 func TestBearerTokenGenerationWithoutPrivateKeyAndParsingWithPrivateKey(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	bearerJwt, err := actions.GenerateBearerToken(ctx, identityId.String())
@@ -91,7 +96,7 @@ func TestBearerTokenGenerationWithoutPrivateKeyAndParsingWithPrivateKey(t *testi
 }
 
 func TestBearerTokenGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey1, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -114,7 +119,7 @@ func TestBearerTokenGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
 }
 
 func TestBearerTokenIsRSAMethodWithPrivateKey(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -135,25 +140,8 @@ func TestBearerTokenIsRSAMethodWithPrivateKey(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestBearerTokenIsNoneMethodWithoutPrivateKey(t *testing.T) {
-	ctx := context.Background()
-	identityId := ksuid.New()
-
-	jwtToken, err := actions.GenerateBearerToken(ctx, identityId.String())
-	require.NoError(t, err)
-	require.NotEmpty(t, jwtToken)
-
-	_, err = jwt.ParseWithClaims(jwtToken, &actions.Claims{}, func(token *jwt.Token) (interface{}, error) {
-		if token.Header["alg"] != "none" {
-			assert.Fail(t, "Invalid signing method. Expected none.")
-		}
-		return jwt.UnsafeAllowNoneSignatureType, nil
-	})
-	require.NoError(t, err)
-}
-
 func TestBearerTokenHasExpiryClaims(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -179,7 +167,7 @@ func TestBearerTokenHasExpiryClaims(t *testing.T) {
 }
 
 func TestExpiredBearerTokenIsInvalid(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -207,14 +195,9 @@ func TestExpiredBearerTokenIsInvalid(t *testing.T) {
 }
 
 func TestResetTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 	identityId := ksuid.New()
-
-	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		AllowUnsigned:   true,
-		AllowAnyIssuers: true,
-	})
 
 	bearerJwt, err := actions.GenerateResetToken(ctx, identityId.String())
 	require.NoError(t, err)
@@ -226,7 +209,7 @@ func TestResetTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 }
 
 func TestResetTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -244,7 +227,7 @@ func TestResetTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
 }
 
 func TestResetTokenGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey1, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -267,7 +250,7 @@ func TestResetTokenGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
 }
 
 func TestResetTokenIsRSAMethodWithPrivateKey(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -289,7 +272,7 @@ func TestResetTokenIsRSAMethodWithPrivateKey(t *testing.T) {
 }
 
 func TestResetTokenHasExpiryClaims(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -315,7 +298,7 @@ func TestResetTokenHasExpiryClaims(t *testing.T) {
 }
 
 func TestExpiredResetTokenIsInvalid(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -344,7 +327,7 @@ func TestExpiredResetTokenIsInvalid(t *testing.T) {
 }
 
 func TestResetTokenMissingAudIsInvalid(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -372,13 +355,12 @@ func TestResetTokenMissingAudIsInvalid(t *testing.T) {
 }
 
 func TestBearerTokenIssueClaimIsKeel(t *testing.T) {
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 
 	identityId := ksuid.New()
 
 	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		AllowUnsigned:   true,
 		AllowAnyIssuers: true,
 	})
 
@@ -394,7 +376,7 @@ func TestBearerTokenIssueClaimIsKeel(t *testing.T) {
 func TestBearerTokenFromThirdParty(t *testing.T) {
 	issuer := "https://enhanced-osprey-20.clerk.accounts.dev"
 
-	ctx := context.Background()
+	ctx := newContextWithPK()
 	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 
 	identityId := "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp"

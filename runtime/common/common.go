@@ -50,6 +50,8 @@ func NewJsonErrorResponse(err error) Response {
 			httpCode = http.StatusNotFound
 		case ErrPermissionDenied:
 			httpCode = http.StatusForbidden
+		case ErrUnauthorized:
+			httpCode = http.StatusUnauthorized
 		}
 	}
 
@@ -66,6 +68,7 @@ const (
 	ErrInvalidInput     = "ERR_INVALID_INPUT"
 	ErrPermissionDenied = "ERR_PERMISSION_DENIED"
 	ErrRecordNotFound   = "ERR_RECORD_NOT_FOUND"
+	ErrUnauthorized     = "ERR_UNAUTHORIZED"
 )
 
 type PermissionStatus string

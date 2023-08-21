@@ -42,6 +42,17 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			attribute.String("api.protocol", "HTTP JSON"),
 		)
 
+		identity, err := actions.HandleAuthorizationHeader(ctx, p, r.Header)
+		if err != nil {
+			return common.NewJsonResponse(http.StatusUnauthorized, common.HttpJsonErrorResponse{
+				Code:    common.ErrUnauthorized,
+				Message: "not authorized",
+			}, nil)
+		}
+		if identity != nil {
+			ctx = runtimectx.WithIdentity(ctx, identity)
+		}
+
 		switch r.Method {
 		case http.MethodGet:
 			inputs = parseQueryParams(r.URL.Query())

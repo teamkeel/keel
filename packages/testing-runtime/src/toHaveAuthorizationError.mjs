@@ -9,9 +9,12 @@ export async function toHaveAuthorizationError(received) {
     };
   } catch (err) {
     return {
-      pass: err.code === "ERR_PERMISSION_DENIED",
+      pass:
+        err.code === "ERR_PERMISSION_DENIED" || err.code === "ERR_UNAUTHORIZED",
       message: () =>
-        `expected there to be ${isNot ? "no " : ""}ERR_PERMISSION_DENIED error`,
+        `expected there to be ${
+          isNot ? "no " : ""
+        }ERR_PERMISSION_DENIED or ERR_UNAUTHORIZED error`,
       actual: err,
       expected: {
         ...err,

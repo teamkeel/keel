@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	email "net/mail"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -13,6 +15,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/segmentio/ksuid"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/teamkeel/keel/mail"
@@ -245,23 +248,16 @@ func generateToken(ctx context.Context, sub string, aud []string, expiresIn time
 		return "", err
 	}
 
-	if privateKey != nil {
-		// If the private key is set, sign the token with the private key.
-		token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-		tokenString, err := token.SignedString(privateKey)
-		if err != nil {
-			return "", fmt.Errorf("cannot create signed jwt: %w", err)
-		}
-		return tokenString, nil
-	} else {
-		// If the private key is not set, do not sign the token.
-		token := jwt.NewWithClaims(jwt.SigningMethodNone, claims)
-		tokenString, err := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
-		if err != nil {
-			return "", fmt.Errorf("cannot create unsecured jwt: %w", err)
-		}
-		return tokenString, nil
+	if privateKey == nil {
+		return "", fmt.Errorf("no private key set")
 	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	tokenString, err := token.SignedString(privateKey)
+	if err != nil {
+		return "", fmt.Errorf("cannot create signed jwt: %w", err)
+	}
+	return tokenString, nil
 }
 
 // Verifies the bearer token and returns the JWT subject and issuer.
@@ -284,6 +280,10 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		return "", "", err
 	}
 
+	if ctxPrivateKey == nil {
+		return "", "", errors.New("no private key set")
+	}
+
 	ctx, span := tracer.Start(ctx, "Validate token")
 	defer span.End()
 
@@ -296,14 +296,7 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 	// this supports external issued tokens but which are signed with our private key (such as clerk)
 	span.AddEvent("Validating with Keel pk")
 	token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-		if ctxPrivateKey != nil {
-			return &ctxPrivateKey.PublicKey, nil
-		} else if authConfig != nil && authConfig.AllowUnsigned {
-			span.AddEvent("Accepting unsigned token as AllowUnsigned is enabled")
-			// no private key is set in test env, so in this case allow the "none" algo
-			return jwt.UnsafeAllowNoneSignatureType, nil
-		}
-		return nil, fmt.Errorf("invalid token")
+		return &ctxPrivateKey.PublicKey, nil
 	})
 
 	// if unsuccessful using our private key, try to validate against any of the known external issuers if there are any
@@ -412,4 +405,54 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		}
 		return claims.Subject, claims.Issuer, nil
 	}
+}
+
+func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, headers http.Header) (*runtimectx.Identity, error) {
+	ctx, span := tracer.Start(ctx, "Authorization")
+	defer span.End()
+
+	header := headers.Get("Authorization")
+	if header == "" {
+		return nil, nil
+	}
+
+	headerSplit := strings.Split(header, "Bearer ")
+	if len(headerSplit) != 2 {
+		span.SetStatus(codes.Error, "no 'Bearer' prefix in the authentication header")
+		return nil, errors.New("invalid authorization header")
+	}
+
+	span.SetAttributes(attribute.String("token", headerSplit[1]))
+
+	subject, issuer, err := ValidateBearerToken(ctx, headerSplit[1])
+	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	// Check that identity actually does exist as it could
+	// have been deleted after the bearer token was generated.
+	var identity *runtimectx.Identity
+	if issuer == "keel" || issuer == "" {
+		identity, err = FindIdentityById(ctx, schema, subject)
+	} else {
+		identity, err = FindIdentityByExternalId(ctx, schema, subject, issuer)
+		if identity == nil {
+			identity, err = CreateExternalIdentity(ctx, schema, subject, issuer, headerSplit[1])
+		}
+	}
+
+	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	if identity == nil {
+		span.SetStatus(codes.Error, "identity not found")
+		return nil, err
+	}
+
+	span.SetAttributes(attribute.String("identity.id", identity.Id))
+
+	return identity, nil
 }

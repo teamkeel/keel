@@ -126,6 +126,7 @@ func TestIntegration(t *gotest.T) {
 				FunctionsOutput: &functionOutput,
 				EnvVars:         envVars,
 				Secrets:         secrets,
+				TestGroupName:   e.Name(),
 			})
 			require.NoError(t, err)
 

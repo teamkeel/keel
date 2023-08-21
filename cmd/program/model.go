@@ -26,6 +26,7 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -460,12 +461,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if m.Mode == ModeTest {
 
-			// In test mode we accept any tokens
-			ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-				AllowUnsigned:   true,
-				AllowAnyIssuers: false,
-			})
-
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 
 			switch pathParts[0] {
@@ -480,9 +475,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 
-				token := r.Header.Get("Authorization")
-
-				identity, err := runtime.HandleBearerToken(ctx, m.Schema, token)
+				identity, err := actions.HandleAuthorizationHeader(ctx, m.Schema, r.Header)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					_, err = w.Write([]byte(err.Error()))
@@ -526,7 +519,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			// In run mode we accept any external issuers but the tokens need to be signed correctly
 			ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-				AllowUnsigned:   false,
 				AllowAnyIssuers: true,
 			})
 
