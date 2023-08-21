@@ -7,7 +7,7 @@ model Post {
 
     actions {
         // For testing AND conditions
-        create createPost() with (title, theAuthor.id) {
+        create createPost() with (title, theAuthor.id, isActive?) {
             @set(post.isActive = true)
             @permission(expression: post.theAuthor.isActive == true)
         }
