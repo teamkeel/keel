@@ -1,0 +1,20 @@
+job MyJob1 {
+    @permission(roles: [NoRoleName])
+}
+
+job MyJob2 {
+    @permission(roles: [Admin,NoRoleName])
+}
+
+job MyJob3 {
+    @permission(roles: Admin)
+}
+
+job MyJob4 {
+    @permission([Admin])
+}
+
+
+role Admin {}
+
+role Developer {}

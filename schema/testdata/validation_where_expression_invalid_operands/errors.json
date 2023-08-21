@@ -1,0 +1,140 @@
+{
+  "errors": [
+    {
+      "message": "'invalid' not found",
+      "hint": "Did you mean ctx, or person?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 170,
+        "line": 9,
+        "column": 32
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 177,
+        "line": 9,
+        "column": 39
+      }
+    },
+    {
+      "message": "'ct' not found",
+      "hint": "Did you mean ctx?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 250,
+        "line": 13,
+        "column": 32
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 252,
+        "line": 13,
+        "column": 34
+      }
+    },
+    {
+      "message": "'ct' not found",
+      "hint": "Did you mean ctx?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 367,
+        "line": 17,
+        "column": 32
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 369,
+        "line": 17,
+        "column": 34
+      }
+    },
+    {
+      "message": "Non-boolean single operand conditions such as '\"true\"' not permitted on @where",
+      "hint": "Please add an operator and second operand. Did you mean '\"true\" == xxx'?",
+      "code": "E061",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 469,
+        "line": 21,
+        "column": 32
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 475,
+        "line": 21,
+        "column": 38
+      }
+    },
+    {
+      "message": "'invalid' not found on 'Organisation'",
+      "hint": "Did you mean one of people, id, createdAt, or updatedAt?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 599,
+        "line": 25,
+        "column": 68
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 606,
+        "line": 25,
+        "column": 75
+      }
+    },
+    {
+      "message": "'invalid' not found on 'Organisation'",
+      "hint": "Did you mean one of people, id, createdAt, or updatedAt?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 739,
+        "line": 29,
+        "column": 92
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 746,
+        "line": 29,
+        "column": 99
+      }
+    },
+    {
+      "message": "'invalid' not found on 'Boolean'",
+      "hint": "",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 839,
+        "line": 33,
+        "column": 52
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 846,
+        "line": 33,
+        "column": 59
+      }
+    },
+    {
+      "message": "'invalid' not found on 'Organisation'",
+      "hint": "Did you mean one of people, id, createdAt, or updatedAt?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 887,
+        "line": 33,
+        "column": 100
+      },
+      "endPos": {
+        "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
+        "offset": 894,
+        "line": 33,
+        "column": 107
+      }
+    }
+  ]
+}
