@@ -84,6 +84,40 @@
         "line": 21,
         "column": 8
       }
+    },
+    {
+      "message": "@on requires two arguments - an array of action types and a subscriber name",
+      "hint": "For example, @on([create, update], verifyEmailAddress)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 264,
+        "line": 14,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 267,
+        "line": 14,
+        "column": 16
+      }
+    },
+    {
+      "message": "@on action types argument must be an array",
+      "hint": "For example, @on([create, update], verifyEmailAddress)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 268,
+        "line": 14,
+        "column": 17
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 283,
+        "line": 14,
+        "column": 32
+      }
     }
   ]
 }
