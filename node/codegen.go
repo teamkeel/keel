@@ -300,7 +300,7 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 		var tsType string
 
 		switch {
-		case f.Unique || f.PrimaryKey:
+		case f.Unique || f.PrimaryKey || len(f.UniqueWith) > 0:
 			tsType = toTypeScriptType(f.Type, false)
 		case proto.IsHasMany(f):
 			// If a model "has one" of another model then you can
