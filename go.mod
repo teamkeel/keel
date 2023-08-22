@@ -27,6 +27,8 @@ require (
 	github.com/nleeper/goment v1.4.4
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/otiai10/copy v1.7.0
+	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/pquerna/cachecontrol v0.2.0
 	github.com/radovskyb/watcher v1.0.7
 	github.com/relvacode/iso8601 v1.3.0
 	github.com/rs/cors v1.8.2
@@ -54,8 +56,6 @@ require (
 require (
 	github.com/PaesslerAG/gval v1.0.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/bxcodec/gotcha v1.0.0-beta.8 // indirect
-	github.com/bxcodec/httpcache v1.0.0-beta.3 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
@@ -82,9 +82,7 @@ require (
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.1 // indirect
-	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
-	github.com/pquerna/cachecontrol v0.2.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect

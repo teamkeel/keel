@@ -1,0 +1,9 @@
+model Member {
+    fields {
+        name Text
+        email Text
+        verified Boolean @default(false)
+    }
+
+    @on([create, update], verifyEmail)
+}

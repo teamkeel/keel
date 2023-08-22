@@ -747,6 +747,7 @@ func RunTests(dir string, port string, cfg *config.ProjectConfig, conn *db.Conne
 		envVars := cfg.GetEnvVars("test")
 		envVars["KEEL_TESTING_ACTIONS_API_URL"] = fmt.Sprintf("http://localhost:%s/%s/json", port, testing.ActionApiPath)
 		envVars["KEEL_TESTING_JOBS_URL"] = fmt.Sprintf("http://localhost:%s/%s/json", port, testing.JobPath)
+		envVars["KEEL_TESTING_SUBSCRIBERS_URL"] = fmt.Sprintf("http://localhost:%s/%s/json", port, testing.SubscriberPath)
 		envVars["KEEL_DB_CONN_TYPE"] = "pg"
 		envVars["KEEL_DB_CONN"] = conn.String()
 		envVars["NODE_OPTIONS"] = "--no-warnings"

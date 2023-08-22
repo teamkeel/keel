@@ -143,6 +143,10 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 		attribute.String("job.name", job.Name),
 	)
 
+	span.SetAttributes(
+		attribute.String("job.name", job.Name),
+	)
+
 	scope := actions.NewJobScope(ctx, job, handler.schema)
 
 	permissionState := common.NewPermissionState()
@@ -169,6 +173,45 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 		inputs,
 		permissionState,
 		trigger,
+	)
+
+	// Generate and send any events for this context.
+	eventsErr := events.GenerateEvents(ctx)
+	if eventsErr != nil {
+		span.RecordError(eventsErr)
+	}
+
+	return err
+}
+
+type SubscriberHandler struct {
+	schema *proto.Schema
+}
+
+func NewSubscriberHandler(currSchema *proto.Schema) SubscriberHandler {
+	return SubscriberHandler{
+		schema: currSchema,
+	}
+}
+
+// RunSubscriber will run the subscriber function in the runtime.
+func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberName string, inputs map[string]any) error {
+	ctx, span := tracer.Start(ctx, "Run subscriber")
+	defer span.End()
+
+	subscriber := proto.FindSubscriber(handler.schema.Subscribers, subscriberName)
+	if subscriber == nil {
+		return fmt.Errorf("no subscriber with the name '%s' exists", subscriberName)
+	}
+
+	span.SetAttributes(
+		attribute.String("subscriber.name", subscriber.Name),
+	)
+
+	err := functions.CallSubscriber(
+		ctx,
+		subscriber,
+		inputs,
 	)
 
 	// Generate and send any events for this context.

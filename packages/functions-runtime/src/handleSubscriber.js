@@ -8,12 +8,12 @@ const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
 const { PROTO_ACTION_TYPES } = require("./consts");
-const { tryExecuteJob } = require("./tryExecuteJob");
+const { tryExecuteSubscriber } = require("./tryExecuteSubscriber");
 
 // Generic handler function that is agnostic to runtime environment (local or lambda)
-// to execute a job function based on the contents of a jsonrpc-2.0 payload object.
+// to execute a subscriber function based on the contents of a jsonrpc-2.0 payload object.
 // To read more about jsonrpc request and response shapes, please read https://www.jsonrpc.org/specification
-async function handleJob(request, config) {
+async function handleSubscriber(request, config) {
   // Try to extract trace context from caller
   const activeContext = opentelemetry.propagation.extract(
     opentelemetry.context.active(),
@@ -25,10 +25,10 @@ async function handleJob(request, config) {
     // Wrapping span for the whole request
     return withSpan(request.method, async (span) => {
       try {
-        const { createJobContextAPI, jobs } = config;
+        const { createSubscriberContextAPI, subscribers } = config;
 
-        if (!(request.method in jobs)) {
-          const message = `no corresponding job found for '${request.method}'`;
+        if (!(request.method in subscribers)) {
+          const message = `no corresponding subscriber found for '${request.method}'`;
           span.setStatus({
             code: opentelemetry.SpanStatusCode.ERROR,
             message: message,
@@ -40,27 +40,19 @@ async function handleJob(request, config) {
           );
         }
 
-        // The ctx argument passed into the job function.
-        const ctx = createJobContextAPI({
+        // The ctx argument passed into the subscriber function.
+        const ctx = createSubscriberContextAPI({
           meta: request.meta,
         });
 
-        const permitted =
-          request.meta && request.meta.permissionState.status === "granted"
-            ? true
-            : null;
-
         const db = getDatabaseClient();
-        const jobFunction = jobs[request.method];
-        const actionType = PROTO_ACTION_TYPES.JOB;
+        const subscriberFunction = subscribers[request.method];
+        const actionType = PROTO_ACTION_TYPES.SUBSCRIBER;
 
-        await tryExecuteJob(
-          { request, permitted, db, actionType },
-          async () => {
-            // Return the job function to the containing tryExecuteJob block
-            return jobFunction(ctx, request.params);
-          }
-        );
+        await tryExecuteSubscriber({ db, actionType }, async () => {
+          // Return the subscriber function to the containing tryExecuteSubscriber block
+          return subscriberFunction(ctx, request.params);
+        });
 
         return createJSONRPCSuccessResponse(request.id, null);
       } catch (e) {
@@ -91,6 +83,6 @@ async function handleJob(request, config) {
 }
 
 module.exports = {
-  handleJob,
+  handleSubscriber,
   RuntimeErrors,
 };

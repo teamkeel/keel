@@ -30,7 +30,9 @@ func HasFunctions(sch *proto.Schema) bool {
 
 	hasJobs := sch.Jobs != nil && len(sch.Jobs) > 0
 
-	return hasCustomFunctions || hasJobs
+	hasSubscribers := sch.Subscribers != nil && len(sch.Subscribers) > 0
+
+	return hasCustomFunctions || hasJobs || hasSubscribers
 }
 
 // HasTests returns true if there any TypeScript test files in dir or any of it's

@@ -38,9 +38,9 @@ const (
 type FunctionType string
 
 const (
-	ActionFunction FunctionType = "action"
-	JobFunction    FunctionType = "job"
-	EventFunction  FunctionType = "event"
+	ActionFunction     FunctionType = "action"
+	JobFunction        FunctionType = "job"
+	SubscriberFunction FunctionType = "subscriber"
 )
 
 type TriggerType string
@@ -202,6 +202,55 @@ func CallJob(ctx context.Context, job *proto.Job, inputs map[string]any, permiss
 	span.SetAttributes(
 		attribute.String("job.id", req.ID),
 		attribute.String("job.name", job.Name),
+	)
+
+	resp, err := transport(ctx, req)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return err
+	}
+
+	if resp.Error != nil {
+		span.SetStatus(codes.Error, resp.Error.Message)
+		span.SetAttributes(attribute.Int("error.code", int(resp.Error.Code)))
+		return toRuntimeError(resp.Error)
+	}
+
+	return nil
+}
+
+// CallSubscriber will invoke the subscriber function on the runtime node server.
+func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, inputs map[string]any) error {
+	ctx, span := tracer.Start(ctx, "Call subscriber")
+	defer span.End()
+
+	transport, ok := ctx.Value(contextKey).(Transport)
+	if !ok {
+		return errors.New("no functions client in context")
+	}
+
+	secrets := runtimectx.GetSecrets(ctx)
+
+	tracingContext := propagation.MapCarrier{}
+	otel.GetTextMapPropagator().Inject(ctx, tracingContext)
+
+	meta := map[string]any{
+		"secrets": secrets,
+		"tracing": tracingContext,
+	}
+
+	req := &FunctionsRuntimeRequest{
+		ID:     ksuid.New().String(),
+		Method: subscriber.Name,
+		Type:   SubscriberFunction,
+		Params: inputs,
+		Meta:   meta,
+	}
+
+	span.SetAttributes(
+		attribute.String("subscriber.id", req.ID),
+		attribute.String("subscriber.name", subscriber.Name),
 	)
 
 	resp, err := transport(ctx, req)
