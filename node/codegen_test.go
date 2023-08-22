@@ -1393,14 +1393,14 @@ export type GetPersonHooks = {
 }
 export declare function CreatePerson(hooks?: CreatePersonHooks) : void
 export type CreatePersonHooks = {
-    beforeWrite?: (ctx: ContextAPI, inputs: CreatePersonInput, values: PersonCreateValues) => Promise<PersonCreateValues>
+    beforeWrite?: (ctx: ContextAPI, inputs: CreatePersonInput) => Promise<PersonCreateValues>
     afterWrite?: (ctx: ContextAPI, inputs: CreatePersonInput, data: Person) => Promise<void>
 }
 export declare function UpdatePerson(hooks?: UpdatePersonHooks) : void
 export type UpdatePersonHooks = {
     beforeQuery?: (ctx: ContextAPI, inputs: UpdatePersonInput) => Promise<Person>
     afterQuery?: (ctx: ContextAPI, inputs: UpdatePersonInput, person: Person) => Promise<Person>
-    beforeWrite?: (ctx: ContextAPI, inputs: UpdatePersonInput, values: Partial<Person>) => Promise<Partial<Person>>
+    beforeWrite?: (ctx: ContextAPI, inputs: UpdatePersonInput) => Promise<Partial<Person>>
     afterWrite?: (ctx: ContextAPI, inputs: UpdatePersonInput, data: Person) => Promise<void>
 }
 export declare function DeletePerson(hooks?: DeletePersonHooks) : void
@@ -1488,7 +1488,7 @@ const CreatePerson = (hooks = {}) => {
         // call beforeWrite hook (if defined)
         if (hooks.beforeWrite) {
             await runtime.tracing.withSpan('createPerson.beforeWrite', async (span) => {
-                values = await hooks.beforeWrite(ctx, inputs, values);
+                values = await hooks.beforeWrite(ctx, inputs);
             });
         }
 
@@ -1514,7 +1514,7 @@ const UpdatePerson = (hooks = {}) => {
         // call beforeWrite hook (if defined)
         if (hooks.beforeWrite) {
             await runtime.tracing.withSpan('updatePerson.beforeWrite', async (span) => {
-                values = await hooks.beforeWrite(ctx, inputs, values);
+                values = await hooks.beforeWrite(ctx, inputs);
             });
         }
 

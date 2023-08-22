@@ -1,10 +1,10 @@
 import { UpdatePersonWithBeforeWrite, Sex } from "@teamkeel/sdk";
 
 export default UpdatePersonWithBeforeWrite({
-  beforeWrite: async (ctx, inputs, values) => {
+  beforeWrite: async (ctx, inputs) => {
     return {
-      sex: values.sex,
-      title: `${getSalutation(values.sex!)} ${values.title}`,
+      sex: inputs.values.sex,
+      title: `${getSalutation(inputs.values.sex!)} ${inputs.values.title}`,
     };
   },
 });

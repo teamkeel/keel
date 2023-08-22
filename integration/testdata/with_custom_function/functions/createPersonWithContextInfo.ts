@@ -1,7 +1,7 @@
 import { CreatePersonWithContextInfo } from "@teamkeel/sdk";
 
 export default CreatePersonWithContextInfo({
-  beforeWrite: async (ctx, inputs, values) => {
+  beforeWrite: async (ctx, inputs) => {
     const { identity } = ctx;
     return {
       name: identity != null ? identity.email! : "none",

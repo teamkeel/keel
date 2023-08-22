@@ -785,7 +785,7 @@ func writeBeforeWriteHook(w *codegen.Writer, action *proto.Action) {
 	w.Indent()
 
 	wrapWithSpan(w, fmt.Sprintf("%s.beforeWrite", action.Name), func(w *codegen.Writer) {
-		w.Writeln("values = await hooks.beforeWrite(ctx, inputs, values);")
+		w.Writeln("values = await hooks.beforeWrite(ctx, inputs);")
 	})
 	w.Dedent()
 	w.Writeln("}")
@@ -971,18 +971,11 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 			// afterQuery returns a Promise<T> or T
 			w.Writef("afterQuery?: (ctx: ContextAPI, inputs: %s, %s: %s) => Promise<%s>\n", inputMessage, casing.ToLowerCamel(action.ModelName), action.ModelName, action.ModelName)
 
-			valuesType := ""
+			valuesType := fmt.Sprintf("Partial<%s>", action.ModelName)
 
-			switch action.Type {
-			case proto.ActionType_ACTION_TYPE_CREATE:
-				valuesType = fmt.Sprintf("%sCreateValues", action.ModelName)
-			case proto.ActionType_ACTION_TYPE_UPDATE:
-				valuesType = fmt.Sprintf("Partial<%s>", action.ModelName)
-			}
-
-			w.Writef("beforeWrite?: (ctx: ContextAPI, inputs: %s, values: %s) => Promise<%s>\n", inputMessage, valuesType, valuesType)
+			w.Writef("beforeWrite?: (ctx: ContextAPI, inputs: %s) => Promise<%s>\n", inputMessage, valuesType)
 			w.Writef("afterWrite?: (ctx: ContextAPI, inputs: %s, data: %s) => Promise<void>\n", inputMessage, action.ModelName)
-		case proto.IsReadAction(action) || action.Type == proto.ActionType_ACTION_TYPE_DELETE:
+		case action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_DELETE:
 			resolvedReturnType := "unknown"
 			queryBuilderType := fmt.Sprintf("%sQueryBuilder", action.ModelName)
 
@@ -1017,7 +1010,7 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 			// afterQuery returns a Promise<T> or T
 			w.Writef("afterQuery?: (ctx: ContextAPI, inputs: %s, %s: %s) => Promise<%s> | %s\n", inputMessage, dataVariableName, resolvedReturnType, resolvedReturnType, resolvedReturnType)
 
-		case proto.IsWriteAction(action):
+		case action.Type == proto.ActionType_ACTION_TYPE_CREATE || action.Type == proto.ActionType_ACTION_TYPE_UPDATE:
 			valuesType := ""
 
 			switch action.Type {
@@ -1027,7 +1020,7 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 				valuesType = fmt.Sprintf("Partial<%s>", action.ModelName)
 			}
 
-			w.Writef("beforeWrite?: (ctx: ContextAPI, inputs: %s, values: %s) => Promise<%s>\n", inputMessage, valuesType, valuesType)
+			w.Writef("beforeWrite?: (ctx: ContextAPI, inputs: %s) => Promise<%s>\n", inputMessage, valuesType)
 			w.Writef("afterWrite?: (ctx: ContextAPI, inputs: %s, data: %s) => Promise<void>\n", inputMessage, action.ModelName)
 		}
 
