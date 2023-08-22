@@ -3,6 +3,10 @@ name: GoReleaser
 on:
   workflow_call:
     inputs:
+      branch:
+        description: "The branch to run the release on"
+        required: true
+        type: string
       version:
         description: "Release Version"
         required: true
@@ -45,6 +49,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          ref: ${{ inputs.branch }}
           fetch-depth: 0
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -62,6 +67,7 @@ jobs:
           message: "Keel release v${{ inputs.version }}"
 
       - name: Run GoReleaser
+        id: goreleaser
         uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser
@@ -69,6 +75,14 @@ jobs:
           args: release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Update CHANGELOG
+        id: changelog
+        if: ${{ inputs.generateChangelog }}
+        uses: requarks/changelog-action@v1.8.1
+        with:
+          token: ${{ github.token }}
+          tag: "v${{ inputs.version }}"
 
       # Goreleaser won't update a draft release, so you have to update the release after to tune release params
       - name: Update goreleaser release with the changelogs
@@ -78,7 +92,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: "v${{ inputs.version }}"
           name: "Keel release v${{ inputs.version }}"
-          generateReleaseNotes: ${{ inputs.generateChangelog }}
           draft: ${{ inputs.draft }}
           allowUpdates: true
           updateOnlyUnreleased: true
@@ -87,7 +100,25 @@ jobs:
           commit: ${{ inputs.commit }}
           bodyFile: ${{ inputs.releaseNotesURL }}
 
+      - name: Commit CHANGELOG.md
+        if: ${{ inputs.generateChangelog }}
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          branch: main
+          commit_message: "docs: update CHANGELOG.md for v${{ inputs.version }} [skip ci]"
+          file_pattern: CHANGELOG.md
+
+      - name: Fire Release Event with Changelog
+        if: ${{ inputs.generateChangelog }}
+        id: release_event_changelog
+        uses: peter-evans/repository-dispatch@v2.1.1
+        with:
+          token: ${{ secrets.PAT }}
+          repository: teamkeel/backend
+          event-type: ${{ inputs.releaseEvent }}
+          client-payload: '{"version": "${{ inputs.version }}", "changelog": "${{ steps.changelog.outputs.changelog }}"}'
       - name: Fire Release Event
+        if: ${{ inputs.generateChangelog  ==  false }}
         id: release_event
         uses: peter-evans/repository-dispatch@v2.1.1
         with:
