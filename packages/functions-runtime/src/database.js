@@ -22,6 +22,7 @@ async function withDatabase(db, actionType, cb) {
       break;
   }
 
+  // db.transaction() provides a kysely instance bound to a transaction.
   if (requiresTransaction) {
     return db.transaction().execute(async (transaction) => {
       return dbInstance.run(transaction, async () => {
@@ -30,8 +31,11 @@ async function withDatabase(db, actionType, cb) {
     });
   }
 
-  return dbInstance.run(db, async () => {
-    return cb({ transaction: db });
+  // db.connection() provides a kysely instance bound to a single database connection.
+  return db.connection().execute(async (sDb) => {
+    return dbInstance.run(sDb, async () => {
+      return cb({ sDb });
+    });
   });
 }
 
