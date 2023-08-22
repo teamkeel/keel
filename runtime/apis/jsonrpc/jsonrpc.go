@@ -26,8 +26,8 @@ const (
 	JsonRpcMethodNotFoundCode = -32601
 	JsonRpcInvalidParams      = -32602
 	JsonRpcInternalErrorCode  = -32603
-	JsonRpcUnauthorized       = -32002
-	JsonRpcForbidden          = -32001
+	JsonRpcUnauthorized       = -32001 // Not part of the official spec
+	JsonRpcForbidden          = -32003 // Not part of the official spec
 
 	// Application error codes
 	HttpMethodNotAllowedCode = http.StatusMethodNotAllowed
@@ -53,8 +53,8 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
 				JsonRpc: "2.0",
 				Error: JsonRpcError{
-					Code:    RuntimeErrorCodeToJsonRpcErrorCode(common.ErrUnauthorized),
-					Message: "not authorized",
+					Code:    RuntimeErrorCodeToJsonRpcErrorCode(common.ErrAuthenticationFailed),
+					Message: "not authenticated",
 				},
 			}, nil)
 		}
@@ -188,7 +188,7 @@ func parseJsonRpcRequest(b io.ReadCloser) (req *JsonRpcRequest, err error) {
 
 func RuntimeErrorCodeToJsonRpcErrorCode(code string) int {
 	switch code {
-	case common.ErrUnauthorized:
+	case common.ErrAuthenticationFailed:
 		return JsonRpcUnauthorized
 	case common.ErrPermissionDenied:
 		return JsonRpcForbidden

@@ -57,7 +57,7 @@ goreleaser:
 	rm -rf dist
 	goreleaser release --snapshot
 
-# Generate the defualt pk used by the run and test commands
+# Generate the defualt private key used by the run and test commands
 gen-pk:
 	go run ./util/privatekey/pkgen.go ./testing/testing/default.pem
 	

@@ -50,7 +50,7 @@ func NewJsonErrorResponse(err error) Response {
 			httpCode = http.StatusNotFound
 		case ErrPermissionDenied:
 			httpCode = http.StatusForbidden
-		case ErrUnauthorized:
+		case ErrAuthenticationFailed:
 			httpCode = http.StatusUnauthorized
 		}
 	}
@@ -64,11 +64,11 @@ func NewJsonErrorResponse(err error) Response {
 type ApiHandlerFunc func(r *http.Request) Response
 
 const (
-	ErrInternal         = "ERR_INTERNAL"
-	ErrInvalidInput     = "ERR_INVALID_INPUT"
-	ErrPermissionDenied = "ERR_PERMISSION_DENIED"
-	ErrRecordNotFound   = "ERR_RECORD_NOT_FOUND"
-	ErrUnauthorized     = "ERR_UNAUTHORIZED"
+	ErrInternal             = "ERR_INTERNAL"
+	ErrInvalidInput         = "ERR_INVALID_INPUT"
+	ErrPermissionDenied     = "ERR_PERMISSION_DENIED"
+	ErrRecordNotFound       = "ERR_RECORD_NOT_FOUND"
+	ErrAuthenticationFailed = "ERR_AUTHENTICATION_FAILED"
 )
 
 type PermissionStatus string
@@ -163,5 +163,12 @@ func NewPermissionError() RuntimeError {
 	return RuntimeError{
 		Code:    ErrPermissionDenied,
 		Message: "not authorized to access this action",
+	}
+}
+
+func NewAuthenticationFailedErr() RuntimeError {
+	return RuntimeError{
+		Code:    ErrAuthenticationFailed,
+		Message: "not authenticated",
 	}
 }

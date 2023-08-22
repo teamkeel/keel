@@ -275,12 +275,12 @@ func ValidateResetToken(ctx context.Context, tokenString string) (string, error)
 }
 
 func validateToken(ctx context.Context, tokenString string, audienceClaim string) (string, string, error) {
-	ctxPrivateKey, err := runtimectx.GetPrivateKey(ctx)
+	privateKey, err := runtimectx.GetPrivateKey(ctx)
 	if err != nil {
 		return "", "", err
 	}
 
-	if ctxPrivateKey == nil {
+	if privateKey == nil {
 		return "", "", errors.New("no private key set")
 	}
 
@@ -296,7 +296,7 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 	// this supports external issued tokens but which are signed with our private key (such as clerk)
 	span.AddEvent("Validating with Keel pk")
 	token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-		return &ctxPrivateKey.PublicKey, nil
+		return &privateKey.PublicKey, nil
 	})
 
 	// if unsuccessful using our private key, try to validate against any of the known external issuers if there are any
@@ -449,7 +449,7 @@ func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, header
 
 	if identity == nil {
 		span.SetStatus(codes.Error, "identity not found")
-		return nil, err
+		return nil, nil
 	}
 
 	span.SetAttributes(attribute.String("identity.id", identity.Id))

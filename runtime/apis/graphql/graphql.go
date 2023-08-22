@@ -46,7 +46,8 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			return common.NewJsonResponse(http.StatusOK, graphql.Result{
 				Errors: []gqlerrors.FormattedError{
 					{
-						Message: "not authorized",
+						Message:    "not authenticated",
+						Extensions: common.NewAuthenticationFailedErr().Extensions(),
 					},
 				},
 			}, nil)

@@ -44,10 +44,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		identity, err := actions.HandleAuthorizationHeader(ctx, p, r.Header)
 		if err != nil {
-			return common.NewJsonResponse(http.StatusUnauthorized, common.HttpJsonErrorResponse{
-				Code:    common.ErrUnauthorized,
-				Message: "not authorized",
-			}, nil)
+			return common.NewJsonResponse(http.StatusUnauthorized, common.NewAuthenticationFailedErr(), nil)
 		}
 		if identity != nil {
 			ctx = runtimectx.WithIdentity(ctx, identity)
