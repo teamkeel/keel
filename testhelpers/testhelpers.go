@@ -2,7 +2,12 @@ package testhelpers
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
 	"database/sql"
+	_ "embed"
+	"encoding/pem"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -98,4 +103,17 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 func DbNameForTestName(testName string) string {
 	re := regexp.MustCompile(`[^\w]`)
 	return strings.ToLower(re.ReplaceAllString(testName, ""))
+}
+
+//go:embed default.pem
+var defaultPem []byte
+
+func GetEmbeddedPrivateKey() (*rsa.PrivateKey, error) {
+
+	privateKeyBlock, err := pem.Decode(defaultPem)
+	if privateKeyBlock == nil {
+		return nil, fmt.Errorf("private key PEM either invalid or empty: %s", err)
+	}
+
+	return x509.ParsePKCS1PrivateKey(privateKeyBlock.Bytes)
 }

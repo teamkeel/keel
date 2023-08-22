@@ -31,19 +31,21 @@ export class ActionExecutor {
 
     // An Identity instance is provided make a JWT
     if (this._identity !== null) {
+      const base64pk = process.env.KEEL_DEFAULT_PK;
+      let privateKey = undefined;
+
+      if (base64pk) {
+        privateKey = Buffer.from(base64pk, "base64").toString("utf8");
+      }
+
       headers["Authorization"] =
         "Bearer " +
-        jwt.sign(
-          {},
-          // Not using a signing algorithm, therefore the private key is undefined
-          undefined,
-          {
-            algorithm: "none",
-            expiresIn: 60 * 60 * 24,
-            subject: this._identity.id,
-            issuer: "keel",
-          }
-        );
+        jwt.sign({}, privateKey, {
+          algorithm: privateKey ? "RS256" : "none",
+          expiresIn: 60 * 60 * 24,
+          subject: this._identity.id,
+          issuer: "keel",
+        });
     }
 
     // If an auth token is provided that can be sent as-is

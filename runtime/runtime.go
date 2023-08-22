@@ -2,7 +2,6 @@ package runtime
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -21,16 +20,10 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/trace"
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime")
 var Version string
-
-const (
-	authorizationHeaderName string = "Authorization"
-)
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
@@ -49,6 +42,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	}
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
+
 		ctx, span := tracer.Start(r.Context(), "Runtime")
 		defer span.End()
 
@@ -56,19 +50,15 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			attribute.String("runtime_version", Version),
 		)
 
+		w.Header().Add("Content-Type", "application/json")
+
 		if handler == nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte("Cannot serve requests when schema contains errors"))
 			return
 		}
 
-		identity, err := HandleAuthorizationHeader(ctx, currSchema, r.Header, w)
-		if err != nil {
-			return
-		}
-		if identity != nil {
-			ctx = runtimectx.WithIdentity(ctx, identity)
-		}
+		ctx = runtimectx.WithIssuersFromEnv(ctx)
 
 		// Collect request headers and add to runtime context
 		// These are exposed in custom functions and in expressions
@@ -88,8 +78,6 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 				w.Header().Add(k, value)
 			}
 		}
-
-		w.Header().Add("Content-Type", "application/json")
 
 		span.SetAttributes(
 			attribute.Int("response.status", response.Status),
@@ -232,99 +220,4 @@ func logLevel() log.Level {
 	default:
 		return log.ErrorLevel
 	}
-}
-
-func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, headers http.Header, w http.ResponseWriter) (*runtimectx.Identity, error) {
-	ctx, span := tracer.Start(ctx, "Authorization")
-	defer span.End()
-
-	header := headers.Get(authorizationHeaderName)
-	if header == "" {
-		return nil, nil
-	}
-
-	headerSplit := strings.Split(header, "Bearer ")
-	if len(headerSplit) != 2 {
-		span.SetStatus(codes.Error, "no 'Bearer' prefix in the authentication header")
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte("no 'Bearer' prefix in the authentication header"))
-		return nil, errors.New("invalid authorization header")
-	}
-
-	subject, issuer, err := actions.ValidateBearerToken(ctx, headerSplit[1])
-	if err != nil {
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, err.Error())
-	}
-
-	switch {
-	case errors.Is(err, actions.ErrInvalidToken) || errors.Is(err, actions.ErrTokenExpired):
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write([]byte(err.Error()))
-		return nil, err
-	case err != nil:
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte("error validating bearer token"))
-		return nil, err
-	}
-
-	// Check that identity actually does exist as it could
-	// have been deleted after the bearer token was generated.
-	var identity *runtimectx.Identity
-	if issuer == "keel" || issuer == "" {
-		identity, err = actions.FindIdentityById(ctx, schema, subject)
-	} else {
-		identity, err = actions.FindIdentityByExternalId(ctx, schema, subject, issuer)
-		if identity == nil {
-			identity, err = actions.CreateExternalIdentity(ctx, schema, subject, issuer, headerSplit[1])
-		}
-	}
-
-	if err != nil {
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write([]byte("error validating identity"))
-		return nil, err
-	}
-
-	if identity == nil {
-		span.SetStatus(codes.Error, "identity not found")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write([]byte(actions.ErrIdentityNotFound.Error()))
-		return nil, err
-	}
-
-	span.SetAttributes(attribute.String("identity.id", identity.Id))
-
-	return identity, nil
-}
-
-func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) (*runtimectx.Identity, error) {
-	subject, issuer, err := actions.ValidateBearerToken(ctx, token)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check that identity actually does exist as it could
-	// have been deleted after the bearer token was generated.
-	var identity *runtimectx.Identity
-	if issuer == "keel" || issuer == "" {
-		identity, err = actions.FindIdentityById(ctx, schema, subject)
-	} else {
-		identity, err = actions.FindIdentityByExternalId(ctx, schema, subject, issuer)
-		if identity == nil {
-			identity, err = actions.CreateExternalIdentity(ctx, schema, subject, issuer, token)
-		}
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	if identity == nil {
-		return nil, actions.ErrIdentityNotFound
-	}
-
-	return identity, nil
 }

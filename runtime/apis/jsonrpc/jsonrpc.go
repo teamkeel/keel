@@ -10,6 +10,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -25,6 +26,8 @@ const (
 	JsonRpcMethodNotFoundCode = -32601
 	JsonRpcInvalidParams      = -32602
 	JsonRpcInternalErrorCode  = -32603
+	JsonRpcUnauthorized       = -32001 // Not part of the official spec
+	JsonRpcForbidden          = -32003 // Not part of the official spec
 
 	// Application error codes
 	HttpMethodNotAllowedCode = http.StatusMethodNotAllowed
@@ -43,6 +46,20 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 					Message: "only HTTP post accepted",
 				},
 			}, nil)
+		}
+
+		identity, err := actions.HandleAuthorizationHeader(ctx, p, r.Header)
+		if err != nil {
+			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
+				JsonRpc: "2.0",
+				Error: JsonRpcError{
+					Code:    RuntimeErrorCodeToJsonRpcErrorCode(common.ErrAuthenticationFailed),
+					Message: "not authenticated",
+				},
+			}, nil)
+		}
+		if identity != nil {
+			ctx = runtimectx.WithIdentity(ctx, identity)
 		}
 
 		req, err := parseJsonRpcRequest(r.Body)
@@ -171,7 +188,11 @@ func parseJsonRpcRequest(b io.ReadCloser) (req *JsonRpcRequest, err error) {
 
 func RuntimeErrorCodeToJsonRpcErrorCode(code string) int {
 	switch code {
-	case common.ErrInvalidInput, common.ErrRecordNotFound, common.ErrPermissionDenied:
+	case common.ErrAuthenticationFailed:
+		return JsonRpcUnauthorized
+	case common.ErrPermissionDenied:
+		return JsonRpcForbidden
+	case common.ErrInvalidInput, common.ErrRecordNotFound:
 		return JsonRpcInvalidParams
 	default:
 		return JsonRpcInternalErrorCode

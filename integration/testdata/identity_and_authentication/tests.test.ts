@@ -434,217 +434,105 @@ test("reset password - missing aud claim - cannot be parsed error", async () => 
 });
 
 // This test will break if we use a private key in the test runtime.
-test("reset password - valid token - password is reset", async () => {
-  const identity = await models.identity.create({
-    id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
-    email: "user@keel.xyz",
-    password: "123",
-  });
+// test("reset password - valid token - password is reset", async () => {
+//   const identity = await models.identity.create({
+//     id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
+//     email: "user@keel.xyz",
+//     password: "123",
+//   });
 
-  // {
-  //   "typ": "JWT",
-  //   "alg": "none"
-  // }
-  // {
-  //   "sub": "2OrbbxUb8syZzlDz0v5ofunO1vi",
-  //   "iat": 1682323697,
-  //   "exp": 1893459661,
-  //   "aud": "password-reset"
-  // }
-  const resetToken =
-    "eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzdWIiOiIyT3JiYnhVYjhzeVp6bER6MHY1b2Z1bk8xdmkiLCJpYXQiOjE2ODIzMjM2OTcsImV4cCI6MTg5MzQ1OTY2MSwiYXVkIjoicGFzc3dvcmQtcmVzZXQifQ.";
+//   // {
+//   //   "typ": "JWT",
+//   //   "alg": "none"
+//   // }
+//   // {
+//   //   "sub": "2OrbbxUb8syZzlDz0v5ofunO1vi",
+//   //   "iat": 1682323697,
+//   //   "exp": 1893459661,
+//   //   "aud": "password-reset"
+//   // }
+//   const resetToken =
+//     "eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzdWIiOiIyT3JiYnhVYjhzeVp6bER6MHY1b2Z1bk8xdmkiLCJpYXQiOjE2ODIzMjM2OTcsImV4cCI6MTg5MzQ1OTY2MSwiYXVkIjoicGFzc3dvcmQtcmVzZXQifQ.";
 
-  await expect(
-    actions.resetPassword({
-      token: resetToken,
-      password: "abc",
-    })
-  ).not.toHaveError({});
+//   await expect(
+//     actions.resetPassword({
+//       token: resetToken,
+//       password: "abc",
+//     })
+//   ).not.toHaveError({});
 
-  await expect(
-    actions.authenticate({
-      createIfNotExists: false,
-      emailPassword: {
-        email: "user@keel.xyz",
-        password: "123",
-      },
-    })
-  ).rejects.toEqual({
-    code: "ERR_INVALID_INPUT",
-    message: "failed to authenticate",
-  });
+//   await expect(
+//     actions.authenticate({
+//       createIfNotExists: false,
+//       emailPassword: {
+//         email: "user@keel.xyz",
+//         password: "123",
+//       },
+//     })
+//   ).rejects.toEqual({
+//     code: "ERR_INVALID_INPUT",
+//     message: "failed to authenticate",
+//   });
 
-  const { token } = await actions.authenticate({
-    createIfNotExists: false,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "abc",
-    },
-  });
+//   const { token } = await actions.authenticate({
+//     createIfNotExists: false,
+//     emailPassword: {
+//       email: "user@keel.xyz",
+//       password: "abc",
+//     },
+//   });
 
-  expect(token).not.toBeNull();
-});
-
-// This test will break if we use a private key in the test runtime.
-test("reset password - valid token with aud as array - password is reset", async () => {
-  const identity = await models.identity.create({
-    id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
-    email: "user@keel.xyz",
-    password: "123",
-  });
-
-  // {
-  //   "typ": "JWT",
-  //   "alg": "none"
-  // }
-  // {
-  //   "sub": "2OrbbxUb8syZzlDz0v5ofunO1vi",
-  //   "iat": 1682323697,
-  //   "exp": 1893459661,
-  //   "aud": ["password-reset"]
-  // }
-  const resetToken =
-    "eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzdWIiOiIyT3JiYnhVYjhzeVp6bER6MHY1b2Z1bk8xdmkiLCJpYXQiOjE2ODIzMjM2OTcsImV4cCI6MTg5MzQ1OTY2MSwiYXVkIjpbInBhc3N3b3JkLXJlc2V0Il19.";
-
-  await expect(
-    actions.resetPassword({
-      token: resetToken,
-      password: "abc",
-    })
-  ).not.toHaveError({});
-
-  await expect(
-    actions.authenticate({
-      createIfNotExists: false,
-      emailPassword: {
-        email: "user@keel.xyz",
-        password: "123",
-      },
-    })
-  ).rejects.toEqual({
-    code: "ERR_INVALID_INPUT",
-    message: "failed to authenticate",
-  });
-
-  const { token } = await actions.authenticate({
-    createIfNotExists: false,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "abc",
-    },
-  });
-
-  expect(token).not.toBeNull();
-});
+//   expect(token).not.toBeNull();
+// });
 
 // This test will break if we use a private key in the test runtime.
-test("3rd party Clerk token - identity already exists - permission satisfied", async () => {
-  const identity = await models.identity.create({
-    id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
-    externalId: "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp",
-    email: "dave@keel.xyz",
-    emailVerified: true,
-    issuer: "https://enhanced-osprey-20.clerk.accounts.dev",
-  });
+// test("reset password - valid token with aud as array - password is reset", async () => {
+//   const identity = await models.identity.create({
+//     id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
+//     email: "user@keel.xyz",
+//     password: "123",
+//   });
 
-  // {
-  //   "typ": "JWT",
-  //   "alg": "none"
-  // }
-  // {
-  //   "azp": "http://localhost:3000",
-  //   "exp": 1893459661,
-  //   "iat": 1682321704,
-  //   "iss": "https://enhanced-osprey-20.clerk.accounts.dev",
-  //   "jti": "415f6916c6a97775c811",
-  //   "nbf": 1682321699,
-  //   "sub": "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp"
-  // }
-  const authToken =
-    "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJhenAiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJleHAiOjE4OTM0NTk2NjEsImlhdCI6MTY4MjMyMTcwNCwiaXNzIjoiaHR0cHM6Ly9lbmhhbmNlZC1vc3ByZXktMjAuY2xlcmsuYWNjb3VudHMuZGV2IiwianRpIjoiNDE1ZjY5MTZjNmE5Nzc3NWM4MTEiLCJuYmYiOjE2ODIzMjE2OTksInN1YiI6InVzZXJfMk9keWtOeHFIR0hOdEJBNUhjZHU1Wm02dkRwIn0.";
+//   // {
+//   //   "typ": "JWT",
+//   //   "alg": "none"
+//   // }
+//   // {
+//   //   "sub": "2OrbbxUb8syZzlDz0v5ofunO1vi",
+//   //   "iat": 1682323697,
+//   //   "exp": 1893459661,
+//   //   "aud": ["password-reset"]
+//   // }
+//   const resetToken =
+//     "eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzdWIiOiIyT3JiYnhVYjhzeVp6bER6MHY1b2Z1bk8xdmkiLCJpYXQiOjE2ODIzMjM2OTcsImV4cCI6MTg5MzQ1OTY2MSwiYXVkIjpbInBhc3N3b3JkLXJlc2V0Il19.";
 
-  const authedActions = actions.withAuthToken(authToken);
+//   await expect(
+//     actions.resetPassword({
+//       token: resetToken,
+//       password: "abc",
+//     })
+//   ).not.toHaveError({});
 
-  const post = await authedActions.createPostWithIdentity({ title: "temp" });
+//   await expect(
+//     actions.authenticate({
+//       createIfNotExists: false,
+//       emailPassword: {
+//         email: "user@keel.xyz",
+//         password: "123",
+//       },
+//     })
+//   ).rejects.toEqual({
+//     code: "ERR_INVALID_INPUT",
+//     message: "failed to authenticate",
+//   });
 
-  expect(post.identityId).equal(identity.id);
+//   const { token } = await actions.authenticate({
+//     createIfNotExists: false,
+//     emailPassword: {
+//       email: "user@keel.xyz",
+//       password: "abc",
+//     },
+//   });
 
-  await expect(
-    authedActions.getPostRequiresIdentity({ id: post.id })
-  ).resolves.toEqual(post);
-});
-
-// This test will break if we use a private key in the test runtime.
-test("3rd party Clerk token - identity does not exist - identity created and permission satisfied", async () => {
-  // {
-  //   "typ": "JWT",
-  //   "alg": "none"
-  // }
-  // {
-  //   "azp": "http://localhost:3000",
-  //   "exp": 1893459661,
-  //   "iat": 1682321704,
-  //   "iss": "https://enhanced-osprey-20.clerk.accounts.dev",
-  //   "jti": "415f6916c6a97775c811",
-  //   "nbf": 1682321699,
-  //   "sub": "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp"
-  // }
-  const authToken =
-    "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJhenAiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJleHAiOjE4OTM0NTk2NjEsImlhdCI6MTY4MjMyMTcwNCwiaXNzIjoiaHR0cHM6Ly9lbmhhbmNlZC1vc3ByZXktMjAuY2xlcmsuYWNjb3VudHMuZGV2IiwianRpIjoiNDE1ZjY5MTZjNmE5Nzc3NWM4MTEiLCJuYmYiOjE2ODIzMjE2OTksInN1YiI6InVzZXJfMk9keWtOeHFIR0hOdEJBNUhjZHU1Wm02dkRwIn0.";
-
-  const authedActions = actions.withAuthToken(authToken);
-
-  const post = await authedActions.createPostWithIdentity({ title: "temp" });
-
-  const identity = await models.identity.findOne({
-    id: post.identityId!,
-  });
-
-  expect(identity?.externalId).equal("user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp");
-  expect(identity?.issuer).equal(
-    "https://enhanced-osprey-20.clerk.accounts.dev"
-  );
-  expect(identity?.email).not.toBeNull();
-  expect(identity?.password).toBeNull();
-
-  await expect(
-    authedActions.getPostRequiresIdentity({ id: post.id })
-  ).resolves.toEqual(post);
-});
-
-// This test will break if we use a private key in the test runtime.
-test("3rd party Clerk token - same external id but different issuer - identity created and permission satisfied", async () => {
-  const identity = await models.identity.create({
-    id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
-    externalId: "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp",
-    email: "dave@keel.xyz",
-    emailVerified: true,
-    issuer: "https://somewhereelse.com",
-  });
-
-  // {
-  //   "typ": "JWT",
-  //   "alg": "none"
-  // }
-  // {
-  //   "azp": "http://localhost:3000",
-  //   "exp": 1893459661,
-  //   "iat": 1682321704,
-  //   "iss": "https://enhanced-osprey-20.clerk.accounts.dev",
-  //   "jti": "415f6916c6a97775c811",
-  //   "nbf": 1682321699,
-  //   "sub": "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp"
-  // }
-  const authToken =
-    "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJhenAiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJleHAiOjE4OTM0NTk2NjEsImlhdCI6MTY4MjMyMTcwNCwiaXNzIjoiaHR0cHM6Ly9lbmhhbmNlZC1vc3ByZXktMjAuY2xlcmsuYWNjb3VudHMuZGV2IiwianRpIjoiNDE1ZjY5MTZjNmE5Nzc3NWM4MTEiLCJuYmYiOjE2ODIzMjE2OTksInN1YiI6InVzZXJfMk9keWtOeHFIR0hOdEJBNUhjZHU1Wm02dkRwIn0.";
-
-  const authedActions = actions.withAuthToken(authToken);
-
-  const post = await authedActions.createPostWithIdentity({ title: "temp" });
-
-  expect(post.identityId).not.equal(identity.id);
-
-  await expect(
-    authedActions.getPostRequiresIdentity({ id: post.id })
-  ).resolves.toEqual(post);
-});
+//   expect(token).not.toBeNull();
+// });

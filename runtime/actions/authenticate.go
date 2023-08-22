@@ -4,17 +4,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	email "net/mail"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/karlseguin/typed"
 	"github.com/samber/lo"
 	"github.com/segmentio/ksuid"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/teamkeel/keel/mail"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
@@ -34,8 +40,8 @@ var (
 )
 
 const (
-	BearerTokenExpiry time.Duration = time.Hour * 24
-	ResetTokenExpiry  time.Duration = time.Minute * 15
+	DefaultBearerTokenExpiry time.Duration = time.Hour * 24
+	ResetTokenExpiry         time.Duration = time.Minute * 15
 )
 
 const (
@@ -90,6 +96,14 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 
 	if !typedInput.Bool("createIfNotExists") {
 		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "failed to authenticate"}
+	}
+
+	config, err := runtimectx.GetAuthConfig(scope.Context)
+	if err == nil {
+		if config != nil && config.Keel != nil && !config.Keel.AllowCreate {
+			// Creating new identities is disabled
+			return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "registration disabled"}
+		}
 	}
 
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(emailPassword.String("password")), bcrypt.DefaultCost)
@@ -201,7 +215,16 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 }
 
 func GenerateBearerToken(ctx context.Context, identityId string) (string, error) {
-	return generateToken(ctx, identityId, []string{}, BearerTokenExpiry)
+
+	expiry := DefaultBearerTokenExpiry
+	config, err := runtimectx.GetAuthConfig(ctx)
+	if err == nil {
+		if config != nil && config.Keel != nil {
+			expiry = time.Duration(config.Keel.TokenDuration) * time.Second
+		}
+	}
+
+	return generateToken(ctx, identityId, []string{}, expiry)
 }
 
 func GenerateResetToken(ctx context.Context, identityId string) (string, error) {
@@ -225,23 +248,16 @@ func generateToken(ctx context.Context, sub string, aud []string, expiresIn time
 		return "", err
 	}
 
-	if privateKey != nil {
-		// If the private key is set, sign the token with the private key.
-		token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-		tokenString, err := token.SignedString(privateKey)
-		if err != nil {
-			return "", fmt.Errorf("cannot create signed jwt: %w", err)
-		}
-		return tokenString, nil
-	} else {
-		// If the private key is not set, do not sign the token.
-		token := jwt.NewWithClaims(jwt.SigningMethodNone, claims)
-		tokenString, err := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
-		if err != nil {
-			return "", fmt.Errorf("cannot create unsecured jwt: %w", err)
-		}
-		return tokenString, nil
+	if privateKey == nil {
+		return "", fmt.Errorf("no private key set")
 	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	tokenString, err := token.SignedString(privateKey)
+	if err != nil {
+		return "", fmt.Errorf("cannot create signed jwt: %w", err)
+	}
+	return tokenString, nil
 }
 
 // Verifies the bearer token and returns the JWT subject and issuer.
@@ -259,49 +275,104 @@ func ValidateResetToken(ctx context.Context, tokenString string) (string, error)
 }
 
 func validateToken(ctx context.Context, tokenString string, audienceClaim string) (string, string, error) {
-	ctxPrivateKey, err := runtimectx.GetPrivateKey(ctx)
-
+	privateKey, err := runtimectx.GetPrivateKey(ctx)
 	if err != nil {
 		return "", "", err
 	}
 
+	if privateKey == nil {
+		return "", "", errors.New("no private key set")
+	}
+
+	ctx, span := tracer.Start(ctx, "Validate token")
+	defer span.End()
+
+	authConfig, _ := runtimectx.GetAuthConfig(ctx)
+
 	var token *jwt.Token
 	claims := &Claims{}
 
-	keelEnv := runtimectx.GetEnv(ctx)
-
 	// try to decode the token and validate using our private key as the signing method.
 	// this supports external issued tokens but which are signed with our private key (such as clerk)
+	span.AddEvent("Validating with Keel pk")
 	token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-		if ctxPrivateKey != nil {
-			return &ctxPrivateKey.PublicKey, nil
-		} else if keelEnv == runtimectx.KeelEnvTest {
-			// no private key is set in test env, so in this case allow the "none" algo
-			return jwt.UnsafeAllowNoneSignatureType, nil
-		}
-		return nil, fmt.Errorf("invalid token")
+		return &privateKey.PublicKey, nil
 	})
 
-	// if unsuccessful on the first pass, then try and decode/validate the token using the public key that matches the issuer in the token from our external issuers registry
-	// external issuers can be added by modifying the KEEL_EXTERNAL_ISSUERS env var
+	// if unsuccessful using our private key, try to validate against any of the known external issuers if there are any
 	if err != nil {
 		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 			iss := t.Claims.(*Claims).Issuer
 
-			issuers := runtimectx.ExternalIssuersFromEnv()
+			if authConfig == nil {
+				// If no auth config skip all this
+				return nil, nil
+			}
 
-			// check to see if there is a matching issuer for the token issuer in the registry
-			if lo.Contains(issuers, iss) {
-				if kid, ok := t.Header["kid"]; ok {
-					if kidStr, ok := kid.(string); ok {
-						publicKey, err := runtimectx.PublicKeyForIssuer(iss, kidStr)
+			issuers := authConfig.Issuers
 
-						if err == nil {
-							return publicKey, nil
-						}
+			if authConfig.AllowAnyIssuers {
+				span.AddEvent("Accepting any issuer as AllowAnyIssuers is enabled")
+				// In this mode we allow any issuer that is openID connect compatible
+				// So if this issuer is new add it to the know issuers and verify
+
+				match := false
+				for _, extIssuers := range issuers {
+					if extIssuers.Iss == iss {
+						match = true
+					}
+				}
+				if !match {
+					issuers = append(issuers, auth.ExternalIssuer{
+						Iss: iss,
+					})
+				}
+
+				authConfig.Issuers = issuers
+				ctx = runtimectx.WithAuthConfig(ctx, *authConfig)
+
+			}
+
+			if len(issuers) > 0 {
+				span.AddEvent("Validating with external issuers")
+			}
+
+			for _, issuer := range issuers {
+				if issuer.Iss != iss {
+					continue
+				}
+				iss := t.Claims.(*Claims).Issuer
+
+				kid := ""
+				if header, ok := t.Header["kid"]; ok {
+					if kidStr, ok := header.(string); ok {
+						kid = kidStr
 					}
 				}
 
+				publicKey, err := auth.PublicKeyForIssuer(ctx, iss, kid)
+
+				// Check the audience matches if set
+				match := true
+				if issuer.Audience != nil {
+					match = false
+					aud := t.Claims.(*Claims).Audience
+					for _, audience := range aud {
+						if audience == *issuer.Audience {
+							match = true
+							break
+						}
+					}
+					span.AddEvent("Validating audience claims", trace.WithAttributes(attribute.Bool("match", match)))
+				}
+
+				if !match {
+					return nil, fmt.Errorf("invalid token")
+				}
+
+				if err == nil {
+					return publicKey, nil
+				}
 			}
 
 			return nil, fmt.Errorf("unexpected issuer in token: %s", iss)
@@ -334,4 +405,54 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		}
 		return claims.Subject, claims.Issuer, nil
 	}
+}
+
+func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, headers http.Header) (*runtimectx.Identity, error) {
+	ctx, span := tracer.Start(ctx, "Authorization")
+	defer span.End()
+
+	header := headers.Get("Authorization")
+	if header == "" {
+		return nil, nil
+	}
+
+	headerSplit := strings.Split(header, "Bearer ")
+	if len(headerSplit) != 2 {
+		span.SetStatus(codes.Error, "no 'Bearer' prefix in the authentication header")
+		return nil, errors.New("invalid authorization header")
+	}
+
+	span.SetAttributes(attribute.String("token", headerSplit[1]))
+
+	subject, issuer, err := ValidateBearerToken(ctx, headerSplit[1])
+	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	// Check that identity actually does exist as it could
+	// have been deleted after the bearer token was generated.
+	var identity *runtimectx.Identity
+	if issuer == "keel" || issuer == "" {
+		identity, err = FindIdentityById(ctx, schema, subject)
+	} else {
+		identity, err = FindIdentityByExternalId(ctx, schema, subject, issuer)
+		if identity == nil {
+			identity, err = CreateExternalIdentity(ctx, schema, subject, issuer, headerSplit[1])
+		}
+	}
+
+	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	if identity == nil {
+		span.SetStatus(codes.Error, "identity not found")
+		return nil, nil
+	}
+
+	span.SetAttributes(attribute.String("identity.id", identity.Id))
+
+	return identity, nil
 }
