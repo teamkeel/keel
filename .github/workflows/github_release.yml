@@ -82,7 +82,7 @@ jobs:
         if: ${{ inputs.generateChangelog }}
         uses: requarks/changelog-action@v1.8.1
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.GH_TOKEN }}
           tag: "v${{ inputs.version }}"
 
       # Goreleaser won't update a draft release, so you have to update the release after to tune release params
