@@ -1,9 +1,7 @@
 const { withDatabase } = require("./database");
-const {
-  withPermissions,
-  PERMISSION_STATE,
-  PermissionError,
-} = require("./permissions");
+const { withPermissions, PERMISSION_STATE } = require("./permissions");
+
+const { PermissionError } = require("./errors");
 
 // tryExecuteJob will create a new database transaction around a function call
 // and handle any permissions checks. If a permission check fails, then an Error will be thrown and the catch block will be hit.

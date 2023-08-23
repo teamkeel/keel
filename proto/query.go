@@ -170,6 +170,32 @@ func FindAction(schema *Schema, actionName string) *Action {
 	return actions[0]
 }
 
+func ActionIsFunction(action *Action) bool {
+	return action.Implementation == ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+}
+
+func ActionIsArbitraryFunction(action *Action) bool {
+	return ActionIsFunction(action) && (action.Type == ActionType_ACTION_TYPE_READ || action.Type == ActionType_ACTION_TYPE_WRITE)
+}
+
+func IsWriteAction(action *Action) bool {
+	switch action.Type {
+	case ActionType_ACTION_TYPE_CREATE, ActionType_ACTION_TYPE_DELETE, ActionType_ACTION_TYPE_WRITE, ActionType_ACTION_TYPE_UPDATE:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsReadAction(action *Action) bool {
+	switch action.Type {
+	case ActionType_ACTION_TYPE_GET, ActionType_ACTION_TYPE_LIST, ActionType_ACTION_TYPE_READ:
+		return true
+	default:
+		return false
+	}
+}
+
 // FindModels locates and returns the models whose names match up with those
 // specified in the given names to find.
 func FindModels(allModels []*Model, namesToFind []string) (foundModels []*Model) {

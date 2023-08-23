@@ -2,9 +2,9 @@ const { withDatabase } = require("./database");
 const {
   withPermissions,
   PERMISSION_STATE,
-  PermissionError,
   checkBuiltInPermissions,
 } = require("./permissions");
+const { PermissionError } = require("./errors");
 const { PROTO_ACTION_TYPES } = require("./consts");
 
 // tryExecuteFunction will create a new database transaction around a function call

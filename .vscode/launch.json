@@ -9,7 +9,7 @@
         "program": "${workspaceFolder}/${input:modulePath}",
         "args": [
             "-test.run",
-            "${input:testCase}"
+            "${input:testCaseName}"
         ]
     },
     {
@@ -137,6 +137,11 @@
             "type": "promptString",
             "id": "modulePath",
             "description": "Module path to test"
+        },
+        {
+            "type": "promptString",
+            "id": "testCaseName",
+            "description": "The test case name to run e.g ^TestSomething/case$"
         }
     ]
 }

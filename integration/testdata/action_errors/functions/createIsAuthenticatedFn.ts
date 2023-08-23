@@ -1,8 +1,10 @@
-import { CreateIsAuthenticatedFn, models } from "@teamkeel/sdk";
+import { CreateIsAuthenticatedFn } from "@teamkeel/sdk";
 
-export default CreateIsAuthenticatedFn(async (ctx, inputs) => {
-  return await models.book.create({
-    title: inputs.title,
-    lastUpdatedById: ctx.identity!.id,
-  });
+export default CreateIsAuthenticatedFn({
+  beforeWrite: async (ctx, inputs) => {
+    return {
+      title: inputs.title,
+      lastUpdatedById: ctx.identity!.id,
+    };
+  },
 });
