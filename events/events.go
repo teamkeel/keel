@@ -6,6 +6,29 @@ import (
 	"time"
 )
 
+type Event struct {
+	// The name of the event, e.g. member.created.
+	EventName string `json:"eventName"`
+	// The time at which the event was created.
+	OccurredAt time.Time `json:"occurredAt"`
+	// The identity that resulted in the triggered events.
+	IdentityId string `json:"identityId,omitempty"`
+	// The target impacted by this event.
+	Target *EventTarget `json:"target"`
+}
+
+type EventTarget struct {
+	// The id of the target, if applicable.
+	Id string `json:"id"`
+	// The type of event target, e.g. Employee
+	Type string `json:"type"`
+	// The data relevant to this target type.
+	Data map[string]any `json:"data"`
+}
+
+// The event handler function to be executed for each subscriber event generated.
+type EventHandler func(ctx context.Context, subscriber string, event *Event) error
+
 type handlerContextKey string
 
 var contextKey handlerContextKey = "eventHandler"
@@ -26,19 +49,6 @@ func GetEventHandler(ctx context.Context) (EventHandler, error) {
 	return v, nil
 }
 
-// The event payload.
-// TODO: Iron out the data.
-type Event struct {
-	Name       string         `json:"name,omitempty"`
-	Model      string         `json:"model,omitempty"`
-	OccurredAt time.Time      `json:"occurred_at,omitempty"`
-	IdentityId string         `json:"identity_id,omitempty"`
-	Data       map[string]any `json:"data,omitempty"`
-}
-
-// The event handler function to be executed for each event generated.
-type EventHandler func(ctx context.Context, event *Event) error
-
 // Gather, create and send events which have occurred within the scope of this context.
 func GenerateEvents(ctx context.Context) error {
 
@@ -54,17 +64,21 @@ func GenerateEvents(ctx context.Context) error {
 	handler, _ := GetEventHandler(ctx)
 
 	testEvent := &Event{
-		Name:       "member.created",
-		Model:      "member",
+		EventName:  "member.created",
 		OccurredAt: time.Now(),
-		IdentityId: "",
-		Data: map[string]any{
-			"id":   "123",
-			"name": "Boetie",
+		IdentityId: "12312312",
+		Target: &EventTarget{
+			Id:   "2342342",
+			Type: "Member",
+			Data: map[string]any{
+				"id":    "2342342",
+				"name":  "Dave",
+				"email": "dave@hello.com",
+			},
 		},
 	}
 
-	_ = handler(ctx, testEvent)
+	_ = handler(ctx, "verifyEmail", testEvent)
 
 	return nil
 }

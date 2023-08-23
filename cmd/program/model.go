@@ -20,6 +20,7 @@ import (
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/mail"
 	"github.com/teamkeel/keel/migrations"
@@ -523,14 +524,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 
-				var inputs map[string]any
-				err = json.Unmarshal(body, &inputs)
+				var event *events.Event
+				err = json.Unmarshal(body, &event)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					break
 				}
 
-				err = m.SubscriberHandler.RunSubscriber(ctx, subscriberName, inputs)
+				err = m.SubscriberHandler.RunSubscriber(ctx, subscriberName, event)
 				if err != nil {
 					response := common.NewJsonErrorResponse(err)
 					w.WriteHeader(response.Status)

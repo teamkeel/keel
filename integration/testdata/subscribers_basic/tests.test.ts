@@ -7,15 +7,17 @@ test("subscriber - mutating field", async () => {
     email: "mary@keel.so",
   });
 
-  const payload = {
-    name: "member.create",
-    model: "Member",
-    sourceId: mary.id,
+  const event = {
+    eventName: "member.created",
     occurredAt: new Date(),
-    data: mary,
+    target: {
+      id: mary.id,
+      type: "Member",
+      data: mary,
+    },
   };
 
-  await subscribers.verifyEmail(payload);
+  await subscribers.verifyEmail(event);
 
   const updatedMary = await models.member.findOne({ id: mary.id });
 
