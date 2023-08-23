@@ -20,15 +20,6 @@ model Person {
 
 ===
 
-CREATE TABLE "audit" (
-"table_name" TEXT NOT NULL,
-"op" TEXT NOT NULL,
-"data" TEXT NOT NULL,
-"id" TEXT NOT NULL DEFAULT ksuid(),
-"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-ALTER TABLE "audit" ADD CONSTRAINT audit_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "identity" (
 "email" TEXT,
 "email_verified" BOOL,
@@ -44,6 +35,14 @@ ALTER TABLE "identity" ADD CONSTRAINT identity_email_issuer_udx UNIQUE ("email",
 CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH ROW EXECUTE PROCEDURE process_audit(); 
 CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH ROW EXECUTE PROCEDURE process_audit(); 
 CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH ROW EXECUTE PROCEDURE process_audit(); 
+CREATE TABLE "keel_audit" (
+"table_name" TEXT NOT NULL,
+"op" TEXT NOT NULL,
+"data" jsonb NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
 "text_with_value" TEXT NOT NULL DEFAULT 'foo',
 "text_with_default" TEXT NOT NULL DEFAULT '',
@@ -63,9 +62,5 @@ CREATE TRIGGER person_update AFTER UPDATE ON "person" REFERENCING NEW TABLE AS n
 CREATE TRIGGER person_delete AFTER DELETE ON "person" REFERENCING OLD TABLE AS old_table FOR EACH ROW EXECUTE PROCEDURE process_audit();
 === 
 
-[
-{"Model":"Audit","Field":"","Type":"ADDED"},
-{"Model":"Identity","Field":"","Type":"ADDED"},
-{"Model":"Person","Field":"","Type":"ADDED"}
-]
 
+[{"Model":"Identity","Field":"","Type":"ADDED"},{"Model":"KeelAudit","Field":"","Type":"ADDED"},{"Model":"Person","Field":"","Type":"ADDED"}]

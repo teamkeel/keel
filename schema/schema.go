@@ -307,7 +307,6 @@ func (scm *Builder) insertForeignKeyFields(
 
 func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
 	scm.insertIdentityModel(declarations, schemaFile)
-	scm.insertAuditModel(declarations, schemaFile)
 }
 
 func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile reader.SchemaFile) {
@@ -414,62 +413,6 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile rea
 			}
 		}
 	}
-}
-
-func (scm *Builder) insertAuditModel(declarations *parser.AST, schemaFile reader.SchemaFile) {
-	declaration := &parser.DeclarationNode{
-		Model: &parser.ModelNode{
-			BuiltIn: true,
-			Name: parser.NameNode{
-				Value: parser.ImplicitAuditTableName,
-				Node: node.Node{
-					Pos: lexer.Position{
-						Filename: schemaFile.FileName,
-					},
-				},
-			},
-		},
-	}
-
-	tableNameField := &parser.FieldNode{
-		BuiltIn: true,
-		Name: parser.NameNode{
-			Value: parser.ImplicitAuditFieldNameTableName,
-		},
-		Type: parser.NameNode{
-			Value: parser.FieldTypeText,
-		},
-		Optional: false,
-	}
-
-	opField := &parser.FieldNode{
-		BuiltIn: true,
-		Name: parser.NameNode{
-			Value: parser.ImplicitAuditFieldNameOp,
-		},
-		Type: parser.NameNode{
-			Value: parser.FieldTypeText,
-		},
-		Optional: false,
-	}
-
-	dataField := &parser.FieldNode{
-		BuiltIn: true,
-		Name: parser.NameNode{
-			Value: parser.ImplicitAuditFieldNameData,
-		},
-		Type: parser.NameNode{
-			Value: parser.FieldTypeText,
-		},
-		Optional: false,
-	}
-
-	section := &parser.ModelSectionNode{
-		Fields: []*parser.FieldNode{tableNameField, opField, dataField},
-	}
-
-	declaration.Model.Sections = append(declaration.Model.Sections, section)
-	declarations.Declarations = append(declarations.Declarations, declaration)
 }
 
 func (scm *Builder) addEnvironmentVariables(declarations *parser.AST) {

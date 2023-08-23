@@ -241,72 +241,12 @@
           "responseMessageName": "ResetPasswordResponse"
         }
       ]
-    },
-    {
-      "name": "Audit",
-      "fields": [
-        {
-          "modelName": "Audit",
-          "name": "tableName",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Audit",
-          "name": "op",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Audit",
-          "name": "data",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Audit",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Audit",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Audit",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        }
-      ]
     }
   ],
   "apis": [
     {
       "name": "Api",
       "apiModels": [
-        {
-          "modelName": "Audit"
-        },
         {
           "modelName": "Company"
         },

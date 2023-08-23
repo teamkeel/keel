@@ -11,7 +11,6 @@ import (
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema/parser"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -112,6 +111,20 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	modelsAdded := []*proto.Model{}
 	existingModels := []*proto.Model{}
 
+	// We're going to analyse the database changes required using a temporarily mutated schema.
+	// Specifically we're going to inject a fake, hard-coded KeelAudit model into it.
+	//
+	// This mutated copy only lives for the lifespan of this New() function, and does
+	// not interfere with the Migrations.Schema field in the Migration object returned.
+	//
+	// The reasons for this are:
+	// 1) The audit table will get created if it doesn't exist.
+	// 2) If we add a column to our hard-coded definition of the audit table, that will
+	//    trigger a corresponding migration also.
+	//
+	pushAuditModel(schema)
+	defer popAuditModel(schema)
+
 	modelNames := proto.ModelNames(schema)
 
 	// Add any new models
@@ -134,7 +147,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 			// Add audit logs hooks to every table - excluding of course
 			// the audit table itself.
-			if model.Name != parser.ImplicitAuditTableName {
+			if model.Name != auditModelName {
 				stmt, err = createAuditHookStmt(schema, model)
 				if err != nil {
 					return nil, err
@@ -273,6 +286,10 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			})
 		}
 	}
+
+	// Make sure the audit model is removed from the schema returned inside the New Migrations
+	// object.
+	popAuditModel(schema)
 
 	return &Migrations{
 		database: database,
