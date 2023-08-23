@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "field something has an unsupported type Unknown",
-      "hint": "Did you mean one of Audit, Boolean, Date, ID, Identity, Number, Password, Post, Secret, Text, or Timestamp?",
+      "hint": "Did you mean one of Boolean, Date, ID, Identity, Number, Password, Post, Secret, Text, or Timestamp?",
       "code": "E009",
       "pos": {
         "filename": "testdata/validation_unsupported_field_type/schema.keel",

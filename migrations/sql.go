@@ -215,19 +215,15 @@ func fieldDefinition(schema *proto.Schema, field *proto.Field) (string, error) {
 	columnName := Identifier(field.Name)
 
 	// We don't yet support Postgres JSON field types in Keel schemas.
-	// But we need one for the data column in the special case of the internally generated Audit table.
+	// But we need one for the special case of the keel_audit table.
 	// So we hard code the JSON field type for now, for that special case.
 
-	// specialCaseForAuditTableDataColumn := (field.ModelName == parser.ImplicitAuditTableName) && (field.Name == parser.ImplicitAuditFieldNameData)
+	isAuditDataColumn := (field.ModelName == auditModelName) && (field.Name == auditTableDataField)
 
-	// XXXX remove this maybe - experimenting to see if integration test errors arise from using a json field
-
-	// fieldType := lo.Ternary(
-	// 	specialCaseForAuditTableDataColumn,
-	// 	"jsonb",
-	// 	PostgresFieldTypes[field.Type.Type])
-
-	fieldType := PostgresFieldTypes[field.Type.Type]
+	fieldType := lo.Ternary(
+		isAuditDataColumn,
+		"jsonb",
+		PostgresFieldTypes[field.Type.Type])
 
 	output := fmt.Sprintf("%s %s", columnName, fieldType)
 
