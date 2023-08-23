@@ -13,7 +13,7 @@ model Person {
         name Text
     }
 
-    functions {
+    actions {
         write writeSportInterests(Input) returns (Response)
     }
 }

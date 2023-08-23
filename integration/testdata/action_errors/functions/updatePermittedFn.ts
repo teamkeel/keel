@@ -1,9 +1,10 @@
-import { UpdatePermittedFn, models } from "@teamkeel/sdk";
+import { UpdatePermittedFn } from "@teamkeel/sdk";
 
-export default UpdatePermittedFn(async (ctx, inputs) => {
-  const book = await models.book.update(inputs.where, {
-    title: inputs.values.title,
-    lastUpdatedById: inputs.values.lastUpdatedBy?.id,
-  });
-  return book;
+export default UpdatePermittedFn({
+  beforeWrite: async (ctx, inputs) => {
+    return {
+      title: inputs.values.title,
+      lastUpdatedById: inputs.values.lastUpdatedBy?.id,
+    };
+  },
 });

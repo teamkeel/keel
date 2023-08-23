@@ -7,7 +7,7 @@ message Out {
 }
 
 model Post {
-  functions {
+  actions {
     read getPost(In) returns(Out)
   }
 }

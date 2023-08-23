@@ -20,8 +20,8 @@ func TestBootstrap(t *testing.T) {
 
 	err := os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
 		model Post {
-			functions {
-				create createPost()
+			actions {
+				create createPost() @function
 			}
 		}
 	`), 0777)
@@ -55,8 +55,8 @@ func TestBootstrapVersionInterpolation(t *testing.T) {
 
 	err := os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
 		model Post {
-			functions {
-				create createPost()
+			actions {
+				create createPost() @function
 			}
 		}
 	`), 0777)
@@ -93,8 +93,8 @@ func TestBootstrapPackageJSONExists(t *testing.T) {
 
 	err := os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
 		model Post {
-			functions {
-				create createPost()
+			actions {
+				create createPost() @function
 			}
 		}
 	`), 0777)

@@ -1,18 +1,18 @@
 {
   "errors": [
     {
-      "message": "Operation deleteMyModel must either take a unique field as input or filter on a unique field using a @where attribute",
+      "message": "Action deleteMyModel must either take a unique field as input or filter on a unique field using a @where attribute",
       "hint": "Did you mean to add 'id' as an input?",
       "code": "E008",
       "pos": {
         "filename": "testdata/validation_delete_operation_no_unique_lookup/schema.keel",
-        "offset": 48,
+        "offset": 45,
         "line": 3,
         "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_delete_operation_no_unique_lookup/schema.keel",
-        "offset": 61,
+        "offset": 58,
         "line": 3,
         "column": 29
       }

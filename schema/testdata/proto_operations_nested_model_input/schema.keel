@@ -4,7 +4,7 @@ model Fee {
         theName Text
     }
 
-    operations {
+    actions {
         list searchFees(theFi.theFo.theFum.theName)
     }
 }
@@ -29,7 +29,7 @@ model Fum {
         theName Text
     }
 
-    operations {
+    actions {
         list searchFums(theFos.theFis.theFees.theName)
     }
 }

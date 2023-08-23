@@ -3,7 +3,7 @@ model Post {
     status PostStatus
   }
 
-  operations {
+  actions {
     list getPublishedPosts() {
       @where(post.status == OtherPostStatus.Something)
     }

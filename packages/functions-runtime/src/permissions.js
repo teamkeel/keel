@@ -1,6 +1,5 @@
 const { AsyncLocalStorage } = require("async_hooks");
-
-class PermissionError extends Error {}
+const { PermissionError } = require("./errors");
 
 const PERMISSION_STATE = {
   UNKNOWN: "unknown",

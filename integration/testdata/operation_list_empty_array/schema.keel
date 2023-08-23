@@ -11,7 +11,7 @@ model Todo {
         owner Identity
     }
 
-    operations {
+    actions {
         list listTodo(project.id?) {
             @permission(expression: todo.owner == ctx.identity)
         }

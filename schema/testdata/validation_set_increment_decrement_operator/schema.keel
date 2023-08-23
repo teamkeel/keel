@@ -3,7 +3,7 @@ model Post {
         views Number
     }
 
-    operations {
+    actions {
         update boostViews(id) {
             @set(post.views += 1)
         }

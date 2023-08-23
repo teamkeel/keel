@@ -11,9 +11,9 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 )
 
-func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql.ResolveParams) (interface{}, error) {
+func ActionFunc(schema *proto.Schema, action *proto.Action) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
-		scope := actions.NewScope(p.Context, operation, schema)
+		scope := actions.NewScope(p.Context, action, schema)
 		input := p.Args["input"]
 
 		res, headers, err := actions.Execute(scope, input)
@@ -35,7 +35,7 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 			headersValue[k] = v
 		}
 
-		if operation.Type == proto.OperationType_OPERATION_TYPE_LIST {
+		if action.Type == proto.ActionType_ACTION_TYPE_LIST {
 			// actions.Execute() returns any but a list action will return a map
 			m, _ := res.(map[string]any)
 			return connectionResponse(m)

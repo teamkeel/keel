@@ -42,33 +42,33 @@
           }
         }
       ],
-      "operations": [
+      "actions": [
         {
           "modelName": "Foo",
           "name": "operationA",
-          "type": "OPERATION_TYPE_LIST",
-          "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
+          "type": "ACTION_TYPE_LIST",
+          "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
           "inputMessageName": "OperationAInput"
         },
         {
           "modelName": "Foo",
           "name": "operationB",
-          "type": "OPERATION_TYPE_CREATE",
-          "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
           "inputMessageName": "OperationBInput"
         },
         {
           "modelName": "Foo",
           "name": "operationC",
-          "type": "OPERATION_TYPE_CREATE",
-          "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
           "inputMessageName": "OperationCInput"
         },
         {
           "modelName": "Foo",
           "name": "operationD",
-          "type": "OPERATION_TYPE_CREATE",
-          "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
           "inputMessageName": "OperationDInput"
         }
       ]
@@ -154,28 +154,28 @@
           }
         }
       ],
-      "operations": [
+      "actions": [
         {
           "modelName": "Identity",
           "name": "authenticate",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "RequestPasswordResetInput",
           "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "ResetPasswordInput",
           "responseMessageName": "ResetPasswordResponse"
         }

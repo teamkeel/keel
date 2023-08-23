@@ -1,6 +1,3 @@
-import { ListPermittedFn, models } from "@teamkeel/sdk";
+import { ListPermittedFn } from "@teamkeel/sdk";
 
-export default ListPermittedFn(async (ctx, inputs) => {
-  const books = await models.book.findMany(inputs);
-  return books;
-});
+export default ListPermittedFn();

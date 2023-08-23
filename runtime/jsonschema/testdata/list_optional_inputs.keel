@@ -4,7 +4,7 @@ model Person {
         company Company
     }
 
-    operations {
+    actions {
         list testAction(firstName?, company.name?)
     }
 }

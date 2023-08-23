@@ -3,7 +3,7 @@ message Foo {
 }
 
 model Person {
-  functions {
+  actions {
     read getPersonWithMultipleReturns() returns(Foo, Any)
     read getPersonWithLowercaseAny() returns(any)
   }

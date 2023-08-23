@@ -5,7 +5,7 @@ model ChildModel {
         parentOptional ParentModel?
     }
 
-    operations {
+    actions {
         create createChild1() with (isActive, explicitParentId: ID) {
             @set(childModel.parent.id = explicitParentId)
             @set(childModel.parentOptional.id = explicitParentId)

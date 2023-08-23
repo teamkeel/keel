@@ -40,7 +40,7 @@ func GetDefinition(schemaFiles []*reader.SchemaFile, pos Position) *Definition {
 			}
 		}
 
-		for _, fn := range query.ModelFunctions(model) {
+		for _, fn := range query.ModelActions(model, func(a *parser.ActionNode) bool { return a.IsFunction() }) {
 			if !tokenContainsPosition(fn.Name.Tokens[0], pos) {
 				continue
 			}

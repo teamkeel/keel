@@ -146,11 +146,11 @@ func FindEnum(enums []*Enum, name string) *Enum {
 	return enum
 }
 
-func FilterOperations(p *Schema, filter func(op *Operation) bool) (ops []*Operation) {
+func FilterActions(p *Schema, filter func(op *Action) bool) (ops []*Action) {
 	for _, model := range p.Models {
-		operations := model.Operations
+		actions := model.Actions
 
-		for _, o := range operations {
+		for _, o := range actions {
 			if filter(o) {
 				ops = append(ops, o)
 			}
@@ -160,14 +160,40 @@ func FilterOperations(p *Schema, filter func(op *Operation) bool) (ops []*Operat
 	return ops
 }
 
-func FindOperation(schema *Schema, operationName string) *Operation {
-	operations := FilterOperations(schema, func(op *Operation) bool {
-		return op.Name == operationName
+func FindAction(schema *Schema, actionName string) *Action {
+	actions := FilterActions(schema, func(op *Action) bool {
+		return op.Name == actionName
 	})
-	if len(operations) != 1 {
+	if len(actions) != 1 {
 		return nil
 	}
-	return operations[0]
+	return actions[0]
+}
+
+func ActionIsFunction(action *Action) bool {
+	return action.Implementation == ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+}
+
+func ActionIsArbitraryFunction(action *Action) bool {
+	return ActionIsFunction(action) && (action.Type == ActionType_ACTION_TYPE_READ || action.Type == ActionType_ACTION_TYPE_WRITE)
+}
+
+func IsWriteAction(action *Action) bool {
+	switch action.Type {
+	case ActionType_ACTION_TYPE_CREATE, ActionType_ACTION_TYPE_DELETE, ActionType_ACTION_TYPE_WRITE, ActionType_ACTION_TYPE_UPDATE:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsReadAction(action *Action) bool {
+	switch action.Type {
+	case ActionType_ACTION_TYPE_GET, ActionType_ACTION_TYPE_LIST, ActionType_ACTION_TYPE_READ:
+		return true
+	default:
+		return false
+	}
 }
 
 // FindModels locates and returns the models whose names match up with those
@@ -245,8 +271,8 @@ func GetActionNamesForApi(p *Schema, api *Api) []string {
 
 	actions := []string{}
 	for _, m := range models {
-		for _, op := range m.Operations {
-			actions = append(actions, op.Name)
+		for _, action := range m.Actions {
+			actions = append(actions, action.Name)
 		}
 	}
 
@@ -268,7 +294,7 @@ func PermissionsWithRole(permissions []*PermissionRule) []*PermissionRule {
 
 type PermissionFilter = func(p *PermissionRule) bool
 
-func PermissionsForAction(schema *Schema, action *Operation, filters ...PermissionFilter) (permissions []*PermissionRule) {
+func PermissionsForAction(schema *Schema, action *Action, filters ...PermissionFilter) (permissions []*PermissionRule) {
 	// if there are any action level permissions, then these take priority
 	if len(action.Permissions) > 0 {
 		return action.Permissions
@@ -276,7 +302,7 @@ func PermissionsForAction(schema *Schema, action *Operation, filters ...Permissi
 
 	// if there are no action level permissions, then we fallback to model level permissions
 	// that match the type of the action
-	opTypePermissions := PermissionsForOperationType(schema, action.ModelName, action.Type)
+	opTypePermissions := PermissionsForActionType(schema, action.ModelName, action.Type)
 	permissions = append(permissions, opTypePermissions...)
 
 	if len(filters) == 0 {
@@ -299,14 +325,14 @@ permissions:
 	return filtered
 }
 
-// PermissionsForOperationType returns a list of permissions defined for an operation type on a model.
-func PermissionsForOperationType(schema *Schema, modelName string, opType OperationType) []*PermissionRule {
+// PermissionsForActionType returns a list of permissions defined for an action type on a model.
+func PermissionsForActionType(schema *Schema, modelName string, actionType ActionType) []*PermissionRule {
 	permissions := []*PermissionRule{}
 
 	model := FindModel(schema.Models, modelName)
 
 	for _, perm := range model.Permissions {
-		if lo.Contains(perm.OperationsTypes, opType) {
+		if lo.Contains(perm.ActionTypes, actionType) {
 			permissions = append(permissions, perm)
 		}
 	}
@@ -329,7 +355,7 @@ func PermissionsWithExpression(permissions []*PermissionRule) []*PermissionRule 
 
 // IsModelField returns true if the input targets a model field
 // and is handled automatically by the runtime.
-// This will only be true for inputs that are part of operations,
+// This will only be true for inputs that are built-in actions,
 // as functions never have this behaviour.
 func (f *MessageField) IsModelField() bool {
 	return len(f.Target) > 0
@@ -356,16 +382,16 @@ func FindMessageField(message *Message, fieldName string) *MessageField {
 	return nil
 }
 
-// For built-in operation types, returns the "values" input message, which may be nested inside the
-// root message for some operation types, or returns nil if not found.
-func FindValuesInputMessage(schema *Schema, operationName string) *Message {
-	operation := FindOperation(schema, operationName)
-	message := FindMessage(schema.Messages, operation.InputMessageName)
+// For built-in action types, returns the "values" input message, which may be nested inside the
+// root message for some action types, or returns nil if not found.
+func FindValuesInputMessage(schema *Schema, actionName string) *Message {
+	action := FindAction(schema, actionName)
+	message := FindMessage(schema.Messages, action.InputMessageName)
 
-	switch operation.Type {
-	case OperationType_OPERATION_TYPE_CREATE:
+	switch action.Type {
+	case ActionType_ACTION_TYPE_CREATE:
 		return message
-	case OperationType_OPERATION_TYPE_UPDATE:
+	case ActionType_ACTION_TYPE_UPDATE:
 		for _, v := range message.Fields {
 			if v.Name == "values" && v.Type.Type == Type_TYPE_MESSAGE {
 				return FindMessage(schema.Messages, v.Type.MessageName.Value)
@@ -375,18 +401,18 @@ func FindValuesInputMessage(schema *Schema, operationName string) *Message {
 	return nil
 }
 
-// For built-in operation types, returns the "where" input message, which may be nested inside the
-// root message for some operation types, or returns nil if not found.
-func FindWhereInputMessage(schema *Schema, operationName string) *Message {
-	operation := FindOperation(schema, operationName)
-	message := FindMessage(schema.Messages, operation.InputMessageName)
+// For built-in action types, returns the "where" input message, which may be nested inside the
+// root message for some action types, or returns nil if not found.
+func FindWhereInputMessage(schema *Schema, actionName string) *Message {
+	action := FindAction(schema, actionName)
+	message := FindMessage(schema.Messages, action.InputMessageName)
 
-	switch operation.Type {
-	case OperationType_OPERATION_TYPE_GET,
-		OperationType_OPERATION_TYPE_DELETE:
+	switch action.Type {
+	case ActionType_ACTION_TYPE_GET,
+		ActionType_ACTION_TYPE_DELETE:
 		return message
-	case OperationType_OPERATION_TYPE_LIST,
-		OperationType_OPERATION_TYPE_UPDATE:
+	case ActionType_ACTION_TYPE_LIST,
+		ActionType_ACTION_TYPE_UPDATE:
 		for _, v := range message.Fields {
 			if v.Name == "where" && v.Type.Type == Type_TYPE_MESSAGE {
 				return FindMessage(schema.Messages, v.Type.MessageName.Value)
@@ -398,8 +424,8 @@ func FindWhereInputMessage(schema *Schema, operationName string) *Message {
 
 func MessageUsedAsResponse(schema *Schema, msgName string) bool {
 	for _, model := range schema.Models {
-		for _, op := range model.Operations {
-			if op.ResponseMessageName == msgName {
+		for _, action := range model.Actions {
+			if action.ResponseMessageName == msgName {
 				return true
 			}
 		}

@@ -10,7 +10,7 @@ import (
 )
 
 // TryResolveExpressionEarly attempts to evaluate the expression in the runtime process without generating a row-based query against the database.
-func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, expression *parser.Expression, args map[string]any) (canResolveInMemory bool, resolvedValue bool) {
+func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, expression *parser.Expression, args map[string]any) (canResolveInMemory bool, resolvedValue bool) {
 	can := false
 	value := false
 
@@ -20,13 +20,13 @@ func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model 
 
 		for _, and := range or.And {
 			if and.Expression != nil {
-				currCan, currValue := TryResolveExpressionEarly(ctx, schema, model, operation, and.Expression, args)
+				currCan, currValue := TryResolveExpressionEarly(ctx, schema, model, action, and.Expression, args)
 				currCanResolve = currCan && currCanResolve
 				currExpressionValue = currExpressionValue && currValue
 			}
 
 			if and.Condition != nil {
-				currCan, currValue := resolveConditionEarly(ctx, schema, model, operation, and.Condition, args)
+				currCan, currValue := resolveConditionEarly(ctx, schema, model, action, and.Condition, args)
 				currCanResolve = currCan && currCanResolve
 				currExpressionValue = currExpressionValue && currValue
 			}
@@ -40,26 +40,26 @@ func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model 
 }
 
 // canResolveConditionEarly determines if a single condition can be resolved in the process without generating a row-based query against the database.
-func canResolveConditionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, condition *parser.Condition) bool {
-	lhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.LHS)
+func canResolveConditionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, condition *parser.Condition) bool {
+	lhsResolver := NewOperandResolver(ctx, schema, model, action, condition.LHS)
 
 	if condition.Type() == parser.ValueCondition {
 		return !lhsResolver.IsDatabaseColumn()
 	}
 
-	rhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.RHS)
+	rhsResolver := NewOperandResolver(ctx, schema, model, action, condition.RHS)
 	referencesDatabaseColumns := lhsResolver.IsDatabaseColumn() || rhsResolver.IsDatabaseColumn()
 
 	return !(referencesDatabaseColumns)
 }
 
 // resolveConditionEarly resolves a single condition in the process without generating a row-based query against the database.
-func resolveConditionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, condition *parser.Condition, args map[string]any) (canResolveEarly bool, resolvedValue bool) {
-	if !canResolveConditionEarly(ctx, schema, model, operation, condition) {
+func resolveConditionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, condition *parser.Condition, args map[string]any) (canResolveEarly bool, resolvedValue bool) {
+	if !canResolveConditionEarly(ctx, schema, model, action, condition) {
 		return false, false
 	}
 
-	lhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.LHS)
+	lhsResolver := NewOperandResolver(ctx, schema, model, action, condition.LHS)
 	operandType, _ := lhsResolver.GetOperandType()
 	lhsValue, _ := lhsResolver.ResolveValue(args)
 
@@ -68,7 +68,7 @@ func resolveConditionEarly(ctx context.Context, schema *proto.Schema, model *pro
 		return true, result
 	}
 
-	rhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.RHS)
+	rhsResolver := NewOperandResolver(ctx, schema, model, action, condition.RHS)
 	rhsValue, _ := rhsResolver.ResolveValue(args)
 	result, _ := evaluate(lhsValue, rhsValue, operandType, condition.Operator)
 

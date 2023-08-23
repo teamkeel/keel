@@ -6,7 +6,7 @@ model Person {
         identity Identity
     }
 
-    operations {
+    actions {
         list getPeople(name) {
             @permission(expression: person.public == true)
             @where(person.public == true)

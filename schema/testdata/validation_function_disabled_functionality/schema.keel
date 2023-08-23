@@ -1,0 +1,25 @@
+model Address {
+  fields {
+    town Text
+  }
+}
+
+model Person {
+  fields {
+    title Text
+    age Number?
+    address Address
+  }
+
+  actions {
+    get getPerson(id) {
+      @where(person.age > 10)
+      @function
+    }
+
+    create createPerson() with(title, address.town) {
+      @set(person.age = 9)
+      @function
+    }
+  }
+}

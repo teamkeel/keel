@@ -7,7 +7,7 @@ model Post {
     name Text
   }
 
-  functions {
+  actions {
     read getPost(name, someBool: Boolean) returns(Out)
   }
 }

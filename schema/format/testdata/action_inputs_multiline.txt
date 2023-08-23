@@ -1,21 +1,21 @@
 model Order {
-    operations {
-        list veryLongOperationName(veryLong, listOfInputs, soVeryHardToRead, allOnOneLine)
-        update veryLongUpdateOperation(id) with (one?, two?, three?, four?, five?, six?, seven?)
+    actions {
+        list veryVeryLongActionName(veryLong, listOfInputs, soVeryHardToRead, allOnOneLine)
+        update veryLongUpdateActionName(id) with (one?, two?, three?, four?, five?, six?, seven?)
     }
 }
 
 ===
 
 model Order {
-    operations {
-        list veryLongOperationName(
+    actions {
+        list veryVeryLongActionName(
             veryLong,
             listOfInputs,
             soVeryHardToRead,
             allOnOneLine,
         )
-        update veryLongUpdateOperation(id) with (
+        update veryLongUpdateActionName(id) with (
             one?,
             two?,
             three?,

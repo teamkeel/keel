@@ -3,7 +3,7 @@ model MyModel {
         isLocked Boolean
     }
 
-    operations {
+    actions {
         delete deleteMyModel(id) {
             @where(myModel.isLocked == false)
         }

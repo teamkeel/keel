@@ -3,7 +3,7 @@ model Account {
         identity Identity? @unique
     }
 
-    operations {
+    actions {
         create createAccount() {
             @set(account.identity = ctx.identity)
         }

@@ -6,13 +6,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
-        "offset": 153,
+        "offset": 150,
         "line": 9,
         "column": 18
       },
       "endPos": {
         "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
-        "offset": 163,
+        "offset": 160,
         "line": 9,
         "column": 28
       }
@@ -23,13 +23,13 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
-        "offset": 247,
+        "offset": 244,
         "line": 14,
         "column": 41
       },
       "endPos": {
         "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
-        "offset": 251,
+        "offset": 248,
         "line": 14,
         "column": 45
       }

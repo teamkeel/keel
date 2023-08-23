@@ -6,7 +6,7 @@ model Person {
         employer Company?
     }
 
-    operations {
+    actions {
         get getPerson(id)
         create createPerson() with (name, preferredName, employmentStatus, employer.id)
         create createPersonAndEmployer() with (name, employer.tradingAs)

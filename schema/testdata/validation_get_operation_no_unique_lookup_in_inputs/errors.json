@@ -1,18 +1,18 @@
 {
   "errors": [
     {
-      "message": "text is not a unique field. get operations take only unique inputs",
+      "message": "text is not a unique field. get actions take only unique inputs",
       "hint": "",
       "code": "E035",
       "pos": {
         "filename": "testdata/validation_get_operation_no_unique_lookup_in_inputs/schema.keel",
-        "offset": 94,
+        "offset": 91,
         "line": 7,
         "column": 24
       },
       "endPos": {
         "filename": "testdata/validation_get_operation_no_unique_lookup_in_inputs/schema.keel",
-        "offset": 98,
+        "offset": 95,
         "line": 7,
         "column": 28
       }

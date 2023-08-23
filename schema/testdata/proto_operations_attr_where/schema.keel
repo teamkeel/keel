@@ -3,7 +3,7 @@ model Foo {
         f1 Text @unique
     }
 
-    operations {
+    actions {
         get operationA() {
             @where(foo.f1 == "foo")
         }

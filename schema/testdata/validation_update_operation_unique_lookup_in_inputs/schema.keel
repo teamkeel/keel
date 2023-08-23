@@ -3,7 +3,7 @@ model MyModel {
         isActive Boolean
     }
 
-    operations {
+    actions {
         get updateMyModel(id) {
             @where(myModel.isActive == true)
         }

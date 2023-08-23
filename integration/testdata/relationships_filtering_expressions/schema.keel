@@ -6,7 +6,7 @@ model Post {
         theReviewer Author? @relation(reviewedPosts)
     }
 
-    operations {
+    actions {
         get getActivePost(id) {
             @where(post.theAuthor.thePublisher.isActive == true)
             @where(post.theAuthor.isActive == true)
@@ -55,7 +55,7 @@ model Author {
         thePublisher Publisher
     }
 
-    operations {
+    actions {
         list listReviewerByPostId(reviewedPosts.id)
     }
 
@@ -73,7 +73,7 @@ model Publisher {
         booleanValue Boolean?
     }
 
-    operations {
+    actions {
         get getActivePublisherWithActivePosts(id) {
             @where(true in publisher.theAuthors.thePosts.isActive)
             @where(true in publisher.theAuthors.isActive)

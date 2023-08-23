@@ -1,13 +1,3 @@
-import {
-  models,
-  permissions,
-  ListOptionalFieldsWithOptionalInputs,
-} from "@teamkeel/sdk";
+import { ListOptionalFieldsWithOptionalInputs } from "@teamkeel/sdk";
 
-export default ListOptionalFieldsWithOptionalInputs((_, inputs) => {
-  permissions.allow();
-
-  return models.person.findMany({
-    where: inputs.where!,
-  });
-});
+export default ListOptionalFieldsWithOptionalInputs();

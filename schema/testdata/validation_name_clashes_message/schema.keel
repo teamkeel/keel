@@ -9,11 +9,11 @@ model ModelWithActions {
         foo Text
     }
 
-    operations {
+    actions {
         update updateModel(id) with (foo)
     }
 
-    functions {
+    actions {
         read readModel(UpdateModelInput) returns (UpdateModelResponse)
     }
 }

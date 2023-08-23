@@ -4,7 +4,7 @@ model Person {
         surname Text
     }
 
-    operations {
+    actions {
         list testAction() {
             @sortable(surname, firstName)
         }

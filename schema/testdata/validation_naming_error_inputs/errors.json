@@ -1,18 +1,86 @@
 {
   "errors": [
     {
+      "message": "Action uppercaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 417,
+        "line": 18,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 434,
+        "line": 18,
+        "column": 26
+      }
+    },
+    {
+      "message": "Action upperCamelCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 458,
+        "line": 19,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 480,
+        "line": 19,
+        "column": 31
+      }
+    },
+    {
+      "message": "Action snakeCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 509,
+        "line": 20,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 526,
+        "line": 20,
+        "column": 26
+      }
+    },
+    {
+      "message": "Action screamingSnakeCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 551,
+        "line": 21,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 577,
+        "line": 21,
+        "column": 35
+      }
+    },
+    {
       "message": "input names must use lowerCamelCase",
       "hint": "e.g. uppercase",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 49,
+        "offset": 46,
         "line": 3,
         "column": 19
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 58,
+        "offset": 55,
         "line": 3,
         "column": 28
       }
@@ -23,13 +91,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 133,
+        "offset": 130,
         "line": 6,
         "column": 24
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 147,
+        "offset": 144,
         "line": 6,
         "column": 38
       }
@@ -40,13 +108,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 222,
+        "offset": 219,
         "line": 9,
         "column": 19
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 232,
+        "offset": 229,
         "line": 9,
         "column": 29
       }
@@ -57,13 +125,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 312,
+        "offset": 309,
         "line": 12,
         "column": 28
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 332,
+        "offset": 329,
         "line": 12,
         "column": 48
       }
@@ -74,13 +142,30 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 440,
+        "offset": 435,
         "line": 18,
         "column": 27
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 449,
+        "offset": 444,
+        "line": 18,
+        "column": 36
+      }
+    },
+    {
+      "message": "UPPERCASE is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute",
+      "hint": "",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 435,
+        "line": 18,
+        "column": 27
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 444,
         "line": 18,
         "column": 36
       }
@@ -91,13 +176,30 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 486,
+        "offset": 481,
         "line": 19,
         "column": 32
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 500,
+        "offset": 495,
+        "line": 19,
+        "column": 46
+      }
+    },
+    {
+      "message": "UpperCamelCase is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute",
+      "hint": "",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 481,
+        "line": 19,
+        "column": 32
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 495,
         "line": 19,
         "column": 46
       }
@@ -108,13 +210,30 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 532,
+        "offset": 527,
         "line": 20,
         "column": 27
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 542,
+        "offset": 537,
+        "line": 20,
+        "column": 37
+      }
+    },
+    {
+      "message": "snake_case is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute",
+      "hint": "",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 527,
+        "line": 20,
+        "column": 27
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 537,
         "line": 20,
         "column": 37
       }
@@ -125,13 +244,30 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 583,
+        "offset": 578,
         "line": 21,
         "column": 36
       },
       "endPos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 603,
+        "offset": 598,
+        "line": 21,
+        "column": 56
+      }
+    },
+    {
+      "message": "SCREAMING_SNAKE_CASE is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute",
+      "hint": "",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 578,
+        "line": 21,
+        "column": 36
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 598,
         "line": 21,
         "column": 56
       }

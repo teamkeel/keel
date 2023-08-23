@@ -13,7 +13,7 @@ import (
 // Include a filter (where condition) on the query based on an implicit input filter.
 func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []string, fieldName string, operator ActionOperator, value any) error {
 	// Implicit inputs don't include the base model as the first fragment (unlike expressions), so we include it
-	fragments := append([]string{casing.ToLowerCamel(scope.Operation.ModelName)}, targetField...)
+	fragments := append([]string{casing.ToLowerCamel(scope.Action.ModelName)}, targetField...)
 
 	// The lhs QueryOperand is determined from the fragments in the implicit input field
 	left, err := operandFromFragments(scope.Schema, fragments)
@@ -87,8 +87,8 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 		return fmt.Errorf("can only handle condition type of LogicalCondition or ValueCondition, have: %s", condition.Type())
 	}
 
-	lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Operation, condition.LHS)
-	rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Operation, condition.RHS)
+	lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, condition.LHS)
+	rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, condition.RHS)
 
 	lhsOperandType, err := lhsResolver.GetOperandType()
 	if err != nil {

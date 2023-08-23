@@ -18,53 +18,53 @@
       }
     },
     {
-      "message": "operation 'createAccount' has an unrecognised attribute @on",
-      "hint": "Did you mean @set, @where, @permission, @validate, @orderBy, or @sortable?",
+      "message": "actions 'createAccount' has an unrecognised attribute @on",
+      "hint": "Did you mean @set, @where, @permission, @validate, @orderBy, @sortable, or @function?",
       "code": "E011",
       "pos": {
+        "filename": "testdata/validation_attribute_on/schema.keel",
+        "offset": 129,
+        "line": 8,
+        "column": 13
+      },
+      "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
         "offset": 132,
         "line": 8,
-        "column": 13
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 135,
-        "line": 8,
         "column": 16
       }
     },
     {
-      "message": "function 'updateAccount' has an unrecognised attribute @on",
-      "hint": "Did you mean @permission?",
+      "message": "actions 'updateAccount' has an unrecognised attribute @on",
+      "hint": "Did you mean @set, @where, @permission, @validate, @orderBy, @sortable, or @function?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 231,
-        "line": 14,
+        "offset": 206,
+        "line": 12,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 234,
-        "line": 14,
+        "offset": 209,
+        "line": 12,
         "column": 16
       }
     },
     {
-      "message": "function 'updateAccount' has an unrecognised attribute @on",
-      "hint": "Did you mean @permission?",
+      "message": "actions 'updateAccount' has an unrecognised attribute @on",
+      "hint": "Did you mean @set, @where, @permission, @validate, @orderBy, @sortable, or @function?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 264,
-        "line": 15,
+        "offset": 239,
+        "line": 13,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 267,
-        "line": 15,
+        "offset": 242,
+        "line": 13,
         "column": 16
       }
     },
@@ -74,14 +74,14 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 372,
-        "line": 22,
+        "offset": 369,
+        "line": 21,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 375,
-        "line": 22,
+        "offset": 372,
+        "line": 21,
         "column": 8
       }
     }

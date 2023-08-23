@@ -23,9 +23,12 @@ func TestDevelopmentServerAction(t *testing.T) {
 		{
 			Path: "schema.keel",
 			Contents: `
+				message PersonResponse {
+					id Text
+				}
 				model Person {
-					functions {
-						get getPerson(id)
+					actions {
+						read getPerson(id) returns (PersonResponse)
 					}
 				}
 			`,
@@ -37,7 +40,7 @@ func TestDevelopmentServerAction(t *testing.T) {
 
 				export default GetPerson(async (ctx, inputs) => {
 					permissions.allow()
-					return {id: inputs.id, createdAt: new Date("2022-01-01"), updatedAt: new Date("2022-01-01")};
+					return {id: inputs.id};
 				});
 			`,
 		},
@@ -60,7 +63,7 @@ func TestDevelopmentServerAction(t *testing.T) {
 		b, err := io.ReadAll(res.Body)
 		require.NoError(t, err)
 
-		assert.Equal(t, `{"jsonrpc":"2.0","result":{"id":"1234","createdAt":"2022-01-01T00:00:00.000Z","updatedAt":"2022-01-01T00:00:00.000Z"},"meta":{"headers":{}}}`, string(b))
+		assert.Equal(t, `{"jsonrpc":"2.0","result":{"id":"1234"},"meta":{"headers":{}}}`, string(b))
 	})
 }
 
@@ -112,8 +115,8 @@ func TestDevelopmentServerStartError(t *testing.T) {
 			Path: "schema.keel",
 			Contents: `
 				model Person {
-					functions {
-						get getPerson(id)
+					actions {
+						get getPerson(id) @function
 					}
 				}
 			`,

@@ -37,7 +37,7 @@ model Person {
         name Text
     }
 
-    functions {
+    actions {
         read countName(name) returns (CountResponse)
         read countNameAdvanced(AdvancedSearchInput) returns (CountResponse)
         write createAndCount(name) returns (CountResponse)

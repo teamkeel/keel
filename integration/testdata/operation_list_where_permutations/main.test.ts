@@ -7,7 +7,7 @@ test("equalsGettingStarted", async () => {
   await models.thing.create({ title: "History of Art" });
   await models.thing.create({ title: "History of Cars" });
 
-  // The operations follow a naming convention.
+  // The actions follow a naming convention.
   // E.g. eqTextFieldToInput should be read as:
   //
   // "using the Equals operator, on a field/input of type Text, with the LHS of

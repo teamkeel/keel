@@ -3,7 +3,7 @@ model Person {
         name Text
     }
 
-    operations {
+    actions {
         create createPerson() with (personName: name)
         update updatePerson(id) with (personName: Text)
     }

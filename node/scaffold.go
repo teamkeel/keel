@@ -40,8 +40,8 @@ func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) 
 
 	generatedFiles := codegen.GeneratedFiles{}
 
-	functions := proto.FilterOperations(schema, func(op *proto.Operation) bool {
-		return op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
+	functions := proto.FilterActions(schema, func(op *proto.Action) bool {
+		return op.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 	})
 
 	for _, fn := range functions {
@@ -82,49 +82,26 @@ func ensureDir(dirName string) error {
 	}
 }
 
-func writeFunctionWrapper(function *proto.Operation) string {
+func writeFunctionWrapper(function *proto.Action) string {
 	functionName := casing.ToCamel(function.Name)
 
-	suggestedImplementation := ""
-	modelName := casing.ToLowerCamel(function.ModelName)
-
-	requiresModelsInput := true
-
-	switch function.Type {
-	case proto.OperationType_OPERATION_TYPE_CREATE:
-		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.create(inputs);
-	return %s;`, modelName, modelName, modelName)
-	case proto.OperationType_OPERATION_TYPE_LIST:
-		suggestedImplementation = fmt.Sprintf(`const %ss = await models.%s.findMany(inputs);
-	return %ss;`, modelName, modelName, modelName)
-	case proto.OperationType_OPERATION_TYPE_GET:
-		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.findOne(inputs);
-	return %s;`, modelName, modelName, modelName)
-	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.update(inputs.where, inputs.values);
-	return %s;`, modelName, modelName, modelName)
-	case proto.OperationType_OPERATION_TYPE_DELETE:
-		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.delete(inputs);
-	return %s;`, modelName, modelName, modelName)
-	case proto.OperationType_OPERATION_TYPE_READ, proto.OperationType_OPERATION_TYPE_WRITE:
-		suggestedImplementation = "// Build something cool"
-		requiresModelsInput = false
-	}
-
-	extraImports := ""
-
-	if requiresModelsInput {
-		// import models from the sdk for those scaffolded functions who's default
-		// implementation hits the database via the model api
-		extraImports += ", models"
-	}
-
-	return fmt.Sprintf(`import { %s%s } from '@teamkeel/sdk';
-
+	if proto.ActionIsArbitraryFunction(function) {
+		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
 export default %s(async (ctx, inputs) => {
-	%s
-});
-	`, functionName, extraImports, functionName, suggestedImplementation)
+
+})`, functionName, functionName)
+	}
+
+	hookType := fmt.Sprintf("%sHooks", casing.ToCamel(function.Name))
+
+	return fmt.Sprintf(`import { %s, %s } from '@teamkeel/sdk';
+
+// To learn more about what you can do with hooks,
+// visit https://docs.keel.so/functions
+const hooks : %s = {};
+
+export default %s(hooks);
+	`, functionName, hookType, hookType, functionName)
 }
 
 func writeJobWrapper(job *proto.Job) string {

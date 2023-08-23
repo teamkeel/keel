@@ -1,0 +1,79 @@
+model Log {
+  fields {
+    msg Text
+  }
+}
+
+model Person {
+  fields {
+    title Text
+    sex Sex
+  }
+
+  actions {
+    create createPersonWithBeforeWrite() with(title, sex) {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+
+    create createPersonWithAfterWrite() with(title, sex) {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+
+    update updatePersonWithBeforeWrite(id) with(title, sex) {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+    
+    update updatePersonWithAfterWrite(id) with(title, sex) {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+
+    update updatePersonWithBeforeQuery(id) with(title, sex) {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+
+    update updatePersonWithAfterQuery(id) with(title, sex) {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+
+    delete deletePersonBeforeQuery(id) {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+
+    delete deletePersonAfterQuery(id) {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+
+    get getPersonBeforeQuery(id) {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+
+    get getPersonAfterQuery(id) {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+
+    list listPeopleBeforeQuery() {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+
+    list listPeopleAfterQuery() {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+  }
+}
+
+enum Sex {
+  Male
+  Female
+}

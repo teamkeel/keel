@@ -82,7 +82,7 @@ func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *conf
 		return getFieldCompletions(asts, tokenAtPos)
 	case parser.KeywordMessage:
 		return getMessageFieldCompletions(asts, tokenAtPos)
-	case parser.KeywordOperations, parser.KeywordFunctions:
+	case parser.KeywordActions:
 		return getActionCompletions(asts, tokenAtPos, enclosingBlock)
 	case parser.KeywordModels:
 		// models block inside an api block - complete with model names
@@ -366,7 +366,7 @@ func getActionCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, encl
 	}
 
 	// current token is action name - can't auto-complete
-	if lo.Contains(append(parser.OperationActionTypes, parser.FunctionActionTypes...), tokenAtPos.ValueAt(-1)) {
+	if lo.Contains(parser.ActionTypes, tokenAtPos.ValueAt(-1)) {
 		modelName := getParentModelName(tokenAtPos)
 		actionType := tokenAtPos.ValueAt(-1)
 
@@ -382,20 +382,15 @@ func getActionCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, encl
 	isEndOfParen := tokenAtPos.Prev().EndOfParen() != nil
 
 	return lo.Filter(actionBlockKeywords, func(i *CompletionItem, _ int) bool {
-		keep := true
-		// if we're not a function them remove `read` and `write`
-		if enclosingBlock != parser.KeywordFunctions {
-			keep = i.Label != parser.ActionTypeRead && i.Label != parser.ActionTypeWrite
-		}
 		// if we're at the start of a new line then we should remove `with`
 		// if we're not on a new line and the last token is a closing parenthesis and we haven't got another
 		// `with` on this line then the only valid completion is `with`
 		if isNewLine {
-			return keep && i.Label != parser.KeywordWith
+			return i.Label != parser.KeywordWith
 		} else if isEndOfParen {
 			return i.Label == parser.KeywordWith
 		}
-		return keep
+		return true
 	})
 }
 
@@ -435,11 +430,7 @@ var modelBlockKeywords = []*CompletionItem{
 		Kind:  KindKeyword,
 	},
 	{
-		Label: parser.KeywordOperations,
-		Kind:  KindKeyword,
-	},
-	{
-		Label: parser.KeywordFunctions,
+		Label: parser.KeywordActions,
 		Kind:  KindKeyword,
 	},
 }
@@ -541,55 +532,51 @@ func getBuiltInTypeCompletions() []*CompletionItem {
 }
 
 func getActionInputCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
-	enclosingBlock := getTypeOfEnclosingBlock(tokenAtPos)
-
 	// inside action input args - auto-complete field names
 	completions := append([]*CompletionItem{}, builtInFieldCompletions...)
 
-	if enclosingBlock == parser.KeywordFunctions {
-		block := tokenAtPos.StartOfBlock()
+	block := tokenAtPos.StartOfBlock()
 
-		actionType := block.Next().Value()
+	actionType := block.Next().Value()
 
-		readOrWriteActionType := actionType == parser.ActionTypeRead || actionType == parser.ActionTypeWrite
+	readOrWriteActionType := actionType == parser.ActionTypeRead || actionType == parser.ActionTypeWrite
 
-		if readOrWriteActionType {
-			// find the first occurrence of a given token in the previous token stream and return what match was found
-			match, _ := tokenAtPos.StartOfParen().FindPrevMultiple(
-				parser.KeywordReturns,
-				parser.ActionTypeRead,
-				parser.ActionTypeWrite,
-			)
-			// if insideInputs is true, it means the first preceding token we're interested in was action type read or write
-			insideInputs := match == parser.ActionTypeRead || match == parser.ActionTypeWrite
+	if readOrWriteActionType {
+		// find the first occurrence of a given token in the previous token stream and return what match was found
+		match, _ := tokenAtPos.StartOfParen().FindPrevMultiple(
+			parser.KeywordReturns,
+			parser.ActionTypeRead,
+			parser.ActionTypeWrite,
+		)
+		// if insideInputs is true, it means the first preceding token we're interested in was action type read or write
+		insideInputs := match == parser.ActionTypeRead || match == parser.ActionTypeWrite
 
-			// the first occurrence was the 'returns' keyword, so we know we're inside a returns parentheses
-			insideReturns := match == parser.KeywordReturns
+		// the first occurrence was the 'returns' keyword, so we know we're inside a returns parentheses
+		insideReturns := match == parser.KeywordReturns
 
-			messages := lo.Map(query.MessageNames(asts), func(msgName string, _ int) *CompletionItem {
-				return &CompletionItem{
-					Label: msgName,
-					Kind:  KindLabel,
-				}
-			})
-
-			switch {
-			case insideInputs:
-				// for read and write actions, we want to suggest the field names (default behaviour) and the available message types
-				completions = append(completions, messages...)
-
-				// in the proto generation, we append the 'Any' type as a new message to the proto schema's Messages
-				// However we haven't reached the proto generation yet, so we are still in schema land
-				// so it will be easiest just to append 'Any' here
-				completions = append(completions, &CompletionItem{
-					Label: "Any",
-					Kind:  KindLabel,
-				})
-			case insideReturns:
-				// suggest the message types available in the schema only
-
-				return messages
+		messages := lo.Map(query.MessageNames(asts), func(msgName string, _ int) *CompletionItem {
+			return &CompletionItem{
+				Label: msgName,
+				Kind:  KindLabel,
 			}
+		})
+
+		switch {
+		case insideInputs:
+			// for read and write actions, we want to suggest the field names (default behaviour) and the available message types
+			completions = append(completions, messages...)
+
+			// in the proto generation, we append the 'Any' type as a new message to the proto schema's Messages
+			// However we haven't reached the proto generation yet, so we are still in schema land
+			// so it will be easiest just to append 'Any' here
+			completions = append(completions, &CompletionItem{
+				Label: "Any",
+				Kind:  KindLabel,
+			})
+		case insideReturns:
+			// suggest the message types available in the schema only
+
+			return messages
 		}
 	}
 
@@ -989,8 +976,7 @@ var namedBlocks = []string{
 
 var unNamedBlocks = []string{
 	parser.KeywordFields,
-	parser.KeywordOperations,
-	parser.KeywordFunctions,
+	parser.KeywordActions,
 	parser.KeywordEmails,
 	parser.KeywordDomains,
 	parser.KeywordModels,

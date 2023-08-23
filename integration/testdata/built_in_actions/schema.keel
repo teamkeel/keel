@@ -6,7 +6,7 @@ model Post {
         subTitle Text @unique
     }
 
-    operations {
+    actions {
         create createPost() with (title, subTitle)
         get getPost(id)
         update updatePost(id) with (title)

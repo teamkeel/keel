@@ -3,16 +3,15 @@ model Account {
         name Text @on
     }
 
-    operations {
+    actions {
         create createAccount() with (name) {
             @on(sendWelcomeMail)
         }
-    }
 
-    functions {
         update updateAccount() {
             @on(sendWelcomeMail)
             @on(verifyEmail)
+            @function
         }
     }
 }

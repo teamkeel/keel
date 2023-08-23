@@ -5,7 +5,7 @@ model Author {
         surname Text
     }
 
-    operations {
+    actions {
         create createAuthor() with (firstName, surname) {
             @orderBy(firstName: asc)
         }
@@ -18,7 +18,7 @@ model Author {
 
     @orderBy(firstName: asc)
 
-    functions {
+    actions {
         list listAuthorsFn() {
             @orderBy(firstName: asc, surname: asc)
         }

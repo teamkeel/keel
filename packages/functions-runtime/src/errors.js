@@ -1,5 +1,13 @@
 const { createJSONRPCErrorResponse } = require("json-rpc-2.0");
-const { PermissionError } = require("./permissions");
+
+class PermissionError extends Error {}
+
+class DatabaseError extends Error {
+  constructor(error) {
+    super(error.message);
+    this.error = error;
+  }
+}
 
 const RuntimeErrors = {
   // Catchall error type for unhandled execution errors during custom function
@@ -113,4 +121,6 @@ const parseKeyMessage = (msg) => {
 module.exports = {
   errorToJSONRPCResponse,
   RuntimeErrors,
+  DatabaseError,
+  PermissionError,
 };

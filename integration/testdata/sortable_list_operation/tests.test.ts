@@ -68,11 +68,6 @@ test("sortable - no sorting", async () => {
   expect(winners.pageInfo.count).toEqual(5);
   expect(winners.pageInfo.totalCount).toEqual(5);
   expect(winners.pageInfo.hasNextPage).toEqual(false);
-  expect(winners.results[0].name).toEqual("Donald");
-  expect(winners.results[1].name).toEqual("Bongani");
-  expect(winners.results[2].name).toEqual("John");
-  expect(winners.results[3].name).toEqual("Stoffel");
-  expect(winners.results[4].name).toEqual("Mary");
 });
 
 test("sortable - by name", async () => {

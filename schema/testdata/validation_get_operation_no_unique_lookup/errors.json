@@ -1,18 +1,18 @@
 {
   "errors": [
     {
-      "message": "Operation getMyModel must either take a unique field as input or filter on a unique field using a @where attribute",
+      "message": "Action getMyModel must either take a unique field as input or filter on a unique field using a @where attribute",
       "hint": "Did you mean to add 'id' as an input?",
       "code": "E008",
       "pos": {
         "filename": "testdata/validation_get_operation_no_unique_lookup/schema.keel",
-        "offset": 45,
+        "offset": 42,
         "line": 3,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_get_operation_no_unique_lookup/schema.keel",
-        "offset": 55,
+        "offset": 52,
         "line": 3,
         "column": 23
       }

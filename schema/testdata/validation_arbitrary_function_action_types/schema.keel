@@ -3,7 +3,9 @@ message Foo {
 }
 
 model Person {
-  functions {
-    get getPerson() returns (Foo)
+  actions {
+    get getPerson() returns (Foo) {
+      @function
+    }
   }
 }

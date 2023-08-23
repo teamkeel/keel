@@ -6,13 +6,13 @@
       "code": "E024",
       "pos": {
         "filename": "testdata/validation_operation_where_too_many_arguments/schema.keel",
-        "offset": 212,
+        "offset": 209,
         "line": 13,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_operation_where_too_many_arguments/schema.keel",
-        "offset": 282,
+        "offset": 279,
         "line": 13,
         "column": 83
       }

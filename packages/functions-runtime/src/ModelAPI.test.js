@@ -1,4 +1,4 @@
-import { test, expect, beforeEach } from "vitest";
+import { test, expect, beforeEach, describe } from "vitest";
 const { ModelAPI } = require("./ModelAPI");
 const { sql } = require("kysely");
 const { useDatabase } = require("./database");
@@ -654,49 +654,6 @@ test("ModelAPI.findMany - notEquals", async () => {
   expect(rows[0].id).toEqual(p.id);
 });
 
-test("ModelAPI.findMany - complex query", async () => {
-  const p = await personAPI.create({
-    id: KSUID.randomSync().string,
-    name: "Jake",
-    favouriteNumber: 8,
-    date: new Date("2021-12-31"),
-  });
-  await personAPI.create({
-    id: KSUID.randomSync().string,
-    name: "Jane",
-    favouriteNumber: 12,
-    date: new Date("2022-01-11"),
-  });
-  const p2 = await personAPI.create({
-    id: KSUID.randomSync().string,
-    name: "Billy",
-    favouriteNumber: 16,
-    date: new Date("2022-01-05"),
-  });
-
-  const rows = await personAPI
-    // Will match Jake
-    .where({
-      name: {
-        startsWith: "J",
-        endsWith: "e",
-      },
-      favouriteNumber: {
-        lessThan: 10,
-      },
-    })
-    // Will match Billy
-    .orWhere({
-      date: {
-        after: new Date("2022-01-01"),
-        before: new Date("2022-01-10"),
-      },
-    })
-    .findMany();
-  expect(rows.length).toEqual(2);
-  expect(rows.map((x) => x.id).sort()).toEqual([p.id, p2.id].sort());
-});
-
 test("ModelAPI.findMany - relationships - one to many", async () => {
   const person = await personAPI.create({
     id: KSUID.randomSync().string,
@@ -883,38 +840,190 @@ test("ModelAPI.delete", async () => {
   await expect(personAPI.findOne({ id })).resolves.toEqual(null);
 });
 
-test("ModelAPI chained findMany with offset/limit/order by", async () => {
-  await postAPI.create({
-    id: KSUID.randomSync().string,
-    title: "adam",
-  });
-  await postAPI.create({
-    id: KSUID.randomSync().string,
-    title: "dave",
-  });
-  const three = await postAPI.create({
-    id: KSUID.randomSync().string,
-    title: "jon",
-  });
-  const four = await postAPI.create({
-    id: KSUID.randomSync().string,
-    title: "jon bretman",
-  });
-
-  const results = await postAPI
-    .where({ title: { equals: "adam" } })
-    .orWhere({
-      title: { startsWith: "jon" },
-    })
-    .findMany({
-      limit: 3,
-      offset: 1,
-      orderBy: {
-        title: "asc",
-      },
+describe("QueryBuilder", () => {
+  test("ModelAPI chained findMany with offset/limit/order by", async () => {
+    await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "adam",
+    });
+    await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "dave",
+    });
+    const three = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "jon",
+    });
+    const four = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "jon bretman",
     });
 
-  // because we've offset by 1, adam should not appear in the results even though
-  // the query constraints match adam
-  expect(results).toEqual([three, four]);
+    const results = await postAPI
+      .where({ title: { equals: "adam" } })
+      .orWhere({
+        title: { startsWith: "jon" },
+      })
+      .findMany({
+        limit: 3,
+        offset: 1,
+        orderBy: {
+          title: "asc",
+        },
+      });
+
+    // because we've offset by 1, adam should not appear in the results even though
+    // the query constraints match adam
+    expect(results).toEqual([three, four]);
+  });
+
+  test("ModelAPI.findMany - complex query", async () => {
+    const p = await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Jake",
+      favouriteNumber: 8,
+      date: new Date("2021-12-31"),
+    });
+    await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Jane",
+      favouriteNumber: 12,
+      date: new Date("2022-01-11"),
+    });
+    const p2 = await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Billy",
+      favouriteNumber: 16,
+      date: new Date("2022-01-05"),
+    });
+
+    const rows = await personAPI
+      // Will match Jake
+      .where({
+        name: {
+          startsWith: "J",
+          endsWith: "e",
+        },
+        favouriteNumber: {
+          lessThan: 10,
+        },
+      })
+      // Will match Billy
+      .orWhere({
+        date: {
+          after: new Date("2022-01-01"),
+          before: new Date("2022-01-10"),
+        },
+      })
+      .findMany();
+    expect(rows.length).toEqual(2);
+    expect(rows.map((x) => x.id).sort()).toEqual([p.id, p2.id].sort());
+  });
+
+  test("ModelAPI chained delete", async () => {
+    const p = await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Jake",
+      favouriteNumber: 8,
+      date: new Date("2021-12-31"),
+    });
+
+    const deletedId = await personAPI.where({ id: p.id }).delete();
+
+    expect(deletedId).toEqual(p.id);
+  });
+
+  test("Model API chained delete - non existent id", async () => {
+    const fakeId = "xxx";
+
+    // the error message returned from the runtime will actually be 'record not found'
+    // but this is handled at handleRequest level
+    // no result is the error msg returned by kysely.
+    await expect(personAPI.where({ id: fakeId }).delete()).rejects.toThrow(
+      "no result"
+    );
+  });
+
+  test("Model API chained findOne", async () => {
+    const p = await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Jake",
+      favouriteNumber: 8,
+      date: new Date("2021-12-31"),
+    });
+
+    const jake = await personAPI.where({ id: p.id }).findOne();
+
+    expect(jake).toEqual(p);
+  });
+
+  // test("Model API chained order by", async () => {
+  //   const p1 = await postAPI.create({
+  //     id: KSUID.randomSync().string,
+  //     title: "adam",
+  //   });
+  //   const p2 = await postAPI.create({
+  //     id: KSUID.randomSync().string,
+  //     title: "dave",
+  //   });
+  //   const p3 = await postAPI.create({
+  //     id: KSUID.randomSync().string,
+  //     title: "jon",
+  //   });
+  //   const p4 = await postAPI.create({
+  //     id: KSUID.randomSync().string,
+  //     title: "jon bretman",
+  //   });
+
+  //   const query = postAPI
+  //     .where({ title: "adam" })
+  //     .orWhere({ title: "dave" })
+  //     .orderBy({ title: "desc" });
+
+  //   const results = await query.findMany();
+
+  //   expect(results[0].id).toEqual(p2);
+  // });
+
+  test("Model API chained update", async () => {
+    const p1 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "adam",
+    });
+    const p2 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "adam",
+    });
+    const p3 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "adam",
+    });
+
+    const updatedRow = await postAPI
+      .where({ id: p2.id })
+      .update({ title: "adam 2" });
+
+    expect(updatedRow.title).toEqual("adam 2");
+    expect(updatedRow.id).toEqual(p2.id);
+
+    // will fail because there is more than 1 row matching the constraints (p1 and p3)
+    await expect(
+      postAPI
+        .where({
+          title: "adam",
+        })
+        .update({ title: "bob" })
+    ).rejects.toThrowError(
+      "more than one row matched update constraints - only unique fields should be used when updating."
+    );
+
+    // will fail because there are no rows to update
+    await expect(
+      postAPI
+        .where({
+          title: "no match",
+        })
+        .update({ title: "bob" })
+    ).resolves.toEqual(null);
+  });
 });

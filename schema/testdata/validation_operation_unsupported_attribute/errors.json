@@ -1,18 +1,18 @@
 {
   "errors": [
     {
-      "message": "operation 'createProfile' has an unrecognised attribute @save",
-      "hint": "Did you mean @set, @where, @permission, @validate, @orderBy, or @sortable?",
+      "message": "actions 'createProfile' has an unrecognised attribute @save",
+      "hint": "Did you mean @set, @where, @permission, @validate, @orderBy, @sortable, or @function?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_operation_unsupported_attribute/schema.keel",
-        "offset": 226,
+        "offset": 223,
         "line": 13,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_operation_unsupported_attribute/schema.keel",
-        "offset": 231,
+        "offset": 228,
         "line": 13,
         "column": 18
       }

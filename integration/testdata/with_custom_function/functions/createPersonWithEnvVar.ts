@@ -1,8 +1,10 @@
-import { models, CreatePersonWithEnvVar } from "@teamkeel/sdk";
+import { CreatePersonWithEnvVar } from "@teamkeel/sdk";
 
-export default CreatePersonWithEnvVar((ctx, inputs) => {
-  return models.person.create({
-    ...inputs,
-    name: ctx.env.TEST,
-  });
+export default CreatePersonWithEnvVar({
+  beforeWrite: async (ctx, inputs) => {
+    return {
+      ...inputs,
+      name: ctx.env.TEST,
+    };
+  },
 });

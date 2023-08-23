@@ -47,7 +47,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeNotAllowedError,
 					errorhandling.ErrorDetails{
-						Message: "@sortable can only be used on list operations",
+						Message: "@sortable can only be used on list actions",
 					},
 					attribute.Name,
 				))
@@ -57,7 +57,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeNotAllowedError,
 					errorhandling.ErrorDetails{
-						Message: "@sortable can only be defined once per operation",
+						Message: "@sortable can only be defined once per action",
 					},
 					attribute.Name,
 				))

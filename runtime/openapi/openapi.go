@@ -102,8 +102,8 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 			continue
 		}
 
-		for _, op := range model.Operations {
-			inputSchema := jsonschema.JSONSchemaForOperationInput(ctx, schema, op)
+		for _, op := range model.Actions {
+			inputSchema := jsonschema.JSONSchemaForActionInput(ctx, schema, op)
 			endpoint := fmt.Sprintf("/%s/json/%s", strings.ToLower(api.Name), op.Name)
 
 			// Merge components from this request schema into OpenAPI components
@@ -114,7 +114,7 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 				inputSchema.Components = nil
 			}
 
-			responseSchema := jsonschema.JSONSchemaForOperationResponse(ctx, schema, op)
+			responseSchema := jsonschema.JSONSchemaForActionResponse(ctx, schema, op)
 
 			if responseSchema.Components != nil {
 				for name, comp := range responseSchema.Components.Schemas {

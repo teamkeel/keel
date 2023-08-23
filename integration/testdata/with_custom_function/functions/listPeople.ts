@@ -1,5 +1,3 @@
-import { models, ListPeople } from "@teamkeel/sdk";
+import { ListPeople } from "@teamkeel/sdk";
 
-export default ListPeople((ctx, inputs) => {
-  return models.person.findMany(inputs);
-});
+export default ListPeople();

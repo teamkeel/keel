@@ -6,13 +6,13 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 170,
+        "offset": 168,
         "line": 9,
         "column": 32
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 177,
+        "offset": 175,
         "line": 9,
         "column": 39
       }
@@ -23,13 +23,13 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 250,
+        "offset": 248,
         "line": 13,
         "column": 32
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 252,
+        "offset": 250,
         "line": 13,
         "column": 34
       }
@@ -40,13 +40,13 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 367,
+        "offset": 365,
         "line": 17,
         "column": 32
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 369,
+        "offset": 367,
         "line": 17,
         "column": 34
       }
@@ -57,13 +57,13 @@
       "code": "E061",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 469,
+        "offset": 467,
         "line": 21,
         "column": 32
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 475,
+        "offset": 473,
         "line": 21,
         "column": 38
       }
@@ -74,13 +74,13 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 599,
+        "offset": 597,
         "line": 25,
         "column": 68
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 606,
+        "offset": 604,
         "line": 25,
         "column": 75
       }
@@ -91,13 +91,13 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 739,
+        "offset": 737,
         "line": 29,
         "column": 92
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 746,
+        "offset": 744,
         "line": 29,
         "column": 99
       }
@@ -108,13 +108,13 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 839,
+        "offset": 837,
         "line": 33,
         "column": 52
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 846,
+        "offset": 844,
         "line": 33,
         "column": 59
       }
@@ -125,13 +125,13 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 887,
+        "offset": 885,
         "line": 33,
         "column": 100
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_invalid_operands/schema.keel",
-        "offset": 894,
+        "offset": 892,
         "line": 33,
         "column": 107
       }

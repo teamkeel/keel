@@ -332,9 +332,10 @@ const subscribers = {
 	checkGrammar: subscriber_checkGrammar,
 }
 const actionTypes = {
-	createPost: "OPERATION_TYPE_CREATE",
-	updatePost: "OPERATION_TYPE_UPDATE",
-}`
+	createPost: "ACTION_TYPE_CREATE",
+	updatePost: "ACTION_TYPE_UPDATE",
+}
+	`
 
 	schema := `
 model Post {
@@ -342,9 +343,9 @@ model Post {
 		title Text
 	}
 
-	functions {
-		create createPost() with(title)
-		update updatePost(id) with(title)
+	actions {
+		create createPost() with(title) @function
+		update updatePost(id) with(title) @function
 	}
 
 	@on([create], checkGrammar)
@@ -471,8 +472,8 @@ export interface JobContextAPI {
 func TestWriteActionInputTypesGet(t *testing.T) {
 	schema := `
 model Person {
-	functions {
-		get getPerson(id)
+	actions {
+		get getPerson(id) @function
 	}
 }
 	`
@@ -492,8 +493,8 @@ model Person {
 	fields {
 		name Text
 	}
-	functions {
-		create createPerson() with (name)
+	actions {
+		create createPerson() with (name) @function
 	}
 }
 	`
@@ -513,8 +514,8 @@ model Person {
 	fields {
 		name Text?
 	}
-	functions {
-		create createPerson() with (name)
+	actions {
+		create createPerson() with (name) @function
 	}
 }
 	`
@@ -534,8 +535,8 @@ model Person {
 	fields {
 		name Text?
 	}
-	functions {
-		create createPerson() with (name?)
+	actions {
+		create createPerson() with (name?) @function
 	}
 }`
 
@@ -561,8 +562,8 @@ model Person {
 		name Text
 		employer Company
 	}
-	functions {
-		create createPerson() with (name, employer.name)
+	actions {
+		create createPerson() with (name, employer.name) @function
 	}
 }`
 
@@ -593,8 +594,8 @@ model Person {
 		name Text
 		contracts Contract[]
 	}
-	functions {
-		create createPerson() with (name, contracts.name)
+	actions {
+		create createPerson() with (name, contracts.name) @function
 	}
 }`
 
@@ -618,8 +619,8 @@ model Person {
 	fields {
 		name Text
 	}
-	functions {
-		update updatePerson(id) with (name)
+	actions {
+		update updatePerson(id) with (name) @function
 	}
 }
 	`
@@ -646,8 +647,8 @@ model Person {
 	fields {
 		name Text?
 	}
-	functions {
-		update updatePerson(id) with (name)
+	actions {
+		update updatePerson(id) with (name) @function
 	}
 }
 	`
@@ -674,8 +675,8 @@ model Person {
 	fields {
 		name Text?
 	}
-	functions {
-		update updatePerson(id) with (name?)
+	actions {
+		update updatePerson(id) with (name?) @function
 	}
 }
 	`
@@ -702,8 +703,8 @@ model Person {
 	fields {
 		name Text
 	}
-	functions {
-		list listPeople(name, some: Boolean?)
+	actions {
+		list listPeople(name, some: Boolean?) @function
 	}
 }
 	`
@@ -733,7 +734,7 @@ export interface ListPeopleInput {
 	})
 }
 
-func TestWriteActionInputTypesListOperation(t *testing.T) {
+func TestWriteActionInputTypesListAction(t *testing.T) {
 	schema := `
 enum Sport {
 	Football
@@ -744,7 +745,7 @@ model Person {
 		name Text
 		favouriteSport Sport
 	}
-	operations {
+	actions {
 		list listPeople(name, favouriteSport)
 	}
 }
@@ -792,8 +793,8 @@ model Person {
 		name Text
 		employer Company
 	}
-	functions {
-		list listPersons(name, employer.name)
+	actions {
+		list listPersons(name, employer.name) @function
 	}
 }`
 
@@ -830,8 +831,8 @@ model Person {
 		name Text
 		contracts Contract
 	}
-	functions {
-		list listPersons(name, contracts.name)
+	actions {
+		list listPersons(name, contracts.name) @function
 	}
 }`
 
@@ -878,8 +879,8 @@ func TestWriteActionInputTypesListRelationshipOptionalFields(t *testing.T) {
 			author Author?
 		}
 	
-		functions {
-			list listBooks(author.publisher.name)
+		actions {
+			list listBooks(author.publisher.name) @function
 		}
 	}`
 
@@ -936,8 +937,8 @@ func TestWriteActionInputTypesListRelationshipOptionalInput(t *testing.T) {
 			author Author
 		}
 	
-		functions {
-			list listBooks(author.publisher.name?)
+		actions {
+			list listBooks(author.publisher.name?) @function
 		}
 	}`
 
@@ -983,7 +984,7 @@ model Person {
 		name Text
 		favouriteSport Sport
 	}
-	operations {
+	actions {
 		list listPeople(name, favouriteSport) {
 			@sortable(name, favouriteSport)
 		}
@@ -1031,8 +1032,8 @@ export interface ListPeopleInput {
 func TestWriteActionInputTypesDelete(t *testing.T) {
 	schema := `
 model Person {
-	functions {
-		delete deletePerson(id)
+	actions {
+		delete deletePerson(id) @function
 	}
 }
 	`
@@ -1053,8 +1054,8 @@ message PersonNameResponse {
 }
 
 model Person {
-	functions {
-		read getPersonName(id) returns (PersonNameResponse)
+	actions {
+		read getPersonName(id) returns (PersonNameResponse) @function
 	}
 }`
 	expected := `
@@ -1078,8 +1079,8 @@ message GetInput {
 }
 
 model Person {
-	functions {
-		read deletePerson(GetInput) returns (PersonNameResponse)
+	actions {
+		read deletePerson(GetInput) returns (PersonNameResponse) @function
 	}
 }
 	`
@@ -1104,8 +1105,8 @@ message GetInput {
 }
 
 model Person {
-	functions {
-		read deletePerson(GetInput) returns (PersonNameResponse)
+	actions {
+		read deletePerson(GetInput) returns (PersonNameResponse) @function
 	}
 }
 	`
@@ -1126,8 +1127,8 @@ message DeleteResponse {
 }
 
 model Person {
-	functions {
-		write deletePerson(id) returns (DeleteResponse)
+	actions {
+		write deletePerson(id) returns (DeleteResponse) @function
 	}
 }`
 	expected := `
@@ -1151,8 +1152,8 @@ message DeleteInput {
 }
 
 model Person {
-	functions {
-		write deletePerson(DeleteInput) returns (DeleteResponse)
+	actions {
+		write deletePerson(DeleteInput) returns (DeleteResponse) @function
 	}
 }
 	`
@@ -1177,8 +1178,8 @@ message DeleteInput {
 }
 
 model Person {
-	functions {
-		read deletePerson(DeleteInput) returns (DeleteResponse)
+	actions {
+		read deletePerson(DeleteInput) returns (DeleteResponse) @function
 	}
 }
 	`
@@ -1203,8 +1204,8 @@ message People {
 }
 
 model Person {
-	functions {
-		read readPerson(PeopleInput) returns (People)
+	actions {
+		read readPerson(PeopleInput) returns (People) @function
 	}
 }`
 	expected := `
@@ -1224,7 +1225,7 @@ func TestMessageFieldAnyType(t *testing.T) {
 	}
 
 	model Person {
-		functions {
+		actions {
 			read getPerson(Foo) returns(Foo)
 		}
 	}
@@ -1253,8 +1254,8 @@ message Response {
 }
 
 model Person {
-	functions {
-		write writeSportInterests(Input) returns (Response)
+	actions {
+		write writeSportInterests(Input) returns (Response) @function
 	}
 }
 
@@ -1290,8 +1291,8 @@ message People {
 }
 
 model Person {
-	functions {
-		read readPerson(name: Text) returns (People)
+	actions {
+		read readPerson(name: Text) returns (People) @function
 	}
 }`
 	expected := `
@@ -1315,8 +1316,8 @@ message Details {
 }
 
 model Person {
-	functions {
-		read readPerson(name: Text) returns (People)
+	actions {
+		read readPerson(name: Text) returns (People) @function
 	}
 }`
 	expected := `
@@ -1342,8 +1343,8 @@ message PersonResponse {
 }
 
 model Person {
-	functions {
-		read readPerson(id) returns (PersonResponse)
+	actions {
+		read readPerson(id) returns (PersonResponse) @function
 	}
 }
 
@@ -1366,8 +1367,8 @@ export interface PersonResponse {
 func TestWriteActionInputTypesNoInputs(t *testing.T) {
 	schema := `
 model Person {
-	functions {
-		read getPersonName() returns (Any)
+	actions {
+		read getPersonName() returns (Any) @function
 	}
 }`
 	expected := `
@@ -1383,8 +1384,8 @@ func TestWriteActionInputTypesEmptyInputs(t *testing.T) {
 	schema := `
 message In {}
 model Person {
-	functions {
-		read getPersonName(In) returns (Any)
+	actions {
+		read getPersonName(In) returns (Any) @function
 	}
 }`
 	expected := `
@@ -1439,7 +1440,7 @@ export interface SendWelcomeEmailMemberCreateEvent {
 	})
 }
 
-func TestWriteCustomFunctionWrapperType(t *testing.T) {
+func TestWriteSubscriberFunctionWrapperType(t *testing.T) {
 	schema := `
 model Member {
 	fields {
@@ -1464,26 +1465,269 @@ export declare function SendWelcomeEmail(fn: (ctx: SubscriberContextAPI, event: 
 func TestWriteSubscriberWrapperType(t *testing.T) {
 	schema := `
 model Person {
-	functions {
-		get getPerson(id)
-		create createPerson()
-		update updatePerson()
-		delete deletePerson()
-		list listPeople()
+	actions {
+		get getPerson(id) @function
+		create createPerson() @function
+		update updatePerson() @function
+		delete deletePerson()	@function
+		list listPeople()	@function
 	}
 }
 	`
 	expected := `
-export declare function GetPerson(fn: (ctx: ContextAPI, inputs: GetPersonInput) => Promise<Person | null>): Promise<Person | null>;
-export declare function CreatePerson(fn: (ctx: ContextAPI, inputs: CreatePersonInput) => Promise<Person>): Promise<Person>;
-export declare function UpdatePerson(fn: (ctx: ContextAPI, inputs: UpdatePersonInput) => Promise<Person>): Promise<Person>;
-export declare function DeletePerson(fn: (ctx: ContextAPI, inputs: DeletePersonInput) => Promise<string>): Promise<string>;
-export declare function ListPeople(fn: (ctx: ContextAPI, inputs: ListPeopleInput) => Promise<Person[]>): Promise<Person[]>;`
+export declare function GetPerson(hooks?: GetPersonHooks) : void
+export type GetPersonHooks = {
+    beforeQuery?: (ctx: ContextAPI, inputs: GetPersonInput, query: PersonQueryBuilder) => PersonQueryBuilder | Promise<Person>
+    afterQuery?: (ctx: ContextAPI, inputs: GetPersonInput, record: Person) => Promise<Person> | Person
+}
+export declare function CreatePerson(hooks?: CreatePersonHooks) : void
+export type CreatePersonHooks = {
+    beforeWrite?: (ctx: ContextAPI, inputs: CreatePersonInput) => Promise<PersonCreateValues>
+    afterWrite?: (ctx: ContextAPI, inputs: CreatePersonInput, data: Person) => Promise<void>
+}
+export declare function UpdatePerson(hooks?: UpdatePersonHooks) : void
+export type UpdatePersonHooks = {
+    beforeQuery?: (ctx: ContextAPI, inputs: UpdatePersonInput) => Promise<Person>
+    afterQuery?: (ctx: ContextAPI, inputs: UpdatePersonInput, person: Person) => Promise<Person>
+    beforeWrite?: (ctx: ContextAPI, inputs: UpdatePersonInput) => Promise<Partial<Person>>
+    afterWrite?: (ctx: ContextAPI, inputs: UpdatePersonInput, data: Person) => Promise<void>
+}
+export declare function DeletePerson(hooks?: DeletePersonHooks) : void
+export type DeletePersonHooks = {
+    beforeQuery?: (ctx: ContextAPI, inputs: DeletePersonInput, query: PersonQueryBuilder) => PersonQueryBuilder | Promise<string>
+    afterQuery?: (ctx: ContextAPI, inputs: DeletePersonInput, deletedId: string) => Promise<string> | string
+}
+export declare function ListPeople(hooks?: ListPeopleHooks) : void
+export type ListPeopleHooks = {
+    beforeQuery?: (ctx: ContextAPI, inputs: ListPeopleInput, query: PersonQueryBuilder) => PersonQueryBuilder | Promise<Person[]>
+    afterQuery?: (ctx: ContextAPI, inputs: ListPeopleInput, records: Person[]) => Promise<Person[]> | Person[]
+}`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		for _, op := range m.Operations {
-			writeCustomFunctionWrapperType(w, m, op)
+
+		for _, action := range m.Actions {
+			writeFunctionWrapperType(w, m, action)
+		}
+	})
+}
+
+func TestWriteFunctionImplementation(t *testing.T) {
+	schema := `
+model Person {
+	actions {
+		get getPerson(id) @function
+		create createPerson() @function
+		update updatePerson() @function
+		delete deletePerson()	@function
+		list listPeople()	@function
+	}
+}
+	`
+	expected := `
+const GetPerson = (hooks = {}) => {
+    return async function(ctx, inputs) {
+        const models = createModelAPI();
+        let wheres = {
+            ...inputs.where,
+        };
+
+        let data;
+
+        // call beforeQuery hook (if defined)
+        if (hooks.beforeQuery) {
+            let builder = models.person.where(wheres);
+
+            // we don't know if its an instance of PersonQueryBuilder or Promise<Person> so we wrap in Promise.resolve to get the eventual value.
+            let resolvedValue;
+            await runtime.tracing.withSpan('getPerson.beforeQuery', async (span) => {
+                resolvedValue = await hooks.beforeQuery(ctx, inputs, builder);
+            });
+
+            const constructor = resolvedValue?.constructor?.name
+            if (constructor === 'QueryBuilder') {
+                builder = resolvedValue;
+                // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
+                data = await builder.findOne();
+            } else {
+                // in this case, the data is just the resolved value of the promise
+                data = resolvedValue;
+            }
+        } else {
+            // when no beforeQuery hook is defined, use the default implementation
+            data = await models.person.findOne(wheres);
+        }
+        // call afterQuery hook (if defined)
+        if (hooks.afterQuery) {
+            await runtime.tracing.withSpan('getPerson.afterQuery', async (span) => {
+                data = await hooks.afterQuery(ctx, inputs, data);
+            });
+        }
+
+        return data;
+    }
+};
+const CreatePerson = (hooks = {}) => {
+    return async function(ctx, inputs) {
+        const models = createModelAPI();
+        let values = {
+            ...inputs,
+        };
+
+        // call beforeWrite hook (if defined)
+        if (hooks.beforeWrite) {
+            await runtime.tracing.withSpan('createPerson.beforeWrite', async (span) => {
+                values = await hooks.beforeWrite(ctx, inputs);
+            });
+        }
+
+        // values is the mutated version of inputs.values
+        const data = await models.person.create(values);
+
+        // call afterWrite hook (if defined)
+        if (hooks.afterWrite) {
+            await runtime.tracing.withSpan('createPerson.afterWrite', async (span) => {
+                await hooks.afterWrite(ctx, inputs, data);
+            });
+        }
+
+        return data;
+    }
+};
+const UpdatePerson = (hooks = {}) => {
+    return async function(ctx, inputs) {
+        const models = createModelAPI();
+        let values = inputs.values;
+        let wheres = inputs.where;
+
+        // call beforeWrite hook (if defined)
+        if (hooks.beforeWrite) {
+            await runtime.tracing.withSpan('updatePerson.beforeWrite', async (span) => {
+                values = await hooks.beforeWrite(ctx, inputs);
+            });
+        }
+
+        let data;
+        if (hooks.beforeQuery) {
+            await runtime.tracing.withSpan('updatePerson.beforeQuery', async (span) => {
+                data = await hooks.beforeQuery(ctx, inputs);
+            });
+        } else {
+            // when no beforeQuery hook is defined, use the default implementation
+            data = await models.person.update(wheres, values);
+        }
+
+        // call afterQuery hook (if defined)
+        if (hooks.afterQuery) {
+            await runtime.tracing.withSpan('updatePerson.afterQuery', async (span) => {
+                data = await hooks.afterQuery(ctx, inputs, data);
+            });
+        }
+
+
+
+        // call afterWrite hook (if defined)
+        if (hooks.afterWrite) {
+            await runtime.tracing.withSpan('updatePerson.afterWrite', async (span) => {
+                await hooks.afterWrite(ctx, inputs, data);
+            });
+        }
+
+        return data;
+    }
+};
+const DeletePerson = (hooks = {}) => {
+    return async function(ctx, inputs) {
+        const models = createModelAPI();
+        let wheres = {
+            ...inputs.where,
+        };
+
+        wheres = inputs;
+        let data;
+
+        // call beforeQuery hook (if defined)
+        if (hooks.beforeQuery) {
+            let builder = models.person.where(wheres);
+
+            // we don't know if its an instance of PersonQueryBuilder or Promise<string> so we wrap in Promise.resolve to get the eventual value.
+            let resolvedValue;
+            await runtime.tracing.withSpan('deletePerson.beforeQuery', async (span) => {
+                resolvedValue = await hooks.beforeQuery(ctx, inputs, builder);
+            });
+
+            const constructor = resolvedValue?.constructor?.name
+            if (constructor === 'QueryBuilder') {
+                builder = resolvedValue;
+                // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
+                data = await builder.delete();
+            } else {
+                // in this case, the data is just the resolved value of the promise
+                data = resolvedValue;
+            }
+        } else {
+            // when no beforeQuery hook is defined, use the default implementation
+            data = await models.person.delete(wheres);
+        }
+        // call afterQuery hook (if defined)
+        if (hooks.afterQuery) {
+            await runtime.tracing.withSpan('deletePerson.afterQuery', async (span) => {
+                data = await hooks.afterQuery(ctx, inputs, data);
+            });
+        }
+
+        return data;
+    }
+};
+const ListPeople = (hooks = {}) => {
+    return async function(ctx, inputs) {
+        const models = createModelAPI();
+        let wheres = {
+            ...inputs.where,
+        };
+
+        let data;
+
+        // call beforeQuery hook (if defined)
+        if (hooks.beforeQuery) {
+            let builder = models.person.where(wheres);
+
+            // we don't know if its an instance of PersonQueryBuilder or Promise<Person[]> so we wrap in Promise.resolve to get the eventual value.
+            let resolvedValue;
+            await runtime.tracing.withSpan('listPeople.beforeQuery', async (span) => {
+                resolvedValue = await hooks.beforeQuery(ctx, inputs, builder);
+            });
+
+            const constructor = resolvedValue?.constructor?.name
+            if (constructor === 'QueryBuilder') {
+                builder = resolvedValue;
+                // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
+                data = await builder.findMany();
+            } else {
+                // in this case, the data is just the resolved value of the promise
+                data = resolvedValue;
+            }
+        } else {
+            // when no beforeQuery hook is defined, use the default implementation
+            data = await models.person.findMany(inputs);
+        }
+        // call afterQuery hook (if defined)
+        if (hooks.afterQuery) {
+            await runtime.tracing.withSpan('listPeople.afterQuery', async (span) => {
+                data = await hooks.afterQuery(ctx, inputs, data);
+            });
+        }
+
+        return data;
+    }
+};
+`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		m := proto.FindModel(s.Models, "Person")
+
+		for _, action := range m.Actions {
+			writeFunctionImplementation(w, s, action)
 		}
 	})
 }
@@ -1548,14 +1792,18 @@ export interface AdHocJobWithInputsMessage {
 func TestWriteTestingTypes(t *testing.T) {
 	schema := `
 model Person {
-	operations {
+	actions {
 		get getPerson(id)
 		create createPerson()
-	}
-	functions {
-		update updatePerson()
-		delete deletePerson()
-		list listPeople()
+		update updatePerson() {
+			@function
+		}
+		delete deletePerson() {
+			@function
+		}
+		list listPeople() {
+			@function
+		}
 	}
 }`
 
@@ -1771,7 +2019,7 @@ model Person {
 	fields {
 		hobby Hobby
 	}
-	operations {
+	actions {
 		list peopleByHobby(hobby)
 	}
 }
@@ -1853,8 +2101,8 @@ func TestTestingActionExecutor(t *testing.T) {
 		{
 			Contents: `
 			model Person {
-				functions {
-					get getPerson(id)
+				actions {
+					get getPerson(id) @function
 				}
 			}
 			`,
@@ -1955,8 +2203,8 @@ func TestSDKTypings(t *testing.T) {
 						name Text
 						lastName Text?
 					}
-					functions {
-						get getPerson(id: Number)
+					actions {
+						get getPerson(id: Number) @function
 					}
 				}`,
 		},
@@ -1975,63 +2223,35 @@ func TestSDKTypings(t *testing.T) {
 			code: `
 				import { models, GetPerson } from "@teamkeel/sdk";
 		
-				export default GetPerson((_, inputs) => {
-					return models.person.findOne({
-						id: inputs.id,
-					});
+				export default GetPerson({
+					beforeQuery: async (ctx, inputs, query) => {
+						const p = await models.person.findOne({
+							id: 123
+						});
+
+						return p;
+					}
 				});
 			`,
-			error: "code.ts(6,7): error TS2322: Type 'number' is not assignable to type 'string'",
+			error: "Type 'number' is not assignable to type 'string'",
 		},
 		{
 			name: "findOne - can return null",
 			code: `
 				import { models, GetPerson } from "@teamkeel/sdk";
 		
-				export default GetPerson(async (_, inputs) => {
-					const r = await models.person.findOne({
-						id: "1234",
-					});
-					console.log(r.id);
-					return r;
-				});
-			`,
-			error: "code.ts(8,18): error TS18047: 'r' is possibly 'null'",
-		},
-		{
-			name: "findMany - correct typings on where condition",
-			code: `
-				import { models, GetPerson } from "@teamkeel/sdk";
-		
-				export default GetPerson(async (_, inputs) => {
-					const r = await models.person.findMany({
-						where: {
-							name: {
-								startsWith: true,
-							}
-						}
-					});
-					return r.length > 0 ? r[0] : null;
-				});
-			`,
-			error: "code.ts(8,9): error TS2322: Type 'boolean' is not assignable to type 'string'",
-		},
-		{
-			name: "optional model fields are typed as nullable",
-			code: `
-				import { models, GetPerson } from "@teamkeel/sdk";
-		
-				export default GetPerson(async (_, inputs) => {
-					const person = await models.person.findOne({
-						id: "1234",
-					});
-					if (person) {
-						person.lastName.toUpperCase();
+				export default GetPerson({
+					beforeQuery: async (ctx, inputs, query) => {
+						const r = await models.person.findOne({
+							id: "1234",
+						});
+						// the console.log of r.id triggers the typeerror
+						console.log(r.id);
+						return r;
 					}
-					return person;
 				});
 			`,
-			error: "code.ts(9,7): error TS18047: 'person.lastName' is possibly 'null'",
+			error: "'r' is possibly 'null'",
 		},
 		{
 			name: "testing actions executor - input types",

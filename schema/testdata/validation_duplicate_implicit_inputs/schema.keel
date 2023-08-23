@@ -3,7 +3,7 @@ model B {
         name Text
     }
 
-    operations {
+    actions {
         create create() with (name, name)
         list list(name, name)
         get get(id, id)
@@ -11,7 +11,7 @@ model B {
         delete delete(id, id)
     }
 
-    functions {
+    actions {
         create createFn() with (name, name)
         list listFn(name, name)
         get getFn(id, id)
@@ -21,4 +21,3 @@ model B {
         write writeFn(name, name) returns (Any)
     }
 }
-

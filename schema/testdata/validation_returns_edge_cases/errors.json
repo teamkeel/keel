@@ -6,13 +6,13 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_returns_edge_cases/schema.keel",
-        "offset": 61,
+        "offset": 59,
         "line": 7,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_returns_edge_cases/schema.keel",
-        "offset": 65,
+        "offset": 63,
         "line": 7,
         "column": 9
       }
@@ -23,13 +23,13 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_returns_edge_cases/schema.keel",
-        "offset": 119,
+        "offset": 117,
         "line": 8,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_returns_edge_cases/schema.keel",
-        "offset": 123,
+        "offset": 121,
         "line": 8,
         "column": 9
       }
@@ -40,13 +40,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_returns_edge_cases/schema.keel",
-        "offset": 105,
+        "offset": 103,
         "line": 7,
         "column": 49
       },
       "endPos": {
         "filename": "testdata/validation_returns_edge_cases/schema.keel",
-        "offset": 108,
+        "offset": 106,
         "line": 7,
         "column": 52
       }
@@ -57,13 +57,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_returns_edge_cases/schema.keel",
-        "offset": 160,
+        "offset": 158,
         "line": 8,
         "column": 46
       },
       "endPos": {
         "filename": "testdata/validation_returns_edge_cases/schema.keel",
-        "offset": 163,
+        "offset": 161,
         "line": 8,
         "column": 49
       }

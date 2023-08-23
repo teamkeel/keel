@@ -19,9 +19,9 @@ type testCase struct {
 	name string
 	// Valid keel schema for this test case
 	keelSchema string
-	// Operation name to run test upon
-	operationName string
-	// Input map for operation
+	// action name to run test upon
+	actionName string
+	// Input map for action
 	input map[string]any
 	// Expected SQL template generated (with ? placeholders for values)
 	expectedTemplate string
@@ -34,13 +34,13 @@ var testCases = []testCase{
 		name: "get_op_by_id",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					get getThing(id)
 				}
 				@permission(expression: true, actions: [get])
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*
@@ -57,15 +57,15 @@ var testCases = []testCase{
 				fields {
 					isActive Boolean
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@where(thing.isActive == true)
 					}
 				}
 				@permission(expression: true, actions: [get])
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*
@@ -85,13 +85,13 @@ var testCases = []testCase{
 					age Number @default(100)
 					isActive Boolean @default(true)
 				}
-				operations {
+				actions {
 					create createPerson()
 				}
 				@permission(expression: true, actions: [create])
 			}`,
-		operationName: "createPerson",
-		input:         map[string]any{},
+		actionName: "createPerson",
+		input:      map[string]any{},
 		expectedTemplate: `
 			WITH 
 				new_1_person AS 
@@ -110,7 +110,7 @@ var testCases = []testCase{
 					age Number
 					isActive Boolean
 				}
-				operations {
+				actions {
 					create createPerson() {
 						@set(person.name = "Bob")
 						@set(person.age = 100)
@@ -119,8 +119,8 @@ var testCases = []testCase{
 				}
 				@permission(expression: true, actions: [create])
 			}`,
-		operationName: "createPerson",
-		input:         map[string]any{},
+		actionName: "createPerson",
+		input:      map[string]any{},
 		expectedTemplate: `
 			WITH 
 				new_1_person AS 
@@ -141,13 +141,13 @@ var testCases = []testCase{
 					age Number?
 					isActive Boolean?
 				}
-				operations {
+				actions {
 					create createPerson() with (name?, age?, isActive?)
 				}
 				@permission(expression: true, actions: [create])
 			}`,
-		operationName: "createPerson",
-		input:         map[string]any{},
+		actionName: "createPerson",
+		input:      map[string]any{},
 		expectedTemplate: `
 			WITH 
 				new_1_person AS 
@@ -165,7 +165,7 @@ var testCases = []testCase{
 					name Text
 					company Company?
 				}
-				operations {
+				actions {
 					create createPerson() with (name, company.id?)
 				}
 				@permission(expression: true, actions: [create])
@@ -173,7 +173,7 @@ var testCases = []testCase{
 			model Company {
 				
 			}`,
-		operationName: "createPerson",
+		actionName: "createPerson",
 		input: map[string]any{
 			"name": "Bob",
 		},
@@ -197,7 +197,7 @@ var testCases = []testCase{
 					age Number
 					isActive Boolean
 				}
-				operations {
+				actions {
 					update updatePerson(id) {
 						@set(person.name = "Bob")
 						@set(person.age = 100)
@@ -206,7 +206,7 @@ var testCases = []testCase{
 				}
 				@permission(expression: true, actions: [create])
 			}`,
-		operationName: "updatePerson",
+		actionName: "updatePerson",
 		input: map[string]any{
 			"where": map[string]any{
 				"id": "xyz",
@@ -232,12 +232,12 @@ var testCases = []testCase{
 					age Number?
 					isActive Boolean?
 				}
-				operations {
+				actions {
 					update updatePerson(id) with (name?, age?, isActive?)
 				}
 				@permission(expression: true, actions: [create])
 			}`,
-		operationName: "updatePerson",
+		actionName: "updatePerson",
 		input: map[string]any{
 			"where": map[string]any{
 				"id": "xyz",
@@ -261,12 +261,12 @@ var testCases = []testCase{
 		name: "list_op_no_filter",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					list listThings() 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
@@ -284,12 +284,12 @@ var testCases = []testCase{
 				fields {
 					name Text
 				}
-				operations {
+				actions {
 					list listThings(name) 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{
 				"name": map[string]any{
@@ -313,12 +313,12 @@ var testCases = []testCase{
 				fields {
 					name Text
 				}
-				operations {
+				actions {
 					list listThings(name) 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{
 				"name": map[string]any{
@@ -342,12 +342,12 @@ var testCases = []testCase{
 				fields {
 					name Text
 				}
-				operations {
+				actions {
 					list listThings(name) 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{
 				"name": map[string]any{
@@ -371,12 +371,12 @@ var testCases = []testCase{
                 fields {
                     name Text
                 }
-                operations {
+                actions {
                     list listThings(name) 
                 }
                 @permission(expression: true, actions: [list])
             }`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{
 				"name": map[string]any{
@@ -400,7 +400,7 @@ var testCases = []testCase{
                 fields {
                     category Category
                 }
-                operations {
+                actions {
                     list listThings(category) 
                 }
                 @permission(expression: true, actions: [list])
@@ -410,7 +410,7 @@ var testCases = []testCase{
 				Food
 				Lifestyle
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{
 				"category": map[string]any{
@@ -431,12 +431,12 @@ var testCases = []testCase{
 		name: "list_op_implicit_input_timestamp_after",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					list listThings(createdAt) 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{
 				"createdAt": map[string]any{
@@ -457,12 +457,12 @@ var testCases = []testCase{
 		name: "list_op_implicit_input_timestamp_onorafter",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					list listThings(createdAt) 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{
 				"createdAt": map[string]any{
@@ -483,12 +483,12 @@ var testCases = []testCase{
 		name: "list_op_implicit_input_timestamp_after",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					list listThings(createdAt) 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{
 				"createdAt": map[string]any{
@@ -509,12 +509,12 @@ var testCases = []testCase{
 		name: "list_op_implicit_input_timestamp_onorbefore",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					list listThings(createdAt) 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{
 				"createdAt": map[string]any{
@@ -538,15 +538,15 @@ var testCases = []testCase{
 				fields {
                     title Text
                 }
-				operations {
+				actions {
 					list listThings() {
 						@where(thing.title in ["title1", "title2"])
 					} 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
-		input:         map[string]any{},
+		actionName: "listThings",
+		input:      map[string]any{},
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
@@ -573,15 +573,15 @@ var testCases = []testCase{
                     title Text
 					repeatedThings RepeatedThing[]
                 }
-				operations {
+				actions {
 					list listRepeatedThings() {
 						@where(thing.title in thing.repeatedThings.name)
 					} 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listRepeatedThings",
-		input:         map[string]any{},
+		actionName: "listRepeatedThings",
+		input:      map[string]any{},
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, 
@@ -608,15 +608,15 @@ var testCases = []testCase{
 				fields {
                     title Text
                 }
-				operations {
+				actions {
 					list listThings() {
 						@where(thing.title not in ["title1", "title2"])
 					} 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
-		input:         map[string]any{},
+		actionName: "listThings",
+		input:      map[string]any{},
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
@@ -636,15 +636,15 @@ var testCases = []testCase{
 				fields {
                     age Number
                 }
-				operations {
+				actions {
 					list listThings() {
 						@where(thing.age in [10, 20])
 					} 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
-		input:         map[string]any{},
+		actionName: "listThings",
+		input:      map[string]any{},
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
@@ -664,15 +664,15 @@ var testCases = []testCase{
 				fields {
                     age Number
                 }
-				operations {
+				actions {
 					list listThings() {
 						@where(thing.age not in [10, 20])
 					} 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
-		input:         map[string]any{},
+		actionName: "listThings",
+		input:      map[string]any{},
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
@@ -697,12 +697,12 @@ var testCases = []testCase{
 				fields {
 					parent Parent
 				}
-				operations {
+				actions {
 					list listThings(parent.name) 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{
 				"parent": map[string]any{
@@ -736,14 +736,14 @@ var testCases = []testCase{
 				fields {
 					parent Parent
 				}
-				operations {
+				actions {
 					list listThings() {
 						@where(thing.parent.isActive == false)
 					} 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{}},
 		expectedTemplate: `
@@ -769,14 +769,14 @@ var testCases = []testCase{
 					name Text
 					views Number
 				}
-				operations {
+				actions {
 					list listThings() {
 						@orderBy(name: asc, views: desc)
 					} 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{}},
 		expectedTemplate: `
@@ -801,14 +801,14 @@ var testCases = []testCase{
 					name Text
 					views Number
 				}
-				operations {
+				actions {
 					list listThings() {
 						@orderBy(name: asc, views: desc)
 					} 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"after": "xyz",
 			"where": map[string]any{}},
@@ -841,14 +841,14 @@ var testCases = []testCase{
 					name Text
 					views Number
 				}
-				operations {
+				actions {
 					list listThings() {
 						@sortable(name, views)
 					} 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{},
 			"orderBy": []any{
@@ -877,14 +877,14 @@ var testCases = []testCase{
 					name Text
 					views Number
 				}
-				operations {
+				actions {
 					list listThings() {
 						@sortable(name, views)
 					} 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"after": "xyz",
 			"where": map[string]any{},
@@ -921,7 +921,7 @@ var testCases = []testCase{
 					name Text
 					views Number
 				}
-				operations {
+				actions {
 					list listThings() {
 						@orderBy(name: desc)
 						@sortable(name, views)
@@ -929,7 +929,7 @@ var testCases = []testCase{
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{},
 			"orderBy": []any{
@@ -958,7 +958,7 @@ var testCases = []testCase{
 					name Text
 					views Number
 				}
-				operations {
+				actions {
 					list listThings() {
 						@sortable(name, views)
 						@orderBy(name: asc)
@@ -966,7 +966,7 @@ var testCases = []testCase{
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{},
 			"orderBy": []any{
@@ -1000,12 +1000,12 @@ var testCases = []testCase{
 					age Number
 					parent Parent
 				}
-				operations {
+				actions {
 					create createThing() with (name, age, parent.id)
 				}
 				@permission(expression: true, actions: [create])
 			}`,
-		operationName: "createThing",
+		actionName: "createThing",
 		input: map[string]any{
 			"name":   "bob",
 			"age":    21,
@@ -1031,7 +1031,7 @@ var testCases = []testCase{
 				orders Order[]
 			}
 		
-			operations {
+			actions {
 				create createCustomer() with (name, orders.id?)
 			}
 		
@@ -1047,7 +1047,7 @@ var testCases = []testCase{
 			}
 		}
 		`,
-		operationName: "createCustomer",
+		actionName: "createCustomer",
 		input: map[string]any{
 			"name": "fred",
 		},
@@ -1070,12 +1070,12 @@ var testCases = []testCase{
 					isActive Boolean
 					parent Parent
 				}
-				operations {
+				actions {
 					update updateThing(id) with (name, age, parent.id)
 				}
 				@permission(expression: true, actions: [create])
 			}`,
-		operationName: "updateThing",
+		actionName: "updateThing",
 		input: map[string]any{
 			"where": map[string]any{
 				"id": "789",
@@ -1105,13 +1105,13 @@ var testCases = []testCase{
 		name: "delete_op_by_id",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					delete deleteThing(id)
 				}
 				@permission(expression: true, actions: [delete])
 			}`,
-		operationName: "deleteThing",
-		input:         map[string]any{"id": "123"},
+		actionName: "deleteThing",
+		input:      map[string]any{"id": "123"},
 		expectedTemplate: `
 			DELETE FROM 
 				"thing" 
@@ -1132,15 +1132,15 @@ var testCases = []testCase{
 				fields {
 					parent Parent
 				}
-				operations {
+				actions {
 					delete deleteThing(id) {
 						@where(thing.parent.name == "XYZ")
 					}
 				}
 				@permission(expression: true, actions: [delete])
 			}`,
-		operationName: "deleteThing",
-		input:         map[string]any{"id": "123"},
+		actionName: "deleteThing",
+		input:      map[string]any{"id": "123"},
 		expectedTemplate: `
 			DELETE FROM 
 				"thing" 
@@ -1156,12 +1156,12 @@ var testCases = []testCase{
 		name: "list_op_forward_paging",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					list listThings() 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"first": 2,
 			"after": "123",
@@ -1183,12 +1183,12 @@ var testCases = []testCase{
 		name: "list_op_backwards_paging",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					list listThings() 
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		input: map[string]any{
 			"last":   2,
 			"before": "123",
@@ -1215,14 +1215,14 @@ var testCases = []testCase{
 					second Number
 					third Boolean
 				}
-				operations {
+				actions {
 					list listThing() {
 						@where(thing.first == "first" and thing.second == 10 or thing.third == true and thing.second > 100)
 					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThing",
+		actionName: "listThing",
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
@@ -1247,14 +1247,14 @@ var testCases = []testCase{
 					second Number
 					third Boolean
 				}
-				operations {
+				actions {
 					list listThing() {
 						@where((thing.first == "first" and thing.second == 10) or (thing.third == true and thing.second > 100))
 					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThing",
+		actionName: "listThing",
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
@@ -1278,14 +1278,14 @@ var testCases = []testCase{
 					second Number
 					third Boolean
 				}
-				operations {
+				actions {
 					list listThing() {
 						@where((thing.first == "first" or thing.second == 10) and (thing.third == true or thing.second > 100))
 					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThing",
+		actionName: "listThing",
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
@@ -1309,14 +1309,14 @@ var testCases = []testCase{
 					second Number
 					third Boolean
 				}
-				operations {
+				actions {
 					list listThing() {
 						@where(thing.first == "first" or (thing.second == 10 and (thing.third == true or thing.second > 100)))
 					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThing",
+		actionName: "listThing",
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
@@ -1340,14 +1340,14 @@ var testCases = []testCase{
 					second Number
 					third Boolean
 				}
-				operations {
+				actions {
 					list listThing(first, explicitSecond: Number) {
 						@where(thing.second == explicitSecond or thing.third == false)
 					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThing",
+		actionName: "listThing",
 		input: map[string]any{
 			"where": map[string]any{
 				"first": map[string]any{
@@ -1375,14 +1375,14 @@ var testCases = []testCase{
 					second Number
 					third Boolean
 				}
-				operations {
+				actions {
 					list listThing(first, explicitSecond: Number) {
 						@where(thing.second == explicitSecond or thing.third == false)
 					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
-		operationName: "listThing",
+		actionName: "listThing",
 		input: map[string]any{
 			"first": 2,
 			"after": "123",
@@ -1418,14 +1418,14 @@ var testCases = []testCase{
 					name Text
 					code Text @unique
 				}
-				operations {
+				actions {
 					update updateThing(id) with (name) {
 						@where(thing.code == "XYZ" or thing.code == "ABC")
 					}
 				}
 				@permission(expression: true, actions: [create])
 			}`,
-		operationName: "updateThing",
+		actionName: "updateThing",
 		input: map[string]any{
 			"where": map[string]any{
 				"id": "789",
@@ -1459,14 +1459,14 @@ var testCases = []testCase{
 					name Text
 					code Text @unique
 				}
-				operations {
+				actions {
 					delete deleteThing(id) {
 						@where(thing.code == "XYZ" or thing.code == "ABC")
 					}
 				}
 				@permission(expression: true, actions: [create])
 			}`,
-		operationName: "deleteThing",
+		actionName: "deleteThing",
 		input: map[string]any{
 			"id": "789",
 		},
@@ -1488,7 +1488,7 @@ var testCases = []testCase{
 					onPromotion Boolean
 					items OrderItem[]
 				}
-				operations {
+				actions {
 					create createOrder() with (onPromotion, items.quantity, items.product.id)
 				}
 				@permission(expression: true, actions: [create])
@@ -1505,7 +1505,7 @@ var testCases = []testCase{
 					product Product
 				}
 			}`,
-		operationName: "createOrder",
+		actionName: "createOrder",
 		input: map[string]any{
 			"onPromotion": true,
 			"items": []any{
@@ -1557,7 +1557,7 @@ var testCases = []testCase{
 				fields {
 					product Product
 				}
-				operations {
+				actions {
 					create createOrder() with (product.name, product.attributes.name, product.attributes.status) {
 						@set(order.product.createdOnOrder = true)
 					}
@@ -1585,7 +1585,7 @@ var testCases = []testCase{
 				Yes
 				No
 			}`,
-		operationName: "createOrder",
+		actionName: "createOrder",
 		input: map[string]any{
 			"product": map[string]any{
 				"name": "Child Bicycle",
@@ -1641,7 +1641,7 @@ var testCases = []testCase{
 				fields {
 					items OrderItem[]
 				}
-				operations {
+				actions {
 					create createOrder() with (items.quantity, items.product.name)
 				}
 				@permission(expression: true, actions: [create])
@@ -1661,7 +1661,7 @@ var testCases = []testCase{
 					isReturned Boolean @default(false)
 				}
 			}`,
-		operationName: "createOrder",
+		actionName: "createOrder",
 		input: map[string]any{
 			"items": []any{
 				map[string]any{
@@ -1724,7 +1724,7 @@ var testCases = []testCase{
 					product1 Product
 					product2 Product
 				}
-				operations {
+				actions {
 					create createOrder() with (product1.name, product2.name)
 				}
 				@permission(expression: true, actions: [create])
@@ -1735,7 +1735,7 @@ var testCases = []testCase{
 					isActive Boolean @default(true)
 				}
 			}`,
-		operationName: "createOrder",
+		actionName: "createOrder",
 		input: map[string]any{
 			"product1": map[string]any{
 				"name": "Child Bicycle",
@@ -1778,7 +1778,7 @@ var testCases = []testCase{
 					items OrderItem[] 
 					freeItems OrderItem[]
 				}
-				operations {
+				actions {
 					create createOrder() with (items.quantity, items.product.id, freeItems.quantity, freeItems.product.id)
 				}
 				@permission(expression: true, actions: [create])
@@ -1796,7 +1796,7 @@ var testCases = []testCase{
 					product Product
 				}
 			}`,
-		operationName: "createOrder",
+		actionName: "createOrder",
 		input: map[string]any{
 			"items": []any{
 				map[string]any{
@@ -1872,25 +1872,25 @@ func TestQueryBuilder(t *testing.T) {
 
 		t.Run(testCase.name, func(t *testing.T) {
 
-			scope, query, operation, err := generateQueryScope(context.Background(), testCase.keelSchema, testCase.operationName)
+			scope, query, action, err := generateQueryScope(context.Background(), testCase.keelSchema, testCase.actionName)
 			if err != nil {
 				require.NoError(t, err)
 			}
 
 			var statement *actions.Statement
-			switch operation.Type {
-			case proto.OperationType_OPERATION_TYPE_GET:
+			switch action.Type {
+			case proto.ActionType_ACTION_TYPE_GET:
 				statement, err = actions.GenerateGetStatement(query, scope, testCase.input)
-			case proto.OperationType_OPERATION_TYPE_LIST:
+			case proto.ActionType_ACTION_TYPE_LIST:
 				statement, _, err = actions.GenerateListStatement(query, scope, testCase.input)
-			case proto.OperationType_OPERATION_TYPE_CREATE:
+			case proto.ActionType_ACTION_TYPE_CREATE:
 				statement, err = actions.GenerateCreateStatement(query, scope, testCase.input)
-			case proto.OperationType_OPERATION_TYPE_UPDATE:
+			case proto.ActionType_ACTION_TYPE_UPDATE:
 				statement, err = actions.GenerateUpdateStatement(query, scope, testCase.input)
-			case proto.OperationType_OPERATION_TYPE_DELETE:
+			case proto.ActionType_ACTION_TYPE_DELETE:
 				statement, err = actions.GenerateDeleteStatement(query, scope, testCase.input)
 			default:
-				require.NoError(t, fmt.Errorf("unhandled operation type %s in sql generation", operation.Type.String()))
+				require.NoError(t, fmt.Errorf("unhandled action type %s in sql generation", action.Type.String()))
 			}
 
 			if err != nil {
@@ -1921,23 +1921,23 @@ func TestQueryBuilder(t *testing.T) {
 }
 
 // Generates a scope and query builder
-func generateQueryScope(ctx context.Context, schemaText string, operationName string) (*actions.Scope, *actions.QueryBuilder, *proto.Operation, error) {
+func generateQueryScope(ctx context.Context, schemaText string, actionName string) (*actions.Scope, *actions.QueryBuilder, *proto.Action, error) {
 	builder := &schema.Builder{}
 	schema, err := builder.MakeFromString(schemaText)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	operation := proto.FindOperation(schema, operationName)
-	if operation == nil {
-		return nil, nil, nil, fmt.Errorf("operation not found in schema: %s", operationName)
+	action := proto.FindAction(schema, actionName)
+	if action == nil {
+		return nil, nil, nil, fmt.Errorf("action not found in schema: %s", actionName)
 	}
 
-	model := proto.FindModel(schema.Models, operation.ModelName)
+	model := proto.FindModel(schema.Models, action.ModelName)
 	query := actions.NewQuery(model)
-	scope := actions.NewScope(ctx, operation, schema)
+	scope := actions.NewScope(ctx, action, schema)
 
-	return scope, query, operation, nil
+	return scope, query, action, nil
 }
 
 // Trims and removes redundant spacing

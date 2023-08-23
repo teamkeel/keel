@@ -3,7 +3,7 @@ import { test, expect, beforeEach } from "vitest";
 
 beforeEach(resetDatabase);
 
-test("get operation where expressions with M:1 relations - all models active - model returned", async () => {
+test("get action where expressions with M:1 relations - all models active - model returned", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -24,7 +24,7 @@ test("get operation where expressions with M:1 relations - all models active - m
   expect(post!.id).toEqual(firstPost.id);
 });
 
-test("get operation where expressions with M:1 relations - post model not active - no records found", async () => {
+test("get action where expressions with M:1 relations - post model not active - no records found", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -44,7 +44,7 @@ test("get operation where expressions with M:1 relations - post model not active
   expect(p).toEqual(null);
 });
 
-test("get operation where expressions with M:1 relations - nested author model not active - no records found", async () => {
+test("get action where expressions with M:1 relations - nested author model not active - no records found", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -64,7 +64,7 @@ test("get operation where expressions with M:1 relations - nested author model n
   expect(p).toEqual(null);
 });
 
-test("get operation where expressions with M:1 relations - nested nested publisher model not active - no records found", async () => {
+test("get action where expressions with M:1 relations - nested nested publisher model not active - no records found", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -84,7 +84,7 @@ test("get operation where expressions with M:1 relations - nested nested publish
   expect(p).toEqual(null);
 });
 
-test("get operation where expressions with 1:M relations - all models active - publisher returned", async () => {
+test("get action where expressions with 1:M relations - all models active - publisher returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -122,7 +122,7 @@ test("get operation where expressions with 1:M relations - all models active - p
   expect(publisher!.id).toEqual(publisherKeel.id);
 });
 
-test("get operation where expressions with 1:M relations - publisher not active - no publisher found", async () => {
+test("get action where expressions with 1:M relations - publisher not active - no publisher found", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -159,7 +159,7 @@ test("get operation where expressions with 1:M relations - publisher not active 
   expect(p).toEqual(null);
 });
 
-test("get operation where expressions with 1:M relations - one author active - publisher returned", async () => {
+test("get action where expressions with 1:M relations - one author active - publisher returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -197,7 +197,7 @@ test("get operation where expressions with 1:M relations - one author active - p
   expect(publisher!.id).toEqual(publisherKeel.id);
 });
 
-test("get operation where expressions with 1:M relations - active author with inactive posts and inactive autor with active posts - no publisher found", async () => {
+test("get action where expressions with 1:M relations - active author with inactive posts and inactive autor with active posts - no publisher found", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -234,7 +234,7 @@ test("get operation where expressions with 1:M relations - active author with in
   expect(p).toEqual(null);
 });
 
-test("get operation where expressions with 1:M relations - no active posts  - publisher returned", async () => {
+test("get action where expressions with 1:M relations - no active posts  - publisher returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -271,7 +271,7 @@ test("get operation where expressions with 1:M relations - no active posts  - pu
   expect(p).toEqual(null);
 });
 
-test("list operation where expressions with M:1 relations - all models active - all models returned", async () => {
+test("list action where expressions with M:1 relations - all models active - all models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -311,7 +311,7 @@ test("list operation where expressions with M:1 relations - all models active - 
   expect(posts.length).toEqual(3);
 });
 
-test("list operation where expressions with M:1 relations - Keel org not active - Weave models returned", async () => {
+test("list action where expressions with M:1 relations - Keel org not active - Weave models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -351,7 +351,7 @@ test("list operation where expressions with M:1 relations - Keel org not active 
   expect(posts.length).toEqual(1);
 });
 
-test("list operation where expressions with M:1 relations - Keelson author not active - Weaveton models returned", async () => {
+test("list action where expressions with M:1 relations - Keelson author not active - Weaveton models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -391,7 +391,7 @@ test("list operation where expressions with M:1 relations - Keelson author not a
   expect(posts.length).toEqual(1);
 });
 
-test("list operation where expressions with M:1 relations - one Keelson post not active - Weaveton models returned", async () => {
+test("list action where expressions with M:1 relations - one Keelson post not active - Weaveton models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -431,7 +431,7 @@ test("list operation where expressions with M:1 relations - one Keelson post not
   expect(posts.length).toEqual(2);
 });
 
-test("list operation where expressions with 1:M relations - all models active - all models returned", async () => {
+test("list action where expressions with 1:M relations - all models active - all models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org 2",
     isActive: true,
@@ -472,7 +472,7 @@ test("list operation where expressions with 1:M relations - all models active - 
   expect(publishers.length).toEqual(2);
 });
 
-test("list operation where expressions with 1:M relations - Keel org not active - only Keel returned", async () => {
+test("list action where expressions with 1:M relations - Keel org not active - only Keel returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -513,7 +513,7 @@ test("list operation where expressions with 1:M relations - Keel org not active 
   expect(publishers.length).toEqual(1);
 });
 
-test("list operation where expressions with 1:M relations - Keel author not active - Weave org returned", async () => {
+test("list action where expressions with 1:M relations - Keel author not active - Weave org returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -554,7 +554,7 @@ test("list operation where expressions with 1:M relations - Keel author not acti
   expect(publishers.length).toEqual(1);
 });
 
-test("list operation where expressions with 1:M relations - one Keel post not active - all models returned", async () => {
+test("list action where expressions with 1:M relations - one Keel post not active - all models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -595,7 +595,7 @@ test("list operation where expressions with 1:M relations - one Keel post not ac
   expect(publishers.length).toEqual(2);
 });
 
-test("list operation where expressions with 1:M relations - all Keel posts not active - Weave org returned", async () => {
+test("list action where expressions with 1:M relations - all Keel posts not active - Weave org returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -636,7 +636,7 @@ test("list operation where expressions with 1:M relations - all Keel posts not a
   expect(publishers.length).toEqual(1);
 });
 
-test("get operation where expressions with M:1 relations with RHS field operand - all models active - model returned", async () => {
+test("get action where expressions with M:1 relations with RHS field operand - all models active - model returned", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -660,7 +660,7 @@ test("get operation where expressions with M:1 relations with RHS field operand 
   expect(post!.id).toEqual(firstPost.id);
 });
 
-test("get operation where expressions with M:1 relations with RHS field operand - all models inactive - model returned", async () => {
+test("get action where expressions with M:1 relations with RHS field operand - all models inactive - model returned", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -684,7 +684,7 @@ test("get operation where expressions with M:1 relations with RHS field operand 
   expect(post!.id).toEqual(firstPost.id);
 });
 
-test("get operation where expressions with M:1 relations with RHS field operand - publisher not active - model not returned", async () => {
+test("get action where expressions with M:1 relations with RHS field operand - publisher not active - model not returned", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -705,7 +705,7 @@ test("get operation where expressions with M:1 relations with RHS field operand 
   expect(p).toEqual(null);
 });
 
-test("get operation where expressions with M:1 relations with RHS field operand - author not active - model not returned", async () => {
+test("get action where expressions with M:1 relations with RHS field operand - author not active - model not returned", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -726,7 +726,7 @@ test("get operation where expressions with M:1 relations with RHS field operand 
   expect(p).toEqual(null);
 });
 
-test("get operation where expressions with M:1 relations with RHS field operand - post not active - model not returned", async () => {
+test("get action where expressions with M:1 relations with RHS field operand - post not active - model not returned", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -747,7 +747,7 @@ test("get operation where expressions with M:1 relations with RHS field operand 
   expect(p).toEqual(null);
 });
 
-test("get operation where expressions with 1:M relations with RHS field operand - all models active - publisher returned", async () => {
+test("get action where expressions with 1:M relations with RHS field operand - all models active - publisher returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -788,7 +788,7 @@ test("get operation where expressions with 1:M relations with RHS field operand 
   expect(publisher!.id).toEqual(publisherKeel.id);
 });
 
-test("get operation where expressions with 1:M relations with RHS field operand - one active author - publisher returned", async () => {
+test("get action where expressions with 1:M relations with RHS field operand - one active author - publisher returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -829,7 +829,7 @@ test("get operation where expressions with 1:M relations with RHS field operand 
   expect(publisher!.id).toEqual(publisherKeel.id);
 });
 
-test("get operation where expressions with 1:M relations with RHS field operand - no active author - publisher not returned", async () => {
+test("get action where expressions with 1:M relations with RHS field operand - no active author - publisher not returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -867,7 +867,7 @@ test("get operation where expressions with 1:M relations with RHS field operand 
   expect(p).toEqual(null);
 });
 
-test("get operation where expressions with 1:M relations with RHS field operand - one active post - publisher returned", async () => {
+test("get action where expressions with 1:M relations with RHS field operand - one active post - publisher returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -908,7 +908,7 @@ test("get operation where expressions with 1:M relations with RHS field operand 
   expect(publisher!.id).toEqual(publisherKeel.id);
 });
 
-test("get operation where expressions with 1:M relations with RHS field operand - no active posts - publisher not returned", async () => {
+test("get action where expressions with 1:M relations with RHS field operand - no active posts - publisher not returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -946,7 +946,7 @@ test("get operation where expressions with 1:M relations with RHS field operand 
   expect(p).toEqual(null);
 });
 
-test("list operation where expressions with M:1 relations with RHS field operand - all models active - all models returned", async () => {
+test("list action where expressions with M:1 relations with RHS field operand - all models active - all models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -988,7 +988,7 @@ test("list operation where expressions with M:1 relations with RHS field operand
   expect(posts.length).toEqual(3);
 });
 
-test("list operation where expressions with M:1 relations with RHS field operand - matching active status - all models returned", async () => {
+test("list action where expressions with M:1 relations with RHS field operand - matching active status - all models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -1030,7 +1030,7 @@ test("list operation where expressions with M:1 relations with RHS field operand
   expect(posts.length).toEqual(3);
 });
 
-test("list operation where expressions with M:1 relations with RHS field operand - one active author - Keelson posts returned", async () => {
+test("list action where expressions with M:1 relations with RHS field operand - one active author - Keelson posts returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -1072,7 +1072,7 @@ test("list operation where expressions with M:1 relations with RHS field operand
   expect(posts.length).toEqual(2);
 });
 
-test("list operation where expressions with M:1 relations with RHS field operand - Weaveton author inactive and one active Keelson post - other Keelson post returned", async () => {
+test("list action where expressions with M:1 relations with RHS field operand - Weaveton author inactive and one active Keelson post - other Keelson post returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -1114,7 +1114,7 @@ test("list operation where expressions with M:1 relations with RHS field operand
   expect(posts.length).toEqual(1);
 });
 
-test("list operation where expressions with 1:M relations with RHS field operand - all models active - all models returned", async () => {
+test("list action where expressions with 1:M relations with RHS field operand - all models active - all models returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org 2",
     isActive: true,
@@ -1157,7 +1157,7 @@ test("list operation where expressions with 1:M relations with RHS field operand
   expect(publishers.length).toEqual(2);
 });
 
-test("list operation where expressions with 1:M relations with RHS field operand - Weaveton post inactive - Keelson publisher returned", async () => {
+test("list action where expressions with 1:M relations with RHS field operand - Weaveton post inactive - Keelson publisher returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org 2",
     isActive: true,
@@ -1200,7 +1200,7 @@ test("list operation where expressions with 1:M relations with RHS field operand
   expect(publishers.length).toEqual(1);
 });
 
-test("list operation where expressions with 1:M relations with RHS field operand - only one Keelson post inactive - all publishers returned", async () => {
+test("list action where expressions with 1:M relations with RHS field operand - only one Keelson post inactive - all publishers returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org 2",
     isActive: true,
@@ -1243,7 +1243,7 @@ test("list operation where expressions with 1:M relations with RHS field operand
   expect(publishers.length).toEqual(2);
 });
 
-test("list operation where expressions with 1:M relations with RHS field operand - Keelson author inactive and Weaveton post inactive - no publishers returned", async () => {
+test("list action where expressions with 1:M relations with RHS field operand - Keelson author inactive and Weaveton post inactive - no publishers returned", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org 2",
     isActive: true,
@@ -1336,7 +1336,7 @@ test("where expressions which references models multiple times - Keel has active
   expect(p).toEqual(null);
 });
 
-test("delete operation where expressions with M:1 relations - all models active - model deleted", async () => {
+test("delete action where expressions with M:1 relations - all models active - model deleted", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -1357,7 +1357,7 @@ test("delete operation where expressions with M:1 relations - all models active 
   expect(deleted).toEqual(firstPost.id);
 });
 
-test("delete operation where expressions with M:1 relations - post model not active - no records found", async () => {
+test("delete action where expressions with M:1 relations - post model not active - no records found", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -1381,7 +1381,7 @@ test("delete operation where expressions with M:1 relations - post model not act
   });
 });
 
-test("delete operation where expressions with M:1 relations - publisher model not active - no records found", async () => {
+test("delete action where expressions with M:1 relations - publisher model not active - no records found", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -1405,7 +1405,7 @@ test("delete operation where expressions with M:1 relations - publisher model no
   });
 });
 
-test("delete operation where expressions with 1:M relations - all models active - publisher deleted", async () => {
+test("delete action where expressions with 1:M relations - all models active - publisher deleted", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -1443,7 +1443,7 @@ test("delete operation where expressions with 1:M relations - all models active 
   expect(deleted).toEqual(publisherKeel.id);
 });
 
-test("delete operation where expressions with 1:M relations - publisher not active - no publisher found", async () => {
+test("delete action where expressions with 1:M relations - publisher not active - no publisher found", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: false,
@@ -1482,7 +1482,7 @@ test("delete operation where expressions with 1:M relations - publisher not acti
   });
 });
 
-test("delete operation where expressions with 1:M relations - single post active - publisher deleted", async () => {
+test("delete action where expressions with 1:M relations - single post active - publisher deleted", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -1520,7 +1520,7 @@ test("delete operation where expressions with 1:M relations - single post active
   expect(deleted).toEqual(publisherKeel.id);
 });
 
-test("delete operation where expressions with 1:M relations - posts not active - no publisher found", async () => {
+test("delete action where expressions with 1:M relations - posts not active - no publisher found", async () => {
   const publisherKeel = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,
@@ -1559,7 +1559,7 @@ test("delete operation where expressions with 1:M relations - posts not active -
   });
 });
 
-test("get operation where expressions with M:1 relations - depends on @relation", async () => {
+test("get action where expressions with M:1 relations - depends on @relation", async () => {
   const publisher = await models.publisher.create({
     orgName: "Keel Org",
     isActive: true,

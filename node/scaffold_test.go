@@ -21,12 +21,12 @@ func TestScaffold(t *testing.T) {
 		fields {
 			title Text
 		}
-		functions {
-			create createPost() with(title)
-			list listPosts()
-			update updatePost(id) with(title)
-			get getPost(id)
-			delete deletePost(id)
+		actions {
+			create createPost() with(title) @function
+			list listPosts() @function
+			update updatePost(id) with(title) @function
+			get getPost(id) @function
+			delete deletePost(id) @function
 			write customFunctionWrite(Any) returns(Any)
 			read customFunctionRead(Any) returns(Any)
 		}
@@ -69,31 +69,31 @@ func TestScaffold(t *testing.T) {
 
 	expectedFiles := codegen.GeneratedFiles{
 		&codegen.GeneratedFile{
-			Contents: "import { CreatePost, models } from '@teamkeel/sdk';\n\nexport default CreatePost(async (ctx, inputs) => {\n\tconst post = await models.post.create(inputs);\n\treturn post;\n});\n\t",
+			Contents: "import { CreatePost, CreatePostHooks } from '@teamkeel/sdk';\n\n// To learn more about what you can do with hooks,\n// visit https://docs.keel.so/functions\nconst hooks : CreatePostHooks = {};\n\nexport default CreatePost(hooks);\n\t",
 			Path:     "functions/createPost.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { ListPosts, models } from '@teamkeel/sdk';\n\nexport default ListPosts(async (ctx, inputs) => {\n\tconst posts = await models.post.findMany(inputs);\n\treturn posts;\n});\n\t",
+			Contents: "import { ListPosts, ListPostsHooks } from '@teamkeel/sdk';\n\n// To learn more about what you can do with hooks,\n// visit https://docs.keel.so/functions\nconst hooks : ListPostsHooks = {};\n\nexport default ListPosts(hooks);\n\t",
 			Path:     "functions/listPosts.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { UpdatePost, models } from '@teamkeel/sdk';\n\nexport default UpdatePost(async (ctx, inputs) => {\n\tconst post = await models.post.update(inputs.where, inputs.values);\n\treturn post;\n});\n\t",
+			Contents: "import { UpdatePost, UpdatePostHooks } from '@teamkeel/sdk';\n\n// To learn more about what you can do with hooks,\n// visit https://docs.keel.so/functions\nconst hooks : UpdatePostHooks = {};\n\nexport default UpdatePost(hooks);\n\t",
 			Path:     "functions/updatePost.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { GetPost, models } from '@teamkeel/sdk';\n\nexport default GetPost(async (ctx, inputs) => {\n\tconst post = await models.post.findOne(inputs);\n\treturn post;\n});\n\t",
+			Contents: "import { GetPost, GetPostHooks } from '@teamkeel/sdk';\n\n// To learn more about what you can do with hooks,\n// visit https://docs.keel.so/functions\nconst hooks : GetPostHooks = {};\n\nexport default GetPost(hooks);\n\t",
 			Path:     "functions/getPost.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { DeletePost, models } from '@teamkeel/sdk';\n\nexport default DeletePost(async (ctx, inputs) => {\n\tconst post = await models.post.delete(inputs);\n\treturn post;\n});\n\t",
+			Contents: "import { DeletePost, DeletePostHooks } from '@teamkeel/sdk';\n\n// To learn more about what you can do with hooks,\n// visit https://docs.keel.so/functions\nconst hooks : DeletePostHooks = {};\n\nexport default DeletePost(hooks);\n\t",
 			Path:     "functions/deletePost.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { CustomFunctionWrite } from '@teamkeel/sdk';\n\nexport default CustomFunctionWrite(async (ctx, inputs) => {\n\t// Build something cool\n});\n\t",
+			Contents: "import { CustomFunctionWrite } from '@teamkeel/sdk';\nexport default CustomFunctionWrite(async (ctx, inputs) => {\n\n})",
 			Path:     "functions/customFunctionWrite.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { CustomFunctionRead } from '@teamkeel/sdk';\n\nexport default CustomFunctionRead(async (ctx, inputs) => {\n\t// Build something cool\n});\n\t",
+			Contents: "import { CustomFunctionRead } from '@teamkeel/sdk';\nexport default CustomFunctionRead(async (ctx, inputs) => {\n\n})",
 			Path:     "functions/customFunctionRead.ts",
 		},
 		&codegen.GeneratedFile{
@@ -137,8 +137,8 @@ func TestExistingFunction(t *testing.T) {
 		fields {
 			title Text
 		}
-		functions {
-			create existingCreatePost() with(title)
+		actions {
+			create existingCreatePost() with(title) @function
 		}
 	}
 `

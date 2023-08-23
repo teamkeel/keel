@@ -4,7 +4,7 @@ model Person {
         organisation Organisation
     }
 
-    operations{
+    actions {
         list listPeople() {
             @where(expression: invalid)
         }

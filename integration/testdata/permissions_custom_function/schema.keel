@@ -21,27 +21,40 @@ model Post {
         business Business
     }
 
-    functions {
+    actions {
         get getSecretPost(id) {
+            @function
+
             @permission(expression: ctx.isAuthenticated)
         }
         get getPost(id) {
+            @function
+
             @permission(expression: post.business.identity == ctx.identity)
         }
         list listPosts() {
+            @function
+
             @permission(expression: post.business.identity == ctx.identity)
         }
         create createPost() with (title, business.id) {
+            @function
+
             @permission(expression: post.business.identity == ctx.identity)
         }
         create createPostWithRole() with (title, business.id) {
+            @function
+
             @permission(roles: [Admin])
             @permission(expression: false)
         }
         update updatePost(id) with (title) {
+            @function
+
             @permission(expression: post.business.identity == ctx.identity)
         }
         delete deletePost(id) {
+            @function
             @permission(expression: post.business.identity == ctx.identity)
         }
     }
