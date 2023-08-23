@@ -12,7 +12,7 @@ jobs:
   setup:
     name: Generate Version
     runs-on: ubuntu-latest
-    if: startsWith( github.event.head_commit.message, 'feat' ) || startsWith( github.event.head_commit.message, 'fix' ) || contains(github.event.head_commit.message, '!:')
+    if: startsWith( github.event.head_commit.message, 'feat' ) || startsWith( github.event.head_commit.message, 'fix' ) || contains(github.event.head_commit.message, '!:') || github.event_name == 'workflow_dispatch'
     steps:
       - uses: pnpm/action-setup@v2.4.0
         with:
