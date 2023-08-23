@@ -21,8 +21,8 @@ func writePermissions(w *codegen.Writer, schema *proto.Schema) {
 	w.Indent()
 
 	for _, model := range schema.Models {
-		for _, action := range model.Operations {
-			if action.Implementation != proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		for _, action := range model.Actions {
+			if action.Implementation != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
 				continue
 			}
 

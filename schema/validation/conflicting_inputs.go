@@ -15,27 +15,27 @@ import (
 // For example in the getThing operation `id` is listed as a model input but
 // is also used in a @where expression.
 func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
-	isOperation := false
+	isAction := false
 	modelInputs := map[*parser.ActionInputNode]bool{}
 
 	return Visitor{
 		EnterModelSection: func(n *parser.ModelSectionNode) {
-			isOperation = len(n.Operations) > 0
+			isAction = len(n.Actions) > 0
 		},
 		LeaveModelSection: func(n *parser.ModelSectionNode) {
-			isOperation = false
+			isAction = false
 		},
 		EnterAction: func(n *parser.ActionNode) {
 			modelInputs = map[*parser.ActionInputNode]bool{}
 		},
 		EnterActionInput: func(n *parser.ActionInputNode) {
-			if n.Label == nil && isOperation {
+			if n.Label == nil && isAction {
 				modelInputs[n] = true
 			}
 		},
 		EnterAttribute: func(n *parser.AttributeNode) {
 			isRelevantAttr := lo.Contains([]string{parser.AttributeWhere, parser.AttributeSet}, n.Name.Value)
-			if !isOperation || !isRelevantAttr || len(n.Arguments) == 0 {
+			if !isAction || !isRelevantAttr || len(n.Arguments) == 0 {
 				return
 			}
 

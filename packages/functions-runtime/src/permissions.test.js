@@ -2,13 +2,11 @@ const {
   permissionsApiInstance,
   Permissions,
   PERMISSION_STATE,
-  PermissionError,
   checkBuiltInPermissions,
 } = require("./permissions");
-
 import { useDatabase } from "./database";
-
 import { beforeEach, describe, expect, test } from "vitest";
+const { PermissionError } = require("./errors");
 
 let permissions;
 let ctx = {};

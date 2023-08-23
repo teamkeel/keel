@@ -5,7 +5,7 @@ model Post {
         theAuthor Author?
     }
 
-    operations {
+    actions {
         // For testing AND conditions
         create createPost() with (title, theAuthor.id, isActive?) {
             @permission(expression: post.theAuthor.isActive == true and post.isActive)
@@ -39,8 +39,7 @@ model Author {
         thePosts Post[]
     }
 
-    operations {
-        // For testing AND conditions
+    actions {
         get getAuthor(id) {
             @permission(expression: true in author.thePosts.isActive and author.isActive)
         }

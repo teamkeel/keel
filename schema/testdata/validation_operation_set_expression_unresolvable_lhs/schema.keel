@@ -5,7 +5,7 @@ model Profile {
         }
     }
 
-    operations {
+    actions {
         update createProfile(id) with (username) {
             @set(profile.identit = ctx.identity)
         }

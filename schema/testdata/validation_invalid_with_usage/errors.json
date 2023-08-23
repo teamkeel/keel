@@ -6,13 +6,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_invalid_with_usage/schema.keel",
-        "offset": 78,
+        "offset": 75,
         "line": 7,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_invalid_with_usage/schema.keel",
-        "offset": 107,
+        "offset": 104,
         "line": 7,
         "column": 38
       }
@@ -23,13 +23,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_invalid_with_usage/schema.keel",
-        "offset": 116,
+        "offset": 113,
         "line": 8,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_invalid_with_usage/schema.keel",
-        "offset": 145,
+        "offset": 142,
         "line": 8,
         "column": 38
       }
@@ -40,13 +40,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_invalid_with_usage/schema.keel",
-        "offset": 154,
+        "offset": 151,
         "line": 9,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_invalid_with_usage/schema.keel",
-        "offset": 189,
+        "offset": 186,
         "line": 9,
         "column": 44
       }

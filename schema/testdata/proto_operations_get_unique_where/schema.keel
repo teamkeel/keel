@@ -5,7 +5,7 @@ model Author {
         }
     }
 
-    operations {
+    actions {
         get getAuthor() {
             @where(author.name == "Bob")
         }

@@ -47,7 +47,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeNotAllowedError,
 					errorhandling.ErrorDetails{
-						Message: "@orderBy can only be used on list operations",
+						Message: "@orderBy can only be used on list actions",
 					},
 					attribute.Name,
 				))
@@ -57,7 +57,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeNotAllowedError,
 					errorhandling.ErrorDetails{
-						Message: "@orderBy can only be defined once per operation",
+						Message: "@orderBy can only be defined once per action",
 					},
 					attribute.Name,
 				))

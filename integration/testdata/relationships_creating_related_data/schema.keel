@@ -4,7 +4,7 @@ model Order {
         customer Customer
         items OrderItem[]
     }
-    operations {
+    actions {
         create createOrder() with (customer.id, onPromotion, items.quantity, items.price, items.product.id)
         create createOrderWithRelated() with (customer.name, onPromotion, items.quantity, items.price, items.product.name)
         update updateOrderCustomer(id) with (customer.id)
@@ -25,7 +25,7 @@ model OrderItem {
         price Number
         product Product
     }
-    operations {
+    actions {
         list listByOrder(order.id)
     }
 }

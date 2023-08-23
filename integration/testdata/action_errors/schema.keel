@@ -4,7 +4,7 @@ model Book {
         lastUpdatedBy Identity
     }
 
-    operations {
+    actions {
         create createPermitted() with (title) {
             @permission(expression: true)
             @set(book.lastUpdatedBy.id = ctx.identity.id)
@@ -80,71 +80,85 @@ model Book {
         list listDbPermission() {
             @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
         }
-    }
 
-    functions {
         create createPermittedFn() with (title, lastUpdatedBy.id?) {
             @permission(expression: true)
+            @function
         }
 
         create createNotPermittedFn() with (title, lastUpdatedBy.id?) {
             @permission(expression: false)
+            @function
         }
 
         create createIsAuthenticatedFn() with (title, lastUpdatedBy.id?) {
             @permission(expression: ctx.isAuthenticated)
+            @function
         }
 
         create createDbPermissionFn() with (title, lastUpdatedBy.id?) {
             @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+            @function
         }
         
         update updatePermittedFn(id) with (title, lastUpdatedBy.id?) {
             @permission(expression: true)
+            @function
         }
 
         update updateNotPermittedFn(id) with (title, lastUpdatedBy.id?) {
             @permission(expression: false)
+            @function
         }
 
         update updateDbPermissionFn(id) with (title, lastUpdatedBy.id?) {
             @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+            @function
         }
 
         get getPermittedFn(id) {
             @permission(expression: true)
+            @function
         }
 
         get getNotPermittedFn(id) {
             @permission(expression: false)
+            @function
         }
 
         get getDbPermissionFn(id) {
             @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+            @function
         }
 
         delete deletePermittedFn(id) {
             @permission(expression: true)
+            @function
         }
 
         delete deleteNotPermittedFn(id) {
             @permission(expression: false)
+            @function
         }
 
         delete deleteDbPermissionFn(id) {
             @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+            @function
         }
 
         list listPermittedFn() {
             @permission(expression: true)
+            @function
         }
 
         list listNotPermittedFn() {
             @permission(expression: false)
+            @function
         }
 
         list listDbPermissionFn() {
             @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+            @function
         }
     }
 }

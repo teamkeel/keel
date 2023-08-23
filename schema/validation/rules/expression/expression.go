@@ -138,7 +138,7 @@ func OperatorAssignmentRule(asts []*parser.AST, expression *parser.Expression, c
 
 			errors = append(errors,
 				errorhandling.NewValidationError(
-					errorhandling.ErrorForbiddenExpressionOperation,
+					errorhandling.ErrorForbiddenExpressionAction,
 					errorhandling.TemplateLiterals{
 						Literals: map[string]string{
 							"Operator":   condition.Operator.Symbol,
@@ -170,7 +170,7 @@ func OperatorLogicalRule(asts []*parser.AST, expression *parser.Expression, cont
 			correction := errorhandling.NewCorrectionHint([]string{"=="}, condition.Operator.Symbol)
 			errors = append(errors,
 				errorhandling.NewValidationError(
-					errorhandling.ErrorForbiddenExpressionOperation,
+					errorhandling.ErrorForbiddenExpressionAction,
 					errorhandling.TemplateLiterals{
 						Literals: map[string]string{
 							"Operator":   condition.Operator.Symbol,

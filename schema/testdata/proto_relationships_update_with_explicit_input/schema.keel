@@ -6,7 +6,7 @@ model ChildModel {
         parentOptional ParentModel?
     }
 
-    operations {
+    actions {
         update updateChild1(id) with (isActive, explicitParentId: ID) {
             @set(childModel.parentId = explicitParentId)
             @set(childModel.parentOptionalId = explicitParentId)

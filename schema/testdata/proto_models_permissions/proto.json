@@ -51,9 +51,9 @@
           "expression": {
             "source": "foo.f1 == true"
           },
-          "operationsTypes": [
-            "OPERATION_TYPE_LIST",
-            "OPERATION_TYPE_GET"
+          "actionTypes": [
+            "ACTION_TYPE_LIST",
+            "ACTION_TYPE_GET"
           ]
         },
         {
@@ -61,8 +61,8 @@
           "roleNames": [
             "Restricted"
           ],
-          "operationsTypes": [
-            "OPERATION_TYPE_UPDATE"
+          "actionTypes": [
+            "ACTION_TYPE_UPDATE"
           ]
         }
       ]
@@ -148,28 +148,28 @@
           }
         }
       ],
-      "operations": [
+      "actions": [
         {
           "modelName": "Identity",
           "name": "authenticate",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "RequestPasswordResetInput",
           "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "ResetPasswordInput",
           "responseMessageName": "ResetPasswordResponse"
         }

@@ -8,7 +8,7 @@ model Profile {
         }
     }
 
-    operations {
+    actions {
         create createProfile() with (username, email) {
             @save(profile.identity = ctx.identity)
         }

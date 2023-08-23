@@ -7,5 +7,9 @@
         "@semantic-release/github": "^8.0.7",
         "prettier": "^2.7.1"
     },
-    "version": "0.273.3"
+    "version": "0.273.3",
+    "scripts": {
+        "lint:integration": "./node_modules/.bin/prettier --write ./integration",
+        "lint:packages": "./node_modules/.bin/prettier --write ./packages"
+    }
 }

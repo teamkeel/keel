@@ -5,7 +5,7 @@ model Profile {
         }
     }
 
-    operations {
+    actions {
         create createProfile() {
             @set(profile.username = context.identity)
         }

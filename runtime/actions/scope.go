@@ -15,41 +15,41 @@ import (
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/actions")
 
 const (
-	authenticateOperationName         = "authenticate"
-	requestPasswordResetOperationName = "requestPasswordReset"
-	passwordResetOperationName        = "resetPassword"
+	authenticateActionName         = "authenticate"
+	requestPasswordResetActionName = "requestPasswordReset"
+	passwordResetActionName        = "resetPassword"
 )
 
 type Scope struct {
-	Context   context.Context
-	Operation *proto.Operation
-	Model     *proto.Model
-	Job       *proto.Job
-	Schema    *proto.Schema
+	Context context.Context
+	Action  *proto.Action
+	Model   *proto.Model
+	Job     *proto.Job
+	Schema  *proto.Schema
 }
 
 func (s *Scope) WithContext(ctx context.Context) *Scope {
 	return &Scope{
-		Context:   ctx,
-		Operation: s.Operation,
-		Model:     s.Model,
-		Schema:    s.Schema,
+		Context: ctx,
+		Action:  s.Action,
+		Model:   s.Model,
+		Schema:  s.Schema,
 	}
 }
 
 func NewScope(
 	ctx context.Context,
-	operation *proto.Operation,
+	action *proto.Action,
 	schema *proto.Schema) *Scope {
 
-	model := proto.FindModel(schema.Models, operation.ModelName)
+	model := proto.FindModel(schema.Models, action.ModelName)
 
 	return &Scope{
-		Context:   ctx,
-		Operation: operation,
-		Model:     model,
-		Job:       nil,
-		Schema:    schema,
+		Context: ctx,
+		Action:  action,
+		Model:   model,
+		Job:     nil,
+		Schema:  schema,
 	}
 }
 
@@ -59,11 +59,11 @@ func NewModelScope(
 	schema *proto.Schema) *Scope {
 
 	return &Scope{
-		Context:   ctx,
-		Operation: nil,
-		Model:     model,
-		Job:       nil,
-		Schema:    schema,
+		Context: ctx,
+		Action:  nil,
+		Model:   model,
+		Job:     nil,
+		Schema:  schema,
 	}
 }
 
@@ -73,20 +73,20 @@ func NewJobScope(
 	schema *proto.Schema) *Scope {
 
 	return &Scope{
-		Context:   ctx,
-		Operation: nil,
-		Model:     nil,
-		Job:       job,
-		Schema:    schema,
+		Context: ctx,
+		Action:  nil,
+		Model:   nil,
+		Job:     job,
+		Schema:  schema,
 	}
 }
 
 func Execute(scope *Scope, inputs any) (result any, headers map[string][]string, err error) {
-	ctx, span := tracer.Start(scope.Context, scope.Operation.Name)
+	ctx, span := tracer.Start(scope.Context, scope.Action.Name)
 	defer span.End()
 
 	span.SetAttributes(
-		attribute.String("action", scope.Operation.Name),
+		attribute.String("action", scope.Action.Name),
 		attribute.String("model", scope.Model.Name),
 	)
 
@@ -96,10 +96,10 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 	// an array / number / string etc, which doesn't fit in with the traditional map[string]any definition of an inputs object
 	inputsAsMap, inputWasAMap := inputs.(map[string]any)
 
-	switch scope.Operation.Implementation {
-	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM:
+	switch scope.Action.Implementation {
+	case proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM:
 		result, headers, err = executeCustomFunction(scope, inputs)
-	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME:
+	case proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME:
 		if !inputWasAMap {
 			if inputs == nil {
 				inputsAsMap = make(map[string]any)
@@ -107,8 +107,8 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
 			}
 		}
-		result, headers, err = executeRuntimeOperation(scope, inputsAsMap)
-	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO:
+		result, headers, err = executeRuntimeAction(scope, inputsAsMap)
+	case proto.ActionImplementation_ACTION_IMPLEMENTATION_AUTO:
 		if !inputWasAMap {
 			if inputs == nil {
 				inputsAsMap = make(map[string]any)
@@ -116,9 +116,9 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
 			}
 		}
-		result, headers, err = executeAutoOperation(scope, inputsAsMap)
+		result, headers, err = executeAutoAction(scope, inputsAsMap)
 	default:
-		return nil, nil, fmt.Errorf("unhandled unknown operation %s of type %s", scope.Operation.Name, scope.Operation.Implementation)
+		return nil, nil, fmt.Errorf("unhandled unknown action %s of type %s", scope.Action.Name, scope.Action.Implementation)
 	}
 
 	// Generate and send any events for this context.
@@ -131,7 +131,7 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 }
 
 func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, error) {
-	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
 	canAuthoriseEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
 	if err != nil {
@@ -149,7 +149,7 @@ func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, 
 
 	resp, headers, err := functions.CallFunction(
 		scope.Context,
-		scope.Operation.Name,
+		scope.Action.Name,
 		inputs,
 		permissionState,
 	)
@@ -163,7 +163,7 @@ func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, 
 	// to "wrap" the results here.
 	// TODO: come up with a better implementation for list functions that can support
 	// pagination
-	if scope.Operation.Type == proto.OperationType_OPERATION_TYPE_LIST {
+	if scope.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
 		results, _ := resp.([]any)
 		return map[string]any{
 			"results": results,
@@ -183,24 +183,24 @@ func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, 
 	return resp, headers, err
 }
 
-func executeRuntimeOperation(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
-	switch scope.Operation.Name {
-	case authenticateOperationName:
+func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
+	switch scope.Action.Name {
+	case authenticateActionName:
 		result, err := Authenticate(scope, inputs)
 		return result, nil, err
-	case requestPasswordResetOperationName:
+	case requestPasswordResetActionName:
 		err := ResetRequestPassword(scope, inputs)
 		return map[string]any{}, nil, err
-	case passwordResetOperationName:
+	case passwordResetActionName:
 		err := ResetPassword(scope, inputs)
 		return map[string]any{}, nil, err
 	default:
-		return nil, nil, fmt.Errorf("unhandled runtime operation: %s", scope.Operation.Name)
+		return nil, nil, fmt.Errorf("unhandled runtime action: %s", scope.Action.Name)
 	}
 }
 
-func executeAutoOperation(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
-	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
+func executeAutoAction(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
 	// Attempt to resolve permissions early; i.e. before row-based database querying.
 	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
@@ -211,8 +211,8 @@ func executeAutoOperation(scope *Scope, inputs map[string]any) (any, map[string]
 		return nil, nil, common.NewPermissionError()
 	}
 
-	switch scope.Operation.Type {
-	case proto.OperationType_OPERATION_TYPE_GET:
+	switch scope.Action.Type {
+	case proto.ActionType_ACTION_TYPE_GET:
 		v, err := Get(scope, inputs)
 		// Get() can return nil, but for some reason if we don't explicitly
 		// return nil here too the result becomes an empty map, which is rather
@@ -222,19 +222,19 @@ func executeAutoOperation(scope *Scope, inputs map[string]any) (any, map[string]
 			return nil, nil, err
 		}
 		return v, nil, err
-	case proto.OperationType_OPERATION_TYPE_UPDATE:
+	case proto.ActionType_ACTION_TYPE_UPDATE:
 		result, err := Update(scope, inputs)
 		return result, nil, err
-	case proto.OperationType_OPERATION_TYPE_CREATE:
+	case proto.ActionType_ACTION_TYPE_CREATE:
 		result, err := Create(scope, inputs)
 		return result, nil, err
-	case proto.OperationType_OPERATION_TYPE_DELETE:
+	case proto.ActionType_ACTION_TYPE_DELETE:
 		result, err := Delete(scope, inputs)
 		return result, nil, err
-	case proto.OperationType_OPERATION_TYPE_LIST:
+	case proto.ActionType_ACTION_TYPE_LIST:
 		result, err := List(scope, inputs)
 		return result, nil, err
 	default:
-		return nil, nil, fmt.Errorf("unhandled auto operation type: %s", scope.Operation.Type.String())
+		return nil, nil, fmt.Errorf("unhandled auto action type: %s", scope.Action.Type.String())
 	}
 }

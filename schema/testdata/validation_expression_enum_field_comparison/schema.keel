@@ -4,7 +4,7 @@ model Post {
         differentType PostType
     }
 
-    operations {
+    actions {
         get getPost(id) {
             @permission(expression: post.type == post.differentType)
         }

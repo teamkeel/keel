@@ -1,5 +1,3 @@
-import { models, ListBooksByPublisherName } from "@teamkeel/sdk";
+import { ListBooksByPublisherName } from "@teamkeel/sdk";
 
-export default ListBooksByPublisherName(async (ctx, inputs) => {
-  return models.book.findMany(inputs);
-});
+export default ListBooksByPublisherName();

@@ -4,7 +4,7 @@ model Post {
         blog Blog?
     }
 
-    operations {
+    actions {
         create create() with (name, blog.name)
         create createDups() with (blog.name, blog.name)
 

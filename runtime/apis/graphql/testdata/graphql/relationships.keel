@@ -3,7 +3,7 @@ model Order {
         items OrderItem[]
     }
 
-    operations {
+    actions {
         get getOrder(id)
     }
 }
@@ -14,7 +14,7 @@ model OrderItem {
         price Number
     }
 
-    operations {
+    actions {
         list listOrderItems(order.id)
     }
 }

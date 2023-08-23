@@ -6,7 +6,7 @@ model Post {
         comments Comment[]
     }
 
-    operations {
+    actions {
         create createPostWithIdentity() with (title) {
             @set(post.identity = ctx.identity)
             @permission(expression: true)
@@ -41,7 +41,7 @@ model ChildPost {
         post Post
     }
 
-    operations {
+    actions {
         create createChild() with (post.id) {
             @permission(expression: childPost.post.identity == ctx.identity)
         }

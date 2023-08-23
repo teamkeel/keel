@@ -3,7 +3,7 @@ model Person {
         name Text
         age Number?
     }
-    operations {
+    actions {
         update updatePersonName(id) with (name)
         update otherUpdatePerson(personId: id) with (personName: name) {
             @where(person.id = personId)
@@ -25,7 +25,7 @@ model Person {
         age Number?
     }
 
-    operations {
+    actions {
         update updatePersonName(id) with (name)
         update otherUpdatePerson(personId: id) with (personName: name) {
             @where(person.id = personId)

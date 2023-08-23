@@ -5,7 +5,7 @@ model Person {
         occupation Occupation?
     }
 
-    operations {
+    actions {
         get getPerson(id)
         list listPeople(name, dateOfBirth, occupation)
         list listPeopleAllOptional(name?, dateOfBirth?, occupation?)

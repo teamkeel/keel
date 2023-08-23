@@ -33,7 +33,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						public Boolean
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -62,7 +62,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						public Boolean
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -91,7 +91,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						title Text
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -124,7 +124,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						viewCount Number
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -157,7 +157,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						identity Identity?
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -186,7 +186,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						identity Identity?
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -219,7 +219,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						visibility Visibility
 					}
-					operations {
+					actions {
 						get getProject(id)
 					}
 					@permission(
@@ -252,7 +252,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						secretKey Text
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -285,7 +285,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						secretKey Text
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -323,7 +323,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						author Author
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -366,7 +366,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						author Author
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -406,7 +406,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						accounts Account[]
 					}
-					operations {
+					actions {
 						get getProject(id)
 					}
 					@permission(
@@ -440,7 +440,7 @@ func TestToSQL(t *testing.T) {
 						identity Identity
 						public Boolean
 					}
-					operations {
+					actions {
 						get getProject(id)
 					}
 					@permission(
@@ -475,7 +475,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						publishDate Date
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -508,7 +508,7 @@ func TestToSQL(t *testing.T) {
 						identity Identity
 						publishDate Date
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -553,7 +553,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						account Account
 					}
-					operations {
+					actions {
 						get getPost(id)
 					}
 					@permission(
@@ -600,7 +600,7 @@ func TestToSQL(t *testing.T) {
 					fields {
 						inner Table
 					}
-					operations {
+					actions {
 						get getJoin(id)
 					}
 					@permission(
@@ -645,9 +645,9 @@ func TestToSQL(t *testing.T) {
 			require.NoError(t, err)
 
 			var model *proto.Model
-			var action *proto.Operation
+			var action *proto.Action
 			for _, m := range s.Models {
-				for _, a := range m.Operations {
+				for _, a := range m.Actions {
 					if a.Name == fixture.action {
 						action = a
 						model = m

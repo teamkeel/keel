@@ -25,7 +25,7 @@ model Person {
     name Text
   }
 
-  functions {
+  actions {
     write upload(UploadInput) returns(UploadOutput)
     read search(SearchInput) returns(SearchOutput)
   }

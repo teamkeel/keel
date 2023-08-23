@@ -16,8 +16,8 @@ type authorisationTestCase struct {
 	name string
 	// Valid keel schema for this test case
 	keelSchema string
-	// Operation name to run test upon
-	operationName string
+	// Action name to run test upon
+	actionName string
 	// Input map for operation
 	input map[string]any
 	// Expected SQL template generated (with ? placeholders for values)
@@ -58,13 +58,13 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					list listThings() {
 						@permission(expression: thing.createdBy == ctx.identity)
 					}
 				}
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing"."id"
@@ -87,13 +87,13 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					related Related
 				}
-				operations {
+				actions {
 					list listThings() {
 						@permission(expression: thing.related.createdBy == ctx.identity)
 					}
 				}
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing"."id"
@@ -116,13 +116,13 @@ var authorisationTestCases = []authorisationTestCase{
 					isActive Boolean
 					createdBy Identity
 				}
-				operations {
+				actions {
 					list listThings() {
 						@permission(expression: thing.isActive == true)
 					}
 				}
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing"."id"
@@ -146,13 +146,13 @@ var authorisationTestCases = []authorisationTestCase{
 					createdBy Identity
 					related Related
 				}
-				operations {
+				actions {
 					list listThings() {
 						@permission(expression: thing.related.createdBy == thing.createdBy)
 					}
 				}
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing"."id"
@@ -174,13 +174,13 @@ var authorisationTestCases = []authorisationTestCase{
 					isActive Boolean
 					createdBy Identity
 				}
-				operations {
+				actions {
 					list listThings() {
 						@permission(expression: thing.isActive == true and thing.createdBy == ctx.identity)
 					}
 				}
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing"."id"
@@ -199,13 +199,13 @@ var authorisationTestCases = []authorisationTestCase{
 					isActive Boolean
 					createdBy Identity
 				}
-				operations {
+				actions {
 					list listThings() {
 						@permission(expression: thing.isActive == true or thing.createdBy == ctx.identity)
 					}
 				}
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing"."id"
@@ -224,14 +224,14 @@ var authorisationTestCases = []authorisationTestCase{
 					isActive Boolean
 					createdBy Identity
 				}
-				operations {
+				actions {
 					list listThings() {
 						@permission(expression: thing.isActive == true)
 						@permission(expression: thing.createdBy == ctx.identity)
 					}
 				}
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing"."id"
@@ -258,14 +258,14 @@ var authorisationTestCases = []authorisationTestCase{
 					related Related
 					createdBy Identity
 				}
-				operations {
+				actions {
 					list listThings() {
 						@permission(expression: thing.isActive == true and thing.createdBy == ctx.identity)
 						@permission(expression: thing.createdBy == thing.related.createdBy)
 					}
 				}
 			}`,
-		operationName: "listThings",
+		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing"."id"
@@ -285,93 +285,93 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					create createThing() {
 						@set(thing.createdBy.id = ctx.identity.id)
 						@permission(expression: ctx.isAuthenticated)
 					}
 				}
 			}`,
-		operationName: "createThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "createThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_get_op",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: ctx.isAuthenticated)
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_update_op",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					update updateThing(id) {
 						@permission(expression: ctx.isAuthenticated)
 					}
 				}
 			}`,
-		operationName: "updateThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "updateThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_list_op",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					list listThing() {
 						@permission(expression: ctx.isAuthenticated)
 					}
 				}
 			}`,
-		operationName: "listThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "listThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_delete_op",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					delete deleteThing(id) {
 						@permission(expression: ctx.isAuthenticated)
 					}
 				}
 			}`,
-		operationName: "deleteThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "deleteThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_isauth_lhs",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					create createThing() {
 						@permission(expression: ctx.isAuthenticated == false)
 					}
 				}
 			}`,
-		operationName: "createThing",
-		earlyAuth:     AuthorisationDeniedEarly(),
+		actionName: "createThing",
+		earlyAuth:  AuthorisationDeniedEarly(),
 	},
 	{
 		name: "early_evaluate_isauth_rhs",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					create createThing() {
 						@permission(expression: false == ctx.isAuthenticated)
 					}
 				}
 			}`,
-		operationName: "createThing",
-		earlyAuth:     AuthorisationDeniedEarly(),
+		actionName: "createThing",
+		earlyAuth:  AuthorisationDeniedEarly(),
 	},
 	{
 		name: "cannot_early_evaluate_multiple_conditions_and_with_database",
@@ -380,15 +380,15 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: ctx.isAuthenticated and thing.createdBy.id == ctx.identity.id)
 					}
 				}
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     CouldNotAuthoriseEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  CouldNotAuthoriseEarly(),
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing"."id"
@@ -408,14 +408,14 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: ctx.isAuthenticated or thing.createdBy.id == ctx.identity.id)
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_multiple_attributes_with_database",
@@ -424,68 +424,68 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: ctx.isAuthenticated)
 						@permission(expression: thing.createdBy.id == ctx.identity.id)
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_multiple_attributes_authorised",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: ctx.isAuthenticated)
 						@permission(expression: ctx.isAuthenticated == false)
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_multiple_and_conditions_authorised",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: ctx.isAuthenticated and ctx.isAuthenticated)
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_multiple_or_conditions_authorised",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: ctx.isAuthenticated or ctx.isAuthenticated)
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_multiple_and_conditions_not_authorised",
 		keelSchema: `
 			model Thing {
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: ctx.isAuthenticated and false)
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationDeniedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationDeniedEarly(),
 	},
 	{
 		name: "early_evaluate_roles_domain_authorised",
@@ -496,14 +496,14 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}
 			model Thing {
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(roles: [Admin])
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_roles_domain_not_authorised",
@@ -514,14 +514,14 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}
 			model Thing {
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(roles: [Admin])
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationDeniedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationDeniedEarly(),
 	},
 	{
 		name: "early_evaluate_roles_email_authorised",
@@ -532,14 +532,14 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}
 			model Thing {
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(roles: [Admin])
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_roles_email_not_authorised",
@@ -550,14 +550,14 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}
 			model Thing {
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(roles: [Admin])
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationDeniedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationDeniedEarly(),
 	},
 	{
 		name: "early_evaluate_passed_role_and_failed_permissions_authorised",
@@ -568,15 +568,15 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}
 			model Thing {
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: false)
 						@permission(roles: [Admin])
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "early_evaluate_failed_role_and_passed_permissions_authorised",
@@ -587,15 +587,15 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}
 			model Thing {
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: true)
 						@permission(roles: [Admin])
 					}
 				}
 			}`,
-		operationName: "getThing",
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "cannot_early_evaluate_failed_role_and_failed_permissions_and_database",
@@ -609,7 +609,7 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: false)
 						@permission(roles: [Admin])
@@ -617,9 +617,9 @@ var authorisationTestCases = []authorisationTestCase{
 					}
 				}
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     CouldNotAuthoriseEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "cannot_early_evaluate_failed_role_and_failed_permissions_and_database_2",
@@ -633,7 +633,7 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: false)
 						@permission(expression: thing.createdBy.id == ctx.identity.id)
@@ -641,9 +641,9 @@ var authorisationTestCases = []authorisationTestCase{
 					}
 				}
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     CouldNotAuthoriseEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "cannot_early_evaluate_failed_role_and_failed_permissions_and_database_3",
@@ -657,7 +657,7 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: false)
 						@permission(roles: [Admin])
@@ -665,9 +665,9 @@ var authorisationTestCases = []authorisationTestCase{
 					}
 				}
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     CouldNotAuthoriseEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "can_early_evaluate_mixed_permissions_authorised",
@@ -681,7 +681,7 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: false)
 						@permission(roles: [Admin])
@@ -689,9 +689,9 @@ var authorisationTestCases = []authorisationTestCase{
 					}
 				}
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "can_early_evaluate_mixed_permissions_authorised_2",
@@ -705,7 +705,7 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: false)
 						@permission(expression: thing.createdBy.id == ctx.identity.id)
@@ -714,9 +714,9 @@ var authorisationTestCases = []authorisationTestCase{
 					}
 				}
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "can_early_evaluate_mixed_permissions_authorised_3",
@@ -730,7 +730,7 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(roles: [Admin])
 						@permission(expression: false)
@@ -738,9 +738,9 @@ var authorisationTestCases = []authorisationTestCase{
 					}
 				}
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "can_early_evaluate_mixed_permissions_authorised_4",
@@ -754,7 +754,7 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: thing.createdBy.id == ctx.identity.id)
 						@permission(expression: false)
@@ -762,9 +762,9 @@ var authorisationTestCases = []authorisationTestCase{
 					}
 				}
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "cannot_early_evaluate_op_level_permissions",
@@ -778,16 +778,16 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: thing.createdBy.id == ctx.identity.id)
 					}
 				}
 				@permission(expression: true, actions: [get])
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     CouldNotAuthoriseEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "can_early_evaluate_op_level_permissions_granted",
@@ -801,16 +801,16 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: true)
 					}
 				}
 				@permission(expression: thing.createdBy.id == ctx.identity.id, actions: [get])
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     AuthorisationGrantedEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  AuthorisationGrantedEarly(),
 	},
 	{
 		name: "can_early_evaluate_op_level_permissions_denied",
@@ -824,16 +824,16 @@ var authorisationTestCases = []authorisationTestCase{
 				fields {
 					createdBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id) {
 						@permission(expression: false)
 					}
 				}
 				@permission(expression: thing.createdBy.id == ctx.identity.id, actions: [get])
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     AuthorisationDeniedEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  AuthorisationDeniedEarly(),
 	},
 	{
 		name: "multiple_model_level_permissions_ored",
@@ -843,15 +843,15 @@ var authorisationTestCases = []authorisationTestCase{
 					createdBy Identity
 					updatedBy Identity
 				}
-				operations {
+				actions {
 					get getThing(id)
 				}
 				@permission(expression: thing.createdBy.id == ctx.identity.id, actions: [get])
 				@permission(expression: thing.updatedBy.id == ctx.identity.id, actions: [get])
 			}`,
-		operationName: "getThing",
-		input:         map[string]any{"id": "123"},
-		earlyAuth:     CouldNotAuthoriseEarly(),
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		earlyAuth:  CouldNotAuthoriseEarly(),
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing"."id" 
@@ -875,7 +875,7 @@ var authorisationTestCases = []authorisationTestCase{
 					organisations UserOrganisation[]
 				}
 			
-				operations {
+				actions {
 					list listUsersByOrganisation(organisations.organisation.id) {
 						@permission(expression: ctx.identity in user.organisations.organisation.users.user.identity)
 					}
@@ -892,7 +892,7 @@ var authorisationTestCases = []authorisationTestCase{
 					organisation Organisation
 				}
 			}`,
-		operationName: "listUsersByOrganisation",
+		actionName: "listUsersByOrganisation",
 		input: map[string]any{
 			"organisations": map[string]any{
 				"organisation": map[string]any{
@@ -926,12 +926,12 @@ func TestPermissionQueryBuilder(t *testing.T) {
 			ctx := context.Background()
 			ctx = runtimectx.WithIdentity(ctx, identity)
 
-			scope, _, _, err := generateQueryScope(ctx, testCase.keelSchema, testCase.operationName)
+			scope, _, _, err := generateQueryScope(ctx, testCase.keelSchema, testCase.actionName)
 			if err != nil {
 				require.NoError(t, err)
 			}
 
-			permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
+			permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
 			canResolveEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, permissions)
 			if err != nil {
@@ -946,7 +946,7 @@ func TestPermissionQueryBuilder(t *testing.T) {
 			}
 
 			if !canResolveEarly {
-				permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
+				permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
 				statement, err := actions.GeneratePermissionStatement(scope, permissions, testCase.input)
 				if err != nil {

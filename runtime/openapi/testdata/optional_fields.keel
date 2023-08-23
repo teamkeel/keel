@@ -11,7 +11,7 @@ model Customer {
         address Address?
     }
 
-    operations {
+    actions {
         get getCustomer(id)
         create createCustomer() with (
             name,

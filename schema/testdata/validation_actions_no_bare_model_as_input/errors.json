@@ -6,13 +6,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 111,
+        "offset": 108,
         "line": 7,
         "column": 36
       },
       "endPos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 117,
+        "offset": 114,
         "line": 7,
         "column": 42
       }
@@ -23,13 +23,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 156,
+        "offset": 153,
         "line": 8,
         "column": 38
       },
       "endPos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 162,
+        "offset": 159,
         "line": 8,
         "column": 44
       }
@@ -40,13 +40,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 187,
+        "offset": 184,
         "line": 9,
         "column": 24
       },
       "endPos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 193,
+        "offset": 190,
         "line": 9,
         "column": 30
       }
@@ -57,13 +57,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 261,
+        "offset": 256,
         "line": 13,
         "column": 44
       },
       "endPos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 267,
+        "offset": 262,
         "line": 13,
         "column": 50
       }
@@ -74,13 +74,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 314,
+        "offset": 309,
         "line": 14,
         "column": 46
       },
       "endPos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 320,
+        "offset": 315,
         "line": 14,
         "column": 52
       }
@@ -91,13 +91,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 353,
+        "offset": 348,
         "line": 15,
         "column": 32
       },
       "endPos": {
         "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
-        "offset": 359,
+        "offset": 354,
         "line": 15,
         "column": 38
       }

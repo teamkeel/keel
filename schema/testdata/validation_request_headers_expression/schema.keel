@@ -3,7 +3,7 @@ model ApiKey {
         key Text
     }
 
-    operations {
+    actions {
         create createApiKey() {
             @set(apiKey.key = ctx.headers.X_API_TOKEN)
         }

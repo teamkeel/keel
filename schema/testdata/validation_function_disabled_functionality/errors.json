@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "message": "@where attributes are not supported when using the @function attribute",
+      "hint": "Remove @where if you would like to continue writing the function yourself.",
+      "code": "AttributeNotAllowedError",
+      "pos": {
+        "filename": "testdata/validation_function_disabled_functionality/schema.keel",
+        "offset": 172,
+        "line": 16,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_function_disabled_functionality/schema.keel",
+        "offset": 195,
+        "line": 16,
+        "column": 30
+      }
+    },
+    {
+      "message": "@set attributes are not supported when using the @function attribute",
+      "hint": "Remove @set if you would like to continue writing the function yourself.",
+      "code": "AttributeNotAllowedError",
+      "pos": {
+        "filename": "testdata/validation_function_disabled_functionality/schema.keel",
+        "offset": 279,
+        "line": 21,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_function_disabled_functionality/schema.keel",
+        "offset": 299,
+        "line": 21,
+        "column": 27
+      }
+    }
+  ]
+}

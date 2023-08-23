@@ -5,9 +5,9 @@ model Beatle {
         code Text @unique
     }
 
-    // This is testing that operations with no inputs
+    // This is testing that actions with no inputs
     // are handled correctly
-    operations {
+    actions {
         get getBeatle() {
             @where(beatle.name == "John Lennon")
         }

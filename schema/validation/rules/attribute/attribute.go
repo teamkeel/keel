@@ -22,15 +22,9 @@ func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, "model", model.Name.Value))
 			}
 
-			if section.Operations != nil {
-				for _, op := range section.Operations {
-					errs.Concat(checkAttributes(op.Attributes, "operation", op.Name.Value))
-				}
-			}
-
-			if section.Functions != nil {
-				for _, function := range section.Functions {
-					errs.Concat(checkAttributes(function.Attributes, "function", function.Name.Value))
+			if section.Actions != nil {
+				for _, function := range section.Actions {
+					errs.Concat(checkAttributes(function.Attributes, parser.KeywordActions, function.Name.Value))
 				}
 			}
 
@@ -73,16 +67,14 @@ var attributeLocations = map[string][]string{
 		parser.AttributePrimaryKey,
 		parser.AttributeRelation,
 	},
-	parser.KeywordOperation: {
+	parser.KeywordActions: {
 		parser.AttributeSet,
 		parser.AttributeWhere,
 		parser.AttributePermission,
 		parser.AttributeValidate,
 		parser.AttributeOrderBy,
 		parser.AttributeSortable,
-	},
-	parser.KeywordFunction: {
-		parser.AttributePermission,
+		parser.AttributeFunction,
 	},
 	parser.KeywordJob: {
 		parser.AttributePermission,

@@ -3,9 +3,10 @@ model Post {
         title Text
     }
 
-    functions {
+    actions {
         get getPostButOnlyIfItsAfter2020(id) {
             @permission(expression: true)
+            @function
         }
     }
 }

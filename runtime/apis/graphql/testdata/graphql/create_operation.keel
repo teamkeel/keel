@@ -4,7 +4,7 @@ model Person {
         company Company
     }
 
-    operations {
+    actions {
         create createPerson() with (name, company.id)
         create createPersonAndCompany() with (name, company.name)
     }

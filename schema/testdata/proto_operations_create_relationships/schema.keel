@@ -4,7 +4,7 @@ model Sale {
         items SaleItem[]
     }
 
-    operations {
+    actions {
         // Create a sale with existing sale items
         create createSale() with (date, items.id)
         // Create a sale existing products
@@ -21,7 +21,7 @@ model SaleItem {
         quantity Number
     }
 
-    operations {
+    actions {
         create createSaleItem() with (sale.id, product.id, quantity)
 
         // TODO: https://linear.app/keel/issue/BLD-343/validation-for-creating-relationship-on-m1

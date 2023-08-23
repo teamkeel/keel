@@ -6,47 +6,47 @@
       "code": "E034",
       "pos": {
         "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 78,
+        "offset": 75,
         "line": 7,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 123,
+        "offset": 120,
         "line": 7,
         "column": 54
       }
     },
     {
-      "message": "personName is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
+      "message": "personName is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute",
       "hint": "",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 106,
+        "offset": 103,
         "line": 7,
         "column": 37
       },
       "endPos": {
         "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 116,
+        "offset": 113,
         "line": 7,
         "column": 47
       }
     },
     {
-      "message": "personName is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
+      "message": "personName is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute",
       "hint": "",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 162,
+        "offset": 159,
         "line": 8,
         "column": 39
       },
       "endPos": {
         "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 172,
+        "offset": 169,
         "line": 8,
         "column": 49
       }

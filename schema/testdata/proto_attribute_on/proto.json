@@ -181,28 +181,28 @@
           }
         }
       ],
-      "operations": [
+      "actions": [
         {
           "modelName": "Identity",
           "name": "authenticate",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "RequestPasswordResetInput",
           "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "ResetPasswordInput",
           "responseMessageName": "ResetPasswordResponse"
         }
@@ -687,27 +687,27 @@
     {
       "name": "member.create",
       "modelName": "Member",
-      "operationType": "OPERATION_TYPE_CREATE"
+      "actionType": "ACTION_TYPE_CREATE"
     },
     {
       "name": "member.update",
       "modelName": "Member",
-      "operationType": "OPERATION_TYPE_UPDATE"
+      "actionType": "ACTION_TYPE_UPDATE"
     },
     {
       "name": "member.delete",
       "modelName": "Member",
-      "operationType": "OPERATION_TYPE_DELETE"
+      "actionType": "ACTION_TYPE_DELETE"
     },
     {
       "name": "employee.create",
       "modelName": "Employee",
-      "operationType": "OPERATION_TYPE_CREATE"
+      "actionType": "ACTION_TYPE_CREATE"
     },
     {
       "name": "employee.update",
       "modelName": "Employee",
-      "operationType": "OPERATION_TYPE_UPDATE"
+      "actionType": "ACTION_TYPE_UPDATE"
     }
   ]
 }

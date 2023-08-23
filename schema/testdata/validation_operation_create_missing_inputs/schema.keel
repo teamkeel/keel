@@ -3,7 +3,7 @@ model Person {
         name Text
         age Number
     }
-    operations {
+    actions {
         create createPerson() with (name)
     }
 }

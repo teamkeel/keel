@@ -8,7 +8,7 @@ model Person {
         name Text
     }
 
-    functions {
+    actions {
         write writePerson(TheMessage) returns (TheMessage)
     }
 }

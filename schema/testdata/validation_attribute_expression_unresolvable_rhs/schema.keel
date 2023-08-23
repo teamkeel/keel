@@ -4,7 +4,7 @@ model Post {
         title Text
     }
 
-    operations {
+    actions {
         update updatePost(id) with (title) {
             @set(post.title = title)
         }

@@ -1,8 +1,10 @@
-import { CreatePermittedFn, models } from "@teamkeel/sdk";
+import { CreatePermittedFn } from "@teamkeel/sdk";
 
-export default CreatePermittedFn(async (ctx, inputs) => {
-  return await models.book.create({
-    title: inputs.title,
-    lastUpdatedById: inputs.lastUpdatedBy!.id!,
-  });
+export default CreatePermittedFn({
+  beforeWrite: async (ctx, inputs) => {
+    return {
+      title: inputs.title,
+      lastUpdatedById: inputs.lastUpdatedBy!.id!,
+    };
+  },
 });

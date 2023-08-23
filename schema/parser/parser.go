@@ -7,6 +7,7 @@ import (
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/reader"
@@ -42,10 +43,9 @@ type ModelNode struct {
 type ModelSectionNode struct {
 	node.Node
 
-	Fields     []*FieldNode   `( "fields" "{" @@* "}"`
-	Functions  []*ActionNode  `| "functions" "{" @@* "}"`
-	Operations []*ActionNode  `| "operations" "{" @@* "}"`
-	Attribute  *AttributeNode `| @@)`
+	Fields    []*FieldNode   `( "fields" "{" @@* "}"`
+	Actions   []*ActionNode  `| "actions" "{" @@* "}"`
+	Attribute *AttributeNode `| @@)`
 }
 
 type NameNode struct {
@@ -190,11 +190,20 @@ type ActionNode struct {
 	Inputs     []*ActionInputNode `"(" ( @@ ( "," @@ )* ","? )? ")"`
 	With       []*ActionInputNode `( ( "with" "(" ( @@ ( "," @@ )* ","? ) ")" )`
 	Returns    []*ActionInputNode `| ( "returns" "(" ( @@ ( "," @@ )* ) ")" ) )?`
-	Attributes []*AttributeNode   `( "{" @@+ "}" )?`
+	Attributes []*AttributeNode   `( "{" @@+ "}" | @@+ )?`
 }
 
 func (a *ActionNode) IsArbitraryFunction() bool {
-	return len(a.Returns) > 0 && (a.Type.Value == ActionTypeRead || a.Type.Value == ActionTypeWrite)
+	return a.IsFunction() && (a.Type.Value == ActionTypeRead || a.Type.Value == ActionTypeWrite)
+}
+
+func (a *ActionNode) IsFunction() bool {
+	if a.Type.Value == ActionTypeRead || a.Type.Value == ActionTypeWrite {
+		return true
+	}
+	return lo.ContainsBy(a.Attributes, func(a *AttributeNode) bool {
+		return a.Name.Value == AttributeFunction
+	})
 }
 
 type ActionInputNode struct {

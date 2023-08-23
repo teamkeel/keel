@@ -5,7 +5,7 @@ message Out {
 }
 
 model Post {
-  functions {
+  actions {
     read noInput() returns(Out)
     read emptyInput(In) returns(Out)
     write noInputWrite() returns(Out)

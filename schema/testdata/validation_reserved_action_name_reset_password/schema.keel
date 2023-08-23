@@ -3,7 +3,7 @@ model User {
         email Text
     }
 
-    operations {
+    actions {
         create resetPassword() with (email)
     }
 }

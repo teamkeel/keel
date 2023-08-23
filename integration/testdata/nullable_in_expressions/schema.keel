@@ -4,7 +4,7 @@ model Person {
         status Status? @default(Status.Fired)
     }
 
-    operations {
+    actions {
         create createPersonWithDefaults()
 
         create createPerson() {

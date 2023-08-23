@@ -5,7 +5,7 @@ model Person {
         previousCompany Company?
     }
 
-    operations {
+    actions {
         list listByCompany(company.name, company.tradingAs)
         list listByPreviousCompany(previousCompany.name, previousCompany.tradingAs)
         list listByCompanyOptionalInputs(company.name?, company.tradingAs?)

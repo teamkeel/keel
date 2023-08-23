@@ -6,7 +6,7 @@ model ChildModel {
         parentOptional ParentModel?
     }
 
-    operations {
+    actions {
         update updateChild1(id) with (isActive, parent.id)
 
         update updateChild2(id) with (isActive, parentId)

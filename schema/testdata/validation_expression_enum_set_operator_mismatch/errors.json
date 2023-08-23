@@ -6,13 +6,13 @@
       "code": "E026",
       "pos": {
         "filename": "testdata/validation_expression_enum_set_operator_mismatch/schema.keel",
-        "offset": 104,
+        "offset": 101,
         "line": 8,
         "column": 12
       },
       "endPos": {
         "filename": "testdata/validation_expression_enum_set_operator_mismatch/schema.keel",
-        "offset": 143,
+        "offset": 140,
         "line": 8,
         "column": 51
       }

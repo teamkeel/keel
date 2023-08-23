@@ -12,7 +12,7 @@ model Post {
         isActive Boolean @default(true)
     }
 
-    operations {
+    actions {
         create createWithText() with (title, isActive?)
         create createWithNumber() with (views, isActive?)
         create createWithBoolean() with (active, isActive?)

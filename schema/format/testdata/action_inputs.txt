@@ -4,7 +4,7 @@ model Order {
         promoCode Text
         externalId ID
     }
-    operations {
+    actions {
         list listOrders(items.price, code:     Text) {
             @where(order.promoCode == code)
         }
@@ -31,7 +31,7 @@ model Order {
         externalId ID
     }
 
-    operations {
+    actions {
         list listOrders(items.price, code: Text) {
             @where(order.promoCode == code)
         }

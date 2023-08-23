@@ -6,30 +6,30 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 89,
+        "offset": 86,
         "line": 7,
         "column": 25
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 99,
+        "offset": 96,
         "line": 7,
         "column": 35
       }
     },
     {
-      "message": "name is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
+      "message": "name is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute",
       "hint": "",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 89,
+        "offset": 86,
         "line": 7,
         "column": 25
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 93,
+        "offset": 90,
         "line": 7,
         "column": 29
       }
@@ -40,30 +40,30 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 145,
+        "offset": 142,
         "line": 8,
         "column": 45
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 160,
+        "offset": 157,
         "line": 8,
         "column": 60
       }
     },
     {
-      "message": "something is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
+      "message": "something is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute",
       "hint": "",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 145,
+        "offset": 142,
         "line": 8,
         "column": 45
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 154,
+        "offset": 151,
         "line": 8,
         "column": 54
       }
@@ -74,15 +74,32 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 211,
+        "offset": 206,
         "line": 12,
         "column": 27
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 221,
+        "offset": 216,
         "line": 12,
         "column": 37
+      }
+    },
+    {
+      "message": "name is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute",
+      "hint": "",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 206,
+        "line": 12,
+        "column": 27
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 210,
+        "line": 12,
+        "column": 31
       }
     },
     {
@@ -91,15 +108,32 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 269,
+        "offset": 264,
         "line": 13,
         "column": 47
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 284,
+        "offset": 279,
         "line": 13,
         "column": 62
+      }
+    },
+    {
+      "message": "something is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute",
+      "hint": "",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 264,
+        "line": 13,
+        "column": 47
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 273,
+        "line": 13,
+        "column": 56
       }
     }
   ]

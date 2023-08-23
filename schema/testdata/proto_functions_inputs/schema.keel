@@ -3,10 +3,10 @@ model Foo {
         bar Text
     }
 
-    functions {
-        list operationA()
-        create operationB() with (bar)
-        create operationC() with (bar, baz: Text)
-        create operationD() with (baz: Text)
+    actions {
+        list operationA() @function
+        create operationB() with (bar) @function
+        create operationC() with (bar, baz: Text) @function
+        create operationD() with (baz: Text) @function
     }
 }

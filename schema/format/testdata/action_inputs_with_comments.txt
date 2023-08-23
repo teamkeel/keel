@@ -1,5 +1,5 @@
 model Order {
-    operations {
+    actions {
         // Description of listOrders
         list listOrders(
             // Filter by price
@@ -13,7 +13,7 @@ model Order {
 ===
 
 model Order {
-    operations {
+    actions {
         // Description of listOrders
         list listOrders(
             // Filter by price

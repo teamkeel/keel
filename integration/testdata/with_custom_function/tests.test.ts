@@ -73,7 +73,7 @@ test("fetching person by additional unique field (not PK)", async () => {
   expect(person.id).toEqual(fetchedPerson!.id);
 });
 
-test("listing", async () => {
+test("listing with constraints", async () => {
   await models.person.create({ name: "fred", gender: "male", niNumber: "000" });
   const x11 = await models.person.create({
     name: "X11",

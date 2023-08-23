@@ -6,13 +6,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_create_missing_identity/schema.keel",
-        "offset": 109,
+        "offset": 106,
         "line": 8,
         "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_create_missing_identity/schema.keel",
-        "offset": 119,
+        "offset": 116,
         "line": 8,
         "column": 26
       }

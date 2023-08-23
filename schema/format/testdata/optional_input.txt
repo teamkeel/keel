@@ -2,7 +2,7 @@ model Person {
     fields {
         name Text?
     }
-    operations {
+    actions {
         create createPerson() with (name?)
     }
 }
@@ -14,7 +14,7 @@ model Person {
         name Text?
     }
 
-    operations {
+    actions {
         create createPerson() with (name?)
     }
 }

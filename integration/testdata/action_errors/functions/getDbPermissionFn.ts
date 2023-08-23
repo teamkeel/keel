@@ -1,6 +1,3 @@
-import { GetDbPermissionFn, models } from "@teamkeel/sdk";
+import { GetDbPermissionFn } from "@teamkeel/sdk";
 
-export default GetDbPermissionFn(async (ctx, inputs) => {
-  const book = await models.book.findOne(inputs);
-  return book;
-});
+export default GetDbPermissionFn();

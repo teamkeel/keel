@@ -3,7 +3,7 @@ model MyModel {
         nonUnique Text
     }
 
-    operations {
+    actions {
         update updateMyModel() {
             @where(myModel.nonUnique == "something")
         }

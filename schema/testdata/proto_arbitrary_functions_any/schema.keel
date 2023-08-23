@@ -1,5 +1,5 @@
 model Person {
-  functions {
+  actions {
     read getPerson(Any) returns(Any)
     write updatePerson(Any) returns(Any)
   }

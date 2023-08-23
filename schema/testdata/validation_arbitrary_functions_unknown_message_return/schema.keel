@@ -1,5 +1,7 @@
 model Person {
-    functions {
-        write createBulkPeople(Any) returns (UnknownMessage)
+    actions {
+        write createBulkPeople(Any) returns (UnknownMessage) {
+            @function
+        }
     }
 }

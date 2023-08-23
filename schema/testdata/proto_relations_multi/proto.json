@@ -184,28 +184,28 @@
           }
         }
       ],
-      "operations": [
+      "actions": [
         {
           "modelName": "Identity",
           "name": "authenticate",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "RequestPasswordResetInput",
           "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "ResetPasswordInput",
           "responseMessageName": "ResetPasswordResponse"
         }

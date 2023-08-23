@@ -23,13 +23,13 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_field_required_of_same_message_type/schema.keel",
-        "offset": 130,
+        "offset": 128,
         "line": 12,
         "column": 7
       },
       "endPos": {
         "filename": "testdata/validation_field_required_of_same_message_type/schema.keel",
-        "offset": 143,
+        "offset": 141,
         "line": 12,
         "column": 20
       }

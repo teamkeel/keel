@@ -6,13 +6,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 313,
+        "offset": 308,
         "line": 21,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 329,
+        "offset": 324,
         "line": 21,
         "column": 22
       }
@@ -23,13 +23,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 340,
+        "offset": 335,
         "line": 24,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 354,
+        "offset": 349,
         "line": 24,
         "column": 20
       }
@@ -40,13 +40,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 365,
+        "offset": 360,
         "line": 27,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 384,
+        "offset": 379,
         "line": 27,
         "column": 25
       }
@@ -57,13 +57,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 395,
+        "offset": 390,
         "line": 30,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 408,
+        "offset": 403,
         "line": 30,
         "column": 19
       }
@@ -74,13 +74,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 419,
+        "offset": 414,
         "line": 33,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 435,
+        "offset": 430,
         "line": 33,
         "column": 22
       }
@@ -91,13 +91,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 446,
+        "offset": 441,
         "line": 36,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 463,
+        "offset": 458,
         "line": 36,
         "column": 23
       }
@@ -108,13 +108,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 474,
+        "offset": 469,
         "line": 39,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 494,
+        "offset": 489,
         "line": 39,
         "column": 26
       }
@@ -125,13 +125,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 505,
+        "offset": 500,
         "line": 42,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 525,
+        "offset": 520,
         "line": 42,
         "column": 26
       }
@@ -142,13 +142,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 536,
+        "offset": 531,
         "line": 45,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 559,
+        "offset": 554,
         "line": 45,
         "column": 29
       }
@@ -159,13 +159,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 570,
+        "offset": 565,
         "line": 48,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 595,
+        "offset": 590,
         "line": 48,
         "column": 31
       }
@@ -176,13 +176,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 606,
+        "offset": 601,
         "line": 51,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 634,
+        "offset": 629,
         "line": 51,
         "column": 34
       }
@@ -193,13 +193,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 645,
+        "offset": 640,
         "line": 54,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 653,
+        "offset": 648,
         "line": 54,
         "column": 14
       }
@@ -210,13 +210,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 664,
+        "offset": 659,
         "line": 57,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 670,
+        "offset": 665,
         "line": 57,
         "column": 12
       }
@@ -227,13 +227,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 681,
+        "offset": 676,
         "line": 60,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 687,
+        "offset": 682,
         "line": 60,
         "column": 12
       }
@@ -244,13 +244,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 698,
+        "offset": 693,
         "line": 63,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 705,
+        "offset": 700,
         "line": 63,
         "column": 13
       }
@@ -261,13 +261,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 753,
+        "offset": 748,
         "line": 72,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 758,
+        "offset": 753,
         "line": 72,
         "column": 11
       }
@@ -278,13 +278,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 769,
+        "offset": 764,
         "line": 75,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 775,
+        "offset": 770,
         "line": 75,
         "column": 12
       }
@@ -295,13 +295,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 786,
+        "offset": 781,
         "line": 78,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 791,
+        "offset": 786,
         "line": 78,
         "column": 11
       }
@@ -312,13 +312,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 802,
+        "offset": 797,
         "line": 81,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 810,
+        "offset": 805,
         "line": 81,
         "column": 14
       }
@@ -329,13 +329,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 821,
+        "offset": 816,
         "line": 84,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 826,
+        "offset": 821,
         "line": 84,
         "column": 11
       }
@@ -346,13 +346,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 837,
+        "offset": 832,
         "line": 87,
         "column": 6
       },
       "endPos": {
         "filename": "testdata/validation_name_clashes_enum/schema.keel",
-        "offset": 849,
+        "offset": 844,
         "line": 87,
         "column": 18
       }
