@@ -456,3 +456,32 @@ func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, header
 
 	return identity, nil
 }
+
+func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) (*runtimectx.Identity, error) {
+	subject, issuer, err := ValidateBearerToken(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check that identity actually does exist as it could
+	// have been deleted after the bearer token was generated.
+	var identity *runtimectx.Identity
+	if issuer == "keel" || issuer == "" {
+		identity, err = FindIdentityById(ctx, schema, subject)
+	} else {
+		identity, err = FindIdentityByExternalId(ctx, schema, subject, issuer)
+		if identity == nil {
+			identity, err = CreateExternalIdentity(ctx, schema, subject, issuer, token)
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if identity == nil {
+		return nil, ErrIdentityNotFound
+	}
+
+	return identity, nil
+}
