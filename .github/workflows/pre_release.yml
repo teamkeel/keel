@@ -47,7 +47,7 @@ jobs:
     with:
       version: ${{ needs.setup.outputs.version }}
       publishTag: "next"
-      dryRun: false
+      dryRun: true
     secrets: inherit
 
   github_release:
@@ -57,7 +57,8 @@ jobs:
       branch: main
       version: ${{ needs.setup.outputs.version }}
       preRelease: true
-      draft: false
+      draft: true
       makeLatest: false
       generateChangelog: true
+      publishEvent: ${{ github.event_name != 'workflow_dispatch' }}
     secrets: inherit

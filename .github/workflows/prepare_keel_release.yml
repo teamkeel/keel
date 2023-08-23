@@ -78,7 +78,7 @@ jobs:
     with:
       version: ${{ needs.create_branch.outputs.version }}
       publishTag: rc-next
-      dryRun: false
+      dryRun: true
     secrets: inherit
 
   github_release:

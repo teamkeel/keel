@@ -31,6 +31,10 @@ on:
         required: false
         type: string
         default: ""
+      publishEvent:
+        required: false
+        type: boolean
+        default: false
       eventBranch:
         required: false
         type: string
@@ -105,7 +109,7 @@ jobs:
           file_pattern: CHANGELOG.md
 
       - name: Fire Release Event with Changelog
-        if: ${{ inputs.generateChangelog }}
+        if: ${{ inputs.publishEvent && inputs.generateChangelog }}
         id: release_event_changelog
         uses: peter-evans/repository-dispatch@v2.1.1
         with:
@@ -115,7 +119,7 @@ jobs:
           client-payload: '{"version": "${{ inputs.version }}", "changelog": "${{ steps.changelog.outputs.changelog }}", baseBranch: "${{ inputs.eventBranch }}"}'
 
       - name: Fire Release Event
-        if: ${{ inputs.generateChangelog  ==  false }}
+        if: ${{ inputs.publishEvent && inputs.generateChangelog  ==  false }}
         id: release_event
         uses: peter-evans/repository-dispatch@v2.1.1
         with:

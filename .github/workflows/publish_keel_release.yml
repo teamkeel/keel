@@ -32,7 +32,7 @@ jobs:
     with:
       version: ${{ inputs.version }}
       publishTag: latest
-      dryRun: false
+      dryRun: true
     secrets: inherit
 
   github_release:
@@ -46,8 +46,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: "v${{ inputs.version }}"
-          draft: false
-          makeLatest: true
+          draft: true
+          makeLatest: false
           prerelease: false
           allowUpdates: true
           updateOnlyUnreleased: true
