@@ -1,14 +1,28 @@
 name: Prepare Keel Release
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
-      ref:
-        description: "Ref of where the release should be marked"
+      backendBranch:
+        description: "The backend branch that triggered this release"
         required: true
         type: string
-      version:
-        description: "Release Version"
+      preReleaseVersion:
+        description: "Pre Release Version to release"
+        required: true
+        type: string
+      releaseNotesUrl:
+        description: "URL to release notes for version"
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      backendBranch:
+        description: "The backend branch that triggered this release"
+        required: true
+        type: string
+      preReleaseVersion:
+        description: "Pre Release Version to release"
         required: true
         type: string
       releaseNotesUrl:
@@ -25,45 +39,58 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: teamkeel/keel
-          ref: ${{ inputs.ref }}
+          ref: "v${{ inputs.preReleaseVersion }}"
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
+
+      # generate a new version number based on semantic versioning
+      - name: Generate version
+        id: generate-version
+        uses: paulhatch/semantic-version@v5.0.3
+        with:
+          tag_prefix: "v"
+          major_pattern: "[A-Za-z]+.*!:"
+          major_regexp_flags: "g"
+          minor_pattern: "^(feat|fix)(\\(.*\\))?: .*$"
+          version_format: "${major}.${minor}.${patch}"
 
       - name: Create new release branch
         uses: peterjgrainger/action-create-branch@v2.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          branch: "refs/heads/release/v${{ inputs.version }}"
+          branch: "refs/heads/release/${{ steps.generate-version.outputs.version }}"
           sha: ${{ github.sha }}
 
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           repository: teamkeel/keel
-          ref: release/v${{ inputs.version }}
+          ref: release/${{ steps.generate-version.outputs.version }}
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
+    outputs:
+      version: ${{ steps.generate-version.outputs.version }}
 
   npm_release:
     uses: ./.github/workflows/npm_release.yml
+    needs: [create_branch]
     with:
-      version: ${{ inputs.version }}
+      version: ${{ needs.create_branch.outputs.version }}
       publishTag: rc-next
       dryRun: false
     secrets: inherit
 
   github_release:
-    needs: [npm_release]
+    needs: [create_branch, npm_release]
     uses: ./.github/workflows/github_release.yml
     with:
-      version: ${{ inputs.version }}
-      preRelease: true
+      version: ${{ needs.create_branch.outputs.version }}
+      preRelease: false
       draft: true
       makeLatest: false
       generateChangelog: false
-      releaseEvent: "new-release"
-      branch: ${{ inputs.ref }}
-      commit: "release/v${{ inputs.version }}"
+      branch: "release/v${{ needs.create_branch.outputs.version }}"
       releaseNotesURL: ${{ inputs.releaseNotesUrl }}
+      eventBranch: ${{ inputs.backendBranch }}
     secrets: inherit

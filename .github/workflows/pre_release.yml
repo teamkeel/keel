@@ -60,5 +60,4 @@ jobs:
       draft: false
       makeLatest: false
       generateChangelog: true
-      releaseEvent: "new-runtime-pre-release"
     secrets: inherit
