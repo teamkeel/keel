@@ -100,7 +100,7 @@ jobs:
         if: ${{ inputs.generateChangelog }}
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          branch: main
+          branch: ${{ inputs.branch }}
           commit_message: "docs: update CHANGELOG.md for v${{ inputs.version }} [skip ci]"
           file_pattern: CHANGELOG.md
 
@@ -115,7 +115,7 @@ jobs:
           client-payload: '{"version": "${{ inputs.version }}", "changelog": "${{ steps.changelog.outputs.changelog }}", baseBranch: "${{ inputs.eventBranch }}"}'
 
       - name: Fire Release Event
-        if: ${{ inputs.generateChangelog  ==  false }} || ${{ github.event.branch }}
+        if: ${{ inputs.generateChangelog  ==  false }}
         id: release_event
         uses: peter-evans/repository-dispatch@v2.1.1
         with:
