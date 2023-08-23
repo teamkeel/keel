@@ -99,6 +99,12 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		sdk.Writeln("")
 	}
 
+	for _, subscriber := range schema.Subscribers {
+		writeSubscriberFunctionWrapperType(sdkTypes, subscriber)
+		sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(subscriber.Name))
+		sdk.Writeln("")
+	}
+
 	writeTableConfig(sdk, schema.Models)
 
 	writeAPIFactory(sdk, schema)
@@ -263,6 +269,13 @@ func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage boo
 }
 
 func writeMessage(w *codegen.Writer, schema *proto.Schema, message *proto.Message, isTestingPackage bool) {
+	if message.Type != nil {
+		w.Writef("export type %s = ", message.Name)
+		w.Write(toTypeScriptType(message.Type, isTestingPackage))
+		w.Writeln(";")
+		return
+	}
+
 	w.Writef("export interface %s {\n", message.Name)
 	w.Indent()
 
@@ -289,7 +302,6 @@ func writeMessage(w *codegen.Writer, schema *proto.Schema, message *proto.Messag
 	}
 
 	w.Dedent()
-
 	w.Writeln("}")
 }
 
@@ -542,6 +554,14 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("now(): Date;")
 	w.Dedent()
 	w.Writeln("}")
+
+	w.Writeln("export interface SubscriberContextAPI {")
+	w.Indent()
+	w.Writeln("secrets: Secrets;")
+	w.Writeln("env: Environment;")
+	w.Writeln("now(): Date;")
+	w.Dedent()
+	w.Writeln("}")
 }
 
 func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
@@ -605,6 +625,33 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
+	w.Writeln("function createSubscriberContextAPI({ meta }) {")
+	w.Indent()
+	w.Writeln("const now = () => { return new Date(); };")
+	w.Writeln("const env = {")
+	w.Indent()
+
+	for _, variable := range schema.EnvironmentVariables {
+		// fetch the value of the env var from the process.env (will pull the value based on the current environment)
+		// outputs "key: process.env["key"] || []"
+		w.Writef("%s: process.env[\"%s\"] || \"\",\n", variable.Name, variable.Name)
+	}
+
+	w.Dedent()
+	w.Writeln("};")
+	w.Writeln("const secrets = {")
+	w.Indent()
+
+	for _, secret := range schema.Secrets {
+		w.Writef("%s: meta.secrets.%s || \"\",\n", secret.Name, secret.Name)
+	}
+
+	w.Dedent()
+	w.Writeln("};")
+	w.Writeln("return { env, now, secrets };")
+	w.Dedent()
+	w.Writeln("};")
+
 	w.Writeln("function createModelAPI() {")
 	w.Indent()
 	w.Writeln("return {")
@@ -636,6 +683,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln(`module.exports.permissions = createPermissionApi();`)
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
 	w.Writeln("module.exports.createJobContextAPI = createJobContextAPI;")
+	w.Writeln("module.exports.createSubscriberContextAPI = createSubscriberContextAPI;")
 }
 
 func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
@@ -740,6 +788,12 @@ func writeJobFunctionWrapperType(w *codegen.Writer, job *proto.Job) {
 	w.Writeln(";")
 }
 
+func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Subscriber) {
+	w.Writef("export declare function %s", casing.ToCamel(subscriber.Name))
+	w.Writef("(fn: (ctx: SubscriberContextAPI, event: %s) => Promise<void>): Promise<void>", subscriber.InputMessageName)
+	w.Writeln(";")
+}
+
 func toActionReturnType(model *proto.Model, op *proto.Action) string {
 	returnType := "Promise<"
 	sdkPrefix := "sdk."
@@ -766,8 +820,8 @@ func toActionReturnType(model *proto.Model, op *proto.Action) string {
 
 func generateDevelopmentServer(schema *proto.Schema) codegen.GeneratedFiles {
 	w := &codegen.Writer{}
-	w.Writeln(`import { handleRequest, handleJob, tracing } from '@teamkeel/functions-runtime';`)
-	w.Writeln(`import { createContextAPI, createJobContextAPI, permissionFns } from '@teamkeel/sdk';`)
+	w.Writeln(`import { handleRequest, handleJob, handleSubscriber, tracing } from '@teamkeel/functions-runtime';`)
+	w.Writeln(`import { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } from '@teamkeel/sdk';`)
 	w.Writeln(`import { createServer } from "http";`)
 
 	functions := []*proto.Action{}
@@ -790,6 +844,13 @@ func generateDevelopmentServer(schema *proto.Schema) codegen.GeneratedFiles {
 		w.Writeln(";")
 	}
 
+	for _, subscriber := range schema.Subscribers {
+		name := subscriber.Name
+		// namespace import to avoid naming clashes
+		w.Writef(`import subscriber_%s from "../subscribers/%s.ts"`, name, name)
+		w.Writeln(";")
+	}
+
 	w.Writeln("const functions = {")
 	w.Indent()
 	for _, fn := range functions {
@@ -804,6 +865,16 @@ func generateDevelopmentServer(schema *proto.Schema) codegen.GeneratedFiles {
 	for _, job := range schema.Jobs {
 		name := strcase.ToLowerCamel(job.Name)
 		w.Writef("%s: job_%s,", name, name)
+		w.Writeln("")
+	}
+	w.Dedent()
+	w.Writeln("}")
+
+	w.Writeln("const subscribers = {")
+	w.Indent()
+	for _, subscriber := range schema.Subscribers {
+		name := subscriber.Name
+		w.Writef("%s: subscriber_%s,", name, name)
 		w.Writeln("")
 	}
 	w.Dedent()
@@ -852,6 +923,12 @@ const listener = async (req, res) => {
 				createJobContextAPI,
 			});
 			break;
+		case "subscriber":
+			rpcResponse = await handleSubscriber(json, {
+				subscribers,
+				createSubscriberContextAPI,
+			});
+			break;
 		default:
 			res.statusCode = 400;
 			res.end();
@@ -890,11 +967,12 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	// with Vitest
 	js.Writeln(`import sdk from "@teamkeel/sdk"`)
 	js.Writeln("const { useDatabase, models } = sdk;")
-	js.Writeln(`import { ActionExecutor, JobExecutor, sql } from "@teamkeel/testing-runtime";`)
+	js.Writeln(`import { ActionExecutor, JobExecutor, SubscriberExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 	js.Writeln("export { models };")
 	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export const jobs = new JobExecutor({});")
+	js.Writeln("export const subscribers = new SubscriberExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
 	js.Writeln("const db = useDatabase();")
@@ -936,7 +1014,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
 	test: {
 		setupFiles: [__dirname + "/vitest.setup"],
-		testTimeout: 10000,
+		testTimeout: 100000,
 	},
 });
 			`,
@@ -1026,8 +1104,29 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		}
 		w.Dedent()
 		w.Writeln("}")
-
 		w.Writeln("export declare const jobs: JobExecutor;")
+	}
+
+	if len(schema.Subscribers) > 0 {
+		w.Writeln("declare class SubscriberExecutor {")
+		w.Indent()
+		for _, subscriber := range schema.Subscribers {
+			msg := proto.FindMessage(schema.Messages, subscriber.InputMessageName)
+
+			w.Writef("%s(i", subscriber.Name)
+
+			if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+				return f.Optional
+			}) {
+				w.Write("?")
+			}
+
+			w.Writef(`: %s): %s`, subscriber.InputMessageName, "Promise<void>")
+			w.Writeln(";")
+		}
+		w.Dedent()
+		w.Writeln("}")
+		w.Writeln("export declare const subscribers: SubscriberExecutor;")
 	}
 
 	w.Writeln("export declare const actions: ActionExecutor;")

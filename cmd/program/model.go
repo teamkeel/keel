@@ -26,6 +26,8 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
@@ -128,23 +130,24 @@ type Model struct {
 	TracingEnabled bool
 
 	// Model state - used in View()
-	Status           int
-	Err              error
-	Schema           *proto.Schema
-	Config           *config.ProjectConfig
-	SchemaFiles      []reader.SchemaFile
-	Database         db.Database
-	DatabaseConnInfo *db.ConnectionInfo
-	GeneratedFiles   codegen.GeneratedFiles
-	MigrationChanges []*migrations.DatabaseChange
-	FunctionsServer  *node.DevelopmentServer
-	RuntimeHandler   http.Handler
-	JobHandler       runtime.JobHandler
-	RuntimeRequests  []*RuntimeRequest
-	FunctionsLog     []*FunctionLog
-	TestOutput       string
-	Secrets          map[string]string
-	Environment      string
+	Status            int
+	Err               error
+	Schema            *proto.Schema
+	Config            *config.ProjectConfig
+	SchemaFiles       []reader.SchemaFile
+	Database          db.Database
+	DatabaseConnInfo  *db.ConnectionInfo
+	GeneratedFiles    codegen.GeneratedFiles
+	MigrationChanges  []*migrations.DatabaseChange
+	FunctionsServer   *node.DevelopmentServer
+	RuntimeHandler    http.Handler
+	JobHandler        runtime.JobHandler
+	SubscriberHandler runtime.SubscriberHandler
+	RuntimeRequests   []*RuntimeRequest
+	FunctionsLog      []*FunctionLog
+	TestOutput        string
+	Secrets           map[string]string
+	Environment       string
 
 	// Channels for communication between long-running
 	// commands and the Bubbletea program
@@ -301,6 +304,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			m.Schema.Apis = append(m.Schema.Apis, testApi)
 			m.JobHandler = runtime.NewJobHandler(m.Schema)
+			m.SubscriberHandler = runtime.NewSubscriberHandler(m.Schema)
 		}
 
 		cors := cors.New(cors.Options{
@@ -458,6 +462,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if m.Mode == ModeTest {
+
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 
 			switch pathParts[0] {
@@ -472,9 +477,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 
-				token := r.Header.Get("Authorization")
-
-				identity, err := runtime.HandleBearerToken(ctx, m.Schema, token)
+				identity, err := actions.HandleAuthorizationHeader(ctx, m.Schema, r.Header)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					_, err = w.Write([]byte(err.Error()))
@@ -501,6 +504,33 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				trigger := functions.TriggerType(r.Header.Get("X-Trigger-Type"))
 
 				err = m.JobHandler.RunJob(ctx, jobName, inputs, trigger)
+
+				if err != nil {
+					response := common.NewJsonErrorResponse(err)
+					w.WriteHeader(response.Status)
+					_, err = w.Write(response.Body)
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					w.WriteHeader(http.StatusOK)
+				}
+			case testing.SubscriberPath:
+				subscriberName := pathParts[2]
+				body, err := io.ReadAll(r.Body)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					break
+				}
+
+				var inputs map[string]any
+				err = json.Unmarshal(body, &inputs)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					break
+				}
+
+				err = m.SubscriberHandler.RunSubscriber(ctx, subscriberName, inputs)
 				if err != nil {
 					response := common.NewJsonErrorResponse(err)
 					w.WriteHeader(response.Status)
@@ -515,6 +545,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				w.WriteHeader(http.StatusNotFound)
 			}
 		} else {
+
+			// In run mode we accept any external issuers but the tokens need to be signed correctly
+			ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+				AllowAnyIssuers: true,
+			})
+
 			r = msg.r.WithContext(ctx)
 			m.RuntimeHandler.ServeHTTP(msg.w, r)
 		}

@@ -27,6 +27,8 @@ require (
 	github.com/nleeper/goment v1.4.4
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/otiai10/copy v1.7.0
+	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/pquerna/cachecontrol v0.2.0
 	github.com/radovskyb/watcher v1.0.7
 	github.com/relvacode/iso8601 v1.3.0
 	github.com/rs/cors v1.8.2

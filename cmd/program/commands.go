@@ -6,6 +6,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"database/sql"
+	"encoding/base64"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -16,6 +17,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	_ "embed"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/radovskyb/watcher"
@@ -31,6 +34,9 @@ import (
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/testing"
 )
+
+//go:embed default.pem
+var defaultPem []byte
 
 func NextMsgCommand(ch chan tea.Msg) tea.Cmd {
 	return func() tea.Msg {
@@ -338,8 +344,16 @@ type ParsePrivateKeyMsg struct {
 
 func ParsePrivateKey(path string) tea.Cmd {
 	return func() tea.Msg {
-		if path != "" {
-			privateKeyPem, err := os.ReadFile(path)
+
+		// Uses the embedded default private key if a custom key isn't provided
+		// This allows for a smooth DX in a local env where the signing of the token isn't important
+		// but avoids a code path where we skip token validation
+		var privateKeyPem []byte
+
+		if path == "" {
+			privateKeyPem = defaultPem
+		} else {
+			customPem, err := os.ReadFile(path)
 			if errors.Is(err, os.ErrNotExist) {
 				return ParsePrivateKeyMsg{
 					Err: fmt.Errorf("cannot locate private key file at: %s", path),
@@ -349,29 +363,25 @@ func ParsePrivateKey(path string) tea.Cmd {
 					Err: fmt.Errorf("cannot read private key file: %s", err.Error()),
 				}
 			}
+			privateKeyPem = customPem
+		}
 
-			privateKeyBlock, _ := pem.Decode(privateKeyPem)
-			if privateKeyBlock == nil {
-				return ParsePrivateKeyMsg{
-					Err: errors.New("private key PEM either invalid or empty"),
-				}
-			}
-
-			privateKey, err := x509.ParsePKCS1PrivateKey(privateKeyBlock.Bytes)
-			if err != nil {
-				return ParsePrivateKeyMsg{
-					Err: err,
-				}
-			}
-
+		privateKeyBlock, _ := pem.Decode(privateKeyPem)
+		if privateKeyBlock == nil {
 			return ParsePrivateKeyMsg{
-				PrivateKey: privateKey,
+				Err: errors.New("private key PEM either invalid or empty"),
 			}
+		}
 
+		privateKey, err := x509.ParsePKCS1PrivateKey(privateKeyBlock.Bytes)
+		if err != nil {
+			return ParsePrivateKeyMsg{
+				Err: err,
+			}
 		}
 
 		return ParsePrivateKeyMsg{
-			PrivateKey: nil,
+			PrivateKey: privateKey,
 		}
 	}
 }
@@ -737,9 +747,11 @@ func RunTests(dir string, port string, cfg *config.ProjectConfig, conn *db.Conne
 		envVars := cfg.GetEnvVars("test")
 		envVars["KEEL_TESTING_ACTIONS_API_URL"] = fmt.Sprintf("http://localhost:%s/%s/json", port, testing.ActionApiPath)
 		envVars["KEEL_TESTING_JOBS_URL"] = fmt.Sprintf("http://localhost:%s/%s/json", port, testing.JobPath)
+		envVars["KEEL_TESTING_SUBSCRIBERS_URL"] = fmt.Sprintf("http://localhost:%s/%s/json", port, testing.SubscriberPath)
 		envVars["KEEL_DB_CONN_TYPE"] = "pg"
 		envVars["KEEL_DB_CONN"] = conn.String()
 		envVars["NODE_OPTIONS"] = "--no-warnings"
+		envVars["KEEL_DEFAULT_PK"] = base64.StdEncoding.EncodeToString(defaultPem)
 
 		for key, value := range envVars {
 			cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))

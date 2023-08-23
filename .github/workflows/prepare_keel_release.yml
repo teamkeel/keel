@@ -3,10 +3,9 @@ name: Prepare Keel Release
 on:
   workflow_call:
     inputs:
-      preReleaseTag:
-        description: "Tag to create release branch at. If not supplied, release branch will be created at HEAD commit"
-        required: false
-        default: "HEAD"
+      ref:
+        description: "Ref of where the release should be marked"
+        required: true
         type: string
       version:
         description: "Release Version"
@@ -26,7 +25,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: teamkeel/keel
-          ref: ${{ inputs.preReleaseTag }}
+          ref: ${{ inputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
@@ -62,8 +61,9 @@ jobs:
       preRelease: true
       draft: true
       makeLatest: false
-      generateChangelog: true
+      generateChangelog: false
       releaseEvent: "new-release"
+      branch: ${{ inputs.ref }}
       commit: "release/v${{ inputs.version }}"
       releaseNotesURL: ${{ inputs.releaseNotesUrl }}
     secrets: inherit

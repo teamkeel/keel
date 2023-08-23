@@ -60,6 +60,11 @@ func TestRuntimeGraphQL(t *testing.T) {
 
 			ctx := request.Context()
 
+			pk, err := testhelpers.GetEmbeddedPrivateKey()
+			require.NoError(t, err)
+
+			ctx = runtimectx.WithPrivateKey(ctx, pk)
+
 			dbName := testhelpers.DbNameForTestName(tCase.name)
 			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
 			require.NoError(t, err)

@@ -4,7 +4,6 @@ import { handleJob, RuntimeErrors } from "./handleJob";
 import { test, expect, beforeEach, describe } from "vitest";
 import { ModelAPI } from "./ModelAPI";
 import { useDatabase } from "./database";
-const { Permissions } = require("./permissions");
 import KSUID from "ksuid";
 
 test("when the job returns nothing as expected", async () => {

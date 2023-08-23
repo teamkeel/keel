@@ -317,11 +317,19 @@ export declare function useDatabase(): Kysely<database>;`
 
 func TestWriteDevelopmentServer(t *testing.T) {
 	expected := `
+import function_createPost from "../functions/createPost.ts";
+import function_updatePost from "../functions/updatePost.ts";
+import job_batchPosts from "../jobs/batchPosts.ts";
+import subscriber_checkGrammar from "../subscribers/checkGrammar.ts";
 const functions = {
 	createPost: function_createPost,
 	updatePost: function_updatePost,
 }
 const jobs = {
+	batchPosts: job_batchPosts,
+}
+const subscribers = {
+	checkGrammar: subscriber_checkGrammar,
 }
 const actionTypes = {
 	createPost: "ACTION_TYPE_CREATE",
@@ -330,17 +338,22 @@ const actionTypes = {
 	`
 
 	schema := `
-		model Post {
-			fields {
-				title Text
-			}
+model Post {
+	fields {
+		title Text
+	}
 
-			actions {
-				create createPost() with(title) @function
-				update updatePost(id) with(title) @function
-			}
-		}
-	`
+	actions {
+		create createPost() with(title) @function
+		update updatePost(id) with(title) @function
+	}
+
+	@on([create], checkGrammar)
+}
+
+job BatchPosts {
+	@schedule("* * * * *")
+}`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		files := generateDevelopmentServer(s)
@@ -379,6 +392,16 @@ function createJobContextAPI({ meta }) {
 	};
 	return { identity, env, now, secrets, isAuthenticated };
 };
+function createSubscriberContextAPI({ meta }) {
+	const now = () => { return new Date(); };
+	const env = {
+		TEST: process.env["TEST"] || "",
+	};
+	const secrets = {
+		SECRET_KEY: meta.secrets.SECRET_KEY || "",
+	};
+	return { env, now, secrets };
+};
 function createModelAPI() {
 	return {
 		person: new runtime.ModelAPI("person", () => ({}), tableConfigMap),
@@ -391,7 +414,8 @@ function createPermissionApi() {
 module.exports.models = createModelAPI();
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;
-module.exports.createJobContextAPI = createJobContextAPI;`
+module.exports.createJobContextAPI = createJobContextAPI;
+module.exports.createSubscriberContextAPI = createSubscriberContextAPI;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
@@ -1373,7 +1397,72 @@ export interface In {
 	})
 }
 
+func TestWriteSubscriberMessages(t *testing.T) {
+	schema := `
+model Member {
+	fields {
+		name Text
+	}
+	@on([create, update], verifyEmail)
+	@on([create], sendWelcomeEmail)
+}`
+
+	expected := `
+export type VerifyEmailEvent = (VerifyEmailMemberCreateEvent | VerifyEmailMemberUpdateEvent);
+export interface VerifyEmailMemberCreateEvent {
+	name: string;
+	model: string;
+	sourceId: string;
+	occurredAt: Date;
+	identityId?: string;
+	data: Member;
+}
+export interface VerifyEmailMemberUpdateEvent {
+	name: string;
+	model: string;
+	sourceId: string;
+	occurredAt: Date;
+	identityId?: string;
+	data: Member;
+}
+export type SendWelcomeEmailEvent = (SendWelcomeEmailMemberCreateEvent);
+export interface SendWelcomeEmailMemberCreateEvent {
+	name: string;
+	model: string;
+	sourceId: string;
+	occurredAt: Date;
+	identityId?: string;
+	data: Member;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
 func TestWriteCustomFunctionWrapperType(t *testing.T) {
+	schema := `
+model Member {
+	fields {
+		name Text
+	}
+	@on([create, update], verifyEmail)
+	@on([create], sendWelcomeEmail)
+}`
+
+	expected := `
+export declare function VerifyEmail(fn: (ctx: SubscriberContextAPI, event: VerifyEmailEvent) => Promise<void>): Promise<void>;
+export declare function SendWelcomeEmail(fn: (ctx: SubscriberContextAPI, event: SendWelcomeEmailEvent) => Promise<void>): Promise<void>;`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+
+		for _, s := range s.Subscribers {
+			writeSubscriberFunctionWrapperType(w, s)
+		}
+	})
+}
+
+func TestWriteSubscriberWrapperType(t *testing.T) {
 	schema := `
 model Person {
 	actions {

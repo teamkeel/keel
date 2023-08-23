@@ -21,6 +21,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -39,6 +40,21 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "GraphQL")
 		defer span.End()
+
+		identity, err := actions.HandleAuthorizationHeader(ctx, s, r.Header)
+		if err != nil {
+			return common.NewJsonResponse(http.StatusOK, graphql.Result{
+				Errors: []gqlerrors.FormattedError{
+					{
+						Message:    "not authenticated",
+						Extensions: common.NewAuthenticationFailedErr().Extensions(),
+					},
+				},
+			}, nil)
+		}
+		if identity != nil {
+			ctx = runtimectx.WithIdentity(ctx, identity)
+		}
 
 		// We lazily initialise the GraphQL schema as until there is actually
 		// a GraphQL request to handle we don't need it. Also we don't want the
