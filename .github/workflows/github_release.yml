@@ -1,0 +1,128 @@
+name: GoReleaser
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        description: "The branch to run the release on"
+        required: true
+        type: string
+      version:
+        description: "Release Version"
+        required: true
+        type: string
+      preRelease:
+        required: false
+        default: false
+        type: boolean
+      draft:
+        required: false
+        default: false
+        type: boolean
+      makeLatest:
+        required: false
+        default: true
+        type: boolean
+      generateChangelog:
+        required: false
+        default: false
+        type: boolean
+      releaseEvent:
+        required: true
+        type: string
+      releaseNotesURL:
+        required: false
+        type: string
+        default: ""
+      commit:
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.20"
+      - run: git fetch --force --tags
+
+      # creating a tag so goreleaser knows what to release
+      - name: Create Release Tag
+        uses: rickstaa/action-create-tag@v1
+        id: "tag_create"
+        with:
+          tag: "v${{ inputs.version }}"
+          tag_exists_error: false
+          message: "Keel release v${{ inputs.version }}"
+
+      - name: Run GoReleaser
+        id: goreleaser
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          distribution: goreleaser
+          version: 1.13.0
+          args: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Update CHANGELOG
+        id: changelog
+        if: ${{ inputs.generateChangelog }}
+        uses: requarks/changelog-action@v1.8.1
+        with:
+          token: ${{ github.token }}
+          tag: "v${{ inputs.version }}"
+
+      # Goreleaser won't update a draft release, so you have to update the release after to tune release params
+      - name: Update goreleaser release with the changelogs
+        id: update_release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: "v${{ inputs.version }}"
+          name: "Keel release v${{ inputs.version }}"
+          draft: ${{ inputs.draft }}
+          allowUpdates: true
+          updateOnlyUnreleased: true
+          prerelease: ${{ inputs.preRelease }}
+          makeLatest: ${{ inputs.makeLatest }}
+          commit: ${{ inputs.commit }}
+          bodyFile: ${{ inputs.releaseNotesURL }}
+
+      - name: Commit CHANGELOG.md
+        if: ${{ inputs.generateChangelog }}
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          branch: main
+          commit_message: "docs: update CHANGELOG.md for v${{ inputs.version }} [skip ci]"
+          file_pattern: CHANGELOG.md
+
+      - name: Fire Release Event with Changelog
+        if: ${{ inputs.generateChangelog }}
+        id: release_event_changelog
+        uses: peter-evans/repository-dispatch@v2.1.1
+        with:
+          token: ${{ secrets.PAT }}
+          repository: teamkeel/backend
+          event-type: ${{ inputs.releaseEvent }}
+          client-payload: '{"version": "${{ inputs.version }}", "changelog": "${{ steps.changelog.outputs.changelog }}"}'
+      - name: Fire Release Event
+        if: ${{ inputs.generateChangelog  ==  false }}
+        id: release_event
+        uses: peter-evans/repository-dispatch@v2.1.1
+        with:
+          token: ${{ secrets.PAT }}
+          repository: teamkeel/backend
+          event-type: ${{ inputs.releaseEvent }}
+          client-payload: '{"version": "${{ inputs.version }}"}'

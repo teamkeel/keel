@@ -2,6 +2,7 @@ const { ModelAPI } = require("./ModelAPI");
 const { RequestHeaders } = require("./RequestHeaders");
 const { handleRequest } = require("./handleRequest");
 const { handleJob } = require("./handleJob");
+const { handleSubscriber } = require("./handleSubscriber");
 const KSUID = require("ksuid");
 const { useDatabase } = require("./database");
 const {
@@ -16,6 +17,7 @@ module.exports = {
   RequestHeaders,
   handleRequest,
   handleJob,
+  handleSubscriber,
   useDatabase,
   Permissions,
   PERMISSION_STATE,

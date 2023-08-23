@@ -1,0 +1,52 @@
+name: Publish Keel Release
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Ref of where the release should be marked"
+        required: true
+        type: string
+      version:
+        description: "Release Version"
+        required: true
+        type: string
+
+jobs:
+  setup:
+    name: Checkout release branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: teamkeel/keel
+          ref: ${{ inputs.ref }}
+          token: ${{ secrets.GH_TOKEN }}
+          fetch-depth: 0
+
+  npm_release:
+    uses: ./.github/workflows/npm_release.yml
+    with:
+      version: ${{ inputs.version }}
+      publishTag: latest
+      dryRun: false
+    secrets: inherit
+
+  github_release:
+    name: Make Github Release
+    runs-on: ubuntu-latest
+    needs: [npm_release]
+    steps:
+      - name: Publish Release
+        id: publish_release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: "v${{ inputs.version }}"
+          commit: ${{ inputs.ref }}
+          draft: false
+          makeLatest: true
+          prerelease: false
+          allowUpdates: true
+          updateOnlyUnreleased: true

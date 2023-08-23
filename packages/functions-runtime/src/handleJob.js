@@ -4,7 +4,6 @@ const {
   JSONRPCErrorCode,
 } = require("json-rpc-2.0");
 const { getDatabaseClient } = require("./database");
-const { tryExecuteFunction } = require("./tryExecuteFunction");
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
@@ -54,15 +53,11 @@ async function handleJob(request, config) {
         const db = getDatabaseClient();
         const jobFunction = jobs[request.method];
         const actionType = PROTO_ACTION_TYPES.JOB;
-        const permissionFns = new Object();
-
-        // Jobs will have no permission functions yet.
-        permissionFns[request.method] = [];
 
         await tryExecuteJob(
-          { request, ctx, permissionFns, permitted, db, actionType },
+          { request, permitted, db, actionType },
           async () => {
-            // Return the job function to the containing tryExecuteFunction block
+            // Return the job function to the containing tryExecuteJob block
             return jobFunction(ctx, request.params);
           }
         );

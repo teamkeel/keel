@@ -1,0 +1,42 @@
+model Person {
+    fields {
+        identity Identity
+        organisation Organisation
+    }
+
+    actions {
+        list listPeople() {
+            @where(expression: invalid)
+        }
+
+        list listPeople2() {
+            @where(expression: ct.identity == person.identity)
+        }
+              
+        list listPeople3() {
+            @where(expression: ct.invalid == person.identity)
+        }
+
+        list listPeople4() {
+            @where(expression: "true")
+        }
+               
+        list listPeople5() {
+            @where(expression: ctx.identity in person.organisation.invalid)
+        }
+
+        list listPeople6() {
+            @where(expression: ctx.isAuthenticated and ctx.identity in person.organisation.invalid)
+        }
+
+        list listPeople7() {
+            @where(expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid)
+        }
+    }
+}
+
+model Organisation {
+    fields {
+        people Person[]
+    }
+}

@@ -130,6 +130,7 @@ func TestIntegration(t *gotest.T) {
 				EnvVars:         envVars,
 				Secrets:         secrets,
 				Pattern:         *pattern,
+				TestGroupName:   e.Name(),
 			})
 			require.NoError(t, err)
 

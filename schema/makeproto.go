@@ -61,6 +61,7 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 		}
 	}
 
+	// Generate the input messages for all subscribers in the schema.
 	scm.makeSubscriberInputMessages()
 
 	// If the input schema doesn't specify any APIs, we create a default one.
@@ -705,9 +706,11 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	}
 
 	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
-		protoModel.Actions = append(protoModel.Actions, scm.makeAuthenticate())
-		protoModel.Actions = append(protoModel.Actions, scm.makeRequestPasswordReset())
-		protoModel.Actions = append(protoModel.Actions, scm.makePasswordReset())
+		if !(scm != nil && scm.Config != nil && scm.Config.DisableAuth) {
+			protoModel.Actions = append(protoModel.Actions, scm.makeAuthenticate())
+			protoModel.Actions = append(protoModel.Actions, scm.makeRequestPasswordReset())
+			protoModel.Actions = append(protoModel.Actions, scm.makePasswordReset())
+		}
 	}
 
 	scm.proto.Models = append(scm.proto.Models, protoModel)
@@ -1338,9 +1341,9 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 		subscriber := proto.FindSubscriber(scm.proto.Subscribers, subscriberName)
 		if subscriber == nil {
 			subscriber = &proto.Subscriber{
-				Name:         subscriberName,
-				InputMessage: makeSubscriberMessageName(subscriberName),
-				EventNames:   []string{},
+				Name:             subscriberName,
+				InputMessageName: makeSubscriberMessageName(subscriberName),
+				EventNames:       []string{},
 			}
 			scm.proto.Subscribers = append(scm.proto.Subscribers, subscriber)
 		}
@@ -1372,19 +1375,13 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 func (scm *Builder) makeSubscriberInputMessages() {
 	for _, subscriber := range scm.proto.Subscribers {
 		message := &proto.Message{
-			Name:   subscriber.InputMessage,
+			Name:   subscriber.InputMessageName,
 			Fields: []*proto.MessageField{},
-		}
-
-		eventField := &proto.MessageField{
-			MessageName: message.Name,
-			Name:        "event",
 			Type: &proto.TypeInfo{
 				Type:       proto.Type_TYPE_UNION,
 				UnionNames: []*wrapperspb.StringValue{},
 			},
 		}
-		message.Fields = append(message.Fields, eventField)
 
 		scm.proto.Messages = append(scm.proto.Messages, message)
 
@@ -1410,13 +1407,34 @@ func (scm *Builder) makeSubscriberInputMessages() {
 
 			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
 				MessageName: eventMessage.Name,
+				Name:        "sourceId",
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_ID},
+			})
+
+			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
+				MessageName: eventMessage.Name,
 				Name:        "occurredAt",
 				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_TIMESTAMP},
 			})
 
-			scm.proto.Messages = append(scm.proto.Messages, eventMessage)
+			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
+				MessageName: eventMessage.Name,
+				Name:        "identityId",
+				Optional:    true,
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_ID},
+			})
 
-			eventField.Type.UnionNames = append(eventField.Type.UnionNames, wrapperspb.String(eventMessage.Name))
+			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
+				MessageName: eventMessage.Name,
+				Name:        "data",
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_MODEL,
+					ModelName: wrapperspb.String(event.ModelName),
+				},
+			})
+
+			message.Type.UnionNames = append(message.Type.UnionNames, wrapperspb.String(eventMessage.Name))
+			scm.proto.Messages = append(scm.proto.Messages, eventMessage)
 		}
 	}
 }

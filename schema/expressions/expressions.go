@@ -42,31 +42,20 @@ func (c *ConditionResolver) Resolve() (resolvedLhs *ExpressionScopeEntity, resol
 		}
 
 		return resolvedLhs, resolvedRhs, errors
-	} else if lhs.operand.Type() != parser.TypeBoolean {
-		// If there is only a single operand, then it must be a boolean type or literal
-		operand := NewOperandResolver(lhs.operand, c.asts, c.context, OperandPositionLhs)
-		entity, operandErr := operand.Resolve()
-		if operandErr != nil {
-			errors = append(errors, operandErr.ToValidationError())
-		}
-
-		if entity.GetType() != parser.FieldTypeBoolean {
-			errors = append(errors,
-				errorhandling.NewValidationError(
-					errorhandling.ErrorExpressionSingleConditionNotBoolean,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"Value":      lhs.operand.ToString(),
-							"Attribute":  fmt.Sprintf("@%s", c.context.Attribute.Name.Value),
-							"Suggestion": fmt.Sprintf("%s == xxx", lhs.operand.ToString()),
-						},
+	} else if resolvedLhs != nil && resolvedLhs.GetType() != parser.FieldTypeBoolean {
+		errors = append(errors,
+			errorhandling.NewValidationError(
+				errorhandling.ErrorExpressionSingleConditionNotBoolean,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Value":      lhs.operand.ToString(),
+						"Attribute":  fmt.Sprintf("@%s", c.context.Attribute.Name.Value),
+						"Suggestion": fmt.Sprintf("%s == xxx", lhs.operand.ToString()),
 					},
-					lhs.operand.Node,
-				),
-			)
-
-		}
-
+				},
+				lhs.operand.Node,
+			),
+		)
 	}
 
 	return resolvedLhs, nil, errors

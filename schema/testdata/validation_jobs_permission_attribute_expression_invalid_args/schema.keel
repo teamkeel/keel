@@ -1,0 +1,31 @@
+job MyJob1 {
+    @permission(expression: something > 5)
+}
+
+job MyJob2 {
+    @permission(expression: myJob3.id == true)
+}
+
+job MyJob3 {
+    @permission(expression: "invalid")
+}
+
+job MyJob4 {
+    @permission(ctx.isAuthenticated)
+}
+
+job MyJob5 {
+    @permission(expr: ctx.isAuthenticated)
+}
+
+job MyJob6 {
+    @permission(expression: c.isAuthenticated)
+}
+
+job MyJob7 {
+     @permission(expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid)
+}
+
+role Admin {}
+
+role Developer {}

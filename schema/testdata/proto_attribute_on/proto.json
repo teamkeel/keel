@@ -334,18 +334,12 @@
     },
     {
       "name": "SendWelcomeMailEvent",
-      "fields": [
-        {
-          "messageName": "SendWelcomeMailEvent",
-          "name": "event",
-          "type": {
-            "type": "TYPE_UNION",
-            "unionNames": [
-              "SendWelcomeMailMemberCreateEvent"
-            ]
-          }
-        }
-      ]
+      "type": {
+        "type": "TYPE_UNION",
+        "unionNames": [
+          "SendWelcomeMailMemberCreateEvent"
+        ]
+      }
     },
     {
       "name": "SendWelcomeMailMemberCreateEvent",
@@ -366,30 +360,47 @@
         },
         {
           "messageName": "SendWelcomeMailMemberCreateEvent",
+          "name": "sourceId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "SendWelcomeMailMemberCreateEvent",
           "name": "occurredAt",
           "type": {
             "type": "TYPE_TIMESTAMP"
+          }
+        },
+        {
+          "messageName": "SendWelcomeMailMemberCreateEvent",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "SendWelcomeMailMemberCreateEvent",
+          "name": "data",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Member"
           }
         }
       ]
     },
     {
       "name": "VerifyEmailEvent",
-      "fields": [
-        {
-          "messageName": "VerifyEmailEvent",
-          "name": "event",
-          "type": {
-            "type": "TYPE_UNION",
-            "unionNames": [
-              "VerifyEmailMemberCreateEvent",
-              "VerifyEmailMemberUpdateEvent",
-              "VerifyEmailEmployeeCreateEvent",
-              "VerifyEmailEmployeeUpdateEvent"
-            ]
-          }
-        }
-      ]
+      "type": {
+        "type": "TYPE_UNION",
+        "unionNames": [
+          "VerifyEmailMemberCreateEvent",
+          "VerifyEmailMemberUpdateEvent",
+          "VerifyEmailEmployeeCreateEvent",
+          "VerifyEmailEmployeeUpdateEvent"
+        ]
+      }
     },
     {
       "name": "VerifyEmailMemberCreateEvent",
@@ -410,9 +421,32 @@
         },
         {
           "messageName": "VerifyEmailMemberCreateEvent",
+          "name": "sourceId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "VerifyEmailMemberCreateEvent",
           "name": "occurredAt",
           "type": {
             "type": "TYPE_TIMESTAMP"
+          }
+        },
+        {
+          "messageName": "VerifyEmailMemberCreateEvent",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "VerifyEmailMemberCreateEvent",
+          "name": "data",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Member"
           }
         }
       ]
@@ -436,9 +470,32 @@
         },
         {
           "messageName": "VerifyEmailMemberUpdateEvent",
+          "name": "sourceId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "VerifyEmailMemberUpdateEvent",
           "name": "occurredAt",
           "type": {
             "type": "TYPE_TIMESTAMP"
+          }
+        },
+        {
+          "messageName": "VerifyEmailMemberUpdateEvent",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "VerifyEmailMemberUpdateEvent",
+          "name": "data",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Member"
           }
         }
       ]
@@ -462,9 +519,32 @@
         },
         {
           "messageName": "VerifyEmailEmployeeCreateEvent",
+          "name": "sourceId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "VerifyEmailEmployeeCreateEvent",
           "name": "occurredAt",
           "type": {
             "type": "TYPE_TIMESTAMP"
+          }
+        },
+        {
+          "messageName": "VerifyEmailEmployeeCreateEvent",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "VerifyEmailEmployeeCreateEvent",
+          "name": "data",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Employee"
           }
         }
       ]
@@ -488,27 +568,44 @@
         },
         {
           "messageName": "VerifyEmailEmployeeUpdateEvent",
+          "name": "sourceId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "VerifyEmailEmployeeUpdateEvent",
           "name": "occurredAt",
           "type": {
             "type": "TYPE_TIMESTAMP"
+          }
+        },
+        {
+          "messageName": "VerifyEmailEmployeeUpdateEvent",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "VerifyEmailEmployeeUpdateEvent",
+          "name": "data",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Employee"
           }
         }
       ]
     },
     {
       "name": "SendGoodbyeMailEvent",
-      "fields": [
-        {
-          "messageName": "SendGoodbyeMailEvent",
-          "name": "event",
-          "type": {
-            "type": "TYPE_UNION",
-            "unionNames": [
-              "SendGoodbyeMailMemberDeleteEvent"
-            ]
-          }
-        }
-      ]
+      "type": {
+        "type": "TYPE_UNION",
+        "unionNames": [
+          "SendGoodbyeMailMemberDeleteEvent"
+        ]
+      }
     },
     {
       "name": "SendGoodbyeMailMemberDeleteEvent",
@@ -529,9 +626,32 @@
         },
         {
           "messageName": "SendGoodbyeMailMemberDeleteEvent",
+          "name": "sourceId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "SendGoodbyeMailMemberDeleteEvent",
           "name": "occurredAt",
           "type": {
             "type": "TYPE_TIMESTAMP"
+          }
+        },
+        {
+          "messageName": "SendGoodbyeMailMemberDeleteEvent",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "SendGoodbyeMailMemberDeleteEvent",
+          "name": "data",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Member"
           }
         }
       ]
@@ -540,14 +660,14 @@
   "subscribers": [
     {
       "name": "sendWelcomeMail",
-      "inputMessage": "SendWelcomeMailEvent",
+      "inputMessageName": "SendWelcomeMailEvent",
       "eventNames": [
         "member.create"
       ]
     },
     {
       "name": "verifyEmail",
-      "inputMessage": "VerifyEmailEvent",
+      "inputMessageName": "VerifyEmailEvent",
       "eventNames": [
         "member.create",
         "member.update",
@@ -557,7 +677,7 @@
     },
     {
       "name": "sendGoodbyeMail",
-      "inputMessage": "SendGoodbyeMailEvent",
+      "inputMessageName": "SendGoodbyeMailEvent",
       "eventNames": [
         "member.delete"
       ]
