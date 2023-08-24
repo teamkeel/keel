@@ -307,7 +307,6 @@ func TestWriteDatabaseInterface(t *testing.T) {
 interface database {
 	person: PersonTable;
 	identity: IdentityTable;
-	audit: AuditTable;
 }
 export declare function useDatabase(): Kysely<database>;`
 
@@ -407,7 +406,6 @@ function createModelAPI() {
 	return {
 		person: new runtime.ModelAPI("person", () => ({}), tableConfigMap),
 		identity: new runtime.ModelAPI("identity", () => ({}), tableConfigMap),
-		audit: new runtime.ModelAPI("audit", () => ({}), tableConfigMap),
 	};
 };
 function createPermissionApi() {
@@ -436,7 +434,6 @@ func TestWriteAPIDeclarations(t *testing.T) {
 export type ModelsAPI = {
 	person: PersonAPI;
 	identity: IdentityAPI;
-	audit: AuditAPI;
 }
 export declare const models: ModelsAPI;
 export declare const permissions: runtime.Permissions;
