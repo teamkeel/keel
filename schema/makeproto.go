@@ -1389,12 +1389,12 @@ func (scm *Builder) makeSubscriberInputMessages() {
 			event := proto.FindEvent(scm.proto.Events, eventName)
 
 			eventMessage := &proto.Message{
-				Name:   makeSubscriberMessageEventName(subscriber.Name, event.ModelName, mapToEventName(event.OperationType)),
+				Name:   makeSubscriberMessageEventName(subscriber.Name, event.ModelName, mapToEventName(event.ActionType)),
 				Fields: []*proto.MessageField{},
 			}
 
 			eventTargetMessage := &proto.Message{
-				Name:   makeSubscriberMessageEventTargetName(subscriber.Name, event.ModelName, mapToEventName(event.OperationType)),
+				Name:   makeSubscriberMessageEventTargetName(subscriber.Name, event.ModelName, mapToEventName(event.ActionType)),
 				Fields: []*proto.MessageField{},
 			}
 
@@ -1575,11 +1575,11 @@ func (scm *Builder) mapToActionType(actionType string) proto.ActionType {
 func mapToEventName(operationType proto.ActionType) string {
 	switch operationType {
 	case proto.ActionType_ACTION_TYPE_CREATE:
-		return parser.ActionTypeCreate
+		return "created"
 	case proto.ActionType_ACTION_TYPE_UPDATE:
-		return parser.ActionTypeUpdate
+		return "updated"
 	case proto.ActionType_ACTION_TYPE_DELETE:
-		return parser.ActionTypeDelete
+		return "deleted"
 	default:
 		panic(fmt.Errorf("unhandled operation type '%s'", operationType))
 	}
