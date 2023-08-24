@@ -194,8 +194,8 @@ func NewSubscriberHandler(currSchema *proto.Schema) SubscriberHandler {
 	}
 }
 
-// RunSubscriber will run the subscriber function in the runtime.
-func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberName string, inputs map[string]any) error {
+// RunSubscriber will run the subscriber function in the runtime with the event payload.
+func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberName string, event *events.Event) error {
 	ctx, span := tracer.Start(ctx, "Run subscriber")
 	defer span.End()
 
@@ -211,7 +211,7 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 	err := functions.CallSubscriber(
 		ctx,
 		subscriber,
-		inputs,
+		event,
 	)
 
 	// Generate and send any events for this context.

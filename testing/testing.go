@@ -17,6 +17,7 @@ import (
 
 	keelconfig "github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
@@ -268,14 +269,14 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 					return
 				}
 
-				var inputs map[string]any
-				err = json.Unmarshal(body, &inputs)
+				var event *events.Event
+				err = json.Unmarshal(body, &event)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					return
 				}
 
-				err = runtime.NewSubscriberHandler(schema).RunSubscriber(ctx, subscriberName, inputs)
+				err = runtime.NewSubscriberHandler(schema).RunSubscriber(ctx, subscriberName, event)
 
 				if err != nil {
 					response := common.NewJsonErrorResponse(err)

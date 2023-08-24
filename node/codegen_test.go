@@ -1408,30 +1408,39 @@ model Member {
 }`
 
 	expected := `
-export type VerifyEmailEvent = (VerifyEmailMemberCreateEvent | VerifyEmailMemberUpdateEvent);
-export interface VerifyEmailMemberCreateEvent {
-	name: string;
-	model: string;
-	sourceId: string;
+export type VerifyEmailEvent = (VerifyEmailMemberCreatedEvent | VerifyEmailMemberUpdatedEvent);
+export interface VerifyEmailMemberCreatedEvent {
+	eventName: string;
 	occurredAt: Date;
 	identityId?: string;
+	target: VerifyEmailMemberCreatedEventTarget;
+}
+export interface VerifyEmailMemberCreatedEventTarget {
+	id: string;
+	type: string;
 	data: Member;
 }
-export interface VerifyEmailMemberUpdateEvent {
-	name: string;
-	model: string;
-	sourceId: string;
+export interface VerifyEmailMemberUpdatedEvent {
+	eventName: string;
 	occurredAt: Date;
 	identityId?: string;
+	target: VerifyEmailMemberUpdatedEventTarget;
+}
+export interface VerifyEmailMemberUpdatedEventTarget {
+	id: string;
+	type: string;
 	data: Member;
 }
-export type SendWelcomeEmailEvent = (SendWelcomeEmailMemberCreateEvent);
-export interface SendWelcomeEmailMemberCreateEvent {
-	name: string;
-	model: string;
-	sourceId: string;
+export type SendWelcomeEmailEvent = (SendWelcomeEmailMemberCreatedEvent);
+export interface SendWelcomeEmailMemberCreatedEvent {
+	eventName: string;
 	occurredAt: Date;
 	identityId?: string;
+	target: SendWelcomeEmailMemberCreatedEventTarget;
+}
+export interface SendWelcomeEmailMemberCreatedEventTarget {
+	id: string;
+	type: string;
 	data: Member;
 }`
 

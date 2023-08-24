@@ -1352,15 +1352,15 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 		// and add it to the current subscriber's EventNames field.
 		actionTypesArg, _ := attribute.Arguments[0].Expression.ToValue()
 		for _, arg := range actionTypesArg.Array.Values {
-			actionType := arg.Ident.Fragments[0].Fragment
-			eventName := makeEventName(parserModel.Name.Value, actionType)
+			actionType := scm.mapToActionType(arg.Ident.Fragments[0].Fragment)
+			eventName := makeEventName(parserModel.Name.Value, mapToEventName(actionType))
 
 			event := proto.FindEvent(scm.proto.Events, eventName)
 			if event == nil {
 				event = &proto.Event{
 					Name:       eventName,
 					ModelName:  parserModel.Name.Value,
-					ActionType: scm.mapToActionType(actionType),
+					ActionType: actionType,
 				}
 				scm.proto.Events = append(scm.proto.Events, event)
 			}
@@ -1389,26 +1389,19 @@ func (scm *Builder) makeSubscriberInputMessages() {
 			event := proto.FindEvent(scm.proto.Events, eventName)
 
 			eventMessage := &proto.Message{
-				Name:   makeSubscriberMessageEventName(subscriber.Name, event.ModelName, mapToParserType(event.ActionType)),
+				Name:   makeSubscriberMessageEventName(subscriber.Name, event.ModelName, mapToEventName(event.ActionType)),
+				Fields: []*proto.MessageField{},
+			}
+
+			eventTargetMessage := &proto.Message{
+				Name:   makeSubscriberMessageEventTargetName(subscriber.Name, event.ModelName, mapToEventName(event.ActionType)),
 				Fields: []*proto.MessageField{},
 			}
 
 			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
 				MessageName: eventMessage.Name,
-				Name:        "name",
+				Name:        "eventName",
 				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-			})
-
-			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
-				MessageName: eventMessage.Name,
-				Name:        "model",
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-			})
-
-			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
-				MessageName: eventMessage.Name,
-				Name:        "sourceId",
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_ID},
 			})
 
 			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
@@ -1426,6 +1419,27 @@ func (scm *Builder) makeSubscriberInputMessages() {
 
 			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
 				MessageName: eventMessage.Name,
+				Name:        "target",
+				Type: &proto.TypeInfo{
+					Type:        proto.Type_TYPE_MESSAGE,
+					MessageName: wrapperspb.String(eventTargetMessage.Name),
+				},
+			})
+
+			eventTargetMessage.Fields = append(eventTargetMessage.Fields, &proto.MessageField{
+				MessageName: eventTargetMessage.Name,
+				Name:        "id",
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_ID},
+			})
+
+			eventTargetMessage.Fields = append(eventTargetMessage.Fields, &proto.MessageField{
+				MessageName: eventTargetMessage.Name,
+				Name:        "type",
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+			})
+
+			eventTargetMessage.Fields = append(eventTargetMessage.Fields, &proto.MessageField{
+				MessageName: eventTargetMessage.Name,
 				Name:        "data",
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_MODEL,
@@ -1435,6 +1449,7 @@ func (scm *Builder) makeSubscriberInputMessages() {
 
 			message.Type.UnionNames = append(message.Type.UnionNames, wrapperspb.String(eventMessage.Name))
 			scm.proto.Messages = append(scm.proto.Messages, eventMessage)
+			scm.proto.Messages = append(scm.proto.Messages, eventTargetMessage)
 		}
 	}
 }
@@ -1557,14 +1572,14 @@ func (scm *Builder) mapToActionType(actionType string) proto.ActionType {
 	}
 }
 
-func mapToParserType(operationType proto.ActionType) string {
+func mapToEventName(operationType proto.ActionType) string {
 	switch operationType {
 	case proto.ActionType_ACTION_TYPE_CREATE:
-		return parser.ActionTypeCreate
+		return "created"
 	case proto.ActionType_ACTION_TYPE_UPDATE:
-		return parser.ActionTypeUpdate
+		return "updated"
 	case proto.ActionType_ACTION_TYPE_DELETE:
-		return parser.ActionTypeDelete
+		return "deleted"
 	default:
 		panic(fmt.Errorf("unhandled operation type '%s'", operationType))
 	}
@@ -1658,6 +1673,10 @@ func makeSubscriberMessageName(subscriberName string) string {
 
 func makeSubscriberMessageEventName(subscriberName string, modelName string, action string) string {
 	return fmt.Sprintf("%s%s%sEvent", casing.ToCamel(subscriberName), casing.ToCamel(modelName), casing.ToCamel(action))
+}
+
+func makeSubscriberMessageEventTargetName(subscriberName string, modelName string, action string) string {
+	return fmt.Sprintf("%s%s%sEventTarget", casing.ToCamel(subscriberName), casing.ToCamel(modelName), casing.ToCamel(action))
 }
 
 func makeEventName(modelName string, action string) string {

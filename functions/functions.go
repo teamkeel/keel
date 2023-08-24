@@ -7,6 +7,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/segmentio/ksuid"
+	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -221,7 +222,7 @@ func CallJob(ctx context.Context, job *proto.Job, inputs map[string]any, permiss
 }
 
 // CallSubscriber will invoke the subscriber function on the runtime node server.
-func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, inputs map[string]any) error {
+func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *events.Event) error {
 	ctx, span := tracer.Start(ctx, "Call subscriber")
 	defer span.End()
 
@@ -244,7 +245,7 @@ func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, inputs ma
 		ID:     ksuid.New().String(),
 		Method: subscriber.Name,
 		Type:   SubscriberFunction,
-		Params: inputs,
+		Params: event,
 		Meta:   meta,
 	}
 
