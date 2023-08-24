@@ -77,7 +77,7 @@ jobs:
           tag: ${{ inputs.publishTag }}
           package: ./packages/${{ matrix.package }}
           dry-run: ${{ inputs.dryRun }}
-          strategy: upgrade
+          strategy: all
 
     outputs:
       version: ${{ inputs.version }}
