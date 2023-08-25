@@ -33,5 +33,5 @@ jobs:
     uses: ./.github/workflows/pre_release.yml
     with:
       publishTag: "dev"
-      versionFormat: "${major}.${minor}.${patch}-dev${increment}"
+      versionFormat: "${major}.${minor}.${patch}-${{ github.head_ref }}${increment}"
     secrets: inherit
