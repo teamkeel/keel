@@ -1,4 +1,4 @@
-name: Pre-Release
+name: Make Pre Release
 
 on:
   workflow_call:

@@ -1,4 +1,4 @@
-name: Pre-Release
+name: Initiate Pre-Release
 
 on:
   push:
