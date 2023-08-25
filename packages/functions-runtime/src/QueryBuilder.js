@@ -5,7 +5,11 @@ const {
   applyOrderBy,
 } = require("./applyAdditionalQueryConstraints");
 const { applyJoins } = require("./applyJoins");
-const { camelCaseObject, snakeCaseObject, upperCamelCase } = require("./casing");
+const {
+  camelCaseObject,
+  snakeCaseObject,
+  upperCamelCase,
+} = require("./casing");
 const { useDatabase } = require("./database");
 const { QueryContext } = require("./QueryContext");
 const tracing = require("./tracing");
