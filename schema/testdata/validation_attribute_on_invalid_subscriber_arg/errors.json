@@ -1,0 +1,123 @@
+{
+  "errors": [
+    {
+      "message": "@on requires two arguments - an array of action types and a subscriber name",
+      "hint": "For example, @on([create, update], verifyEmailAddress)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 122,
+        "line": 10,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 125,
+        "line": 10,
+        "column": 8
+      }
+    },
+    {
+      "message": "@on subscriber argument must be a valid function name",
+      "hint": "For example, @on([create, update], verifyEmailAddress)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 154,
+        "line": 11,
+        "column": 19
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 157,
+        "line": 11,
+        "column": 22
+      }
+    },
+    {
+      "message": "@on subscriber argument must be a valid function name",
+      "hint": "For example, @on([create, update], verifyEmailAddress)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 177,
+        "line": 12,
+        "column": 19
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 189,
+        "line": 12,
+        "column": 31
+      }
+    },
+    {
+      "message": "a valid function name must be in lower camel case",
+      "hint": "Try use 'verifyEmail'",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 209,
+        "line": 13,
+        "column": 19
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 220,
+        "line": 13,
+        "column": 30
+      }
+    },
+    {
+      "message": "@on only takes two arguments",
+      "hint": "For example, @on([create, update], verifyEmailAddress)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 253,
+        "line": 14,
+        "column": 32
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 257,
+        "line": 14,
+        "column": 36
+      }
+    },
+    {
+      "message": "@on subscriber argument must be a valid function name",
+      "hint": "For example, @on([create, update], verifyEmailAddress)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 277,
+        "line": 15,
+        "column": 19
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 290,
+        "line": 15,
+        "column": 32
+      }
+    },
+    {
+      "message": "a valid function name must be in lower camel case",
+      "hint": "Try use 'verifyEmail'",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 310,
+        "line": 16,
+        "column": 19
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
+        "offset": 322,
+        "line": 16,
+        "column": 31
+      }
+    }
+  ]
+}

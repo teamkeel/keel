@@ -1,16 +1,16 @@
 model Account {
     fields {
-        name Text @on
+        name Text @on([update], verifyEmail)
     }
 
     actions {
         create createAccount() with (name) {
-            @on(sendWelcomeMail)
+            @on([create], sendWelcomeMail)
         }
-
+        
         update updateAccount() {
             @on(sendWelcomeMail)
-            @on(verifyEmail)
+            @on([update], verifyEmail)
             @function
         }
     }
@@ -18,5 +18,5 @@ model Account {
 
 job CheckAccount {
     @permission(expression: ctx.isAuthenticated)
-    @on(sendWelcomeMail)
+    @on([create], sendWelcomeMail)
 }
