@@ -87,6 +87,28 @@ func auditModel() *proto.Model {
 				},
 				Optional: false,
 			},
+
+			{
+				ModelName: auditModelName,
+				Name:      "identityId",
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(auditModelName),
+					FieldName: wrapperspb.String("identityId"),
+				},
+				Optional: false,
+			},
+
+			{
+				ModelName: auditModelName,
+				Name:      "traceId",
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_STRING,
+					ModelName: wrapperspb.String(auditModelName),
+					FieldName: wrapperspb.String("traceId"),
+				},
+				Optional: false,
+			},
 		},
 	}
 	return &mdl

@@ -16,7 +16,6 @@ model Person {
 }
 
 ===
-
 CREATE TABLE "identity" (
 "email" TEXT,
 "email_verified" BOOL,
@@ -37,7 +36,9 @@ CREATE TABLE "keel_audit" (
 "op" TEXT NOT NULL,
 "data" jsonb NOT NULL,
 "id" TEXT NOT NULL DEFAULT ksuid(),
-"created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"identity_id" TEXT NOT NULL,
+"trace_id" TEXT NOT NULL
 );
 ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
