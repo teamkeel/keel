@@ -279,8 +279,10 @@ func captureRequestMetaForAudit(scope *Scope, span trace.Span) (err error) {
 		return err
 	}
 
-	s1 := fmt.Sprintf("select set_config('audit.identity_id', %s, true);", identityId)
-	s2 := fmt.Sprintf("select set_config('audit.trace_id', %s, true);", traceSpanId)
+	// The 'true' in the SQL below tells Postgres to set the config values only "locally" -
+	// which is defined as only in the scope of the current transaction.
+	s1 := fmt.Sprintf("select set_config('audit.identity_id', '%s', 'true');", identityId)
+	s2 := fmt.Sprintf("select set_config('audit.trace_id', '%s', 'true');", traceSpanId)
 	sql := strings.Join([]string{s1, s2}, "\n")
 	_, err = db.ExecuteStatement(ctx, sql)
 	if err != nil {
