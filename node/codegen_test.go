@@ -1555,6 +1555,8 @@ model Person {
                 });
 
                 const constructor = resolvedValue?.constructor?.name
+                span.addEvent('constructor value is ' + constructor);
+                span.addEvent('constructor is ' + resolvedValue?.constructor);
                 if (constructor === 'QueryBuilder') {
                     span.addEvent('using QueryBuilder')
                     builder = resolvedValue;
@@ -1678,6 +1680,8 @@ const DeletePerson = (hooks = {}) => {
                 });
 
                 const constructor = resolvedValue?.constructor?.name
+                span.addEvent('constructor value is ' + constructor);
+                span.addEvent('constructor is ' + resolvedValue?.constructor);
                 if (constructor === 'QueryBuilder') {
                     span.addEvent('using QueryBuilder')
                     builder = resolvedValue;
@@ -1727,6 +1731,8 @@ const ListPeople = (hooks = {}) => {
                 });
 
                 const constructor = resolvedValue?.constructor?.name
+                span.addEvent('constructor value is ' + constructor);
+                span.addEvent('constructor is ' + resolvedValue?.constructor);
                 if (constructor === 'QueryBuilder') {
                     span.addEvent('using QueryBuilder')
                     builder = resolvedValue;

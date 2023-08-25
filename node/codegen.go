@@ -786,6 +786,9 @@ func writeBeforeQueryHook(w *codegen.Writer, action *proto.Action) {
 
 	w.Writeln("const constructor = resolvedValue?.constructor?.name")
 
+	w.Writeln("span.addEvent('constructor value is ' + constructor);")
+	w.Writeln("span.addEvent('constructor is ' + resolvedValue?.constructor);")
+
 	w.Writeln("if (constructor === 'QueryBuilder') {")
 	w.Indent()
 
