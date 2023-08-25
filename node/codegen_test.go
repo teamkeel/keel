@@ -1551,6 +1551,7 @@ const GetPerson = (hooks = {}) => {
             let resolvedValue;
             await runtime.tracing.withSpan('getPerson.beforeQuery', async (span) => {
                 resolvedValue = await hooks.beforeQuery(ctx, inputs, builder);
+                span.setAttribute('resolvedValue', resolvedValue);
             });
 
             const constructor = resolvedValue?.constructor?.name
@@ -1558,6 +1559,7 @@ const GetPerson = (hooks = {}) => {
                 builder = resolvedValue;
                 // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
                 data = await builder.findOne();
+                span.setAttribute('data', data);
             } else {
                 // in this case, the data is just the resolved value of the promise
                 data = resolvedValue;
@@ -1663,6 +1665,7 @@ const DeletePerson = (hooks = {}) => {
             let resolvedValue;
             await runtime.tracing.withSpan('deletePerson.beforeQuery', async (span) => {
                 resolvedValue = await hooks.beforeQuery(ctx, inputs, builder);
+                span.setAttribute('resolvedValue', resolvedValue);
             });
 
             const constructor = resolvedValue?.constructor?.name
@@ -1670,6 +1673,7 @@ const DeletePerson = (hooks = {}) => {
                 builder = resolvedValue;
                 // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
                 data = await builder.delete();
+                span.setAttribute('data', data);
             } else {
                 // in this case, the data is just the resolved value of the promise
                 data = resolvedValue;
@@ -1705,6 +1709,7 @@ const ListPeople = (hooks = {}) => {
             let resolvedValue;
             await runtime.tracing.withSpan('listPeople.beforeQuery', async (span) => {
                 resolvedValue = await hooks.beforeQuery(ctx, inputs, builder);
+                span.setAttribute('resolvedValue', resolvedValue);
             });
 
             const constructor = resolvedValue?.constructor?.name
@@ -1712,6 +1717,7 @@ const ListPeople = (hooks = {}) => {
                 builder = resolvedValue;
                 // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
                 data = await builder.findMany();
+                span.setAttribute('data', data);
             } else {
                 // in this case, the data is just the resolved value of the promise
                 data = resolvedValue;
