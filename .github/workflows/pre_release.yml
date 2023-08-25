@@ -27,6 +27,7 @@ jobs:
       # generate a new version number based on semantic versioning
       - name: Generate version
         id: generate-version
+        if: github.head_ref == 'main'
         uses: paulhatch/semantic-version@v5.0.3
         with:
           tag_prefix: "v"
@@ -36,30 +37,51 @@ jobs:
           minor_pattern: "^(feat|fix)(\\(.*\\))?: .*$"
           version_format: "${major}.${minor}.${patch}-prerelease${increment}"
 
+      - name: Store release version
+        if: github.head_ref == 'main'
+        run: echo "NEW_VERSION=${{ steps.generate-version.outputs.version }}" >> "$GITHUB_OUTPUT"
+
+      # generate a new version number based on semantic versioning
+      - name: Generate version
+        id: generate-version-branch
+        if: github.head_ref != 'main'
+        uses: paulhatch/semantic-version@v5.0.3
+        with:
+          tag_prefix: "v"
+          use_branches: true
+          major_pattern: "[A-Za-z]+.*!:"
+          major_regexp_flags: "g"
+          minor_pattern: "^(feat|fix)(\\(.*\\))?: .*$"
+          version_format: "${major}.${minor}.${patch}-dev${increment}"
+
+      - name: Store release version
+        if: github.head_ref != 'main'
+        run: echo "NEW_VERSION=${{ steps.generate-version-branch.outputs.version }}" >> "$GITHUB_ENV"
+
       - name: Output release version
-        run: echo "NEW_VERSION=${{ steps.generate-version.outputs.version }}"
+        run: echo "NEW_VERSION=${{ github.env.NEW_VERSION }}"
 
     outputs:
-      version: ${{ steps.generate-version.outputs.version }}
+      version: ${{ github.env.NEW_VERSION }}
 
-  npm_release:
-    needs: [setup]
-    uses: ./.github/workflows/npm_release.yml
-    with:
-      version: ${{ needs.setup.outputs.version }}
-      publishTag: "next"
-      dryRun: false
-    secrets: inherit
+  # npm_release:
+  #   needs: [setup]
+  #   uses: ./.github/workflows/npm_release.yml
+  #   with:
+  #     version: ${{ needs.setup.outputs.version }}
+  #     publishTag: "next"
+  #     dryRun: false
+  #   secrets: inherit
 
-  github_release:
-    needs: [setup, npm_release]
-    uses: ./.github/workflows/github_release.yml
-    with:
-      branch: main
-      version: ${{ needs.setup.outputs.version }}
-      preRelease: true
-      draft: false
-      makeLatest: false
-      generateChangelog: true
-      releaseEvent: "new-runtime-pre-release"
-    secrets: inherit
+  # github_release:
+  #   needs: [setup, npm_release]
+  #   uses: ./.github/workflows/github_release.yml
+  #   with:
+  #     branch: main
+  #     version: ${{ needs.setup.outputs.version }}
+  #     preRelease: true
+  #     draft: false
+  #     makeLatest: false
+  #     generateChangelog: true
+  #     releaseEvent: "new-runtime-pre-release"
+  #   secrets: inherit
