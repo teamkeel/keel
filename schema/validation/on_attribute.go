@@ -23,12 +23,12 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 
 	return Visitor{
 		EnterAttribute: func(attribute *parser.AttributeNode) {
-			currentAttribute = attribute
-			arguments = []*parser.AttributeArgumentNode{}
-
 			if attribute.Name.Value != parser.AttributeOn {
 				return
 			}
+
+			currentAttribute = attribute
+			arguments = []*parser.AttributeArgumentNode{}
 
 			if len(attribute.Arguments) < 2 {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
@@ -41,8 +41,11 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 				))
 			}
 		},
+		LeaveAttribute: func(n *parser.AttributeNode) {
+			currentAttribute = nil
+		},
 		EnterAttributeArgument: func(arg *parser.AttributeArgumentNode) {
-			if currentAttribute.Name.Value != parser.AttributeOn {
+			if currentAttribute == nil {
 				return
 			}
 
