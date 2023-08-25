@@ -60,7 +60,7 @@ jobs:
         run: echo "NEW_VERSION=$new_version"
 
     outputs:
-      version: ${{ github.env.NEW_VERSION }}
+      version: $new_version
 
   npm_release_prerelease:
     if: github.head_ref == 'main'
