@@ -1043,15 +1043,38 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 			// type will be ActionNameValues
 			valuesType := fmt.Sprintf("%sValues", casing.ToCamel(action.Name))
 
+			w.Writef(`
+	/**
+	* beforeQuery can be used to modify the existing query, or replace it entirely.
+	* If the function is marked with the async keyword, then the expected return type is a %s.
+	* If the function is non-async, then the expected return type is an instance of QueryBuilder.
+	*/
+`, returnType)
 			// the signature for beforeQuery for update is slightly different
 			// as we want to pass both the original inputs, and the version of values
 			// mutated by the beforeWrite hook to the function
 			w.Writef("beforeQuery?: (ctx: ContextAPI, inputs: %s, values: %s) => %s\n", inputMessage, valuesType, returnType)
 
+			w.Write(`
+	/**
+	* afterQuery is useful for modifying the response data purely for the purposes of presentation, performing custom permission checks, or performing other side effects. 
+	*/
+`)
 			// afterQuery returns a Promise<T> or T
 			w.Writef("afterQuery?: (ctx: ContextAPI, inputs: %s, %s: %s) => Promise<%s>\n", inputMessage, casing.ToLowerCamel(action.ModelName), action.ModelName, action.ModelName)
 
+			w.Write(`
+	/**
+	* The beforeWrite hook allows you to modify the values that will be written to the database.
+	*/
+	`)
 			w.Writef("beforeWrite?: (ctx: ContextAPI, inputs: %s, values: %s) => Promise<%s>\n", inputMessage, valuesType, valuesType)
+
+			w.Write(`
+	/**
+	* The afterWrite hook allows you to perform side effects after the record has been written to the database. Common use cases include creating other models, and performing custom permission checks.
+	*/
+	`)
 			w.Writef("afterWrite?: (ctx: ContextAPI, inputs: %s, data: %s) => Promise<void>\n", inputMessage, action.ModelName)
 		case action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_DELETE:
 			resolvedReturnType := "unknown"
@@ -1072,7 +1095,13 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 			// the return type for beforeQuery can either be a {Model}QueryBuilder
 			// or a Promise<{Model}{[]}>
 			returnType := fmt.Sprintf("%sQueryBuilder | Promise<%s>", action.ModelName, resolvedReturnType)
-
+			w.Writef(`
+	/**
+	* beforeQuery can be used to modify the existing query, or replace it entirely.
+	* If the function is marked with the async keyword, then the expected return type is a %s.
+	* If the function is non-async, then the expected return type is an instance of QueryBuilder.
+	*/
+`, returnType)
 			w.Writef("beforeQuery?: (ctx: ContextAPI, inputs: %s, query: %s) => %s\n", inputMessage, queryBuilderType, returnType)
 
 			dataVariableName := ""
@@ -1085,6 +1114,11 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 				dataVariableName = "deletedId"
 			}
 
+			w.Write(`
+	/**
+	* afterQuery is useful for modifying the response data purely for the purposes of presentation, performing custom permission checks, or performing other side effects. 
+	*/
+`)
 			// afterQuery returns a Promise<T> or T
 			w.Writef("afterQuery?: (ctx: ContextAPI, inputs: %s, %s: %s) => Promise<%s> | %s\n", inputMessage, dataVariableName, resolvedReturnType, resolvedReturnType, resolvedReturnType)
 
@@ -1098,7 +1132,18 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 				valuesType = fmt.Sprintf("Partial<%s>", action.ModelName)
 			}
 
+			w.Write(`
+	/**
+	* The beforeWrite hook allows you to modify the values that will be written to the database.
+	*/
+`)
 			w.Writef("beforeWrite?: (ctx: ContextAPI, inputs: %s, values: %s) => Promise<%s>\n", inputMessage, valuesType, valuesType)
+
+			w.Write(`
+	/**
+	* The afterWrite hook allows you to perform side effects after the record has been written to the database. Common use cases include creating other models, and performing custom permission checks.
+	*/
+	`)
 			w.Writef("afterWrite?: (ctx: ContextAPI, inputs: %s, data: %s) => Promise<void>\n", inputMessage, action.ModelName)
 		}
 

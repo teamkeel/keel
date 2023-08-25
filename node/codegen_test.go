@@ -1486,31 +1486,88 @@ model Person {
 	expected := `
 export declare function GetPerson(hooks?: GetPersonHooks) : void
 export type GetPersonHooks = {
+    
+    /**
+    * beforeQuery can be used to modify the existing query, or replace it entirely.
+    * If the function is marked with the async keyword, then the expected return type is a PersonQueryBuilder | Promise<Person>.
+    * If the function is non-async, then the expected return type is an instance of QueryBuilder.
+    */
     beforeQuery?: (ctx: ContextAPI, inputs: GetPersonInput, query: PersonQueryBuilder) => PersonQueryBuilder | Promise<Person>
+    
+    /**
+    * afterQuery is useful for modifying the response data purely for the purposes of presentation, performing custom permission checks, or performing other side effects. 
+    */
     afterQuery?: (ctx: ContextAPI, inputs: GetPersonInput, record: Person) => Promise<Person> | Person
 }
 export declare function CreatePerson(hooks?: CreatePersonHooks) : void
 export type CreatePersonHooks = {
+    
+    /**
+    * The beforeWrite hook allows you to modify the values that will be written to the database.
+    */
     beforeWrite?: (ctx: ContextAPI, inputs: CreatePersonInput, values: PersonCreateValues) => Promise<PersonCreateValues>
+    
+    /**
+    * The afterWrite hook allows you to perform side effects after the record has been written to the database. Common use cases include creating other models, and performing custom permission checks.
+    */
     afterWrite?: (ctx: ContextAPI, inputs: CreatePersonInput, data: Person) => Promise<void>
 }
 export declare function UpdatePerson(hooks?: UpdatePersonHooks) : void
 export type UpdatePersonHooks = {
+    
+    /**
+    * beforeQuery can be used to modify the existing query, or replace it entirely.
+    * If the function is marked with the async keyword, then the expected return type is a Promise<Person>.
+    * If the function is non-async, then the expected return type is an instance of QueryBuilder.
+    */
     beforeQuery?: (ctx: ContextAPI, inputs: UpdatePersonInput, values: UpdatePersonValues) => Promise<Person>
+    
+    /**
+    * afterQuery is useful for modifying the response data purely for the purposes of presentation, performing custom permission checks, or performing other side effects. 
+    */
     afterQuery?: (ctx: ContextAPI, inputs: UpdatePersonInput, person: Person) => Promise<Person>
+    
+    /**
+    * The beforeWrite hook allows you to modify the values that will be written to the database.
+    */
     beforeWrite?: (ctx: ContextAPI, inputs: UpdatePersonInput, values: UpdatePersonValues) => Promise<UpdatePersonValues>
+    
+    /**
+    * The afterWrite hook allows you to perform side effects after the record has been written to the database. Common use cases include creating other models, and performing custom permission checks.
+    */
     afterWrite?: (ctx: ContextAPI, inputs: UpdatePersonInput, data: Person) => Promise<void>
 }
 export declare function DeletePerson(hooks?: DeletePersonHooks) : void
 export type DeletePersonHooks = {
+    
+    /**
+    * beforeQuery can be used to modify the existing query, or replace it entirely.
+    * If the function is marked with the async keyword, then the expected return type is a PersonQueryBuilder | Promise<string>.
+    * If the function is non-async, then the expected return type is an instance of QueryBuilder.
+    */
     beforeQuery?: (ctx: ContextAPI, inputs: DeletePersonInput, query: PersonQueryBuilder) => PersonQueryBuilder | Promise<string>
+    
+    /**
+    * afterQuery is useful for modifying the response data purely for the purposes of presentation, performing custom permission checks, or performing other side effects. 
+    */
     afterQuery?: (ctx: ContextAPI, inputs: DeletePersonInput, deletedId: string) => Promise<string> | string
 }
 export declare function ListPeople(hooks?: ListPeopleHooks) : void
 export type ListPeopleHooks = {
+    
+    /**
+    * beforeQuery can be used to modify the existing query, or replace it entirely.
+    * If the function is marked with the async keyword, then the expected return type is a PersonQueryBuilder | Promise<Person[]>.
+    * If the function is non-async, then the expected return type is an instance of QueryBuilder.
+    */
     beforeQuery?: (ctx: ContextAPI, inputs: ListPeopleInput, query: PersonQueryBuilder) => PersonQueryBuilder | Promise<Person[]>
+    
+    /**
+    * afterQuery is useful for modifying the response data purely for the purposes of presentation, performing custom permission checks, or performing other side effects. 
+    */
     afterQuery?: (ctx: ContextAPI, inputs: ListPeopleInput, records: Person[]) => Promise<Person[]> | Person[]
-}`
+}
+`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
