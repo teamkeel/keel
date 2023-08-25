@@ -3,13 +3,16 @@ package actions
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/actions")
@@ -91,6 +94,12 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 	)
 
 	scope = scope.WithContext(ctx)
+
+	// Capture the request-oriented data that is needed by the audit trigger function
+	// that will get fired inside Postgres if this action mutates any rows.
+	if err := captureRequestMetaForAudit(scope, span); err != nil {
+		return nil, nil, err
+	}
 
 	// inputs can be anything - with arbitrary functions 'Any' type, they can be
 	// an array / number / string etc, which doesn't fit in with the traditional map[string]any definition of an inputs object
@@ -239,4 +248,43 @@ func executeAutoAction(scope *Scope, inputs map[string]any) (any, map[string][]s
 	default:
 		return nil, nil, fmt.Errorf("unhandled auto action type: %s", scope.Action.Type.String())
 	}
+}
+
+// captureRequestMetaForAudit extracts the Identity associated with this Scope (if available),
+// and the current trace span id, and posts them into short-lived, (transaction-scoped),
+// Postgres config.
+//
+// The aim is to make these data available to the process_audit() function that fires
+// inside Postgres when rows are mutated.
+func captureRequestMetaForAudit(scope *Scope, span trace.Span) (err error) {
+
+	// Capture the required data from the scope and the trace span.
+
+	ctx := scope.Context
+
+	var identityId string = "unknown"
+	var traceSpanId string = "unknown"
+
+	if identity, err := runtimectx.GetIdentity(ctx); err == nil {
+		identityId = identity.Id
+	}
+
+	if span.SpanContext().HasSpanID() {
+		traceSpanId = span.SpanContext().SpanID().String()
+	}
+
+	// Write the captured data into a short-lived (transaction-scoped) postgres config.
+	db, err := runtimectx.GetDatabase(ctx)
+	if err != nil {
+		return err
+	}
+
+	s1 := fmt.Sprintf("select set_config('audit.identity_id', %s, true);", identityId)
+	s2 := fmt.Sprintf("select set_config('audit.trace_id', %s, true);", traceSpanId)
+	sql := strings.Join([]string{s1, s2}, "\n")
+	_, err = db.ExecuteStatement(ctx, sql)
+	if err != nil {
+		return err
+	}
+	return nil
 }
