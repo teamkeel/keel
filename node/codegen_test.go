@@ -1489,7 +1489,7 @@ export type GetPersonHooks = {
     
     /**
     * beforeQuery can be used to modify the existing query, or replace it entirely.
-    * If the function is marked with the async keyword, then the expected return type is a PersonQueryBuilder | Promise<Person>.
+    * If the function is marked with the async keyword, then the expected return type is a Promise<Person>.
     * If the function is non-async, then the expected return type is an instance of QueryBuilder.
     */
     beforeQuery?: (ctx: ContextAPI, inputs: GetPersonInput, query: PersonQueryBuilder) => PersonQueryBuilder | Promise<Person>
@@ -1542,7 +1542,7 @@ export type DeletePersonHooks = {
     
     /**
     * beforeQuery can be used to modify the existing query, or replace it entirely.
-    * If the function is marked with the async keyword, then the expected return type is a PersonQueryBuilder | Promise<string>.
+    * If the function is marked with the async keyword, then the expected return type is a Promise<string>.
     * If the function is non-async, then the expected return type is an instance of QueryBuilder.
     */
     beforeQuery?: (ctx: ContextAPI, inputs: DeletePersonInput, query: PersonQueryBuilder) => PersonQueryBuilder | Promise<string>
@@ -1557,7 +1557,7 @@ export type ListPeopleHooks = {
     
     /**
     * beforeQuery can be used to modify the existing query, or replace it entirely.
-    * If the function is marked with the async keyword, then the expected return type is a PersonQueryBuilder | Promise<Person[]>.
+    * If the function is marked with the async keyword, then the expected return type is a Promise<Person[]>.
     * If the function is non-async, then the expected return type is an instance of QueryBuilder.
     */
     beforeQuery?: (ctx: ContextAPI, inputs: ListPeopleInput, query: PersonQueryBuilder) => PersonQueryBuilder | Promise<Person[]>

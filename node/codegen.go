@@ -1098,10 +1098,10 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 			w.Writef(`
 	/**
 	* beforeQuery can be used to modify the existing query, or replace it entirely.
-	* If the function is marked with the async keyword, then the expected return type is a %s.
+	* If the function is marked with the async keyword, then the expected return type is a Promise<%s>.
 	* If the function is non-async, then the expected return type is an instance of QueryBuilder.
 	*/
-`, returnType)
+`, resolvedReturnType)
 			w.Writef("beforeQuery?: (ctx: ContextAPI, inputs: %s, query: %s) => %s\n", inputMessage, queryBuilderType, returnType)
 
 			dataVariableName := ""
