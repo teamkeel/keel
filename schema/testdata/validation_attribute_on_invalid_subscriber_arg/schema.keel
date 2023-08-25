@@ -3,7 +3,7 @@ model Account {
         name Text
     }
 
-    operations {
+    actions {
         create createAccount() with (name)
     }
 

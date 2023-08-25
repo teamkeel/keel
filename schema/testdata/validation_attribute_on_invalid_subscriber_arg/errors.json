@@ -6,13 +6,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 125,
+        "offset": 122,
         "line": 10,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 128,
+        "offset": 125,
         "line": 10,
         "column": 8
       }
@@ -23,13 +23,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 157,
+        "offset": 154,
         "line": 11,
         "column": 19
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 160,
+        "offset": 157,
         "line": 11,
         "column": 22
       }
@@ -40,13 +40,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 180,
+        "offset": 177,
         "line": 12,
         "column": 19
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 192,
+        "offset": 189,
         "line": 12,
         "column": 31
       }
@@ -57,13 +57,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 212,
+        "offset": 209,
         "line": 13,
         "column": 19
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 223,
+        "offset": 220,
         "line": 13,
         "column": 30
       }
@@ -74,13 +74,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 256,
+        "offset": 253,
         "line": 14,
         "column": 32
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 260,
+        "offset": 257,
         "line": 14,
         "column": 36
       }
@@ -91,13 +91,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 280,
+        "offset": 277,
         "line": 15,
         "column": 19
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 293,
+        "offset": 290,
         "line": 15,
         "column": 32
       }
@@ -108,13 +108,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 313,
+        "offset": 310,
         "line": 16,
         "column": 19
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on_invalid_subscriber_arg/schema.keel",
-        "offset": 325,
+        "offset": 322,
         "line": 16,
         "column": 31
       }

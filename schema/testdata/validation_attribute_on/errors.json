@@ -23,13 +23,13 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 129,
+        "offset": 152,
         "line": 8,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 132,
+        "offset": 155,
         "line": 8,
         "column": 16
       }
@@ -40,13 +40,13 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 206,
+        "offset": 247,
         "line": 12,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 209,
+        "offset": 250,
         "line": 12,
         "column": 16
       }
@@ -57,13 +57,13 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 239,
+        "offset": 280,
         "line": 13,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 242,
+        "offset": 283,
         "line": 13,
         "column": 16
       }
@@ -74,13 +74,13 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 369,
+        "offset": 420,
         "line": 21,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 372,
+        "offset": 423,
         "line": 21,
         "column": 8
       }
@@ -91,14 +91,14 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 264,
-        "line": 14,
+        "offset": 247,
+        "line": 12,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 267,
-        "line": 14,
+        "offset": 250,
+        "line": 12,
         "column": 16
       }
     },
@@ -108,14 +108,14 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 268,
-        "line": 14,
+        "offset": 251,
+        "line": 12,
         "column": 17
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 283,
-        "line": 14,
+        "offset": 266,
+        "line": 12,
         "column": 32
       }
     }

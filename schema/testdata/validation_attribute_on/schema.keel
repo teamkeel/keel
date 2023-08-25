@@ -7,8 +7,7 @@ model Account {
         create createAccount() with (name) {
             @on([create], sendWelcomeMail)
         }
-    }
-
+        
         update updateAccount() {
             @on(sendWelcomeMail)
             @on([update], verifyEmail)
