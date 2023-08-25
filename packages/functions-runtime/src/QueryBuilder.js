@@ -5,7 +5,7 @@ const {
   applyOrderBy,
 } = require("./applyAdditionalQueryConstraints");
 const { applyJoins } = require("./applyJoins");
-const { camelCaseObject, snakeCaseObject } = require("./casing");
+const { camelCaseObject, snakeCaseObject, upperCamelCase } = require("./casing");
 const { useDatabase } = require("./database");
 const { QueryContext } = require("./QueryContext");
 const tracing = require("./tracing");
@@ -21,6 +21,7 @@ class QueryBuilder {
     this._tableName = tableName;
     this._context = context;
     this._db = db;
+    this._modelName = upperCamelCase(this._tableName);
   }
 
   where(where) {
