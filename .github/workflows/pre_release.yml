@@ -38,7 +38,7 @@ jobs:
 
       - name: Store release version
         if: github.head_ref == 'main'
-        run: echo "NEW_VERSION=${{ steps.generate-version.outputs.version }}" >> "$GITHUB_OUTPUT"
+        run: echo "new_version=${{ steps.generate-version.outputs.version }}" >> "$GITHUB_OUTPUT"
 
       # generate a new version number based on semantic versioning
       - name: Generate version
@@ -54,10 +54,10 @@ jobs:
 
       - name: Store release version
         if: github.head_ref != 'main'
-        run: echo "NEW_VERSION=${{ steps.generate-version-branch.outputs.version }}" >> "$GITHUB_ENV"
+        run: echo "new_version=${{ steps.generate-version-branch.outputs.version }}" >> "$GITHUB_ENV"
 
       - name: Output release version
-        run: echo "NEW_VERSION=${{ github.env.NEW_VERSION }}"
+        run: echo "NEW_VERSION=$new_version"
 
     outputs:
       version: ${{ github.env.NEW_VERSION }}
