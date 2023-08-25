@@ -539,6 +539,13 @@ func printAttributesBlock(writer *Writer, attributes []*parser.AttributeNode) {
 		return
 	}
 
+	if len(attributes) == 1 && attributes[0].Name.Value == parser.AttributeFunction {
+		writer.Write(" ")
+		printAttributes(writer, attributes)
+
+		return
+	}
+
 	writer.Block(func() {
 		printAttributes(writer, attributes)
 	})

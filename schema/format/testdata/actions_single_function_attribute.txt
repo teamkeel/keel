@@ -1,0 +1,13 @@
+model Post {
+  actions {
+    get getPost(id) @function
+  }
+}
+
+===
+
+model Post {
+    actions {
+        get getPost(id) @function
+    }
+}
