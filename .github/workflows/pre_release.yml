@@ -62,24 +62,36 @@ jobs:
     outputs:
       version: ${{ github.env.NEW_VERSION }}
 
-  # npm_release:
-  #   needs: [setup]
-  #   uses: ./.github/workflows/npm_release.yml
-  #   with:
-  #     version: ${{ needs.setup.outputs.version }}
-  #     publishTag: "next"
-  #     dryRun: false
-  #   secrets: inherit
+  npm_release_prerelease:
+    if: github.head_ref == 'main'
+    needs: [setup]
+    uses: ./.github/workflows/npm_release.yml
+    with:
+      version: ${{ needs.setup.outputs.version }}
+      publishTag: "next"
+      dryRun: false
+    secrets: inherit
 
-  # github_release:
-  #   needs: [setup, npm_release]
-  #   uses: ./.github/workflows/github_release.yml
-  #   with:
-  #     branch: main
-  #     version: ${{ needs.setup.outputs.version }}
-  #     preRelease: true
-  #     draft: false
-  #     makeLatest: false
-  #     generateChangelog: true
-  #     releaseEvent: "new-runtime-pre-release"
-  #   secrets: inherit
+  npm_release_dev:
+    if: github.head_ref != 'main'
+    needs: [setup]
+    uses: ./.github/workflows/npm_release.yml
+    with:
+      version: ${{ needs.setup.outputs.version }}
+      publishTag: "dev"
+      dryRun: false
+    secrets: inherit
+
+  github_release:
+    if: ${{ always() }}
+    needs: [setup, npm_release_prerelease, npm_release_dev]
+    uses: ./.github/workflows/github_release.yml
+    with:
+      branch: ${{ github.head_ref }}
+      version: ${{ needs.setup.outputs.version }}
+      preRelease: true
+      draft: false
+      makeLatest: false
+      generateChangelog: true
+      releaseEvent: "new-runtime-pre-release"
+    secrets: inherit
