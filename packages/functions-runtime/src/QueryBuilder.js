@@ -49,6 +49,10 @@ class QueryBuilder {
     return new QueryBuilder(this._tableName, context, builder);
   }
 
+  sql() {
+    return this._db.compile().sql;
+  }
+
   async update(values) {
     const name = tracing.spanNameForModelAPI(this._modelName, "update");
     const db = useDatabase();

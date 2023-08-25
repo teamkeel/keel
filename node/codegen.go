@@ -794,7 +794,7 @@ func writeBeforeQueryHook(w *codegen.Writer, action *proto.Action) {
 
 	w.Writeln("// in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query")
 
-	w.Writeln("span.addEvent(builder.compile().sql)")
+	w.Writeln("span.addEvent(builder.sql())")
 	switch action.Type {
 	case proto.ActionType_ACTION_TYPE_LIST:
 		w.Writeln("data = await builder.findMany();")

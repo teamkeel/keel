@@ -1559,7 +1559,7 @@ model Person {
                     span.addEvent('using QueryBuilder')
                     builder = resolvedValue;
                     // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
-                    span.addEvent(builder.compile().sql)
+                    span.addEvent(builder.sql())
                     data = await builder.findOne();
                     span.addEvent('data', data);
                 } else {
@@ -1682,7 +1682,7 @@ const DeletePerson = (hooks = {}) => {
                     span.addEvent('using QueryBuilder')
                     builder = resolvedValue;
                     // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
-                    span.addEvent(builder.compile().sql)
+                    span.addEvent(builder.sql())
                     data = await builder.delete();
                     span.addEvent('data', data);
                 } else {
@@ -1731,7 +1731,7 @@ const ListPeople = (hooks = {}) => {
                     span.addEvent('using QueryBuilder')
                     builder = resolvedValue;
                     // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
-                    span.addEvent(builder.compile().sql)
+                    span.addEvent(builder.sql())
                     data = await builder.findMany();
                     span.addEvent('data', data);
                 } else {
