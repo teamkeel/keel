@@ -207,6 +207,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 				if err != nil {
 					panic(err)
 				}
+				return
 			}
 
 			switch pathParts[0] {
@@ -223,11 +224,14 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 
 				identity, err := actions.HandleAuthorizationHeader(ctx, schema, r.Header)
 				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					_, err = w.Write([]byte(err.Error()))
+					response := common.NewJsonErrorResponse(err)
+
+					w.WriteHeader(response.Status)
+					_, err = w.Write(response.Body)
 					if err != nil {
 						panic(err)
 					}
+					return
 				}
 
 				if identity != nil {

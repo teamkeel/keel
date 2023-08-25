@@ -169,6 +169,13 @@ func NewPermissionError() RuntimeError {
 func NewAuthenticationFailedErr() RuntimeError {
 	return RuntimeError{
 		Code:    ErrAuthenticationFailed,
-		Message: "not authenticated",
+		Message: "authentication failed",
+	}
+}
+
+func NewAuthenticationFailedMessageErr(message string) RuntimeError {
+	return RuntimeError{
+		Code:    ErrAuthenticationFailed,
+		Message: message,
 	}
 }

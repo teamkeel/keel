@@ -20,6 +20,9 @@ model Post {
         get getPostRequiresNoAuthentication(id) {
             @permission(expression: ctx.isAuthenticated == false)
         }
+        get getPostPublic(id) {
+            @permission(expression: true)
+        }
         create createPostSetIsAuthenticated() with (title) {
             @set(post.isAuthenticated = ctx.isAuthenticated)
             @permission(expression: true)

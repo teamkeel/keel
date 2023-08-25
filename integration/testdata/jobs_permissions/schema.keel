@@ -19,12 +19,27 @@ job ManualJobTrueExpression {
     @permission(expression: true)
 }
 
+job ManualJobIsAuthenticatedExpression {
+    inputs {
+        id ID
+    }
+    @permission(expression: ctx.isAuthenticated)
+}
+
 job ManualJobEnvExpression {
     inputs {
         id ID
     }
 
     @permission(expression: ctx.env.REGION == "za-test")
+}
+
+job ManualJobEnvExpression2 {
+    inputs {
+        id ID
+    }
+
+    @permission(expression: ctx.env.REGION == "uk-test")
 }
 
 job ManualJobMultiPermission {

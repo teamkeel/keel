@@ -34,9 +34,9 @@ type AuthenticateResult struct {
 }
 
 var (
-	ErrInvalidToken     = errors.New("cannot be parsed or verified as a valid JWT")
-	ErrTokenExpired     = errors.New("token has expired")
-	ErrIdentityNotFound = errors.New("identity does not exist")
+	ErrInvalidToken     = common.NewAuthenticationFailedMessageErr("cannot be parsed or verified as a valid JWT")
+	ErrTokenExpired     = common.NewAuthenticationFailedMessageErr("token has expired")
+	ErrIdentityNotFound = common.NewAuthenticationFailedErr()
 )
 
 const (
@@ -215,7 +215,6 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 }
 
 func GenerateBearerToken(ctx context.Context, identityId string) (string, error) {
-
 	expiry := DefaultBearerTokenExpiry
 	config, err := runtimectx.GetAuthConfig(ctx)
 	if err == nil {
@@ -418,8 +417,8 @@ func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, header
 
 	headerSplit := strings.Split(header, "Bearer ")
 	if len(headerSplit) != 2 {
-		span.SetStatus(codes.Error, "no 'Bearer' prefix in the authentication header")
-		return nil, errors.New("invalid authorization header")
+		span.SetStatus(codes.Error, "no 'Bearer' prefix in the Authorization header")
+		return nil, common.NewAuthenticationFailedMessageErr("no 'Bearer' prefix in the Authorization header")
 	}
 
 	span.SetAttributes(attribute.String("token", headerSplit[1]))
@@ -449,39 +448,10 @@ func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, header
 
 	if identity == nil {
 		span.SetStatus(codes.Error, "identity not found")
-		return nil, nil
+		return nil, common.NewAuthenticationFailedErr()
 	}
 
 	span.SetAttributes(attribute.String("identity.id", identity.Id))
-
-	return identity, nil
-}
-
-func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) (*runtimectx.Identity, error) {
-	subject, issuer, err := ValidateBearerToken(ctx, token)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check that identity actually does exist as it could
-	// have been deleted after the bearer token was generated.
-	var identity *runtimectx.Identity
-	if issuer == "keel" || issuer == "" {
-		identity, err = FindIdentityById(ctx, schema, subject)
-	} else {
-		identity, err = FindIdentityByExternalId(ctx, schema, subject, issuer)
-		if identity == nil {
-			identity, err = CreateExternalIdentity(ctx, schema, subject, issuer, token)
-		}
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	if identity == nil {
-		return nil, ErrIdentityNotFound
-	}
 
 	return identity, nil
 }

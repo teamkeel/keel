@@ -1431,11 +1431,12 @@ export default defineConfig({
 			Path: ".build/vitest.setup.mjs",
 			Contents: `
 import { expect } from "vitest";
-import { toHaveError, toHaveAuthorizationError } from "@teamkeel/testing-runtime";
+import { toHaveError, toHaveAuthorizationError, toHaveAuthenticationError } from "@teamkeel/testing-runtime";
 
 expect.extend({
 	toHaveError,
 	toHaveAuthorizationError,
+	toHaveAuthenticationError,
 });
 			`,
 		},

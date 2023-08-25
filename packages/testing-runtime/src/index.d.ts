@@ -8,6 +8,7 @@ interface ActionError {
 
 interface CustomMatchers<R = unknown> {
   toHaveAuthorizationError(): void;
+  toHaveAuthenticationError(): void;
   toHaveError(err: Partial<ActionError>): void;
 }
 

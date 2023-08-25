@@ -44,7 +44,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		identity, err := actions.HandleAuthorizationHeader(ctx, p, r.Header)
 		if err != nil {
-			return common.NewJsonResponse(http.StatusUnauthorized, common.NewAuthenticationFailedErr(), nil)
+			return common.NewJsonErrorResponse(err)
 		}
 		if identity != nil {
 			ctx = runtimectx.WithIdentity(ctx, identity)
@@ -117,47 +117,20 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		scope := actions.NewScope(ctx, action, p)
 
-		keelEnv := runtimectx.GetEnv(ctx)
-
 		response, headers, err := actions.Execute(scope, inputs)
 		if err != nil {
 			span.RecordError(err, trace.WithStackTrace(true))
 			span.SetStatus(codes.Error, err.Error())
 
-			code := "ERR_INTERNAL"
-
-			message := "error executing request"
-
-			if keelEnv == runtimectx.KeelEnvTest {
-				message = fmt.Sprintf("error executing request - %s", err.Error())
-			}
-
-			httpCode := http.StatusInternalServerError
-
 			var runtimeErr common.RuntimeError
 			if errors.As(err, &runtimeErr) {
-				code = runtimeErr.Code
-				message = runtimeErr.Message
-
 				span.SetAttributes(
 					attribute.String("error.code", runtimeErr.Code),
 					attribute.String("error.message", runtimeErr.Message),
 				)
-
-				switch code {
-				case common.ErrInvalidInput:
-					httpCode = http.StatusBadRequest
-				case common.ErrRecordNotFound:
-					httpCode = http.StatusNotFound
-				case common.ErrPermissionDenied:
-					httpCode = http.StatusForbidden
-				}
 			}
 
-			return common.NewJsonResponse(httpCode, common.HttpJsonErrorResponse{
-				Code:    code,
-				Message: message,
-			}, nil)
+			return common.NewJsonErrorResponse(err)
 		}
 
 		return common.NewJsonResponse(http.StatusOK, response, headers)
