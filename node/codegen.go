@@ -778,6 +778,8 @@ func writeBeforeQueryHook(w *codegen.Writer, action *proto.Action) {
 
 	wrapWithSpan(w, fmt.Sprintf("%s.beforeQuery", action.Name), func(w *codegen.Writer) {
 		w.Writef("resolvedValue = await hooks.beforeQuery(ctx, inputs, builder);\n")
+		w.Writeln("span.setAttribute('resolvedValue', resolvedValue);")
+
 	})
 	w.Writeln("")
 
@@ -800,6 +802,7 @@ func writeBeforeQueryHook(w *codegen.Writer, action *proto.Action) {
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		w.Writeln("data = await builder.delete();")
 	}
+	w.Writeln("span.setAttribute('data', data);")
 	w.Dedent()
 	w.Writeln("} else {")
 	w.Indent()
