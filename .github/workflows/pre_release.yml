@@ -1,18 +1,21 @@
 name: Pre-Release
 
 on:
-  push:
-    branches:
-      - main
-    tags-ignore:
-      - "*"
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      versionFormat:
+        description: "Ref of where the release should be marked"
+        required: true
+        type: string
+      publishTag:
+        description: "Release Version"
+        required: true
+        type: string
 
 jobs:
   setup:
     name: Generate Version
     runs-on: ubuntu-latest
-    if: startsWith( github.event.head_commit.message, 'feat' ) || startsWith( github.event.head_commit.message, 'fix' ) || contains(github.event.head_commit.message, '!:') || github.event_name == 'workflow_dispatch'
     steps:
       - uses: pnpm/action-setup@v2.4.0
         with:
@@ -27,64 +30,31 @@ jobs:
       # generate a new version number based on semantic versioning
       - name: Generate version
         id: generate-version
-        if: github.head_ref == 'main'
         uses: paulhatch/semantic-version@v5.0.3
         with:
           tag_prefix: "v"
           major_pattern: "[A-Za-z]+.*!:"
           major_regexp_flags: "g"
           minor_pattern: "^(feat|fix)(\\(.*\\))?: .*$"
-          version_format: "${major}.${minor}.${patch}-prerelease${increment}"
+          version_format: ${{ inputs.versionFormat}}
 
-      - name: Store release version
-        if: github.head_ref == 'main'
-        run: echo "new_version=${{ steps.generate-version.outputs.version }}" >> "$GITHUB_OUTPUT"
-
-      # generate a new version number based on semantic versioning
-      - name: Generate version
-        id: generate-version-branch
-        if: github.head_ref != 'main'
-        uses: paulhatch/semantic-version@v5.0.3
-        with:
-          tag_prefix: "v"
-          major_pattern: "[A-Za-z]+.*!:"
-          major_regexp_flags: "g"
-          minor_pattern: "^(feat|fix)(\\(.*\\))?: .*$"
-          version_format: "${major}.${minor}.${patch}-dev${increment}"
-
-      - name: Store release version
-        if: github.head_ref != 'main'
-        run: echo "new_version=${{ steps.generate-version-branch.outputs.version }}" >> "$GITHUB_ENV"
-
-      - name: Output release version
-        run: echo "NEW_VERSION=$new_version"
+      - name: Print release version
+        run: echo "NEW_VERSION=${{ steps.generate-version.outputs.version }}"
 
     outputs:
-      version: $new_version
+      version: ${{ steps.generate-version.outputs.version }}
 
-  npm_release_prerelease:
-    if: github.head_ref == 'main'
+  npm_release:
     needs: [setup]
     uses: ./.github/workflows/npm_release.yml
     with:
       version: ${{ needs.setup.outputs.version }}
-      publishTag: "next"
-      dryRun: false
-    secrets: inherit
-
-  npm_release_dev:
-    if: github.head_ref != 'main'
-    needs: [setup]
-    uses: ./.github/workflows/npm_release.yml
-    with:
-      version: ${{ needs.setup.outputs.version }}
-      publishTag: "dev"
+      publishTag: ${{ inputs.publishTag }}
       dryRun: false
     secrets: inherit
 
   github_release:
-    if: ${{ always() }}
-    needs: [setup, npm_release_prerelease, npm_release_dev]
+    needs: [setup, npm_release]
     uses: ./.github/workflows/github_release.yml
     with:
       branch: ${{ github.head_ref }}
