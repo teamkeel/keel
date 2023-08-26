@@ -388,10 +388,6 @@ func initSectionHeading(v string) {
 	fmt.Println(style.Render(v))
 }
 
-func printSuccess(v string) {
-	fmt.Println(colors.Green("✔"), v)
-}
-
 func printLogo() {
 	logo := `	                                       
                   bbbb                 

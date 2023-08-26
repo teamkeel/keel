@@ -19,11 +19,25 @@ const Empty = ""
 
 // ProjectConfig is the configuration for a keel project
 type ProjectConfig struct {
-	Environment   []Input    `yaml:"environment"`
-	UseDefaultApi *bool      `yaml:"useDefaultApi,omitempty"`
-	Secrets       []Input    `yaml:"secrets"`
-	Auth          AuthConfig `yaml:"auth"`
-	DisableAuth   bool       `yaml:"disableKeelAuth"`
+	Project       ProjectDetails `yaml:"project"`
+	Environment   []Input        `yaml:"environment"`
+	Deploy        DeployConfig   `yaml:"deploy"`
+	UseDefaultApi *bool          `yaml:"useDefaultApi,omitempty"`
+	Secrets       []Input        `yaml:"secrets"`
+	Auth          AuthConfig     `yaml:"auth"`
+	DisableAuth   bool           `yaml:"disableKeelAuth"`
+}
+
+type ProjectDetails struct {
+	Name string `yaml:"name"`
+}
+
+type DeployConfig struct {
+	Database DatabaseConfig `yaml:"database"`
+}
+
+type DatabaseConfig struct {
+	Provider string `yaml:"provider"`
 }
 
 func (p *ProjectConfig) GetEnvVars() map[string]string {
