@@ -95,9 +95,9 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 
 	scope = scope.WithContext(ctx)
 
-	// Capture the request-oriented data that is needed by the audit trigger function
-	// that will get fired inside Postgres if this action mutates any rows.
-	if err := captureRequestMetaForAudit(scope, span); err != nil {
+	// Capture some request-oriented data and register it in the database config for
+	// the database audit function to pick up.
+	if err := registerRequestMetaDataInDB(scope, span); err != nil {
 		return nil, nil, err
 	}
 
@@ -250,13 +250,12 @@ func executeAutoAction(scope *Scope, inputs map[string]any) (any, map[string][]s
 	}
 }
 
-// captureRequestMetaForAudit extracts the Identity associated with this Scope (if available),
-// and the current trace span id, and posts them into short-lived, (transaction-scoped),
-// Postgres config.
+// registerRequestMetaDataInDB extracts the Identity associated with this Scope (if available),
+// and the current trace span id, and posts them into Postgres config.
 //
 // The aim is to make these data available to the process_audit() function that fires
 // inside Postgres when rows are mutated.
-func captureRequestMetaForAudit(scope *Scope, span trace.Span) (err error) {
+func registerRequestMetaDataInDB(scope *Scope, span trace.Span) (err error) {
 
 	// Capture the required data from the scope and the trace span.
 
@@ -273,16 +272,16 @@ func captureRequestMetaForAudit(scope *Scope, span trace.Span) (err error) {
 		traceSpanId = span.SpanContext().SpanID().String()
 	}
 
-	// Write the captured data into a short-lived (transaction-scoped) postgres config.
+	// Write the captured data into postgres config.
 	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return err
 	}
 
-	// The 'true' in the SQL below tells Postgres to set the config values only "locally" -
-	// which is defined as only in the scope of the current transaction.
-	s1 := fmt.Sprintf("select set_config('audit.identity_id', '%s', 'true');", identityId)
-	s2 := fmt.Sprintf("select set_config('audit.trace_id', '%s', 'true');", traceSpanId)
+	// The 'false' in the SQL below is the "local" argument for setting config values. Local=true means
+	// transactions scope, whereas local=false means connection scope).
+	s1 := fmt.Sprintf("select set_config('audit.identity_id', '%s', false);", identityId)
+	s2 := fmt.Sprintf("select set_config('audit.trace_id', '%s', false);", traceSpanId)
 	sql := strings.Join([]string{s1, s2}, "\n")
 	_, err = db.ExecuteStatement(ctx, sql)
 	if err != nil {
