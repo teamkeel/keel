@@ -599,6 +599,7 @@ func StartFunctions(m *Model) tea.Cmd {
 		server, err := node.RunDevelopmentServer(m.ProjectDir, &node.ServerOpts{
 			EnvVars: envVars,
 			Output:  output,
+			Watch:   true,
 		})
 		if err != nil {
 			return StartFunctionsMsg{
