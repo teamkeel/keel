@@ -1,0 +1,47 @@
+model Project {
+    fields {
+        name Text
+        users ProjectUser[]
+    }
+}
+
+model ProjectUser {
+    fields {
+        user User
+        project Project
+        role Text
+    }
+}
+
+enum Role {
+    Member
+    Admin
+}
+
+model User {
+    fields {
+        name Text
+        identity Identity
+        projects ProjectUser[]
+    }
+}
+
+model Task {
+    fields {
+        title Text
+        project Project
+    }
+
+    actions {
+        get getTask(id)
+        get getTaskFn(id) @function
+    }
+
+    @permission(
+        actions: [get],
+        expression: (
+          ctx.identity in task.project.users.user.identity and 
+          "Admin" in task.project.users.role
+        )
+    )
+}

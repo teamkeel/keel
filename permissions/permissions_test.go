@@ -44,10 +44,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", ("post"."public" IS NOT DISTINCT FROM false) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id"
+				WHERE ("post"."public" IS NOT DISTINCT FROM false) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -73,10 +72,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", ("post"."public" IS NOT DISTINCT FROM true) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id"
+				WHERE ("post"."public" IS NOT DISTINCT FROM true) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -102,10 +100,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", ("post"."title" IS NOT DISTINCT FROM ?) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id"
+				WHERE ("post"."title" IS NOT DISTINCT FROM ?) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -135,10 +132,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", ("post"."view_count" < ?) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id"
+				WHERE ("post"."view_count" < ?) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -168,10 +164,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-			SELECT "post"."id", ("post"."identity_id" IS NOT DISTINCT FROM null) AS "result" 
-			FROM "post" 
-			WHERE "post"."id" IN (?) 
-			GROUP BY "post"."id"
+				SELECT DISTINCT "post"."id" 
+				FROM "post" 
+				WHERE ("post"."identity_id" IS NOT DISTINCT FROM null) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -197,10 +192,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", ("post"."identity_id" IS DISTINCT FROM null) AS "result" 
+				SELECT DISTINCT "post"."id"
 				FROM "post" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id"
+				WHERE ("post"."identity_id" IS DISTINCT FROM null) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -230,10 +224,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getProject",
 			sql: `
-				SELECT "project"."id", ("project"."visibility" IS NOT DISTINCT FROM ?) AS "result" 
+				SELECT DISTINCT "project"."id" 
 				FROM "project" 
-				WHERE "project"."id" IN (?) 
-				GROUP BY "project"."id"
+				WHERE ("project"."visibility" IS NOT DISTINCT FROM ?) AND "project"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -263,10 +256,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", (? IS NOT DISTINCT FROM "post"."secret_key") AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id"
+				WHERE (? IS NOT DISTINCT FROM "post"."secret_key") AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -296,10 +288,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", (? IS NOT DISTINCT FROM "post"."secret_key") AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id"
+				WHERE (? IS NOT DISTINCT FROM "post"."secret_key") AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -334,11 +325,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", ("post$author"."identity_id" IS NOT DISTINCT FROM ?) AS "result" 
-				FROM "post" 
-				LEFT JOIN "author" AS "post$author" ON "post"."author_id" = "post$author"."id" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id", "post$author"."identity_id"
+				SELECT DISTINCT "post"."id" 
+				FROM "post" LEFT JOIN "author" AS "post$author" ON "post"."author_id" = "post$author"."id" 
+				WHERE ("post$author"."identity_id" IS NOT DISTINCT FROM ?) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -377,12 +366,11 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", ("post$author$account"."identity_id" IS NOT DISTINCT FROM ?) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
 				LEFT JOIN "author" AS "post$author" ON "post"."author_id" = "post$author"."id" 
 				LEFT JOIN "account" AS "post$author$account" ON "post$author"."account_id" = "post$author$account"."id" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id", "post$author$account"."identity_id"
+				WHERE ("post$author$account"."identity_id" IS NOT DISTINCT FROM ?) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -417,11 +405,10 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getProject",
 			sql: `
-				SELECT "project"."id", (? = ANY(ARRAY_AGG("project$accounts"."identity_id"))) AS "result" 
+				SELECT DISTINCT "project"."id" 
 				FROM "project" 
-				LEFT JOIN "account" AS "project$accounts" ON "project"."id" = "project$accounts"."project_id" 
-				WHERE "project"."id" IN (?) 
-				GROUP BY "project"."id"
+				LEFT JOIN "account" AS "project$accounts" ON "project"."id" = "project$accounts"."project_id"
+				WHERE (? IS NOT DISTINCT FROM "project$accounts"."identity_id") AND "project"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -451,10 +438,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getProject",
 			sql: `
-				SELECT "project"."id", ("project"."identity_id" IS NOT DISTINCT FROM ? or ("project"."public" and ?::boolean IS NOT DISTINCT FROM false)) AS "result" 
-				FROM "project" 
-				WHERE "project"."id" IN (?) 
-				GROUP BY "project"."id"
+				SELECT DISTINCT "project"."id" FROM "project" 
+				WHERE ("project"."identity_id" IS NOT DISTINCT 
+				FROM ? or ("project"."public" and ?::boolean IS NOT DISTINCT FROM false)) AND "project"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -486,10 +472,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", ("post"."publish_date" <= ?) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id"
+				WHERE ("post"."publish_date" <= ?) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -523,10 +508,9 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", ("post"."publish_date" <= ?) or ("post"."identity_id" IS NOT DISTINCT FROM ?) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id"
+				WHERE ("post"."publish_date" <= ?) or ("post"."identity_id" IS NOT DISTINCT FROM ?) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -568,11 +552,10 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getPost",
 			sql: `
-				SELECT "post"."id", ("post$account"."identity_id" IS NOT DISTINCT FROM ?) or ("post$account"."posts_are_public") AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
 				LEFT JOIN "account" AS "post$account" ON "post"."account_id" = "post$account"."id" 
-				WHERE "post"."id" IN (?) 
-				GROUP BY "post"."id", "post$account"."identity_id", "post$account"."posts_are_public"
+				WHERE ("post$account"."identity_id" IS NOT DISTINCT FROM ?) or ("post$account"."posts_are_public") AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -611,12 +594,11 @@ func TestToSQL(t *testing.T) {
 			`,
 			action: "getJoin",
 			sql: `
-				SELECT "join"."id", ("join$inner$group"."by_id" IS NOT DISTINCT FROM ?) AS "result" 
+				SELECT DISTINCT "join"."id" 
 				FROM "join" 
 				LEFT JOIN "table" AS "join$inner" ON "join"."inner_id" = "join$inner"."id" 
 				LEFT JOIN "select" AS "join$inner$group" ON "join$inner"."group_id" = "join$inner$group"."id" 
-				WHERE "join"."id" IN (?) 
-				GROUP BY "join"."id", "join$inner$group"."by_id"
+				WHERE ("join$inner$group"."by_id" IS NOT DISTINCT FROM ?) AND "join"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{

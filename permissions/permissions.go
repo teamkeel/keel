@@ -43,9 +43,7 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 	tableName := identifier(m.Name)
 	pkField := identifier(proto.PrimaryKeyFieldName(m))
 
-	stmt := &statement{
-		groupBy: []string{fmt.Sprintf("%s.%s", tableName, pkField)},
-	}
+	stmt := &statement{}
 
 	for _, p := range proto.PermissionsForAction(s, action) {
 		if p.Expression == nil {
@@ -72,14 +70,13 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 		return sql, values, nil
 	}
 
-	sql = fmt.Sprintf("SELECT %s.%s, %s AS %s", tableName, pkField, stmt.expression, identifier("result"))
+	sql = fmt.Sprintf("SELECT DISTINCT %s.%s", tableName, pkField)
 	sql += fmt.Sprintf(" FROM %s", tableName)
 	if len(stmt.joins) > 0 {
 		// lo.Unique to dedupe joins
 		sql += " " + strings.Join(lo.Uniq(stmt.joins), " ")
 	}
-	sql += fmt.Sprintf(" WHERE %s.%s IN (?)", tableName, pkField)
-	sql += fmt.Sprintf(" GROUP BY %s", strings.Join(lo.Uniq(stmt.groupBy), ", "))
+	sql += fmt.Sprintf(" WHERE %s AND %s.%s IN (?)", stmt.expression, tableName, pkField)
 
 	stmt.values = append(stmt.values, &Value{
 		Type: ValueRecordIDs,
@@ -234,8 +231,6 @@ func handleContext(o *parser.Operand, stmt *statement) error {
 
 func handleModel(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *statement) (err error) {
 	fieldName := ""
-	isArray := false
-	hasJoin := false
 	for i, f := range o.Ident.Fragments {
 		switch {
 		// The first fragment
@@ -248,9 +243,6 @@ func handleModel(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *s
 			field := proto.FindField(s.Models, model.Name, f.Fragment)
 			if field == nil {
 				return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
-			}
-			if field.Type.Repeated {
-				isArray = true
 			}
 
 			// Turn the table into a quoted identifier
@@ -266,7 +258,6 @@ func handleModel(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *s
 
 		// Middle fragments are joins
 		default:
-			hasJoin = true
 			// Left alias is the source table
 			leftAlias := fieldName
 
@@ -279,9 +270,6 @@ func handleModel(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *s
 			field := proto.FindField(s.Models, model.Name, f.Fragment)
 			if field == nil {
 				return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
-			}
-			if field.Type.Repeated {
-				isArray = true
 			}
 
 			joinModel := proto.FindModel(s.Models, field.Type.ModelName.Value)
@@ -313,12 +301,6 @@ func handleModel(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *s
 	}
 
 	sql := fieldName
-	if isArray {
-		sql = fmt.Sprintf("ARRAY_AGG(%s)", sql)
-	} else if hasJoin {
-		stmt.groupBy = append(stmt.groupBy, sql)
-	}
-
 	stmt.expression += sql
 	return nil
 }
@@ -331,7 +313,6 @@ func identifier(s string) string {
 type statement struct {
 	expression string
 	joins      []string
-	groupBy    []string
 	values     []*Value
 }
 
@@ -345,5 +326,5 @@ var operatorMap = map[string][]string{
 	"<=": {" <= "},
 	">":  {" > "},
 	">=": {" >= "},
-	"in": {" = ANY(", ")"},
+	"in": {" IS NOT DISTINCT FROM "},
 }
