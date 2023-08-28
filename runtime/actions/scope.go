@@ -3,16 +3,13 @@ package actions
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/actions")
@@ -97,7 +94,7 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 
 	// Capture some request-oriented data and register it in the database config for
 	// the database audit function to pick up.
-	if err := registerRequestMetaDataInDB(scope, span); err != nil {
+	if err := RegisterAuditScopeInDB(scope, span); err != nil {
 		return nil, nil, err
 	}
 
@@ -248,44 +245,4 @@ func executeAutoAction(scope *Scope, inputs map[string]any) (any, map[string][]s
 	default:
 		return nil, nil, fmt.Errorf("unhandled auto action type: %s", scope.Action.Type.String())
 	}
-}
-
-// registerRequestMetaDataInDB extracts the Identity associated with this Scope (if available),
-// and the current trace span id, and posts them into Postgres config.
-//
-// The aim is to make these data available to the process_audit() function that fires
-// inside Postgres when rows are mutated.
-func registerRequestMetaDataInDB(scope *Scope, span trace.Span) (err error) {
-
-	// Capture the required data from the scope and the trace span.
-
-	ctx := scope.Context
-
-	var identityId string = "unknown"
-	var traceSpanId string = "unknown"
-
-	if identity, err := runtimectx.GetIdentity(ctx); err == nil {
-		identityId = identity.Id
-	}
-
-	if span.SpanContext().HasSpanID() {
-		traceSpanId = span.SpanContext().SpanID().String()
-	}
-
-	// Write the captured data into postgres config.
-	db, err := runtimectx.GetDatabase(ctx)
-	if err != nil {
-		return err
-	}
-
-	// The 'false' in the SQL below is the "local" argument for setting config values. Local=true means
-	// transactions scope, whereas local=false means connection scope).
-	s1 := fmt.Sprintf("select set_config('audit.identity_id', '%s', false);", identityId)
-	s2 := fmt.Sprintf("select set_config('audit.trace_id', '%s', false);", traceSpanId)
-	sql := strings.Join([]string{s1, s2}, "\n")
-	_, err = db.ExecuteStatement(ctx, sql)
-	if err != nil {
-		return err
-	}
-	return nil
 }
