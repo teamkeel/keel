@@ -96,7 +96,12 @@ func auditModel() *proto.Model {
 					ModelName: wrapperspb.String(auditModelName),
 					FieldName: wrapperspb.String("identityId"),
 				},
-				Optional: false,
+				DefaultValue: &proto.DefaultValue{
+					Expression: &proto.Expression{
+						Source: `"unknown"`,
+					},
+				},
+				Optional: true,
 			},
 
 			{
@@ -107,7 +112,12 @@ func auditModel() *proto.Model {
 					ModelName: wrapperspb.String(auditModelName),
 					FieldName: wrapperspb.String("traceId"),
 				},
-				Optional: false,
+				DefaultValue: &proto.DefaultValue{
+					Expression: &proto.Expression{
+						Source: `"unknown"`,
+					},
+				},
+				Optional: true,
 			},
 		},
 	}

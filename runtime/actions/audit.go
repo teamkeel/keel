@@ -8,35 +8,22 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// RegisterAuditScopeInDB extracts the Identity and Trace Id associated from the given
-// Scope (if available), and posts them into the database cited by the scope.
+// RegisterAuditScopeInDB extracts the Identity associated from the given
+// Scope (if available), and the Span Id from the given Span,
+// and posts them into the database cited by the scope.
 //
 // The aim is to make these data available to the process_audit() function that fires
 // inside Postgres when rows are mutated.
 //
-// When these data are missing from the scope, it uses the constant strings:
-// MissingIdentity and MissingTraceId respectively.
+// When these data are missing from the scope, it uses the constant string "missing".
 func RegisterAuditScopeInDB(scope *Scope, span trace.Span) (err error) {
 
 	// Capture the required data from the scope and the trace span.
 
 	ctx := scope.Context
 
-	// XXXX remove this debug
-	hasSpanID := span.SpanContext().HasSpanID()
-	hasTraceID := span.SpanContext().HasTraceID()
-
-	_, _ = hasSpanID, hasTraceID
-
-	if hasSpanID {
-		fmt.Printf("XXXX found case where has span id is set\n")
-	}
-	if hasTraceID {
-		fmt.Printf("XXXX found case where has span id is set\n")
-	}
-
-	var identityId string = MissingIdentity
-	var traceSpanId string = MissingTraceId
+	var identityId string = "missing"
+	var traceSpanId string = "missing"
 
 	if identity, err := runtimectx.GetIdentity(ctx); err == nil {
 		identityId = identity.Id
@@ -44,6 +31,8 @@ func RegisterAuditScopeInDB(scope *Scope, span trace.Span) (err error) {
 
 	if span.SpanContext().HasSpanID() {
 		traceSpanId = span.SpanContext().SpanID().String()
+		// XXXX remove this
+		fmt.Printf("XXXX span has Id, which is <%s>\n", traceSpanId)
 	}
 
 	// Write the captured data into postgres config.
@@ -63,6 +52,3 @@ func RegisterAuditScopeInDB(scope *Scope, span trace.Span) (err error) {
 	}
 	return nil
 }
-
-const MissingIdentity = "missing_identity"
-const MissingTraceId = "missing_trace_id"
