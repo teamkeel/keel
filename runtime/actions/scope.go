@@ -92,11 +92,12 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 
 	scope = scope.WithContext(ctx)
 
-	// Capture some request-oriented data and register it in the database config for
+	// Capture some request-oriented data and register it in the database config (briefly) for
 	// the database audit function to pick up.
-	if err := RegisterAuditScopeInDB(scope, span); err != nil {
+	if err := SetAuditScopeIntoDB(scope, span); err != nil {
 		return nil, nil, err
 	}
+	defer ClearAuditScopeInDB(scope)
 
 	// inputs can be anything - with arbitrary functions 'Any' type, they can be
 	// an array / number / string etc, which doesn't fit in with the traditional map[string]any definition of an inputs object
