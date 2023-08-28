@@ -1,18 +1,21 @@
-name: Pre-Release
+name: Make Pre Release
 
 on:
-  push:
-    branches:
-      - main
-    tags-ignore:
-      - "*"
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      versionFormat:
+        description: "Ref of where the release should be marked"
+        required: true
+        type: string
+      publishTag:
+        description: "Release Version"
+        required: true
+        type: string
 
 jobs:
   setup:
     name: Generate Version
     runs-on: ubuntu-latest
-    if: startsWith( github.event.head_commit.message, 'feat' ) || startsWith( github.event.head_commit.message, 'fix' ) || contains(github.event.head_commit.message, '!:') || github.event_name == 'workflow_dispatch'
     steps:
       - uses: pnpm/action-setup@v2.4.0
         with:
@@ -33,9 +36,9 @@ jobs:
           major_pattern: "[A-Za-z]+.*!:"
           major_regexp_flags: "g"
           minor_pattern: "^(feat|fix)(\\(.*\\))?: .*$"
-          version_format: "${major}.${minor}.${patch}-prerelease${increment}"
+          version_format: ${{ inputs.versionFormat}}
 
-      - name: Output release version
+      - name: Print release version
         run: echo "NEW_VERSION=${{ steps.generate-version.outputs.version }}"
 
     outputs:
@@ -46,15 +49,15 @@ jobs:
     uses: ./.github/workflows/npm_release.yml
     with:
       version: ${{ needs.setup.outputs.version }}
-      publishTag: "next"
-      dryRun: true
+      publishTag: ${{ inputs.publishTag }}
+      dryRun: false
     secrets: inherit
 
   github_release:
     needs: [setup, npm_release]
     uses: ./.github/workflows/github_release.yml
     with:
-      branch: ${{ github.event.ref }}
+      branch: ${{ github.event.ref || github.head_ref }}
       version: ${{ needs.setup.outputs.version }}
       preRelease: true
       draft: true
