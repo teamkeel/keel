@@ -20,6 +20,23 @@ test("user has authorisation to read their own record", async () => {
   ).not.toHaveAuthorizationError();
 });
 
+test("user getting non-existing user gets back null", async () => {
+  const identity = await models.identity.create({
+    email: "adam@keel.xyz",
+    password: "foo",
+  });
+  const user = await models.user.create({
+    name: "Adam",
+    identityId: identity.id,
+  });
+
+  await expect(
+    actions.withIdentity(identity).getUser({
+      id: '2UbUQErk5RD5w0QVBYprBh0I9wa',
+    })
+  ).resolves.toBeNull();
+});
+
 test("user does not have authorisation to read another user's record", async () => {
   const identityAdam = await models.identity.create({
     email: "adam@keel.xyz",
@@ -490,6 +507,19 @@ test("authorised to get an organisations which the identity is associated to", a
     .withIdentity(identityDave)
     .getOrganisation({ id: organisationKeel.id });
   expect(row!.id).toEqual(organisationKeel.id);
+});
+
+test("user getting non-existing organisation gets back null", async () => {
+  const identity = await models.identity.create({
+    email: "adam@keel.xyz",
+    password: "foo",
+  });
+
+  await expect(
+    actions.withIdentity(identity).getOrganisation({
+      id: '2UbUQErk5RD5w0QVBYprBh0I9wa',
+    })
+  ).resolves.toBeNull();
 });
 
 test("not authorised to get an organisations which the identity is not associated to", async () => {

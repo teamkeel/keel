@@ -404,11 +404,6 @@ test("get action - not permitted, id not exists - ERR_PERMISSION_DENIED", async 
   ).toHaveAuthorizationError();
 });
 
-test("get action - permitted, id not exists - ERR_RECORD_NOT_FOUND", async () => {
-  const book = await actions.getPermitted({ id: "123" });
-  expect(book).toBeNull();
-});
-
 test("get action - permitted, id not exists - null returned", async () => {
   const book = await actions.getPermitted({ id: "123" });
   expect(book).toBeNull();
@@ -452,11 +447,6 @@ test("get function - not permitted, id not exists - ERR_PERMISSION_DENIED", asyn
   await expect(
     actions.getNotPermittedFn({ id: "123" })
   ).toHaveAuthorizationError();
-});
-
-test("get function - permitted, id not exists - ERR_RECORD_NOT_FOUND", async () => {
-  const book = await actions.getPermittedFn({ id: "123" });
-  expect(book).toBeNull();
 });
 
 test("get function - permitted, id not exists - null returned", async () => {
