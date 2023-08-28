@@ -32,7 +32,7 @@ test("user getting non-existing user gets back null", async () => {
 
   await expect(
     actions.withIdentity(identity).getUser({
-      id: '2UbUQErk5RD5w0QVBYprBh0I9wa',
+      id: "2UbUQErk5RD5w0QVBYprBh0I9wa",
     })
   ).resolves.toBeNull();
 });
@@ -517,7 +517,7 @@ test("user getting non-existing organisation gets back null", async () => {
 
   await expect(
     actions.withIdentity(identity).getOrganisation({
-      id: '2UbUQErk5RD5w0QVBYprBh0I9wa',
+      id: "2UbUQErk5RD5w0QVBYprBh0I9wa",
     })
   ).resolves.toBeNull();
 });
