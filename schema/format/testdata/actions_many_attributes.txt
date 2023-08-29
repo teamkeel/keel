@@ -1,0 +1,16 @@
+model Post {
+  actions {
+    get getPost(id) @function @permission(expression: true)
+  }
+}
+
+===
+
+model Post {
+    actions {
+        get getPost(id) {
+            @function
+            @permission(expression: true)
+        }
+    }
+}
