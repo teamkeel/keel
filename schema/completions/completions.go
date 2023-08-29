@@ -892,13 +892,13 @@ func getOnArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.Pr
 		return []*CompletionItem{{Label: "[", Kind: KindPunctuation}}
 	}
 
-	// If the first argument and within an array group
-	if t.Prev().Prev().Value() == parser.AttributeOn && t.StartOfGroup("[", "]") != nil {
+	// If within the array group
+	if t.StartOfGroup("[", "]") != nil {
 		return onAttributeActionTypeKeywords
 	}
 
 	// If the second argument
-	if t.Value() == "," {
+	if (t.Value() == "," || t.Prev().Value() == ",") && t.StartOfGroup("[", "]") == nil {
 		subscriberNames := query.SubscriberNames(asts)
 		completions := lo.Map(subscriberNames, func(name string, _ int) *CompletionItem {
 			return &CompletionItem{

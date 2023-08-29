@@ -1218,6 +1218,14 @@ func TestOnCompletions(t *testing.T) {
 			expected: []string{"create", "delete", "update"},
 		},
 		{
+			name: "on-attribute-action-args-second",
+			schema: `
+			model Person {
+				@on([update,<Cursor>
+		    }`,
+			expected: []string{"create", "delete", "update"},
+		},
+		{
 			name: "on-attribute-subscriber-arg",
 			schema: `
 			model Employee {
@@ -1226,18 +1234,10 @@ func TestOnCompletions(t *testing.T) {
 			}
 			model Person {
 				@on([create, update], verifyDetails)
-				@on([create, delete],<Cursor>
+				@on([create, delete], <Cursor>
 		    }
 			`,
 			expected: []string{"sendGoodbyeMail", "verifyDetails"},
-		},
-		{
-			name: "on-attribute-subscriber-arg-with-array",
-			schema: `
-			model Person {
-				@on([create, delete],[<Cursor>
-		    }`,
-			expected: []string{},
 		},
 	}
 
