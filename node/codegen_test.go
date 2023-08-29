@@ -1551,24 +1551,20 @@ model Person {
                 // we don't know if its an instance of PersonQueryBuilder or Promise<Person> so we wrap in Promise.resolve to get the eventual value.
                 let resolvedValue;
                 await runtime.tracing.withSpan('getPerson.beforeQuery', async (span) => {
-                    resolvedValue = await hooks.beforeQuery(ctx, inputs, builder);
+                    resolvedValue = await hooks.beforeQuery(ctx, deepFreeze(inputs), builder);
                 });
 
                 const constructor = resolvedValue?.constructor?.name
-                span.addEvent('constructor value is ' + constructor);
-                span.addEvent('constructor is ' + resolvedValue?.constructor);
                 if (constructor === 'QueryBuilder') {
                     span.addEvent('using QueryBuilder')
                     builder = resolvedValue;
                     // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
                     span.addEvent(builder.sql())
                     data = await builder.findOne();
-                    span.addEvent('data', data);
                 } else {
                     // in this case, the data is just the resolved value of the promise
                     span.addEvent('using Model API')
                     data = resolvedValue;
-                    span.addEvent('data', data);
                 }
             } else {
                 // when no beforeQuery hook is defined, use the default implementation
@@ -1577,7 +1573,7 @@ model Person {
             // call afterQuery hook (if defined)
             if (hooks.afterQuery) {
                 await runtime.tracing.withSpan('getPerson.afterQuery', async (span) => {
-                    data = await hooks.afterQuery(ctx, inputs, data);
+                    data = await hooks.afterQuery(ctx, deepFreeze(inputs), data);
                 });
             }
 
@@ -1596,7 +1592,7 @@ const CreatePerson = (hooks = {}) => {
             // call beforeWrite hook (if defined)
             if (hooks.beforeWrite) {
                 await runtime.tracing.withSpan('createPerson.beforeWrite', async (span) => {
-                    values = await hooks.beforeWrite(ctx, inputs);
+                    values = await hooks.beforeWrite(ctx, deepFreeze(inputs), values);
                 });
             }
 
@@ -1606,7 +1602,7 @@ const CreatePerson = (hooks = {}) => {
             // call afterWrite hook (if defined)
             if (hooks.afterWrite) {
                 await runtime.tracing.withSpan('createPerson.afterWrite', async (span) => {
-                    await hooks.afterWrite(ctx, inputs, data);
+                    await hooks.afterWrite(ctx, deepFreeze(inputs), data);
                 });
             }
 
@@ -1618,20 +1614,20 @@ const UpdatePerson = (hooks = {}) => {
     return async function(ctx, inputs) {
         return await runtime.tracing.withSpan('updatePerson.DefaultImplementation', async (span) => {
             const models = createModelAPI();
-            let values = inputs.values;
-            let wheres = inputs.where;
+            let values = Object.assign({}, inputs.values);
+            let wheres = Object.assign({}, inputs.where);
 
             // call beforeWrite hook (if defined)
             if (hooks.beforeWrite) {
                 await runtime.tracing.withSpan('updatePerson.beforeWrite', async (span) => {
-                    values = await hooks.beforeWrite(ctx, inputs);
+                    values = await hooks.beforeWrite(ctx, deepFreeze(inputs), values);
                 });
             }
 
             let data;
             if (hooks.beforeQuery) {
                 await runtime.tracing.withSpan('updatePerson.beforeQuery', async (span) => {
-                    data = await hooks.beforeQuery(ctx, inputs);
+                    data = await hooks.beforeQuery(ctx, deepFreeze(inputs), values);
                 });
             } else {
                 // when no beforeQuery hook is defined, use the default implementation
@@ -1641,7 +1637,7 @@ const UpdatePerson = (hooks = {}) => {
             // call afterQuery hook (if defined)
             if (hooks.afterQuery) {
                 await runtime.tracing.withSpan('updatePerson.afterQuery', async (span) => {
-                    data = await hooks.afterQuery(ctx, inputs, data);
+                    data = await hooks.afterQuery(ctx, deepFreeze(inputs), data);
                 });
             }
 
@@ -1650,7 +1646,7 @@ const UpdatePerson = (hooks = {}) => {
             // call afterWrite hook (if defined)
             if (hooks.afterWrite) {
                 await runtime.tracing.withSpan('updatePerson.afterWrite', async (span) => {
-                    await hooks.afterWrite(ctx, inputs, data);
+                    await hooks.afterWrite(ctx, deepFreeze(inputs), data);
                 });
             }
 
@@ -1676,24 +1672,20 @@ const DeletePerson = (hooks = {}) => {
                 // we don't know if its an instance of PersonQueryBuilder or Promise<string> so we wrap in Promise.resolve to get the eventual value.
                 let resolvedValue;
                 await runtime.tracing.withSpan('deletePerson.beforeQuery', async (span) => {
-                    resolvedValue = await hooks.beforeQuery(ctx, inputs, builder);
+                    resolvedValue = await hooks.beforeQuery(ctx, deepFreeze(inputs), builder);
                 });
 
                 const constructor = resolvedValue?.constructor?.name
-                span.addEvent('constructor value is ' + constructor);
-                span.addEvent('constructor is ' + resolvedValue?.constructor);
                 if (constructor === 'QueryBuilder') {
                     span.addEvent('using QueryBuilder')
                     builder = resolvedValue;
                     // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
                     span.addEvent(builder.sql())
                     data = await builder.delete();
-                    span.addEvent('data', data);
                 } else {
                     // in this case, the data is just the resolved value of the promise
                     span.addEvent('using Model API')
                     data = resolvedValue;
-                    span.addEvent('data', data);
                 }
             } else {
                 // when no beforeQuery hook is defined, use the default implementation
@@ -1702,7 +1694,7 @@ const DeletePerson = (hooks = {}) => {
             // call afterQuery hook (if defined)
             if (hooks.afterQuery) {
                 await runtime.tracing.withSpan('deletePerson.afterQuery', async (span) => {
-                    data = await hooks.afterQuery(ctx, inputs, data);
+                    data = await hooks.afterQuery(ctx, deepFreeze(inputs), data);
                 });
             }
 
@@ -1727,24 +1719,20 @@ const ListPeople = (hooks = {}) => {
                 // we don't know if its an instance of PersonQueryBuilder or Promise<Person[]> so we wrap in Promise.resolve to get the eventual value.
                 let resolvedValue;
                 await runtime.tracing.withSpan('listPeople.beforeQuery', async (span) => {
-                    resolvedValue = await hooks.beforeQuery(ctx, inputs, builder);
+                    resolvedValue = await hooks.beforeQuery(ctx, deepFreeze(inputs), builder);
                 });
 
                 const constructor = resolvedValue?.constructor?.name
-                span.addEvent('constructor value is ' + constructor);
-                span.addEvent('constructor is ' + resolvedValue?.constructor);
                 if (constructor === 'QueryBuilder') {
                     span.addEvent('using QueryBuilder')
                     builder = resolvedValue;
                     // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
                     span.addEvent(builder.sql())
                     data = await builder.findMany();
-                    span.addEvent('data', data);
                 } else {
                     // in this case, the data is just the resolved value of the promise
                     span.addEvent('using Model API')
                     data = resolvedValue;
-                    span.addEvent('data', data);
                 }
             } else {
                 // when no beforeQuery hook is defined, use the default implementation
@@ -1753,7 +1741,7 @@ const ListPeople = (hooks = {}) => {
             // call afterQuery hook (if defined)
             if (hooks.afterQuery) {
                 await runtime.tracing.withSpan('listPeople.afterQuery', async (span) => {
-                    data = await hooks.afterQuery(ctx, inputs, data);
+                    data = await hooks.afterQuery(ctx, deepFreeze(inputs), data);
                 });
             }
 

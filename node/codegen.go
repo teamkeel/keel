@@ -60,6 +60,21 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
 	sdkTypes.Writeln("")
 
+	// deepFreeze is used to make the inputs object to function hooks immutable
+	sdk.Writeln(`
+const deepFreeze = o => {
+	if (o===null || typeof o !== 'object') return o
+	return new Proxy(o, {
+		get(obj, prop) {
+			return deepFreeze(obj[prop])
+		},
+		set(obj, prop) {
+			throw new Error("Input " + JSON.stringify(obj) + " cannot be modified. Did you mean to modify values instead?")
+		}
+	})
+}
+	`)
+
 	writePermissions(sdk, schema)
 
 	writeMessages(sdkTypes, schema, false)
@@ -777,7 +792,7 @@ func writeBeforeQueryHook(w *codegen.Writer, action *proto.Action) {
 	w.Writeln("let resolvedValue;")
 
 	wrapWithSpan(w, fmt.Sprintf("%s.beforeQuery", action.Name), func(w *codegen.Writer) {
-		w.Writef("resolvedValue = await hooks.beforeQuery(ctx, inputs, builder);\n")
+		w.Writef("resolvedValue = await hooks.beforeQuery(ctx, deepFreeze(inputs), builder);\n")
 	})
 	w.Writeln("")
 
@@ -785,9 +800,6 @@ func writeBeforeQueryHook(w *codegen.Writer, action *proto.Action) {
 	// instanceof has some gotchas particularly between esmodules, so we revert to checking the constuctor of the resolvedValue
 
 	w.Writeln("const constructor = resolvedValue?.constructor?.name")
-
-	w.Writeln("span.addEvent('constructor value is ' + constructor);")
-	w.Writeln("span.addEvent('constructor is ' + resolvedValue?.constructor);")
 
 	w.Writeln("if (constructor === 'QueryBuilder') {")
 	w.Indent()
@@ -806,7 +818,6 @@ func writeBeforeQueryHook(w *codegen.Writer, action *proto.Action) {
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		w.Writeln("data = await builder.delete();")
 	}
-	w.Writeln("span.addEvent('data', data);")
 	w.Dedent()
 	w.Writeln("} else {")
 	w.Indent()
@@ -815,7 +826,6 @@ func writeBeforeQueryHook(w *codegen.Writer, action *proto.Action) {
 	w.Writeln("span.addEvent('using Model API')")
 
 	w.Writeln("data = resolvedValue;")
-	w.Writeln("span.addEvent('data', data);")
 	w.Dedent()
 	w.Writeln("}")
 	w.Dedent()
@@ -828,7 +838,7 @@ func writeAfterQueryHook(w *codegen.Writer, action *proto.Action) {
 	w.Writeln("if (hooks.afterQuery) {")
 	w.Indent()
 	wrapWithSpan(w, fmt.Sprintf("%s.afterQuery", action.Name), func(w *codegen.Writer) {
-		w.Writeln("data = await hooks.afterQuery(ctx, inputs, data);")
+		w.Writeln("data = await hooks.afterQuery(ctx, deepFreeze(inputs), data);")
 	})
 	w.Dedent()
 	w.Writeln("}")
@@ -844,7 +854,7 @@ func writeBeforeWriteHook(w *codegen.Writer, action *proto.Action) {
 	w.Indent()
 
 	wrapWithSpan(w, fmt.Sprintf("%s.beforeWrite", action.Name), func(w *codegen.Writer) {
-		w.Writeln("values = await hooks.beforeWrite(ctx, inputs, values);")
+		w.Writeln("values = await hooks.beforeWrite(ctx, deepFreeze(inputs), values);")
 	})
 	w.Dedent()
 	w.Writeln("}")
@@ -861,7 +871,7 @@ func writeAfterWriteHook(w *codegen.Writer, action *proto.Action) {
 	w.Indent()
 
 	wrapWithSpan(w, fmt.Sprintf("%s.afterWrite", action.Name), func(w *codegen.Writer) {
-		w.Writeln("await hooks.afterWrite(ctx, inputs, data);")
+		w.Writeln("await hooks.afterWrite(ctx, deepFreeze(inputs), data);")
 	})
 
 	w.Dedent()
@@ -897,8 +907,8 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 		// - beforeQuery / afterQuery
 		// - beforeWrite / afterWrite
 		case action.Type == proto.ActionType_ACTION_TYPE_UPDATE:
-			w.Writeln("let values = inputs.values;")
-			w.Writeln("let wheres = inputs.where;")
+			w.Writeln("let values = Object.assign({}, inputs.values);")
+			w.Writeln("let wheres = Object.assign({}, inputs.where);")
 
 			writeBeforeWriteHook(w, action)
 
@@ -908,7 +918,7 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 			w.Indent()
 
 			wrapWithSpan(w, fmt.Sprintf("%s.beforeQuery", action.Name), func(w *codegen.Writer) {
-				w.Writeln("data = await hooks.beforeQuery(ctx, inputs, values);")
+				w.Writeln("data = await hooks.beforeQuery(ctx, deepFreeze(inputs), values);")
 			})
 
 			w.Dedent()
