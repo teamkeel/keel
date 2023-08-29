@@ -1,0 +1,17 @@
+model Account {
+    fields {
+        name Text
+    }
+
+    actions {
+        create createAccount() with (name)
+    }
+
+    @on([create])
+    @on([create], 123)
+    @on([create], verify.Email)
+    @on([create], VerifyEmail)
+    @on([create], verifyEmail, nope)
+    @on([create], [verifyEmail])
+    @on([create], verify_Email)
+}

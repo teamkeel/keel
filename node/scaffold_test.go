@@ -30,6 +30,10 @@ func TestScaffold(t *testing.T) {
 			write customFunctionWrite(Any) returns(Any)
 			read customFunctionRead(Any) returns(Any)
 		}
+
+		@on([create, update], doSomething)
+		@on([update], doSomethingElse)
+
 	}
 	job MyJobWithInputs {
 		inputs {
@@ -97,12 +101,44 @@ func TestScaffold(t *testing.T) {
 			Path:     "functions/customFunctionRead.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { MyJobWithInputs, models } from '@teamkeel/sdk';\nexport default MyJobWithInputs(async (ctx, inputs) => {\n\t// Build something cool\n});\n\t",
-			Path:     "jobs/myJobWithInputs.ts",
+			Contents: `
+import { MyJobWithInputs } from '@teamkeel/sdk';
+
+// To learn more about jobs, visit https://docs.keel.so/jobs
+export default MyJobWithInputs(async (ctx, inputs) => {
+
+});`,
+			Path: "jobs/myJobWithInputs.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { MyJobNoInputs, models } from '@teamkeel/sdk';\nexport default MyJobNoInputs(async (ctx) => {\n\t// Build something cool\n});\n\t",
-			Path:     "jobs/myJobNoInputs.ts",
+			Contents: `
+import { MyJobNoInputs } from '@teamkeel/sdk';
+
+// To learn more about jobs, visit https://docs.keel.so/jobs
+export default MyJobNoInputs(async (ctx) => {
+
+});`,
+			Path: "jobs/myJobNoInputs.ts",
+		},
+		&codegen.GeneratedFile{
+			Contents: `
+import { DoSomething } from '@teamkeel/sdk';
+
+// To learn more about events and subscribers, visit https://docs.keel.so/events
+export default DoSomething(async (ctx, event) => {
+
+});`,
+			Path: "subscribers/doSomething.ts",
+		},
+		&codegen.GeneratedFile{
+			Contents: `
+import { DoSomethingElse } from '@teamkeel/sdk';
+
+// To learn more about events and subscribers, visit https://docs.keel.so/events
+export default DoSomethingElse(async (ctx, event) => {
+
+});`,
+			Path: "subscribers/doSomethingElse.ts",
 		},
 	}
 
