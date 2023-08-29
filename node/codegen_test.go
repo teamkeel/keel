@@ -1534,7 +1534,7 @@ model Person {
 }
 	`
 	expected := `
-	const GetPerson = (hooks = {}) => {
+const GetPerson = (hooks = {}) => {
     return async function(ctx, inputs) {
         return await runtime.tracing.withSpan('getPerson.DefaultImplementation', async (span) => {
             const models = createModelAPI();
@@ -1619,7 +1619,6 @@ const UpdatePerson = (hooks = {}) => {
         return await runtime.tracing.withSpan('updatePerson.DefaultImplementation', async (span) => {
             const models = createModelAPI();
             let values = inputs.values;
-            let wheres = inputs.where;
 
             // call beforeWrite hook (if defined)
             if (hooks.beforeWrite) {
@@ -1631,11 +1630,11 @@ const UpdatePerson = (hooks = {}) => {
             let data;
             if (hooks.beforeQuery) {
                 await runtime.tracing.withSpan('updatePerson.beforeQuery', async (span) => {
-                    data = await hooks.beforeQuery(ctx, inputs);
+                    data = await hooks.beforeQuery(ctx, { where: inputs.where, values });
                 });
             } else {
                 // when no beforeQuery hook is defined, use the default implementation
-                data = await models.person.update(wheres, values);
+                data = await models.person.update(inputs.where, values);
             }
 
             // call afterQuery hook (if defined)
