@@ -62,6 +62,10 @@ func WithIssuersFromEnv(ctx context.Context) context.Context {
 		})
 	}
 
+	if authConfig == nil {
+		authConfig = &auth.AuthConfig{}
+	}
+
 	authConfig.Issuers = issuers
 
 	ctx = WithAuthConfig(ctx, *authConfig)
