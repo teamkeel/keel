@@ -1471,7 +1471,7 @@ export declare function SendWelcomeEmail(fn: (ctx: SubscriberContextAPI, event: 
 	})
 }
 
-func TestWriteSubscriberWrapperType(t *testing.T) {
+func TestWriteFunctionWrapperType(t *testing.T) {
 	schema := `
 model Person {
 	actions {
@@ -1491,14 +1491,14 @@ export type GetPersonHooks = {
 }
 export declare function CreatePerson(hooks?: CreatePersonHooks) : void
 export type CreatePersonHooks = {
-    beforeWrite?: (ctx: ContextAPI, inputs: CreatePersonInput) => Promise<PersonCreateValues>
+    beforeWrite?: (ctx: ContextAPI, inputs: CreatePersonInput, values: PersonCreateValues) => Promise<PersonCreateValues>
     afterWrite?: (ctx: ContextAPI, inputs: CreatePersonInput, data: Person) => Promise<void>
 }
 export declare function UpdatePerson(hooks?: UpdatePersonHooks) : void
 export type UpdatePersonHooks = {
-    beforeQuery?: (ctx: ContextAPI, inputs: UpdatePersonInput) => Promise<Person>
+    beforeQuery?: (ctx: ContextAPI, inputs: UpdatePersonInput, values: UpdatePersonValues) => Promise<Person>
     afterQuery?: (ctx: ContextAPI, inputs: UpdatePersonInput, person: Person) => Promise<Person>
-    beforeWrite?: (ctx: ContextAPI, inputs: UpdatePersonInput) => Promise<Partial<Person>>
+    beforeWrite?: (ctx: ContextAPI, inputs: UpdatePersonInput, values: UpdatePersonValues) => Promise<UpdatePersonValues>
     afterWrite?: (ctx: ContextAPI, inputs: UpdatePersonInput, data: Person) => Promise<void>
 }
 export declare function DeletePerson(hooks?: DeletePersonHooks) : void

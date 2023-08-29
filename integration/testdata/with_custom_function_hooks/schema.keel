@@ -36,6 +36,11 @@ model Person {
       @permission(expression: ctx.isAuthenticated)
     }
 
+    update updatePersonWithBeforeWriteAndBeforeQuery(id) with(title, sex) {
+      @function
+      @permission(expression: ctx.isAuthenticated)
+    }
+
     update updatePersonWithAfterQuery(id) with(title, sex) {
       @function
       @permission(expression: ctx.isAuthenticated)
