@@ -47,12 +47,9 @@ func WithIssuersFromEnv(ctx context.Context) context.Context {
 		return ctx
 	}
 
-	newCtx, err := GetAuthConfig(ctx)
-	if err != nil {
-		return ctx
-	}
+	authConfig, _ := GetAuthConfig(ctx)
 
-	if newCtx != nil && len(newCtx.Issuers) > 0 {
+	if authConfig != nil && len(authConfig.Issuers) > 0 {
 		// Already have known issuers
 		return ctx
 	}
@@ -65,9 +62,9 @@ func WithIssuersFromEnv(ctx context.Context) context.Context {
 		})
 	}
 
-	newCtx.Issuers = issuers
+	authConfig.Issuers = issuers
 
-	ctx = WithAuthConfig(ctx, *newCtx)
+	ctx = WithAuthConfig(ctx, *authConfig)
 
 	return ctx
 }
