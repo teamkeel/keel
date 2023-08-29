@@ -6,14 +6,16 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
 )
 
 const (
-	FUNCTIONS_DIR = "functions"
-	JOBS_DIR      = "jobs"
+	FUNCTIONS_DIR   = "functions"
+	JOBS_DIR        = "jobs"
+	SUBSCRIBERS_DIR = "subscribers"
 )
 
 func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) {
@@ -35,6 +37,10 @@ func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) 
 	}
 	jobsDir := filepath.Join(dir, JOBS_DIR)
 	if err := ensureDir(jobsDir); err != nil {
+		return nil, err
+	}
+	subscribersDir := filepath.Join(dir, SUBSCRIBERS_DIR)
+	if err := ensureDir(subscribersDir); err != nil {
 		return nil, err
 	}
 
@@ -65,6 +71,17 @@ func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) 
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
 				Contents: writeJobWrapper(job),
+			})
+		}
+	}
+
+	for _, subscriber := range schema.Subscribers {
+		path := filepath.Join(SUBSCRIBERS_DIR, fmt.Sprintf("%s.ts", subscriber.Name))
+		_, err = os.Stat(filepath.Join(dir, path))
+		if os.IsNotExist(err) {
+			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
+				Path:     path,
+				Contents: writeSubscriberWrapper(subscriber),
 			})
 		}
 	}
@@ -105,24 +122,33 @@ export default %s(hooks);
 }
 
 func writeJobWrapper(job *proto.Job) string {
-	extraImports := ", models"
-	suggestedImplementation := "// Build something cool"
-
 	// The "inputs" argument for the function signature is only
 	// wanted there are some.
 	switch {
 	case job.InputMessageName == "":
-		return fmt.Sprintf(`import { %s%s } from '@teamkeel/sdk';
+		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
+
+// To learn more about jobs, visit https://docs.keel.so/jobs
 export default %s(async (ctx) => {
-	%s
-});
-	`, job.Name, extraImports, job.Name, suggestedImplementation)
+
+});`, job.Name, job.Name)
 
 	default:
-		return fmt.Sprintf(`import { %s%s } from '@teamkeel/sdk';
+		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
+
+// To learn more about jobs, visit https://docs.keel.so/jobs
 export default %s(async (ctx, inputs) => {
-	%s
-});
-	`, job.Name, extraImports, job.Name, suggestedImplementation)
+
+});`, job.Name, job.Name)
 	}
+}
+
+func writeSubscriberWrapper(subscriber *proto.Subscriber) string {
+	return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
+
+// To learn more about events and subscribers, visit https://docs.keel.so/events
+export default %s(async (ctx, event) => {
+
+});`, strcase.ToCamel(subscriber.Name), strcase.ToCamel(subscriber.Name))
+
 }
