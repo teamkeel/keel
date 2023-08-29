@@ -65,6 +65,39 @@ describe("write hooks", () => {
     expect(record.title).toEqual(`Ms. Alice`);
   });
 
+  // this is a special case because the result returned from the beforeWrite hook is passed onto
+  // the beforeQuery hook so therefore we want to test that the beforeQuery hooks receives the mutated
+  // version of the inputs from the beforeWrite hook.
+  test("update.beforeWrite + beforeQuery combination", async () => {
+    const identity = await models.identity.create({
+      email: "adam@keel.xyz",
+    });
+
+    const person = await models.person.create({
+      sex: Sex.Male,
+      title: "adam",
+    });
+
+    const result = await actions
+      .withIdentity(identity)
+      .updatePersonWithBeforeWriteAndBeforeQuery({
+        where: { id: person.id },
+        values: {
+          sex: Sex.Male,
+          title: "bob",
+        },
+      });
+
+    // the afterQuery hook calls .repeat(2) on the result of the beforeWrite hook which also calls .repeat(2)
+    // so we expect the result returned from the action to be 4 bobs
+    expect(result.title).toEqual("bobbobbobbob");
+
+    const updatedRecord = await models.person.findOne({ id: person.id });
+
+    // and in the database we only expect bob to be repeated once
+    expect(updatedRecord?.title).toEqual("bobbob");
+  });
+
   test("update.afterWrite hook - custom permissions check", async () => {
     const identity = await models.identity.create({
       email: "adam@keel.xyz",

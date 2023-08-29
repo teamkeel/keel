@@ -844,6 +844,7 @@ func writeBeforeWriteHook(w *codegen.Writer, action *proto.Action) {
 	w.Indent()
 
 	wrapWithSpan(w, fmt.Sprintf("%s.beforeWrite", action.Name), func(w *codegen.Writer) {
+		// beforeWrite receives the original inputs
 		w.Writeln("values = await hooks.beforeWrite(ctx, inputs);")
 	})
 	w.Dedent()
@@ -897,9 +898,8 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 		// - beforeQuery / afterQuery
 		// - beforeWrite / afterWrite
 		case action.Type == proto.ActionType_ACTION_TYPE_UPDATE:
+			// values is set by beforeWrite (if the hook is defined).
 			w.Writeln("let values = inputs.values;")
-			w.Writeln("let wheres = inputs.where;")
-
 			writeBeforeWriteHook(w, action)
 
 			w.Writeln("let data;")
@@ -908,7 +908,9 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 			w.Indent()
 
 			wrapWithSpan(w, fmt.Sprintf("%s.beforeQuery", action.Name), func(w *codegen.Writer) {
-				w.Writeln("data = await hooks.beforeQuery(ctx, inputs);")
+				// we pass the mutated version of the values here alongside the inputs.where
+				// so we inherit the changes made in beforeWrite
+				w.Writeln("data = await hooks.beforeQuery(ctx, { where: inputs.where, values });")
 			})
 
 			w.Dedent()
@@ -918,7 +920,7 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 			w.Writef("} else {\n")
 			w.Indent()
 			w.Writeln("// when no beforeQuery hook is defined, use the default implementation")
-			w.Writef("data = await models.%s.update(wheres, values);\n", casing.ToLowerCamel(action.ModelName))
+			w.Writef("data = await models.%s.update(inputs.where, values);\n", casing.ToLowerCamel(action.ModelName))
 			w.Dedent()
 			w.Writeln("}")
 			w.Writeln("")
@@ -927,7 +929,7 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 			writeAfterWriteHook(w, action)
 
 			w.Writeln("return data;")
-		case proto.IsReadAction(action) || action.Type == proto.ActionType_ACTION_TYPE_DELETE:
+		case action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_DELETE:
 			w.Writeln("let wheres = {")
 			w.Indent()
 			w.Writeln("...inputs.where,")
@@ -966,7 +968,7 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 			writeAfterQueryHook(w, action)
 
 			w.Writeln("return data;")
-		case proto.IsWriteAction(action):
+		case action.Type == proto.ActionType_ACTION_TYPE_CREATE:
 			w.Writeln("let values = {")
 			w.Indent()
 			w.Writeln("...inputs,")
@@ -976,12 +978,7 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 			writeBeforeWriteHook(w, action)
 
 			w.Writeln("// values is the mutated version of inputs.values")
-			switch action.Type {
-			case proto.ActionType_ACTION_TYPE_CREATE:
-				w.Writef("const data = await models.%s.create(values);", casing.ToLowerCamel(action.ModelName))
-			case proto.ActionType_ACTION_TYPE_UPDATE:
-				w.Writef("const data = await models.%s.update(inputs.where, values);", casing.ToLowerCamel(action.ModelName))
-			}
+			w.Writef("const data = await models.%s.create(values);", casing.ToLowerCamel(action.ModelName))
 
 			writeAfterWriteHook(w, action)
 
