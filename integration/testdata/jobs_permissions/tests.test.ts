@@ -153,7 +153,7 @@ test("job - exception - internal error without rollback transaction", async () =
     jobs.withIdentity(identity).manualJobWithException({ id })
   ).toHaveError({
     code: "ERR_INTERNAL",
-    message:"something bad has happened!"
+    message: "something bad has happened!",
   });
 
   // This would be false if a transaction rolled back.

@@ -44,7 +44,7 @@ test("subscriber - exception - internal error without rollback transaction", asy
 
   await expect(subscribers.subscriberWithException(event)).toHaveError({
     code: "ERR_INTERNAL",
-    message: "something bad has happened!"
+    message: "something bad has happened!",
   });
 
   // This would be false if a transaction rolled back.
