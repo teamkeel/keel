@@ -1996,6 +1996,56 @@ export declare function resetDatabase(): Promise<void>;`
 	})
 }
 
+func TestWriteTestingTypesSubscribers(t *testing.T) {
+	schema := `
+model Member {
+	@on([create, update], verifyEmail)
+}`
+
+	expected := `
+export type VerifyEmailEvent = (VerifyEmailMemberCreatedEvent | VerifyEmailMemberUpdatedEvent);
+export interface VerifyEmailMemberCreatedEvent {
+	eventName: string;
+	occurredAt: Date;
+	identityId?: string;
+	target: VerifyEmailMemberCreatedEventTarget;
+}
+export interface VerifyEmailMemberCreatedEventTarget {
+	id: string;
+	type: string;
+	data: sdk.Member;
+}
+export interface VerifyEmailMemberUpdatedEvent {
+	eventName: string;
+	occurredAt: Date;
+	identityId?: string;
+	target: VerifyEmailMemberUpdatedEventTarget;
+}
+export interface VerifyEmailMemberUpdatedEventTarget {
+	id: string;
+	type: string;
+	data: sdk.Member;
+}
+declare class ActionExecutor {
+	withIdentity(identity: sdk.Identity): ActionExecutor;
+	withAuthToken(token: string): ActionExecutor;
+	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
+	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
+	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
+}
+declare class SubscriberExecutor {
+	verifyEmail(e: VerifyEmailEvent): Promise<void>;
+}
+export declare const subscribers: SubscriberExecutor;
+export declare const actions: ActionExecutor;
+export declare const models: sdk.ModelsAPI;
+export declare function resetDatabase(): Promise<void>;`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeTestingTypes(w, s)
+	})
+}
+
 func TestWriteTableConfig(t *testing.T) {
 	schema := `
 model Publisher {
