@@ -1039,6 +1039,10 @@ var identRegex = regexp.MustCompile("^[a-zA-Z]+$")
 func getPreviousIdents(tokens *TokensAtPosition) []string {
 	idents := []string{}
 
+	if tokens.tokens[tokens.tokenIndex].Value == "(" {
+		return []string{}
+	}
+
 	// walk backwards from current token collecting all the idents
 	t := tokens
 	for {

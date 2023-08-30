@@ -43,7 +43,7 @@ func NewTokensAtPosition(schema string, pos *node.Position) *TokensAtPosition {
 
 		// If token index is not set but this token comes after the given
 		// position then insert a whitespace token
-		if tokens.tokenIndex == -1 && t.Pos.Line > pos.Line || t.Pos.Line == pos.Line && tokenStart > pos.Column {
+		if tokens.tokenIndex == -1 && (t.Pos.Line > pos.Line || t.Pos.Line == pos.Line && tokenStart > pos.Column) {
 			tokens.tokens = append(tokens.tokens, &Token{
 				Value: "",
 				Pos: &node.Position{
