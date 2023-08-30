@@ -525,6 +525,74 @@ func TestActionCompletions(t *testing.T) {
 			expected: []string{"foo", "id", "createdAt", "updatedAt"},
 		},
 		{
+			name: "with-nested-relationship",
+			schema: `
+			enum Sex {
+				Male
+				Female
+		}
+
+		model Author {
+				fields {
+						name Text
+				}
+		}
+
+		model Person {
+				fields {
+						title Text
+						author Author
+				}
+
+				actions {
+						create createPerson() with (title, author.<Cursor>) {
+								@permission(expression: true)
+						}
+				}
+		}
+
+			`,
+			expected: []string{"createdAt", "id", "name", "updatedAt"},
+		},
+		{
+			name: "set-expression-nested",
+			schema: `
+			model User {
+				fields {
+						identity Identity
+						name Text
+				}
+
+				actions {
+						create createUser() with (name) {
+								@set(user.identity = ctx.identity)
+								@permission(expression: ctx.isAuthenticated)
+						}
+				}
+		}
+
+		model Team {
+				fields {
+						name Text
+				}
+		}
+
+		model UserTeam {
+				fields {
+						user User
+						team Team
+				}
+
+				actions {
+						create createTeam() with (team.name) {
+								@set(<Cursor>)
+						}
+				}
+		}
+			`,
+			expected: []string{"ctx", "userTeam"},
+		},
+		{
 			name: "model-field-inputs-relationship-multi-file",
 			schema: `
 			model A {
