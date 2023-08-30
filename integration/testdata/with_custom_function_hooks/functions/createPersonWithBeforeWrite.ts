@@ -1,10 +1,10 @@
 import { CreatePersonWithBeforeWrite, Sex } from "@teamkeel/sdk";
 
 export default CreatePersonWithBeforeWrite({
-  beforeWrite: async (ctx, inputs) => {
+  beforeWrite: async (ctx, inputs, values) => {
     return {
-      ...inputs,
-      title: `${getSalutation(inputs.sex)} ${inputs.title}`,
+      ...values,
+      title: `${getSalutation(values.sex)} ${values.title}`,
     };
   },
 });
