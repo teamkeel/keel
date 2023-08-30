@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"syscall"
 	"time"
 
 	"github.com/teamkeel/keel/util"
@@ -17,7 +16,6 @@ type DevelopmentServer struct {
 	cmd       *exec.Cmd
 	exitError error
 	output    io.Writer
-	stdin     *io.PipeWriter
 	URL       string
 }
 
@@ -36,13 +34,7 @@ func (ds *DevelopmentServer) Kill() error {
 		return nil
 	}
 
-	if ds.stdin != nil {
-		_ = ds.stdin.Close()
-	}
-
-	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
-	// for more info on this
-	err := syscall.Kill(-ds.cmd.Process.Pid, syscall.SIGKILL)
+	err := ds.cmd.Process.Signal(os.Interrupt)
 	if err != nil {
 		return err
 	}
@@ -60,56 +52,16 @@ func (ds *DevelopmentServer) Kill() error {
 	return ds.exitError
 }
 
-// Rebuild triggers tsx to re-start the app in watch mode.
-// tsx does not watch node_modules or dot-directories like .build and given
-// we change files in these places we need a way to manually trigger a restart..
-// The tsx docs say that in watch mode you can "Press Return to manually rerun"
-// so we just send a newline to stdin.
-func (ds *DevelopmentServer) Rebuild() error {
-	if ds.stdin == nil {
-		return nil
-	}
-
-	// Running in a go routine otherwise this will block until the go routine
-	// reading from the other end of the pipe reads the data. We don't need to
-	// wait for this to happen though.
-	go func() {
-		_, _ = ds.stdin.Write([]byte("\n"))
-	}()
-
-	return nil
-}
-
 type ServerOpts struct {
 	Port    string
 	EnvVars map[string]string
 	Output  io.Writer
 	Debug   bool
-	Watch   bool
 }
 
 // RunDevelopmentServer will start a new node runtime server serving/handling custom function requests
 func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, error) {
-	args := []string{".build/server.js"}
-	if options != nil && options.Watch {
-		args = append([]string{"watch"}, args...)
-	}
-
-	cmd := exec.Command("./node_modules/.bin/tsx", args...)
-
-	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
-	// for more info on this
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-
-	// Use a pipe for stdin so we can send "Enter" key presses in watch mode
-	// See Rebuild func for more info
-	var stdin *io.PipeWriter
-	if options != nil && options.Watch {
-		var r *io.PipeReader
-		r, stdin = io.Pipe()
-		cmd.Stdin = r
-	}
-
+	cmd := exec.Command("npx", "tsx", ".build/server.js")
 	cmd.Dir = dir
 	cmd.Env = os.Environ()
 
@@ -135,7 +87,6 @@ func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, 
 	d := &DevelopmentServer{
 		cmd:    cmd,
 		output: output,
-		stdin:  stdin,
 		URL:    fmt.Sprintf("http://localhost:%s", port),
 	}
 
