@@ -355,28 +355,20 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
+		if m.FunctionsServer != nil {
+			_ = m.FunctionsServer.Kill()
+		}
+
 		if m.Mode == ModeTest && !node.HasFunctions(m.Schema) {
 			m.Status = StatusRunning
 			return m, RunTests(m.ProjectDir, m.Port, m.Config, m.DatabaseConnInfo, m.TestPattern)
 		}
 
-		// If functions already running nothing to do
-		if m.FunctionsServer != nil {
-			_ = m.FunctionsServer.Rebuild()
-			m.Status = StatusRunning
-			return m, nil
-		}
-
-		// Start functions if needed
-		if node.HasFunctions(m.Schema) {
-			m.Status = StatusStartingFunctions
-			return m, tea.Batch(
-				StartFunctions(m),
-				NextMsgCommand(m.functionsLogCh),
-			)
-		}
-
-		return m, nil
+		m.Status = StatusStartingFunctions
+		return m, tea.Batch(
+			StartFunctions(m),
+			NextMsgCommand(m.functionsLogCh),
+		)
 
 	case StartFunctionsMsg:
 		m.Err = msg.Err
