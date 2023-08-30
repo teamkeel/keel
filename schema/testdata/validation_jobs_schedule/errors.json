@@ -52,23 +52,6 @@
       }
     },
     {
-      "message": "@schedule cron syntax is not correct",
-      "hint": "cron expression should be in the following format @schedule(\"0 6 * * *\")",
-      "code": "AttributeNotAllowedError",
-      "pos": {
-        "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 120,
-        "line": 10,
-        "column": 5
-      },
-      "endPos": {
-        "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 129,
-        "line": 10,
-        "column": 14
-      }
-    },
-    {
       "message": "Job with name 'MyJob' already exists",
       "hint": "Rename the job with a unique name",
       "code": "DuplicateDefinitionError",
@@ -87,7 +70,7 @@
     },
     {
       "message": "@schedule argument is not correctly formatted",
-      "hint": "schedule should be in the following format @schedule(\"0 6 * * *\")",
+      "hint": "schedule should be in the following format @schedule(\"0 6 * * * *\")",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
@@ -138,7 +121,7 @@
     },
     {
       "message": "@schedule argument is not correctly formatted",
-      "hint": "schedule should be in the following format @schedule(\"0 6 * * *\")",
+      "hint": "schedule should be in the following format @schedule(\"0 6 * * * *\")",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
@@ -168,23 +151,6 @@
         "offset": 224,
         "line": 21,
         "column": 10
-      }
-    },
-    {
-      "message": "@schedule cron syntax is not correct",
-      "hint": "cron expression should be in the following format @schedule(\"0 6 * * *\")",
-      "code": "AttributeNotAllowedError",
-      "pos": {
-        "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 231,
-        "line": 22,
-        "column": 5
-      },
-      "endPos": {
-        "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 240,
-        "line": 22,
-        "column": 14
       }
     }
   ]
