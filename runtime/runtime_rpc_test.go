@@ -47,9 +47,15 @@ func TestRuntimeRPC(t *testing.T) {
 				},
 				Method: tCase.Method,
 				Body:   io.NopCloser(strings.NewReader(tCase.Body)),
+				Header: tCase.Headers,
 			}
 
 			ctx := request.Context()
+
+			pk, err := testhelpers.GetEmbeddedPrivateKey()
+			require.NoError(t, err)
+
+			ctx = runtimectx.WithPrivateKey(ctx, pk)
 
 			dbName := testhelpers.DbNameForTestName(tCase.name)
 			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
@@ -108,23 +114,136 @@ func TestRuntimeRPC(t *testing.T) {
 
 var rpcTestCases = []rpcTestCase{
 	{
+		name: "json_invalid_token_missing_bearer",
+		keelSchema: `
+			model Thing {
+				actions {
+					list listThings()
+				}
+				@permission(
+					expression: true,
+					actions: [list]
+				)
+			}
+			api Test {
+				models {
+					Thing
+				}
+			}
+		`,
+		Path:   "listThings",
+		Method: http.MethodGet,
+		Headers: map[string][]string{
+			"Authorization": {"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyVUtUZ1kyanY3S0dBSlpHdjJYdGlybnBRSlciLCJleHAiOjE2OTM0OTEyMjIsImlhdCI6MTY5MzQwNDgyMn0.C3DH-k8vcKoVNkJ2bWp5v84tpOu4KPyVEWtJMoE_4Ys"},
+		},
+		assertError: func(t *testing.T, data map[string]any, statusCode int) {
+			assert.Equal(t, statusCode, http.StatusUnauthorized)
+			assert.Equal(t, "ERR_AUTHENTICATION_FAILED", data["code"])
+			assert.Equal(t, "no 'Bearer' prefix in the Authorization header", data["message"])
+		},
+	},
+	{
+		name: "json_invalid_token_not_jwt",
+		keelSchema: `
+			model Thing {
+				actions {
+					list listThings()
+				}
+				@permission(
+					expression: true,
+					actions: [list]
+				)
+			}
+			api Test {
+				models {
+					Thing
+				}
+			}
+		`,
+		Path:   "listThings",
+		Method: http.MethodGet,
+		Headers: map[string][]string{
+			"Authorization": {"Bearer invalid.token"},
+		},
+		assertError: func(t *testing.T, data map[string]any, statusCode int) {
+			assert.Equal(t, statusCode, http.StatusUnauthorized)
+			assert.Equal(t, "ERR_AUTHENTICATION_FAILED", data["code"])
+			assert.Equal(t, "cannot be parsed or verified as a valid JWT", data["message"])
+		},
+	},
+	{
+		name: "json_invalid_token_not_authenticated",
+		keelSchema: `
+			model Thing {
+				actions {
+					list listThings()
+				}
+				@permission(
+					expression: true,
+					actions: [list]
+				)
+			}
+			api Test {
+				models {
+					Thing
+				}
+			}
+		`,
+		Path:   "listThings",
+		Method: http.MethodGet,
+		Headers: map[string][]string{
+			"Authorization": {"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyVUtUZ1kyanY3S0dBSlpHdjJYdGlybnBRSlciLCJleHAiOjE2OTM0OTEyMjIsImlhdCI6MTY5MzQwNDgyMn0.C3DH-k8vcKoVNkJ2bWp5v84tpOu4KPyVEWtJMoE_4Ys"},
+		},
+		assertError: func(t *testing.T, data map[string]any, statusCode int) {
+			assert.Equal(t, statusCode, http.StatusUnauthorized)
+			assert.Equal(t, "ERR_AUTHENTICATION_FAILED", data["code"])
+			assert.Equal(t, "cannot be parsed or verified as a valid JWT", data["message"])
+		},
+	},
+	{
+		name: "json_not_permitted",
+		keelSchema: `
+			model Thing {
+				actions {
+					list listThings()
+				}
+				@permission(
+					expression: false,
+					actions: [list]
+				)
+			}
+			api Test {
+				models {
+					Thing
+				}
+			}
+		`,
+		Path:   "listThings",
+		Method: http.MethodGet,
+		assertError: func(t *testing.T, data map[string]any, statusCode int) {
+			assert.Equal(t, statusCode, http.StatusForbidden)
+			assert.Equal(t, "ERR_PERMISSION_DENIED", data["code"])
+			assert.Equal(t, "not authorized to access this action", data["message"])
+		},
+	},
+	{
 		name: "rpc_list_http_get",
 		keelSchema: `
-		model Thing {
-			actions {
-				list listThings()
+			model Thing {
+				actions {
+					list listThings()
+				}
+				@permission(
+					expression: true,
+					actions: [list]
+				)
 			}
-			@permission(
-				expression: true,
-				actions: [list]
-			)
-		}
-		api Test {
-			models {
-				Thing
+			api Test {
+				models {
+					Thing
+				}
 			}
-		}
-	`,
+		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			row1 := initRow(map[string]any{
 				"id": "id_123",

@@ -227,10 +227,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 					response := common.NewJsonErrorResponse(err)
 
 					w.WriteHeader(response.Status)
-					_, err = w.Write(response.Body)
-					if err != nil {
-						panic(err)
-					}
+					_, _ = w.Write(response.Body)
 					return
 				}
 

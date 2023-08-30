@@ -142,7 +142,6 @@ test("authenticate - incorrect credentials with existing identity - not authenti
   });
 });
 
-
 test("withAuthToken - invalid token - authentication failed", async () => {
   await expect(
     actions.withAuthToken("invalid").createPostWithIdentity({ title: "temp" })

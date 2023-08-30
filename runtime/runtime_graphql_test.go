@@ -56,6 +56,7 @@ func TestRuntimeGraphQL(t *testing.T) {
 				},
 				Method: http.MethodPost,
 				Body:   io.NopCloser(strings.NewReader(reqBody)),
+				Header: tCase.headers,
 			}
 
 			ctx := request.Context()
@@ -139,6 +140,7 @@ type testCase struct {
 	databaseSetup  func(t *testing.T, db *gorm.DB)
 	gqlOperation   string
 	variables      map[string]any
+	headers        map[string][]string
 	assertData     func(t *testing.T, data map[string]any)
 	assertErrors   func(t *testing.T, errors []gqlerrors.FormattedError)
 	assertDatabase func(t *testing.T, db *gorm.DB, data map[string]any)
@@ -152,6 +154,7 @@ type rpcTestCase struct {
 	QueryParams    string
 	Body           string
 	Method         string
+	Headers        map[string][]string
 	assertResponse func(t *testing.T, data map[string]any)
 	assertError    func(t *testing.T, data map[string]any, statusCode int)
 	assertDatabase func(t *testing.T, db *gorm.DB, data interface{})
@@ -397,6 +400,133 @@ const date_timestamp_parsing = `
 // testCases is a list of testCase that is good for the top level test suite to
 // iterate over.
 var testCases = []testCase{
+	{
+		name:       "invalid_token_missing_bearer",
+		keelSchema: basicSchema,
+		gqlOperation: `
+			mutation CreatePerson($name: String!) {
+				createPerson(input: {name: $name}) {
+					id
+					name
+				}
+			}
+		`,
+		variables: map[string]any{
+			"name": "Fred",
+		},
+		headers: map[string][]string{
+			"Authorization": {"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyVUtUZ1kyanY3S0dBSlpHdjJYdGlybnBRSlciLCJleHAiOjE2OTM0OTEyMjIsImlhdCI6MTY5MzQwNDgyMn0.C3DH-k8vcKoVNkJ2bWp5v84tpOu4KPyVEWtJMoE_4Ys"},
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "authentication failed", errors[0].Message)
+			require.Equal(t, "ERR_AUTHENTICATION_FAILED", errors[0].Extensions["code"])
+			require.Equal(t, "no 'Bearer' prefix in the Authorization header", errors[0].Extensions["message"])
+		},
+	},
+	{
+		name:       "invalid_token_not_jwt",
+		keelSchema: basicSchema,
+		gqlOperation: `
+			mutation CreatePerson($name: String!) {
+				createPerson(input: {name: $name}) {
+					id
+					name
+				}
+			}
+		`,
+		variables: map[string]any{
+			"name": "Fred",
+		},
+		headers: map[string][]string{
+			"Authorization": {"Bearer invalid.token"},
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "authentication failed", errors[0].Message)
+			require.Equal(t, "ERR_AUTHENTICATION_FAILED", errors[0].Extensions["code"])
+			require.Equal(t, "cannot be parsed or verified as a valid JWT", errors[0].Extensions["message"])
+		},
+	},
+	{
+		name:       "invalid_token_not_authenticated",
+		keelSchema: basicSchema,
+		gqlOperation: `
+			mutation CreatePerson($name: String!) {
+				createPerson(input: {name: $name}) {
+					id
+					name
+				}
+			}
+		`,
+		variables: map[string]any{
+			"name": "Fred",
+		},
+		headers: map[string][]string{
+			"Authorization": {"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyVUtUZ1kyanY3S0dBSlpHdjJYdGlybnBRSlciLCJleHAiOjE2OTM0OTEyMjIsImlhdCI6MTY5MzQwNDgyMn0.C3DH-k8vcKoVNkJ2bWp5v84tpOu4KPyVEWtJMoE_4Ys"},
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "authentication failed", errors[0].Message)
+			require.Equal(t, "ERR_AUTHENTICATION_FAILED", errors[0].Extensions["code"])
+			require.Equal(t, "cannot be parsed or verified as a valid JWT", errors[0].Extensions["message"])
+		},
+	},
+	{
+		name: "not_permitted",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text 
+				}
+				actions {
+					create createPerson() with (name) {
+						@permission(expression: false)
+					}
+				}
+			}
+			api Test {
+				models {
+					Person
+				}
+			}
+		`,
+		gqlOperation: `
+			mutation CreatePerson($name: String!) {
+				createPerson(input: {name: $name}) {
+					id
+					name
+				}
+			}
+		`,
+		variables: map[string]any{
+			"name": "Fred",
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "not authorized to access this action", errors[0].Message)
+			require.Equal(t, "ERR_PERMISSION_DENIED", errors[0].Extensions["code"])
+			require.Equal(t, "not authorized to access this action", errors[0].Extensions["message"])
+		},
+	},
+	{
+		name:       "create_action_errors",
+		keelSchema: basicSchema,
+		gqlOperation: `
+			mutation CreatePerson($name: String!) {
+				createPerson(input: {name: $name}) {
+					nosuchfield
+				}
+			}
+		`,
+		variables: map[string]any{
+			"name": "Fred",
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "Cannot query field \"nosuchfield\" on type \"Person\".", errors[0].Message)
+		},
+	},
 	{
 		name:       "create_action_happy",
 		keelSchema: basicSchema,
@@ -997,7 +1127,7 @@ var testCases = []testCase{
 				listPeople(input: { where: {
 					firstName: { startsWith: "Fr" }
 					secondName: "Smith"
-				} }) 	   
+				} })
 				{
 					pageInfo {
 						hasNextPage
@@ -1050,7 +1180,7 @@ var testCases = []testCase{
 					get getPerson(id)
 					create createPerson() with (name) {
 						@set(person.nickname = "Joe Soap")
-					}	
+					}
 				}
 			}
 			api Test {
@@ -1204,10 +1334,10 @@ var testCases = []testCase{
 		`,
 		gqlOperation: `
 			mutation {
-				authenticate(input: { 
-					createIfNotExists: true, 
-					emailPassword: { 
-						email: "newuser@keel.xyz", 
+				authenticate(input: {
+					createIfNotExists: true,
+					emailPassword: {
+						email: "newuser@keel.xyz",
 						password: "1234"
 					}
 				}) {
@@ -1246,10 +1376,10 @@ var testCases = []testCase{
 		`,
 		gqlOperation: `
 			mutation {
-				authenticate(input: { 
-					createIfNotExists: false, 
-					emailPassword: { 
-						email: "newuser@keel.xyz", 
+				authenticate(input: {
+					createIfNotExists: false,
+					emailPassword: {
+						email: "newuser@keel.xyz",
 						password: "1234"
 					}
 				}) {
@@ -1944,7 +2074,7 @@ var testCases = []testCase{
 					actions: [get]
 				)
 			}
-			
+
 			model Author {
 				fields {
 					name Text
@@ -1956,7 +2086,7 @@ var testCases = []testCase{
 					BlogPost
 					Author
 				}
-			}		
+			}
 		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -2014,10 +2144,10 @@ var testCases = []testCase{
 		},
 		gqlOperation: `
 			mutation CreatePost($authorId: ID!, $title: String!) {
-				createPost(input: 
-					{ 
+				createPost(input:
+					{
 						title: $title, author: { id: $authorId }
-					}) 
+					})
 					{
 						id
 						title
@@ -2108,7 +2238,7 @@ var testCases = []testCase{
 		keelSchema: date_timestamp_parsing,
 		gqlOperation: `
 				mutation CreateThing {
-					createThing(input: { 
+					createThing(input: {
 						theDate: "2022-06-17",
 						theTimestamp: "2017-01-02T15:04:05Z"
 					}) {
@@ -2138,7 +2268,7 @@ var testCases = []testCase{
 		},
 		gqlOperation: `
 				mutation UpdateThing {
-					updateThing(input: { 
+					updateThing(input: {
 						where: {
 							id: "thing_1"
 						}
@@ -2173,7 +2303,7 @@ var testCases = []testCase{
 		},
 		gqlOperation: `
 				query GetThing {
-					getThing(input: { 
+					getThing(input: {
 						id: "thing_1",
 						theDate: "2022-06-17",
 						theTimestamp: "2022-01-01T15:04:05Z"
@@ -2206,12 +2336,12 @@ var testCases = []testCase{
 		},
 		gqlOperation: `
 				query ListThing {
-					listThing(input: { 
+					listThing(input: {
 						where: {
 							theDate: {
 								equals: "2022-06-17"
 							},
-              theTimestamp: {
+	          theTimestamp: {
 								before: "2024-03-13T17:39:04Z",
 								after: "2021-03-13T10:39:04Z"
 							}
@@ -2243,7 +2373,7 @@ var testCases = []testCase{
 		keelSchema: date_timestamp_parsing,
 		gqlOperation: `
 				mutation CreateThing {
-					createThing(input: { 
+					createThing(input: {
 						theDate: "20th December 2022",
 						theTimestamp: "2023-03-13T12:00:00.00Z"
 					}) {
@@ -2269,7 +2399,7 @@ var testCases = []testCase{
 		keelSchema: date_timestamp_parsing,
 		gqlOperation: `
 				mutation CreateThing {
-					createThing(input: { 
+					createThing(input: {
 						theDate: "2022-06-17",
 						theTimestamp: "2023-03-13T17:00:00.00+07:00"
 					}) {
@@ -2291,8 +2421,8 @@ var testCases = []testCase{
 		keelSchema: relationships,
 		gqlOperation: `
 			mutation CreateAuthorWithPosts {
-				createAuthorWithPosts(input: 
-					{ 
+				createAuthorWithPosts(input:
+					{
 						name: "Bob",
 						posts: [
 							{ title: "Bobs Adventures" },
@@ -2301,7 +2431,7 @@ var testCases = []testCase{
 						publisher: {
 							organisation: "Bobs Publishers"
 						}
-					}) 
+					})
 					{
 						id
 						name
@@ -2371,7 +2501,7 @@ var testCases = []testCase{
 					BlogPost
 					Author
 				}
-			}		
+			}
 		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -2457,7 +2587,7 @@ var testCases = []testCase{
 					BlogPost
 					Author
 				}
-			}		
+			}
 		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -2544,7 +2674,7 @@ var testCases = []testCase{
 					BlogPost
 					Author
 				}
-			}		
+			}
 		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -2626,7 +2756,7 @@ var testCases = []testCase{
 					BlogPost
 					Author
 				}
-			}		
+			}
 		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -2671,7 +2801,7 @@ var testCases = []testCase{
 							}
 						}
 					}
-					
+
 				}
 			}`,
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
