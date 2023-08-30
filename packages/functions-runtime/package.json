@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "prettier": "2.7.1",
-    "vitest": "^0.27.1"
+    "vitest": "^0.32.3"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.4.1",

@@ -1591,221 +1591,46 @@ model Person {
 }
 	`
 	expected := `
-	const GetPerson = (hooks = {}) => {
-    return async function(ctx, inputs) {
-        return await runtime.tracing.withSpan('getPerson.DefaultImplementation', async (span) => {
-            const models = createModelAPI();
-            let wheres = {
-                ...inputs.where,
-            };
-
-            let data;
-
-            // call beforeQuery hook (if defined)
-            if (hooks.beforeQuery) {
-                let builder = models.person.where(wheres);
-
-                // we don't know if its an instance of PersonQueryBuilder or Promise<Person> so we wrap in Promise.resolve to get the eventual value.
-                let resolvedValue;
-                await runtime.tracing.withSpan('getPerson.beforeQuery', async (span) => {
-                    resolvedValue = await hooks.beforeQuery(ctx, deepFreeze(inputs), builder);
-                });
-
-                const constructor = resolvedValue?.constructor?.name
-                if (constructor === 'QueryBuilder') {
-                    span.addEvent('using QueryBuilder')
-                    builder = resolvedValue;
-                    // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
-                    span.addEvent(builder.sql())
-                    data = await builder.findOne();
-                } else {
-                    // in this case, the data is just the resolved value of the promise
-                    span.addEvent('using Model API')
-                    data = resolvedValue;
-                }
-            } else {
-                // when no beforeQuery hook is defined, use the default implementation
-                data = await models.person.findOne(wheres);
-            }
-            // call afterQuery hook (if defined)
-            if (hooks.afterQuery) {
-                await runtime.tracing.withSpan('getPerson.afterQuery', async (span) => {
-                    data = await hooks.afterQuery(ctx, deepFreeze(inputs), data);
-                });
-            }
-
-            return data;
-        });
+const GetPerson = (hooks = {}) => {
+    const action = {
+        name: "getPerson",
+        type: "ACTION_TYPE_GET",
+        modelAPI: new runtime.ModelAPI("person", () => ({}), tableConfigMap),
     };
-};
+    return runtime.defaultImplementation(hooks, action);
+}
 const CreatePerson = (hooks = {}) => {
-    return async function(ctx, inputs) {
-        return await runtime.tracing.withSpan('createPerson.DefaultImplementation', async (span) => {
-            const models = createModelAPI();
-            let values = {
-                ...inputs,
-            };
-
-            // call beforeWrite hook (if defined)
-            if (hooks.beforeWrite) {
-                await runtime.tracing.withSpan('createPerson.beforeWrite', async (span) => {
-                    values = await hooks.beforeWrite(ctx, deepFreeze(inputs), values);
-                });
-            }
-
-            // values is the mutated version of inputs.values
-            const data = await models.person.create(values);
-
-            // call afterWrite hook (if defined)
-            if (hooks.afterWrite) {
-                await runtime.tracing.withSpan('createPerson.afterWrite', async (span) => {
-                    await hooks.afterWrite(ctx, deepFreeze(inputs), data);
-                });
-            }
-
-            return data;
-        });
+    const action = {
+        name: "createPerson",
+        type: "ACTION_TYPE_CREATE",
+        modelAPI: new runtime.ModelAPI("person", () => ({}), tableConfigMap),
     };
-};
+    return runtime.defaultImplementation(hooks, action);
+}
 const UpdatePerson = (hooks = {}) => {
-    return async function(ctx, inputs) {
-        return await runtime.tracing.withSpan('updatePerson.DefaultImplementation', async (span) => {
-            const models = createModelAPI();
-            let values = Object.assign({}, inputs.values);
-            let wheres = Object.assign({}, inputs.where);
-
-            // call beforeWrite hook (if defined)
-            if (hooks.beforeWrite) {
-                await runtime.tracing.withSpan('updatePerson.beforeWrite', async (span) => {
-                    values = await hooks.beforeWrite(ctx, deepFreeze(inputs), values);
-                });
-            }
-
-            let data;
-            if (hooks.beforeQuery) {
-                await runtime.tracing.withSpan('updatePerson.beforeQuery', async (span) => {
-                    data = await hooks.beforeQuery(ctx, deepFreeze(inputs), values);
-                });
-            } else {
-                // when no beforeQuery hook is defined, use the default implementation
-                data = await models.person.update(wheres, values);
-            }
-
-            // call afterQuery hook (if defined)
-            if (hooks.afterQuery) {
-                await runtime.tracing.withSpan('updatePerson.afterQuery', async (span) => {
-                    data = await hooks.afterQuery(ctx, deepFreeze(inputs), data);
-                });
-            }
-
-
-
-            // call afterWrite hook (if defined)
-            if (hooks.afterWrite) {
-                await runtime.tracing.withSpan('updatePerson.afterWrite', async (span) => {
-                    await hooks.afterWrite(ctx, deepFreeze(inputs), data);
-                });
-            }
-
-            return data;
-        });
+    const action = {
+        name: "updatePerson",
+        type: "ACTION_TYPE_UPDATE",
+        modelAPI: new runtime.ModelAPI("person", () => ({}), tableConfigMap),
     };
-};
+    return runtime.defaultImplementation(hooks, action);
+}
 const DeletePerson = (hooks = {}) => {
-    return async function(ctx, inputs) {
-        return await runtime.tracing.withSpan('deletePerson.DefaultImplementation', async (span) => {
-            const models = createModelAPI();
-            let wheres = {
-                ...inputs.where,
-            };
-
-            wheres = inputs;
-            let data;
-
-            // call beforeQuery hook (if defined)
-            if (hooks.beforeQuery) {
-                let builder = models.person.where(wheres);
-
-                // we don't know if its an instance of PersonQueryBuilder or Promise<string> so we wrap in Promise.resolve to get the eventual value.
-                let resolvedValue;
-                await runtime.tracing.withSpan('deletePerson.beforeQuery', async (span) => {
-                    resolvedValue = await hooks.beforeQuery(ctx, deepFreeze(inputs), builder);
-                });
-
-                const constructor = resolvedValue?.constructor?.name
-                if (constructor === 'QueryBuilder') {
-                    span.addEvent('using QueryBuilder')
-                    builder = resolvedValue;
-                    // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
-                    span.addEvent(builder.sql())
-                    data = await builder.delete();
-                } else {
-                    // in this case, the data is just the resolved value of the promise
-                    span.addEvent('using Model API')
-                    data = resolvedValue;
-                }
-            } else {
-                // when no beforeQuery hook is defined, use the default implementation
-                data = await models.person.delete(wheres);
-            }
-            // call afterQuery hook (if defined)
-            if (hooks.afterQuery) {
-                await runtime.tracing.withSpan('deletePerson.afterQuery', async (span) => {
-                    data = await hooks.afterQuery(ctx, deepFreeze(inputs), data);
-                });
-            }
-
-            return data;
-        });
+    const action = {
+        name: "deletePerson",
+        type: "ACTION_TYPE_DELETE",
+        modelAPI: new runtime.ModelAPI("person", () => ({}), tableConfigMap),
     };
-};
+    return runtime.defaultImplementation(hooks, action);
+}
 const ListPeople = (hooks = {}) => {
-    return async function(ctx, inputs) {
-        return await runtime.tracing.withSpan('listPeople.DefaultImplementation', async (span) => {
-            const models = createModelAPI();
-            let wheres = {
-                ...inputs.where,
-            };
-
-            let data;
-
-            // call beforeQuery hook (if defined)
-            if (hooks.beforeQuery) {
-                let builder = models.person.where(wheres);
-
-                // we don't know if its an instance of PersonQueryBuilder or Promise<Person[]> so we wrap in Promise.resolve to get the eventual value.
-                let resolvedValue;
-                await runtime.tracing.withSpan('listPeople.beforeQuery', async (span) => {
-                    resolvedValue = await hooks.beforeQuery(ctx, deepFreeze(inputs), builder);
-                });
-
-                const constructor = resolvedValue?.constructor?.name
-                if (constructor === 'QueryBuilder') {
-                    span.addEvent('using QueryBuilder')
-                    builder = resolvedValue;
-                    // in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query
-                    span.addEvent(builder.sql())
-                    data = await builder.findMany();
-                } else {
-                    // in this case, the data is just the resolved value of the promise
-                    span.addEvent('using Model API')
-                    data = resolvedValue;
-                }
-            } else {
-                // when no beforeQuery hook is defined, use the default implementation
-                data = await models.person.findMany(inputs);
-            }
-            // call afterQuery hook (if defined)
-            if (hooks.afterQuery) {
-                await runtime.tracing.withSpan('listPeople.afterQuery', async (span) => {
-                    data = await hooks.afterQuery(ctx, deepFreeze(inputs), data);
-                });
-            }
-
-            return data;
-        });
+    const action = {
+        name: "listPeople",
+        type: "ACTION_TYPE_LIST",
+        modelAPI: new runtime.ModelAPI("person", () => ({}), tableConfigMap),
     };
-};
+    return runtime.defaultImplementation(hooks, action);
+}
 `
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {

@@ -5,6 +5,7 @@ const { handleJob } = require("./handleJob");
 const { handleSubscriber } = require("./handleSubscriber");
 const KSUID = require("ksuid");
 const { useDatabase } = require("./database");
+const { defaultImplementation } = require("./defaultFunctionImplementation");
 const {
   Permissions,
   PERMISSION_STATE,
@@ -22,6 +23,7 @@ module.exports = {
   Permissions,
   PERMISSION_STATE,
   checkBuiltInPermissions,
+  defaultImplementation,
   tracing,
   ksuid() {
     return KSUID.randomSync().string;
