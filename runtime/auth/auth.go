@@ -97,28 +97,47 @@ func CheckIssuers(ctx context.Context, issuers []ExternalIssuer) []ExternalIssue
 		return issuers
 	}
 
-	ctx, span := tracer.Start(ctx, "OpenID setup")
+	ctx, span := tracer.Start(ctx, "OpenID providers")
 	defer span.End()
 
 	validIssuers := []ExternalIssuer{}
 
 	for _, issuer := range issuers {
 
-		ctx, issSpan := tracer.Start(ctx, issuer.Iss)
-
-		oidc, err := GetOpenIDConnectConfig(ctx, issuer.Iss)
+		err := processIssuer(ctx, issuer)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"issuer": issuer,
-				"error":  err,
-			}).Error("Failed to load OpenID config")
-
-			issSpan.RecordError(err, trace.WithStackTrace(true))
-			issSpan.SetStatus(codes.Error, err.Error())
 			continue
 		}
 
-		issSpan.SetAttributes(attribute.String("JWKS url", oidc.JWKSURL))
+		validIssuers = append(validIssuers, issuer)
+	}
+
+	return validIssuers
+}
+
+func processIssuer(ctx context.Context, issuer ExternalIssuer) error {
+	ctx, span := tracer.Start(ctx, issuer.Iss)
+	defer span.End()
+
+	oidc, err := GetOpenIDConnectConfig(ctx, issuer.Iss)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"issuer": issuer,
+			"error":  err,
+		}).Error("Failed to load OpenID config")
+
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+
+		return err
+	}
+
+	span.SetAttributes(attribute.String("JWKS url", oidc.JWKSURL))
+
+	return func() error {
+
+		ctx, span := tracer.Start(ctx, "Fetch JWKs")
+		defer span.End()
 
 		err = JwkCache.Register(oidc.JWKSURL, jwk.WithHTTPClient(HttpClient))
 		if err != nil {
@@ -128,9 +147,9 @@ func CheckIssuers(ctx context.Context, issuers []ExternalIssuer) []ExternalIssue
 				"error":  err,
 			}).Error("Couldn't register JWKS")
 
-			issSpan.RecordError(err, trace.WithStackTrace(true))
-			issSpan.SetStatus(codes.Error, err.Error())
-			continue
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+			return err
 		}
 
 		// Check the url is valid
@@ -141,17 +160,13 @@ func CheckIssuers(ctx context.Context, issuers []ExternalIssuer) []ExternalIssue
 				"error":  err,
 			}).Error("Couldn't validate JWKS from cache")
 
-			issSpan.RecordError(err, trace.WithStackTrace(true))
-			issSpan.SetStatus(codes.Error, err.Error())
-			continue
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+			return err
 		}
 
-		validIssuers = append(validIssuers, issuer)
-
-		issSpan.End()
-	}
-
-	return validIssuers
+		return nil
+	}()
 }
 
 func GetOpenIDConnectConfig(ctx context.Context, issuer string) (*OpenidConfig, error) {
