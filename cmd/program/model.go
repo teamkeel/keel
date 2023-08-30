@@ -3,7 +3,6 @@ package program
 import (
 	"context"
 	"crypto/rsa"
-	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -20,14 +19,12 @@ import (
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
-	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/mail"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
-	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -463,7 +460,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if m.Mode == ModeTest {
-
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 
 			switch pathParts[0] {
@@ -471,76 +467,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				r = msg.r.WithContext(ctx)
 				m.RuntimeHandler.ServeHTTP(msg.w, r)
 			case testing.JobPath:
-				jobName := pathParts[2]
-				body, err := io.ReadAll(r.Body)
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					break
-				}
-
-				identity, err := actions.HandleAuthorizationHeader(ctx, m.Schema, r.Header)
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					_, err = w.Write([]byte(err.Error()))
-					if err != nil {
-						panic(err)
-					}
-				}
-
-				if identity != nil {
-					ctx = runtimectx.WithIdentity(ctx, identity)
-				}
-
-				var inputs map[string]any
-				if string(body) == "" {
-					inputs = nil
-				} else {
-					err = json.Unmarshal(body, &inputs)
-					if err != nil {
-						w.WriteHeader(http.StatusInternalServerError)
-						break
-					}
-				}
-
-				trigger := functions.TriggerType(r.Header.Get("X-Trigger-Type"))
-
-				err = m.JobHandler.RunJob(ctx, jobName, inputs, trigger)
-
+				err := testing.HandleJobExecutorRequest(ctx, m.Schema, pathParts[2], r)
 				if err != nil {
 					response := common.NewJsonErrorResponse(err)
 					w.WriteHeader(response.Status)
-					_, err = w.Write(response.Body)
-					if err != nil {
-						panic(err)
-					}
-				} else {
-					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write(response.Body)
 				}
 			case testing.SubscriberPath:
-				subscriberName := pathParts[2]
-				body, err := io.ReadAll(r.Body)
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					break
-				}
-
-				var event *events.Event
-				err = json.Unmarshal(body, &event)
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					break
-				}
-
-				err = m.SubscriberHandler.RunSubscriber(ctx, subscriberName, event)
+				err := testing.HandleSubscriberExecutorRequest(ctx, m.Schema, pathParts[2], r)
 				if err != nil {
 					response := common.NewJsonErrorResponse(err)
 					w.WriteHeader(response.Status)
-					_, err = w.Write(response.Body)
-					if err != nil {
-						panic(err)
-					}
-				} else {
-					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write(response.Body)
 				}
 			default:
 				w.WriteHeader(http.StatusNotFound)

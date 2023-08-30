@@ -469,7 +469,7 @@ test("request reset password - unknown email - successful request", async () => 
 });
 
 // This test will break if we use a private key in the test runtime.
-test("reset password - invalid token - token has expired error", async () => {
+test("reset password - invalid token - cannot be parsed", async () => {
   const identity = await models.identity.create({
     id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
     email: "user@keel.xyz",
@@ -483,7 +483,7 @@ test("reset password - invalid token - token has expired error", async () => {
     })
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
-    message: "token has expired",
+    message: "cannot be parsed or verified as a valid JWT",
   });
 });
 
