@@ -322,9 +322,11 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 					}
 				}
 				if !match {
-					issuers = append(issuers, auth.ExternalIssuer{
-						Iss: iss,
-					})
+					if iss != "" {
+						issuers = append(issuers, auth.ExternalIssuer{
+							Iss: iss,
+						})
+					}
 				}
 
 				authConfig.Issuers = issuers
