@@ -148,11 +148,15 @@ test("withAuthToken - invalid token - authentication failed", async () => {
   ).toHaveAuthenticationError();
 
   await expect(
-    actions.withAuthToken("invalid").getPostRequiresAuthentication({ id: "temp" })
+    actions
+      .withAuthToken("invalid")
+      .getPostRequiresAuthentication({ id: "temp" })
   ).toHaveAuthenticationError();
 
   await expect(
-    actions.withAuthToken("invalid").getPostRequiresNoAuthentication({ id: "temp" })
+    actions
+      .withAuthToken("invalid")
+      .getPostRequiresNoAuthentication({ id: "temp" })
   ).toHaveAuthenticationError();
 
   await expect(
@@ -180,11 +184,15 @@ test("withAuthToken - identity does not exist - authentication failed", async ()
   ).toHaveAuthenticationError();
 
   await expect(
-    actions.withAuthToken("invalid").getPostRequiresAuthentication({ id: "temp" })
+    actions
+      .withAuthToken("invalid")
+      .getPostRequiresAuthentication({ id: "temp" })
   ).toHaveAuthenticationError();
 
   await expect(
-    actions.withAuthToken("invalid").getPostRequiresNoAuthentication({ id: "temp" })
+    actions
+      .withAuthToken("invalid")
+      .getPostRequiresNoAuthentication({ id: "temp" })
   ).toHaveAuthenticationError();
 
   await expect(
@@ -193,7 +201,7 @@ test("withAuthToken - identity does not exist - authentication failed", async ()
 });
 
 test("withIdentity - identity does not exist - authentication failed", async () => {
-   await actions.authenticate({
+  await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -215,11 +223,15 @@ test("withIdentity - identity does not exist - authentication failed", async () 
   ).toHaveAuthenticationError();
 
   await expect(
-    actions.withIdentity(identity!).getPostRequiresAuthentication({ id: "temp" })
+    actions
+      .withIdentity(identity!)
+      .getPostRequiresAuthentication({ id: "temp" })
   ).toHaveAuthenticationError();
 
   await expect(
-    actions.withIdentity(identity!).getPostRequiresNoAuthentication({ id: "temp" })
+    actions
+      .withIdentity(identity!)
+      .getPostRequiresNoAuthentication({ id: "temp" })
   ).toHaveAuthenticationError();
 
   await expect(

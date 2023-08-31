@@ -102,17 +102,6 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		response, headers, err := actions.Execute(scope, inputs)
 		if err != nil {
-			span.RecordError(err, trace.WithStackTrace(true))
-			span.SetStatus(codes.Error, err.Error())
-
-			var runtimeErr common.RuntimeError
-			if errors.As(err, &runtimeErr) {
-				span.SetAttributes(
-					attribute.String("error.code", runtimeErr.Code),
-					attribute.String("error.message", runtimeErr.Message),
-				)
-			}
-
 			return NewErrorResponse(ctx, err, nil)
 		}
 
@@ -162,6 +151,8 @@ func NewErrorResponse(ctx context.Context, err error, data map[string]any) commo
 		message = runtimeError.Message
 
 		switch code {
+		case common.ErrInternal:
+			httpCode = http.StatusInternalServerError
 		case common.ErrInvalidInput:
 			httpCode = http.StatusBadRequest
 		case common.ErrRecordNotFound:
@@ -170,6 +161,8 @@ func NewErrorResponse(ctx context.Context, err error, data map[string]any) commo
 			httpCode = http.StatusForbidden
 		case common.ErrAuthenticationFailed:
 			httpCode = http.StatusUnauthorized
+		case common.ErrMethodNotFound:
+			httpCode = http.StatusNotFound
 		case common.ErrHttpMethodNotAllowed:
 			httpCode = http.StatusMethodNotAllowed
 		case common.ErrInputMalformed:

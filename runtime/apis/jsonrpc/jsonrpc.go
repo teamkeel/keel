@@ -56,7 +56,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		}
 
 		if !req.Valid() {
-			err = common.NewInputMalformedError("invalid JSON-RPC request")
+			err = common.NewInputMalformedError("invalid JSON-RPC 2.0 request")
 			return NewErrorResponse(ctx, &req.ID, err)
 		}
 

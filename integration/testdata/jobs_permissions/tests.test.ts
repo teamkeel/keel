@@ -14,7 +14,9 @@ test("job - without identity - not permitted", async () => {
   await expect(jobs.manualJob({ id })).toHaveAuthorizationError();
   expect(await jobRan(id)).toBeFalsy();
 
-  await expect(jobs.manualJobIsAuthenticatedExpression({ id })).toHaveAuthorizationError();
+  await expect(
+    jobs.manualJobIsAuthenticatedExpression({ id })
+  ).toHaveAuthorizationError();
   expect(await jobRan(id)).toBeFalsy();
 
   await expect(jobs.manualJobMultiRoles({ id })).toHaveAuthorizationError();
@@ -24,16 +26,24 @@ test("job - without identity - not permitted", async () => {
 test("job - invalid token - not authenticated", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
 
-  await expect(jobs.withAuthToken("invalid").manualJobTrueExpression({ id })).not.toHaveAuthorizationError();
+  await expect(
+    jobs.withAuthToken("invalid").manualJobTrueExpression({ id })
+  ).not.toHaveAuthorizationError();
   expect(await jobRan(id)).toBeFalsy();
 
-  await expect(jobs.withAuthToken("invalid").manualJob({ id })).toHaveAuthenticationError();
+  await expect(
+    jobs.withAuthToken("invalid").manualJob({ id })
+  ).toHaveAuthenticationError();
   expect(await jobRan(id)).toBeFalsy();
 
-  await expect(jobs.withAuthToken("invalid").manualJobIsAuthenticatedExpression({ id })).toHaveAuthenticationError();
+  await expect(
+    jobs.withAuthToken("invalid").manualJobIsAuthenticatedExpression({ id })
+  ).toHaveAuthenticationError();
   expect(await jobRan(id)).toBeFalsy();
 
-  await expect(jobs.withAuthToken("invalid").manualJobMultiRoles({ id })).toHaveAuthenticationError();
+  await expect(
+    jobs.withAuthToken("invalid").manualJobMultiRoles({ id })
+  ).toHaveAuthenticationError();
   expect(await jobRan(id)).toBeFalsy();
 });
 
@@ -41,7 +51,9 @@ test("job - with identity, ctx.isAuthenticated - permitted", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
   const identity = await models.identity.create({ email: "weave@gmail.com" });
 
-  await expect(jobs.withIdentity(identity).manualJobIsAuthenticatedExpression({ id })).not.toHaveAuthorizationError();
+  await expect(
+    jobs.withIdentity(identity).manualJobIsAuthenticatedExpression({ id })
+  ).not.toHaveAuthorizationError();
   expect(await jobRan(id)).toBeTruthy();
 });
 
@@ -55,7 +67,9 @@ test("job - with token, ctx.isAuthenticated - permitted", async () => {
     },
   });
 
-  await expect(jobs.withAuthToken(token).manualJobIsAuthenticatedExpression({ id })).not.toHaveAuthorizationError();
+  await expect(
+    jobs.withAuthToken(token).manualJobIsAuthenticatedExpression({ id })
+  ).not.toHaveAuthorizationError();
   expect(await jobRan(id)).toBeTruthy();
 });
 
@@ -142,9 +156,7 @@ test("job - env var expression - permitted", async () => {
 test("job - env var expression fail - not permitted", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
 
-  await expect(
-    jobs.manualJobEnvExpression2({ id })
-  ).toHaveAuthorizationError();
+  await expect(jobs.manualJobEnvExpression2({ id })).toHaveAuthorizationError();
 
   expect(await jobRan(id)).toBeFalsy();
 });
@@ -235,7 +247,6 @@ test("scheduled job - with identity - permitted", async () => {
   expect(await jobRan(id)).toBeTruthy();
 });
 
-
 test("scheduled job - invalid token - authentication failed", async () => {
   const { id } = await models.trackJob.create({
     id: "12345",
@@ -243,7 +254,9 @@ test("scheduled job - invalid token - authentication failed", async () => {
   });
 
   await expect(
-    jobs.withAuthToken("invalid").scheduledWithoutPermissions({ scheduled: true })
+    jobs
+      .withAuthToken("invalid")
+      .scheduledWithoutPermissions({ scheduled: true })
   ).toHaveAuthenticationError();
 
   expect(await jobRan(id)).toBeFalsy();

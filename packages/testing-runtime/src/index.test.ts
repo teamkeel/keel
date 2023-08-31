@@ -26,7 +26,6 @@ test("not.toHaveAuthorizationError", async () => {
   await expect(p).not.toHaveAuthorizationError();
 });
 
-
 test("toHaveAuthenticationError", async () => {
   const p = Promise.reject({
     code: "ERR_AUTHENTICATION_FAILED",
