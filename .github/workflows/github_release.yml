@@ -39,6 +39,10 @@ on:
         required: false
         type: string
         default: "main"
+      commitMessage:
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -116,7 +120,7 @@ jobs:
           token: ${{ secrets.PAT }}
           repository: teamkeel/backend
           event-type: "new-runtime-release"
-          client-payload: '{"version": "${{ inputs.version }}", "changelog": "${{ steps.changelog.outputs.changelog }}", baseBranch: "${{ inputs.eventBranch }}"}'
+          client-payload: '{"version": "${{ inputs.version }}", "changelog": "${{ steps.changelog.outputs.changelog }}", baseBranch: "${{ inputs.eventBranch }}", "triggeringCommitMessage": "${{ inputs.commitMessage }}"}'
 
       - name: Fire Release Event
         if: ${{ inputs.publishEvent && inputs.generateChangelog  ==  false }}
@@ -126,4 +130,4 @@ jobs:
           token: ${{ secrets.PAT }}
           repository: teamkeel/backend
           event-type: "new-runtime-release"
-          client-payload: '{"version": "${{ inputs.version }}", baseBranch: "${{ inputs.eventBranch }}"}'
+          client-payload: '{"version": "${{ inputs.version }}", baseBranch: "${{ inputs.eventBranch }}", "triggeringCommitMessage": "${{ inputs.commitMessage }}"}'
