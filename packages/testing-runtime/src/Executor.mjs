@@ -103,8 +103,6 @@ export class Executor {
 
       if (this._parseJsonResult) {
         return r.json();
-      } else {
-        return true;
       }
     });
   }

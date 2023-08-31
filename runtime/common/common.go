@@ -2,7 +2,6 @@ package common
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -18,12 +17,6 @@ type Response struct {
 	Headers map[string][]string
 }
 
-type HttpJsonErrorResponse struct {
-	Code    string         `json:"code"`
-	Message string         `json:"message"`
-	Data    map[string]any `json:"data,omitempty"`
-}
-
 func NewJsonResponse(status int, body any, headers map[string][]string) Response {
 	b, _ := json.Marshal(body)
 	return Response{
@@ -33,42 +26,25 @@ func NewJsonResponse(status int, body any, headers map[string][]string) Response
 	}
 }
 
-func NewJsonErrorResponse(err error) Response {
-	code := "ERR_INTERNAL"
-	message := "error executing request"
-	httpCode := http.StatusInternalServerError
-
-	var runtimeErr RuntimeError
-	if errors.As(err, &runtimeErr) {
-		code = runtimeErr.Code
-		message = runtimeErr.Message
-
-		switch code {
-		case ErrInvalidInput:
-			httpCode = http.StatusBadRequest
-		case ErrRecordNotFound:
-			httpCode = http.StatusNotFound
-		case ErrPermissionDenied:
-			httpCode = http.StatusForbidden
-		case ErrAuthenticationFailed:
-			httpCode = http.StatusUnauthorized
-		}
-	}
-
-	return NewJsonResponse(httpCode, HttpJsonErrorResponse{
-		Code:    code,
-		Message: message,
-	}, nil)
-}
-
 type ApiHandlerFunc func(r *http.Request) Response
 
 const (
-	ErrInternal             = "ERR_INTERNAL"
-	ErrInvalidInput         = "ERR_INVALID_INPUT"
-	ErrPermissionDenied     = "ERR_PERMISSION_DENIED"
-	ErrRecordNotFound       = "ERR_RECORD_NOT_FOUND"
+	// An unexpected internal error happened.
+	ErrInternal = "ERR_INTERNAL"
+	// The input arguments provided are not valid.
+	ErrInvalidInput = "ERR_INVALID_INPUT"
+	// The input provided is malformed and cannot be parsed.
+	ErrInputMalformed = "ERR_INPUT_MALFORMED"
+	// Authentication failed when trying to identify the identity.
 	ErrAuthenticationFailed = "ERR_AUTHENTICATION_FAILED"
+	// Permission denied when trying to access some resource.
+	ErrPermissionDenied = "ERR_PERMISSION_DENIED"
+	// Record cannot be found with the provided parameters.
+	ErrRecordNotFound = "ERR_RECORD_NOT_FOUND"
+	// The path or action does not exist.
+	ErrMethodNotFound = "ERR_ACTION_NOT_FOUND"
+	// The HTTP method is not allowed for this request.
+	ErrHttpMethodNotAllowed = "ERR_HTTP_METHOD_NOT_ALLOWED"
 )
 
 type PermissionStatus string
@@ -110,10 +86,38 @@ func (r RuntimeError) Error() string {
 	return r.Message
 }
 
+func NewValidationError(message string) RuntimeError {
+	return RuntimeError{
+		Code:    ErrInvalidInput,
+		Message: message,
+	}
+}
+
 func NewNotFoundError() RuntimeError {
 	return RuntimeError{
 		Code:    ErrRecordNotFound,
 		Message: "record not found",
+	}
+}
+
+func NewMethodNotFoundError() RuntimeError {
+	return RuntimeError{
+		Code:    ErrMethodNotFound,
+		Message: "method not found",
+	}
+}
+
+func NewHttpMethodNotAllowedError(message string) RuntimeError {
+	return RuntimeError{
+		Code:    ErrHttpMethodNotAllowed,
+		Message: message,
+	}
+}
+
+func NewInputMalformedError(message string) RuntimeError {
+	return RuntimeError{
+		Code:    ErrInputMalformed,
+		Message: message,
 	}
 }
 

@@ -34,7 +34,7 @@ async function withDatabase(db, actionType, cb) {
   // db.connection() provides a kysely instance bound to a single database connection.
   return db.connection().execute(async (sDb) => {
     return dbInstance.run(sDb, async () => {
-      return cb({ sDb });
+      return cb();
     });
   });
 }

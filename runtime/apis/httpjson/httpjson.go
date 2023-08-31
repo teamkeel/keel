@@ -1,6 +1,7 @@
 package httpjson
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -44,7 +45,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		identity, err := actions.HandleAuthorizationHeader(ctx, p, r.Header)
 		if err != nil {
-			return common.NewJsonErrorResponse(err)
+			return NewErrorResponse(ctx, err, nil)
 		}
 		if identity != nil {
 			ctx = runtimectx.WithIdentity(ctx, identity)
@@ -57,37 +58,22 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			var err error
 			inputs, err = parsePostBody(r.Body)
 			if err != nil {
-				return common.NewJsonResponse(http.StatusBadRequest, common.HttpJsonErrorResponse{
-					Code:    "ERR_INTERNAL",
-					Message: "error parsing POST body",
-				}, nil)
+				return NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
 			}
 		default:
-			return common.NewJsonResponse(http.StatusMethodNotAllowed, common.HttpJsonErrorResponse{
-				Code:    "ERR_HTTP_METHOD_NOT_ALLOWED",
-				Message: "only HTTP POST or GET accepted",
-			}, nil)
+			return NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP POST or GET accepted"), nil)
+
 		}
 
 		action := proto.FindAction(p, actionName)
 		if action == nil {
-			span.SetStatus(codes.Error, "action not found")
-			return common.NewJsonResponse(http.StatusNotFound, common.HttpJsonErrorResponse{
-				Code:    "ERR_NOT_FOUND",
-				Message: "method not found",
-			}, nil)
+			return NewErrorResponse(ctx, common.NewMethodNotFoundError(), nil)
 		}
 
 		validation, err := jsonschema.ValidateRequest(ctx, p, action, inputs)
 		if err != nil {
-			span.RecordError(err, trace.WithStackTrace(true))
-			span.SetStatus(codes.Error, err.Error())
-			// I think this can only happen if we generate an invalid JSON Schema for the
-			// request type
-			return common.NewJsonResponse(http.StatusBadRequest, common.HttpJsonErrorResponse{
-				Code:    "ERR_INTERNAL",
-				Message: "error validating request body",
-			}, nil)
+			// Validation cannot complete due to an invalid JSON schema
+			return NewErrorResponse(ctx, err, nil)
 		}
 
 		if !validation.Valid() {
@@ -106,13 +92,10 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			span.AddEvent("errors", trace.WithAttributes(attrs...))
 			span.SetStatus(codes.Error, strings.Join(messages, ", "))
 
-			return common.NewJsonResponse(http.StatusBadRequest, common.HttpJsonErrorResponse{
-				Code:    "ERR_INVALID_INPUT",
-				Message: "one or more errors found validating request object",
-				Data: map[string]any{
-					"errors": errs,
-				},
-			}, nil)
+			err = common.NewValidationError("one or more errors found validating request object")
+			return NewErrorResponse(ctx, err, map[string]any{
+				"errors": errs,
+			})
 		}
 
 		scope := actions.NewScope(ctx, action, p)
@@ -130,7 +113,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 				)
 			}
 
-			return common.NewJsonErrorResponse(err)
+			return NewErrorResponse(ctx, err, nil)
 		}
 
 		return common.NewJsonResponse(http.StatusOK, response, headers)
@@ -158,4 +141,52 @@ func parsePostBody(b io.ReadCloser) (inputs any, err error) {
 
 	err = json.Unmarshal(body, &inputs)
 	return inputs, err
+}
+
+type HttpJsonErrorResponse struct {
+	Code    string         `json:"code"`
+	Message string         `json:"message"`
+	Data    map[string]any `json:"data,omitempty"`
+}
+
+func NewErrorResponse(ctx context.Context, err error, data map[string]any) common.Response {
+	span := trace.SpanFromContext(ctx)
+
+	code := common.ErrInternal
+	message := "error executing request"
+	httpCode := http.StatusInternalServerError
+
+	var runtimeError common.RuntimeError
+	if errors.As(err, &runtimeError) {
+		code = runtimeError.Code
+		message = runtimeError.Message
+
+		switch code {
+		case common.ErrInvalidInput:
+			httpCode = http.StatusBadRequest
+		case common.ErrRecordNotFound:
+			httpCode = http.StatusNotFound
+		case common.ErrPermissionDenied:
+			httpCode = http.StatusForbidden
+		case common.ErrAuthenticationFailed:
+			httpCode = http.StatusUnauthorized
+		case common.ErrHttpMethodNotAllowed:
+			httpCode = http.StatusMethodNotAllowed
+		case common.ErrInputMalformed:
+			httpCode = http.StatusBadRequest
+		}
+	}
+
+	span.RecordError(err, trace.WithStackTrace(true))
+	span.SetStatus(codes.Error, err.Error())
+	span.SetAttributes(
+		attribute.String("error.code", runtimeError.Code),
+		attribute.String("error.message", runtimeError.Message),
+	)
+
+	return common.NewJsonResponse(httpCode, HttpJsonErrorResponse{
+		Code:    code,
+		Message: message,
+		Data:    data,
+	}, nil)
 }

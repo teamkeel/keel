@@ -25,8 +25,8 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/testing"
@@ -461,6 +461,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if m.Mode == ModeTest {
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+			if len(pathParts) != 3 {
+				w.WriteHeader(http.StatusNotFound)
+			}
 
 			switch pathParts[0] {
 			case testing.ActionApiPath:
@@ -469,14 +472,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case testing.JobPath:
 				err := testing.HandleJobExecutorRequest(ctx, m.Schema, pathParts[2], r)
 				if err != nil {
-					response := common.NewJsonErrorResponse(err)
+					response := httpjson.NewErrorResponse(ctx, err, nil)
 					w.WriteHeader(response.Status)
 					_, _ = w.Write(response.Body)
 				}
 			case testing.SubscriberPath:
 				err := testing.HandleSubscriberExecutorRequest(ctx, m.Schema, pathParts[2], r)
 				if err != nil {
-					response := common.NewJsonErrorResponse(err)
+					response := httpjson.NewErrorResponse(ctx, err, nil)
 					w.WriteHeader(response.Status)
 					_, _ = w.Write(response.Body)
 				}

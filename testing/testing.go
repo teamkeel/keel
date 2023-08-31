@@ -23,7 +23,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/actions"
-	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
@@ -203,10 +203,6 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 			if len(pathParts) != 3 {
 				w.WriteHeader(http.StatusNotFound)
-				_, err = w.Write([]byte(fmt.Sprintf("invalid url received on testing server '%s'", r.URL.Path)))
-				if err != nil {
-					panic(err)
-				}
 				return
 			}
 
@@ -217,14 +213,14 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			case JobPath:
 				err := HandleJobExecutorRequest(ctx, schema, pathParts[2], r)
 				if err != nil {
-					response := common.NewJsonErrorResponse(err)
+					response := httpjson.NewErrorResponse(ctx, err, nil)
 					w.WriteHeader(response.Status)
 					_, _ = w.Write(response.Body)
 				}
 			case SubscriberPath:
 				err := HandleSubscriberExecutorRequest(ctx, schema, pathParts[2], r)
 				if err != nil {
-					response := common.NewJsonErrorResponse(err)
+					response := httpjson.NewErrorResponse(ctx, err, nil)
 					w.WriteHeader(response.Status)
 					_, _ = w.Write(response.Body)
 				}
