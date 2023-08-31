@@ -97,7 +97,7 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 	if err := SetAuditScopeIntoDB(scope, span); err != nil {
 		return nil, nil, err
 	}
-	defer ClearAuditScopeInDB(scope)
+	//defer ClearAuditScopeInDB(scope)
 
 	// inputs can be anything - with arbitrary functions 'Any' type, they can be
 	// an array / number / string etc, which doesn't fit in with the traditional map[string]any definition of an inputs object
