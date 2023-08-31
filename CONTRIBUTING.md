@@ -4,6 +4,13 @@ This repo is setup so that all contributors follow [Conventional Commits](https:
 
 __You will not be able to merge your PR without following these conventions.__
 
+### Important:
+- Please ensure that you have read and understood the Contributing guidelines before creating a PR.
+- This project is currently focused on bug fixes, nit fixes, documentation, and tests.
+- **We are NOT accepting pull requests for new features or refactor contributions at this time.**
+
+### How to file a bug report.
+To file a bug report, please head over to the [issues tab](https://github.com/teamkeel/keel/issues) of this repository, create a new issue and in the issue template please select bug report.
 ### A short primer on conventional commit messages
 
 Prefix your commit messages with:
@@ -14,8 +21,7 @@ Prefix your commit messages with:
 
 ## Note
 
-Keel is currently pre-release (semver < 1). _Do not commit any major releases using conventional commits to bump the version to v1 until we have decided that
-this is the case_
+Keel is currently pre-release (semver < 1). _Do not commit any major releases using conventional commits to bump the version to v1 until we have decided that this is the case_
 
 ---
 
@@ -101,15 +107,15 @@ go run cmd/keel/main.go [cmd] [args]
 
 ### Configuring a private key in development
 
-The `-private-key-path` argument on the run command lets you pass in the path 
-to a file containing a private key in PEM format. This may be useful if you 
+The `-private-key-path` argument on the run command lets you pass in the path
+to a file containing a private key in PEM format. This may be useful if you
 need to perform development or testing with signed tokens.
 
 ```bash
 go run cmd/keel/main.go run -private-key-path private-key.pem
 ```
 
-You can generate a private key in PEM with `openssl genrsa -out private-key.pem 2048` 
+You can generate a private key in PEM with `openssl genrsa -out private-key.pem 2048`
 or using some online [RSA key generator](https://travistidwell.com/jsencrypt/demo/index.html).
 
 
@@ -159,3 +165,11 @@ If you have made a change to error message copy, then you can run `make testdata
 Naming convention for test cases should describe the units you are testing in a hierarchical manner. Test cases covering validations should begin with `validation_` for example, and subsequent fragments should describe which validation is being tested.
 
 If a test case is complex, or the name itself doesn't adequately describe what it is testing, then either reconsider the naming, or consider adding a `description.md` file into the directory where the test case lives to provide more colour.
+
+### Get in touch
+If you run into any kind of issue, or have any questions, don't hesitate to ask for help. You can get in touch with us via the following channels:
+
+- **Community Discord**
+You can join our Discord community by clicking this [link](https://discord.gg/9G7Uv6JGQM)
+- **Email**
+Get in touch with us via email at [support@keel.so](mailto:support@keel.so)
