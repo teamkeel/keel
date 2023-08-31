@@ -59,6 +59,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
 	sdkTypes.Writeln("")
+	sdkTypes.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
 
 	// deepFreeze is used to make the inputs object to function hooks immutable
 	sdk.Writeln(`
@@ -226,7 +227,6 @@ func writeCreateValuesInterface(w *codegen.Writer, model *proto.Model) {
 }
 
 func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model, isTestingPackage bool) {
-	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
 	w.Writef("export type %sOrderBy = {\n", model.Name)
 	w.Indent()
 
