@@ -298,6 +298,11 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		return &privateKey.PublicKey, nil
 	})
 
+	var validationErr *jwt.ValidationError
+	if errors.As(err, &validationErr) && validationErr.Errors == jwt.ValidationErrorExpired {
+		return "", "", ErrTokenExpired
+	}
+
 	// if unsuccessful using our private key, try to validate against any of the known external issuers if there are any
 	if err != nil {
 		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {

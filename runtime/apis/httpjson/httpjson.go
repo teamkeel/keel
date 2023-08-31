@@ -175,14 +175,15 @@ func NewErrorResponse(ctx context.Context, err error, data map[string]any) commo
 		case common.ErrInputMalformed:
 			httpCode = http.StatusBadRequest
 		}
+
+		span.SetAttributes(
+			attribute.String("error.code", runtimeError.Code),
+			attribute.String("error.message", runtimeError.Message),
+		)
 	}
 
 	span.RecordError(err, trace.WithStackTrace(true))
 	span.SetStatus(codes.Error, err.Error())
-	span.SetAttributes(
-		attribute.String("error.code", runtimeError.Code),
-		attribute.String("error.message", runtimeError.Message),
-	)
 
 	return common.NewJsonResponse(httpCode, HttpJsonErrorResponse{
 		Code:    code,

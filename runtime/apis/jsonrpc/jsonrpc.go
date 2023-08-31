@@ -134,6 +134,11 @@ func NewErrorResponse(ctx context.Context, requestId *string, err error) common.
 			Code:    runtimeErrorCodeToJsonRpcErrorCode(runtimeError.Code),
 			Message: runtimeError.Message,
 		}
+
+		span.SetAttributes(
+			attribute.String("error.code", runtimeError.Code),
+			attribute.String("error.message", runtimeError.Message),
+		)
 	default:
 		response = JsonRpcError{
 			Code:    JsonRpcInternalErrorCode,
@@ -143,10 +148,6 @@ func NewErrorResponse(ctx context.Context, requestId *string, err error) common.
 
 	span.RecordError(err, trace.WithStackTrace(true))
 	span.SetStatus(codes.Error, err.Error())
-	span.SetAttributes(
-		attribute.String("error.code", runtimeError.Code),
-		attribute.String("error.message", runtimeError.Message),
-	)
 
 	return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
 		JsonRpc: "2.0",
