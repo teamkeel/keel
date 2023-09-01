@@ -7,6 +7,7 @@ import (
 
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/util"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Event struct {
@@ -58,12 +59,13 @@ func SendEvents(ctx context.Context) error {
 		return nil
 	}
 
-	traceparent := util.GetTraceparent(ctx)
-
 	handler, err := GetEventHandler(ctx)
 	if err != nil {
 		return err
 	}
+
+	spanContext := trace.SpanContextFromContext(ctx)
+	traceparent := util.GetTraceparent(spanContext)
 
 	identityId := ""
 	if runtimectx.IsAuthenticated(ctx) {
