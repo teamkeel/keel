@@ -83,12 +83,12 @@ func SendEvents(ctx context.Context) error {
 
 	// PLACEHOLDER CODE
 	testEvent := &Event{
-		EventName:  "member.created",
+		EventName:  "person.created",
 		OccurredAt: time.Now().UTC(),
 		IdentityId: identityId,
 		Target: &EventTarget{
 			Id:   "2342342",
-			Type: "Member",
+			Type: "Person",
 			Data: map[string]any{
 				"id":    "2342342",
 				"name":  "Dave",
