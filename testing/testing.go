@@ -23,7 +23,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/actions"
-	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
@@ -203,10 +203,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 			if len(pathParts) != 3 {
 				w.WriteHeader(http.StatusNotFound)
-				_, err = w.Write([]byte(fmt.Sprintf("invalid url received on testing server '%s'", r.URL.Path)))
-				if err != nil {
-					panic(err)
-				}
+				return
 			}
 
 			switch pathParts[0] {
@@ -214,87 +211,21 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 				r = r.WithContext(ctx)
 				runtime.NewHttpHandler(schema).ServeHTTP(w, r)
 			case JobPath:
-				jobName := pathParts[2]
-				body, err := io.ReadAll(r.Body)
+				err := HandleJobExecutorRequest(ctx, schema, pathParts[2], r)
 				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-
-				identity, err := actions.HandleAuthorizationHeader(ctx, schema, r.Header)
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					_, err = w.Write([]byte(err.Error()))
-					if err != nil {
-						panic(err)
-					}
-				}
-
-				if identity != nil {
-					ctx = runtimectx.WithIdentity(ctx, identity)
-				}
-
-				var inputs map[string]any
-				// if no json body has been sent, just return an empty map for the inputs
-				if string(body) == "" {
-					inputs = nil
-				} else {
-					err = json.Unmarshal(body, &inputs)
-					if err != nil {
-						w.WriteHeader(http.StatusInternalServerError)
-						return
-					}
-				}
-
-				trigger := functions.TriggerType(r.Header.Get("X-Trigger-Type"))
-
-				err = runtime.NewJobHandler(schema).RunJob(ctx, jobName, inputs, trigger)
-
-				if err != nil {
-					response := common.NewJsonErrorResponse(err)
-
+					response := httpjson.NewErrorResponse(ctx, err, nil)
 					w.WriteHeader(response.Status)
-					_, err = w.Write(response.Body)
-					if err != nil {
-						panic(err)
-					}
-				} else {
-					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write(response.Body)
 				}
 			case SubscriberPath:
-				subscriberName := pathParts[2]
-				body, err := io.ReadAll(r.Body)
+				err := HandleSubscriberExecutorRequest(ctx, schema, pathParts[2], r)
 				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-
-				var event *events.Event
-				err = json.Unmarshal(body, &event)
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-
-				err = runtime.NewSubscriberHandler(schema).RunSubscriber(ctx, subscriberName, event)
-
-				if err != nil {
-					response := common.NewJsonErrorResponse(err)
-
+					response := httpjson.NewErrorResponse(ctx, err, nil)
 					w.WriteHeader(response.Status)
-					_, err = w.Write(response.Body)
-					if err != nil {
-						panic(err)
-					}
-				} else {
-					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write(response.Body)
 				}
 			default:
 				w.WriteHeader(http.StatusNotFound)
-				_, err = w.Write([]byte(fmt.Sprintf("invalid url received on testing server '%s'", r.URL.Path)))
-				if err != nil {
-					panic(err)
-				}
 			}
 		}),
 	}
@@ -354,4 +285,64 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	}
 
 	return &TestOutput{Output: string(b), Success: err == nil}, nil
+}
+
+// HandleJobExecutorRequest handles requests the job module in the testing package.
+func HandleJobExecutorRequest(ctx context.Context, schema *proto.Schema, jobName string, r *http.Request) error {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	identity, err := actions.HandleAuthorizationHeader(ctx, schema, r.Header)
+	if err != nil {
+		return err
+	}
+
+	if identity != nil {
+		ctx = runtimectx.WithIdentity(ctx, identity)
+	}
+
+	var inputs map[string]any
+	// if no json body has been sent, just return an empty map for the inputs
+	if string(body) == "" {
+		inputs = nil
+	} else {
+		err = json.Unmarshal(body, &inputs)
+		if err != nil {
+			return err
+		}
+	}
+
+	trigger := functions.TriggerType(r.Header.Get("X-Trigger-Type"))
+
+	err = runtime.NewJobHandler(schema).RunJob(ctx, jobName, inputs, trigger)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// HandleSubscriberExecutorRequest handles requests the subscriber module in the testing package.
+func HandleSubscriberExecutorRequest(ctx context.Context, schema *proto.Schema, subscriberName string, r *http.Request) error {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	var event *events.Event
+	err = json.Unmarshal(body, &event)
+	if err != nil {
+		return err
+	}
+
+	err = runtime.NewSubscriberHandler(schema).RunSubscriber(ctx, subscriberName, event)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -34,9 +34,9 @@ type AuthenticateResult struct {
 }
 
 var (
-	ErrInvalidToken     = errors.New("cannot be parsed or verified as a valid JWT")
-	ErrTokenExpired     = errors.New("token has expired")
-	ErrIdentityNotFound = errors.New("identity does not exist")
+	ErrInvalidToken     = common.NewAuthenticationFailedMessageErr("cannot be parsed or verified as a valid JWT")
+	ErrTokenExpired     = common.NewAuthenticationFailedMessageErr("token has expired")
+	ErrIdentityNotFound = common.NewAuthenticationFailedMessageErr("identity not found")
 )
 
 const (
@@ -215,7 +215,6 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 }
 
 func GenerateBearerToken(ctx context.Context, identityId string) (string, error) {
-
 	expiry := DefaultBearerTokenExpiry
 	config, err := runtimectx.GetAuthConfig(ctx)
 	if err == nil {
@@ -299,6 +298,11 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		return &privateKey.PublicKey, nil
 	})
 
+	var validationErr *jwt.ValidationError
+	if errors.As(err, &validationErr) && validationErr.Errors == jwt.ValidationErrorExpired {
+		return "", "", ErrTokenExpired
+	}
+
 	// if unsuccessful using our private key, try to validate against any of the known external issuers if there are any
 	if err != nil {
 		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
@@ -323,9 +327,11 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 					}
 				}
 				if !match {
-					issuers = append(issuers, auth.ExternalIssuer{
-						Iss: iss,
-					})
+					if iss != "" {
+						issuers = append(issuers, auth.ExternalIssuer{
+							Iss: iss,
+						})
+					}
 				}
 
 				authConfig.Issuers = issuers
@@ -379,6 +385,10 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		})
 	}
 
+	if err != nil {
+		return "", "", ErrInvalidToken
+	}
+
 	if !claims.VerifyExpiresAt(time.Now().UTC(), true) {
 		return "", "", ErrTokenExpired
 	}
@@ -408,9 +418,6 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 }
 
 func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, headers http.Header) (*runtimectx.Identity, error) {
-	ctx, span := tracer.Start(ctx, "Authorization")
-	defer span.End()
-
 	header := headers.Get("Authorization")
 	if header == "" {
 		return nil, nil
@@ -418,48 +425,31 @@ func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, header
 
 	headerSplit := strings.Split(header, "Bearer ")
 	if len(headerSplit) != 2 {
-		span.SetStatus(codes.Error, "no 'Bearer' prefix in the authentication header")
-		return nil, errors.New("invalid authorization header")
+		return nil, common.NewAuthenticationFailedMessageErr("no 'Bearer' prefix in the Authorization header")
 	}
 
-	span.SetAttributes(attribute.String("token", headerSplit[1]))
+	token := headerSplit[1]
 
-	subject, issuer, err := ValidateBearerToken(ctx, headerSplit[1])
-	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
-	}
-
-	// Check that identity actually does exist as it could
-	// have been deleted after the bearer token was generated.
-	var identity *runtimectx.Identity
-	if issuer == "keel" || issuer == "" {
-		identity, err = FindIdentityById(ctx, schema, subject)
-	} else {
-		identity, err = FindIdentityByExternalId(ctx, schema, subject, issuer)
-		if identity == nil {
-			identity, err = CreateExternalIdentity(ctx, schema, subject, issuer, headerSplit[1])
+	if token != "" {
+		identity, err := HandleBearerToken(ctx, schema, token)
+		if err != nil {
+			return nil, err
 		}
+		return identity, nil
 	}
 
-	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
-	}
-
-	if identity == nil {
-		span.SetStatus(codes.Error, "identity not found")
-		return nil, nil
-	}
-
-	span.SetAttributes(attribute.String("identity.id", identity.Id))
-
-	return identity, nil
+	return nil, nil
 }
 
 func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) (*runtimectx.Identity, error) {
+	ctx, span := tracer.Start(ctx, "Authorization")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("token", token))
+
 	subject, issuer, err := ValidateBearerToken(ctx, token)
 	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -482,6 +472,8 @@ func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) 
 	if identity == nil {
 		return nil, ErrIdentityNotFound
 	}
+
+	span.SetAttributes(attribute.String("identity.id", identity.Id))
 
 	return identity, nil
 }

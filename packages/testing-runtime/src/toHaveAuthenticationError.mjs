@@ -1,4 +1,4 @@
-export async function toHaveAuthorizationError(received) {
+export async function toHaveAuthenticationError(received) {
   const { isNot } = this;
   try {
     const v = await received;
@@ -9,9 +9,11 @@ export async function toHaveAuthorizationError(received) {
     };
   } catch (err) {
     return {
-      pass: err.code === "ERR_PERMISSION_DENIED",
+      pass: err.code === "ERR_AUTHENTICATION_FAILED",
       message: () =>
-        `expected there to be ${isNot ? "no " : ""}ERR_PERMISSION_DENIED error`,
+        `expected there to be ${
+          isNot ? "no " : ""
+        }ERR_AUTHENTICATION_FAILED error`,
       actual: err,
       expected: {
         ...err,

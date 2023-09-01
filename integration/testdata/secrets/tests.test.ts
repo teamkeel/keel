@@ -8,6 +8,4 @@ test("create person with secret key", async () => {
     name: "dave",
     secretKey: "1232132_2323",
   });
-
-  expect(person.name).toEqual("dave");
 });

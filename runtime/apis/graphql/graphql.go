@@ -43,11 +43,18 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		identity, err := actions.HandleAuthorizationHeader(ctx, s, r.Header)
 		if err != nil {
+			var extensions map[string]interface{}
+
+			var runtimeErr common.RuntimeError
+			if errors.As(err, &runtimeErr) {
+				extensions = runtimeErr.Extensions()
+			}
+
 			return common.NewJsonResponse(http.StatusOK, graphql.Result{
 				Errors: []gqlerrors.FormattedError{
 					{
-						Message:    "not authenticated",
-						Extensions: common.NewAuthenticationFailedErr().Extensions(),
+						Message:    "authentication failed",
+						Extensions: extensions,
 					},
 				},
 			}, nil)

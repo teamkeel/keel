@@ -142,6 +142,103 @@ test("authenticate - incorrect credentials with existing identity - not authenti
   });
 });
 
+test("withAuthToken - invalid token - authentication failed", async () => {
+  await expect(
+    actions.withAuthToken("invalid").createPostWithIdentity({ title: "temp" })
+  ).toHaveAuthenticationError();
+
+  await expect(
+    actions
+      .withAuthToken("invalid")
+      .getPostRequiresAuthentication({ id: "temp" })
+  ).toHaveAuthenticationError();
+
+  await expect(
+    actions
+      .withAuthToken("invalid")
+      .getPostRequiresNoAuthentication({ id: "temp" })
+  ).toHaveAuthenticationError();
+
+  await expect(
+    actions.withAuthToken("invalid").getPostPublic({ id: "temp" })
+  ).toHaveAuthenticationError();
+});
+
+test("withAuthToken - identity does not exist - authentication failed", async () => {
+  const { token } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
+  });
+
+  await models.identity.delete({ email: "user@keel.xyz" });
+
+  await expect(
+    actions.withAuthToken(token).createPostWithIdentity({ title: "temp" })
+  ).toHaveAuthenticationError();
+
+  await expect(
+    actions.withAuthToken("invalid").createPostWithIdentity({ title: "temp" })
+  ).toHaveAuthenticationError();
+
+  await expect(
+    actions
+      .withAuthToken("invalid")
+      .getPostRequiresAuthentication({ id: "temp" })
+  ).toHaveAuthenticationError();
+
+  await expect(
+    actions
+      .withAuthToken("invalid")
+      .getPostRequiresNoAuthentication({ id: "temp" })
+  ).toHaveAuthenticationError();
+
+  await expect(
+    actions.withAuthToken("invalid").getPostPublic({ id: "temp" })
+  ).toHaveAuthenticationError();
+});
+
+test("withIdentity - identity does not exist - authentication failed", async () => {
+  await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
+  });
+
+  const identity = await models.identity.findOne({ email: "user@keel.xyz" });
+  expect(identity).not.toBeNull();
+
+  await models.identity.delete({ email: "user@keel.xyz" });
+
+  await expect(
+    actions.withIdentity(identity!).createPostWithIdentity({ title: "temp" })
+  ).toHaveAuthenticationError();
+
+  await expect(
+    actions.withIdentity(identity!).createPostWithIdentity({ title: "temp" })
+  ).toHaveAuthenticationError();
+
+  await expect(
+    actions
+      .withIdentity(identity!)
+      .getPostRequiresAuthentication({ id: "temp" })
+  ).toHaveAuthenticationError();
+
+  await expect(
+    actions
+      .withIdentity(identity!)
+      .getPostRequiresNoAuthentication({ id: "temp" })
+  ).toHaveAuthenticationError();
+
+  await expect(
+    actions.withIdentity(identity!).getPostPublic({ id: "temp" })
+  ).toHaveAuthenticationError();
+});
+
 test("identity context permission - correct identity - permission satisfied", async () => {
   const authResponse = await actions.authenticate({
     createIfNotExists: true,
@@ -384,7 +481,7 @@ test("request reset password - unknown email - successful request", async () => 
 });
 
 // This test will break if we use a private key in the test runtime.
-test("reset password - invalid token - token has expired error", async () => {
+test("reset password - invalid token - cannot be parsed", async () => {
   const identity = await models.identity.create({
     id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
     email: "user@keel.xyz",
@@ -398,7 +495,7 @@ test("reset password - invalid token - token has expired error", async () => {
     })
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
-    message: "token has expired",
+    message: "cannot be parsed or verified as a valid JWT",
   });
 });
 

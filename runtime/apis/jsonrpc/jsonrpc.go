@@ -1,6 +1,7 @@
 package jsonrpc
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -28,9 +29,6 @@ const (
 	JsonRpcInternalErrorCode  = -32603
 	JsonRpcUnauthorized       = -32001 // Not part of the official spec
 	JsonRpcForbidden          = -32003 // Not part of the official spec
-
-	// Application error codes
-	HttpMethodNotAllowedCode = http.StatusMethodNotAllowed
 )
 
 func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
@@ -39,24 +37,13 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		defer span.End()
 
 		if r.Method != http.MethodPost {
-			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
-				JsonRpc: "2.0",
-				Error: JsonRpcError{
-					Code:    HttpMethodNotAllowedCode,
-					Message: "only HTTP post accepted",
-				},
-			}, nil)
+			err := common.NewHttpMethodNotAllowedError("only HTTP post is accepted")
+			return NewErrorResponse(ctx, nil, err)
 		}
 
 		identity, err := actions.HandleAuthorizationHeader(ctx, p, r.Header)
 		if err != nil {
-			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
-				JsonRpc: "2.0",
-				Error: JsonRpcError{
-					Code:    RuntimeErrorCodeToJsonRpcErrorCode(common.ErrAuthenticationFailed),
-					Message: "not authenticated",
-				},
-			}, nil)
+			return NewErrorResponse(ctx, nil, err)
 		}
 		if identity != nil {
 			ctx = runtimectx.WithIdentity(ctx, identity)
@@ -64,27 +51,13 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		req, err := parseJsonRpcRequest(r.Body)
 		if err != nil {
-			span.RecordError(err, trace.WithStackTrace(true))
-			span.SetStatus(codes.Error, err.Error())
-			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
-				JsonRpc: "2.0",
-				Error: JsonRpcError{
-					Code:    JsonRpcInvalidRequestCode,
-					Message: fmt.Sprintf("error parsing JSON: %s", err.Error()),
-				},
-			}, nil)
+			err = common.NewInputMalformedError(fmt.Sprintf("error parsing JSON: %s", err.Error()))
+			return NewErrorResponse(ctx, &req.ID, err)
 		}
 
 		if !req.Valid() {
-			span.SetStatus(codes.Error, "invalid JSON-RPC request")
-			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
-				JsonRpc: "2.0",
-				ID:      &req.ID,
-				Error: JsonRpcError{
-					Code:    JsonRpcInvalidRequestCode,
-					Message: "invalid JSON-RPC 2.0 request",
-				},
-			}, nil)
+			err = common.NewInputMalformedError("invalid JSON-RPC 2.0 request")
+			return NewErrorResponse(ctx, &req.ID, err)
 		}
 
 		inputs := req.Params
@@ -97,52 +70,18 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		action := proto.FindAction(p, actionName)
 		if action == nil {
-			span.SetStatus(codes.Error, "action not found")
-			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
-				JsonRpc: "2.0",
-				ID:      &req.ID,
-				Error: JsonRpcError{
-					Code:    JsonRpcMethodNotFoundCode,
-					Message: "method not found",
-				},
-			}, nil)
+			err = common.NewMethodNotFoundError()
+			return NewErrorResponse(ctx, &req.ID, err)
 		}
 
 		scope := actions.NewScope(ctx, action, p)
 
 		response, headers, err := actions.Execute(scope, inputs)
 		if err != nil {
-			span.RecordError(err, trace.WithStackTrace(true))
-			span.SetStatus(codes.Error, err.Error())
-
-			code := JsonRpcInternalErrorCode
-			message := "error executing request"
-
-			var runtimeError common.RuntimeError
-			if errors.As(err, &runtimeError) {
-				span.SetAttributes(
-					attribute.String("error.code", runtimeError.Code),
-					attribute.String("error.message", runtimeError.Message),
-				)
-				code = RuntimeErrorCodeToJsonRpcErrorCode(runtimeError.Code)
-				message = runtimeError.Message
-			}
-
-			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
-				JsonRpc: "2.0",
-				ID:      &req.ID,
-				Error: JsonRpcError{
-					Code:    code,
-					Message: message,
-				},
-			}, nil)
+			return NewErrorResponse(ctx, &req.ID, err)
 		}
 
-		return common.NewJsonResponse(http.StatusOK, JsonRpcSuccessResponse{
-			JsonRpc: "2.0",
-			ID:      req.ID,
-			Result:  response,
-		}, headers)
+		return NewSuccessResponse(ctx, req.ID, response, headers)
 	}
 }
 
@@ -175,6 +114,48 @@ type JsonRpcError struct {
 	Detail  any    `json:"detail,omitempty"`
 }
 
+func NewSuccessResponse(ctx context.Context, requestId string, response any, headers map[string][]string) common.Response {
+	return common.NewJsonResponse(http.StatusOK, JsonRpcSuccessResponse{
+		JsonRpc: "2.0",
+		ID:      requestId,
+		Result:  response,
+	}, headers)
+}
+
+func NewErrorResponse(ctx context.Context, requestId *string, err error) common.Response {
+	span := trace.SpanFromContext(ctx)
+
+	var response JsonRpcError
+	var runtimeError common.RuntimeError
+
+	switch {
+	case errors.As(err, &runtimeError):
+		response = JsonRpcError{
+			Code:    runtimeErrorCodeToJsonRpcErrorCode(runtimeError.Code),
+			Message: runtimeError.Message,
+		}
+
+		span.SetAttributes(
+			attribute.String("error.code", runtimeError.Code),
+			attribute.String("error.message", runtimeError.Message),
+		)
+	default:
+		response = JsonRpcError{
+			Code:    JsonRpcInternalErrorCode,
+			Message: "error executing request",
+		}
+	}
+
+	span.RecordError(err, trace.WithStackTrace(true))
+	span.SetStatus(codes.Error, err.Error())
+
+	return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
+		JsonRpc: "2.0",
+		ID:      requestId,
+		Error:   response,
+	}, nil)
+}
+
 func parseJsonRpcRequest(b io.ReadCloser) (req *JsonRpcRequest, err error) {
 	body, err := io.ReadAll(b)
 	if err != nil {
@@ -186,7 +167,7 @@ func parseJsonRpcRequest(b io.ReadCloser) (req *JsonRpcRequest, err error) {
 	return req, err
 }
 
-func RuntimeErrorCodeToJsonRpcErrorCode(code string) int {
+func runtimeErrorCodeToJsonRpcErrorCode(code string) int {
 	switch code {
 	case common.ErrAuthenticationFailed:
 		return JsonRpcUnauthorized
@@ -194,6 +175,10 @@ func RuntimeErrorCodeToJsonRpcErrorCode(code string) int {
 		return JsonRpcForbidden
 	case common.ErrInvalidInput, common.ErrRecordNotFound:
 		return JsonRpcInvalidParams
+	case common.ErrMethodNotFound:
+		return JsonRpcMethodNotFoundCode
+	case common.ErrInputMalformed:
+		return JsonRpcInvalidRequestCode
 	default:
 		return JsonRpcInternalErrorCode
 	}

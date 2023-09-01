@@ -5,8 +5,10 @@
 import { expect } from "vitest";
 import { toHaveError } from "./toHaveError";
 import { toHaveAuthorizationError } from "./toHaveAuthorizationError";
+import { toHaveAuthenticationError } from "./toHaveAuthenticationError";
 
 expect.extend({
   toHaveError,
   toHaveAuthorizationError,
+  toHaveAuthenticationError,
 });
