@@ -1,0 +1,27 @@
+message LongLongLongInputName {
+  
+}
+
+message LongLongLongLongReturns {
+
+}
+model Person {
+  actions {
+    read longLongLongLongLongLongTitle(LongLongLongInputName) returns (LongLongLongLongReturns)
+  }
+}
+
+
+===
+
+message LongLongLongInputName {
+}
+
+message LongLongLongLongReturns {
+}
+
+model Person {
+    actions {
+        read longLongLongLongLongLongTitle(LongLongLongInputName) returns (LongLongLongLongReturns)
+    }
+}

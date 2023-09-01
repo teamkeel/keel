@@ -414,7 +414,7 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 	}
 
 	for i, arg := range inputs {
-		if isMultiline {
+		if !isArbitraryFunction && isMultiline {
 			writer.WriteLine("")
 		}
 
@@ -445,14 +445,16 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 			}
 		})
 
-		if isMultiline {
-			writer.Write(",")
-		} else if i < len(inputs)-1 {
-			writer.Write(", ")
+		if !isArbitraryFunction {
+			if isMultiline {
+				writer.Write(",")
+			} else if i < len(inputs)-1 {
+				writer.Write(", ")
+			}
 		}
 	}
 
-	if isMultiline {
+	if !isArbitraryFunction && isMultiline {
 		writer.WriteLine("")
 	}
 
