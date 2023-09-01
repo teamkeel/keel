@@ -1,4 +1,4 @@
-name: GoReleaser
+name: Create Release
 
 on:
   workflow_call:
@@ -27,17 +27,22 @@ on:
         required: false
         default: false
         type: boolean
-      releaseEvent:
-        required: true
-        type: string
       releaseNotesURL:
         required: false
         type: string
         default: ""
-      commit:
+      publishEvent:
         required: false
-        default: ""
+        type: boolean
+        default: false
+      eventBranch:
+        required: false
         type: string
+        default: "main"
+      commitMessage:
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -81,7 +86,7 @@ jobs:
         if: ${{ inputs.generateChangelog }}
         uses: requarks/changelog-action@v1.8.1
         with:
-          token: ${{ github.token }}
+          token: ${{ secrets.GH_TOKEN }}
           tag: "v${{ inputs.version }}"
 
       # Goreleaser won't update a draft release, so you have to update the release after to tune release params
@@ -97,32 +102,32 @@ jobs:
           updateOnlyUnreleased: true
           prerelease: ${{ inputs.preRelease }}
           makeLatest: ${{ inputs.makeLatest }}
-          commit: ${{ inputs.commit }}
           bodyFile: ${{ inputs.releaseNotesURL }}
 
       - name: Commit CHANGELOG.md
         if: ${{ inputs.generateChangelog }}
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          branch: main
+          branch: ${{ inputs.branch }}
           commit_message: "docs: update CHANGELOG.md for v${{ inputs.version }} [skip ci]"
           file_pattern: CHANGELOG.md
 
       - name: Fire Release Event with Changelog
-        if: ${{ inputs.generateChangelog }}
+        if: ${{ inputs.publishEvent && inputs.generateChangelog }}
         id: release_event_changelog
         uses: peter-evans/repository-dispatch@v2.1.1
         with:
           token: ${{ secrets.PAT }}
           repository: teamkeel/backend
-          event-type: ${{ inputs.releaseEvent }}
-          client-payload: '{"version": "${{ inputs.version }}", "changelog": "${{ steps.changelog.outputs.changelog }}"}'
+          event-type: "new-runtime-release"
+          client-payload: '{"version": "${{ inputs.version }}", "changelog": "${{ steps.changelog.outputs.changelog }}", baseBranch: "${{ inputs.eventBranch }}", "triggeringCommitMessage": "${{ inputs.commitMessage }}"}'
+
       - name: Fire Release Event
-        if: ${{ inputs.generateChangelog  ==  false }}
+        if: ${{ inputs.publishEvent && inputs.generateChangelog  ==  false }}
         id: release_event
         uses: peter-evans/repository-dispatch@v2.1.1
         with:
           token: ${{ secrets.PAT }}
           repository: teamkeel/backend
-          event-type: ${{ inputs.releaseEvent }}
-          client-payload: '{"version": "${{ inputs.version }}"}'
+          event-type: "new-runtime-release"
+          client-payload: '{"version": "${{ inputs.version }}", baseBranch: "${{ inputs.eventBranch }}", "triggeringCommitMessage": "${{ inputs.commitMessage }}"}'

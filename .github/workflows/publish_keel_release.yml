@@ -1,12 +1,14 @@
 name: Publish Keel Release
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
-      ref:
-        description: "Ref of where the release should be marked"
+      version:
+        description: "Release Version"
         required: true
         type: string
+  workflow_call:
+    inputs:
       version:
         description: "Release Version"
         required: true
@@ -21,7 +23,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: teamkeel/keel
-          ref: ${{ inputs.ref }}
+          ref: "release/v${{ inputs.version }}"
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
@@ -44,7 +46,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: "v${{ inputs.version }}"
-          commit: ${{ inputs.ref }}
           draft: false
           makeLatest: true
           prerelease: false
