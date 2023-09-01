@@ -19,7 +19,7 @@ jobs:
           version: 8.5.1
 
   pre-release:
-    if: github.event_name == 'push' || (github.event_name == 'repository_dispatch' && github.event.branch == 'main')
+    if: github.event_name == 'push' || (github.event_name == 'repository_dispatch' && github.event.ref == 'main')
     needs: [setup]
     uses: ./.github/workflows/pre_release.yml
     with:
@@ -28,7 +28,7 @@ jobs:
     secrets: inherit
 
   dev-release:
-    if: github.event_name == 'repository_dispatch' && github.event.branch != 'main'
+    if: github.event_name == 'repository_dispatch' && github.event.ref != 'main'
     needs: [setup]
     uses: ./.github/workflows/pre_release.yml
     with:
