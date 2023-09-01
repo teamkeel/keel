@@ -54,9 +54,9 @@ func GetEventHandler(ctx context.Context) (EventHandler, error) {
 
 // Gather, create and send events which have occurred within the scope of this context.
 func SendEvents(ctx context.Context) error {
-	// if !HasEventHandler(ctx) {
-	// 	return nil
-	// }
+	if !HasEventHandler(ctx) {
+		return nil
+	}
 
 	traceparent := util.GetTraceparent(ctx)
 
