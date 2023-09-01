@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/util"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Event struct {
@@ -27,7 +31,7 @@ type EventTarget struct {
 }
 
 // The event handler function to be executed for each subscriber event generated.
-type EventHandler func(ctx context.Context, subscriber string, event *Event) error
+type EventHandler func(ctx context.Context, subscriber string, event *Event, traceparent string) error
 
 type handlerContextKey string
 
@@ -50,23 +54,50 @@ func GetEventHandler(ctx context.Context) (EventHandler, error) {
 }
 
 // Gather, create and send events which have occurred within the scope of this context.
-func GenerateEvents(ctx context.Context) error {
+func SendEvents(ctx context.Context) error {
+	span := trace.SpanFromContext(ctx)
+	// spanId := ""
+	// traceId := ""
+	//
 
-	// 1. Retrieve rows from the audit table by this ctx's trace_id
-	// 2. Do we have any events in the schema matching these rows?
-	// 3. If so, call handleEvent for each subscriber of that event with the payload.
+	// if span.SpanContext().IsValid() {
+	// 	spanId = span.Tra
+	// 	traceId = span.SpanContext().TraceID().String()
+	// }
+
+	// span.SpanContext().
 
 	if !HasEventHandler(ctx) {
 		return nil
 	}
 
-	// PLACEHOLDER CODE
-	handler, _ := GetEventHandler(ctx)
+	traceparent := util.GetTraceparent(ctx)
 
+	handler, err := GetEventHandler(ctx)
+	if err != nil {
+		span.AddEvent("No EventHandler configured")
+		return err
+	}
+
+	identityId := ""
+	if runtimectx.IsAuthenticated(ctx) {
+		identity, err := runtimectx.GetIdentity(ctx)
+		if err != nil {
+			return err
+		}
+
+		identityId = identity.Id
+	}
+
+	// 1. Retrieve rows from the audit table by this ctx's trace_id
+	// 2. Do we have any events in the schema matching these rows?
+	// 3. If so, call handleEvent for each subscriber of that event with the payload.
+
+	// PLACEHOLDER CODE
 	testEvent := &Event{
 		EventName:  "member.created",
-		OccurredAt: time.Now(),
-		IdentityId: "12312312",
+		OccurredAt: time.Now().UTC(),
+		IdentityId: identityId,
 		Target: &EventTarget{
 			Id:   "2342342",
 			Type: "Member",
@@ -78,7 +109,5 @@ func GenerateEvents(ctx context.Context) error {
 		},
 	}
 
-	_ = handler(ctx, "verifyEmail", testEvent)
-
-	return nil
+	return handler(ctx, "verifyEmail", testEvent, traceparent)
 }
