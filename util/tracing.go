@@ -8,7 +8,7 @@ import (
 )
 
 // Retrieves traceparent, or empty string if no span exists.
-// Uses standarnd format: {version}-{trace_id}-{span_id}-{trace_flags}
+// Uses standard format: {version}-{trace_id}-{span_id}-{trace_flags}
 // See specification: https://www.w3.org/TR/trace-context/#traceparent-header-field-values
 func GetTraceparent(ctx context.Context) string {
 	span := trace.SpanContextFromContext(ctx)

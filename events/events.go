@@ -7,7 +7,6 @@ import (
 
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/util"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type Event struct {
@@ -55,27 +54,14 @@ func GetEventHandler(ctx context.Context) (EventHandler, error) {
 
 // Gather, create and send events which have occurred within the scope of this context.
 func SendEvents(ctx context.Context) error {
-	span := trace.SpanFromContext(ctx)
-	// spanId := ""
-	// traceId := ""
-	//
-
-	// if span.SpanContext().IsValid() {
-	// 	spanId = span.Tra
-	// 	traceId = span.SpanContext().TraceID().String()
+	// if !HasEventHandler(ctx) {
+	// 	return nil
 	// }
-
-	// span.SpanContext().
-
-	if !HasEventHandler(ctx) {
-		return nil
-	}
 
 	traceparent := util.GetTraceparent(ctx)
 
 	handler, err := GetEventHandler(ctx)
 	if err != nil {
-		span.AddEvent("No EventHandler configured")
 		return err
 	}
 
