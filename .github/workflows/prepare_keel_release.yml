@@ -59,14 +59,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          branch: "refs/heads/release/${{ steps.generate-version.outputs.version }}"
+          branch: "refs/heads/release/v${{ steps.generate-version.outputs.version }}"
           sha: ${{ github.sha }}
 
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           repository: teamkeel/keel
-          ref: release/${{ steps.generate-version.outputs.version }}
+          ref: release/v${{ steps.generate-version.outputs.version }}
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
     outputs:
