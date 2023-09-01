@@ -1,13 +1,21 @@
-import { test, expect } from "vitest";
-import { subscribers, models } from "@teamkeel/testing";
+import { test, expect, beforeEach } from "vitest";
+import { subscribers, models, resetDatabase } from "@teamkeel/testing";
 
-test("subscriber - mutating field", async () => {
+beforeEach(resetDatabase);
+
+async function subscriberRan() {
+  const trackers = await models.trackSubscriber.findMany();
+  expect(trackers).toHaveLength(1);
+  return trackers[0].didSubscriberRun;
+}
+
+async function makeEvent() {
   const mary = await models.member.create({
     name: "Mary",
     email: "mary@keel.so",
   });
 
-  const event = {
+  return {
     eventName: "member.created",
     occurredAt: new Date(),
     target: {
@@ -16,11 +24,39 @@ test("subscriber - mutating field", async () => {
       data: mary,
     },
   };
+}
+
+test("subscriber - mutating field", async () => {
+  const event = await makeEvent();
 
   await subscribers.verifyEmail(event);
 
-  const updatedMary = await models.member.findOne({ id: mary.id });
+  const updatedMary = await models.member.findOne({ id: event.target.data.id });
 
-  expect(mary?.verified).toBeFalsy();
+  expect(event.target.data?.verified).toBeFalsy();
   expect(updatedMary?.verified).toBeTruthy();
+});
+
+test("subscriber - exception - internal error without rollback transaction", async () => {
+  await models.trackSubscriber.create({ didSubscriberRun: false });
+
+  const event = await makeEvent();
+
+  await expect(subscribers.subscriberWithException(event)).toHaveError({
+    code: "ERR_INTERNAL",
+    message: "something bad has happened!",
+  });
+
+  // This would be false if a transaction rolled back.
+  expect(await subscriberRan()).toBeTruthy();
+});
+
+test("subscriber - with env vars - successful", async () => {
+  await models.trackSubscriber.create({ didSubscriberRun: false });
+
+  const event = await makeEvent();
+
+  await expect(subscribers.subscriberEnvvars(event)).not.toHaveError({});
+
+  expect(await subscriberRan()).toBeTruthy();
 });

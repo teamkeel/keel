@@ -6,4 +6,13 @@ model Member {
     }
 
     @on([create, update], verifyEmail)
+    @on([create, update], subscriberWithException)
+    @on([create, update], subscriberEnvvars)
+}
+
+
+model TrackSubscriber {
+    fields {
+        didSubscriberRun Boolean @default(false)
+    }
 }

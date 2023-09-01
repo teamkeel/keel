@@ -1521,9 +1521,9 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		for _, subscriber := range schema.Subscribers {
 			msg := proto.FindMessage(schema.Messages, subscriber.InputMessageName)
 
-			w.Writef("%s(i", subscriber.Name)
+			w.Writef("%s(e", subscriber.Name)
 
-			if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+			if msg.Type.Type != proto.Type_TYPE_UNION && lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
 				return f.Optional
 			}) {
 				w.Write("?")
