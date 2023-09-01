@@ -28,6 +28,7 @@ jobs:
           fetch-depth: 0
 
   npm_release:
+    needs: [setup]
     uses: ./.github/workflows/npm_release.yml
     with:
       version: ${{ inputs.version }}
