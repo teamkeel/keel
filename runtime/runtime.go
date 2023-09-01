@@ -176,7 +176,9 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 	)
 
 	// Generate and send any events for this context.
-	eventsErr := events.GenerateEvents(ctx)
+	// If event sending fails, then record this in the span,
+	// but do not return the error. The action should still succeed.
+	eventsErr := events.SendEvents(ctx)
 	if eventsErr != nil {
 		span.RecordError(eventsErr)
 	}
@@ -215,7 +217,9 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 	)
 
 	// Generate and send any events for this context.
-	eventsErr := events.GenerateEvents(ctx)
+	// If event sending fails, then record this in the span,
+	// but do not return the error. The action should still succeed.
+	eventsErr := events.SendEvents(ctx)
 	if eventsErr != nil {
 		span.RecordError(eventsErr)
 	}
