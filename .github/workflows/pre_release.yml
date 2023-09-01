@@ -60,7 +60,7 @@ jobs:
       branch: ${{ github.event.ref || github.head_ref }}
       version: ${{ needs.setup.outputs.version }}
       preRelease: true
-      draft: true
+      draft: false
       makeLatest: false
       generateChangelog: true
       publishEvent: ${{ github.event_name != 'workflow_dispatch' }}

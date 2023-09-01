@@ -77,7 +77,7 @@ jobs:
         with:
           distribution: goreleaser
           version: 1.13.0
-          args: release --skip-publish
+          args: release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
