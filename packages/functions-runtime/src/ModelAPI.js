@@ -3,6 +3,9 @@ const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
+const { auditDataInstance } = require("./tryExecuteFunction.js");
+const { sql } = require("kysely");
+
 const {
   applyLimit,
   applyOffset,
@@ -35,6 +38,14 @@ const { DatabaseError } = require("./errors");
  * @typedef {Object.<string, TableConfig>} TableConfigMap
  */
 
+ function setAuditConfig(transaction) {
+  let auditStore = auditDataInstance.getStore();
+  const identityId = auditStore.identityId;
+  console.log(identityId);
+
+   sql`select set_config('audit.identity_id', ${identityId}, true);`.execute(transaction);
+}
+
 class ModelAPI {
   /**
    * @param {string} tableName The name of the table this API is for
@@ -47,23 +58,37 @@ class ModelAPI {
     this._modelName = upperCamelCase(this._tableName);
   }
 
+  // async setAuditConfig(transaction) {
+ 
+  //   let auditStore = auditDataInstance.getStore();
+  //   console.log(auditStore);
+  //   await sql`select set_config('audit.identity_id', '`+auditStore.identityId+`', true);`.execute(transaction);
+  // }
+
   async create(values) {
     const name = tracing.spanNameForModelAPI(this._modelName, "create");
     const db = useDatabase();
 
-    return tracing.withSpan(name, async (span) => {
-      try {
-        const query = db
-          .insertInto(this._tableName)
-          .values(
-            snakeCaseObject({
-              ...values,
-            })
-          )
-          .returningAll();
+    
 
-        span.setAttribute("sql", query.compile().sql);
-        const row = await query.executeTakeFirstOrThrow();
+    return tracing.withSpan(name, async (span) => {
+      try { 
+        const row = db.transaction().execute(async (transaction) => {
+
+           setAuditConfig(transaction);
+
+          const query = transaction
+            .insertInto(this._tableName)
+            .values(
+              snakeCaseObject({
+                ...values,
+              })
+            )
+            .returningAll();
+
+            span.setAttribute("sql", query.compile().sql);
+           return await query.executeTakeFirstOrThrow();
+        });
 
         return camelCaseObject(row);
       } catch (e) {
