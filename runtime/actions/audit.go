@@ -1,10 +1,12 @@
 package actions
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/runtime/auth"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -14,13 +16,11 @@ import (
 //
 // If the values cannot be extracted from the ctx and
 // the span, it sets the values to "not found".
-func SetAuditScopeIntoDB(scope *Scope, span trace.Span) (err error) {
+func SetAuditScopeIntoDB(ctx context.Context, span trace.Span) (err error) {
 
 	// Capture the required data from the scope and the trace span.
 
-	ctx := scope.Context
-
-	identity, err := runtimectx.GetIdentity(ctx)
+	identity, err := auth.GetIdentity(ctx)
 
 	var identityId string = "not found"
 	identityAvailable := (err == nil) && (identity != nil)
@@ -36,7 +36,7 @@ func SetAuditScopeIntoDB(scope *Scope, span trace.Span) (err error) {
 	}
 
 	// Write the captured data into postgres config.
-	db, err := runtimectx.GetDatabase(ctx)
+	db, err := db.GetDatabase(ctx)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func ClearAuditScopeInDB(scope *Scope) {
 
 	ctx := scope.Context
 
-	db, err := runtimectx.GetDatabase(ctx)
+	db, err := db.GetDatabase(ctx)
 	if err != nil {
 		return
 	}

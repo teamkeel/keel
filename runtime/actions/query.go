@@ -12,7 +12,6 @@ import (
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -810,7 +809,7 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 
 // Execute the SQL statement against the database, returning the number of rows affected.
 func (statement *Statement) Execute(ctx context.Context) (int, error) {
-	database, err := runtimectx.GetDatabase(ctx)
+	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -854,7 +853,7 @@ func (pi *PageInfo) ToMap() map[string]any {
 
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
 func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows, *PageInfo, error) {
-	database, err := runtimectx.GetDatabase(ctx)
+	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, nil, err
 	}

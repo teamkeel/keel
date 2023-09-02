@@ -1,0 +1,24 @@
+model Account {
+    fields {
+        owner Identity
+        name Text
+        balance Number @default(0)
+    }
+
+    actions {
+        create createAccount() with (name, balance?) {
+            @set(account.owner = ctx.identity)
+            @permission(expression: ctx.isAuthenticated)
+        }
+        update updateBalance(id) with (balance) {
+            @permission(expression: ctx.identity == account.owner)
+            @permission(roles: [BankEmployee])
+        }
+    }
+}
+
+role BankEmployee {
+    domains {
+        "thebank.com"
+    }
+}

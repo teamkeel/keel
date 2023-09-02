@@ -3,10 +3,12 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/teamkeel/keel/runtime/auth"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -36,7 +38,34 @@ func (db *GormDB) ExecuteQuery(ctx context.Context, sqlQuery string, values ...a
 		conn = v
 	}
 
-	err := conn.Raw(sqlQuery, values...).Scan(&rows).Error
+	err := conn.Transaction(func(tx *gorm.DB) (err error) {
+		if auth.IsAuthenticated(ctx) {
+			identity, err := auth.GetIdentity(ctx)
+			if err != nil {
+				return err
+			}
+
+			setIdentityId := fmt.Sprintf("select set_config('audit.identity_id', '%s', true);", identity.Id)
+			err = tx.Exec(setIdentityId).Error
+			if err != nil {
+				return err
+			}
+		}
+
+		spanContext := trace.SpanContextFromContext(ctx)
+		if spanContext.IsValid() {
+			setTraceId := fmt.Sprintf("select set_config('audit.trace_id', '%s', true);", spanContext.TraceID().String())
+			err = tx.Exec(setTraceId).Error
+			if err != nil {
+				return err
+			}
+		}
+
+		conn = tx.Raw(sqlQuery, values...).Scan(&rows)
+
+		return conn.Error
+	})
+
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -55,22 +84,36 @@ func (db *GormDB) ExecuteStatement(ctx context.Context, sqlQuery string, values 
 
 	conn := db.db.WithContext(ctx)
 
+	isExplicitTransaction := false
+
 	// Check for a transaction
 	if v, ok := ctx.Value(transactionCtxKey).(*gorm.DB); ok {
 		conn = v
+		isExplicitTransaction = true
 	}
 
-	result := conn.Exec(sqlQuery, values...)
+	//var result
+	var err error
+	if !isExplicitTransaction {
+		err = conn.Transaction(func(tx *gorm.DB) (err error) {
+			conn = tx.Exec(sqlQuery, values...)
 
-	err := result.Error
+			return conn.Error
+		})
+	} else {
+		conn = conn.Exec(sqlQuery, values...)
+
+	}
+
+	//err := result.Error
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
 		return nil, toDbError(err)
 	}
 
-	span.SetAttributes(attribute.Int("rows.affected", int(result.RowsAffected)))
-	return &ExecuteStatementResult{RowsAffected: result.RowsAffected}, nil
+	span.SetAttributes(attribute.Int("rows.affected", int(conn.RowsAffected)))
+	return &ExecuteStatementResult{RowsAffected: conn.RowsAffected}, nil
 }
 
 var transactionCtxKey struct{}

@@ -3,12 +3,12 @@ package actions
 import (
 	"context"
 
+	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/runtime/common"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
 func Create(scope *Scope, input map[string]any) (res map[string]any, err error) {
-	database, err := runtimectx.GetDatabase(scope.Context)
+	database, err := db.GetDatabase(scope.Context)
 	if err != nil {
 		return nil, err
 	}

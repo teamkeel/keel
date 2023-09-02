@@ -10,8 +10,8 @@ import (
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -46,7 +46,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			return NewErrorResponse(ctx, nil, err)
 		}
 		if identity != nil {
-			ctx = runtimectx.WithIdentity(ctx, identity)
+			ctx = auth.WithIdentity(ctx, identity)
 		}
 
 		req, err := parseJsonRpcRequest(r.Body)

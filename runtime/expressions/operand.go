@@ -13,6 +13,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -236,18 +237,18 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 		// todo: https://linear.app/keel/issue/RUN-153/set-attribute-to-support-targeting-database-fields
 		panic("cannot resolve operand value when IsDatabaseColumn() is true")
 	case resolver.Operand.Ident.IsContextIdentityField():
-		isAuthenticated := runtimectx.IsAuthenticated(resolver.Context)
+		isAuthenticated := auth.IsAuthenticated(resolver.Context)
 		if !isAuthenticated {
 			return nil, nil
 		}
 
-		identity, err := runtimectx.GetIdentity(resolver.Context)
+		identity, err := auth.GetIdentity(resolver.Context)
 		if err != nil {
 			return nil, err
 		}
 		return identity.Id, nil
 	case resolver.Operand.Ident.IsContextIsAuthenticatedField():
-		isAuthenticated := runtimectx.IsAuthenticated(resolver.Context)
+		isAuthenticated := auth.IsAuthenticated(resolver.Context)
 		return isAuthenticated, nil
 	case resolver.Operand.Ident.IsContextNowField():
 		return runtimectx.GetNow(), nil
