@@ -33,37 +33,19 @@ func (db *GormDB) ExecuteQuery(ctx context.Context, sqlQuery string, values ...a
 	rows := []map[string]any{}
 	conn := db.db.WithContext(ctx)
 
-	// Check for a transaction
+	// Check for an explicit transaction
 	if v, ok := ctx.Value(transactionCtxKey).(*gorm.DB); ok {
 		conn = v
 	}
 
+	// Opens a transaction to ensure set_config values are readable in the trigger function.
+	// If a transaction is already open, then this inner transaction will have no impact.
 	err := conn.Transaction(func(tx *gorm.DB) (err error) {
-		if auth.IsAuthenticated(ctx) {
-			identity, err := auth.GetIdentity(ctx)
-			if err != nil {
-				return err
-			}
-
-			setIdentityId := fmt.Sprintf("select set_config('audit.identity_id', '%s', true);", identity.Id)
-			err = tx.Exec(setIdentityId).Error
-			if err != nil {
-				return err
-			}
+		err = setAuditParameters(ctx, tx)
+		if err != nil {
+			return err
 		}
-
-		spanContext := trace.SpanContextFromContext(ctx)
-		if spanContext.IsValid() {
-			setTraceId := fmt.Sprintf("select set_config('audit.trace_id', '%s', true);", spanContext.TraceID().String())
-			err = tx.Exec(setTraceId).Error
-			if err != nil {
-				return err
-			}
-		}
-
-		conn = tx.Raw(sqlQuery, values...).Scan(&rows)
-
-		return conn.Error
+		return tx.Raw(sqlQuery, values...).Scan(&rows).Error
 	})
 
 	if err != nil {
@@ -84,28 +66,21 @@ func (db *GormDB) ExecuteStatement(ctx context.Context, sqlQuery string, values 
 
 	conn := db.db.WithContext(ctx)
 
-	isExplicitTransaction := false
-
-	// Check for a transaction
+	// Check for an explicit transaction
 	if v, ok := ctx.Value(transactionCtxKey).(*gorm.DB); ok {
 		conn = v
-		isExplicitTransaction = true
 	}
 
-	//var result
-	var err error
-	if !isExplicitTransaction {
-		err = conn.Transaction(func(tx *gorm.DB) (err error) {
-			conn = tx.Exec(sqlQuery, values...)
+	// Opens a transaction to ensure set_config values are readable in the trigger function.
+	// If a transaction is already open, then this inner transaction will have no impact.
+	err := conn.Transaction(func(tx *gorm.DB) (err error) {
+		err = setAuditParameters(ctx, tx)
+		if err != nil {
+			return err
+		}
+		return tx.Exec(sqlQuery, values...).Error
+	})
 
-			return conn.Error
-		})
-	} else {
-		conn = conn.Exec(sqlQuery, values...)
-
-	}
-
-	//err := result.Error
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -162,4 +137,28 @@ func toDbError(err error) error {
 	default:
 		return err
 	}
+}
+
+func setAuditParameters(ctx context.Context, tx *gorm.DB) error {
+	statements := []string{}
+
+	if auth.IsAuthenticated(ctx) {
+		identity, err := auth.GetIdentity(ctx)
+		if err != nil {
+			return err
+		}
+
+		setIdentityId := fmt.Sprintf("select set_config('audit.identity_id', '%s', true);", identity.Id)
+		statements = append(statements, setIdentityId)
+	}
+
+	spanContext := trace.SpanContextFromContext(ctx)
+	if spanContext.IsValid() {
+		setTraceId := fmt.Sprintf("select set_config('audit.trace_id', '%s', true);", spanContext.TraceID().String())
+		statements = append(statements, setTraceId)
+	}
+
+	sql := strings.Join(statements, "")
+
+	return tx.Exec(sql).Error
 }

@@ -26,12 +26,20 @@ test("create action - not permitted, @set identity - ERR_PERMISSION_DENIED", asy
   await expect(
     actions.createNotPermitted({ title: "My Book" })
   ).toHaveAuthorizationError();
+
+  await expect(
+    await models.book.findMany()
+  ).toHaveLength(0)
 });
 
 test("create action - not authenticated, @set identity - ERR_PERMISSION_DENIED", async () => {
   await expect(
     actions.createIsAuthenticated({ title: "My Book" })
   ).toHaveAuthorizationError();
+
+  await expect(
+    await models.book.findMany()
+  ).toHaveLength(0)
 });
 
 test("create action - database permission, @set to null - ERR_INVALID_INPUT", async () => {
@@ -39,6 +47,10 @@ test("create action - database permission, @set to null - ERR_INVALID_INPUT", as
     code: "ERR_INVALID_INPUT",
     message: "field 'lastUpdatedById' cannot be null",
   });
+
+  await expect(
+    await models.book.findMany()
+  ).toHaveLength(0)
 });
 
 test("create action - database permission, lookup failed - ERR_INVALID_INPUT", async () => {
@@ -51,6 +63,10 @@ test("create action - database permission, lookup failed - ERR_INVALID_INPUT", a
     code: "ERR_INVALID_INPUT",
     message: "the record referenced in field 'lastUpdatedById' does not exist",
   });
+
+  await expect(
+    await models.book.findMany()
+  ).toHaveLength(0)
 });
 
 test("create action - database permission, no identity - ERR_PERMISSION_DENIED", async () => {
@@ -62,6 +78,10 @@ test("create action - database permission, no identity - ERR_PERMISSION_DENIED",
       lastUpdatedBy: { id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R" },
     })
   ).toHaveAuthorizationError();
+
+  await expect(
+    await models.book.findMany()
+  ).toHaveLength(0)
 });
 
 test("create action - database permission, wrong identity - ERR_PERMISSION_DENIED", async () => {
@@ -76,6 +96,10 @@ test("create action - database permission, wrong identity - ERR_PERMISSION_DENIE
       lastUpdatedBy: { id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R" },
     })
   ).toHaveAuthorizationError();
+
+  await expect(
+    await models.book.findMany()
+  ).toHaveLength(0)
 });
 
 test("create function - permitted, lookup fail - ERR_INVALID_INPUT", async () => {
@@ -158,6 +182,10 @@ test("create function - database permission, wrong identity - ERR_PERMISSION_DEN
       lastUpdatedBy: { id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R" },
     })
   ).toHaveAuthorizationError();
+
+  await expect(
+    await models.book.findMany()
+  ).toHaveLength(0)
 });
 
 test("update action - not permitted, id not exists - ERR_PERMISSION_DENIED", async () => {
