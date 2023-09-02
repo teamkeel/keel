@@ -26,6 +26,19 @@ func auditModel() *proto.Model {
 	mdl := proto.Model{
 		Name: auditModelName,
 		Fields: []*proto.Field{
+
+			{
+				ModelName:  auditModelName,
+				Name:       "id",
+				PrimaryKey: true,
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(auditModelName),
+					FieldName: wrapperspb.String("id"),
+				},
+				Optional: false,
+			},
+
 			{
 				ModelName: auditModelName,
 				Name:      "tableName",
@@ -60,21 +73,6 @@ func auditModel() *proto.Model {
 			},
 
 			{
-				ModelName:  auditModelName,
-				Name:       "id",
-				PrimaryKey: true,
-				DefaultValue: &proto.DefaultValue{
-					UseZeroValue: true,
-				},
-				Type: &proto.TypeInfo{
-					Type:      proto.Type_TYPE_ID,
-					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("id"),
-				},
-				Optional: false,
-			},
-
-			{
 				ModelName: auditModelName,
 				Name:      "createdAt",
 				DefaultValue: &proto.DefaultValue{
@@ -96,11 +94,6 @@ func auditModel() *proto.Model {
 					ModelName: wrapperspb.String(auditModelName),
 					FieldName: wrapperspb.String("identityId"),
 				},
-				DefaultValue: &proto.DefaultValue{
-					Expression: &proto.Expression{
-						Source: `"unknown"`,
-					},
-				},
 				Optional: true,
 			},
 
@@ -111,11 +104,6 @@ func auditModel() *proto.Model {
 					Type:      proto.Type_TYPE_STRING,
 					ModelName: wrapperspb.String(auditModelName),
 					FieldName: wrapperspb.String("traceId"),
-				},
-				DefaultValue: &proto.DefaultValue{
-					Expression: &proto.Expression{
-						Source: `"unknown"`,
-					},
 				},
 				Optional: true,
 			},
