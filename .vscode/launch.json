@@ -59,7 +59,8 @@
             "-d",
             "${input:directory}",
             "--node-packages-path",
-            "/packages",
+            "${workspaceFolder}/packages",
+            "--tracing"
         ]
     },
     {
