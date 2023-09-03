@@ -50,20 +50,21 @@ class ModelAPI {
     this._modelName = upperCamelCase(this._tableName);
   }
 
-  // Sets the audit context in the database and then runs individual 
-  // database statements within a transaction if one hasn't been opened.
+  // execute sets the audit context in the database and then runs individual 
+  // database statements within a transaction if one hasn't been opened, which
+  // is necessary because the audit parameters will only be available within transactions.
   async #execute(fn) {
     const db = useDatabase();
 
     try {
       if (db.isTransaction) {
-        await this.#setAuditContext(db);
+        await this.#setAuditParameters(db);
         return await fn(db);
       } else {
         return db
           .transaction()
           .execute(async (transaction) => {
-            await this.#setAuditContext(transaction);
+            await this.#setAuditParameters(transaction);
             return await fn(transaction);
           });
       }
@@ -72,11 +73,12 @@ class ModelAPI {
     }
   }
 
-// Sets available context data for use by audit triggers.
-async #setAuditContext(transaction) {
+// setAuditParameters sets audit context data to configuration parameters
+// in the database so that they can be read by the triggered auditing function.
+async #setAuditParameters(transaction) {
   const audit = getAuditContext();
   const statements = [];
-  console.log("SET AUDIT");
+  
   if (audit.identityId) {
     statements.push(
       `CALL set_identity_id('${audit.identityId}');`

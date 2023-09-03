@@ -37,8 +37,8 @@ CREATE TABLE "keel_audit" (
 "data" jsonb NOT NULL,
 "id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-"identity_id" TEXT DEFAULT 'unknown',
-"trace_id" TEXT DEFAULT 'unknown'
+"identity_id" TEXT,
+"trace_id" TEXT
 );
 ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
