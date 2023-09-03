@@ -8,8 +8,8 @@ const { PermissionError } = require("./errors");
 function tryExecuteJob({ db, permitted, actionType, request }, cb) {
   return withPermissions(permitted, async ({ getPermissionState }) => {
     return withDatabase(db, actionType, async () => {
-      withAuditContext(request, async () => {
-        return await cb();
+      await withAuditContext(request, async () => {
+        return cb();
       });
 
       // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function, or if execution has already been permitted by a role based permission (evaluated in the main runtime).

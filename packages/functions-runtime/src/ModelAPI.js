@@ -61,11 +61,11 @@ class ModelAPI {
         await this.#setAuditParameters(db);
         return await fn(db);
       } else {
-        return db
+        return await db
           .transaction()
           .execute(async (transaction) => {
             await this.#setAuditParameters(transaction);
-            return await fn(transaction);
+            return fn(transaction);
           });
       }
     } catch (e) {

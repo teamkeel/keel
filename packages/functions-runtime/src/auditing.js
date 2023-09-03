@@ -11,7 +11,7 @@ async function withAuditContext(request, cb) {
     if (request.meta?.identity) {
       audit.identityId = request.meta.identity.id;
     }
-    if (request.meta.tracing?.traceparent) {
+    if (request.meta?.tracing?.traceparent) {
       audit.traceId = TraceParent.fromString(
         request.meta.tracing.traceparent
       )?.traceId;
