@@ -1,9 +1,9 @@
 const { useDatabase } = require("./database");
+const { getAuditContext } = require("./auditing")
 const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
-const { auditDataInstance } = require("./tryExecuteFunction.js");
 const { sql } = require("kysely");
 
 const {
@@ -38,13 +38,10 @@ const { DatabaseError } = require("./errors");
  * @typedef {Object.<string, TableConfig>} TableConfigMap
  */
 
- function setAuditConfig(transaction) {
-  let auditStore = auditDataInstance.getStore();
-  const identityId = auditStore.identityId;
-  console.log(identityId);
 
-   sql`select set_config('audit.identity_id', ${identityId}, true);`.execute(transaction);
-}
+
+
+
 
 class ModelAPI {
   /**
@@ -58,24 +55,36 @@ class ModelAPI {
     this._modelName = upperCamelCase(this._tableName);
   }
 
-  // async setAuditConfig(transaction) {
- 
-  //   let auditStore = auditDataInstance.getStore();
-  //   console.log(auditStore);
-  //   await sql`select set_config('audit.identity_id', '`+auditStore.identityId+`', true);`.execute(transaction);
-  // }
+  async #setAuditContext(transaction) {
+    const audit = getAuditContext();
+    const identityId = audit.identityId;
+    const traceId = audit.traceId;
+    const statements = [];
+  
+    if (identityId) {
+      statements.push(`select set_config('audit.identity_id', '${identityId}', true);`);
+    }
+
+    if (traceId) {
+      statements.push(`select set_config('audit.trace_id', '${traceId}', true);`);
+    }
+
+  if (statements.length > 0) {
+    const stmt = statements.join('');
+    await sql.raw(stmt).execute(
+      transaction
+    );
+  }
+  }
 
   async create(values) {
     const name = tracing.spanNameForModelAPI(this._modelName, "create");
     const db = useDatabase();
 
-    
-
     return tracing.withSpan(name, async (span) => {
-      try { 
+      try {
         const row = db.transaction().execute(async (transaction) => {
-
-           setAuditConfig(transaction);
+          await this.#setAuditContext(transaction);
 
           const query = transaction
             .insertInto(this._tableName)
@@ -86,8 +95,8 @@ class ModelAPI {
             )
             .returningAll();
 
-            span.setAttribute("sql", query.compile().sql);
-           return await query.executeTakeFirstOrThrow();
+          span.setAttribute("sql", query.compile().sql);
+          return await query.executeTakeFirstOrThrow();
         });
 
         return camelCaseObject(row);
@@ -241,6 +250,8 @@ class ModelAPI {
     return new QueryBuilder(this._tableName, context, builder);
   }
 }
+
+
 
 module.exports = {
   ModelAPI,

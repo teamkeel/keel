@@ -1,5 +1,6 @@
-const { AsyncLocalStorage } = require("async_hooks");
+
 const { withDatabase } = require("./database");
+const { withAuditContext, auditFromRequest } = require("./auditing");
 const {
   withPermissions,
   PERMISSION_STATE,
@@ -7,16 +8,6 @@ const {
 } = require("./permissions");
 const { PermissionError } = require("./errors");
 const { PROTO_ACTION_TYPES } = require("./consts");
-const TraceParent = require('traceparent')
-
-
-const auditDataInstance = new AsyncLocalStorage();
-
-async function withAuditContext(identityId, traceId, cb) {
-  return await auditDataInstance.run({ identityId: identityId, traceId: traceId }, () => {
-    return cb();
-  });
-}
 
 // tryExecuteFunction will create a new database transaction around a function call
 // and handle any permissions checks. If a permission check fails, then an Error will be thrown and the catch block will be hit.
@@ -24,14 +15,11 @@ function tryExecuteFunction(
   { db, permitted, permissionFns, actionType, request, ctx },
   cb
 ) {
-
   return withPermissions(permitted, async ({ getPermissionState }) => {
     return withDatabase(db, actionType, async ({ transaction }) => {
-      const identityId = request.meta.identity;
-      const traceId = request.meta.tracing.traceparent;
-
-      const fnResult =  withAuditContext(identityId, traceId, async () => {
-       return await cb();
+      const audit = auditFromRequest(request);
+      const fnResult = withAuditContext(audit, async () => {
+        return await cb();
       });
 
       // api.permissions maintains an internal state of whether the current function has been *explicitly* permitted/denied by the user in the course of their custom function, or if execution has already been permitted by a role based permission (evaluated in the main runtime).
@@ -90,4 +78,3 @@ function tryExecuteFunction(
 }
 
 module.exports.tryExecuteFunction = tryExecuteFunction;
-module.exports.auditDataInstance = auditDataInstance;
