@@ -1,5 +1,5 @@
 const { useDatabase } = require("./database");
-const { getAuditContext } = require("./auditing")
+const { getAuditContext } = require("./auditing");
 const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
@@ -38,11 +38,6 @@ const { DatabaseError } = require("./errors");
  * @typedef {Object.<string, TableConfig>} TableConfigMap
  */
 
-
-
-
-
-
 class ModelAPI {
   /**
    * @param {string} tableName The name of the table this API is for
@@ -55,54 +50,69 @@ class ModelAPI {
     this._modelName = upperCamelCase(this._tableName);
   }
 
-  async #setAuditContext(transaction) {
-    const audit = getAuditContext();
-    const identityId = audit.identityId;
-    const traceId = audit.traceId;
-    const statements = [];
-  
-    if (identityId) {
-      statements.push(`select set_config('audit.identity_id', '${identityId}', true);`);
-    }
+  // Sets the audit context in the database and then runs individual 
+  // database statements within a transaction if one hasn't been opened.
+  async #execute(fn) {
+    const db = useDatabase();
 
-    if (traceId) {
-      statements.push(`select set_config('audit.trace_id', '${traceId}', true);`);
+    try {
+      if (db.isTransaction) {
+        await this.#setAuditContext(db);
+        return await fn(db);
+      } else {
+        return db
+          .transaction()
+          .execute(async (transaction) => {
+            await this.#setAuditContext(transaction);
+            return await fn(transaction);
+          });
+      }
+    } catch (e) {
+      throw new DatabaseError(e);
     }
+  }
 
-  if (statements.length > 0) {
-    const stmt = statements.join('');
-    await sql.raw(stmt).execute(
-      transaction
+// Sets available context data for use by audit triggers.
+async #setAuditContext(transaction) {
+  const audit = getAuditContext();
+  const statements = [];
+  console.log("SET AUDIT");
+  if (audit.identityId) {
+    statements.push(
+      `CALL set_identity_id('${audit.identityId}');`
     );
   }
+
+  if (audit.traceId) {
+    statements.push(
+      `CALL set_trace_id('${audit.traceId}');`
+    );
   }
+
+  if (statements.length > 0) {
+    const stmt = statements.join("");
+    await sql.raw(stmt).execute(transaction);
+  }
+}
 
   async create(values) {
     const name = tracing.spanNameForModelAPI(this._modelName, "create");
-    const db = useDatabase();
 
     return tracing.withSpan(name, async (span) => {
-      try {
-        const row = db.transaction().execute(async (transaction) => {
-          await this.#setAuditContext(transaction);
+      return await this.#execute(async (db) => {
+        const query = db
+          .insertInto(this._tableName)
+          .values(
+            snakeCaseObject({
+              ...values,
+            })
+          )
+          .returningAll();
 
-          const query = transaction
-            .insertInto(this._tableName)
-            .values(
-              snakeCaseObject({
-                ...values,
-              })
-            )
-            .returningAll();
-
-          span.setAttribute("sql", query.compile().sql);
-          return await query.executeTakeFirstOrThrow();
-        });
-
+        span.setAttribute("sql", query.compile().sql);
+        const row = await query.executeTakeFirstOrThrow();
         return camelCaseObject(row);
-      } catch (e) {
-        throw new DatabaseError(e);
-      }
+      });
     });
   }
 
@@ -189,48 +199,49 @@ class ModelAPI {
 
   async update(where, values) {
     const name = tracing.spanNameForModelAPI(this._modelName, "update");
-    const db = useDatabase();
 
     return tracing.withSpan(name, async (span) => {
-      let builder = db.updateTable(this._tableName).returningAll();
+      return await this.#execute(async (db) => {
+        let builder = db.updateTable(this._tableName).returningAll();
 
-      builder = builder.set(snakeCaseObject(values));
+        builder = builder.set(snakeCaseObject(values));
 
-      const context = new QueryContext([this._tableName], this._tableConfigMap);
+        const context = new QueryContext(
+          [this._tableName],
+          this._tableConfigMap
+        );
 
-      // TODO: support joins for update
-      builder = applyWhereConditions(context, builder, where);
+        // TODO: support joins for update
+        builder = applyWhereConditions(context, builder, where);
 
-      span.setAttribute("sql", builder.compile().sql);
+        span.setAttribute("sql", builder.compile().sql);
 
-      try {
         const row = await builder.executeTakeFirstOrThrow();
         return camelCaseObject(row);
-      } catch (e) {
-        throw new DatabaseError(e);
-      }
+      });
     });
   }
 
   async delete(where) {
     const name = tracing.spanNameForModelAPI(this._modelName, "delete");
-    const db = useDatabase();
 
     return tracing.withSpan(name, async (span) => {
-      let builder = db.deleteFrom(this._tableName).returning(["id"]);
+      return await this.#execute(async (db) => {
+        let builder = db.deleteFrom(this._tableName).returning(["id"]);
 
-      const context = new QueryContext([this._tableName], this._tableConfigMap);
+        const context = new QueryContext(
+          [this._tableName],
+          this._tableConfigMap
+        );
 
-      // TODO: support joins for delete
-      builder = applyWhereConditions(context, builder, where);
+        // TODO: support joins for delete
+        builder = applyWhereConditions(context, builder, where);
 
-      span.setAttribute("sql", builder.compile().sql);
-      try {
+        span.setAttribute("sql", builder.compile().sql);
+
         const row = await builder.executeTakeFirstOrThrow();
         return row.id;
-      } catch (e) {
-        throw new DatabaseError(e);
-      }
+      });
     });
   }
 
@@ -250,8 +261,6 @@ class ModelAPI {
     return new QueryBuilder(this._tableName, context, builder);
   }
 }
-
-
 
 module.exports = {
   ModelAPI,

@@ -29,6 +29,12 @@ var (
 
 	//go:embed process_audit.sql
 	processAuditFunction string
+
+	//go:embed set_identity_id.sql
+	setIdentityId string
+
+	//go:embed set_trace_id.sql
+	setTraceId string
 )
 
 type DatabaseChange struct {
@@ -70,6 +76,8 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	// Functions
 	sql.WriteString(ksuidFunction)
 	sql.WriteString(processAuditFunction)
+	sql.WriteString(setIdentityId)
+	sql.WriteString(setTraceId)
 
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema ( schema TEXT NOT NULL );\n")
 	sql.WriteString("DELETE FROM keel_schema;\n")

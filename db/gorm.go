@@ -139,6 +139,8 @@ func toDbError(err error) error {
 	}
 }
 
+// setAuditParameters sets audit context data to configuration parameters
+// in the database so that they can be read by the triggered auditing function.
 func setAuditParameters(ctx context.Context, tx *gorm.DB) error {
 	statements := []string{}
 
@@ -148,13 +150,13 @@ func setAuditParameters(ctx context.Context, tx *gorm.DB) error {
 			return err
 		}
 
-		setIdentityId := fmt.Sprintf("select set_config('audit.identity_id', '%s', true);", identity.Id)
+		setIdentityId := fmt.Sprintf("CALL set_identity_id('%s');", identity.Id)
 		statements = append(statements, setIdentityId)
 	}
 
 	spanContext := trace.SpanContextFromContext(ctx)
 	if spanContext.IsValid() {
-		setTraceId := fmt.Sprintf("select set_config('audit.trace_id', '%s', true);", spanContext.TraceID().String())
+		setTraceId := fmt.Sprintf("CALL set_trace_id('%s');", spanContext.TraceID().String())
 		statements = append(statements, setTraceId)
 	}
 

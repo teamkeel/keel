@@ -1,6 +1,5 @@
-
 const { withDatabase } = require("./database");
-const { withAuditContext, auditFromRequest } = require("./auditing");
+const { withAuditContext } = require("./auditing");
 const {
   withPermissions,
   PERMISSION_STATE,
@@ -17,8 +16,7 @@ function tryExecuteFunction(
 ) {
   return withPermissions(permitted, async ({ getPermissionState }) => {
     return withDatabase(db, actionType, async ({ transaction }) => {
-      const audit = auditFromRequest(request);
-      const fnResult = withAuditContext(audit, async () => {
+      const fnResult = withAuditContext(request, async () => {
         return await cb();
       });
 

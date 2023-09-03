@@ -15,7 +15,6 @@ async function withDatabase(db, actionType, cb) {
   let requiresTransaction = true;
 
   switch (actionType) {
-    case PROTO_ACTION_TYPES.WRITE:
     case PROTO_ACTION_TYPES.SUBSCRIBER:
     case PROTO_ACTION_TYPES.JOB:
     case PROTO_ACTION_TYPES.GET:
