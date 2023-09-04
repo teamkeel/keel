@@ -2238,6 +2238,21 @@ export declare function query(statement: string): Promise<any>;`
 	})
 }
 
+func TestWriteTestingTypesWithoutQueryModule(t *testing.T) {
+	schema := `
+model Person {
+	fields {
+		name Text
+	}
+}`
+
+	expected := `export declare function query(statement: string): Promise<any>;`
+
+	runWriterNotMatchingTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeTestingTypes(w, s, &generateOptions{withQueryModule: false})
+	})
+}
+
 func TestTestingActionExecutor(t *testing.T) {
 	tmpDir := t.TempDir()
 
@@ -2493,6 +2508,17 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 
 		t.Errorf("\nExpected:\n---------\n%s", normalise(expected))
 		t.Errorf("\nActual:\n---------\n%s", normalise(w.String()))
+	}
+}
+
+func runWriterNotMatchingTest(t *testing.T, schemaString string, expected string, fn func(s *proto.Schema, w *codegen.Writer)) {
+	b := schema.Builder{}
+	s, err := b.MakeFromString(schemaString)
+	require.NoError(t, err)
+	w := &codegen.Writer{}
+	fn(s, w)
+	if !strings.Contains(normalise(w.String()), normalise(expected)) {
+		t.Error("generated code matches but it not expected")
 	}
 }
 
