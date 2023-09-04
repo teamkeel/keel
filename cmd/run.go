@@ -38,6 +38,8 @@ func init() {
 
 	if enabledDeveloperFlags == "true" {
 		runCmd.Flags().StringVar(&flagNodePackagesPath, "node-packages-path", "", "path to local @teamkeel npm packages")
+		testCmd.Flags().MarkHidden("node-packages-path")
 		runCmd.Flags().BoolVar(&flagTracing, "tracing", false, "enable tracing - an OTEL collector (e.g. jaeger) must be running on localhost:4318")
+		testCmd.Flags().MarkHidden("tracing")
 	}
 }

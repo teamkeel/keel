@@ -35,6 +35,9 @@ func init() {
 
 	if enabledDeveloperFlags == "true" {
 		testCmd.Flags().StringVar(&flagNodePackagesPath, "node-packages-path", "", "path to local @teamkeel npm packages")
+		testCmd.Flags().MarkHidden("node-packages-path")
+
 		testCmd.Flags().BoolVar(&flagWithQueryModule, "query-module", false, "exposes db query module in tests")
+		testCmd.Flags().MarkHidden("query-module")
 	}
 }
