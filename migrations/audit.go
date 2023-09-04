@@ -40,6 +40,21 @@ func auditModel() *proto.Model {
 			},
 
 			{
+				ModelName:  auditModelName,
+				Name:       "id",
+				PrimaryKey: true,
+				DefaultValue: &proto.DefaultValue{
+					UseZeroValue: true,
+				},
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(auditModelName),
+					FieldName: wrapperspb.String("id"),
+				},
+				Optional: false,
+			},
+
+			{
 				ModelName: auditModelName,
 				Name:      "tableName",
 				Type: &proto.TypeInfo{
