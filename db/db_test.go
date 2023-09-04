@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
@@ -148,56 +149,56 @@ func TestDbTransactionRollback(t *testing.T) {
 	assert.Len(t, result.Rows, 0)
 }
 
-// func TestDbStatements(t *testing.T) {
-// 	ctx := context.Background()
-// 	db := createTestDb(t, ctx)
-// 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
-// 	assert.NoError(t, err)
-// 	t.Cleanup(func() {
-// 		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
-// 	})
-// 	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(
-//         id               text PRIMARY KEY,
-//         name             text,
-//         married          boolean,
-//         favourite_number integer,
-//         date             timestamptz
-//     );`)
-// 	assert.NoError(t, err)
-// 	location := time.FixedZone("UTC-7", -6*56*34)
+func TestDbStatements(t *testing.T) {
+	ctx := context.Background()
+	db := createTestDb(t, ctx)
+	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
+	assert.NoError(t, err)
+	t.Cleanup(func() {
+		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
+	})
+	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(
+        id               text PRIMARY KEY,
+        name             text,
+        married          boolean,
+        favourite_number integer,
+        date             timestamptz
+    );`)
+	assert.NoError(t, err)
+	location := time.FixedZone("UTC-7", -6*56*34)
 
-// 	keelKeelsonValues := []any{"id1", "Keel Keelson", true, 10, time.Date(2013, 3, 1, 9, 10, 59, 897000, location)}
-// 	agentSmithValues := []any{"id2", "Agent Smith", false, 1, time.Date(2022, 4, 3, 12, 1, 33, 567000, location)}
-// 	nullPersonValues := []any{"id3", nil, nil, nil, nil}
+	keelKeelsonValues := []any{"id1", "Keel Keelson", true, 10, time.Date(2013, 3, 1, 9, 10, 59, 897000, location)}
+	agentSmithValues := []any{"id2", "Agent Smith", false, 1, time.Date(2022, 4, 3, 12, 1, 33, 567000, location)}
+	nullPersonValues := []any{"id3", nil, nil, nil, nil}
 
-// 	statementResult, err := db.ExecuteStatement(ctx, "INSERT INTO person (id, name, married, favourite_number, date) VALUES (?, ?, ?, ?, ?)", keelKeelsonValues...)
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, int64(1), statementResult.RowsAffected)
-// 	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name, married, favourite_number, date) VALUES (?, ?, ?, ?, ?)", agentSmithValues...)
-// 	assert.NoError(t, err)
-// 	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name, married, favourite_number, date) VALUES (?, ?, ?, ?, ?)", nullPersonValues...)
-// 	assert.NoError(t, err)
+	statementResult, err := db.ExecuteStatement(ctx, "INSERT INTO person (id, name, married, favourite_number, date) VALUES (?, ?, ?, ?, ?)", keelKeelsonValues...)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), statementResult.RowsAffected)
+	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name, married, favourite_number, date) VALUES (?, ?, ?, ?, ?)", agentSmithValues...)
+	assert.NoError(t, err)
+	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name, married, favourite_number, date) VALUES (?, ?, ?, ?, ?)", nullPersonValues...)
+	assert.NoError(t, err)
 
-// 	result, err := db.ExecuteQuery(ctx, "SELECT * FROM person ORDER BY id ASC")
-// 	assert.NoError(t, err)
-// 	expectedData := []map[string]interface{}{
-// 		{"date": time.Date(2013, time.March, 1, 9, 10, 59, 897000, location), "favourite_number": int32(10), "id": "id1", "married": true, "name": "Keel Keelson"},
-// 		{"date": time.Date(2022, time.April, 3, 12, 1, 33, 567000, location), "favourite_number": int32(1), "id": "id2", "married": false, "name": "Agent Smith"},
-// 		{"date": interface{}(nil), "favourite_number": interface{}(nil), "id": "id3", "married": interface{}(nil), "name": interface{}(nil)},
-// 	}
-// 	assert.Equal(t, 3, len(result.Rows))
-// 	for i, row := range result.Rows {
-// 		assert.Equal(t, expectedData[i], row)
-// 	}
+	result, err := db.ExecuteQuery(ctx, "SELECT * FROM person ORDER BY id ASC")
+	assert.NoError(t, err)
+	expectedData := []map[string]interface{}{
+		{"date": time.Date(2013, time.March, 1, 9, 10, 59, 897000, location), "favourite_number": int32(10), "id": "id1", "married": true, "name": "Keel Keelson"},
+		{"date": time.Date(2022, time.April, 3, 12, 1, 33, 567000, location), "favourite_number": int32(1), "id": "id2", "married": false, "name": "Agent Smith"},
+		{"date": interface{}(nil), "favourite_number": interface{}(nil), "id": "id3", "married": interface{}(nil), "name": interface{}(nil)},
+	}
+	assert.Equal(t, 3, len(result.Rows))
+	for i, row := range result.Rows {
+		assert.Equal(t, expectedData[i], row)
+	}
 
-// 	statementResult, err = db.ExecuteStatement(ctx, "UPDATE person SET name = 'named' WHERE name IS NOT DISTINCT FROM ?", nil)
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, int64(1), statementResult.RowsAffected)
+	statementResult, err = db.ExecuteStatement(ctx, "UPDATE person SET name = 'named' WHERE name IS NOT DISTINCT FROM ?", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), statementResult.RowsAffected)
 
-// 	statementResult, err = db.ExecuteStatement(ctx, "DELETE FROM person")
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, int64(3), statementResult.RowsAffected)
-// }
+	statementResult, err = db.ExecuteStatement(ctx, "DELETE FROM person")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3), statementResult.RowsAffected)
+}
 
 func TestErrUniqueConstraintViolation(t *testing.T) {
 	ctx := context.Background()
