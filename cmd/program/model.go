@@ -127,8 +127,8 @@ type Model struct {
 	// env var KEEL_TRACING_ENABLED will be passed to the functions runtime
 	TracingEnabled bool
 
-	// Exposes the Kysely module from the testing package
-	WithDbModule bool
+	// Exposes a database query module from the testing package
+	WithQueryModule bool
 
 	// Model state - used in View()
 	Status            int
@@ -344,7 +344,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.Status = StatusUpdateFunctions
-		return m, UpdateFunctions(m.Schema, m.ProjectDir, m.WithDbModule)
+		return m, UpdateFunctions(m.Schema, m.ProjectDir, m.WithQueryModule)
 
 	case UpdateFunctionsMsg:
 		m.Err = msg.Err

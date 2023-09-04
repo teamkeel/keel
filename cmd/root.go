@@ -16,7 +16,7 @@ var (
 	flagPrivateKeyPath   string
 	flagPattern          string
 	flagTracing          bool
-	flagWithDbModule     bool
+	flagWithQueryModule  bool
 )
 
 var rootCmd = &cobra.Command{

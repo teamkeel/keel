@@ -22,7 +22,7 @@ var testCmd = &cobra.Command{
 			NodePackagesPath: flagNodePackagesPath,
 			PrivateKeyPath:   flagPrivateKeyPath,
 			TestPattern:      flagPattern,
-			WithDbModule:     flagWithDbModule,
+			WithQueryModule:  flagWithQueryModule,
 		})
 	},
 }
@@ -35,6 +35,6 @@ func init() {
 
 	if enabledDeveloperFlags == "true" {
 		testCmd.Flags().StringVar(&flagNodePackagesPath, "node-packages-path", "", "path to local @teamkeel npm packages")
-		testCmd.Flags().BoolVar(&flagWithDbModule, "db-module", false, "exposes importable db module in tests")
+		testCmd.Flags().BoolVar(&flagWithQueryModule, "query-module", false, "exposes db query module in tests")
 	}
 }

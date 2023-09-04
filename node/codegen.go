@@ -17,7 +17,7 @@ import (
 
 type generateOptions struct {
 	developmentServer bool
-	databaseModule    bool
+	withQueryModule   bool
 }
 
 // WithDevelopmentServer enables or disables the generation of the development
@@ -28,11 +28,11 @@ func WithDevelopmentServer(b bool) func(o *generateOptions) {
 	}
 }
 
-// WithDatabaseModule enables or disables the generation of the database
-// module as an import from @teamkeel/testing
-func WithDatabaseModule(b bool) func(o *generateOptions) {
+// WithQueryModule enables or disables the generation of the database
+// query module as an import from @teamkeel/testing
+func WithQueryModule(b bool) func(o *generateOptions) {
 	return func(o *generateOptions) {
-		o.databaseModule = b
+		o.withQueryModule = b
 	}
 }
 
@@ -1402,13 +1402,14 @@ func generateTestingPackage(schema *proto.Schema, options *generateOptions) code
 	js.Writeln("`.execute(db);")
 	js.Dedent()
 	js.Writeln("}")
-	if options.databaseModule {
-		//js.Writeln("export const db = useDatabase();")
-		js.Writeln(`
-			export async function query(statement) {
-				const db = useDatabase();
-				return await sql(statement).execute(db);
-			} `)
+
+	if options.withQueryModule {
+		js.Writeln("export async function query(statement) {")
+		js.Indent()
+		js.Writeln("const db = useDatabase();")
+		js.Writeln("return await sql(statement).execute(db);")
+		js.Dedent()
+		js.Writeln("}")
 	}
 
 	writeTestingTypes(types, schema, options)
@@ -1467,11 +1468,6 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema, options *generat
 	// We need to import the testing-runtime package to get
 	// the types for the extended vitest matchers e.g. expect(v).toHaveAuthorizationError()
 	w.Writeln(`import "@teamkeel/testing-runtime";`)
-
-	// if options.databaseModule {
-	// 	w.Writeln(`import { Kysely } from "kysely";`)
-	// }
-
 	w.Writeln("")
 
 	// For the testing package we need input and response types for all actions
@@ -1563,8 +1559,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema, options *generat
 	w.Writeln("export declare const actions: ActionExecutor;")
 	w.Writeln("export declare const models: sdk.ModelsAPI;")
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
-	if options.databaseModule {
-		//w.Writeln("export declare const db: Kysely<sdk.database>;")
+	if options.withQueryModule {
 		w.Writeln("export declare function query(statement: string): Promise<any>;")
 	}
 }
