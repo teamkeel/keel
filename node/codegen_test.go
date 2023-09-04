@@ -2517,7 +2517,7 @@ func runWriterNotMatchingTest(t *testing.T, schemaString string, expected string
 	require.NoError(t, err)
 	w := &codegen.Writer{}
 	fn(s, w)
-	if !strings.Contains(normalise(w.String()), normalise(expected)) {
+	if strings.Contains(normalise(w.String()), normalise(expected)) {
 		t.Error("generated code matches but it not expected")
 	}
 }
