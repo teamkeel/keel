@@ -165,10 +165,9 @@ func TestDbStatements(t *testing.T) {
         date             timestamptz
     );`)
 	assert.NoError(t, err)
-	location := time.FixedZone("UTC-7", -6*56*34)
 
-	keelKeelsonValues := []any{"id1", "Keel Keelson", true, 10, time.Date(2013, 3, 1, 9, 10, 59, 897000, location)}
-	agentSmithValues := []any{"id2", "Agent Smith", false, 1, time.Date(2022, 4, 3, 12, 1, 33, 567000, location)}
+	keelKeelsonValues := []any{"id1", "Keel Keelson", true, 10, time.Date(2013, 3, 1, 9, 10, 59, 897000, time.Local)}
+	agentSmithValues := []any{"id2", "Agent Smith", false, 1, time.Date(2022, 4, 3, 12, 1, 33, 567000, time.Local)}
 	nullPersonValues := []any{"id3", nil, nil, nil, nil}
 
 	statementResult, err := db.ExecuteStatement(ctx, "INSERT INTO person (id, name, married, favourite_number, date) VALUES (?, ?, ?, ?, ?)", keelKeelsonValues...)
@@ -182,8 +181,8 @@ func TestDbStatements(t *testing.T) {
 	result, err := db.ExecuteQuery(ctx, "SELECT * FROM person ORDER BY id ASC")
 	assert.NoError(t, err)
 	expectedData := []map[string]interface{}{
-		{"date": time.Date(2013, time.March, 1, 9, 10, 59, 897000, location), "favourite_number": int32(10), "id": "id1", "married": true, "name": "Keel Keelson"},
-		{"date": time.Date(2022, time.April, 3, 12, 1, 33, 567000, location), "favourite_number": int32(1), "id": "id2", "married": false, "name": "Agent Smith"},
+		{"date": time.Date(2013, time.March, 1, 9, 10, 59, 897000, time.Local), "favourite_number": int32(10), "id": "id1", "married": true, "name": "Keel Keelson"},
+		{"date": time.Date(2022, time.April, 3, 12, 1, 33, 567000, time.Local), "favourite_number": int32(1), "id": "id2", "married": false, "name": "Agent Smith"},
 		{"date": interface{}(nil), "favourite_number": interface{}(nil), "id": "id3", "married": interface{}(nil), "name": interface{}(nil)},
 	}
 	assert.Equal(t, 3, len(result.Rows))
