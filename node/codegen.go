@@ -17,6 +17,7 @@ import (
 
 type generateOptions struct {
 	developmentServer bool
+	withQueryModule   bool
 }
 
 // WithDevelopmentServer enables or disables the generation of the development
@@ -24,6 +25,14 @@ type generateOptions struct {
 func WithDevelopmentServer(b bool) func(o *generateOptions) {
 	return func(o *generateOptions) {
 		o.developmentServer = b
+	}
+}
+
+// WithQueryModule enables or disables the generation of the database
+// query module as an import from @teamkeel/testing
+func WithQueryModule(b bool) func(o *generateOptions) {
+	return func(o *generateOptions) {
+		o.withQueryModule = b
 	}
 }
 
@@ -38,7 +47,7 @@ func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generat
 	}
 
 	files := generateSdkPackage(schema)
-	files = append(files, generateTestingPackage(schema)...)
+	files = append(files, generateTestingPackage(schema, options)...)
 	files = append(files, generateTestingSetup()...)
 
 	if options.developmentServer {
@@ -1367,7 +1376,7 @@ server.listen(port);`)
 	}
 }
 
-func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
+func generateTestingPackage(schema *proto.Schema, options *generateOptions) codegen.GeneratedFiles {
 	js := &codegen.Writer{}
 	types := &codegen.Writer{}
 
@@ -1394,7 +1403,16 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	js.Dedent()
 	js.Writeln("}")
 
-	writeTestingTypes(types, schema)
+	if options.withQueryModule {
+		js.Writeln("export async function query(statement) {")
+		js.Indent()
+		js.Writeln("const db = useDatabase();")
+		js.Writeln("return await sql(statement).execute(db);")
+		js.Dedent()
+		js.Writeln("}")
+	}
+
+	writeTestingTypes(types, schema, options)
 
 	return codegen.GeneratedFiles{
 		{
@@ -1443,7 +1461,7 @@ expect.extend({
 	}
 }
 
-func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
+func writeTestingTypes(w *codegen.Writer, schema *proto.Schema, options *generateOptions) {
 	w.Writeln(`import * as sdk from "@teamkeel/sdk";`)
 	w.Writeln(`import * as runtime from "@teamkeel/functions-runtime";`)
 
@@ -1541,6 +1559,9 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export declare const actions: ActionExecutor;")
 	w.Writeln("export declare const models: sdk.ModelsAPI;")
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
+	if options.withQueryModule {
+		w.Writeln("export declare function query(statement: string): Promise<any>;")
+	}
 }
 
 func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
