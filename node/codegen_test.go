@@ -1961,7 +1961,7 @@ export declare const models: sdk.ModelsAPI;
 export declare function resetDatabase(): Promise<void>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeTestingTypes(w, s)
+		writeTestingTypes(w, s, &generateOptions{})
 	})
 }
 
@@ -2036,7 +2036,7 @@ export declare const models: sdk.ModelsAPI;
 export declare function resetDatabase(): Promise<void>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeTestingTypes(w, s)
+		writeTestingTypes(w, s, &generateOptions{})
 	})
 }
 
@@ -2086,7 +2086,7 @@ export declare const models: sdk.ModelsAPI;
 export declare function resetDatabase(): Promise<void>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeTestingTypes(w, s)
+		writeTestingTypes(w, s, &generateOptions{})
 	})
 }
 
@@ -2215,7 +2215,7 @@ export declare const models: sdk.ModelsAPI;
 export declare function resetDatabase(): Promise<void>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeTestingTypes(w, s)
+		writeTestingTypes(w, s, &generateOptions{})
 	})
 }
 

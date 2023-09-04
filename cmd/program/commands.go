@@ -484,9 +484,9 @@ func (t *TypeScriptError) Error() string {
 	return fmt.Sprintf("TypeScript error: %s", t.Err.Error())
 }
 
-func UpdateFunctions(schema *proto.Schema, dir string) tea.Cmd {
+func UpdateFunctions(schema *proto.Schema, dir string, withDbModule bool) tea.Cmd {
 	return func() tea.Msg {
-		files, err := node.Generate(context.TODO(), schema, node.WithDevelopmentServer(true))
+		files, err := node.Generate(context.TODO(), schema, node.WithDevelopmentServer(true), node.WithDatabaseModule(withDbModule))
 		if err != nil {
 			return UpdateFunctionsMsg{Err: err}
 		}

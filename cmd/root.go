@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var enabledDebugFlags = "true"
+var enabledDeveloperFlags = "true"
 
 var (
 	flagProjectDir       string
@@ -16,6 +16,7 @@ var (
 	flagPrivateKeyPath   string
 	flagPattern          string
 	flagTracing          bool
+	flagWithDbModule     bool
 )
 
 var rootCmd = &cobra.Command{

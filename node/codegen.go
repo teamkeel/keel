@@ -17,6 +17,7 @@ import (
 
 type generateOptions struct {
 	developmentServer bool
+	databaseModule    bool
 }
 
 // WithDevelopmentServer enables or disables the generation of the development
@@ -24,6 +25,14 @@ type generateOptions struct {
 func WithDevelopmentServer(b bool) func(o *generateOptions) {
 	return func(o *generateOptions) {
 		o.developmentServer = b
+	}
+}
+
+// WithDatabaseModule enables or disables the generation of the database
+// module as an import from @teamkeel/testing
+func WithDatabaseModule(b bool) func(o *generateOptions) {
+	return func(o *generateOptions) {
+		o.databaseModule = b
 	}
 }
 
@@ -38,7 +47,7 @@ func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generat
 	}
 
 	files := generateSdkPackage(schema)
-	files = append(files, generateTestingPackage(schema)...)
+	files = append(files, generateTestingPackage(schema, options)...)
 	files = append(files, generateTestingSetup()...)
 
 	if options.developmentServer {
@@ -1367,7 +1376,7 @@ server.listen(port);`)
 	}
 }
 
-func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
+func generateTestingPackage(schema *proto.Schema, options *generateOptions) codegen.GeneratedFiles {
 	js := &codegen.Writer{}
 	types := &codegen.Writer{}
 
@@ -1393,8 +1402,16 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	js.Writeln("`.execute(db);")
 	js.Dedent()
 	js.Writeln("}")
+	if options.databaseModule {
+		//js.Writeln("export const db = useDatabase();")
+		js.Writeln(`
+			export async function query(statement) {
+				const db = useDatabase();
+				return await sql(statement).execute(db);
+			} `)
+	}
 
-	writeTestingTypes(types, schema)
+	writeTestingTypes(types, schema, options)
 
 	return codegen.GeneratedFiles{
 		{
@@ -1443,13 +1460,18 @@ expect.extend({
 	}
 }
 
-func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
+func writeTestingTypes(w *codegen.Writer, schema *proto.Schema, options *generateOptions) {
 	w.Writeln(`import * as sdk from "@teamkeel/sdk";`)
 	w.Writeln(`import * as runtime from "@teamkeel/functions-runtime";`)
 
 	// We need to import the testing-runtime package to get
 	// the types for the extended vitest matchers e.g. expect(v).toHaveAuthorizationError()
 	w.Writeln(`import "@teamkeel/testing-runtime";`)
+
+	// if options.databaseModule {
+	// 	w.Writeln(`import { Kysely } from "kysely";`)
+	// }
+
 	w.Writeln("")
 
 	// For the testing package we need input and response types for all actions
@@ -1541,6 +1563,10 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export declare const actions: ActionExecutor;")
 	w.Writeln("export declare const models: sdk.ModelsAPI;")
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
+	if options.databaseModule {
+		//w.Writeln("export declare const db: Kysely<sdk.database>;")
+		w.Writeln("export declare function query(statement: string): Promise<any>;")
+	}
 }
 
 func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {

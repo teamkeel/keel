@@ -36,7 +36,7 @@ func init() {
 	runCmd.Flags().StringVar(&flagPort, "port", "8000", "the port to run the Keel application on")
 	runCmd.Flags().StringVar(&flagPrivateKeyPath, "private-key-path", "", "path to the private key .pem file")
 
-	if enabledDebugFlags == "true" {
+	if enabledDeveloperFlags == "true" {
 		runCmd.Flags().StringVar(&flagNodePackagesPath, "node-packages-path", "", "path to local @teamkeel npm packages")
 		runCmd.Flags().BoolVar(&flagTracing, "tracing", false, "enable tracing - an OTEL collector (e.g. jaeger) must be running on localhost:4318")
 	}
