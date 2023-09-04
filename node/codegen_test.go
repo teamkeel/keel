@@ -2219,6 +2219,25 @@ export declare function resetDatabase(): Promise<void>;`
 	})
 }
 
+func TestWriteTestingTypesWithQueryModule(t *testing.T) {
+	schema := `
+model Person {
+	fields {
+		name Text
+	}
+}`
+
+	expected := `
+export declare const actions: ActionExecutor;
+export declare const models: sdk.ModelsAPI;
+export declare function resetDatabase(): Promise<void>;
+export declare function query(statement: string): Promise<any>;`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeTestingTypes(w, s, &generateOptions{withQueryModule: true})
+	})
+}
+
 func TestTestingActionExecutor(t *testing.T) {
 	tmpDir := t.TempDir()
 
