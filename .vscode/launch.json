@@ -131,7 +131,7 @@
         {
             "type": "promptString",
             "id": "directory",
-            "default": "../../keelschemas/audit",
+            "default": "scratch",
             "description": "Path to directory containing keel schema file."
         },
         {

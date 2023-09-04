@@ -50,7 +50,7 @@ class ModelAPI {
     this._modelName = upperCamelCase(this._tableName);
   }
 
-  // execute sets the audit context in the database and then runs individual 
+  // execute sets the audit context in the database and then runs individual
   // database statements within a transaction if one hasn't been opened, which
   // is necessary because the audit parameters will only be available within transactions.
   async #execute(fn) {
@@ -61,41 +61,35 @@ class ModelAPI {
         await this.#setAuditParameters(db);
         return await fn(db);
       } else {
-        return await db
-          .transaction()
-          .execute(async (transaction) => {
-            await this.#setAuditParameters(transaction);
-            return fn(transaction);
-          });
+        return await db.transaction().execute(async (transaction) => {
+          await this.#setAuditParameters(transaction);
+          return fn(transaction);
+        });
       }
     } catch (e) {
       throw new DatabaseError(e);
     }
   }
 
-// setAuditParameters sets audit context data to configuration parameters
-// in the database so that they can be read by the triggered auditing function.
-async #setAuditParameters(transaction) {
-  const audit = getAuditContext();
-  const statements = [];
-  
-  if (audit.identityId) {
-    statements.push(
-      `CALL set_identity_id('${audit.identityId}');`
-    );
-  }
+  // setAuditParameters sets audit context data to configuration parameters
+  // in the database so that they can be read by the triggered auditing function.
+  async #setAuditParameters(transaction) {
+    const audit = getAuditContext();
+    const statements = [];
 
-  if (audit.traceId) {
-    statements.push(
-      `CALL set_trace_id('${audit.traceId}');`
-    );
-  }
+    if (audit.identityId) {
+      statements.push(`CALL set_identity_id('${audit.identityId}');`);
+    }
 
-  if (statements.length > 0) {
-    const stmt = statements.join("");
-    await sql.raw(stmt).execute(transaction);
+    if (audit.traceId) {
+      statements.push(`CALL set_trace_id('${audit.traceId}');`);
+    }
+
+    if (statements.length > 0) {
+      const stmt = statements.join("");
+      await sql.raw(stmt).execute(transaction);
+    }
   }
-}
 
   async create(values) {
     const name = tracing.spanNameForModelAPI(this._modelName, "create");

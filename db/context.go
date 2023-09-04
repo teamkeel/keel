@@ -25,5 +25,6 @@ func GetDatabase(ctx context.Context) (Database, error) {
 }
 
 func WithDatabase(ctx context.Context, database Database) context.Context {
+	database = database.WithAuditing()
 	return context.WithValue(ctx, dbKey, database)
 }

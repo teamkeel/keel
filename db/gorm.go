@@ -19,7 +19,8 @@ import (
 var tracer = otel.Tracer("github.com/teamkeel/keel/db")
 
 type GormDB struct {
-	db *gorm.DB
+	withAuditing bool
+	db           *gorm.DB
 }
 
 var _ Database = &GormDB{}
@@ -41,10 +42,13 @@ func (db *GormDB) ExecuteQuery(ctx context.Context, sqlQuery string, values ...a
 	// Opens a transaction to ensure set_config values are readable in the trigger function.
 	// If a transaction is already open, then this inner transaction will have no impact.
 	err := conn.Transaction(func(tx *gorm.DB) (err error) {
-		err = setAuditParameters(ctx, tx)
-		if err != nil {
-			return err
+		if db.withAuditing {
+			err = setAuditParameters(ctx, tx)
+			if err != nil {
+				return err
+			}
 		}
+
 		return tx.Raw(sqlQuery, values...).Scan(&rows).Error
 	})
 
@@ -73,12 +77,16 @@ func (db *GormDB) ExecuteStatement(ctx context.Context, sqlQuery string, values 
 
 	// Opens a transaction to ensure set_config values are readable in the trigger function.
 	// If a transaction is already open, then this inner transaction will have no impact.
-	err := conn.Transaction(func(tx *gorm.DB) (err error) {
-		err = setAuditParameters(ctx, tx)
-		if err != nil {
-			return err
+	err := conn.Transaction(func(tx *gorm.DB) error {
+		if db.withAuditing {
+			err := setAuditParameters(ctx, tx)
+			if err != nil {
+				return err
+			}
 		}
-		return tx.Exec(sqlQuery, values...).Error
+
+		conn = tx.Exec(sqlQuery, values...)
+		return conn.Error
 	})
 
 	if err != nil {
@@ -114,6 +122,11 @@ func (db *GormDB) Close() error {
 
 func (db *GormDB) GetDB() *gorm.DB {
 	return db.db
+}
+
+func (db *GormDB) WithAuditing() Database {
+	db.withAuditing = true
+	return db
 }
 
 func toDbError(err error) error {

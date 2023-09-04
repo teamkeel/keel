@@ -27,9 +27,7 @@ test("create action - not permitted, @set identity - ERR_PERMISSION_DENIED", asy
     actions.createNotPermitted({ title: "My Book" })
   ).toHaveAuthorizationError();
 
-  await expect(
-    await models.book.findMany()
-  ).toHaveLength(0)
+  await expect(await models.book.findMany()).toHaveLength(0);
 });
 
 test("create action - not authenticated, @set identity - ERR_PERMISSION_DENIED", async () => {
@@ -37,9 +35,7 @@ test("create action - not authenticated, @set identity - ERR_PERMISSION_DENIED",
     actions.createIsAuthenticated({ title: "My Book" })
   ).toHaveAuthorizationError();
 
-  await expect(
-    await models.book.findMany()
-  ).toHaveLength(0)
+  await expect(await models.book.findMany()).toHaveLength(0);
 });
 
 test("create action - database permission, @set to null - ERR_INVALID_INPUT", async () => {
@@ -48,9 +44,7 @@ test("create action - database permission, @set to null - ERR_INVALID_INPUT", as
     message: "field 'lastUpdatedById' cannot be null",
   });
 
-  await expect(
-    await models.book.findMany()
-  ).toHaveLength(0)
+  await expect(await models.book.findMany()).toHaveLength(0);
 });
 
 test("create action - database permission, lookup failed - ERR_INVALID_INPUT", async () => {
@@ -64,9 +58,7 @@ test("create action - database permission, lookup failed - ERR_INVALID_INPUT", a
     message: "the record referenced in field 'lastUpdatedById' does not exist",
   });
 
-  await expect(
-    await models.book.findMany()
-  ).toHaveLength(0)
+  await expect(await models.book.findMany()).toHaveLength(0);
 });
 
 test("create action - database permission, no identity - ERR_PERMISSION_DENIED", async () => {
@@ -79,9 +71,7 @@ test("create action - database permission, no identity - ERR_PERMISSION_DENIED",
     })
   ).toHaveAuthorizationError();
 
-  await expect(
-    await models.book.findMany()
-  ).toHaveLength(0)
+  await expect(await models.book.findMany()).toHaveLength(0);
 });
 
 test("create action - database permission, wrong identity - ERR_PERMISSION_DENIED", async () => {
@@ -97,9 +87,7 @@ test("create action - database permission, wrong identity - ERR_PERMISSION_DENIE
     })
   ).toHaveAuthorizationError();
 
-  await expect(
-    await models.book.findMany()
-  ).toHaveLength(0)
+  await expect(await models.book.findMany()).toHaveLength(0);
 });
 
 test("create function - permitted, lookup fail - ERR_INVALID_INPUT", async () => {
@@ -183,9 +171,7 @@ test("create function - database permission, wrong identity - ERR_PERMISSION_DEN
     })
   ).toHaveAuthorizationError();
 
-  await expect(
-    await models.book.findMany()
-  ).toHaveLength(0)
+  await expect(await models.book.findMany()).toHaveLength(0);
 });
 
 test("update action - not permitted, id not exists - ERR_PERMISSION_DENIED", async () => {
