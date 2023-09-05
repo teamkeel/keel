@@ -49,7 +49,7 @@ async function handleSubscriber(request, config) {
         const subscriberFunction = subscribers[request.method];
         const actionType = PROTO_ACTION_TYPES.SUBSCRIBER;
 
-        await tryExecuteSubscriber({ db, actionType }, async () => {
+        await tryExecuteSubscriber({ request, db, actionType }, async () => {
           // Return the subscriber function to the containing tryExecuteSubscriber block
           return subscriberFunction(ctx, request.params);
         });

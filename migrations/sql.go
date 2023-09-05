@@ -304,20 +304,20 @@ func createAuditHookStmt(schema *proto.Schema, model *proto.Model) (string, erro
 	//
 	// CREATE TRIGGER person_create AFTER INSERT ON person
 	// REFERENCING OLD TABLE AS old_table
-	// FOR EACH ROW EXECUTE PROCEDURE process_audit();
+	// FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 	//
 	tblName := Identifier(model.Name)
 	modelLower := casing.ToSnake(model.Name)
 	statements := []string{}
 
 	statements = append(statements, fmt.Sprintf(
-		`CREATE TRIGGER %s_create AFTER INSERT ON %s REFERENCING NEW TABLE AS new_table FOR EACH ROW EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
+		`CREATE TRIGGER %s_create AFTER INSERT ON %s REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
 
 	statements = append(statements, fmt.Sprintf(
-		`CREATE TRIGGER %s_update AFTER UPDATE ON %s REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH ROW EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
+		`CREATE TRIGGER %s_update AFTER UPDATE ON %s REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
 
 	statements = append(statements, fmt.Sprintf(
-		`CREATE TRIGGER %s_delete AFTER DELETE ON %s REFERENCING OLD TABLE AS old_table FOR EACH ROW EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
+		`CREATE TRIGGER %s_delete AFTER DELETE ON %s REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
 
 	return strings.Join(statements, "\n"), nil
 }

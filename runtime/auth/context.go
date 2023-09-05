@@ -1,4 +1,4 @@
-package runtimectx
+package auth
 
 import (
 	"context"
@@ -26,7 +26,6 @@ func WithIdentity(ctx context.Context, identity *Identity) context.Context {
 	if identity != nil {
 		ctx = context.WithValue(ctx, identityContextKey, identity)
 	}
-
 	return ctx
 }
 

@@ -61,7 +61,7 @@ func TestRuntimeRPC(t *testing.T) {
 			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
 			require.NoError(t, err)
 
-			ctx = runtimectx.WithDatabase(ctx, database)
+			ctx = db.WithDatabase(ctx, database)
 			request = request.WithContext(ctx)
 
 			// Apply the database prior-set up mandated by this test case.
