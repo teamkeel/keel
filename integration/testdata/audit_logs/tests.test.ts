@@ -21,7 +21,7 @@ interface Audit<T> {
   createdAt: Date;
 }
 
-test("create action - audit table is populated correctly", async () => {
+test("create action - audit table populated", async () => {
   const wedding = await actions.createWedding({
     name: "Mary & Bob",
   });
@@ -33,7 +33,6 @@ test("create action - audit table is populated correctly", async () => {
   expect(logs.rows.length).toEqual(1);
   const audit = logs.rows.at(0)!;
 
-  // Audit table columns
   expect(audit.id).not.toBeNull();
   expect(audit.tableName).toEqual("wedding");
   expect(audit.op).toEqual("insert");
@@ -41,7 +40,6 @@ test("create action - audit table is populated correctly", async () => {
   expect(audit.traceId).toBeNull();
   expect(audit.createdAt).not.toBeNull();
 
-  // Data column
   expect(audit.data.id).toEqual(wedding.id);
   expect(audit.data.name).toEqual(wedding.name);
   expect(audit.data.venue).toBeNull();
@@ -53,7 +51,7 @@ test("create action - audit table is populated correctly", async () => {
   );
 });
 
-test("update action - audit table is populated correctly", async () => {
+test("update action - audit table populated", async () => {
   const { id } = await actions.createWedding({
     name: "Mary & Bob",
   });
@@ -91,7 +89,7 @@ test("update action - audit table is populated correctly", async () => {
   );
 });
 
-test("delete action - audit table is populated correctly", async () => {
+test("delete action - audit table populated", async () => {
   const wedding = await actions.createWedding({
     name: "Mary & Bob",
   });
@@ -126,7 +124,7 @@ test("delete action - audit table is populated correctly", async () => {
   );
 });
 
-test("create action - with identity", async () => {
+test("create action with identity - audit table populated", async () => {
   const identity = await models.identity.create({ email: "keelson@keel.xyz" });
 
   const wedding = await actions.withIdentity(identity).createWedding({
@@ -147,7 +145,7 @@ test("create action - with identity", async () => {
   expect(audit.data.id).toEqual(wedding.id);
 });
 
-test("update action - with identity", async () => {
+test("update action with identity - audit table populated", async () => {
   const identity = await models.identity.create({ email: "keelson@keel.xyz" });
 
   const { id } = await actions.createWedding({
@@ -172,7 +170,7 @@ test("update action - with identity", async () => {
   expect(audit.data.id).toEqual(wedding.id);
 });
 
-test("delete action - with identity", async () => {
+test("delete action with identity - audit table populated", async () => {
   const identity = await models.identity.create({ email: "keelson@keel.xyz" });
 
   const wedding = await actions.createWedding({
@@ -196,7 +194,7 @@ test("delete action - with identity", async () => {
   expect(audit.data.id).toEqual(wedding.id);
 });
 
-test("nested create action - audit table is populated correctly", async () => {
+test("nested create action - audit table populated", async () => {
   const identity = await models.identity.create({ email: "mary@keel.xyz" });
 
   const wedding = await actions.withIdentity(identity).createWeddingWithGuests({
@@ -213,7 +211,6 @@ test("nested create action - audit table is populated correctly", async () => {
   expect(logs.rows.length).toEqual(1);
   const weddingAudit = logs.rows.at(0)!;
 
-  // Audit table columns
   expect(weddingAudit.id).not.toBeNull();
   expect(weddingAudit.tableName).toEqual("wedding");
   expect(weddingAudit.op).toEqual("insert");
@@ -221,7 +218,6 @@ test("nested create action - audit table is populated correctly", async () => {
   expect(weddingAudit.traceId).toBeNull();
   expect(weddingAudit.createdAt).not.toBeNull();
 
-  // Data column
   expect(weddingAudit.data.id).toEqual(wedding.id);
   expect(weddingAudit.data.name).toEqual(wedding.name);
   expect(new Date(weddingAudit.data.createdAt).toISOString()).toEqual(
@@ -243,7 +239,6 @@ test("nested create action - audit table is populated correctly", async () => {
   )[0];
   const keelsonLog = inviteelLogs.rows.at(0)!;
 
-  // Audit table columns
   expect(keelsonLog.id).not.toBeNull();
   expect(keelsonLog.tableName).toEqual("wedding_invitee");
   expect(keelsonLog.op).toEqual("insert");
@@ -251,7 +246,6 @@ test("nested create action - audit table is populated correctly", async () => {
   expect(keelsonLog.traceId).toBeNull();
   expect(keelsonLog.createdAt).not.toBeNull();
 
-  // Data column
   expect(keelsonLog.data.id).toEqual(keelson.id);
   expect(keelsonLog.data.firstName).toEqual(keelson.firstName);
   expect(keelsonLog.data.weddingId).toEqual(wedding.id);
@@ -267,7 +261,6 @@ test("nested create action - audit table is populated correctly", async () => {
   )[0];
   const weaveLog = inviteelLogs.rows.at(1)!;
 
-  // Audit table columns
   expect(weaveLog.id).not.toBeNull();
   expect(weaveLog.tableName).toEqual("wedding_invitee");
   expect(weaveLog.op).toEqual("insert");
@@ -275,7 +268,6 @@ test("nested create action - audit table is populated correctly", async () => {
   expect(weaveLog.traceId).toBeNull();
   expect(weaveLog.createdAt).not.toBeNull();
 
-  // Data column
   expect(weaveLog.data.id).toEqual(weave.id);
   expect(weaveLog.data.firstName).toEqual(weave.firstName);
   expect(weaveLog.data.weddingId).toEqual(wedding.id);
@@ -287,7 +279,7 @@ test("nested create action - audit table is populated correctly", async () => {
   );
 });
 
-test("built-in actions - multiple identities", async () => {
+test("built-in actions with multiple identities - audit table populated", async () => {
   const keelson = await models.identity.create({ email: "keelson@keel.xyz" });
   const weave = await models.identity.create({ email: "weave@keel.xyz" });
 
@@ -330,7 +322,7 @@ test("built-in actions - multiple identities", async () => {
   expect(deleteAudit.data.id).toEqual(wedding.id);
 });
 
-test("hook function - audit table is populated correctly", async () => {
+test("hook function - audit table populated", async () => {
   const identity = await models.identity.create({ email: "keelson@keel.xyz" });
 
   const guest = await actions.withIdentity(identity).inviteGuest({
@@ -347,7 +339,6 @@ test("hook function - audit table is populated correctly", async () => {
 
   const insertAudit = logs.rows.at(0)!;
 
-  // Audit table columns
   expect(insertAudit.id).not.toBeNull();
   expect(insertAudit.tableName).toEqual("wedding_invitee");
   expect(insertAudit.op).toEqual("insert");
@@ -355,7 +346,6 @@ test("hook function - audit table is populated correctly", async () => {
   expect(insertAudit.traceId).toBeNull();
   expect(insertAudit.createdAt).not.toBeNull();
 
-  // Data column
   expect(insertAudit.data.id).toEqual(guest.id);
   expect(insertAudit.data.firstName).toEqual(guest.firstName);
   expect(insertAudit.data.isFamily).toBeTruthy();
@@ -370,7 +360,6 @@ test("hook function - audit table is populated correctly", async () => {
 
   const updateAudit = logs.rows.at(1)!;
 
-  // Audit table columns
   expect(updateAudit.id).not.toBeNull();
   expect(updateAudit.tableName).toEqual("wedding_invitee");
   expect(updateAudit.op).toEqual("update");
@@ -378,7 +367,6 @@ test("hook function - audit table is populated correctly", async () => {
   expect(updateAudit.traceId).toBeNull();
   expect(updateAudit.createdAt).not.toBeNull();
 
-  // Data column
   expect(updateAudit.data.id).toEqual(guest.id);
   expect(updateAudit.data.firstName).toEqual(guest.firstName);
   expect(updateAudit.data.isFamily).toBeTruthy();
@@ -392,7 +380,7 @@ test("hook function - audit table is populated correctly", async () => {
   );
 });
 
-test("write function with identity - audit table is populated correctly", async () => {
+test("write function with identity - audit table populated", async () => {
   const identity = await models.identity.create({ email: "keelson@keel.xyz" });
 
   const wedding = await actions.createWedding({
@@ -414,7 +402,6 @@ test("write function with identity - audit table is populated correctly", async 
 
   const insertKeelson = logs.rows.at(0)!;
 
-  // Audit table columns
   expect(insertKeelson.id).not.toBeNull();
   expect(insertKeelson.tableName).toEqual("wedding_invitee");
   expect(insertKeelson.op).toEqual("insert");
@@ -422,7 +409,6 @@ test("write function with identity - audit table is populated correctly", async 
   expect(insertKeelson.traceId).toBeNull();
   expect(insertKeelson.createdAt).not.toBeNull();
 
-  // Data column
   expect(insertKeelson.data.firstName).toEqual("Keelson");
   expect(insertKeelson.data.isFamily).toBeFalsy();
   expect(insertKeelson.data.status).toEqual(InviteStatus.Pending);
@@ -430,7 +416,6 @@ test("write function with identity - audit table is populated correctly", async 
 
   const insertWeave = logs.rows.at(1)!;
 
-  // Audit table columns
   expect(insertWeave.id).not.toBeNull();
   expect(insertWeave.tableName).toEqual("wedding_invitee");
   expect(insertWeave.op).toEqual("insert");
@@ -438,7 +423,6 @@ test("write function with identity - audit table is populated correctly", async 
   expect(insertWeave.traceId).toBeNull();
   expect(insertWeave.createdAt).not.toBeNull();
 
-  // Data column
   expect(insertWeave.data.firstName).toEqual("Weave");
   expect(insertWeave.data.isFamily).toBeFalsy();
   expect(insertWeave.data.status).toEqual(InviteStatus.Pending);
@@ -471,7 +455,7 @@ test("write function with error and rollback - model and audit table empty", asy
   expect(logs.rows.length).toEqual(0);
 });
 
-test("job function with identity - audit table is populated correctly", async () => {
+test("job function with identity - audit table populated", async () => {
   const identity = await models.identity.create({ email: "keelson@keel.xyz" });
 
   const wedding = await actions.createWedding({
@@ -653,7 +637,7 @@ test("job function with error and no rollback - audit table is not rolled back",
   expect(weddingUpdateAudit.data.headcount).toEqual(1);
 });
 
-test("identity model - audit table is populated correctly", async () => {
+test("identity model - audit table populated", async () => {
   const { identityCreated } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
@@ -718,7 +702,7 @@ test("identity model - audit table is populated correctly", async () => {
   expect(deleted).toEqual(deleteLog!.data.id);
 });
 
-test("model API use in tests - audit table is populated", async () => {
+test("model API use in tests - audit table is populated without identity or trace IDs", async () => {
   const created = await models.wedding.create({ name: "Mary & Bob" });
   const updated = await models.wedding.update(
     { id: created.id },
