@@ -29,7 +29,7 @@ jobs:
     secrets: inherit
 
   dev-release:
-    if: github.event_name == 'workflow_dispatch' || github.event.base_ref != 'main'
+    if: github.event_name == 'workflow_dispatch'
     needs: [setup]
     uses: ./.github/workflows/pre_release.yml
     with:
