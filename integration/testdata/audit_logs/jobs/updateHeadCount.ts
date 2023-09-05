@@ -21,7 +21,7 @@ export default UpdateHeadCount(async (ctx, inputs) => {
   await models.wedding.update({ id: inputs.weddingId }, { headcount: count });
 
   if (shouldErr) {
-    // This will rollback the function, any mutations and any audit logs
+    // This will __NOT__ rollback the function, mutations nor logs
     throw new Error("prisma is not invited!");
   }
 });
