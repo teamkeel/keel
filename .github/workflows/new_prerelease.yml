@@ -28,10 +28,10 @@ jobs:
     secrets: inherit
 
   dev-release:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'repository_dispatch'
     needs: [setup]
     uses: ./.github/workflows/pre_release.yml
     with:
       publishTag: "dev"
-      versionFormat: "${major}.${minor}.${patch}-${{ github.event.ref }}${increment}"
+      versionFormat: "${major}.${minor}.${patch}-${{ github.event.base_ref }}${increment}"
     secrets: inherit
