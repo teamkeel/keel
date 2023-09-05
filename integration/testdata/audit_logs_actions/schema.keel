@@ -2,6 +2,8 @@ model Wedding {
     fields {
         name Text
         guests WeddingInvitee[]
+        headcount Number @default(0)
+        venue Text?
     }
 
     actions {
@@ -38,11 +40,21 @@ model WeddingInvitee {
 
     actions {
         create inviteGuest() with (firstName, isFamily) @function
-        write inviteMany(Guests) returns (Any)
+        write inviteMany(Guests) returns (Any) {
+            @permission(expression: true)
+        }
     }
 
     @permission(
         expression: true,
         actions: [create, update, delete]
     )
+}
+
+job UpdateHeadCount {
+    inputs {
+        weddingId Id
+    }
+
+    @permission(expression: true)
 }
