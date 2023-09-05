@@ -17,10 +17,10 @@ jobs:
       - uses: pnpm/action-setup@v2.4.0
         with:
           version: 8.5.1
-      - run: echo "Running pre-release for branch ${{ github.base_ref || github.event.base_ref }}"
+      - run: echo "Running pre-release for branch ${{ github.event.base_ref }}"
 
   pre-release:
-    if: github.event_name == 'push' || github.base_ref == 'main'
+    if: github.event_name == 'push' || github.event.base_ref == 'main'
     needs: [setup]
     uses: ./.github/workflows/pre_release.yml
     with:
@@ -29,10 +29,10 @@ jobs:
     secrets: inherit
 
   dev-release:
-    if: github.event_name == 'workflow_dispatch' || github.base_ref != 'main'
+    if: github.event_name == 'workflow_dispatch' || github.event.base_ref != 'main'
     needs: [setup]
     uses: ./.github/workflows/pre_release.yml
     with:
       publishTag: "dev"
-      versionFormat: "${major}.${minor}.${patch}-${{ github.base_ref }}${increment}"
+      versionFormat: "${major}.${minor}.${patch}-${{ github.event.base_ref }}${increment}"
     secrets: inherit
