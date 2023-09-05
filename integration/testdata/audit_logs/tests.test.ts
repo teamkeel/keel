@@ -37,9 +37,7 @@ test("create action - audit table populated", async () => {
   expect(audit.tableName).toEqual("wedding");
   expect(audit.op).toEqual("insert");
   expect(audit.identityId).toBeNull();
-  expect(audit.traceId).toBeNull();
   expect(audit.createdAt).not.toBeNull();
-
   expect(audit.data.id).toEqual(wedding.id);
   expect(audit.data.name).toEqual(wedding.name);
   expect(audit.data.venue).toBeNull();
@@ -74,7 +72,6 @@ test("update action - audit table populated", async () => {
   expect(audit.tableName).toEqual("wedding");
   expect(audit.op).toEqual("update");
   expect(audit.identityId).toBeNull();
-  expect(audit.traceId).toBeNull();
   expect(audit.createdAt).not.toBeNull();
 
   // Data column
@@ -109,7 +106,6 @@ test("delete action - audit table populated", async () => {
   expect(audit.tableName).toEqual("wedding");
   expect(audit.op).toEqual("delete");
   expect(audit.identityId).toBeNull();
-  expect(audit.traceId).toBeNull();
   expect(audit.createdAt).not.toBeNull();
 
   // Data column
@@ -141,7 +137,6 @@ test("create action with identity - audit table populated", async () => {
   const audit = logs.rows.at(0)!;
 
   expect(audit.identityId).toEqual(identity.id);
-  expect(audit.traceId).toBeNull();
   expect(audit.data.id).toEqual(wedding.id);
 });
 
@@ -166,7 +161,6 @@ test("update action with identity - audit table populated", async () => {
   const audit = logs.rows.at(0)!;
 
   expect(audit.identityId).toEqual(identity.id);
-  expect(audit.traceId).toBeNull();
   expect(audit.data.id).toEqual(wedding.id);
 });
 
@@ -190,7 +184,6 @@ test("delete action with identity - audit table populated", async () => {
   const audit = logs.rows.at(0)!;
 
   expect(audit.identityId).toEqual(identity.id);
-  expect(audit.traceId).toBeNull();
   expect(audit.data.id).toEqual(wedding.id);
 });
 
@@ -215,7 +208,6 @@ test("nested create action - audit table populated", async () => {
   expect(weddingAudit.tableName).toEqual("wedding");
   expect(weddingAudit.op).toEqual("insert");
   expect(weddingAudit.identityId).toEqual(identity.id);
-  expect(weddingAudit.traceId).toBeNull();
   expect(weddingAudit.createdAt).not.toBeNull();
 
   expect(weddingAudit.data.id).toEqual(wedding.id);
@@ -243,7 +235,6 @@ test("nested create action - audit table populated", async () => {
   expect(keelsonLog.tableName).toEqual("wedding_invitee");
   expect(keelsonLog.op).toEqual("insert");
   expect(keelsonLog.identityId).toEqual(identity.id);
-  expect(keelsonLog.traceId).toBeNull();
   expect(keelsonLog.createdAt).not.toBeNull();
 
   expect(keelsonLog.data.id).toEqual(keelson.id);
@@ -265,7 +256,6 @@ test("nested create action - audit table populated", async () => {
   expect(weaveLog.tableName).toEqual("wedding_invitee");
   expect(weaveLog.op).toEqual("insert");
   expect(weaveLog.identityId).toEqual(identity.id);
-  expect(weaveLog.traceId).toBeNull();
   expect(weaveLog.createdAt).not.toBeNull();
 
   expect(weaveLog.data.id).toEqual(weave.id);
@@ -308,17 +298,14 @@ test("built-in actions with multiple identities - audit table populated", async 
 
   const insertAudit = logs.rows.at(0)!;
   expect(insertAudit.identityId).toEqual(keelson.id);
-  expect(insertAudit.traceId).toBeNull();
   expect(insertAudit.data.id).toEqual(wedding.id);
 
   const updateAudit = logs.rows.at(1)!;
   expect(updateAudit.identityId).toBeNull();
-  expect(updateAudit.traceId).toBeNull();
   expect(updateAudit.data.id).toEqual(wedding.id);
 
   const deleteAudit = logs.rows.at(2)!;
   expect(deleteAudit.identityId).toEqual(weave.id);
-  expect(deleteAudit.traceId).toBeNull();
   expect(deleteAudit.data.id).toEqual(wedding.id);
 });
 
@@ -343,7 +330,6 @@ test("hook function - audit table populated", async () => {
   expect(insertAudit.tableName).toEqual("wedding_invitee");
   expect(insertAudit.op).toEqual("insert");
   expect(insertAudit.identityId).toEqual(identity.id);
-  expect(insertAudit.traceId).toBeNull();
   expect(insertAudit.createdAt).not.toBeNull();
 
   expect(insertAudit.data.id).toEqual(guest.id);
@@ -364,7 +350,6 @@ test("hook function - audit table populated", async () => {
   expect(updateAudit.tableName).toEqual("wedding_invitee");
   expect(updateAudit.op).toEqual("update");
   expect(updateAudit.identityId).toEqual(identity.id);
-  expect(updateAudit.traceId).toBeNull();
   expect(updateAudit.createdAt).not.toBeNull();
 
   expect(updateAudit.data.id).toEqual(guest.id);
@@ -406,7 +391,6 @@ test("write function with identity - audit table populated", async () => {
   expect(insertKeelson.tableName).toEqual("wedding_invitee");
   expect(insertKeelson.op).toEqual("insert");
   expect(insertKeelson.identityId).toEqual(identity.id);
-  expect(insertKeelson.traceId).toBeNull();
   expect(insertKeelson.createdAt).not.toBeNull();
 
   expect(insertKeelson.data.firstName).toEqual("Keelson");
@@ -420,7 +404,6 @@ test("write function with identity - audit table populated", async () => {
   expect(insertWeave.tableName).toEqual("wedding_invitee");
   expect(insertWeave.op).toEqual("insert");
   expect(insertWeave.identityId).toEqual(identity.id);
-  expect(insertWeave.traceId).toBeNull();
   expect(insertWeave.createdAt).not.toBeNull();
 
   expect(insertWeave.data.firstName).toEqual("Weave");
@@ -656,15 +639,12 @@ test("identity model - audit table populated", async () => {
   expect(logs.rows.length).toEqual(1);
   const audit = logs.rows.at(0)!;
 
-  // Audit table columns
   expect(audit.id).not.toBeNull();
   expect(audit.tableName).toEqual("identity");
   expect(audit.op).toEqual("insert");
   expect(audit.identityId).toBeNull();
-  expect(audit.traceId).toBeNull();
   expect(audit.createdAt).not.toBeNull();
 
-  // Data column
   expect(audit.data.id).toEqual(identity!.id);
   expect(audit.data.email).toEqual(identity!.email);
   expect(audit.data.password).toEqual(identity!.password);
@@ -718,18 +698,21 @@ test("model API use in tests - audit table is populated without identity or trac
   const insertLog = logs.rows.at(0)!;
   expect(insertLog.op).toEqual("insert");
   expect(insertLog.identityId).toBeNull();
+  expect(insertLog.traceId).toBeNull();
   expect(insertLog.data.id).toEqual(created.id);
   expect(insertLog.data.name).toEqual(created.name);
 
   const updateLog = logs.rows.at(1)!;
   expect(updateLog.op).toEqual("update");
   expect(insertLog.identityId).toBeNull();
+  expect(insertLog.traceId).toBeNull();
   expect(updateLog.data.id).toEqual(updated.id);
   expect(updateLog.data.name).toEqual(updated.name);
 
   const deleteLog = logs.rows.at(2)!;
   expect(deleteLog.op).toEqual("delete");
   expect(insertLog.identityId).toBeNull();
+  expect(insertLog.traceId).toBeNull();
   expect(deleteLog.data.id).toEqual(deleted);
   expect(deleteLog.data.name).toEqual(updated.name);
 });
