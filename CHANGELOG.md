@@ -1,3 +1,20 @@
+# Version: v0.365.16-goreleaser-updates21
+
+* [#1154](https://github.com/teamkeel/keel/pull/1154): fix: subscribers not in transactions, fixed opt on testing types
+* [#1160](https://github.com/teamkeel/keel/pull/1160): fix: update auth tracing
+* [#1161](https://github.com/teamkeel/keel/pull/1161): build: error response and tracing improvements
+* [#1168](https://github.com/teamkeel/keel/pull/1168): chore: passing traceparent to event handler
+* [#1169](https://github.com/teamkeel/keel/pull/1169): fix: format issues
+* [#1170](https://github.com/teamkeel/keel/pull/1170): chore: refactoring test names
+* [#1171](https://github.com/teamkeel/keel/pull/1171): feat: identity and tracing context in audit logs
+* [#1172](https://github.com/teamkeel/keel/pull/1172): chore: query database module in integration tests
+* [#1174](https://github.com/teamkeel/keel/pull/1174): build(release): use base_ref not event ref
+* [#1175](https://github.com/teamkeel/keel/pull/1175): chore: audit log tests
+* [#1177](https://github.com/teamkeel/keel/pull/1177): fix: self referencing relationship on many bug
+* [#1178](https://github.com/teamkeel/keel/pull/1178): chore: reverts 1172
+* [#1179](https://github.com/teamkeel/keel/pull/1179): fix: self referencing relationship on many bug (#1177)
+
+
 ## [0.365.14](https://github.com/teamkeel/keel/compare/v0.365.13...v0.365.14) (2023-08-21)
 
 
