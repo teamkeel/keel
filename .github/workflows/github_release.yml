@@ -43,19 +43,16 @@ on:
         required: false
         type: string
         default: ""
+      homebrewRepo:
+        required: false
+        type: string
+        default: "homebrew-keel"
 
 permissions:
   contents: write
 
 env:
-  HOMEBREW_REPO: |
-    {
-      if [ ${{ inputs.preRelease }} ]; then
-        variable="homebrew-keel-prerelease"
-      else
-        variable="homebrew-keel"
-      echo variable
-    }
+  HOMEBREW_REPO: ${{ inputs.homebrewRepo }}
 
 jobs:
   goreleaser:

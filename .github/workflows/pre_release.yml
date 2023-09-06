@@ -65,4 +65,5 @@ jobs:
       generateChangelog: true
       publishEvent: ${{ github.event_name != 'workflow_dispatch' }}
       commitMessage: ${{ github.event.head_commit.message }}
+      homebrewRepo: "homebrew-keel-prerelease"
     secrets: inherit
