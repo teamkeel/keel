@@ -7,7 +7,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-// RequiredFieldOfSameMessageType ensures that a message cannot have a field of the same type,
+// RequiredFieldOfSameMessageType ensures that a message cannot have a required field of the same type,
 // as this results in an infinite recursion.
 func RequiredFieldOfSameMessageType(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var message *parser.MessageNode

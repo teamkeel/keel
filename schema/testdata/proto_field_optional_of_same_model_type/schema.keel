@@ -1,6 +1,7 @@
 model Person {
     fields {
-        person Person?
+        mother Person? @relation(children)
+        children Person[]
     }
 
     actions {
