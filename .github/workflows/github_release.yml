@@ -78,7 +78,7 @@ jobs:
           tag_exists_error: false
           message: "Keel release v${{ inputs.version }}"
 
-      - name: Get current Keel version
+      - name: Set variables for homebrew
         id: set-brew-envvars
         run: |
           {
@@ -103,7 +103,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}
-          HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outcome.HOMEBREW_ALIAS }}
+          HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outputs.HOMEBREW_ALIAS }}
 
       - name: Update CHANGELOG
         id: changelog
