@@ -1897,10 +1897,6 @@ func TestQueryBuilder(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			if clean(testCase.expectedTemplate) != clean(statement.SqlTemplate()) {
-				fmt.Printf("XXXX actual sql:\n%s\n", clean(statement.SqlTemplate()))
-			}
-
 			require.Equal(t, clean(testCase.expectedTemplate), clean(statement.SqlTemplate()))
 
 			if testCase.expectedArgs != nil {

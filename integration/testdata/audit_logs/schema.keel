@@ -1,0 +1,60 @@
+model Wedding {
+    fields {
+        name Text
+        guests WeddingInvitee[]
+        headcount Number @default(0)
+        venue Text?
+    }
+
+    actions {
+        create createWedding() with (name)
+        create createWeddingWithGuests() with (name, guests.firstName)
+        update updateWedding(id) with (name)
+        delete deleteWedding(id)
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, update, delete]
+    )
+}
+
+message Guests {
+    names Text[]
+    weddingId Id
+}
+
+enum InviteStatus {
+    Accepted
+    Pending
+    Declined
+}
+
+model WeddingInvitee {
+    fields {
+        wedding Wedding?
+        firstName Text
+        isFamily Boolean @default(false)
+        status InviteStatus @default(InviteStatus.Pending)
+    }
+
+    actions {
+        create inviteGuest() with (firstName, isFamily) @function
+        write inviteMany(Guests) returns (Any) {
+            @permission(expression: true)
+        }
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, update, delete]
+    )
+}
+
+job UpdateHeadCount {
+    inputs {
+        weddingId Id
+    }
+
+    @permission(expression: true)
+}

@@ -118,8 +118,8 @@ func TestAuditCreateAction(t *testing.T) {
 	audit := audits[0]
 
 	// This is due to https://linear.app/keel/issue/BLD-824/storing-dates-in-utc-and-not-with-timezone
-	wedding["created_at"] = wedding["created_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
-	wedding["updated_at"] = wedding["updated_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
+	wedding["created_at"] = wedding["created_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
+	wedding["updated_at"] = wedding["updated_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
 
 	expectedData, err := json.Marshal(wedding)
 	require.NoError(t, err)
@@ -168,8 +168,8 @@ func TestAuditNestedCreateAction(t *testing.T) {
 	weddingAudit := weddingAudits[0]
 
 	// This is due to https://linear.app/keel/issue/BLD-824/storing-dates-in-utc-and-not-with-timezone
-	wedding["created_at"] = wedding["created_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
-	wedding["updated_at"] = wedding["updated_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
+	wedding["created_at"] = wedding["created_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
+	wedding["updated_at"] = wedding["updated_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
 
 	expectedData, err := json.Marshal(wedding)
 	require.NoError(t, err)
@@ -196,12 +196,12 @@ func TestAuditNestedCreateAction(t *testing.T) {
 	require.True(t, found)
 
 	// This is due to https://linear.app/keel/issue/BLD-824/storing-dates-in-utc-and-not-with-timezone
-	pete["created_at"] = pete["created_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
-	pete["updated_at"] = pete["updated_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
+	pete["created_at"] = pete["created_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
+	pete["updated_at"] = pete["updated_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
 
 	// This is due to https://linear.app/keel/issue/BLD-824/storing-dates-in-utc-and-not-with-timezone
-	adam["created_at"] = adam["created_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
-	adam["updated_at"] = adam["updated_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
+	adam["created_at"] = adam["created_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
+	adam["updated_at"] = adam["updated_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
 
 	var peteAudits []map[string]any
 	db.Raw(fmt.Sprintf("SELECT * FROM keel_audit WHERE table_name='wedding_invitee' AND data ->> 'id' = '%s'", pete["id"])).Scan(&peteAudits)
@@ -273,8 +273,8 @@ func TestAuditUpdateAction(t *testing.T) {
 	wedding := weddings[0]
 
 	// This is due to https://linear.app/keel/issue/BLD-824/storing-dates-in-utc-and-not-with-timezone
-	wedding["created_at"] = wedding["created_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
-	wedding["updated_at"] = wedding["updated_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
+	wedding["created_at"] = wedding["created_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
+	wedding["updated_at"] = wedding["updated_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
 
 	var audits []map[string]any
 	db.Raw("SELECT * FROM keel_audit WHERE op='insert' and table_name='wedding'").Scan(&audits)
@@ -322,8 +322,8 @@ func TestAuditDeleteAction(t *testing.T) {
 	wedding := weddings[0]
 
 	// This is due to https://linear.app/keel/issue/BLD-824/storing-dates-in-utc-and-not-with-timezone
-	wedding["created_at"] = wedding["created_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
-	wedding["updated_at"] = wedding["updated_at"].(time.Time).Format("2006-01-02T15:04:05.999999999+00:00")
+	wedding["created_at"] = wedding["created_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
+	wedding["updated_at"] = wedding["updated_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
 
 	delete := proto.FindAction(schema, "deleteWedding")
 	_, _, err = actions.Execute(
