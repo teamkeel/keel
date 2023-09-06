@@ -114,13 +114,14 @@ jobs:
           makeLatest: ${{ inputs.makeLatest }}
           bodyFile: ${{ inputs.releaseNotesURL }}
 
-      - name: Commit CHANGELOG.md
-        if: ${{ inputs.generateChangelog }}
-        uses: stefanzweifel/git-auto-commit-action@v4
+      - name: Create Changelog Pull Request
+        uses: peter-evans/create-pull-request@v5
         with:
-          branch: ${{ inputs.branch }}
-          commit_message: "docs: update CHANGELOG.md for v${{ inputs.version }} [skip ci]"
-          file_pattern: CHANGELOG.md
+          commit-message: "docs: update CHANGELOG.md for v${{ inputs.version }}"
+          base: ${{ inputs.branch }}
+          branch: update-changelog-${{ inputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          delete-branch: false
 
       - name: Fire Release Event with Changelog
         if: ${{ inputs.publishEvent && inputs.generateChangelog }}
