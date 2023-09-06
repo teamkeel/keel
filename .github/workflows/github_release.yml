@@ -108,10 +108,23 @@ jobs:
       - name: Update CHANGELOG
         id: changelog
         if: ${{ inputs.generateChangelog }}
-        uses: requarks/changelog-action@v1.8.1
+        uses: saadmk11/changelog-ci@v1.1.2
         with:
-          token: ${{ secrets.GH_TOKEN }}
-          tag: "v${{ inputs.version }}"
+          release_version: "v${{ inputs.version }}"
+          github_token: ${{ secrets.GH_TOKEN }}
+
+      - name: Get Changelog Output
+        run: |
+          echo "${{ steps.changelog.outputs.changelog }}"
+          echo "${{ steps.changelog.outputs.changelog }}" >> $GITHUB_STEP_SUMMARY
+
+      # - name: Update CHANGELOG
+      #   id: changelog
+      #   if: ${{ inputs.generateChangelog }}
+      #   uses: requarks/changelog-action@v1.8.2
+      #   with:
+      #     token: ${{ secrets.GH_TOKEN }}
+      #     tag: "v${{ inputs.version }}"
 
       # Goreleaser won't update a draft release, so you have to update the release after to tune release params
       - name: Update goreleaser release with the changelogs
