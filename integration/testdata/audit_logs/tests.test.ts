@@ -8,16 +8,19 @@ import {
 } from "@teamkeel/sdk";
 import { test, expect, beforeEach } from "vitest";
 import { sql } from "kysely";
+import  KSUID from "ksuid"
+import { isDate } from "util/types";
+
 
 beforeEach(resetDatabase);
 
 interface Audit<T> {
-  id: String;
-  tableName: String;
-  op: String;
+  id: string;
+  tableName: string;
+  op: string;
   data: T;
-  identityId: String | null;
-  traceId: String | null;
+  identityId: string | null;
+  traceId: string | null;
   createdAt: Date;
 }
 
@@ -33,7 +36,7 @@ test("create action - audit table populated", async () => {
   expect(logs.rows.length).toEqual(1);
   const audit = logs.rows.at(0)!;
 
-  expect(audit.id).not.toBeNull();
+  expect(KSUID.parse(audit.id)).toBeInstanceOf(KSUID);
   expect(audit.tableName).toEqual("wedding");
   expect(audit.op).toEqual("insert");
   expect(audit.identityId).toBeNull();
@@ -68,7 +71,7 @@ test("update action - audit table populated", async () => {
   const audit = logs.rows.at(0)!;
 
   // Audit table columns
-  expect(audit.id).not.toBeNull();
+  expect(KSUID.parse(audit.id)).toBeInstanceOf(KSUID);
   expect(audit.tableName).toEqual("wedding");
   expect(audit.op).toEqual("update");
   expect(audit.identityId).toBeNull();
@@ -102,7 +105,7 @@ test("delete action - audit table populated", async () => {
   const audit = logs.rows.at(0)!;
 
   // Audit table columns
-  expect(audit.id).not.toBeNull();
+  expect(KSUID.parse(audit.id)).toBeInstanceOf(KSUID);
   expect(audit.tableName).toEqual("wedding");
   expect(audit.op).toEqual("delete");
   expect(audit.identityId).toBeNull();
@@ -204,7 +207,7 @@ test("nested create action - audit table populated", async () => {
   expect(logs.rows.length).toEqual(1);
   const weddingAudit = logs.rows.at(0)!;
 
-  expect(weddingAudit.id).not.toBeNull();
+  expect(KSUID.parse(weddingAudit.id)).toBeInstanceOf(KSUID);
   expect(weddingAudit.tableName).toEqual("wedding");
   expect(weddingAudit.op).toEqual("insert");
   expect(weddingAudit.identityId).toEqual(identity.id);
@@ -326,7 +329,7 @@ test("hook function - audit table populated", async () => {
 
   const insertAudit = logs.rows.at(0)!;
 
-  expect(insertAudit.id).not.toBeNull();
+  expect(KSUID.parse(insertAudit.id)).toBeInstanceOf(KSUID);
   expect(insertAudit.tableName).toEqual("wedding_invitee");
   expect(insertAudit.op).toEqual("insert");
   expect(insertAudit.identityId).toEqual(identity.id);
@@ -346,7 +349,7 @@ test("hook function - audit table populated", async () => {
 
   const updateAudit = logs.rows.at(1)!;
 
-  expect(updateAudit.id).not.toBeNull();
+  expect(KSUID.parse(updateAudit.id)).toBeInstanceOf(KSUID);
   expect(updateAudit.tableName).toEqual("wedding_invitee");
   expect(updateAudit.op).toEqual("update");
   expect(updateAudit.identityId).toEqual(identity.id);
@@ -472,28 +475,28 @@ test("job function with identity - audit table populated", async () => {
   expect(inviteesAudits.rows.length).toEqual(4);
 
   const keelsonAudit = inviteesAudits.rows.at(0)!;
-  expect(keelsonAudit.id).not.toBeNull();
+  expect(KSUID.parse(keelsonAudit.id)).toBeInstanceOf(KSUID);
   expect(keelsonAudit.tableName).toEqual("wedding_invitee");
   expect(keelsonAudit.op).toEqual("insert");
   expect(keelsonAudit.identityId).toBeNull();
   expect(keelsonAudit.data.id).toEqual(keelson.id);
 
   const keelerAudit = inviteesAudits.rows.at(1)!;
-  expect(keelerAudit.id).not.toBeNull();
+  expect(KSUID.parse(keelerAudit.id)).toBeInstanceOf(KSUID);
   expect(keelerAudit.tableName).toEqual("wedding_invitee");
   expect(keelerAudit.op).toEqual("insert");
   expect(keelerAudit.identityId).toBeNull();
   expect(keelerAudit.data.id).toEqual(keeler.id);
 
   const weavetonAudit = inviteesAudits.rows.at(2)!;
-  expect(weavetonAudit.id).not.toBeNull();
+  expect(KSUID.parse(weavetonAudit.id)).toBeInstanceOf(KSUID);
   expect(weavetonAudit.tableName).toEqual("wedding_invitee");
   expect(weavetonAudit.op).toEqual("insert");
   expect(weavetonAudit.identityId).toBeNull();
   expect(weavetonAudit.data.id).toEqual(weaveton.id);
 
   const keelerDeleteAudit = inviteesAudits.rows.at(3)!;
-  expect(keelerDeleteAudit.id).not.toBeNull();
+  expect(KSUID.parse(keelerDeleteAudit.id)).toBeInstanceOf(KSUID);
   expect(keelerDeleteAudit.tableName).toEqual("wedding_invitee");
   expect(keelerDeleteAudit.op).toEqual("delete");
   expect(keelerDeleteAudit.identityId).toEqual(identity.id);
@@ -510,7 +513,7 @@ test("job function with identity - audit table populated", async () => {
   expect(weddingAudits.rows.length).toEqual(2);
 
   const weddingAudit = weddingAudits.rows.at(0)!;
-  expect(weddingAudit.id).not.toBeNull();
+  expect(KSUID.parse(weddingAudit.id)).toBeInstanceOf(KSUID);
   expect(weddingAudit.tableName).toEqual("wedding");
   expect(weddingAudit.op).toEqual("insert");
   expect(weddingAudit.identityId).toBeNull();
@@ -519,7 +522,7 @@ test("job function with identity - audit table populated", async () => {
   expect(weddingAudit.data.headcount).toEqual(0);
 
   const weddingUpdateAudit = weddingAudits.rows.at(1)!;
-  expect(weddingUpdateAudit.id).not.toBeNull();
+  expect(KSUID.parse(weddingUpdateAudit.id)).toBeInstanceOf(KSUID);
   expect(weddingUpdateAudit.tableName).toEqual("wedding");
   expect(weddingUpdateAudit.op).toEqual("update");
   expect(weddingUpdateAudit.identityId).toEqual(identity.id);
@@ -564,28 +567,28 @@ test("job function with error and no rollback - audit table is not rolled back",
   expect(inviteesAudits.rows.length).toEqual(4);
 
   const keelsonAudit = inviteesAudits.rows.at(0)!;
-  expect(keelsonAudit.id).not.toBeNull();
+  expect(KSUID.parse(keelsonAudit.id)).toBeInstanceOf(KSUID);
   expect(keelsonAudit.tableName).toEqual("wedding_invitee");
   expect(keelsonAudit.op).toEqual("insert");
   expect(keelsonAudit.identityId).toBeNull();
   expect(keelsonAudit.data.id).toEqual(keelson.id);
 
   const keelerAudit = inviteesAudits.rows.at(1)!;
-  expect(keelerAudit.id).not.toBeNull();
+  expect(KSUID.parse(keelerAudit.id)).toBeInstanceOf(KSUID);
   expect(keelerAudit.tableName).toEqual("wedding_invitee");
   expect(keelerAudit.op).toEqual("insert");
   expect(keelerAudit.identityId).toBeNull();
   expect(keelerAudit.data.id).toEqual(keeler.id);
 
   const weavetonAudit = inviteesAudits.rows.at(2)!;
-  expect(weavetonAudit.id).not.toBeNull();
+  expect(KSUID.parse(weavetonAudit.id)).toBeInstanceOf(KSUID);
   expect(weavetonAudit.tableName).toEqual("wedding_invitee");
   expect(weavetonAudit.op).toEqual("insert");
   expect(weavetonAudit.identityId).toBeNull();
   expect(weavetonAudit.data.id).toEqual(prisma.id);
 
   const keelerDeleteAudit = inviteesAudits.rows.at(3)!;
-  expect(keelerDeleteAudit.id).not.toBeNull();
+  expect(KSUID.parse(keelerDeleteAudit.id)).toBeInstanceOf(KSUID);
   expect(keelerDeleteAudit.tableName).toEqual("wedding_invitee");
   expect(keelerDeleteAudit.op).toEqual("delete");
   expect(keelerDeleteAudit.identityId).toEqual(identity.id);
@@ -602,7 +605,7 @@ test("job function with error and no rollback - audit table is not rolled back",
   expect(weddingAudits.rows.length).toEqual(2);
 
   const weddingAudit = weddingAudits.rows.at(0)!;
-  expect(weddingAudit.id).not.toBeNull();
+  expect(KSUID.parse(weddingAudit.id)).toBeInstanceOf(KSUID);
   expect(weddingAudit.tableName).toEqual("wedding");
   expect(weddingAudit.op).toEqual("insert");
   expect(weddingAudit.identityId).toBeNull();
@@ -611,7 +614,7 @@ test("job function with error and no rollback - audit table is not rolled back",
   expect(weddingAudit.data.headcount).toEqual(0);
 
   const weddingUpdateAudit = weddingAudits.rows.at(1)!;
-  expect(weddingUpdateAudit.id).not.toBeNull();
+  expect(KSUID.parse(weddingUpdateAudit.id)).toBeInstanceOf(KSUID);
   expect(weddingUpdateAudit.tableName).toEqual("wedding");
   expect(weddingUpdateAudit.op).toEqual("update");
   expect(weddingUpdateAudit.identityId).toEqual(identity.id);
@@ -639,7 +642,7 @@ test("identity model - audit table populated", async () => {
   expect(logs.rows.length).toEqual(1);
   const audit = logs.rows.at(0)!;
 
-  expect(audit.id).not.toBeNull();
+  expect(KSUID.parse(audit.id)).toBeInstanceOf(KSUID);
   expect(audit.tableName).toEqual("identity");
   expect(audit.op).toEqual("insert");
   expect(audit.identityId).toBeNull();
