@@ -22,7 +22,6 @@ var testCmd = &cobra.Command{
 			NodePackagesPath: flagNodePackagesPath,
 			PrivateKeyPath:   flagPrivateKeyPath,
 			TestPattern:      flagPattern,
-			WithQueryModule:  flagWithQueryModule,
 		})
 	},
 }
@@ -33,11 +32,7 @@ func init() {
 	testCmd.Flags().StringVarP(&flagPattern, "pattern", "p", "(.*)", "pattern to isolate test")
 	testCmd.Flags().StringVar(&flagPrivateKeyPath, "private-key-path", "", "path to the private key .pem file")
 
-	if enabledDeveloperFlags == "true" {
+	if enabledDebugFlags == "true" {
 		testCmd.Flags().StringVar(&flagNodePackagesPath, "node-packages-path", "", "path to local @teamkeel npm packages")
-		_ = testCmd.Flags().MarkHidden("node-packages-path")
-
-		testCmd.Flags().BoolVar(&flagWithQueryModule, "query-module", false, "exposes db query module in tests")
-		_ = testCmd.Flags().MarkHidden("query-module")
 	}
 }
