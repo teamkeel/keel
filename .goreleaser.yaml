@@ -1,3 +1,5 @@
+variables:
+  homebrewRepo: {{ if .Env.PRERELEASE }}{{ "homebrew-keel" }}{{ else }}"homebrew-keel-prerelease"{{ end }}
 before:
   hooks:
     - go mod tidy
@@ -33,7 +35,7 @@ brews:
       bin.install "cli" => "keel"
     tap:
       owner: teamkeel
-      name: homebrew-keel
+      name: { { .Var.homebrewRepo } }
 checksum:
   name_template: "checksums.txt"
 snapshot:

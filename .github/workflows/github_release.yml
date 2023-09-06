@@ -47,10 +47,23 @@ on:
 permissions:
   contents: write
 
+env:
+  HOMEBREW_REPO: |
+    {
+      if [ ${{ inputs.preRelease }} ]; then
+        variable="homebrew-keel-prerelease"
+      else
+        variable="homebrew-keel"
+      echo variable
+    }
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
+      - name: Print homebrew repo
+        run: echo "HOMEBREW_REPO=${{ env.HOMEBREW_REPO }}"
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
