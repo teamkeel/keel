@@ -358,3 +358,113 @@ describe("ModelAPI error handling", () => {
     });
   });
 });
+
+// The following tests assert on the various
+// jsonrpc responses that *should* happen when a user
+// writes a custom function that inadvertently causes a pg constraint error to occur inside of our ModelAPI class instance.
+describe("ModelAPI error handling", () => {
+  let functionConfig;
+  let db;
+
+  beforeEach(async () => {
+    process.env.KEEL_DB_CONN_TYPE = "pg";
+    process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
+
+    db = useDatabase();
+
+    await sql`
+    DROP TABLE IF EXISTS post;
+    DROP TABLE IF EXISTS author;
+
+    CREATE TABLE author(
+      "id"               text PRIMARY KEY,
+      "name"             text NOT NULL
+    );
+  
+    CREATE TABLE post(
+      "id"            text PRIMARY KEY,
+      "title"         text NOT NULL UNIQUE,
+      "author_id"     text NOT NULL REFERENCES author(id)
+    );
+    `.execute(db);
+
+    await sql`
+      INSERT INTO author (id, name) VALUES ('adam', 'adam bull')
+    `.execute(db);
+
+    const models = {
+      post: new ModelAPI("post", undefined, {
+        post: {
+          author: {
+            relationshipType: "belongsTo",
+            foreignKey: "author_id",
+            referencesTable: "person",
+          },
+        },
+      }),
+    };
+
+    functionConfig = {
+      permissionFns: {},
+      actionTypes: {
+        createPost: PROTO_ACTION_TYPES.CREATE,
+        deletePost: PROTO_ACTION_TYPES.DELETE,
+      },
+      functions: {
+        createPost: async (ctx, inputs) => {
+          new Permissions().allow();
+
+          const post = await models.post.create({
+            id: KSUID.randomSync().string,
+            ...inputs,
+          });
+
+          return post;
+        },
+        deletePost: async (ctx, inputs) => {
+          new Permissions().allow();
+
+          const deleted = await models.post.delete(inputs);
+
+          return deleted;
+        },
+      },
+      createContextAPI: () => ({}),
+    };
+  });
+
+  test("when kysely returns a no result error", async () => {
+    // a kysely NoResultError is thrown when attempting to delete/update a non existent record.
+    const rpcReq = createJSONRPCRequest("123", "deletePost", {
+      id: "non-existent-id",
+    });
+
+    expect(await handleRequest(rpcReq, functionConfig)).toEqual({
+      id: "123",
+      jsonrpc: "2.0",
+      error: {
+        code: RuntimeErrors.RecordNotFoundError,
+        message: "no result",
+      },
+    });
+  });
+
+  test("when there is a not null constraint error", async () => {
+    const rpcReq = createJSONRPCRequest("123", "createPost", { title: null });
+
+    expect(await handleRequest(rpcReq, functionConfig)).toEqual({
+      id: "123",
+      jsonrpc: "2.0",
+      error: {
+        code: RuntimeErrors.NotNullConstraintError,
+        message: 'null value in column "title" violates not-null constraint',
+        data: {
+          code: "23502",
+          column: "title",
+          detail: expect.stringContaining("Failing row contains"),
+          table: "post",
+        },
+      },
+    });
+  });
+});

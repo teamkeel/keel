@@ -8,9 +8,8 @@ import {
 } from "@teamkeel/sdk";
 import { test, expect, beforeEach } from "vitest";
 import { sql } from "kysely";
-import  KSUID from "ksuid"
+import KSUID from "ksuid";
 import { isDate } from "util/types";
-
 
 beforeEach(resetDatabase);
 

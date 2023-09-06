@@ -144,7 +144,6 @@ func TestIntegration(t *gotest.T) {
 			fmt.Println("===============================")
 
 			if !output.Success {
-
 				t.Fail()
 			}
 		})
