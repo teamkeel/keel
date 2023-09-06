@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -103,10 +102,6 @@ func TestMigrations(t *testing.T) {
 
 			// Assert correct SQL generated
 			assert.Equal(t, expectedSQL, m.SQL)
-
-			if expectedSQL != m.SQL {
-				fmt.Printf("XXXX actual for %s is \n%s\n", testCase.Name(), m.SQL)
-			}
 
 			actualChanges, err := json.Marshal(m.Changes)
 			require.NoError(t, err)
