@@ -28,7 +28,6 @@ brews:
   - name: keel
     url_template: "https://github.com/teamkeel/cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     homepage: "https://github.com/teamkeel/cli"
-    skip_upload: auto
     install: |
       bin.install "cli" => "keel"
     tap:
