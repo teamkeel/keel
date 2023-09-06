@@ -51,9 +51,6 @@ on:
 permissions:
   contents: write
 
-env:
-  HOMEBREW_REPO: ${{ inputs.homebrewRepo }}
-
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -81,6 +78,21 @@ jobs:
           tag_exists_error: false
           message: "Keel release v${{ inputs.version }}"
 
+      - name: Get current Keel version
+        id: set-brew-envvars
+        run: |
+          {
+            if [ ${{ inputs.preRelease }} == true ]; then
+              repo="homebrew-keel-prerelease"
+              alias="keel-prerelease"
+            else
+              repo="homebrew-keel"
+              alias="keel"
+            fi
+            echo "HOMEBREW_REPO=$repo" >> "$GITHUB_OUTPUT"
+            echo "HOMEBREW_ALIAS=$alias" >> "$GITHUB_OUTPUT"
+          }
+
       - name: Run GoReleaser
         id: goreleaser
         uses: goreleaser/goreleaser-action@v4
@@ -90,6 +102,8 @@ jobs:
           args: release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}
+          HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outcome.HOMEBREW_ALIAS }}
 
       - name: Update CHANGELOG
         id: changelog
