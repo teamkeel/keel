@@ -30,7 +30,6 @@ on:
       releaseNotesURL:
         required: false
         type: string
-        default: ""
       publishEvent:
         required: false
         type: boolean
@@ -43,10 +42,6 @@ on:
         required: false
         type: string
         default: ""
-      homebrewRepo:
-        required: false
-        type: string
-        default: "homebrew-keel"
 
 permissions:
   contents: write
@@ -55,9 +50,6 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
-      - name: Print homebrew repo
-        run: echo "HOMEBREW_REPO=${{ env.HOMEBREW_REPO }}"
-
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -118,14 +110,6 @@ jobs:
           echo "${{ steps.changelog.outputs.changelog }}"
           echo "${{ steps.changelog.outputs.changelog }}" >> $GITHUB_STEP_SUMMARY
 
-      # - name: Update CHANGELOG
-      #   id: changelog
-      #   if: ${{ inputs.generateChangelog }}
-      #   uses: requarks/changelog-action@v1.8.2
-      #   with:
-      #     token: ${{ secrets.GH_TOKEN }}
-      #     tag: "v${{ inputs.version }}"
-
       # Goreleaser won't update a draft release, so you have to update the release after to tune release params
       - name: Update goreleaser release with the changelogs
         id: update_release
@@ -139,16 +123,7 @@ jobs:
           updateOnlyUnreleased: true
           prerelease: ${{ inputs.preRelease }}
           makeLatest: ${{ inputs.makeLatest }}
-          bodyFile: ${{ inputs.releaseNotesURL }}
-
-      - name: Create Changelog Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          commit-message: "docs: update CHANGELOG.md for v${{ inputs.version }}"
-          base: ${{ inputs.branch }}
-          branch: update-changelog-${{ inputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          delete-branch: false
+          body: "Keel release v${{ inputs.version }}. Release notes can be found at ${{ inputs.releaseNotesURL || steps.changelog.outputs.changelog  }}"
 
       - name: Fire Release Event with Changelog
         if: ${{ inputs.publishEvent && inputs.generateChangelog }}

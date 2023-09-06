@@ -93,5 +93,4 @@ jobs:
       branch: "release/v${{ needs.create_branch.outputs.version }}"
       releaseNotesURL: ${{ inputs.releaseNotesUrl }}
       eventBranch: ${{ inputs.backendBranch }}
-      homebrewRepo: "homebrew-keel-prerelease"
     secrets: inherit
