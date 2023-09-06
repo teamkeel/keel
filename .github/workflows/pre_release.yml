@@ -57,7 +57,7 @@ jobs:
     needs: [setup, npm_release]
     uses: ./.github/workflows/github_release.yml
     with:
-      branch: ${{ github.event.ref || github.head_ref }}
+      branch: ${{ github.ref_name }}
       version: ${{ needs.setup.outputs.version }}
       preRelease: true
       draft: false
