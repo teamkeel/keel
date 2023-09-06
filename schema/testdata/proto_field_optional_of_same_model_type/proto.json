@@ -5,14 +5,24 @@
       "fields": [
         {
           "modelName": "Person",
-          "name": "person",
+          "name": "mother",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Person"
           },
           "optional": true,
-          "foreignKeyFieldName": "personId",
-          "inverseFieldName": "person"
+          "foreignKeyFieldName": "motherId",
+          "inverseFieldName": "children"
+        },
+        {
+          "modelName": "Person",
+          "name": "children",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Person",
+            "repeated": true
+          },
+          "inverseFieldName": "mother"
         },
         {
           "modelName": "Person",
@@ -47,7 +57,7 @@
         },
         {
           "modelName": "Person",
-          "name": "personId",
+          "name": "motherId",
           "type": {
             "type": "TYPE_ID"
           },
