@@ -5,6 +5,16 @@
       "fields": [
         {
           "modelName": "Account",
+          "name": "favourite",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Post"
+          },
+          "foreignKeyFieldName": "favouriteId",
+          "inverseFieldName": "favouritedBy"
+        },
+        {
+          "modelName": "Account",
           "name": "authoredPosts",
           "type": {
             "type": "TYPE_MODEL",
@@ -53,22 +63,23 @@
           "defaultValue": {
             "useZeroValue": true
           }
+        },
+        {
+          "modelName": "Account",
+          "name": "favouriteId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Post",
+            "relatedModelField": "id"
+          }
         }
       ]
     },
     {
       "name": "Post",
       "fields": [
-        {
-          "modelName": "Post",
-          "name": "author",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Account"
-          },
-          "foreignKeyFieldName": "authorId",
-          "inverseFieldName": "authoredPosts"
-        },
         {
           "modelName": "Post",
           "name": "reviewer",
@@ -78,6 +89,26 @@
           },
           "foreignKeyFieldName": "reviewerId",
           "inverseFieldName": "reviewedPosts"
+        },
+        {
+          "modelName": "Post",
+          "name": "favouritedBy",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Account",
+            "repeated": true
+          },
+          "inverseFieldName": "favourite"
+        },
+        {
+          "modelName": "Post",
+          "name": "author",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Account"
+          },
+          "foreignKeyFieldName": "authorId",
+          "inverseFieldName": "authoredPosts"
         },
         {
           "modelName": "Post",
@@ -112,7 +143,7 @@
         },
         {
           "modelName": "Post",
-          "name": "authorId",
+          "name": "reviewerId",
           "type": {
             "type": "TYPE_ID"
           },
@@ -123,7 +154,7 @@
         },
         {
           "modelName": "Post",
-          "name": "reviewerId",
+          "name": "authorId",
           "type": {
             "type": "TYPE_ID"
           },

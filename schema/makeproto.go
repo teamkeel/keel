@@ -1074,7 +1074,7 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 		return
 	}
 
-	// If no @relation attribute exists, then look for this field name in the fields' @relation definitions
+	// If no @relation attribute exists, then look a match in the related model fields' @relation attributes
 	for _, remoteField := range query.ModelFields(relatedModel) {
 		if remoteField.Type.Value != thisProtoField.ModelName {
 			continue
@@ -1090,7 +1090,7 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 	}
 
 	// If there are no @relation attributes that match, then we know that there is only one relation between these models
-	// which means there is exactly one field of this model on the related model (with exception of self referencing models).
+	// which means there is exactly one field of this model type on the related model (with exception of self referencing models).
 	for _, remoteField := range query.ModelFields(relatedModel) {
 		if remoteField.Type.Value != thisProtoField.ModelName {
 			continue

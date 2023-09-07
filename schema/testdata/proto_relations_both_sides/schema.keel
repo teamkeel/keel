@@ -6,6 +6,6 @@ model Account {
 
 model Post {
     fields {
-        author Account @relation(posts)
+        author Account
     }
 }

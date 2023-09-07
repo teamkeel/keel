@@ -1,8 +1,8 @@
 model Person {
     fields {
         name Text
-        mother Person? @relation(children)
         children Person[]
+        mother Person?
     }
 
     actions {
