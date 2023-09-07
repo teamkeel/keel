@@ -74,15 +74,20 @@ jobs:
         id: set-brew-envvars
         run: |
           {
+            raisePR=false
             if [ ${{ inputs.preRelease }} == true ]; then
               repo="homebrew-keel-prerelease"
               alias="keel-prerelease"
             else
               repo="homebrew-keel"
               alias="keel"
+              if [ ${{ inputs.makeLatest }} == false ]; then
+              raisePR=true
+              fi
             fi
             echo "HOMEBREW_REPO=$repo" >> "$GITHUB_OUTPUT"
             echo "HOMEBREW_ALIAS=$alias" >> "$GITHUB_OUTPUT"
+            echo "HOMEBREW_RAISE_PR=$raisePR" >> "$GITHUB_OUTPUT"
           }
 
       - name: Run GoReleaser
@@ -96,6 +101,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}
           HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outputs.HOMEBREW_ALIAS }}
+          HOMEBREW_RAISE_PR: ${{ steps.set-brew-envvars.outputs.HOMEBREW_RAISE_PR }}
 
       - name: Update CHANGELOG
         id: changelog

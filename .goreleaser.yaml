@@ -30,9 +30,15 @@ brews:
     homepage: "https://github.com/teamkeel/cli"
     alternative_names:
       - "{{ .Env.HOMEBREW_ALIAS }}@{{ .Version }}"
-    skip_upload: auto
     install: |
       bin.install "cli" => "{{ .Env.HOMEBREW_ALIAS }}"
+    # Repository to push the generated files to.
+    repository:
+      owner: teamkeel
+      name: "{{ .Env.HOMEBREW_REPO }}"
+      pull_request:
+        # Whether to enable it or not.
+        enabled: "{{ .Env.HOMEBREW_RAISE_PR }}"
     tap:
       owner: teamkeel
       name: "{{ .Env.HOMEBREW_REPO }}"

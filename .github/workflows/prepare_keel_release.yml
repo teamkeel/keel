@@ -13,7 +13,7 @@ on:
         type: string
       releaseNotesUrl:
         description: "URL to release notes for version"
-        required: true
+        required: false
         type: string
   workflow_call:
     inputs:
@@ -27,7 +27,7 @@ on:
         type: string
       releaseNotesUrl:
         description: "URL to release notes for version"
-        required: true
+        required: false
         type: string
 
 jobs:
