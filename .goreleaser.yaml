@@ -25,9 +25,11 @@ release:
     name: cli
   prerelease: auto
 brews:
-  - name: keel
+  - name: "{{ .Env.HOMEBREW_ALIAS }}"
     url_template: "https://github.com/teamkeel/cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     homepage: "https://github.com/teamkeel/cli"
+    alternative_names:
+      - "{{ .Env.HOMEBREW_ALIAS }}@{{ .Version }}"
     skip_upload: auto
     install: |
       bin.install "cli" => "{{ .Env.HOMEBREW_ALIAS }}"
