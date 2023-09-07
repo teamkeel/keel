@@ -68,7 +68,7 @@ func DirectManyToManyRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				return
 			}
 			otherModel := query.Model(asts, currentField.Type.Value)
-			if otherModel == nil {
+			if otherModel == nil || currentModel.Name.Value == otherModel.Name.Value {
 				return
 			}
 			if query.IsHasManyModelField(asts, currentField) {
@@ -118,7 +118,7 @@ func invalidManyToManyError(invalidDetails *InvalidManyToManyDetails, node node.
 		errorhandling.RelationshipError,
 		errorhandling.ErrorDetails{
 			Message: fmt.Sprintf("Cannot have a direct many to many between '%s' and '%s'", invalidDetails.ThisModel.Name.Value, invalidDetails.InverseModel.Name.Value),
-			Hint:    "Visit https://keel.notaku.site/documentation/models for information on how to create a many-to-many relationship",
+			Hint:    "Visit https://docs.keel.so/models#many-to-many-relationships for information on how to create a many-to-many relationship",
 		},
 		node,
 	)
