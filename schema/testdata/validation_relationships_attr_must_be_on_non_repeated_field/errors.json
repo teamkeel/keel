@@ -12,9 +12,9 @@
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_must_be_on_non_repeated_field/schema.keel",
-        "offset": 125,
+        "offset": 97,
         "line": 9,
-        "column": 43
+        "column": 15
       }
     }
   ]

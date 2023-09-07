@@ -45,7 +45,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 						"WrongType":  thisField.Type.Value,
 						"Suggestion": thisField.Name.Value,
 					},
-					thisField)
+					thisField.Name)
 				continue
 			}
 
@@ -56,7 +56,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 					map[string]string{
 						"FieldName": thisField.Name.Value,
 					},
-					thisField)
+					thisField.Name)
 				continue
 			}
 
@@ -70,7 +70,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 					map[string]string{
 						"FieldName": thisField.Name.Value,
 					},
-					relationAttr)
+					relationAttr.Name)
 
 				continue
 			}
@@ -90,7 +90,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 						"RelatedModelName": relatedModelName,
 						"SuggestedNames":   suggestedNames,
 					},
-					relationAttr)
+					relationAttr.Name)
 				continue
 			}
 
@@ -106,7 +106,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 						"RequiredType":     thisModel.Name.Value,
 						"SuggestedNames":   suggestedFields,
 					},
-					relationAttr)
+					relationAttr.Name)
 
 				continue
 			}
@@ -118,7 +118,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 					map[string]string{
 						"RelatedFieldName": relatedFieldName,
 					},
-					relationAttr)
+					relationAttr.Name)
 
 				continue
 			}
@@ -132,7 +132,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 					map[string]string{
 						"RelatedFieldName": relatedFieldName,
 					},
-					relationAttr)
+					relationAttr.Name)
 
 				continue
 			}
@@ -199,7 +199,7 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 								Message: fmt.Sprintf("Field '%s' on %s and '%s' on %s are both marked as @unique", field.Name.Value, model.Name.Value, otherField.Name.Value, otherModel.Name.Value),
 								Hint:    "In a one-to-one relationship, only one side must be marked as @unique",
 							},
-							field,
+							field.Name,
 						),
 					)
 				} else {
@@ -219,7 +219,7 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 							"ModelA": model.Name.Value,
 							"ModelB": field.Type.Value,
 						},
-						field,
+						field.Name,
 					)
 				}
 
@@ -362,7 +362,7 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 					"ModelB":          reverseFields[0].Type.Value,
 					"SuggestedFields": formatting.HumanizeList(suggestedFields, formatting.DelimiterAnd),
 				},
-				singleEndModel,
+				singleEndModel.Name,
 			)
 		}
 	}
