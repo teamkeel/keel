@@ -1,40 +1,31 @@
 {
   "models": [
     {
-      "name": "Account",
+      "name": "Person",
       "fields": [
         {
-          "modelName": "Account",
-          "name": "favourite",
+          "modelName": "Person",
+          "name": "children",
           "type": {
             "type": "TYPE_MODEL",
-            "modelName": "Post"
-          },
-          "foreignKeyFieldName": "favouriteId",
-          "inverseFieldName": "favouritedBy"
-        },
-        {
-          "modelName": "Account",
-          "name": "authoredPosts",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Post",
+            "modelName": "Person",
             "repeated": true
           },
-          "inverseFieldName": "author"
+          "inverseFieldName": "mother"
         },
         {
-          "modelName": "Account",
-          "name": "reviewedPosts",
+          "modelName": "Person",
+          "name": "mother",
           "type": {
             "type": "TYPE_MODEL",
-            "modelName": "Post",
-            "repeated": true
+            "modelName": "Person"
           },
-          "inverseFieldName": "reviewer"
+          "optional": true,
+          "foreignKeyFieldName": "motherId",
+          "inverseFieldName": "children"
         },
         {
-          "modelName": "Account",
+          "modelName": "Person",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -45,7 +36,7 @@
           }
         },
         {
-          "modelName": "Account",
+          "modelName": "Person",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -55,7 +46,7 @@
           }
         },
         {
-          "modelName": "Account",
+          "modelName": "Person",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -65,53 +56,45 @@
           }
         },
         {
-          "modelName": "Account",
-          "name": "favouriteId",
+          "modelName": "Person",
+          "name": "motherId",
           "type": {
             "type": "TYPE_ID"
           },
+          "optional": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Post",
+            "relatedModelName": "Person",
             "relatedModelField": "id"
           }
         }
       ]
     },
     {
-      "name": "Post",
+      "name": "Person2",
       "fields": [
         {
-          "modelName": "Post",
-          "name": "reviewer",
+          "modelName": "Person2",
+          "name": "children",
           "type": {
             "type": "TYPE_MODEL",
-            "modelName": "Account"
-          },
-          "foreignKeyFieldName": "reviewerId",
-          "inverseFieldName": "reviewedPosts"
-        },
-        {
-          "modelName": "Post",
-          "name": "favouritedBy",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Account",
+            "modelName": "Person2",
             "repeated": true
           },
-          "inverseFieldName": "favourite"
+          "inverseFieldName": "mother"
         },
         {
-          "modelName": "Post",
-          "name": "author",
+          "modelName": "Person2",
+          "name": "mother",
           "type": {
             "type": "TYPE_MODEL",
-            "modelName": "Account"
+            "modelName": "Person2"
           },
-          "foreignKeyFieldName": "authorId",
-          "inverseFieldName": "authoredPosts"
+          "optional": true,
+          "foreignKeyFieldName": "motherId",
+          "inverseFieldName": "children"
         },
         {
-          "modelName": "Post",
+          "modelName": "Person2",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -122,7 +105,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "modelName": "Person2",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -132,7 +115,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "modelName": "Person2",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -142,24 +125,14 @@
           }
         },
         {
-          "modelName": "Post",
-          "name": "reviewerId",
+          "modelName": "Person2",
+          "name": "motherId",
           "type": {
             "type": "TYPE_ID"
           },
+          "optional": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Account",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "authorId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Account",
+            "relatedModelName": "Person2",
             "relatedModelField": "id"
           }
         }
@@ -279,13 +252,13 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Account"
-        },
-        {
           "modelName": "Identity"
         },
         {
-          "modelName": "Post"
+          "modelName": "Person"
+        },
+        {
+          "modelName": "Person2"
         }
       ]
     }

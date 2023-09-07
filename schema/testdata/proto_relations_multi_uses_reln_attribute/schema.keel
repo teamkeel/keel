@@ -1,5 +1,6 @@
 model Account {
     fields {
+        favourite Post @relation(favouritedBy)
         authoredPosts Post[]
         reviewedPosts Post[]
     }
@@ -7,7 +8,8 @@ model Account {
 
 model Post {
     fields {
-        author Account @relation(authoredPosts)
         reviewer Account @relation(reviewedPosts)
+        favouritedBy Account[]
+        author Account @relation(authoredPosts)
     }
 }

@@ -1066,6 +1066,7 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 	nameOfRelatedModel := thisProtoField.Type.ModelName.Value
 	relatedModel := query.Model(scm.asts, nameOfRelatedModel)
 
+	// Use the field name in @relation(fieldName) if this attribute exists
 	relationAttr := query.FieldGetAttribute(thisParserField, parser.AttributeRelation)
 	if relationAttr != nil {
 		inverseFieldName := attributeFirstArgAsIdentifier(relationAttr)
@@ -1073,22 +1074,31 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 		return
 	}
 
+	// If no @relation attribute exists, then look a match in the related model fields' @relation attributes
 	for _, remoteField := range query.ModelFields(relatedModel) {
 		if remoteField.Type.Value != thisProtoField.ModelName {
 			continue
 		}
 		relationAttr := query.FieldGetAttribute(remoteField, parser.AttributeRelation)
-		if relationAttr == nil {
-			thisProtoField.InverseFieldName = wrapperspb.String(remoteField.Name.Value)
-			return
+		if relationAttr != nil {
+			inverseFieldName := attributeFirstArgAsIdentifier(relationAttr)
+			if inverseFieldName == thisProtoField.Name {
+				thisProtoField.InverseFieldName = wrapperspb.String(remoteField.Name.Value)
+				return
+			}
 		}
+	}
 
-		inverseFieldName := attributeFirstArgAsIdentifier(relationAttr)
-		if inverseFieldName == thisProtoField.Name {
-			// We've found the inverse.
-			thisProtoField.InverseFieldName = wrapperspb.String(remoteField.Name.Value)
-			return
+	// If there are no @relation attributes that match, then we know that there is only one relation between these models
+	// which means there is exactly one field of this model type on the related model (with exception of self referencing models).
+	for _, remoteField := range query.ModelFields(relatedModel) {
+		if remoteField.Type.Value != thisProtoField.ModelName {
+			continue
 		}
+		if nameOfRelatedModel == thisProtoField.ModelName && remoteField.Name.Value == thisProtoField.Name {
+			continue
+		}
+		thisProtoField.InverseFieldName = wrapperspb.String(remoteField.Name.Value)
 	}
 }
 
