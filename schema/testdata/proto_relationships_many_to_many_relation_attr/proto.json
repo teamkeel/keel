@@ -1,0 +1,370 @@
+{
+  "models": [
+    {
+      "name": "User",
+      "fields": [
+        {
+          "modelName": "User",
+          "name": "employer",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Company"
+          },
+          "foreignKeyFieldName": "employerId",
+          "inverseFieldName": "employees"
+        },
+        {
+          "modelName": "User",
+          "name": "owns",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Company",
+            "repeated": true
+          },
+          "inverseFieldName": "owner"
+        },
+        {
+          "modelName": "User",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "employerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Company",
+            "relatedModelField": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Company",
+      "fields": [
+        {
+          "modelName": "Company",
+          "name": "employees",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "User",
+            "repeated": true
+          },
+          "inverseFieldName": "employer"
+        },
+        {
+          "modelName": "Company",
+          "name": "owner",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "User"
+          },
+          "foreignKeyFieldName": "ownerId",
+          "inverseFieldName": "owns"
+        },
+        {
+          "modelName": "Company",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "ownerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "User",
+            "relatedModelField": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "issuer"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Company"
+        },
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "User"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "EmailPasswordInput",
+      "fields": [
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateInput",
+      "fields": [
+        {
+          "messageName": "AuthenticateInput",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "AuthenticateInput",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    }
+  ]
+}

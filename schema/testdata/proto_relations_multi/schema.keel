@@ -1,11 +1,11 @@
 model Account {
-  fields {
-    posts Post[]
-  }
+    fields {
+        posts Post[]
+    }
 }
 
 model Post {
-  fields {
-	  author Account
-  }
+    fields {
+        author Account @relation(posts)
+    }
 }

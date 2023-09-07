@@ -1,0 +1,8 @@
+model Person {
+    fields {
+        bestFriend Person? @relation(bestFriendsOf)
+        bestFriendsOf Person[]
+        mother Person? @relation(children)
+        children Person[]
+    }
+}
