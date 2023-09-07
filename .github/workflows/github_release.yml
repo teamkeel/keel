@@ -84,10 +84,15 @@ jobs:
       - name: Update CHANGELOG
         id: changelog
         if: ${{ inputs.generateChangelog }}
-        uses: requarks/changelog-action@v1.8.1
+        uses: saadmk11/changelog-ci@v1.1.2
         with:
-          token: ${{ secrets.GH_TOKEN }}
-          tag: "v${{ inputs.version }}"
+          release_version: "v${{ inputs.version }}"
+          github_token: ${{ secrets.GH_TOKEN }}
+
+      - name: Get Changelog Output
+        run: |
+          echo "${{ steps.changelog.outputs.changelog }}"
+          echo "${{ steps.changelog.outputs.changelog }}" >> $GITHUB_STEP_SUMMARY
 
       # Goreleaser won't update a draft release, so you have to update the release after to tune release params
       - name: Update goreleaser release with the changelogs
@@ -102,15 +107,7 @@ jobs:
           updateOnlyUnreleased: true
           prerelease: ${{ inputs.preRelease }}
           makeLatest: ${{ inputs.makeLatest }}
-          bodyFile: ${{ inputs.releaseNotesURL }}
-
-      - name: Commit CHANGELOG.md
-        if: ${{ inputs.generateChangelog }}
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          branch: ${{ inputs.branch }}
-          commit_message: "docs: update CHANGELOG.md for v${{ inputs.version }} [skip ci]"
-          file_pattern: CHANGELOG.md
+          body: "Keel release v${{ inputs.version }}. Release notes can be found at ${{ inputs.releaseNotesURL || steps.changelog.outputs.changelog }}"
 
       - name: Fire Release Event with Changelog
         if: ${{ inputs.publishEvent && inputs.generateChangelog }}
