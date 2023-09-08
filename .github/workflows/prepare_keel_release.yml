@@ -62,21 +62,21 @@ jobs:
           major_pattern: "^([A-Za-z]+.)*!:.*$"
           major_regexp_flags: "g"
           minor_pattern: "feat"
-          version_format: "${major}.${minor}.${patch}"
+          version_format: "${major}.${minor}.${patch}-test"
 
       - name: Create new release branch
         uses: peterjgrainger/action-create-branch@v2.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          branch: "refs/heads/release/v${{ steps.generate-version.outputs.version }}"
+          branch: "refs/heads/test/v${{ steps.generate-version.outputs.version }}"
           sha: ${{ github.sha }}
 
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           repository: teamkeel/keel
-          ref: release/v${{ steps.generate-version.outputs.version }}
+          ref: test/v${{ steps.generate-version.outputs.version }}
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
     outputs:
@@ -88,7 +88,7 @@ jobs:
     with:
       version: ${{ needs.create_branch.outputs.version }}
       publishTag: rc-next
-      dryRun: false
+      dryRun: true
     secrets: inherit
 
   github_release:
@@ -100,7 +100,7 @@ jobs:
       draft: true
       makeLatest: false
       generateChangelog: false
-      branch: "release/v${{ needs.create_branch.outputs.version }}"
+      branch: "test/v${{ needs.create_branch.outputs.version }}"
       releaseNotesURL: ${{ inputs.releaseNotesUrl }}
       eventBranch: ${{ inputs.backendBranch }}
       publishEvent: ${{ inputs.sendUpdateEvent }}
