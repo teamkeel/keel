@@ -33,13 +33,13 @@ jobs:
     strategy:
       matrix:
         package:
-        [
-          "wasm",
-          "functions-runtime",
-          "testing-runtime",
-          "client-react",
-          "client-react-query",
-        ]
+          [
+            "wasm",
+            "functions-runtime",
+            "testing-runtime",
+            "client-react",
+            "client-react-query",
+          ]
     steps:
       - uses: actions/setup-node@v3
         with:
