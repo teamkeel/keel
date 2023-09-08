@@ -1,5 +1,6 @@
-CREATE OR REPLACE PROCEDURE set_trace_id(id VARCHAR) AS $$
+CREATE OR REPLACE FUNCTION set_trace_id(id VARCHAR) 
+RETURNS TEXT AS $$
 BEGIN
-    PERFORM set_config('audit.trace_id', id, true);
+    RETURN set_config('audit.trace_id', id, true);
 END
 $$ LANGUAGE plpgsql;

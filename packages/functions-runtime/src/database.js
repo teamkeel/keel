@@ -1,5 +1,6 @@
 const { Kysely, PostgresDialect, CamelCasePlugin } = require("kysely");
 const { AsyncLocalStorage } = require("async_hooks");
+const { getAuditContext } = require("./auditing");
 const pg = require("pg");
 const { PROTO_ACTION_TYPES } = require("./consts");
 const { withSpan } = require("./tracing");
@@ -88,11 +89,11 @@ function getDatabaseClient() {
     ],
     log(event) {
       if ("DEBUG" in process.env) {
-        if (event.level === "query") {
-          console.log(event.query.sql);
-          console.log(event.query.parameters);
-        }
-      }
+       if (event.level === "query") {
+        console.log(event.query);
+         console.log(event.query.parameters);
+       }
+     }
     },
   });
 
@@ -117,22 +118,47 @@ const txStatements = {
 class InstrumentedClient extends pg.Client {
   async query(...args) {
     const _super = super.query.bind(this);
-    const sql = args[0];
+    let sql = args[0];
+    let doAuditing = false;
+
+    if (sql.toUpperCase().startsWith("INSERT") || 
+      sql.toUpperCase().startsWith("UPDATE") || 
+      sql.toUpperCase().startsWith("DELETE")) {
+        doAuditing = true; // TODO check for returning statement
+    }
+
+    if (doAuditing) {
+      const audit = getAuditContext();
+      if (audit.identityId) {
+        sql = sql + `, set_identity_id('${audit.identityId}') AS __identity_id`;
+      }
+      if (audit.traceId) {
+        sql = sql + `, set_trace_id('${audit.traceId}') AS __trace_id`;
+      }
+      args[0] = sql;
+    }
 
     let sqlAttribute = false;
-
     let spanName = txStatements[sql.toLowerCase()];
     if (!spanName) {
       spanName = "Database Query";
       sqlAttribute = true;
     }
 
-    return withSpan(spanName, function (span) {
+    const res = await withSpan(spanName, function (span) {
       if (sqlAttribute) {
         span.setAttribute("sql", args[0]);
       }
+
       return _super(...args);
     });
+
+    if (doAuditing) {
+      delete res.rows[0].__identity_id;
+      delete res.rows[0].__trace_id;
+    }
+
+    return  res;
   }
 }
 
