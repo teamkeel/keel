@@ -87,7 +87,7 @@ jobs:
     needs: [create_branch]
     with:
       version: ${{ needs.create_branch.outputs.version }}
-      publishTag: rc-next
+      publishTag: "test"
       dryRun: true
     secrets: inherit
 
