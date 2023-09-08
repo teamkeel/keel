@@ -35,6 +35,7 @@ brews:
     repository:
       owner: teamkeel
       name: "{{ .Env.HOMEBREW_REPO }}"
+      branch: "main"
       pull_request:
         enabled: true
         draft: true
