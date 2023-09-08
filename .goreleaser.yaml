@@ -29,6 +29,7 @@ brews:
   - name: "{{ .Env.HOMEBREW_ALIAS }}"
     url_template: "https://github.com/teamkeel/cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     homepage: "https://github.com/teamkeel/cli"
+    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
     install: |
       bin.install "cli" => "{{ .Env.HOMEBREW_ALIAS }}"
     # Repository to push the generated files to.
