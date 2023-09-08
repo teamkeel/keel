@@ -29,12 +29,26 @@ jobs:
 
   npm_release:
     needs: [setup]
-    uses: ./.github/workflows/npm_release.yml
-    with:
-      version: ${{ inputs.version }}
-      publishTag: latest
-      dryRun: false
-    secrets: inherit
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+        [
+          "wasm",
+          "functions-runtime",
+          "testing-runtime",
+          "client-react",
+          "client-react-query",
+        ]
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Set NPM packages to latest
+        run: npm dist-tag add @teamkeel${{ matrix.package }}@${{ inputs.version }} latest
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   github_release:
     name: Make Github Release
