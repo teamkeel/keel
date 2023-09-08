@@ -13,12 +13,13 @@ builds:
     ldflags:
       - -s -w -X 'github.com/teamkeel/keel/runtime.Version={{.Version}}' -X 'github.com/teamkeel/keel/cmd.enabledDebugFlags=false'
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+  - name_template: >-
+      {{- .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end -}}
 release:
   github:
     owner: teamkeel
@@ -35,7 +36,7 @@ brews:
       owner: teamkeel
       name: "{{ .Env.HOMEBREW_REPO }}"
       pull_request:
-        enabled: true
+        enabled: { { .Env.HOMEBREW_RAISE_PR } }
         draft: true
 checksum:
   name_template: "checksums.txt"
