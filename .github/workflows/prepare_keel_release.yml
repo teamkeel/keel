@@ -15,6 +15,11 @@ on:
         description: "URL to release notes for version"
         required: false
         type: string
+      sendUpdateEvent:
+        description: Raise PR against backend
+        required: false
+        type: boolean
+        default: true
   workflow_call:
     inputs:
       backendBranch:
@@ -29,6 +34,11 @@ on:
         description: "URL to release notes for version"
         required: false
         type: string
+      sendUpdateEvent:
+        description: Raise PR against backend
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   create_branch:
@@ -93,5 +103,5 @@ jobs:
       branch: "release/v${{ needs.create_branch.outputs.version }}"
       releaseNotesURL: ${{ inputs.releaseNotesUrl }}
       eventBranch: ${{ inputs.backendBranch }}
-      publishEvent: true
+      publishEvent: ${{ inputs.sendUpdateEvent }}
     secrets: inherit
