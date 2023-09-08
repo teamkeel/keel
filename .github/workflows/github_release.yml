@@ -90,14 +90,13 @@ jobs:
         uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser
-          version: 1.20.0
+          version: 1.13.0
           args: release
         #testing only
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           HOMEBREW_REPO: "homebrew-keel-prerelease"
           HOMEBREW_ALIAS: "keel-prerelease"
-          HOMEBREW_RAISE_PR: true
         # env:
         #   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         #   HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}

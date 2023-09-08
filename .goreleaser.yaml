@@ -1,10 +1,6 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod tidy
-    # you may remove this if you don't need go generate
     - go generate ./...
 builds:
   - env:
@@ -16,21 +12,13 @@ builds:
     main: ./cmd/keel
     ldflags:
       - -s -w -X 'github.com/teamkeel/keel/runtime.Version={{.Version}}' -X 'github.com/teamkeel/keel/cmd.enabledDebugFlags=false'
-
 archives:
-  - format: tar.gz
-    # this name template makes the OS and Arch compatible with the results of uname.
-    name_template: >-
-      {{ .ProjectName }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-    # use zip for windows archives
-    format_overrides:
-      - goos: windows
-        format: zip
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
 release:
   github:
     owner: teamkeel
@@ -40,28 +28,16 @@ brews:
   - name: "{{ .Env.HOMEBREW_ALIAS }}"
     url_template: "https://github.com/teamkeel/cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     homepage: "https://github.com/teamkeel/cli"
+    skip_upload: auto
     download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
     install: |
       bin.install "cli" => "{{ .Env.HOMEBREW_ALIAS }}"
-    # Repository to push the generated files to.
-    repository:
+    tap:
       owner: teamkeel
       name: "{{ .Env.HOMEBREW_REPO }}"
-      branch: "main"
-      pull_request:
-        enabled: true
-        draft: true
 checksum:
   name_template: "checksums.txt"
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 changelog:
   sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
-# The lines beneath this are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
