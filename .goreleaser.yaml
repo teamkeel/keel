@@ -35,7 +35,7 @@ brews:
       owner: teamkeel
       name: "{{ .Env.HOMEBREW_REPO }}"
       pull_request:
-        enabled: { .Env.HOMEBREW_RAISE_PR }
+        enabled: true
         draft: true
 checksum:
   name_template: "checksums.txt"
