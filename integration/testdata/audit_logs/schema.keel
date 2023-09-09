@@ -58,3 +58,11 @@ job UpdateHeadCount {
 
     @permission(expression: true)
 }
+
+job UpdateHeadCountWithKysely {
+    inputs {
+        weddingId Id
+    }
+
+    @permission(expression: true)
+}

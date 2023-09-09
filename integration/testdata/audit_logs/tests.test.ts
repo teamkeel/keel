@@ -471,7 +471,7 @@ test("job function with identity - audit table populated", async () => {
   >`SELECT * FROM keel_audit where table_name = 'wedding_invitee'`.execute(
     useDatabase()
   );
-  expect(inviteesAudits.rows.length).toEqual(4);
+ expect(inviteesAudits.rows.length).toEqual(4);
 
   const keelsonAudit = inviteesAudits.rows.at(0)!;
   expect(KSUID.parse(keelsonAudit.id)).toBeInstanceOf(KSUID);
@@ -585,6 +585,97 @@ test("job function with error and no rollback - audit table is not rolled back",
   expect(weavetonAudit.op).toEqual("insert");
   expect(weavetonAudit.identityId).toBeNull();
   expect(weavetonAudit.data.id).toEqual(prisma.id);
+
+  const keelerDeleteAudit = inviteesAudits.rows.at(3)!;
+  expect(KSUID.parse(keelerDeleteAudit.id)).toBeInstanceOf(KSUID);
+  expect(keelerDeleteAudit.tableName).toEqual("wedding_invitee");
+  expect(keelerDeleteAudit.op).toEqual("delete");
+  expect(keelerDeleteAudit.identityId).toEqual(identity.id);
+  expect(keelerDeleteAudit.data.id).toEqual(keeler.id);
+  expect(keelerDeleteAudit.data.firstName).toEqual(keeler.firstName);
+  expect(keelerDeleteAudit.data.status).toEqual(keeler.status);
+  expect(keelerDeleteAudit.data.isFamily).toEqual(keeler.isFamily);
+
+  const weddingAudits = await sql<
+    Audit<Wedding>
+  >`SELECT * FROM keel_audit where table_name = 'wedding'`.execute(
+    useDatabase()
+  );
+  expect(weddingAudits.rows.length).toEqual(2);
+
+  const weddingAudit = weddingAudits.rows.at(0)!;
+  expect(KSUID.parse(weddingAudit.id)).toBeInstanceOf(KSUID);
+  expect(weddingAudit.tableName).toEqual("wedding");
+  expect(weddingAudit.op).toEqual("insert");
+  expect(weddingAudit.identityId).toBeNull();
+  expect(weddingAudit.data.id).toEqual(wedding.id);
+  expect(weddingAudit.data.name).toEqual(wedding.name);
+  expect(weddingAudit.data.headcount).toEqual(0);
+
+  const weddingUpdateAudit = weddingAudits.rows.at(1)!;
+  expect(KSUID.parse(weddingUpdateAudit.id)).toBeInstanceOf(KSUID);
+  expect(weddingUpdateAudit.tableName).toEqual("wedding");
+  expect(weddingUpdateAudit.op).toEqual("update");
+  expect(weddingUpdateAudit.identityId).toEqual(identity.id);
+  expect(weddingUpdateAudit.data.id).toEqual(wedding.id);
+  expect(weddingUpdateAudit.data.name).toEqual(wedding.name);
+  expect(weddingUpdateAudit.data.headcount).toEqual(1);
+});
+
+
+test("job function using kysely with identity - audit table populated", async () => {
+  const identity = await models.identity.create({ email: "keelson@keel.xyz" });
+
+  const wedding = await actions.createWedding({
+    name: "Mary & Bob",
+  });
+  expect(wedding).not.toBeNull();
+
+  const keelson = await models.weddingInvitee.create({
+    firstName: "Keelson",
+    status: InviteStatus.Accepted,
+    weddingId: wedding.id,
+  });
+  const keeler = await models.weddingInvitee.create({
+    firstName: "Keeler",
+    status: InviteStatus.Declined,
+    weddingId: wedding.id,
+  });
+  const weaveton = await models.weddingInvitee.create({
+    firstName: "Weaveton",
+    status: InviteStatus.Pending,
+    weddingId: wedding.id,
+  });
+
+  await jobs.withIdentity(identity).updateHeadCountWithKysely({ weddingId: wedding.id });
+
+  const inviteesAudits = await sql<
+    Audit<WeddingInvitee>
+  >`SELECT * FROM keel_audit where table_name = 'wedding_invitee'`.execute(
+    useDatabase()
+  );
+ expect(inviteesAudits.rows.length).toEqual(4);
+
+  const keelsonAudit = inviteesAudits.rows.at(0)!;
+  expect(KSUID.parse(keelsonAudit.id)).toBeInstanceOf(KSUID);
+  expect(keelsonAudit.tableName).toEqual("wedding_invitee");
+  expect(keelsonAudit.op).toEqual("insert");
+  expect(keelsonAudit.identityId).toBeNull();
+  expect(keelsonAudit.data.id).toEqual(keelson.id);
+
+  const keelerAudit = inviteesAudits.rows.at(1)!;
+  expect(KSUID.parse(keelerAudit.id)).toBeInstanceOf(KSUID);
+  expect(keelerAudit.tableName).toEqual("wedding_invitee");
+  expect(keelerAudit.op).toEqual("insert");
+  expect(keelerAudit.identityId).toBeNull();
+  expect(keelerAudit.data.id).toEqual(keeler.id);
+
+  const weavetonAudit = inviteesAudits.rows.at(2)!;
+  expect(KSUID.parse(weavetonAudit.id)).toBeInstanceOf(KSUID);
+  expect(weavetonAudit.tableName).toEqual("wedding_invitee");
+  expect(weavetonAudit.op).toEqual("insert");
+  expect(weavetonAudit.identityId).toBeNull();
+  expect(weavetonAudit.data.id).toEqual(weaveton.id);
 
   const keelerDeleteAudit = inviteesAudits.rows.at(3)!;
   expect(KSUID.parse(keelerDeleteAudit.id)).toBeInstanceOf(KSUID);

@@ -163,13 +163,13 @@ func setAuditParameters(ctx context.Context, tx *gorm.DB) error {
 			return err
 		}
 
-		setIdentityId := fmt.Sprintf("CALL set_identity_id('%s');", identity.Id)
+		setIdentityId := fmt.Sprintf("SELECT set_identity_id('%s');", identity.Id)
 		statements = append(statements, setIdentityId)
 	}
 
 	spanContext := trace.SpanContextFromContext(ctx)
 	if spanContext.IsValid() {
-		setTraceId := fmt.Sprintf("CALL set_trace_id('%s');", spanContext.TraceID().String())
+		setTraceId := fmt.Sprintf("SELECT set_trace_id('%s');", spanContext.TraceID().String())
 		statements = append(statements, setTraceId)
 	}
 
