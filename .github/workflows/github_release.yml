@@ -93,15 +93,14 @@ jobs:
           version: 1.13.0
           args: release
         #testing only
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          HOMEBREW_REPO: "homebrew-keel-prerelease"
-          HOMEBREW_ALIAS: "keel-prerelease"
         # env:
         #   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        #   HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}
-        #   HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outputs.HOMEBREW_ALIAS }}
-        #   HOMEBREW_RAISE_PR: ${{ steps.set-brew-envvars.outputs.HOMEBREW_RAISE_PR }}
+        #   HOMEBREW_REPO: "homebrew-keel-prerelease"
+        #   HOMEBREW_ALIAS: "keel-prerelease"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}
+          HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outputs.HOMEBREW_ALIAS }}
 
       - name: Update CHANGELOG
         id: changelog
