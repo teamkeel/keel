@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"syscall"
 	"time"
 
 	"github.com/teamkeel/keel/util"
@@ -40,9 +39,7 @@ func (ds *DevelopmentServer) Kill() error {
 		_ = ds.stdin.Close()
 	}
 
-	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
-	// for more info on this
-	err := syscall.Kill(-ds.cmd.Process.Pid, syscall.SIGKILL)
+	err := ds.kill()
 	if err != nil {
 		return err
 	}
@@ -97,10 +94,6 @@ func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, 
 
 	cmd := exec.Command("./node_modules/.bin/tsx", args...)
 
-	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
-	// for more info on this
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-
 	// Use a pipe for stdin so we can send "Enter" key presses in watch mode
 	// See Rebuild func for more info
 	var stdin *io.PipeWriter
@@ -141,6 +134,7 @@ func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, 
 
 	cmd.Stdout = d.output
 	cmd.Stderr = d.output
+	cmd.SysProcAttr = d.getSysProcAttr()
 
 	if options != nil {
 		if options.Debug {
