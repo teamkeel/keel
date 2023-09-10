@@ -7,9 +7,10 @@ const KSUID = require("ksuid");
 let personAPI;
 let postAPI;
 let authorAPI;
-const db = useDatabase();
 
 beforeEach(async () => {
+  const db = useDatabase();
+
   await sql`
   DROP TABLE IF EXISTS post;
   DROP TABLE IF EXISTS person;
@@ -55,26 +56,6 @@ beforeEach(async () => {
   postAPI = new ModelAPI("post", undefined, tableConfigMap);
 
   authorAPI = new ModelAPI("author", undefined, tableConfigMap);
-
-  return { db };
-});
-
-test("ModelAPI.create", async () => {
-  const row = await personAPI.create({
-    id: KSUID.randomSync().string,
-    name: "Jim",
-    married: false,
-    favouriteNumber: 10,
-  });
-
-  const set =
-    await sql`select current_setting('audit.identityId', true)`.execute(db);
-  console.log(set);
-
-  expect(row.name).toEqual("Jim");
-  expect(row.married).toEqual(false);
-  expect(row.favouriteNumber).toEqual(10);
-  expect(KSUID.parse(row.id).string).toEqual(row.id);
 });
 
 test("ModelAPI.create", async () => {

@@ -776,7 +776,7 @@ test("identity model - audit table populated", async () => {
   expect(deleted).toEqual(deleteLog!.data.id);
 });
 
-test("model API use in tests - audit table is populated without identity or trace IDs", async () => {
+test("model API in integration tests - audit table is populated without identity or trace IDs", async () => {
   const created = await models.wedding.create({ name: "Mary & Bob" });
   const updated = await models.wedding.update(
     { id: created.id },
