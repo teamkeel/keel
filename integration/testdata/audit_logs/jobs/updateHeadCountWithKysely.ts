@@ -16,7 +16,6 @@ export default UpdateHeadCountWithKysely(async (ctx, inputs) => {
         .deleteFrom("wedding_invitee")
         .where("id", "=", guest.id)
         .execute();
-
     } else if (guest.status == InviteStatus.Accepted) {
       count++;
     }
