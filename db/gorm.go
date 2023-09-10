@@ -3,12 +3,10 @@ package db
 import (
 	"context"
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/teamkeel/keel/runtime/auth"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -19,8 +17,7 @@ import (
 var tracer = otel.Tracer("github.com/teamkeel/keel/db")
 
 type GormDB struct {
-	withAuditing bool
-	db           *gorm.DB
+	db *gorm.DB
 }
 
 var _ Database = &GormDB{}
@@ -39,19 +36,7 @@ func (db *GormDB) ExecuteQuery(ctx context.Context, sqlQuery string, values ...a
 		conn = v
 	}
 
-	// Opens a transaction to ensure set_config values are readable in the trigger function.
-	// If a transaction is already open, then this inner transaction will have no impact.
-	err := conn.Transaction(func(tx *gorm.DB) (err error) {
-		if db.withAuditing {
-			err = setAuditParameters(ctx, tx)
-			if err != nil {
-				return err
-			}
-		}
-
-		return tx.Raw(sqlQuery, values...).Scan(&rows).Error
-	})
-
+	err := conn.Raw(sqlQuery, values...).Scan(&rows).Error
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -75,28 +60,17 @@ func (db *GormDB) ExecuteStatement(ctx context.Context, sqlQuery string, values 
 		conn = v
 	}
 
-	// Opens a transaction to ensure set_config values are readable in the trigger function.
-	// If a transaction is already open, then this inner transaction will have no impact.
-	err := conn.Transaction(func(tx *gorm.DB) error {
-		if db.withAuditing {
-			err := setAuditParameters(ctx, tx)
-			if err != nil {
-				return err
-			}
-		}
+	result := conn.Exec(sqlQuery, values...)
 
-		conn = tx.Exec(sqlQuery, values...)
-		return conn.Error
-	})
-
+	err := result.Error
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
 		return nil, toDbError(err)
 	}
 
-	span.SetAttributes(attribute.Int("rows.affected", int(conn.RowsAffected)))
-	return &ExecuteStatementResult{RowsAffected: conn.RowsAffected}, nil
+	span.SetAttributes(attribute.Int("rows.affected", int(result.RowsAffected)))
+	return &ExecuteStatementResult{RowsAffected: result.RowsAffected}, nil
 }
 
 var transactionCtxKey struct{}
@@ -124,11 +98,6 @@ func (db *GormDB) GetDB() *gorm.DB {
 	return db.db
 }
 
-func (db *GormDB) WithAuditing() Database {
-	db.withAuditing = true
-	return db
-}
-
 func toDbError(err error) error {
 	var pgxErr *pgconn.PgError
 	if !errors.As(err, &pgxErr) {
@@ -150,30 +119,4 @@ func toDbError(err error) error {
 	default:
 		return err
 	}
-}
-
-// setAuditParameters sets audit context data to configuration parameters
-// in the database so that they can be read by the triggered auditing function.
-func setAuditParameters(ctx context.Context, tx *gorm.DB) error {
-	statements := []string{}
-
-	if auth.IsAuthenticated(ctx) {
-		identity, err := auth.GetIdentity(ctx)
-		if err != nil {
-			return err
-		}
-
-		setIdentityId := fmt.Sprintf("SELECT set_identity_id('%s');", identity.Id)
-		statements = append(statements, setIdentityId)
-	}
-
-	spanContext := trace.SpanContextFromContext(ctx)
-	if spanContext.IsValid() {
-		setTraceId := fmt.Sprintf("SELECT set_trace_id('%s');", spanContext.TraceID().String())
-		statements = append(statements, setTraceId)
-	}
-
-	sql := strings.Join(statements, "")
-
-	return tx.Exec(sql).Error
 }

@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/karlseguin/typed"
 	"github.com/nsf/jsondiff"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
@@ -408,4 +409,62 @@ func TestAuditTablesWithOnlyTracing(t *testing.T) {
 	require.NotNil(t, audit["created_at"])
 	require.Nil(t, audit["identity_id"])
 	require.Equal(t, traceId, audit["trace_id"])
+}
+
+func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
+	ctx, database, schema := newContext(t)
+	defer database.Close()
+	db := database.GetDB()
+
+	ctx, identity := withIdentity(t, ctx, schema)
+	ctx = withTracing(t, ctx)
+
+	result, err := actions.Create(
+		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
+		map[string]any{"name": "Dave"})
+	require.NoError(t, err)
+
+	action := proto.FindAction(schema, "createWedding")
+
+	scope := actions.NewScope(ctx, action, schema)
+	query := actions.NewQuery(scope.Context, scope.Model)
+	err = query.Where(actions.IdField(), actions.Equals, actions.Value(result["id"]))
+	require.NoError(t, err)
+	query.AddWriteValue(actions.Field("name"), "Devin")
+	affected, err := query.UpdateStatement().Execute(ctx)
+	require.NoError(t, err)
+	require.Equal(t, 1, affected)
+
+	var audits []map[string]any
+	db.Raw("SELECT * FROM keel_audit WHERE table_name='wedding' and op='update'").Scan(&audits)
+	require.Len(t, audits, 1)
+	audit := audits[0]
+
+	require.Equal(t, "wedding", audit["table_name"])
+	require.Equal(t, "update", audit["op"])
+	require.NotNil(t, audit["id"])
+	require.NotNil(t, audit["created_at"])
+	require.Equal(t, identity.Id, audit["identity_id"])
+	require.Equal(t, traceId, audit["trace_id"])
+
+	data, err := typed.JsonString(audit["data"].(string))
+	require.NoError(t, err)
+	require.Equal(t, data["name"], "Devin")
+}
+
+func TestAuditFieldsAreDroppedOnCreate(t *testing.T) {
+	ctx, database, schema := newContext(t)
+	defer database.Close()
+
+	ctx, _ = withIdentity(t, ctx, schema)
+	ctx = withTracing(t, ctx)
+
+	result, err := actions.Create(
+		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
+		map[string]any{"name": "Dave"})
+	require.NoError(t, err)
+
+	require.Nil(t, result["keelIdentityId"])
+	require.Nil(t, result["keelTraceId"])
+	require.Equal(t, 4, len(result))
 }

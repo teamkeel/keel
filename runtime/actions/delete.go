@@ -5,7 +5,7 @@ import (
 )
 
 func Delete(scope *Scope, input map[string]any) (*string, error) {
-	query := NewQuery(scope.Model)
+	query := NewQuery(scope.Context, scope.Model)
 
 	// Generate the SQL statement
 	statement, err := GenerateDeleteStatement(query, scope, input)

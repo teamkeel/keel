@@ -26,7 +26,7 @@ func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string
 
 func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
-	query := NewQuery(identityModel)
+	query := NewQuery(ctx, identityModel)
 	err := query.Where(Field("externalId"), Equals, Value(externalId))
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 
 func findSingle(ctx context.Context, schema *proto.Schema, field string, value string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
-	query := NewQuery(identityModel)
+	query := NewQuery(ctx, identityModel)
 	err := query.Where(Field(field), Equals, Value(value))
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func findSingle(ctx context.Context, schema *proto.Schema, field string, value s
 func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
-	query := NewQuery(identityModel)
+	query := NewQuery(ctx, identityModel)
 	query.AddWriteValues(map[string]any{
 		"email":    email,
 		"password": password,
@@ -113,7 +113,7 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 		}
 	}
 
-	query := NewQuery(identityModel)
+	query := NewQuery(ctx, identityModel)
 	// even if we can't fetch the user data, create it with the core information
 	query.AddWriteValues(map[string]any{
 		"externalId": externalId,

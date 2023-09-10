@@ -5,7 +5,7 @@ import (
 )
 
 func Update(scope *Scope, input map[string]any) (res map[string]any, err error) {
-	query := NewQuery(scope.Model)
+	query := NewQuery(scope.Context, scope.Model)
 
 	// Generate the SQL statement
 	statement, err := GenerateUpdateStatement(query, scope, input)

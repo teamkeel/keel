@@ -312,7 +312,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				relatedModel := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
 
 				// Create a new query for the related model
-				query := actions.NewQuery(relatedModel)
+				query := actions.NewQuery(ctx, relatedModel)
 				query.AppendSelect(actions.AllFields())
 
 				foreignKeyField := proto.GetForignKeyFieldName(mk.proto.Models, field)
@@ -354,7 +354,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 					return nil, err
 				}
 
-				scope := actions.NewModelScope(p.Context, relatedModel, mk.proto)
+				scope := actions.NewModelScope(ctx, relatedModel, mk.proto)
 
 				switch {
 				case proto.IsBelongsTo(field), proto.IsHasOne(field):

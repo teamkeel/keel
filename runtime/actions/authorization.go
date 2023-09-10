@@ -187,7 +187,7 @@ func resolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permis
 
 func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRule, input map[string]any) (*Statement, error) {
 	permissions = proto.PermissionsWithExpression(permissions)
-	query := NewQuery(scope.Model, WithJoinType(JoinTypeLeft))
+	query := NewQuery(scope.Context, scope.Model, WithJoinType(JoinTypeLeft))
 
 	// Implicit and explicit filters need to be included in the permissions query,
 	// otherwise we'll be testing against records which aren't part of the the result set
