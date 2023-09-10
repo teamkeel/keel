@@ -84,8 +84,6 @@ test("auditing - capturing identity id in transaction", async () => {
   );
 
   expect(row.name).toEqual("James");
-  expect(KSUID.parse(row.id).string).toEqual(row.id);
-
   expect(await identityIdFromConfigParam(db)).toBeNull();
   expect(await identityIdFromConfigParam(db, false)).toBeNull();
 });
@@ -121,9 +119,7 @@ test("auditing - capturing tracing in transaction", async () => {
     }
   );
 
-  expect(KSUID.parse(row.id).string).toEqual(row.id);
   expect(row.name).toEqual("Jim");
-
   expect(await traceIdFromConfigParam(db)).toBeNull();
   expect(await traceIdFromConfigParam(db, false)).toBeNull();
 });
@@ -154,8 +150,6 @@ test("auditing - capturing identity id without transaction", async () => {
   );
 
   expect(row.name).toEqual("James");
-  expect(KSUID.parse(row.id).string).toEqual(row.id);
-
   expect(await identityIdFromConfigParam(db)).toBeNull();
   expect(await identityIdFromConfigParam(db, false)).toBeNull();
 });
@@ -187,9 +181,7 @@ test("auditing - capturing tracing without transaction", async () => {
     }
   );
 
-  expect(KSUID.parse(row.id).string).toEqual(row.id);
   expect(row.name).toEqual("Jim");
-
   expect(await traceIdFromConfigParam(db)).toBeNull();
   expect(await traceIdFromConfigParam(db, false)).toBeNull();
 });

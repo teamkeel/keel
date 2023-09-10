@@ -28,7 +28,7 @@ async function withDatabase(db, actionType, cb) {
   if (requiresTransaction) {
     return db.transaction().execute(async (transaction) => {
       return dbInstance.run(transaction, async () => {
-        return await cb({ transaction });
+        return cb({ transaction });
       });
     });
   }
@@ -36,7 +36,7 @@ async function withDatabase(db, actionType, cb) {
   // db.connection() provides a kysely instance bound to a single database connection.
   return db.connection().execute(async (sDb) => {
     return dbInstance.run(sDb, async () => {
-      return await cb({ sDb });
+      return cb({ sDb });
     });
   });
 }
@@ -120,7 +120,7 @@ const txStatements = {
 class InstrumentedClient extends pg.Client {
   async query(...args) {
     const _super = super.query.bind(this);
-    let sql = args[0];
+    const sql = args[0];
 
     let sqlAttribute = false;
     let spanName = txStatements[sql.toLowerCase()];
@@ -129,14 +129,12 @@ class InstrumentedClient extends pg.Client {
       sqlAttribute = true;
     }
 
-    const res = await withSpan(spanName, function (span) {
+    return await withSpan(spanName, function (span) {
       if (sqlAttribute) {
         span.setAttribute("sql", args[0]);
       }
       return _super(...args);
     });
-
-    return res;
   }
 }
 
