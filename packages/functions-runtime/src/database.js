@@ -28,7 +28,7 @@ async function withDatabase(db, actionType, cb) {
   if (requiresTransaction) {
     return db.transaction().execute(async (transaction) => {
       return dbInstance.run(transaction, async () => {
-        return  await cb({ transaction });
+        return await cb({ transaction });
       });
     });
   }

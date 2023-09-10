@@ -9,9 +9,7 @@ let postAPI;
 let authorAPI;
 const db = useDatabase();
 
-
 beforeEach(async () => {
-
   await sql`
   DROP TABLE IF EXISTS post;
   DROP TABLE IF EXISTS person;
@@ -62,9 +60,6 @@ beforeEach(async () => {
 });
 
 test("ModelAPI.create", async () => {
-
-
-
   const row = await personAPI.create({
     id: KSUID.randomSync().string,
     name: "Jim",
@@ -72,7 +67,8 @@ test("ModelAPI.create", async () => {
     favouriteNumber: 10,
   });
 
-  const set = await sql`select current_setting('audit.identityId', true)`.execute(db);
+  const set =
+    await sql`select current_setting('audit.identityId', true)`.execute(db);
   console.log(set);
 
   expect(row.name).toEqual("Jim");

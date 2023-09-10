@@ -471,7 +471,7 @@ test("job function with identity - audit table populated", async () => {
   >`SELECT * FROM keel_audit where table_name = 'wedding_invitee'`.execute(
     useDatabase()
   );
- expect(inviteesAudits.rows.length).toEqual(4);
+  expect(inviteesAudits.rows.length).toEqual(4);
 
   const keelsonAudit = inviteesAudits.rows.at(0)!;
   expect(KSUID.parse(keelsonAudit.id)).toBeInstanceOf(KSUID);
@@ -622,7 +622,6 @@ test("job function with error and no rollback - audit table is not rolled back",
   expect(weddingUpdateAudit.data.headcount).toEqual(1);
 });
 
-
 test("job function using kysely with identity - audit table populated", async () => {
   const identity = await models.identity.create({ email: "keelson@keel.xyz" });
 
@@ -647,14 +646,16 @@ test("job function using kysely with identity - audit table populated", async ()
     weddingId: wedding.id,
   });
 
-  await jobs.withIdentity(identity).updateHeadCountWithKysely({ weddingId: wedding.id });
+  await jobs
+    .withIdentity(identity)
+    .updateHeadCountWithKysely({ weddingId: wedding.id });
 
   const inviteesAudits = await sql<
     Audit<WeddingInvitee>
   >`SELECT * FROM keel_audit where table_name = 'wedding_invitee'`.execute(
     useDatabase()
   );
- expect(inviteesAudits.rows.length).toEqual(4);
+  expect(inviteesAudits.rows.length).toEqual(4);
 
   const keelsonAudit = inviteesAudits.rows.at(0)!;
   expect(KSUID.parse(keelsonAudit.id)).toBeInstanceOf(KSUID);

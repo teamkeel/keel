@@ -1,5 +1,10 @@
-import { models, UpdateHeadCountWithKysely, WeddingInvitee, InviteStatus, useDatabase } from "@teamkeel/sdk";
-
+import {
+  models,
+  UpdateHeadCountWithKysely,
+  WeddingInvitee,
+  InviteStatus,
+  useDatabase,
+} from "@teamkeel/sdk";
 
 // To learn more about jobs, visit https://docs.keel.so/jobs
 export default UpdateHeadCountWithKysely(async (ctx, inputs) => {
@@ -13,22 +18,21 @@ export default UpdateHeadCountWithKysely(async (ctx, inputs) => {
     }
 
     if (guest.status == InviteStatus.Declined) {
-     // await models.weddingInvitee.delete({ id: guest.id });
+      // await models.weddingInvitee.delete({ id: guest.id });
 
       await useDatabase()
         .deleteFrom("wedding_invitee")
         .where("id", "=", guest.id)
         .execute();
-
     } else if (guest.status == InviteStatus.Accepted) {
       count++;
     }
   }
 
- // await models.wedding.update({ id: inputs.weddingId }, { headcount: count });
- await useDatabase()
-  .updateTable("wedding")
-  .set({ headcount: count })
-  .where("id", "=", inputs.weddingId)
-  .execute();
+  // await models.wedding.update({ id: inputs.weddingId }, { headcount: count });
+  await useDatabase()
+    .updateTable("wedding")
+    .set({ headcount: count })
+    .where("id", "=", inputs.weddingId)
+    .execute();
 });
