@@ -4,9 +4,6 @@ const { AuditContextPlugin } = require("./auditing");
 const pg = require("pg");
 const { PROTO_ACTION_TYPES } = require("./consts");
 const { withSpan } = require("./tracing");
-const { Parser } = require('node-sql-parser');
-//const {SelectMyFuncPlugin } = require("./plugin.ts");
-
 
 // withDatabase is responsible for setting the correct database client in our AsyncLocalStorage
 // so that the the code in a custom function uses the correct client.
@@ -31,7 +28,7 @@ async function withDatabase(db, actionType, cb) {
   if (requiresTransaction) {
     return db.transaction().execute(async (transaction) => {
       return dbInstance.run(transaction, async () => {
-        return cb({ transaction });
+        return  await cb({ transaction });
       });
     });
   }
@@ -39,7 +36,7 @@ async function withDatabase(db, actionType, cb) {
   // db.connection() provides a kysely instance bound to a single database connection.
   return db.connection().execute(async (sDb) => {
     return dbInstance.run(sDb, async () => {
-      return cb({ sDb });
+      return await cb({ sDb });
     });
   });
 }
@@ -70,7 +67,6 @@ function useDatabase() {
   throw new Error("useDatabase must be called within a function");
 }
 
-
 // getDatabaseClient will return a brand new instance of Kysely. Every instance of Kysely
 // represents an individual connection to the database.
 // not to be exported externally from our sdk - consumers should use useDatabase
@@ -84,22 +80,22 @@ function getDatabaseClient() {
   db = new Kysely({
     dialect: getDialect(),
     plugins: [
+      // ensures that the audit context data is written to Postgres configuration parameters
+      new AuditContextPlugin(),
       // allows users to query using camelCased versions of the database column names, which
       // should match the names we use in our schema.
       // https://kysely-org.github.io/kysely/classes/CamelCasePlugin.html
       // If they don't, then we can create a custom implementation of the plugin where we control
       // the casing behaviour (see url above for example)
-      
-      new AuditContextPlugin(),
-      new CamelCasePlugin()
+      new CamelCasePlugin(),
     ],
     log(event) {
       if ("DEBUG" in process.env) {
-       if (event.level === "query") {
-        // console.log(event.query);
-        //  console.log(event.query.parameters);
-       }
-     }
+        if (event.level === "query") {
+          console.log(event.query);
+          console.log(event.query.parameters);
+        }
+      }
     },
   });
 
@@ -140,7 +136,7 @@ class InstrumentedClient extends pg.Client {
       return _super(...args);
     });
 
-    return  res;
+    return res;
   }
 }
 

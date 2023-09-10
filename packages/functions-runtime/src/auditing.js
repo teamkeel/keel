@@ -1,5 +1,6 @@
 const { AsyncLocalStorage } = require("async_hooks");
 const TraceParent = require("traceparent");
+const { sql, SelectionNode } = require("kysely");
 
 const auditContextStorage = new AsyncLocalStorage();
 
@@ -8,7 +9,7 @@ const auditContextStorage = new AsyncLocalStorage();
 // ModelAPI during the execution of actions, jobs and subscribers.
 async function withAuditContext(request, cb) {
   let audit = {};
-  
+
   if (request.meta?.identity) {
     audit.identityId = request.meta.identity.id;
   }
@@ -40,15 +41,15 @@ function getAuditContext() {
 class AuditContextPlugin {
   constructor() {
     this.identityIdAlias = "__keel_identity_id";
-    this.traceIdAlias =  "__keel_trace_id";
+    this.traceIdAlias = "__keel_trace_id";
   }
 
-  #setIdentityClause(value, alias) {
-    return `set_identity_id('${value}') AS ${alias}`
+  #setIdentityClause(value) {
+    return `set_identity_id('${value}')`;
   }
 
-  #setTraceIdClause(value, alias) {
-    return `set_trace_id('${value}') AS ${alias}`
+  #setTraceIdClause(value) {
+    return `set_trace_id('${value}')`;
   }
 
   // Appends set_identity_id() and set_trace_id() function calls to the returning statement
@@ -59,61 +60,57 @@ class AuditContextPlugin {
       case "UpdateQueryNode":
       case "DeleteQueryNode":
         const returning = {
-          kind: 'ReturningNode',
-          selections: []
-        }
+          kind: "ReturningNode",
+          selections: [],
+        };
         if (args.node.returning) {
           returning.selections.push(...args.node.returning.selections);
         }
-  
+
         // Retrieve the audit context from async storage.
         const audit = getAuditContext();
-  
+
         if (audit.identityId) {
-          const select = {
-            kind: 'SelectionNode',
-            selection: { 
-              kind: 'RawNode', 
-              sqlFragments: [ this.#setIdentityClause(audit.identityId, this.identityIdAlias) ], 
-              parameters: []
-            }
-          }
-          returning.selections.push(select);
+          const rawNode = sql
+            .raw(
+              this.#setIdentityClause(audit.identityId, this.identityIdAlias)
+            )
+            .as(this.identityIdAlias)
+            .toOperationNode();
+
+          returning.selections.push(SelectionNode.create(rawNode));
         }
-        
+
         if (audit.traceId) {
-          const select = {
-            kind: 'SelectionNode',
-            selection: { 
-              kind: 'RawNode', 
-              sqlFragments: [ this.#setTraceIdClause(audit.traceId, this.traceIdAlias) ], 
-              parameters: [] 
-            }
-          }
-          returning.selections.push(select);
+          const rawNode = sql
+            .raw(this.#setTraceIdClause(audit.traceId))
+            .as(this.traceIdAlias)
+            .toOperationNode();
+
+          returning.selections.push(SelectionNode.create(rawNode));
         }
-   
+
         return {
           ...args.node,
           returning: returning,
         };
-    }  
+    }
 
     return {
-      ...args.node
+      ...args.node,
     };
   }
 
   // Drops the set_identity_id() and set_trace_id() fields from the result.
   transformResult(args) {
     if (args.result?.rows) {
-      for (let i = 0; i <  args.result.rows.length; i++) {
-          delete args.result.rows[i][this.identityIdAlias];
-          delete args.result.rows[i][this.traceIdAlias];
+      for (let i = 0; i < args.result.rows.length; i++) {
+        delete args.result.rows[i][this.identityIdAlias];
+        delete args.result.rows[i][this.traceIdAlias];
       }
     }
 
-    return args.result
+    return args.result;
   }
 }
 
