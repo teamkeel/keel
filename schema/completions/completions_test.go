@@ -1221,15 +1221,25 @@ func TestOnCompletions(t *testing.T) {
 			name: "on-attribute-action-args-second",
 			schema: `
 			model Person {
-				@on([update,<Cursor>
+				@on([update, <Cursor>
 		    }`,
 			expected: []string{"create", "delete", "update"},
 		},
 		{
 			name: "on-attribute-subscriber-arg",
 			schema: `
+			model Person {
+				@on([create, delete],<Cursor>
+		    }
+			`,
+			expected: []string{},
+		},
+		{
+			name: "on-attribute-subscriber-arg-suggest-existing",
+			schema: `
 			model Employee {
-				@on([create, update], verifyDetails)
+				@on([update], verifyDetails)
+				@on([create], verifydetails) // Different casing
 				@on([delete], sendGoodbyeMail)
 			}
 			model Person {
@@ -1237,7 +1247,7 @@ func TestOnCompletions(t *testing.T) {
 				@on([create, delete], <Cursor>
 		    }
 			`,
-			expected: []string{"sendGoodbyeMail", "verifyDetails"},
+			expected: []string{"sendGoodbyeMail", "verifyDetails", "verifydetails"},
 		},
 	}
 
