@@ -66,8 +66,7 @@ class AuditContextPlugin {
         const audit = getAuditContext();
 
         if (audit.identityId) {
-          const rawNode = sql
-            `set_identity_id(${audit.identityId})`
+          const rawNode = sql`set_identity_id(${audit.identityId})`
             .as(this.identityIdAlias)
             .toOperationNode();
 
@@ -75,8 +74,7 @@ class AuditContextPlugin {
         }
 
         if (audit.traceId) {
-          const rawNode = sql
-            `set_trace_id(${audit.traceId})`
+          const rawNode = sql`set_trace_id(${audit.traceId})`
             .as(this.traceIdAlias)
             .toOperationNode();
 
