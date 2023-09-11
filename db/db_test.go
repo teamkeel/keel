@@ -104,7 +104,7 @@ func TestDbTransactionCommit(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, []map[string]any{}, result.Rows)
 
-		// Return no error - commit
+		// Return no error and commit
 		return nil
 	})
 	assert.NoError(t, err)

@@ -1,5 +1,6 @@
 const { Kysely, PostgresDialect, CamelCasePlugin } = require("kysely");
 const { AsyncLocalStorage } = require("async_hooks");
+const { AuditContextPlugin } = require("./auditing");
 const pg = require("pg");
 const { PROTO_ACTION_TYPES } = require("./consts");
 const { withSpan } = require("./tracing");
@@ -79,6 +80,8 @@ function getDatabaseClient() {
   db = new Kysely({
     dialect: getDialect(),
     plugins: [
+      // ensures that the audit context data is written to Postgres configuration parameters
+      new AuditContextPlugin(),
       // allows users to query using camelCased versions of the database column names, which
       // should match the names we use in our schema.
       // https://kysely-org.github.io/kysely/classes/CamelCasePlugin.html
@@ -120,7 +123,6 @@ class InstrumentedClient extends pg.Client {
     const sql = args[0];
 
     let sqlAttribute = false;
-
     let spanName = txStatements[sql.toLowerCase()];
     if (!spanName) {
       spanName = "Database Query";

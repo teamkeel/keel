@@ -24,7 +24,7 @@ require (
 	github.com/lestrrat-go/jwx/v2 v2.0.11
 	github.com/lib/pq v1.10.9
 	github.com/nleeper/goment v1.4.4
-	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
+	github.com/nsf/jsondiff v0.0.0-20230430225905-43f6cf3098c1
 	github.com/otiai10/copy v1.7.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pquerna/cachecontrol v0.2.0

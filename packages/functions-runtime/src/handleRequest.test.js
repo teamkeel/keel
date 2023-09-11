@@ -282,10 +282,8 @@ describe("ModelAPI error handling", () => {
       },
     });
   });
-
   test("when there is a uniqueness constraint error", async () => {
     await sql`
-
     INSERT INTO post (id, title, author_id) values(${
       KSUID.randomSync().string
     }, 'hello', 'adam')

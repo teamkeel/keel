@@ -11,9 +11,10 @@ import (
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // Some field on the query builder's model.
@@ -114,6 +115,7 @@ func (statement *Statement) SqlArgs() []any {
 }
 
 type QueryBuilder struct {
+	context context.Context
 	// The base model this query builder is acting on.
 	Model *proto.Model
 	// The table name in the database.
@@ -191,8 +193,9 @@ func WithJoinType(joinType JoinType) QueryBuilderOption {
 	}
 }
 
-func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
+func NewQuery(ctx context.Context, model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 	qb := &QueryBuilder{
+		context:    ctx,
 		Model:      model,
 		table:      casing.ToSnake(model.Name),
 		selection:  []string{},
@@ -239,15 +242,16 @@ func (query *QueryBuilder) Copy() *QueryBuilder {
 }
 
 // Includes a value to be written during an INSERT or UPDATE.
-func (query *QueryBuilder) AddWriteValue(fieldName string, value any) {
-	query.writeValues.values[fieldName] = value
+func (query *QueryBuilder) AddWriteValue(operand *QueryOperand, value any) {
+
+	query.writeValues.values[operand.column] = value
 }
 
 // Includes root values to be written during an INSERT or UPDATE for a model.
 func (query *QueryBuilder) AddWriteValues(values map[string]any) {
 	query.writeValues.model = query.Model
 	for k, v := range values {
-		query.AddWriteValue(k, v)
+		query.AddWriteValue(Field(k), v)
 	}
 }
 
@@ -434,7 +438,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 		for j := 0; j < i; j++ {
 			orderClause := query.orderBy[j]
 
-			inline := NewQuery(query.Model)
+			inline := NewQuery(query.context, query.Model)
 			inline.AppendSelect(orderClause.field)
 			err = inline.Where(IdField(), Equals, Value(cursor))
 			if err != nil {
@@ -450,7 +454,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 
 		orderClause := query.orderBy[i]
 
-		inline := NewQuery(query.Model)
+		inline := NewQuery(query.context, query.Model)
 		inline.AppendSelect(orderClause.field)
 		err = inline.Where(IdField(), Equals, Value(cursor))
 		if err != nil {
@@ -585,8 +589,24 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 func (query *QueryBuilder) InsertStatement() *Statement {
 	sql, args, _, alias := query.generateInsertCte(query.writeValues, nil, "")
 
+	selection := []string{"*"}
+	if auth.IsAuthenticated(query.context) {
+		identity, _ := auth.GetIdentity(query.context)
+		selection = append(selection, setIdentityIdClause(identity.Id))
+	}
+
+	spanContext := trace.SpanContextFromContext(query.context)
+	if spanContext.IsValid() {
+		selection = append(selection, setTraceIdClause(spanContext.TraceID().String()))
+	}
+
+	statement := fmt.Sprintf("WITH %s SELECT %s FROM %s",
+		sql,
+		strings.Join(selection, ", "),
+		alias)
+
 	return &Statement{
-		template: fmt.Sprintf("WITH %s SELECT * FROM %s", sql, alias),
+		template: statement,
 		args:     args,
 	}
 }
@@ -751,6 +771,16 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
 	}
 
+	if auth.IsAuthenticated(query.context) {
+		identity, _ := auth.GetIdentity(query.context)
+		query.returning = append(query.returning, setIdentityIdClause(identity.Id))
+	}
+
+	spanContext := trace.SpanContextFromContext(query.context)
+	if spanContext.IsValid() {
+		query.returning = append(query.returning, setTraceIdClause(spanContext.TraceID().String()))
+	}
+
 	if len(query.returning) > 0 {
 		returning = fmt.Sprintf("RETURNING %s", strings.Join(query.returning, ", "))
 	}
@@ -792,6 +822,16 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
 	}
 
+	if auth.IsAuthenticated(query.context) {
+		identity, _ := auth.GetIdentity(query.context)
+		query.returning = append(query.returning, setIdentityIdClause(identity.Id))
+	}
+
+	spanContext := trace.SpanContextFromContext(query.context)
+	if spanContext.IsValid() {
+		query.returning = append(query.returning, setTraceIdClause(spanContext.TraceID().String()))
+	}
+
 	if len(query.returning) > 0 {
 		returning = fmt.Sprintf("RETURNING %s", strings.Join(query.returning, ", "))
 	}
@@ -810,7 +850,7 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 
 // Execute the SQL statement against the database, returning the number of rows affected.
 func (statement *Statement) Execute(ctx context.Context) (int, error) {
-	database, err := runtimectx.GetDatabase(ctx)
+	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -854,7 +894,7 @@ func (pi *PageInfo) ToMap() map[string]any {
 
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
 func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows, *PageInfo, error) {
-	database, err := runtimectx.GetDatabase(ctx)
+	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -895,6 +935,12 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 					endCursor, _ = row["id"].(string)
 				}
 			}
+		}
+
+		// TODO: only do this if we know auditing was added
+		for _, row := range rows {
+			delete(row, setIdentityIdAlias)
+			delete(row, setTraceIdAlias)
 		}
 	}
 
@@ -1094,4 +1140,17 @@ func toRuntimeError(err error) error {
 		}
 	}
 	return err
+}
+
+const (
+	setIdentityIdAlias = "__keel_identity_id"
+	setTraceIdAlias    = "__keel_trace_id"
+)
+
+func setIdentityIdClause(value string) string {
+	return fmt.Sprintf("set_identity_id('%s') AS %s", value, setIdentityIdAlias)
+}
+
+func setTraceIdClause(value string) string {
+	return fmt.Sprintf("set_trace_id('%s') AS %s", value, setTraceIdAlias)
 }

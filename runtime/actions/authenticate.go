@@ -22,6 +22,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
+
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 
@@ -141,7 +142,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 		return common.RuntimeError{Code: common.ErrInvalidInput, Message: "invalid redirect URL"}
 	}
 
-	var identity *runtimectx.Identity
+	var identity *auth.Identity
 	identity, err = FindIdentityByEmail(scope.Context, scope.Schema, emailString)
 	if err != nil {
 		return err
@@ -195,13 +196,13 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 
 	identityModel := proto.FindModel(scope.Schema.Models, parser.ImplicitIdentityModelName)
 
-	query := NewQuery(identityModel)
+	query := NewQuery(scope.Context, identityModel)
 	err = query.Where(Field("id"), Equals, Value(identityId))
 	if err != nil {
 		return err
 	}
 
-	query.AddWriteValue("password", string(hashedPassword))
+	query.AddWriteValue(Field("password"), string(hashedPassword))
 
 	affected, err := query.UpdateStatement().Execute(scope.Context)
 	if err != nil {
@@ -417,7 +418,7 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 	}
 }
 
-func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, headers http.Header) (*runtimectx.Identity, error) {
+func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, headers http.Header) (*auth.Identity, error) {
 	header := headers.Get("Authorization")
 	if header == "" {
 		return nil, nil
@@ -441,7 +442,7 @@ func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, header
 	return nil, nil
 }
 
-func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) (*runtimectx.Identity, error) {
+func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) (*auth.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Authorization")
 	defer span.End()
 
@@ -455,7 +456,7 @@ func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) 
 
 	// Check that identity actually does exist as it could
 	// have been deleted after the bearer token was generated.
-	var identity *runtimectx.Identity
+	var identity *auth.Identity
 	if issuer == "keel" || issuer == "" {
 		identity, err = FindIdentityById(ctx, schema, subject)
 	} else {
