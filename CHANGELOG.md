@@ -1,3 +1,21 @@
+## [v0.365.16-12] - 2023-09-05
+### :sparkles: New Features
+- [`c02a879`](https://github.com/teamkeel/keel/commit/c02a879412e2d6f5b29af62b9c969d7bcbcc0b4a) - audit logs *(commit by [@peterhoward42](https://github.com/peterhoward42))*
+
+### :bug: Bug Fixes
+- [`4d084ca`](https://github.com/teamkeel/keel/commit/4d084caa156a3f703c1fbc51b600ae268ca8a3b8) - subscribers not in transactions, fixed opt on testing types *(PR [#1154](https://github.com/teamkeel/keel/pull/1154) by [@davenewza](https://github.com/davenewza))*
+- [`d7bee4b`](https://github.com/teamkeel/keel/commit/d7bee4bf720b8bf129f866d05fc5bca6f3e25192) - completions & format issues *(PR [#1169](https://github.com/teamkeel/keel/pull/1169) by [@adaam2](https://github.com/adaam2))*
+- [`93c7f86`](https://github.com/teamkeel/keel/commit/93c7f8664b412bffa42dce9c813212d65877bfff) - update auth tracing *(PR [#1160](https://github.com/teamkeel/keel/pull/1160) by [@tomfrew](https://github.com/tomfrew))*
+
+### :wrench: Chores
+- [`8c57dd4`](https://github.com/teamkeel/keel/commit/8c57dd4fb2dc96a37edde8155e0669dace793e1b) - passing traceparent to event handler *(PR [#1168](https://github.com/teamkeel/keel/pull/1168) by [@davenewza](https://github.com/davenewza))*
+- [`5982f5c`](https://github.com/teamkeel/keel/commit/5982f5c306907f637d3eb4a80e64d118ca0b6b4e) - refactoring test names *(PR [#1170](https://github.com/teamkeel/keel/pull/1170) by [@davenewza](https://github.com/davenewza))*
+- [`24c50f7`](https://github.com/teamkeel/keel/commit/24c50f786435641761fd2a0410d861f66cca7e2f) - query database module in integration tests *(PR [#1172](https://github.com/teamkeel/keel/pull/1172) by [@davenewza](https://github.com/davenewza))*
+- [`6457721`](https://github.com/teamkeel/keel/commit/6457721586574a436fb70e9d556f313bb0e5fed0) - fix prerelease worflow *(commit by [@davenewza](https://github.com/davenewza))*
+- [`0ea7f34`](https://github.com/teamkeel/keel/commit/0ea7f34c722d505532c716bb64a4acd19023355c) - fix prerelease worflow 2 *(commit by [@davenewza](https://github.com/davenewza))*
+- [`47ae1d9`](https://github.com/teamkeel/keel/commit/47ae1d939a75ff166501a689583663c956cc951f) - fix prerelease worflow 3 *(commit by [@davenewza](https://github.com/davenewza))*
+
+
 ## [0.365.14](https://github.com/teamkeel/keel/compare/v0.365.13...v0.365.14) (2023-08-21)
 
 

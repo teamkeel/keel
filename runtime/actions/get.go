@@ -3,7 +3,7 @@ package actions
 import "github.com/teamkeel/keel/runtime/common"
 
 func Get(scope *Scope, input map[string]any) (map[string]any, error) {
-	query := NewQuery(scope.Model)
+	query := NewQuery(scope.Context, scope.Model)
 
 	// Generate the SQL statement
 	statement, err := GenerateGetStatement(query, scope, input)

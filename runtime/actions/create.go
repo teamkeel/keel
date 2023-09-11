@@ -15,7 +15,7 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 
 	err = database.Transaction(scope.Context, func(ctx context.Context) error {
 		scope := scope.WithContext(ctx)
-		query := NewQuery(scope.Model)
+		query := NewQuery(scope.Context, scope.Model)
 
 		// Generate the SQL statement
 		statement, err := GenerateCreateStatement(query, scope, input)
