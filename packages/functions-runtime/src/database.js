@@ -129,7 +129,7 @@ class InstrumentedClient extends pg.Client {
       sqlAttribute = true;
     }
 
-    return await withSpan(spanName, function (span) {
+    return withSpan(spanName, function (span) {
       if (sqlAttribute) {
         span.setAttribute("sql", args[0]);
       }

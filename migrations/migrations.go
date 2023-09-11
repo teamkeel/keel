@@ -96,6 +96,9 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	sql.WriteString(m.SQL)
 	sql.WriteString("\n")
 
+	// For now, we do this here but this could belong in our proto once we start on the database indexing work.
+	sql.WriteString("CREATE INDEX idx_keel_audit_trace_id ON keel_audit USING HASH(trace_id);\n")
+
 	_, err = m.database.ExecuteStatement(ctx, sql.String())
 	return err
 }

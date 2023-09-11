@@ -44,14 +44,6 @@ class AuditContextPlugin {
     this.traceIdAlias = "__keel_trace_id";
   }
 
-  #setIdentityClause(value) {
-    return `set_identity_id('${value}')`;
-  }
-
-  #setTraceIdClause(value) {
-    return `set_trace_id('${value}')`;
-  }
-
   // Appends set_identity_id() and set_trace_id() function calls to the returning statement
   // of INSERT, UPDATE and DELETE operations.
   transformQuery(args) {
@@ -59,10 +51,13 @@ class AuditContextPlugin {
       case "InsertQueryNode":
       case "UpdateQueryNode":
       case "DeleteQueryNode":
+        // Represents a RETURNING clause in a SQL statement.
         const returning = {
           kind: "ReturningNode",
           selections: [],
         };
+
+        // If the query already has a selection, then append it.
         if (args.node.returning) {
           returning.selections.push(...args.node.returning.selections);
         }
@@ -72,9 +67,7 @@ class AuditContextPlugin {
 
         if (audit.identityId) {
           const rawNode = sql
-            .raw(
-              this.#setIdentityClause(audit.identityId, this.identityIdAlias)
-            )
+            `set_identity_id(${audit.identityId})`
             .as(this.identityIdAlias)
             .toOperationNode();
 
@@ -83,7 +76,7 @@ class AuditContextPlugin {
 
         if (audit.traceId) {
           const rawNode = sql
-            .raw(this.#setTraceIdClause(audit.traceId))
+            `set_trace_id(${audit.traceId})`
             .as(this.traceIdAlias)
             .toOperationNode();
 
