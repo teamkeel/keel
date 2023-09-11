@@ -13,8 +13,13 @@ on:
         type: string
       releaseNotesUrl:
         description: "URL to release notes for version"
-        required: true
+        required: false
         type: string
+      sendUpdateEvent:
+        description: Raise PR against backend
+        required: false
+        type: boolean
+        default: true
   workflow_call:
     inputs:
       backendBranch:
@@ -27,8 +32,13 @@ on:
         type: string
       releaseNotesUrl:
         description: "URL to release notes for version"
-        required: true
+        required: false
         type: string
+      sendUpdateEvent:
+        description: Raise PR against backend
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   create_branch:
@@ -49,9 +59,9 @@ jobs:
         uses: paulhatch/semantic-version@v5.0.3
         with:
           tag_prefix: "v"
-          major_pattern: "[A-Za-z]+.*!:"
+          major_pattern: "^([A-Za-z]+.)*!:.*$"
           major_regexp_flags: "g"
-          minor_pattern: "^(feat|fix)(\\(.*\\))?: .*$"
+          minor_pattern: "feat"
           version_format: "${major}.${minor}.${patch}"
 
       - name: Create new release branch
@@ -77,7 +87,7 @@ jobs:
     needs: [create_branch]
     with:
       version: ${{ needs.create_branch.outputs.version }}
-      publishTag: rc-next
+      publishTag: "rc-next"
       dryRun: false
     secrets: inherit
 
@@ -93,4 +103,5 @@ jobs:
       branch: "release/v${{ needs.create_branch.outputs.version }}"
       releaseNotesURL: ${{ inputs.releaseNotesUrl }}
       eventBranch: ${{ inputs.backendBranch }}
+      publishEvent: ${{ inputs.sendUpdateEvent }}
     secrets: inherit

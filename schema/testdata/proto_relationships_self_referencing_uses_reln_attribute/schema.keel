@@ -1,0 +1,13 @@
+model Person {
+    fields {
+        children Person[]
+        mother Person? @relation(children)
+    }
+}
+
+model Person2 {
+    fields {
+        children Person2[]
+        mother Person2? @relation(children)
+    }
+}

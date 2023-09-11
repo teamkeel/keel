@@ -1,0 +1,22 @@
+model Person {
+    fields {
+        name Text
+        children Person[]
+        mother Person?
+    }
+
+    actions {
+        create createPerson() with (name, mother.id?)
+        list children(mother.id?, mother.name?) {
+            @orderBy(name: asc)
+        }
+        list mothersOf(children.id?, children.name?) {
+            @orderBy(name: asc)
+        }
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list]
+    )
+}

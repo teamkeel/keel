@@ -95,7 +95,6 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		context,
 		schema,
 		node.WithDevelopmentServer(true),
-		node.WithQueryModule(true),
 	)
 
 	if err != nil {

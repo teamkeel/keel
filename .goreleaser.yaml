@@ -25,15 +25,16 @@ release:
     name: cli
   prerelease: auto
 brews:
-  - name: keel
+  - name: "{{ .Env.HOMEBREW_ALIAS }}"
     url_template: "https://github.com/teamkeel/cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     homepage: "https://github.com/teamkeel/cli"
     skip_upload: auto
+    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
     install: |
-      bin.install "cli" => "keel"
+      bin.install "cli" => "{{ .Env.HOMEBREW_ALIAS }}"
     tap:
       owner: teamkeel
-      name: homebrew-keel
+      name: "{{ .Env.HOMEBREW_REPO }}"
 checksum:
   name_template: "checksums.txt"
 snapshot:

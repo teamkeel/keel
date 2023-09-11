@@ -127,9 +127,6 @@ type Model struct {
 	// env var KEEL_TRACING_ENABLED will be passed to the functions runtime
 	TracingEnabled bool
 
-	// Exposes a database query module from the testing package
-	WithQueryModule bool
-
 	// Model state - used in View()
 	Status            int
 	Err               error
@@ -344,7 +341,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.Status = StatusUpdateFunctions
-		return m, UpdateFunctions(m.Schema, m.ProjectDir, m.WithQueryModule)
+		return m, UpdateFunctions(m.Schema, m.ProjectDir)
 
 	case UpdateFunctionsMsg:
 		m.Err = msg.Err

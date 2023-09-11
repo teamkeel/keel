@@ -5,14 +5,24 @@
       "fields": [
         {
           "modelName": "Person",
-          "name": "person",
+          "name": "children",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Person",
+            "repeated": true
+          },
+          "inverseFieldName": "mother"
+        },
+        {
+          "modelName": "Person",
+          "name": "mother",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Person"
           },
           "optional": true,
-          "foreignKeyFieldName": "personId",
-          "inverseFieldName": "person"
+          "foreignKeyFieldName": "motherId",
+          "inverseFieldName": "children"
         },
         {
           "modelName": "Person",
@@ -47,7 +57,7 @@
         },
         {
           "modelName": "Person",
-          "name": "personId",
+          "name": "motherId",
           "type": {
             "type": "TYPE_ID"
           },
@@ -57,14 +67,74 @@
             "relatedModelField": "id"
           }
         }
-      ],
-      "actions": [
+      ]
+    },
+    {
+      "name": "Person2",
+      "fields": [
         {
-          "modelName": "Person",
-          "name": "createPerson",
-          "type": "ACTION_TYPE_CREATE",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "CreatePersonInput"
+          "modelName": "Person2",
+          "name": "children",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Person2",
+            "repeated": true
+          },
+          "inverseFieldName": "mother"
+        },
+        {
+          "modelName": "Person2",
+          "name": "mother",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Person2"
+          },
+          "optional": true,
+          "foreignKeyFieldName": "motherId",
+          "inverseFieldName": "children"
+        },
+        {
+          "modelName": "Person2",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Person2",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Person2",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Person2",
+          "name": "motherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Person2",
+            "relatedModelField": "id"
+          }
         }
       ]
     },
@@ -186,6 +256,9 @@
         },
         {
           "modelName": "Person"
+        },
+        {
+          "modelName": "Person2"
         }
       ]
     }
@@ -193,9 +266,6 @@
   "messages": [
     {
       "name": "Any"
-    },
-    {
-      "name": "CreatePersonInput"
     },
     {
       "name": "EmailPasswordInput",

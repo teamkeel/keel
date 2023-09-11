@@ -1,40 +1,10 @@
 {
   "models": [
     {
-      "name": "Account",
+      "name": "Person",
       "fields": [
         {
-          "modelName": "Account",
-          "name": "favourite",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Post"
-          },
-          "foreignKeyFieldName": "favouriteId",
-          "inverseFieldName": "favouritedBy"
-        },
-        {
-          "modelName": "Account",
-          "name": "authoredPosts",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Post",
-            "repeated": true
-          },
-          "inverseFieldName": "author"
-        },
-        {
-          "modelName": "Account",
-          "name": "reviewedPosts",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Post",
-            "repeated": true
-          },
-          "inverseFieldName": "reviewer"
-        },
-        {
-          "modelName": "Account",
+          "modelName": "Person",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -45,7 +15,7 @@
           }
         },
         {
-          "modelName": "Account",
+          "modelName": "Person",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -55,113 +25,24 @@
           }
         },
         {
-          "modelName": "Account",
+          "modelName": "Person",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Account",
-          "name": "favouriteId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Post",
-            "relatedModelField": "id"
           }
         }
-      ]
-    },
-    {
-      "name": "Post",
-      "fields": [
+      ],
+      "actions": [
         {
-          "modelName": "Post",
-          "name": "reviewer",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Account"
-          },
-          "foreignKeyFieldName": "reviewerId",
-          "inverseFieldName": "reviewedPosts"
-        },
-        {
-          "modelName": "Post",
-          "name": "favouritedBy",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Account",
-            "repeated": true
-          },
-          "inverseFieldName": "favourite"
-        },
-        {
-          "modelName": "Post",
-          "name": "author",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Account"
-          },
-          "foreignKeyFieldName": "authorId",
-          "inverseFieldName": "authoredPosts"
-        },
-        {
-          "modelName": "Post",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "reviewerId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Account",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "authorId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Account",
-            "relatedModelField": "id"
-          }
+          "modelName": "Person",
+          "name": "getPerson",
+          "type": "ACTION_TYPE_READ",
+          "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
+          "inputMessageName": "GetPersonInput",
+          "responseMessageName": "Foo"
         }
       ]
     },
@@ -279,13 +160,10 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Account"
-        },
-        {
           "modelName": "Identity"
         },
         {
-          "modelName": "Post"
+          "modelName": "Person"
         }
       ]
     }
@@ -293,6 +171,51 @@
   "messages": [
     {
       "name": "Any"
+    },
+    {
+      "name": "Foo",
+      "fields": [
+        {
+          "messageName": "Foo",
+          "name": "bar",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "Foo",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "UnusedMessage",
+      "fields": [
+        {
+          "messageName": "UnusedMessage",
+          "name": "bar",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UnusedMessage",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "GetPersonInput",
+      "fields": [
+        {
+          "messageName": "GetPersonInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
     },
     {
       "name": "EmailPasswordInput",

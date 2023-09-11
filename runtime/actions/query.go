@@ -855,6 +855,8 @@ func (statement *Statement) Execute(ctx context.Context) (int, error) {
 		return 0, err
 	}
 
+	database = database.WithAuditing()
+
 	result, err := database.ExecuteStatement(ctx, statement.template, statement.args...)
 	if err != nil {
 		return 0, toRuntimeError(err)
@@ -898,6 +900,8 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 	if err != nil {
 		return nil, nil, err
 	}
+
+	database = database.WithAuditing()
 
 	result, err := database.ExecuteQuery(ctx, statement.template, statement.args...)
 	if err != nil {

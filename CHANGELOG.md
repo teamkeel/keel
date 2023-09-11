@@ -4559,5 +4559,3 @@
 
 * adds commitlint conventional commits check ([f95b2de](https://github.com/teamkeel/keel/commit/f95b2de0b32c00a6f50b182b13f571c1edf60b74))
 * test tagging ([7fbe2a2](https://github.com/teamkeel/keel/commit/7fbe2a2a99f0b8324ff6326956db147362800440))
-
-[v0.365.16-12]: https://github.com/teamkeel/keel/compare/vv0.365.15...v0.365.16-12

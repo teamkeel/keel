@@ -2,16 +2,16 @@
   "errors": [
     {
       "message": "Cannot have a direct many to many between 'ModelA' and 'ModelB'",
-      "hint": "Visit https://keel.notaku.site/documentation/models for information on how to create a many-to-many relationship",
+      "hint": "Visit https://docs.keel.so/models#many-to-many-relationships for information on how to create a many-to-many relationship",
       "code": "RelationshipError",
       "pos": {
-        "filename": "testdata/validation_direct_many_to_many/schema.keel",
+        "filename": "testdata/validation_relationships_many_to_many/schema.keel",
         "offset": 30,
         "line": 3,
         "column": 5
       },
       "endPos": {
-        "filename": "testdata/validation_direct_many_to_many/schema.keel",
+        "filename": "testdata/validation_relationships_many_to_many/schema.keel",
         "offset": 40,
         "line": 3,
         "column": 15
@@ -19,16 +19,16 @@
     },
     {
       "message": "Cannot have a direct many to many between 'ModelB' and 'ModelA'",
-      "hint": "Visit https://keel.notaku.site/documentation/models for information on how to create a many-to-many relationship",
+      "hint": "Visit https://docs.keel.so/models#many-to-many-relationships for information on how to create a many-to-many relationship",
       "code": "RelationshipError",
       "pos": {
-        "filename": "testdata/validation_direct_many_to_many/schema.keel",
+        "filename": "testdata/validation_relationships_many_to_many/schema.keel",
         "offset": 78,
         "line": 9,
         "column": 5
       },
       "endPos": {
-        "filename": "testdata/validation_direct_many_to_many/schema.keel",
+        "filename": "testdata/validation_relationships_many_to_many/schema.keel",
         "offset": 88,
         "line": 9,
         "column": 15

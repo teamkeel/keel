@@ -10,16 +10,17 @@ on:
 
 jobs:
   setup:
-    name: Generate Version
+    name: Setup workflows
     runs-on: ubuntu-latest
     if: startsWith( github.event.head_commit.message, 'feat' ) || startsWith( github.event.head_commit.message, 'fix' ) || contains(github.event.head_commit.message, '!:') || github.event_name == 'workflow_dispatch'
     steps:
       - uses: pnpm/action-setup@v2.4.0
         with:
           version: 8.5.1
+      - run: echo "Running pre-release for branch *${{ github.ref_name }}*"
 
   pre-release:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.ref_name == 'main'
     needs: [setup]
     uses: ./.github/workflows/pre_release.yml
     with:
@@ -33,5 +34,5 @@ jobs:
     uses: ./.github/workflows/pre_release.yml
     with:
       publishTag: "dev"
-      versionFormat: "${major}.${minor}.${patch}-${{ github.event.base_ref }}${increment}"
+      versionFormat: "${major}.${minor}.${patch}-${{ github.ref_name }}${increment}"
     secrets: inherit

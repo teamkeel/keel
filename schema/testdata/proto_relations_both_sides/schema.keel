@@ -1,0 +1,11 @@
+model Account {
+    fields {
+        posts Post[]
+    }
+}
+
+model Post {
+    fields {
+        author Account
+    }
+}
