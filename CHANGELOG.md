@@ -1,4 +1,4 @@
-# Version: v0.366.0-prerelease0
+# Version: v0.366.0
 
 * [#1154](https://github.com/teamkeel/keel/pull/1154): fix: subscribers not in transactions, fixed opt on testing types
 * [#1160](https://github.com/teamkeel/keel/pull/1160): fix: update auth tracing
