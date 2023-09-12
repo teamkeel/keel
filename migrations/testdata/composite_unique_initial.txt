@@ -16,7 +16,7 @@ model Person {
 
 CREATE TABLE "identity" (
 "email" TEXT,
-"email_verified" BOOL,
+"email_verified" BOOL NOT NULL DEFAULT false,
 "password" TEXT,
 "external_id" TEXT,
 "issuer" TEXT,

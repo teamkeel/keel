@@ -85,7 +85,10 @@ test("job - without identity, true expression permission - permitted", async () 
 
 test("job - wrong domain - not permitted", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
-  const identity = await models.identity.create({ email: "weave@gmail.com" });
+  const identity = await models.identity.create({
+    email: "weave@gmail.com",
+    emailVerified: true,
+  });
 
   await expect(
     jobs.withIdentity(identity).manualJob({ id })
@@ -102,7 +105,12 @@ test("job - wrong domain - not permitted", async () => {
 
 test("job - authorised domain - permitted", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
-  const identity = await models.identity.create({ email: "keel@keel.so" });
+  const identity = await models.identity.create({
+    email: "keel@keel.so",
+    emailVerified: true,
+  });
+
+  console.log("created:", identity);
 
   await expect(
     jobs.withIdentity(identity).manualJob({ id })
@@ -113,7 +121,10 @@ test("job - authorised domain - permitted", async () => {
 
 test("job - wrong authorised domain - not permitted", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
-  const identity = await models.identity.create({ email: "keel@keel.dev" });
+  const identity = await models.identity.create({
+    email: "keel@keel.dev",
+    emailVerified: true,
+  });
 
   await expect(
     jobs.withIdentity(identity).manualJob({ id })
@@ -124,7 +135,10 @@ test("job - wrong authorised domain - not permitted", async () => {
 
 test("job - multi domains, authorised domain - permitted", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
-  const identity = await models.identity.create({ email: "keel@keel.so" });
+  const identity = await models.identity.create({
+    email: "keel@keel.so",
+    emailVerified: true,
+  });
 
   await expect(
     jobs.withIdentity(identity).manualJobMultiRoles({ id })
@@ -163,7 +177,10 @@ test("job - env var expression fail - not permitted", async () => {
 
 test("job - multiple permissions - not permitted", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
-  const identity = await models.identity.create({ email: "bob@bob.com" });
+  const identity = await models.identity.create({
+    email: "bob@bob.com",
+    emailVerified: true,
+  });
 
   await expect(
     jobs.withIdentity(identity).manualJobMultiPermission({ id })
@@ -174,7 +191,10 @@ test("job - multiple permissions - not permitted", async () => {
 
 test("job - multiple permissions - permitted", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
-  const identity = await models.identity.create({ email: "keelson@keel.so" });
+  const identity = await models.identity.create({
+    email: "keelson@keel.so",
+    emailVerified: true,
+  });
 
   await expect(
     jobs.withIdentity(identity).manualJobMultiPermission({ id })
@@ -185,7 +205,10 @@ test("job - multiple permissions - permitted", async () => {
 
 test("job - allowed in job code - permitted", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
-  const identity = await models.identity.create({ email: "keel@keel.so" });
+  const identity = await models.identity.create({
+    email: "keel@keel.so",
+    emailVerified: true,
+  });
 
   await expect(
     jobs.withIdentity(identity).manualJobDeniedInCode({ id, denyIt: false })
@@ -196,7 +219,10 @@ test("job - allowed in job code - permitted", async () => {
 
 test("job - denied in job code - not permitted without rollback transaction", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
-  const identity = await models.identity.create({ email: "keel@keel.so" });
+  const identity = await models.identity.create({
+    email: "keel@keel.so",
+    emailVerified: true,
+  });
 
   await expect(
     jobs.withIdentity(identity).manualJobDeniedInCode({ id, denyIt: true })
@@ -208,7 +234,10 @@ test("job - denied in job code - not permitted without rollback transaction", as
 
 test("job - exception - internal error without rollback transaction", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
-  const identity = await models.identity.create({ email: "keel@keel.so" });
+  const identity = await models.identity.create({
+    email: "keel@keel.so",
+    emailVerified: true,
+  });
 
   await expect(
     jobs.withIdentity(identity).manualJobWithException({ id })

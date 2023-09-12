@@ -71,7 +71,7 @@ type DeleteResponse {
 type Identity {
   createdAt: Timestamp!
   email: String
-  emailVerified: Boolean
+  emailVerified: Boolean!
   externalId: String
   id: ID!
   issuer: String

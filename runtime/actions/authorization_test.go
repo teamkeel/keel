@@ -27,6 +27,7 @@ type authorisationTestCase struct {
 	// If resolved early, what was the authorisation result?
 	// nil if early authorisation cannot be determined.
 	earlyAuth *earlyAuthorisationResult
+	identity  *auth.Identity
 }
 
 type earlyAuthorisationResult struct {
@@ -48,6 +49,12 @@ func AuthorisationDeniedEarly() *earlyAuthorisationResult {
 var identity = &auth.Identity{
 	Id:    "identityId",
 	Email: "keelson@keel.xyz",
+}
+
+var verifiedIdentity = &auth.Identity{
+	Id:            "identityId",
+	Email:         "keelson@keel.xyz",
+	EmailVerified: true,
 }
 
 var authorisationTestCases = []authorisationTestCase{
@@ -504,6 +511,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   verifiedIdentity,
 	},
 	{
 		name: "early_evaluate_roles_domain_not_authorised",
@@ -540,6 +548,25 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   verifiedIdentity,
+	},
+	{
+		name: "early_evaluate_roles_email_net_verified_not_authorised",
+		keelSchema: `
+			role Admin {
+				emails {
+					"keelson@keel.xyz"
+				}
+			}
+			model Thing {
+				actions {
+					get getThing(id) {
+						@permission(roles: [Admin])
+					}
+				}
+			}`,
+		actionName: "getThing",
+		earlyAuth:  AuthorisationDeniedEarly(),
 	},
 	{
 		name: "early_evaluate_roles_email_not_authorised",
@@ -577,6 +604,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   verifiedIdentity,
 	},
 	{
 		name: "early_evaluate_failed_role_and_passed_permissions_authorised",
@@ -670,7 +698,7 @@ var authorisationTestCases = []authorisationTestCase{
 		earlyAuth:  CouldNotAuthoriseEarly(),
 	},
 	{
-		name: "can_early_evaluate_mixed_permissions_authorised",
+		name: "not_verified",
 		keelSchema: `
 			role Admin {
 				emails {
@@ -691,7 +719,31 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		input:      map[string]any{"id": "123"},
+		earlyAuth:  CouldNotAuthoriseEarly(),
+	},
+	{
+		name: "can_early_evaluate_mixed_permissions_authorised",
+		keelSchema: `
+			role Admin {
+				emails {
+					"keelson@keel.xyz"
+				}
+			}
+			model Thing {
+				fields {
+					createdBy Identity
+				}
+				actions {
+					get getThing(id) {
+						@permission(expression: false)
+						@permission(roles: [Admin])
+						@permission(expression: thing.createdBy.id == ctx.identity.id)
+					}
+				}
+			}`,
+		actionName: "getThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   verifiedIdentity,
 	},
 	{
 		name: "can_early_evaluate_mixed_permissions_authorised_2",
@@ -717,6 +769,7 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "getThing",
 		input:      map[string]any{"id": "123"},
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   verifiedIdentity,
 	},
 	{
 		name: "can_early_evaluate_mixed_permissions_authorised_3",
@@ -741,6 +794,7 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "getThing",
 		input:      map[string]any{"id": "123"},
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   verifiedIdentity,
 	},
 	{
 		name: "can_early_evaluate_mixed_permissions_authorised_4",
@@ -765,6 +819,7 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "getThing",
 		input:      map[string]any{"id": "123"},
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   verifiedIdentity,
 	},
 	{
 		name: "cannot_early_evaluate_op_level_permissions",
@@ -923,8 +978,14 @@ func TestPermissionQueryBuilder(t *testing.T) {
 	for _, testCase := range authorisationTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
 
+			activeIdentity := identity
+
+			if testCase.identity != nil {
+				activeIdentity = testCase.identity
+			}
+
 			ctx := context.Background()
-			ctx = auth.WithIdentity(ctx, identity)
+			ctx = auth.WithIdentity(ctx, activeIdentity)
 
 			scope, _, _, err := generateQueryScope(ctx, testCase.keelSchema, testCase.actionName)
 			if err != nil {
