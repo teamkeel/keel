@@ -12,9 +12,9 @@
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_related_field_must_be_repeated/schema.keel",
-        "offset": 48,
+        "offset": 43,
         "line": 3,
-        "column": 21
+        "column": 16
       }
     },
     {
@@ -29,9 +29,9 @@
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_related_field_must_be_repeated/schema.keel",
-        "offset": 124,
+        "offset": 115,
         "line": 9,
-        "column": 41
+        "column": 32
       }
     }
   ]

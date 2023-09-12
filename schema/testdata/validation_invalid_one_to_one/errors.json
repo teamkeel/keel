@@ -12,9 +12,9 @@
       },
       "endPos": {
         "filename": "testdata/validation_invalid_one_to_one/schema.keel",
-        "offset": 47,
+        "offset": 40,
         "line": 3,
-        "column": 22
+        "column": 15
       }
     }
   ]

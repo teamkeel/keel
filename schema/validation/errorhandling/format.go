@@ -2,6 +2,7 @@ package errorhandling
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/teamkeel/keel/colors"
@@ -107,10 +108,11 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 			}
 			newLine()
 
+			msgIndent := (err.Pos.Column - 1) + int(math.Max(float64((err.EndPos.Column-err.Pos.Column)/2), 0))
+
 			// Render the down arrow
 			result += colors.Gray(fmt.Sprintf(gutterFmt, "")).String()
-			result += strings.Repeat(" ", err.Pos.Column-1)
-			result += strings.Repeat(" ", (err.EndPos.Column-err.Pos.Column)/2)
+			result += strings.Repeat(" ", msgIndent)
 			result += colors.Yellow("\u2570").Highlight().String()
 			result += colors.Yellow("\u2500").Highlight().String()
 
@@ -121,8 +123,7 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 			// Render the hint
 			if err.ErrorDetails.Hint != "" {
 				result += colors.Gray(fmt.Sprintf(gutterFmt, "")).String()
-				result += strings.Repeat(" ", err.Pos.Column-1)
-				result += strings.Repeat(" ", (err.EndPos.Column-err.Pos.Column)/2)
+				result += strings.Repeat(" ", msgIndent)
 				// Line up hint with the error message above (taking into account unicode arrows)
 				result += strings.Repeat(" ", 3)
 				result += colors.Cyan(fmt.Sprint(err.ErrorDetails.Hint)).String()
