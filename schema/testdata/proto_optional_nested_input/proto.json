@@ -325,6 +325,7 @@
       "name": "StringQueryInput",
       "fields": [
         {
+          "messageName": "StringQueryInput",
           "name": "equals",
           "type": {
             "type": "TYPE_STRING"
@@ -333,6 +334,7 @@
           "nullable": true
         },
         {
+          "messageName": "StringQueryInput",
           "name": "notEquals",
           "type": {
             "type": "TYPE_STRING"
@@ -341,6 +343,7 @@
           "nullable": true
         },
         {
+          "messageName": "StringQueryInput",
           "name": "startsWith",
           "type": {
             "type": "TYPE_STRING"
@@ -348,6 +351,7 @@
           "optional": true
         },
         {
+          "messageName": "StringQueryInput",
           "name": "endsWith",
           "type": {
             "type": "TYPE_STRING"
@@ -355,6 +359,7 @@
           "optional": true
         },
         {
+          "messageName": "StringQueryInput",
           "name": "contains",
           "type": {
             "type": "TYPE_STRING"
@@ -362,6 +367,7 @@
           "optional": true
         },
         {
+          "messageName": "StringQueryInput",
           "name": "oneOf",
           "type": {
             "type": "TYPE_STRING",

@@ -98,74 +98,85 @@ func defaultAPI(scm *proto.Schema) *proto.Api {
 func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error) {
 	switch typeInfo.Type {
 	case proto.Type_TYPE_ID:
-		return &proto.Message{Name: makeInputMessageName("IDQuery"), Fields: []*proto.MessageField{
+		msgName := makeInputMessageName("IDQuery")
+		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
-				Name:     "equals",
-				Optional: true,
-				Nullable: true,
+				MessageName: msgName,
+				Name:        "equals",
+				Optional:    true,
+				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "oneOf",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "oneOf",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type:     typeInfo.Type,
 					Repeated: true,
 				},
 			},
 			{
-				Name:     "notEquals",
-				Optional: true,
-				Nullable: true,
+				MessageName: msgName,
+				Name:        "notEquals",
+				Optional:    true,
+				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 		}}, nil
 	case proto.Type_TYPE_STRING:
-		return &proto.Message{Name: makeInputMessageName("StringQuery"), Fields: []*proto.MessageField{
+		msgName := makeInputMessageName("StringQuery")
+		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
-				Name:     "equals",
-				Optional: true,
-				Nullable: true,
+				MessageName: msgName,
+				Name:        "equals",
+				Optional:    true,
+				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "notEquals",
-				Optional: true,
-				Nullable: true,
+				MessageName: msgName,
+				Name:        "notEquals",
+				Optional:    true,
+				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "startsWith",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "startsWith",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "endsWith",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "endsWith",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "contains",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "contains",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "oneOf",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "oneOf",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type:     typeInfo.Type,
 					Repeated: true,
@@ -173,54 +184,62 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			},
 		}}, nil
 	case proto.Type_TYPE_INT:
-		return &proto.Message{Name: makeInputMessageName("IntQuery"), Fields: []*proto.MessageField{
+		msgName := makeInputMessageName("IntQuery")
+		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
-				Name:     "equals",
-				Optional: true,
-				Nullable: true,
+				MessageName: msgName,
+				Name:        "equals",
+				Optional:    true,
+				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "notEquals",
-				Optional: true,
-				Nullable: true,
+				MessageName: msgName,
+				Name:        "notEquals",
+				Optional:    true,
+				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "lessThan",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "lessThan",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "lessThanOrEquals",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "lessThanOrEquals",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "greaterThan",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "greaterThan",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "greaterThanOrEquals",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "greaterThanOrEquals",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "oneOf",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "oneOf",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type:     typeInfo.Type,
 					Repeated: true,
@@ -228,111 +247,128 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			},
 		}}, nil
 	case proto.Type_TYPE_BOOL:
-		return &proto.Message{Name: makeInputMessageName("BooleanQuery"), Fields: []*proto.MessageField{
+		msgName := makeInputMessageName("BooleanQuery")
+		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
-				Name:     "equals",
-				Optional: true,
-				Nullable: true,
+				MessageName: msgName,
+				Name:        "equals",
+				Optional:    true,
+				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "notEquals",
-				Optional: true,
-				Nullable: true,
+				MessageName: msgName,
+				Name:        "notEquals",
+				Optional:    true,
+				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 		}}, nil
 	case proto.Type_TYPE_DATE:
-		return &proto.Message{Name: makeInputMessageName("DateQuery"), Fields: []*proto.MessageField{
+		msgName := makeInputMessageName("DateQuery")
+		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
-				Name:     "equals",
-				Optional: true,
-				Nullable: true,
+				MessageName: msgName,
+				Name:        "equals",
+				Optional:    true,
+				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "notEquals",
-				Optional: true,
-				Nullable: true,
+				MessageName: msgName,
+				Name:        "notEquals",
+				Optional:    true,
+				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "before",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "before",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "onOrBefore",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "onOrBefore",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "after",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "after",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "onOrAfter",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "onOrAfter",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 		}}, nil
 	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		return &proto.Message{Name: makeInputMessageName("TimestampQuery"), Fields: []*proto.MessageField{
+		msgName := makeInputMessageName("TimestampQuery")
+		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
-				Name:     "before",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "before",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 			{
-				Name:     "after",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "after",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
 			},
 		}}, nil
 	case proto.Type_TYPE_ENUM:
-		return &proto.Message{Name: makeInputMessageName(fmt.Sprintf("%sQuery", typeInfo.EnumName.Value)), Fields: []*proto.MessageField{
+		msgName := makeInputMessageName(fmt.Sprintf("%sQuery", typeInfo.EnumName.Value))
+		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
-				Name:     "equals",
-				Nullable: true,
-				Optional: true,
+				MessageName: msgName,
+				Name:        "equals",
+				Nullable:    true,
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type:     typeInfo.Type,
 					EnumName: typeInfo.EnumName,
 				},
 			},
 			{
-				Name:     "notEquals",
-				Optional: true,
-				Nullable: true,
+				MessageName: msgName,
+				Name:        "notEquals",
+				Optional:    true,
+				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type:     typeInfo.Type,
 					EnumName: typeInfo.EnumName,
 				},
 			},
 			{
-				Name:     "oneOf",
-				Optional: true,
+				MessageName: msgName,
+				Name:        "oneOf",
+				Optional:    true,
 				Type: &proto.TypeInfo{
 					Type:     typeInfo.Type,
 					EnumName: typeInfo.EnumName,
@@ -355,9 +391,10 @@ func makeListOrderByMessages(actionName string, fieldNames []string) []*proto.Me
 		}
 
 		message.Fields = append(message.Fields, &proto.MessageField{
-			Name:     fieldName,
-			Optional: false,
-			Nullable: false,
+			MessageName: message.Name,
+			Name:        fieldName,
+			Optional:    false,
+			Nullable:    false,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_SORT_DIRECTION,
 			},
