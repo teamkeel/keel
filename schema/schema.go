@@ -370,7 +370,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile rea
 		Type: parser.NameNode{
 			Value: parser.FieldTypeBoolean,
 		},
-		Optional:   true,
+		Optional:   false,
 		Attributes: []*parser.AttributeNode{defaultAttribute},
 	}
 

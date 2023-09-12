@@ -237,7 +237,6 @@
           "type": {
             "type": "TYPE_BOOL"
           },
-          "optional": true,
           "defaultValue": {
             "expression": {
               "source": "false"
