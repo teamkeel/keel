@@ -1,3 +1,10 @@
+# Version: v0.366.1-prerelease1
+
+* [#1163](https://github.com/teamkeel/keel/pull/1163): Update contributing.md
+* [#1181](https://github.com/teamkeel/keel/pull/1181): fix: use name of nodes for relationship attribute validation errors
+* [#1187](https://github.com/teamkeel/keel/pull/1187): Keel run fix (with Windows support)
+
+
 ## [0.365.14](https://github.com/teamkeel/keel/compare/v0.365.13...v0.365.14) (2023-08-21)
 
 
