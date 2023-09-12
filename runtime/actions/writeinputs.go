@@ -207,40 +207,52 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 					if !hasArg {
 						if !input.Optional {
 							return nil, nil, fmt.Errorf("input argument is missing for required field %s", input.Name)
-						} else {
-							continue
-						}
-					}
-
-					argsSectioned, ok := argValue.(map[string]any)
-					if !ok {
-						return nil, nil, fmt.Errorf("cannot convert args to map[string]any for key %s", input.Name)
-					}
-
-					// Create (or associate with) the model which this model references.
-					var row *Row
-					foreignKeys, row, err = query.captureWriteValuesFromMessage(scope, nestedMessage, messageModel, target, argsSectioned)
-					if err != nil {
-						return nil, nil, err
-					}
-
-					// row will be nil if we are associating to an existing model.
-					if row != nil {
-						// Retrieve the foreign key model field on the this model.
-						foriegnKeyModelField := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
-							return f.Type.Type == proto.Type_TYPE_MODEL && f.Type.ModelName.Value == messageModel.Name && f.Name == input.Name
-						})
-
-						if len(foriegnKeyModelField) != 1 {
-							return nil, nil, fmt.Errorf("there needs to be exactly one foreign key field for %s", input.Name)
 						}
 
-						// Add foreign key to current model from the newly referenced models.
-						relationship := &Relationship{
-							foreignKey: foriegnKeyModelField[0],
-							row:        row,
+						continue
+					}
+
+					if argValue == nil && !input.Nullable {
+						return nil, nil, fmt.Errorf("input argument is null for non-nullable field %s", input.Name)
+					}
+
+					if argValue == nil {
+						// We know this needs to be a FK on the referencing row.
+						fieldName := fmt.Sprintf("%sId", target[len(target)-1])
+						foreignKeys = map[string]any{
+							fieldName: nil,
 						}
-						newRow.references = append(newRow.references, relationship)
+					} else {
+						argsSectioned, ok := argValue.(map[string]any)
+						if !ok {
+							return nil, nil, fmt.Errorf("cannot convert args to map[string]any for key %s", input.Name)
+						}
+
+						// Create (or associate with) the model which this model references.
+						var row *Row
+						foreignKeys, row, err = query.captureWriteValuesFromMessage(scope, nestedMessage, messageModel, target, argsSectioned)
+						if err != nil {
+							return nil, nil, err
+						}
+
+						// row will be nil if we are associating to an existing model.
+						if row != nil {
+							// Retrieve the foreign key model field on the this model.
+							foriegnKeyModelField := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
+								return f.Type.Type == proto.Type_TYPE_MODEL && f.Type.ModelName.Value == messageModel.Name && f.Name == input.Name
+							})
+
+							if len(foriegnKeyModelField) != 1 {
+								return nil, nil, fmt.Errorf("there needs to be exactly one foreign key field for %s", input.Name)
+							}
+
+							// Add foreign key to current model from the newly referenced models.
+							relationship := &Relationship{
+								foreignKey: foriegnKeyModelField[0],
+								row:        row,
+							}
+							newRow.references = append(newRow.references, relationship)
+						}
 					}
 				}
 

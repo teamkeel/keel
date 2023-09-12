@@ -25,7 +25,7 @@ input CreatePersonAndCompanyInput {
 }
 
 input CreatePersonCompanyInput {
-  id: ID
+  id: ID!
 }
 
 input CreatePersonInput {

@@ -1202,8 +1202,6 @@ func (scm *Builder) inferParserInputType(
 		}
 	}
 
-	// If any target field is optional, then the input becomes optional,
-	// regardless of how it's specified in the schema definition
 	targetsOptionalField = false
 
 	if protoType == proto.Type_TYPE_UNKNOWN {
@@ -1219,14 +1217,14 @@ func (scm *Builder) inferParserInputType(
 
 			field = query.ModelField(currModel, ident.Fragment)
 
-			if field.Optional {
-				targetsOptionalField = true
-			}
-
 			m := query.Model(scm.asts, field.Type.Value)
 			if m != nil {
 				currModel = m
 			}
+		}
+
+		if field != nil && field.Optional {
+			targetsOptionalField = true
 		}
 
 		protoType = scm.parserFieldToProtoTypeInfo(field).Type
