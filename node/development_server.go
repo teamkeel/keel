@@ -16,6 +16,7 @@ type DevelopmentServer struct {
 	cmd       *exec.Cmd
 	exitError error
 	output    io.Writer
+	stdin     *io.PipeWriter
 	URL       string
 }
 
@@ -34,7 +35,11 @@ func (ds *DevelopmentServer) Kill() error {
 		return nil
 	}
 
-	err := ds.cmd.Process.Signal(os.Interrupt)
+	if ds.stdin != nil {
+		_ = ds.stdin.Close()
+	}
+
+	err := ds.kill()
 	if err != nil {
 		return err
 	}
@@ -52,16 +57,52 @@ func (ds *DevelopmentServer) Kill() error {
 	return ds.exitError
 }
 
+// Rebuild triggers tsx to re-start the app in watch mode.
+// tsx does not watch node_modules or dot-directories like .build and given
+// we change files in these places we need a way to manually trigger a restart..
+// The tsx docs say that in watch mode you can "Press Return to manually rerun"
+// so we just send a newline to stdin.
+func (ds *DevelopmentServer) Rebuild() error {
+	if ds.stdin == nil {
+		return nil
+	}
+
+	// Running in a go routine otherwise this will block until the go routine
+	// reading from the other end of the pipe reads the data. We don't need to
+	// wait for this to happen though.
+	go func() {
+		_, _ = ds.stdin.Write([]byte("\n"))
+	}()
+
+	return nil
+}
+
 type ServerOpts struct {
 	Port    string
 	EnvVars map[string]string
 	Output  io.Writer
 	Debug   bool
+	Watch   bool
 }
 
 // RunDevelopmentServer will start a new node runtime server serving/handling custom function requests
 func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, error) {
-	cmd := exec.Command("npx", "tsx", ".build/server.js")
+	args := []string{".build/server.js"}
+	if options != nil && options.Watch {
+		args = append([]string{"watch"}, args...)
+	}
+
+	cmd := exec.Command("./node_modules/.bin/tsx", args...)
+
+	// Use a pipe for stdin so we can send "Enter" key presses in watch mode
+	// See Rebuild func for more info
+	var stdin *io.PipeWriter
+	if options != nil && options.Watch {
+		var r *io.PipeReader
+		r, stdin = io.Pipe()
+		cmd.Stdin = r
+	}
+
 	cmd.Dir = dir
 	cmd.Env = os.Environ()
 
@@ -87,11 +128,13 @@ func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, 
 	d := &DevelopmentServer{
 		cmd:    cmd,
 		output: output,
+		stdin:  stdin,
 		URL:    fmt.Sprintf("http://localhost:%s", port),
 	}
 
 	cmd.Stdout = d.output
 	cmd.Stderr = d.output
+	cmd.SysProcAttr = d.getSysProcAttr()
 
 	if options != nil {
 		if options.Debug {
