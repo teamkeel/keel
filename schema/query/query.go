@@ -1,6 +1,7 @@
 package query
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/samber/lo"
@@ -351,6 +352,18 @@ func FieldsInModelOfType(model *parser.ModelNode, requiredType string) []string 
 	return names
 }
 
+// FieldsInModelOfType provides a list of the field names for the fields in the
+// given model, that have the given type name.
+func ModelFieldsOfType(model *parser.ModelNode, typeName string) []*parser.FieldNode {
+	fields := []*parser.FieldNode{}
+	for _, field := range ModelFields(model) {
+		if field.Type.Value == typeName {
+			fields = append(fields, field)
+		}
+	}
+	return fields
+}
+
 // AllHasManyRelationFields provides a list of all the fields in the schema
 // which are of type Model and which are repeated.
 func AllHasManyRelationFields(asts []*parser.AST) []*parser.FieldNode {
@@ -520,4 +533,170 @@ func SubscriberNames(asts []*parser.AST) (res []string) {
 	}
 
 	return res
+}
+
+type Relationship struct {
+	Model *parser.ModelNode
+	Field *parser.FieldNode
+}
+
+// GetRelationshipCandidates will find all the candidates relationships that can be formed with the related model.
+// Each relationship field should only have exactly 1 candidate, otherwise there are incorrectly defined relationships in the schema.
+func GetRelationshipCandidates(asts []*parser.AST, model *parser.ModelNode, field *parser.FieldNode) []*Relationship {
+	candidates := []*Relationship{}
+
+	otherModel := Model(asts, field.Type.Value)
+	if otherModel == nil {
+		return candidates
+	}
+
+	otherFields := ModelFieldsOfType(otherModel, model.Name.Value)
+
+	relationAttributeExists := false
+	for _, otherField := range otherFields {
+		// Skip when the field is the same (for self referencing models)
+		if field == otherField {
+			continue
+		}
+
+		if ValidOneToHasMany(field, otherField) ||
+			ValidOneToHasMany(otherField, field) ||
+			ValidUniqueOneToHasOne(field, otherField) ||
+			ValidUniqueOneToHasOne(otherField, field) {
+
+			// This field has a new relationship candidate with the other model
+			candidates = append(candidates, &Relationship{Model: otherModel, Field: otherField})
+
+			if FieldHasAttribute(field, parser.AttributeRelation) || FieldHasAttribute(otherField, parser.AttributeRelation) {
+				relationAttributeExists = true
+			}
+		}
+	}
+
+	// Only use candidate relationships where an explicit @relation is used
+	if relationAttributeExists {
+		relationOnlyCandidates := []*Relationship{}
+
+		for _, relationship := range candidates {
+			if FieldHasAttribute(field, parser.AttributeRelation) || FieldHasAttribute(relationship.Field, parser.AttributeRelation) {
+				relationOnlyCandidates = append(relationOnlyCandidates, relationship)
+			}
+		}
+
+		candidates = relationOnlyCandidates
+	}
+
+	if len(candidates) == 0 && !field.Repeated {
+		// When there is no inverse field provided.
+		candidates = append(candidates, &Relationship{Model: otherModel})
+	}
+
+	return candidates
+}
+
+// GetRelationship will return the related model and field on that model which forms the relationship.
+func GetRelationship(asts []*parser.AST, currentModel *parser.ModelNode, currentField *parser.FieldNode) (*Relationship, error) {
+	candidates := GetRelationshipCandidates(asts, currentModel, currentField)
+
+	otherModel := Model(asts, currentField.Type.Value)
+	if otherModel == nil {
+		return nil, nil
+	}
+
+	// There can only be exactly one candidate, since schema validation has all passed
+	if len(candidates) != 1 {
+		return nil, fmt.Errorf("there is not exactly one candidate relationship for %s field on the %s model", currentField.Name.Value, currentModel.Name.Value)
+	}
+
+	return candidates[0], nil
+}
+
+// Determine if pair form a valid 1:M pattern where, for example:
+//
+//	belongsTo:  author Author @relation(posts)
+//	hasMany:    posts Post[]
+func ValidOneToHasMany(belongsTo *parser.FieldNode, hasMany *parser.FieldNode) bool {
+	if FieldIsUnique(belongsTo) || FieldIsUnique(hasMany) {
+		return false
+	}
+
+	if belongsTo.Repeated {
+		return false
+	}
+
+	if !hasMany.Repeated {
+		return false
+	}
+
+	// If belongsTo has @relation, check the field name matches hasMany
+	belongsToAttribute := FieldGetAttribute(belongsTo, parser.AttributeRelation)
+	if belongsToAttribute != nil {
+		if relation, ok := RelationAttributeValue(belongsToAttribute); ok {
+			if relation != hasMany.Name.Value {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+
+	// If hasMany has @relation, then this is not a candidate
+	hasManyAttribute := FieldGetAttribute(hasMany, parser.AttributeRelation)
+
+	return hasManyAttribute == nil
+}
+
+// Determine if pair form a valid 1:! pattern where, for example:
+//
+//	hasOne:  	  passport Passport @unique
+//	belongsTo:    person Person
+func ValidUniqueOneToHasOne(hasOne *parser.FieldNode, belongsTo *parser.FieldNode) bool {
+	if !FieldIsUnique(hasOne) || FieldIsUnique(belongsTo) {
+		return false
+	}
+
+	if belongsTo.Repeated || hasOne.Repeated {
+		return false
+	}
+
+	otherFieldAttribute := FieldGetAttribute(belongsTo, parser.AttributeRelation)
+	if otherFieldAttribute != nil {
+		return false
+	}
+
+	// If hasOne has @relation, check the field name matches belongsTo
+	hasOneAttribute := FieldGetAttribute(hasOne, parser.AttributeRelation)
+	if hasOneAttribute != nil {
+		if relation, ok := RelationAttributeValue(hasOneAttribute); ok {
+			if relation != belongsTo.Name.Value {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+
+	// If belongsTo has @relation, then this is not a candidate
+	belongsToAttribute := FieldGetAttribute(belongsTo, parser.AttributeRelation)
+
+	return belongsToAttribute == nil
+}
+
+// RelationAttributeValue attempts to retrieve the value of the @relation attribute
+func RelationAttributeValue(attr *parser.AttributeNode) (field string, ok bool) {
+	if len(attr.Arguments) != 1 {
+		return "", false
+	}
+
+	expr := attr.Arguments[0].Expression
+	operand, err := expr.ToValue()
+	if err != nil {
+		return "", false
+	}
+
+	if operand.Ident == nil {
+		return "", false
+	}
+
+	return operand.Ident.Fragments[0].Fragment, true
 }

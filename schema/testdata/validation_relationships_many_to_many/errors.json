@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "Cannot have a direct many to many between 'ModelA' and 'ModelB'",
-      "hint": "Visit https://docs.keel.so/models#many-to-many-relationships for information on how to create a many-to-many relationship",
+      "message": "The field 'b' does not have an associated field on the related ModelB model",
+      "hint": "In a one to many relationship, the related belongs-to field must exist on the ModelB model. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_many_to_many/schema.keel",
@@ -18,8 +18,8 @@
       }
     },
     {
-      "message": "Cannot have a direct many to many between 'ModelB' and 'ModelA'",
-      "hint": "Visit https://docs.keel.so/models#many-to-many-relationships for information on how to create a many-to-many relationship",
+      "message": "The field 'a' does not have an associated field on the related ModelA model",
+      "hint": "In a one to many relationship, the related belongs-to field must exist on the ModelA model. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_many_to_many/schema.keel",

@@ -69,6 +69,7 @@ type DeleteResponse {
 }
 
 type Identity {
+  beatle: Beatle
   createdAt: Timestamp!
   email: String
   emailVerified: Boolean!

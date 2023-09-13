@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "message": "You have a reserved field name createdAt",
+      "hint": "Try 'createdAter' instead",
+      "code": "E006",
+      "pos": {
+        "filename": "",
+        "offset": 0,
+        "line": 0,
+        "column": 0
+      },
+      "endPos": {
+        "filename": "",
+        "offset": 0,
+        "line": 0,
+        "column": 0
+      }
+    },
+    {
+      "message": "The field 'createdAt' on the Identity model must be of type CompanyEmployee in order to establish a relationship",
+      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_identity_backlinks_invalid_relations_field/schema.keel",
+        "offset": 107,
+        "line": 5,
+        "column": 23
+      },
+      "endPos": {
+        "filename": "testdata/validation_identity_backlinks_invalid_relations_field/schema.keel",
+        "offset": 116,
+        "line": 5,
+        "column": 32
+      }
+    }
+  ]
+}

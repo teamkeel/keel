@@ -107,18 +107,36 @@ func (resolver *OperandResolver) IsExplicitInput() bool {
 	return foundExplicitWhereInput || foundExplicitValueInput
 }
 
-// IsDatabaseColumn returns true if the expression operand refers to a field value residing in the database.
+// IsModelDbColumn returns true if the expression operand refers to a field value residing in the database.
 // For example, a where condition might filter on reading data,
 // such as: @where(post.author.isActive)
-func (resolver *OperandResolver) IsDatabaseColumn() bool {
-	return !resolver.IsLiteral() && !resolver.Operand.Ident.IsContext() && !resolver.IsExplicitInput() && !resolver.IsImplicitInput()
+func (resolver *OperandResolver) IsModelDbColumn() bool {
+	return !resolver.IsLiteral() &&
+		!resolver.IsContextField() &&
+		!resolver.IsContextDbColumn() &&
+		!resolver.IsExplicitInput() &&
+		!resolver.IsImplicitInput()
 }
 
-// IsContextField returns true if the expression operand refers to a value on the context.
+// IsContextDbColumn returns true if the expression refers to a value on the context
+// which will require database access (such as with identity backlinks),
+// such as: @permission(expression: ctx.identity.user.isActive)
+func (resolver *OperandResolver) IsContextDbColumn() bool {
+	return resolver.Operand.Ident.IsContext() && resolver.isContextIdentityDbColumn()
+}
+
+// IsContextField returns true if the expression operand refers to a value on the context
+// which does not require to be read from the database.
 // For example, a permission condition may check against the current identity,
 // such as: @permission(thing.identity == ctx.identity)
+//
+// However if the expression traverses onwards from identity (using an Identity-backlink)
+// like this:
+// "ctx.identity.user"
+// then it returns false, because that can no longer be resolved solely from the
+// in memory context data.
 func (resolver *OperandResolver) IsContextField() bool {
-	return resolver.Operand.Ident.IsContext()
+	return resolver.Operand.Ident.IsContext() && !resolver.isContextIdentityDbColumn()
 }
 
 // GetOperandType returns the equivalent protobuf type for the expression operand.
@@ -149,18 +167,27 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 		} else {
 			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("unknown literal type")
 		}
-	case resolver.IsDatabaseColumn():
-		fragmentCount := len(operand.Ident.Fragments)
-		modelTarget := casing.ToCamel(operand.Ident.Fragments[0].Fragment)
+
+	case resolver.IsModelDbColumn(), resolver.IsContextDbColumn():
+		fragments := operand.Ident.Fragments
+
+		if resolver.IsContextDbColumn() {
+			// If this is a context backlink, then remove the first "ctx" fragment.
+			fragments = fragments[1:]
+		}
+
+		fragmentCount := len(fragments)
+
+		modelTarget := casing.ToCamel(fragments[0].Fragment)
 
 		if fragmentCount > 2 {
 			for i := 1; i < fragmentCount-1; i++ {
-				field := proto.FindField(schema.Models, casing.ToCamel(modelTarget), operand.Ident.Fragments[i].Fragment)
+				field := proto.FindField(schema.Models, casing.ToCamel(modelTarget), fragments[i].Fragment)
 				modelTarget = field.Type.ModelName.Value
 			}
 		}
 
-		fieldName := operand.Ident.Fragments[fragmentCount-1].Fragment
+		fieldName := fragments[fragmentCount-1].Fragment
 		if !proto.ModelHasField(schema, casing.ToCamel(modelTarget), fieldName) {
 			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("this model: %s, does not have a field of name: %s", modelTarget, fieldName)
 		}
@@ -220,7 +247,7 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 	case resolver.IsLiteral():
 		isLiteral, _ := resolver.Operand.IsLiteralType()
 		if isLiteral {
-			return ToNative(resolver.Operand, operandType)
+			return toNative(resolver.Operand, operandType)
 		} else if resolver.Operand.Ident != nil && proto.EnumExists(resolver.Schema.Enums, resolver.Operand.Ident.Fragments[0].Fragment) {
 			return resolver.Operand.Ident.Fragments[1].Fragment, nil
 		} else {
@@ -233,9 +260,9 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 			return nil, fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", inputName)
 		}
 		return value, nil
-	case resolver.IsDatabaseColumn():
+	case resolver.IsModelDbColumn(), resolver.IsContextDbColumn():
 		// todo: https://linear.app/keel/issue/RUN-153/set-attribute-to-support-targeting-database-fields
-		panic("cannot resolve operand value when IsDatabaseColumn() is true")
+		panic("cannot resolve operand value from the database")
 	case resolver.Operand.Ident.IsContextIdentityField():
 		isAuthenticated := auth.IsAuthenticated(resolver.Context)
 		if !isAuthenticated {
@@ -278,11 +305,11 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 	}
 }
 
-func ToNative(v *parser.Operand, fieldType proto.Type) (any, error) {
+func toNative(v *parser.Operand, fieldType proto.Type) (any, error) {
 	if v.Array != nil {
 		values := []any{}
 		for _, v := range v.Array.Values {
-			value, err := ToNative(v, fieldType)
+			value, err := toNative(v, fieldType)
 			if err != nil {
 				return nil, err
 			}
@@ -329,4 +356,29 @@ func toDate(s string) time.Time {
 func toTime(s string) time.Time {
 	tm, _ := time.Parse(time.RFC3339, s)
 	return tm
+}
+
+// isContextIdentityDbColumn works out if this operand traverses an Identity field and requires the database.
+func (resolver *OperandResolver) isContextIdentityDbColumn() bool {
+	if resolver.Operand.Ident == nil {
+		return false
+	}
+	fragments := lo.Map(resolver.Operand.Ident.Fragments, func(frag *parser.IdentFragment, _ int) string {
+		return frag.Fragment
+	})
+
+	if len(fragments) < 3 {
+		return false
+	}
+	if fragments[0] != "ctx" {
+		return false
+	}
+	if fragments[1] != "identity" {
+		return false
+	}
+	if fragments[2] == parser.ImplicitFieldNameId {
+		return false
+	}
+
+	return true
 }

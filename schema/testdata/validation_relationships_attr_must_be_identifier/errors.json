@@ -1,9 +1,26 @@
 {
   "errors": [
     {
-      "message": "The @relation value should be a simple string",
-      "hint": "Like myFieldName",
-      "code": "E054",
+      "message": "The field 'written' does not have an associated field on the related Post model",
+      "hint": "In a one to many relationship, the related belongs-to field must exist on the Post model. To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
+        "offset": 36,
+        "line": 3,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
+        "offset": 50,
+        "line": 3,
+        "column": 23
+      }
+    },
+    {
+      "message": "The @relation value must refer to a field on the related model",
+      "hint": "For example, @relation(fieldName). To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
         "offset": 108,
@@ -12,9 +29,9 @@
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
-        "offset": 117,
+        "offset": 122,
         "line": 9,
-        "column": 32
+        "column": 37
       }
     }
   ]

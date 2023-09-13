@@ -1,0 +1,63 @@
+model User {
+    fields {
+        age Number
+        identity Identity @unique
+        group MembersGroup?
+    }
+
+    actions {
+        create createUser() with (age, identity.id)
+        update joinGroup(id) with (group.id)
+    }
+
+    @permission(
+        expression: true,
+        actions: [get, list, create, update]
+    )
+}
+
+model MembersGroup {
+    fields {
+        name Text
+        isActive Boolean @default(true)
+        users User[]
+    }
+}
+
+model Film {
+    fields {
+        title Text @unique
+        ageRestriction Number
+        onlyMembers Boolean @default(false)
+    }
+
+    actions {
+        create createFilm() with (title, ageRestriction, onlyMembers)
+        get getFilm(title) {
+            @permission(expression: ctx.identity.user.age >= film.ageRestriction)
+        }
+        list listMembersFilms() {
+            @where(ctx.identity.user.age >= film.ageRestriction)
+            @where(film.onlyMembers == false or ctx.identity.user.group.isActive == true)
+            @orderBy(title: asc)
+        }
+    }
+
+    @permission(
+        expression: true,
+        actions: [get, list, create, update]
+    )
+}
+
+model Admit {
+    fields {
+        film Film
+        identity Identity
+    }
+
+    actions {
+        create admit() with (film.id, identity.id) {
+            @permission(expression: admit.identity.user.age >= admit.film.ageRestriction)
+        }
+    }
+}

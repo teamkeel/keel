@@ -1,0 +1,18 @@
+model Company {
+    fields {
+        owner Person {
+            @unique
+            @relation(ownerOf)
+        }
+        employees Person[]
+        parentCompany Company? @unique
+        childCompany Company?
+    }
+}
+
+model Person {
+    fields {
+        employedBy Company @relation(employees)
+        ownerOf Company
+    }
+}

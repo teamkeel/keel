@@ -33,7 +33,6 @@ func TestGraphQL(t *testing.T) {
 	testCases := map[string]testCase{}
 
 	for _, f := range testFiles {
-
 		parts := strings.Split(f.Name(), ".")
 		name, ext := parts[0], parts[1]
 

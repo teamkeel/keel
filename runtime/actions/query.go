@@ -994,6 +994,9 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		args = append(args, lhs.value)
 	case lhs.IsNull():
 		lhsSqlOperand = "NULL"
+	case lhs.IsInlineQuery():
+		lhsSqlOperand = fmt.Sprintf("(%s)", lhs.query.SelectStatement().template)
+		args = append(args, lhs.query.args...)
 	default:
 		return "", nil, errors.New("no handling for lhs QueryOperand type")
 	}

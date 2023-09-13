@@ -189,6 +189,9 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	}
 
 	// Updating columns for tables that already exist
+
+	// todo this for loop is now 100 lines long - it should be factored out into
+	// a function to make it easier to read the flow narrative.
 	for _, model := range existingModels {
 		tableName := casing.ToSnake(model.Name)
 
@@ -408,7 +411,6 @@ func GetCurrentSchema(ctx context.Context, database db.Database) (*proto.Schema,
 
 // fkConstraintsForModel generates foreign key constraint statements for each of fields marked as
 // being foreign keys in the given model.
-// present in the given model.
 func fkConstraintsForModel(model *proto.Model, schema *proto.Schema) (fkStatements []string) {
 	fkFields := proto.ForeignKeyFields(model)
 	for _, field := range fkFields {
