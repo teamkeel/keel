@@ -1,3 +1,13 @@
+# Version: v0.366.1-bld-741-create-events-from-audit-table-rows8
+
+* [#1090](https://github.com/teamkeel/keel/pull/1090): fix: only use verified emails for roles
+* [#1163](https://github.com/teamkeel/keel/pull/1163): Update contributing.md
+* [#1181](https://github.com/teamkeel/keel/pull/1181): fix: use name of nodes for relationship attribute validation errors
+* [#1187](https://github.com/teamkeel/keel/pull/1187): Keel run fix (with Windows support)
+* [#1194](https://github.com/teamkeel/keel/pull/1194): [Changelog CI] Add Changelog for Version v0.366.0
+* [#1200](https://github.com/teamkeel/keel/pull/1200): fix: set MessageName field of MessageField for query input messages
+
+
 # Version: v0.366.0
 
 * [#1154](https://github.com/teamkeel/keel/pull/1154): fix: subscribers not in transactions, fixed opt on testing types
