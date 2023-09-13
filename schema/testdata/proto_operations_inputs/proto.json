@@ -231,6 +231,7 @@
       "name": "StringQueryInput",
       "fields": [
         {
+          "messageName": "StringQueryInput",
           "name": "equals",
           "type": {
             "type": "TYPE_STRING"
@@ -239,6 +240,7 @@
           "nullable": true
         },
         {
+          "messageName": "StringQueryInput",
           "name": "notEquals",
           "type": {
             "type": "TYPE_STRING"
@@ -247,6 +249,7 @@
           "nullable": true
         },
         {
+          "messageName": "StringQueryInput",
           "name": "startsWith",
           "type": {
             "type": "TYPE_STRING"
@@ -254,6 +257,7 @@
           "optional": true
         },
         {
+          "messageName": "StringQueryInput",
           "name": "endsWith",
           "type": {
             "type": "TYPE_STRING"
@@ -261,6 +265,7 @@
           "optional": true
         },
         {
+          "messageName": "StringQueryInput",
           "name": "contains",
           "type": {
             "type": "TYPE_STRING"
@@ -268,6 +273,7 @@
           "optional": true
         },
         {
+          "messageName": "StringQueryInput",
           "name": "oneOf",
           "type": {
             "type": "TYPE_STRING",
@@ -281,6 +287,7 @@
       "name": "IntQueryInput",
       "fields": [
         {
+          "messageName": "IntQueryInput",
           "name": "equals",
           "type": {
             "type": "TYPE_INT"
@@ -289,6 +296,7 @@
           "nullable": true
         },
         {
+          "messageName": "IntQueryInput",
           "name": "notEquals",
           "type": {
             "type": "TYPE_INT"
@@ -297,6 +305,7 @@
           "nullable": true
         },
         {
+          "messageName": "IntQueryInput",
           "name": "lessThan",
           "type": {
             "type": "TYPE_INT"
@@ -304,6 +313,7 @@
           "optional": true
         },
         {
+          "messageName": "IntQueryInput",
           "name": "lessThanOrEquals",
           "type": {
             "type": "TYPE_INT"
@@ -311,6 +321,7 @@
           "optional": true
         },
         {
+          "messageName": "IntQueryInput",
           "name": "greaterThan",
           "type": {
             "type": "TYPE_INT"
@@ -318,6 +329,7 @@
           "optional": true
         },
         {
+          "messageName": "IntQueryInput",
           "name": "greaterThanOrEquals",
           "type": {
             "type": "TYPE_INT"
@@ -325,6 +337,7 @@
           "optional": true
         },
         {
+          "messageName": "IntQueryInput",
           "name": "oneOf",
           "type": {
             "type": "TYPE_INT",
