@@ -9,14 +9,14 @@ async function subscriberRan() {
   return trackers[0].didSubscriberRun;
 }
 
-async function makeEvent() {
+test("subscriber - mutating field", async () => {
   const mary = await models.member.create({
     name: "Mary",
     email: "mary@keel.so",
   });
 
-  return {
-    eventName: "member.created",
+  const event = {
+    eventName: "member.created" as const,
     occurredAt: new Date(),
     target: {
       id: mary.id,
@@ -24,10 +24,6 @@ async function makeEvent() {
       data: mary,
     },
   };
-}
-
-test("subscriber - mutating field", async () => {
-  const event = await makeEvent();
 
   await subscribers.verifyEmail(event);
 
@@ -40,7 +36,20 @@ test("subscriber - mutating field", async () => {
 test("subscriber - exception - internal error without rollback transaction", async () => {
   await models.trackSubscriber.create({ didSubscriberRun: false });
 
-  const event = await makeEvent();
+  const mary = await models.member.create({
+    name: "Mary",
+    email: "mary@keel.so",
+  });
+
+  const event = {
+    eventName: "member.created" as const,
+    occurredAt: new Date(),
+    target: {
+      id: mary.id,
+      type: "Member",
+      data: mary,
+    },
+  };
 
   await expect(subscribers.subscriberWithException(event)).toHaveError({
     code: "ERR_INTERNAL",
@@ -54,7 +63,20 @@ test("subscriber - exception - internal error without rollback transaction", asy
 test("subscriber - with env vars - successful", async () => {
   await models.trackSubscriber.create({ didSubscriberRun: false });
 
-  const event = await makeEvent();
+  const mary = await models.member.create({
+    name: "Mary",
+    email: "mary@keel.so",
+  });
+
+  const event = {
+    eventName: "member.created" as const,
+    occurredAt: new Date(),
+    target: {
+      id: mary.id,
+      type: "Member",
+      data: mary,
+    },
+  };
 
   await expect(subscribers.subscriberEnvvars(event)).not.toHaveError({});
 

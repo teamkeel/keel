@@ -352,7 +352,8 @@
           "messageName": "SendWelcomeMailMemberCreatedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_STRING",
+            "discriminatorValue": "member.created"
           }
         },
         {
@@ -426,7 +427,8 @@
           "messageName": "VerifyEmailMemberCreatedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_STRING",
+            "discriminatorValue": "member.created"
           }
         },
         {
@@ -488,7 +490,8 @@
           "messageName": "VerifyEmailMemberUpdatedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_STRING",
+            "discriminatorValue": "member.updated"
           }
         },
         {
@@ -550,7 +553,8 @@
           "messageName": "VerifyEmailEmployeeCreatedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_STRING",
+            "discriminatorValue": "employee.created"
           }
         },
         {
@@ -612,7 +616,8 @@
           "messageName": "VerifyEmailEmployeeUpdatedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_STRING",
+            "discriminatorValue": "employee.updated"
           }
         },
         {
@@ -683,7 +688,8 @@
           "messageName": "SendGoodbyeMailMemberDeletedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_STRING",
+            "discriminatorValue": "member.deleted"
           }
         },
         {

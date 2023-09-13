@@ -26,7 +26,29 @@ const (
 	spanId  = "b4c9e2a6a0d84702"
 )
 
-func newContext(t *testing.T) (context.Context, db.Database, *proto.Schema) {
+var auditSchema = `
+model Wedding {
+	fields {
+		name Text
+		guests WeddingInvitee[]
+	}
+	actions {
+		create createWedding() with (name) 
+		create createWeddingWithGuests() with (name, guests.firstName) 
+		update updateWedding(id) with (name) 
+		delete deleteWedding(id)
+	}
+
+	@permission(expression: true, actions: [create, update, delete])
+}
+model WeddingInvitee {
+	fields {
+		wedding Wedding
+		firstName Text
+	}
+}`
+
+func newContext(t *testing.T, keelSchema string) (context.Context, db.Database, *proto.Schema) {
 	dbConnInfo := &db.ConnectionInfo{
 		Host:     "localhost",
 		Port:     "8001",
@@ -34,29 +56,6 @@ func newContext(t *testing.T) (context.Context, db.Database, *proto.Schema) {
 		Password: "postgres",
 		Database: "keel",
 	}
-
-	var keelSchema = `
-	model Wedding {
-		fields {
-			name Text
-			guests WeddingInvitee[]
-		}
-		actions {
-			create createWedding() with (name) 
-			create createWeddingWithGuests() with (name, guests.firstName) 
-			update updateWedding(id) with (name) 
-			delete deleteWedding(id)
-		}
-
-		@permission(expression: true, actions: [create, update, delete])
-	}
-	model WeddingInvitee {
-		fields {
-			wedding Wedding
-			firstName Text
-		}
-	}
-	`
 
 	schema := protoSchema(t, keelSchema)
 
@@ -96,7 +95,7 @@ func withTracing(t *testing.T, ctx context.Context) context.Context {
 }
 
 func TestAuditCreateAction(t *testing.T) {
-	ctx, database, schema := newContext(t)
+	ctx, database, schema := newContext(t, auditSchema)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -140,7 +139,7 @@ func TestAuditCreateAction(t *testing.T) {
 }
 
 func TestAuditNestedCreateAction(t *testing.T) {
-	ctx, database, schema := newContext(t)
+	ctx, database, schema := newContext(t, auditSchema)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -246,7 +245,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 }
 
 func TestAuditUpdateAction(t *testing.T) {
-	ctx, database, schema := newContext(t)
+	ctx, database, schema := newContext(t, auditSchema)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -304,7 +303,7 @@ func TestAuditUpdateAction(t *testing.T) {
 }
 
 func TestAuditDeleteAction(t *testing.T) {
-	ctx, database, schema := newContext(t)
+	ctx, database, schema := newContext(t, auditSchema)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -360,7 +359,7 @@ func TestAuditDeleteAction(t *testing.T) {
 }
 
 func TestAuditTablesWithOnlyIdentity(t *testing.T) {
-	ctx, database, schema := newContext(t)
+	ctx, database, schema := newContext(t, auditSchema)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -386,7 +385,7 @@ func TestAuditTablesWithOnlyIdentity(t *testing.T) {
 }
 
 func TestAuditTablesWithOnlyTracing(t *testing.T) {
-	ctx, database, schema := newContext(t)
+	ctx, database, schema := newContext(t, auditSchema)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -412,7 +411,7 @@ func TestAuditTablesWithOnlyTracing(t *testing.T) {
 }
 
 func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
-	ctx, database, schema := newContext(t)
+	ctx, database, schema := newContext(t, auditSchema)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -453,7 +452,7 @@ func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
 }
 
 func TestAuditFieldsAreDroppedOnCreate(t *testing.T) {
-	ctx, database, schema := newContext(t)
+	ctx, database, schema := newContext(t, auditSchema)
 	defer database.Close()
 
 	ctx, _ = withIdentity(t, ctx, schema)

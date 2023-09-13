@@ -449,3 +449,11 @@ func FindEvent(subscribers []*Event, name string) *Event {
 	})
 	return event
 }
+
+// FindSubscriber locates the subscriber of the given name.
+func FindEventSubscriptions(schema *Schema, event *Event) []*Subscriber {
+	subscribers := lo.Filter(schema.Subscribers, func(m *Subscriber, _ int) bool {
+		return lo.Contains(m.EventNames, event.Name)
+	})
+	return subscribers
+}

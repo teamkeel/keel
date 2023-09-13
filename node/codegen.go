@@ -1544,6 +1544,10 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 }
 
 func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
+	if t.DiscriminatorValue != nil {
+		return fmt.Sprintf(`"%s"`, t.DiscriminatorValue.Value)
+	}
+
 	switch t.Type {
 	case proto.Type_TYPE_ID:
 		ret = "string"
