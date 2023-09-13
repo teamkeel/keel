@@ -27,8 +27,28 @@ model Post {
 }
 
 ===
+
 ALTER TABLE "post" ADD COLUMN "author_id" TEXT NOT NULL;
 ALTER TABLE "post" ADD FOREIGN KEY ("author_id") REFERENCES "account"("id") ON DELETE CASCADE;
+DROP TRIGGER IF EXISTS account_create on "account";
+CREATE TRIGGER account_create AFTER INSERT ON "account" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS account_update on "account";
+CREATE TRIGGER account_update AFTER UPDATE ON "account" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS account_delete on "account";
+CREATE TRIGGER account_delete AFTER DELETE ON "account" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS post_create on "post";
+CREATE TRIGGER post_create AFTER INSERT ON "post" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS post_update on "post";
+CREATE TRIGGER post_update AFTER UPDATE ON "post" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS post_delete on "post";
+CREATE TRIGGER post_delete AFTER DELETE ON "post" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS identity_create on "identity";
+CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS identity_update on "identity";
+CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS identity_delete on "identity";
+CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+
 === 
 
 

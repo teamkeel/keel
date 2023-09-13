@@ -310,14 +310,16 @@ func createAuditHookStmt(schema *proto.Schema, model *proto.Model) (string, erro
 	modelLower := casing.ToSnake(model.Name)
 	statements := []string{}
 
+	// Keel CLI is currently provisioning v11.3 of PostgreSQL which doesn't support CREATE OR REPLACE TRIGGER, so we need to DROP TRIGGER first.
 	statements = append(statements, fmt.Sprintf(
-		`CREATE TRIGGER %s_create AFTER INSERT ON %s REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
-
+		`DROP TRIGGER IF EXISTS %s_create on %s;
+CREATE TRIGGER %s_create AFTER INSERT ON %s REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName, modelLower, tblName))
 	statements = append(statements, fmt.Sprintf(
-		`CREATE TRIGGER %s_update AFTER UPDATE ON %s REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
-
+		`DROP TRIGGER IF EXISTS %s_update on %s;
+CREATE TRIGGER %s_update AFTER UPDATE ON %s REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName, modelLower, tblName))
 	statements = append(statements, fmt.Sprintf(
-		`CREATE TRIGGER %s_delete AFTER DELETE ON %s REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName))
+		`DROP TRIGGER IF EXISTS %s_delete on %s;
+CREATE TRIGGER %s_delete AFTER DELETE ON %s REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName, modelLower, tblName))
 
 	return strings.Join(statements, "\n"), nil
 }
