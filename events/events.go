@@ -16,6 +16,12 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+const (
+	Created = "created"
+	Updated = "updated"
+	Deleted = "deleted"
+)
+
 type Event struct {
 	// The name of the event, e.g. member.created.
 	EventName string `json:"eventName"`
@@ -167,11 +173,11 @@ func toEventName(tableName string, op string) (string, error) {
 
 	switch op {
 	case "insert":
-		action = "created"
+		action = Created
 	case "update":
-		action = "updated"
+		action = Updated
 	case "delete":
-		action = "deleted"
+		action = Deleted
 	default:
 		return "", fmt.Errorf("unknown op type '%s' when creating event", op)
 	}
