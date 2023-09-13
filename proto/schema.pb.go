@@ -1563,7 +1563,8 @@ type TypeInfo struct {
 	// When TypeInfo's type property is set to UNION, then any one of the type names
 	// listed here can be used as input. Currently only support messages.
 	UnionNames []*wrapperspb.StringValue `protobuf:"bytes,7,rep,name=union_names,json=unionNames,proto3" json:"union_names,omitempty"`
-	// TODO
+	// For types which are in a union, it is optional to provide a value to discriminate on.
+	// This is only useful in TypeScript type generation, where this will make type a string literal type.
 	DiscriminatorValue *wrapperspb.StringValue `protobuf:"bytes,8,opt,name=discriminator_value,json=discriminatorValue,proto3" json:"discriminator_value,omitempty"`
 }
 

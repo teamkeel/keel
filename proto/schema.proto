@@ -271,7 +271,8 @@ message TypeInfo {
     // listed here can be used as input. Currently only support messages.
     repeated google.protobuf.StringValue union_names = 7;
 
-    // TODO
+    // For types which are in a union, it is optional to provide a value to discriminate on.
+    // This is only useful in TypeScript type generation, where this will make type a string literal type.
     google.protobuf.StringValue discriminator_value = 8;
 }
 

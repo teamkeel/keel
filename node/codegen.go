@@ -1544,6 +1544,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 }
 
 func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
+	// If a discriminating value is set, then this field will become a string literal type.
 	if t.DiscriminatorValue != nil {
 		return fmt.Sprintf(`"%s"`, t.DiscriminatorValue.Value)
 	}
