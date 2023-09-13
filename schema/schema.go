@@ -137,9 +137,23 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 		asts = append(asts, declarations)
 	}
 
-	// Now insert the foreign key fields. We have to defer this until now,
-	// because we need access to the global model set.
-	errDetails := scm.insertForeignKeyFields(asts)
+	// All the code below this point - depends on having access to the global
+	// i.e. aggregated asts from multiple files. Mostly in order to be able to
+	// reason over ALL models scope.
+
+	// XXXX
+	// Inject implied reverse relationship fields into the Identity model.
+	// This creates our "backlinks" feature from the Identity model.
+
+	errDetails := scm.insertAllBackLinkFields(asts)
+	if errDetails != nil {
+		parseErrors.Errors = append(parseErrors.Errors, &errorhandling.ValidationError{
+			ErrorDetails: errDetails,
+		})
+	}
+
+	// Now insert the foreign key fields (for relationships)
+	errDetails = scm.insertForeignKeyFields(asts)
 	if errDetails != nil {
 		parseErrors.Errors = append(parseErrors.Errors, &errorhandling.ValidationError{
 			ErrorDetails: errDetails,
