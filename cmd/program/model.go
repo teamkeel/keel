@@ -26,7 +26,6 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
-	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/testing"
@@ -497,7 +496,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 
 			// In run mode we accept any external issuers but the tokens need to be signed correctly
-			ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+			ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
 				AllowAnyIssuers: true,
 			})
 
