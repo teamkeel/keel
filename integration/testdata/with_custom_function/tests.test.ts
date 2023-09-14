@@ -219,8 +219,16 @@ test("relationships - findOne using multiple hasMany relationships", async () =>
   const res = await actions.getPublisherByBook({
     bookId: oliverTwist.id,
   });
+
   expect(res).not.toBe(null);
   expect(res!.id).toBe(publisher2.id);
+
+  const res2 = await actions.getPublisher({
+    id: publisher2.id,
+  });
+
+  expect(res2).not.toBe(null);
+  expect(res2!.id).toBe(publisher2.id);
 });
 
 test("relationships - findMany using multiple belongsTo relationships", async () => {

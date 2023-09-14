@@ -61,17 +61,16 @@ const permissionFns = {
 	createPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
-			return rows.length === records.length && rows.every(x => x.result);
+			return rows.length === records.length;
 		},
 	],
 }
 module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
-				SELECT "person"."id", (true) AS "result" 
+				SELECT DISTINCT "person"."id" 
 				FROM "person" 
-				WHERE "person"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
-				GROUP BY "person"."id"
+				WHERE (true) AND "person"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -94,17 +93,16 @@ const permissionFns = {
 	getPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
-			return rows.length === records.length && rows.every(x => x.result);
+			return rows.length === records.length;
 		},
 	],
 }
 module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
-				SELECT "post"."id", ("post"."publish_date" <= ${ctx.now()}) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
-				GROUP BY "post"."id"
+				WHERE ("post"."publish_date" <= ${ctx.now()}) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -128,18 +126,17 @@ const permissionFns = {
 	updatePost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
-			return rows.length === records.length && rows.every(x => x.result);
+			return rows.length === records.length;
 		},
 	],
 }
 module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
-				SELECT "post"."id", ("post$identity"."email" IS NOT DISTINCT FROM ${"adam@keel.xyz"}) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
 				LEFT JOIN "identity" AS "post$identity" ON "post"."identity_id" = "post$identity"."id" 
-				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
-				GROUP BY "post"."id", "post$identity"."email"
+				WHERE ("post$identity"."email" IS NOT DISTINCT FROM ${"adam@keel.xyz"}) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -162,17 +159,16 @@ const permissionFns = {
 	getPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
-			return rows.length === records.length && rows.every(x => x.result);
+			return rows.length === records.length;
 		},
 	],
 }
 module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
-				SELECT "post"."id", ("post"."view_count" < ${10}) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
-				GROUP BY "post"."id"
+				WHERE ("post"."view_count" < ${10}) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -196,17 +192,16 @@ const permissionFns = {
 	updatePost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
-			return rows.length === records.length && rows.every(x => x.result);
+			return rows.length === records.length;
 		},
 	],
 }
 module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
-				SELECT "post"."id", ("post"."identity_id" IS NOT DISTINCT FROM ${ctx.identity ? ctx.identity.id : ''}) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
-				GROUP BY "post"."id"
+				WHERE ("post"."identity_id" IS NOT DISTINCT FROM ${ctx.identity ? ctx.identity.id : ''}) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -230,18 +225,17 @@ const permissionFns = {
 	updatePost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
-			return rows.length === records.length && rows.every(x => x.result);
+			return rows.length === records.length;
 		},
 	],
 }
 module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
-				SELECT "post"."id", ("post$identity"."email" IS NOT DISTINCT FROM ${ctx.identity ? ctx.identity.email : ''}) AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
 				LEFT JOIN "identity" AS "post$identity" ON "post"."identity_id" = "post$identity"."id" 
-				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
-				GROUP BY "post"."id", "post$identity"."email"
+				WHERE ("post$identity"."email" IS NOT DISTINCT FROM ${ctx.identity ? ctx.identity.email : ''}) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -265,18 +259,16 @@ const permissionFns = {
 	createPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
-			return rows.length === records.length && rows.every(x => x.result);
+			return rows.length === records.length;
 		},
 	],
 }
 module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
-				SELECT "post"."id", (${ctx.isAuthenticated}::boolean) AS "result" 
-				FROM "post"
-				WHERE "post"."id" 
-				IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
-				GROUP BY "post"."id"
+				SELECT DISTINCT "post"."id" 
+				FROM "post" 
+				WHERE (${ctx.isAuthenticated}::boolean) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -299,17 +291,16 @@ const permissionFns = {
 	getPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
-			return rows.length === records.length && rows.every(x => x.result);
+			return rows.length === records.length;
 		},
 	],
 }
 module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
-				SELECT "post"."id", (${ctx.headers["secretkey"] || ""} IS NOT DISTINCT FROM "post"."secret_key") AS "result" 
+				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
-				GROUP BY "post"."id"
+				WHERE (${ctx.headers["secretkey"] || ""} IS NOT DISTINCT FROM "post"."secret_key") AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -332,17 +323,16 @@ const permissionFns = {
 	getPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
-			return rows.length === records.length && rows.every(x => x.result);
+			return rows.length === records.length;
 		},
 	],
 }
 module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
-				SELECT "post"."id", (${ctx.secrets["SECRET_KEY"] || ""} IS NOT DISTINCT FROM "post"."secret_key") AS "result"
-				FROM "post"
-				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
-				GROUP BY "post"."id"
+				SELECT DISTINCT "post"."id" 
+				FROM "post" 
+				WHERE (${ctx.secrets["SECRET_KEY"] || ""} IS NOT DISTINCT FROM "post"."secret_key") AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 	}

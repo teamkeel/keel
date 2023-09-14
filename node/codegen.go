@@ -929,6 +929,7 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 			w.Indent()
 			w.Writeln("// when no beforeQuery hook is defined, use the default implementation")
 			w.Writef("data = await models.%s.update(wheres, values);\n", casing.ToLowerCamel(action.ModelName))
+
 			w.Dedent()
 			w.Writeln("}")
 			w.Writeln("")
@@ -945,10 +946,6 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 			w.Writeln("};")
 			w.Writeln("")
 
-			if action.Type == proto.ActionType_ACTION_TYPE_DELETE {
-				w.Writeln("wheres = inputs;")
-			}
-
 			w.Writeln("let data;")
 
 			writeBeforeQueryHook(w, action)
@@ -964,9 +961,9 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 			case proto.ActionType_ACTION_TYPE_LIST:
 				w.Writef("data = await models.%s.findMany(inputs);\n", casing.ToLowerCamel(action.ModelName))
 			case proto.ActionType_ACTION_TYPE_GET:
-				w.Writef("data = await models.%s.findOne(wheres);\n", casing.ToLowerCamel(action.ModelName))
+				w.Writef("data = await models.%s.findOne(inputs);\n", casing.ToLowerCamel(action.ModelName))
 			case proto.ActionType_ACTION_TYPE_DELETE:
-				w.Writef("data = await models.%s.delete(wheres);\n", casing.ToLowerCamel(action.ModelName))
+				w.Writef("data = await models.%s.delete(inputs);\n", casing.ToLowerCamel(action.ModelName))
 			}
 
 			w.Dedent()

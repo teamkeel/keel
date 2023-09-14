@@ -78,8 +78,8 @@ func writePermissions(w *codegen.Writer, schema *proto.Schema) {
 			w.Write(sql)
 			w.Writeln("`.execute(db);")
 
-			// Permissions pass if the same number of rows are returned and every row's result is true
-			w.Writeln("return rows.length === records.length && rows.every(x => x.result);")
+			// Permissions pass if the same number of rows are returned.
+			w.Writeln("return rows.length === records.length;")
 			w.Dedent()
 			w.Writeln("},")
 
