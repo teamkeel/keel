@@ -352,8 +352,8 @@
           "messageName": "SendWelcomeMailMemberCreatedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING",
-            "discriminatorValue": "member.created"
+            "type": "TYPE_STRING_LITERAL",
+            "stringLiteralValue": "member.created"
           }
         },
         {
@@ -427,8 +427,8 @@
           "messageName": "VerifyEmailMemberCreatedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING",
-            "discriminatorValue": "member.created"
+            "type": "TYPE_STRING_LITERAL",
+            "stringLiteralValue": "member.created"
           }
         },
         {
@@ -490,8 +490,8 @@
           "messageName": "VerifyEmailMemberUpdatedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING",
-            "discriminatorValue": "member.updated"
+            "type": "TYPE_STRING_LITERAL",
+            "stringLiteralValue": "member.updated"
           }
         },
         {
@@ -553,8 +553,8 @@
           "messageName": "VerifyEmailEmployeeCreatedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING",
-            "discriminatorValue": "employee.created"
+            "type": "TYPE_STRING_LITERAL",
+            "stringLiteralValue": "employee.created"
           }
         },
         {
@@ -616,8 +616,8 @@
           "messageName": "VerifyEmailEmployeeUpdatedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING",
-            "discriminatorValue": "employee.updated"
+            "type": "TYPE_STRING_LITERAL",
+            "stringLiteralValue": "employee.updated"
           }
         },
         {
@@ -688,8 +688,8 @@
           "messageName": "SendGoodbyeMailMemberDeletedEvent",
           "name": "eventName",
           "type": {
-            "type": "TYPE_STRING",
-            "discriminatorValue": "member.deleted"
+            "type": "TYPE_STRING_LITERAL",
+            "stringLiteralValue": "member.deleted"
           }
         },
         {

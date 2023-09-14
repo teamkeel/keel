@@ -273,7 +273,7 @@ message TypeInfo {
 
     // For types which are in a union, it is optional to provide a value to discriminate on.
     // This is only useful in TypeScript type generation, where this will make type a string literal type.
-    google.protobuf.StringValue discriminator_value = 8;
+    google.protobuf.StringValue string_literal_value = 8;
 }
 
 message EnvironmentVariable {
@@ -349,15 +349,16 @@ enum Type {
     // Used for hashing passwords and passcodes with the intention to verify admission.
     TYPE_PASSWORD = 15;
     TYPE_MESSAGE = 16;
-
-    // Any is used in Message types to denote a field with any type
+    // Any is used in Message types to denote a field with any type.
     TYPE_ANY = 17;
-
+    // Used to specify a sort direction argument.
     TYPE_SORT_DIRECTION = 18;
-
     // A union type describes a value that can be one of several types.
     // These types are listed in TypeInfo's Union_Names property.
     TYPE_UNION = 19;
+    // A string literal type which can be used to discriminate on in our Typescript types.
+    // TYPE_INFO string_literal_type must also be set.
+    TYPE_STRING_LITERAL = 20;
 }
 
 enum OrderDirection {

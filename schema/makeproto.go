@@ -1414,8 +1414,8 @@ func (scm *Builder) makeSubscriberInputMessages() {
 				MessageName: eventMessage.Name,
 				Name:        "eventName",
 				Type: &proto.TypeInfo{
-					Type:               proto.Type_TYPE_STRING,
-					DiscriminatorValue: wrapperspb.String(eventName),
+					Type:               proto.Type_TYPE_STRING_LITERAL,
+					StringLiteralValue: wrapperspb.String(eventName),
 				},
 			})
 

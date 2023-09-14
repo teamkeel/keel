@@ -1544,11 +1544,6 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 }
 
 func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
-	// If a discriminating value is set, then this field will become a string literal type.
-	if t.DiscriminatorValue != nil {
-		return fmt.Sprintf(`"%s"`, t.DiscriminatorValue.Value)
-	}
-
 	switch t.Type {
 	case proto.Type_TYPE_ID:
 		ret = "string"
@@ -1583,6 +1578,12 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 			return s.Value
 		})
 		ret = fmt.Sprintf("(%s)", strings.Join(messageNames, " | "))
+	case proto.Type_TYPE_STRING_LITERAL:
+		// Use string literal type for discriminating.
+		if t.StringLiteralValue == nil {
+			return fmt.Sprintf("TypeInfo.StringLiteralValue must be provided for type TYPE_STRING_LITERAL")
+		}
+		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
 	default:
 		ret = "any"
 	}
