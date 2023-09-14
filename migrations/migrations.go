@@ -155,16 +155,6 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				Type:  ChangeTypeAdded,
 			})
 			modelsAdded = append(modelsAdded, model)
-
-			// Add audit logs hooks to every table - excluding of course
-			// the audit table itself.
-			if model.Name != auditModelName {
-				stmt, err = createAuditHookStmt(schema, model)
-				if err != nil {
-					return nil, err
-				}
-				statements = append(statements, stmt)
-			}
 			continue
 		}
 
@@ -295,6 +285,17 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				Model: model.Name,
 				Type:  ChangeTypeModified,
 			})
+		}
+	}
+
+	// Add audit logs hooks all model tables - excluding the audit table itself.
+	for _, model := range schema.Models {
+		if model.Name != auditModelName {
+			stmt, err := createAuditHookStmt(schema, model)
+			if err != nil {
+				return nil, err
+			}
+			statements = append(statements, stmt)
 		}
 	}
 

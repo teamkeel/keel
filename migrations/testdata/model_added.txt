@@ -29,10 +29,26 @@ CREATE TABLE "animal" (
 "human_friend_id" TEXT NOT NULL
 );
 ALTER TABLE "animal" ADD CONSTRAINT animal_id_pkey PRIMARY KEY ("id");
-CREATE TRIGGER animal_create AFTER INSERT ON "animal" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
-CREATE TRIGGER animal_update AFTER UPDATE ON "animal" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
-CREATE TRIGGER animal_delete AFTER DELETE ON "animal" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
 ALTER TABLE "animal" ADD FOREIGN KEY ("human_friend_id") REFERENCES "person"("id") ON DELETE CASCADE;
+DROP TRIGGER IF EXISTS person_create on "person";
+CREATE TRIGGER person_create AFTER INSERT ON "person" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS person_update on "person";
+CREATE TRIGGER person_update AFTER UPDATE ON "person" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS person_delete on "person";
+CREATE TRIGGER person_delete AFTER DELETE ON "person" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS animal_create on "animal";
+CREATE TRIGGER animal_create AFTER INSERT ON "animal" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS animal_update on "animal";
+CREATE TRIGGER animal_update AFTER UPDATE ON "animal" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS animal_delete on "animal";
+CREATE TRIGGER animal_delete AFTER DELETE ON "animal" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS identity_create on "identity";
+CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS identity_update on "identity";
+CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS identity_delete on "identity";
+CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+
 === 
 
 [
