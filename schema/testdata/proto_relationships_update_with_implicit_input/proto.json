@@ -519,7 +519,6 @@
             "modelName": "ParentModel",
             "fieldName": "id"
           },
-          "nullable": true,
           "target": [
             "parentOptional",
             "id"

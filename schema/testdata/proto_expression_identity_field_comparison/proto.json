@@ -399,7 +399,6 @@
             "modelName": "Publisher",
             "fieldName": "id"
           },
-          "nullable": true,
           "target": [
             "publisher",
             "id"
@@ -418,7 +417,6 @@
             "modelName": "Author",
             "fieldName": "id"
           },
-          "nullable": true,
           "target": [
             "owner",
             "id"

@@ -14,7 +14,7 @@ test("create action - null values", async () => {
     name: "Arnold",
     preferredName: null,
     employmentStatus: null,
-    employer: { id: null },
+    employer: null,
   });
 
   // Test the response from createPerson
@@ -80,7 +80,7 @@ test("update action - null values", async () => {
     values: {
       preferredName: null,
       employmentStatus: null,
-      employer: { id: null },
+      employer: null,
     },
   });
 
