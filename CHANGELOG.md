@@ -1,3 +1,17 @@
+# Version: v0.366.1-prerelease9
+
+* [#1090](https://github.com/teamkeel/keel/pull/1090): fix: only use verified emails for roles
+* [#1146](https://github.com/teamkeel/keel/pull/1146): fix: row based permission issue
+* [#1163](https://github.com/teamkeel/keel/pull/1163): Update contributing.md
+* [#1181](https://github.com/teamkeel/keel/pull/1181): fix: use name of nodes for relationship attribute validation errors
+* [#1187](https://github.com/teamkeel/keel/pull/1187): Keel run fix (with Windows support)
+* [#1194](https://github.com/teamkeel/keel/pull/1194): [Changelog CI] Add Changelog for Version v0.366.0
+* [#1198](https://github.com/teamkeel/keel/pull/1198): fix: an action input should only be nullable if the field being targeted is optional
+* [#1200](https://github.com/teamkeel/keel/pull/1200): fix: set MessageName field of MessageField for query input messages
+* [#1201](https://github.com/teamkeel/keel/pull/1201): fix: audit trigger migrations for existing models
+* [#1202](https://github.com/teamkeel/keel/pull/1202): chore: sending events from audit table, discriminating types
+
+
 # Version: v0.366.0
 
 * [#1154](https://github.com/teamkeel/keel/pull/1154): fix: subscribers not in transactions, fixed opt on testing types
