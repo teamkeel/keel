@@ -1580,9 +1580,6 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 		ret = fmt.Sprintf("(%s)", strings.Join(messageNames, " | "))
 	case proto.Type_TYPE_STRING_LITERAL:
 		// Use string literal type for discriminating.
-		if t.StringLiteralValue == nil {
-			return fmt.Sprintf("TypeInfo.StringLiteralValue must be provided for type TYPE_STRING_LITERAL")
-		}
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
 	default:
 		ret = "any"
