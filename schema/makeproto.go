@@ -1443,10 +1443,15 @@ func (scm *Builder) makeSubscriberInputMessages() {
 				Fields: []*proto.MessageField{},
 			}
 
+			eventName := makeEventName(event.ModelName, mapToEventName(event.ActionType))
+
 			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
 				MessageName: eventMessage.Name,
 				Name:        "eventName",
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+				Type: &proto.TypeInfo{
+					Type:               proto.Type_TYPE_STRING_LITERAL,
+					StringLiteralValue: wrapperspb.String(eventName),
+				},
 			})
 
 			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{

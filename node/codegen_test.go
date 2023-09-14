@@ -1409,7 +1409,7 @@ model Member {
 	expected := `
 export type VerifyEmailEvent = (VerifyEmailMemberCreatedEvent | VerifyEmailMemberUpdatedEvent);
 export interface VerifyEmailMemberCreatedEvent {
-	eventName: string;
+	eventName: "member.created";
 	occurredAt: Date;
 	identityId?: string;
 	target: VerifyEmailMemberCreatedEventTarget;
@@ -1420,7 +1420,7 @@ export interface VerifyEmailMemberCreatedEventTarget {
 	data: Member;
 }
 export interface VerifyEmailMemberUpdatedEvent {
-	eventName: string;
+	eventName: "member.updated";
 	occurredAt: Date;
 	identityId?: string;
 	target: VerifyEmailMemberUpdatedEventTarget;
@@ -1432,7 +1432,7 @@ export interface VerifyEmailMemberUpdatedEventTarget {
 }
 export type SendWelcomeEmailEvent = (SendWelcomeEmailMemberCreatedEvent);
 export interface SendWelcomeEmailMemberCreatedEvent {
-	eventName: string;
+	eventName: "member.created";
 	occurredAt: Date;
 	identityId?: string;
 	target: SendWelcomeEmailMemberCreatedEventTarget;
@@ -2042,33 +2042,33 @@ export declare function resetDatabase(): Promise<void>;`
 
 func TestWriteTestingTypesSubscribers(t *testing.T) {
 	schema := `
-model Member {
+model ClubHouse {
 	@on([create, update], verifyEmail)
 }`
 
 	expected := `
-export type VerifyEmailEvent = (VerifyEmailMemberCreatedEvent | VerifyEmailMemberUpdatedEvent);
-export interface VerifyEmailMemberCreatedEvent {
-	eventName: string;
+export type VerifyEmailEvent = (VerifyEmailClubHouseCreatedEvent | VerifyEmailClubHouseUpdatedEvent);
+export interface VerifyEmailClubHouseCreatedEvent {
+	eventName: "clubHouse.created";
 	occurredAt: Date;
 	identityId?: string;
-	target: VerifyEmailMemberCreatedEventTarget;
+	target: VerifyEmailClubHouseCreatedEventTarget;
 }
-export interface VerifyEmailMemberCreatedEventTarget {
+export interface VerifyEmailClubHouseCreatedEventTarget {
 	id: string;
 	type: string;
-	data: sdk.Member;
+	data: sdk.ClubHouse;
 }
-export interface VerifyEmailMemberUpdatedEvent {
-	eventName: string;
+export interface VerifyEmailClubHouseUpdatedEvent {
+	eventName: "clubHouse.updated";
 	occurredAt: Date;
 	identityId?: string;
-	target: VerifyEmailMemberUpdatedEventTarget;
+	target: VerifyEmailClubHouseUpdatedEventTarget;
 }
-export interface VerifyEmailMemberUpdatedEventTarget {
+export interface VerifyEmailClubHouseUpdatedEventTarget {
 	id: string;
 	type: string;
-	data: sdk.Member;
+	data: sdk.ClubHouse;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;

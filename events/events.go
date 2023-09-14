@@ -2,12 +2,24 @@ package events
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/iancoleman/strcase"
+	"github.com/karlseguin/typed"
+	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel/trace"
+)
+
+const (
+	Created = "created"
+	Updated = "updated"
+	Deleted = "deleted"
 )
 
 type Event struct {
@@ -54,8 +66,17 @@ func GetEventHandler(ctx context.Context) (EventHandler, error) {
 }
 
 // Gather, create and send events which have occurred within the scope of this context.
-func SendEvents(ctx context.Context) error {
+func SendEvents(ctx context.Context, schema *proto.Schema) error {
+	// If no event handler has been configured, then no events can be sent.
 	if !HasEventHandler(ctx) {
+		return nil
+	}
+
+	spanContext := trace.SpanContextFromContext(ctx)
+
+	// If tracing is disabled, then no events can be sent.
+	// This is because events are produced from the auditing table.
+	if !spanContext.IsValid() {
 		return nil
 	}
 
@@ -64,7 +85,6 @@ func SendEvents(ctx context.Context) error {
 		return err
 	}
 
-	spanContext := trace.SpanContextFromContext(ctx)
 	traceparent := util.GetTraceparent(spanContext)
 
 	identityId := ""
@@ -77,25 +97,98 @@ func SendEvents(ctx context.Context) error {
 		identityId = identity.Id
 	}
 
-	// 1. Retrieve rows from the audit table by this ctx's trace_id
-	// 2. Do we have any events in the schema matching these rows?
-	// 3. If so, call handleEvent for each subscriber of that event with the payload.
+	sql := fmt.Sprintf(`
+		SELECT * FROM keel_audit 
+		WHERE trace_id='%s' AND op IN ('insert', 'update', 'delete')`, spanContext.TraceID().String())
 
-	// PLACEHOLDER CODE
-	testEvent := &Event{
-		EventName:  "person.created",
-		OccurredAt: time.Now().UTC(),
-		IdentityId: identityId,
-		Target: &EventTarget{
-			Id:   "2342342",
-			Type: "Person",
-			Data: map[string]any{
-				"id":    "2342342",
-				"name":  "Dave",
-				"email": "dave@hello.com",
-			},
-		},
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return err
 	}
 
-	return handler(ctx, "verifyEmail", testEvent, traceparent)
+	result, err := database.ExecuteQuery(ctx, sql)
+	if err != nil {
+		return err
+	}
+
+	for _, row := range result.Rows {
+		audit := typed.New(row)
+
+		tableName := audit.String("table_name")
+		if tableName == "" {
+			return errors.New("audit 'table' column cannot be parsed or is empty")
+		}
+
+		op := audit.String("op")
+		if op == "" {
+			return errors.New("audit 'op' column cannot be parsed or is empty")
+		}
+
+		eventName, err := toEventName(tableName, op)
+		if err != nil {
+			return err
+		}
+
+		protoEvent := proto.FindEvent(schema.Events, eventName)
+		if protoEvent == nil {
+			continue
+		}
+
+		subscribers := proto.FindEventSubscriptions(schema, protoEvent)
+
+		for _, subscriber := range subscribers {
+			data, err := typed.JsonString(audit.String("data"))
+			if err != nil {
+				return err
+			}
+
+			id := data.String("id")
+			if id == "" {
+				return errors.New("error parsing audit table data")
+			}
+
+			event := &Event{
+				EventName:  eventName,
+				OccurredAt: time.Now().UTC(),
+				IdentityId: identityId,
+				Target: &EventTarget{
+					Id:   id,
+					Type: strcase.ToCamel(tableName),
+					Data: toLowerCamelMap(data),
+				},
+			}
+
+			err = handler(ctx, subscriber.Name, event, traceparent)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func toEventName(tableName string, op string) (string, error) {
+	action := ""
+
+	switch op {
+	case "insert":
+		action = Created
+	case "update":
+		action = Updated
+	case "delete":
+		action = Deleted
+	default:
+		return "", fmt.Errorf("unknown op type '%s' when creating event", op)
+	}
+
+	return fmt.Sprintf("%s.%s", strcase.ToLowerCamel(tableName), action), nil
+}
+
+func toLowerCamelMap(m map[string]any) map[string]any {
+	res := map[string]any{}
+	for key, value := range m {
+		res[casing.ToLowerCamel(key)] = value
+	}
+	return res
 }
