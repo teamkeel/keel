@@ -69,18 +69,19 @@ func TestOIDCConfig(t *testing.T) {
 		return OIDCMockResponse(req)
 	}
 
-	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{{
-		Iss: issuerUrl,
-	}})
-	require.Equal(t, 1, len(issuers))
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+		Issuers: []runtimectx.ExternalIssuer{
+			{
+				Iss: issuerUrl,
+			},
+		},
+	})
 
 	_, err := auth.GetOpenIDConnectConfig(ctx, issuerUrl)
 	require.NoError(t, err)
 
-	// Prefetch makes one OIDC lookup and one jwks get
-	require.Equal(t, 2, requests)
+	require.Equal(t, 1, requests)
 	require.Contains(t, requestedUrls, issuerUrl+".well-known/openid-configuration")
-	require.Contains(t, requestedUrls, issuerUrl+"jwks")
 }
 
 func TestMultipleOIDCConfig(t *testing.T) {
@@ -94,25 +95,30 @@ func TestMultipleOIDCConfig(t *testing.T) {
 		return OIDCMockResponse(req)
 	}
 
-	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
-		{
-			Iss: "https://example.com/",
-		},
-		{
-			Iss: "https://google.com/",
-		}})
-	require.Equal(t, 2, len(issuers))
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+		Issuers: []runtimectx.ExternalIssuer{
+			{
+				Iss: "https://example.com/",
+			},
+			{
+				Iss: "https://google.com/",
+			}},
+	})
 
 	config, err := auth.GetOpenIDConnectConfig(ctx, "https://example.com/")
 	require.NoError(t, err)
 
-	require.Equal(t, 4, requests)
+	require.Equal(t, 1, requests)
 	require.Equal(t, "https://example.com/jwks", config.JWKSURL)
 
+	_, err = auth.GetOpenIDConnectConfig(ctx, "https://google.com/")
+	require.NoError(t, err)
+
+	// Request again to check cache
 	config, err = auth.GetOpenIDConnectConfig(ctx, "https://google.com/")
 	require.NoError(t, err)
 
-	require.Equal(t, 4, requests)
+	require.Equal(t, 2, requests)
 	require.Equal(t, "https://google.com/jwks", config.JWKSURL)
 }
 
@@ -133,12 +139,13 @@ func TestOIDCConfigNoCache(t *testing.T) {
 		return res, nil
 	}
 
-	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
-		{
-			Iss: issuerUrl,
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+		Issuers: []runtimectx.ExternalIssuer{
+			{
+				Iss: issuerUrl,
+			},
 		},
 	})
-	require.Equal(t, 1, len(issuers))
 
 	_, err := auth.GetOpenIDConnectConfig(ctx, issuerUrl)
 	require.NoError(t, err)
@@ -146,8 +153,7 @@ func TestOIDCConfigNoCache(t *testing.T) {
 	_, err = auth.GetOpenIDConnectConfig(ctx, issuerUrl)
 	require.NoError(t, err)
 
-	// Two prefetch requests and one request for each get
-	require.Equal(t, 4, requests)
+	require.Equal(t, 2, requests)
 }
 
 func TestUserInfo(t *testing.T) {
@@ -155,16 +161,13 @@ func TestUserInfo(t *testing.T) {
 	ctx := newContext()
 	issuerUrl := "https://example.com/"
 
-	mocks.DoFunc = func(req *http.Request) (*http.Response, error) {
-		return OIDCMockResponse(req)
-	}
-
-	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
-		{
-			Iss: issuerUrl,
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+		Issuers: []runtimectx.ExternalIssuer{
+			{
+				Iss: issuerUrl,
+			},
 		},
 	})
-	require.Equal(t, 1, len(issuers))
 
 	requests := 0
 	mocks.DoFunc = func(req *http.Request) (*http.Response, error) {
@@ -185,8 +188,8 @@ func TestUserInfo(t *testing.T) {
 	require.Equal(t, true, user.EmailVerified)
 	require.Equal(t, "John", user.GivenName)
 
-	// No cache headers so no cachine
-	require.Equal(t, 2, requests)
+	// No cache headers so no caching
+	require.Equal(t, 3, requests)
 
 	token, err = makeJWT(issuerUrl, "123", []string{})
 	require.NoError(t, err)
@@ -199,7 +202,7 @@ func TestUserInfo(t *testing.T) {
 	require.Equal(t, "123", user.Subject)
 
 	// Make another call for this new user
-	require.Equal(t, 4, requests)
+	require.Equal(t, 5, requests)
 }
 
 func TestUserInfoCache(t *testing.T) {
@@ -211,12 +214,13 @@ func TestUserInfoCache(t *testing.T) {
 		return OIDCMockResponse(req)
 	}
 
-	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
-		{
-			Iss: issuerUrl,
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+		Issuers: []runtimectx.ExternalIssuer{
+			{
+				Iss: issuerUrl,
+			},
 		},
 	})
-	require.Equal(t, 1, len(issuers))
 
 	requests := 0
 	mocks.DoFunc = func(req *http.Request) (*http.Response, error) {
@@ -244,7 +248,8 @@ func TestUserInfoCache(t *testing.T) {
 	require.Equal(t, true, user.EmailVerified)
 	require.Equal(t, "John", user.GivenName)
 
-	require.Equal(t, 1, requests)
+	// One request for the config and one for user info
+	require.Equal(t, 2, requests)
 
 	token, err = makeJWT(issuerUrl, "123", []string{})
 	require.NoError(t, err)
@@ -256,7 +261,7 @@ func TestUserInfoCache(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "123", user.Subject)
 
-	require.Equal(t, 2, requests)
+	require.Equal(t, 3, requests)
 }
 
 func TestGetJWKS(t *testing.T) {
@@ -271,12 +276,13 @@ func TestGetJWKS(t *testing.T) {
 		return OIDCMockResponse(req)
 	}
 
-	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
-		{
-			Iss: issuerUrl,
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+		Issuers: []runtimectx.ExternalIssuer{
+			{
+				Iss: issuerUrl,
+			},
 		},
 	})
-	require.Equal(t, 1, len(issuers))
 
 	_, err := auth.GetJWKS(ctx, issuerUrl)
 	require.NoError(t, err)
@@ -303,17 +309,21 @@ func TestGetJWKSNoCache(t *testing.T) {
 		return res, nil
 	}
 
-	issuers := auth.CheckIssuers(ctx, []auth.ExternalIssuer{
-		{
-			Iss: issuerUrl,
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+		Issuers: []runtimectx.ExternalIssuer{
+			{
+				Iss: issuerUrl,
+			},
 		},
 	})
-	require.Equal(t, 1, len(issuers))
 
 	_, err := auth.GetJWKS(ctx, issuerUrl)
 	require.NoError(t, err)
 
-	// One OIDC lookup and one JWKS fetch
+	_, err = auth.GetJWKS(ctx, issuerUrl)
+	require.NoError(t, err)
+
+	// One OIDC lookup and two JWKS fetch
 	require.Equal(t, 3, requests)
 }
 
@@ -327,9 +337,9 @@ func TestOIDCTokenValidation(t *testing.T) {
 		return OIDCMockResponse(req)
 	}
 
-	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
 		AllowAnyIssuers: false,
-		Issuers: []auth.ExternalIssuer{
+		Issuers: []runtimectx.ExternalIssuer{
 			{
 				Iss: issuerUrl,
 			},
@@ -360,8 +370,8 @@ func TestOIDCTokenValidationIncorrectAudience(t *testing.T) {
 
 	aud := "no match"
 
-	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		Issuers: []auth.ExternalIssuer{
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+		Issuers: []runtimectx.ExternalIssuer{
 			{
 				Iss:      issuerUrl,
 				Audience: &aud,
@@ -389,8 +399,8 @@ func TestOIDCTokenValidationCorrectAudience(t *testing.T) {
 
 	aud := "staff"
 
-	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		Issuers: []auth.ExternalIssuer{
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+		Issuers: []runtimectx.ExternalIssuer{
 			{
 				Iss:      issuerUrl,
 				Audience: &aud,
@@ -425,8 +435,8 @@ func TestOIDCTokenValidationInvalidIssuer(t *testing.T) {
 		}, nil
 	}
 
-	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
-		Issuers: []auth.ExternalIssuer{
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+		Issuers: []runtimectx.ExternalIssuer{
 			{
 				Iss: issuerUrl,
 			},
@@ -451,7 +461,7 @@ func TestAllowNoIssuer(t *testing.T) {
 		return OIDCMockResponse(req)
 	}
 
-	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{})
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{})
 
 	token, err := makeJWT(issuerUrl, "user_1", []string{})
 	require.NoError(t, err)
@@ -470,7 +480,7 @@ func TestAllowAllIssuers(t *testing.T) {
 		return OIDCMockResponse(req)
 	}
 
-	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
 		AllowAnyIssuers: true,
 	})
 
@@ -489,7 +499,7 @@ func TestEnVarFallback(t *testing.T) {
 		return OIDCMockResponse(req)
 	}
 
-	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
 		AllowAnyIssuers: true,
 	})
 

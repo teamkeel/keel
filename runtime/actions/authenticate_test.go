@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/runtime/actions"
-	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/testhelpers"
 )
@@ -360,7 +359,7 @@ func TestBearerTokenIssueClaimIsKeel(t *testing.T) {
 
 	identityId := ksuid.New()
 
-	ctx = runtimectx.WithAuthConfig(ctx, auth.AuthConfig{
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
 		AllowAnyIssuers: true,
 	})
 
