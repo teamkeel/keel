@@ -47,7 +47,7 @@ permissions:
   contents: write
 
 jobs:
-  goreleaser:
+  keel-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -66,9 +66,9 @@ jobs:
         uses: rickstaa/action-create-tag@v1
         id: "tag_create"
         with:
-          tag: "v${{ inputs.version }}"
+          tag: "${{ inputs.version }}"
           tag_exists_error: false
-          message: "Keel release v${{ inputs.version }}"
+          message: "Keel release ${{ inputs.version }}"
 
       - name: Set variables for homebrew
         id: set-brew-envvars
@@ -101,13 +101,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}
           HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outputs.HOMEBREW_ALIAS }}
+          GORELEASER_CURRENT_TAG: ${{ inputs.version }}
 
       - name: Update CHANGELOG
         id: changelog
         if: ${{ inputs.generateChangelog }}
         uses: saadmk11/changelog-ci@v1.1.2
         with:
-          release_version: "v${{ inputs.version }}"
+          release_version: "${{ inputs.version }}"
           github_token: ${{ secrets.GH_TOKEN }}
 
       - name: Get Changelog Output
@@ -121,14 +122,14 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: "v${{ inputs.version }}"
-          name: "Keel release v${{ inputs.version }}"
+          tag: "${{ inputs.version }}"
+          name: "Keel release ${{ inputs.version }}"
           draft: ${{ inputs.draft }}
           allowUpdates: true
           updateOnlyUnreleased: true
           prerelease: ${{ inputs.preRelease }}
           makeLatest: ${{ inputs.makeLatest }}
-          body: "Keel release v${{ inputs.version }}. Release notes can be found at ${{ inputs.releaseNotesURL || steps.changelog.outputs.changelog  }}"
+          body: "Keel release ${{ inputs.version }}. Release notes can be found at ${{ inputs.releaseNotesURL || steps.changelog.outputs.changelog  }}"
 
       - name: Fire Release Event with Changelog
         if: ${{ inputs.publishEvent && inputs.generateChangelog }}
