@@ -25,7 +25,7 @@ jobs:
     uses: ./.github/workflows/pre_release.yml
     with:
       publishTag: "next"
-      versionFormat: "${major}.${minor}.${patch}-prerelease${increment}"
+      versionFormat: "${major}.${minor}.${patch}"
     secrets: inherit
 
   dev-release:

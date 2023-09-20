@@ -102,6 +102,7 @@ jobs:
           HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}
           HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outputs.HOMEBREW_ALIAS }}
           GORELEASER_CURRENT_TAG: ${{ inputs.version }}
+          PRERELEASE: ${{ inputs.preRelease }}
 
       - name: Update CHANGELOG
         id: changelog
