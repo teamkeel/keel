@@ -3,23 +3,19 @@ name: Prepare Keel Release
 on:
   workflow_dispatch:
     inputs:
-      backendBranch:
-        description: "The backend branch that triggered this release"
-        required: true
-        type: string
       preReleaseVersion:
-        description: "Pre Release Version to release"
+        description: "The tag to release from"
         required: true
         type: string
       releaseNotesUrl:
         description: "URL to release notes for version"
         required: false
         type: string
-      sendUpdateEvent:
-        description: Raise PR against backend
+      backendBranch:
+        description: "The backend branch to update with this new Keel version"
         required: false
-        type: boolean
-        default: true
+        type: string
+        default: "main"
   workflow_call:
     inputs:
       backendBranch:
@@ -34,11 +30,6 @@ on:
         description: "URL to release notes for version"
         required: false
         type: string
-      sendUpdateEvent:
-        description: Raise PR against backend
-        required: false
-        type: boolean
-        default: true
 
 jobs:
   create_branch:
@@ -49,7 +40,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: teamkeel/keel
-          ref: "v${{ inputs.preReleaseVersion }}"
+          ref: "${{ inputs.preReleaseVersion }}"
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
@@ -69,14 +60,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          branch: "refs/heads/release/v${{ steps.generate-version.outputs.version }}"
+          branch: "refs/heads/release/${{ steps.generate-version.outputs.version }}"
           sha: ${{ github.sha }}
 
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           repository: teamkeel/keel
-          ref: release/v${{ steps.generate-version.outputs.version }}
+          ref: release/${{ steps.generate-version.outputs.version }}
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
     outputs:
@@ -100,8 +91,8 @@ jobs:
       draft: true
       makeLatest: false
       generateChangelog: false
-      branch: "release/v${{ needs.create_branch.outputs.version }}"
+      branch: "release/${{ needs.create_branch.outputs.version }}"
       releaseNotesURL: ${{ inputs.releaseNotesUrl }}
       eventBranch: ${{ inputs.backendBranch }}
-      publishEvent: ${{ inputs.sendUpdateEvent }}
+      publishEvent: true
     secrets: inherit
