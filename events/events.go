@@ -97,17 +97,21 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		identityId = identity.Id
 	}
 
-	sql := fmt.Sprintf(`
-		SELECT * FROM keel_audit 
-		WHERE trace_id='%s' AND op IN ('insert', 'update', 'delete')`, spanContext.TraceID().String())
-
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return err
 	}
 
+	sql := fmt.Sprintf(
+		`UPDATE keel_audit SET event_created_at = NOW()
+		WHERE
+			trace_id = '%s' AND 
+			event_created_at IS NULL AND
+			op IN ('insert', 'update', 'delete') RETURNING *`, spanContext.TraceID().String())
+
 	result, err := database.ExecuteQuery(ctx, sql)
 	if err != nil {
+		fmt.Println(err.Error())
 		return err
 	}
 

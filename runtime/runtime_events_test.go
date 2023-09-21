@@ -2,6 +2,7 @@ package runtime_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -64,6 +65,11 @@ type EventHandler struct {
 
 func (handler *EventHandler) HandleEvent(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
 	handler.subscribedEvents[subscriber] = append(handler.subscribedEvents[subscriber], event)
+
+	if subscriber == "" || event == nil {
+		return errors.New("invalid params for event handler")
+	}
+
 	return nil
 }
 
@@ -147,6 +153,7 @@ func TestUpdateEvent(t *testing.T) {
 	require.True(t, ok)
 	require.Len(t, events, 1)
 
+	require.NotEmpty(t, events[0])
 	require.Equal(t, "wedding.updated", events[0].EventName)
 	require.Equal(t, identity.Id, events[0].IdentityId)
 	require.NotEmpty(t, events[0].OccurredAt)
@@ -324,4 +331,34 @@ func TestMultipleEvents(t *testing.T) {
 
 	require.Equal(t, "weddingInvitee.created", verifyDetailsEvent[0].EventName)
 	require.Equal(t, "weddingInvitee.updated", verifyDetailsEvent[1].EventName)
+}
+
+func TestAuditTableEventCreatedAtUpdated(t *testing.T) {
+	ctx, database, schema := newContext(t, eventsSchema)
+	defer database.Close()
+
+	ctx = withTracing(t, ctx)
+
+	handler := NewEventHandler()
+	ctx = events.WithEventHandler(ctx, handler.HandleEvent)
+
+	result, _, err := actions.Execute(
+		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
+		map[string]any{"name": "Dave"})
+	require.NoError(t, err)
+
+	_, ok := result.(map[string]any)
+	require.True(t, ok)
+
+	var audits []map[string]any
+	database.GetDB().Raw("SELECT * FROM keel_audit WHERE table_name='wedding'").Scan(&audits)
+	require.Len(t, audits, 1)
+	audit := typed.New(audits[0])
+
+	eventCreatedAt, isDate := audit.TimeIf("event_created_at")
+	require.NotEmpty(t, eventCreatedAt)
+	require.True(t, isDate)
+	require.GreaterOrEqual(t, time.Now().UTC(), eventCreatedAt)
+
+	require.Len(t, handler.subscribedEvents, 1)
 }

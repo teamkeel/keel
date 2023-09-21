@@ -110,6 +110,17 @@ func auditModel() *proto.Model {
 				},
 				Optional: true,
 			},
+
+			{
+				ModelName: auditModelName,
+				Name:      "eventCreatedAt",
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_TIMESTAMP,
+					ModelName: wrapperspb.String(auditModelName),
+					FieldName: wrapperspb.String("eventCreatedAt"),
+				},
+				Optional: true,
+			},
 		},
 	}
 	return &mdl
