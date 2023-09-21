@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/iancoleman/strcase"
@@ -102,12 +103,27 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		return err
 	}
 
+	wheres := []string{}
+
+	for _, e := range schema.Events {
+		table := strcase.ToSnake(e.ModelName)
+		op, err := toAuditOpName(e.ActionType)
+		if err != nil {
+			return err
+		}
+
+		condition := fmt.Sprintf("(table_name = '%s' AND op = '%s')", table, op)
+		wheres = append(wheres, condition)
+	}
+
 	sql := fmt.Sprintf(
-		`UPDATE keel_audit SET event_created_at = NOW()
+		`UPDATE keel_audit 
+		SET event_created_at = NOW()
 		WHERE
 			trace_id = '%s' AND 
 			event_created_at IS NULL AND
-			op IN ('insert', 'update', 'delete') RETURNING *`, spanContext.TraceID().String())
+			(%s)
+		RETURNING *`, spanContext.TraceID().String(), strings.Join(wheres, " OR "))
 
 	result, err := database.ExecuteQuery(ctx, sql)
 	if err != nil {
@@ -186,6 +202,19 @@ func toEventName(tableName string, op string) (string, error) {
 	}
 
 	return fmt.Sprintf("%s.%s", strcase.ToLowerCamel(tableName), action), nil
+}
+
+func toAuditOpName(action proto.ActionType) (string, error) {
+	switch action {
+	case proto.ActionType_ACTION_TYPE_CREATE:
+		return "insert", nil
+	case proto.ActionType_ACTION_TYPE_UPDATE:
+		return "update", nil
+	case proto.ActionType_ACTION_TYPE_DELETE:
+		return "delete", nil
+	default:
+		return "", fmt.Errorf("unsupported action type '%s' when creating event", action)
+	}
 }
 
 func toLowerCamelMap(m map[string]any) map[string]any {
