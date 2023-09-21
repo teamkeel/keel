@@ -62,7 +62,7 @@ jobs:
       preRelease: true
       draft: false
       makeLatest: false
-      generateChangelog: true
+      generateChangelog: false
       publishEvent: ${{ github.event_name != 'workflow_dispatch' }}
       commitMessage: ${{ github.event.head_commit.message }}
     secrets: inherit
