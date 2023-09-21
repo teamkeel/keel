@@ -29,7 +29,6 @@ brews:
     url_template: "https://github.com/teamkeel/cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     homepage: "https://github.com/teamkeel/cli"
     skip_upload: auto
-    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
     install: |
       bin.install "cli" => "{{ .Env.HOMEBREW_ALIAS }}"
     tap:
