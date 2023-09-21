@@ -111,7 +111,6 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 
 	result, err := database.ExecuteQuery(ctx, sql)
 	if err != nil {
-		fmt.Println(err.Error())
 		return err
 	}
 

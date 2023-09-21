@@ -33,7 +33,8 @@ CREATE TABLE "keel_audit" (
 "data" jsonb NOT NULL,
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "identity_id" TEXT,
-"trace_id" TEXT
+"trace_id" TEXT,
+"event_created_at" TIMESTAMPTZ
 );
 ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
