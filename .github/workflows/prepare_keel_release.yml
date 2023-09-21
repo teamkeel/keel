@@ -60,24 +60,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          branch: "refs/heads/release/${{ steps.generate-version.outputs.version }}"
+          branch: "refs/heads/release/${{ steps.generate-version.outputs.version_tag }}"
           sha: ${{ github.sha }}
 
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           repository: teamkeel/keel
-          ref: release/${{ steps.generate-version.outputs.version }}
+          ref: release/${{ steps.generate-version.outputs.version_tag }}
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
     outputs:
       version: ${{ steps.generate-version.outputs.version }}
+      version_tag: ${{ steps.generate-version.outputs.version_tag}}
 
   npm_release:
     uses: ./.github/workflows/npm_release.yml
     needs: [create_branch]
     with:
-      version: ${{ needs.create_branch.outputs.version }}
+      version: ${{ needs.create_branch.outputs.version_tag }}
       publishTag: "rc-next"
       dryRun: false
     secrets: inherit
@@ -86,12 +87,12 @@ jobs:
     needs: [create_branch, npm_release]
     uses: ./.github/workflows/github_release.yml
     with:
-      version: ${{ needs.create_branch.outputs.version }}
+      version: ${{ needs.create_branch.outputs.version_tag }}
       preRelease: false
       draft: true
       makeLatest: false
       generateChangelog: false
-      branch: "release/${{ needs.create_branch.outputs.version }}"
+      branch: "release/${{ needs.create_branch.outputs.version_tag }}"
       releaseNotesURL: ${{ inputs.releaseNotesUrl }}
       eventBranch: ${{ inputs.backendBranch }}
       publishEvent: true
