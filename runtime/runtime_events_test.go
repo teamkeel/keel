@@ -54,7 +54,6 @@ model Person {
 	}
 	@on([update], verifyDetails)
 	@permission(expression: true, actions: [create])
-
 }
 `
 

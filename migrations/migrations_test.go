@@ -91,7 +91,6 @@ func TestMigrations(t *testing.T) {
 			}
 
 			// Create the new proto
-			//schema := protoSchema(t, newSchema)
 			schema, err := testhelpers.MakeSchemaFromString(newSchema)
 			require.NoError(t, err)
 
