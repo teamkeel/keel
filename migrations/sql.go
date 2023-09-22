@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/auditing"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
@@ -218,7 +219,7 @@ func fieldDefinition(schema *proto.Schema, field *proto.Field) (string, error) {
 	// But we need one for the special case of the keel_audit table.
 	// So we hard code the JSON field type for now, for that special case.
 
-	isAuditDataColumn := (field.ModelName == auditModelName) && (field.Name == auditTableDataField)
+	isAuditDataColumn := (field.ModelName == auditModelName) && (field.Name == auditing.ColumnData)
 
 	fieldType := lo.Ternary(
 		isAuditDataColumn,

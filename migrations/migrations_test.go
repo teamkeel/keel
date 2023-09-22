@@ -18,7 +18,7 @@ import (
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/testhelpers"
+	"github.com/teamkeel/keel/schema"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -81,7 +81,8 @@ func TestMigrations(t *testing.T) {
 			// state first
 			var currProto *proto.Schema
 			if currSchema != "" {
-				currProto, err = testhelpers.MakeSchemaFromString(currSchema)
+				builder := &schema.Builder{}
+				currProto, err = builder.MakeFromString(currSchema)
 				require.NoError(t, err)
 
 				m, err := migrations.New(context, currProto, database)
@@ -91,7 +92,8 @@ func TestMigrations(t *testing.T) {
 			}
 
 			// Create the new proto
-			schema, err := testhelpers.MakeSchemaFromString(newSchema)
+			builder := &schema.Builder{}
+			schema, err := builder.MakeFromString(newSchema)
 			require.NoError(t, err)
 
 			// Create migrations from old (may be nil) to new

@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/auditing"
 	"github.com/teamkeel/keel/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -26,10 +27,9 @@ func auditModel() *proto.Model {
 	mdl := proto.Model{
 		Name: auditModelName,
 		Fields: []*proto.Field{
-
 			{
 				ModelName:  auditModelName,
-				Name:       "id",
+				Name:       auditing.ColumnId,
 				PrimaryKey: true,
 				DefaultValue: &proto.DefaultValue{
 					UseZeroValue: true,
@@ -37,87 +37,80 @@ func auditModel() *proto.Model {
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_ID,
 					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("id"),
+					FieldName: wrapperspb.String(auditing.ColumnId),
 				},
 				Optional: false,
 			},
-
 			{
 				ModelName: auditModelName,
-				Name:      "tableName",
+				Name:      auditing.ColumnTableName,
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
 					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("tableName"),
+					FieldName: wrapperspb.String(auditing.ColumnTableName),
 				},
 				Optional: false,
 			},
-
 			{
 				ModelName: auditModelName,
-				Name:      "op",
+				Name:      auditing.ColumnOp,
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
 					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("op"),
+					FieldName: wrapperspb.String(auditing.ColumnOp),
 				},
 				Optional: false,
 			},
-
 			{
 				ModelName: auditModelName,
-				Name:      auditTableDataField,
+				Name:      auditing.ColumnData,
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
 					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String(auditTableDataField),
+					FieldName: wrapperspb.String(auditing.ColumnData),
 				},
 				Optional: false,
 			},
-
 			{
 				ModelName: auditModelName,
-				Name:      "createdAt",
+				Name:      auditing.ColumnCreatedAt,
 				DefaultValue: &proto.DefaultValue{
 					UseZeroValue: true,
 				},
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_TIMESTAMP,
 					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("createdAt"),
+					FieldName: wrapperspb.String(auditing.ColumnCreatedAt),
 				},
 				Optional: false,
 			},
-
 			{
 				ModelName: auditModelName,
-				Name:      "identityId",
+				Name:      auditing.ColumnIdentityId,
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_ID,
 					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("identityId"),
+					FieldName: wrapperspb.String(auditing.ColumnIdentityId),
 				},
 				Optional: true,
 			},
-
 			{
 				ModelName: auditModelName,
-				Name:      "traceId",
+				Name:      auditing.ColumnTraceId,
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
 					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("traceId"),
+					FieldName: wrapperspb.String(auditing.ColumnTraceId),
 				},
 				Optional: true,
 			},
-
 			{
 				ModelName: auditModelName,
-				Name:      "eventProcessedAt",
+				Name:      auditing.ColumnEventProcessedAt,
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_TIMESTAMP,
 					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("eventProcessedAt"),
+					FieldName: wrapperspb.String(auditing.ColumnEventProcessedAt),
 				},
 				Optional: true,
 			},
@@ -126,5 +119,4 @@ func auditModel() *proto.Model {
 	return &mdl
 }
 
-const auditModelName = "KeelAudit"
-const auditTableDataField = "data"
+const auditModelName = auditing.TableName

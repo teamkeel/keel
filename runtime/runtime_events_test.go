@@ -280,15 +280,15 @@ func TestNestedCreateEvent(t *testing.T) {
 	require.Len(t, sendInvitesEvent, 3)
 
 	require.Equal(t, "wedding.created", sendInvitesEvent[0].EventName)
-	require.Equal(t, "weddingInvitee.created", sendInvitesEvent[1].EventName)
-	require.Equal(t, "weddingInvitee.created", sendInvitesEvent[2].EventName)
+	require.Equal(t, "wedding_invitee.created", sendInvitesEvent[1].EventName)
+	require.Equal(t, "wedding_invitee.created", sendInvitesEvent[2].EventName)
 
 	verifyDetailsEvent, ok := handler.subscribedEvents["verifyDetails"]
 	require.True(t, ok)
 	require.Len(t, verifyDetailsEvent, 2)
 
-	require.Equal(t, "weddingInvitee.created", verifyDetailsEvent[0].EventName)
-	require.Equal(t, "weddingInvitee.created", verifyDetailsEvent[1].EventName)
+	require.Equal(t, "wedding_invitee.created", verifyDetailsEvent[0].EventName)
+	require.Equal(t, "wedding_invitee.created", verifyDetailsEvent[1].EventName)
 }
 
 func TestMultipleEvents(t *testing.T) {
@@ -327,14 +327,14 @@ func TestMultipleEvents(t *testing.T) {
 	require.True(t, ok)
 	require.Len(t, sendInvitesEvent, 1)
 
-	require.Equal(t, "weddingInvitee.created", sendInvitesEvent[0].EventName)
+	require.Equal(t, "wedding_invitee.created", sendInvitesEvent[0].EventName)
 
 	verifyDetailsEvent, ok := handler.subscribedEvents["verifyDetails"]
 	require.True(t, ok)
 	require.Len(t, verifyDetailsEvent, 2)
 
-	require.Equal(t, "weddingInvitee.created", verifyDetailsEvent[0].EventName)
-	require.Equal(t, "weddingInvitee.updated", verifyDetailsEvent[1].EventName)
+	require.Equal(t, "wedding_invitee.created", verifyDetailsEvent[0].EventName)
+	require.Equal(t, "wedding_invitee.updated", verifyDetailsEvent[1].EventName)
 }
 
 func TestAuditTableEventCreatedAtUpdated(t *testing.T) {

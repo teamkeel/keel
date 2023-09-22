@@ -17,6 +17,7 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -57,7 +58,8 @@ func newContext(t *testing.T, keelSchema string) (context.Context, db.Database, 
 		Database: "keel",
 	}
 
-	schema, err := testhelpers.MakeSchemaFromString(keelSchema)
+	builder := &schema.Builder{}
+	schema, err := builder.MakeFromString(keelSchema)
 	require.NoError(t, err)
 
 	ctx := context.Background()
