@@ -18,6 +18,8 @@ import (
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/schema/reader"
 )
 
 // WithTmpDir copies the contents of the src dir to a new temporary directory, returning the tmp dir path
@@ -116,4 +118,16 @@ func GetEmbeddedPrivateKey() (*rsa.PrivateKey, error) {
 	}
 
 	return x509.ParsePKCS1PrivateKey(privateKeyBlock.Bytes)
+}
+
+func MakeSchemaFromString(s string) (*proto.Schema, error) {
+	builder := &schema.Builder{}
+	schema, err := builder.MakeFromInputs(&reader.Inputs{
+		SchemaFiles: []reader.SchemaFile{
+			{
+				Contents: s,
+			},
+		},
+	})
+	return schema, err
 }

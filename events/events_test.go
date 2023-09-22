@@ -5,8 +5,52 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/auditing"
+	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/testhelpers"
 )
+
+func TestEventNameFromInsertAudit(t *testing.T) {
+	eventName, err := eventNameFromAudit("company_employee", auditing.Insert)
+	require.Equal(t, "company_employee.created", eventName)
+	require.NoError(t, err)
+}
+
+func TestEventNameFromUpdateAudit(t *testing.T) {
+	eventName, err := eventNameFromAudit("company_employee", auditing.Update)
+	require.Equal(t, "company_employee.updated", eventName)
+	require.NoError(t, err)
+}
+
+func TestEventNameFromDeleteAudit(t *testing.T) {
+	eventName, err := eventNameFromAudit("company_employee", auditing.Delete)
+	require.Equal(t, "company_employee.deleted", eventName)
+	require.NoError(t, err)
+}
+
+func TestEventNameFromUnknown(t *testing.T) {
+	eventName, err := eventNameFromAudit("company_employee", "unknown")
+	require.Empty(t, eventName)
+	require.Error(t, err)
+}
+
+func TestAuditOpFromCreatedEvent(t *testing.T) {
+	op, err := auditOpFromAction(proto.ActionType_ACTION_TYPE_CREATE)
+	require.Equal(t, auditing.Insert, op)
+	require.NoError(t, err)
+}
+
+func TestAuditOpFromUpdatedEvent(t *testing.T) {
+	op, err := auditOpFromAction(proto.ActionType_ACTION_TYPE_UPDATE)
+	require.Equal(t, auditing.Update, op)
+	require.NoError(t, err)
+}
+
+func TestAuditOpFromDeletedEvent(t *testing.T) {
+	op, err := auditOpFromAction(proto.ActionType_ACTION_TYPE_DELETE)
+	require.Equal(t, auditing.Delete, op)
+	require.NoError(t, err)
+}
 
 func TestSingleEvent(t *testing.T) {
 	var keelSchema = `
@@ -17,19 +61,18 @@ func TestSingleEvent(t *testing.T) {
 			@on([update], verifyDetails)
 		}`
 
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := testhelpers.MakeSchemaFromString(keelSchema)
 	require.NoError(t, err)
 
-	sql, err := updateEventCreatedSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, err := processAuditLogsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.NoError(t, err)
 
 	expectedSql := `
 		UPDATE keel_audit 
-		SET event_created_at = NOW() 
+		SET event_processed_at = NOW() 
 		WHERE 
 			trace_id = '0ffe82e8dcfd9f9fbe4c639d5ef4f1ba' AND 
-			event_created_at IS NULL AND 
+			event_processed_at IS NULL AND 
 			(table_name = 'person' AND op = 'update')
 		RETURNING *`
 
@@ -45,19 +88,18 @@ func TestComplexTableName(t *testing.T) {
 			@on([update], verifyDetails)
 		}`
 
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := testhelpers.MakeSchemaFromString(keelSchema)
 	require.NoError(t, err)
 
-	sql, err := updateEventCreatedSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, err := processAuditLogsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.NoError(t, err)
 
 	expectedSql := `
 		UPDATE keel_audit 
-		SET event_created_at = NOW() 
+		SET event_processed_at = NOW() 
 		WHERE 
 			trace_id = '0ffe82e8dcfd9f9fbe4c639d5ef4f1ba' AND 
-			event_created_at IS NULL AND 
+			event_processed_at IS NULL AND 
 			(table_name = 'employee_of_company_1' AND op = 'update')
 		RETURNING *`
 
@@ -73,19 +115,18 @@ func TestMultipleEventsOneAttribute(t *testing.T) {
 			@on([update, create, delete], verifyDetails)
 		}`
 
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := testhelpers.MakeSchemaFromString(keelSchema)
 	require.NoError(t, err)
 
-	sql, err := updateEventCreatedSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, err := processAuditLogsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.NoError(t, err)
 
 	expectedSql := `
 		UPDATE keel_audit 
-		SET event_created_at = NOW() 
+		SET event_processed_at = NOW() 
 		WHERE 
 			trace_id = '0ffe82e8dcfd9f9fbe4c639d5ef4f1ba' AND 
-			event_created_at IS NULL AND 
+			event_processed_at IS NULL AND 
 			((table_name = 'person' AND op = 'update') OR 
 			(table_name = 'person' AND op = 'insert') OR 
 			(table_name = 'person' AND op = 'delete')) 
@@ -105,19 +146,18 @@ func TestMultipleEventsManyAttribute(t *testing.T) {
 			@on([delete], verifyDetails)
 		}`
 
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := testhelpers.MakeSchemaFromString(keelSchema)
 	require.NoError(t, err)
 
-	sql, err := updateEventCreatedSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, err := processAuditLogsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.NoError(t, err)
 
 	expectedSql := `
 		UPDATE keel_audit 
-		SET event_created_at = NOW() 
+		SET event_processed_at = NOW() 
 		WHERE 
 			trace_id = '0ffe82e8dcfd9f9fbe4c639d5ef4f1ba' AND 
-			event_created_at IS NULL AND 
+			event_processed_at IS NULL AND 
 			((table_name = 'person' AND op = 'update') OR 
 			(table_name = 'person' AND op = 'insert') OR 
 			(table_name = 'person' AND op = 'delete')) 
@@ -134,11 +174,10 @@ func TestNoEvents(t *testing.T) {
 			}
 		}`
 
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := testhelpers.MakeSchemaFromString(keelSchema)
 	require.NoError(t, err)
 
-	sql, err := updateEventCreatedSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, err := processAuditLogsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.Error(t, err)
 	require.Empty(t, sql)
 }
@@ -152,11 +191,10 @@ func TestEmptyTraceId(t *testing.T) {
 			@on([update], verifyDetails)
 		}`
 
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := testhelpers.MakeSchemaFromString(keelSchema)
 	require.NoError(t, err)
 
-	sql, err := updateEventCreatedSql(schema, "")
+	sql, err := processAuditLogsSql(schema, "")
 	require.Error(t, err)
 	require.Empty(t, sql)
 }
@@ -201,19 +239,18 @@ func TestWithMultipleModels(t *testing.T) {
 			@on([update], verifyDetails)
 		}`
 
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := testhelpers.MakeSchemaFromString(keelSchema)
 	require.NoError(t, err)
 
-	sql, err := updateEventCreatedSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, err := processAuditLogsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.NoError(t, err)
 
 	expectedSql := `
 		UPDATE keel_audit 
-		SET event_created_at = NOW() 
+		SET event_processed_at = NOW() 
 		WHERE 
 			trace_id = '0ffe82e8dcfd9f9fbe4c639d5ef4f1ba' AND 
-			event_created_at IS NULL AND 
+			event_processed_at IS NULL AND 
 			((table_name = 'wedding' AND op = 'insert') OR 
 			(table_name = 'wedding' AND op = 'update') OR 
 			(table_name = 'wedding' AND op = 'delete') OR 

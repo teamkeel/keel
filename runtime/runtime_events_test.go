@@ -366,12 +366,12 @@ func TestAuditTableEventCreatedAtUpdated(t *testing.T) {
 	require.Len(t, audits, 2)
 
 	auditWedding := typed.New(audits[0])
-	eventCreatedAt, isDate := auditWedding.TimeIf("event_created_at")
+	eventCreatedAt, isDate := auditWedding.TimeIf("event_processed_at")
 	require.NotEmpty(t, eventCreatedAt)
 	require.True(t, isDate)
 	require.GreaterOrEqual(t, time.Now().UTC(), eventCreatedAt)
 
-	eventCreatedAtPerson, ok := audits[1]["event_created_at"]
+	eventCreatedAtPerson, ok := audits[1]["event_processed_at"]
 	require.Nil(t, eventCreatedAtPerson)
 	require.True(t, ok)
 

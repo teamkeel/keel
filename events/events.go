@@ -17,6 +17,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// Event names
 const (
 	Created = "created"
 	Updated = "updated"
@@ -67,7 +68,8 @@ func GetEventHandler(ctx context.Context) (EventHandler, error) {
 }
 
 // SendEvents will gather, create and send events which have occurred within the scope of this context.
-// It achieves this by inspecting the keel_audit table.
+// It achieves this by inspecting the keel_audit table for rows which must be generated into events,
+// updates the event_processed_at field on these rows, and then calls the event handler for each event.
 func SendEvents(ctx context.Context, schema *proto.Schema) error {
 	// If no event handler has been configured, then no events can be sent.
 	if !HasEventHandler(ctx) {
@@ -104,7 +106,11 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		return err
 	}
 
-	sql, err := updateEventCreatedSql(schema, spanContext.TraceID().String())
+	sql2 := fmt.Sprintf(
+		`SELECT * FROM keel_audit`)
+	result2, err := database.ExecuteQuery(ctx, sql2)
+	fmt.Println(result2)
+	sql, err := processAuditLogsSql(schema, spanContext.TraceID().String())
 	if err != nil {
 		return err
 	}
@@ -127,7 +133,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 			return errors.New("audit 'op' column cannot be parsed or is empty")
 		}
 
-		eventName, err := toEventName(tableName, op)
+		eventName, err := eventNameFromAudit(tableName, op)
 		if err != nil {
 			return err
 		}
@@ -171,9 +177,9 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 	return nil
 }
 
-// updateEventCreatedSql generates SQL which updates and returns the relevant audit table
-// entries which are to be processed into events.
-func updateEventCreatedSql(schema *proto.Schema, traceId string) (string, error) {
+// processAuditLogsSql generates SQL which updates and returns the relevant audit log
+// entries which are to be turned into events.
+func processAuditLogsSql(schema *proto.Schema, traceId string) (string, error) {
 	if traceId == "" {
 		return "", errors.New("traceId cannot be empty")
 	}
@@ -185,7 +191,7 @@ func updateEventCreatedSql(schema *proto.Schema, traceId string) (string, error)
 	conditions := []string{}
 	for _, e := range schema.Events {
 		table := strcase.ToSnake(e.ModelName)
-		op, err := toAuditOp(e.ActionType)
+		op, err := auditOpFromAction(e.ActionType)
 		if err != nil {
 			return "", err
 		}
@@ -200,18 +206,18 @@ func updateEventCreatedSql(schema *proto.Schema, traceId string) (string, error)
 
 	sql := fmt.Sprintf(
 		`UPDATE keel_audit 
-		SET event_created_at = NOW()
+		SET event_processed_at = NOW()
 		WHERE
 			trace_id = '%s' AND 
-			event_created_at IS NULL AND
+			event_processed_at IS NULL AND
 			%s
 		RETURNING *`, traceId, filter)
 
 	return sql, nil
 }
 
-// toEventName generates an event name from an audit table columns
-func toEventName(tableName string, op string) (string, error) {
+// eventNameFromAudit generates an event name from audit table columns.
+func eventNameFromAudit(tableName string, op string) (string, error) {
 	action := ""
 
 	switch op {
@@ -225,11 +231,11 @@ func toEventName(tableName string, op string) (string, error) {
 		return "", fmt.Errorf("unknown op type '%s' when creating event", op)
 	}
 
-	return fmt.Sprintf("%s.%s", strcase.ToLowerCamel(tableName), action), nil
+	return fmt.Sprintf("%s.%s", strcase.ToSnake(tableName), action), nil
 }
 
-// toAuditOp gets the audit operation for a specific action type
-func toAuditOp(action proto.ActionType) (string, error) {
+// auditOpFromAction gets the audit operation for a specific action type.
+func auditOpFromAction(action proto.ActionType) (string, error) {
 	switch action {
 	case proto.ActionType_ACTION_TYPE_CREATE:
 		return "insert", nil
