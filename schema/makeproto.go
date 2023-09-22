@@ -1622,8 +1622,8 @@ func (scm *Builder) mapToActionType(actionType string) proto.ActionType {
 	}
 }
 
-func mapToEventName(operationType proto.ActionType) string {
-	switch operationType {
+func mapToEventName(actionType proto.ActionType) string {
+	switch actionType {
 	case proto.ActionType_ACTION_TYPE_CREATE:
 		return "created"
 	case proto.ActionType_ACTION_TYPE_UPDATE:
@@ -1631,7 +1631,7 @@ func mapToEventName(operationType proto.ActionType) string {
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		return "deleted"
 	default:
-		panic(fmt.Errorf("unhandled operation type '%s'", operationType))
+		panic(fmt.Errorf("unhandled action type '%s'", actionType))
 	}
 }
 
