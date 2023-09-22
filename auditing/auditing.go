@@ -44,7 +44,8 @@ type AuditLog struct {
 	EventProcessedAt time.Time
 }
 
-// ProcessEventsFromAuditTrail
+// ProcessEventsFromAuditTrail inspects the audit table for logs which need to be
+// turned into events, updates their event_processed_at column, and then returns them.
 func ProcessEventsFromAuditTrail(ctx context.Context, schema *proto.Schema, traceId string) ([]*AuditLog, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
