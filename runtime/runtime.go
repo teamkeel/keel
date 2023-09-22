@@ -210,7 +210,6 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 		attribute.String("subscriber.name", subscriber.Name),
 	)
 
-	fmt.Println("CallSubscriber")
 	err := functions.CallSubscriber(
 		ctx,
 		subscriber,

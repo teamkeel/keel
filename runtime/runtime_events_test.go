@@ -49,7 +49,12 @@ model WeddingInvitee  {
 	@permission(expression: true, actions: [create, update, delete])
 }
 model Person {
+	actions {
+		create createPerson()
+	}
 	@on([update], verifyDetails)
+	@permission(expression: true, actions: [create])
+
 }
 `
 
@@ -346,19 +351,29 @@ func TestAuditTableEventCreatedAtUpdated(t *testing.T) {
 		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
 		map[string]any{"name": "Dave"})
 	require.NoError(t, err)
-
 	_, ok := result.(map[string]any)
 	require.True(t, ok)
 
-	var audits []map[string]any
-	database.GetDB().Raw("SELECT * FROM keel_audit WHERE table_name='wedding'").Scan(&audits)
-	require.Len(t, audits, 1)
-	audit := typed.New(audits[0])
+	result2, _, err := actions.Execute(
+		actions.NewScope(ctx, proto.FindAction(schema, "createPerson"), schema),
+		map[string]any{})
+	require.NoError(t, err)
+	_, ok2 := result2.(map[string]any)
+	require.True(t, ok2)
 
-	eventCreatedAt, isDate := audit.TimeIf("event_created_at")
+	var audits []map[string]any
+	database.GetDB().Raw("SELECT * FROM keel_audit").Scan(&audits)
+	require.Len(t, audits, 2)
+
+	auditWedding := typed.New(audits[0])
+	eventCreatedAt, isDate := auditWedding.TimeIf("event_created_at")
 	require.NotEmpty(t, eventCreatedAt)
 	require.True(t, isDate)
 	require.GreaterOrEqual(t, time.Now().UTC(), eventCreatedAt)
+
+	eventCreatedAtPerson, ok := audits[1]["event_created_at"]
+	require.Nil(t, eventCreatedAtPerson)
+	require.True(t, ok)
 
 	require.Len(t, handler.subscribedEvents, 1)
 }
