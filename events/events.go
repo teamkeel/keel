@@ -106,10 +106,6 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		return err
 	}
 
-	sql2 := fmt.Sprintf(
-		`SELECT * FROM keel_audit`)
-	result2, err := database.ExecuteQuery(ctx, sql2)
-	fmt.Println(result2)
 	sql, err := processAuditLogsSql(schema, spanContext.TraceID().String())
 	if err != nil {
 		return err
