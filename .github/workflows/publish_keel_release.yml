@@ -46,7 +46,7 @@ jobs:
           node-version: 18
 
       - name: Set NPM packages to latest
-        run: "npm dist-tag add @teamkeel/${{ matrix.package }}@${{ inputs.version }} latest"
+        run: npm dist-tag add @teamkeel/${{ matrix.package }}@${{ inputs.version }} latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
