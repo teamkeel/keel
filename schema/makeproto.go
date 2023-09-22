@@ -1398,7 +1398,7 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 		actionTypesArg, _ := attribute.Arguments[0].Expression.ToValue()
 		for _, arg := range actionTypesArg.Array.Values {
 			actionType := scm.mapToActionType(arg.Ident.Fragments[0].Fragment)
-			eventName := makeEventName(parserModel.Name.Value, mapToEventName(actionType))
+			eventName := makeEventName(parserModel.Name.Value, mapToEventType(actionType))
 
 			event := proto.FindEvent(scm.proto.Events, eventName)
 			if event == nil {
@@ -1434,16 +1434,16 @@ func (scm *Builder) makeSubscriberInputMessages() {
 			event := proto.FindEvent(scm.proto.Events, eventName)
 
 			eventMessage := &proto.Message{
-				Name:   makeSubscriberMessageEventName(subscriber.Name, event.ModelName, mapToEventName(event.ActionType)),
+				Name:   makeSubscriberMessageEventName(subscriber.Name, event.ModelName, mapToEventType(event.ActionType)),
 				Fields: []*proto.MessageField{},
 			}
 
 			eventTargetMessage := &proto.Message{
-				Name:   makeSubscriberMessageEventTargetName(subscriber.Name, event.ModelName, mapToEventName(event.ActionType)),
+				Name:   makeSubscriberMessageEventTargetName(subscriber.Name, event.ModelName, mapToEventType(event.ActionType)),
 				Fields: []*proto.MessageField{},
 			}
 
-			eventName := makeEventName(event.ModelName, mapToEventName(event.ActionType))
+			eventName := makeEventName(event.ModelName, mapToEventType(event.ActionType))
 
 			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
 				MessageName: eventMessage.Name,
@@ -1622,8 +1622,8 @@ func (scm *Builder) mapToActionType(actionType string) proto.ActionType {
 	}
 }
 
-func mapToEventName(operationType proto.ActionType) string {
-	switch operationType {
+func mapToEventType(actionType proto.ActionType) string {
+	switch actionType {
 	case proto.ActionType_ACTION_TYPE_CREATE:
 		return "created"
 	case proto.ActionType_ACTION_TYPE_UPDATE:
@@ -1631,7 +1631,7 @@ func mapToEventName(operationType proto.ActionType) string {
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		return "deleted"
 	default:
-		panic(fmt.Errorf("unhandled operation type '%s'", operationType))
+		panic(fmt.Errorf("unhandled action type '%s'", actionType))
 	}
 }
 
@@ -1730,5 +1730,5 @@ func makeSubscriberMessageEventTargetName(subscriberName string, modelName strin
 }
 
 func makeEventName(modelName string, action string) string {
-	return fmt.Sprintf("%s.%s", casing.ToLowerCamel(modelName), action)
+	return fmt.Sprintf("%s.%s", casing.ToSnake(modelName), action)
 }

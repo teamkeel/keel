@@ -20,7 +20,6 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	rtt "github.com/teamkeel/keel/runtime/runtimetest"
 	"github.com/teamkeel/keel/schema"
-	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/testhelpers"
 	"gorm.io/gorm"
 )
@@ -178,13 +177,7 @@ func initRow(with map[string]any) map[string]any {
 // keel schema.
 func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromInputs(&reader.Inputs{
-		SchemaFiles: []reader.SchemaFile{
-			{
-				Contents: keelSchema,
-			},
-		},
-	})
+	schema, err := builder.MakeFromString(keelSchema)
 	require.NoError(t, err)
 	return schema
 }

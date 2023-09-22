@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/auditing"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
@@ -290,7 +292,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 	// Add audit logs hooks all model tables - excluding the audit table itself.
 	for _, model := range schema.Models {
-		if model.Name != auditModelName {
+		if model.Name != strcase.ToCamel(auditing.TableName) {
 			stmt, err := createAuditHookStmt(schema, model)
 			if err != nil {
 				return nil, err

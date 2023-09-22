@@ -60,6 +60,7 @@ func TestRuntimeRPC(t *testing.T) {
 			dbName := testhelpers.DbNameForTestName(tCase.name)
 			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
 			require.NoError(t, err)
+			defer database.Close()
 
 			ctx = db.WithDatabase(ctx, database)
 			request = request.WithContext(ctx)

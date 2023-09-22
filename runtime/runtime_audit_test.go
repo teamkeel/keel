@@ -17,6 +17,7 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -57,7 +58,9 @@ func newContext(t *testing.T, keelSchema string) (context.Context, db.Database, 
 		Database: "keel",
 	}
 
-	schema := protoSchema(t, keelSchema)
+	builder := &schema.Builder{}
+	schema, err := builder.MakeFromString(keelSchema)
+	require.NoError(t, err)
 
 	ctx := context.Background()
 
@@ -130,6 +133,7 @@ func TestAuditCreateAction(t *testing.T) {
 	require.NotNil(t, audit["created_at"])
 	require.Equal(t, identity.Id, audit["identity_id"])
 	require.Equal(t, traceId, audit["trace_id"])
+	require.Nil(t, audit["event_processed_at"])
 
 	opts := jsondiff.DefaultConsoleOptions()
 	diff, explanation := jsondiff.Compare(expectedData, []byte(audit["data"].(string)), &opts)
@@ -180,6 +184,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 	require.NotNil(t, weddingAudit["created_at"])
 	require.Equal(t, identity.Id, weddingAudit["identity_id"])
 	require.Equal(t, traceId, weddingAudit["trace_id"])
+	require.Nil(t, weddingAudit["event_processed_at"])
 
 	opts := jsondiff.DefaultConsoleOptions()
 	diff, explanation := jsondiff.Compare(expectedData, []byte(weddingAudit["data"].(string)), &opts)
@@ -217,6 +222,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 	require.NotNil(t, peteAudit["created_at"])
 	require.Equal(t, identity.Id, peteAudit["identity_id"])
 	require.Equal(t, traceId, peteAudit["trace_id"])
+	require.Nil(t, peteAudit["event_processed_at"])
 
 	diff, explanation = jsondiff.Compare(expectedPeteData, []byte(peteAudit["data"].(string)), &opts)
 	if diff != jsondiff.FullMatch {
@@ -294,6 +300,7 @@ func TestAuditUpdateAction(t *testing.T) {
 	require.NotNil(t, audit["created_at"])
 	require.Equal(t, identity.Id, audit["identity_id"])
 	require.Equal(t, traceId, audit["trace_id"])
+	require.Nil(t, audit["event_processed_at"])
 
 	opts := jsondiff.DefaultConsoleOptions()
 	diff, explanation := jsondiff.Compare(expectedData, []byte(audit["data"].(string)), &opts)
@@ -350,6 +357,7 @@ func TestAuditDeleteAction(t *testing.T) {
 	require.NotNil(t, audit["created_at"])
 	require.Equal(t, identity.Id, audit["identity_id"])
 	require.Equal(t, traceId, audit["trace_id"])
+	require.Nil(t, audit["event_processed_at"])
 
 	opts := jsondiff.DefaultConsoleOptions()
 	diff, explanation := jsondiff.Compare(expectedData, []byte(audit["data"].(string)), &opts)
@@ -382,6 +390,7 @@ func TestAuditTablesWithOnlyIdentity(t *testing.T) {
 	require.NotNil(t, audit["created_at"])
 	require.Equal(t, identity.Id, audit["identity_id"])
 	require.Nil(t, audit["trace_id"])
+	require.Nil(t, audit["event_processed_at"])
 }
 
 func TestAuditTablesWithOnlyTracing(t *testing.T) {
@@ -408,6 +417,8 @@ func TestAuditTablesWithOnlyTracing(t *testing.T) {
 	require.NotNil(t, audit["created_at"])
 	require.Nil(t, audit["identity_id"])
 	require.Equal(t, traceId, audit["trace_id"])
+	require.Nil(t, audit["event_processed_at"])
+
 }
 
 func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
@@ -445,6 +456,7 @@ func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
 	require.NotNil(t, audit["created_at"])
 	require.Equal(t, identity.Id, audit["identity_id"])
 	require.Equal(t, traceId, audit["trace_id"])
+	require.Nil(t, audit["event_processed_at"])
 
 	data, err := typed.JsonString(audit["data"].(string))
 	require.NoError(t, err)

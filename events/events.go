@@ -2,20 +2,19 @@ package events
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/iancoleman/strcase"
-	"github.com/karlseguin/typed"
+	"github.com/teamkeel/keel/auditing"
 	"github.com/teamkeel/keel/casing"
-	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel/trace"
 )
 
+// Event names
 const (
 	Created = "created"
 	Updated = "updated"
@@ -65,7 +64,9 @@ func GetEventHandler(ctx context.Context) (EventHandler, error) {
 	return v, nil
 }
 
-// Gather, create and send events which have occurred within the scope of this context.
+// SendEvents will gather, create and send events which have occurred within the scope of this context.
+// It achieves this by inspecting the keel_audit table for rows which must be generated into events,
+// updates the event_processed_at field on these rows, and then calls the event handler for each event.
 func SendEvents(ctx context.Context, schema *proto.Schema) error {
 	// If no event handler has been configured, then no events can be sent.
 	if !HasEventHandler(ctx) {
@@ -86,6 +87,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 	}
 
 	traceparent := util.GetTraceparent(spanContext)
+	traceId := spanContext.TraceID().String()
 
 	identityId := ""
 	if auth.IsAuthenticated(ctx) {
@@ -97,34 +99,13 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		identityId = identity.Id
 	}
 
-	sql := fmt.Sprintf(`
-		SELECT * FROM keel_audit 
-		WHERE trace_id='%s' AND op IN ('insert', 'update', 'delete')`, spanContext.TraceID().String())
-
-	database, err := db.GetDatabase(ctx)
+	auditLogs, err := auditing.ProcessEventsFromAuditTrail(ctx, schema, traceId)
 	if err != nil {
 		return err
 	}
 
-	result, err := database.ExecuteQuery(ctx, sql)
-	if err != nil {
-		return err
-	}
-
-	for _, row := range result.Rows {
-		audit := typed.New(row)
-
-		tableName := audit.String("table_name")
-		if tableName == "" {
-			return errors.New("audit 'table' column cannot be parsed or is empty")
-		}
-
-		op := audit.String("op")
-		if op == "" {
-			return errors.New("audit 'op' column cannot be parsed or is empty")
-		}
-
-		eventName, err := toEventName(tableName, op)
+	for _, log := range auditLogs {
+		eventName, err := eventNameFromAudit(log.TableName, log.Op)
 		if err != nil {
 			return err
 		}
@@ -137,24 +118,14 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		subscribers := proto.FindEventSubscriptions(schema, protoEvent)
 
 		for _, subscriber := range subscribers {
-			data, err := typed.JsonString(audit.String("data"))
-			if err != nil {
-				return err
-			}
-
-			id := data.String("id")
-			if id == "" {
-				return errors.New("error parsing audit table data")
-			}
-
 			event := &Event{
 				EventName:  eventName,
 				OccurredAt: time.Now().UTC(),
 				IdentityId: identityId,
 				Target: &EventTarget{
-					Id:   id,
-					Type: strcase.ToCamel(tableName),
-					Data: toLowerCamelMap(data),
+					Id:   log.Data["id"].(string),
+					Type: strcase.ToCamel(log.TableName),
+					Data: toLowerCamelMap(log.Data),
 				},
 			}
 
@@ -168,21 +139,22 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 	return nil
 }
 
-func toEventName(tableName string, op string) (string, error) {
+// eventNameFromAudit generates an event name from audit table columns.
+func eventNameFromAudit(tableName string, op string) (string, error) {
 	action := ""
 
 	switch op {
-	case "insert":
+	case auditing.Insert:
 		action = Created
-	case "update":
+	case auditing.Update:
 		action = Updated
-	case "delete":
+	case auditing.Delete:
 		action = Deleted
 	default:
 		return "", fmt.Errorf("unknown op type '%s' when creating event", op)
 	}
 
-	return fmt.Sprintf("%s.%s", strcase.ToLowerCamel(tableName), action), nil
+	return fmt.Sprintf("%s.%s", strcase.ToSnake(tableName), action), nil
 }
 
 func toLowerCamelMap(m map[string]any) map[string]any {

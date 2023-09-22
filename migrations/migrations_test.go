@@ -19,7 +19,6 @@ import (
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
-	"github.com/teamkeel/keel/schema/reader"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -82,7 +81,10 @@ func TestMigrations(t *testing.T) {
 			// state first
 			var currProto *proto.Schema
 			if currSchema != "" {
-				currProto = protoSchema(t, currSchema)
+				builder := &schema.Builder{}
+				currProto, err = builder.MakeFromString(currSchema)
+				require.NoError(t, err)
+
 				m, err := migrations.New(context, currProto, database)
 				require.NoError(t, err)
 				err = m.Apply(context)
@@ -90,7 +92,9 @@ func TestMigrations(t *testing.T) {
 			}
 
 			// Create the new proto
-			schema := protoSchema(t, newSchema)
+			builder := &schema.Builder{}
+			schema, err := builder.MakeFromString(newSchema)
+			require.NoError(t, err)
 
 			// Create migrations from old (may be nil) to new
 			m, err := migrations.New(
@@ -134,19 +138,6 @@ func TestMigrations(t *testing.T) {
 			assert.False(t, k.IsNil())
 		})
 	}
-}
-
-func protoSchema(t *testing.T, s string) *proto.Schema {
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromInputs(&reader.Inputs{
-		SchemaFiles: []reader.SchemaFile{
-			{
-				Contents: s,
-			},
-		},
-	})
-	require.NoError(t, err)
-	return schema
 }
 
 func assertJSON(t *testing.T, expected []byte, actual []byte) {

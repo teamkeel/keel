@@ -1,7 +1,9 @@
 package migrations
 
 import (
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/auditing"
 	"github.com/teamkeel/keel/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -15,7 +17,7 @@ func pushAuditModel(schema *proto.Schema) {
 // schema.
 func popAuditModel(schema *proto.Schema) {
 	schema.Models = lo.Reject(schema.Models, func(m *proto.Model, _ int) bool {
-		return m.Name == auditModelName
+		return m.Name == strcase.ToCamel(auditing.TableName)
 	})
 }
 
@@ -23,90 +25,95 @@ func popAuditModel(schema *proto.Schema) {
 //
 // Migrations will fire as we would wish, if you edit the fields in this model definition.
 func auditModel() *proto.Model {
-	mdl := proto.Model{
-		Name: auditModelName,
-		Fields: []*proto.Field{
+	modelName := strcase.ToCamel(auditing.TableName)
 
+	mdl := proto.Model{
+		Name: modelName,
+		Fields: []*proto.Field{
 			{
-				ModelName:  auditModelName,
-				Name:       "id",
+				ModelName:  modelName,
+				Name:       strcase.ToLowerCamel(auditing.ColumnId),
 				PrimaryKey: true,
 				DefaultValue: &proto.DefaultValue{
 					UseZeroValue: true,
 				},
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_ID,
-					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("id"),
+					ModelName: wrapperspb.String(modelName),
+					FieldName: wrapperspb.String(strcase.ToLowerCamel(auditing.ColumnId)),
 				},
 				Optional: false,
 			},
-
 			{
-				ModelName: auditModelName,
-				Name:      "tableName",
+				ModelName: modelName,
+				Name:      strcase.ToLowerCamel(auditing.ColumnTableName),
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
-					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("tableName"),
+					ModelName: wrapperspb.String(modelName),
+					FieldName: wrapperspb.String(strcase.ToLowerCamel(auditing.ColumnTableName)),
 				},
 				Optional: false,
 			},
-
 			{
-				ModelName: auditModelName,
-				Name:      "op",
+				ModelName: modelName,
+				Name:      strcase.ToLowerCamel(auditing.ColumnOp),
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
-					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("op"),
+					ModelName: wrapperspb.String(modelName),
+					FieldName: wrapperspb.String(strcase.ToLowerCamel(auditing.ColumnOp)),
 				},
 				Optional: false,
 			},
-
 			{
-				ModelName: auditModelName,
-				Name:      auditTableDataField,
+				ModelName: modelName,
+				Name:      strcase.ToLowerCamel(auditing.ColumnData),
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
-					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String(auditTableDataField),
+					ModelName: wrapperspb.String(modelName),
+					FieldName: wrapperspb.String(strcase.ToLowerCamel(auditing.ColumnData)),
 				},
 				Optional: false,
 			},
-
 			{
-				ModelName: auditModelName,
-				Name:      "createdAt",
+				ModelName: modelName,
+				Name:      strcase.ToLowerCamel(auditing.ColumnCreatedAt),
 				DefaultValue: &proto.DefaultValue{
 					UseZeroValue: true,
 				},
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_TIMESTAMP,
-					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("createdAt"),
+					ModelName: wrapperspb.String(modelName),
+					FieldName: wrapperspb.String(strcase.ToLowerCamel(auditing.ColumnCreatedAt)),
 				},
 				Optional: false,
 			},
-
 			{
-				ModelName: auditModelName,
-				Name:      "identityId",
+				ModelName: modelName,
+				Name:      strcase.ToLowerCamel(auditing.ColumnIdentityId),
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_ID,
-					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("identityId"),
+					ModelName: wrapperspb.String(modelName),
+					FieldName: wrapperspb.String(strcase.ToLowerCamel(auditing.ColumnIdentityId)),
 				},
 				Optional: true,
 			},
-
 			{
-				ModelName: auditModelName,
-				Name:      "traceId",
+				ModelName: modelName,
+				Name:      strcase.ToLowerCamel(auditing.ColumnTraceId),
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
-					ModelName: wrapperspb.String(auditModelName),
-					FieldName: wrapperspb.String("traceId"),
+					ModelName: wrapperspb.String(modelName),
+					FieldName: wrapperspb.String(strcase.ToLowerCamel(auditing.ColumnTraceId)),
+				},
+				Optional: true,
+			},
+			{
+				ModelName: modelName,
+				Name:      strcase.ToLowerCamel(auditing.ColumnEventProcessedAt),
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_TIMESTAMP,
+					ModelName: wrapperspb.String(modelName),
+					FieldName: wrapperspb.String(strcase.ToLowerCamel(auditing.ColumnEventProcessedAt)),
 				},
 				Optional: true,
 			},
@@ -114,6 +121,3 @@ func auditModel() *proto.Model {
 	}
 	return &mdl
 }
-
-const auditModelName = "KeelAudit"
-const auditTableDataField = "data"
