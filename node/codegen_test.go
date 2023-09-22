@@ -2048,7 +2048,7 @@ model ClubHouse {
 	expected := `
 export type VerifyEmailEvent = (VerifyEmailClubHouseCreatedEvent | VerifyEmailClubHouseUpdatedEvent);
 export interface VerifyEmailClubHouseCreatedEvent {
-	eventName: "clubHouse.created";
+	eventName: "club_house.created";
 	occurredAt: Date;
 	identityId?: string;
 	target: VerifyEmailClubHouseCreatedEventTarget;
@@ -2059,7 +2059,7 @@ export interface VerifyEmailClubHouseCreatedEventTarget {
 	data: sdk.ClubHouse;
 }
 export interface VerifyEmailClubHouseUpdatedEvent {
-	eventName: "clubHouse.updated";
+	eventName: "club_house.updated";
 	occurredAt: Date;
 	identityId?: string;
 	target: VerifyEmailClubHouseUpdatedEventTarget;
