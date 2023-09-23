@@ -81,6 +81,7 @@ func Run(model *Model) {
 		// We still need a tracing provider for auditing and events,
 		// even if the data is not being exported.
 		otel.SetTracerProvider(sdktrace.NewTracerProvider())
+		otel.SetTextMapPropagator(propagation.TraceContext{})
 	}
 
 	defer func() {

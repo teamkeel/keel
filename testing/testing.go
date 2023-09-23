@@ -182,7 +182,6 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			ctx, span := tracer.Start(ctx, opts.TestGroupName)
 
 			span.SetAttributes(attribute.String("request.url", r.URL.String()))
-
 			defer span.End()
 
 			// Use the embedded private key for the tests
