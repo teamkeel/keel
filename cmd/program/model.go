@@ -19,6 +19,7 @@ import (
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/mail"
 	"github.com/teamkeel/keel/migrations"
@@ -73,8 +74,13 @@ func Run(model *Model) {
 				resource.NewSchemaless(attribute.String("service.name", "runtime")),
 			),
 		)
+
 		otel.SetTracerProvider(provider)
 		otel.SetTextMapPropagator(propagation.TraceContext{})
+	} else {
+		// We still need a tracing provider for auditing and events,
+		// even if the data is not being exported.
+		otel.SetTracerProvider(sdktrace.NewTracerProvider())
 	}
 
 	defer func() {
@@ -467,6 +473,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if m.Mode == ModeTest {
+			// Synchronous event handling for keel test.
+			ctx, err := events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
+				return runtime.NewSubscriberHandler(m.Schema).RunSubscriber(ctx, subscriber, event)
+			})
+			if err != nil {
+				m.Err = err
+				return m, tea.Quit
+			}
+
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 			if len(pathParts) != 3 {
 				w.WriteHeader(http.StatusNotFound)
@@ -494,6 +509,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				w.WriteHeader(http.StatusNotFound)
 			}
 		} else {
+			// Asynchronous event handling for keel run.
+			ctx, err := events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
+				go func() {
+					_ = runtime.NewSubscriberHandler(m.Schema).RunSubscriber(ctx, subscriber, event)
+				}()
+				return nil
+			})
+			if err != nil {
+				m.Err = err
+				return m, tea.Quit
+			}
 
 			// In run mode we accept any external issuers but the tokens need to be signed correctly
 			ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
