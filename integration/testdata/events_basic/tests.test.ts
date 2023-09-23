@@ -6,11 +6,11 @@ beforeEach(resetDatabase);
 test("events from action", async () => {
   await actions.createPerson({ name: "Keelson", email: "keelson@keel.so" });
 
- const persons = await models.person.findMany();
+  const persons = await models.person.findMany();
 
- expect(persons).toHaveLength(1);
- expect(persons[0].verifiedEmail).toBeTruthy();
- expect(persons[0].verifiedUpdate).toBeTruthy();
+  expect(persons).toHaveLength(1);
+  expect(persons[0].verifiedEmail).toBeTruthy();
+  expect(persons[0].verifiedUpdate).toBeTruthy();
 });
 
 test("events from custom function", async () => {
@@ -27,7 +27,7 @@ test("events from custom function", async () => {
 });
 
 test("events from job", async () => {
-   await jobs.createRandomPersons();
+  await jobs.createRandomPersons();
 
   const persons = await models.person.findMany();
 
