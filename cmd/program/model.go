@@ -510,12 +510,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				w.WriteHeader(http.StatusNotFound)
 			}
 		} else {
-			// Asynchronous event handling for keel run.
+			// Synchronous event handling for keel run.
+			// TODO: make asynchronous
 			ctx, err := events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
-				go func() {
-					_ = runtime.NewSubscriberHandler(m.Schema).RunSubscriber(ctx, subscriber, event)
-				}()
-				return nil
+				return runtime.NewSubscriberHandler(m.Schema).RunSubscriber(ctx, subscriber, event)
 			})
 			if err != nil {
 				m.Err = err
