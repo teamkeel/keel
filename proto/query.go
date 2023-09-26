@@ -58,7 +58,8 @@ func AllFields(p *Schema) []*Field {
 	return fields
 }
 
-// IdFields returns all the fields in the given model which have type Type_TYPE_ID.
+// ForeignKeyFields returns all the fields in the given model which have their ForeignKeyInfo
+// populated.
 func ForeignKeyFields(model *Model) []*Field {
 	return lo.Filter(model.Fields, func(f *Field, _ int) bool {
 		return f.ForeignKeyInfo != nil

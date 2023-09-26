@@ -19,7 +19,7 @@ func (scm *Builder) insertAllBackLinkFields(
 
 	// Traverse all fields of all models to find "forward" relationships to Identity models.
 	// And for each found, delegate to insertOneBackLinkField() the creation of
-	// the corresponding backlink field.
+	// the corresponding backlink field in the Identity model.
 	for _, model := range query.Models(asts) {
 		fmt.Printf("XXXX consider model: %s\n", model.Name.Value)
 		if model == identityModel {
@@ -43,10 +43,12 @@ func (scm *Builder) insertOneBackLinkField(
 	parentModel *parser.ModelNode,
 	forwardRelnField *parser.FieldNode) *errorhandling.ErrorDetails {
 
+	// The backlink field is names after the name of the model it is back
+	// linking to. For example "user".
+
+	// XXXX todo resolve clashes using @relation when there is more than one.
 	backlinkName := casing.ToLowerCamel(parentModel.Name.Value)
 	backlinkType := parentModel.Name.Value
-
-	repeated := false
 
 	backLinkField := &parser.FieldNode{
 		Name: parser.NameNode{
@@ -55,8 +57,8 @@ func (scm *Builder) insertOneBackLinkField(
 		Type: parser.NameNode{
 			Value: backlinkType,
 		},
-		Repeated: repeated,
-		Optional: false,
+		Repeated: false,
+		Optional: true,
 		BuiltIn:  true,
 	}
 

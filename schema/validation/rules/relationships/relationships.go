@@ -144,6 +144,14 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 }
 
 func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+
+	// The code below traverses over forward and reverse, reciprocal relationship fields between ModelA and ModelB.
+	//
+	// Left to its own devices it will fire twice for each such case. First when the outer loop visits
+	// ModelA, and then again with the outer loop visits ModelB.
+	//
+	// So we keep track of which pairs we have analysed and skip them the second time round using this
+	// map.
 	processed := map[string]bool{}
 
 	for _, model := range query.Models(asts) {
@@ -162,6 +170,9 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 				continue
 			}
 
+			// To reach this point, we now know that "field" is a hasOne relationship field that points
+			// to "otherModel"
+
 			otherModelFields := query.ModelFields(otherModel)
 
 			for _, otherField := range otherModelFields {
@@ -172,10 +183,24 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 					continue
 				}
 
+				// To reach here we additionally now know that "otherField" in "otherModel", is a relationship
+				// field that points back to "model".
+
 				// If either the field on model A is repeated
 				// or the corresponding field on the other side is repeated
 				// then we are not interested
 				if otherField.Repeated {
+					continue
+				}
+
+				// Now we also know that it is a 1:1, forward/reverse relationship.
+
+				// If we reach this point, and either of the models is our built-in Identity model, then
+				// we don't care. This is because we manufacture the relationship fields in the Identity model
+				// programatically and deterministically internally, and no ambiguity is thus
+				// present. (We never create FK fields in the Identity model/table).
+				if field.Type.Value == parser.ImplicitIdentityModelName ||
+					otherField.Type.Value == parser.ImplicitIdentityModelName {
 					continue
 				}
 
