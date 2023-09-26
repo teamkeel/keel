@@ -190,6 +190,9 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	}
 
 	// Updating columns for tables that already exist
+
+	// todo this for loop is now 100 lines long - it should be factored out into
+	// a function to make it easier to read the flow narrative.
 	for _, model := range existingModels {
 		tableName := casing.ToSnake(model.Name)
 
@@ -199,6 +202,12 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 		for _, field := range model.Fields {
 			if field.Type.Type == proto.Type_TYPE_MODEL {
+				continue
+			}
+
+			// Ignore the auto-generated Identity back link relationship fields. We never make columns
+			// for those.
+			if model.Name == parser.ImplicitIdentityModelName && field.ForeignKeyInfo != nil {
 				continue
 			}
 
