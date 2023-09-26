@@ -1,0 +1,33 @@
+model User {
+    fields {
+        isAdult Boolean
+        identity Identity
+    }
+
+    actions {
+        create createUser() with (isAdult, identity.id)
+    }
+
+    @permission(
+        expression: true,
+        actions: [get, list, create, update]
+    )
+}
+
+model Film {
+    fields {
+        title Text @unique
+    }
+
+    actions {
+        create createFilm() with (title)
+        get getFilm(title) {
+            @permission(expression: ctx.identity.user.isAdult)
+        }
+    }
+
+    @permission(
+        expression: true,
+        actions: [get, list, create, update]
+    )
+}

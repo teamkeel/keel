@@ -16,6 +16,7 @@ import (
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
+	"golang.org/x/exp/slices"
 )
 
 // OperandResolver hides some of the complexity of expression parsing so that the runtime action code
@@ -117,8 +118,36 @@ func (resolver *OperandResolver) IsDatabaseColumn() bool {
 // IsContextField returns true if the expression operand refers to a value on the context.
 // For example, a permission condition may check against the current identity,
 // such as: @permission(thing.identity == ctx.identity)
+//
+// However if the expression traverses onwards from identity (using an Identity-backlink)
+// like this:
+// "ctx.identity.user"
+// then it returns false, because that can no longer be resolved solely from the
+// in memory context data.
 func (resolver *OperandResolver) IsContextField() bool {
-	return resolver.Operand.Ident.IsContext()
+	return resolver.Operand.Ident.IsContext() && !resolver.traversesBacklink()
+}
+
+// XXXX decent comment
+func (resolver *OperandResolver) traversesBacklink() bool {
+	if resolver.Operand.Ident == nil {
+		return false
+	}
+	fragments := resolver.Operand.Ident.Fragments
+	if len(fragments) < 3 {
+		return false
+	}
+	if fragments[0].Fragment != "ctx" {
+		return false
+	}
+	if fragments[1].Fragment != "identity" {
+		return false
+	}
+	// Next field must be a back link if it's not one of the standard Identity fields.
+	identityStandardFields := []string{"wontbethis", "orthat", "xxxx fart"}
+	nextField := fragments[2].Fragment
+	isBacklink := !slices.Contains(identityStandardFields, nextField)
+	return isBacklink
 }
 
 // GetOperandType returns the equivalent protobuf type for the expression operand.
