@@ -1,0 +1,40 @@
+model Person {
+    fields {
+        name Text
+        email Text
+        verifiedEmail Boolean @default(false)
+        verifiedUpdate Boolean @default(false)
+    }
+
+    actions {
+        create createPerson() with (name, email) {
+            @permission(expression: true)
+        }
+        get getPerson(id) {
+            @permission(expression: true)
+        }
+        write writeRandomPersons(Any) returns (Any) {
+            @permission(expression: true)
+        }
+    }
+
+    @on(
+        [create],
+        verifyEmail
+    )
+
+    @on(
+        [update],
+        verifyUpdate
+    )
+}
+
+job CreateRandomPersons {
+    @permission(expression: true)
+}
+
+api Web {
+    models {
+        Person
+    }
+}

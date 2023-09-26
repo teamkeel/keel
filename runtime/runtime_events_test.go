@@ -2,7 +2,6 @@ package runtime_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
@@ -57,21 +56,23 @@ model Person {
 }
 `
 
-func NewEventHandler() EventHandler {
+func NewEventHandler(t *testing.T) EventHandler {
 	return EventHandler{
-		subscribedEvents: map[string][]*events.Event{},
+		handledEvents: map[string][]*events.Event{},
+		testing:       t,
 	}
 }
 
 type EventHandler struct {
-	subscribedEvents map[string][]*events.Event
+	handledEvents map[string][]*events.Event
+	testing       *testing.T
 }
 
 func (handler *EventHandler) HandleEvent(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
-	handler.subscribedEvents[subscriber] = append(handler.subscribedEvents[subscriber], event)
+	handler.handledEvents[subscriber] = append(handler.handledEvents[subscriber], event)
 
 	if subscriber == "" || event == nil {
-		return errors.New("invalid params for event handler")
+		handler.testing.Error("invalid params for event handler")
 	}
 
 	return nil
@@ -84,8 +85,9 @@ func TestCreateEvent(t *testing.T) {
 	ctx, identity := withIdentity(t, ctx, schema)
 	ctx = withTracing(t, ctx)
 
-	handler := NewEventHandler()
-	ctx = events.WithEventHandler(ctx, handler.HandleEvent)
+	handler := NewEventHandler(t)
+	ctx, err := events.WithEventHandler(ctx, handler.HandleEvent)
+	require.NoError(t, err)
 
 	result, _, err := actions.Execute(
 		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
@@ -95,9 +97,9 @@ func TestCreateEvent(t *testing.T) {
 	wedding, ok := result.(map[string]any)
 	require.True(t, ok)
 
-	require.Len(t, handler.subscribedEvents, 1)
+	require.Len(t, handler.handledEvents, 1)
 
-	events, ok := handler.subscribedEvents["sendInvites"]
+	events, ok := handler.handledEvents["sendInvites"]
 	require.True(t, ok)
 	require.Len(t, events, 1)
 
@@ -136,8 +138,9 @@ func TestUpdateEvent(t *testing.T) {
 	ctx, identity := withIdentity(t, ctx, schema)
 	ctx = withTracing(t, ctx)
 
-	handler := NewEventHandler()
-	ctx = events.WithEventHandler(ctx, handler.HandleEvent)
+	handler := NewEventHandler(t)
+	ctx, err = events.WithEventHandler(ctx, handler.HandleEvent)
+	require.NoError(t, err)
 
 	updated, _, err := actions.Execute(
 		actions.NewScope(ctx, proto.FindAction(schema, "updateWedding"), schema),
@@ -151,9 +154,9 @@ func TestUpdateEvent(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, wedding["id"], updatedWedding["id"])
 
-	require.Len(t, handler.subscribedEvents, 1)
+	require.Len(t, handler.handledEvents, 1)
 
-	events, ok := handler.subscribedEvents["sendUpdates"]
+	events, ok := handler.handledEvents["sendUpdates"]
 	require.True(t, ok)
 	require.Len(t, events, 1)
 
@@ -193,17 +196,18 @@ func TestDeleteEvent(t *testing.T) {
 	ctx, identity := withIdentity(t, ctx, schema)
 	ctx = withTracing(t, ctx)
 
-	handler := NewEventHandler()
-	ctx = events.WithEventHandler(ctx, handler.HandleEvent)
+	handler := NewEventHandler(t)
+	ctx, err = events.WithEventHandler(ctx, handler.HandleEvent)
+	require.NoError(t, err)
 
 	_, _, err = actions.Execute(
 		actions.NewScope(ctx, proto.FindAction(schema, "deleteWedding"), schema),
 		map[string]any{"id": wedding["id"]})
 	require.NoError(t, err)
 
-	require.Len(t, handler.subscribedEvents, 1)
+	require.Len(t, handler.handledEvents, 1)
 
-	events, ok := handler.subscribedEvents["sendCancellations"]
+	events, ok := handler.handledEvents["sendCancellations"]
 	require.True(t, ok)
 	require.Len(t, events, 1)
 
@@ -233,17 +237,18 @@ func TestNoIdentityEvent(t *testing.T) {
 
 	ctx = withTracing(t, ctx)
 
-	handler := NewEventHandler()
-	ctx = events.WithEventHandler(ctx, handler.HandleEvent)
+	handler := NewEventHandler(t)
+	ctx, err := events.WithEventHandler(ctx, handler.HandleEvent)
+	require.NoError(t, err)
 
-	_, _, err := actions.Execute(
+	_, _, err = actions.Execute(
 		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
 		map[string]any{"name": "Dave"})
 	require.NoError(t, err)
 
-	require.Len(t, handler.subscribedEvents, 1)
+	require.Len(t, handler.handledEvents, 1)
 
-	events, ok := handler.subscribedEvents["sendInvites"]
+	events, ok := handler.handledEvents["sendInvites"]
 	require.True(t, ok)
 	require.Len(t, events, 1)
 	require.Empty(t, events[0].IdentityId)
@@ -256,8 +261,9 @@ func TestNestedCreateEvent(t *testing.T) {
 	ctx, _ = withIdentity(t, ctx, schema)
 	ctx = withTracing(t, ctx)
 
-	handler := NewEventHandler()
-	ctx = events.WithEventHandler(ctx, handler.HandleEvent)
+	handler := NewEventHandler(t)
+	ctx, err := events.WithEventHandler(ctx, handler.HandleEvent)
+	require.NoError(t, err)
 
 	result, _, err := actions.Execute(
 		actions.NewScope(ctx, proto.FindAction(schema, "createWeddingWithGuests"), schema),
@@ -273,9 +279,9 @@ func TestNestedCreateEvent(t *testing.T) {
 	_, ok := result.(map[string]any)
 	require.True(t, ok)
 
-	require.Len(t, handler.subscribedEvents, 2)
+	require.Len(t, handler.handledEvents, 2)
 
-	sendInvitesEvent, ok := handler.subscribedEvents["sendInvites"]
+	sendInvitesEvent, ok := handler.handledEvents["sendInvites"]
 	require.True(t, ok)
 	require.Len(t, sendInvitesEvent, 3)
 
@@ -283,7 +289,7 @@ func TestNestedCreateEvent(t *testing.T) {
 	require.Equal(t, "wedding_invitee.created", sendInvitesEvent[1].EventName)
 	require.Equal(t, "wedding_invitee.created", sendInvitesEvent[2].EventName)
 
-	verifyDetailsEvent, ok := handler.subscribedEvents["verifyDetails"]
+	verifyDetailsEvent, ok := handler.handledEvents["verifyDetails"]
 	require.True(t, ok)
 	require.Len(t, verifyDetailsEvent, 2)
 
@@ -298,16 +304,16 @@ func TestMultipleEvents(t *testing.T) {
 	ctx, _ = withIdentity(t, ctx, schema)
 	ctx = withTracing(t, ctx)
 
+	handler := NewEventHandler(t)
+	ctx, err := events.WithEventHandler(ctx, handler.HandleEvent)
+	require.NoError(t, err)
+
 	result, _, err := actions.Execute(
 		actions.NewScope(ctx, proto.FindAction(schema, "createInvitee"), schema),
 		map[string]any{"firstName": "Dave"})
 	require.NoError(t, err)
-
 	wedding, ok := result.(map[string]any)
 	require.True(t, ok)
-
-	handler := NewEventHandler()
-	ctx = events.WithEventHandler(ctx, handler.HandleEvent)
 
 	updated, _, err := actions.Execute(
 		actions.NewScope(ctx, proto.FindAction(schema, "updateInvitee"), schema),
@@ -316,25 +322,28 @@ func TestMultipleEvents(t *testing.T) {
 			"values": map[string]any{"firstName": "Adam"},
 		})
 	require.NoError(t, err)
-
 	updatedWedding, ok := updated.(map[string]any)
 	require.True(t, ok)
 	require.Equal(t, wedding["id"], updatedWedding["id"])
 
-	require.Len(t, handler.subscribedEvents, 2)
+	require.Len(t, handler.handledEvents, 2)
 
-	sendInvitesEvent, ok := handler.subscribedEvents["sendInvites"]
+	sendInvitesEvent, ok := handler.handledEvents["sendInvites"]
 	require.True(t, ok)
 	require.Len(t, sendInvitesEvent, 1)
 
 	require.Equal(t, "wedding_invitee.created", sendInvitesEvent[0].EventName)
+	require.Equal(t, "Dave", sendInvitesEvent[0].Target.Data["firstName"])
 
-	verifyDetailsEvent, ok := handler.subscribedEvents["verifyDetails"]
+	verifyDetailsEvent, ok := handler.handledEvents["verifyDetails"]
 	require.True(t, ok)
 	require.Len(t, verifyDetailsEvent, 2)
 
 	require.Equal(t, "wedding_invitee.created", verifyDetailsEvent[0].EventName)
+	require.Equal(t, "Dave", verifyDetailsEvent[0].Target.Data["firstName"])
+
 	require.Equal(t, "wedding_invitee.updated", verifyDetailsEvent[1].EventName)
+	require.Equal(t, "Adam", verifyDetailsEvent[1].Target.Data["firstName"])
 }
 
 func TestAuditTableEventCreatedAtUpdated(t *testing.T) {
@@ -343,8 +352,9 @@ func TestAuditTableEventCreatedAtUpdated(t *testing.T) {
 
 	ctx = withTracing(t, ctx)
 
-	handler := NewEventHandler()
-	ctx = events.WithEventHandler(ctx, handler.HandleEvent)
+	handler := NewEventHandler(t)
+	ctx, err := events.WithEventHandler(ctx, handler.HandleEvent)
+	require.NoError(t, err)
 
 	result, _, err := actions.Execute(
 		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
@@ -374,5 +384,5 @@ func TestAuditTableEventCreatedAtUpdated(t *testing.T) {
 	require.Nil(t, eventCreatedAtPerson)
 	require.True(t, ok)
 
-	require.Len(t, handler.subscribedEvents, 1)
+	require.Len(t, handler.handledEvents, 1)
 }

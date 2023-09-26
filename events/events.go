@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/util"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -48,8 +50,14 @@ type handlerContextKey string
 
 var contextKey handlerContextKey = "eventHandler"
 
-func WithEventHandler(ctx context.Context, handler EventHandler) context.Context {
-	return context.WithValue(ctx, contextKey, handler)
+func WithEventHandler(ctx context.Context, handler EventHandler) (context.Context, error) {
+	// If no tracing provider is set up, then events will not work.
+	// It is better to error than to let events silently malfunction.
+	if otel.GetTracerProvider() == trace.NewNoopTracerProvider() {
+		return nil, errors.New("cannot use events when there is no trace provider configured")
+	}
+
+	return context.WithValue(ctx, contextKey, handler), nil
 }
 
 func HasEventHandler(ctx context.Context) bool {
@@ -75,8 +83,9 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 
 	spanContext := trace.SpanContextFromContext(ctx)
 
-	// If tracing is disabled, then no events can be sent.
-	// This is because events are produced from the auditing table.
+	// If there is no valid trace, then no events can be sent.  This is because
+	// events are produced from the auditing table by comparing the trace ids.
+	// However, there should always be a valid trace at this point.
 	if !spanContext.IsValid() {
 		return nil
 	}
@@ -112,10 +121,13 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 
 		protoEvent := proto.FindEvent(schema.Events, eventName)
 		if protoEvent == nil {
-			continue
+			return fmt.Errorf("event '%s' does not exist", eventName)
 		}
 
 		subscribers := proto.FindEventSubscriptions(schema, protoEvent)
+		if len(subscribers) == 0 {
+			return fmt.Errorf("event '%s' must have at least one subscriber", eventName)
+		}
 
 		for _, subscriber := range subscribers {
 			event := &Event{

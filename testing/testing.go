@@ -80,10 +80,10 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 
 	schema.Apis = append(schema.Apis, testApi)
 
-	context := context.Background()
+	ctx := context.Background()
 
 	dbName := "keel_test"
-	database, err := testhelpers.SetupDatabaseForTestCase(context, opts.DbConnInfo, schema, dbName)
+	database, err := testhelpers.SetupDatabaseForTestCase(ctx, opts.DbConnInfo, schema, dbName)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	dbConnString := opts.DbConnInfo.WithDatabase(dbName).String()
 
 	files, err := node.Generate(
-		context,
+		ctx,
 		schema,
 		node.WithDevelopmentServer(true),
 	)
@@ -182,7 +182,6 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			ctx, span := tracer.Start(ctx, opts.TestGroupName)
 
 			span.SetAttributes(attribute.String("request.url", r.URL.String()))
-
 			defer span.End()
 
 			// Use the embedded private key for the tests
@@ -199,6 +198,14 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 
 			if functionsTransport != nil {
 				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)
+			}
+
+			// Synchronous event handling
+			ctx, err = events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
+				return runtime.NewSubscriberHandler(schema).RunSubscriber(ctx, subscriber, event)
+			})
+			if err != nil {
+				panic(err.Error())
 			}
 
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
@@ -236,7 +243,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	}()
 
 	defer func() {
-		_ = runtimeServer.Shutdown(context)
+		_ = runtimeServer.Shutdown(ctx)
 	}()
 
 	cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty")
