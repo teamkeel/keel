@@ -140,7 +140,6 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 	}
 
 	scope := actions.NewJobScope(ctx, job, handler.schema)
-	span.AddEvent()
 	permissionState := common.NewPermissionState()
 
 	if trigger == functions.ManualTrigger {
@@ -166,9 +165,15 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 		permissionState,
 		trigger,
 	)
+	if err != nil {
+		return err
+	}
 
 	// Generate and send any events for this context.
 	err = events.SendEvents(ctx, scope.Schema)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
@@ -198,9 +203,15 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 		subscriber,
 		event,
 	)
+	if err != nil {
+		return err
+	}
 
 	// Generate and send any events for this context.
 	err = events.SendEvents(ctx, handler.schema)
+	if err != nil {
+		return err
+	}
 
 	return err
 }

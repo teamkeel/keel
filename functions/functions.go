@@ -252,8 +252,8 @@ func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *ev
 	span.SetAttributes(
 		attribute.String("subscriber.id", req.ID),
 		attribute.String("subscriber.name", subscriber.Name),
-		attribute.String("subscriber.event_name", event.EventName),
-		attribute.String("subscriber.event_target_id", event.Target.Id),
+		attribute.String("event.name", event.EventName),
+		attribute.String("event.target_id", event.Target.Id),
 	)
 
 	resp, err := transport(ctx, req)
