@@ -112,7 +112,7 @@ func (resolver *OperandResolver) IsExplicitInput() bool {
 // For example, a where condition might filter on reading data,
 // such as: @where(post.author.isActive)
 func (resolver *OperandResolver) IsDatabaseColumn() bool {
-	return !resolver.IsLiteral() && !resolver.Operand.Ident.IsContext() && !resolver.IsExplicitInput() && !resolver.IsImplicitInput()
+	return !resolver.IsLiteral() && !resolver.IsContextField() && !resolver.IsExplicitInput() && !resolver.IsImplicitInput()
 }
 
 // IsContextField returns true if the expression operand refers to a value on the context.
@@ -128,7 +128,8 @@ func (resolver *OperandResolver) IsContextField() bool {
 	return resolver.Operand.Ident.IsContext() && !resolver.traversesBacklink()
 }
 
-// XXXX decent comment
+// traversesBacklink works out if an operand is like this "ctx.identity.user.age"
+// and thus traverses an Identity Backlink.
 func (resolver *OperandResolver) traversesBacklink() bool {
 	if resolver.Operand.Ident == nil {
 		return false
@@ -143,9 +144,12 @@ func (resolver *OperandResolver) traversesBacklink() bool {
 	if fragments[1].Fragment != "identity" {
 		return false
 	}
-	// Next field must be a back link if it's not one of the standard Identity fields.
-	identityStandardFields := []string{"wontbethis", "orthat", "xxxx fart"}
+
+	// The next field must be a back link if it's not one of the standard Identity fields.
 	nextField := fragments[2].Fragment
+	identityStandardFields := []string{
+		"email", "emailVerified", "password", "externalId", "issuer", "id",
+		"createdAt", "updatedAt"}
 	isBacklink := !slices.Contains(identityStandardFields, nextField)
 	return isBacklink
 }
@@ -178,8 +182,15 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 		} else {
 			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("unknown literal type")
 		}
+
+	// This case must precede the one that follows - because it is a subset of it.
+	case resolver.IsDatabaseColumn() && resolver.traversesBacklink():
+		return resolver.getOperandTypeForBacklink()
+
 	case resolver.IsDatabaseColumn():
+
 		fragmentCount := len(operand.Ident.Fragments)
+
 		modelTarget := casing.ToCamel(operand.Ident.Fragments[0].Fragment)
 
 		if fragmentCount > 2 {
@@ -358,4 +369,36 @@ func toDate(s string) time.Time {
 func toTime(s string) time.Time {
 	tm, _ := time.Parse(time.RFC3339, s)
 	return tm
+}
+
+// getOperandTypeForBacklink analyses operands that traverse Identity backlinks such as this:
+// "ctx.identity.user.foo.bar.age"
+// It returns the type of the field at the end of the traversal. I.e the type of the "age" field
+// in this example.
+func (resolver *OperandResolver) getOperandTypeForBacklink() (proto.Type, error) {
+
+	schema := resolver.Schema
+
+	relavent := resolver.Operand.Ident.Fragments[2:] // Discard "ctx.identity"
+	n := len(relavent)
+	rootModel := relavent[0].Fragment        // "user"
+	relationFields := relavent[1 : n-1]      // "foo.bar"
+	finalFieldName := relavent[n-1].Fragment // "age"
+
+	// Walk the relationship fields to find the final model being referenced.
+	targetModel := casing.ToCamel(rootModel)
+	for _, field := range relationFields {
+		field := proto.FindField(schema.Models, casing.ToCamel(targetModel), field.Fragment)
+		targetModel = field.Type.ModelName.Value
+	}
+
+	// Now we can establish the type of the finalField
+	if !proto.ModelHasField(schema, targetModel, finalFieldName) {
+		return proto.Type_TYPE_UNKNOWN,
+			fmt.Errorf("this model: %s, does not have a field of name: %s", targetModel, finalFieldName)
+	}
+
+	operandType := proto.FindField(schema.Models, targetModel, finalFieldName).Type.Type
+
+	return operandType, nil
 }
