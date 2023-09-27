@@ -122,7 +122,10 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 	}
 
 	// Generate and send any events for this context.
-	err = events.SendEvents(ctx, scope.Schema)
+	eventsErr := events.SendEvents(ctx, scope.Schema)
+	if eventsErr != nil {
+		return nil, nil, eventsErr
+	}
 
 	return
 }

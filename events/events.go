@@ -81,6 +81,11 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		return nil
 	}
 
+	// If there are no events defined in the schema, then don't bother processing events.
+	if len(schema.Events) == 0 {
+		return nil
+	}
+
 	span := trace.SpanFromContext(ctx)
 	spanContext := span.SpanContext()
 
