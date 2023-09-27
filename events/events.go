@@ -81,13 +81,14 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		return nil
 	}
 
-	spanContext := trace.SpanContextFromContext(ctx)
+	span := trace.SpanFromContext(ctx)
+	spanContext := span.SpanContext()
 
 	// If there is no valid trace, then no events can be sent.  This is because
 	// events are produced from the auditing table by comparing the trace ids.
 	// However, there should always be a valid trace at this point.
 	if !spanContext.IsValid() {
-		return nil
+		return errors.New("valid spanContext expected")
 	}
 
 	handler, err := GetEventHandler(ctx)
@@ -143,7 +144,11 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 
 			err = handler(ctx, subscriber.Name, event, traceparent)
 			if err != nil {
-				return err
+				// We do not error when the event handler fails
+				span.RecordError(err)
+			} else {
+				// For successfully fired events
+				span.AddEvent(eventName)
 			}
 		}
 	}

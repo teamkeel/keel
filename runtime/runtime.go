@@ -139,16 +139,8 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 		return fmt.Errorf("no job with the name '%s' exists", jobName)
 	}
 
-	span.SetAttributes(
-		attribute.String("job.name", job.Name),
-	)
-
-	span.SetAttributes(
-		attribute.String("job.name", job.Name),
-	)
-
 	scope := actions.NewJobScope(ctx, job, handler.schema)
-
+	span.AddEvent()
 	permissionState := common.NewPermissionState()
 
 	if trigger == functions.ManualTrigger {
@@ -176,12 +168,7 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 	)
 
 	// Generate and send any events for this context.
-	// If event sending fails, then record this in the span,
-	// but do not return the error. The action should still succeed.
-	eventsErr := events.SendEvents(ctx, handler.schema)
-	if eventsErr != nil {
-		span.RecordError(eventsErr)
-	}
+	err = events.SendEvents(ctx, scope.Schema)
 
 	return err
 }
@@ -206,10 +193,6 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 		return fmt.Errorf("no subscriber with the name '%s' exists", subscriberName)
 	}
 
-	span.SetAttributes(
-		attribute.String("subscriber.name", subscriber.Name),
-	)
-
 	err := functions.CallSubscriber(
 		ctx,
 		subscriber,
@@ -217,12 +200,7 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 	)
 
 	// Generate and send any events for this context.
-	// If event sending fails, then record this in the span,
-	// but do not return the error. The action should still succeed.
-	eventsErr := events.SendEvents(ctx, handler.schema)
-	if eventsErr != nil {
-		span.RecordError(eventsErr)
-	}
+	err = events.SendEvents(ctx, handler.schema)
 
 	return err
 }
