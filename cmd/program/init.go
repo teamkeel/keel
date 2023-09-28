@@ -148,12 +148,12 @@ node_modules/
 
 		files = append(files, &codegen.GeneratedFile{
 			Path:     "schema.keel",
-			Contents: "// Visit https://keel.notaku.site/ for documentation on how to get started",
+			Contents: "// Visit https://docs.keel.so/ for documentation on how to get started",
 		})
 
 		files = append(files, &codegen.GeneratedFile{
 			Path: "keelconfig.yaml",
-			Contents: `# Visit https://keel.notaku.site/documentation/environment-variables-and-secrets for more
+			Contents: `# Visit https://docs.keel.so/envvars and https://docs.keel.so/secrets for more
 # information about environment variables and secrets
 environment:
   default:

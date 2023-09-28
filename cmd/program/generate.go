@@ -164,7 +164,7 @@ func (m *GenerateModel) renderGenerate() string {
 			b.WriteString(colors.Cyan("generate").String())
 			b.WriteString(colors.Gray(" command, define some functions in your schema, or write some tests.").String())
 			b.WriteString("\n\n")
-			b.WriteString(colors.Gray("For more information, visit https://keel.notaku.site/documentation/cli-and-local-development").String())
+			b.WriteString(colors.Gray("For more information, visit https://docs.keel.so/local-environment").String())
 		}
 
 		b.WriteString("\n")
