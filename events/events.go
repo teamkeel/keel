@@ -13,6 +13,7 @@ import (
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -151,6 +152,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 			if err != nil {
 				// We do not error when the event handler fails
 				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
 			} else {
 				// For successfully fired events
 				span.AddEvent(eventName)
