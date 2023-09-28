@@ -164,8 +164,7 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 
 // CallJob will invoke the job function on the runtime node server.
 func CallJob(ctx context.Context, job *proto.Job, inputs map[string]any, permissionState *common.PermissionState, trigger TriggerType) error {
-	ctx, span := tracer.Start(ctx, "Call job")
-	defer span.End()
+	span := trace.SpanFromContext(ctx)
 
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {
@@ -225,8 +224,7 @@ func CallJob(ctx context.Context, job *proto.Job, inputs map[string]any, permiss
 
 // CallSubscriber will invoke the subscriber function on the runtime node server.
 func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *events.Event) error {
-	ctx, span := tracer.Start(ctx, "Call subscriber")
-	defer span.End()
+	span := trace.SpanFromContext(ctx)
 
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {
@@ -254,6 +252,8 @@ func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *ev
 	span.SetAttributes(
 		attribute.String("subscriber.id", req.ID),
 		attribute.String("subscriber.name", subscriber.Name),
+		attribute.String("event.name", event.EventName),
+		attribute.String("event.target_id", event.Target.Id),
 	)
 
 	resp, err := transport(ctx, req)

@@ -2,6 +2,7 @@ package runtime_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -385,4 +386,30 @@ func TestAuditTableEventCreatedAtUpdated(t *testing.T) {
 	require.True(t, ok)
 
 	require.Len(t, handler.handledEvents, 1)
+}
+
+func TestFailedEventHandling(t *testing.T) {
+	ctx, database, schema := newContext(t, eventsSchema)
+	defer database.Close()
+
+	ctx = withTracing(t, ctx)
+
+	ctx, err := events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
+		return errors.New("something went wrong")
+	})
+	require.NoError(t, err)
+
+	result, _, err := actions.Execute(
+		actions.NewScope(ctx, proto.FindAction(schema, "createWeddingWithGuests"), schema),
+		map[string]any{
+			"name": "Dave",
+			"guests": []any{
+				map[string]any{"firstName": "Pete"},
+				map[string]any{"firstName": "Adam"},
+			},
+		})
+	require.NoError(t, err)
+
+	_, ok := result.(map[string]any)
+	require.True(t, ok)
 }

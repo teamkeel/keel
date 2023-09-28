@@ -205,7 +205,8 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 				return runtime.NewSubscriberHandler(schema).RunSubscriber(ctx, subscriber, event)
 			})
 			if err != nil {
-				panic(err.Error())
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte(err.Error()))
 			}
 
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")

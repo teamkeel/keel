@@ -122,11 +122,9 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 	}
 
 	// Generate and send any events for this context.
-	// If event sending fails, then record this in the span,
-	// but do not return the error. The action should still succeed.
 	eventsErr := events.SendEvents(ctx, scope.Schema)
 	if eventsErr != nil {
-		span.RecordError(eventsErr)
+		return nil, nil, eventsErr
 	}
 
 	return
