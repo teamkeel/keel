@@ -125,33 +125,19 @@ func (resolver *OperandResolver) IsDatabaseColumn() bool {
 // then it returns false, because that can no longer be resolved solely from the
 // in memory context data.
 func (resolver *OperandResolver) IsContextField() bool {
-	return resolver.Operand.Ident.IsContext() && !resolver.traversesBacklink()
+
+	return resolver.Operand.Ident.IsContext() && !resolver.IsBacklink()
 }
 
-// traversesBacklink works out if an operand is like this "ctx.identity.user.age"
-// and thus traverses an Identity Backlink.
-func (resolver *OperandResolver) traversesBacklink() bool {
+// IsBacklink works out this operand traverses an Identity Backlink.
+func (resolver *OperandResolver) IsBacklink() bool {
 	if resolver.Operand.Ident == nil {
 		return false
 	}
-	fragments := resolver.Operand.Ident.Fragments
-	if len(fragments) < 3 {
-		return false
-	}
-	if fragments[0].Fragment != "ctx" {
-		return false
-	}
-	if fragments[1].Fragment != "identity" {
-		return false
-	}
-
-	// The next field must be a back link if it's not one of the standard Identity fields.
-	nextField := fragments[2].Fragment
-	identityStandardFields := []string{
-		"email", "emailVerified", "password", "externalId", "issuer", "id",
-		"createdAt", "updatedAt"}
-	isBacklink := !slices.Contains(identityStandardFields, nextField)
-	return isBacklink
+	fragments := lo.Map(resolver.Operand.Ident.Fragments, func(frag *parser.IdentFragment, _ int) string {
+		return frag.Fragment
+	})
+	return IsIdentityBacklink(fragments)
 }
 
 // GetOperandType returns the equivalent protobuf type for the expression operand.
@@ -184,7 +170,7 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 		}
 
 	// This case must precede the one that follows - because it is a subset of it.
-	case resolver.IsDatabaseColumn() && resolver.traversesBacklink():
+	case resolver.IsDatabaseColumn() && resolver.IsBacklink():
 		return resolver.getOperandTypeForBacklink()
 
 	case resolver.IsDatabaseColumn():
@@ -401,4 +387,35 @@ func (resolver *OperandResolver) getOperandTypeForBacklink() (proto.Type, error)
 	operandType := proto.FindField(schema.Models, targetModel, finalFieldName).Type.Type
 
 	return operandType, nil
+}
+
+// IsIdentityBacklink works out if the given dot delimitted expression fragments
+// traverse an Identity Backlink.
+func IsIdentityBacklink(fragments []string) bool {
+
+	if len(fragments) < 3 {
+		return false
+	}
+	if fragments[0] != "ctx" {
+		return false
+	}
+	if fragments[1] != "identity" {
+		return false
+	}
+
+	// The next field must be a back link if it's not one of the standard Identity fields.
+	rootModelField := fragments[2]
+	identityStandardFields := []string{
+		"email", "emailVerified", "password", "externalId", "issuer", "id",
+		"createdAt", "updatedAt"}
+	isBacklink := !slices.Contains(identityStandardFields, rootModelField)
+
+	return isBacklink
+}
+
+// IdentityBacklink models an expression that traverses an IdentityBacklink.
+// E.g. this expression "ctx.identity.user.foo.bar.name"
+type IdentityBacklink struct {
+	RootModel     string   // "user"
+	RemainingPath []string // ["foo", "bar", "name"]
 }
