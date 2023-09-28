@@ -200,9 +200,18 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 }
 
 // Constructs a QueryOperand from a splice of fragments, representing an expression operand or implicit input.
-// The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive
+// The fragment slice must either:
+// 1) include the base model as the first fragment, for example: post.author.publisher.isActive, or
+// 2) be an Identity backlink like this: ctx.identity.user.isAdult
 func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOperand, error) {
 	var field string
+
+	// If it's case (2) we convert the fragments into form (1).
+	// I.e. we convert ctx.identity.user.isAdult into user.isAdult
+	if expressions.IsIdentityBacklink(fragments) {
+		fragments = fragments[2:]
+	}
+
 	model := casing.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
 
