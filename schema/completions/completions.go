@@ -69,7 +69,7 @@ func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *conf
 	// switch on nearest (previous) keyword
 	switch enclosingBlock {
 	case parser.KeywordModel:
-		attributes := getAttributeCompletions(tokenAtPos, []string{parser.AttributePermission, parser.AttributeUnique})
+		attributes := getAttributeCompletions(tokenAtPos, []string{parser.AttributePermission, parser.AttributeUnique, parser.AttributeOn})
 		return append(attributes, modelBlockKeywords...)
 	case parser.KeywordRole:
 		return roleBlockKeywords
@@ -516,6 +516,21 @@ var topLevelKeywords = []*CompletionItem{
 	},
 }
 
+var onAttributeActionTypeKeywords = []*CompletionItem{
+	{
+		Label: parser.ActionTypeCreate,
+		Kind:  KindKeyword,
+	},
+	{
+		Label: parser.ActionTypeUpdate,
+		Kind:  KindKeyword,
+	},
+	{
+		Label: parser.ActionTypeDelete,
+		Kind:  KindKeyword,
+	},
+}
+
 func getBuiltInTypeCompletions() []*CompletionItem {
 	completions := []*CompletionItem{}
 	for t := range parser.BuiltInTypes {
@@ -632,7 +647,8 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 		return getOrderByArgCompletions(asts, t, cfg)
 	case parser.AttributeSchedule:
 		return getScheduleArgCompletions(asts, t, cfg)
-
+	case parser.AttributeOn:
+		return getOnArgCompletions(asts, t, cfg)
 	case parser.AttributeUnique:
 		// composite
 		if enclosingBlock == parser.KeywordModel {
@@ -868,6 +884,33 @@ func getPermissionArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *c
 	default:
 		return []*CompletionItem{}
 	}
+}
+
+func getOnArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
+	// If the first argument and no array bracket has been opened
+	if t.Prev().Value() == parser.AttributeOn {
+		return []*CompletionItem{{Label: "[", Kind: KindPunctuation}}
+	}
+
+	// If within the array group
+	if t.StartOfGroup("[", "]") != nil {
+		return onAttributeActionTypeKeywords
+	}
+
+	// If the second argument
+	if (t.Value() == "," || t.Prev().Value() == ",") && t.StartOfGroup("[", "]") == nil {
+		subscriberNames := query.SubscriberNames(asts)
+		completions := lo.Map(subscriberNames, func(name string, _ int) *CompletionItem {
+			return &CompletionItem{
+				Label: name,
+				Kind:  KindField,
+			}
+		})
+
+		return completions
+	}
+
+	return []*CompletionItem{}
 }
 
 func getExpressionCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {

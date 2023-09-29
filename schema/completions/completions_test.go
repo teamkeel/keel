@@ -113,7 +113,7 @@ func TestModelCompletions(t *testing.T) {
 			model A {
 			  <Cursor>
 			}`,
-			expected: []string{"@permission", "@unique", "fields", "actions"},
+			expected: []string{"@permission", "@unique", "@on", "fields", "actions"},
 		},
 		// attributes tests
 		{
@@ -122,7 +122,7 @@ func TestModelCompletions(t *testing.T) {
 			model A {
               @<Cursor>
             }`,
-			expected: []string{"@permission", "@unique", "fields", "actions"},
+			expected: []string{"@permission", "@unique", "@on", "fields", "actions"},
 		},
 	}
 
@@ -1193,6 +1193,61 @@ func TestSortableCompletions(t *testing.T) {
 			  }
 		    }`,
 			expected: []string{"age", "createdAt", "id", "name", "updatedAt"},
+		},
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestOnCompletions(t *testing.T) {
+	cases := []testCase{
+		{
+			name: "on-attribute-action-args-without-array",
+			schema: `
+			model Person {
+				@on(<Cursor>
+		    }`,
+			expected: []string{"["},
+		},
+		{
+			name: "on-attribute-action-args",
+			schema: `
+			model Person {
+				@on([<Cursor>
+		    }`,
+			expected: []string{"create", "delete", "update"},
+		},
+		{
+			name: "on-attribute-action-args-second",
+			schema: `
+			model Person {
+				@on([update, <Cursor>
+		    }`,
+			expected: []string{"create", "delete", "update"},
+		},
+		{
+			name: "on-attribute-subscriber-arg",
+			schema: `
+			model Person {
+				@on([create, delete],<Cursor>
+		    }
+			`,
+			expected: []string{},
+		},
+		{
+			name: "on-attribute-subscriber-arg-suggest-existing",
+			schema: `
+			model Employee {
+				@on([update], verifyDetails)
+				@on([create], verifydetails) // Different casing
+				@on([delete], sendGoodbyeMail)
+			}
+			model Person {
+				@on([create, update], verifyDetails)
+				@on([create, delete], <Cursor>
+		    }
+			`,
+			expected: []string{"sendGoodbyeMail", "verifyDetails", "verifydetails"},
 		},
 	}
 

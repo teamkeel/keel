@@ -3,6 +3,7 @@ package query
 import (
 	"strings"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -471,4 +472,34 @@ func IsHasManyModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 	default:
 		return true
 	}
+}
+
+// SubscriberNames gets a unique slice of subscriber names which have been defined in the schema.
+func SubscriberNames(asts []*parser.AST) (res []string) {
+	for _, ast := range asts {
+
+		for _, decl := range ast.Declarations {
+			if decl.Model != nil {
+				for _, section := range decl.Model.Sections {
+					if section.Attribute != nil && section.Attribute.Name.Value == parser.AttributeOn {
+						attribute := section.Attribute
+
+						if len(attribute.Arguments) == 2 {
+							subscriberArg := attribute.Arguments[1]
+							operand, err := subscriberArg.Expression.ToValue()
+							if err == nil && operand.Ident != nil && len(operand.Ident.Fragments) == 1 {
+								name := operand.Ident.Fragments[0].Fragment
+								if !lo.Contains(res, name) {
+									res = append(res, name)
+								}
+							}
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+	return res
 }
