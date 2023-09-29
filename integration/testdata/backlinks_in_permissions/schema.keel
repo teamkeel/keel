@@ -22,7 +22,12 @@ model Film {
     actions {
         create createFilm() with (title)
         get getFilm(title) {
+            // Drawing from the context's identity 
             @permission(expression: ctx.identity.user.isAdult)
+            // 
+            @permission(expression: film.identity.user.isAdult)
+            // 
+            @permission(expression: film.identity.user.id == ctx.identity.user.id)
         }
     }
 

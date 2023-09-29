@@ -22,9 +22,9 @@ test("getFilm action - with adult user - should be authorized", async () => {
     title: "some film"
   })
 
-  // This permission expression (which uses an Identity back-link):
+  // getFilm has a permission expression (which uses an Identity back-link):
   // ctx.identity.user.isAdult == true
-  // Should grant access to films only to Users who are adult.
+  // Which should grant access to films only to Users who are adult.
 
   await actions.withIdentity(adultIdentity).getFilm({
     title: "some film"

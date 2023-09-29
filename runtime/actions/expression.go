@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/expressions"
@@ -158,8 +159,18 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 }
 
 // Constructs and adds an INNER JOIN from a splice of fragments (representing an operand in an expression or implicit input).
-// The fragment slice must include the base model as the first item, for example: "post." in post.author.publisher.isActive
+// The fragment slice must either:
+// 1) include the base model as the first fragment, for example: post.author.publisher.isActive, or
+// 2) be an Identity backlink like this: ctx.identity.user.isAdult
+// post.user.id == ctx.identity.user.id
 func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string) error {
+
+	// If it's case (2) we convert the fragments into form (1).
+	// I.e. we convert ctx.identity.user.isAdult into identity.user.isAdult
+	if expressions.IsIdentityBacklink(fragments) {
+		fragments = fragments[1:]
+	}
+
 	model := casing.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
 	//previousIsRepeated := false
@@ -180,15 +191,47 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 		var leftOperand *QueryOperand
 		var rightOperand *QueryOperand
 
-		if proto.IsBelongsTo(relatedModelField) {
+		fmt.Printf("XXXX some join input data...\n")
+
+		fmt.Printf("XXXX current fragment: %s\n", currentFragment)
+
+		fmt.Printf("XXXX relatedModelField: ...\n")
+		litter.Dump(relatedModelField)
+
+		fmt.Printf("XXXX model: %s\n", model)
+		fmt.Printf("XXXX foreignKeyField: %s\n", foreignKeyField)
+
+		fmt.Printf("XXXX primaryKey: %s\n", primaryKey)
+
+		fmt.Printf("XXXX fragments...\n")
+		litter.Dump(fragments)
+
+		// Which end of the relationship has the foreign key?
+
+		switch {
+
+		// xxxx fart here
+
+		case model == parser.ImplicitIdentityModelName:
+			// Auto injected backlink fields on the Identity model are a special case.
+			// For these, the foreign keys are always on the other model by definition.
+			leftOperand = ExpressionField(
+				[]string{
+					model,
+					relatedModelField.ForeignKeyInfo.RelatedModelName,
+				},
+				relatedModelField.InverseFieldName.Value+"_id")
+			rightOperand = ExpressionField(
+				[]string{model},
+				primaryKey)
+		case proto.IsBelongsTo(relatedModelField):
 			// In a "belongs to" the foriegn key is on _this_ model
 			leftOperand = ExpressionField(fragments[:i+1], primaryKey)
 			rightOperand = ExpressionField(fragments[:i], foreignKeyField)
-		} else {
+		default:
 			// In all others the foriegn key is on the _other_ model
 			leftOperand = ExpressionField(fragments[:i+1], foreignKeyField)
 			rightOperand = ExpressionField(fragments[:i], primaryKey)
-
 		}
 
 		query.Join(relatedModel, leftOperand, rightOperand)
@@ -207,9 +250,9 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 	var field string
 
 	// If it's case (2) we convert the fragments into form (1).
-	// I.e. we convert ctx.identity.user.isAdult into user.isAdult
+	// I.e. we convert ctx.identity.user.isAdult into identity.user.isAdult
 	if expressions.IsIdentityBacklink(fragments) {
-		fragments = fragments[2:]
+		fragments = fragments[1:]
 	}
 
 	model := casing.ToCamel(fragments[0])
