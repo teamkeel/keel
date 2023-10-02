@@ -10,14 +10,11 @@ model User {
         email Text
     }
 
-    operations {
+    actions {
         list listUsers()
         update setIdentity(id) {
             @set(user.identity = ctx.identity)
         }
-    }
-
-    functions {
         write updateUser(UpdateUserInput) returns (Any)
     }
 
