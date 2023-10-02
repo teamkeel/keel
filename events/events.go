@@ -13,7 +13,6 @@ import (
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -120,6 +119,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		return err
 	}
 
+	var handlerErrors error
 	for _, log := range auditLogs {
 		eventName, err := eventNameFromAudit(log.TableName, log.Op)
 		if err != nil {
@@ -150,9 +150,8 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 
 			err = handler(ctx, subscriber.Name, event, traceparent)
 			if err != nil {
-				// We do not error when the event handler fails
-				span.RecordError(err)
-				span.SetStatus(codes.Error, err.Error())
+				// We do not error yet when the event handler fails
+				handlerErrors = errors.Join(handlerErrors, err)
 			} else {
 				// For successfully fired events
 				span.AddEvent(eventName)
@@ -160,7 +159,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		}
 	}
 
-	return nil
+	return handlerErrors
 }
 
 // eventNameFromAudit generates an event name from audit table columns.

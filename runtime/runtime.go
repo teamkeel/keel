@@ -20,6 +20,7 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime")
@@ -165,14 +166,14 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 		permissionState,
 		trigger,
 	)
-	if err != nil {
-		return err
-	}
 
 	// Generate and send any events for this context.
-	err = events.SendEvents(ctx, scope.Schema)
-	if err != nil {
-		return err
+	// This must run regardless of the job succeeding or failing.
+	// Failure to generate events fail silently.
+	eventsErr := events.SendEvents(ctx, scope.Schema)
+	if eventsErr != nil {
+		span.RecordError(eventsErr)
+		span.SetStatus(codes.Error, eventsErr.Error())
 	}
 
 	return err
@@ -203,14 +204,14 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 		subscriber,
 		event,
 	)
-	if err != nil {
-		return err
-	}
 
 	// Generate and send any events for this context.
-	err = events.SendEvents(ctx, handler.schema)
-	if err != nil {
-		return err
+	// This must run regardless of the function succeeding or failing.
+	// Failure to generate events fail silently.
+	eventsErr := events.SendEvents(ctx, handler.schema)
+	if eventsErr != nil {
+		span.RecordError(eventsErr)
+		span.SetStatus(codes.Error, eventsErr.Error())
 	}
 
 	return err

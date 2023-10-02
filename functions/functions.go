@@ -20,8 +20,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-var tracer = otel.Tracer("github.com/teamkeel/keel/functions")
-
 // Custom error codes returned from custom
 // function runtime
 // See packages/functions-runtime for original definition and more info.
@@ -94,8 +92,7 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 
 // CallFunction will invoke the custom function on the runtime node server.
 func CallFunction(ctx context.Context, actionName string, body any, permissionState *common.PermissionState) (any, map[string][]string, error) {
-	ctx, span := tracer.Start(ctx, "Call function")
-	defer span.End()
+	span := trace.SpanFromContext(ctx)
 
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {
