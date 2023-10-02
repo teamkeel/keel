@@ -10,6 +10,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/actions")
@@ -122,9 +123,12 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 	}
 
 	// Generate and send any events for this context.
+	// This must run regardless of the action succeeding or failing.
+	// Failure to generate events fail silently.
 	eventsErr := events.SendEvents(ctx, scope.Schema)
 	if eventsErr != nil {
-		return nil, nil, eventsErr
+		span.RecordError(eventsErr)
+		span.SetStatus(codes.Error, eventsErr.Error())
 	}
 
 	return
