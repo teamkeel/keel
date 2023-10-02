@@ -145,15 +145,15 @@ const deepFreeze = o => {
 
 	return []*codegen.GeneratedFile{
 		{
-			Path:     "node_modules/@teamkeel/sdk/index.js",
+			Path:     ".build/sdk/index.js",
 			Contents: sdk.String(),
 		},
 		{
-			Path:     "node_modules/@teamkeel/sdk/index.d.ts",
+			Path:     ".build/sdk/index.d.ts",
 			Contents: sdkTypes.String(),
 		},
 		{
-			Path:     "node_modules/@teamkeel/sdk/package.json",
+			Path:     ".build/sdk/package.json",
 			Contents: `{"name": "@teamkeel/sdk"}`,
 		},
 	}
@@ -1395,15 +1395,15 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 
 	return codegen.GeneratedFiles{
 		{
-			Path:     "node_modules/@teamkeel/testing/index.mjs",
+			Path:     ".build/testing/index.mjs",
 			Contents: js.String(),
 		},
 		{
-			Path:     "node_modules/@teamkeel/testing/index.d.ts",
+			Path:     ".build/testing/index.d.ts",
 			Contents: types.String(),
 		},
 		{
-			Path:     "node_modules/@teamkeel/testing/package.json",
+			Path:     ".build/testing/package.json",
 			Contents: `{"name": "@teamkeel/testing", "type": "module", "exports": "./index.mjs"}`,
 		},
 	}
@@ -1415,12 +1415,25 @@ func generateTestingSetup() codegen.GeneratedFiles {
 			Path: ".build/vitest.config.mjs",
 			Contents: `
 import { defineConfig } from "vitest/config";
+import * as path from 'path';
 
 export default defineConfig({
 	test: {
 		setupFiles: [__dirname + "/vitest.setup"],
 		testTimeout: 100000,
 	},
+	resolve: {
+		// on top of the "paths" entry in the project's tsconfig file that aliases the @teamkeel/sdk and @teamkeel/testing
+		// imports so that they actually exist in the .build directory underneath the hood, for vitest we need to also add
+		// the below alias section which enables vitest to pickup the same paths configuration for the code generated
+		// npm modules. This is necessary because vitest isn't aware of the 'paths' configuration in typescript world at all
+    alias: {
+			// the __dirname below is relative to the .build directory which contains the sdk and testing directories containing
+			// the codegenned sdk and testing packages. 
+      '@teamkeel/testing': path.resolve(__dirname, './testing'),
+			'@teamkeel/sdk': path.resolve(__dirname, './sdk')
+    }
+  }
 });
 			`,
 		},
