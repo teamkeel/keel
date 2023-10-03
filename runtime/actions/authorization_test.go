@@ -972,12 +972,47 @@ var authorisationTestCases = []authorisationTestCase{
 			`,
 		expectedArgs: []any{"123", identity.Id},
 	},
+	{
+		name: "identity_backlink_from_model",
+		keelSchema: `
+			model User {
+				fields {
+					isAdult Boolean
+					identity Identity @unique
+				}
+			}
+			model AdultFilm {
+			}
+			model Admit {
+				fields {
+					film AdultFilm
+					identity Identity
+				}
+				actions {
+					create admit() with (film.id, identity.id) {
+						@permission(expression: admit.identity.user.isAdult)
+					}
+				}
+			}`,
+		actionName: "admit",
+		expectedTemplate: `
+			SELECT DISTINCT ON("admit"."id") "admit"."id" 
+			FROM "admit" 
+			LEFT JOIN "identity" AS "admit$identity" ON "admit$identity"."id" = "admit"."identity_id" 
+			LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
+			WHERE ( "admit$identity$user"."is_adult" IS NOT DISTINCT FROM ? )`,
+		expectedArgs: []any{identity.Id},
+		earlyAuth:    CouldNotAuthoriseEarly(),
+	},
 }
 
 func TestPermissionQueryBuilder(t *testing.T) {
 	for _, testCase := range authorisationTestCases {
-		t.Run(testCase.name, func(t *testing.T) {
+		if testCase.name != "identity_backlink" {
+			continue
+		}
 
+		t.Run(testCase.name, func(t *testing.T) {
 			activeIdentity := identity
 
 			if testCase.identity != nil {

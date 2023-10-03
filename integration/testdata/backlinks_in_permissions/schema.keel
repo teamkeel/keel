@@ -31,3 +31,16 @@ model AdultFilm {
         actions: [get, list, create, update]
     )
 }
+
+model Admit {
+    fields {
+        film AdultFilm
+        identity Identity
+    }
+
+    actions {
+        create admit() with (film.id, identity.id) {
+            @permission(expression: admit.identity.user.isAdult)
+        }
+    }
+}
