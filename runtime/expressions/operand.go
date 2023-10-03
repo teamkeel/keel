@@ -129,7 +129,7 @@ func (resolver *OperandResolver) IsContextField() bool {
 	return resolver.Operand.Ident.IsContext() && !resolver.IsBacklink()
 }
 
-// IsBacklink works out this operand traverses an Identity Backlink.
+// IsBacklink works out if this operand traverses an Identity Backlink.
 func (resolver *OperandResolver) IsBacklink() bool {
 	if resolver.Operand.Ident == nil {
 		return false
@@ -411,11 +411,4 @@ func IsIdentityBacklink(fragments []string) bool {
 	isBacklink := !slices.Contains(identityStandardFields, rootModelField)
 
 	return isBacklink
-}
-
-// IdentityBacklink models an expression that traverses an IdentityBacklink.
-// E.g. this expression "ctx.identity.user.foo.bar.name"
-type IdentityBacklink struct {
-	RootModel     string   // "user"
-	RemainingPath []string // ["foo", "bar", "name"]
 }

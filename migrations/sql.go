@@ -64,7 +64,7 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 		// Fields of type model should exist only in proto land
 		case field.Type.Type == proto.Type_TYPE_MODEL:
 			return false
-		// The phantom reverse relationship fields we put into Identity should not have db columns.
+		// The backlink reverse relationship fields we put into Identity should not have db columns.
 		case model.Name == parser.ImplicitIdentityModelName && field.ForeignKeyInfo != nil:
 			return false
 		default:
