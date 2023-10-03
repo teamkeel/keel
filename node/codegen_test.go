@@ -612,6 +612,56 @@ export interface CreatePersonContractsInput {
 	})
 }
 
+func TestWriteActionInputTypesCreateRelationshipOneToOne(t *testing.T) {
+	schema := `
+model Company {
+	fields {
+		name Text
+		companyProfile CompanyProfile @unique
+	}
+
+	actions {
+		create createCompany() with (
+			name,
+			companyProfile.employeeCount,
+			companyProfile.taxProfile.taxNumber,
+		)
+	}
+}
+
+model CompanyProfile {
+	fields {
+		employeeCount Number
+		taxProfile TaxProfile? @unique
+		company Company
+	}
+}
+
+model TaxProfile {
+	fields {
+		taxNumber Text
+		companyProfile CompanyProfile
+	}
+}`
+
+	expected := `
+export interface CreateCompanyInput {
+	name: string;
+	companyProfile: CreateCompanyCompanyProfileInput;
+}
+export interface CreateCompanyCompanyProfileInput {
+	employeeCount: number;
+	taxProfile: CreateCompanyCompanyProfileTaxProfileInput | null;
+}
+export interface CreateCompanyCompanyProfileTaxProfileInput {
+	taxNumber: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
 func TestWriteActionInputTypesUpdate(t *testing.T) {
 	schema := `
 model Person {

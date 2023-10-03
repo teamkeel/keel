@@ -1,0 +1,57 @@
+model Company {
+    fields {
+        name Text
+        companyProfile CompanyProfile @unique
+    }
+
+    actions {
+        create createCompany() with (
+            name,
+            companyProfile.employeeCount,
+            companyProfile.taxProfile.taxNumber?,
+        )
+        get getCompanyByTaxNumber(companyProfile.taxProfile.taxNumber)
+        list largeCompaniesRegistered() {
+            @where(company.companyProfile.taxProfile != null)
+            @where(company.companyProfile.employeeCount >= 100)
+        }
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, list, get]
+    )
+}
+
+model CompanyProfile {
+    fields {
+        employeeCount Number
+        taxProfile TaxProfile? @unique
+        company Company
+    }
+
+    actions {
+        list findCompanyProfile(company.id)
+    }
+
+    @permission(
+        expression: true,
+        actions: [list]
+    )
+}
+
+model TaxProfile {
+    fields {
+        taxNumber Text @unique
+        companyProfile CompanyProfile
+    }
+
+    actions {
+        list findTaxProfile(companyProfile.company.id)
+    }
+
+    @permission(
+        expression: true,
+        actions: [list]
+    )
+}

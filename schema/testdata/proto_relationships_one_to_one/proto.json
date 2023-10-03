@@ -1,31 +1,20 @@
 {
   "models": [
     {
-      "name": "User",
+      "name": "Company",
       "fields": [
         {
-          "modelName": "User",
-          "name": "identity",
+          "modelName": "Company",
+          "name": "profile",
           "type": {
             "type": "TYPE_MODEL",
-            "modelName": "Identity"
+            "modelName": "CompanyProfile"
           },
           "unique": true,
-          "foreignKeyFieldName": "identityId"
+          "foreignKeyFieldName": "profileId"
         },
         {
-          "modelName": "User",
-          "name": "student",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Student"
-          },
-          "optional": true,
-          "foreignKeyFieldName": "studentId",
-          "inverseFieldName": "user"
-        },
-        {
-          "modelName": "User",
+          "modelName": "Company",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -36,7 +25,7 @@
           }
         },
         {
-          "modelName": "User",
+          "modelName": "Company",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -46,7 +35,7 @@
           }
         },
         {
-          "modelName": "User",
+          "modelName": "Company",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -56,47 +45,40 @@
           }
         },
         {
-          "modelName": "User",
-          "name": "identityId",
+          "modelName": "Company",
+          "name": "profileId",
           "type": {
             "type": "TYPE_ID"
           },
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Identity",
+            "relatedModelName": "CompanyProfile",
             "relatedModelField": "id"
           }
-        },
+        }
+      ],
+      "actions": [
         {
-          "modelName": "User",
-          "name": "studentId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Student",
-            "relatedModelField": "id"
-          }
+          "modelName": "Company",
+          "name": "createCompany",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "CreateCompanyInput"
         }
       ]
     },
     {
-      "name": "Student",
+      "name": "CompanyProfile",
       "fields": [
         {
-          "modelName": "Student",
-          "name": "user",
+          "modelName": "CompanyProfile",
+          "name": "employeeCount",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "User"
-          },
-          "unique": true,
-          "foreignKeyFieldName": "userId",
-          "inverseFieldName": "student"
+            "type": "TYPE_INT"
+          }
         },
         {
-          "modelName": "Student",
+          "modelName": "CompanyProfile",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -107,7 +89,7 @@
           }
         },
         {
-          "modelName": "Student",
+          "modelName": "CompanyProfile",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -117,25 +99,13 @@
           }
         },
         {
-          "modelName": "Student",
+          "modelName": "CompanyProfile",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Student",
-          "name": "userId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "User",
-            "relatedModelField": "id"
           }
         }
       ]
@@ -258,13 +228,13 @@
       "name": "Api",
       "apiModels": [
         {
+          "modelName": "Company"
+        },
+        {
+          "modelName": "CompanyProfile"
+        },
+        {
           "modelName": "Identity"
-        },
-        {
-          "modelName": "Student"
-        },
-        {
-          "modelName": "User"
         }
       ]
     }
@@ -272,6 +242,37 @@
   "messages": [
     {
       "name": "Any"
+    },
+    {
+      "name": "CreateCompanyInput",
+      "fields": [
+        {
+          "messageName": "CreateCompanyInput",
+          "name": "profile",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateCompanyProfileInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreateCompanyProfileInput",
+      "fields": [
+        {
+          "messageName": "CreateCompanyProfileInput",
+          "name": "employeeCount",
+          "type": {
+            "type": "TYPE_INT",
+            "modelName": "CompanyProfile",
+            "fieldName": "employeeCount"
+          },
+          "target": [
+            "profile",
+            "employeeCount"
+          ]
+        }
+      ]
     },
     {
       "name": "EmailPasswordInput",
