@@ -1,0 +1,15 @@
+model Company {
+    fields {
+        profile CompanyProfile @unique
+    }
+
+    actions {
+        create createCompany() with (profile.employeeCount)
+    }
+}
+
+model CompanyProfile {
+    fields {
+        employeeCount Number
+    }
+}

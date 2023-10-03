@@ -474,6 +474,24 @@ func IsHasManyModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 	}
 }
 
+// IsBelongsToModelField returns true if the given field refers to a model
+// in which this is in a 1:1 relationship and where the other model owns the relationship.
+// This means the other model's field will have @unique defined and also the other model is
+// where the foreign key will exist.
+func IsBelongsToModelField(asts []*parser.AST, model *parser.ModelNode, field *parser.FieldNode) bool {
+	if IsModel(asts, field.Type.Value) {
+		for _, v := range ModelFields(Model(asts, field.Type.Value)) {
+			if v.Type.Value == model.Name.Value {
+				if !v.Repeated && FieldIsUnique(v) {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
+}
+
 // SubscriberNames gets a unique slice of subscriber names which have been defined in the schema.
 func SubscriberNames(asts []*parser.AST) (res []string) {
 	for _, ast := range asts {

@@ -159,6 +159,11 @@ func checkHasOneRelationField(
 	// supplied.
 	nestedPath := extendDotDelimPath(dotDelimPath, field.Name.Value)
 	for _, nestedModelField := range query.ModelFields(nestedModel) {
+		// Skip if the field is the other side of a 1:1 relationship.
+		// TODO: Support multiple 1:1 relationships between the same two tables.
+		if nestedModelField.Name.Value == rootModelName && !nestedModelField.Repeated {
+			continue
+		}
 		// This is where the recursion happens.
 		checkField(asts, nestedModelField, nestedModel, rootModelName, nestedPath, op, errs)
 	}

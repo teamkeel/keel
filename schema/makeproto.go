@@ -1079,12 +1079,14 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 		}
 	}
 
-	// Model field (sibling to foreign key)
-	if query.IsModel(scm.asts, parserField.Type.Value) && !parserField.Repeated {
-		protoField.ForeignKeyFieldName = wrapperspb.String(fmt.Sprintf("%sId", parserField.Name.Value))
+	if !query.IsBelongsToModelField(scm.asts, model, parserField) {
+		// Model field (sibling to foreign key)
+		if query.IsModel(scm.asts, parserField.Type.Value) && !parserField.Repeated {
+			protoField.ForeignKeyFieldName = wrapperspb.String(fmt.Sprintf("%sId", parserField.Name.Value))
+		}
 	}
 
-	// If this is a HasMany relationship field - see if we can mark it with
+	// If this is a HasMany or BelongsTo relationship field - see if we can mark it with
 	// an explicit InverseFieldName - i.e. one defined by an @relation attribute.
 	if protoField.Type.Type == proto.Type_TYPE_MODEL {
 		scm.setInverseFieldName(parserField, protoField)

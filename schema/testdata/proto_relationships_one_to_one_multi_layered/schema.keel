@@ -1,0 +1,37 @@
+model Company {
+    fields {
+        name Text
+        companyProfile CompanyProfile @unique
+    }
+
+    actions {
+        create createCompany() with (
+            name,
+            companyProfile.employeeCount,
+            companyProfile.taxProfile.taxNumber,
+        )
+    }
+}
+
+model CompanyProfile {
+    fields {
+        employeeCount Number
+        taxProfile TaxProfile? @unique
+        company Company
+    }
+
+    actions {
+        list findCompanyProfile(company.id)
+    }
+}
+
+model TaxProfile {
+    fields {
+        taxNumber Text
+        companyProfile CompanyProfile
+    }
+
+    actions {
+        list findTaxProfile(companyProfile.company.id)
+    }
+}

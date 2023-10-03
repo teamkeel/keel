@@ -1,0 +1,732 @@
+{
+  "models": [
+    {
+      "name": "Company",
+      "fields": [
+        {
+          "modelName": "Company",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "companyProfile",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "CompanyProfile"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "companyProfileId",
+          "inverseFieldName": "company"
+        },
+        {
+          "modelName": "Company",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "companyProfileId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "CompanyProfile",
+            "relatedModelField": "id"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Company",
+          "name": "createCompany",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "CreateCompanyInput"
+        }
+      ]
+    },
+    {
+      "name": "CompanyProfile",
+      "fields": [
+        {
+          "modelName": "CompanyProfile",
+          "name": "employeeCount",
+          "type": {
+            "type": "TYPE_INT"
+          }
+        },
+        {
+          "modelName": "CompanyProfile",
+          "name": "taxProfile",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "TaxProfile"
+          },
+          "optional": true,
+          "unique": true,
+          "foreignKeyFieldName": "taxProfileId",
+          "inverseFieldName": "companyProfile"
+        },
+        {
+          "modelName": "CompanyProfile",
+          "name": "company",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Company"
+          },
+          "inverseFieldName": "companyProfile"
+        },
+        {
+          "modelName": "CompanyProfile",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "CompanyProfile",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "CompanyProfile",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "CompanyProfile",
+          "name": "taxProfileId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "TaxProfile",
+            "relatedModelField": "id"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "CompanyProfile",
+          "name": "findCompanyProfile",
+          "type": "ACTION_TYPE_LIST",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "FindCompanyProfileInput"
+        }
+      ]
+    },
+    {
+      "name": "TaxProfile",
+      "fields": [
+        {
+          "modelName": "TaxProfile",
+          "name": "taxNumber",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "TaxProfile",
+          "name": "companyProfile",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "CompanyProfile"
+          },
+          "inverseFieldName": "taxProfile"
+        },
+        {
+          "modelName": "TaxProfile",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "TaxProfile",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "TaxProfile",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "TaxProfile",
+          "name": "findTaxProfile",
+          "type": "ACTION_TYPE_LIST",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "FindTaxProfileInput"
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "issuer"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Company"
+        },
+        {
+          "modelName": "CompanyProfile"
+        },
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "TaxProfile"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "CreateCompanyInput",
+      "fields": [
+        {
+          "messageName": "CreateCompanyInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Company",
+            "fieldName": "name"
+          },
+          "target": [
+            "name"
+          ]
+        },
+        {
+          "messageName": "CreateCompanyInput",
+          "name": "companyProfile",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateCompanyCompanyProfileInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreateCompanyCompanyProfileInput",
+      "fields": [
+        {
+          "messageName": "CreateCompanyCompanyProfileInput",
+          "name": "employeeCount",
+          "type": {
+            "type": "TYPE_INT",
+            "modelName": "CompanyProfile",
+            "fieldName": "employeeCount"
+          },
+          "target": [
+            "companyProfile",
+            "employeeCount"
+          ]
+        },
+        {
+          "messageName": "CreateCompanyCompanyProfileInput",
+          "name": "taxProfile",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateCompanyCompanyProfileTaxProfileInput"
+          },
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "CreateCompanyCompanyProfileTaxProfileInput",
+      "fields": [
+        {
+          "messageName": "CreateCompanyCompanyProfileTaxProfileInput",
+          "name": "taxNumber",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "TaxProfile",
+            "fieldName": "taxNumber"
+          },
+          "target": [
+            "companyProfile",
+            "taxProfile",
+            "taxNumber"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FindCompanyProfileCompanyInput",
+      "fields": [
+        {
+          "messageName": "FindCompanyProfileCompanyInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "IdQueryInput"
+          },
+          "target": [
+            "company",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IdQueryInput",
+      "fields": [
+        {
+          "messageName": "IdQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "IdQueryInput",
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_ID",
+            "repeated": true
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IdQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "FindCompanyProfileWhere",
+      "fields": [
+        {
+          "messageName": "FindCompanyProfileWhere",
+          "name": "company",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "FindCompanyProfileCompanyInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "FindCompanyProfileInput",
+      "fields": [
+        {
+          "messageName": "FindCompanyProfileInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "FindCompanyProfileWhere"
+          }
+        },
+        {
+          "messageName": "FindCompanyProfileInput",
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "FindCompanyProfileInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "FindCompanyProfileInput",
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "FindCompanyProfileInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "FindTaxProfileCompanyProfileInput",
+      "fields": [
+        {
+          "messageName": "FindTaxProfileCompanyProfileInput",
+          "name": "company",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "FindTaxProfileCompanyProfileCompanyInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "FindTaxProfileCompanyProfileCompanyInput",
+      "fields": [
+        {
+          "messageName": "FindTaxProfileCompanyProfileCompanyInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "IdQueryInput"
+          },
+          "target": [
+            "companyProfile",
+            "company",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FindTaxProfileWhere",
+      "fields": [
+        {
+          "messageName": "FindTaxProfileWhere",
+          "name": "companyProfile",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "FindTaxProfileCompanyProfileInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "FindTaxProfileInput",
+      "fields": [
+        {
+          "messageName": "FindTaxProfileInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "FindTaxProfileWhere"
+          }
+        },
+        {
+          "messageName": "FindTaxProfileInput",
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "FindTaxProfileInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "FindTaxProfileInput",
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "FindTaxProfileInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "EmailPasswordInput",
+      "fields": [
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateInput",
+      "fields": [
+        {
+          "messageName": "AuthenticateInput",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "AuthenticateInput",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    }
+  ]
+}

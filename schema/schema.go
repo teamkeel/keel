@@ -250,8 +250,7 @@ func (scm *Builder) insertForeignKeyFields(
 	for _, mdl := range query.Models(asts) {
 		fkFieldsToAdd := []*parser.FieldNode{}
 		for _, field := range query.ModelFields(mdl) {
-
-			if !query.IsHasOneModelField(asts, field) {
+			if !query.IsHasOneModelField(asts, field) || query.IsBelongsToModelField(asts, mdl, field) {
 				continue
 			}
 
