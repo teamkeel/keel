@@ -1,11 +1,13 @@
 model User {
     fields {
-        isAdult Boolean
+        age Number
         identity Identity @unique
+        group MembersGroup?
     }
 
     actions {
-        create createUser() with (isAdult, identity.id)
+        create createUser() with (age, identity.id)
+        update joinGroup(id) with (group.id)
     }
 
     @permission(
@@ -14,15 +16,30 @@ model User {
     )
 }
 
-model AdultFilm {
+model MembersGroup {
+    fields {
+        name Text
+        isActive Boolean @default(true)
+        users User[]
+    }
+}
+
+model Film {
     fields {
         title Text @unique
+        ageRestriction Number
+        onlyMembers Boolean @default(false)
     }
 
     actions {
-        create createFilm() with (title)
+        create createFilm() with (title, ageRestriction, onlyMembers)
         get getFilm(title) {
-            @permission(expression: ctx.identity.user.isAdult)
+            @permission(expression: ctx.identity.user.age >= film.ageRestriction)
+        }
+        list listMembersFilms() {
+            @where(ctx.identity.user.age >= film.ageRestriction)
+            @where(film.onlyMembers == false or ctx.identity.user.group.isActive == true)
+            @orderBy(title: asc)
         }
     }
 
@@ -34,13 +51,13 @@ model AdultFilm {
 
 model Admit {
     fields {
-        film AdultFilm
+        film Film
         identity Identity
     }
 
     actions {
         create admit() with (film.id, identity.id) {
-            @permission(expression: admit.identity.user.isAdult)
+            @permission(expression: admit.identity.user.age >= admit.film.ageRestriction)
         }
     }
 }

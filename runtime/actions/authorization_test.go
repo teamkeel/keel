@@ -1040,9 +1040,9 @@ var authorisationTestCases = []authorisationTestCase{
 			SELECT DISTINCT ON("admit"."id") "admit"."id" 
 			FROM "admit" 
 			LEFT JOIN "identity" AS "admit$identity" ON "admit$identity"."id" = "admit"."identity_id" 
-			LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
+			LEFT JOIN "user" AS "admit$identity$user" ON "admit$identity$user"."identity_id" = "admit$identity"."id" 
 			WHERE ( "admit$identity$user"."is_adult" IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{identity.Id},
+		expectedArgs: []any{true},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -1068,7 +1068,7 @@ var authorisationTestCases = []authorisationTestCase{
 			FROM "adult_film" 
 			WHERE 
 				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
-				( (SELECT "identity"."is_adult" FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS NOT DISTINCT FROM ? )`,
+				( (SELECT "identity$user"."is_adult" FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS NOT DISTINCT FROM ? )`,
 		expectedArgs: []any{"123", "identityId", true},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
@@ -1096,20 +1096,18 @@ var authorisationTestCases = []authorisationTestCase{
 		expectedTemplate: `
 			SELECT DISTINCT ON("adult_film"."id") "adult_film"."id" 
 			FROM "adult_film" 
+			LEFT JOIN "identity" AS "adult_film$identity" ON "adult_film$identity"."id" = "adult_film"."identity_id" 
+			LEFT JOIN "user" AS "adult_film$identity$user" ON "adult_film$identity$user"."identity_id" = "adult_film$identity"."id" 
 			WHERE 
 				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
-				( (SELECT "identity"."is_adult" FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{"123", "identityId", true},
+				( (SELECT "identity$user"."id" FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS NOT DISTINCT FROM "adult_film$identity$user"."id" )`,
+		expectedArgs: []any{"123", "identityId"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 }
 
 func TestPermissionQueryBuilder(t *testing.T) {
 	for _, testCase := range authorisationTestCases {
-		if testCase.name != "identity_email_field_from_ctx" {
-			continue
-		}
-
 		t.Run(testCase.name, func(t *testing.T) {
 			activeIdentity := identity
 

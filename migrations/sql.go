@@ -57,19 +57,10 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 	statements := []string{}
 	output := fmt.Sprintf("CREATE TABLE %s (\n", Identifier(model.Name))
 
-	// Exclude fields that we don't want database columns for.
-
+	// Exclude fields of type Model - these exists only in proto land - and has no corresponding
+	// column in the database.
 	fields := lo.Filter(model.Fields, func(field *proto.Field, _ int) bool {
-		switch {
-		// Fields of type model should exist only in proto land
-		case field.Type.Type == proto.Type_TYPE_MODEL:
-			return false
-		// The backlink reverse relationship fields we put into Identity should not have db columns.
-		case model.Name == parser.ImplicitIdentityModelName && field.ForeignKeyInfo != nil:
-			return false
-		default:
-			return true
-		}
+		return field.Type.Type != proto.Type_TYPE_MODEL
 	})
 
 	for i, field := range fields {
@@ -110,9 +101,8 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 	}
 
 	statements = append(statements, stmts...)
-	asString := strings.Join(statements, "\n")
 
-	return asString, nil
+	return strings.Join(statements, "\n"), nil
 }
 
 func dropTableStmt(name string) string {

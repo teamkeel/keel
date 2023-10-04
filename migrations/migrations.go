@@ -13,7 +13,6 @@ import (
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema/parser"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -202,12 +201,6 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 		for _, field := range model.Fields {
 			if field.Type.Type == proto.Type_TYPE_MODEL {
-				continue
-			}
-
-			// Ignore the auto-generated Identity back link relationship fields. We never make columns
-			// for those.
-			if model.Name == parser.ImplicitIdentityModelName && field.ForeignKeyInfo != nil {
 				continue
 			}
 
@@ -418,13 +411,7 @@ func GetCurrentSchema(ctx context.Context, database db.Database) (*proto.Schema,
 
 // fkConstraintsForModel generates foreign key constraint statements for each of fields marked as
 // being foreign keys in the given model.
-// present in the given model.
 func fkConstraintsForModel(model *proto.Model, schema *proto.Schema) (fkStatements []string) {
-	// Special case exclusion for the built in Identity model. We don't want this to have
-	// any FK fields in it.
-	if model.Name == parser.ImplicitIdentityModelName {
-		return fkStatements
-	}
 	fkFields := proto.ForeignKeyFields(model)
 	for _, field := range fkFields {
 		stmt := fkConstraint(field, model, schema)

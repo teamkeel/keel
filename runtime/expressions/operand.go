@@ -111,7 +111,11 @@ func (resolver *OperandResolver) IsExplicitInput() bool {
 // For example, a where condition might filter on reading data,
 // such as: @where(post.author.isActive)
 func (resolver *OperandResolver) IsModelDbColumn() bool {
-	return !resolver.IsLiteral() && !resolver.IsContextField() && !resolver.IsExplicitInput() && !resolver.IsImplicitInput() && !resolver.IsContextDbColumn()
+	return !resolver.IsLiteral() &&
+		!resolver.IsContextField() &&
+		!resolver.IsContextDbColumn() &&
+		!resolver.IsExplicitInput() &&
+		!resolver.IsImplicitInput()
 }
 
 // IsContextDbColumn returns true if the expression refers to a value on the context
@@ -133,17 +137,6 @@ func (resolver *OperandResolver) IsContextDbColumn() bool {
 // in memory context data.
 func (resolver *OperandResolver) IsContextField() bool {
 	return resolver.Operand.Ident.IsContext() && !resolver.isBacklink()
-}
-
-// isBacklink works out if this operand traverses an Identity Backlink.
-func (resolver *OperandResolver) isBacklink() bool {
-	if resolver.Operand.Ident == nil {
-		return false
-	}
-	fragments := lo.Map(resolver.Operand.Ident.Fragments, func(frag *parser.IdentFragment, _ int) string {
-		return frag.Fragment
-	})
-	return IsIdentityBacklink(fragments)
 }
 
 // GetOperandType returns the equivalent protobuf type for the expression operand.
@@ -397,9 +390,14 @@ func (resolver *OperandResolver) getOperandTypeForBacklink() (proto.Type, error)
 	return operandType, nil
 }
 
-// IsIdentityBacklink works out if the given dot delimitted expression fragments
-// traverse an Identity Backlink.
-func IsIdentityBacklink(fragments []string) bool {
+// isBacklink works out if this operand traverses an Identity field.
+func (resolver *OperandResolver) isBacklink() bool {
+	if resolver.Operand.Ident == nil {
+		return false
+	}
+	fragments := lo.Map(resolver.Operand.Ident.Fragments, func(frag *parser.IdentFragment, _ int) string {
+		return frag.Fragment
+	})
 
 	if len(fragments) < 3 {
 		return false
@@ -410,13 +408,9 @@ func IsIdentityBacklink(fragments []string) bool {
 	if fragments[1] != "identity" {
 		return false
 	}
-
-	// The next field must be a back link if it's not one of the standard Identity fields.
-	// rootModelField := fragments[2]
-	// identityStandardFields := []string{
-	// 	"email", "emailVerified", "password", "externalId", "issuer", "id",
-	// 	"createdAt", "updatedAt"}
-	// isBacklink := !slices.Contains(identityStandardFields, rootModelField)
+	if fragments[2] == parser.ImplicitFieldNameId {
+		return false
+	}
 
 	return true
 }

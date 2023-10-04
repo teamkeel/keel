@@ -5,7 +5,6 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
-	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
@@ -161,21 +160,10 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 }
 
 // Constructs and adds an INNER JOIN from a splice of fragments (representing an operand in an expression or implicit input).
-// The fragment slice must either:
-// 1) include the base model as the first fragment, for example: post.author.publisher.isActive, or
-// 2) be an Identity backlink like this: ctx.identity.user.isAdult
-// post.user.id == ctx.identity.user.id
+// The fragment slice must include the base model as the first item, for example: "post." in post.author.publisher.isActive
 func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string) error {
-
-	// // If it's case (2) we convert the fragments into form (1).
-	// // I.e. we convert ctx.identity.user.isAdult into identity.user.isAdult
-	// if expressions.IsIdentityBacklink(fragments) {
-	// 	fragments = fragments[1:]
-	// }
-
 	model := casing.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
-	//previousIsRepeated := false
 
 	for i := 1; i < fragmentCount-1; i++ {
 		currentFragment := fragments[i]
@@ -193,39 +181,7 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 		var leftOperand *QueryOperand
 		var rightOperand *QueryOperand
 
-		fmt.Printf("XXXX some join input data...\n")
-
-		fmt.Printf("XXXX current fragment: %s\n", currentFragment)
-
-		fmt.Printf("XXXX relatedModelField: ...\n")
-		litter.Dump(relatedModelField)
-
-		fmt.Printf("XXXX model: %s\n", model)
-		fmt.Printf("XXXX foreignKeyField: %s\n", foreignKeyField)
-
-		fmt.Printf("XXXX primaryKey: %s\n", primaryKey)
-
-		fmt.Printf("XXXX fragments...\n")
-		litter.Dump(fragments)
-
-		// Which end of the relationship has the foreign key?
-
 		switch {
-
-		// xxxx fart here
-
-		// case model == parser.ImplicitIdentityModelName:
-		// 	// Auto injected backlink fields on the Identity model are a special case.
-		// 	// For these, the foreign keys are always on the other model by definition.
-		// 	leftOperand = ExpressionField(
-		// 		[]string{
-		// 			model,
-		// 			relatedModelField.ForeignKeyInfo.RelatedModelName,
-		// 		},
-		// 		relatedModelField.InverseFieldName.Value+"_id")
-		// 	rightOperand = ExpressionField(
-		// 		[]string{model},
-		// 		primaryKey)
 		case proto.IsBelongsTo(relatedModelField):
 			// In a "belongs to" the foriegn key is on _this_ model
 			leftOperand = ExpressionField(fragments[:i+1], primaryKey)
@@ -271,17 +227,18 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 	return ExpressionField(fragments[:len(fragments)-1], field), nil
 }
 
-// Generates a database QueryOperand, either representing a field, a value or null.
+// Generates a database QueryOperand, either representing a field, inline query, a value or null.
 func generateQueryOperand(resolver *expressions.OperandResolver, args map[string]any) (*QueryOperand, error) {
 	var queryOperand *QueryOperand
 
-	if resolver.IsContextDbColumn() {
-		fmt.Println(resolver.Operand.Ident.Fragments)
+	switch {
+	case resolver.IsContextDbColumn():
+		// If this is a value from ctx that requires a database read (such as with identity backlinks),
+		// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
+		// from the current query builder.
 
-		// TODO: inline query for context reads
 		model := proto.FindModel(resolver.Schema.Models, strcase.ToCamel(resolver.Operand.Ident.Fragments[1].Fragment))
 		ctxScope := NewModelScope(resolver.Context, model, resolver.Schema)
-
 		query := NewQuery(resolver.Context, model)
 
 		var identity *auth.Identity
@@ -294,7 +251,8 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 		}
 
 		if identity == nil {
-			return nil, err //todo
+			//todo: if no identity, then the condition where this operand is usd should return false?
+			return nil, err
 		}
 
 		err = query.Where(IdField(), Equals, Value(identity.Id))
@@ -303,33 +261,20 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 		}
 
 		fragments := lo.Map(resolver.Operand.Ident.Fragments[1:], func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
-		//op, err := operandFromFragments(resolver.Schema, fragments)
-		// if err != nil {
-		// 	return nil, err
-		// }
 
 		err = query.addJoinFromFragments(ctxScope, fragments)
 		if err != nil {
 			return nil, err
 		}
-		query.AppendSelect(Field(fragments[len(fragments)-1]))
 
-		//operand := InlineQuery()
+		query.AppendSelect(ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1]))
+
 		operand := InlineQuery(query)
+
 		return operand, nil
+	case resolver.IsModelDbColumn():
+		// If this is a model field then generate the appropriate column operand for the database query.
 
-	} else if !resolver.IsModelDbColumn() {
-		value, err := resolver.ResolveValue(args)
-		if err != nil {
-			return nil, err
-		}
-
-		if value == nil {
-			queryOperand = Null()
-		} else {
-			queryOperand = Value(value)
-		}
-	} else {
 		// Step through the fragments in order to determine the table and field referenced by the expression operand
 		fragments := lo.Map(resolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
@@ -348,6 +293,19 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 		queryOperand, err = operandFromFragments(resolver.Schema, fragments)
 		if err != nil {
 			return nil, err
+		}
+	default:
+		// For all others operands, we know we can resolve their value without the datebase.
+
+		value, err := resolver.ResolveValue(args)
+		if err != nil {
+			return nil, err
+		}
+
+		if value == nil {
+			queryOperand = Null()
+		} else {
+			queryOperand = Value(value)
 		}
 	}
 
