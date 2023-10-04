@@ -241,21 +241,16 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 		ctxScope := NewModelScope(resolver.Context, model, resolver.Schema)
 		query := NewQuery(resolver.Context, model)
 
-		var identity *auth.Identity
-		var err error
+		identityId := ""
 		if auth.IsAuthenticated(resolver.Context) {
-			identity, err = auth.GetIdentity(resolver.Context)
+			identity, err := auth.GetIdentity(resolver.Context)
 			if err != nil {
 				return nil, err
 			}
+			identityId = identity.Id
 		}
 
-		if identity == nil {
-			//todo: if no identity, then the condition where this operand is usd should return false?
-			return nil, err
-		}
-
-		err = query.Where(IdField(), Equals, Value(identity.Id))
+		err := query.Where(IdField(), Equals, Value(identityId))
 		if err != nil {
 			return nil, err
 		}

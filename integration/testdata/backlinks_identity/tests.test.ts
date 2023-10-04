@@ -97,19 +97,18 @@ test("getFilm action with child user - backlink from identity model field - is n
   ).toHaveAuthorizationError();
 });
 
-// TODO: broken when there is no identity in ctx
-// test("getFilm action with no user - backlink from identity model field - is not authorized", async () => {
-//   await models.film.create({
-//     title: "some film",
-//     ageRestriction: 16,
-//   });
+test("getFilm action with no user - backlink from identity model field - is not authorized", async () => {
+  await models.film.create({
+    title: "some film",
+    ageRestriction: 16,
+  });
 
-//   await expect(
-//     actions.getFilm({
-//       title: "some film",
-//     })
-//   ).toHaveAuthorizationError();
-// });
+  await expect(
+    actions.getFilm({
+      title: "some film",
+    })
+  ).toHaveAuthorizationError();
+});
 
 test("list members films - where attribute backlink from ctx - returns applicable films", async () => {
   await models.film.create({

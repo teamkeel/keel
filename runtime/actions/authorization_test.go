@@ -46,9 +46,9 @@ func AuthorisationDeniedEarly() *earlyAuthorisationResult {
 	return &earlyAuthorisationResult{authorised: false}
 }
 
-var identity = &auth.Identity{
+var unverifiedIdentity = &auth.Identity{
 	Id:    "identityId",
-	Email: "keelson@keel.xyz",
+	Email: "weaveton@weave.xyz",
 }
 
 var verifiedIdentity = &auth.Identity{
@@ -79,8 +79,32 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing"
 			WHERE
 				( "thing"."created_by_id" IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{identity.Id},
+		expectedArgs: []any{unverifiedIdentity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
+	},
+	{
+		name: "identity_check_not_authenticated",
+		keelSchema: `
+			model Thing {
+				fields {
+					createdBy Identity
+				}
+				actions {
+					list listThings() {
+						@permission(expression: thing.createdBy == ctx.identity)
+					}
+				}
+			}`,
+		actionName: "listThings",
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("thing"."id") "thing"."id"
+			FROM
+				"thing"
+			WHERE
+				( "thing"."created_by_id" IS NOT DISTINCT FROM NULL )`,
+		earlyAuth: CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "identity_on_related_model",
@@ -112,8 +136,9 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing$related"."id" = "thing"."related_id"
 			WHERE
 				( "thing$related"."created_by_id" IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{identity.Id},
+		expectedArgs: []any{unverifiedIdentity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
 	},
 	{
 		name: "field_with_literal",
@@ -195,8 +220,9 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing"
 			WHERE
 				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )`,
-		expectedArgs: []any{true, identity.Id},
+		expectedArgs: []any{true, unverifiedIdentity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
 	},
 	{
 		name: "multiple_conditions_or",
@@ -220,8 +246,9 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing"
 			WHERE
 				( ( "thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )`,
-		expectedArgs: []any{true, identity.Id},
+		expectedArgs: []any{true, unverifiedIdentity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
 	},
 	{
 		name: "multiple_permission_attributes",
@@ -248,8 +275,9 @@ var authorisationTestCases = []authorisationTestCase{
 				( "thing"."is_active" IS NOT DISTINCT FROM ?
 					OR
 				 "thing"."created_by_id" IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{true, identity.Id},
+		expectedArgs: []any{true, unverifiedIdentity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
 	},
 	{
 		name: "multiple_permission_attributes_with_multiple_conditions",
@@ -282,8 +310,9 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing$related" ON "thing$related"."id" = "thing"."related_id"
 			WHERE
 				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) OR "thing"."created_by_id" IS NOT DISTINCT FROM "thing$related"."created_by_id" )`,
-		expectedArgs: []any{true, identity.Id},
+		expectedArgs: []any{true, unverifiedIdentity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_create_op",
@@ -301,6 +330,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "createThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_get_op",
@@ -314,6 +344,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_update_op",
@@ -327,6 +358,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "updateThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_list_op",
@@ -340,6 +372,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "listThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_delete_op",
@@ -353,6 +386,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "deleteThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_isauth_lhs",
@@ -366,6 +400,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "createThing",
 		earlyAuth:  AuthorisationDeniedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_isauth_rhs",
@@ -379,6 +414,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "createThing",
 		earlyAuth:  AuthorisationDeniedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "cannot_early_evaluate_multiple_conditions_and_with_database",
@@ -406,7 +442,8 @@ var authorisationTestCases = []authorisationTestCase{
 			WHERE 
 				"thing"."id" IS NOT DISTINCT FROM ? AND 
 				( ( ? IS NOT DISTINCT FROM ? AND "thing$created_by"."id" IS NOT DISTINCT FROM ? ) )`,
-		expectedArgs: []any{"123", true, true, identity.Id},
+		expectedArgs: []any{"123", true, true, unverifiedIdentity.Id},
+		identity:     unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_multiple_conditions_or_with_database",
@@ -423,6 +460,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_multiple_attributes_with_database",
@@ -440,6 +478,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_multiple_attributes_authorised",
@@ -454,6 +493,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_multiple_and_conditions_authorised",
@@ -467,6 +507,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_multiple_or_conditions_authorised",
@@ -480,6 +521,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_multiple_and_conditions_not_authorised",
@@ -493,6 +535,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		earlyAuth:  AuthorisationDeniedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_roles_domain_authorised",
@@ -889,6 +932,7 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "getThing",
 		input:      map[string]any{"id": "123"},
 		earlyAuth:  AuthorisationDeniedEarly(),
+		identity:   unverifiedIdentity,
 	},
 	{
 		name: "multiple_model_level_permissions_ored",
@@ -919,7 +963,8 @@ var authorisationTestCases = []authorisationTestCase{
 			WHERE 
 				"thing"."id" IS NOT DISTINCT FROM ? AND 
 				( "thing$created_by"."id" IS NOT DISTINCT FROM ? OR "thing$updated_by"."id" IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{"123", identity.Id, identity.Id},
+		expectedArgs: []any{"123", unverifiedIdentity.Id, unverifiedIdentity.Id},
+		identity:     unverifiedIdentity,
 	},
 	{
 		name: "filters_and_permissions_and_relationships",
@@ -970,7 +1015,8 @@ var authorisationTestCases = []authorisationTestCase{
 			WHERE 
 				"user$organisations$organisation"."id" IS NOT DISTINCT FROM ? AND ( ? IS NOT DISTINCT FROM "user$organisations$organisation$users$user"."identity_id" )
 			`,
-		expectedArgs: []any{"123", identity.Id},
+		expectedArgs: []any{"123", unverifiedIdentity.Id},
+		identity:     unverifiedIdentity,
 	},
 	{
 		name: "identity_email_field_from_model",
@@ -1010,7 +1056,28 @@ var authorisationTestCases = []authorisationTestCase{
 		expectedTemplate: `
 			SELECT DISTINCT ON("thing"."id") "thing"."id" FROM "thing" 
 			WHERE ( (SELECT "identity"."email" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS DISTINCT FROM ? )`,
-		expectedArgs: []any{"identityId", "weaveton@weave.xyz"},
+		expectedArgs: []any{unverifiedIdentity.Id, "weaveton@weave.xyz"},
+		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
+	},
+	{
+		name: "identity_email_field_from_ctx_not_authenticated",
+		keelSchema: `
+			model Thing {
+				fields {
+					identity Identity
+				}
+				actions {
+					list list() {
+						@permission(expression: ctx.identity.email != "weaveton@weave.xyz")
+					}
+				}
+			}`,
+		actionName: "list",
+		expectedTemplate: `
+			SELECT DISTINCT ON("thing"."id") "thing"."id" FROM "thing" 
+			WHERE ( (SELECT "identity"."email" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS DISTINCT FROM ? )`,
+		expectedArgs: []any{"", "weaveton@weave.xyz"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -1069,8 +1136,9 @@ var authorisationTestCases = []authorisationTestCase{
 			WHERE 
 				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
 				( (SELECT "identity$user"."is_adult" FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{"123", "identityId", true},
+		expectedArgs: []any{"123", unverifiedIdentity.Id, true},
 		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
 	},
 	{
 		name: "identity_backlink_ctx_compare_with_model",
@@ -1101,22 +1169,20 @@ var authorisationTestCases = []authorisationTestCase{
 			WHERE 
 				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
 				( (SELECT "identity$user"."id" FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS NOT DISTINCT FROM "adult_film$identity$user"."id" )`,
-		expectedArgs: []any{"123", "identityId"},
+		expectedArgs: []any{"123", unverifiedIdentity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
 	},
 }
 
 func TestPermissionQueryBuilder(t *testing.T) {
 	for _, testCase := range authorisationTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			activeIdentity := identity
+			ctx := context.Background()
 
 			if testCase.identity != nil {
-				activeIdentity = testCase.identity
+				ctx = auth.WithIdentity(ctx, testCase.identity)
 			}
-
-			ctx := context.Background()
-			ctx = auth.WithIdentity(ctx, activeIdentity)
 
 			scope, _, _, err := generateQueryScope(ctx, testCase.keelSchema, testCase.actionName)
 			if err != nil {
@@ -1131,10 +1197,16 @@ func TestPermissionQueryBuilder(t *testing.T) {
 			}
 
 			if canResolveEarly {
-				require.NotNil(t, testCase.earlyAuth, "earlyAuth is CouldNotAuthoriseEarly(), but authorised was determined early. Expected earlyAuthorisationResult.")
-				require.Equal(t, testCase.earlyAuth.authorised, authorised, "earlyAuth.authorised not matching. Expected: %v, Actual: %v", testCase.earlyAuth.authorised, authorised)
+				require.NotNil(t, testCase.earlyAuth, "earlyAuth is CouldNotAuthoriseEarly(), but authorisation was determined early.")
+				if testCase.earlyAuth != nil {
+					if authorised {
+						require.Equal(t, testCase.earlyAuth.authorised, true, "earlyAuth is AuthorisationDeniedEarly(). Expected AuthorisationGrantedEarly().")
+					} else {
+						require.Equal(t, testCase.earlyAuth.authorised, false, "earlyAuth is AuthorisationGrantedEarly(). Expected AuthorisationDeniedEarly().")
+					}
+				}
 			} else {
-				require.Nil(t, testCase.earlyAuth, "earlyAuth should be CouldNotAuthoriseEarly() because authorised could not be determined given early. Expected nil.")
+				require.Nil(t, testCase.earlyAuth, "earlyAuth should be CouldNotAuthoriseEarly() because authorised could not be determined given early.")
 			}
 
 			if !canResolveEarly {
