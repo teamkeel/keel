@@ -973,6 +973,47 @@ var authorisationTestCases = []authorisationTestCase{
 		expectedArgs: []any{"123", identity.Id},
 	},
 	{
+		name: "identity_email_field_from_model",
+		keelSchema: `
+			model Thing {
+				fields {
+					identity Identity
+				}
+				actions {
+					list list() {
+						@permission(expression: thing.identity.email != "weaveton@weave.xyz")
+					}
+				}
+			}`,
+		actionName: "list",
+		expectedTemplate: `
+			SELECT DISTINCT ON("thing"."id") "thing"."id" 
+			FROM "thing" LEFT JOIN "identity" AS "thing$identity" ON "thing$identity"."id" = "thing"."identity_id" 
+			WHERE ( "thing$identity"."email" IS DISTINCT FROM ? )`,
+		expectedArgs: []any{"weaveton@weave.xyz"},
+		earlyAuth:    CouldNotAuthoriseEarly(),
+	},
+	{
+		name: "identity_email_field_from_ctx",
+		keelSchema: `
+			model Thing {
+				fields {
+					identity Identity
+				}
+				actions {
+					list list() {
+						@permission(expression: ctx.identity.email != "weaveton@weave.xyz")
+					}
+				}
+			}`,
+		actionName: "list",
+		expectedTemplate: `
+			SELECT DISTINCT ON("thing"."id") "thing"."id" FROM "thing" 
+			WHERE ( (SELECT "identity"."email" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS DISTINCT FROM ? )`,
+		expectedArgs: []any{"identityId", "weaveton@weave.xyz"},
+		earlyAuth:    CouldNotAuthoriseEarly(),
+	},
+	{
 		name: "identity_backlink_from_model",
 		keelSchema: `
 			model User {
@@ -1004,11 +1045,68 @@ var authorisationTestCases = []authorisationTestCase{
 		expectedArgs: []any{identity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
+	{
+		name: "identity_backlink_from_ctx",
+		keelSchema: `
+			model User {
+				fields {
+					isAdult Boolean
+					identity Identity @unique
+				}
+			}
+			model AdultFilm {
+				actions {
+					get getFilm(id) {
+						@permission(expression: ctx.identity.user.isAdult)
+					}
+				}
+			}`,
+		actionName: "getFilm",
+		input:      map[string]any{"id": "123"},
+		expectedTemplate: `
+			SELECT DISTINCT ON("adult_film"."id") "adult_film"."id" 
+			FROM "adult_film" 
+			WHERE 
+				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
+				( (SELECT "identity"."is_adult" FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS NOT DISTINCT FROM ? )`,
+		expectedArgs: []any{"123", "identityId", true},
+		earlyAuth:    CouldNotAuthoriseEarly(),
+	},
+	{
+		name: "identity_backlink_ctx_compare_with_model",
+		keelSchema: `
+			model User {
+				fields {
+					isAdult Boolean
+					identity Identity @unique
+				}
+			}
+			model AdultFilm {
+				fields {
+					identity Identity @unique
+				}
+				actions {
+					get getFilm(id) {
+						@permission(expression: ctx.identity.user.id == adultFilm.identity.user.id)
+					}
+				}
+			}`,
+		actionName: "getFilm",
+		input:      map[string]any{"id": "123"},
+		expectedTemplate: `
+			SELECT DISTINCT ON("adult_film"."id") "adult_film"."id" 
+			FROM "adult_film" 
+			WHERE 
+				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
+				( (SELECT "identity"."is_adult" FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS NOT DISTINCT FROM ? )`,
+		expectedArgs: []any{"123", "identityId", true},
+		earlyAuth:    CouldNotAuthoriseEarly(),
+	},
 }
 
 func TestPermissionQueryBuilder(t *testing.T) {
 	for _, testCase := range authorisationTestCases {
-		if testCase.name != "identity_backlink" {
+		if testCase.name != "identity_email_field_from_ctx" {
 			continue
 		}
 

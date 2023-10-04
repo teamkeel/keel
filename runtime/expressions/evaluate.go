@@ -41,25 +41,14 @@ func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model 
 
 // canResolveConditionEarly determines if a single condition can be resolved in the process without generating a row-based query against the database.
 func canResolveConditionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, condition *parser.Condition) bool {
-
-	// XXXX take this out
-	if action.Name == "getFilm" {
-		a := 1
-		_ = a
-	}
-
 	lhsResolver := NewOperandResolver(ctx, schema, model, action, condition.LHS)
 
 	if condition.Type() == parser.ValueCondition {
-		// XXXXX remove this intermediate variable.
-		isDbColumn := lhsResolver.IsDatabaseColumn()
-		_ = isDbColumn
-
-		return !lhsResolver.IsDatabaseColumn()
+		return !lhsResolver.IsModelDbColumn() && !lhsResolver.IsContextDbColumn()
 	}
 
 	rhsResolver := NewOperandResolver(ctx, schema, model, action, condition.RHS)
-	referencesDatabaseColumns := lhsResolver.IsDatabaseColumn() || rhsResolver.IsDatabaseColumn()
+	referencesDatabaseColumns := lhsResolver.IsModelDbColumn() || rhsResolver.IsModelDbColumn() || lhsResolver.IsContextDbColumn() || rhsResolver.IsContextDbColumn()
 
 	return !(referencesDatabaseColumns)
 }

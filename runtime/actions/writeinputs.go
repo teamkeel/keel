@@ -31,7 +31,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
-		if !lhsResolver.IsDatabaseColumn() {
+		if !lhsResolver.IsModelDbColumn() {
 			return errors.New("lhs operand of assignment expression must be a model field")
 		}
 

@@ -3,10 +3,12 @@ package actions
 import (
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -105,7 +107,7 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 		return err
 	}
 
-	if lhsResolver.IsDatabaseColumn() {
+	if lhsResolver.IsModelDbColumn() {
 		lhsFragments := lo.Map(lhsResolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
 		// Generates joins based on the fragments that make up the operand
@@ -138,7 +140,7 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 			return err
 		}
 
-		if rhsResolver.IsDatabaseColumn() {
+		if rhsResolver.IsModelDbColumn() {
 			rhsFragments := lo.Map(rhsResolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
 			// Generates joins based on the fragments that make up the operand
@@ -165,11 +167,11 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 // post.user.id == ctx.identity.user.id
 func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string) error {
 
-	// If it's case (2) we convert the fragments into form (1).
-	// I.e. we convert ctx.identity.user.isAdult into identity.user.isAdult
-	if expressions.IsIdentityBacklink(fragments) {
-		fragments = fragments[1:]
-	}
+	// // If it's case (2) we convert the fragments into form (1).
+	// // I.e. we convert ctx.identity.user.isAdult into identity.user.isAdult
+	// if expressions.IsIdentityBacklink(fragments) {
+	// 	fragments = fragments[1:]
+	// }
 
 	model := casing.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
@@ -212,18 +214,18 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 
 		// xxxx fart here
 
-		case model == parser.ImplicitIdentityModelName:
-			// Auto injected backlink fields on the Identity model are a special case.
-			// For these, the foreign keys are always on the other model by definition.
-			leftOperand = ExpressionField(
-				[]string{
-					model,
-					relatedModelField.ForeignKeyInfo.RelatedModelName,
-				},
-				relatedModelField.InverseFieldName.Value+"_id")
-			rightOperand = ExpressionField(
-				[]string{model},
-				primaryKey)
+		// case model == parser.ImplicitIdentityModelName:
+		// 	// Auto injected backlink fields on the Identity model are a special case.
+		// 	// For these, the foreign keys are always on the other model by definition.
+		// 	leftOperand = ExpressionField(
+		// 		[]string{
+		// 			model,
+		// 			relatedModelField.ForeignKeyInfo.RelatedModelName,
+		// 		},
+		// 		relatedModelField.InverseFieldName.Value+"_id")
+		// 	rightOperand = ExpressionField(
+		// 		[]string{model},
+		// 		primaryKey)
 		case proto.IsBelongsTo(relatedModelField):
 			// In a "belongs to" the foriegn key is on _this_ model
 			leftOperand = ExpressionField(fragments[:i+1], primaryKey)
@@ -243,18 +245,9 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 }
 
 // Constructs a QueryOperand from a splice of fragments, representing an expression operand or implicit input.
-// The fragment slice must either:
-// 1) include the base model as the first fragment, for example: post.author.publisher.isActive, or
-// 2) be an Identity backlink like this: ctx.identity.user.isAdult
+// The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive
 func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOperand, error) {
 	var field string
-
-	// If it's case (2) we convert the fragments into form (1).
-	// I.e. we convert ctx.identity.user.isAdult into identity.user.isAdult
-	if expressions.IsIdentityBacklink(fragments) {
-		fragments = fragments[1:]
-	}
-
 	model := casing.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
 
@@ -282,7 +275,50 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 func generateQueryOperand(resolver *expressions.OperandResolver, args map[string]any) (*QueryOperand, error) {
 	var queryOperand *QueryOperand
 
-	if !resolver.IsDatabaseColumn() {
+	if resolver.IsContextDbColumn() {
+		fmt.Println(resolver.Operand.Ident.Fragments)
+
+		// TODO: inline query for context reads
+		model := proto.FindModel(resolver.Schema.Models, strcase.ToCamel(resolver.Operand.Ident.Fragments[1].Fragment))
+		ctxScope := NewModelScope(resolver.Context, model, resolver.Schema)
+
+		query := NewQuery(resolver.Context, model)
+
+		var identity *auth.Identity
+		var err error
+		if auth.IsAuthenticated(resolver.Context) {
+			identity, err = auth.GetIdentity(resolver.Context)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if identity == nil {
+			return nil, err //todo
+		}
+
+		err = query.Where(IdField(), Equals, Value(identity.Id))
+		if err != nil {
+			return nil, err
+		}
+
+		fragments := lo.Map(resolver.Operand.Ident.Fragments[1:], func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
+		//op, err := operandFromFragments(resolver.Schema, fragments)
+		// if err != nil {
+		// 	return nil, err
+		// }
+
+		err = query.addJoinFromFragments(ctxScope, fragments)
+		if err != nil {
+			return nil, err
+		}
+		query.AppendSelect(Field(fragments[len(fragments)-1]))
+
+		//operand := InlineQuery()
+		operand := InlineQuery(query)
+		return operand, nil
+
+	} else if !resolver.IsModelDbColumn() {
 		value, err := resolver.ResolveValue(args)
 		if err != nil {
 			return nil, err

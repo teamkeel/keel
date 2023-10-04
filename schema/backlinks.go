@@ -67,7 +67,7 @@ func (scm *Builder) insertOneBackLinkField(
 		},
 		Repeated: false,
 		Optional: true,
-		BuiltIn:  true,
+		BuiltIn:  false, // TODO: needs to be false
 	}
 
 	// XXXX todo DRY up this boiler place - it is repeated all over the place, but all it does is insert a

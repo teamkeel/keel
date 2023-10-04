@@ -88,6 +88,7 @@ func IsModel(asts []*parser.AST, name string) bool {
 }
 
 func IsForeignKey(asts []*parser.AST, model *parser.ModelNode, field *parser.FieldNode) bool {
+	// TODO: why does this exist???
 	if !field.BuiltIn {
 		return false
 	}

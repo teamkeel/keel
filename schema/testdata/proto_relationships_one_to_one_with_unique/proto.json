@@ -11,7 +11,8 @@
             "modelName": "Identity"
           },
           "unique": true,
-          "foreignKeyFieldName": "identityId"
+          "foreignKeyFieldName": "identityId",
+          "inverseFieldName": "user"
         },
         {
           "modelName": "User",
@@ -210,6 +211,16 @@
           "defaultValue": {
             "useZeroValue": true
           }
+        },
+        {
+          "modelName": "Identity",
+          "name": "user",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "User"
+          },
+          "optional": true,
+          "inverseFieldName": "identity"
         }
       ],
       "actions": [
