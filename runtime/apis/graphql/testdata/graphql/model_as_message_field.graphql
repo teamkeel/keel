@@ -1,0 +1,113 @@
+type Query {
+  _health: Boolean
+  listUsers(input: ListUsersInput): UserConnection!
+}
+
+type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
+  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
+  setIdentity(input: SetIdentityInput!): User!
+  updateUser(input: UpdateUserInput!): Any
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input ListUsersInput {
+  after: String
+  before: String
+  first: Int
+  last: Int
+}
+
+input RequestPasswordResetInput {
+  email: String!
+  redirectUrl: String!
+}
+
+input ResetPasswordInput {
+  password: String!
+  token: String!
+}
+
+input SetIdentityInput {
+  where: SetIdentityWhere!
+}
+
+input SetIdentityWhere {
+  id: ID!
+}
+
+input UpdateUserInput {
+  user: User!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean!
+  token: String!
+}
+
+type Identity {
+  createdAt: Timestamp!
+  email: String
+  emailVerified: Boolean!
+  externalId: String
+  id: ID!
+  issuer: String
+  updatedAt: Timestamp!
+}
+
+type PageInfo {
+  count: Int!
+  endCursor: String!
+  hasNextPage: Boolean!
+  startCursor: String!
+  totalCount: Int!
+}
+
+type RequestPasswordResetResponse {
+  success: Boolean
+}
+
+type ResetPasswordResponse {
+  success: Boolean
+}
+
+type Timestamp {
+  formatted(format: String!): String!
+  fromNow: String!
+  iso8601: String!
+  seconds: Int!
+}
+
+type User {
+  createdAt: Timestamp!
+  email: String!
+  firstName: String!
+  id: ID!
+  identity: Identity
+  identityId: ID
+  lastName: String!
+  updatedAt: Timestamp!
+}
+
+type UserConnection {
+  edges: [UserEdge!]!
+  pageInfo: PageInfo!
+}
+
+type UserEdge {
+  node: User!
+}
+
+scalar Any
+
+scalar ISO8601

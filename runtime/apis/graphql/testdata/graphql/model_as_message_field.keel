@@ -1,0 +1,31 @@
+message UpdateUserInput {
+    user User
+}
+
+model User {
+    fields {
+        identity Identity?
+        firstName Text
+        lastName Text
+        email Text
+    }
+
+    actions {
+        list listUsers()
+        update setIdentity(id) {
+            @set(user.identity = ctx.identity)
+        }
+        write updateUser(UpdateUserInput) returns (Any)
+    }
+
+    @permission(
+        expression: true,
+        actions: [get, create, update, delete, list]
+    )
+}
+
+api Test {
+    models {
+        User
+    }
+}

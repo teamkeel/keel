@@ -225,11 +225,13 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 		types = append(types, global)
 	}
 
+	mutation := lo.Ternary(len(mk.mutation.Fields()) > 0, mk.mutation, nil)
+
 	gSchema, err := graphql.NewSchema(graphql.SchemaConfig{
 		Query: mk.query,
 		Types: types,
 		// graphql won't accept a mutation object that has zero fields.
-		Mutation: lo.Ternary(len(mk.mutation.Fields()) > 0, mk.mutation, nil),
+		Mutation: mutation,
 	})
 	if err != nil {
 		return nil, err
@@ -670,7 +672,7 @@ func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Outp
 // addModel generates the graphql type to represent the given proto.Model, and inserts it into
 // mk.types
 func (mk *graphqlSchemaBuilder) addModelInput(model *proto.Model) (graphql.Input, error) {
-	if in, ok := mk.types[fmt.Sprintf("modelinput-%s", model.Name)]; ok {
+	if in, ok := mk.types[fmt.Sprintf("model-%s", model.Name)]; ok {
 		return in.(graphql.Input), nil
 	}
 
