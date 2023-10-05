@@ -1,0 +1,8 @@
+model CompanyEmployee {
+    fields {
+        identity Identity {
+            @unique
+            @relation(createdAt)
+        }
+    }
+}

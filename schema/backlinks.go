@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"fmt"
-
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -71,10 +69,6 @@ func (scm *Builder) insertOneBackLinkField(
 	// linking to. For example "user".
 
 	backlinkName := casing.ToLowerCamel(parentModel.Name.Value)
-	if i > 0 {
-		backlinkName = casing.ToLowerCamel(fmt.Sprintf("%s%v", parentModel.Name.Value, i))
-	}
-
 	relation := query.FieldGetAttribute(forwardRelnField, parser.AttributeRelation)
 	if relation != nil {
 		relationValue, _ := relation.Arguments[0].Expression.ToValue()

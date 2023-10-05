@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "message": "You have a reserved field name createdAt",
+      "hint": "Try 'createdAter' instead",
+      "code": "E006",
+      "pos": {
+        "filename": "",
+        "offset": 0,
+        "line": 0,
+        "column": 0
+      },
+      "endPos": {
+        "filename": "",
+        "offset": 0,
+        "line": 0,
+        "column": 0
+      }
+    },
+    {
+      "message": "'@relation(createdAt)' refers to a related field of type 'Timestamp', which should be of type 'CompanyEmployee",
+      "hint": "Did you mean one of: createdAt ?",
+      "code": "E056",
+      "pos": {
+        "filename": "testdata/validation_identity_backlinks_invalid_relations_field/schema.keel",
+        "offset": 97,
+        "line": 5,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_identity_backlinks_invalid_relations_field/schema.keel",
+        "offset": 106,
+        "line": 5,
+        "column": 22
+      }
+    }
+  ]
+}
