@@ -1,0 +1,13 @@
+model Author {
+    fields {
+        coWritten Post @unique
+        written Post @unique
+    }
+}
+
+model Post {
+    fields {
+        author Author
+        coAuthor Author
+    }
+}

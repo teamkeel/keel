@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "Author and Post define a singular relationship with one another",
-      "hint": "It is not clear where the foreign key should be placed. Remove the explicit reference from one side.",
+      "hint": "It is not clear which model owns the relationship. Define one of the fields with @unique to indicate this.",
       "code": "E039",
       "pos": {
         "filename": "testdata/validation_relationships_attr_related_field_must_be_repeated/schema.keel",

@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "message": "Your model 'CompanyEmployee' has more than one field that references a 'Identity', and a 'Identity' has a (reverse) field back to 'CompanyEmployee'.",
+      "hint": "This is only allowed if you put a @relation attribute on the following fields in CompanyEmployee: abcIdentity, and xyzIdentity",
+      "code": "E045",
+      "pos": {
+        "filename": "testdata/validation_identity_backlinks/schema.keel",
+        "offset": 6,
+        "line": 1,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_identity_backlinks/schema.keel",
+        "offset": 21,
+        "line": 1,
+        "column": 22
+      }
+    },
+    {
+      "message": "Your model 'CompanyEmployee' has more than one field that references a 'Identity', and a 'Identity' has a (reverse) field back to 'CompanyEmployee'.",
+      "hint": "This is only allowed if you put a @relation attribute on the following fields in CompanyEmployee: abcIdentity, and xyzIdentity",
+      "code": "E045",
+      "pos": {
+        "filename": "testdata/validation_identity_backlinks/schema.keel",
+        "offset": 6,
+        "line": 1,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_identity_backlinks/schema.keel",
+        "offset": 21,
+        "line": 1,
+        "column": 22
+      }
+    }
+  ]
+}

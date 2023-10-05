@@ -63,6 +63,7 @@ var validatorFuncs = []validationFunc{
 	relationships.InvalidImplicitBelongsToWithHasManyRule,
 	relationships.RelationAttributeRule,
 	relationships.MoreThanOneReverseMany,
+	relationships.MoreThanOneReverseOne,
 }
 
 var visitorFuncs = []VisitorFunc{

@@ -1,10 +1,10 @@
 {
   "models": [
     {
-      "name": "Person",
+      "name": "CompanyEmployee",
       "fields": [
         {
-          "modelName": "Person",
+          "modelName": "CompanyEmployee",
           "name": "pIdentity",
           "type": {
             "type": "TYPE_MODEL",
@@ -12,10 +12,10 @@
           },
           "unique": true,
           "foreignKeyFieldName": "pIdentityId",
-          "inverseFieldName": "person"
+          "inverseFieldName": "companyEmployee"
         },
         {
-          "modelName": "Person",
+          "modelName": "CompanyEmployee",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -26,7 +26,7 @@
           }
         },
         {
-          "modelName": "Person",
+          "modelName": "CompanyEmployee",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -36,7 +36,7 @@
           }
         },
         {
-          "modelName": "Person",
+          "modelName": "CompanyEmployee",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -46,7 +46,7 @@
           }
         },
         {
-          "modelName": "Person",
+          "modelName": "CompanyEmployee",
           "name": "pIdentityId",
           "type": {
             "type": "TYPE_ID"
@@ -145,10 +145,10 @@
         },
         {
           "modelName": "Identity",
-          "name": "person",
+          "name": "companyEmployee",
           "type": {
             "type": "TYPE_MODEL",
-            "modelName": "Person"
+            "modelName": "CompanyEmployee"
           },
           "optional": true,
           "inverseFieldName": "pIdentity"
@@ -187,10 +187,10 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Identity"
+          "modelName": "CompanyEmployee"
         },
         {
-          "modelName": "Person"
+          "modelName": "Identity"
         }
       ]
     }

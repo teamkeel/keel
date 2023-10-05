@@ -1,8 +1,5 @@
 model CompanyEmployee {
     fields {
-        pIdentity Identity {
-            @unique
-            @relation(companyEmp)
-        }
+        pIdentity Identity @unique
     }
 }

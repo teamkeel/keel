@@ -141,10 +141,8 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	// i.e. aggregated asts from multiple files. Mostly in order to be able to
 	// reason over ALL models scope.
 
-	// XXXX
 	// Inject implied reverse relationship fields into the Identity model.
 	// This creates our "backlinks" feature from the Identity model.
-
 	errDetails := scm.insertAllBackLinkFields(asts)
 	if errDetails != nil {
 		parseErrors.Errors = append(parseErrors.Errors, &errorhandling.ValidationError{

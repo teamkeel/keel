@@ -5,14 +5,25 @@
       "fields": [
         {
           "modelName": "CompanyEmployee",
-          "name": "pIdentity",
+          "name": "abcIdentity",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Identity"
           },
           "unique": true,
-          "foreignKeyFieldName": "pIdentityId",
-          "inverseFieldName": "companyEmployee"
+          "foreignKeyFieldName": "abcIdentityId",
+          "inverseFieldName": "abcEmployee"
+        },
+        {
+          "modelName": "CompanyEmployee",
+          "name": "xyzIdentity",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "xyzIdentityId",
+          "inverseFieldName": "xyzEmployee"
         },
         {
           "modelName": "CompanyEmployee",
@@ -47,7 +58,19 @@
         },
         {
           "modelName": "CompanyEmployee",
-          "name": "pIdentityId",
+          "name": "abcIdentityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "CompanyEmployee",
+          "name": "xyzIdentityId",
           "type": {
             "type": "TYPE_ID"
           },
@@ -145,13 +168,23 @@
         },
         {
           "modelName": "Identity",
-          "name": "companyEmployee",
+          "name": "abcEmployee",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "CompanyEmployee"
           },
           "optional": true,
-          "inverseFieldName": "pIdentity"
+          "inverseFieldName": "abcIdentity"
+        },
+        {
+          "modelName": "Identity",
+          "name": "xyzEmployee",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "CompanyEmployee"
+          },
+          "optional": true,
+          "inverseFieldName": "xyzIdentity"
         }
       ],
       "actions": [

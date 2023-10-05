@@ -1,5 +1,0 @@
-model CompanyEmployee {
-    fields {
-        pIdentity Identity @unique
-    }
-}

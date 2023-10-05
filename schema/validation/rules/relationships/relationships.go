@@ -111,10 +111,26 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 				continue
 			}
 
-			// The related field must be a repeated field.
-			if !relatedField.Repeated {
+			isOneToOne := query.FieldGetAttribute(thisField, parser.AttributeUnique) != nil
+
+			// The related field must be a repeated field
+			// unless it is a one to one relationship (inferred with @unique)
+			if !isOneToOne && !relatedField.Repeated {
 				errs.Append(
 					errorhandling.ErrorRelationAttributeRelatedFieldIsNotRepeated,
+					map[string]string{
+						"RelatedFieldName": relatedFieldName,
+					},
+					relationAttr.Name)
+
+				continue
+			}
+
+			// The related field must be a NON repeated field
+			// because it is in a one to one relationship (inferring with @unique)
+			if isOneToOne && relatedField.Repeated {
+				errs.Append(
+					errorhandling.ErrorRelationAttributeRelatedFieldIsRepeated,
 					map[string]string{
 						"RelatedFieldName": relatedFieldName,
 					},
@@ -365,6 +381,97 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 			// It isn't a REVERSE relation field if despite it being a hasOne relation field,
 			// it refers to a different model to that of the model to which the hasManyField belongs to.
 			if f.Type.Value != hasManyF.belongsTo.Name.Value {
+				return false
+			}
+
+			// If it is qualified - we don't count it.
+			if query.FieldHasAttribute(f, parser.AttributeRelation) {
+				return false
+			}
+			return true
+		})
+
+		// It is an error, if there are more than one un-qualified reverse fields.
+		if len(reverseFields) > 1 {
+			suggestedFields := lo.Map(reverseFields, func(f *parser.FieldNode, _ int) string {
+				return f.Name.Value
+			})
+			errs.Append(
+				errorhandling.ErrorAmbiguousRelationship,
+				map[string]string{
+					"ModelA":          singleEndModel.Name.Value,
+					"ModelB":          reverseFields[0].Type.Value,
+					"SuggestedFields": formatting.HumanizeList(suggestedFields, formatting.DelimiterAnd),
+				},
+				singleEndModel.Name,
+			)
+		}
+	}
+
+	return errs
+}
+
+// When ModelA has a set of BelongsTo relationship fields (marked with @unique) that references ModelB, then we must make
+// sure that ModelB has a corresponding set of reverse ToOne unique relationships. We need to know
+// which field in ModelB *IS* the reverse relationship in order to
+// generate the SQL associated with ModelA's relationship fields.
+//
+// When a field in ModelA is marked with an @relation attribute - it tells us directly
+// and unambiguously which BelongsTo field in ModelB it "reverses".
+// In the code below these are called "qualified".
+//
+// Provided there's only ONE that is not qualified - we can
+// deduce it and that's fine. So the rule is that there must be only one that does not
+// carry the @relation attribute.
+func MoreThanOneReverseOne(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+
+	type hasOneField struct {
+		theField  *parser.FieldNode
+		belongsTo *parser.ModelNode
+	}
+
+	// First capture all the relation fields defined by the ASTs
+	hasOneFields := []*hasOneField{}
+	for _, model := range query.Models(asts) {
+		for _, f := range query.ModelFields(model) {
+			if query.IsHasOneModelField(asts, f) && !query.FieldHasAttribute(f, parser.AttributeUnique) {
+				hasOneFields = append(hasOneFields, &hasOneField{
+					theField:  f,
+					belongsTo: model,
+				})
+			}
+		}
+	}
+
+	// Now we iterate over all the captured relation fields in order to investigate
+	// the model at the ToOne end of the relationship.
+	for _, hasOneF := range hasOneFields {
+
+		singleEndModel := query.Model(asts, hasOneF.theField.Type.Value)
+
+		if singleEndModel == nil {
+			// This can be the case for invalid schemas but other rules check for that.
+			// For our purposes, it just means we can't proceed with this validation
+			// rule right now, for this hasMany field.
+			continue
+		}
+
+		// Given access to the model at the HasOne end, how many fields does it have that
+		// refer back to the model at the hasMany end - which are not *qualified*?
+		reverseFields := query.ModelFields(singleEndModel, func(f *parser.FieldNode) bool {
+
+			// It can't be a reverse relation field if it's not a hasOne relation field.
+			if !query.IsHasOneModelField(asts, f) {
+				return false
+			}
+			// It isn't a REVERSE relation field if despite it being a hasOne relation field,
+			// it refers to a different model to that of the model to which the hasManyField belongs to.
+			if f.Type.Value != hasOneF.belongsTo.Name.Value {
+				return false
+			}
+
+			// If it's not unique, we don't count it.
+			if !query.FieldHasAttribute(f, parser.AttributeUnique) {
 				return false
 			}
 

@@ -108,7 +108,7 @@ en:
     hint: ""
   E039:
     message: "{{ .ModelA }} and {{ .ModelB }} define a singular relationship with one another"
-    hint: "It is not clear where the foreign key should be placed. Remove the explicit reference from one side."
+    hint: "It is not clear which model owns the relationship. Define one of the fields with @unique to indicate this."
   E040:
     message: "{{ .Type }} is not a valid action type. Valid types are {{ .ValidTypes }}"
   E041:
@@ -124,7 +124,7 @@ en:
     message: "The '{{ .ModelB }}' model does not include a field that references {{ .ModelA }}"
     hint: "Try adding '{{ .Suggestion }}' to the fields definition of the {{ .ModelB }} model."
   E045:
-    message: "Your model '{{ .ModelA }}' has more than one field that references a '{{ .ModelB }}', and a '{{ .ModelB }}' has a (reverse) repeated field back to '{{.ModelA}}'."
+    message: "Your model '{{ .ModelA }}' has more than one field that references a '{{ .ModelB }}', and a '{{ .ModelB }}' has a (reverse) field back to '{{.ModelA}}'."
     hint: "This is only allowed if you put a @relation attribute on the following fields in {{.ModelA}}: {{.SuggestedFields}}"
   E046:
     message: "create actions must accept all required fields that have no default value"
@@ -174,3 +174,6 @@ en:
   E061:
     message: "Non-boolean single operand conditions such as '{{ .Value }}' not permitted on {{ .Attribute }}"
     hint: "Please add an operator and second operand. Did you mean '{{ .Suggestion }}'?"
+  E062:
+    message: "The related field '{{.RelatedFieldName}}' must not be a repeated field"
+    hint: "You can achieve this by removing the []"

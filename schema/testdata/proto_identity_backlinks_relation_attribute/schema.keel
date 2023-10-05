@@ -1,0 +1,12 @@
+model CompanyEmployee {
+    fields {
+        abcIdentity Identity {
+            @unique
+            @relation(abcEmployee)
+        }
+        xyzIdentity Identity {
+            @unique
+            @relation(xyzEmployee)
+        }
+    }
+}

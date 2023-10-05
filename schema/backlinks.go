@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"fmt"
+
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -27,6 +29,9 @@ func (scm *Builder) insertAllBackLinkFields(
 		if model == identityModel {
 			continue
 		}
+
+		//	hasNoRelationAttribute := false
+		backlinkFields := []*parser.FieldNode{}
 		for _, f := range query.ModelFields(model) {
 			if f.Type.Value != parser.ImplicitIdentityModelName {
 				continue
@@ -37,10 +42,20 @@ func (scm *Builder) insertAllBackLinkFields(
 			if !query.FieldHasAttribute(f, parser.AttributeUnique) {
 				continue
 			}
-			if errorDetails := scm.insertOneBackLinkField(identityModel, asts, model, f); errorDetails != nil {
+			// if !query.FieldHasAttribute(f, parser.AttributeRelation) {
+			// 	hasNoRelationAttribute = true
+			// }
+
+			backlinkFields = append(backlinkFields, f)
+		}
+
+		//	if !(len(backlinkFields) > 1 && hasNoRelationAttribute) {
+		for i, f := range backlinkFields {
+			if errorDetails := scm.insertOneBackLinkField(identityModel, asts, model, f, i); errorDetails != nil {
 				return errorDetails
 			}
 		}
+		//}
 	}
 	return nil
 }
@@ -49,13 +64,23 @@ func (scm *Builder) insertOneBackLinkField(
 	identityModel *parser.ModelNode,
 	asts []*parser.AST,
 	parentModel *parser.ModelNode,
-	forwardRelnField *parser.FieldNode) *errorhandling.ErrorDetails {
+	forwardRelnField *parser.FieldNode,
+	i int) *errorhandling.ErrorDetails {
 
 	// The backlink field is named (for now) after the name of the model it is back
 	// linking to. For example "user".
 
-	// XXXX todo resolve clashes using @relation when there is more than one.
 	backlinkName := casing.ToLowerCamel(parentModel.Name.Value)
+	if i > 0 {
+		backlinkName = casing.ToLowerCamel(fmt.Sprintf("%s%v", parentModel.Name.Value, i))
+	}
+
+	relation := query.FieldGetAttribute(forwardRelnField, parser.AttributeRelation)
+	if relation != nil {
+		relationValue, _ := relation.Arguments[0].Expression.ToValue()
+		backlinkName = relationValue.ToString()
+	}
+
 	backlinkType := parentModel.Name.Value
 
 	backLinkField := &parser.FieldNode{
