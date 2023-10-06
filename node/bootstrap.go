@@ -128,7 +128,11 @@ func Bootstrap(dir string, opts ...BootstrapOption) (codegen.GeneratedFiles, err
 				"strictNullChecks": true,
 				"types": ["node"],
 				"allowJs": true,
-				"resolveJsonModule": true
+				"resolveJsonModule": true,
+				"paths": {
+					"@teamkeel/sdk": ["./.build/sdk"],
+					"@teamkeel/testing": ["./.build/testing"]
+				}
 			},
 			"include": ["**/*.ts"],
 			"exclude": ["node_modules"]
