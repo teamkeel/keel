@@ -1,0 +1,12 @@
+model User {
+    fields {
+        student Student @unique
+    }
+}
+
+model Student {
+    fields {
+        user User
+        user2 User
+    }
+}

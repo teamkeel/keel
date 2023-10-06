@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "The @relation attribute must be defined on the @unique side of a one to one relationship",
+      "hint": "Define @relation the 'written' field instead",
+      "code": "E063",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_one_with_relation_on_wrong_side/schema.keel",
+        "offset": 114,
+        "line": 9,
+        "column": 23
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_one_with_relation_on_wrong_side/schema.keel",
+        "offset": 123,
+        "line": 9,
+        "column": 32
+      }
+    }
+  ]
+}

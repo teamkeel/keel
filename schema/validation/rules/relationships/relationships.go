@@ -111,7 +111,9 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 				continue
 			}
 
-			isOneToOne := query.FieldGetAttribute(thisField, parser.AttributeUnique) != nil
+			// If either side of the relation has a @unique or neither side is repeated, then a one to one relatioship is probably intended
+			isOneToOne := query.FieldGetAttribute(thisField, parser.AttributeUnique) != nil ||
+				query.FieldGetAttribute(relatedField, parser.AttributeUnique) != nil || (!thisField.Repeated && !relatedField.Repeated)
 
 			// The related field must be a repeated field
 			// unless it is a one to one relationship (inferred with @unique)
@@ -131,6 +133,19 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 			if isOneToOne && relatedField.Repeated {
 				errs.Append(
 					errorhandling.ErrorRelationAttributeRelatedFieldIsRepeated,
+					map[string]string{
+						"RelatedFieldName": relatedFieldName,
+					},
+					relationAttr.Name)
+
+				continue
+			}
+
+			// The related field must be a NON repeated field
+			// because it is in a one to one relationship (inferring with @unique)
+			if isOneToOne && query.FieldGetAttribute(relatedField, parser.AttributeUnique) != nil {
+				errs.Append(
+					errorhandling.ErrorRelationAttributeOnWrongSideOfOneToOne,
 					map[string]string{
 						"RelatedFieldName": relatedFieldName,
 					},
@@ -457,7 +472,7 @@ func MoreThanOneReverseOne(asts []*parser.AST) (errs errorhandling.ValidationErr
 		}
 
 		// Given access to the model at the HasOne end, how many fields does it have that
-		// refer back to the model at the hasMany end - which are not *qualified*?
+		// refer back to the model at the BelongsTo end - which are not *qualified*?
 		reverseFields := query.ModelFields(singleEndModel, func(f *parser.FieldNode) bool {
 
 			// It can't be a reverse relation field if it's not a hasOne relation field.

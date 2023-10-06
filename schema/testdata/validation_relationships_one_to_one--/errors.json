@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "User and Student define a singular relationship with one another",
+      "hint": "It is not clear which model owns the relationship. Define one of the fields with @unique to indicate this.",
+      "code": "E039",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_one_relation_attr_both_sides/schema.keel",
+        "offset": 34,
+        "line": 3,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_one_relation_attr_both_sides/schema.keel",
+        "offset": 41,
+        "line": 3,
+        "column": 16
+      }
+    }
+  ]
+}

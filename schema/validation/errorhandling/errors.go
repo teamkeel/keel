@@ -72,6 +72,7 @@ const (
 	ErrorExpressionTypeNotNullable                  = "E060"
 	ErrorExpressionSingleConditionNotBoolean        = "E061"
 	ErrorRelationAttributeRelatedFieldIsRepeated    = "E062"
+	ErrorRelationAttributeOnWrongSideOfOneToOne     = "E063"
 )
 
 type ErrorDetails struct {

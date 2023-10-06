@@ -177,3 +177,6 @@ en:
   E062:
     message: "The related field '{{.RelatedFieldName}}' must not be a repeated field"
     hint: "You can achieve this by removing the []"
+  E063:
+    message: "The @relation attribute must be defined on the @unique side of a one to one relationship"
+    hint: "Define @relation the '{{.RelatedFieldName}}' field instead"
