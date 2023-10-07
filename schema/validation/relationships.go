@@ -14,7 +14,7 @@ type relatedTo struct {
 	field *parser.FieldNode
 }
 
-func RelationsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
+func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var currentModel *parser.ModelNode
 	relationships := map[*parser.FieldNode][]relatedTo{}
 

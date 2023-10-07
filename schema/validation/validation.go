@@ -57,14 +57,6 @@ var validatorFuncs = []validationFunc{
 
 	api.UniqueAPINamesRule,
 	api.NamesCorrespondToModels,
-
-	//	relationships.InvalidOneToOneRelationshipRule,
-	//	relationships.InvalidImplicitBelongsToWithHasManyRule,
-	//
-	// relationships.RelationAttributeRule,
-	//
-	//	relationships.MoreThanOneReverseMany,
-	//	relationships.MoreThanOneReverseOne,
 }
 
 var visitorFuncs = []VisitorFunc{
@@ -77,7 +69,6 @@ var visitorFuncs = []VisitorFunc{
 	InvalidWithUsage,
 	RepeatedScalarFieldRule,
 	NameClashesRule,
-	//	DirectManyToManyRule,
 	UniqueAttributeRule,
 	OrderByAttributeRule,
 	SortableAttributeRule,
@@ -87,7 +78,7 @@ var visitorFuncs = []VisitorFunc{
 	AttributeArgumentsRule,
 	FunctionDisallowedBehavioursRule,
 	OnAttributeRule,
-	RelationsAttribute,
+	RelationshipsRules,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {

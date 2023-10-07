@@ -144,27 +144,6 @@ en:
   E051:
     message: "default expression doesn't support operators"
     hint: "Try removing '{{ .Op }}'"
-  E052:
-    message: "Field '{{.FieldName}}'' has type '{{.WrongType}}', so it cannot have the @relation attribute"
-    hint: "Did you mean make to make field '{{.FieldName}}' refer to another Model?"
-  E053:
-    message: "Field '{{.FieldName}}' is repeated, i.e. [], so it cannot have the @relation attribute"
-    hint: "For many-to-one relationships, you put the @relation on the non-repeated end of the relationship"
-  E054:
-    message: "The @relation value should be a simple string"
-    hint: "Like myFieldName"
-  E055:
-    message: "'{{.RelatedFieldName}}' is not a field in the '{{.RelatedModelName}}'' model"
-    hint: "Did you mean one of: {{.SuggestedNames}}"
-  E056:
-    message: "'@relation({{.RelatedFieldName}})' refers to a related field of type '{{.RelatedFieldType}}', which should be of type '{{.RequiredType}}"
-    hint: "Did you mean one of: {{.SuggestedNames}} ?"
-  E057:
-    message: "The related field '{{.RelatedFieldName}}' must be a repeated field"
-    hint: "You can make it repeated by adding [] to that field"
-  E058:
-    message: "You have already used '{{.RelatedFieldName}}' in a @Relation. Duplicates are not allowed."
-    hint: "Did you mean a different related field?"
   E059:
     message: "You cannot set values for both {{.IdPath}} and {{.ConflictingPath}} in this create action - because the first one indicates that you want to refer to an existing {{.ModelName}}"
     hint: "Either 1) use the .id form, and none of the {{.ModelName}} fields, or 2) omit the .id form and specify all of the fields of {{.ModelName}} that are needed to create one."
@@ -174,9 +153,3 @@ en:
   E061:
     message: "Non-boolean single operand conditions such as '{{ .Value }}' not permitted on {{ .Attribute }}"
     hint: "Please add an operator and second operand. Did you mean '{{ .Suggestion }}'?"
-  E062:
-    message: "The related field '{{.RelatedFieldName}}' must not be a repeated field"
-    hint: "You can achieve this by removing the []"
-  E063:
-    message: "The @relation attribute must be defined on the @unique side of a one to one relationship"
-    hint: "Define @relation the '{{.RelatedFieldName}}' field instead"
