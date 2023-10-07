@@ -352,6 +352,18 @@ func FieldsInModelOfType(model *parser.ModelNode, requiredType string) []string 
 	return names
 }
 
+// FieldsInModelOfType provides a list of the field names for the fields in the
+// given model, that have the given type name.
+func ModelFieldsOfType(model *parser.ModelNode, typeName string) []*parser.FieldNode {
+	fields := []*parser.FieldNode{}
+	for _, field := range ModelFields(model) {
+		if field.Type.Value == typeName {
+			fields = append(fields, field)
+		}
+	}
+	return fields
+}
+
 // AllHasManyRelationFields provides a list of all the fields in the schema
 // which are of type Model and which are repeated.
 func AllHasManyRelationFields(asts []*parser.AST) []*parser.FieldNode {

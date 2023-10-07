@@ -1,20 +1,37 @@
 {
   "errors": [
     {
-      "message": "'noSuchField' is not a field in the 'Author'' model",
-      "hint": "Did you mean one of: age, or written",
-      "code": "E055",
+      "message": "The field 'written' does not have an associated field on the related Post model",
+      "hint": "To create a one to many relationship a other field must be created on the Post model",
+      "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_must_point_to_related_field/schema.keel",
-        "offset": 127,
-        "line": 10,
-        "column": 23
+        "offset": 55,
+        "line": 4,
+        "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_must_point_to_related_field/schema.keel",
-        "offset": 136,
+        "offset": 69,
+        "line": 4,
+        "column": 23
+      }
+    },
+    {
+      "message": "The field 'noSuchField' does not exist on the Author model",
+      "hint": "",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_attr_must_point_to_related_field/schema.keel",
+        "offset": 137,
         "line": 10,
-        "column": 32
+        "column": 33
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_attr_must_point_to_related_field/schema.keel",
+        "offset": 148,
+        "line": 10,
+        "column": 44
       }
     }
   ]

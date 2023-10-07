@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "message": "Attempting to associate with 'author' on model Post but a relationship may already exist",
+      "hint": "Use @relation to refer to a Author[] field on the Post model which is not yet in a relationship",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_many_duplicate_relation_to_many_side/schema.keel",
+        "offset": 75,
+        "line": 4,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_many_duplicate_relation_to_many_side/schema.keel",
+        "offset": 107,
+        "line": 4,
+        "column": 41
+      }
+    },
+    {
+      "message": "Attempting to associate with 'coWritten' on model Author but a relationship may already exist",
+      "hint": "",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_many_duplicate_relation_to_many_side/schema.keel",
+        "offset": 151,
+        "line": 10,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_many_duplicate_relation_to_many_side/schema.keel",
+        "offset": 166,
+        "line": 10,
+        "column": 24
+      }
+    }
+  ]
+}

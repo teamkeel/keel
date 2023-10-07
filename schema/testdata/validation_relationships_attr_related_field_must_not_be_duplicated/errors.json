@@ -1,20 +1,37 @@
 {
   "errors": [
     {
-      "message": "You have already used 'written' in a @Relation. Duplicates are not allowed.",
-      "hint": "Did you mean a different related field?",
-      "code": "E058",
+      "message": "Attempting to associate with 'written' on model Author but a relationship may already exist",
+      "hint": "Use @relation to refer to a Post[] field on the Author model which is not yet in a relationship",
+      "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_related_field_must_not_be_duplicated/schema.keel",
-        "offset": 170,
+        "offset": 154,
         "line": 11,
-        "column": 25
+        "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_related_field_must_not_be_duplicated/schema.keel",
-        "offset": 179,
+        "offset": 188,
         "line": 11,
-        "column": 34
+        "column": 43
+      }
+    },
+    {
+      "message": "Attempting to associate with 'coAuthor' on model Post but a relationship may already exist",
+      "hint": "",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_attr_related_field_must_not_be_duplicated/schema.keel",
+        "offset": 55,
+        "line": 4,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_attr_related_field_must_not_be_duplicated/schema.keel",
+        "offset": 69,
+        "line": 4,
+        "column": 23
       }
     }
   ]

@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "The field 'createdAt' on the Student model must be of type User in order to establish a relationship",
+      "hint": "",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_one_relation_field_not_valid_type/schema.keel",
+        "offset": 94,
+        "line": 5,
+        "column": 23
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_one_relation_field_not_valid_type/schema.keel",
+        "offset": 103,
+        "line": 5,
+        "column": 32
+      }
+    }
+  ]
+}

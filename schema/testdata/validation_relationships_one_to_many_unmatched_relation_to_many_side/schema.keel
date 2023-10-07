@@ -1,0 +1,13 @@
+model Author {
+    fields {
+        written Post @relation(author)
+        written2 Post @relation(author)
+        written3 Post
+    }
+}
+
+model Post {
+    fields {
+        author Author[]
+    }
+}

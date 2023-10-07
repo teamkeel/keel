@@ -124,8 +124,8 @@ en:
     message: "The '{{ .ModelB }}' model does not include a field that references {{ .ModelA }}"
     hint: "Try adding '{{ .Suggestion }}' to the fields definition of the {{ .ModelB }} model."
   E045:
-    message: "Your model '{{ .ModelA }}' has more than one field that references a '{{ .ModelB }}', and a '{{ .ModelB }}' has a (reverse) field back to '{{.ModelA}}'."
-    hint: "This is only allowed if you put a @relation attribute on the following fields in {{.ModelA}}: {{.SuggestedFields}}"
+    message: "The @relation attribute must be used as more than one field on the {{ .ModelA }} model references {{ .ModelB }}"
+    hint: "Define the @relation attribute on this field to indicate which field on {{ .ModelA }} it references"
   E046:
     message: "create actions must accept all required fields that have no default value"
     hint: "maybe add one of {{ .WithNames }} to with() inputs, or one of {{ .SetNames }} to a @set expression"

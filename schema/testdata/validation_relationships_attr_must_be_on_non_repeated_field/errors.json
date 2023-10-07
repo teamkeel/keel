@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "Field 'author' is repeated, i.e. [], so it cannot have the @relation attribute",
-      "hint": "For many-to-one relationships, you put the @relation on the non-repeated end of the relationship",
-      "code": "E053",
+      "message": "The @relation attribute must be defined on the other side of a one to many relationship",
+      "hint": "",
+      "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_must_be_on_non_repeated_field/schema.keel",
-        "offset": 91,
+        "offset": 107,
         "line": 9,
-        "column": 9
+        "column": 25
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_must_be_on_non_repeated_field/schema.keel",
-        "offset": 97,
+        "offset": 125,
         "line": 9,
-        "column": 15
+        "column": 43
       }
     }
   ]

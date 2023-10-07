@@ -18,6 +18,23 @@
       }
     },
     {
+      "message": "The field 'posts' does not have an associated field on the related Post model",
+      "hint": "To create a one to many relationship a other field must be created on the Post model",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 264,
+        "line": 15,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 284,
+        "line": 15,
+        "column": 29
+      }
+    },
+    {
       "message": "@unique is not permitted on has many relationships",
       "hint": "",
       "code": "TypeError",

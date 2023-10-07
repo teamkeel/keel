@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "The field 'nope' does not exist on the Student model",
+      "hint": "",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_one_relation_field_not_exists/schema.keel",
+        "offset": 94,
+        "line": 5,
+        "column": 23
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_one_relation_field_not_exists/schema.keel",
+        "offset": 98,
+        "line": 5,
+        "column": 27
+      }
+    }
+  ]
+}

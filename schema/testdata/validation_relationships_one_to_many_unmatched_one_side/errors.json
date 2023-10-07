@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "message": "Attempting to associate with 'loveThese' on model Person but a relationship may already exist",
+      "hint": "Use @relation to refer to a Book[] field on the Person model which is not yet in a relationship",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_many_unmatched_one_side/schema.keel",
+        "offset": 215,
+        "line": 6,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_many_unmatched_one_side/schema.keel",
+        "offset": 228,
+        "line": 6,
+        "column": 22
+      }
+    },
+    {
+      "message": "Attempting to associate with 'editor' on model Book but a relationship may already exist",
+      "hint": "",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_many_unmatched_one_side/schema.keel",
+        "offset": 274,
+        "line": 12,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_many_unmatched_one_side/schema.keel",
+        "offset": 290,
+        "line": 12,
+        "column": 25
+      }
+    }
+  ]
+}

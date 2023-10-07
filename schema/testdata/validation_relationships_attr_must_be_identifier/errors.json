@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "The @relation value should be a simple string",
-      "hint": "Like myFieldName",
-      "code": "E054",
+      "message": "The @relation value must refer to a field on the related model",
+      "hint": "For example, @relation(fieldName)",
+      "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
         "offset": 108,
@@ -12,9 +12,9 @@
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
-        "offset": 117,
+        "offset": 122,
         "line": 9,
-        "column": 32
+        "column": 37
       }
     }
   ]

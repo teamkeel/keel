@@ -408,18 +408,18 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 
 		// It is an error, if there are more than one un-qualified reverse fields.
 		if len(reverseFields) > 1 {
-			suggestedFields := lo.Map(reverseFields, func(f *parser.FieldNode, _ int) string {
-				return f.Name.Value
-			})
-			errs.Append(
-				errorhandling.ErrorAmbiguousRelationship,
-				map[string]string{
-					"ModelA":          singleEndModel.Name.Value,
-					"ModelB":          reverseFields[0].Type.Value,
-					"SuggestedFields": formatting.HumanizeList(suggestedFields, formatting.DelimiterAnd),
-				},
-				singleEndModel.Name,
-			)
+
+			for _, f := range reverseFields {
+				errs.Append(
+					errorhandling.ErrorAmbiguousRelationship,
+					map[string]string{
+						"ModelA": f.Type.Value,
+						"ModelB": singleEndModel.Name.Value,
+					},
+					f.Name,
+				)
+			}
+
 		}
 	}
 
@@ -449,7 +449,7 @@ func MoreThanOneReverseOne(asts []*parser.AST) (errs errorhandling.ValidationErr
 	hasOneFields := []*hasOneField{}
 	for _, model := range query.Models(asts) {
 		for _, f := range query.ModelFields(model) {
-			if query.IsHasOneModelField(asts, f) && !query.FieldHasAttribute(f, parser.AttributeUnique) {
+			if query.IsHasOneModelField(asts, f) && query.FieldHasAttribute(f, parser.AttributeUnique) {
 				hasOneFields = append(hasOneFields, &hasOneField{
 					theField:  f,
 					belongsTo: model,
@@ -479,14 +479,15 @@ func MoreThanOneReverseOne(asts []*parser.AST) (errs errorhandling.ValidationErr
 			if !query.IsHasOneModelField(asts, f) {
 				return false
 			}
+
 			// It isn't a REVERSE relation field if despite it being a hasOne relation field,
 			// it refers to a different model to that of the model to which the hasManyField belongs to.
 			if f.Type.Value != hasOneF.belongsTo.Name.Value {
 				return false
 			}
 
-			// If it's not unique, we don't count it.
-			if !query.FieldHasAttribute(f, parser.AttributeUnique) {
+			// If it's unique, we don't count it.
+			if query.FieldHasAttribute(f, parser.AttributeUnique) {
 				return false
 			}
 
@@ -499,17 +500,13 @@ func MoreThanOneReverseOne(asts []*parser.AST) (errs errorhandling.ValidationErr
 
 		// It is an error, if there are more than one un-qualified reverse fields.
 		if len(reverseFields) > 1 {
-			suggestedFields := lo.Map(reverseFields, func(f *parser.FieldNode, _ int) string {
-				return f.Name.Value
-			})
 			errs.Append(
 				errorhandling.ErrorAmbiguousRelationship,
 				map[string]string{
-					"ModelA":          singleEndModel.Name.Value,
-					"ModelB":          reverseFields[0].Type.Value,
-					"SuggestedFields": formatting.HumanizeList(suggestedFields, formatting.DelimiterAnd),
+					"ModelA": singleEndModel.Name.Value,
+					"ModelB": reverseFields[0].Type.Value,
 				},
-				singleEndModel.Name,
+				hasOneF.theField.Name,
 			)
 		}
 	}

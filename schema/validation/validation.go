@@ -7,7 +7,6 @@ import (
 	"github.com/teamkeel/keel/schema/validation/rules/api"
 	"github.com/teamkeel/keel/schema/validation/rules/attribute"
 	"github.com/teamkeel/keel/schema/validation/rules/field"
-	"github.com/teamkeel/keel/schema/validation/rules/relationships"
 	"github.com/teamkeel/keel/schema/validation/rules/role"
 )
 
@@ -59,11 +58,13 @@ var validatorFuncs = []validationFunc{
 	api.UniqueAPINamesRule,
 	api.NamesCorrespondToModels,
 
-	relationships.InvalidOneToOneRelationshipRule,
-	relationships.InvalidImplicitBelongsToWithHasManyRule,
-	relationships.RelationAttributeRule,
-	relationships.MoreThanOneReverseMany,
-	relationships.MoreThanOneReverseOne,
+	//	relationships.InvalidOneToOneRelationshipRule,
+	//	relationships.InvalidImplicitBelongsToWithHasManyRule,
+	//
+	// relationships.RelationAttributeRule,
+	//
+	//	relationships.MoreThanOneReverseMany,
+	//	relationships.MoreThanOneReverseOne,
 }
 
 var visitorFuncs = []VisitorFunc{
@@ -76,7 +77,7 @@ var visitorFuncs = []VisitorFunc{
 	InvalidWithUsage,
 	RepeatedScalarFieldRule,
 	NameClashesRule,
-	DirectManyToManyRule,
+	//	DirectManyToManyRule,
 	UniqueAttributeRule,
 	OrderByAttributeRule,
 	SortableAttributeRule,
@@ -86,6 +87,7 @@ var visitorFuncs = []VisitorFunc{
 	AttributeArgumentsRule,
 	FunctionDisallowedBehavioursRule,
 	OnAttributeRule,
+	RelationsAttribute,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {

@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "Cannot determine which field on the Student model to form the relationship with",
+      "hint": "Use @relation to refer to a User field on the Student model which is not yet in a relationship",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_one_mismatch/schema.keel",
+        "offset": 34,
+        "line": 3,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_one_mismatch/schema.keel",
+        "offset": 57,
+        "line": 3,
+        "column": 32
+      }
+    }
+  ]
+}

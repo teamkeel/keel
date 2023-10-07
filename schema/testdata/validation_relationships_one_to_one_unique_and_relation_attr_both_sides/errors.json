@@ -1,54 +1,37 @@
 {
   "errors": [
     {
-      "message": "Field 'student' on User and 'user' on Student are both marked as @unique",
-      "hint": "In a one-to-one relationship, only one side must be marked as @unique",
+      "message": "Cannot create a relationship to the unique field 'user' on the Student model",
+      "hint": "In a one to one relationship, only this side must be marked as @unique",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_one_unique_and_relation_attr_both_sides/schema.keel",
-        "offset": 34,
+        "offset": 68,
         "line": 3,
-        "column": 9
+        "column": 43
       },
       "endPos": {
         "filename": "testdata/validation_relationships_one_to_one_unique_and_relation_attr_both_sides/schema.keel",
-        "offset": 41,
+        "offset": 72,
         "line": 3,
-        "column": 16
+        "column": 47
       }
     },
     {
-      "message": "The @relation attribute must be defined on the @unique side of a one to one relationship",
-      "hint": "Define @relation the 'user' field instead",
-      "code": "E063",
+      "message": "Cannot create a relationship to the unique field 'student' on the User model",
+      "hint": "In a one to one relationship, only this side must be marked as @unique",
+      "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_one_unique_and_relation_attr_both_sides/schema.keel",
-        "offset": 58,
-        "line": 3,
-        "column": 33
+        "offset": 148,
+        "line": 9,
+        "column": 37
       },
       "endPos": {
         "filename": "testdata/validation_relationships_one_to_one_unique_and_relation_attr_both_sides/schema.keel",
-        "offset": 67,
-        "line": 3,
-        "column": 42
-      }
-    },
-    {
-      "message": "The @relation attribute must be defined on the @unique side of a one to one relationship",
-      "hint": "Define @relation the 'student' field instead",
-      "code": "E063",
-      "pos": {
-        "filename": "testdata/validation_relationships_one_to_one_unique_and_relation_attr_both_sides/schema.keel",
-        "offset": 138,
+        "offset": 155,
         "line": 9,
-        "column": 27
-      },
-      "endPos": {
-        "filename": "testdata/validation_relationships_one_to_one_unique_and_relation_attr_both_sides/schema.keel",
-        "offset": 147,
-        "line": 9,
-        "column": 36
+        "column": 44
       }
     }
   ]
