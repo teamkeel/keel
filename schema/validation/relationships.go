@@ -20,19 +20,19 @@ const (
 
 func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var currentModel *parser.ModelNode
-	candidates := map[*parser.FieldNode][]relatedTo{}
+	candidates := map[*parser.FieldNode][]*relatedTo{}
+	alreadyErrored := map[*parser.FieldNode]bool{}
 
 	return Visitor{
 		EnterModel: func(model *parser.ModelNode) {
 			// For each relationship field, we generate possible candidates of fields
 			// from the other model to form the relationship.  A relationship should
 			// only ever have one candidate.
-			candidates = map[*parser.FieldNode][]relatedTo{}
+			candidates = map[*parser.FieldNode][]*relatedTo{}
 			currentModel = model
 		},
 
 		LeaveModel: func(_ *parser.ModelNode) {
-			alreadyErrored := map[*parser.FieldNode]bool{}
 
 			for field := range candidates {
 				if len(candidates[field]) > 1 {
@@ -75,7 +75,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 						case validUniqueOneToHasOne(field, candidate.field):
 							if !alreadyErrored[field] {
 								errs.AppendError(makeRelationshipError(
-									fmt.Sprintf("Cannot determine which field on the %s model to form a one to many relationship", candidate.model.Name.Value),
+									fmt.Sprintf("Cannot determine which field on the %s model to form a one to one relationship", candidate.model.Name.Value),
 									fmt.Sprintf("Use @relation to refer to a %s field on the %s model which is not yet in a relationship", currentModel.Name.Value, candidate.model.Name.Value),
 									field,
 								))
@@ -201,21 +201,27 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				}
 			}
 
-			otherFields := query.ModelFieldsOfType(otherModel, currentModel.Name.Value)
+			// otherFields := query.ModelFieldsOfType(otherModel, currentModel.Name.Value)
 
-			matched := false
-			for _, otherField := range otherFields {
-				if validOneToHasMany(currentField, otherField) ||
-					validOneToHasMany(otherField, currentField) ||
-					validUniqueOneToHasOne(currentField, otherField) ||
-					validUniqueOneToHasOne(otherField, currentField) {
-					// This field has a new relationship candidate with the other model
-					candidates[currentField] = append(candidates[currentField], relatedTo{model: otherModel, field: otherField})
-					matched = true
-				}
+			// matched := false
+			// for _, otherField := range otherFields {
+			// 	if validOneToHasMany(currentField, otherField) ||
+			// 		validOneToHasMany(otherField, currentField) ||
+			// 		validUniqueOneToHasOne(currentField, otherField) ||
+			// 		validUniqueOneToHasOne(otherField, currentField) {
+			// 		// This field has a new relationship candidate with the other model
+			// 		candidates[currentField] = append(candidates[currentField], relatedTo{model: otherModel, field: otherField})
+			// 		matched = true
+			// 	}
+			// }
+
+			fieldCandidates := findCandidates(asts, currentModel, currentField)
+
+			if len(fieldCandidates) > 0 {
+				candidates[currentField] = fieldCandidates
 			}
 
-			if !matched && currentField.Repeated {
+			if len(fieldCandidates) == 0 && currentField.Repeated {
 				errs.AppendError(makeRelationshipError(
 					fmt.Sprintf("The field '%s' does not have an associated field on the related %s model", currentField.Name.Value, currentField.Type.Value),
 					fmt.Sprintf("In a one to many relationship, the related belongs-to field must exist on the %s model. %s", currentField.Type.Value, learnMore),
@@ -224,6 +230,29 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			}
 		},
 	}
+}
+
+func findCandidates(asts []*parser.AST, currentModel *parser.ModelNode, currentField *parser.FieldNode) []*relatedTo {
+	candidates := []*relatedTo{}
+
+	otherModel := query.Model(asts, currentField.Type.Value)
+	if otherModel == nil {
+		return candidates
+	}
+
+	otherFields := query.ModelFieldsOfType(otherModel, currentModel.Name.Value)
+
+	for _, otherField := range otherFields {
+		if validOneToHasMany(currentField, otherField) ||
+			validOneToHasMany(otherField, currentField) ||
+			validUniqueOneToHasOne(currentField, otherField) ||
+			validUniqueOneToHasOne(otherField, currentField) {
+			// This field has a new relationship candidate with the other model
+			candidates = append(candidates, &relatedTo{model: otherModel, field: otherField})
+		}
+	}
+
+	return candidates
 }
 
 // Determine if pair form a valid 1:M pattern where, for example:

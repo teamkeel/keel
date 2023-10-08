@@ -1,24 +1,7 @@
 {
   "errors": [
     {
-      "message": "Cannot determine which field on the Student model to form a one to many relationship",
-      "hint": "Use @relation to refer to a User field on the Student model which is not yet in a relationship",
-      "code": "RelationshipError",
-      "pos": {
-        "filename": "testdata/validation_relationships_one_to_one_duplication_relation/schema.keel",
-        "offset": 118,
-        "line": 7,
-        "column": 9
-      },
-      "endPos": {
-        "filename": "testdata/validation_relationships_one_to_one_duplication_relation/schema.keel",
-        "offset": 142,
-        "line": 7,
-        "column": 33
-      }
-    },
-    {
-      "message": "Cannot associate with field 'user' on model Student to form a one to one relationship as a relationship may already exist",
+      "message": "Cannot determine which field on the Student model to form a one to one relationship",
       "hint": "Use @relation to refer to a User field on the Student model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {

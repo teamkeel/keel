@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "Cannot determine which field on the Student model to form a one to many relationship",
+      "message": "Cannot determine which field on the Student model to form a one to one relationship",
       "hint": "Use @relation to refer to a User field on the Student model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {

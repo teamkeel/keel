@@ -35,23 +35,6 @@
       }
     },
     {
-      "message": "Cannot associate with field 'author' on model Post to form a one to many relationship as a relationship may already exist",
-      "hint": "Use @relation to refer to a Author[] field on the Post model which is not yet in a relationship",
-      "code": "RelationshipError",
-      "pos": {
-        "filename": "testdata/validation_relationships_one_to_many_needs_relation_attribute/schema.keel",
-        "offset": 57,
-        "line": 4,
-        "column": 9
-      },
-      "endPos": {
-        "filename": "testdata/validation_relationships_one_to_many_needs_relation_attribute/schema.keel",
-        "offset": 71,
-        "line": 4,
-        "column": 23
-      }
-    },
-    {
       "message": "Cannot associate with field 'coWritten' on model Author to form a one to many relationship as a relationship may already exist",
       "hint": "",
       "code": "RelationshipError",
