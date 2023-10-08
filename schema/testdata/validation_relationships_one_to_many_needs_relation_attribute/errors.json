@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "Cannot determine which field on the Post model to form the relationship with",
+      "message": "Cannot determine which field on the Post model to form a one to many relationship with",
       "hint": "Use @relation to refer to a Author[] field on the Post model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -18,7 +18,7 @@
       }
     },
     {
-      "message": "Cannot determine which field on the Post model to form the relationship with",
+      "message": "Cannot determine which field on the Post model to form a one to many relationship with",
       "hint": "Use @relation to refer to a Author[] field on the Post model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -35,7 +35,7 @@
       }
     },
     {
-      "message": "Attempting to associate with 'author' on model Post but a relationship may already exist",
+      "message": "Cannot associate with field 'author' on model Post to form a one to many relationship as a relationship may already exist",
       "hint": "Use @relation to refer to a Author[] field on the Post model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -52,7 +52,7 @@
       }
     },
     {
-      "message": "Attempting to associate with 'coWritten' on model Author but a relationship may already exist",
+      "message": "Cannot associate with field 'coWritten' on model Author to form a one to many relationship as a relationship may already exist",
       "hint": "",
       "code": "RelationshipError",
       "pos": {
@@ -69,7 +69,7 @@
       }
     },
     {
-      "message": "Attempting to associate with 'coWritten' on model Author but a relationship may already exist",
+      "message": "Cannot associate with field 'coWritten' on model Author to form a one to many relationship as a relationship may already exist",
       "hint": "",
       "code": "RelationshipError",
       "pos": {

@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "The @relation attribute must be defined on the other side of a one to many relationship",
-      "hint": "",
+      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_must_be_on_non_repeated_field/schema.keel",

@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "Cannot determine which field on the Post model to form the relationship with",
+      "message": "Cannot determine which field on the Post model to form a one to many relationship",
       "hint": "Use @relation to refer to a Author field on the Post model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -18,7 +18,7 @@
       }
     },
     {
-      "message": "Cannot determine which field on the Post model to form the relationship with",
+      "message": "Cannot determine which field on the Post model to form a one to many relationship",
       "hint": "Use @relation to refer to a Author field on the Post model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -35,7 +35,7 @@
       }
     },
     {
-      "message": "Attempting to associate with 'coAuthor' on model Post but a relationship may already exist",
+      "message": "Cannot associate with field 'coAuthor' on model Post to form a one to one relationship as a relationship may already exist",
       "hint": "Use @relation to refer to a Author field on the Post model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -52,8 +52,8 @@
       }
     },
     {
-      "message": "Attempting to associate with 'written' on model Author but a relationship may already exist",
-      "hint": "",
+      "message": "Cannot associate with field 'written' on model Author to form a one to one relationship as a relationship may already exist",
+      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_one_attr_related_missing/schema.keel",
@@ -69,8 +69,8 @@
       }
     },
     {
-      "message": "Attempting to associate with 'written' on model Author but a relationship may already exist",
-      "hint": "",
+      "message": "Cannot associate with field 'written' on model Author to form a one to one relationship as a relationship may already exist",
+      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_one_attr_related_missing/schema.keel",

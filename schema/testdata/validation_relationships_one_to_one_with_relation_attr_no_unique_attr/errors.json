@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "To create a one to one relationship, the 'author' field should be @unique",
-      "hint": "In a one to one relationship, the other side must be marked as @unique",
+      "message": "A one to one relationship requires a single side to be @unique",
+      "hint": "In a one to one relationship, the 'author' field must be @unique. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_one_with_relation_attr_no_unique_attr/schema.keel",

@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "Attempting to associate with 'author' on model Post but a relationship may already exist",
+      "message": "Cannot associate with field 'author' on model Post to form a one to one relationship as a relationship may already exist",
       "hint": "Use @relation to refer to a Author field on the Post model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -18,8 +18,8 @@
       }
     },
     {
-      "message": "Attempting to associate with 'starPost' on model Author but a relationship may already exist",
-      "hint": "",
+      "message": "Cannot associate with field 'starPost' on model Author to form a one to one relationship as a relationship may already exist",
+      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_mixed_unmatched_one_to_one/schema.keel",

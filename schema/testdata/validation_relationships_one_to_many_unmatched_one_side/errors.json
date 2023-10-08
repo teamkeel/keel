@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "Attempting to associate with 'loveThese' on model Person but a relationship may already exist",
+      "message": "Cannot associate with field 'loveThese' on model Person to form a one to many relationship as a relationship may already exist",
       "hint": "Use @relation to refer to a Book[] field on the Person model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -18,7 +18,7 @@
       }
     },
     {
-      "message": "Attempting to associate with 'editor' on model Book but a relationship may already exist",
+      "message": "Cannot associate with field 'editor' on model Book to form a one to many relationship as a relationship may already exist",
       "hint": "",
       "code": "RelationshipError",
       "pos": {

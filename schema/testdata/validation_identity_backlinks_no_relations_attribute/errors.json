@@ -18,7 +18,24 @@
       }
     },
     {
-      "message": "Cannot determine which field on the Identity model to form the relationship with",
+      "message": "Cannot determine which field on the Identity model to form a one to many relationship",
+      "hint": "Use @relation to refer to a CompanyEmployee field on the Identity model which is not yet in a relationship",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_identity_backlinks_no_relations_attribute/schema.keel",
+        "offset": 82,
+        "line": 4,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_identity_backlinks_no_relations_attribute/schema.keel",
+        "offset": 110,
+        "line": 4,
+        "column": 37
+      }
+    },
+    {
+      "message": "Cannot determine which field on the Identity model to form a one to many relationship",
       "hint": "Use @relation to refer to a CompanyEmployee field on the Identity model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -35,7 +52,7 @@
       }
     },
     {
-      "message": "Cannot determine which field on the Identity model to form the relationship with",
+      "message": "Cannot associate with field 'companyEmployee' on model Identity to form a one to one relationship as a relationship may already exist",
       "hint": "Use @relation to refer to a CompanyEmployee field on the Identity model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -52,25 +69,8 @@
       }
     },
     {
-      "message": "Attempting to associate with 'companyEmployee' on model Identity but a relationship may already exist",
-      "hint": "Use @relation to refer to a CompanyEmployee field on the Identity model which is not yet in a relationship",
-      "code": "RelationshipError",
-      "pos": {
-        "filename": "testdata/validation_identity_backlinks_no_relations_attribute/schema.keel",
-        "offset": 82,
-        "line": 4,
-        "column": 9
-      },
-      "endPos": {
-        "filename": "testdata/validation_identity_backlinks_no_relations_attribute/schema.keel",
-        "offset": 110,
-        "line": 4,
-        "column": 37
-      }
-    },
-    {
-      "message": "Attempting to associate with 'xyzIdentity' on model CompanyEmployee but a relationship may already exist",
-      "hint": "",
+      "message": "Cannot associate with field 'xyzIdentity' on model CompanyEmployee to form a one to one relationship as a relationship may already exist",
+      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "",
@@ -86,8 +86,8 @@
       }
     },
     {
-      "message": "Attempting to associate with 'xyzIdentity' on model CompanyEmployee but a relationship may already exist",
-      "hint": "",
+      "message": "Cannot associate with field 'xyzIdentity' on model CompanyEmployee to form a one to one relationship as a relationship may already exist",
+      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "",

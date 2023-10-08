@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "The field 'author' does not have an associated field on the related Author model",
-      "hint": "To create a one to many relationship a other field must be created on the Author model",
+      "hint": "In a one to many relationship, the related belongs-to field must exist on the Author model. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_many_no_fields_on_one_side/schema.keel",
@@ -19,7 +19,7 @@
     },
     {
       "message": "The field 'coAuthor' does not have an associated field on the related Author model",
-      "hint": "To create a one to many relationship a other field must be created on the Author model",
+      "hint": "In a one to many relationship, the related belongs-to field must exist on the Author model. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_many_no_fields_on_one_side/schema.keel",

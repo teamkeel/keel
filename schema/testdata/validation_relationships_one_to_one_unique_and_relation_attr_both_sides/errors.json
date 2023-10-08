@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "Cannot create a relationship to the unique field 'user' on the Student model",
-      "hint": "In a one to one relationship, only this side must be marked as @unique",
+      "hint": "In a one to one relationship, only this side must be marked as @unique. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_one_unique_and_relation_attr_both_sides/schema.keel",
@@ -19,7 +19,7 @@
     },
     {
       "message": "Cannot create a relationship to the unique field 'student' on the User model",
-      "hint": "In a one to one relationship, only this side must be marked as @unique",
+      "hint": "In a one to one relationship, only this side must be marked as @unique. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_one_unique_and_relation_attr_both_sides/schema.keel",

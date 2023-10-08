@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "Attempting to associate with 'author' on model Post but a relationship may already exist",
+      "message": "Cannot associate with field 'author' on model Post to form a one to many relationship as a relationship may already exist",
       "hint": "Use @relation to refer to a Author[] field on the Post model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -18,7 +18,7 @@
       }
     },
     {
-      "message": "Attempting to associate with 'written2' on model Author but a relationship may already exist",
+      "message": "Cannot associate with field 'written2' on model Author to form a one to many relationship as a relationship may already exist",
       "hint": "",
       "code": "RelationshipError",
       "pos": {
@@ -35,7 +35,7 @@
       }
     },
     {
-      "message": "Attempting to associate with 'author' on model Post but a relationship may already exist",
+      "message": "Cannot associate with field 'author' on model Post to form a one to many relationship as a relationship may already exist",
       "hint": "Use @relation to refer to a Author[] field on the Post model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {

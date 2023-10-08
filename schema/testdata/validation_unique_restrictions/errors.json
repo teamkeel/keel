@@ -19,7 +19,7 @@
     },
     {
       "message": "The field 'posts' does not have an associated field on the related Post model",
-      "hint": "To create a one to many relationship a other field must be created on the Post model",
+      "hint": "In a one to many relationship, the related belongs-to field must exist on the Post model. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_unique_restrictions/schema.keel",

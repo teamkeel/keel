@@ -19,7 +19,7 @@
     },
     {
       "message": "The @relation value must refer to a field on the related model",
-      "hint": "For example, @relation(fieldName)",
+      "hint": "For example, @relation(fieldName). To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_empty/schema.keel",
@@ -36,7 +36,7 @@
     },
     {
       "message": "The @relation value must refer to a field on the related model",
-      "hint": "For example, @relation(fieldName)",
+      "hint": "For example, @relation(fieldName). To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_empty/schema.keel",

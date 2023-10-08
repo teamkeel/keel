@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "The @relation attribute cannot be used on non-model fields",
-      "hint": "",
+      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_must_be_on_model_field_/schema.keel",
