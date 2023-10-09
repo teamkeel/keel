@@ -18,7 +18,7 @@
       }
     },
     {
-      "message": "Cannot determine which field on the Identity model to form a one to one relationship",
+      "message": "Cannot determine which field on the Identity model to form a one to one relationship with",
       "hint": "Use @relation to refer to a CompanyEmployee field on the Identity model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -35,7 +35,7 @@
       }
     },
     {
-      "message": "Cannot determine which field on the Identity model to form a one to one relationship",
+      "message": "Cannot determine which field on the Identity model to form a one to one relationship with",
       "hint": "Use @relation to refer to a CompanyEmployee field on the Identity model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {

@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "Cannot determine which field on the Post model to form a one to one relationship",
+      "message": "Cannot determine which field on the Post model to form a one to one relationship with",
       "hint": "Use @relation to refer to a Author field on the Post model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {
@@ -18,7 +18,7 @@
       }
     },
     {
-      "message": "Cannot determine which field on the Post model to form a one to one relationship",
+      "message": "Cannot determine which field on the Post model to form a one to one relationship with",
       "hint": "Use @relation to refer to a Author field on the Post model which is not yet in a relationship",
       "code": "RelationshipError",
       "pos": {

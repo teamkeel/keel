@@ -9,7 +9,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-type relatedTo struct {
+type relationship struct {
 	model *parser.ModelNode
 	field *parser.FieldNode
 }
@@ -20,7 +20,7 @@ const (
 
 func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var currentModel *parser.ModelNode
-	candidates := map[*parser.FieldNode][]*relatedTo{}
+	candidates := map[*parser.FieldNode][]*relationship{}
 	alreadyErrored := map[*parser.FieldNode]bool{}
 
 	return Visitor{
@@ -28,7 +28,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			// For each relationship field, we generate possible candidates of fields
 			// from the other model to form the relationship.  A relationship should
 			// only ever have one candidate.
-			candidates = map[*parser.FieldNode][]*relatedTo{}
+			candidates = map[*parser.FieldNode][]*relationship{}
 			currentModel = model
 		},
 
@@ -47,6 +47,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 
 						switch {
 						case validOneToHasMany(field, candidate.field):
+							//
 							if !alreadyErrored[field] {
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot determine which field on the %s model to form a one to many relationship with", candidate.model.Name.Value),
@@ -75,7 +76,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 						case validUniqueOneToHasOne(field, candidate.field):
 							if !alreadyErrored[field] {
 								errs.AppendError(makeRelationshipError(
-									fmt.Sprintf("Cannot determine which field on the %s model to form a one to one relationship", candidate.model.Name.Value),
+									fmt.Sprintf("Cannot determine which field on the %s model to form a one to one relationship with", candidate.model.Name.Value),
 									fmt.Sprintf("Use @relation to refer to a %s field on the %s model which is not yet in a relationship", currentModel.Name.Value, candidate.model.Name.Value),
 									field,
 								))
@@ -201,20 +202,6 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				}
 			}
 
-			// otherFields := query.ModelFieldsOfType(otherModel, currentModel.Name.Value)
-
-			// matched := false
-			// for _, otherField := range otherFields {
-			// 	if validOneToHasMany(currentField, otherField) ||
-			// 		validOneToHasMany(otherField, currentField) ||
-			// 		validUniqueOneToHasOne(currentField, otherField) ||
-			// 		validUniqueOneToHasOne(otherField, currentField) {
-			// 		// This field has a new relationship candidate with the other model
-			// 		candidates[currentField] = append(candidates[currentField], relatedTo{model: otherModel, field: otherField})
-			// 		matched = true
-			// 	}
-			// }
-
 			fieldCandidates := findCandidates(asts, currentModel, currentField)
 
 			if len(fieldCandidates) > 0 {
@@ -232,8 +219,8 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 	}
 }
 
-func findCandidates(asts []*parser.AST, currentModel *parser.ModelNode, currentField *parser.FieldNode) []*relatedTo {
-	candidates := []*relatedTo{}
+func findCandidates(asts []*parser.AST, currentModel *parser.ModelNode, currentField *parser.FieldNode) []*relationship {
+	candidates := []*relationship{}
 
 	otherModel := query.Model(asts, currentField.Type.Value)
 	if otherModel == nil {
@@ -248,7 +235,7 @@ func findCandidates(asts []*parser.AST, currentModel *parser.ModelNode, currentF
 			validUniqueOneToHasOne(currentField, otherField) ||
 			validUniqueOneToHasOne(otherField, currentField) {
 			// This field has a new relationship candidate with the other model
-			candidates = append(candidates, &relatedTo{model: otherModel, field: otherField})
+			candidates = append(candidates, &relationship{model: otherModel, field: otherField})
 		}
 	}
 
