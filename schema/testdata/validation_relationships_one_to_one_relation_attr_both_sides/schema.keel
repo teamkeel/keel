@@ -1,11 +1,17 @@
-model User {
+model Author {
     fields {
-        student Student @relation(user)
+        written Post[]
+        reviewed Post
+        starPost Post {
+            @unique
+            @relation(author)
+        }
     }
 }
 
-model Student {
+model Post {
     fields {
-        user User @relation(student)
+        author Author @relation(written)
+        reviewedBy Author[]
     }
 }

@@ -11,7 +11,7 @@
             "modelName": "Student"
           },
           "unique": true,
-          "inverseFieldName": "user2"
+          "inverseFieldName": "user"
         },
         {
           "modelName": "User",
@@ -65,7 +65,7 @@
             "type": "TYPE_MODEL",
             "modelName": "User"
           },
-          "inverseFieldName": "student2"
+          "inverseFieldName": "student"
         },
         {
           "modelName": "Student",

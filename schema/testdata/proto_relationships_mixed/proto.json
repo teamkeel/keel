@@ -31,8 +31,7 @@
             "modelName": "Post"
           },
           "unique": true,
-          "foreignKeyFieldName": "starPostId",
-          "inverseFieldName": "reviewedBy"
+          "foreignKeyFieldName": "starPostId"
         },
         {
           "modelName": "Author",
@@ -110,7 +109,7 @@
             "modelName": "Author",
             "repeated": true
           },
-          "inverseFieldName": "starPost"
+          "inverseFieldName": "reviewed"
         },
         {
           "modelName": "Post",

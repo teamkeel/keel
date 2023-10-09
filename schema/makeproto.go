@@ -1113,7 +1113,7 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 		return
 	}
 
-	// If no @relation attribute exists, then look a match in the related model fields' @relation attributes
+	// If no @relation attribute exists, then look for a match in the related model fields' @relation attributes
 	for _, remoteField := range query.ModelFields(relatedModel) {
 		if remoteField.Type.Value != thisProtoField.ModelName {
 			continue
@@ -1128,8 +1128,8 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 		}
 	}
 
-	// If there are no @relation attributes that match, then we know that there is only one relation between these models
-	// which means there is exactly one field of this model type on the related model (with exception of self referencing models).
+	// If there are no @relation attributes that match, then we know that there is only one relation
+	// between these models of this exact relationship type and in this direction
 	for _, remoteField := range query.ModelFields(relatedModel) {
 		if remoteField.Type.Value != thisProtoField.ModelName {
 			continue
@@ -1137,7 +1137,12 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 		if nameOfRelatedModel == thisProtoField.ModelName && remoteField.Name.Value == thisProtoField.Name {
 			continue
 		}
-		thisProtoField.InverseFieldName = wrapperspb.String(remoteField.Name.Value)
+		if query.ValidOneToHasMany(thisParserField, remoteField) ||
+			query.ValidOneToHasMany(remoteField, thisParserField) ||
+			query.ValidUniqueOneToHasOne(thisParserField, remoteField) ||
+			query.ValidUniqueOneToHasOne(remoteField, thisParserField) {
+			thisProtoField.InverseFieldName = wrapperspb.String(remoteField.Name.Value)
+		}
 	}
 }
 

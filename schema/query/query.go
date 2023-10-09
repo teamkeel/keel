@@ -534,3 +534,84 @@ func SubscriberNames(asts []*parser.AST) (res []string) {
 
 	return res
 }
+
+// Determine if pair form a valid 1:M pattern where, for example:
+//
+//	belongsTo:  author Author @relation(posts)
+//	hasMany:    posts Post[]
+func ValidOneToHasMany(belongsTo *parser.FieldNode, hasMany *parser.FieldNode) bool {
+	// Neither field can be unique in a 1:M relationship
+	if FieldIsUnique(belongsTo) || FieldIsUnique(hasMany) {
+		return false
+	}
+
+	if belongsTo.Repeated {
+		return false
+	}
+
+	if !hasMany.Repeated {
+		return false
+	}
+
+	// If belongsTo has @relation, check the field name matches hasMany
+	relnAttribute := FieldGetAttribute(belongsTo, parser.AttributeRelation)
+	if relnAttribute != nil {
+		if relation, ok := RelationAttributeValue(relnAttribute); ok {
+			if relation != hasMany.Name.Value {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+// Determine if pair form a valid 1:! pattern where, for example:
+//
+//	hasOne:  	  passport Passport @unique
+//	belongsTo:    person Person
+func ValidUniqueOneToHasOne(hasOne *parser.FieldNode, belongsTo *parser.FieldNode) bool {
+	if !FieldIsUnique(hasOne) || FieldIsUnique(belongsTo) {
+		return false
+	}
+
+	if belongsTo.Repeated || hasOne.Repeated {
+		return false
+	}
+
+	otherFieldAttribute := FieldGetAttribute(belongsTo, parser.AttributeRelation)
+	if otherFieldAttribute != nil {
+		return false
+	}
+
+	// If hasOne has @relation, check the field name matches belongsTo
+	currentFieldAttribute := FieldGetAttribute(hasOne, parser.AttributeRelation)
+	if currentFieldAttribute != nil {
+		if relation, ok := RelationAttributeValue(currentFieldAttribute); ok {
+			if relation != belongsTo.Name.Value {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+// RelationAttributeValue attempts to retrieve the value of the @relation attribute
+func RelationAttributeValue(attr *parser.AttributeNode) (field string, ok bool) {
+	if len(attr.Arguments) != 1 {
+		return "", false
+	}
+
+	expr := attr.Arguments[0].Expression
+	operand, err := expr.ToValue()
+	if err != nil {
+		return "", false
+	}
+
+	if operand.Ident == nil {
+		return "", false
+	}
+
+	return operand.Ident.Fragments[0].Fragment, true
+}

@@ -10,8 +10,7 @@
             "type": "TYPE_MODEL",
             "modelName": "Student"
           },
-          "unique": true,
-          "inverseFieldName": "user"
+          "unique": true
         },
         {
           "modelName": "User",
@@ -56,8 +55,7 @@
             "type": "TYPE_MODEL",
             "modelName": "User"
           },
-          "unique": true,
-          "inverseFieldName": "student"
+          "unique": true
         },
         {
           "modelName": "Student",
