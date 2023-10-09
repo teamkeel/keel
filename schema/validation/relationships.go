@@ -35,6 +35,21 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 		LeaveModel: func(_ *parser.ModelNode) {
 
 			for field := range candidates {
+				if len(candidates[field]) == 1 {
+					otherField := candidates[field][0].field
+					otherModel := candidates[field][0].model
+					if len(candidates[otherField]) > 1 {
+						//err - prob already covered
+					} else if len(candidates[otherField]) == 1 && candidates[otherField][0].field != field {
+						// field in another relationship
+						errs.AppendError(makeRelationshipError(
+							fmt.Sprintf("Field '%s' on model %s is already in a relationship with field '%s'", otherField.Name.Value, otherModel.Name.Value, candidates[otherField][0].field.Name.Value),
+							learnMore,
+							field,
+						))
+					}
+				}
+
 				if len(candidates[field]) > 1 {
 					for i, candidate := range candidates[field] {
 						// Skip the first relationship candidate match
@@ -47,7 +62,6 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 
 						switch {
 						case validOneToHasMany(field, candidate.field):
-							//
 							if !alreadyErrored[field] {
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot determine which field on the %s model to form a one to many relationship with", candidate.model.Name.Value),
