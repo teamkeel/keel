@@ -69,6 +69,7 @@ var visitorFuncs = []VisitorFunc{
 	RequiredFieldOfSameModelType,
 	RequiredFieldOfSameMessageType,
 	UnusedInputRule,
+	CreateNestedInputIsMany,
 	ConflictingInputsRule,
 	CasingRule,
 	DuplicateDefinitionRule,

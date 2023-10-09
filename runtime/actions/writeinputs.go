@@ -197,6 +197,8 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 								newRow.referencedBy = append(newRow.referencedBy, relationship)
 							}
 						}
+					} else if len(foreignKeys) > 0 {
+						return nil, nil, fmt.Errorf("it is not possible to specify just the id for %s as the foreign key does not sit on %s", input.Name, messageModel.Name)
 					}
 				} else {
 					// A not-repeating field means that we have a M:1 or 1:1 relationship. Therefore:
@@ -305,7 +307,9 @@ func (query *QueryBuilder) captureWriteValuesArrayFromMessage(scope *Scope, mess
 			return nil, nil, err
 		}
 
-		rows = append(rows, row)
+		if row != nil {
+			rows = append(rows, row)
+		}
 
 		for k, v := range fks {
 			foreignKeys[k] = v

@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "Cannot use the id of nested records which do not exist yet",
+      "hint": "Rather create the nested models by providing their field names as inputs. For example, id.name",
+      "code": "AttributeNotAllowedError",
+      "pos": {
+        "filename": "testdata/validation_relationships_create_nested_invalid_to_many_input/schema.keel",
+        "offset": 167,
+        "line": 8,
+        "column": 51
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_create_nested_invalid_to_many_input/schema.keel",
+        "offset": 179,
+        "line": 8,
+        "column": 63
+      }
+    }
+  ]
+}
