@@ -28,7 +28,6 @@ func (scm *Builder) insertAllBackLinkFields(
 			continue
 		}
 
-		//	hasNoRelationAttribute := false
 		backlinkFields := []*parser.FieldNode{}
 		for _, f := range query.ModelFields(model) {
 			if f.Type.Value != parser.ImplicitIdentityModelName {
@@ -40,20 +39,15 @@ func (scm *Builder) insertAllBackLinkFields(
 			if !query.FieldHasAttribute(f, parser.AttributeUnique) {
 				continue
 			}
-			// if !query.FieldHasAttribute(f, parser.AttributeRelation) {
-			// 	hasNoRelationAttribute = true
-			// }
 
 			backlinkFields = append(backlinkFields, f)
 		}
 
-		//	if !(len(backlinkFields) > 1 && hasNoRelationAttribute) {
 		for i, f := range backlinkFields {
 			if errorDetails := scm.insertOneBackLinkField(identityModel, asts, model, f, i); errorDetails != nil {
 				return errorDetails
 			}
 		}
-		//}
 	}
 	return nil
 }
