@@ -1035,7 +1035,7 @@ var testCases = []testCase{
 			}
 		
 			actions {
-				create createCustomer() with (name, orders.id?)
+				create createCustomer() with (name, orders.deliveryAddress?)
 			}
 		
 			@permission(

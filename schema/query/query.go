@@ -421,10 +421,6 @@ func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parent
 			return nil
 		}
 
-		if field.Repeated {
-
-		}
-
 		model = Model(asts, field.Type.Value)
 	}
 
