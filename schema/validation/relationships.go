@@ -9,18 +9,13 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-type relationship struct {
-	model *parser.ModelNode
-	field *parser.FieldNode
-}
-
 const (
 	learnMore = "To learn more about relationships, visit https://docs.keel.so/models#relationships"
 )
 
 func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var currentModel *parser.ModelNode
-	candidates := map[*parser.FieldNode][]*relationship{}
+	candidates := map[*parser.FieldNode][]*query.Relationship{}
 	alreadyErrored := map[*parser.FieldNode]bool{}
 
 	return Visitor{
@@ -28,7 +23,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			// For each relationship field, we generate possible candidates of fields
 			// from the other model to form the relationship.  A relationship should
 			// only ever have one candidate.
-			candidates = map[*parser.FieldNode][]*relationship{}
+			candidates = map[*parser.FieldNode][]*query.Relationship{}
 			currentModel = model
 		},
 
@@ -36,14 +31,14 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 
 			for field := range candidates {
 				if len(candidates[field]) == 1 {
-					otherField := candidates[field][0].field
-					otherModel := candidates[field][0].model
+					otherField := candidates[field][0].Field
+					otherModel := candidates[field][0].Model
 					if len(candidates[otherField]) > 1 {
 						//err - prob already covered
-					} else if len(candidates[otherField]) == 1 && candidates[otherField][0].field != field {
+					} else if len(candidates[otherField]) == 1 && candidates[otherField][0].Field != field {
 						// field in another relationship
 						errs.AppendError(makeRelationshipError(
-							fmt.Sprintf("Field '%s' on model %s is already in a relationship with field '%s'", otherField.Name.Value, otherModel.Name.Value, candidates[otherField][0].field.Name.Value),
+							fmt.Sprintf("Field '%s' on model %s is already in a relationship with field '%s'", otherField.Name.Value, otherModel.Name.Value, candidates[otherField][0].Field.Name.Value),
 							learnMore,
 							field,
 						))
@@ -60,58 +55,58 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 							continue
 						}
 
-						if candidate.field == nil {
+						if candidate.Field == nil {
 							continue
 						}
 
 						switch {
-						case query.ValidOneToHasMany(field, candidate.field):
+						case query.ValidOneToHasMany(field, candidate.Field):
 							if !alreadyErrored[field] {
 								errs.AppendError(makeRelationshipError(
-									fmt.Sprintf("Cannot determine which field on the %s model to form a one to many relationship with", candidate.model.Name.Value),
-									fmt.Sprintf("Use @relation to refer to a %s[] field on the %s model which is not yet in a relationship", currentModel.Name.Value, candidate.model.Name.Value),
+									fmt.Sprintf("Cannot determine which field on the %s model to form a one to many relationship with", candidate.Model.Name.Value),
+									fmt.Sprintf("Use @relation to refer to a %s[] field on the %s model which is not yet in a relationship", currentModel.Name.Value, candidate.Model.Name.Value),
 									field,
 								))
 								alreadyErrored[field] = true
 							}
-						case query.ValidOneToHasMany(candidate.field, field):
-							if !alreadyErrored[candidate.field] {
+						case query.ValidOneToHasMany(candidate.Field, field):
+							if !alreadyErrored[candidate.Field] {
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot associate with field '%s' on model %s to form a one to many relationship as a relationship may already exist", field.Name.Value, currentModel.Name.Value),
-									fmt.Sprintf("Use @relation to refer to a %s[] field on the %s model which is not yet in a relationship", candidate.model.Name.Value, currentModel.Name.Value),
-									candidate.field,
+									fmt.Sprintf("Use @relation to refer to a %s[] field on the %s model which is not yet in a relationship", candidate.Model.Name.Value, currentModel.Name.Value),
+									candidate.Field,
 								))
-								alreadyErrored[candidate.field] = true
+								alreadyErrored[candidate.Field] = true
 							}
 							if !alreadyErrored[field] {
 								errs.AppendError(makeRelationshipError(
-									fmt.Sprintf("Cannot associate with field '%s' on model %s to form a one to many relationship as a relationship may already exist", candidate.field.Name.Value, candidate.model.Name.Value),
+									fmt.Sprintf("Cannot associate with field '%s' on model %s to form a one to many relationship as a relationship may already exist", candidate.Field.Name.Value, candidate.Model.Name.Value),
 									"",
 									field,
 								))
 								alreadyErrored[field] = true
 							}
-						case query.ValidUniqueOneToHasOne(field, candidate.field):
+						case query.ValidUniqueOneToHasOne(field, candidate.Field):
 							if !alreadyErrored[field] {
 								errs.AppendError(makeRelationshipError(
-									fmt.Sprintf("Cannot determine which field on the %s model to form a one to one relationship with", candidate.model.Name.Value),
-									fmt.Sprintf("Use @relation to refer to a %s field on the %s model which is not yet in a relationship", currentModel.Name.Value, candidate.model.Name.Value),
+									fmt.Sprintf("Cannot determine which field on the %s model to form a one to one relationship with", candidate.Model.Name.Value),
+									fmt.Sprintf("Use @relation to refer to a %s field on the %s model which is not yet in a relationship", currentModel.Name.Value, candidate.Model.Name.Value),
 									field,
 								))
 								alreadyErrored[field] = true
 							}
-						case query.ValidUniqueOneToHasOne(candidate.field, field):
-							if !alreadyErrored[candidate.field] {
+						case query.ValidUniqueOneToHasOne(candidate.Field, field):
+							if !alreadyErrored[candidate.Field] {
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot associate with field '%s' on model %s to form a one to one relationship as a relationship may already exist", field.Name.Value, currentModel.Name.Value),
-									fmt.Sprintf("Use @relation to refer to a %s field on the %s model which is not yet in a relationship", candidate.model.Name.Value, currentModel.Name.Value),
-									candidate.field,
+									fmt.Sprintf("Use @relation to refer to a %s field on the %s model which is not yet in a relationship", candidate.Model.Name.Value, currentModel.Name.Value),
+									candidate.Field,
 								))
-								alreadyErrored[candidate.field] = true
+								alreadyErrored[candidate.Field] = true
 							}
 							if !alreadyErrored[field] {
 								errs.AppendError(makeRelationshipError(
-									fmt.Sprintf("Cannot associate with field '%s' on model %s to form a one to one relationship as a relationship may already exist", candidate.field.Name.Value, candidate.model.Name.Value),
+									fmt.Sprintf("Cannot associate with field '%s' on model %s to form a one to one relationship as a relationship may already exist", candidate.Field.Name.Value, candidate.Model.Name.Value),
 									learnMore,
 									field,
 								))
@@ -120,7 +115,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 						default:
 							if !alreadyErrored[field] {
 								errs.AppendError(makeRelationshipError(
-									fmt.Sprintf("Cannot associate with field '%s' on model %s to form a relationship", candidate.field.Name.Value, candidate.model.Name.Value),
+									fmt.Sprintf("Cannot associate with field '%s' on model %s to form a relationship", candidate.Field.Name.Value, candidate.Model.Name.Value),
 									learnMore,
 									field,
 								))
@@ -241,36 +236,11 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				}
 			}
 
-			fieldCandidates := findCandidates(asts, currentModel, currentField)
+			// Determine all the possible candidate relationships between this field and the related model.
+			fieldCandidates := query.GetRelationshipCandidates(asts, currentModel, currentField)
 
 			if len(fieldCandidates) > 0 {
 				candidates[currentField] = fieldCandidates
-			}
-
-			if len(fieldCandidates) == 1 {
-				candidate := fieldCandidates[0]
-
-				otherFieldRelationAttribute := query.FieldGetAttribute(candidate.field, parser.AttributeRelation)
-				if otherFieldRelationAttribute != nil {
-					if _, ok := query.RelationAttributeValue(otherFieldRelationAttribute); ok {
-						if query.ValidOneToHasMany(currentField, candidate.field) {
-							errs.AppendError(makeRelationshipError(
-								fmt.Sprintf("Cannot form a one to many relation with '%s' as it may already be in a relationship", candidate.field.Name.Value),
-								fmt.Sprintf("In a one to many relationship, only the '%s' field must have the @relation attribute defined. %s", currentField.Name.Value, learnMore),
-								currentField.Name,
-							))
-						} else if query.ValidUniqueOneToHasOne(currentField, candidate.field) {
-							errs.AppendError(makeRelationshipError(
-								fmt.Sprintf("Cannot form a one to one relation with '%s' as it may already be in a relationship", candidate.field.Name.Value),
-								fmt.Sprintf("In a one to one relationship, only the '%s' field must have the @relation attribute defined. %s", currentField.Name.Value, learnMore),
-								currentField.Name,
-							))
-						}
-					}
-				}
-
-				return
-
 			}
 
 			if len(fieldCandidates) == 0 && currentField.Repeated {
@@ -279,35 +249,9 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 					fmt.Sprintf("In a one to many relationship, the related belongs-to field must exist on the %s model. %s", currentField.Type.Value, learnMore),
 					currentField,
 				))
-			} else {
-				// When there is no inverse field provided.
-				candidates[currentField] = append(candidates[currentField], &relationship{model: otherModel})
 			}
 		},
 	}
-}
-
-func findCandidates(asts []*parser.AST, currentModel *parser.ModelNode, currentField *parser.FieldNode) []*relationship {
-	candidates := []*relationship{}
-
-	otherModel := query.Model(asts, currentField.Type.Value)
-	if otherModel == nil {
-		return candidates
-	}
-
-	otherFields := query.ModelFieldsOfType(otherModel, currentModel.Name.Value)
-
-	for _, otherField := range otherFields {
-		if query.ValidOneToHasMany(currentField, otherField) ||
-			query.ValidOneToHasMany(otherField, currentField) ||
-			query.ValidUniqueOneToHasOne(currentField, otherField) ||
-			query.ValidUniqueOneToHasOne(otherField, currentField) {
-			// This field has a new relationship candidate with the other model
-			candidates = append(candidates, &relationship{model: otherModel, field: otherField})
-		}
-	}
-
-	return candidates
 }
 
 func makeRelationshipError(message string, hint string, node node.ParserNode) *errorhandling.ValidationError {

@@ -261,10 +261,39 @@ func (scm *Builder) insertForeignKeyFields(
 
 	for _, mdl := range query.Models(asts) {
 		fkFieldsToAdd := []*parser.FieldNode{}
+
 		for _, field := range query.ModelFields(mdl) {
-			if !query.IsHasOneModelField(asts, field) || query.IsBelongsToModelField(asts, mdl, field) {
+			if query.Model(asts, field.Type.Value) == nil {
 				continue
 			}
+
+			candidates := query.GetRelationshipCandidates(asts, mdl, field)
+
+			if candidates == nil || len(candidates) != 1 {
+				continue
+			}
+
+			relationship := candidates[0]
+
+			if !(relationship.Field == nil ||
+				query.ValidOneToHasMany(field, relationship.Field) ||
+				query.ValidUniqueOneToHasOne(field, relationship.Field)) {
+				continue
+			}
+			// if !(query.IsHasOneModelField(asts, field) || query.FieldIsUnique(field)) {
+			// 	continue
+			// }
+
+			// if !query.IsHasOneModelField(asts, field) || query.FieldIsUnique(field)) {
+			// 	continue
+			// }
+
+			// otherModel := query.Model(asts, field.Type.Value)
+			// if otherModel == nil {
+			// 	continue
+			// }
+
+			//if !query.ValidOneToHasMany(field, )
 
 			referredToModelName := casing.ToCamel(field.Type.Value)
 			referredToModel := query.Model(asts, referredToModelName)

@@ -1,6 +1,7 @@
 package query
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/samber/lo"
@@ -535,6 +536,58 @@ func SubscriberNames(asts []*parser.AST) (res []string) {
 	return res
 }
 
+type Relationship struct {
+	Model *parser.ModelNode
+	Field *parser.FieldNode
+}
+
+// GetRelationshipCandidates will find all the candidates relationships that can be formed with the related model.
+// Each relationship field should only have exactly 1 candidate, otherwise there are incorrectly formed relationships in the schema.
+func GetRelationshipCandidates(asts []*parser.AST, model *parser.ModelNode, field *parser.FieldNode) []*Relationship {
+	candidates := []*Relationship{}
+
+	otherModel := Model(asts, field.Type.Value)
+	if otherModel == nil {
+		return candidates
+	}
+
+	otherFields := ModelFieldsOfType(otherModel, model.Name.Value)
+
+	for _, otherField := range otherFields {
+		if ValidOneToHasMany(field, otherField) ||
+			ValidOneToHasMany(otherField, field) ||
+			ValidUniqueOneToHasOne(field, otherField) ||
+			ValidUniqueOneToHasOne(otherField, field) {
+			// This field has a new relationship candidate with the other model
+			candidates = append(candidates, &Relationship{Model: otherModel, Field: otherField})
+		}
+	}
+
+	if len(candidates) == 0 && !field.Repeated {
+		// When there is no inverse field provided.
+		candidates = append(candidates, &Relationship{Model: otherModel})
+	}
+
+	return candidates
+}
+
+// GetRelationship will return the related model and field on that model which forms the relationship.
+func GetRelationship(asts []*parser.AST, currentModel *parser.ModelNode, currentField *parser.FieldNode) (*Relationship, error) {
+	candidates := GetRelationshipCandidates(asts, currentModel, currentField)
+
+	otherModel := Model(asts, currentField.Type.Value)
+	if otherModel == nil {
+		return nil, nil
+	}
+
+	// There can only be exactly one candidate, since schema validation has all passed
+	if len(candidates) != 1 {
+		return nil, fmt.Errorf("there is not exactly one candidate relationship for %s field on the %s model", currentField.Name.Value, currentModel.Name.Value)
+	}
+
+	return candidates[0], nil
+}
+
 // Determine if pair form a valid 1:M pattern where, for example:
 //
 //	belongsTo:  author Author @relation(posts)
@@ -554,9 +607,9 @@ func ValidOneToHasMany(belongsTo *parser.FieldNode, hasMany *parser.FieldNode) b
 	}
 
 	// If belongsTo has @relation, check the field name matches hasMany
-	relnAttribute := FieldGetAttribute(belongsTo, parser.AttributeRelation)
-	if relnAttribute != nil {
-		if relation, ok := RelationAttributeValue(relnAttribute); ok {
+	attribute := FieldGetAttribute(belongsTo, parser.AttributeRelation)
+	if attribute != nil {
+		if relation, ok := RelationAttributeValue(attribute); ok {
 			if relation != hasMany.Name.Value {
 				return false
 			}
@@ -585,9 +638,9 @@ func ValidUniqueOneToHasOne(hasOne *parser.FieldNode, belongsTo *parser.FieldNod
 	}
 
 	// If hasOne has @relation, check the field name matches belongsTo
-	currentFieldAttribute := FieldGetAttribute(hasOne, parser.AttributeRelation)
-	if currentFieldAttribute != nil {
-		if relation, ok := RelationAttributeValue(currentFieldAttribute); ok {
+	attribute := FieldGetAttribute(hasOne, parser.AttributeRelation)
+	if attribute != nil {
+		if relation, ok := RelationAttributeValue(attribute); ok {
 			if relation != belongsTo.Name.Value {
 				return false
 			}

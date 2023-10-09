@@ -1079,9 +1079,14 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 		}
 	}
 
-	if !query.IsBelongsToModelField(scm.asts, model, parserField) {
-		// Model field (sibling to foreign key)
-		if query.IsModel(scm.asts, parserField.Type.Value) && !parserField.Repeated {
+	relationship, err := query.GetRelationship(scm.asts, query.Model(scm.asts, modelName), parserField)
+	if err != nil {
+		panic(err)
+	}
+	if relationship != nil {
+		if relationship.Field == nil ||
+			query.ValidOneToHasMany(parserField, relationship.Field) ||
+			query.ValidUniqueOneToHasOne(parserField, relationship.Field) {
 			protoField.ForeignKeyFieldName = wrapperspb.String(fmt.Sprintf("%sId", parserField.Name.Value))
 		}
 	}

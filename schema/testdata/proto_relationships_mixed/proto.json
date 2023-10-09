@@ -99,6 +99,7 @@
             "type": "TYPE_MODEL",
             "modelName": "Author"
           },
+          "foreignKeyFieldName": "authorId",
           "inverseFieldName": "written"
         },
         {
@@ -140,6 +141,17 @@
           },
           "defaultValue": {
             "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Post",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Author",
+            "relatedModelField": "id"
           }
         }
       ]
