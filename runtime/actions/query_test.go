@@ -689,6 +689,53 @@ var testCases = []testCase{
 		expectedArgs: []any{int64(10), int64(20), int64(10), int64(20), 50},
 	},
 	{
+		name: "list_op_expression_identity_in",
+		keelSchema: `
+			model Account {
+				fields {
+					identity Identity @unique
+					followers Follow[]
+					following Follow[]
+				}
+			
+				actions {
+					list accountsFollowing() {
+						@where(account.identity not in ctx.identity.following.follower.identity)
+            			@where(account.identity != ctx.identity)
+						@permission(expression: ctx.isAuthenticated)
+					}
+				}
+			}
+			
+			model Follow {
+				fields {
+					account Account @relation(followers)
+					follower Account @relation(following)
+				}
+				@unique([follower, account])
+			}`,
+		actionName: "accountsFollowing",
+		input:      map[string]any{},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "thing"."id") 
+					FROM 
+						"thing" 
+					LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
+						"thing$repeated_things"."thing_id" = "thing"."id" 
+					WHERE 
+						"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name") AS totalCount FROM "thing" 
+			LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
+				"thing$repeated_things"."thing_id" = "thing"."id" 
+			WHERE 
+				"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name" 
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
 		name: "list_op_implicit_input_on_nested_model",
 		keelSchema: `
 			model Parent {
