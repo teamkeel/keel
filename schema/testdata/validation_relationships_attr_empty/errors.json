@@ -1,0 +1,55 @@
+{
+  "errors": [
+    {
+      "message": "You have duplicate field names author",
+      "hint": "Remove 'author' on line 4",
+      "code": "E003",
+      "pos": {
+        "filename": "testdata/validation_relationships_attr_empty/schema.keel",
+        "offset": 64,
+        "line": 4,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_attr_empty/schema.keel",
+        "offset": 70,
+        "line": 4,
+        "column": 15
+      }
+    },
+    {
+      "message": "The @relation value must refer to a field on the related model",
+      "hint": "For example, @relation(fieldName). To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_attr_empty/schema.keel",
+        "offset": 46,
+        "line": 3,
+        "column": 21
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_attr_empty/schema.keel",
+        "offset": 55,
+        "line": 3,
+        "column": 30
+      }
+    },
+    {
+      "message": "The @relation value must refer to a field on the related model",
+      "hint": "For example, @relation(fieldName). To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_attr_empty/schema.keel",
+        "offset": 78,
+        "line": 4,
+        "column": 23
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_attr_empty/schema.keel",
+        "offset": 87,
+        "line": 4,
+        "column": 32
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+model Author {
+    fields {
+        // Requires @relation otherwise we don't know which Post field to relate with
+        coWritten Post @unique
+        // Requires @relation otherwise we don't know which Post field to relate with
+        written Post @unique
+    }
+}
+
+model Post {
+    fields {
+        // Not clear which Author field owns the relationship
+        author Author
+        // Not clear which Author field owns the relationship
+        coAuthor Author
+    }
+}

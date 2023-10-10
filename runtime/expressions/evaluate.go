@@ -44,11 +44,11 @@ func canResolveConditionEarly(ctx context.Context, schema *proto.Schema, model *
 	lhsResolver := NewOperandResolver(ctx, schema, model, action, condition.LHS)
 
 	if condition.Type() == parser.ValueCondition {
-		return !lhsResolver.IsDatabaseColumn()
+		return !lhsResolver.IsModelDbColumn() && !lhsResolver.IsContextDbColumn()
 	}
 
 	rhsResolver := NewOperandResolver(ctx, schema, model, action, condition.RHS)
-	referencesDatabaseColumns := lhsResolver.IsDatabaseColumn() || rhsResolver.IsDatabaseColumn()
+	referencesDatabaseColumns := lhsResolver.IsModelDbColumn() || rhsResolver.IsModelDbColumn() || lhsResolver.IsContextDbColumn() || rhsResolver.IsContextDbColumn()
 
 	return !(referencesDatabaseColumns)
 }

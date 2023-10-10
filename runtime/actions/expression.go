@@ -3,9 +3,11 @@ package actions
 import (
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -104,7 +106,7 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 		return err
 	}
 
-	if lhsResolver.IsDatabaseColumn() {
+	if lhsResolver.IsModelDbColumn() {
 		lhsFragments := lo.Map(lhsResolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
 		// Generates joins based on the fragments that make up the operand
@@ -137,7 +139,7 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 			return err
 		}
 
-		if rhsResolver.IsDatabaseColumn() {
+		if rhsResolver.IsModelDbColumn() {
 			rhsFragments := lo.Map(rhsResolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
 			// Generates joins based on the fragments that make up the operand
@@ -162,7 +164,6 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string) error {
 	model := casing.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
-	//previousIsRepeated := false
 
 	for i := 1; i < fragmentCount-1; i++ {
 		currentFragment := fragments[i]
@@ -180,15 +181,15 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 		var leftOperand *QueryOperand
 		var rightOperand *QueryOperand
 
-		if proto.IsBelongsTo(relatedModelField) {
+		switch {
+		case proto.IsBelongsTo(relatedModelField):
 			// In a "belongs to" the foriegn key is on _this_ model
 			leftOperand = ExpressionField(fragments[:i+1], primaryKey)
 			rightOperand = ExpressionField(fragments[:i], foreignKeyField)
-		} else {
+		default:
 			// In all others the foriegn key is on the _other_ model
 			leftOperand = ExpressionField(fragments[:i+1], foreignKeyField)
 			rightOperand = ExpressionField(fragments[:i], primaryKey)
-
 		}
 
 		query.Join(relatedModel, leftOperand, rightOperand)
@@ -226,22 +227,49 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 	return ExpressionField(fragments[:len(fragments)-1], field), nil
 }
 
-// Generates a database QueryOperand, either representing a field, a value or null.
+// Generates a database QueryOperand, either representing a field, inline query, a value or null.
 func generateQueryOperand(resolver *expressions.OperandResolver, args map[string]any) (*QueryOperand, error) {
 	var queryOperand *QueryOperand
 
-	if !resolver.IsDatabaseColumn() {
-		value, err := resolver.ResolveValue(args)
+	switch {
+	case resolver.IsContextDbColumn():
+		// If this is a value from ctx that requires a database read (such as with identity backlinks),
+		// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
+		// from the current query builder.
+
+		model := proto.FindModel(resolver.Schema.Models, strcase.ToCamel(resolver.Operand.Ident.Fragments[1].Fragment))
+		ctxScope := NewModelScope(resolver.Context, model, resolver.Schema)
+		query := NewQuery(resolver.Context, model)
+
+		identityId := ""
+		if auth.IsAuthenticated(resolver.Context) {
+			identity, err := auth.GetIdentity(resolver.Context)
+			if err != nil {
+				return nil, err
+			}
+			identityId = identity.Id
+		}
+
+		err := query.Where(IdField(), Equals, Value(identityId))
 		if err != nil {
 			return nil, err
 		}
 
-		if value == nil {
-			queryOperand = Null()
-		} else {
-			queryOperand = Value(value)
+		fragments := lo.Map(resolver.Operand.Ident.Fragments[1:], func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
+
+		err = query.addJoinFromFragments(ctxScope, fragments)
+		if err != nil {
+			return nil, err
 		}
-	} else {
+
+		query.AppendSelect(ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1]))
+
+		operand := InlineQuery(query)
+
+		return operand, nil
+	case resolver.IsModelDbColumn():
+		// If this is a model field then generate the appropriate column operand for the database query.
+
 		// Step through the fragments in order to determine the table and field referenced by the expression operand
 		fragments := lo.Map(resolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
@@ -260,6 +288,19 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 		queryOperand, err = operandFromFragments(resolver.Schema, fragments)
 		if err != nil {
 			return nil, err
+		}
+	default:
+		// For all others operands, we know we can resolve their value without the datebase.
+
+		value, err := resolver.ResolveValue(args)
+		if err != nil {
+			return nil, err
+		}
+
+		if value == nil {
+			queryOperand = Null()
+		} else {
+			queryOperand = Value(value)
 		}
 	}
 

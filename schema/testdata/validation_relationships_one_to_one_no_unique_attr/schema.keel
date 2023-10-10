@@ -1,0 +1,11 @@
+model User {
+    fields {
+        student Student @relation(user)
+    }
+}
+
+model Student {
+    fields {
+        user User @relation(student)
+    }
+}

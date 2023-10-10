@@ -108,7 +108,7 @@ en:
     hint: ""
   E039:
     message: "{{ .ModelA }} and {{ .ModelB }} define a singular relationship with one another"
-    hint: "It is not clear where the foreign key should be placed. Remove the explicit reference from one side."
+    hint: "It is not clear which model owns the relationship. Define one of the fields with @unique to indicate this."
   E040:
     message: "{{ .Type }} is not a valid action type. Valid types are {{ .ValidTypes }}"
   E041:
@@ -124,8 +124,8 @@ en:
     message: "The '{{ .ModelB }}' model does not include a field that references {{ .ModelA }}"
     hint: "Try adding '{{ .Suggestion }}' to the fields definition of the {{ .ModelB }} model."
   E045:
-    message: "Your model '{{ .ModelA }}' has more than one field that references a '{{ .ModelB }}', and a '{{ .ModelB }}' has a (reverse) repeated field back to '{{.ModelA}}'."
-    hint: "This is only allowed if you put a @relation attribute on the following fields in {{.ModelA}}: {{.SuggestedFields}}"
+    message: "The @relation attribute must be used as more than one field on the {{ .ModelA }} model references {{ .ModelB }}"
+    hint: "Define the @relation attribute on this field to indicate which field on {{ .ModelA }} it references"
   E046:
     message: "create actions must accept all required fields that have no default value"
     hint: "maybe add one of {{ .WithNames }} to with() inputs, or one of {{ .SetNames }} to a @set expression"
@@ -144,27 +144,6 @@ en:
   E051:
     message: "default expression doesn't support operators"
     hint: "Try removing '{{ .Op }}'"
-  E052:
-    message: "Field '{{.FieldName}}'' has type '{{.WrongType}}', so it cannot have the @relation attribute"
-    hint: "Did you mean make to make field '{{.FieldName}}' refer to another Model?"
-  E053:
-    message: "Field '{{.FieldName}}' is repeated, i.e. [], so it cannot have the @relation attribute"
-    hint: "For many-to-one relationships, you put the @relation on the non-repeated end of the relationship"
-  E054:
-    message: "The @relation value should be a simple string"
-    hint: "Like myFieldName"
-  E055:
-    message: "'{{.RelatedFieldName}}' is not a field in the '{{.RelatedModelName}}'' model"
-    hint: "Did you mean one of: {{.SuggestedNames}}"
-  E056:
-    message: "'@relation({{.RelatedFieldName}})' refers to a related field of type '{{.RelatedFieldType}}', which should be of type '{{.RequiredType}}"
-    hint: "Did you mean one of: {{.SuggestedNames}} ?"
-  E057:
-    message: "The related field '{{.RelatedFieldName}}' must be a repeated field"
-    hint: "You can make it repeated by adding [] to that field"
-  E058:
-    message: "You have already used '{{.RelatedFieldName}}' in a @Relation. Duplicates are not allowed."
-    hint: "Did you mean a different related field?"
   E059:
     message: "You cannot set values for both {{.IdPath}} and {{.ConflictingPath}} in this create action - because the first one indicates that you want to refer to an existing {{.ModelName}}"
     hint: "Either 1) use the .id form, and none of the {{.ModelName}} fields, or 2) omit the .id form and specify all of the fields of {{.ModelName}} that are needed to create one."

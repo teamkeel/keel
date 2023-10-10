@@ -1,0 +1,9 @@
+model Post {
+    fields {
+        author Text @relation
+        author Author @relation
+    }
+}
+
+model Author {
+}

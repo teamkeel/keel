@@ -1079,9 +1079,14 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 		}
 	}
 
-	if !query.IsBelongsToModelField(scm.asts, model, parserField) {
-		// Model field (sibling to foreign key)
-		if query.IsModel(scm.asts, parserField.Type.Value) && !parserField.Repeated {
+	relationship, err := query.GetRelationship(scm.asts, query.Model(scm.asts, modelName), parserField)
+	if err != nil {
+		panic(err)
+	}
+	if relationship != nil {
+		if relationship.Field == nil ||
+			query.ValidOneToHasMany(parserField, relationship.Field) ||
+			query.ValidUniqueOneToHasOne(parserField, relationship.Field) {
 			protoField.ForeignKeyFieldName = wrapperspb.String(fmt.Sprintf("%sId", parserField.Name.Value))
 		}
 	}
@@ -1113,7 +1118,7 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 		return
 	}
 
-	// If no @relation attribute exists, then look a match in the related model fields' @relation attributes
+	// If no @relation attribute exists, then look for a match in the related model fields' @relation attributes
 	for _, remoteField := range query.ModelFields(relatedModel) {
 		if remoteField.Type.Value != thisProtoField.ModelName {
 			continue
@@ -1128,8 +1133,8 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 		}
 	}
 
-	// If there are no @relation attributes that match, then we know that there is only one relation between these models
-	// which means there is exactly one field of this model type on the related model (with exception of self referencing models).
+	// If there are no @relation attributes that match, then we know that there is only one relation
+	// between these models of this exact relationship type and in this direction
 	for _, remoteField := range query.ModelFields(relatedModel) {
 		if remoteField.Type.Value != thisProtoField.ModelName {
 			continue
@@ -1137,7 +1142,12 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 		if nameOfRelatedModel == thisProtoField.ModelName && remoteField.Name.Value == thisProtoField.Name {
 			continue
 		}
-		thisProtoField.InverseFieldName = wrapperspb.String(remoteField.Name.Value)
+		if query.ValidOneToHasMany(thisParserField, remoteField) ||
+			query.ValidOneToHasMany(remoteField, thisParserField) ||
+			query.ValidUniqueOneToHasOne(thisParserField, remoteField) ||
+			query.ValidUniqueOneToHasOne(remoteField, thisParserField) {
+			thisProtoField.InverseFieldName = wrapperspb.String(remoteField.Name.Value)
+		}
 	}
 }
 
