@@ -1,0 +1,73 @@
+model Retreat {
+    fields {
+        retreatName Text @unique
+        owner Identity
+        location Text?
+        company Text?
+        attendees RetreatPerson[]
+    }
+
+    actions {
+        create createRetreat() with (retreatName, attendees.person.id) {
+            @set(retreat.owner = ctx.identity)
+        }
+        create createRetreatWithPeopleAndMeals() with (
+            retreatName,
+            attendees.person.name,
+            attendees.person.email,
+            attendees.person.emergencyContact?,
+            attendees.person.meals.meal.mealName,
+        ) {
+            @set(retreat.owner = ctx.identity)
+        }
+    }
+
+    @permission(
+        actions: [create],
+        expression: retreat.owner == ctx.identity
+    )
+}
+
+model RetreatPerson {
+    fields {
+        retreat Retreat
+        person Person
+    }
+}
+
+model Person {
+    fields {
+        name Text
+        email Text @unique
+        emergencyContact Number?
+        retreatsAttending RetreatPerson[]
+        meals MealPerson[]
+    }
+
+    @permission(
+        actions: [create],
+        expression: true
+    )
+}
+
+model Meal {
+    fields {
+        retreat Retreat?
+        mealName MealName
+        location Text?
+        attendees MealPerson[]
+    }
+}
+
+enum MealName {
+    Breakfast
+    Lunch
+    Dinner
+}
+
+model MealPerson {
+    fields {
+        person Person
+        meal Meal
+    }
+}
