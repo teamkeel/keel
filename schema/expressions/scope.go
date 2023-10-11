@@ -182,22 +182,13 @@ func (e *ExpressionScopeEntity) AllowedOperators(asts []*parser.AST) []string {
 
 	arrayEntity := e.IsRepeated()
 
-	// if !arrayEntity && e.Model != nil {
-	// 	return []string{
-	// 		parser.OperatorEquals,
-	// 		parser.OperatorNotEquals,
-	// 		parser.OperatorAssignment,
-	// 	}
-	// }
+	if !arrayEntity && e.Model != nil {
+		t = parser.TypeModel
+	}
 
-	if !arrayEntity && e.Field != nil {
-		if query.Model(asts, e.Field.Type.Value) != nil {
-			return []string{
-				parser.OperatorEquals,
-				parser.OperatorNotEquals,
-				parser.OperatorAssignment,
-			}
-		}
+	// When the field is of type model
+	if !arrayEntity && e.Field != nil && query.Model(asts, e.Field.Type.Value) != nil {
+		t = parser.TypeModel
 	}
 
 	if arrayEntity {

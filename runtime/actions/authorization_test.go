@@ -1288,9 +1288,6 @@ var authorisationTestCases = []authorisationTestCase{
 
 func TestPermissionQueryBuilder(t *testing.T) {
 	for _, testCase := range authorisationTestCases {
-		if testCase.name != "identity_check_by_id" {
-			continue
-		}
 		t.Run(testCase.name, func(t *testing.T) {
 			ctx := context.Background()
 

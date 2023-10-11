@@ -30,6 +30,7 @@ const (
 	TypeArray = "Array"
 	TypeIdent = "Ident"
 	TypeEnum  = "Enum"
+	TypeModel = "Model"
 )
 
 // Built in Keel types. Worth noting a field type can also reference
