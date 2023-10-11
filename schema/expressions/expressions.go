@@ -91,9 +91,12 @@ func NewOperandResolver(operand *parser.Operand, asts []*parser.AST, context *Ex
 // Given an operand of a condition, tries to resolve all of the fragments defined within the operand
 // an operand might be:
 // - post.author.name
+// - post.author
 // - MyEnum.ValueName
 // - "123"
 // - true
+// - ctx.identity.account
+// - ctx.identity.account.name
 // All of these types above are checked / attempted to be resolved in this method.
 func (o *OperandResolver) Resolve() (entity *ExpressionScopeEntity, err *ResolutionError) {
 	// build the default expression scope for all expressions

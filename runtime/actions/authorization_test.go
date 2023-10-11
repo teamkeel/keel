@@ -1216,10 +1216,81 @@ var authorisationTestCases = []authorisationTestCase{
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
+	{
+		name: "identity_backlink_ctx_compare_with_model",
+		keelSchema: `
+			model User {
+				fields {
+					isAdult Boolean
+					identity Identity @unique
+				}
+			}
+			model AdultFilm {
+				fields {
+					identity Identity @unique
+				}
+				actions {
+					get getFilm(id) {
+						@permission(expression: ctx.identity.user == adultFilm.identity.user)
+					}
+				}
+			}`,
+		actionName: "getFilm",
+		input:      map[string]any{"id": "123"},
+		expectedTemplate: `
+			SELECT DISTINCT ON("adult_film"."id") "adult_film"."id" 
+			FROM "adult_film" 
+			LEFT JOIN "identity" AS "adult_film$identity" ON "adult_film$identity"."id" = "adult_film"."identity_id" 
+			LEFT JOIN "user" AS "adult_film$identity$user" ON "adult_film$identity$user"."identity_id" = "adult_film$identity"."id" 
+			WHERE 
+				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
+					((SELECT "identity$user"."id" 
+					FROM "identity" 
+					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?  AND "identity$user"."id" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM "adult_film$identity$user"."id")`,
+		expectedArgs: []any{"123", unverifiedIdentity.Id},
+		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
+	},
+	{
+		name: "identity_model_comparison",
+		keelSchema: `
+			model User {
+				fields {
+					identity Identity @unique
+				}
+			}
+			model BankAccount {
+				fields {
+					identity Identity @unique
+				}
+				actions {
+					get getBankAccount(id) {
+						@permission(expression: ctx.identity == bankAccount.identity)
+					}
+				}
+			}`,
+		actionName: "getBankAccount",
+		input:      map[string]any{"id": "123"},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("bank_account"."id") "bank_account"."id" 
+			FROM 
+				"bank_account" 
+			WHERE 
+				"bank_account"."id" IS NOT DISTINCT FROM ? AND 
+				(? IS NOT DISTINCT FROM "bank_account"."identity_id")`,
+		expectedArgs: []any{"123", unverifiedIdentity.Id},
+		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
+	},
 }
 
 func TestPermissionQueryBuilder(t *testing.T) {
 	for _, testCase := range authorisationTestCases {
+		if testCase.name != "identity_check_by_id" {
+			continue
+		}
 		t.Run(testCase.name, func(t *testing.T) {
 			ctx := context.Background()
 

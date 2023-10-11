@@ -177,18 +177,26 @@ func (e *ExpressionScopeEntity) GetType() string {
 	return ""
 }
 
-func (e *ExpressionScopeEntity) AllowedOperators() []string {
+func (e *ExpressionScopeEntity) AllowedOperators(asts []*parser.AST) []string {
 	t := e.GetType()
 
 	arrayEntity := e.IsRepeated()
 
-	// If the field is a model
-	// todo: https://linear.app/keel/issue/RUN-167/refactor-identity-proto-type-to-use-model
-	if !arrayEntity && (e.Model != nil || t == parser.ImplicitIdentityModelName) {
-		return []string{
-			parser.OperatorEquals,
-			parser.OperatorNotEquals,
-			parser.OperatorAssignment,
+	// if !arrayEntity && e.Model != nil {
+	// 	return []string{
+	// 		parser.OperatorEquals,
+	// 		parser.OperatorNotEquals,
+	// 		parser.OperatorAssignment,
+	// 	}
+	// }
+
+	if !arrayEntity && e.Field != nil {
+		if query.Model(asts, e.Field.Type.Value) != nil {
+			return []string{
+				parser.OperatorEquals,
+				parser.OperatorNotEquals,
+				parser.OperatorAssignment,
+			}
 		}
 	}
 

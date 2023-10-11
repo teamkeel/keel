@@ -52,13 +52,40 @@ func (resolver *OperandResolver) NormalisedFragments() ([]string, error) {
 		return nil, err
 	}
 
-	if operandType == proto.Type_TYPE_MODEL {
-		if len(fragments) == 1 {
-			fragments = append(fragments, "id")
-		} else {
-			fragments[len(fragments)-1] = fmt.Sprintf("%sId", fragments[len(fragments)-1])
+	if operandType == proto.Type_TYPE_MODEL && len(fragments) == 1 {
+		// One fragment is only possible if the expression is only referencing the model.
+		// For example, @where(account in ...)
+		// Add a new fragment 'id'
+		fragments = append(fragments, parser.ImplicitFieldNameId)
+	} else if operandType == proto.Type_TYPE_MODEL {
+		i := 0
+		if fragments[0] == "ctx" {
+			i++
 		}
 
+		modelTarget := proto.FindModel(resolver.Schema.Models, casing.ToCamel(fragments[i]))
+		if modelTarget == nil {
+			return nil, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[i]))
+		}
+
+		var fieldTarget *proto.Field
+		for i := i + 1; i < len(fragments); i++ {
+			fieldTarget = proto.FindField(resolver.Schema.Models, modelTarget.Name, fragments[i])
+			if fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
+				modelTarget = proto.FindModel(resolver.Schema.Models, fieldTarget.Type.ModelName.Value)
+				if modelTarget == nil {
+					return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.Type.ModelName.Value)
+				}
+			}
+		}
+
+		if proto.IsHasOne(fieldTarget) {
+			// Add a new fragment 'id'
+			fragments = append(fragments, parser.ImplicitFieldNameId)
+		} else {
+			// Replace the last fragment with the foreign key field
+			fragments[len(fragments)-1] = fmt.Sprintf("%sId", fragments[len(fragments)-1])
+		}
 	}
 
 	return fragments, nil

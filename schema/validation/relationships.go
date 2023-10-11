@@ -2,6 +2,7 @@ package validation
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
@@ -34,6 +35,9 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			for k := range candidates {
 				orderedKeys = append(orderedKeys, k)
 			}
+			sort.Slice(orderedKeys, func(i, j int) bool {
+				return orderedKeys[i].Name.Value < orderedKeys[j].Name.Value
+			})
 
 			for _, field := range orderedKeys {
 				if len(candidates[field]) == 1 {
