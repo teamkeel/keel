@@ -1,0 +1,72 @@
+model Account {
+    fields {
+        username Text @unique
+        identity Identity {
+            @unique
+            @relation(primaryAccount)
+        }
+        followers Follow[]
+        following Follow[]
+    }
+
+    actions {
+        create newAccount() with (username) {
+            @set(account.identity = ctx.identity)
+        }
+        get getMyAccount() {
+            @where(account.identity == ctx.identity)
+        }
+        // Accounts which I am following
+        list accountsFollowed() {
+            @where(account in ctx.identity.primaryAccount.following.followee)
+            @orderBy(username: asc)
+        }
+        // Accounts which I am not following yet
+        list accountsNotFollowed() {
+            @where(account.identity != ctx.identity)
+            @where(account.identity not in ctx.identity.primaryAccount.following.followee.identity)
+            @orderBy(username: asc)
+        }
+        // Accounts which are following me
+        list accountsFollowingMe() {
+            @where(account.id in ctx.identity.primaryAccount.followers.follower.id)
+            @orderBy(username: asc)
+        }
+        // Accounts which are not following me yet
+        list accountsNotFollowingMe() {
+            @where(account.identity.id != ctx.identity.id)
+            @where(account.id not in ctx.identity.primaryAccount.followers.follower.id)
+            @orderBy(username: asc)
+        }
+    }
+
+    @permission(
+        expression: ctx.isAuthenticated,
+        actions: [get, list, create, update]
+    )
+}
+
+model Follow {
+    fields {
+        followee Account @relation(followers)
+        follower Account @relation(following)
+    }
+
+    actions {
+        create follow() with (followee.id, follower.id)
+    }
+
+    @unique([follower, followee])
+
+    @permission(
+        expression: true,
+        actions: [get, list, create, update]
+    )
+}
+
+api Api {
+    models {
+        Account
+        Follow
+    }
+}

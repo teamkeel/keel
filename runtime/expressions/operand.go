@@ -38,6 +38,26 @@ func NewOperandResolver(ctx context.Context, schema *proto.Schema, model *proto.
 	}
 }
 
+func (resolver *OperandResolver) NormalisedFragments() []string {
+	fragments := lo.Map(resolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
+
+	operandType, err := resolver.GetOperandType()
+	if err != nil {
+		panic(err)
+	}
+
+	if operandType == proto.Type_TYPE_MODEL {
+		if len(fragments) == 1 {
+			fragments = append(fragments, "id")
+		} else {
+			fragments[len(fragments)-1] = fmt.Sprintf("%sId", fragments[len(fragments)-1])
+		}
+
+	}
+
+	return fragments
+}
+
 // IsLiteral returns true if the expression operand is a literal type.
 // For example, a number or string literal written straight into the Keel schema,
 // such as the right-hand side operand in @where(person.age > 21).
@@ -176,24 +196,30 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 			fragments = fragments[1:]
 		}
 
-		fragmentCount := len(fragments)
+		// The first fragment will always be the root model name, e.g. "author" in author.posts.title
+		modelTarget := proto.FindModel(schema.Models, casing.ToCamel(fragments[0].Fragment))
+		if modelTarget == nil {
+			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[0].Fragment))
+		}
 
-		modelTarget := casing.ToCamel(fragments[0].Fragment)
-
-		if fragmentCount > 2 {
-			for i := 1; i < fragmentCount-1; i++ {
-				field := proto.FindField(schema.Models, casing.ToCamel(modelTarget), fragments[i].Fragment)
-				modelTarget = field.Type.ModelName.Value
+		var fieldTarget *proto.Field
+		for i := 1; i < len(fragments); i++ {
+			fieldTarget = proto.FindField(schema.Models, modelTarget.Name, fragments[i].Fragment)
+			if fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
+				modelTarget = proto.FindModel(schema.Models, fieldTarget.Type.ModelName.Value)
+				if modelTarget == nil {
+					return proto.Type_TYPE_UNKNOWN, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.Type.ModelName.Value)
+				}
 			}
 		}
 
-		fieldName := fragments[fragmentCount-1].Fragment
-		if !proto.ModelHasField(schema, casing.ToCamel(modelTarget), fieldName) {
-			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("this model: %s, does not have a field of name: %s", modelTarget, fieldName)
+		// If no field is provided, for example: @where(account in ...)
+		// Or if the target field is a MODEL, for example:
+		if fieldTarget == nil || fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
+			return proto.Type_TYPE_MODEL, nil
 		}
 
-		operandType := proto.FindField(schema.Models, casing.ToCamel(modelTarget), fieldName).Type.Type
-		return operandType, nil
+		return fieldTarget.Type.Type, nil
 	case resolver.IsImplicitInput():
 		modelTarget := casing.ToCamel(action.ModelName)
 		inputName := operand.Ident.Fragments[0].Fragment

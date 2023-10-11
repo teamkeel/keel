@@ -26,10 +26,17 @@ type testCase struct {
 	actionName string
 	// Input map for action
 	input map[string]any
+	// OPTIONAL: Identity to be authenticated with
+	identity *auth.Identity
 	// Expected SQL template generated (with ? placeholders for values)
 	expectedTemplate string
 	// OPTIONAL: Expected ordered argument slice
 	expectedArgs []any
+}
+
+var identity = &auth.Identity{
+	Id:    "identityId",
+	Email: "keelson@keel.xyz",
 }
 
 var testCases = []testCase{
@@ -689,24 +696,71 @@ var testCases = []testCase{
 		expectedArgs: []any{int64(10), int64(20), int64(10), int64(20), 50},
 	},
 	{
-		name: "list_op_expression_identity_in",
+		name: "list_op_expression_model_in_backlink",
 		keelSchema: `
 			model Account {
 				fields {
+					username Text @unique
 					identity Identity @unique
 					followers Follow[]
 					following Follow[]
 				}
 			
 				actions {
-					list accountsFollowing() {
-						@where(account.identity not in ctx.identity.following.follower.identity)
-            			@where(account.identity != ctx.identity)
+					list accountsFollowed() {
+						@where(account in ctx.identity.account.following.followee)
+            			@orderBy(username: asc)
 						@permission(expression: ctx.isAuthenticated)
 					}
 				}
 			}
+			model Follow {
+				fields {
+					followee Account @relation(followers)
+					follower Account @relation(following)
+				}
+				@unique([follower, followee])
+			}`,
+		actionName: "accountsFollowed",
+		input:      map[string]any{},
+		identity:   identity,
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("account"."username", "account"."id") "account".*, 
+				CASE WHEN LEAD("account"."id") OVER (ORDER BY "account"."username" ASC, "account"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."id" IN (SELECT "identity$account$following"."followee_id" FROM "identity" LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$account$following"."followee_id" IS DISTINCT FROM NULL )) AS totalCount 
+			FROM 
+				"account" 
+			WHERE "account"."id" IN 
+				(SELECT "identity$account$following"."followee_id" 
+				FROM "identity" 
+				LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" 
+				LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" 
+				WHERE 
+					"identity"."id" IS NOT DISTINCT FROM ? AND 
+					"identity$account$following"."followee_id" IS DISTINCT FROM NULL ) 
+			ORDER BY "account"."username" ASC, "account"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"identityId", "identityId", 50},
+	},
+	{
+		name: "list_op_expression_model_id_in_backlink",
+		keelSchema: `
+			model Account {
+				fields {
+					username Text @unique
+					identity Identity @unique
+					followers Follow[]
+					following Follow[]
+				}
 			
+				actions {
+					list accountsFollowed() {
+						@where(account.id in ctx.identity.account.following.account.id)
+            			@orderBy(username: asc)
+						@permission(expression: ctx.isAuthenticated)
+					}
+				}
+			}
 			model Follow {
 				fields {
 					account Account @relation(followers)
@@ -714,26 +768,83 @@ var testCases = []testCase{
 				}
 				@unique([follower, account])
 			}`,
-		actionName: "accountsFollowing",
+		actionName: "accountsFollowed",
 		input:      map[string]any{},
+		identity:   identity,
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, 
-				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT "thing"."id") 
-					FROM 
-						"thing" 
-					LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
-						"thing$repeated_things"."thing_id" = "thing"."id" 
-					WHERE 
-						"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name") AS totalCount FROM "thing" 
-			LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
-				"thing$repeated_things"."thing_id" = "thing"."id" 
+				DISTINCT ON("account"."username", "account"."id") "account".*, 
+				CASE WHEN LEAD("account"."id") OVER (ORDER BY "account"."username" ASC, "account"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."id" IN (SELECT "identity$account$following$account"."id" FROM "identity" LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" LEFT JOIN "account" AS "identity$account$following$account" ON "identity$account$following$account"."id" = "identity$account$following"."account_id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$account$following$account"."id" IS DISTINCT FROM NULL )) AS totalCount 
+			FROM 
+				"account" 
 			WHERE 
-				"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name" 
+				"account"."id" IN 
+					(SELECT "identity$account$following$account"."id" 
+					FROM "identity" 
+					LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" 
+					LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" 
+					LEFT JOIN "account" AS "identity$account$following$account" ON "identity$account$following$account"."id" = "identity$account$following"."account_id" 
+					WHERE 
+						"identity"."id" IS NOT DISTINCT FROM ? AND 
+						"identity$account$following$account"."id" IS DISTINCT FROM NULL ) 
 			ORDER BY 
-				"thing"."id" ASC LIMIT ?`,
-		expectedArgs: []any{50},
+				"account"."username" ASC, 
+				"account"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"identityId", "identityId", 50},
+	},
+	{
+		name: "list_op_expression_model_id_not_in_backlink",
+		keelSchema: `
+			model Account {
+				fields {
+					username Text @unique
+					identity Identity @unique @relation(primaryAccount)
+					followers Follow[]
+					following Follow[]
+				}
+			
+				actions {
+					list accountsNotFollowed() {
+						@where(account.identity != ctx.identity)
+           				@where(account.id not in ctx.identity.primaryAccount.following.followee.id)
+            			@orderBy(username: asc)
+						@permission(expression: ctx.isAuthenticated)
+					}
+				}
+			}
+			model Follow {
+				fields {
+					followee Account @relation(followers)
+					follower Account @relation(following)
+				}
+				@unique([follower, followee])
+			}`,
+		actionName: "accountsNotFollowed",
+		input:      map[string]any{},
+		identity:   identity,
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("account"."username", "account"."id") "account".*, 
+				CASE WHEN LEAD("account"."id") OVER (ORDER BY "account"."username" ASC, "account"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."identity_id" IS DISTINCT FROM ? AND "account"."id" NOT IN (SELECT "identity$primary_account$following$followee"."id" FROM "identity" LEFT JOIN "account" AS "identity$primary_account" ON "identity$primary_account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$primary_account$following" ON "identity$primary_account$following"."follower_id" = "identity$primary_account"."id" LEFT JOIN "account" AS "identity$primary_account$following$followee" ON "identity$primary_account$following$followee"."id" = "identity$primary_account$following"."followee_id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$primary_account$following$followee"."id" IS DISTINCT FROM NULL )) AS totalCount 
+			FROM 
+				"account" 
+			WHERE 
+				"account"."identity_id" IS DISTINCT FROM ? AND 
+				"account"."id" NOT IN 
+					(SELECT "identity$primary_account$following$followee"."id" 
+					FROM "identity" 
+					LEFT JOIN "account" AS "identity$primary_account" ON "identity$primary_account"."identity_id" = "identity"."id" 
+					LEFT JOIN "follow" AS "identity$primary_account$following" ON "identity$primary_account$following"."follower_id" = "identity$primary_account"."id" 
+					LEFT JOIN "account" AS "identity$primary_account$following$followee" ON "identity$primary_account$following$followee"."id" = "identity$primary_account$following"."followee_id" 
+					WHERE 
+						"identity"."id" IS NOT DISTINCT FROM ? AND 
+						"identity$primary_account$following$followee"."id" IS DISTINCT FROM NULL ) 
+			ORDER BY
+				"account"."username" ASC, 
+				"account"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"identityId", "identityId", "identityId", "identityId", 50},
 	},
 	{
 		name: "list_op_implicit_input_on_nested_model",
@@ -1919,10 +2030,17 @@ var testCases = []testCase{
 
 func TestQueryBuilder(t *testing.T) {
 	for _, testCase := range testCases {
-
+		// if testCase.name != "list_op_expression_model_in_backlink" {
+		// 	continue
+		// }
 		t.Run(testCase.name, func(t *testing.T) {
+			ctx := context.Background()
 
-			scope, query, action, err := generateQueryScope(context.Background(), testCase.keelSchema, testCase.actionName)
+			if testCase.identity != nil {
+				ctx = auth.WithIdentity(ctx, testCase.identity)
+			}
+
+			scope, query, action, err := generateQueryScope(ctx, testCase.keelSchema, testCase.actionName)
 			if err != nil {
 				require.NoError(t, err)
 			}
@@ -1988,7 +2106,13 @@ func generateQueryScope(ctx context.Context, schemaText string, actionName strin
 
 // Trims and removes redundant spacing
 func clean(sql string) string {
-	return strings.Join(strings.Fields(strings.TrimSpace(sql)), " ")
+	sql = strings.ReplaceAll(sql, "\n", " ")
+	sql = strings.ReplaceAll(sql, "\t", " ")
+
+	sql = strings.Join(strings.Fields(strings.TrimSpace(sql)), " ")
+	sql = strings.ReplaceAll(sql, "( ", "(")
+	sql = strings.ReplaceAll(sql, " )", ")")
+	return sql
 }
 
 func TestInsertStatement(t *testing.T) {
