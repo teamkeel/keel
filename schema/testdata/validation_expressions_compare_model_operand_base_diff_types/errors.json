@@ -5,13 +5,13 @@
       "hint": "Did you mean ==, or !=?",
       "code": "E027",
       "pos": {
-        "filename": "testdata/validation_expressions_compare_model_operand_base/schema.keel",
+        "filename": "testdata/validation_expressions_compare_model_operand_base_diff_types/schema.keel",
         "offset": 175,
         "line": 8,
         "column": 32
       },
       "endPos": {
-        "filename": "testdata/validation_expressions_compare_model_operand_base/schema.keel",
+        "filename": "testdata/validation_expressions_compare_model_operand_base_diff_types/schema.keel",
         "offset": 181,
         "line": 8,
         "column": 38
