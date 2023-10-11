@@ -26,7 +26,7 @@ type testCase struct {
 	actionName string
 	// Input map for action
 	input map[string]any
-	// OPTIONAL: Identity to be authenticated with
+	// OPTIONAL: Authenticated identity for the query
 	identity *auth.Identity
 	// Expected SQL template generated (with ? placeholders for values)
 	expectedTemplate string
@@ -2030,9 +2030,6 @@ var testCases = []testCase{
 
 func TestQueryBuilder(t *testing.T) {
 	for _, testCase := range testCases {
-		// if testCase.name != "list_op_expression_model_in_backlink" {
-		// 	continue
-		// }
 		t.Run(testCase.name, func(t *testing.T) {
 			ctx := context.Background()
 
@@ -2104,11 +2101,10 @@ func generateQueryScope(ctx context.Context, schemaText string, actionName strin
 	return scope, query, action, nil
 }
 
-// Trims and removes redundant spacing
+// Trims and removes redundant spacing and other characters
 func clean(sql string) string {
 	sql = strings.ReplaceAll(sql, "\n", " ")
 	sql = strings.ReplaceAll(sql, "\t", " ")
-
 	sql = strings.Join(strings.Fields(strings.TrimSpace(sql)), " ")
 	sql = strings.ReplaceAll(sql, "( ", "(")
 	sql = strings.ReplaceAll(sql, " )", ")")

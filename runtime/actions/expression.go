@@ -101,8 +101,13 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 	}
 
 	if lhsResolver.IsModelDbColumn() {
+		lhsFragments, err := lhsResolver.NormalisedFragments()
+		if err != nil {
+			return err
+		}
+
 		// Generates joins based on the fragments that make up the operand
-		err = query.addJoinFromFragments(scope, lhsResolver.NormalisedFragments())
+		err = query.addJoinFromFragments(scope, lhsFragments)
 		if err != nil {
 			return err
 		}
@@ -137,8 +142,13 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 		}
 
 		if rhsResolver.IsModelDbColumn() {
+			rhsFragments, err := rhsResolver.NormalisedFragments()
+			if err != nil {
+				return err
+			}
+
 			// Generates joins based on the fragments that make up the operand
-			err = query.addJoinFromFragments(scope, rhsResolver.NormalisedFragments())
+			err = query.addJoinFromFragments(scope, rhsFragments)
 			if err != nil {
 				return err
 			}
@@ -232,7 +242,13 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 		// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
 		// from the current query builder.
 
-		fragments := resolver.NormalisedFragments()[1:]
+		fragments, err := resolver.NormalisedFragments()
+		if err != nil {
+			return nil, err
+		}
+
+		// Remove the ctx fragment
+		fragments = fragments[1:]
 
 		model := proto.FindModel(resolver.Schema.Models, strcase.ToCamel(fragments[0]))
 		ctxScope := NewModelScope(resolver.Context, model, resolver.Schema)
@@ -247,19 +263,7 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 			identityId = identity.Id
 		}
 
-		// operandType, err := resolver.GetOperandType()
-		// if err != nil {
-		// 	return nil, err
-		// }
-
-		// // If the target is type MODEL, then refer to the
-		// // foreign key id by appending "Id" to the field name
-		// // TODO what if we have a non-conformed field name? we need to fish this from proto
-		// if operandType == proto.Type_TYPE_MODEL {
-		// 	fragments[len(fragments)-1] = fmt.Sprintf("%sId", fragments[len(fragments)-1])
-		// }
-
-		err := query.addJoinFromFragments(ctxScope, fragments)
+		err = query.addJoinFromFragments(ctxScope, fragments)
 		if err != nil {
 			return nil, err
 		}
@@ -287,9 +291,13 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 	case resolver.IsModelDbColumn():
 		// If this is a model field then generate the appropriate column operand for the database query.
 
+		fragments, err := resolver.NormalisedFragments()
+		if err != nil {
+			return nil, err
+		}
+
 		// Generate QueryOperand from the fragments that make up the expression operand
-		var err error
-		queryOperand, err = operandFromFragments(resolver.Schema, resolver.NormalisedFragments())
+		queryOperand, err = operandFromFragments(resolver.Schema, fragments)
 		if err != nil {
 			return nil, err
 		}

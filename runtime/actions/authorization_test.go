@@ -78,7 +78,34 @@ var authorisationTestCases = []authorisationTestCase{
 			FROM
 				"thing"
 			WHERE
-				( "thing"."created_by_id" IS NOT DISTINCT FROM ? )`,
+				("thing"."created_by_id" IS NOT DISTINCT FROM ?)`,
+		expectedArgs: []any{unverifiedIdentity.Id},
+		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
+	},
+	{
+		name: "identity_check_by_id",
+		keelSchema: `
+			model Thing {
+				fields {
+					createdBy Identity
+				}
+				actions {
+					list listThings() {
+						@permission(expression: thing.createdBy.id == ctx.identity.id)
+					}
+				}
+			}`,
+		actionName: "listThings",
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing"."id" 
+			FROM 
+				"thing" 
+			LEFT JOIN "identity" AS "thing$created_by" ON 
+				"thing$created_by"."id" = "thing"."created_by_id" 
+			WHERE 
+				("thing$created_by"."id" IS NOT DISTINCT FROM ?)`,
 		expectedArgs: []any{unverifiedIdentity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -1055,7 +1082,12 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "list",
 		expectedTemplate: `
 			SELECT DISTINCT ON("thing"."id") "thing"."id" FROM "thing" 
-			WHERE ( (SELECT "identity"."email" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS DISTINCT FROM ? )`,
+			WHERE (
+				(SELECT "identity"."email" 
+				FROM "identity" 
+				WHERE 
+					"identity"."id" IS NOT DISTINCT FROM ? AND 
+					"identity"."email" IS DISTINCT FROM NULL) IS DISTINCT FROM ?)`,
 		expectedArgs: []any{unverifiedIdentity.Id, "weaveton@weave.xyz"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -1076,7 +1108,12 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "list",
 		expectedTemplate: `
 			SELECT DISTINCT ON("thing"."id") "thing"."id" FROM "thing" 
-			WHERE ( (SELECT "identity"."email" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS DISTINCT FROM ? )`,
+			WHERE (
+				(SELECT "identity"."email" 
+				FROM "identity" 
+				WHERE 
+					"identity"."id" IS NOT DISTINCT FROM ? AND 
+					"identity"."email" IS DISTINCT FROM NULL) IS DISTINCT FROM ?)`,
 		expectedArgs: []any{"", "weaveton@weave.xyz"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
@@ -1135,13 +1172,16 @@ var authorisationTestCases = []authorisationTestCase{
 			FROM "adult_film" 
 			WHERE 
 				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
-				( (SELECT "identity$user"."is_adult" FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS NOT DISTINCT FROM ? )`,
+					((SELECT "identity$user"."is_adult" 
+					FROM "identity" 
+					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."is_adult" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM ?)`,
 		expectedArgs: []any{"123", unverifiedIdentity.Id, true},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
 	{
-		name: "identity_backlink_ctx_compare_with_model",
+		name: "identity_backlink_ctx_compare_with_model_id",
 		keelSchema: `
 			model User {
 				fields {
@@ -1168,7 +1208,10 @@ var authorisationTestCases = []authorisationTestCase{
 			LEFT JOIN "user" AS "adult_film$identity$user" ON "adult_film$identity$user"."identity_id" = "adult_film$identity"."id" 
 			WHERE 
 				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
-				( (SELECT "identity$user"."id" FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? ) IS NOT DISTINCT FROM "adult_film$identity$user"."id" )`,
+					((SELECT "identity$user"."id" 
+					FROM "identity" 
+					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?  AND "identity$user"."id" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM "adult_film$identity$user"."id")`,
 		expectedArgs: []any{"123", unverifiedIdentity.Id},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
