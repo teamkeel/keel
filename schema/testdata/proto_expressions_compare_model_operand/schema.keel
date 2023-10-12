@@ -1,0 +1,15 @@
+model User {
+    fields {
+        identity Identity @unique
+    }
+}
+model BankAccount {
+    fields {
+        identity Identity @unique
+    }
+    actions {
+        get getBankAccount(id) {
+            @permission(expression: ctx.identity.user == bankAccount.identity.user)
+        }
+    }
+}

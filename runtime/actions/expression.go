@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
@@ -92,22 +91,20 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 	lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, condition.LHS)
 	rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, condition.RHS)
 
-	lhsOperandType, err := lhsResolver.GetOperandType()
-	if err != nil {
-		return fmt.Errorf("cannot resolve operand type of LHS operand")
-	}
-
 	var operator ActionOperator
 	var left, right *QueryOperand
 
 	// Generate lhs QueryOperand
-	left, err = generateQueryOperand(lhsResolver, args)
+	left, err := generateQueryOperand(lhsResolver, args)
 	if err != nil {
 		return err
 	}
 
 	if lhsResolver.IsModelDbColumn() {
-		lhsFragments := lo.Map(lhsResolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
+		lhsFragments, err := lhsResolver.NormalisedFragments()
+		if err != nil {
+			return err
+		}
 
 		// Generates joins based on the fragments that make up the operand
 		err = query.addJoinFromFragments(scope, lhsFragments)
@@ -117,6 +114,11 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 	}
 
 	if condition.Type() == parser.ValueCondition {
+		lhsOperandType, err := lhsResolver.GetOperandType()
+		if err != nil {
+			return err
+		}
+
 		if lhsOperandType != proto.Type_TYPE_BOOL {
 			return fmt.Errorf("single operands in a value condition must be of type boolean")
 		}
@@ -140,7 +142,10 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 		}
 
 		if rhsResolver.IsModelDbColumn() {
-			rhsFragments := lo.Map(rhsResolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
+			rhsFragments, err := rhsResolver.NormalisedFragments()
+			if err != nil {
+				return err
+			}
 
 			// Generates joins based on the fragments that make up the operand
 			err = query.addJoinFromFragments(scope, rhsFragments)
@@ -159,7 +164,7 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 	return nil
 }
 
-// Constructs and adds an INNER JOIN from a splice of fragments (representing an operand in an expression or implicit input).
+// Constructs and adds an LEFT JOIN from a splice of fragments (representing an operand in an expression or implicit input).
 // The fragment slice must include the base model as the first item, for example: "post." in post.author.publisher.isActive
 func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string) error {
 	model := casing.ToCamel(fragments[0])
@@ -237,7 +242,15 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 		// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
 		// from the current query builder.
 
-		model := proto.FindModel(resolver.Schema.Models, strcase.ToCamel(resolver.Operand.Ident.Fragments[1].Fragment))
+		fragments, err := resolver.NormalisedFragments()
+		if err != nil {
+			return nil, err
+		}
+
+		// Remove the ctx fragment
+		fragments = fragments[1:]
+
+		model := proto.FindModel(resolver.Schema.Models, strcase.ToCamel(fragments[0]))
 		ctxScope := NewModelScope(resolver.Context, model, resolver.Schema)
 		query := NewQuery(resolver.Context, model)
 
@@ -250,38 +263,37 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 			identityId = identity.Id
 		}
 
-		err := query.Where(IdField(), Equals, Value(identityId))
-		if err != nil {
-			return nil, err
-		}
-
-		fragments := lo.Map(resolver.Operand.Ident.Fragments[1:], func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
-
 		err = query.addJoinFromFragments(ctxScope, fragments)
 		if err != nil {
 			return nil, err
 		}
 
-		query.AppendSelect(ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1]))
-
-		operand := InlineQuery(query)
-
-		return operand, nil
-	case resolver.IsModelDbColumn():
-		// If this is a model field then generate the appropriate column operand for the database query.
-
-		// Step through the fragments in order to determine the table and field referenced by the expression operand
-		fragments := lo.Map(resolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
-
-		operandType, err := resolver.GetOperandType()
+		err = query.Where(IdField(), Equals, Value(identityId))
 		if err != nil {
 			return nil, err
 		}
 
-		// If the target is type MODEL, then refer to the
-		// foreign key id by appending "Id" to the field name
-		if operandType == proto.Type_TYPE_MODEL {
-			fragments[len(fragments)-1] = fmt.Sprintf("%sId", fragments[len(fragments)-1])
+		selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1])
+
+		// If there are no matches in the subquery then null will be returned, but null
+		// will cause IN and NOT IN filtering of this subquery result to always evaluate as false.
+		// Therefore we need to filter out null.
+		query.And()
+		err = query.Where(selectField, NotEquals, Null())
+		if err != nil {
+			return nil, err
+		}
+
+		query.AppendSelect(selectField)
+
+		queryOperand = InlineQuery(query)
+
+	case resolver.IsModelDbColumn():
+		// If this is a model field then generate the appropriate column operand for the database query.
+
+		fragments, err := resolver.NormalisedFragments()
+		if err != nil {
+			return nil, err
 		}
 
 		// Generate QueryOperand from the fragments that make up the expression operand

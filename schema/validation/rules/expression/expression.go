@@ -224,8 +224,8 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *parser.Condit
 		return nil
 	}
 
-	allowedOperatorsLHS := resolvedLHS.AllowedOperators()
-	allowedOperatorsRHS := resolvedRHS.AllowedOperators()
+	allowedOperatorsLHS := resolvedLHS.AllowedOperators(asts)
+	allowedOperatorsRHS := resolvedRHS.AllowedOperators(asts)
 
 	if resolvedLHS.IsRepeated() && resolvedRHS.IsRepeated() {
 		return append(errors, errorhandling.NewValidationError(

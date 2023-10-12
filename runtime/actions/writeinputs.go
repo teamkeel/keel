@@ -26,10 +26,6 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 		lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, assignment.LHS)
 		rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, assignment.RHS)
-		operandType, err := lhsResolver.GetOperandType()
-		if err != nil {
-			return err
-		}
 
 		if !lhsResolver.IsModelDbColumn() {
 			return errors.New("lhs operand of assignment expression must be a model field")
@@ -40,20 +36,21 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
-		target := lo.Map(assignment.LHS.Ident.Fragments, func(f *parser.IdentFragment, _ int) string {
-			return f.Fragment
-		})
+		fragments, err := lhsResolver.NormalisedFragments()
+		if err != nil {
+			return err
+		}
 
 		currRows := []*Row{query.writeValues}
 
 		// The model field to update.
-		field := target[len(target)-1]
-		targetsLessField := target[:len(target)-1]
+		field := fragments[len(fragments)-1]
+		targetsLessField := fragments[:len(fragments)-1]
 
 		// If the target field is id, then we need to update the foreign key field on the previous target fragment model
 		if field == "id" {
-			field = fmt.Sprintf("%sId", target[len(target)-2])
-			targetsLessField = target[:len(target)-2]
+			field = fmt.Sprintf("%sId", fragments[len(fragments)-2])
+			targetsLessField = fragments[:len(fragments)-2]
 		}
 
 		// Iterate through the fragments in the @set expression AND traverse the graph until we have a set of rows to update.
@@ -80,12 +77,6 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 				}
 			}
 			currRows = nextRows
-		}
-
-		// If targeting the nested model (without a field), then set the foreign key with the "id" of the assigning model.
-		// For example, @set(post.user = ctx.identity) will set post.userId with ctx.identity.id.
-		if operandType == proto.Type_TYPE_MODEL {
-			field = fmt.Sprintf("%sId", field)
 		}
 
 		// Set the field on all rows.

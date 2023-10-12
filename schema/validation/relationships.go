@@ -2,6 +2,7 @@ package validation
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
@@ -29,7 +30,16 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 
 		LeaveModel: func(_ *parser.ModelNode) {
 
-			for field := range candidates {
+			// Make iterating through the map with deterministic ordering
+			orderedKeys := make([]*parser.FieldNode, 0, len(candidates))
+			for k := range candidates {
+				orderedKeys = append(orderedKeys, k)
+			}
+			sort.Slice(orderedKeys, func(i, j int) bool {
+				return orderedKeys[i].Name.Value < orderedKeys[j].Name.Value
+			})
+
+			for _, field := range orderedKeys {
 				if len(candidates[field]) == 1 {
 					otherField := candidates[field][0].Field
 					otherModel := candidates[field][0].Model
