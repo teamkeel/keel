@@ -34,7 +34,7 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 					if input.Optional {
 						continue
 					}
-					return fmt.Errorf("cannot convert args to map[string]any for key %s", input.Name)
+					return fmt.Errorf("cannot convert args to map[string]any for key: %s", input.Name)
 				}
 
 				err := query.applyImplicitFiltersFromMessage(scope, nestedMessage, messageModel, argsSectioned)

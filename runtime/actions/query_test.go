@@ -847,6 +847,55 @@ var testCases = []testCase{
 		expectedArgs: []any{"identityId", "identityId", "identityId", "identityId", 50},
 	},
 	{
+		name: "list_op_implicit_input_nested_model_id",
+		keelSchema: `
+			model BankAccount {
+				fields {
+					entity Entity @unique
+					balance Number @default(0)
+				}
+			}
+			model Entity {
+				fields {
+					name Text
+					users EntityUser[]
+					account BankAccount 
+				}
+			}	
+			model EntityUser {
+				fields {
+					name Text
+					identity Identity @unique @relation(user)
+					entity Entity
+				}
+				actions {
+					list bankAccountUsers(entity.account.id) {
+						 @orderBy(name: asc)
+					}
+				}
+			}`,
+		actionName: "bankAccountUsers",
+		input:      map[string]any{"where": map[string]any{"entity": map[string]any{"account": map[string]any{"id": map[string]any{"equals": "123"}}}}},
+		identity:   identity,
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("entity_user"."name", "entity_user"."id") "entity_user".*, 
+				CASE WHEN LEAD("entity_user"."id") OVER (ORDER BY "entity_user"."name" ASC, "entity_user"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("entity_user"."name", "entity_user"."id")) FROM "entity_user" LEFT JOIN "entity" AS "entity_user$entity" ON "entity_user$entity"."id" = "entity_user"."entity_id" LEFT JOIN "bank_account" AS "entity_user$entity$account" ON "entity_user$entity$account"."entity_id" = "entity_user$entity"."id" WHERE "entity_user$entity$account"."id" IS NOT DISTINCT FROM ?) AS totalCount 
+			FROM 
+				"entity_user" 
+			LEFT JOIN 
+				"entity" AS "entity_user$entity" ON "entity_user$entity"."id" = "entity_user"."entity_id" 
+			LEFT JOIN 
+				"bank_account" AS "entity_user$entity$account" ON "entity_user$entity$account"."entity_id" = "entity_user$entity"."id" 
+			WHERE 
+				"entity_user$entity$account"."id" IS NOT DISTINCT FROM ? 
+			ORDER BY 
+				"entity_user"."name" ASC, 
+				"entity_user"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"123", "123", 50},
+	},
+	{
 		name: "list_op_implicit_input_on_nested_model",
 		keelSchema: `
 			model Parent {
