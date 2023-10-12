@@ -12,7 +12,7 @@
           },
           "unique": true,
           "foreignKeyFieldName": "identityId",
-          "inverseFieldName": "mainAccount"
+          "inverseFieldName": "account"
         },
         {
           "modelName": "BankAccount",
@@ -66,7 +66,7 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "whereExpressions": [
             {
-              "source": "bankAccount == ctx.identity.mainAccount"
+              "source": "bankAccount == ctx.identity.account"
             }
           ],
           "inputMessageName": "GetBankAccountInput"
@@ -159,7 +159,7 @@
         },
         {
           "modelName": "Identity",
-          "name": "mainAccount",
+          "name": "account",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "BankAccount"
@@ -214,21 +214,7 @@
       "name": "Any"
     },
     {
-      "name": "GetBankAccountInput",
-      "fields": [
-        {
-          "messageName": "GetBankAccountInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "BankAccount",
-            "fieldName": "id"
-          },
-          "target": [
-            "id"
-          ]
-        }
-      ]
+      "name": "GetBankAccountInput"
     },
     {
       "name": "EmailPasswordInput",

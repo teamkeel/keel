@@ -1,8 +1,11 @@
-
 model BankAccount {
     fields {
-        identity Identity @unique
+        identity Identity {
+            @unique
+            @relation(account)
+        }
     }
+
     actions {
         get getBankAccount() {
             @where(bankAccount == ctx.identity.account)
