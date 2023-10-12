@@ -347,11 +347,24 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 				}
 
 				for _, op := range operands {
-					if op.Ident == nil || len(op.Ident.Fragments) != 2 {
+					if op.Ident == nil || len(op.Ident.Fragments) > 2 {
 						continue
 					}
 
-					modelName, fieldName := op.Ident.Fragments[0].Fragment, op.Ident.Fragments[1].Fragment
+					modelName := op.Ident.Fragments[0].Fragment
+
+					// if the operand is only the model name,
+					// then it is referring to the `id` which is unique
+					if len(op.Ident.Fragments) == 1 && query.Model(asts, casing.ToCamel(modelName)) != nil {
+						hasUniqueLookup = true
+						continue
+					}
+
+					if len(op.Ident.Fragments) == 1 {
+						continue
+					}
+
+					fieldName := op.Ident.Fragments[1].Fragment
 
 					if modelName != casing.ToLowerCamel(model.Name.Value) {
 						continue

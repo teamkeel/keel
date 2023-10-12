@@ -79,7 +79,7 @@ func (resolver *OperandResolver) NormalisedFragments() ([]string, error) {
 			}
 		}
 
-		if proto.IsHasOne(fieldTarget) {
+		if proto.IsHasOne(fieldTarget) || proto.IsHasMany(fieldTarget) {
 			// Add a new fragment 'id'
 			fragments = append(fragments, parser.ImplicitFieldNameId)
 		} else {

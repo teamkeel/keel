@@ -1284,6 +1284,116 @@ var authorisationTestCases = []authorisationTestCase{
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
+	{
+		name: "model_in_many_models",
+		keelSchema: `
+			model Entity {
+				fields {
+					name Text
+					users EntityUser[]
+				}
+			}	
+			model EntityUser {
+				fields {
+					identity Identity @unique @relation(user)
+					entity Entity
+				}
+				actions {
+					list entityUsers(entity.id) {
+						@permission(expression: entityUser in ctx.identity.administrator.access.entity.users)
+					}
+				}
+			}
+			model EntityAccess {
+				fields {
+					entity Entity
+					admin Administrator
+				}
+			}
+			model Administrator {
+				fields {
+					access EntityAccess[]
+					identity Identity @unique
+				}
+			}`,
+		actionName: "entityUsers",
+		input:      map[string]any{"entity": map[string]any{"id": map[string]any{"equals": "123"}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("entity_user"."id") "entity_user"."id" 
+			FROM 
+				"entity_user" 
+			LEFT JOIN 
+				"entity" AS "entity_user$entity" ON "entity_user$entity"."id" = "entity_user"."entity_id" 
+			WHERE 
+				"entity_user$entity"."id" IS NOT DISTINCT FROM ? AND 
+				("entity_user"."id" IN 
+					(SELECT "identity$administrator$access$entity$users"."id" 
+					FROM "identity" 
+					LEFT JOIN "administrator" AS "identity$administrator" ON "identity$administrator"."identity_id" = "identity"."id" 
+					LEFT JOIN "entity_access" AS "identity$administrator$access" ON "identity$administrator$access"."admin_id" = "identity$administrator"."id" 
+					LEFT JOIN "entity" AS "identity$administrator$access$entity" ON "identity$administrator$access$entity"."id" = "identity$administrator$access"."entity_id" 
+					LEFT JOIN "entity_user" AS "identity$administrator$access$entity$users" ON "identity$administrator$access$entity$users"."entity_id" = "identity$administrator$access$entity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$administrator$access$entity$users"."id" IS DISTINCT FROM NULL))`,
+		expectedArgs: []any{"123", unverifiedIdentity.Id},
+		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
+	},
+	{
+		name: "model_id_in_many_models_ids",
+		keelSchema: `
+			model Entity {
+				fields {
+					name Text
+					users EntityUser[]
+				}
+			}	
+			model EntityUser {
+				fields {
+					identity Identity @unique @relation(user)
+					entity Entity
+				}
+				actions {
+					list entityUsers(entity.id) {
+						@permission(expression: entityUser.id in ctx.identity.administrator.access.entity.users.id)
+					}
+				}
+			}
+			model EntityAccess {
+				fields {
+					entity Entity
+					admin Administrator
+				}
+			}
+			model Administrator {
+				fields {
+					access EntityAccess[]
+					identity Identity @unique
+				}
+			}`,
+		actionName: "entityUsers",
+		input:      map[string]any{"entity": map[string]any{"id": map[string]any{"equals": "123"}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("entity_user"."id") "entity_user"."id" 
+			FROM 
+				"entity_user" 
+			LEFT JOIN 
+				"entity" AS "entity_user$entity" ON "entity_user$entity"."id" = "entity_user"."entity_id" 
+			WHERE 
+				"entity_user$entity"."id" IS NOT DISTINCT FROM ? AND 
+				("entity_user"."id" IN 
+					(SELECT "identity$administrator$access$entity$users"."id" 
+					FROM "identity" 
+					LEFT JOIN "administrator" AS "identity$administrator" ON "identity$administrator"."identity_id" = "identity"."id" 
+					LEFT JOIN "entity_access" AS "identity$administrator$access" ON "identity$administrator$access"."admin_id" = "identity$administrator"."id" 
+					LEFT JOIN "entity" AS "identity$administrator$access$entity" ON "identity$administrator$access$entity"."id" = "identity$administrator$access"."entity_id" 
+					LEFT JOIN "entity_user" AS "identity$administrator$access$entity$users" ON "identity$administrator$access$entity$users"."entity_id" = "identity$administrator$access$entity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$administrator$access$entity$users"."id" IS DISTINCT FROM NULL))`,
+		expectedArgs: []any{"123", unverifiedIdentity.Id},
+		earlyAuth:    CouldNotAuthoriseEarly(),
+		identity:     unverifiedIdentity,
+	},
 }
 
 func TestPermissionQueryBuilder(t *testing.T) {
