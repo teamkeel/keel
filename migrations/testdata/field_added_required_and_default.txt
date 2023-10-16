@@ -1,8 +1,6 @@
 model Person {
     fields {
-        email Text @default("n/a")
-        age Number @default(10)
-        isActive Boolean
+        name Text
     }
 }
 
@@ -10,20 +8,14 @@ model Person {
 
 model Person {
     fields {
-        // Change the default
-        email Text @default("")
-        // Remove the default
-        age Number
-        // Create a default
-        isActive Boolean @default(true)
+        name Text
+        age Number @default(10)
     }
 }
 
 ===
 
-ALTER TABLE "person" ALTER COLUMN "email" SET DEFAULT '';
-ALTER TABLE "person" ALTER COLUMN "age" DROP DEFAULT;
-ALTER TABLE "person" ALTER COLUMN "is_active" SET DEFAULT true;
+ALTER TABLE "person" ADD COLUMN "age" INTEGER NOT NULL DEFAULT 10;
 DROP TRIGGER IF EXISTS person_create on "person";
 CREATE TRIGGER person_create AFTER INSERT ON "person" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
 DROP TRIGGER IF EXISTS person_update on "person";
@@ -40,7 +32,5 @@ CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE 
 === 
 
 [
-  { "Model": "Person", "Field": "email", "Type": "MODIFIED" },
-  { "Model": "Person", "Field": "age", "Type": "MODIFIED" },
-  { "Model": "Person", "Field": "isActive", "Type": "MODIFIED" }
+  { "Model": "Person", "Field": "age", "Type": "ADDED" }
 ]
