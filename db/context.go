@@ -13,7 +13,7 @@ var dbKey dbContextKey = "database"
 func GetDatabase(ctx context.Context) (Database, error) {
 	v := ctx.Value(dbKey)
 	if v == nil {
-		return nil, fmt.Errorf("context does not have a :%s key", dbKey)
+		return nil, fmt.Errorf("context does not have a %s key", dbKey)
 	}
 
 	database, ok := v.(Database)

@@ -27,6 +27,7 @@ var (
 type DbError struct {
 	Columns []string
 	Err     error
+	PgErr   error
 }
 
 func (err *DbError) Error() string {

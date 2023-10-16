@@ -106,16 +106,28 @@ func toDbError(err error) error {
 
 	switch pgxErr.Code {
 	case "23502":
-		return &DbError{Columns: []string{pgxErr.ColumnName}, Err: ErrNotNullConstraintViolation}
+		return &DbError{
+			Columns: []string{pgxErr.ColumnName},
+			Err:     ErrNotNullConstraintViolation,
+			PgErr:   pgxErr,
+		}
 	case "23503":
 		// Extract column and value from "Key (author_id)=(2L2ar5NCPvTTEdiDYqgcpF3f5QN1) is not present in table \"author\"."
 		out := regexp.MustCompile(`\(([^)]+)\)`).FindAllStringSubmatch(pgxErr.Detail, -1)
-		return &DbError{Columns: []string{out[0][1]}, Err: ErrForeignKeyConstraintViolation}
+		return &DbError{
+			Columns: []string{out[0][1]},
+			Err:     ErrForeignKeyConstraintViolation,
+			PgErr:   pgxErr,
+		}
 	case "23505":
 		// Extract column and value from "Key (code)=(1234) already exists."
 		out := regexp.MustCompile(`\(([^)]+)\)`).FindAllStringSubmatch(pgxErr.Detail, -1)
 		cols := strings.Split(out[0][1], ", ")
-		return &DbError{Columns: cols, Err: ErrUniqueConstraintViolation}
+		return &DbError{
+			Columns: cols,
+			Err:     ErrUniqueConstraintViolation,
+			PgErr:   pgxErr,
+		}
 	default:
 		return err
 	}
