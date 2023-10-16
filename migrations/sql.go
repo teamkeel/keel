@@ -183,8 +183,6 @@ func alterColumnStmt(schema *proto.Schema, modelName string, field *proto.Field,
 		stmts = append(stmts, output)
 	}
 
-	// This must occur before setting a column to NOT NULL,
-	// otherwise the default value will not be applied to existing rows which are NULL
 	if field.DefaultValue != nil {
 		value, err := getDefaultValue(schema, field)
 		if err != nil {
@@ -209,6 +207,7 @@ func alterColumnStmt(schema *proto.Schema, modelName string, field *proto.Field,
 		} else {
 			change = "SET NOT NULL"
 
+			// Update all existing rows to the default value if they are null
 			if field.DefaultValue != nil {
 				value, err := getDefaultValue(schema, field)
 				if err != nil {
