@@ -559,6 +559,9 @@ func GetRelationshipCandidates(asts []*parser.AST, model *parser.ModelNode, fiel
 			continue
 		}
 
+		// hasOneToMany, explicitOneToMany := ValidOneToHasMany(field, otherField)
+		// hasOneToOne, explicitOneToOne := ValidUniqueOneToHasOne(field, otherField)
+
 		if ValidOneToHasMany(field, otherField) ||
 			ValidOneToHasMany(otherField, field) ||
 			ValidUniqueOneToHasOne(field, otherField) ||
@@ -643,7 +646,11 @@ func ValidOneToHasMany(belongsTo *parser.FieldNode, hasMany *parser.FieldNode) b
 	// If hasMany has @relation, then this is not a candidate
 	hasManyAttribute := FieldGetAttribute(hasMany, parser.AttributeRelation)
 
-	return hasManyAttribute == nil
+	if hasManyAttribute != nil {
+		return false
+	}
+
+	return true
 }
 
 // Determine if pair form a valid 1:! pattern where, for example:
