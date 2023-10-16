@@ -178,23 +178,13 @@ func alterColumnStmt(schema *proto.Schema, modelName string, field *proto.Field,
 
 	alterColumnStmtPrefix := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s", Identifier(modelName), Identifier(column.ColumnName))
 
-	// these two flags are opposites of each other, so if they are both true
-	// or both false then there is a change to be applied
-	if field.Optional == column.NotNull {
-		var change string
-		if field.Optional && column.NotNull {
-			change = "DROP NOT NULL"
-		} else {
-			change = "SET NOT NULL"
-		}
-		stmts = append(stmts, fmt.Sprintf("%s %s;", alterColumnStmtPrefix, change))
-	}
-
 	if field.DefaultValue == nil && column.HasDefault {
 		output := fmt.Sprintf("%s DROP DEFAULT;", alterColumnStmtPrefix)
 		stmts = append(stmts, output)
 	}
 
+	// This must occur before setting a column to NOT NULL,
+	// otherwise the default value will not be applied to existing rows which are NULL
 	if field.DefaultValue != nil {
 		value, err := getDefaultValue(schema, field)
 		if err != nil {
@@ -208,6 +198,28 @@ func alterColumnStmt(schema *proto.Schema, modelName string, field *proto.Field,
 			output := fmt.Sprintf("%s SET DEFAULT %s;", alterColumnStmtPrefix, value)
 			stmts = append(stmts, output)
 		}
+	}
+
+	// these two flags are opposites of each other, so if they are both true
+	// or both false then there is a change to be applied
+	if field.Optional == column.NotNull {
+		var change string
+		if field.Optional && column.NotNull {
+			change = "DROP NOT NULL"
+		} else {
+			change = "SET NOT NULL"
+
+			if field.DefaultValue != nil {
+				value, err := getDefaultValue(schema, field)
+				if err != nil {
+					return "", err
+				}
+				update := fmt.Sprintf("UPDATE %s SET %s = %s WHERE %s IS NULL;", Identifier(modelName), Identifier(column.ColumnName), value, Identifier(column.ColumnName))
+				stmts = append(stmts, update)
+			}
+
+		}
+		stmts = append(stmts, fmt.Sprintf("%s %s;", alterColumnStmtPrefix, change))
 	}
 
 	return strings.Join(stmts, "\n"), nil

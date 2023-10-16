@@ -1,0 +1,57 @@
+model Person {
+    fields {
+        email Text? @default("n/a")
+        age Number? @default(10)
+        isActive Boolean?
+        isDeleted Boolean? @default(true)
+    }
+}
+
+===
+
+model Person {
+    fields {
+        // Make required, keep default
+        email Text @default("n/a")
+        // Make required, drop default
+        age Number
+        // Make required, new default
+        isActive Boolean @default(true)
+        // Make required, changed default
+        isDeleted Boolean @default(false)
+    }
+}
+
+===
+
+UPDATE "person" SET "email" = 'n/a' WHERE "email" IS NULL;
+ALTER TABLE "person" ALTER COLUMN "email" SET NOT NULL;
+ALTER TABLE "person" ALTER COLUMN "age" DROP DEFAULT;
+ALTER TABLE "person" ALTER COLUMN "age" SET NOT NULL;
+ALTER TABLE "person" ALTER COLUMN "is_active" SET DEFAULT true;
+UPDATE "person" SET "is_active" = true WHERE "is_active" IS NULL;
+ALTER TABLE "person" ALTER COLUMN "is_active" SET NOT NULL;
+ALTER TABLE "person" ALTER COLUMN "is_deleted" SET DEFAULT false;
+UPDATE "person" SET "is_deleted" = false WHERE "is_deleted" IS NULL;
+ALTER TABLE "person" ALTER COLUMN "is_deleted" SET NOT NULL;
+DROP TRIGGER IF EXISTS person_create on "person";
+CREATE TRIGGER person_create AFTER INSERT ON "person" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS person_update on "person";
+CREATE TRIGGER person_update AFTER UPDATE ON "person" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS person_delete on "person";
+CREATE TRIGGER person_delete AFTER DELETE ON "person" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS identity_create on "identity";
+CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS identity_update on "identity";
+CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
+DROP TRIGGER IF EXISTS identity_delete on "identity";
+CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+
+=== 
+
+[
+  { "Model": "Person", "Field": "email", "Type": "MODIFIED" },
+  { "Model": "Person", "Field": "age", "Type": "MODIFIED" },
+  { "Model": "Person", "Field": "isActive", "Type": "MODIFIED" },
+  { "Model": "Person", "Field": "isDeleted", "Type": "MODIFIED" }
+]
