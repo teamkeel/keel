@@ -7,18 +7,14 @@ model Address {
 model Customer {
     fields {
         name Text?
-        dateOfBirth Date?
+        timeOfBirth Timestamp?
         address Address?
     }
 
     actions {
         get getCustomer(id)
-        create createCustomer() with (
-            name,
-            dateOfBirth,
-            address.addressLine1
-        )
-        update updateCustomer(id) with (name, dateOfBirth)
+        create createCustomer() with (name, timeOfBirth, address.addressLine1)
+        update updateCustomer(id) with (name, timeOfBirth)
         list customers(name, address.addressLine1)
     }
 }

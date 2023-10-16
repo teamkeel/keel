@@ -98,7 +98,7 @@
 									"address": {
 										"$ref": "#/components/schemas/NullableCreateCustomerAddressInput"
 									},
-									"dateOfBirth": {
+									"timeOfBirth": {
 										"type": ["string", "null"],
 										"format": "date-time"
 									},
@@ -107,7 +107,7 @@
 									}
 								},
 								"additionalProperties": false,
-								"required": ["name", "dateOfBirth", "address"]
+								"required": ["name", "timeOfBirth", "address"]
 							}
 						}
 					}
@@ -555,7 +555,7 @@
 						"type": "string",
 						"format": "date-time"
 					},
-					"dateOfBirth": {
+					"timeOfBirth": {
 						"type": ["string", "null"],
 						"format": "date-time"
 					},
@@ -648,7 +648,7 @@
 			"UpdateCustomerValues": {
 				"type": "object",
 				"properties": {
-					"dateOfBirth": {
+					"timeOfBirth": {
 						"type": ["string", "null"],
 						"format": "date-time"
 					},
@@ -657,7 +657,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"required": ["name", "dateOfBirth"]
+				"required": ["name", "timeOfBirth"]
 			},
 			"UpdateCustomerWhere": {
 				"type": "object",
