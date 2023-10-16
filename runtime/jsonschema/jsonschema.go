@@ -335,10 +335,13 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		} else {
 			prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.Name)}
 		}
-	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		// date-time format allows both YYYY-MM-DD and full ISO8601/RFC3339 format
 		prop.Type = "string"
 		prop.Format = "date-time"
+	case proto.Type_TYPE_DATE:
+		prop.Type = "string"
+		prop.Format = "date"
 	case proto.Type_TYPE_ENUM:
 		// For enum's we actually don't need to set the `type` field at all
 		enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {

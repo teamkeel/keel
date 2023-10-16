@@ -3,7 +3,7 @@
 	"properties": {
 		"birthday": {
 			"type": "string",
-			"format": "date-time"
+			"format": "date"
 		},
 		"name": {
 			"type": "string"

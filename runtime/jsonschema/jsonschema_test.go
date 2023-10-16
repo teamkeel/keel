@@ -288,12 +288,6 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "createPersonWithOptionalDob",
 				},
 				{
-					name:    "valid - providing ISO8601 format for a Date",
-					request: `{"name": "Jon", "birthday": "1986-03-18T00:00:00.000Z"}`,
-					opName:  "createPersonWithOptionalDob",
-				},
-
-				{
 					name:    "valid - providing optional input for optional enum field as null",
 					request: `{"hobby": null}`,
 					opName:  "createPersonWithEnum",
@@ -350,7 +344,15 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"name": "Jon", "birthday": "18th March 1986"}`,
 					opName:  "createPersonWithDob",
 					errors: map[string]string{
-						"birthday": "Does not match format 'date-time'",
+						"birthday": "Does not match format 'date'",
+					},
+				},
+				{
+					name:    "providing ISO8601 format for a Date",
+					request: `{"name": "Jon", "birthday": "1986-03-18T00:00:00.000Z"}`,
+					opName:  "createPersonWithOptionalDob",
+					errors: map[string]string{
+						"birthday": "Does not match format 'date'",
 					},
 				},
 				{
@@ -745,11 +747,19 @@ func TestValidateRequest(t *testing.T) {
 					},
 				},
 				{
+					name:    "date invalid format with time component",
+					opName:  "listBooks",
+					request: `{"where": {"releaseDate": {"after": "1986-03-18T00:00:00.000Z"}}}`,
+					errors: map[string]string{
+						"where.releaseDate.after": `Does not match format 'date'`,
+					},
+				},
+				{
 					name:    "date invalid format",
 					opName:  "listBooks",
 					request: `{"where": {"releaseDate": {"after": "not-a-date-time"}}}`,
 					errors: map[string]string{
-						"where.releaseDate.after": `Does not match format 'date-time'`,
+						"where.releaseDate.after": `Does not match format 'date'`,
 					},
 				},
 				{
