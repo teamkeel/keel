@@ -64,11 +64,12 @@ func TestRuntimeGraphQL(t *testing.T) {
 			require.NoError(t, err)
 
 			ctx = runtimectx.WithPrivateKey(ctx, pk)
+			ctx = withTracing(t, ctx)
 
 			dbName := testhelpers.DbNameForTestName(tCase.name)
 			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName, true)
-			require.NoError(t, err)
 			defer database.Close()
+			require.NoError(t, err)
 
 			ctx = db.WithDatabase(ctx, database)
 			request = request.WithContext(ctx)
