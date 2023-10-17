@@ -99,36 +99,33 @@ func (db *GormDB) GetDB() *gorm.DB {
 }
 
 func toDbError(err error) error {
-	var pgxErr *pgconn.PgError
-	if !errors.As(err, &pgxErr) {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) {
 		return err
 	}
 
-	switch pgxErr.Code {
-	case "23502":
-		return &DbError{
-			Columns: []string{pgxErr.ColumnName},
-			Err:     ErrNotNullConstraintViolation,
-			PgErr:   pgxErr,
-		}
-	case "23503":
-		// Extract column and value from "Key (author_id)=(2L2ar5NCPvTTEdiDYqgcpF3f5QN1) is not present in table \"author\"."
-		out := regexp.MustCompile(`\(([^)]+)\)`).FindAllStringSubmatch(pgxErr.Detail, -1)
-		return &DbError{
-			Columns: []string{out[0][1]},
-			Err:     ErrForeignKeyConstraintViolation,
-			PgErr:   pgxErr,
-		}
-	case "23505":
-		// Extract column and value from "Key (code)=(1234) already exists."
-		out := regexp.MustCompile(`\(([^)]+)\)`).FindAllStringSubmatch(pgxErr.Detail, -1)
-		cols := strings.Split(out[0][1], ", ")
-		return &DbError{
-			Columns: cols,
-			Err:     ErrUniqueConstraintViolation,
-			PgErr:   pgxErr,
-		}
-	default:
-		return err
+	dbErr := &DbError{
+		Table:     pgErr.TableName,
+		Columns:   []string{},
+		Message:   pgErr.Message,
+		PgErrCode: pgErr.Code,
+		Err:       pgErr,
 	}
+
+	switch pgErr.Code {
+	case PgForeignKeyConstraintViolation:
+		// Extract column and value from "Key (author_id)=(2L2ar5NCPvTTEdiDYqgcpF3f5QN1) is not present in table \"author\"."
+		out := regexp.MustCompile(`\(([^)]+)\)`).FindAllStringSubmatch(pgErr.Detail, -1)
+		dbErr.Columns = []string{out[0][1]}
+	case PgUniqueConstraintViolation:
+		// Extract column and value from "Key (code)=(1234) already exists."
+		out := regexp.MustCompile(`\(([^)]+)\)`).FindAllStringSubmatch(pgErr.Detail, -1)
+		dbErr.Columns = strings.Split(out[0][1], ", ")
+	default:
+		if pgErr.ColumnName != "" {
+			dbErr.Columns = []string{pgErr.ColumnName}
+		}
+	}
+
+	return dbErr
 }

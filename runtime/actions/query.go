@@ -1129,12 +1129,12 @@ func sqlQuote(tokens ...string) string {
 func toRuntimeError(err error) error {
 	var value *db.DbError
 	if errors.As(err, &value) {
-		switch value.Err {
-		case db.ErrNotNullConstraintViolation:
+		switch value.PgErrCode {
+		case db.PgNotNullConstraintViolation:
 			return common.NewNotNullError(value.Columns[0])
-		case db.ErrUniqueConstraintViolation:
+		case db.PgUniqueConstraintViolation:
 			return common.NewUniquenessError(value.Columns)
-		case db.ErrForeignKeyConstraintViolation:
+		case db.PgForeignKeyConstraintViolation:
 			return common.NewForeignKeyConstraintError(value.Columns[0])
 		default:
 			return common.RuntimeError{

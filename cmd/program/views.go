@@ -220,15 +220,26 @@ func renderError(m *Model) string {
 		}
 
 	case StatusRunMigrations:
-		dbErr := &db.DbError{}
-
 		b.WriteString("❌ There was an error updating your database schema:\n\n")
-		b.WriteString("  ")
+
+		dbErr := &db.DbError{}
 		if errors.As(m.Err, &dbErr) {
-			b.WriteString("column ")
-			b.WriteString(colors.Red(strings.Join(dbErr.Columns, ", ")).String())
-			b.WriteString(": ")
-			b.WriteString(colors.Red(dbErr.Error()).String())
+			b.WriteString(colors.Red("Error: ").String())
+			b.WriteString(colors.Red(dbErr.Message).String())
+			b.WriteString(colors.Red(fmt.Sprintf(" (SQLSTATE Code: %s)", dbErr.PgErrCode)).String())
+			b.WriteString("\n")
+
+			if dbErr.Table != "" {
+				b.WriteString(colors.Red("Table: ").String())
+				b.WriteString(colors.Red(dbErr.Table).String())
+				b.WriteString("\n")
+			}
+
+			if dbErr.Columns != nil && len(dbErr.Columns) > 0 {
+				b.WriteString(colors.Red("Column(s): ").String())
+				b.WriteString(colors.Red(strings.Join(dbErr.Columns, ", ")).String())
+				b.WriteString("\n")
+			}
 		} else {
 			b.WriteString(colors.Red(m.Err.Error()).String())
 		}

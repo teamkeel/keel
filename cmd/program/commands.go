@@ -526,6 +526,10 @@ func (a *ApplyMigrationsError) Error() string {
 	return a.Err.Error()
 }
 
+func (e *ApplyMigrationsError) Unwrap() error {
+	return e.Err
+}
+
 func RunMigrations(schema *proto.Schema, database db.Database) tea.Cmd {
 	return func() tea.Msg {
 

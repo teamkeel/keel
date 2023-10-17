@@ -102,14 +102,6 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	sql.WriteString("CREATE INDEX IF NOT EXISTS idx_keel_audit_trace_id ON keel_audit USING HASH(trace_id);\n")
 
 	_, err = m.database.ExecuteStatement(ctx, sql.String())
-	if err != nil {
-		var pgErr *db.DbError
-		if errors.As(err, &pgErr) {
-			return pgErr.PgErr
-		}
-		return err
-	}
-
 	return err
 }
 

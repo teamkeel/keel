@@ -62,4 +62,8 @@ CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE 
 
 === 
 
-[{"Model":"Identity","Field":"","Type":"ADDED"},{"Model":"KeelAudit","Field":"","Type":"ADDED"},{"Model":"Person","Field":"","Type":"ADDED"}]
+[
+    {"Model":"Identity","Field":"","Type":"ADDED"},
+    {"Model":"KeelAudit","Field":"","Type":"ADDED"},
+    {"Model":"Person","Field":"","Type":"ADDED"}
+]
