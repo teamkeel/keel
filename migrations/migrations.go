@@ -15,6 +15,7 @@ import (
 	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/proto"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 )
@@ -55,6 +56,10 @@ type DatabaseChange struct {
 	Type string
 }
 
+func (c DatabaseChange) String() string {
+	return fmt.Sprintf("Model: %s, Field: %s, Type: %s", c.Model, c.Field, c.Type)
+}
+
 type Migrations struct {
 	database db.Database
 
@@ -78,6 +83,12 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	ctx, span := tracer.Start(ctx, "Apply Migrations")
 	defer span.End()
 
+	// Tracing is required because there may be data mutations which
+	// should log audits and fire events, if necessary.
+	if !span.SpanContext().IsValid() {
+		return errors.New("migrations cannot continue without active tracing enabled")
+	}
+
 	sql := strings.Builder{}
 
 	// Enable extensions
@@ -85,9 +96,13 @@ func (m *Migrations) Apply(ctx context.Context) error {
 
 	// Functions
 	sql.WriteString(ksuidFunction)
+	sql.WriteString("\n")
 	sql.WriteString(processAuditFunction)
+	sql.WriteString("\n")
 	sql.WriteString(setIdentityId)
+	sql.WriteString("\n")
 	sql.WriteString(setTraceId)
+	sql.WriteString("\n")
 
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema ( schema TEXT NOT NULL );\n")
 	sql.WriteString("DELETE FROM keel_schema;\n")
@@ -97,12 +112,11 @@ func (m *Migrations) Apply(ctx context.Context) error {
 		return err
 	}
 
-	// Cannot use parameters as then you get an error:
-	//   ERROR: cannot insert multiple commands into a prepared statement (SQLSTATE 42601)
 	escapedJSON := db.QuoteLiteral(string(b))
-	insertStmt := fmt.Sprintf("INSERT INTO keel_schema (schema) VALUES (%s);", escapedJSON)
-	sql.WriteString(insertStmt)
+	sql.WriteString(fmt.Sprintf("INSERT INTO keel_schema (schema) VALUES (%s);", escapedJSON))
 	sql.WriteString("\n")
+
+	sql.WriteString(fmt.Sprintf("SELECT set_trace_id('%s');\n", span.SpanContext().TraceID().String()))
 
 	sql.WriteString(m.SQL)
 	sql.WriteString("\n")
@@ -131,6 +145,9 @@ func (m *Migrations) Apply(ctx context.Context) error {
 // Introspection is performed on the database to work out what schema changes
 // need to be applied to result in the database schema matching the Keel schema
 func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migrations, error) {
+	ctx, span := tracer.Start(ctx, "Generate Migrations")
+	defer span.End()
+
 	columns, err := getColumns(ctx, database)
 	if err != nil {
 		return nil, err
@@ -212,6 +229,17 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				Model: modelName,
 				Type:  ChangeTypeRemoved,
 			})
+		}
+	}
+
+	// Add audit log triggers all model tables excluding the audit table itself.
+	for _, model := range schema.Models {
+		if model.Name != strcase.ToCamel(auditing.TableName) {
+			stmt, err := createAuditTriggerStmts(triggers, schema, model)
+			if err != nil {
+				return nil, err
+			}
+			statements = append(statements, stmt)
 		}
 	}
 
@@ -317,20 +345,8 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 		}
 	}
 
-	// Add audit logs hooks all model tables - excluding the audit table itself.
-	for _, model := range schema.Models {
-		if model.Name != strcase.ToCamel(auditing.TableName) {
-			stmt, err := createAuditTriggerStmts(triggers, schema, model)
-			if err != nil {
-				return nil, err
-			}
-			statements = append(statements, stmt)
-		}
-	}
-
-	// Make sure the audit model is removed from the schema returned inside the New Migrations
-	// object.
-	popAuditModel(schema)
+	stringChanges := lo.Map(changes, func(c *DatabaseChange, _ int) string { return c.String() })
+	span.SetAttributes(attribute.StringSlice("migration", stringChanges))
 
 	return &Migrations{
 		database: database,

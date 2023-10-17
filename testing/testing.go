@@ -83,7 +83,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	ctx := context.Background()
 
 	dbName := "keel_test"
-	database, err := testhelpers.SetupDatabaseForTestCase(ctx, opts.DbConnInfo, schema, dbName)
+	database, err := testhelpers.SetupDatabaseForTestCase(ctx, opts.DbConnInfo, schema, dbName, true)
 	if err != nil {
 		return nil, err
 	}
@@ -180,9 +180,9 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			otel.SetTextMapPropagator(propagation.TraceContext{})
 
 			ctx, span := tracer.Start(ctx, opts.TestGroupName)
+			defer span.End()
 
 			span.SetAttributes(attribute.String("request.url", r.URL.String()))
-			defer span.End()
 
 			// Use the embedded private key for the tests
 			pk, err := testhelpers.GetEmbeddedPrivateKey()

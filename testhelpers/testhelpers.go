@@ -53,7 +53,7 @@ func NpmInstall(dir string) (string, error) {
 	return string(b), err
 }
 
-func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo, schema *proto.Schema, dbName string) (db.Database, error) {
+func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo, schema *proto.Schema, dbName string, resetDatabase bool) (db.Database, error) {
 	mainDB, err := sql.Open("pgx/v5", dbConnInfo.String())
 	if err != nil {
 		return nil, err
@@ -64,17 +64,19 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 		return nil, err
 	}
 
-	// Drop the database if it already exists. The normal dropping of it at the end of the
-	// test case is bypassed if you quit a debug run of the test in VS Code.
-	_, err = mainDB.Exec("DROP DATABASE if exists " + dbName)
-	if err != nil {
-		return nil, err
-	}
+	if resetDatabase {
+		// Drop the database if it already exists. The normal dropping of it at the end of the
+		// test case is bypassed if you quit a debug run of the test in VS Code.
+		_, err = mainDB.Exec("DROP DATABASE if exists " + dbName)
+		if err != nil {
+			return nil, err
+		}
 
-	// Create the database and drop at the end of the test
-	_, err = mainDB.Exec("CREATE DATABASE " + dbName)
-	if err != nil {
-		return nil, err
+		// Create the database and drop at the end of the test
+		_, err = mainDB.Exec("CREATE DATABASE " + dbName)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Connect to the newly created test database and close connection

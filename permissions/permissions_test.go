@@ -670,7 +670,7 @@ func TestToSQL(t *testing.T) {
 			// Setup test database
 			ctx := context.Background()
 			dbName := testhelpers.DbNameForTestName(t.Name())
-			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, s, dbName)
+			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, s, dbName, true)
 			require.NoError(t, err)
 			defer database.Close()
 
