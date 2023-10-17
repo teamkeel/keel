@@ -667,8 +667,11 @@ func TestToSQL(t *testing.T) {
 				Password: "postgres",
 			}
 
-			// Setup test database
 			ctx := context.Background()
+
+			ctx, err = testhelpers.WithTracing(ctx)
+			require.NoError(t, err)
+
 			dbName := testhelpers.DbNameForTestName(t.Name())
 			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, s, dbName, true)
 			require.NoError(t, err)

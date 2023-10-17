@@ -19,6 +19,7 @@ import (
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/testhelpers"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -59,9 +60,9 @@ func TestMigrations(t *testing.T) {
 			_, err = mainDB.Exec("CREATE DATABASE " + dbName)
 			require.NoError(t, err)
 
-			context := context.Background()
+			ctx := context.Background()
 
-			database, err := db.New(context, dbConnInfo.WithDatabase(dbName).String())
+			database, err := db.New(ctx, dbConnInfo.WithDatabase(dbName).String())
 			require.NoError(t, err)
 
 			// Read the fixture file
@@ -77,6 +78,9 @@ func TestMigrations(t *testing.T) {
 
 			currSchema, newSchema, expectedSQL, expectedChanges := parts[0], parts[1], parts[2], parts[3]
 
+			ctx, err = testhelpers.WithTracing(t, ctx)
+			require.NoError(t, err)
+
 			// If this test defines a "current schema" then migrate the database to that
 			// state first
 			var currProto *proto.Schema
@@ -85,9 +89,9 @@ func TestMigrations(t *testing.T) {
 				currProto, err = builder.MakeFromString(currSchema)
 				require.NoError(t, err)
 
-				m, err := migrations.New(context, currProto, database)
+				m, err := migrations.New(ctx, currProto, database)
 				require.NoError(t, err)
-				err = m.Apply(context)
+				err = m.Apply(ctx)
 				require.NoError(t, err)
 			}
 
@@ -98,7 +102,7 @@ func TestMigrations(t *testing.T) {
 
 			// Create migrations from old (may be nil) to new
 			m, err := migrations.New(
-				context,
+				ctx,
 				schema,
 				database,
 			)
@@ -114,11 +118,11 @@ func TestMigrations(t *testing.T) {
 			assertJSON(t, []byte(expectedChanges), actualChanges)
 
 			// Check the new migrations can be applied without error
-			require.NoError(t, m.Apply(context))
+			require.NoError(t, m.Apply(ctx))
 
 			// Now fetch the "current" schema from the database, which
 			// should be the new one we just applied
-			dbSchema, err := migrations.GetCurrentSchema(context, database)
+			dbSchema, err := migrations.GetCurrentSchema(ctx, database)
 			require.NoError(t, err)
 
 			// Assert it is the new schema
@@ -130,7 +134,7 @@ func TestMigrations(t *testing.T) {
 			assertJSON(t, schemaBytes, dbSchemaBytes)
 
 			// Test ksuid function
-			r, err := database.ExecuteQuery(context, `select ksuid()`)
+			r, err := database.ExecuteQuery(ctx, `select ksuid()`)
 			require.NoError(t, err)
 			require.Equal(t, 1, len(r.Rows))
 			k, err := ksuid.Parse(r.Rows[0]["ksuid"].(string))

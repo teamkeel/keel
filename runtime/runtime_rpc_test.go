@@ -52,6 +52,9 @@ func TestRuntimeRPC(t *testing.T) {
 
 			ctx := request.Context()
 
+			ctx, err := testhelpers.WithTracing(ctx)
+			require.NoError(t, err)
+
 			pk, err := testhelpers.GetEmbeddedPrivateKey()
 			require.NoError(t, err)
 

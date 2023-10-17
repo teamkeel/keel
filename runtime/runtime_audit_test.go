@@ -2,7 +2,6 @@ package runtime_test
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -21,11 +20,6 @@ import (
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
 	"go.opentelemetry.io/otel/trace"
-)
-
-const (
-	traceId = "71f835dc7ac2750bed2135c7b30dc7fe"
-	spanId  = "b4c9e2a6a0d84702"
 )
 
 var auditSchema = `
@@ -70,7 +64,8 @@ func newContext(t *testing.T, keelSchema string, resetDatabase bool) (context.Co
 	require.NoError(t, err)
 	ctx = runtimectx.WithPrivateKey(ctx, pk)
 
-	ctx = withTracing(t, ctx)
+	ctx, err = testhelpers.WithTracing(ctx)
+	require.NoError(t, err)
 
 	// Add database to context
 	database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, "runtime_test", resetDatabase)
@@ -84,21 +79,6 @@ func withIdentity(t *testing.T, ctx context.Context, schema *proto.Schema) (cont
 	identity, err := actions.CreateIdentity(ctx, schema, "dave.new@keel.xyz", "1234")
 	require.NoError(t, err)
 	return auth.WithIdentity(ctx, identity), identity
-}
-
-func withTracing(t *testing.T, ctx context.Context) context.Context {
-	traceIdBytes, err := hex.DecodeString(traceId)
-	require.NoError(t, err)
-	spanIdBytes, err := hex.DecodeString(spanId)
-	require.NoError(t, err)
-	spanContext := trace.NewSpanContext(trace.SpanContextConfig{
-		TraceID:    trace.TraceID(traceIdBytes),
-		SpanID:     trace.SpanID(spanIdBytes),
-		TraceFlags: trace.FlagsSampled,
-	})
-	require.True(t, spanContext.IsValid())
-
-	return trace.ContextWithSpanContext(ctx, spanContext)
 }
 
 func TestAuditCreateAction(t *testing.T) {
@@ -135,7 +115,7 @@ func TestAuditCreateAction(t *testing.T) {
 	require.NotNil(t, audit["id"])
 	require.NotNil(t, audit["created_at"])
 	require.Equal(t, identity.Id, audit["identity_id"])
-	require.Equal(t, traceId, audit["trace_id"])
+	require.Equal(t, testhelpers.TraceId, audit["trace_id"])
 	require.Nil(t, audit["event_processed_at"])
 
 	opts := jsondiff.DefaultConsoleOptions()
@@ -185,7 +165,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 	require.NotNil(t, weddingAudit["id"])
 	require.NotNil(t, weddingAudit["created_at"])
 	require.Equal(t, identity.Id, weddingAudit["identity_id"])
-	require.Equal(t, traceId, weddingAudit["trace_id"])
+	require.Equal(t, testhelpers.TraceId, weddingAudit["trace_id"])
 	require.Nil(t, weddingAudit["event_processed_at"])
 
 	opts := jsondiff.DefaultConsoleOptions()
@@ -223,7 +203,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 	require.NotNil(t, peteAudit["id"])
 	require.NotNil(t, peteAudit["created_at"])
 	require.Equal(t, identity.Id, peteAudit["identity_id"])
-	require.Equal(t, traceId, peteAudit["trace_id"])
+	require.Equal(t, testhelpers.TraceId, peteAudit["trace_id"])
 	require.Nil(t, peteAudit["event_processed_at"])
 
 	diff, explanation = jsondiff.Compare(expectedPeteData, []byte(peteAudit["data"].(string)), &opts)
@@ -244,7 +224,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 	require.NotNil(t, adamAudit["id"])
 	require.NotNil(t, peteAudit["created_at"])
 	require.Equal(t, identity.Id, adamAudit["identity_id"])
-	require.Equal(t, traceId, adamAudit["trace_id"])
+	require.Equal(t, testhelpers.TraceId, adamAudit["trace_id"])
 
 	diff, explanation = jsondiff.Compare(expectedAdamData, []byte(adamAudit["data"].(string)), &opts)
 	if diff != jsondiff.FullMatch {
@@ -300,7 +280,7 @@ func TestAuditUpdateAction(t *testing.T) {
 	require.NotNil(t, audit["id"])
 	require.NotNil(t, audit["created_at"])
 	require.Equal(t, identity.Id, audit["identity_id"])
-	require.Equal(t, traceId, audit["trace_id"])
+	require.Equal(t, testhelpers.TraceId, audit["trace_id"])
 	require.Nil(t, audit["event_processed_at"])
 
 	opts := jsondiff.DefaultConsoleOptions()
@@ -356,7 +336,7 @@ func TestAuditDeleteAction(t *testing.T) {
 	require.NotNil(t, audit["id"])
 	require.NotNil(t, audit["created_at"])
 	require.Equal(t, identity.Id, audit["identity_id"])
-	require.Equal(t, traceId, audit["trace_id"])
+	require.Equal(t, testhelpers.TraceId, audit["trace_id"])
 	require.Nil(t, audit["event_processed_at"])
 
 	opts := jsondiff.DefaultConsoleOptions()
@@ -418,7 +398,7 @@ func TestAuditTablesWithOnlyTracing(t *testing.T) {
 	require.NotNil(t, audit["id"])
 	require.NotNil(t, audit["created_at"])
 	require.Nil(t, audit["identity_id"])
-	require.Equal(t, traceId, audit["trace_id"])
+	require.Equal(t, testhelpers.TraceId, audit["trace_id"])
 	require.Nil(t, audit["event_processed_at"])
 
 }
@@ -456,7 +436,7 @@ func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
 	require.NotNil(t, audit["id"])
 	require.NotNil(t, audit["created_at"])
 	require.Equal(t, identity.Id, audit["identity_id"])
-	require.Equal(t, traceId, audit["trace_id"])
+	require.Equal(t, testhelpers.TraceId, audit["trace_id"])
 	require.Nil(t, audit["event_processed_at"])
 
 	data, err := typed.JsonString(audit["data"].(string))
@@ -544,7 +524,7 @@ func TestAuditDatabaseMigration(t *testing.T) {
 	require.NotNil(t, ageUpdateAudit["id"])
 	require.NotNil(t, ageUpdateAudit["created_at"])
 	require.Nil(t, ageUpdateAudit["identity_id"])
-	require.Equal(t, traceId, ageUpdateAudit["trace_id"])
+	require.Equal(t, testhelpers.TraceId, ageUpdateAudit["trace_id"])
 	require.Nil(t, ageUpdateAudit["event_processed_at"])
 	require.Equal(t, 0, data.IntMust("age"))
 	require.Empty(t, data["is_active"])
@@ -559,7 +539,7 @@ func TestAuditDatabaseMigration(t *testing.T) {
 	require.NotNil(t, ageUpdateAudit["id"])
 	require.NotNil(t, ageUpdateAudit["created_at"])
 	require.Nil(t, ageUpdateAudit["identity_id"])
-	require.Equal(t, traceId, ageUpdateAudit["trace_id"])
+	require.Equal(t, testhelpers.TraceId, ageUpdateAudit["trace_id"])
 	require.Nil(t, ageUpdateAudit["event_processed_at"])
 	require.Equal(t, 0, data.IntMust("age"))
 	require.Equal(t, true, data.BoolMust("is_active"))
