@@ -56,18 +56,6 @@ ALTER TABLE "defaults" ALTER COLUMN "bool_changed" SET DEFAULT false;
 ALTER TABLE "defaults" ALTER COLUMN "bool_removed" DROP DEFAULT;
 ALTER TABLE "defaults" ALTER COLUMN "enum_changed" SET DEFAULT 'Earth';
 ALTER TABLE "defaults" ALTER COLUMN "enum_removed" DROP DEFAULT;
-DROP TRIGGER IF EXISTS defaults_create on "defaults";
-CREATE TRIGGER defaults_create AFTER INSERT ON "defaults" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
-DROP TRIGGER IF EXISTS defaults_update on "defaults";
-CREATE TRIGGER defaults_update AFTER UPDATE ON "defaults" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
-DROP TRIGGER IF EXISTS defaults_delete on "defaults";
-CREATE TRIGGER defaults_delete AFTER DELETE ON "defaults" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
-DROP TRIGGER IF EXISTS identity_create on "identity";
-CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
-DROP TRIGGER IF EXISTS identity_update on "identity";
-CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); 
-DROP TRIGGER IF EXISTS identity_delete on "identity";
-CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 
 === 
 

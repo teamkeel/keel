@@ -12,9 +12,14 @@ import (
 	"github.com/teamkeel/keel/auditing"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/proto"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 )
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/db")
 
 const (
 	ChangeTypeAdded    = "ADDED"
@@ -70,6 +75,9 @@ func (m *Migrations) HasModelFieldChanges() bool {
 
 // Apply executes the migrations against the database
 func (m *Migrations) Apply(ctx context.Context) error {
+	ctx, span := tracer.Start(ctx, "Apply Migrations")
+	defer span.End()
+
 	sql := strings.Builder{}
 
 	// Enable extensions
@@ -94,6 +102,7 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	escapedJSON := db.QuoteLiteral(string(b))
 	insertStmt := fmt.Sprintf("INSERT INTO keel_schema (schema) VALUES (%s);", escapedJSON)
 	sql.WriteString(insertStmt)
+	sql.WriteString("\n")
 
 	sql.WriteString(m.SQL)
 	sql.WriteString("\n")
@@ -102,7 +111,20 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	sql.WriteString("CREATE INDEX IF NOT EXISTS idx_keel_audit_trace_id ON keel_audit USING HASH(trace_id);\n")
 
 	_, err = m.database.ExecuteStatement(ctx, sql.String())
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Generate and send any events for this context.
+	// This must run regardless of the migration succeeding or failing.
+	// Failure to generate events fail silently.
+	eventsErr := events.SendEvents(ctx, m.Schema)
+	if eventsErr != nil {
+		span.RecordError(eventsErr)
+		span.SetStatus(codes.Error, eventsErr.Error())
+	}
+
+	return nil
 }
 
 // New creates a new Migrations instance for the given schema and database.
@@ -115,6 +137,11 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	}
 
 	constraints, err := getConstraints(ctx, database)
+	if err != nil {
+		return nil, err
+	}
+
+	triggers, err := getTriggers(ctx, database)
 	if err != nil {
 		return nil, err
 	}
@@ -189,9 +216,6 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	}
 
 	// Updating columns for tables that already exist
-
-	// todo this for loop is now 100 lines long - it should be factored out into
-	// a function to make it easier to read the flow narrative.
 	for _, model := range existingModels {
 		tableName := casing.ToSnake(model.Name)
 
@@ -296,7 +320,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	// Add audit logs hooks all model tables - excluding the audit table itself.
 	for _, model := range schema.Models {
 		if model.Name != strcase.ToCamel(auditing.TableName) {
-			stmt, err := createAuditHookStmt(schema, model)
+			stmt, err := createAuditTriggerStmts(triggers, schema, model)
 			if err != nil {
 				return nil, err
 			}
