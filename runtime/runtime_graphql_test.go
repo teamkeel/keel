@@ -68,8 +68,11 @@ func TestRuntimeGraphQL(t *testing.T) {
 
 			dbName := testhelpers.DbNameForTestName(tCase.name)
 			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName, true)
-			defer database.Close()
+			if err != nil {
+				database.Close()
+			}
 			require.NoError(t, err)
+			defer database.Close()
 
 			ctx = db.WithDatabase(ctx, database)
 			request = request.WithContext(ctx)
