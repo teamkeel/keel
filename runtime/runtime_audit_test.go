@@ -366,32 +366,36 @@ func TestAuditDeleteAction(t *testing.T) {
 	}
 }
 
-// func TestAuditTablesWithOnlyIdentity(t *testing.T) {
-// 	ctx, database, schema := newContext(t, auditSchema, true)
-// 	defer database.Close()
-// 	db := database.GetDB()
+func TestAuditTablesWithOnlyIdentity(t *testing.T) {
+	ctx, database, schema := newContext(t, auditSchema, true)
+	defer database.Close()
+	db := database.GetDB()
 
-// 	ctx, identity := withIdentity(t, ctx, schema)
+	ctx, identity := withIdentity(t, ctx, schema)
 
-// 	action := proto.FindAction(schema, "createWedding")
-// 	input := map[string]any{"name": "Dave"}
-// 	scope := actions.NewScope(ctx, action, schema)
-// 	_, err := actions.Create(scope, input)
-// 	require.NoError(t, err)
+	// Empty and invalid span context
+	spanContext := trace.NewSpanContext(trace.SpanContextConfig{})
+	ctx = trace.ContextWithSpanContext(ctx, spanContext)
 
-// 	var audits []map[string]any
-// 	db.Raw("SELECT * FROM keel_audit WHERE table_name='wedding'").Scan(&audits)
-// 	require.Len(t, audits, 1)
-// 	audit := audits[0]
+	action := proto.FindAction(schema, "createWedding")
+	input := map[string]any{"name": "Dave"}
+	scope := actions.NewScope(ctx, action, schema)
+	_, err := actions.Create(scope, input)
+	require.NoError(t, err)
 
-// 	require.Equal(t, "wedding", audit["table_name"])
-// 	require.Equal(t, "insert", audit["op"])
-// 	require.NotNil(t, audit["id"])
-// 	require.NotNil(t, audit["created_at"])
-// 	require.Equal(t, identity.Id, audit["identity_id"])
-// 	require.Nil(t, audit["trace_id"])
-// 	require.Nil(t, audit["event_processed_at"])
-// }
+	var audits []map[string]any
+	db.Raw("SELECT * FROM keel_audit WHERE table_name='wedding'").Scan(&audits)
+	require.Len(t, audits, 1)
+	audit := audits[0]
+
+	require.Equal(t, "wedding", audit["table_name"])
+	require.Equal(t, "insert", audit["op"])
+	require.NotNil(t, audit["id"])
+	require.NotNil(t, audit["created_at"])
+	require.Equal(t, identity.Id, audit["identity_id"])
+	require.Nil(t, audit["trace_id"])
+	require.Nil(t, audit["event_processed_at"])
+}
 
 func TestAuditTablesWithOnlyTracing(t *testing.T) {
 	ctx, database, schema := newContext(t, auditSchema, true)
