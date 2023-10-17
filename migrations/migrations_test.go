@@ -78,7 +78,7 @@ func TestMigrations(t *testing.T) {
 
 			currSchema, newSchema, expectedSQL, expectedChanges := parts[0], parts[1], parts[2], parts[3]
 
-			ctx, err = testhelpers.WithTracing(t, ctx)
+			ctx, err = testhelpers.WithTracing(ctx)
 			require.NoError(t, err)
 
 			// If this test defines a "current schema" then migrate the database to that
