@@ -2,6 +2,7 @@ package node
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,7 +11,10 @@ import (
 	"time"
 
 	"github.com/teamkeel/keel/util"
+	"go.opentelemetry.io/otel"
 )
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/testing")
 
 type DevelopmentServer struct {
 	cmd       *exec.Cmd
@@ -85,8 +89,11 @@ type ServerOpts struct {
 	Watch   bool
 }
 
-// RunDevelopmentServer will start a new node runtime server serving/handling custom function requests
-func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, error) {
+// StartDevelopmentServer will start a new node runtime server serving/handling custom function requests
+func StartDevelopmentServer(ctx context.Context, dir string, options *ServerOpts) (*DevelopmentServer, error) {
+	_, span := tracer.Start(ctx, "Start Development Server")
+	defer span.End()
+
 	args := []string{".build/server.js"}
 	if options != nil && options.Watch {
 		args = append([]string{"watch"}, args...)
@@ -172,7 +179,7 @@ func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, 
 			_ = d.Kill()
 			return d, fmt.Errorf("development server failed to start after %s", maxWait.String())
 		}
-		time.Sleep(time.Millisecond * 500)
+		time.Sleep(time.Millisecond * 100)
 	}
 
 	return d, nil

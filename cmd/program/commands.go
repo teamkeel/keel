@@ -600,7 +600,7 @@ func StartFunctions(m *Model) tea.Cmd {
 			Buffer: true,
 			ch:     m.functionsLogCh,
 		}
-		server, err := node.RunDevelopmentServer(m.ProjectDir, &node.ServerOpts{
+		server, err := node.StartDevelopmentServer(context.Background(), m.ProjectDir, &node.ServerOpts{
 			EnvVars: envVars,
 			Output:  output,
 			Watch:   true,
