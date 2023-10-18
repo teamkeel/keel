@@ -58,7 +58,7 @@ model Record {
     }
 
     @permission(
-        expression: ctx.isAuthenticated,
+        expression: true,
         actions: [create, update]
     )
 }

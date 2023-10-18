@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "ctx.identity.user.records.owner is an array of User. Only 'in' or 'not in' can be used",
+      "hint": "Change '=' to either 'in' or 'not in'.",
+      "code": "E030",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_backlink_repeated_lhs_fields/schema.keel",
+        "offset": 192,
+        "line": 10,
+        "column": 31
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_backlink_repeated_lhs_fields/schema.keel",
+        "offset": 193,
+        "line": 10,
+        "column": 32
+      }
+    }
+  ]
+}

@@ -294,8 +294,17 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 	}
 
 	// Case: LHS and RHS are the same type
-	if resolvedLHS.GetType() == resolvedRHS.GetType() && resolvedLHS.IsRepeated() == resolvedRHS.IsRepeated() {
-		return nil
+	if resolvedLHS.GetType() == resolvedRHS.GetType() {
+		if condition.Operator != nil && condition.Operator.Symbol == parser.OperatorAssignment {
+			if resolvedLHS.IsRepeated() == resolvedRHS.IsRepeated() {
+				return nil
+			}
+			if resolvedLHS.IsRepeated() && !resolvedRHS.IsRepeated() {
+				return nil
+			}
+		} else if resolvedLHS.IsRepeated() == resolvedRHS.IsRepeated() {
+			return nil
+		}
 	}
 
 	// Case: LHS and RHS are of _compatible_ types
@@ -311,7 +320,6 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 
 	// Case: LHS is of type T and RHS is an array of type T
 	if resolvedRHS.IsRepeated() {
-
 		// First check array contains only one type
 		arrayType := resolvedRHS.GetType()
 		valid := true
@@ -374,6 +382,12 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 		return nil
 	}
 
+	if condition.Operator != nil && condition.Operator.Symbol == parser.OperatorAssignment {
+		if resolvedLHS.IsRepeated() && !resolvedRHS.IsRepeated() {
+			return nil
+		}
+	}
+
 	lhsType := resolvedLHS.GetType()
 	if resolvedLHS.IsRepeated() {
 		if resolvedLHS.Array != nil {
@@ -392,22 +406,22 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 		}
 	}
 
-	// // LHS and RHS types do not match, report error
-	// errors = append(errors,
-	// 	errorhandling.NewValidationError(
-	// 		errorhandling.ErrorExpressionTypeMismatch,
-	// 		errorhandling.TemplateLiterals{
-	// 			Literals: map[string]string{
-	// 				"Operator": condition.Operator.Symbol,
-	// 				"LHS":      condition.LHS.ToString(),
-	// 				"LHSType":  lhsType,
-	// 				"RHS":      condition.RHS.ToString(),
-	// 				"RHSType":  rhsType,
-	// 			},
-	// 		},
-	// 		condition,
-	// 	),
-	// )
+	// LHS and RHS types do not match, report error
+	errors = append(errors,
+		errorhandling.NewValidationError(
+			errorhandling.ErrorExpressionTypeMismatch,
+			errorhandling.TemplateLiterals{
+				Literals: map[string]string{
+					"Operator": condition.Operator.Symbol,
+					"LHS":      condition.LHS.ToString(),
+					"LHSType":  lhsType,
+					"RHS":      condition.RHS.ToString(),
+					"RHSType":  rhsType,
+				},
+			},
+			condition,
+		),
+	)
 
 	return errors
 }

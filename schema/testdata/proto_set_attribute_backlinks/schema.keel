@@ -1,0 +1,41 @@
+model Record {
+    fields {
+        name Text
+        owner User
+        organisation Organisation
+        isActive Boolean @default(false)
+        parent Record?
+        children Record[]
+    }
+
+    actions {
+        create createRecord() with (name) {
+            @set(record.owner = ctx.identity.user)
+            @set(record.organisation.id = ctx.identity.user.organisation.id)
+            @set(record.isActive = ctx.identity.user.organisation.isActive)
+        }
+        update updateRecordOwner(id) {
+            @set(record.owner = ctx.identity.user)
+            @set(record.organisation.id = ctx.identity.user.organisation.id)
+            @set(record.isActive = ctx.identity.user.organisation.isActive)
+        }
+    }
+}
+
+model User {
+    fields {
+        identity Identity {
+            @unique
+            @relation(user)
+        }
+        organisation Organisation
+        isAdmin Boolean @default(false)
+    }
+}
+
+model Organisation {
+    fields {
+        users User[]
+        isActive Boolean @default(true)
+    }
+}

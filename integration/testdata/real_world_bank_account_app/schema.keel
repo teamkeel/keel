@@ -1,9 +1,8 @@
-
 model Entity {
     fields {
         name Text
         users EntityUser[]
-        account BankAccount  
+        account BankAccount
     }
 }
 
@@ -19,12 +18,10 @@ model BankAccount {
             @where(bankAccount == ctx.identity.user.entity.account)
             @permission(expression: ctx.isAuthenticated)
         }
-
         update updateMyAccount() with (alias) {
             @where(bankAccount == ctx.identity.user.entity.account)
             @permission(expression: ctx.isAuthenticated and ctx.identity.user.canUpdate)
         }
-
         get getAccount(id) {
             @permission(expression: bankAccount.entity in ctx.identity.administrator.access.entity)
         }
@@ -34,34 +31,34 @@ model BankAccount {
 model EntityUser {
     fields {
         name Text
-        identity Identity @unique @relation(user)
+        identity Identity {
+            @unique
+            @relation(user)
+        }
         entity Entity
         canUpdate Boolean @default(false)
     }
 
     actions {
         get myUser() {
-             @where(entityUser == ctx.identity.user)
-             @permission(expression: ctx.isAuthenticated)
+            @where(entityUser == ctx.identity.user)
+            @permission(expression: ctx.isAuthenticated)
         }
-
         list myFellowUsers() {
             @where(entityUser in ctx.identity.user.entity.users)
             @where(entityUser != ctx.identity.user)
             @permission(expression: ctx.isAuthenticated)
             @orderBy(name: asc)
         }
-
         list entityUsers(entity.id) {
             // Only permitted to users of entities which this administrator has access to.
-             @permission(expression: entityUser in ctx.identity.administrator.access.entity.users)
-             @orderBy(name: asc)
+            @permission(expression: entityUser in ctx.identity.administrator.access.entity.users)
+            @orderBy(name: asc)
         }
-
         list bankAccountUsers(entity.account.id) {
             // A different way to expression the permission rule compared to entityUsers
-             @permission(expression: entityUser.entity in ctx.identity.administrator.access.entity)
-             @orderBy(name: asc)
+            @permission(expression: entityUser.entity in ctx.identity.administrator.access.entity)
+            @orderBy(name: asc)
         }
     }
 }

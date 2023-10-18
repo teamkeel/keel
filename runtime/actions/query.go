@@ -123,22 +123,6 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	}
 }
 
-func (o *QueryOperand) toAlias(query *QueryBuilder) string {
-	switch {
-	case o.IsValue(), o.IsField(), o.IsNull(), o.IsRaw():
-		return ""
-	case o.IsInlineQuery():
-		table := o.table
-		// If no model table is specified, then use the base model in the query builder
-		if table == "" {
-			table = query.table
-		}
-		return sqlQuote(table, o.column)
-	default:
-		panic("nope")
-	}
-}
-
 func (o *QueryOperand) toSqlArgs() []any {
 	switch {
 	case o.IsValue():
