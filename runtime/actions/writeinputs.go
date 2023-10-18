@@ -130,15 +130,6 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 				selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1])
 
-				// If there are no matches in the subquery then null will be returned, but null
-				// will cause IN and NOT IN filtering of this subquery result to always evaluate as false.
-				// Therefore we need to filter out null.
-				identityQuery.And()
-				err = identityQuery.Where(selectField, NotEquals, Null())
-				if err != nil {
-					return err
-				}
-
 				identityQuery.AppendSelect(selectField)
 
 				row.values[field] = InlineQuery(identityQuery, selectField)
@@ -238,9 +229,10 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 						// Retrieve the foreign key model field on the related model.
 						// If there are multiple relationships to the same model, then field.InverseFieldName will be
 						// populated and will provide the disambiguation as to which foreign key field to use.
-						foriegnKeyModelField := lo.Filter(messageModel.Fields, func(f *proto.Field, _ int) bool {
+						foriegnKeyModelField := lo.Filter(messageModel.Fields, func(f *proto.Field, i int) bool {
 							return f.Type.Type == proto.Type_TYPE_MODEL &&
 								f.Type.ModelName.Value == model.Name &&
+								field != f && // For self-referencing models
 								(field.InverseFieldName == nil || f.ForeignKeyFieldName.Value == fmt.Sprintf("%sId", field.InverseFieldName.Value))
 						})
 
@@ -301,7 +293,17 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 						if row != nil {
 							// Retrieve the foreign key model field on the this model.
 							foriegnKeyModelField := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
-								return f.Type.Type == proto.Type_TYPE_MODEL && f.Type.ModelName.Value == messageModel.Name && f.Name == input.Name
+								return f.Type.Type == proto.Type_TYPE_MODEL &&
+									f.Type.ModelName.Value == messageModel.Name &&
+									f.Name == input.Name
+								// For self-referencing models
+								//field != f &&
+								//f.ForeignKeyFieldName != nil &&
+								//f.ForeignKeyFieldName.Value == fmt.Sprintf("%sId", field.Name)
+
+								// This will always be set in M:1 or 1:1
+								//f.InverseFieldName != nil &&
+								//f.InverseFieldName.Value == input.Name
 							})
 
 							if len(foriegnKeyModelField) != 1 {

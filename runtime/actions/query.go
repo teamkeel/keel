@@ -602,7 +602,8 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 
 // Generates an executable INSERT statement with the list of arguments.
 func (query *QueryBuilder) InsertStatement() *Statement {
-	ctes, args, _, alias := query.generateInsertCte(query.writeValues, nil, "")
+	ctes := []string{}
+	ctes, args, _, alias := query.generateInsertCte(ctes, query.writeValues, nil, "")
 
 	selection := []string{"*"}
 	if auth.IsAuthenticated(query.context) {
@@ -627,9 +628,8 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 }
 
 // Recursively generates in common table expression insert query for the write values graph.
-func (query *QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, primaryKeyTableAlias string) ([]string, []any, *proto.Field, string) {
+func (query *QueryBuilder) generateInsertCte(ctes []string, row *Row, foreignKey *proto.Field, primaryKeyTableAlias string) ([]string, []any, *proto.Field, string) {
 
-	ctes := []string{}
 	alias := fmt.Sprintf("new_%v_%s", makeAlias(query.writeValues, row), casing.ToSnake(row.model.Name))
 
 	columnNames := []string{}
@@ -648,19 +648,17 @@ func (query *QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, 
 		// 	continue
 		// }
 
-		var foreignKeyField *proto.Field
+		//var foreignKeyField *proto.Field
 		var primaryKeyTable string
 
-		c, a, foreignKeyField, primaryKeyTable := query.generateInsertCte(r.row, r.foreignKey, alias)
+		c, a, _, primaryKeyTable := query.generateInsertCte(ctes, r.row, nil, alias)
 
-		ctes = append(ctes, c...)
+		ctes = c // append(ctes, c...)
 		args = append(args, a...)
 
 		// For every row that this references, we need to set the foreign key.
 		// For example, on the Sale row; customerId = (SELECT id FROM new_customer_1)
-		if foreignKeyField != nil && row.model.Name == foreignKeyField.ModelName {
-			row.values[foreignKeyField.ForeignKeyFieldName.Value] = &inlineSelect{sql: fmt.Sprintf("(SELECT id FROM %s)", primaryKeyTable)}
-		}
+		row.values[r.foreignKey.ForeignKeyFieldName.Value] = &inlineSelect{sql: fmt.Sprintf("(SELECT id FROM %s)", primaryKeyTable)}
 	}
 
 	// Does this foreign key of the relationship exist on this row?
@@ -678,6 +676,41 @@ func (query *QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, 
 
 	columnValues := []string{}
 	sort.Strings(orderedKeys)
+
+	for _, col := range orderedKeys {
+		//colName := casing.ToSnake(col)
+		//columnNames = append(columnNames, colName)
+
+		if value, ok := row.values[col].(*QueryOperand); ok && value.IsInlineQuery() {
+			//turn into new cte
+			cteAlias := fmt.Sprintf("select_%s", value.query.table)
+
+			cteExists := false
+			for _, c := range ctes {
+				if strings.HasPrefix(c, cteAlias) {
+					cteExists = true
+					break
+				}
+			}
+
+			cteAliases := []string{}
+			for i, _ := range value.query.selection {
+				cteAliases = append(cteAliases, fmt.Sprintf("column_%v", i))
+			}
+
+			if !cteExists {
+
+				cte := fmt.Sprintf("%s (%s) AS (%s)",
+					cteAlias,
+					strings.Join(cteAliases, ", "),
+					value.query.SelectStatement().SqlTemplate())
+
+				ctes = append(ctes, cte)
+				args = append(args, value.query.SelectStatement().SqlArgs()...)
+			}
+		}
+	}
+
 	for _, col := range orderedKeys {
 		colName := casing.ToSnake(col)
 		columnNames = append(columnNames, colName)
@@ -691,26 +724,42 @@ func (query *QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, 
 				columnValues = append(columnValues, value.toColumnString(query))
 			case value.IsInlineQuery():
 				//turn into new cte
-				alias := fmt.Sprintf("select_%s", value.query.table)
+				cteAlias := fmt.Sprintf("select_%s", value.query.table)
 
-				cteExists := false
-				for _, c := range ctes {
-					if strings.HasPrefix(c, alias) {
-						cteExists = true
-						break
+				// cteExists := false
+				// for _, c := range ctes {
+				// 	if strings.HasPrefix(c, cteAlias) {
+				// 		cteExists = true
+				// 		break
+				// 	}
+				// }
+
+				columnAlias := ""
+
+				//cteAliases := []string{}
+				for i, s := range value.query.selection {
+					//cteAliases = append(cteAliases, fmt.Sprintf("column_%v", i))
+					if s == value.selectColumn {
+						columnAlias = fmt.Sprintf("column_%v", i)
 					}
 				}
 
-				if !cteExists {
-					cte := fmt.Sprintf("%s AS (%s)",
-						alias,
-						value.query.SelectStatement().SqlTemplate())
-
-					ctes = append(ctes, cte)
-					args = append(args, value.query.SelectStatement().SqlArgs()...)
+				if columnAlias == "" {
+					panic("need col")
 				}
 
-				rhs := fmt.Sprintf("(SELECT %s FROM %s)", value.selectColumn, alias)
+				// if !cteExists {
+
+				// 	cte := fmt.Sprintf("%s (%s) AS (%s)",
+				// 		cteAlias,
+				// 		strings.Join(cteAliases, ", "),
+				// 		value.query.SelectStatement().SqlTemplate())
+
+				// 	ctes = append(ctes, cte)
+				// 	args = append(args, value.query.SelectStatement().SqlArgs()...)
+				// }
+
+				rhs := fmt.Sprintf("(SELECT %s FROM %s)", columnAlias, cteAlias)
 				columnValues = append(columnValues, rhs)
 				// args = append(args, value.query.SelectStatement().args...)
 			case value.IsValue():
@@ -732,9 +781,10 @@ func (query *QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, 
 			// 	args = append(args, row.values[col])
 			// }
 		} else {
-			panic("not")
-			//args = append(args, row.values[col])
-			//columnValues = append(columnValues, "?")
+			//panic("not")
+			//todo: identity probably doign this
+			args = append(args, row.values[col])
+			columnValues = append(columnValues, "?")
 		}
 	}
 
@@ -757,8 +807,8 @@ func (query *QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, 
 
 	// If this row is referenced by other rows, then we need to create these rows afterwards. We need to pass in this row table alias in order to extract the primary key.
 	for _, r := range row.referencedBy {
-		s, a, _, _ := query.generateInsertCte(r.row, r.foreignKey, alias)
-		ctes = append(ctes, s...)
+		c, a, _, _ := query.generateInsertCte(ctes, r.row, r.foreignKey, alias)
+		ctes = c //ctes = append(ctes, s...)
 		args = append(args, a...)
 	}
 

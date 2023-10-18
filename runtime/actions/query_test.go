@@ -2295,17 +2295,22 @@ var testCases = []testCase{
 		actionName: "createRecord",
 		input:      map[string]any{"name": "Dave"},
 		expectedTemplate: `
-			WITH new_1_record AS (
-				INSERT INTO 
-					"record" (is_active, name, user_id) 
-				VALUES (
-					(SELECT "identity$user"."is_active" FROM ctx), 
-					?, 
-					(SELECT "identity$user"."id" FROM ctx)) 
-				RETURNING *) 
+			WITH 
+				select_identity (column_0, column_1) AS (
+					SELECT "identity$user"."id", "identity$user"."is_active" 
+					FROM "identity" 
+					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?), 
+				new_1_record AS (
+					INSERT INTO "record" (is_active, name, user_id)
+					VALUES (
+						(SELECT column_1 FROM select_identity), 
+						?, 
+						(SELECT column_0 FROM select_identity))
+					RETURNING *) 
 			SELECT * FROM new_1_record`,
 		identity:     identity,
-		expectedArgs: []any{"Dave", "Dave"},
+		expectedArgs: []any{"identityId", "Dave"},
 	},
 }
 
