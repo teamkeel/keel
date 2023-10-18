@@ -5,7 +5,7 @@
         "additionalProperties": false,
         "properties": {
           "birthday": {
-            "format": "date-time",
+            "format": "date",
             "type": "string"
           },
           "hobby": {

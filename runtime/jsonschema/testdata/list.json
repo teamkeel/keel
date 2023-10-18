@@ -38,27 +38,27 @@
 				"properties": {
 					"after": {
 						"type": "string",
-						"format": "date-time"
+						"format": "date"
 					},
 					"before": {
 						"type": "string",
-						"format": "date-time"
+						"format": "date"
 					},
 					"equals": {
 						"type": ["string", "null"],
-						"format": "date-time"
+						"format": "date"
 					},
 					"notEquals": {
 						"type": ["string", "null"],
-						"format": "date-time"
+						"format": "date"
 					},
 					"onOrAfter": {
 						"type": "string",
-						"format": "date-time"
+						"format": "date"
 					},
 					"onOrBefore": {
 						"type": "string",
-						"format": "date-time"
+						"format": "date"
 					}
 				},
 				"additionalProperties": false

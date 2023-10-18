@@ -17,7 +17,7 @@
 				"properties": {
 					"birthday": {
 						"type": "string",
-						"format": "date-time"
+						"format": "date"
 					},
 					"hobby": {
 						"enum": ["Tennis", "Chess"]

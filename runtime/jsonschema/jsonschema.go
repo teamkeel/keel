@@ -3,6 +3,7 @@ package jsonschema
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
@@ -77,6 +78,10 @@ type Components struct {
 // being created.
 func ValidateRequest(ctx context.Context, schema *proto.Schema, action *proto.Action, input any) (*gojsonschema.Result, error) {
 	requestType := JSONSchemaForActionInput(ctx, schema, action)
+
+	// We want to allow ISO8601 format WITH a compulsary date component to be permitted for the date format
+	gojsonschema.FormatCheckers.Add("date", RelaxedDateFormatChecker{})
+
 	return gojsonschema.Validate(gojsonschema.NewGoLoader(requestType), gojsonschema.NewGoLoader(input))
 }
 
@@ -84,7 +89,6 @@ func ValidateResponse(ctx context.Context, schema *proto.Schema, action *proto.A
 	responseSchema := JSONSchemaForActionResponse(ctx, schema, action)
 
 	s := gojsonschema.NewGoLoader(responseSchema)
-
 	r := gojsonschema.NewGoLoader(response)
 	result, err := gojsonschema.Validate(s, r)
 	return responseSchema, result, err
@@ -335,10 +339,13 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		} else {
 			prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.Name)}
 		}
-	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		// date-time format allows both YYYY-MM-DD and full ISO8601/RFC3339 format
 		prop.Type = "string"
 		prop.Format = "date-time"
+	case proto.Type_TYPE_DATE:
+		prop.Type = "string"
+		prop.Format = "date"
 	case proto.Type_TYPE_ENUM:
 		// For enum's we actually don't need to set the `type` field at all
 		enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {
@@ -414,4 +421,28 @@ func ErrorsToString(errs []gojsonschema.ResultError) (ret string) {
 	}
 
 	return ret
+}
+
+type RelaxedDateFormatChecker struct{}
+
+// Checks that the value matches the a ISO8601 except the date component is mandatory
+func (f RelaxedDateFormatChecker) IsFormat(input interface{}) bool {
+	asString, ok := input.(string)
+	if !ok {
+		return false
+	}
+
+	formats := []string{
+		"2006-01-02",
+		time.RFC3339,
+		time.RFC3339Nano,
+	}
+
+	for _, format := range formats {
+		if _, err := time.Parse(format, asString); err == nil {
+			return true
+		}
+	}
+
+	return false
 }

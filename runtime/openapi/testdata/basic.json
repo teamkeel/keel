@@ -100,7 +100,7 @@
 									},
 									"dateOfBirth": {
 										"type": "string",
-										"format": "date-time"
+										"format": "date"
 									},
 									"name": {
 										"type": "string"
@@ -569,7 +569,7 @@
 					},
 					"dateOfBirth": {
 						"type": "string",
-						"format": "date-time"
+						"format": "date"
 					},
 					"id": {
 						"type": "string"
@@ -638,7 +638,7 @@
 				"properties": {
 					"dateOfBirth": {
 						"type": "string",
-						"format": "date-time"
+						"format": "date"
 					},
 					"name": {
 						"type": "string"
