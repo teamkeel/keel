@@ -50,10 +50,15 @@ model Record {
             @set(record.parent.organisation.id = ctx.identity.user.organisation.id)
             @set(record.parent.isActive = ctx.identity.user.organisation.isActive)
         }
+        update updateRecordOwner(id) {
+            @set(record.owner = ctx.identity.user)
+            @set(record.organisation.id = ctx.identity.user.organisation.id)
+            @set(record.isActive = ctx.identity.user.organisation.isActive)
+        }
     }
 
     @permission(
-        expression: true,
-        actions: [create]
+        expression: ctx.isAuthenticated,
+        actions: [create, update]
     )
 }

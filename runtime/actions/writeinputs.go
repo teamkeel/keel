@@ -160,7 +160,7 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any)
 
 	// Add any foreign keys to the root row from rows which it references.
 	for k, v := range foreignKeys {
-		row.values[k] = v
+		row.values[k] = Value(v)
 	}
 
 	query.writeValues = row
@@ -175,7 +175,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 	newRow := &Row{
 		model:        model,
 		target:       currentTarget,
-		values:       map[string]any{},
+		values:       map[string]*QueryOperand{},
 		referencedBy: []*Relationship{},
 		references:   []*Relationship{},
 	}

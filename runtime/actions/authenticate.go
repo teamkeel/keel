@@ -202,7 +202,7 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 		return err
 	}
 
-	query.AddWriteValue(Field("password"), string(hashedPassword))
+	query.AddWriteValue(Field("password"), Value(string(hashedPassword)))
 
 	affected, err := query.UpdateStatement().Execute(scope.Context)
 	if err != nil {

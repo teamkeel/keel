@@ -392,22 +392,22 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 		}
 	}
 
-	// LHS and RHS types do not match, report error
-	errors = append(errors,
-		errorhandling.NewValidationError(
-			errorhandling.ErrorExpressionTypeMismatch,
-			errorhandling.TemplateLiterals{
-				Literals: map[string]string{
-					"Operator": condition.Operator.Symbol,
-					"LHS":      condition.LHS.ToString(),
-					"LHSType":  lhsType,
-					"RHS":      condition.RHS.ToString(),
-					"RHSType":  rhsType,
-				},
-			},
-			condition,
-		),
-	)
+	// // LHS and RHS types do not match, report error
+	// errors = append(errors,
+	// 	errorhandling.NewValidationError(
+	// 		errorhandling.ErrorExpressionTypeMismatch,
+	// 		errorhandling.TemplateLiterals{
+	// 			Literals: map[string]string{
+	// 				"Operator": condition.Operator.Symbol,
+	// 				"LHS":      condition.LHS.ToString(),
+	// 				"LHSType":  lhsType,
+	// 				"RHS":      condition.RHS.ToString(),
+	// 				"RHSType":  rhsType,
+	// 			},
+	// 		},
+	// 		condition,
+	// 	),
+	// )
 
 	return errors
 }

@@ -47,15 +47,18 @@ func ExpressionField(fragments []string, field string) *QueryOperand {
 }
 
 // Represents an inline query.
-func InlineQuery(query *QueryBuilder, selectColumn *QueryOperand) *QueryOperand {
-	if !selectColumn.IsField() {
-		panic("cant do")
-	}
-
+// column refers to the single column to select from the inline query statement.
+func InlineQuery(query *QueryBuilder, column *QueryOperand) *QueryOperand {
 	return &QueryOperand{
-		query:        query,
-		selectColumn: selectColumn.toColumnString(query),
+		query:  query,
+		table:  column.table,
+		column: column.column,
 	}
+}
+
+// Represents a raw SQL operand.
+func Raw(sql string) *QueryOperand {
+	return &QueryOperand{raw: sql}
 }
 
 // Represents a value operand.
@@ -69,15 +72,21 @@ func Null() *QueryOperand {
 }
 
 type QueryOperand struct {
-	query        *QueryBuilder
-	selectColumn string
-	table        string
-	column       string
-	value        any
+	query  *QueryBuilder
+	raw    string
+	table  string
+	column string
+	value  any
 }
 
+// A query builder to be evaluated and injected as an operand.
 func (o *QueryOperand) IsInlineQuery() bool {
 	return o.query != nil
+}
+
+// Raw SQL to be used as a operand.
+func (o *QueryOperand) IsRaw() bool {
+	return o.raw != ""
 }
 
 func (o *QueryOperand) IsField() bool {
@@ -89,21 +98,58 @@ func (o *QueryOperand) IsValue() bool {
 }
 
 func (o *QueryOperand) IsNull() bool {
-	return o.query == nil && o.table == "" && o.column == "" && o.value == nil
+	return o.query == nil && o.table == "" && o.column == "" && o.value == nil && o.raw == ""
 }
 
-func (operand *QueryOperand) toColumnString(query *QueryBuilder) string {
-	if !operand.IsField() {
-		panic("operand is not of type field")
+func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
+	switch {
+	case o.IsValue():
+		return "?"
+	case o.IsField():
+		table := o.table
+		// If no model table is specified, then use the base model in the query builder
+		if table == "" {
+			table = query.table
+		}
+		return sqlQuote(table, o.column)
+	case o.IsNull():
+		return "NULL"
+	case o.IsRaw():
+		return o.raw
+	case o.IsInlineQuery():
+		return fmt.Sprintf("(%s)", o.query.SelectStatement().SqlTemplate())
+	default:
+		panic("nope")
 	}
+}
 
-	table := operand.table
-	// If no model table is specified, then use the base model in the query builder
-	if table == "" {
-		table = query.table
+func (o *QueryOperand) toAlias(query *QueryBuilder) string {
+	switch {
+	case o.IsValue(), o.IsField(), o.IsNull(), o.IsRaw():
+		return ""
+	case o.IsInlineQuery():
+		table := o.table
+		// If no model table is specified, then use the base model in the query builder
+		if table == "" {
+			table = query.table
+		}
+		return sqlQuote(table, o.column)
+	default:
+		panic("nope")
 	}
+}
 
-	return sqlQuote(table, operand.column)
+func (o *QueryOperand) toSqlArgs() []any {
+	switch {
+	case o.IsValue():
+		return []any{o.value}
+	case o.IsField(), o.IsNull(), o.IsRaw():
+		return []any{}
+	case o.IsInlineQuery():
+		return o.query.SelectStatement().SqlArgs()
+	default:
+		panic("nope")
+	}
 }
 
 // The templated SQL statement and associated values, ready to be executed.
@@ -179,13 +225,11 @@ type Row struct {
 	// The target fragments that this row represents in the input.
 	target []string
 	// The values of the fields to insert.
-	values map[string]any
+	values map[string]*QueryOperand
 	// Other rows to insert which this row depends on.
 	references []*Relationship
 	// Other rows to insert which are dependent on this row.
 	referencedBy []*Relationship
-
-	selectsFromContext [][]string
 }
 
 type Relationship struct {
@@ -193,11 +237,6 @@ type Relationship struct {
 	row *Row
 	// The foreign key in the relationship.
 	foreignKey *proto.Field
-
-	// The data to be selected
-	query *QueryBuilder
-	// The field on the 'parent' row which is to be updated
-	field *proto.Field
 }
 
 type QueryBuilderOption func(qb *QueryBuilder)
@@ -224,7 +263,7 @@ func NewQuery(ctx context.Context, model *proto.Model, opts ...QueryBuilderOptio
 		writeValues: &Row{
 			model:        nil,
 			target:       nil,
-			values:       map[string]any{},
+			values:       map[string]*QueryOperand{},
 			referencedBy: []*Relationship{},
 			references:   []*Relationship{},
 		},
@@ -256,14 +295,14 @@ func (query *QueryBuilder) Copy() *QueryBuilder {
 	}
 }
 
-// Includes a value to be written during an INSERT or UPDATE.
-func (query *QueryBuilder) AddWriteValue(operand *QueryOperand, value any) {
+// Includes a literal value to be written during an INSERT or UPDATE.
+func (query *QueryBuilder) AddWriteValue(operand *QueryOperand, value *QueryOperand) {
 
 	query.writeValues.values[operand.column] = value
 }
 
-// Includes root values to be written during an INSERT or UPDATE for a model.
-func (query *QueryBuilder) AddWriteValues(values map[string]any) {
+// Includes root literal values to be written during an INSERT or UPDATE.
+func (query *QueryBuilder) AddWriteValues(values map[string]*QueryOperand) {
 	query.writeValues.model = query.Model
 	for k, v := range values {
 		query.AddWriteValue(Field(k), v)
@@ -272,7 +311,7 @@ func (query *QueryBuilder) AddWriteValues(values map[string]any) {
 
 // Includes a column in SELECT.
 func (query *QueryBuilder) AppendSelect(operand *QueryOperand) {
-	c := operand.toColumnString(query)
+	c := operand.toSqlOperandString(query)
 
 	if !lo.Contains(query.selection, c) {
 		query.selection = append(query.selection, c)
@@ -288,7 +327,7 @@ func (query *QueryBuilder) AppendSelectClause(clause string) {
 
 // Include a column in this table in DISTINCT ON.
 func (query *QueryBuilder) AppendDistinctOn(operand *QueryOperand) {
-	c := operand.toColumnString(query)
+	c := operand.toSqlOperandString(query)
 
 	if !lo.Contains(query.distinctOn, c) {
 		query.distinctOn = append(query.distinctOn, c)
@@ -345,7 +384,7 @@ func (query *QueryBuilder) Join(joinModel string, joinField *QueryOperand, model
 	join := joinClause{
 		table:     sqlQuote(casing.ToSnake(joinModel)),
 		alias:     sqlQuote(joinField.table),
-		condition: fmt.Sprintf("%s = %s", joinField.toColumnString(query), modelField.toColumnString(query)),
+		condition: fmt.Sprintf("%s = %s", joinField.toSqlOperandString(query), modelField.toSqlOperandString(query)),
 		joinType:  query.joinType,
 	}
 
@@ -378,7 +417,7 @@ func (query *QueryBuilder) Limit(limit int) {
 
 // Include a column in RETURNING.
 func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
-	c := operand.toColumnString(query)
+	c := operand.toSqlOperandString(query)
 
 	if !lo.Contains(query.returning, c) {
 		query.returning = append(query.returning, c)
@@ -406,9 +445,9 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// Select hasNext clause
 	orderByClausesAsSql := []string{}
 	for _, o := range query.orderBy {
-		orderByClausesAsSql = append(orderByClausesAsSql, fmt.Sprintf("%s %s", o.field.toColumnString(query), o.direction))
+		orderByClausesAsSql = append(orderByClausesAsSql, fmt.Sprintf("%s %s", o.field.toSqlOperandString(query), o.direction))
 	}
-	hasNext := fmt.Sprintf("CASE WHEN LEAD(%s) OVER (ORDER BY %s) IS NOT NULL THEN true ELSE false END AS hasNext", IdField().toColumnString(query), strings.Join(orderByClausesAsSql, ", "))
+	hasNext := fmt.Sprintf("CASE WHEN LEAD(%s) OVER (ORDER BY %s) IS NOT NULL THEN true ELSE false END AS hasNext", IdField().toSqlOperandString(query), strings.Join(orderByClausesAsSql, ", "))
 	query.AppendSelectClause(hasNext)
 
 	// We add a subquery to the select list that fetches the total count of records
@@ -574,7 +613,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	if len(query.orderBy) > 0 {
 		orderByClausesAsSql := []string{}
 		for _, o := range query.orderBy {
-			orderByClausesAsSql = append(orderByClausesAsSql, fmt.Sprintf("%s %s", o.field.toColumnString(query), o.direction))
+			orderByClausesAsSql = append(orderByClausesAsSql, fmt.Sprintf("%s %s", o.field.toSqlOperandString(query), o.direction))
 		}
 
 		orderBy = fmt.Sprintf("ORDER BY %s", strings.Join(orderByClausesAsSql, ", "))
@@ -603,7 +642,8 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 // Generates an executable INSERT statement with the list of arguments.
 func (query *QueryBuilder) InsertStatement() *Statement {
 	ctes := []string{}
-	ctes, args, _, alias := query.generateInsertCte(ctes, query.writeValues, nil, "")
+	args := []any{}
+	ctes, args, alias := query.generateInsertCte(ctes, args, query.writeValues, nil, "")
 
 	selection := []string{"*"}
 	if auth.IsAuthenticated(query.context) {
@@ -628,44 +668,26 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 }
 
 // Recursively generates in common table expression insert query for the write values graph.
-func (query *QueryBuilder) generateInsertCte(ctes []string, row *Row, foreignKey *proto.Field, primaryKeyTableAlias string) ([]string, []any, *proto.Field, string) {
-
+func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row, foreignKey *proto.Field, primaryKeyTableAlias string) ([]string, []any, string) {
 	alias := fmt.Sprintf("new_%v_%s", makeAlias(query.writeValues, row), casing.ToSnake(row.model.Name))
-
 	columnNames := []string{}
-	args := []any{}
 
 	// Rows which this row references need to created first, and the primary needs to be extracted (as a SELECT statement from them to insert into this row.
 	// The foreign key field for this row is returned, along with the alias of the table needed to extract the primary key from.
 	for _, r := range row.references {
-		// if r.query != nil {
-		// 	cte := fmt.Sprintf("%s AS (%s)",
-		// 		"ctx",
-		// 		r.query.SelectStatement().SqlTemplate())
-
-		// 	ctes = append(ctes, cte)
-		// 	args = append(args, r.query.SelectStatement().SqlArgs()...)
-		// 	continue
-		// }
-
-		//var foreignKeyField *proto.Field
 		var primaryKeyTable string
-
-		c, a, _, primaryKeyTable := query.generateInsertCte(ctes, r.row, nil, alias)
-
-		ctes = c // append(ctes, c...)
-		args = append(args, a...)
+		ctes, args, primaryKeyTable = query.generateInsertCte(ctes, args, r.row, nil, alias)
 
 		// For every row that this references, we need to set the foreign key.
 		// For example, on the Sale row; customerId = (SELECT id FROM new_customer_1)
-		row.values[r.foreignKey.ForeignKeyFieldName.Value] = &inlineSelect{sql: fmt.Sprintf("(SELECT id FROM %s)", primaryKeyTable)}
+		row.values[r.foreignKey.ForeignKeyFieldName.Value] = Raw(fmt.Sprintf("(SELECT id FROM %s)", primaryKeyTable))
 	}
 
 	// Does this foreign key of the relationship exist on this row?
 	// This means this row exists as a referencedBy row for another.
 	// For example, on the SaleItem row; saleId = (SELECT id FROM new_sale_1)
 	if foreignKey != nil && row.model.Name == foreignKey.ModelName {
-		row.values[foreignKey.ForeignKeyFieldName.Value] = &inlineSelect{sql: fmt.Sprintf("(SELECT id FROM %s)", primaryKeyTableAlias)}
+		row.values[foreignKey.ForeignKeyFieldName.Value] = Raw(fmt.Sprintf("(SELECT id FROM %s)", primaryKeyTableAlias))
 	}
 
 	// Make iterating through the map with deterministic ordering
@@ -673,118 +695,72 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, row *Row, foreignKey
 	for k := range row.values {
 		orderedKeys = append(orderedKeys, k)
 	}
-
-	columnValues := []string{}
 	sort.Strings(orderedKeys)
 
+	columnValues := []string{}
+
+	// For any inline query operands (such as with backlinks),
+	// we want to create the common table expressions first,
+	// and ensure we only create the CTE once (as there may be more
+	// than once reference by other fields).
 	for _, col := range orderedKeys {
-		//colName := casing.ToSnake(col)
-		//columnNames = append(columnNames, colName)
+		operand := row.values[col]
+		if !operand.IsInlineQuery() {
+			continue
+		}
 
-		if value, ok := row.values[col].(*QueryOperand); ok && value.IsInlineQuery() {
-			//turn into new cte
-			cteAlias := fmt.Sprintf("select_%s", value.query.table)
-
-			cteExists := false
-			for _, c := range ctes {
-				if strings.HasPrefix(c, cteAlias) {
-					cteExists = true
-					break
-				}
+		cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+		cteExists := false
+		for _, c := range ctes {
+			if strings.HasPrefix(c, cteAlias) {
+				cteExists = true
+				break
 			}
+		}
 
+		if !cteExists {
 			cteAliases := []string{}
-			for i, _ := range value.query.selection {
+			for i := range operand.query.selection {
 				cteAliases = append(cteAliases, fmt.Sprintf("column_%v", i))
 			}
 
-			if !cteExists {
+			cte := fmt.Sprintf("%s (%s) AS (%s)",
+				cteAlias,
+				strings.Join(cteAliases, ", "),
+				operand.query.SelectStatement().SqlTemplate())
 
-				cte := fmt.Sprintf("%s (%s) AS (%s)",
-					cteAlias,
-					strings.Join(cteAliases, ", "),
-					value.query.SelectStatement().SqlTemplate())
-
-				ctes = append(ctes, cte)
-				args = append(args, value.query.SelectStatement().SqlArgs()...)
-			}
+			ctes = append(ctes, cte)
+			args = append(args, operand.query.SelectStatement().SqlArgs()...)
 		}
 	}
 
 	for _, col := range orderedKeys {
 		colName := casing.ToSnake(col)
 		columnNames = append(columnNames, colName)
+		operand := row.values[col]
 
-		if inline, ok := row.values[col].(*inlineSelect); ok {
-			columnValues = append(columnValues, inline.sql)
-		} else if value, ok := row.values[col].(*QueryOperand); ok {
+		switch {
+		case operand.IsField(), operand.IsValue(), operand.IsNull(), operand.IsRaw():
+			sql := operand.toSqlOperandString(query)
+			opArgs := operand.toSqlArgs()
 
-			switch {
-			case value.IsField():
-				columnValues = append(columnValues, value.toColumnString(query))
-			case value.IsInlineQuery():
-				//turn into new cte
-				cteAlias := fmt.Sprintf("select_%s", value.query.table)
+			columnValues = append(columnValues, sql)
+			args = append(args, opArgs...)
+		case operand.IsInlineQuery():
+			cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+			columnAlias := ""
 
-				// cteExists := false
-				// for _, c := range ctes {
-				// 	if strings.HasPrefix(c, cteAlias) {
-				// 		cteExists = true
-				// 		break
-				// 	}
-				// }
-
-				columnAlias := ""
-
-				//cteAliases := []string{}
-				for i, s := range value.query.selection {
-					//cteAliases = append(cteAliases, fmt.Sprintf("column_%v", i))
-					if s == value.selectColumn {
-						columnAlias = fmt.Sprintf("column_%v", i)
-					}
+			for i, s := range operand.query.selection {
+				if s == sqlQuote(operand.table, operand.column) {
+					columnAlias = fmt.Sprintf("column_%v", i)
+					break
 				}
-
-				if columnAlias == "" {
-					panic("need col")
-				}
-
-				// if !cteExists {
-
-				// 	cte := fmt.Sprintf("%s (%s) AS (%s)",
-				// 		cteAlias,
-				// 		strings.Join(cteAliases, ", "),
-				// 		value.query.SelectStatement().SqlTemplate())
-
-				// 	ctes = append(ctes, cte)
-				// 	args = append(args, value.query.SelectStatement().SqlArgs()...)
-				// }
-
-				rhs := fmt.Sprintf("(SELECT %s FROM %s)", columnAlias, cteAlias)
-				columnValues = append(columnValues, rhs)
-				// args = append(args, value.query.SelectStatement().args...)
-			case value.IsValue():
-				columnValues = append(columnValues, "?")
-				args = append(args, value.value)
-			// case value.IsNull():
-			// 	lhsSqlOperand = "NULL"
-			// case value.IsInlineQuery():
-			// 	lhsSqlOperand = fmt.Sprintf("(%s)", lhs.query.SelectStatement().template)
-			// 	args = append(args, lhs.query.args...)
-			default:
-				panic("no handling for rhs QueryOperand type")
 			}
 
-			// if value.IsValue() {
-			// 	args = append(args, row.values[col])
-			// 	columnValues = append(columnValues, "?")
-			// } else if value.IsField() {
-			// 	args = append(args, row.values[col])
-			// }
-		} else {
-			//panic("not")
-			//todo: identity probably doign this
-			args = append(args, row.values[col])
-			columnValues = append(columnValues, "?")
+			sql := fmt.Sprintf("(SELECT %s FROM %s)", columnAlias, cteAlias)
+			columnValues = append(columnValues, sql)
+		default:
+			panic("no handling for rhs QueryOperand type")
 		}
 	}
 
@@ -807,16 +783,10 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, row *Row, foreignKey
 
 	// If this row is referenced by other rows, then we need to create these rows afterwards. We need to pass in this row table alias in order to extract the primary key.
 	for _, r := range row.referencedBy {
-		c, a, _, _ := query.generateInsertCte(ctes, r.row, r.foreignKey, alias)
-		ctes = c //ctes = append(ctes, s...)
-		args = append(args, a...)
+		ctes, args, _ = query.generateInsertCte(ctes, args, r.row, r.foreignKey, alias)
 	}
 
-	return ctes, args, foreignKey, alias
-}
-
-type inlineSelect struct {
-	sql string
+	return ctes, args, alias
 }
 
 // Generates a unique alias for this row in the graph.
@@ -841,9 +811,6 @@ func orderGraphNodes(graph *Row) []*Row {
 	rows := []*Row{}
 
 	for _, r := range graph.references {
-		if r.query != nil {
-			continue
-		}
 		g := orderGraphNodes(r.row)
 		rows = append(rows, g...)
 	}
@@ -865,6 +832,7 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 	returning := ""
 	sets := []string{}
 	args := []any{}
+	ctes := []string{}
 
 	// Make iteratng through the writeValues map deterministically ordered
 	orderedKeys := make([]string, 0, len(query.writeValues.values))
@@ -872,19 +840,62 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 		orderedKeys = append(orderedKeys, k)
 	}
 	sort.Strings(orderedKeys)
-	for _, v := range orderedKeys {
-		sets = append(sets, fmt.Sprintf("%s = ?", casing.ToSnake(v)))
-		if value, ok := query.writeValues.values[v].(*QueryOperand); ok {
-			if value.IsValue() {
-				args = append(args, value.value)
-			} else {
-				panic("sds")
-			}
 
-		} else {
-			panic("sadsdfsd")
+	for _, v := range orderedKeys {
+		operand := query.writeValues.values[v]
+		if !operand.IsInlineQuery() {
+			continue
 		}
 
+		cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+		cteExists := false
+		for _, c := range ctes {
+			if strings.HasPrefix(c, cteAlias) {
+				cteExists = true
+				break
+			}
+		}
+
+		if !cteExists {
+			cteAliases := []string{}
+			for i := range operand.query.selection {
+				cteAliases = append(cteAliases, fmt.Sprintf("column_%v", i))
+			}
+
+			cte := fmt.Sprintf("%s (%s) AS (%s)",
+				cteAlias,
+				strings.Join(cteAliases, ", "),
+				operand.query.SelectStatement().SqlTemplate())
+
+			ctes = append(ctes, cte)
+			args = append(args, operand.query.SelectStatement().SqlArgs()...)
+		}
+
+	}
+
+	for _, v := range orderedKeys {
+		operand := query.writeValues.values[v]
+
+		if operand.IsInlineQuery() {
+			cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+			columnAlias := ""
+
+			for i, s := range operand.query.selection {
+				if s == sqlQuote(operand.table, operand.column) {
+					columnAlias = fmt.Sprintf("column_%v", i)
+					break
+				}
+			}
+
+			sql := fmt.Sprintf("(SELECT %s FROM %s)", columnAlias, cteAlias)
+			sets = append(sets, fmt.Sprintf("%s = %s", casing.ToSnake(v), sql))
+		} else {
+			sqlOperand := operand.toSqlOperandString(query)
+			sqlArgs := operand.toSqlArgs()
+
+			args = append(args, sqlArgs...)
+			sets = append(sets, fmt.Sprintf("%s = %s", casing.ToSnake(v), sqlOperand))
+		}
 	}
 
 	args = append(args, query.args...)
@@ -914,7 +925,13 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 		returning = fmt.Sprintf("RETURNING %s", strings.Join(query.returning, ", "))
 	}
 
-	template := fmt.Sprintf("UPDATE %s SET %s %s %s %s",
+	commonTableExpressions := ""
+	if len(ctes) > 0 {
+		commonTableExpressions = fmt.Sprintf("WITH %s", strings.Join(ctes, ", "))
+	}
+
+	template := fmt.Sprintf("%s UPDATE %s SET %s %s %s %s",
+		commonTableExpressions,
 		sqlQuote(query.table),
 		strings.Join(sets, ", "),
 		joins,
@@ -1116,23 +1133,21 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	}
 
 	switch {
-	case lhs.IsField():
-		lhsSqlOperand = lhs.toColumnString(query)
-	case lhs.IsValue():
-		lhsSqlOperand = "?"
-		args = append(args, lhs.value)
-	case lhs.IsNull():
-		lhsSqlOperand = "NULL"
-	case lhs.IsInlineQuery():
-		lhsSqlOperand = fmt.Sprintf("(%s)", lhs.query.SelectStatement().template)
-		args = append(args, lhs.query.args...)
+	case lhs.IsField(), lhs.IsValue(), lhs.IsNull(), lhs.IsInlineQuery(), lhs.IsRaw():
+		lhsSqlOperand = lhs.toSqlOperandString(query)
+		lhsArgs := lhs.toSqlArgs()
+
+		args = append(args, lhsArgs...)
 	default:
 		return "", nil, errors.New("no handling for lhs QueryOperand type")
 	}
 
 	switch {
-	case rhs.IsField():
-		rhsSqlOperand = rhs.toColumnString(query)
+	case rhs.IsField(), rhs.IsNull(), rhs.IsInlineQuery(), rhs.IsRaw():
+		rhsSqlOperand = rhs.toSqlOperandString(query)
+		rhsArgs := rhs.toSqlArgs()
+
+		args = append(args, rhsArgs...)
 	case rhs.IsValue():
 		if operator == OneOf || operator == NotOneOf {
 			// The IN operator on an a value slice needs to have its template structured like this:
@@ -1157,11 +1172,6 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			rhsSqlOperand = "?"
 			args = append(args, rhs.value)
 		}
-	case rhs.IsNull():
-		rhsSqlOperand = "NULL"
-	case rhs.IsInlineQuery():
-		rhsSqlOperand = fmt.Sprintf("(%s)", rhs.query.SelectStatement().template)
-		args = append(args, rhs.query.args...)
 	default:
 		return "", nil, errors.New("no handling for rhs QueryOperand type")
 	}
