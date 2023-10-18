@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -187,6 +188,7 @@ func TestDbStatements(t *testing.T) {
 	}
 	assert.Equal(t, 3, len(result.Rows))
 	for i, row := range result.Rows {
+		// NOTE: this may fail on your local due to localisation issues
 		assert.Equal(t, expectedData[i], row)
 	}
 
@@ -199,7 +201,7 @@ func TestDbStatements(t *testing.T) {
 	assert.Equal(t, int64(3), statementResult.RowsAffected)
 }
 
-func TestErrUniqueConstraintViolation(t *testing.T) {
+func TestUniqueConstraintViolation(t *testing.T) {
 	ctx := context.Background()
 	db := createTestDb(t, ctx)
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
@@ -225,21 +227,31 @@ func TestErrUniqueConstraintViolation(t *testing.T) {
 	assert.Equal(t, int64(1), statementResult.RowsAffected)
 
 	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", keelKeelsonValuesNotUniqueName...)
-	assert.ErrorIs(t, err, ErrUniqueConstraintViolation)
 	dbError1 := &DbError{}
 	if assert.ErrorAs(t, err, &dbError1) {
 		assert.Equal(t, dbError1.Columns[0], "name")
+		assert.Equal(t, dbError1.Table, "person")
+		assert.NotEmpty(t, dbError1.Message)
+		assert.Equal(t, dbError1.PgErrCode, PgUniqueConstraintViolation)
+		pgErr := &pgconn.PgError{}
+		assert.ErrorAs(t, dbError1.Err, &pgErr)
+		assert.Equal(t, PgUniqueConstraintViolation, pgErr.Code)
 	}
 
 	_, err = db.ExecuteQuery(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", keelKeelsonValuesNotUniqueName...)
-	assert.ErrorIs(t, err, ErrUniqueConstraintViolation)
 	dbError2 := &DbError{}
 	if assert.ErrorAs(t, err, &dbError2) {
 		assert.Equal(t, dbError2.Columns[0], "name")
+		assert.Equal(t, dbError2.Table, "person")
+		assert.NotEmpty(t, dbError2.Message)
+		assert.Equal(t, dbError2.PgErrCode, PgUniqueConstraintViolation)
+		pgErr := &pgconn.PgError{}
+		assert.ErrorAs(t, dbError2.Err, &pgErr)
+		assert.Equal(t, PgUniqueConstraintViolation, pgErr.Code)
 	}
 }
 
-func TestErrNotNullConstraintViolation(t *testing.T) {
+func TestNotNullConstraintViolation(t *testing.T) {
 	ctx := context.Background()
 	db := createTestDb(t, ctx)
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
@@ -265,21 +277,27 @@ func TestErrNotNullConstraintViolation(t *testing.T) {
 	assert.Equal(t, int64(1), statementResult.RowsAffected)
 
 	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", notNameValues...)
-	assert.ErrorIs(t, err, ErrNotNullConstraintViolation)
 	dbError1 := &DbError{}
 	if assert.ErrorAs(t, err, &dbError1) {
-		assert.Equal(t, dbError1.Columns[0], "name")
+		assert.Equal(t, "name", dbError1.Columns[0])
+		assert.Equal(t, "person", dbError1.Table)
+		assert.NotEmpty(t, dbError1.Message)
+		assert.Equal(t, PgNotNullConstraintViolation, dbError1.PgErrCode)
+		pgErr := &pgconn.PgError{}
+		assert.ErrorAs(t, dbError1.Err, &pgErr)
+		assert.Equal(t, PgNotNullConstraintViolation, pgErr.Code)
 	}
 
 	_, err = db.ExecuteQuery(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", notNameValues...)
-	assert.ErrorIs(t, err, ErrNotNullConstraintViolation)
+
 	dbError2 := &DbError{}
 	if assert.ErrorAs(t, err, &dbError2) {
 		assert.Equal(t, dbError2.Columns[0], "name")
+		assert.Equal(t, PgNotNullConstraintViolation, dbError2.PgErrCode)
 	}
 }
 
-func TestErrForeignKeyConstraintViolation(t *testing.T) {
+func TestForeignKeyConstraintViolation(t *testing.T) {
 	ctx := context.Background()
 	db := createTestDb(t, ctx)
 
@@ -322,16 +340,26 @@ func TestErrForeignKeyConstraintViolation(t *testing.T) {
 	assert.Equal(t, int64(1), statementResult.RowsAffected)
 
 	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name, company_id) VALUES (?, ?, ?)", noCompanyValues...)
-	assert.ErrorIs(t, err, ErrForeignKeyConstraintViolation)
 	dbError1 := &DbError{}
 	if assert.ErrorAs(t, err, &dbError1) {
-		assert.Equal(t, dbError1.Columns[0], "company_id")
+		assert.Equal(t, "company_id", dbError1.Columns[0])
+		assert.Equal(t, "person", dbError1.Table)
+		assert.NotEmpty(t, dbError1.Message)
+		assert.Equal(t, PgForeignKeyConstraintViolation, dbError1.PgErrCode)
+		pgErr := &pgconn.PgError{}
+		assert.ErrorAs(t, dbError1.Err, &pgErr)
+		assert.Equal(t, PgForeignKeyConstraintViolation, pgErr.Code)
 	}
 
 	_, err = db.ExecuteQuery(ctx, "INSERT INTO person (id, name, company_id) VALUES (?, ?, ?)", noCompanyValues...)
-	assert.ErrorIs(t, err, ErrForeignKeyConstraintViolation)
 	dbError2 := &DbError{}
 	if assert.ErrorAs(t, err, &dbError2) {
-		assert.Equal(t, dbError2.Columns[0], "company_id")
+		assert.Equal(t, "company_id", dbError2.Columns[0])
+		assert.Equal(t, "person", dbError2.Table)
+		assert.NotEmpty(t, dbError2.Message)
+		assert.Equal(t, PgForeignKeyConstraintViolation, dbError2.PgErrCode)
+		pgErr := &pgconn.PgError{}
+		assert.ErrorAs(t, dbError2.Err, &pgErr)
+		assert.Equal(t, PgForeignKeyConstraintViolation, pgErr.Code)
 	}
 }

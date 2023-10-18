@@ -172,7 +172,7 @@ func runDevelopmentServerTest(t *testing.T, files codegen.GeneratedFiles, fn fun
 	err = files.Write(tmpDir)
 	require.NoError(t, err)
 
-	server, err := node.RunDevelopmentServer(tmpDir, &node.ServerOpts{
+	server, err := node.StartDevelopmentServer(context.Background(), tmpDir, &node.ServerOpts{
 		EnvVars: map[string]string{
 			"KEEL_DB_CONN_TYPE": "pg",
 			"KEEL_DB_CONN":      "postgresql://postgres:postgres@localhost:8001/keel",

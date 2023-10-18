@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"errors"
 
 	"github.com/lib/pq"
 	"gorm.io/driver/postgres"
@@ -19,14 +18,22 @@ type ExecuteStatementResult struct {
 }
 
 var (
-	ErrNotNullConstraintViolation    = errors.New("null value violates not null column constraint")
-	ErrForeignKeyConstraintViolation = errors.New("insert or update violates foreign key constraint")
-	ErrUniqueConstraintViolation     = errors.New("duplicate key value violates unique constraint")
+	PgNotNullConstraintViolation    = "23502"
+	PgForeignKeyConstraintViolation = "23503"
+	PgUniqueConstraintViolation     = "23505"
 )
 
 type DbError struct {
+	// if the error was associated with a specific table, the name of the table
+	Table string
+	// if the error was associated with specific table columns, the names of these columns
 	Columns []string
-	Err     error
+	// the primary human-readable error message. This should be accurate but terse (typically one line). Always present
+	Message string
+	// the SQLSTATE code for the error - https://www.postgresql.org/docs/current/errcodes-appendix.html. Always present
+	PgErrCode string
+	// the underlying error
+	Err error
 }
 
 func (err *DbError) Error() string {

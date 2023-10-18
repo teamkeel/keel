@@ -64,9 +64,14 @@ func TestRuntimeGraphQL(t *testing.T) {
 			require.NoError(t, err)
 
 			ctx = runtimectx.WithPrivateKey(ctx, pk)
+			ctx, err = testhelpers.WithTracing(ctx)
+			require.NoError(t, err)
 
 			dbName := testhelpers.DbNameForTestName(tCase.name)
-			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
+			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName, true)
+			if err != nil {
+				database.Close()
+			}
 			require.NoError(t, err)
 			defer database.Close()
 

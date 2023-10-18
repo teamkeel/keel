@@ -6,7 +6,9 @@ import (
 	"crypto/x509"
 	"database/sql"
 	_ "embed"
+	"encoding/hex"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -17,6 +19,7 @@ import (
 	cp "github.com/otiai10/copy"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/teamkeel/keel/proto"
 )
@@ -53,7 +56,7 @@ func NpmInstall(dir string) (string, error) {
 	return string(b), err
 }
 
-func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo, schema *proto.Schema, dbName string) (db.Database, error) {
+func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo, schema *proto.Schema, dbName string, resetDatabase bool) (db.Database, error) {
 	mainDB, err := sql.Open("pgx/v5", dbConnInfo.String())
 	if err != nil {
 		return nil, err
@@ -64,17 +67,19 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 		return nil, err
 	}
 
-	// Drop the database if it already exists. The normal dropping of it at the end of the
-	// test case is bypassed if you quit a debug run of the test in VS Code.
-	_, err = mainDB.Exec("DROP DATABASE if exists " + dbName)
-	if err != nil {
-		return nil, err
-	}
+	if resetDatabase {
+		// Drop the database if it already exists. The normal dropping of it at the end of the
+		// test case is bypassed if you quit a debug run of the test in VS Code.
+		_, err = mainDB.Exec("DROP DATABASE if exists " + dbName)
+		if err != nil {
+			return nil, err
+		}
 
-	// Create the database and drop at the end of the test
-	_, err = mainDB.Exec("CREATE DATABASE " + dbName)
-	if err != nil {
-		return nil, err
+		// Create the database and drop at the end of the test
+		_, err = mainDB.Exec("CREATE DATABASE " + dbName)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Connect to the newly created test database and close connection
@@ -117,4 +122,33 @@ func GetEmbeddedPrivateKey() (*rsa.PrivateKey, error) {
 	}
 
 	return x509.ParsePKCS1PrivateKey(privateKeyBlock.Bytes)
+}
+
+const (
+	TraceId = "71f835dc7ac2750bed2135c7b30dc7fe"
+	SpanId  = "b4c9e2a6a0d84702"
+)
+
+func WithTracing(ctx context.Context) (context.Context, error) {
+	traceIdBytes, err := hex.DecodeString(TraceId)
+	if err != nil {
+		return nil, err
+	}
+
+	spanIdBytes, err := hex.DecodeString(SpanId)
+	if err != nil {
+		return nil, err
+	}
+
+	spanContext := trace.NewSpanContext(trace.SpanContextConfig{
+		TraceID:    trace.TraceID(traceIdBytes),
+		SpanID:     trace.SpanID(spanIdBytes),
+		TraceFlags: trace.FlagsSampled,
+	})
+
+	if !spanContext.IsValid() {
+		return nil, errors.New("spanContext is unexpectedly invalid")
+	}
+
+	return trace.ContextWithSpanContext(ctx, spanContext), nil
 }

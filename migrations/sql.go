@@ -162,7 +162,7 @@ func addColumnStmt(schema *proto.Schema, modelName string, field *proto.Field) (
 }
 
 // addForeignKeyConstraintStmt generates a string of this form:
-// ALTER TABLE "thisTable" ADD FOREIGN KEY ("thisColumn") REFERENCES "otherTable"("otherColumn")
+// ALTER TABLE "thisTable" ADD FOREIGN KEY ("thisColumn") REFERENCES "otherTable"("otherColumn") ON DELETE CASCADE;
 func addForeignKeyConstraintStmt(thisTable string, thisColumn string, otherTable string, otherColumn string, onDelete string) string {
 	return fmt.Sprintf("ALTER TABLE %s ADD FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE %s;",
 		thisTable,
@@ -177,18 +177,6 @@ func alterColumnStmt(schema *proto.Schema, modelName string, field *proto.Field,
 	stmts := []string{}
 
 	alterColumnStmtPrefix := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s", Identifier(modelName), Identifier(column.ColumnName))
-
-	// these two flags are opposites of each other, so if they are both true
-	// or both false then there is a change to be applied
-	if field.Optional == column.NotNull {
-		var change string
-		if field.Optional && column.NotNull {
-			change = "DROP NOT NULL"
-		} else {
-			change = "SET NOT NULL"
-		}
-		stmts = append(stmts, fmt.Sprintf("%s %s;", alterColumnStmtPrefix, change))
-	}
 
 	if field.DefaultValue == nil && column.HasDefault {
 		output := fmt.Sprintf("%s DROP DEFAULT;", alterColumnStmtPrefix)
@@ -208,6 +196,29 @@ func alterColumnStmt(schema *proto.Schema, modelName string, field *proto.Field,
 			output := fmt.Sprintf("%s SET DEFAULT %s;", alterColumnStmtPrefix, value)
 			stmts = append(stmts, output)
 		}
+	}
+
+	// these two flags are opposites of each other, so if they are both true
+	// or both false then there is a change to be applied
+	if field.Optional == column.NotNull {
+		var change string
+		if field.Optional && column.NotNull {
+			change = "DROP NOT NULL"
+		} else {
+			change = "SET NOT NULL"
+
+			// Update all existing rows to the default value if they are null
+			if field.DefaultValue != nil {
+				value, err := getDefaultValue(schema, field)
+				if err != nil {
+					return "", err
+				}
+				update := fmt.Sprintf("UPDATE %s SET %s = %s WHERE %s IS NULL;", Identifier(modelName), Identifier(column.ColumnName), value, Identifier(column.ColumnName))
+				stmts = append(stmts, update)
+			}
+
+		}
+		stmts = append(stmts, fmt.Sprintf("%s %s;", alterColumnStmtPrefix, change))
 	}
 
 	return strings.Join(stmts, "\n"), nil
@@ -301,27 +312,29 @@ func dropColumnStmt(modelName string, fieldName string) string {
 	return output
 }
 
-func createAuditHookStmt(schema *proto.Schema, model *proto.Model) (string, error) {
-	// This makes 3 sql statements similar to this:
-	//
-	// CREATE TRIGGER person_create AFTER INSERT ON person
-	// REFERENCING OLD TABLE AS old_table
-	// FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
-	//
-	tblName := Identifier(model.Name)
+// createAuditTriggerStmts generates the CREATE TRIGGER statements for auditing.
+// Only creates a trigger if the trigger does not already exist in the database.
+func createAuditTriggerStmts(triggers []*TriggerRow, schema *proto.Schema, model *proto.Model) (string, error) {
 	modelLower := casing.ToSnake(model.Name)
 	statements := []string{}
 
-	// Keel CLI is currently provisioning v11.3 of PostgreSQL which doesn't support CREATE OR REPLACE TRIGGER, so we need to DROP TRIGGER first.
-	statements = append(statements, fmt.Sprintf(
-		`DROP TRIGGER IF EXISTS %s_create on %s;
-CREATE TRIGGER %s_create AFTER INSERT ON %s REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName, modelLower, tblName))
-	statements = append(statements, fmt.Sprintf(
-		`DROP TRIGGER IF EXISTS %s_update on %s;
-CREATE TRIGGER %s_update AFTER UPDATE ON %s REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName, modelLower, tblName))
-	statements = append(statements, fmt.Sprintf(
-		`DROP TRIGGER IF EXISTS %s_delete on %s;
-CREATE TRIGGER %s_delete AFTER DELETE ON %s REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit(); `, modelLower, tblName, modelLower, tblName))
+	create := fmt.Sprintf("%s_create", modelLower)
+	if _, found := lo.Find(triggers, func(t *TriggerRow) bool { return t.TriggerName == create && t.TableName == modelLower }); !found {
+		statements = append(statements, fmt.Sprintf(
+			`CREATE TRIGGER %s AFTER INSERT ON %s REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();`, create, Identifier(model.Name)))
+	}
+
+	update := fmt.Sprintf("%s_update", modelLower)
+	if _, found := lo.Find(triggers, func(t *TriggerRow) bool { return t.TriggerName == update && t.TableName == modelLower }); !found {
+		statements = append(statements, fmt.Sprintf(
+			`CREATE TRIGGER %s AFTER UPDATE ON %s REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();`, update, Identifier(model.Name)))
+	}
+
+	delete := fmt.Sprintf("%s_delete", modelLower)
+	if _, found := lo.Find(triggers, func(t *TriggerRow) bool { return t.TriggerName == delete && t.TableName == modelLower }); !found {
+		statements = append(statements, fmt.Sprintf(
+			`CREATE TRIGGER %s AFTER DELETE ON %s REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();`, delete, Identifier(model.Name)))
+	}
 
 	return strings.Join(statements, "\n"), nil
 }

@@ -52,13 +52,16 @@ func TestRuntimeRPC(t *testing.T) {
 
 			ctx := request.Context()
 
+			ctx, err := testhelpers.WithTracing(ctx)
+			require.NoError(t, err)
+
 			pk, err := testhelpers.GetEmbeddedPrivateKey()
 			require.NoError(t, err)
 
 			ctx = runtimectx.WithPrivateKey(ctx, pk)
 
 			dbName := testhelpers.DbNameForTestName(tCase.name)
-			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
+			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName, true)
 			require.NoError(t, err)
 			defer database.Close()
 

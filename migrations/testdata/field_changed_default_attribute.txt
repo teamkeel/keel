@@ -1,0 +1,34 @@
+model Person {
+    fields {
+        email Text @default("n/a")
+        age Number @default(10)
+        isActive Boolean
+    }
+}
+
+===
+
+model Person {
+    fields {
+        // Change the default
+        email Text @default("")
+        // Remove the default
+        age Number
+        // Create a default
+        isActive Boolean @default(true)
+    }
+}
+
+===
+
+ALTER TABLE "person" ALTER COLUMN "email" SET DEFAULT '';
+ALTER TABLE "person" ALTER COLUMN "age" DROP DEFAULT;
+ALTER TABLE "person" ALTER COLUMN "is_active" SET DEFAULT true;
+
+=== 
+
+[
+  { "Model": "Person", "Field": "email", "Type": "MODIFIED" },
+  { "Model": "Person", "Field": "age", "Type": "MODIFIED" },
+  { "Model": "Person", "Field": "isActive", "Type": "MODIFIED" }
+]

@@ -31,10 +31,6 @@ import (
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
-	traceSdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
 const (
@@ -60,7 +56,7 @@ type RunnerOpts struct {
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/testing")
 
-func Run(opts *RunnerOpts) (*TestOutput, error) {
+func Run(ctx context.Context, opts *RunnerOpts) (*TestOutput, error) {
 	builder := &schema.Builder{}
 
 	schema, err := builder.MakeFromDirectory(opts.Dir)
@@ -80,10 +76,11 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 
 	schema.Apis = append(schema.Apis, testApi)
 
-	ctx := context.Background()
+	ctx, span := tracer.Start(ctx, opts.TestGroupName)
+	defer span.End()
 
 	dbName := "keel_test"
-	database, err := testhelpers.SetupDatabaseForTestCase(ctx, opts.DbConnInfo, schema, dbName)
+	database, err := testhelpers.SetupDatabaseForTestCase(ctx, opts.DbConnInfo, schema, dbName, true)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +118,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			opts.EnvVars[key] = value
 		}
 
-		functionsServer, err = node.RunDevelopmentServer(opts.Dir, &node.ServerOpts{
+		functionsServer, err = node.StartDevelopmentServer(ctx, opts.Dir, &node.ServerOpts{
 			EnvVars: opts.EnvVars,
 			Output:  opts.FunctionsOutput,
 			Debug:   true, // todo: configurable
@@ -160,29 +157,14 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	runtimeServer := http.Server{
 		Addr: fmt.Sprintf(":%s", runtimePort),
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
+			ctx, span := tracer.Start(ctx, strings.Trim(r.URL.Path, "/"))
+			defer span.End()
+
 			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 			ctx = db.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
 
-			exporter, err := otlptracehttp.New(ctx, otlptracehttp.WithInsecure())
-			if err != nil {
-				panic(err)
-			}
-
-			provider := traceSdk.NewTracerProvider(
-				traceSdk.WithBatcher(exporter),
-				traceSdk.WithResource(
-					resource.NewSchemaless(attribute.String("service.name", "runtime")),
-				),
-			)
-			otel.SetTracerProvider(provider)
-			otel.SetTextMapPropagator(propagation.TraceContext{})
-
-			ctx, span := tracer.Start(ctx, opts.TestGroupName)
-
 			span.SetAttributes(attribute.String("request.url", r.URL.String()))
-			defer span.End()
 
 			// Use the embedded private key for the tests
 			pk, err := testhelpers.GetEmbeddedPrivateKey()

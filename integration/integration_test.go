@@ -11,6 +11,12 @@ import (
 	gotest "testing"
 
 	cp "github.com/otiai10/copy"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,9 +26,11 @@ import (
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/testing"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
 var pattern = flag.String("pattern", "", "Pattern to match individual test case names")
+var tracer = otel.Tracer("github.com/teamkeel/keel/testing")
 
 func TestIntegration(t *gotest.T) {
 	entries, err := os.ReadDir("./testdata")
@@ -46,10 +54,28 @@ func TestIntegration(t *gotest.T) {
 	genericEntries, err := os.ReadDir(tmpDir)
 	require.NoError(t, err)
 
-	for _, e := range entries {
+	ctx := context.Background()
 
+	exporter, err := otlptracehttp.New(ctx, otlptracehttp.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+
+	provider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(
+			resource.NewSchemaless(attribute.String("service.name", "runtime")),
+		),
+	)
+	otel.SetTracerProvider(provider)
+	otel.SetTextMapPropagator(propagation.TraceContext{})
+
+	for _, e := range entries {
 		t.Run(e.Name(), func(t *gotest.T) {
 			testDir := filepath.Join("./testdata", e.Name())
+
+			ctx, span := tracer.Start(ctx, e.Name(), trace.WithNewRoot())
+			defer span.End()
 
 			// These files might be present when someone is working on tests
 			// but we don't want to copy them over to the test dir
@@ -123,7 +149,7 @@ func TestIntegration(t *gotest.T) {
 
 			var functionOutput bytes.Buffer
 
-			output, err := testing.Run(&testing.RunnerOpts{
+			output, err := testing.Run(ctx, &testing.RunnerOpts{
 				Dir:             tmpDir,
 				DbConnInfo:      dbConnInfo,
 				FunctionsOutput: &functionOutput,

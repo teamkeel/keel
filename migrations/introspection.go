@@ -13,6 +13,11 @@ func getConstraints(ctx context.Context, database db.Database) ([]*ConstraintRow
 	return rows, database.GetDB().Raw(constraintsQuery).Scan(&rows).Error
 }
 
+func getTriggers(ctx context.Context, database db.Database) ([]*TriggerRow, error) {
+	rows := []*TriggerRow{}
+	return rows, database.GetDB().Raw(triggersQuery).Scan(&rows).Error
+}
+
 func getColumns(ctx context.Context, database db.Database) ([]*ColumnRow, error) {
 	rows := []*ColumnRow{}
 	return rows, database.GetDB().Raw(columnsQuery).Scan(&rows).Error
@@ -24,6 +29,9 @@ var (
 
 	//go:embed constraints.sql
 	constraintsQuery string
+
+	//go:embed triggers.sql
+	triggersQuery string
 )
 
 type ColumnRow struct {
@@ -59,4 +67,17 @@ type ConstraintRow struct {
 	// n = set null
 	// d = set default
 	OnDelete string
+}
+
+type TriggerRow struct {
+	// company_employee_delete
+	TriggerName string `json:"trigger_name"`
+	// e.g. company_employee
+	TableName string `json:"table_name"`
+	// e.g. DELETE
+	StatementType string `json:"statement_type"`
+	// e.g. EXECUTE PROCEDURE process_audit()
+	ActionStatement string `json:"action_statement"`
+	// e.g. AFTER
+	ActionTiming string `json:"action_timing"`
 }

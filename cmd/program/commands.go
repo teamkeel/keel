@@ -526,6 +526,10 @@ func (a *ApplyMigrationsError) Error() string {
 	return a.Err.Error()
 }
 
+func (e *ApplyMigrationsError) Unwrap() error {
+	return e.Err
+}
+
 func RunMigrations(schema *proto.Schema, database db.Database) tea.Cmd {
 	return func() tea.Msg {
 
@@ -596,7 +600,7 @@ func StartFunctions(m *Model) tea.Cmd {
 			Buffer: true,
 			ch:     m.functionsLogCh,
 		}
-		server, err := node.RunDevelopmentServer(m.ProjectDir, &node.ServerOpts{
+		server, err := node.StartDevelopmentServer(context.Background(), m.ProjectDir, &node.ServerOpts{
 			EnvVars: envVars,
 			Output:  output,
 			Watch:   true,
