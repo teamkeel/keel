@@ -51,12 +51,6 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return errors.New("lhs operand of assignment expression must be a model field")
 		}
 
-		// if rhsResolver.IsModelDbColumn() {
-		// 	//	query.
-		// 	//} else if rhsResolver.IsContextDbColumn() {
-
-		// } else {
-
 		fragments, err := lhsResolver.NormalisedFragments()
 		if err != nil {
 			return err
@@ -296,14 +290,6 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 								return f.Type.Type == proto.Type_TYPE_MODEL &&
 									f.Type.ModelName.Value == messageModel.Name &&
 									f.Name == input.Name
-								// For self-referencing models
-								//field != f &&
-								//f.ForeignKeyFieldName != nil &&
-								//f.ForeignKeyFieldName.Value == fmt.Sprintf("%sId", field.Name)
-
-								// This will always be set in M:1 or 1:1
-								//f.InverseFieldName != nil &&
-								//f.InverseFieldName.Value == input.Name
 							})
 
 							if len(foriegnKeyModelField) != 1 {

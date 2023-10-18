@@ -119,7 +119,7 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	case o.IsInlineQuery():
 		return fmt.Sprintf("(%s)", o.query.SelectStatement().SqlTemplate())
 	default:
-		panic("nope")
+		return ""
 	}
 }
 
@@ -132,7 +132,7 @@ func (o *QueryOperand) toSqlArgs() []any {
 	case o.IsInlineQuery():
 		return o.query.SelectStatement().SqlArgs()
 	default:
-		panic("nope")
+		return nil
 	}
 }
 
@@ -279,13 +279,13 @@ func (query *QueryBuilder) Copy() *QueryBuilder {
 	}
 }
 
-// Includes a literal value to be written during an INSERT or UPDATE.
+// Includes a value to be written during an INSERT or UPDATE.
 func (query *QueryBuilder) AddWriteValue(operand *QueryOperand, value *QueryOperand) {
 
 	query.writeValues.values[operand.column] = value
 }
 
-// Includes root literal values to be written during an INSERT or UPDATE.
+// Includes values to be written during an INSERT or UPDATE.
 func (query *QueryBuilder) AddWriteValues(values map[string]*QueryOperand) {
 	query.writeValues.model = query.Model
 	for k, v := range values {
