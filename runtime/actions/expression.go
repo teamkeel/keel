@@ -286,7 +286,7 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 
 		query.AppendSelect(selectField)
 
-		queryOperand = InlineQuery(query)
+		queryOperand = InlineQuery(query, selectField)
 
 	case resolver.IsModelDbColumn():
 		// If this is a model field then generate the appropriate column operand for the database query.

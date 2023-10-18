@@ -77,20 +77,17 @@ type Components struct {
 // is returned then validation could not be completed, likely to do an invalid JSON schema
 // being created.
 func ValidateRequest(ctx context.Context, schema *proto.Schema, action *proto.Action, input any) (*gojsonschema.Result, error) {
-	requestType := JSONSchemaForActionInput(ctx, schema, action)
+	requestSchema := JSONSchemaForActionInput(ctx, schema, action)
 
 	// We want to allow ISO8601 format WITH a compulsary date component to be permitted for the date format
 	gojsonschema.FormatCheckers.Add("date", RelaxedDateFormatChecker{})
 
-	return gojsonschema.Validate(gojsonschema.NewGoLoader(requestType), gojsonschema.NewGoLoader(input))
+	return gojsonschema.Validate(gojsonschema.NewGoLoader(requestSchema), gojsonschema.NewGoLoader(input))
 }
 
 func ValidateResponse(ctx context.Context, schema *proto.Schema, action *proto.Action, response any) (JSONSchema, *gojsonschema.Result, error) {
 	responseSchema := JSONSchemaForActionResponse(ctx, schema, action)
-
-	s := gojsonschema.NewGoLoader(responseSchema)
-	r := gojsonschema.NewGoLoader(response)
-	result, err := gojsonschema.Validate(s, r)
+	result, err := gojsonschema.Validate(gojsonschema.NewGoLoader(responseSchema), gojsonschema.NewGoLoader(response))
 	return responseSchema, result, err
 }
 

@@ -47,8 +47,15 @@ func ExpressionField(fragments []string, field string) *QueryOperand {
 }
 
 // Represents an inline query.
-func InlineQuery(query *QueryBuilder) *QueryOperand {
-	return &QueryOperand{query: query}
+func InlineQuery(query *QueryBuilder, selectColumn *QueryOperand) *QueryOperand {
+	if !selectColumn.IsField() {
+		panic("cant do")
+	}
+
+	return &QueryOperand{
+		query:        query,
+		selectColumn: selectColumn.toColumnString(query),
+	}
 }
 
 // Represents a value operand.
@@ -62,10 +69,11 @@ func Null() *QueryOperand {
 }
 
 type QueryOperand struct {
-	query  *QueryBuilder
-	table  string
-	column string
-	value  any
+	query        *QueryBuilder
+	selectColumn string
+	table        string
+	column       string
+	value        any
 }
 
 func (o *QueryOperand) IsInlineQuery() bool {
@@ -73,11 +81,11 @@ func (o *QueryOperand) IsInlineQuery() bool {
 }
 
 func (o *QueryOperand) IsField() bool {
-	return o.column != ""
+	return o.column != "" && o.query == nil
 }
 
 func (o *QueryOperand) IsValue() bool {
-	return o.value != nil
+	return o.value != nil && o.query == nil
 }
 
 func (o *QueryOperand) IsNull() bool {
@@ -176,6 +184,8 @@ type Row struct {
 	references []*Relationship
 	// Other rows to insert which are dependent on this row.
 	referencedBy []*Relationship
+
+	selectsFromContext [][]string
 }
 
 type Relationship struct {
@@ -183,6 +193,11 @@ type Relationship struct {
 	row *Row
 	// The foreign key in the relationship.
 	foreignKey *proto.Field
+
+	// The data to be selected
+	query *QueryBuilder
+	// The field on the 'parent' row which is to be updated
+	field *proto.Field
 }
 
 type QueryBuilderOption func(qb *QueryBuilder)
@@ -445,7 +460,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 				return err
 			}
 
-			err = query.Where(orderClause.field, Equals, InlineQuery(inline))
+			err = query.Where(orderClause.field, Equals, InlineQuery(inline, orderClause.field))
 			if err != nil {
 				return err
 			}
@@ -475,7 +490,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 			return errors.New("unknown order by direction")
 		}
 
-		err = query.Where(orderClause.field, operator, InlineQuery(inline))
+		err = query.Where(orderClause.field, operator, InlineQuery(inline, orderClause.field))
 		if err != nil {
 			return err
 		}
@@ -587,7 +602,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 
 // Generates an executable INSERT statement with the list of arguments.
 func (query *QueryBuilder) InsertStatement() *Statement {
-	sql, args, _, alias := query.generateInsertCte(query.writeValues, nil, "")
+	ctes, args, _, alias := query.generateInsertCte(query.writeValues, nil, "")
 
 	selection := []string{"*"}
 	if auth.IsAuthenticated(query.context) {
@@ -601,7 +616,7 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 	}
 
 	statement := fmt.Sprintf("WITH %s SELECT %s FROM %s",
-		sql,
+		strings.Join(ctes, ", "),
 		strings.Join(selection, ", "),
 		alias)
 
@@ -612,8 +627,9 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 }
 
 // Recursively generates in common table expression insert query for the write values graph.
-func (query QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, primaryKeyTableAlias string) (string, []any, *proto.Field, string) {
-	sql := ""
+func (query *QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, primaryKeyTableAlias string) ([]string, []any, *proto.Field, string) {
+
+	ctes := []string{}
 	alias := fmt.Sprintf("new_%v_%s", makeAlias(query.writeValues, row), casing.ToSnake(row.model.Name))
 
 	columnNames := []string{}
@@ -622,14 +638,22 @@ func (query QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, p
 	// Rows which this row references need to created first, and the primary needs to be extracted (as a SELECT statement from them to insert into this row.
 	// The foreign key field for this row is returned, along with the alias of the table needed to extract the primary key from.
 	for _, r := range row.references {
+		// if r.query != nil {
+		// 	cte := fmt.Sprintf("%s AS (%s)",
+		// 		"ctx",
+		// 		r.query.SelectStatement().SqlTemplate())
+
+		// 	ctes = append(ctes, cte)
+		// 	args = append(args, r.query.SelectStatement().SqlArgs()...)
+		// 	continue
+		// }
+
 		var foreignKeyField *proto.Field
 		var primaryKeyTable string
 
-		s, a, foreignKeyField, primaryKeyTable := query.generateInsertCte(r.row, r.foreignKey, alias)
-		if len(sql) > 0 {
-			sql += ", "
-		}
-		sql += s
+		c, a, foreignKeyField, primaryKeyTable := query.generateInsertCte(r.row, r.foreignKey, alias)
+
+		ctes = append(ctes, c...)
 		args = append(args, a...)
 
 		// For every row that this references, we need to set the foreign key.
@@ -660,9 +684,57 @@ func (query QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, p
 
 		if inline, ok := row.values[col].(*inlineSelect); ok {
 			columnValues = append(columnValues, inline.sql)
+		} else if value, ok := row.values[col].(*QueryOperand); ok {
+
+			switch {
+			case value.IsField():
+				columnValues = append(columnValues, value.toColumnString(query))
+			case value.IsInlineQuery():
+				//turn into new cte
+				alias := fmt.Sprintf("select_%s", value.query.table)
+
+				cteExists := false
+				for _, c := range ctes {
+					if strings.HasPrefix(c, alias) {
+						cteExists = true
+						break
+					}
+				}
+
+				if !cteExists {
+					cte := fmt.Sprintf("%s AS (%s)",
+						alias,
+						value.query.SelectStatement().SqlTemplate())
+
+					ctes = append(ctes, cte)
+					args = append(args, value.query.SelectStatement().SqlArgs()...)
+				}
+
+				rhs := fmt.Sprintf("(SELECT %s FROM %s)", value.selectColumn, alias)
+				columnValues = append(columnValues, rhs)
+				// args = append(args, value.query.SelectStatement().args...)
+			case value.IsValue():
+				columnValues = append(columnValues, "?")
+				args = append(args, value.value)
+			// case value.IsNull():
+			// 	lhsSqlOperand = "NULL"
+			// case value.IsInlineQuery():
+			// 	lhsSqlOperand = fmt.Sprintf("(%s)", lhs.query.SelectStatement().template)
+			// 	args = append(args, lhs.query.args...)
+			default:
+				panic("no handling for rhs QueryOperand type")
+			}
+
+			// if value.IsValue() {
+			// 	args = append(args, row.values[col])
+			// 	columnValues = append(columnValues, "?")
+			// } else if value.IsField() {
+			// 	args = append(args, row.values[col])
+			// }
 		} else {
-			args = append(args, row.values[col])
-			columnValues = append(columnValues, "?")
+			panic("not")
+			//args = append(args, row.values[col])
+			//columnValues = append(columnValues, "?")
 		}
 	}
 
@@ -681,22 +753,16 @@ func (query QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, p
 		sqlQuote(casing.ToSnake(row.model.Name)),
 		values)
 
-	if len(sql) > 0 {
-		sql += ", "
-	}
-	sql += cte
+	ctes = append(ctes, cte)
 
 	// If this row is referenced by other rows, then we need to create these rows afterwards. We need to pass in this row table alias in order to extract the primary key.
 	for _, r := range row.referencedBy {
 		s, a, _, _ := query.generateInsertCte(r.row, r.foreignKey, alias)
-		if len(sql) > 0 {
-			sql += ", "
-		}
-		sql += s
+		ctes = append(ctes, s...)
 		args = append(args, a...)
 	}
 
-	return sql, args, foreignKey, alias
+	return ctes, args, foreignKey, alias
 }
 
 type inlineSelect struct {
@@ -725,6 +791,9 @@ func orderGraphNodes(graph *Row) []*Row {
 	rows := []*Row{}
 
 	for _, r := range graph.references {
+		if r.query != nil {
+			continue
+		}
 		g := orderGraphNodes(r.row)
 		rows = append(rows, g...)
 	}
@@ -755,7 +824,17 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 	sort.Strings(orderedKeys)
 	for _, v := range orderedKeys {
 		sets = append(sets, fmt.Sprintf("%s = ?", casing.ToSnake(v)))
-		args = append(args, query.writeValues.values[v])
+		if value, ok := query.writeValues.values[v].(*QueryOperand); ok {
+			if value.IsValue() {
+				args = append(args, value.value)
+			} else {
+				panic("sds")
+			}
+
+		} else {
+			panic("sadsdfsd")
+		}
+
 	}
 
 	args = append(args, query.args...)

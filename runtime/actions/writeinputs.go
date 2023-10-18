@@ -4,15 +4,35 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
 // Updates the query with all set attributes defined on the action.
 func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
+	model := proto.FindModel(scope.Schema.Models, strcase.ToCamel("identity"))
+	ctxScope := NewModelScope(scope.Context, model, scope.Schema)
+	identityQuery := NewQuery(scope.Context, model)
+
+	identityId := ""
+	if auth.IsAuthenticated(scope.Context) {
+		identity, err := auth.GetIdentity(scope.Context)
+		if err != nil {
+			return err
+		}
+		identityId = identity.Id
+	}
+
+	err := identityQuery.Where(IdField(), Equals, Value(identityId))
+	if err != nil {
+		return err
+	}
+
 	for _, setExpression := range scope.Action.SetExpressions {
 		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
@@ -31,10 +51,11 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return errors.New("lhs operand of assignment expression must be a model field")
 		}
 
-		value, err := rhsResolver.ResolveValue(args)
-		if err != nil {
-			return err
-		}
+		// if rhsResolver.IsModelDbColumn() {
+		// 	//	query.
+		// 	//} else if rhsResolver.IsContextDbColumn() {
+
+		// } else {
 
 		fragments, err := lhsResolver.NormalisedFragments()
 		if err != nil {
@@ -81,7 +102,55 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 		// Set the field on all rows.
 		for _, row := range currRows {
-			row.values[field] = value
+			if rhsResolver.IsModelDbColumn() {
+
+				rhsFragments, err := rhsResolver.NormalisedFragments()
+				if err != nil {
+					return err
+				}
+
+				row.values[field] = ExpressionField(rhsFragments, field)
+			} else if rhsResolver.IsContextDbColumn() {
+				// If this is a value from ctx that requires a database read (such as with identity backlinks),
+				// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
+				// from the current query builder.
+
+				fragments, err := rhsResolver.NormalisedFragments()
+				if err != nil {
+					return err
+				}
+
+				// Remove the ctx fragment
+				fragments = fragments[1:]
+
+				err = identityQuery.addJoinFromFragments(ctxScope, fragments)
+				if err != nil {
+					return err
+				}
+
+				selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1])
+
+				// If there are no matches in the subquery then null will be returned, but null
+				// will cause IN and NOT IN filtering of this subquery result to always evaluate as false.
+				// Therefore we need to filter out null.
+				identityQuery.And()
+				err = identityQuery.Where(selectField, NotEquals, Null())
+				if err != nil {
+					return err
+				}
+
+				identityQuery.AppendSelect(selectField)
+
+				row.values[field] = InlineQuery(identityQuery, selectField)
+
+			} else if rhsResolver.IsContextField() || rhsResolver.IsLiteral() || rhsResolver.IsExplicitInput() || rhsResolver.IsImplicitInput() {
+				value, err := rhsResolver.ResolveValue(args)
+				if err != nil {
+					return err
+				}
+
+				row.values[field] = Value(value)
+			}
 		}
 	}
 	return nil
@@ -252,7 +321,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 				// If any nested messages referenced a primary key, then the
 				// foreign keys will be generated instead of a new row created.
 				for k, v := range foreignKeys {
-					newRow.values[k] = v
+					newRow.values[k] = Value(v)
 				}
 			}
 
@@ -274,7 +343,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 			value, ok := args[input.Name]
 			// Only add the arg value if it was provided as an input.
 			if ok {
-				newRow.values[input.Name] = value
+				newRow.values[input.Name] = Value(value)
 			}
 		}
 	}
