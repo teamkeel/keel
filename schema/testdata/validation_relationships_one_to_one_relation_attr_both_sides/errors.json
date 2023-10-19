@@ -16,23 +16,6 @@
         "line": 3,
         "column": 23
       }
-    },
-    {
-      "message": "Cannot form a one to one relation with 'author' as it may already be in a relationship",
-      "hint": "In a one to one relationship, only the 'starPost' field must have the @relation attribute defined. To learn more about relationships, visit https://docs.keel.so/models#relationships",
-      "code": "RelationshipError",
-      "pos": {
-        "filename": "testdata/validation_relationships_one_to_one_relation_attr_both_sides/schema.keel",
-        "offset": 81,
-        "line": 5,
-        "column": 9
-      },
-      "endPos": {
-        "filename": "testdata/validation_relationships_one_to_one_relation_attr_both_sides/schema.keel",
-        "offset": 89,
-        "line": 5,
-        "column": 17
-      }
     }
   ]
 }

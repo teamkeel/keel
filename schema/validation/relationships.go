@@ -247,27 +247,6 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 					))
 					return
 				}
-
-				// If belongsTo has @relation, check the field name matches hasMany
-				otherFieldRelationAttribute := query.FieldGetAttribute(otherField, parser.AttributeRelation)
-				if otherFieldRelationAttribute != nil {
-					if _, ok := query.RelationAttributeValue(otherFieldRelationAttribute); ok {
-						if query.FieldIsUnique(currentField) {
-							errs.AppendError(makeRelationshipError(
-								fmt.Sprintf("Cannot form a one to one relation with '%s' as it may already be in a relationship", otherField.Name.Value),
-								fmt.Sprintf("In a one to one relationship, only the '%s' field must have the @relation attribute defined. %s", currentField.Name.Value, learnMore),
-								currentField.Name,
-							))
-						} else {
-							errs.AppendError(makeRelationshipError(
-								fmt.Sprintf("Cannot form a one to many relation with '%s' as it may already be in a relationship", otherField.Name.Value),
-								fmt.Sprintf("In a one to many relationship, only the '%s' field must have the @relation attribute defined. %s", currentField.Name.Value, learnMore),
-								currentField.Name,
-							))
-						}
-
-					}
-				}
 			}
 
 			// Determine all the possible candidate relationships between this field and the related model.
