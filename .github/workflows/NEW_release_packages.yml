@@ -77,7 +77,7 @@ jobs:
           tag: ${{ inputs.publishTag }}
           package: ./packages/${{ matrix.package }}
           dry-run: ${{ inputs.dryRun }}
-          strategy: all
+          strategy: upgrade
           ignore-scripts: false
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
