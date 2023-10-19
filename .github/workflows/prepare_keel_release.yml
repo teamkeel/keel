@@ -41,7 +41,6 @@ jobs:
         with:
           repository: teamkeel/keel
           ref: "${{ inputs.preReleaseVersion }}"
-          token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
       # generate a new version number based on semantic versioning
@@ -68,7 +67,6 @@ jobs:
         with:
           repository: teamkeel/keel
           ref: release/${{ steps.generate-version.outputs.version_tag }}
-          token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
     outputs:
       version: ${{ steps.generate-version.outputs.version }}
