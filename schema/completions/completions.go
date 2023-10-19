@@ -940,7 +940,7 @@ func getExpressionCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *conf
 			{
 				Label:       "identity",
 				Description: "Identity",
-				Kind:        KindField,
+				Kind:        KindModel,
 			},
 			{
 				Label:       "now",
@@ -975,6 +975,18 @@ func getExpressionCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *conf
 				completions = getEnvironmentVariableCompletions(cfg)
 			case "secrets":
 				completions = getSecretsCompletions(cfg)
+			case "identity":
+				model := query.Model(asts, "Identity")
+				fieldNames, ok := getFieldNamesAtPath(asts, model, previousIdents[1:])
+				if !ok {
+					// if we were unable to resolve the relevant model
+					// return no completions as returning the default
+					// fields in this case could be unhelpful
+					return []*CompletionItem{}
+				}
+
+				fieldNames = append(fieldNames, builtInFieldCompletions...)
+				return fieldNames
 			}
 		}
 

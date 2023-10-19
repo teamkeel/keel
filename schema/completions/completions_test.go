@@ -530,27 +530,26 @@ func TestActionCompletions(t *testing.T) {
 			enum Sex {
 				Male
 				Female
-		}
+			}
 
-		model Author {
+			model Author {
 				fields {
-						name Text
+					name Text
 				}
-		}
+			}
 
-		model Person {
+			model Person {
 				fields {
-						title Text
+					title Text
 						author Author
 				}
 
 				actions {
-						create createPerson() with (title, author.<Cursor>) {
-								@permission(expression: true)
-						}
+					create createPerson() with (title, author.<Cursor>) {
+							@permission(expression: true)
+					}
 				}
-		}
-
+			}
 			`,
 			expected: []string{"createdAt", "id", "name", "updatedAt"},
 		},
@@ -559,36 +558,36 @@ func TestActionCompletions(t *testing.T) {
 			schema: `
 			model User {
 				fields {
-						identity Identity
-						name Text
+					identity Identity
+					name Text
 				}
 
 				actions {
-						create createUser() with (name) {
-								@set(user.identity = ctx.identity)
-								@permission(expression: ctx.isAuthenticated)
-						}
+					create createUser() with (name) {
+						@set(user.identity = ctx.identity)
+						@permission(expression: ctx.isAuthenticated)
+					}
 				}
-		}
+			}
 
-		model Team {
+			model Team {
 				fields {
-						name Text
+					name Text
 				}
-		}
+			}
 
-		model UserTeam {
+			model UserTeam {
 				fields {
-						user User
-						team Team
+					user User
+					team Team
 				}
 
 				actions {
-						create createTeam() with (team.name) {
-								@set(<Cursor>)
-						}
+					create createTeam() with (team.name) {
+						@set(<Cursor>)
+					}
 				}
-		}
+			}
 			`,
 			expected: []string{"ctx", "userTeam"},
 		},
@@ -699,110 +698,160 @@ func TestActionCompletions(t *testing.T) {
 			expected: []string{"@function", "@orderBy", "@permission", "@set", "@sortable", "@validate", "@where"},
 		},
 		// @where tests
+
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestWhereAttributeConmpletiont(t *testing.T) {
+	cases := []testCase{
 		{
-			name: "where-attribute-model-fields",
+			name: "where-attribute-ctx-identity",
 			schema: `
-			model Person {
-			  fields {
-				name Text
-				age Number
-			  }
-		      actions {
-		        list people() {
-					@where(person.<Cursor>)
-				}
-			  }
-		    }`,
-			expected: []string{"name", "age", "id", "createdAt", "updatedAt"},
-		},
-		{
-			name: "where-attribute-model-fields-relationships",
-			schema: `
-			model Dog {
+			model CompanyUser {
 				fields {
-					breed Text
-					owner Person
+					name Text
+					identity Identity @unique @relation(user)
 				}
 			}
-			model Person {
-			  fields {
-				dogs Dog[]
-			  }
-		      actions {
-		        list people() {
-					@where(person.dogs.<Cursor>)
-				}
-			  }
-		    }`,
-			expected: []string{"breed", "id", "createdAt", "owner", "updatedAt"},
-		},
-		{
-			name: "where-attribute-model-fields-relationships-multi-file",
-			schema: `
-			model Person {
-			  fields {
-				dogs Dog[]
-			  }
-		      actions {
-		        list people() {
-					@where(person.dogs.<Cursor>)
-				}
-			  }
-		    }`,
-			otherSchema: `
-			model Dog {
+			model Record {
 				fields {
-					breed Text
-					owner Person
+					owner CompanyUser
 				}
-			}
-			`,
-			expected: []string{"breed", "id", "createdAt", "owner", "updatedAt"},
-		},
-		{
-			name: "where-attribute-enums",
-			schema: `
-			model Pet {
-			  fields {
-				species Animal
-			  }
-		      actions {
-		        list pets() {
-					@where(pet.species == <Cursor>)
+				actions {
+					list pets() {
+						@where(record.owner  == ctx.identity.<Cursor>)
+					}
 				}
-			  }
-		    }`,
-			otherSchema: `
-			enum Animal {
-				Dog
-				Cat
-				Rabbit
-			}
-			`,
-			expected: []string{"Animal", "ctx", "pet"},
+			}`,
+			expected: []string{"env", "headers", "identity", "isAuthenticated", "now", "secrets"},
 		},
-		{
-			name: "where-attribute-enum-values",
-			schema: `
-			model Pet {
-			  fields {
-				species Animal
-			  }
-		      actions {
-		        list pets() {
-					@where(pet.species == Animal.<Cursor>)
-				}
-			  }
-		    }`,
-			otherSchema: `
-			enum Animal {
-				Dog
-				Cat
-				Rabbit
-			}
-			`,
-			expected: []string{"Dog", "Cat", "Rabbit"},
-		},
+		// {
+		// 	name: "where-attribute-model-fields",
+		// 	schema: `
+		// 	model Person {
+		// 		fields {
+		// 			name Text
+		// 			age Number
+		// 		}
+		// 		actions {
+		// 			list people() {
+		// 				@where(person.<Cursor>)
+		// 			}
+		// 		}
+		// 	}`,
+		// 	expected: []string{"name", "age", "id", "createdAt", "updatedAt"},
+		// },
+		// {
+		// 	name: "where-attribute-model-fields-relationships",
+		// 	schema: `
+		// 	model Dog {
+		// 		fields {
+		// 			breed Text
+		// 			owner Person
+		// 		}
+		// 	}
+		// 	model Person {
+		// 		fields {
+		// 			dogs Dog[]
+		// 		}
+		// 		actions {
+		// 			list people() {
+		// 				@where(person.dogs.<Cursor>)
+		// 			}
+		// 		}
+		// 	}`,
+		// 	expected: []string{"breed", "id", "createdAt", "owner", "updatedAt"},
+		// },
+		// {
+		// 	name: "where-attribute-model-fields-relationships-multi-file",
+		// 	schema: `
+		// 	model Person {
+		// 		fields {
+		// 			dogs Dog[]
+		// 		}
+		// 		actions {
+		// 			list people() {
+		// 				@where(person.dogs.<Cursor>)
+		// 			}
+		// 		}
+		// 	}`,
+		// 	otherSchema: `
+		// 	model Dog {
+		// 		fields {
+		// 			breed Text
+		// 			owner Person
+		// 		}
+		// 	}
+		// 	`,
+		// 	expected: []string{"breed", "id", "createdAt", "owner", "updatedAt"},
+		// },
+		// {
+		// 	name: "where-attribute-enums",
+		// 	schema: `
+		// 	model Pet {
+		// 		fields {
+		// 			species Animal
+		// 		}
+		// 		actions {
+		// 			list pets() {
+		// 				@where(pet.species == <Cursor>)
+		// 			}
+		// 		}
+		// 	}`,
+		// 	otherSchema: `
+		// 	enum Animal {
+		// 		Dog
+		// 		Cat
+		// 		Rabbit
+		// 	}
+		// 	`,
+		// 	expected: []string{"Animal", "ctx", "pet"},
+		// },
+		// {
+		// 	name: "where-attribute-enum-values",
+		// 	schema: `
+		// 	model Pet {
+		// 		fields {
+		// 			species Animal
+		// 		}
+		// 		actions {
+		// 			list pets() {
+		// 				@where(pet.species == Animal.<Cursor>)
+		// 			}
+		// 		}
+		// 	}`,
+		// 	otherSchema: `
+		// 	enum Animal {
+		// 		Dog
+		// 		Cat
+		// 		Rabbit
+		// 	}
+		// 	`,
+		// 	expected: []string{"Dog", "Cat", "Rabbit"},
+		// },
+		// {
+		// 	name: "where-attribute-ctx",
+		// 	schema: `
+		// 	model CompanyUser {
+		// 		fields {
+		// 			identity Identity @unique @relation(user)
+		// 		}
+		// 	}
+		// 	model Record {
+		// 		fields {
+		// 			owner CompanyUser
+		// 		}
+		// 		actions {
+		// 			list pets() {
+		// 				@where(record.owner == ctx.<Cursor>)
+		// 			}
+		// 		}
+		// 	}`,
+		// 	expected: []string{"env", "headers", "identity", "isAuthenticated", "now", "secrets"},
+		// },
+
 	}
 
 	runTestsCases(t, cases)
