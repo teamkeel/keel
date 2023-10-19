@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "Both sides of the expression cannot be an array",
+      "hint": "Left hand side of expression ('record.children.owner') produced more than one result because one of the relationships was a collection.",
+      "code": "E031",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_backlink_repeated_fields/schema.keel",
+        "offset": 201,
+        "line": 10,
+        "column": 40
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_backlink_repeated_fields/schema.keel",
+        "offset": 202,
+        "line": 10,
+        "column": 41
+      }
+    }
+  ]
+}

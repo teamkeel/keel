@@ -1,0 +1,616 @@
+{
+  "models": [
+    {
+      "name": "Record",
+      "fields": [
+        {
+          "modelName": "Record",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Record",
+          "name": "owner",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "User"
+          },
+          "foreignKeyFieldName": "ownerId"
+        },
+        {
+          "modelName": "Record",
+          "name": "organisation",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Organisation"
+          },
+          "foreignKeyFieldName": "organisationId"
+        },
+        {
+          "modelName": "Record",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Record",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Record"
+          },
+          "optional": true,
+          "foreignKeyFieldName": "parentId",
+          "inverseFieldName": "children"
+        },
+        {
+          "modelName": "Record",
+          "name": "children",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Record",
+            "repeated": true
+          },
+          "inverseFieldName": "parent"
+        },
+        {
+          "modelName": "Record",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Record",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Record",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Record",
+          "name": "ownerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "User",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Record",
+          "name": "organisationId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Organisation",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Record",
+          "name": "parentId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Record",
+            "relatedModelField": "id"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Record",
+          "name": "createRecordWithChildren",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "record.owner = ctx.identity.user"
+            },
+            {
+              "source": "record.organisation.id = ctx.identity.user.organisation.id"
+            },
+            {
+              "source": "record.isActive = ctx.identity.user.organisation.isActive"
+            },
+            {
+              "source": "record.children.owner = ctx.identity.user"
+            },
+            {
+              "source": "record.children.organisation.id = ctx.identity.user.organisation.id"
+            },
+            {
+              "source": "record.children.isActive = ctx.identity.user.organisation.isActive"
+            }
+          ],
+          "inputMessageName": "CreateRecordWithChildrenInput"
+        }
+      ],
+      "permissions": [
+        {
+          "modelName": "Record",
+          "expression": {
+            "source": "true"
+          },
+          "actionTypes": [
+            "ACTION_TYPE_CREATE",
+            "ACTION_TYPE_UPDATE"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "fields": [
+        {
+          "modelName": "User",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "identityId",
+          "inverseFieldName": "user"
+        },
+        {
+          "modelName": "User",
+          "name": "organisation",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Organisation"
+          },
+          "foreignKeyFieldName": "organisationId",
+          "inverseFieldName": "users"
+        },
+        {
+          "modelName": "User",
+          "name": "isAdmin",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "organisationId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Organisation",
+            "relatedModelField": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Organisation",
+      "fields": [
+        {
+          "modelName": "Organisation",
+          "name": "users",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "User",
+            "repeated": true
+          },
+          "inverseFieldName": "organisation"
+        },
+        {
+          "modelName": "Organisation",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "true"
+            }
+          }
+        },
+        {
+          "modelName": "Organisation",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Organisation",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Organisation",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "issuer"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "user",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "User"
+          },
+          "optional": true,
+          "inverseFieldName": "identity"
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Organisation"
+        },
+        {
+          "modelName": "Record"
+        },
+        {
+          "modelName": "User"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "CreateRecordWithChildrenInput",
+      "fields": [
+        {
+          "messageName": "CreateRecordWithChildrenInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Record",
+            "fieldName": "name"
+          },
+          "target": [
+            "name"
+          ]
+        },
+        {
+          "messageName": "CreateRecordWithChildrenInput",
+          "name": "children",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateRecordWithChildrenChildrenInput",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreateRecordWithChildrenChildrenInput",
+      "fields": [
+        {
+          "messageName": "CreateRecordWithChildrenChildrenInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Record",
+            "fieldName": "name"
+          },
+          "target": [
+            "children",
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EmailPasswordInput",
+      "fields": [
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateInput",
+      "fields": [
+        {
+          "messageName": "AuthenticateInput",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "AuthenticateInput",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    }
+  ]
+}

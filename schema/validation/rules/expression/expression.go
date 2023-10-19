@@ -294,8 +294,17 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 	}
 
 	// Case: LHS and RHS are the same type
-	if resolvedLHS.GetType() == resolvedRHS.GetType() && resolvedLHS.IsRepeated() == resolvedRHS.IsRepeated() {
-		return nil
+	if resolvedLHS.GetType() == resolvedRHS.GetType() {
+		if condition.Operator != nil && condition.Operator.Symbol == parser.OperatorAssignment {
+			if resolvedLHS.IsRepeated() == resolvedRHS.IsRepeated() {
+				return nil
+			}
+			if resolvedLHS.IsRepeated() && !resolvedRHS.IsRepeated() {
+				return nil
+			}
+		} else if resolvedLHS.IsRepeated() == resolvedRHS.IsRepeated() {
+			return nil
+		}
 	}
 
 	// Case: LHS and RHS are of _compatible_ types
@@ -311,7 +320,6 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 
 	// Case: LHS is of type T and RHS is an array of type T
 	if resolvedRHS.IsRepeated() {
-
 		// First check array contains only one type
 		arrayType := resolvedRHS.GetType()
 		valid := true
@@ -372,6 +380,12 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 		return errors
 	} else if resolvedRHS.IsNull() || resolvedLHS.IsNull() {
 		return nil
+	}
+
+	if condition.Operator != nil && condition.Operator.Symbol == parser.OperatorAssignment {
+		if resolvedLHS.IsRepeated() && !resolvedRHS.IsRepeated() {
+			return nil
+		}
 	}
 
 	lhsType := resolvedLHS.GetType()

@@ -421,7 +421,7 @@ func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
 	query := actions.NewQuery(scope.Context, scope.Model)
 	err = query.Where(actions.IdField(), actions.Equals, actions.Value(result["id"]))
 	require.NoError(t, err)
-	query.AddWriteValue(actions.Field("name"), "Devin")
+	query.AddWriteValue(actions.Field("name"), actions.Value("Devin"))
 	affected, err := query.UpdateStatement().Execute(ctx)
 	require.NoError(t, err)
 	require.Equal(t, 1, affected)

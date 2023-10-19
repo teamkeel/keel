@@ -112,7 +112,7 @@ var testCases = []testCase{
 		expectedArgs: []any{},
 	},
 	{
-		name: "create_op_set_attribute",
+		name: "create_op_set_attribute_literals",
 		keelSchema: `
 			model Person {
 				fields {
@@ -141,6 +141,309 @@ var testCases = []testCase{
 					RETURNING *) 
 			SELECT * FROM new_1_person`,
 		expectedArgs: []any{int64(100), true, "Bob"},
+	},
+	{
+		name: "create_op_set_attribute_context_identity_id",
+		keelSchema: `
+			model Person {
+				fields {
+					mainIdentity Identity
+				}
+				actions {
+					create createPerson() {
+						@set(person.mainIdentity.id = ctx.identity.id)
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		actionName: "createPerson",
+		input:      map[string]any{},
+		expectedTemplate: `
+			WITH 
+				new_1_person AS 
+					(INSERT INTO "person" 
+						(main_identity_id) 
+					VALUES 
+						(?) 
+					RETURNING *) 
+			SELECT * FROM new_1_person`,
+		identity:     identity,
+		expectedArgs: []any{"identityId"},
+	},
+	{
+		name: "create_op_set_attribute_context_identity",
+		keelSchema: `
+			model Person {
+				fields {
+					mainIdentity Identity
+				}
+				actions {
+					create createPerson() {
+						@set(person.mainIdentity = ctx.identity)
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		actionName: "createPerson",
+		input:      map[string]any{},
+		expectedTemplate: `
+			WITH 
+				new_1_person AS 
+					(INSERT INTO "person" 
+						(main_identity_id) 
+					VALUES 
+						(?) 
+					RETURNING *) 
+			SELECT * FROM new_1_person`,
+		identity:     identity,
+		expectedArgs: []any{"identityId"},
+	},
+	{
+		name: "create_op_set_attribute_input",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+					nickName Text
+				}
+				actions {
+					create createPerson() with (name) {
+						@set(person.nickName = name)
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		actionName: "createPerson",
+		input:      map[string]any{"name": "Dave"},
+		expectedTemplate: `
+			WITH 
+				new_1_person AS 
+					(INSERT INTO "person" 
+						(name, nick_name) 
+					VALUES 
+						(?, ?) 
+					RETURNING *) 
+			SELECT * FROM new_1_person`,
+		identity:     identity,
+		expectedArgs: []any{"Dave", "Dave"},
+	},
+	{
+		name: "create_op_set_attribute_identity_user_backlink",
+		keelSchema: `
+			model CompanyUser {
+				fields {
+					identity Identity @unique @relation(user)
+				}
+			}
+			model Record {
+				fields {
+					name Text
+					user CompanyUser
+				}
+				actions {
+					create createRecord() with (name) {
+						@set(record.user = ctx.identity.user)
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		actionName: "createRecord",
+		input:      map[string]any{"name": "Dave"},
+		expectedTemplate: `
+			WITH 
+				select_identity (column_0) AS (
+					SELECT "identity$user"."id" 
+					FROM "identity" 
+					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?), 
+				new_1_record AS (
+					INSERT INTO "record" (name, user_id) 
+					VALUES (
+						?, 
+						(SELECT column_0 FROM select_identity)) 
+					RETURNING *) 
+			SELECT * FROM new_1_record`,
+		identity:     identity,
+		expectedArgs: []any{identity.Id, "Dave"},
+	},
+	{
+		name: "create_op_set_attribute_identity_user_backlink_field",
+		keelSchema: `
+			model CompanyUser {
+				fields {
+					identity Identity @unique @relation(user)
+					isActive Boolean
+				}
+			}
+			model Record {
+				fields {
+					name Text
+					user CompanyUser
+					isActive Boolean
+				}
+				actions {
+					create createRecord() with (name) {
+						@set(record.user = ctx.identity.user)
+						@set(record.isActive = ctx.identity.user.isActive)
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		actionName: "createRecord",
+		input:      map[string]any{"name": "Dave"},
+		expectedTemplate: `
+			WITH 
+				select_identity (column_0, column_1) AS (
+					SELECT "identity$user"."id", "identity$user"."is_active" 
+					FROM "identity" 
+					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?), 
+				new_1_record AS (
+					INSERT INTO "record" (is_active, name, user_id)
+					VALUES (
+						(SELECT column_1 FROM select_identity), 
+						?, 
+						(SELECT column_0 FROM select_identity))
+					RETURNING *) 
+			SELECT * FROM new_1_record`,
+		identity:     identity,
+		expectedArgs: []any{identity.Id, "Dave"},
+	},
+
+	{
+		name: "update_op_set_attribute_context_identity_id",
+		keelSchema: `
+			model Person {
+				fields {
+					mainIdentity Identity
+				}
+				actions {
+					update updatePerson(id) {
+						@set(person.mainIdentity.id = ctx.identity.id)
+					}
+				}
+				@permission(expression: true, actions: [update])
+			}`,
+		actionName: "updatePerson",
+		input: map[string]any{
+			"where": map[string]any{
+				"id": "xyz",
+			},
+		},
+		expectedTemplate: `
+			UPDATE "person" 
+			SET main_identity_id = ? 
+			WHERE "person"."id" IS NOT DISTINCT FROM ? 
+			RETURNING "person".*`,
+		identity:     identity,
+		expectedArgs: []any{identity.Id, "xyz"},
+	},
+	{
+		name: "update_op_set_attribute_context_identity",
+		keelSchema: `
+			model Person {
+				fields {
+					mainIdentity Identity
+				}
+				actions {
+					update updatePerson(id) {
+						@set(person.mainIdentity = ctx.identity)
+					}
+				}
+				@permission(expression: true, actions: [update])
+			}`,
+		actionName: "updatePerson",
+		input: map[string]any{
+			"where": map[string]any{
+				"id": "xyz",
+			},
+		},
+		expectedTemplate: `
+			UPDATE "person" 
+			SET main_identity_id = ? 
+			WHERE "person"."id" IS NOT DISTINCT FROM ? 
+			RETURNING "person".*`,
+		identity:     identity,
+		expectedArgs: []any{identity.Id, "xyz"},
+	},
+	{
+		name: "update_op_set_attribute_input",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+					nickName Text
+				}
+				actions {
+					update updatePerson(id) with (name) {
+						@set(person.nickName = name)
+					}
+				}
+				@permission(expression: true, actions: [update])
+			}`,
+		actionName: "updatePerson",
+		input: map[string]any{
+			"where": map[string]any{
+				"id": "xyz",
+			},
+			"values": map[string]any{
+				"name": "Dave",
+			},
+		},
+		expectedTemplate: `
+			UPDATE "person" 
+			SET 
+				name = ?, 
+				nick_name = ? 
+			WHERE "person"."id" IS NOT DISTINCT FROM ? 
+			RETURNING "person".*`,
+		expectedArgs: []any{"Dave", "Dave", "xyz"},
+	},
+	{
+		name: "update_op_set_attribute_identity_user_backlink_field",
+		keelSchema: `
+			model CompanyUser {
+				fields {
+					identity Identity @unique @relation(user)
+					isActive Boolean
+				}
+			}
+			model Record {
+				fields {
+					name Text
+					user CompanyUser
+					isActive Boolean
+				}
+				actions {
+					update updateRecordOwner(id) {
+						@set(record.user = ctx.identity.user)
+						@set(record.isActive = ctx.identity.user.isActive)
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		actionName: "updateRecordOwner",
+		input: map[string]any{
+			"where": map[string]any{
+				"id": "xyz",
+			},
+		},
+		expectedTemplate: `
+			WITH 
+				select_identity (column_0, column_1) AS (
+					SELECT "identity$user"."id", "identity$user"."is_active" 
+					FROM "identity" 
+					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?) 
+			UPDATE "record" 
+			SET 
+				is_active = (SELECT column_1 FROM select_identity), 
+				user_id = (SELECT column_0 FROM select_identity) 
+			WHERE 
+				"record"."id" IS NOT DISTINCT FROM ? 
+			RETURNING "record".*`,
+		identity:     identity,
+		expectedArgs: []any{identity.Id, "xyz"},
 	},
 	{
 		name: "create_op_optional_inputs",
@@ -847,6 +1150,75 @@ var testCases = []testCase{
 		expectedArgs: []any{"identityId", "identityId", "identityId", "identityId", 50},
 	},
 	{
+		name: "get_op_context_user_backlink_model_with_relation_attribute",
+		keelSchema: `
+			model CompanyUser {
+				fields {
+					identity Identity @unique @relation(primaryUser)
+				}
+			}
+			model Record {
+				fields {
+					name Text
+					owner CompanyUser
+				}
+				actions {
+					get record(id) {
+						@where(record.owner == ctx.identity.primaryUser)
+					}
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		actionName: "record",
+		input:      map[string]any{"id": "xyz"},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("record"."id") "record".* FROM "record" 
+			WHERE 
+				"record"."id" IS NOT DISTINCT FROM ? AND 
+				"record"."owner_id" IS NOT DISTINCT FROM (
+					SELECT "identity$primary_user"."id" 
+					FROM "identity" 
+					LEFT JOIN "company_user" AS "identity$primary_user" ON "identity$primary_user"."identity_id" = "identity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$primary_user"."id" IS DISTINCT FROM NULL)`,
+		identity:     identity,
+		expectedArgs: []any{"xyz", "identityId"},
+	},
+	{
+		name: "get_op_context_user_backlink_field",
+		keelSchema: `
+			model CompanyUser {
+				fields {
+					identity Identity @unique @relation(primaryUser)
+					isActive Boolean
+				}
+			}
+			model Record {
+				fields {
+					name Text
+				}
+				actions {
+					get record(id) {
+						@where(ctx.identity.primaryUser.isActive)
+					}
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		actionName: "record",
+		input:      map[string]any{"id": "xyz"},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("record"."id") "record".* FROM "record" 
+			WHERE 
+				"record"."id" IS NOT DISTINCT FROM ? AND 
+					(SELECT "identity$primary_user"."is_active" 
+					FROM "identity" 
+					LEFT JOIN "company_user" AS "identity$primary_user" ON "identity$primary_user"."identity_id" = "identity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$primary_user"."is_active" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM ?`,
+		identity:     identity,
+		expectedArgs: []any{"xyz", "identityId", true},
+	},
+	{
 		name: "list_op_implicit_input_nested_model_id",
 		keelSchema: `
 			model BankAccount {
@@ -1262,7 +1634,9 @@ var testCases = []testCase{
 			"name": "fred",
 		},
 		expectedTemplate: `
-		WITH new_1_customer AS (INSERT INTO "customer" (name) VALUES (?) RETURNING *) SELECT * FROM new_1_customer`,
+			WITH new_1_customer AS (
+				INSERT INTO "customer" (name) VALUES (?) RETURNING *) 
+			SELECT * FROM new_1_customer`,
 		expectedArgs: []any{"fred"},
 	},
 	{
@@ -2163,7 +2537,7 @@ func clean(sql string) string {
 func TestInsertStatement(t *testing.T) {
 	model := &proto.Model{Name: "Person"}
 	query := actions.NewQuery(context.Background(), model)
-	query.AddWriteValues(map[string]any{"name": "Fred"})
+	query.AddWriteValues(map[string]*actions.QueryOperand{"name": actions.Value("Fred")})
 	query.AppendSelect(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
 	stmt := query.InsertStatement()
@@ -2178,7 +2552,7 @@ func TestInsertStatement(t *testing.T) {
 func TestUpdateStatement(t *testing.T) {
 	model := &proto.Model{Name: "Person"}
 	query := actions.NewQuery(context.Background(), model)
-	query.AddWriteValue(actions.Field("name"), "Fred")
+	query.AddWriteValue(actions.Field("name"), actions.Value("Fred"))
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
 	query.AppendSelect(actions.AllFields())
@@ -2213,7 +2587,7 @@ func TestInsertStatementWithAuditing(t *testing.T) {
 
 	model := &proto.Model{Name: "Person"}
 	query := actions.NewQuery(ctx, model)
-	query.AddWriteValues(map[string]any{"name": "Fred"})
+	query.AddWriteValues(map[string]*actions.QueryOperand{"name": actions.Value("Fred")})
 	query.AppendSelect(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
 	stmt := query.InsertStatement()
@@ -2236,7 +2610,7 @@ func TestUpdateStatementWithAuditing(t *testing.T) {
 
 	model := &proto.Model{Name: "Person"}
 	query := actions.NewQuery(ctx, model)
-	query.AddWriteValue(actions.Field("name"), "Fred")
+	query.AddWriteValue(actions.Field("name"), actions.Value("Fred"))
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
 	query.AppendSelect(actions.AllFields())
@@ -2259,7 +2633,7 @@ func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
 
 	model := &proto.Model{Name: "Person"}
 	query := actions.NewQuery(ctx, model)
-	query.AddWriteValue(actions.Field("name"), "Fred")
+	query.AddWriteValue(actions.Field("name"), actions.Value("Fred"))
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
 	query.AppendSelect(actions.AllFields())

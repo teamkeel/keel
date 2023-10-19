@@ -4,15 +4,35 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
 // Updates the query with all set attributes defined on the action.
 func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
+	model := proto.FindModel(scope.Schema.Models, strcase.ToCamel("identity"))
+	ctxScope := NewModelScope(scope.Context, model, scope.Schema)
+	identityQuery := NewQuery(scope.Context, model)
+
+	identityId := ""
+	if auth.IsAuthenticated(scope.Context) {
+		identity, err := auth.GetIdentity(scope.Context)
+		if err != nil {
+			return err
+		}
+		identityId = identity.Id
+	}
+
+	err := identityQuery.Where(IdField(), Equals, Value(identityId))
+	if err != nil {
+		return err
+	}
+
 	for _, setExpression := range scope.Action.SetExpressions {
 		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
@@ -29,11 +49,6 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 		if !lhsResolver.IsModelDbColumn() {
 			return errors.New("lhs operand of assignment expression must be a model field")
-		}
-
-		value, err := rhsResolver.ResolveValue(args)
-		if err != nil {
-			return err
 		}
 
 		fragments, err := lhsResolver.NormalisedFragments()
@@ -81,7 +96,46 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 		// Set the field on all rows.
 		for _, row := range currRows {
-			row.values[field] = value
+			if rhsResolver.IsModelDbColumn() {
+
+				rhsFragments, err := rhsResolver.NormalisedFragments()
+				if err != nil {
+					return err
+				}
+
+				row.values[field] = ExpressionField(rhsFragments, field)
+			} else if rhsResolver.IsContextDbColumn() {
+				// If this is a value from ctx that requires a database read (such as with identity backlinks),
+				// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
+				// from the current query builder.
+
+				fragments, err := rhsResolver.NormalisedFragments()
+				if err != nil {
+					return err
+				}
+
+				// Remove the ctx fragment
+				fragments = fragments[1:]
+
+				err = identityQuery.addJoinFromFragments(ctxScope, fragments)
+				if err != nil {
+					return err
+				}
+
+				selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1])
+
+				identityQuery.AppendSelect(selectField)
+
+				row.values[field] = InlineQuery(identityQuery, selectField)
+
+			} else if rhsResolver.IsContextField() || rhsResolver.IsLiteral() || rhsResolver.IsExplicitInput() || rhsResolver.IsImplicitInput() {
+				value, err := rhsResolver.ResolveValue(args)
+				if err != nil {
+					return err
+				}
+
+				row.values[field] = Value(value)
+			}
 		}
 	}
 	return nil
@@ -100,7 +154,7 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any)
 
 	// Add any foreign keys to the root row from rows which it references.
 	for k, v := range foreignKeys {
-		row.values[k] = v
+		row.values[k] = Value(v)
 	}
 
 	query.writeValues = row
@@ -115,7 +169,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 	newRow := &Row{
 		model:        model,
 		target:       currentTarget,
-		values:       map[string]any{},
+		values:       map[string]*QueryOperand{},
 		referencedBy: []*Relationship{},
 		references:   []*Relationship{},
 	}
@@ -169,9 +223,10 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 						// Retrieve the foreign key model field on the related model.
 						// If there are multiple relationships to the same model, then field.InverseFieldName will be
 						// populated and will provide the disambiguation as to which foreign key field to use.
-						foriegnKeyModelField := lo.Filter(messageModel.Fields, func(f *proto.Field, _ int) bool {
+						foriegnKeyModelField := lo.Filter(messageModel.Fields, func(f *proto.Field, i int) bool {
 							return f.Type.Type == proto.Type_TYPE_MODEL &&
 								f.Type.ModelName.Value == model.Name &&
+								field != f && // For self-referencing models
 								(field.InverseFieldName == nil || f.ForeignKeyFieldName.Value == fmt.Sprintf("%sId", field.InverseFieldName.Value))
 						})
 
@@ -232,7 +287,9 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 						if row != nil {
 							// Retrieve the foreign key model field on the this model.
 							foriegnKeyModelField := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
-								return f.Type.Type == proto.Type_TYPE_MODEL && f.Type.ModelName.Value == messageModel.Name && f.Name == input.Name
+								return f.Type.Type == proto.Type_TYPE_MODEL &&
+									f.Type.ModelName.Value == messageModel.Name &&
+									f.Name == input.Name
 							})
 
 							if len(foriegnKeyModelField) != 1 {
@@ -252,7 +309,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 				// If any nested messages referenced a primary key, then the
 				// foreign keys will be generated instead of a new row created.
 				for k, v := range foreignKeys {
-					newRow.values[k] = v
+					newRow.values[k] = Value(v)
 				}
 			}
 
@@ -274,7 +331,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 			value, ok := args[input.Name]
 			// Only add the arg value if it was provided as an input.
 			if ok {
-				newRow.values[input.Name] = value
+				newRow.values[input.Name] = Value(value)
 			}
 		}
 	}

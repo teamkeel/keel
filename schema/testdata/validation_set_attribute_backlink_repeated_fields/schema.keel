@@ -1,0 +1,23 @@
+model Record {
+    fields {
+        owner User?
+        parent Record?
+        children Record[]
+    }
+
+    actions {
+        create createRecordWithChildren() {
+            @set(record.children.owner = ctx.identity.user.records.owner)
+        }
+    }
+}
+
+model User {
+    fields {
+        identity Identity {
+            @unique
+            @relation(user)
+        }
+        records Record[]
+    }
+}

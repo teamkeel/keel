@@ -1,0 +1,64 @@
+model User {
+    fields {
+        name Text
+        identity Identity {
+            @unique
+            @relation(user)
+        }
+        organisation Organisation
+        isAdmin Boolean @default(false)
+    }
+}
+
+model Organisation {
+    fields {
+        name Text
+        users User[]
+        isActive Boolean @default(true)
+    }
+}
+
+model Record {
+    fields {
+        name Text
+        owner User
+        organisation Organisation
+        isActive Boolean @default(false)
+        parent Record?
+        children Record[]
+    }
+
+    actions {
+        create createRecord() with (name) {
+            @set(record.owner = ctx.identity.user)
+            @set(record.organisation.id = ctx.identity.user.organisation.id)
+            @set(record.isActive = ctx.identity.user.organisation.isActive)
+        }
+        create createRecordWithChildren() with (name, children.name) {
+            @set(record.owner = ctx.identity.user)
+            @set(record.organisation.id = ctx.identity.user.organisation.id)
+            @set(record.isActive = ctx.identity.user.organisation.isActive)
+            @set(record.children.owner = ctx.identity.user)
+            @set(record.children.organisation.id = ctx.identity.user.organisation.id)
+            @set(record.children.isActive = ctx.identity.user.organisation.isActive)
+        }
+        create createRecordWithParent() with (name, parent.name) {
+            @set(record.owner = ctx.identity.user)
+            @set(record.organisation.id = ctx.identity.user.organisation.id)
+            @set(record.isActive = ctx.identity.user.organisation.isActive)
+            @set(record.parent.owner = ctx.identity.user)
+            @set(record.parent.organisation.id = ctx.identity.user.organisation.id)
+            @set(record.parent.isActive = ctx.identity.user.organisation.isActive)
+        }
+        update updateRecordOwner(id) {
+            @set(record.owner = ctx.identity.user)
+            @set(record.organisation.id = ctx.identity.user.organisation.id)
+            @set(record.isActive = ctx.identity.user.organisation.isActive)
+        }
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, update]
+    )
+}

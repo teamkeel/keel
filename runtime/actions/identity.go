@@ -75,10 +75,10 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
 	query := NewQuery(ctx, identityModel)
-	query.AddWriteValues(map[string]any{
-		"email":    email,
-		"password": password,
-		"issuer":   keelIssuerClaim,
+	query.AddWriteValues(map[string]*QueryOperand{
+		"email":    Value(email),
+		"password": Value(password),
+		"issuer":   Value(keelIssuerClaim),
 	})
 	query.AppendSelect(AllFields())
 	query.AppendReturning(IdField())
@@ -115,17 +115,17 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 
 	query := NewQuery(ctx, identityModel)
 	// even if we can't fetch the user data, create it with the core information
-	query.AddWriteValues(map[string]any{
-		"externalId": externalId,
-		"issuer":     issuer,
+	query.AddWriteValues(map[string]*QueryOperand{
+		"externalId": Value(externalId),
+		"issuer":     Value(issuer),
 	})
 
 	if match {
 		externalUserDetails, err := auth.GetUserInfo(ctx, issuer, jwt)
 		if err == nil {
-			query.AddWriteValues(map[string]any{
-				"email":         externalUserDetails.Email,
-				"emailVerified": externalUserDetails.EmailVerified,
+			query.AddWriteValues(map[string]*QueryOperand{
+				"email":         Value(externalUserDetails.Email),
+				"emailVerified": Value(externalUserDetails.EmailVerified),
 			})
 		}
 	}
