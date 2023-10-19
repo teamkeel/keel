@@ -1,0 +1,19 @@
+model Country {
+    fields {
+        name Text
+        capital City @unique @relation(capitalOf)
+    }
+
+    actions {
+        create createCountry() with (name, capital.name) {
+            @permission(expression: true)
+        }
+    }
+}
+
+model City {
+    fields {
+        name Text
+        capitalOf Country
+    }
+}
