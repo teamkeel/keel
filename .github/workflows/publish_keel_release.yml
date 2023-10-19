@@ -24,7 +24,6 @@ jobs:
         with:
           repository: teamkeel/keel
           ref: "release/${{ inputs.version }}"
-          token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
   npm_release:

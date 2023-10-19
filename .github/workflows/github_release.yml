@@ -98,7 +98,6 @@ jobs:
         #   HOMEBREW_REPO: "homebrew-keel-prerelease"
         #   HOMEBREW_ALIAS: "keel-prerelease"
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}
           HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outputs.HOMEBREW_ALIAS }}
           GORELEASER_CURRENT_TAG: ${{ inputs.version }}
@@ -109,7 +108,6 @@ jobs:
         uses: saadmk11/changelog-ci@v1.1.2
         with:
           release_version: "${{ inputs.version }}"
-          github_token: ${{ secrets.GH_TOKEN }}
 
       - name: Get Changelog Output
         run: |
