@@ -94,10 +94,11 @@ jobs:
           args: release
         #testing only
         # env:
-        #   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         #   HOMEBREW_REPO: "homebrew-keel-prerelease"
         #   HOMEBREW_ALIAS: "keel-prerelease"
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}
           HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outputs.HOMEBREW_ALIAS }}
           GORELEASER_CURRENT_TAG: ${{ inputs.version }}
