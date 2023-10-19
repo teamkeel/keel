@@ -1,4 +1,4 @@
-name: Release CLI
+name: New Release CLI
 
 on:
   workflow_dispatch:
@@ -48,7 +48,7 @@ jobs:
           version: 1.13.0
           args: release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
           HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}
           HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outputs.HOMEBREW_ALIAS }}
           GORELEASER_CURRENT_TAG: ${{ inputs.tag }}
