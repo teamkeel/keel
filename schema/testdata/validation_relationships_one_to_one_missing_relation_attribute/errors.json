@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "Cannot determine which field on the Student model to form a one to one relationship with",
-      "hint": "Use @relation to refer to a User field on the Student model which is not yet in a relationship",
+      "message": "Cannot form a one to one relationship with field 'student' on User as it is already associated with field 'user'",
+      "hint": "Use @relation on 'student' to explicitly create a relationship with this field. For example, student Student @unique @relation(user2). To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_one_missing_relation_attribute/schema.keel",
-        "offset": 34,
-        "line": 3,
+        "offset": 122,
+        "line": 10,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_relationships_one_to_one_missing_relation_attribute/schema.keel",
-        "offset": 57,
-        "line": 3,
-        "column": 32
+        "offset": 132,
+        "line": 10,
+        "column": 19
       }
     }
   ]

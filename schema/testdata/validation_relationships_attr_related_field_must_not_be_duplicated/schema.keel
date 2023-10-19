@@ -1,6 +1,5 @@
 model Author {
     fields {
-        age Number
         written Post[]
     }
 }

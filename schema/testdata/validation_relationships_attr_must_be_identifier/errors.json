@@ -1,36 +1,36 @@
 {
   "errors": [
     {
-      "message": "The field 'written' does not have an associated field on the related Post model",
-      "hint": "In a one to many relationship, the related belongs-to field must exist on the Post model. To learn more about relationships, visit https://docs.keel.so/models#relationships",
-      "code": "RelationshipError",
+      "message": "field author has an unsupported type Author",
+      "hint": "Did you mean one of Boolean, Date, ID, Identity, Number, Password, Post, Secret, Text, or Timestamp?",
+      "code": "E009",
       "pos": {
         "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
-        "offset": 36,
+        "offset": 34,
         "line": 3,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
-        "offset": 50,
+        "offset": 40,
         "line": 3,
-        "column": 23
+        "column": 15
       }
     },
     {
-      "message": "The @relation value must refer to a field on the related model",
-      "hint": "For example, @relation(fieldName). To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "message": "The @relation attribute cannot be used on non-model types",
+      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
-        "offset": 108,
-        "line": 9,
+        "offset": 48,
+        "line": 3,
         "column": 23
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
-        "offset": 122,
-        "line": 9,
+        "offset": 62,
+        "line": 3,
         "column": 37
       }
     }

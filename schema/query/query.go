@@ -551,6 +551,7 @@ func GetRelationshipCandidates(asts []*parser.AST, model *parser.ModelNode, fiel
 	}
 
 	otherFields := ModelFieldsOfType(otherModel, model.Name.Value)
+	theseFields := ModelFieldsOfType(model, otherModel.Name.Value)
 
 	relationAttributeExists := false
 	for _, otherField := range otherFields {
@@ -559,16 +560,32 @@ func GetRelationshipCandidates(asts []*parser.AST, model *parser.ModelNode, fiel
 			continue
 		}
 
-		// hasOneToMany, explicitOneToMany := ValidOneToHasMany(field, otherField)
-		// hasOneToOne, explicitOneToOne := ValidUniqueOneToHasOne(field, otherField)
-
 		if ValidOneToHasMany(field, otherField) ||
 			ValidOneToHasMany(otherField, field) ||
 			ValidUniqueOneToHasOne(field, otherField) ||
 			ValidUniqueOneToHasOne(otherField, field) {
 
-			// This field has a new relationship candidate with the other model
-			candidates = append(candidates, &Relationship{Model: otherModel, Field: otherField})
+			// Make sure this candidate is not already being referenced by a @relation attribute on another field
+			alreadyReferencedByRelation := false
+			for _, f := range theseFields {
+				if f.Name.Value == field.Name.Value {
+					continue
+				}
+
+				attr := FieldGetAttribute(f, parser.AttributeRelation)
+				if attr != nil {
+					if relation, ok := RelationAttributeValue(attr); ok {
+						if relation == otherField.Name.Value {
+							alreadyReferencedByRelation = true
+						}
+					}
+				}
+			}
+
+			if !alreadyReferencedByRelation {
+				// This field has a new relationship candidate with the other model
+				candidates = append(candidates, &Relationship{Model: otherModel, Field: otherField})
+			}
 
 			if FieldHasAttribute(field, parser.AttributeRelation) || FieldHasAttribute(otherField, parser.AttributeRelation) {
 				relationAttributeExists = true

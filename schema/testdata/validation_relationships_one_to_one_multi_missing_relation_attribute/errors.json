@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "Cannot associate with field 'user' on model Student to form a one to one relationship as a relationship may already exist",
-      "hint": "Use @relation to refer to a User field on the Student model which is not yet in a relationship",
+      "message": "Cannot associate with field 'user' on Student to form a one to one relationship because it is already associated with 'student'",
+      "hint": "Use @relation to refer to another User field on Student which is not yet in a relationship. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_one_multi_missing_relation_attribute/schema.keel",
@@ -15,23 +15,6 @@
         "offset": 194,
         "line": 10,
         "column": 10
-      }
-    },
-    {
-      "message": "Cannot associate with field 'student2' on model User to form a one to one relationship as a relationship may already exist",
-      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
-      "code": "RelationshipError",
-      "pos": {
-        "filename": "testdata/validation_relationships_one_to_one_multi_missing_relation_attribute/schema.keel",
-        "offset": 241,
-        "line": 16,
-        "column": 9
-      },
-      "endPos": {
-        "filename": "testdata/validation_relationships_one_to_one_multi_missing_relation_attribute/schema.keel",
-        "offset": 250,
-        "line": 16,
-        "column": 18
       }
     }
   ]

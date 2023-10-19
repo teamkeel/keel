@@ -1,54 +1,37 @@
 {
   "errors": [
     {
-      "message": "You have duplicate field names author",
-      "hint": "Remove 'author' on line 4",
-      "code": "E003",
+      "message": "The @relation attribute cannot be used on non-model types",
+      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_empty/schema.keel",
-        "offset": 64,
-        "line": 4,
-        "column": 9
+        "offset": 47,
+        "line": 3,
+        "column": 22
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_empty/schema.keel",
-        "offset": 70,
-        "line": 4,
-        "column": 15
+        "offset": 56,
+        "line": 3,
+        "column": 31
       }
     },
     {
-      "message": "The @relation value must refer to a field on the related model",
+      "message": "The @relation argument must refer to a field on Author",
       "hint": "For example, @relation(fieldName). To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_empty/schema.keel",
-        "offset": 46,
-        "line": 3,
-        "column": 21
+        "offset": 80,
+        "line": 4,
+        "column": 24
       },
       "endPos": {
         "filename": "testdata/validation_relationships_attr_empty/schema.keel",
-        "offset": 55,
-        "line": 3,
-        "column": 30
-      }
-    },
-    {
-      "message": "The @relation value must refer to a field on the related model",
-      "hint": "For example, @relation(fieldName). To learn more about relationships, visit https://docs.keel.so/models#relationships",
-      "code": "RelationshipError",
-      "pos": {
-        "filename": "testdata/validation_relationships_attr_empty/schema.keel",
-        "offset": 78,
+        "offset": 89,
         "line": 4,
-        "column": 23
-      },
-      "endPos": {
-        "filename": "testdata/validation_relationships_attr_empty/schema.keel",
-        "offset": 87,
-        "line": 4,
-        "column": 32
+        "column": 33
       }
     }
   ]

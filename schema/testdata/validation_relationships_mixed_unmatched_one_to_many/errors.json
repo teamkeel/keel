@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "Field 'author' on model Post is already in a relationship with field 'starPost'",
-      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "message": "The field 'written' does not have an associated field on Post",
+      "hint": "In a one to many relationship, the related belongs-to field must exist on Post. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_mixed_unmatched_one_to_many/schema.keel",
