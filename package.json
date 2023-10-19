@@ -11,15 +11,5 @@
     "scripts": {
         "lint:integration": "./node_modules/.bin/prettier --write ./integration",
         "lint:packages": "./node_modules/.bin/prettier --write ./packages"
-    },
-    "dependencies": {
-        "@teamkeel/functions-runtime": "^0.368.0",
-        "@teamkeel/testing-runtime": "^0.368.0",
-        "@types/node": "^18.11.18",
-        "kysely": "^0.23.4",
-        "node-fetch": "^3.3.0",
-        "tsx": "^3.12.6",
-        "typescript": "^4.9.4",
-        "vitest": "^0.27.2"
     }
 }
