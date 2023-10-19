@@ -185,7 +185,7 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 	w.Writeln("queries: {")
 	w.Indent()
 	for _, fn := range queries {
-		w.Writef(`%s: this.actions.%s.bind(this)`, fn, fn)
+		w.Writef(`%s: this.actions.%s`, fn, fn)
 		w.Writeln(",")
 	}
 	w.Dedent()
@@ -194,7 +194,7 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 	w.Writeln("mutations: {")
 	w.Indent()
 	for _, fn := range mutations {
-		w.Writef(`%s: this.actions.%s.bind(this)`, fn, fn)
+		w.Writef(`%s: this.actions.%s`, fn, fn)
 		w.Writeln(",")
 	}
 	w.Dedent()
