@@ -1,6 +1,6 @@
 # @teamkeel/client-react-query
 
-Create a fully typed React-Query hooks from a generated Keel client.
+Create fully typed React-Query hooks from a generated Keel client.
 
 ## Install
 
