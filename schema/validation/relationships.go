@@ -24,7 +24,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			// For each relationship field, we generate possible candidates of fields
 			// from the other model to form the relationship.  A relationship should
 			// only ever have one candidate.
-			//	candidates = map[*parser.FieldNode][]*query.Relationship{}
+			candidates = map[*parser.FieldNode][]*query.Relationship{}
 			currentModel = model
 		},
 
@@ -40,21 +40,6 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			})
 
 			for _, field := range orderedKeys {
-				if len(candidates[field]) == 1 {
-					otherField := candidates[field][0].Field
-					otherModel := candidates[field][0].Model
-					if len(candidates[otherField]) == 1 && candidates[otherField][0].Field != field {
-						// Field already in another relationship
-						if !alreadyErrored[field] {
-							errs.AppendError(makeRelationshipError(
-								fmt.Sprintf("The field '%s' on %s is already in a relationship with field '%s'", otherField.Name.Value, otherModel.Name.Value, candidates[otherField][0].Field.Name.Value),
-								learnMore,
-								field,
-							))
-							alreadyErrored[field] = true
-						}
-					}
-				}
 				var pairedCandidate *query.Relationship
 				if len(candidates[field]) > 1 {
 					for i, candidate := range candidates[field] {
@@ -80,7 +65,6 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 									candidate.Field,
 								))
 								alreadyErrored[field] = true
-								delete(candidates, field)
 							}
 						case query.ValidOneToHasMany(candidate.Field, field):
 							if !alreadyErrored[candidate.Field] {
@@ -89,7 +73,6 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 									fmt.Sprintf("Use @relation to refer to another %s[] field on %s which is not yet in a relationship. %s", candidate.Model.Name.Value, currentModel.Name.Value, learnMore),
 									candidate.Field,
 								))
-								delete(candidates, candidate.Field)
 								alreadyErrored[candidate.Field] = true
 							}
 						case query.ValidUniqueOneToHasOne(field, candidate.Field):
@@ -102,12 +85,8 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot form a one to one relationship with field '%s' on %s as it is already associated with field '%s'", field.Name.Value, currentModel.Name.Value, pairedCandidate.Field.Name.Value),
 									fmt.Sprintf("Use @relation on '%s' to explicitly create a relationship with this field. For example, %s %s @unique @relation(%s). %s", field.Name.Value, field.Name.Value, candidate.Model.Name.Value, candidate.Field.Name.Value, learnMore),
-
-									//fmt.Sprintf("Cannot determine which field on the %s model to form a one to one relationship with", candidate.Model.Name.Value),
-									//fmt.Sprintf("Use @relation to refer to a %s field on the %s model which is not yet in a relationshi. For example, @relation(%s)", currentModel.Name.Value, candidate.Model.Name.Value, candidate.Field.Name.Value),
 									candidate.Field,
 								))
-								delete(candidates, field)
 								alreadyErrored[field] = true
 							}
 						case query.ValidUniqueOneToHasOne(candidate.Field, field):
@@ -115,22 +94,16 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot associate with field '%s' on %s to form a one to one relationship because it is already associated with '%s'", field.Name.Value, currentModel.Name.Value, pairedCandidate.Field.Name.Value),
 									fmt.Sprintf("Use @relation to refer to another %s field on %s which is not yet in a relationship. %s", candidate.Model.Name.Value, currentModel.Name.Value, learnMore),
-									//fmt.Sprintf("Use @relation to refer to a %s field on the %s model which is not yet in a relationship", candidate.Model.Name.Value, field.Name.Value),
 									candidate.Field,
 								))
-								delete(candidates, candidate.Field)
 								alreadyErrored[candidate.Field] = true
 							}
 						default:
-							//if !alreadyErrored[field] {
 							errs.AppendError(makeRelationshipError(
 								fmt.Sprintf("Cannot associate with field '%s' on model %s to form a relationship", candidate.Field.Name.Value, candidate.Model.Name.Value),
 								learnMore,
 								field,
 							))
-							delete(candidates, field)
-							alreadyErrored[field] = true
-							//}
 						}
 					}
 				}

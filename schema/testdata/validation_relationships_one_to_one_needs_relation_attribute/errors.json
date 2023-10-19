@@ -5,13 +5,13 @@
       "hint": "Use @relation on 'coWritten' to explicitly create a relationship with this field. For example, coWritten Post @unique @relation(coAuthor). To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
-        "filename": "testdata/validation_relationships_one_to_one_attr_related_missing/schema.keel",
+        "filename": "testdata/validation_relationships_one_to_one_needs_relation_attribute/schema.keel",
         "offset": 449,
         "line": 15,
         "column": 9
       },
       "endPos": {
-        "filename": "testdata/validation_relationships_one_to_one_attr_related_missing/schema.keel",
+        "filename": "testdata/validation_relationships_one_to_one_needs_relation_attribute/schema.keel",
         "offset": 464,
         "line": 15,
         "column": 24
@@ -22,13 +22,13 @@
       "hint": "Use @relation on 'written' to explicitly create a relationship with this field. For example, written Post @unique @relation(coAuthor). To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
-        "filename": "testdata/validation_relationships_one_to_one_attr_related_missing/schema.keel",
+        "filename": "testdata/validation_relationships_one_to_one_needs_relation_attribute/schema.keel",
         "offset": 449,
         "line": 15,
         "column": 9
       },
       "endPos": {
-        "filename": "testdata/validation_relationships_one_to_one_attr_related_missing/schema.keel",
+        "filename": "testdata/validation_relationships_one_to_one_needs_relation_attribute/schema.keel",
         "offset": 464,
         "line": 15,
         "column": 24
