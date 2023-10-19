@@ -16,8 +16,8 @@ const (
 
 func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var currentModel *parser.ModelNode
-	candidates := map[*parser.FieldNode][]*query.Relationship{}
-	alreadyErrored := map[*parser.FieldNode]bool{}
+	var candidates map[*parser.FieldNode][]*query.Relationship
+	var alreadyErrored map[*parser.FieldNode]bool
 
 	return Visitor{
 		EnterModel: func(model *parser.ModelNode) {
@@ -25,6 +25,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			// from the other model to form the relationship.  A relationship should
 			// only ever have one candidate.
 			candidates = map[*parser.FieldNode][]*query.Relationship{}
+			alreadyErrored = map[*parser.FieldNode]bool{}
 			currentModel = model
 		},
 

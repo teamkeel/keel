@@ -663,11 +663,7 @@ func ValidOneToHasMany(belongsTo *parser.FieldNode, hasMany *parser.FieldNode) b
 	// If hasMany has @relation, then this is not a candidate
 	hasManyAttribute := FieldGetAttribute(hasMany, parser.AttributeRelation)
 
-	if hasManyAttribute != nil {
-		return false
-	}
-
-	return true
+	return hasManyAttribute == nil
 }
 
 // Determine if pair form a valid 1:! pattern where, for example:
