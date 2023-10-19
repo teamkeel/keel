@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "The field 'written' does not have an associated field on the related Post model",
-      "hint": "In a one to many relationship, the related belongs-to field must exist on the Post model. To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "message": "The field 'written' does not have an associated field on Post",
+      "hint": "In a one to many relationship, the related belongs-to field must exist on Post. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_must_point_to_related_field/schema.keel",
@@ -18,8 +18,8 @@
       }
     },
     {
-      "message": "The field 'noSuchField' does not exist on the Author model",
-      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "message": "The field 'noSuchField' does not exist on Author",
+      "hint": "The @relation argument must refer to a field on Author which is of type Post. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_attr_must_point_to_related_field/schema.keel",

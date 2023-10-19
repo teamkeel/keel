@@ -1,0 +1,14 @@
+model Author {
+    fields {
+        written Post @relation(author)
+        coWritten Post @relation(coAuthor)
+        reviewed Post @unique
+    }
+}
+
+model Post {
+    fields {
+        author Author[]
+        coAuthor Author[]
+    }
+}

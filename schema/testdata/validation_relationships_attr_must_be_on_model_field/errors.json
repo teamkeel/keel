@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "The @relation attribute cannot be used on non-model types",
+      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_attr_must_be_on_model_field/schema.keel",
+        "offset": 46,
+        "line": 3,
+        "column": 21
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_attr_must_be_on_model_field/schema.keel",
+        "offset": 63,
+        "line": 3,
+        "column": 38
+      }
+    }
+  ]
+}

@@ -1,9 +1,3 @@
-model Author {
-    fields {
-        written Post[]
-    }
-}
-
 model Post {
     fields {
         author Author @relation(123)

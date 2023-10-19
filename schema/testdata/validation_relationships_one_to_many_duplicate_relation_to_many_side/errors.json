@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "Cannot associate with field 'author' on model Post to form a one to many relationship as a relationship may already exist",
-      "hint": "Use @relation to refer to a Author[] field on the Post model which is not yet in a relationship",
+      "message": "Cannot associate with repeated field 'author' on Post to form a one to many relationship because it is already associated with field 'written'",
+      "hint": "Use @relation to refer to another Author[] field on Post which is not yet in a relationship. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_many_duplicate_relation_to_many_side/schema.keel",
@@ -15,23 +15,6 @@
         "offset": 107,
         "line": 4,
         "column": 41
-      }
-    },
-    {
-      "message": "Cannot associate with field 'coWritten' on model Author to form a one to many relationship as a relationship may already exist",
-      "hint": "",
-      "code": "RelationshipError",
-      "pos": {
-        "filename": "testdata/validation_relationships_one_to_many_duplicate_relation_to_many_side/schema.keel",
-        "offset": 151,
-        "line": 10,
-        "column": 9
-      },
-      "endPos": {
-        "filename": "testdata/validation_relationships_one_to_many_duplicate_relation_to_many_side/schema.keel",
-        "offset": 166,
-        "line": 10,
-        "column": 24
       }
     }
   ]

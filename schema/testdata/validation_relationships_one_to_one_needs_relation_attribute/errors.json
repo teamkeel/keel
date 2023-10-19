@@ -1,0 +1,55 @@
+{
+  "errors": [
+    {
+      "message": "Cannot form a one to one relationship with field 'coWritten' on Author as it is already associated with field 'author'",
+      "hint": "Use @relation on 'coWritten' to explicitly create a relationship with this field. For example, coWritten Post @unique @relation(coAuthor). To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_one_needs_relation_attribute/schema.keel",
+        "offset": 449,
+        "line": 15,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_one_needs_relation_attribute/schema.keel",
+        "offset": 464,
+        "line": 15,
+        "column": 24
+      }
+    },
+    {
+      "message": "Cannot form a one to one relationship with field 'written' on Author as it is already associated with field 'author'",
+      "hint": "Use @relation on 'written' to explicitly create a relationship with this field. For example, written Post @unique @relation(coAuthor). To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_one_needs_relation_attribute/schema.keel",
+        "offset": 449,
+        "line": 15,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_one_needs_relation_attribute/schema.keel",
+        "offset": 464,
+        "line": 15,
+        "column": 24
+      }
+    },
+    {
+      "message": "Cannot associate with field 'author' on Post to form a one to one relationship because it is already associated with 'coWritten'",
+      "hint": "Use @relation to refer to another Author field on Post which is not yet in a relationship. To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "code": "RelationshipError",
+      "pos": {
+        "filename": "testdata/validation_relationships_one_to_one_needs_relation_attribute/schema.keel",
+        "offset": 239,
+        "line": 6,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_one_to_one_needs_relation_attribute/schema.keel",
+        "offset": 259,
+        "line": 6,
+        "column": 29
+      }
+    }
+  ]
+}

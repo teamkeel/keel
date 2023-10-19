@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "The field 'nope' does not exist on the Student model",
-      "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
+      "message": "The field 'nope' does not exist on Student",
+      "hint": "The @relation argument must refer to a field on Student which is of type User. To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_relationships_one_to_one_relation_field_not_exists/schema.keel",

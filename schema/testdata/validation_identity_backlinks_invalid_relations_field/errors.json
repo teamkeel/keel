@@ -18,7 +18,7 @@
       }
     },
     {
-      "message": "The field 'createdAt' on the Identity model must be of type CompanyEmployee in order to establish a relationship",
+      "message": "The field 'createdAt' on Identity must be of type CompanyEmployee in order to establish a relationship",
       "hint": "To learn more about relationships, visit https://docs.keel.so/models#relationships",
       "code": "RelationshipError",
       "pos": {

@@ -1,7 +1,7 @@
 model Post {
     fields {
-        author Text @relation
-        author Author @relation
+        author1 Text @relation
+        author2 Author @relation
     }
 }
 

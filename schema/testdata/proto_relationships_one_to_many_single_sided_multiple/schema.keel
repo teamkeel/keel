@@ -1,0 +1,13 @@
+model Author {
+    fields {
+        topPost Post
+        worstPost Post
+    }
+}
+
+model Post {
+    fields {
+        authoredBy Author
+        coAuthoredBy Author
+    }
+}
