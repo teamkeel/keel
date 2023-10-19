@@ -3,12 +3,13 @@ name: New Release CLI
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: "The tag to release"
+      version:
+        description: "Keel version (tag)"
         required: true
         type: string
       isPrerelease:
         description: "Prerelease?"
+        default: true
         required: true
         type: boolean
 
@@ -19,7 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ inputs.version }}
           fetch-depth: 0
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -51,5 +52,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
           HOMEBREW_REPO: ${{ steps.set-brew-envvars.outputs.HOMEBREW_REPO }}
           HOMEBREW_ALIAS: ${{ steps.set-brew-envvars.outputs.HOMEBREW_ALIAS }}
-          GORELEASER_CURRENT_TAG: ${{ inputs.tag }}
+          GORELEASER_CURRENT_TAG: ${{ inputs.version }}
     
