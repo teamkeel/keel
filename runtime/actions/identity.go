@@ -17,17 +17,30 @@ import (
 )
 
 func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*auth.Identity, error) {
-	return findSingle(ctx, schema, "id", id)
-}
-
-func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string) (*auth.Identity, error) {
-	return findSingle(ctx, schema, "email", email)
-}
-
-func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(ctx, identityModel)
-	err := query.Where(Field("externalId"), Equals, Value(externalId))
+	err := query.Where(Field("id"), Equals, Value(id))
+	if err != nil {
+		return nil, err
+	}
+
+	query.AppendSelect(AllFields())
+	result, err := query.SelectStatement().ExecuteToSingle(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	return mapToIdentity(result)
+}
+
+func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string, issuer string) (*auth.Identity, error) {
+	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	query := NewQuery(ctx, identityModel)
+	err := query.Where(Field("email"), Equals, Value(email))
 	if err != nil {
 		return nil, err
 	}
@@ -50,10 +63,15 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 	return mapToIdentity(result)
 }
 
-func findSingle(ctx context.Context, schema *proto.Schema, field string, value string) (*auth.Identity, error) {
+func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(ctx, identityModel)
-	err := query.Where(Field(field), Equals, Value(value))
+	err := query.Where(Field("externalId"), Equals, Value(externalId))
+	if err != nil {
+		return nil, err
+	}
+	query.And()
+	err = query.Where(Field("issuer"), Equals, Value(issuer))
 	if err != nil {
 		return nil, err
 	}

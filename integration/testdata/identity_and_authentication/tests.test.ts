@@ -633,3 +633,27 @@ test("reset password - missing aud claim - cannot be parsed error", async () => 
 
 //   expect(token).not.toBeNull();
 // });
+
+test("create and authenticate - email exists for another issuer - success", async () => {
+  await models.identity.create({ email: "keel@keelson.so", issuer: "https://auth.staging.keel.xyz/", externalId: "google-oauth2|117415937240512761581" });
+
+  const { identityCreated: created1 } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "keel@keelson.so",
+      password: "1234",
+    },
+  });
+
+  expect(created1).toEqual(true);
+
+  const { identityCreated: created2 } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "keel@keelson.so",
+      password: "1234",
+    },
+  });
+
+  expect(created2).toEqual(false);
+});
