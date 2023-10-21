@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -25,6 +26,7 @@ type InitModel struct {
 	Status int
 
 	GeneratedFiles codegen.GeneratedFiles
+	SkippedFiles   codegen.GeneratedFiles
 
 	// Maintain the current dimensions of the user's terminal
 	width  int
@@ -55,6 +57,7 @@ func (m *InitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case InitialisedMsg:
 		m.Status = StatusInitialized
 		m.GeneratedFiles = msg.GeneratedFiles
+		m.SkippedFiles = msg.SkippedFiles
 
 		if msg.Err != nil {
 			m.Err = msg.Err
@@ -93,15 +96,27 @@ func (m *InitModel) renderInit() string {
 
 		if len(m.GeneratedFiles) > 0 {
 
-			b.WriteString("The following files were generated:\n")
+			b.WriteString("Generated:\n")
 			b.WriteString("===================================\n")
 
 			for _, f := range m.GeneratedFiles {
 				b.WriteString(fmt.Sprintf("%s\n", colors.Gray(fmt.Sprintf("- %s", f.Path)).String()))
 			}
+
+			b.WriteString("\n")
 		}
 
-		b.WriteString("\n")
+		if len(m.SkippedFiles) > 0 {
+
+			b.WriteString("Skipped as there are existing files:\n")
+			b.WriteString("===================================\n")
+
+			for _, f := range m.SkippedFiles {
+				b.WriteString(fmt.Sprintf("%s\n", colors.Gray(fmt.Sprintf("- %s", f.Path)).String()))
+			}
+
+			b.WriteString("\n")
+		}
 
 		b.WriteString(colors.Cyan("Visit https://docs.keel.so/ to get started.").String())
 
@@ -113,6 +128,7 @@ func (m *InitModel) renderInit() string {
 
 type InitialisedMsg struct {
 	GeneratedFiles codegen.GeneratedFiles
+	SkippedFiles   codegen.GeneratedFiles
 	Err            error
 }
 
@@ -128,32 +144,27 @@ func Init(dir string) tea.Cmd {
 			}
 		}
 
-		empty := isDirEmpty(dir)
-
-		if !empty {
-			return InitialisedMsg{
-				Err: fmt.Errorf("The directory you are trying to initialise is not empty"),
-			}
-		}
-
 		files := codegen.GeneratedFiles{}
 
 		files = append(files, &codegen.GeneratedFile{
 			Path: ".gitignore",
-			Contents: `.build/
-node_modules/
+			Contents: `node_modules/
 .DS_Store
+*.local
+
+# Keel
+.build/
 			`,
 		})
 
 		files = append(files, &codegen.GeneratedFile{
 			Path:     "schema.keel",
-			Contents: "// Visit https://keel.notaku.site/ for documentation on how to get started",
+			Contents: "// Visit https://docs.keel.so/ for documentation on how to get started",
 		})
 
 		files = append(files, &codegen.GeneratedFile{
 			Path: "keelconfig.yaml",
-			Contents: `# Visit https://keel.notaku.site/documentation/environment-variables-and-secrets for more
+			Contents: `# Visit https://docs.keel.so/envvars for more
 # information about environment variables and secrets
 environment:
   default:
@@ -166,7 +177,18 @@ secrets:
 `,
 		})
 
-		err := files.Write(dir)
+		generatedFiles := codegen.GeneratedFiles{}
+		skippedFiles := codegen.GeneratedFiles{}
+
+		for _, file := range files {
+			if _, err := os.Stat(filepath.Join(dir, file.Path)); err == nil {
+				skippedFiles = append(skippedFiles, file)
+			} else {
+				generatedFiles = append(generatedFiles, file)
+			}
+		}
+
+		err := generatedFiles.Write(dir)
 
 		if err != nil {
 			return InitialisedMsg{
@@ -175,7 +197,8 @@ secrets:
 		}
 
 		return InitialisedMsg{
-			GeneratedFiles: files,
+			GeneratedFiles: generatedFiles,
+			SkippedFiles:   skippedFiles,
 		}
 	}
 }
