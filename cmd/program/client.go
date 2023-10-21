@@ -16,6 +16,8 @@ import (
 
 const (
 	StatusGeneratingClient = iota
+	StatusNotGenerated
+	StatusGenerated
 )
 
 type GenerateClientModel struct {

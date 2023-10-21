@@ -1,7 +1,6 @@
 package program
 
 import (
-	"bufio"
 	"context"
 	"crypto/rsa"
 	"crypto/x509"
@@ -10,7 +9,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -97,178 +95,6 @@ type GenerateMsg struct {
 	Status         int
 	GeneratedFiles codegen.GeneratedFiles
 	Log            string
-}
-
-// Generate takes care of ensuring that all of the required steps to get a working Keel project with functions
-// are executed including:
-// - package.json + tsconfig.json generated
-// - Installing deps via npm
-// - Generating dynamic sdk + testing packages
-// - Scaffolding any missing custom functions
-func Generate(dir string, schema *proto.Schema, nodePackagesPath string, output chan tea.Msg) tea.Cmd {
-	return func() tea.Msg {
-
-		generatedFiles := codegen.GeneratedFiles{}
-
-		if !node.HasFunctions(schema) && !node.HasTests(dir) {
-			return GenerateMsg{
-				Status: StatusNotGenerated,
-			}
-		}
-
-		output <- GenerateMsg{
-			Status: StatusBootstrapping,
-			Log:    "Determining changes",
-		}
-
-		// make sure we have all correct deps
-		files, err := node.Bootstrap(dir, node.WithPackagesPath(nodePackagesPath))
-
-		if err != nil {
-			return GenerateMsg{
-				Err: err,
-			}
-		}
-
-		err = files.Write(dir)
-
-		if err != nil {
-			return GenerateMsg{
-				Err: err,
-			}
-		}
-
-		output <- GenerateMsg{
-			Status: StatusBootstrapping,
-			Log:    "Satisfying dependencies",
-		}
-
-		if len(files) > 0 {
-			for _, file := range files {
-				output <- GenerateMsg{
-					Status: StatusBootstrapping,
-					Log:    fmt.Sprintf("Created %s", file.Path),
-				}
-			}
-		} else {
-			output <- GenerateMsg{
-				Status: StatusBootstrapping,
-				Log:    "Nothing to bootstrap",
-			}
-		}
-
-		output <- GenerateMsg{
-			Status: StatusNpmInstalling,
-		}
-
-		npmInstall := exec.Command("npm", "install", "--progress=false")
-		npmInstall.Dir = dir
-		stdoutPipe, _ := npmInstall.StdoutPipe()
-		stderrPipe, _ := npmInstall.StderrPipe()
-
-		// combine both stderr and stdout into a single reader which can be scanned
-		multi := io.MultiReader(stdoutPipe, stderrPipe)
-
-		err = npmInstall.Start()
-		if err != nil {
-			return GenerateMsg{
-				Err: err,
-			}
-		}
-
-		// Next, we construct a line scanner which will allow us to iterate
-		// over the individual new lines written out into the stdout / stderr pipes
-		scanner := bufio.NewScanner(multi)
-		scanner.Split(bufio.ScanLines)
-		for scanner.Scan() {
-			m := scanner.Text()
-
-			output <- GenerateMsg{
-				Log:    m,
-				Status: StatusNpmInstalling,
-			}
-		}
-
-		err = npmInstall.Wait()
-
-		if err != nil {
-			return GenerateMsg{
-				Err: err,
-			}
-		}
-
-		files, err = node.Generate(context.TODO(), schema, node.WithDevelopmentServer(true))
-
-		if err != nil {
-			return GenerateMsg{
-				Err: err,
-			}
-		}
-
-		err = files.Write(dir)
-
-		if err != nil {
-			return GenerateMsg{
-				Err: err,
-			}
-		}
-
-		output <- GenerateMsg{
-			Log:    "Generated @teamkeel/sdk",
-			Status: StatusGeneratingNodePackages,
-		}
-
-		output <- GenerateMsg{
-			Log:    "Generated .build directory",
-			Status: StatusGeneratingNodePackages,
-		}
-
-		output <- GenerateMsg{
-			Log:    "Generated @teamkeel/testing",
-			Status: StatusGeneratingNodePackages,
-		}
-
-		scaffoldedFiles, err := node.Scaffold(dir, schema)
-
-		if err != nil {
-			return GenerateMsg{
-				Err: err,
-			}
-		}
-
-		err = scaffoldedFiles.Write(dir)
-
-		if err != nil {
-			return GenerateMsg{
-				Err: err,
-			}
-		}
-
-		generatedFiles = append(generatedFiles, scaffoldedFiles...)
-
-		if len(generatedFiles) > 0 {
-			for _, f := range scaffoldedFiles {
-
-				output <- GenerateMsg{
-					Log:    f.Path,
-					Status: StatusScaffolding,
-				}
-			}
-
-		} else {
-			output <- GenerateMsg{
-				Log:    "No functions to generate!",
-				Status: StatusScaffolding,
-			}
-		}
-
-		output <- GenerateMsg{
-			GeneratedFiles: generatedFiles,
-			Status:         StatusGenerated,
-		}
-
-		return nil
-	}
 }
 
 type GenerateClientMsg struct {
@@ -443,30 +269,13 @@ type SetupFunctionsMsg struct {
 
 func SetupFunctions(dir string, nodePackagesPath string) tea.Cmd {
 	return func() tea.Msg {
-		files, err := node.Bootstrap(dir, node.WithPackagesPath(nodePackagesPath))
+		err := node.Bootstrap(dir, node.WithPackagesPath(nodePackagesPath))
 		if err != nil {
 			return SetupFunctionsMsg{
 				Err: err,
 			}
 		}
 
-		err = files.Write(dir)
-
-		if err != nil {
-			return SetupFunctionsMsg{
-				Err: err,
-			}
-		}
-
-		npmInstall := exec.Command("npm", "install")
-		npmInstall.Dir = dir
-		err = npmInstall.Run()
-
-		if err != nil {
-			return SetupFunctionsMsg{
-				Err: err,
-			}
-		}
 		return SetupFunctionsMsg{}
 	}
 }
