@@ -679,7 +679,7 @@ type WatcherMsg struct {
 	Event string
 }
 
-func StartWatcher(dir string, ch chan tea.Msg) tea.Cmd {
+func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 	return func() tea.Msg {
 		w := watcher.New()
 		w.SetMaxEvents(1)
@@ -694,6 +694,15 @@ func StartWatcher(dir string, ch chan tea.Msg) tea.Cmd {
 			for _, v := range ignored {
 				if strings.Contains(fullPath, v) {
 					return watcher.ErrSkip
+				}
+			}
+
+			// If there is a filter set then only watch these files
+			if len(filter) > 0 {
+				for _, v := range filter {
+					if !strings.Contains(fullPath, v) {
+						return watcher.ErrSkip
+					}
 				}
 			}
 

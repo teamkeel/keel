@@ -22,6 +22,7 @@ type GenerateClientModel struct {
 	// The directory of the Keel project
 	ProjectDir string
 	Package    bool
+	Watch      bool
 	OutputDir  string
 	ApiName    string
 
@@ -36,6 +37,7 @@ type GenerateClientModel struct {
 	GeneratedFiles codegen.GeneratedFiles
 
 	generateCh chan tea.Msg
+	watcherCh  chan tea.Msg
 
 	generateOutput []*GenerateClientMsg
 
@@ -46,10 +48,29 @@ type GenerateClientModel struct {
 
 func (m *GenerateClientModel) Init() tea.Cmd {
 	m.generateCh = make(chan tea.Msg, 1)
+	m.watcherCh = make(chan tea.Msg, 1)
 
 	m.Status = StatusLoadSchema
 
-	return tea.Batch(LoadSchema(m.ProjectDir, "development"))
+	cmds := []tea.Cmd{
+		LoadSchema(m.ProjectDir, "development"),
+	}
+
+	filter := []string{
+		".keel",
+	}
+
+	if m.Watch {
+		cmds = append(
+			cmds,
+			StartWatcher(m.ProjectDir, m.watcherCh, filter),
+			NextMsgCommand(m.watcherCh),
+		)
+	}
+
+	return tea.Batch(
+		cmds...,
+	)
 }
 
 func (m *GenerateClientModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -73,7 +94,9 @@ func (m *GenerateClientModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if msg.Err != nil {
 			m.Status = StatusNotGenerated
-			return m, tea.Quit
+			if !m.Watch {
+				return m, tea.Quit
+			}
 		}
 
 		m.Schema = msg.Schema
@@ -88,23 +111,44 @@ func (m *GenerateClientModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case GenerateClientMsg:
 		m.generateOutput = append(m.generateOutput, &msg)
 		m.Status = msg.Status
-		m.GeneratedFiles = append(m.GeneratedFiles, msg.GeneratedFiles...)
+		// m.GeneratedFiles = append(m.GeneratedFiles, msg.GeneratedFiles...)
+		m.GeneratedFiles = msg.GeneratedFiles
 		m.Err = msg.Err
 
 		if msg.Err != nil {
 			m.Status = StatusNotGenerated
-			return m, tea.Quit
+			if !m.Watch {
+				return m, tea.Quit
+			}
 		}
 
 		switch m.Status {
 		case StatusGenerated, StatusNotGenerated:
 			// if generation has finished successfully or generation was aborted
 			// due to there being no tests / functions in the schema we can quit now.
-			return m, tea.Quit
+
+			if !m.Watch {
+				return m, tea.Quit
+			}
+
 		default:
 			// otherwise, keep reading from the channel
 			return m, NextMsgCommand(m.generateCh)
 		}
+	case WatcherMsg:
+		m.Err = msg.Err
+		m.Status = StatusGeneratingClient
+
+		// If the watcher errors then probably best to exit
+		if m.Err != nil {
+			return m, tea.Quit
+		}
+
+		return m, tea.Batch(
+			NextMsgCommand(m.watcherCh),
+			LoadSchema(m.ProjectDir, "development"),
+		)
+
 	default:
 		var cmd tea.Cmd
 
@@ -168,6 +212,11 @@ func (m *GenerateClientModel) renderGenerate() string {
 				b.WriteString("\n")
 			}
 		}
+	}
+
+	if m.Watch {
+		b.WriteString("\n")
+		b.WriteString(fmt.Sprintf("%s\n", colors.Gray("Watching for updates. Press ctrl+c or q to exit").String()))
 	}
 
 	return b.String()

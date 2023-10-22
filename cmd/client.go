@@ -9,6 +9,7 @@ import (
 )
 
 var flagClientPackage bool
+var flagClientWatch bool
 var flagClientOutputDir string
 var flagClientApiName string
 
@@ -21,6 +22,7 @@ var clientCmd = &cobra.Command{
 			Package:    flagClientPackage,
 			OutputDir:  flagClientOutputDir,
 			ApiName:    flagClientApiName,
+			Watch:      flagClientWatch,
 		}
 
 		_, err := tea.NewProgram(model).Run()
@@ -40,4 +42,5 @@ func init() {
 	clientCmd.Flags().StringVarP(&flagClientApiName, "api", "a", "", "name of the API to generate a client for")
 	clientCmd.Flags().StringVarP(&flagClientOutputDir, "output", "o", ".", "directory to output the client")
 	clientCmd.Flags().BoolVar(&flagClientPackage, "package", false, "Set to true will generate a a client package, false will generate a single file client")
+	clientCmd.Flags().BoolVar(&flagClientWatch, "watch", false, "Watch for schema changes and regenerate the client")
 }
