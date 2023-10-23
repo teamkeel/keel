@@ -68,7 +68,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "password cannot be empty"}
 	}
 
-	identity, err := FindIdentityByEmail(scope.Context, scope.Schema, emailPassword.String("email"))
+	identity, err := FindIdentityByEmail(scope.Context, scope.Schema, emailPassword.String("email"), keelIssuerClaim)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 	}
 
 	var identity *auth.Identity
-	identity, err = FindIdentityByEmail(scope.Context, scope.Schema, emailString)
+	identity, err = FindIdentityByEmail(scope.Context, scope.Schema, emailString, keelIssuerClaim)
 	if err != nil {
 		return err
 	}
