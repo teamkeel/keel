@@ -13,7 +13,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/rs/cors"
-	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/codegen"
@@ -26,10 +25,8 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
-	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
-	"github.com/teamkeel/keel/testing"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -40,7 +37,6 @@ import (
 
 const (
 	ModeRun = iota
-	ModeTest
 )
 
 const (
@@ -180,15 +176,10 @@ func (m *Model) Init() tea.Cmd {
 	m.runtimeRequestsCh = make(chan tea.Msg, 1)
 	m.functionsLogCh = make(chan tea.Msg, 1)
 	m.watcherCh = make(chan tea.Msg, 1)
-	m.Environment = lo.Ternary(m.Mode == ModeTest, "test", "development")
+	m.Environment = "development"
 
-	switch m.Mode {
-	case ModeRun, ModeTest:
-		m.Status = StatusCheckingDependencies
-		return CheckDependencies()
-	default:
-		return nil
-	}
+	m.Status = StatusCheckingDependencies
+	return CheckDependencies()
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -279,27 +270,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Secrets = msg.Secrets
 
 		if m.Err != nil {
-			if m.Mode == ModeTest {
-				return m, tea.Quit
-			}
 			return m, nil
-		}
-
-		// For test mode inject a special API that contains all models
-		// This is so in tests we can invoke any action
-		if m.Mode == ModeTest {
-			testApi := &proto.Api{
-				Name: testing.ActionApiPath,
-			}
-			for _, m := range m.Schema.Models {
-				testApi.ApiModels = append(testApi.ApiModels, &proto.ApiModel{
-					ModelName: m.Name,
-				})
-			}
-
-			m.Schema.Apis = append(m.Schema.Apis, testApi)
-			m.JobHandler = runtime.NewJobHandler(m.Schema)
-			m.SubscriberHandler = runtime.NewSubscriberHandler(m.Schema)
 		}
 
 		cors := cors.New(cors.Options{
@@ -326,9 +297,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.MigrationChanges = msg.Changes
 
 		if m.Err != nil {
-			if m.Mode == ModeTest {
-				return m, tea.Quit
-			}
 			return m, nil
 		}
 
@@ -343,15 +311,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case UpdateFunctionsMsg:
 		m.Err = msg.Err
 		if m.Err != nil {
-			if m.Mode == ModeTest {
-				return m, tea.Quit
-			}
 			return m, nil
-		}
-
-		if m.Mode == ModeTest && !node.HasFunctions(m.Schema) {
-			m.Status = StatusRunning
-			return m, RunTests(m.ProjectDir, m.Port, m.Config, m.DatabaseConnInfo, m.TestPattern)
 		}
 
 		// If functions already running nothing to do
@@ -380,10 +340,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Status = StatusRunning
 		}
 
-		if m.Mode == ModeTest {
-			return m, RunTests(m.ProjectDir, m.Port, m.Config, m.DatabaseConnInfo, m.TestPattern)
-		}
-
 		return m, nil
 	case FunctionsOutputMsg:
 		log := &FunctionLog{
@@ -396,7 +352,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			NextMsgCommand(m.functionsLogCh),
 		}
 
-		if m.Mode == ModeRun || m.Mode == ModeTest {
+		if m.Mode == ModeRun {
 			cmds = append(cmds, tea.Println(renderFunctionLog(log)))
 		}
 
@@ -459,66 +415,28 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 		}
 
-		envVars := m.Config.GetEnvVars(lo.Ternary(m.Mode == ModeTest, "test", "development"))
+		envVars := m.Config.GetEnvVars("development")
 		for k, v := range envVars {
 			os.Setenv(k, v)
 		}
 
-		if m.Mode == ModeTest {
-			// Synchronous event handling for keel test.
-			ctx, err := events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
-				return runtime.NewSubscriberHandler(m.Schema).RunSubscriber(ctx, subscriber, event)
-			})
-			if err != nil {
-				m.Err = err
-				return m, tea.Quit
-			}
-
-			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-			if len(pathParts) != 3 {
-				w.WriteHeader(http.StatusNotFound)
-			}
-
-			switch pathParts[0] {
-			case testing.ActionApiPath:
-				r = msg.r.WithContext(ctx)
-				m.RuntimeHandler.ServeHTTP(msg.w, r)
-			case testing.JobPath:
-				err := testing.HandleJobExecutorRequest(ctx, m.Schema, pathParts[2], r)
-				if err != nil {
-					response := httpjson.NewErrorResponse(ctx, err, nil)
-					w.WriteHeader(response.Status)
-					_, _ = w.Write(response.Body)
-				}
-			case testing.SubscriberPath:
-				err := testing.HandleSubscriberExecutorRequest(ctx, m.Schema, pathParts[2], r)
-				if err != nil {
-					response := httpjson.NewErrorResponse(ctx, err, nil)
-					w.WriteHeader(response.Status)
-					_, _ = w.Write(response.Body)
-				}
-			default:
-				w.WriteHeader(http.StatusNotFound)
-			}
-		} else {
-			// Synchronous event handling for keel run.
-			// TODO: make asynchronous
-			ctx, err := events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
-				return runtime.NewSubscriberHandler(m.Schema).RunSubscriber(ctx, subscriber, event)
-			})
-			if err != nil {
-				m.Err = err
-				return m, tea.Quit
-			}
-
-			// In run mode we accept any external issuers but the tokens need to be signed correctly
-			ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-				AllowAnyIssuers: true,
-			})
-
-			r = msg.r.WithContext(ctx)
-			m.RuntimeHandler.ServeHTTP(msg.w, r)
+		// Synchronous event handling for keel run.
+		// TODO: make asynchronous
+		ctx, err := events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
+			return runtime.NewSubscriberHandler(m.Schema).RunSubscriber(ctx, subscriber, event)
+		})
+		if err != nil {
+			m.Err = err
+			return m, tea.Quit
 		}
+
+		// In run mode we accept any external issuers but the tokens need to be signed correctly
+		ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+			AllowAnyIssuers: true,
+		})
+
+		r = msg.r.WithContext(ctx)
+		m.RuntimeHandler.ServeHTTP(msg.w, r)
 
 		for k := range envVars {
 			os.Unsetenv(k)
@@ -540,10 +458,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			LoadSchema(m.ProjectDir, m.Environment),
 		)
 
-	case RunTestsMsg:
-		m.Err = msg.Err
-		m.TestOutput = msg.Output
-		return m, tea.Quit
 	}
 
 	return m, nil
@@ -562,8 +476,6 @@ func (m *Model) View() string {
 	switch m.Mode {
 	case ModeRun:
 		b.WriteString(renderRun(m))
-	case ModeTest:
-		b.WriteString(renderTest(m))
 	}
 
 	if m.Err != nil {

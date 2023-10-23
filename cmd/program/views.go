@@ -17,23 +17,6 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func renderTest(m *Model) string {
-	b := strings.Builder{}
-
-	if m.TestOutput != "" {
-		b.WriteString(m.TestOutput)
-	} else {
-		switch m.Status {
-		case StatusRunning:
-			b.WriteString("🏃‍♂️ Running tests\n")
-		default:
-			b.WriteString("⏳ Setting up tests\n")
-		}
-	}
-
-	return b.String()
-}
-
 func renderRun(m *Model) string {
 	b := strings.Builder{}
 	if m.Status == StatusQuitting {
