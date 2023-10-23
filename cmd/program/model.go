@@ -39,8 +39,7 @@ import (
 )
 
 const (
-	ModeValidate = iota
-	ModeRun
+	ModeRun = iota
 	ModeTest
 )
 
@@ -184,9 +183,6 @@ func (m *Model) Init() tea.Cmd {
 	m.Environment = lo.Ternary(m.Mode == ModeTest, "test", "development")
 
 	switch m.Mode {
-	case ModeValidate:
-		m.Status = StatusLoadSchema
-		return LoadSchema(m.ProjectDir, m.Environment)
 	case ModeRun, ModeTest:
 		m.Status = StatusCheckingDependencies
 		return CheckDependencies()
@@ -281,11 +277,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Config = msg.Config
 		m.Err = msg.Err
 		m.Secrets = msg.Secrets
-
-		// For validate mode we're done
-		if m.Mode == ModeValidate {
-			return m, tea.Quit
-		}
 
 		if m.Err != nil {
 			if m.Mode == ModeTest {
@@ -571,8 +562,6 @@ func (m *Model) View() string {
 	switch m.Mode {
 	case ModeRun:
 		b.WriteString(renderRun(m))
-	case ModeValidate:
-		b.WriteString(renderValidate(m))
 	case ModeTest:
 		b.WriteString(renderTest(m))
 	}
