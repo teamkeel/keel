@@ -17,19 +17,6 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func renderValidate(m *Model) string {
-	b := strings.Builder{}
-
-	if m.Err == nil && m.Schema == nil {
-		b.WriteString("⏳ Loading schema")
-	}
-	if m.Err == nil && m.Schema != nil {
-		b.WriteString("✨ Everything's looking good!")
-	}
-
-	return b.String()
-}
-
 func renderTest(m *Model) string {
 	b := strings.Builder{}
 
