@@ -41,10 +41,8 @@ func TestIntegration(t *gotest.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	files, err := node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
+	err = node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
 	require.NoError(t, err)
-
-	require.NoError(t, files.Write(tmpDir))
 
 	_, err = testhelpers.NpmInstall(tmpDir)
 	require.NoError(t, err)

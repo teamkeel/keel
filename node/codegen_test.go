@@ -2274,7 +2274,7 @@ func TestTestingActionExecutor(t *testing.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	_, err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
+	err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
 	require.NoError(t, err)
 
 	_, err = testhelpers.NpmInstall(tmpDir)
@@ -2371,7 +2371,7 @@ func TestSDKTypings(t *testing.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	_, err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
+	err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
 	require.NoError(t, err)
 
 	_, err = testhelpers.NpmInstall(tmpDir)

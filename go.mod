@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/99designs/gqlgen v0.17.16
+	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/alecthomas/participle/v2 v2.0.0-beta.5
 	github.com/bmatcuk/doublestar/v4 v4.2.0

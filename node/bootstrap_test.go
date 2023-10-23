@@ -30,10 +30,8 @@ func TestBootstrap(t *testing.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	files, err := node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
+	err = node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
 	require.NoError(t, err)
-
-	require.NoError(t, files.Write(tmpDir))
 
 	_, err = testhelpers.NpmInstall(tmpDir)
 	require.NoError(t, err)
@@ -70,9 +68,8 @@ func TestBootstrapVersionInterpolation(t *testing.T) {
 
 	runtime.Version = testVersion
 
-	files, err := node.Bootstrap(tmpDir)
+	err = node.Bootstrap(tmpDir)
 	require.NoError(t, err)
-	require.NoError(t, files.Write(tmpDir))
 
 	packageJsonContents, err := os.ReadFile(filepath.Join(tmpDir, "package.json"))
 	assert.NoError(t, err)
@@ -110,9 +107,8 @@ func TestBootstrapPackageJSONExists(t *testing.T) {
 	err = os.WriteFile(filepath.Join(tmpDir, "package.json"), []byte(packageJsonContents), 0777)
 	assert.NoError(t, err)
 
-	files, err := node.Bootstrap(tmpDir)
+	err = node.Bootstrap(tmpDir)
 	assert.NoError(t, err)
-	require.NoError(t, files.Write(tmpDir))
 
 	entries, err := os.ReadDir(tmpDir)
 	assert.NoError(t, err)
