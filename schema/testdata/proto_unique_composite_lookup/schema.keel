@@ -1,0 +1,56 @@
+model User {
+    fields {
+        assignedProduct Product 
+        identity Identity @unique
+    }
+}
+
+
+model Product {
+    fields {
+        name Text
+        sku Text @unique
+        stock ProductStock @unique
+    }
+    actions {
+        get getbySkuAndShampoo(sku: Text) {
+            @where(product.sku == sku and product.name == "Shampoo")
+        }
+
+        get getbySku(sku: Text) {
+            @where(product.sku == sku)
+        }
+
+          get getbySkuAndNotShampoo(sku: Text) {
+            @where(product.sku == sku and product.name != "Shampoo")
+        }
+
+        get getbySkuFromCtx() {
+            @where(product.sku == ctx.identity.user.assignedProduct.sku)
+        }
+
+        get getbyStockId(stockId: ID) {
+            @where(product.stock.id == stockId)
+        }
+
+        get getbyStockFromCtx() {
+            @where(product.stock == ctx.identity.user.assignedProduct.stock)
+        }
+    }
+}
+
+model ProductStock {
+    fields {
+        warehouseBarcode Text @unique
+        supplierSku Text 
+        supplier Supplier
+    }
+
+    @unique([supplierSku, supplier])
+}
+
+model Supplier {
+    fields {
+        supplierCode Text @unique
+    }
+}

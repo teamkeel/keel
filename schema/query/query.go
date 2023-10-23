@@ -307,6 +307,55 @@ func FieldIsUnique(field *parser.FieldNode) bool {
 	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
 }
 
+func FieldIsInCompositeUnique(model *parser.ModelNode, field *parser.FieldNode) (bool, error) {
+	for _, attribute := range ModelAttributes(model) {
+		if attribute.Name.Value == parser.AttributeUnique {
+			fields, err := CompositeUniqueFields(model, attribute)
+			if err != nil {
+				return false, err
+			}
+
+			for _, f := range fields {
+				if field == f {
+					return true, nil
+				}
+			}
+
+		}
+	}
+	return false, nil
+}
+
+func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeNode) ([]*parser.FieldNode, error) {
+	if attribute.Name.Value != parser.AttributeUnique {
+		return nil, fmt.Errorf("%s is not a unique attribute", attribute.Name.Value)
+	}
+
+	fields := []*parser.FieldNode{}
+
+	if len(attribute.Arguments) > 0 {
+		value, err := attribute.Arguments[0].Expression.ToValue()
+		if err != nil {
+			return fields, nil
+		}
+
+		if value.Array != nil {
+			fieldNames := lo.Map(value.Array.Values, func(o *parser.Operand, _ int) string {
+				return o.Ident.ToString()
+			})
+
+			for _, f := range fieldNames {
+				field := Field(model, f)
+				if field != nil {
+					fields = append(fields, field)
+				}
+			}
+		}
+	}
+
+	return fields, nil
+}
+
 // ActionSortableFieldNames returns the field names of the @sortable attribute.
 // If no @sortable attribute exists, an empty slice is returned.
 func ActionSortableFieldNames(action *parser.ActionNode) ([]string, error) {
