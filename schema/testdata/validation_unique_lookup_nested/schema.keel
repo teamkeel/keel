@@ -6,15 +6,15 @@ model Product {
     }
 
     actions {
+        get getBySupplierCode(supplierCode: Text) {
+            @where(product.stock.supplier.supplierCode == supplierCode)
+        }
         get getByBarcodeOrShampooExpr(barcode: Text) {
             @where(product.stock.barcode == barcode or product.name == "Shampoo")
         }
         get getBySupplierSkuInput(stock.supplierSku)
         get getBySupplierSkuExpr(supplierSku: Text) {
             @where(product.stock.supplierSku == supplierSku)
-        }
-        get getBySupplierCode(supplierCode: Text) {
-            @where(product.stock.supplier.supplierCode == supplierCode)
         }
         get getByStockIdIsNull() {
             @where(product.stock == null)

@@ -16,12 +16,10 @@ model Product {
 
     actions {
         get getBySupplierSku(supplierSku)
-        //TODO
         get getBySupplierCode(supplier.supplierCode)
         get getBarcodeIsNull() {
             @where(product.stock.barcode == null)
         }
-        //TODO
         get getBySupplierSkuExprAndNameExprMultiWhere(
             supplierSku: Text,
             name: Text,
@@ -35,10 +33,16 @@ model Product {
         get getBySupplierSkuOrId(supplierSku: Text, supplierId: ID) {
             @where(product.supplierSku == supplierSku or product.supplier.id == supplierId)
         }
+        get getBySupplierSkuAndCodeOrShampoo(supplierSku: Text, supplierCode: Text) {
+            @where(product.supplierSku == supplierSku and product.supplier.supplierCode == supplierCode or product.name == "Shampoo")
+        }
         get getBySupplierSkuAndIdOrShampoo(supplierSku: Text, supplierId: ID) {
             @where(product.supplierSku == supplierSku and (product.supplier.id == supplierId or product.name == "Shampoo"))
         }
-        get getBySupplierSkuAndCodeOrShampoo(supplierSku: Text, supplierCode: Text) {
+        get getBySupplierSkuAndCodeOrShampooParenthesis(
+            supplierSku: Text,
+            supplierCode: Text,
+        ) {
             @where(product.supplierSku == supplierSku and (product.supplier.supplierCode == supplierCode or product.name == "Shampoo"))
         }
     }
@@ -62,11 +66,5 @@ model Supplier {
     fields {
         name Text
         supplierCode Text @unique
-        products Product[]
-    }
-
-    actions {
-        //TODO
-        get getByProductSku(products.sku)
     }
 }

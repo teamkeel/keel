@@ -282,10 +282,11 @@ func DeleteOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling
 	return
 }
 
-// expressionHasUniqueLookup will work through the logical expression syntax to determine if
-// either a unique look is possible.
+// expressionHasUniqueLookup will work through the logical expression syntax to determine if a unique lookup is possible
 func expressionHasUniqueLookup(asts []*parser.AST, expression *parser.Expression, fieldsInCompositeUnique map[*parser.ModelNode][]*parser.FieldNode) bool {
 	hasUniqueLookup := false
+
+	//var fieldsInCompo map[*parser.ModelNode][]*parser.FieldNode
 
 	for _, or := range expression.Or {
 		for _, and := range or.And {
@@ -330,31 +331,18 @@ func expressionHasUniqueLookup(asts []*parser.AST, expression *parser.Expression
 						continue
 					}
 
-					hasUniqueLookup = true
+					// If there is only a single fragment in the expression,
+					// and we know it's the model, therefore this is a unique lookup
+					if len(op.Ident.Fragments) == 1 {
+						return true
+					}
 
-					for i, fragment := range op.Ident.Fragments[1:] {
-						field := query.ModelField(model, fragment.Fragment)
-						if field == nil {
-							hasUniqueLookup = false
-							continue
-						}
+					var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
 
-						isComposite, _ := query.FieldIsInCompositeUnique(model, field)
-						if isComposite {
-							fieldsInCompositeUnique[model] = append(fieldsInCompositeUnique[model], field)
-						}
-
-						if !(query.FieldIsUnique(field) || query.IsBelongsToModelField(asts, model, field)) {
-							hasUniqueLookup = false
-							//continue
-						}
-
-						if i < len(op.Ident.Fragments)-2 {
-							model = query.Model(asts, field.Type.Value)
-							if model == nil {
-								hasUniqueLookup = false
-								continue
-							}
+					hasUniqueLookup, fieldsInComposite = fragmentsUnique(asts, model, op.Ident.Fragments[1:])
+					if len(expression.Or) == 1 {
+						for k, v := range fieldsInComposite {
+							fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
 						}
 					}
 				}
@@ -368,19 +356,19 @@ func expressionHasUniqueLookup(asts []*parser.AST, expression *parser.Expression
 
 		}
 
-		for m, fields := range fieldsInCompositeUnique {
-			for _, attribute := range query.ModelAttributes(m) {
-				if attribute.Name.Value != parser.AttributeUnique {
-					continue
-				}
+		// for m, fields := range fieldsInCompositeUniqueInOr {
+		// 	for _, attribute := range query.ModelAttributes(m) {
+		// 		if attribute.Name.Value != parser.AttributeUnique {
+		// 			continue
+		// 		}
 
-				uniqueFields, _ := query.CompositeUniqueFields(m, attribute)
-				diff, _ := lo.Difference(uniqueFields, fields)
-				if len(diff) == 0 {
-					hasUniqueLookup = true
-				}
-			}
-		}
+		// 		uniqueFields, _ := query.CompositeUniqueFields(m, attribute)
+		// 		diff, _ := lo.Difference(uniqueFields, fields)
+		// 		if len(diff) == 0 {
+		// 			hasUniqueLookup = true
+		// 		}
+		// 	}
+		// }
 
 		// There is no point checking further conditions in this expression
 		// because all ORed conditions need to be unique lookup
@@ -391,6 +379,59 @@ func expressionHasUniqueLookup(asts []*parser.AST, expression *parser.Expression
 	}
 
 	return hasUniqueLookup
+}
+
+func fragmentsUnique(asts []*parser.AST, model *parser.ModelNode, fragments []*parser.IdentFragment) (bool, map[*parser.ModelNode][]*parser.FieldNode) {
+	fieldsInCompositeUnique := map[*parser.ModelNode][]*parser.FieldNode{}
+
+	var candidateCompositeModel *parser.ModelNode
+	var candidateCompositeField *parser.FieldNode
+
+	hasUniqueLookup := true
+	for i, fragment := range fragments {
+
+		field := query.ModelField(model, fragment.Fragment)
+		if field == nil {
+			// Input field does not exist on the model
+			return false, nil
+		}
+
+		isComposite, _ := query.FieldIsInCompositeUnique(model, field)
+		if isComposite && candidateCompositeModel == nil && candidateCompositeField == nil {
+			candidateCompositeModel = model
+			candidateCompositeField = field
+		}
+
+		if !query.FieldIsUnique(field) &&
+			!query.IsBelongsToModelField(asts, model, field) &&
+			!query.IsHasManyModelField(asts, field) {
+
+			if !isComposite {
+				return false, map[*parser.ModelNode][]*parser.FieldNode{}
+			}
+			hasUniqueLookup = false
+		}
+
+		// If last fragment, and field is unique then we know this is a unique lookup
+		if i == len(fragments)-1 {
+			// Composite unique is only a candidate if all subsequent fragments passed as unique lookups
+			if candidateCompositeModel != nil && candidateCompositeField != nil {
+				fieldsInCompositeUnique[candidateCompositeModel] = append(fieldsInCompositeUnique[candidateCompositeModel], candidateCompositeField)
+			}
+
+			return hasUniqueLookup, fieldsInCompositeUnique
+		}
+
+		if i < len(fragments)-1 {
+			model = query.Model(asts, field.Type.Value)
+			if model == nil {
+				// Model does not exist in the schema
+				return false, nil
+			}
+		}
+	}
+
+	return hasUniqueLookup, fieldsInCompositeUnique
 }
 
 func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *parser.ModelNode) (errs errorhandling.ValidationErrors) {
@@ -409,68 +450,17 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 			continue
 		}
 
-		var candidateCompositeModel *parser.ModelNode
-		var candidateCompositeField *parser.FieldNode
+		var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
 
-		// Step through the fragments of this input to check for:
-		//  - does is form a unique lookup?
-		//  - does is form a part of a composite unique?
-		// In both cases, we require that all fragments are either:
-		//  - a relationship field
+		hasUniqueLookup, fieldsInComposite = fragmentsUnique(asts, model, input.Type.Fragments)
 
-		for i, fragment := range input.Type.Fragments {
-			hasUniqueLookup = true
-
-			field := query.ModelField(currentModel, fragment.Fragment)
-			if field == nil {
-				// Input field does not exist
-				hasUniqueLookup = false
-				continue
-			}
-
-			isComposite, _ := query.FieldIsInCompositeUnique(currentModel, field)
-			if isComposite && candidateCompositeModel == nil && candidateCompositeField == nil {
-				candidateCompositeModel = currentModel
-				candidateCompositeField = field
-
-			}
-
-			if !(query.FieldIsUnique(field) || query.IsBelongsToModelField(asts, currentModel, field)) {
-				hasUniqueLookup = false
-			}
-
-			if i == len(input.Type.Fragments)-1 && (hasUniqueLookup || isComposite) {
-				if candidateCompositeModel != nil && candidateCompositeField != nil {
-					fieldsInCompositeUnique[candidateCompositeModel] = append(fieldsInCompositeUnique[candidateCompositeModel], candidateCompositeField)
-				}
-			}
-
-			if i < len(input.Type.Fragments)-1 {
-				currentModel = query.Model(asts, field.Type.Value)
-				if currentModel == nil {
-					hasUniqueLookup = false
-					break
-				}
-			}
+		for k, v := range fieldsInComposite {
+			fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
 		}
 
 		// If any single input is unique, then we know this is a unique lookup
 		if hasUniqueLookup {
 			break
-		}
-	}
-
-	for m, fields := range fieldsInCompositeUnique {
-		for _, attribute := range query.ModelAttributes(m) {
-			if attribute.Name.Value != parser.AttributeUnique {
-				continue
-			}
-
-			uniqueFields, _ := query.CompositeUniqueFields(m, attribute)
-			diff, _ := lo.Difference(uniqueFields, fields)
-			if len(diff) == 0 {
-				hasUniqueLookup = true
-			}
 		}
 	}
 
@@ -495,6 +485,20 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 			//  one of the ANDed attributes need to be unique lookup
 			if hasUniqueLookup {
 				break
+			}
+		}
+	}
+
+	for m, fields := range fieldsInCompositeUnique {
+		for _, attribute := range query.ModelAttributes(m) {
+			if attribute.Name.Value != parser.AttributeUnique {
+				continue
+			}
+
+			uniqueFields, _ := query.CompositeUniqueFields(m, attribute)
+			diff, _ := lo.Difference(uniqueFields, fields)
+			if len(diff) == 0 {
+				hasUniqueLookup = true
 			}
 		}
 	}

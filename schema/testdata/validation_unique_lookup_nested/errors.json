@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "The action 'getByBarcodeOrShampooExpr' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "message": "The action 'getBySupplierCode' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
       "hint": "Did you mean to add 'id' or some other unique field as an input?",
       "code": "ActionInputError",
       "pos": {
@@ -12,8 +12,25 @@
       },
       "endPos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
-        "offset": 166,
+        "offset": 158,
         "line": 9,
+        "column": 30
+      }
+    },
+    {
+      "message": "The action 'getByBarcodeOrShampooExpr' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 275,
+        "line": 12,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 300,
+        "line": 12,
         "column": 38
       }
     },
@@ -23,14 +40,14 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
-        "offset": 288,
-        "line": 12,
+        "offset": 422,
+        "line": 15,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
-        "offset": 309,
-        "line": 12,
+        "offset": 443,
+        "line": 15,
         "column": 34
       }
     },
@@ -40,32 +57,15 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
-        "offset": 341,
-        "line": 13,
+        "offset": 475,
+        "line": 16,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
-        "offset": 361,
-        "line": 13,
+        "offset": 495,
+        "line": 16,
         "column": 33
-      }
-    },
-    {
-      "message": "The action 'getBySupplierCode' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
-      "code": "ActionInputError",
-      "pos": {
-        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
-        "offset": 466,
-        "line": 16,
-        "column": 13
-      },
-      "endPos": {
-        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
-        "offset": 483,
-        "line": 16,
-        "column": 30
       }
     },
     {

@@ -20,14 +20,11 @@ model Product {
     actions {
         get getBySupplierSkuInputAndIdInput(supplierSku, supplier.id)
         get getBySupplierSkuInputAndCodeInput(supplierSku, supplier.supplierCode)
-        get getBySupplierSkuExprAndIdExpr(supplierSku: Text, supplierId: ID) {
-            @where(product.supplierSku == supplierSku and product.supplier.id == supplierId)
-        }
         get getBySupplierSkuExprAndCodeExpr(supplierSku: Text, supplierCode: Text) {
             @where(product.supplierSku == supplierSku and product.supplier.supplierCode == supplierCode)
         }
-        get getBySupplierSkuAndCodeOrShampoo(supplierSku: Text, supplierCode: Text) {
-            @where(product.supplierSku == supplierSku and product.supplier.supplierCode == supplierCode or product.name == "Shampoo")
+        get getBySupplierSkuExprAndIdExpr(supplierSku: Text, supplierId: ID) {
+            @where(product.supplierSku == supplierSku and product.supplier.id == supplierId)
         }
         get getBySupplierSkuExprAndIdExprMultiWhere(
             supplierSku: Text,

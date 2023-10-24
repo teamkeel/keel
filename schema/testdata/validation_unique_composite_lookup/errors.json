@@ -18,20 +18,54 @@
       }
     },
     {
+      "message": "The action 'getBySupplierCode' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 334,
+        "line": 19,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 351,
+        "line": 19,
+        "column": 30
+      }
+    },
+    {
       "message": "The action 'getBarcodeIsNull' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
       "hint": "Did you mean to add 'id' or some other unique field as an input?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
-        "offset": 402,
-        "line": 21,
+        "offset": 387,
+        "line": 20,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
-        "offset": 418,
-        "line": 21,
+        "offset": 403,
+        "line": 20,
         "column": 29
+      }
+    },
+    {
+      "message": "The action 'getBySupplierSkuExprAndNameExprMultiWhere' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 480,
+        "line": 23,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 521,
+        "line": 23,
+        "column": 54
       }
     },
     {
@@ -40,14 +74,14 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
-        "offset": 747,
-        "line": 32,
+        "offset": 717,
+        "line": 30,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
-        "offset": 762,
-        "line": 32,
+        "offset": 732,
+        "line": 30,
         "column": 28
       }
     },
@@ -57,15 +91,66 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
-        "offset": 857,
-        "line": 35,
+        "offset": 827,
+        "line": 33,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
-        "offset": 877,
-        "line": 35,
+        "offset": 847,
+        "line": 33,
         "column": 33
+      }
+    },
+    {
+      "message": "The action 'getBySupplierSkuAndCodeOrShampoo' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 999,
+        "line": 36,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 1031,
+        "line": 36,
+        "column": 45
+      }
+    },
+    {
+      "message": "The action 'getBySupplierSkuAndIdOrShampoo' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 1229,
+        "line": 39,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 1259,
+        "line": 39,
+        "column": 43
+      }
+    },
+    {
+      "message": "The action 'getBySupplierSkuAndCodeOrShampooParenthesis' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 1443,
+        "line": 42,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 1486,
+        "line": 42,
+        "column": 56
       }
     },
     {
@@ -74,14 +159,14 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
-        "offset": 1657,
-        "line": 57,
+        "offset": 1903,
+        "line": 61,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
-        "offset": 1680,
-        "line": 57,
+        "offset": 1926,
+        "line": 61,
         "column": 36
       }
     }
