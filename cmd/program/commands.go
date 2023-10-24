@@ -541,11 +541,3 @@ func RemoveSecret(path, environment, key string) error {
 
 	return config.RemoveSecret(path, environment, key)
 }
-
-func isDirEmpty(name string) bool {
-	// we can ignore the error
-	entries, _ := os.ReadDir(name)
-
-	// if len is 0 then dir is empty or doesn't exist
-	return len(entries) == 0
-}
