@@ -15,7 +15,6 @@ import (
 	"os/exec"
 	"strings"
 
-	keelconfig "github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
@@ -45,24 +44,24 @@ type TestOutput struct {
 }
 
 type RunnerOpts struct {
-	Dir             string
-	Pattern         string
-	DbConnInfo      *db.ConnectionInfo
-	FunctionsOutput io.Writer
-	EnvVars         map[string]string
-	Secrets         map[string]string
-	TestGroupName   string
+	Dir           string
+	Pattern       string
+	DbConnInfo    *db.ConnectionInfo
+	Secrets       map[string]string
+	TestGroupName string
 }
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/testing")
 
-func Run(ctx context.Context, opts *RunnerOpts) (*TestOutput, error) {
+func Run(ctx context.Context, opts *RunnerOpts) error {
 	builder := &schema.Builder{}
 
 	schema, err := builder.MakeFromDirectory(opts.Dir)
 	if err != nil {
-		return nil, err
+		return err
 	}
+
+	envVars := builder.Config.GetEnvVars("test")
 
 	testApi := &proto.Api{
 		// TODO: make random so doesn't clash
@@ -76,13 +75,17 @@ func Run(ctx context.Context, opts *RunnerOpts) (*TestOutput, error) {
 
 	schema.Apis = append(schema.Apis, testApi)
 
-	ctx, span := tracer.Start(ctx, opts.TestGroupName)
+	spanName := opts.TestGroupName
+	if spanName == "" {
+		spanName = "testing.Run"
+	}
+	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	dbName := "keel_test"
 	database, err := testhelpers.SetupDatabaseForTestCase(ctx, opts.DbConnInfo, schema, dbName, true)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer database.Close()
 
@@ -93,42 +96,41 @@ func Run(ctx context.Context, opts *RunnerOpts) (*TestOutput, error) {
 		schema,
 		node.WithDevelopmentServer(true),
 	)
-
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = files.Write(opts.Dir)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var functionsServer *node.DevelopmentServer
 	var functionsTransport functions.Transport
 
 	if node.HasFunctions(schema) {
-		keelEnvVars := map[string]string{
+		functionEnvVars := map[string]string{
 			"KEEL_DB_CONN_TYPE":        "pg",
 			"KEEL_DB_CONN":             dbConnString,
 			"KEEL_TRACING_ENABLED":     "true",
 			"OTEL_RESOURCE_ATTRIBUTES": "service.name=functions",
 		}
 
-		for key, value := range keelEnvVars {
-			opts.EnvVars[key] = value
+		for key, value := range envVars {
+			functionEnvVars[key] = value
 		}
 
 		functionsServer, err = node.StartDevelopmentServer(ctx, opts.Dir, &node.ServerOpts{
-			EnvVars: opts.EnvVars,
-			Output:  opts.FunctionsOutput,
+			EnvVars: functionEnvVars,
+			Output:  os.Stdout,
 			Debug:   true, // todo: configurable
 		})
 
 		if err != nil {
 			if functionsServer != nil && functionsServer.Output() != "" {
-				return nil, errors.New(functionsServer.Output())
+				return errors.New(functionsServer.Output())
 			}
-			return nil, err
+			return err
 		}
 
 		defer func() {
@@ -140,15 +142,9 @@ func Run(ctx context.Context, opts *RunnerOpts) (*TestOutput, error) {
 
 	runtimePort, err := util.GetFreePort()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	config, err := keelconfig.Load(opts.Dir)
-	if err != nil {
-		return nil, err
-	}
-
-	envVars := config.GetEnvVars("test")
 	for key, value := range envVars {
 		os.Setenv(key, value)
 	}
@@ -229,16 +225,14 @@ func Run(ctx context.Context, opts *RunnerOpts) (*TestOutput, error) {
 		_ = runtimeServer.Shutdown(ctx)
 	}()
 
-	cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty")
+	cmd := exec.Command("./node_modules/.bin/tsc", "--noEmit", "--pretty")
 	cmd.Dir = opts.Dir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-	b, err := cmd.CombinedOutput()
-	exitError := &exec.ExitError{}
-	if err != nil && !errors.As(err, &exitError) {
-		return nil, err
-	}
+	err = cmd.Run()
 	if err != nil {
-		return &TestOutput{Output: string(b), Success: false}, nil
+		return err
 	}
 
 	if opts.Pattern == "" {
@@ -257,8 +251,10 @@ func Run(ctx context.Context, opts *RunnerOpts) (*TestOutput, error) {
 
 	pkBase64 := base64.StdEncoding.EncodeToString(pkPem)
 
-	cmd = exec.Command("npx", "vitest", "run", "--color", "--reporter", "verbose", "--config", "./.build/vitest.config.mjs", "--testNamePattern", opts.Pattern)
+	cmd = exec.Command("./node_modules/.bin/vitest", "run", "--color", "--reporter", "verbose", "--config", "./.build/vitest.config.mjs", "--testNamePattern", opts.Pattern)
 	cmd.Dir = opts.Dir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	cmd.Env = append(os.Environ(), []string{
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/%s/json", runtimePort, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_JOBS_URL=http://localhost:%s/%s/json", runtimePort, JobPath),
@@ -270,12 +266,7 @@ func Run(ctx context.Context, opts *RunnerOpts) (*TestOutput, error) {
 		fmt.Sprintf("KEEL_DEFAULT_PK=%s", pkBase64),
 	}...)
 
-	b, err = cmd.CombinedOutput()
-	if err != nil && !errors.As(err, &exitError) {
-		return nil, err
-	}
-
-	return &TestOutput{Output: string(b), Success: err == nil}, nil
+	return cmd.Run()
 }
 
 // HandleJobExecutorRequest handles requests the job module in the testing package.

@@ -1,10 +1,8 @@
 package integration_test
 
 import (
-	"bytes"
 	"context"
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,12 +16,9 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/node"
-	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/testing"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -41,7 +36,7 @@ func TestIntegration(t *gotest.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	err = node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
+	err = node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")), node.WithLogger(func(s string) {}))
 	require.NoError(t, err)
 
 	_, err = testhelpers.NpmInstall(tmpDir)
@@ -112,30 +107,6 @@ func TestIntegration(t *gotest.T) {
 				}
 			})
 
-			cfg, err := config.Load(tmpDir)
-			assert.NoError(t, err)
-
-			envVars := cfg.GetEnvVars("test")
-
-			secrets := map[string]string{
-				"TEST_API_KEY": "1232132_2323",
-				"NAME_API_KEY": "worf",
-			}
-
-			builder := schema.Builder{}
-			schema, err := builder.MakeFromDirectory(tmpDir)
-			require.NoError(t, err)
-
-			files, err := node.Generate(
-				context.Background(),
-				schema,
-				node.WithDevelopmentServer(true),
-			)
-			require.NoError(t, err)
-
-			err = files.Write(tmpDir)
-			require.NoError(t, err)
-
 			// Use the docker compose database
 			dbConnInfo := &db.ConnectionInfo{
 				Host:     "localhost",
@@ -145,31 +116,17 @@ func TestIntegration(t *gotest.T) {
 				Password: "postgres",
 			}
 
-			var functionOutput bytes.Buffer
-
-			output, err := testing.Run(ctx, &testing.RunnerOpts{
-				Dir:             tmpDir,
-				DbConnInfo:      dbConnInfo,
-				FunctionsOutput: &functionOutput,
-				EnvVars:         envVars,
-				Secrets:         secrets,
-				Pattern:         *pattern,
-				TestGroupName:   e.Name(),
+			err = testing.Run(ctx, &testing.RunnerOpts{
+				Dir:        tmpDir,
+				DbConnInfo: dbConnInfo,
+				Secrets: map[string]string{
+					"TEST_API_KEY": "1232132_2323",
+					"NAME_API_KEY": "worf",
+				},
+				Pattern:       *pattern,
+				TestGroupName: e.Name(),
 			})
 			require.NoError(t, err)
-
-			if functionOutput.Len() > 0 {
-				fmt.Println("=== Custom Functions Output ===")
-				fmt.Println(functionOutput.String())
-				fmt.Println("===============================")
-			}
-			fmt.Println("=== Vitest Output ===")
-			fmt.Println(output.Output)
-			fmt.Println("===============================")
-
-			if !output.Success {
-				t.Fail()
-			}
 		})
 	}
 }

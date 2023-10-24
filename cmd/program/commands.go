@@ -4,8 +4,6 @@ import (
 	"context"
 	"crypto/rsa"
 	"crypto/x509"
-	"database/sql"
-	"encoding/base64"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -30,7 +28,6 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
-	"github.com/teamkeel/keel/testing"
 )
 
 //go:embed default.pem
@@ -226,39 +223,8 @@ func StartDatabase(reset bool, mode int, projectDirectory string) tea.Cmd {
 			}
 		}
 
-		if mode != ModeTest {
-			return StartDatabaseMsg{
-				ConnInfo: connInfo,
-			}
-		}
-
-		mainDB, err := sql.Open("pgx/v5", connInfo.String())
-		if err != nil {
-			return StartDatabaseMsg{
-				Err: err,
-			}
-		}
-
-		_, err = mainDB.Exec(`
-			DROP DATABASE IF EXISTS keel_test
-		`)
-		if err != nil {
-			return StartDatabaseMsg{
-				Err: err,
-			}
-		}
-
-		_, err = mainDB.Exec(`
-			CREATE DATABASE keel_test
-		`)
-		if err != nil {
-			return StartDatabaseMsg{
-				Err: err,
-			}
-		}
-
 		return StartDatabaseMsg{
-			ConnInfo: connInfo.WithDatabase("keel_test"),
+			ConnInfo: connInfo,
 		}
 	}
 }
@@ -391,9 +357,6 @@ type FunctionsOutputMsg struct {
 func StartFunctions(m *Model) tea.Cmd {
 	return func() tea.Msg {
 		envType := "development"
-		if m.Mode == ModeTest {
-			envType = "test"
-		}
 
 		envVars := m.Config.GetEnvVars(envType)
 		envVars["KEEL_DB_CONN_TYPE"] = "pg"
@@ -535,50 +498,6 @@ func StartWatcher(dir string, ch chan tea.Msg) tea.Cmd {
 	}
 }
 
-type RunTestsMsg struct {
-	Err    error
-	Output string
-}
-
-func RunTests(dir string, port string, cfg *config.ProjectConfig, conn *db.ConnectionInfo, pattern string) tea.Cmd {
-	return func() tea.Msg {
-		args := []string{
-			"vitest",
-			"run",
-			"--color",
-			"--reporter", "verbose",
-			"--config", "./.build/vitest.config.mjs",
-		}
-
-		if pattern != "" {
-			args = append(args, "--testNamePattern", pattern)
-		}
-
-		cmd := exec.Command("npx", args...)
-		cmd.Dir = dir
-		cmd.Env = os.Environ()
-
-		envVars := cfg.GetEnvVars("test")
-		envVars["KEEL_TESTING_ACTIONS_API_URL"] = fmt.Sprintf("http://localhost:%s/%s/json", port, testing.ActionApiPath)
-		envVars["KEEL_TESTING_JOBS_URL"] = fmt.Sprintf("http://localhost:%s/%s/json", port, testing.JobPath)
-		envVars["KEEL_TESTING_SUBSCRIBERS_URL"] = fmt.Sprintf("http://localhost:%s/%s/json", port, testing.SubscriberPath)
-		envVars["KEEL_DB_CONN_TYPE"] = "pg"
-		envVars["KEEL_DB_CONN"] = conn.String()
-		envVars["NODE_OPTIONS"] = "--no-warnings"
-		envVars["KEEL_DEFAULT_PK"] = base64.StdEncoding.EncodeToString(defaultPem)
-
-		for key, value := range envVars {
-			cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
-		}
-
-		b, err := cmd.CombinedOutput()
-		return RunTestsMsg{
-			Output: string(b),
-			Err:    err,
-		}
-	}
-}
-
 // LoadSecrets lists secrets from the given file and returns a command
 func LoadSecrets(path, environment string) (map[string]string, error) {
 	projectPath, err := filepath.Abs(path)
@@ -593,7 +512,6 @@ func LoadSecrets(path, environment string) (map[string]string, error) {
 	secrets, err := config.GetSecrets(path, environment)
 	if err != nil {
 		return nil, err
-
 	}
 	return secrets, nil
 }
