@@ -40,13 +40,13 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 247,
+        "offset": 249,
         "line": 12,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 250,
+        "offset": 252,
         "line": 12,
         "column": 16
       }
@@ -57,13 +57,13 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 280,
+        "offset": 282,
         "line": 13,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 283,
+        "offset": 285,
         "line": 13,
         "column": 16
       }
@@ -74,13 +74,13 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 420,
+        "offset": 422,
         "line": 21,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 423,
+        "offset": 425,
         "line": 21,
         "column": 8
       }
@@ -91,13 +91,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 247,
+        "offset": 249,
         "line": 12,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 250,
+        "offset": 252,
         "line": 12,
         "column": 16
       }
@@ -108,13 +108,13 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 251,
+        "offset": 253,
         "line": 12,
         "column": 17
       },
       "endPos": {
         "filename": "testdata/validation_attribute_on/schema.keel",
-        "offset": 266,
+        "offset": 268,
         "line": 12,
         "column": 32
       }

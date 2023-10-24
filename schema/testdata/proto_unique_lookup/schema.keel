@@ -1,0 +1,44 @@
+model Product {
+    fields {
+        name Text
+        sku Text @unique
+    }
+
+    actions {
+        get getbySku(sku)
+        get getbySkuInput(sku: Text) {
+            @where(product.sku == sku)
+        }
+        get getSpecificSkuAndByName(name) {
+            @where(product.sku == "123")
+        }
+        get getSpecificSku() {
+            @where(product.sku == "123")
+        }
+        get getbySkuAsInputAndShampoo(sku) {
+            @where(product.name == "Shampoo")
+        }
+        get getbySkuAndShampoo(sku: Text) {
+            @where(product.sku == sku and product.name == "Shampoo")
+        }
+        get getbySkuAndShampooInverse(sku: Text) {
+            @where(product.name == "Shampoo" and product.sku == sku)
+        }
+        get getbySkuOrId(productId: ID) {
+            @where(product.sku == ctx.identity.user.assignedProduct.sku or product.id == productId)
+        }
+        get getbySkuAndNotShampoo(sku: Text) {
+            @where(product.sku == sku and product.name != "Shampoo")
+        }
+        get getbySkuFromCtx() {
+            @where(product.sku == ctx.identity.user.assignedProduct.sku)
+        }
+    }
+}
+
+model User {
+    fields {
+        assignedProduct Product
+        identity Identity @unique
+    }
+}

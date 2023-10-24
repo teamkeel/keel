@@ -1,50 +1,61 @@
 package actions
 
 import (
+	"context"
+
+	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
 func Update(scope *Scope, input map[string]any) (res map[string]any, err error) {
-	query := NewQuery(scope.Context, scope.Model)
-
-	// Generate the SQL statement
-	statement, err := GenerateUpdateStatement(query, scope, input)
+	database, err := db.GetDatabase(scope.Context)
 	if err != nil {
 		return nil, err
 	}
 
-	query.AppendSelect(IdField())
-	query.AppendDistinctOn(IdField())
-	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.Context)
-	if err != nil {
-		return nil, err
-	}
+	err = database.Transaction(scope.Context, func(ctx context.Context) error {
+		scope := scope.WithContext(ctx)
+		query := NewQuery(scope.Context, scope.Model)
 
-	rowsToAuthorise := []map[string]any{}
-	if rowToAuthorise != nil {
-		rowsToAuthorise = append(rowsToAuthorise, rowToAuthorise)
-	}
+		// Generate the SQL statement
+		statement, err := GenerateUpdateStatement(query, scope, input)
+		if err != nil {
+			return err
+		}
 
-	isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
-	if err != nil {
-		return nil, err
-	}
+		query.AppendSelect(IdField())
+		query.AppendDistinctOn(IdField())
+		rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.Context)
+		if err != nil {
+			return err
+		}
 
-	if !isAuthorised {
-		return nil, common.NewPermissionError()
-	}
+		rowsToAuthorise := []map[string]any{}
+		if rowToAuthorise != nil {
+			rowsToAuthorise = append(rowsToAuthorise, rowToAuthorise)
+		}
 
-	// Execute database request, expecting a single result
-	res, err = statement.ExecuteToSingle(scope.Context)
+		isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
+		if err != nil {
+			return err
+		}
 
-	// TODO: if error is multiple rows affected then rollback transaction
-	if err != nil {
-		return nil, err
-	}
+		if !isAuthorised {
+			return common.NewPermissionError()
+		}
 
-	if res == nil {
-		return nil, common.NewNotFoundError()
-	}
+		// Execute database request, expecting a single result
+		res, err = statement.ExecuteToSingle(scope.Context)
+		if err != nil {
+			return err
+		}
+
+		if res == nil {
+			return common.NewNotFoundError()
+		}
+
+		return nil
+	})
 
 	return res, err
 }

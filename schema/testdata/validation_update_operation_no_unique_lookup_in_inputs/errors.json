@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "text is not a unique field. update actions take only unique inputs",
-      "hint": "",
-      "code": "E035",
+      "message": "The action 'updateMyModel' can only update a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_update_operation_no_unique_lookup_in_inputs/schema.keel",
-        "offset": 97,
+        "offset": 83,
         "line": 7,
-        "column": 30
+        "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_update_operation_no_unique_lookup_in_inputs/schema.keel",
-        "offset": 101,
+        "offset": 96,
         "line": 7,
-        "column": 34
+        "column": 29
       }
     }
   ]

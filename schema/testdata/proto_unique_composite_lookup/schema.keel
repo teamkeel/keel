@@ -1,0 +1,81 @@
+model User {
+    fields {
+        assignedProduct Product
+        identity Identity @unique
+    }
+}
+
+model Product {
+    fields {
+        name Text
+        sku Text @unique
+        stock Stock @unique
+        // One to one relationship
+        supplier Supplier
+        // One to many relationship
+        supplierSku Text
+        isActive Boolean
+    }
+
+    actions {
+        get getBySupplierSkuInputAndIdInput(supplierSku, supplier.id)
+        get getBySupplierSkuInputAndCodeInput(supplierSku, supplier.supplierCode)
+        get getBySupplierSkuExprAndCodeExpr(supplierSku: Text, supplierCode: Text) {
+            @where(product.supplierSku == supplierSku and product.supplier.supplierCode == supplierCode)
+        }
+        get getBySupplierSkuExprAndIdExpr(supplierSku: Text, supplierId: ID) {
+            @where(product.supplierSku == supplierSku and product.supplier.id == supplierId)
+        }
+        get getBySupplierSkuExprAndIdExprMultiWhere(
+            supplierSku: Text,
+            supplierId: ID,
+        ) {
+            @where(product.supplierSku == supplierSku)
+            @where(product.supplier.id == supplierId)
+        }
+        get getBySupplierSkuForXyz(supplierSku) {
+            @where(product.isActive == true and product.supplier.supplierCode == "XYZ")
+        }
+        get getByBarcode() {
+            @where(product.stock.barcode == "1234")
+        }
+    }
+
+    @unique([supplierSku, supplier])
+}
+
+model Stock {
+    fields {
+        barcode Text? @unique
+        product Product
+        stockOnHand Number
+    }
+
+    actions {
+        // Going backwards in a 1:1 relationship
+        get getBySupplierSkuAndCode(
+            product.supplierSku,
+            product.supplier.supplierCode,
+        )
+        // Going backwards in a 1:1 relationship
+        get getBySku(product.sku)
+        // Going backwards in a 1:1 relationship
+        get getByAbcSku() {
+            @where("ABC" == stock.product.sku)
+        }
+    }
+}
+
+model Supplier {
+    fields {
+        name Text
+        supplierCode Text @unique
+        products Product[]
+    }
+
+    actions {
+        get getBySupplierCode(supplierCode)
+        // Products can only belong to one supplier
+        get getByProductSku(products.sku)
+    }
+}

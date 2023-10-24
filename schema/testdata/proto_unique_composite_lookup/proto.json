@@ -1,0 +1,920 @@
+{
+  "models": [
+    {
+      "name": "User",
+      "fields": [
+        {
+          "modelName": "User",
+          "name": "assignedProduct",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Product"
+          },
+          "foreignKeyFieldName": "assignedProductId"
+        },
+        {
+          "modelName": "User",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "identityId",
+          "inverseFieldName": "user"
+        },
+        {
+          "modelName": "User",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "assignedProductId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Product",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Product",
+      "fields": [
+        {
+          "modelName": "Product",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "sku",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "unique": true
+        },
+        {
+          "modelName": "Product",
+          "name": "stock",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Stock"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "stockId",
+          "inverseFieldName": "product"
+        },
+        {
+          "modelName": "Product",
+          "name": "supplier",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Supplier"
+          },
+          "uniqueWith": [
+            "supplierSku"
+          ],
+          "foreignKeyFieldName": "supplierId",
+          "inverseFieldName": "products"
+        },
+        {
+          "modelName": "Product",
+          "name": "supplierSku",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "uniqueWith": [
+            "supplier"
+          ]
+        },
+        {
+          "modelName": "Product",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "stockId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Stock",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "supplierId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Supplier",
+            "relatedModelField": "id"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Product",
+          "name": "getBySupplierSkuInputAndIdInput",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetBySupplierSkuInputAndIdInputInput"
+        },
+        {
+          "modelName": "Product",
+          "name": "getBySupplierSkuInputAndCodeInput",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetBySupplierSkuInputAndCodeInputInput"
+        },
+        {
+          "modelName": "Product",
+          "name": "getBySupplierSkuExprAndCodeExpr",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
+            {
+              "source": "product.supplierSku == supplierSku and product.supplier.supplierCode == supplierCode"
+            }
+          ],
+          "inputMessageName": "GetBySupplierSkuExprAndCodeExprInput"
+        },
+        {
+          "modelName": "Product",
+          "name": "getBySupplierSkuExprAndIdExpr",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
+            {
+              "source": "product.supplierSku == supplierSku and product.supplier.id == supplierId"
+            }
+          ],
+          "inputMessageName": "GetBySupplierSkuExprAndIdExprInput"
+        },
+        {
+          "modelName": "Product",
+          "name": "getBySupplierSkuExprAndIdExprMultiWhere",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
+            {
+              "source": "product.supplierSku == supplierSku"
+            },
+            {
+              "source": "product.supplier.id == supplierId"
+            }
+          ],
+          "inputMessageName": "GetBySupplierSkuExprAndIdExprMultiWhereInput"
+        },
+        {
+          "modelName": "Product",
+          "name": "getBySupplierSkuForXyz",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
+            {
+              "source": "product.isActive == true and product.supplier.supplierCode == \"XYZ\""
+            }
+          ],
+          "inputMessageName": "GetBySupplierSkuForXyzInput"
+        },
+        {
+          "modelName": "Product",
+          "name": "getByBarcode",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
+            {
+              "source": "product.stock.barcode == \"1234\""
+            }
+          ],
+          "inputMessageName": "GetByBarcodeInput"
+        }
+      ]
+    },
+    {
+      "name": "Stock",
+      "fields": [
+        {
+          "modelName": "Stock",
+          "name": "barcode",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "unique": true
+        },
+        {
+          "modelName": "Stock",
+          "name": "product",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Product"
+          },
+          "inverseFieldName": "stock"
+        },
+        {
+          "modelName": "Stock",
+          "name": "stockOnHand",
+          "type": {
+            "type": "TYPE_INT"
+          }
+        },
+        {
+          "modelName": "Stock",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Stock",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Stock",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Stock",
+          "name": "getBySupplierSkuAndCode",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetBySupplierSkuAndCodeInput"
+        },
+        {
+          "modelName": "Stock",
+          "name": "getBySku",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetBySkuInput"
+        },
+        {
+          "modelName": "Stock",
+          "name": "getByAbcSku",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
+            {
+              "source": "\"ABC\" == stock.product.sku"
+            }
+          ],
+          "inputMessageName": "GetByAbcSkuInput"
+        }
+      ]
+    },
+    {
+      "name": "Supplier",
+      "fields": [
+        {
+          "modelName": "Supplier",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Supplier",
+          "name": "supplierCode",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "unique": true
+        },
+        {
+          "modelName": "Supplier",
+          "name": "products",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Product",
+            "repeated": true
+          },
+          "inverseFieldName": "supplier"
+        },
+        {
+          "modelName": "Supplier",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Supplier",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Supplier",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Supplier",
+          "name": "getBySupplierCode",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetBySupplierCodeInput"
+        },
+        {
+          "modelName": "Supplier",
+          "name": "getByProductSku",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetByProductSkuInput"
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "issuer"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "user",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "User"
+          },
+          "optional": true,
+          "inverseFieldName": "identity"
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Product"
+        },
+        {
+          "modelName": "Stock"
+        },
+        {
+          "modelName": "Supplier"
+        },
+        {
+          "modelName": "User"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "GetBySupplierSkuInputAndIdInputInput",
+      "fields": [
+        {
+          "messageName": "GetBySupplierSkuInputAndIdInputInput",
+          "name": "supplierSku",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Product",
+            "fieldName": "supplierSku"
+          },
+          "target": [
+            "supplierSku"
+          ]
+        },
+        {
+          "messageName": "GetBySupplierSkuInputAndIdInputInput",
+          "name": "supplierId",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Supplier",
+            "fieldName": "id"
+          },
+          "target": [
+            "supplier",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GetBySupplierSkuInputAndCodeInputInput",
+      "fields": [
+        {
+          "messageName": "GetBySupplierSkuInputAndCodeInputInput",
+          "name": "supplierSku",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Product",
+            "fieldName": "supplierSku"
+          },
+          "target": [
+            "supplierSku"
+          ]
+        },
+        {
+          "messageName": "GetBySupplierSkuInputAndCodeInputInput",
+          "name": "supplierSupplierCode",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Supplier",
+            "fieldName": "supplierCode"
+          },
+          "target": [
+            "supplier",
+            "supplierCode"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GetBySupplierSkuExprAndCodeExprInput",
+      "fields": [
+        {
+          "messageName": "GetBySupplierSkuExprAndCodeExprInput",
+          "name": "supplierSku",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "GetBySupplierSkuExprAndCodeExprInput",
+          "name": "supplierCode",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GetBySupplierSkuExprAndIdExprInput",
+      "fields": [
+        {
+          "messageName": "GetBySupplierSkuExprAndIdExprInput",
+          "name": "supplierSku",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "GetBySupplierSkuExprAndIdExprInput",
+          "name": "supplierId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GetBySupplierSkuExprAndIdExprMultiWhereInput",
+      "fields": [
+        {
+          "messageName": "GetBySupplierSkuExprAndIdExprMultiWhereInput",
+          "name": "supplierSku",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "GetBySupplierSkuExprAndIdExprMultiWhereInput",
+          "name": "supplierId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GetBySupplierSkuForXyzInput",
+      "fields": [
+        {
+          "messageName": "GetBySupplierSkuForXyzInput",
+          "name": "supplierSku",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Product",
+            "fieldName": "supplierSku"
+          },
+          "target": [
+            "supplierSku"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GetByBarcodeInput"
+    },
+    {
+      "name": "GetBySupplierSkuAndCodeInput",
+      "fields": [
+        {
+          "messageName": "GetBySupplierSkuAndCodeInput",
+          "name": "productSupplierSku",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Product",
+            "fieldName": "supplierSku"
+          },
+          "target": [
+            "product",
+            "supplierSku"
+          ]
+        },
+        {
+          "messageName": "GetBySupplierSkuAndCodeInput",
+          "name": "productSupplierSupplierCode",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Supplier",
+            "fieldName": "supplierCode"
+          },
+          "target": [
+            "product",
+            "supplier",
+            "supplierCode"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GetBySkuInput",
+      "fields": [
+        {
+          "messageName": "GetBySkuInput",
+          "name": "productSku",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Product",
+            "fieldName": "sku"
+          },
+          "target": [
+            "product",
+            "sku"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GetByAbcSkuInput"
+    },
+    {
+      "name": "GetBySupplierCodeInput",
+      "fields": [
+        {
+          "messageName": "GetBySupplierCodeInput",
+          "name": "supplierCode",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Supplier",
+            "fieldName": "supplierCode"
+          },
+          "target": [
+            "supplierCode"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GetByProductSkuInput",
+      "fields": [
+        {
+          "messageName": "GetByProductSkuInput",
+          "name": "productsSku",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Product",
+            "fieldName": "sku"
+          },
+          "target": [
+            "products",
+            "sku"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EmailPasswordInput",
+      "fields": [
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateInput",
+      "fields": [
+        {
+          "messageName": "AuthenticateInput",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "AuthenticateInput",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+model User {
+    fields {
+        assignedProduct Product
+        identity Identity @unique
+    }
+}
+
+model Product {
+    fields {
+        name Text
+        sku Text @unique
+    }
+
+    actions {
+        get getByName(name)
+        get getByNameAsInput(name: Text) {
+            @where(product.name == name)
+        }
+        get getBySku(sku: Text) {
+            @where(product.sku != sku)
+        }
+        get getBySkuOrShampoo() {
+            @where(product.sku == ctx.identity.user.assignedProduct.sku or product.name == "Shampoo")
+        }
+        get getBySkuOrIdOrShampoo(productId: ID) {
+            @where(product.sku == ctx.identity.user.assignedProduct.sku and product.id == productId or product.name == "Shampoo")
+        }
+    }
+}

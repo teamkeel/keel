@@ -1,0 +1,89 @@
+{
+  "errors": [
+    {
+      "message": "The action 'getByName' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 206,
+        "line": 15,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 215,
+        "line": 15,
+        "column": 22
+      }
+    },
+    {
+      "message": "The action 'getByNameAsInput' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 234,
+        "line": 16,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 250,
+        "line": 16,
+        "column": 29
+      }
+    },
+    {
+      "message": "The action 'getBySku' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 328,
+        "line": 19,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 336,
+        "line": 19,
+        "column": 21
+      }
+    },
+    {
+      "message": "The action 'getBySkuOrShampoo' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 411,
+        "line": 22,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 428,
+        "line": 22,
+        "column": 30
+      }
+    },
+    {
+      "message": "The action 'getBySkuOrIdOrShampoo' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 557,
+        "line": 25,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 578,
+        "line": 25,
+        "column": 34
+      }
+    }
+  ]
+}

@@ -1,53 +1,69 @@
 package actions
 
 import (
+	"context"
+	"errors"
+
+	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
-func Delete(scope *Scope, input map[string]any) (*string, error) {
-	query := NewQuery(scope.Context, scope.Model)
-
-	// Generate the SQL statement
-	statement, err := GenerateDeleteStatement(query, scope, input)
+func Delete(scope *Scope, input map[string]any) (res *string, err error) {
+	database, err := db.GetDatabase(scope.Context)
 	if err != nil {
 		return nil, err
 	}
 
-	query.AppendSelect(IdField())
-	query.AppendDistinctOn(IdField())
-	res, err := query.SelectStatement().ExecuteToSingle(scope.Context)
-	if err != nil {
-		return nil, err
-	}
+	err = database.Transaction(scope.Context, func(ctx context.Context) error {
+		query := NewQuery(scope.Context, scope.Model)
 
-	rowsToAuthorise := []map[string]any{}
-	if res != nil {
-		rowsToAuthorise = append(rowsToAuthorise, res)
-	}
+		// Generate the SQL statement
+		statement, err := GenerateDeleteStatement(query, scope, input)
+		if err != nil {
+			return err
+		}
 
-	isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
-	if err != nil {
-		return nil, err
-	}
+		query.AppendSelect(IdField())
+		query.AppendDistinctOn(IdField())
+		rows, err := query.SelectStatement().ExecuteToSingle(scope.Context)
+		if err != nil {
+			return err
+		}
 
-	if !isAuthorised {
-		return nil, common.NewPermissionError()
-	}
+		rowsToAuthorise := []map[string]any{}
+		if rows != nil {
+			rowsToAuthorise = append(rowsToAuthorise, rows)
+		}
 
-	// Execute database request
-	row, err := statement.ExecuteToSingle(scope.Context)
+		isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
+		if err != nil {
+			return err
+		}
 
-	// TODO: if the error is multiple rows affected then rollback transaction
-	if err != nil {
-		return nil, err
-	}
+		if !isAuthorised {
+			return common.NewPermissionError()
+		}
 
-	if row == nil {
-		return nil, common.NewNotFoundError()
-	}
+		// Execute database request
+		row, err := statement.ExecuteToSingle(scope.Context)
+		if err != nil {
+			return err
+		}
 
-	id, _ := row["id"].(string)
-	return &id, err
+		if row == nil {
+			return common.NewNotFoundError()
+		}
+
+		id, ok := row["id"].(string)
+		if !ok {
+			return errors.New("could not parse id key")
+		}
+
+		res = &id
+		return nil
+	})
+
+	return res, err
 }
 
 func GenerateDeleteStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {

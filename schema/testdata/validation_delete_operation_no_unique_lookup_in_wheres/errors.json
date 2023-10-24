@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "myModel.nonUnique is not a unique field. delete actions can only filter on unique fields",
-      "hint": "",
-      "code": "E036",
+      "message": "The action 'deleteMyModel' can only delete a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_delete_operation_no_unique_lookup_in_wheres/schema.keel",
-        "offset": 125,
-        "line": 8,
-        "column": 20
+        "offset": 88,
+        "line": 7,
+        "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_delete_operation_no_unique_lookup_in_wheres/schema.keel",
-        "offset": 142,
-        "line": 8,
-        "column": 37
+        "offset": 101,
+        "line": 7,
+        "column": 29
       }
     }
   ]
