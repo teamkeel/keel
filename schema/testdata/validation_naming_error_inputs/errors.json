@@ -1,74 +1,6 @@
 {
   "errors": [
     {
-      "message": "The action 'uppercaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
-      "code": "ActionInputError",
-      "pos": {
-        "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 417,
-        "line": 18,
-        "column": 9
-      },
-      "endPos": {
-        "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 434,
-        "line": 18,
-        "column": 26
-      }
-    },
-    {
-      "message": "The action 'upperCamelCaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
-      "code": "ActionInputError",
-      "pos": {
-        "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 458,
-        "line": 19,
-        "column": 9
-      },
-      "endPos": {
-        "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 480,
-        "line": 19,
-        "column": 31
-      }
-    },
-    {
-      "message": "The action 'snakeCaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
-      "code": "ActionInputError",
-      "pos": {
-        "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 509,
-        "line": 20,
-        "column": 9
-      },
-      "endPos": {
-        "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 526,
-        "line": 20,
-        "column": 26
-      }
-    },
-    {
-      "message": "The action 'screamingSnakeCaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
-      "code": "ActionInputError",
-      "pos": {
-        "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 551,
-        "line": 21,
-        "column": 9
-      },
-      "endPos": {
-        "filename": "testdata/validation_naming_error_inputs/schema.keel",
-        "offset": 577,
-        "line": 21,
-        "column": 35
-      }
-    },
-    {
       "message": "input names must use lowerCamelCase",
       "hint": "e.g. uppercase",
       "code": "NamingError",
@@ -171,6 +103,23 @@
       }
     },
     {
+      "message": "The action 'uppercaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 417,
+        "line": 18,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 434,
+        "line": 18,
+        "column": 26
+      }
+    },
+    {
       "message": "input names must use lowerCamelCase",
       "hint": "e.g. upperCamelCase",
       "code": "NamingError",
@@ -202,6 +151,23 @@
         "offset": 495,
         "line": 19,
         "column": 46
+      }
+    },
+    {
+      "message": "The action 'upperCamelCaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 458,
+        "line": 19,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 480,
+        "line": 19,
+        "column": 31
       }
     },
     {
@@ -239,6 +205,23 @@
       }
     },
     {
+      "message": "The action 'snakeCaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 509,
+        "line": 20,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 526,
+        "line": 20,
+        "column": 26
+      }
+    },
+    {
       "message": "input names must use lowerCamelCase",
       "hint": "e.g. screamingSnakeCase",
       "code": "NamingError",
@@ -270,6 +253,23 @@
         "offset": 598,
         "line": 21,
         "column": 56
+      }
+    },
+    {
+      "message": "The action 'screamingSnakeCaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 551,
+        "line": 21,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 577,
+        "line": 21,
+        "column": 35
       }
     }
   ]
