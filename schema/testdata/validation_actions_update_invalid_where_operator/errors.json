@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "The \u003e operator is not allowed in a update action, only equality operators ('==' and 'in') are allowed",
-      "hint": "",
-      "code": "E037",
+      "message": "Action updateName must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
       "pos": {
         "filename": "testdata/validation_actions_update_invalid_where_operator/schema.keel",
-        "offset": 175,
-        "line": 8,
-        "column": 36
+        "offset": 113,
+        "line": 7,
+        "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_actions_update_invalid_where_operator/schema.keel",
-        "offset": 176,
-        "line": 8,
-        "column": 37
+        "offset": 123,
+        "line": 7,
+        "column": 26
       }
     }
   ]

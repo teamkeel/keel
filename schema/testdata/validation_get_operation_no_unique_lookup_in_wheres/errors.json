@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "myModel.nonUnique is not a unique field. get actions can only filter on unique fields",
-      "hint": "",
-      "code": "E036",
+      "message": "Action getMyModel must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
       "pos": {
         "filename": "testdata/validation_get_operation_no_unique_lookup_in_wheres/schema.keel",
-        "offset": 119,
-        "line": 8,
-        "column": 20
+        "offset": 85,
+        "line": 7,
+        "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_get_operation_no_unique_lookup_in_wheres/schema.keel",
-        "offset": 136,
-        "line": 8,
-        "column": 37
+        "offset": 95,
+        "line": 7,
+        "column": 23
       }
     }
   ]

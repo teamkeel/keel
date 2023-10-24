@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "text is not a unique field. get actions take only unique inputs",
-      "hint": "",
-      "code": "E035",
+      "message": "Action getMyModel must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
       "pos": {
         "filename": "testdata/validation_get_operation_no_unique_lookup_in_inputs/schema.keel",
-        "offset": 91,
+        "offset": 80,
         "line": 7,
-        "column": 24
+        "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_get_operation_no_unique_lookup_in_inputs/schema.keel",
-        "offset": 95,
+        "offset": 90,
         "line": 7,
-        "column": 28
+        "column": 23
       }
     }
   ]

@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "myModel.nonUnique is not a unique field. update actions can only filter on unique fields",
-      "hint": "",
-      "code": "E036",
+      "message": "Action updateMyModel must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
       "pos": {
         "filename": "testdata/validation_update_operation_no_unique_lookup_in_wheres/schema.keel",
-        "offset": 125,
-        "line": 8,
-        "column": 20
+        "offset": 88,
+        "line": 7,
+        "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_update_operation_no_unique_lookup_in_wheres/schema.keel",
-        "offset": 142,
-        "line": 8,
-        "column": 37
+        "offset": 101,
+        "line": 7,
+        "column": 29
       }
     }
   ]

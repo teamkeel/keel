@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "age is not a unique field. update actions take only unique inputs",
-      "hint": "",
-      "code": "E035",
+      "message": "Action updateName must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
       "pos": {
         "filename": "testdata/validation_actions_update_non_unique_input/schema.keel",
-        "offset": 111,
+        "offset": 100,
         "line": 7,
-        "column": 27
+        "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_actions_update_non_unique_input/schema.keel",
-        "offset": 114,
+        "offset": 110,
         "line": 7,
-        "column": 30
+        "column": 26
       }
     }
   ]

@@ -1,0 +1,89 @@
+{
+  "errors": [
+    {
+      "message": "Action getByName must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 206,
+        "line": 15,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 215,
+        "line": 15,
+        "column": 22
+      }
+    },
+    {
+      "message": "Action getByNameAsInput must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 234,
+        "line": 16,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 250,
+        "line": 16,
+        "column": 29
+      }
+    },
+    {
+      "message": "Action getBySku must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 328,
+        "line": 19,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 336,
+        "line": 19,
+        "column": 21
+      }
+    },
+    {
+      "message": "Action getBySkuOrShampoo must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 411,
+        "line": 22,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 428,
+        "line": 22,
+        "column": 30
+      }
+    },
+    {
+      "message": "Action getBySkuOrIdOrShampoo must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 557,
+        "line": 25,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup/schema.keel",
+        "offset": 578,
+        "line": 25,
+        "column": 34
+      }
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "errors": [
+    {
+      "message": "Action getBySupplierSku must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 292,
+        "line": 18,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 308,
+        "line": 18,
+        "column": 29
+      }
+    },
+    {
+      "message": "Action getBarcodeIsNull must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 402,
+        "line": 21,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 418,
+        "line": 21,
+        "column": 29
+      }
+    },
+    {
+      "message": "Action getBySupplierId must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 747,
+        "line": 32,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 762,
+        "line": 32,
+        "column": 28
+      }
+    },
+    {
+      "message": "Action getBySupplierSkuOrId must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 857,
+        "line": 35,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 877,
+        "line": 35,
+        "column": 33
+      }
+    },
+    {
+      "message": "Action getBySupplierSkuAndName must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 1657,
+        "line": 57,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_composite_lookup/schema.keel",
+        "offset": 1680,
+        "line": 57,
+        "column": 36
+      }
+    }
+  ]
+}

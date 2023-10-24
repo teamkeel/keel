@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "text is not a unique field. update actions take only unique inputs",
-      "hint": "",
-      "code": "E035",
+      "message": "Action updateMyModel must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
       "pos": {
         "filename": "testdata/validation_update_operation_no_unique_lookup_in_inputs/schema.keel",
-        "offset": 97,
+        "offset": 83,
         "line": 7,
-        "column": 30
+        "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_update_operation_no_unique_lookup_in_inputs/schema.keel",
-        "offset": 101,
+        "offset": 96,
         "line": 7,
-        "column": 34
+        "column": 29
       }
     }
   ]

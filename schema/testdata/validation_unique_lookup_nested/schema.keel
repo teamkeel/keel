@@ -1,0 +1,46 @@
+model Product {
+    fields {
+        name Text
+        sku Text @unique
+        stock ProductStock? @unique
+    }
+
+    actions {
+        get getByBarcodeOrShampooExpr(barcode: Text) {
+            @where(product.stock.barcode == barcode or product.name == "Shampoo")
+        }
+        get getBySupplierSkuInput(stock.supplierSku)
+        get getBySupplierSkuExpr(supplierSku: Text) {
+            @where(product.stock.supplierSku == supplierSku)
+        }
+        get getBySupplierCode(supplierCode: Text) {
+            @where(product.stock.supplier.supplierCode == supplierCode)
+        }
+        get getByStockIdIsNull() {
+            @where(product.stock == null)
+        }
+        get getByNullStockIdInverse() {
+            @where(null == product.stock)
+        }
+    }
+}
+
+model ProductStock {
+    fields {
+        barcode Text @unique
+        supplierSku Text
+        supplier Supplier
+        product Product
+    }
+
+    actions {
+        get getByProductName(product.name)
+    }
+}
+
+model Supplier {
+    fields {
+        supplierCode Text @unique
+        stock ProductStock
+    }
+}

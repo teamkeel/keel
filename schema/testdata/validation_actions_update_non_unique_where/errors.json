@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "person.age is not a unique field. update actions can only filter on unique fields",
-      "hint": "",
-      "code": "E036",
+      "message": "Action updateName must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
       "pos": {
         "filename": "testdata/validation_actions_update_non_unique_where/schema.keel",
-        "offset": 146,
-        "line": 8,
-        "column": 20
+        "offset": 100,
+        "line": 7,
+        "column": 16
       },
       "endPos": {
         "filename": "testdata/validation_actions_update_non_unique_where/schema.keel",
-        "offset": 156,
-        "line": 8,
-        "column": 30
+        "offset": 110,
+        "line": 7,
+        "column": 26
       }
     }
   ]

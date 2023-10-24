@@ -67,7 +67,7 @@ func ValidArbitraryFunctionReturns(asts []*parser.AST) (errs errorhandling.Valid
 }
 
 // validateInputType makes sure that one particular action input
-// is well formed and conform to various rules.
+// is well formed and conforms to various rules.
 func validateInputType(
 	asts []*parser.AST,
 	input *parser.ActionInputNode,

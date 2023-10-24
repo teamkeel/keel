@@ -1,0 +1,123 @@
+{
+  "errors": [
+    {
+      "message": "Action getByBarcodeOrShampooExpr must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 141,
+        "line": 9,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 166,
+        "line": 9,
+        "column": 38
+      }
+    },
+    {
+      "message": "Action getBySupplierSkuInput must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 288,
+        "line": 12,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 309,
+        "line": 12,
+        "column": 34
+      }
+    },
+    {
+      "message": "Action getBySupplierSkuExpr must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 341,
+        "line": 13,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 361,
+        "line": 13,
+        "column": 33
+      }
+    },
+    {
+      "message": "Action getBySupplierCode must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 466,
+        "line": 16,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 483,
+        "line": 16,
+        "column": 30
+      }
+    },
+    {
+      "message": "Action getByStockIdIsNull must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 600,
+        "line": 19,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 618,
+        "line": 19,
+        "column": 31
+      }
+    },
+    {
+      "message": "Action getByNullStockIdInverse must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 687,
+        "line": 22,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 710,
+        "line": 22,
+        "column": 36
+      }
+    },
+    {
+      "message": "Action getByProductName must either take a unique field as input or filter on a unique field using a @where attribute",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 947,
+        "line": 37,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_lookup_nested/schema.keel",
+        "offset": 963,
+        "line": 37,
+        "column": 29
+      }
+    }
+  ]
+}
