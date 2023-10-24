@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "Action getByBarcodeOrShampooExpr must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getByBarcodeOrShampooExpr' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
         "offset": 141,
@@ -18,9 +18,9 @@
       }
     },
     {
-      "message": "Action getBySupplierSkuInput must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getBySupplierSkuInput' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
         "offset": 288,
@@ -35,9 +35,9 @@
       }
     },
     {
-      "message": "Action getBySupplierSkuExpr must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getBySupplierSkuExpr' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
         "offset": 341,
@@ -52,9 +52,9 @@
       }
     },
     {
-      "message": "Action getBySupplierCode must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getBySupplierCode' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
         "offset": 466,
@@ -69,9 +69,9 @@
       }
     },
     {
-      "message": "Action getByStockIdIsNull must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getByStockIdIsNull' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
         "offset": 600,
@@ -86,9 +86,9 @@
       }
     },
     {
-      "message": "Action getByNullStockIdInverse must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getByNullStockIdInverse' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
         "offset": 687,
@@ -103,9 +103,9 @@
       }
     },
     {
-      "message": "Action getByProductName must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getByProductName' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup_nested/schema.keel",
         "offset": 947,

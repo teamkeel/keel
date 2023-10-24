@@ -509,12 +509,14 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 	// action. This might happen if the action is defined with no inputs or
 	// @where clauses e.g. `get getMyThing()`
 	if !hasUniqueLookup && len(errs.Errors) == 0 {
-		errs.Append(errorhandling.ErrorActionMissingUniqueInput,
-			map[string]string{
-				"Name": action.Name.Value,
+		errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+			errorhandling.ActionInputError,
+			errorhandling.ErrorDetails{
+				Message: fmt.Sprintf("The action '%s' is only permitted to %s a single record and therefore the inputs or @where attribute must filter by unique fields", action.Name.Value, action.Type.Value),
+				Hint:    "Did you mean to add 'id' or some other unique field as an input?",
 			},
 			action.Name,
-		)
+		))
 	}
 
 	return

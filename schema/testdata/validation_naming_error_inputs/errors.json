@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "Action uppercaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'uppercaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
         "offset": 417,
@@ -18,9 +18,9 @@
       }
     },
     {
-      "message": "Action upperCamelCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'upperCamelCaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
         "offset": 458,
@@ -35,9 +35,9 @@
       }
     },
     {
-      "message": "Action snakeCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'snakeCaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
         "offset": 509,
@@ -52,9 +52,9 @@
       }
     },
     {
-      "message": "Action screamingSnakeCaseFunction must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'screamingSnakeCaseFunction' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_naming_error_inputs/schema.keel",
         "offset": 551,

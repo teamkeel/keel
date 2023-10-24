@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "Action getByName must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getByName' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup/schema.keel",
         "offset": 206,
@@ -18,9 +18,9 @@
       }
     },
     {
-      "message": "Action getByNameAsInput must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getByNameAsInput' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup/schema.keel",
         "offset": 234,
@@ -35,9 +35,9 @@
       }
     },
     {
-      "message": "Action getBySku must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getBySku' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup/schema.keel",
         "offset": 328,
@@ -52,9 +52,9 @@
       }
     },
     {
-      "message": "Action getBySkuOrShampoo must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getBySkuOrShampoo' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup/schema.keel",
         "offset": 411,
@@ -69,9 +69,9 @@
       }
     },
     {
-      "message": "Action getBySkuOrIdOrShampoo must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getBySkuOrIdOrShampoo' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup/schema.keel",
         "offset": 557,

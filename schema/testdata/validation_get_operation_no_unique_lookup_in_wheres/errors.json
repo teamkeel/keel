@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "Action getMyModel must either take a unique field as input or filter on a unique field using a @where attribute",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
+      "message": "The action 'getMyModel' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
+      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_get_operation_no_unique_lookup_in_wheres/schema.keel",
         "offset": 85,
