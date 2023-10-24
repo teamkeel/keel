@@ -57,7 +57,7 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 							continue
 						}
 
-						uniqueFields, _ := query.CompositeUniqueFields(m, attribute)
+						uniqueFields := query.CompositeUniqueFields(m, attribute)
 						diff, _ := lo.Difference(uniqueFields, fields)
 						if len(diff) == 0 {
 							hasUniqueLookup = true
@@ -159,7 +159,7 @@ func expressionHasUniqueLookup(asts []*parser.AST, expression *parser.Expression
 				}
 
 				for _, op := range operands {
-					if op.Null == true {
+					if op.Null {
 						hasUniqueLookup = false
 						break
 					}
@@ -183,8 +183,8 @@ func expressionHasUniqueLookup(asts []*parser.AST, expression *parser.Expression
 					}
 
 					var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
-
 					hasUniqueLookup, fieldsInComposite = fragmentsUnique(asts, model, op.Ident.Fragments[1:])
+
 					if len(expression.Or) == 1 {
 						for k, v := range fieldsInComposite {
 							fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
@@ -214,8 +214,6 @@ func expressionHasUniqueLookup(asts []*parser.AST, expression *parser.Expression
 
 func fragmentsUnique(asts []*parser.AST, model *parser.ModelNode, fragments []*parser.IdentFragment) (bool, map[*parser.ModelNode][]*parser.FieldNode) {
 	fieldsInCompositeUnique := map[*parser.ModelNode][]*parser.FieldNode{}
-	var candidateCompositeModel *parser.ModelNode
-	var candidateCompositeField *parser.FieldNode
 
 	hasUniqueLookup := true
 	for i, fragment := range fragments {
@@ -225,10 +223,9 @@ func fragmentsUnique(asts []*parser.AST, model *parser.ModelNode, fragments []*p
 			return false, nil
 		}
 
-		isComposite, _ := query.FieldIsInCompositeUnique(model, field)
-		if isComposite && candidateCompositeModel == nil && candidateCompositeField == nil {
-			candidateCompositeModel = model
-			candidateCompositeField = field
+		isComposite := query.FieldIsInCompositeUnique(model, field)
+		if isComposite {
+			fieldsInCompositeUnique[model] = append(fieldsInCompositeUnique[model], field)
 		}
 
 		if !query.FieldIsUnique(field) &&
@@ -236,16 +233,12 @@ func fragmentsUnique(asts []*parser.AST, model *parser.ModelNode, fragments []*p
 			!query.IsHasManyModelField(asts, field) {
 
 			if !isComposite {
-				return false, map[*parser.ModelNode][]*parser.FieldNode{}
+				return false, nil
 			}
 			hasUniqueLookup = false
 		}
 
 		if i == len(fragments)-1 {
-			if candidateCompositeModel != nil && candidateCompositeField != nil {
-				fieldsInCompositeUnique[candidateCompositeModel] = append(fieldsInCompositeUnique[candidateCompositeModel], candidateCompositeField)
-			}
-
 			return hasUniqueLookup, fieldsInCompositeUnique
 		}
 
@@ -258,6 +251,5 @@ func fragmentsUnique(asts []*parser.AST, model *parser.ModelNode, fragments []*p
 		}
 	}
 
-	panic("Sdsd")
-	return hasUniqueLookup, fieldsInCompositeUnique
+	return false, nil
 }

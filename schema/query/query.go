@@ -307,28 +307,10 @@ func FieldIsUnique(field *parser.FieldNode) bool {
 	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
 }
 
-func FieldIsInCompositeUnique(model *parser.ModelNode, field *parser.FieldNode) (bool, error) {
-	for _, attribute := range ModelAttributes(model) {
-		if attribute.Name.Value == parser.AttributeUnique {
-			fields, err := CompositeUniqueFields(model, attribute)
-			if err != nil {
-				return false, err
-			}
-
-			for _, f := range fields {
-				if field == f {
-					return true, nil
-				}
-			}
-
-		}
-	}
-	return false, nil
-}
-
-func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeNode) ([]*parser.FieldNode, error) {
+// CompositeUniqueFields returns the model's fields that make up a composite unique attribute
+func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeNode) []*parser.FieldNode {
 	if attribute.Name.Value != parser.AttributeUnique {
-		return nil, fmt.Errorf("%s is not a unique attribute", attribute.Name.Value)
+		return nil
 	}
 
 	fields := []*parser.FieldNode{}
@@ -336,7 +318,7 @@ func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeN
 	if len(attribute.Arguments) > 0 {
 		value, err := attribute.Arguments[0].Expression.ToValue()
 		if err != nil {
-			return fields, nil
+			return fields
 		}
 
 		if value.Array != nil {
@@ -353,7 +335,23 @@ func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeN
 		}
 	}
 
-	return fields, nil
+	return fields
+}
+
+// FieldIsInCompositeUnique returns true if a field is part of a composite unique attribute
+func FieldIsInCompositeUnique(model *parser.ModelNode, field *parser.FieldNode) bool {
+	for _, attribute := range ModelAttributes(model) {
+		if attribute.Name.Value == parser.AttributeUnique {
+			fields := CompositeUniqueFields(model, attribute)
+			for _, f := range fields {
+				if field == f {
+					return true
+				}
+			}
+
+		}
+	}
+	return false
 }
 
 // ActionSortableFieldNames returns the field names of the @sortable attribute.
