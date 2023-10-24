@@ -24,7 +24,6 @@ model Product {
         get getbySkuAndShampooInverse(sku: Text) {
             @where(product.name == "Shampoo" and product.sku == sku)
         }
-        // 'or' operand but both expressions produce a unique
         get getbySkuOrId(productId: ID) {
             @where(product.sku == ctx.identity.user.assignedProduct.sku or product.id == productId)
         }

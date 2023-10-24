@@ -35,8 +35,16 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 			model = nil
 		},
 		EnterAction: func(a *parser.ActionNode) {
+			// Only specific action types required unique lookups
 			if !lo.Contains(UniqueLookupActionTypes, a.Type.Value) {
 				return
+			}
+
+			// Functions do not require a unique lookup
+			for _, attr := range a.Attributes {
+				if attr.Name.Value == parser.AttributeFunction {
+					return
+				}
 			}
 
 			action = a
@@ -70,8 +78,8 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.ActionInputError,
 					errorhandling.ErrorDetails{
-						Message: fmt.Sprintf("The action '%s' is only permitted to %s a single record and therefore the inputs or @where attribute must filter by unique fields", action.Name.Value, action.Type.Value),
-						Hint:    "Did you mean to add 'id' or some other unique field as an input?",
+						Message: fmt.Sprintf("The action '%s' can only %s a single record and therefore must be filtered by unique fields", action.Name.Value, action.Type.Value),
+						Hint:    "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
 					},
 					action.Name,
 				))

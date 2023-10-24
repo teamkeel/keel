@@ -263,38 +263,3 @@ func CreateOperationNoReadInputsRule(asts []*parser.AST) (errs errorhandling.Val
 
 	return
 }
-
-// func validateInputIsUnique(asts []*parser.AST, action *parser.ActionNode, input *parser.ActionInputNode, model *parser.ModelNode) (isUnique bool, err *errorhandling.ValidationError) {
-// 	// handle built-in type e.g. not referencing a field name
-// 	// for example `get getMyThing(name: Text)`
-// 	if parser.IsBuiltInFieldType(input.Type.ToString()) {
-// 		return false, nil
-// 	}
-
-// 	var field *parser.FieldNode
-
-// 	for _, fragment := range input.Type.Fragments {
-// 		if model == nil {
-// 			return false, nil
-// 		}
-// 		field = query.ModelField(model, fragment.Fragment)
-// 		if field == nil {
-// 			return false, nil
-// 		}
-// 		if !query.FieldIsUnique(field) {
-// 			// input refers to a non-unique field - this is an error
-// 			return false, errorhandling.NewValidationError(errorhandling.ErrorActionInputNotUnique,
-// 				errorhandling.TemplateLiterals{
-// 					Literals: map[string]string{
-// 						"Input":      fragment.Fragment,
-// 						"ActionType": action.Type.Value,
-// 					},
-// 				},
-// 				fragment,
-// 			)
-// 		}
-// 		model = query.Model(asts, field.Type.Value)
-// 	}
-
-// 	return true, nil
-// }

@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "The action 'getByName' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getByName' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup/schema.keel",
@@ -18,8 +18,8 @@
       }
     },
     {
-      "message": "The action 'getByNameAsInput' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getByNameAsInput' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup/schema.keel",
@@ -35,8 +35,8 @@
       }
     },
     {
-      "message": "The action 'getBySku' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySku' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup/schema.keel",
@@ -52,8 +52,8 @@
       }
     },
     {
-      "message": "The action 'getBySkuOrShampoo' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySkuOrShampoo' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup/schema.keel",
@@ -69,8 +69,8 @@
       }
     },
     {
-      "message": "The action 'getBySkuOrIdOrShampoo' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySkuOrIdOrShampoo' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_lookup/schema.keel",

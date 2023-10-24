@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "The action 'getBySupplierSku' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySupplierSku' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
@@ -18,8 +18,8 @@
       }
     },
     {
-      "message": "The action 'getBySupplierCode' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySupplierCode' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
@@ -35,8 +35,8 @@
       }
     },
     {
-      "message": "The action 'getBarcodeIsNull' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBarcodeIsNull' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
@@ -52,8 +52,8 @@
       }
     },
     {
-      "message": "The action 'getBySupplierSkuExprAndNameExprMultiWhere' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySupplierSkuExprAndNameExprMultiWhere' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
@@ -69,8 +69,8 @@
       }
     },
     {
-      "message": "The action 'getBySupplierId' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySupplierId' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
@@ -86,8 +86,8 @@
       }
     },
     {
-      "message": "The action 'getBySupplierSkuOrId' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySupplierSkuOrId' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
@@ -103,8 +103,8 @@
       }
     },
     {
-      "message": "The action 'getBySupplierSkuAndCodeOrShampoo' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySupplierSkuAndCodeOrShampoo' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
@@ -120,8 +120,8 @@
       }
     },
     {
-      "message": "The action 'getBySupplierSkuAndIdOrShampoo' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySupplierSkuAndIdOrShampoo' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
@@ -137,8 +137,8 @@
       }
     },
     {
-      "message": "The action 'getBySupplierSkuAndCodeOrShampooParenthesis' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySupplierSkuAndCodeOrShampooParenthesis' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",
@@ -154,8 +154,8 @@
       }
     },
     {
-      "message": "The action 'getBySupplierSkuAndName' is only permitted to get a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'getBySupplierSkuAndName' can only get a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_unique_composite_lookup/schema.keel",

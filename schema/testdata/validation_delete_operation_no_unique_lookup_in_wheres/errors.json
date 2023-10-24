@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "The action 'deleteMyModel' is only permitted to delete a single record and therefore the inputs or @where attribute must filter by unique fields",
-      "hint": "Did you mean to add 'id' or some other unique field as an input?",
+      "message": "The action 'deleteMyModel' can only delete a single record and therefore must be filtered by unique fields",
+      "hint": "Did you mean to filter by 'id' or some other unique fields in the action's inputs or @where attributes?",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_delete_operation_no_unique_lookup_in_wheres/schema.keel",
