@@ -1,22 +1,42 @@
 name: New Draft Release
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
 
 jobs:
-  draft-release:
-    runs-on: "ubuntu-latest"
+  setup:
+    name: Generate Version
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - uses: pnpm/action-setup@v2.4.0
+        with:
+          version: 8.5.1
+
+      - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref }}
           fetch-depth: 0
-      - name: Create Draft Release
-        uses: elgohr/Github-Release-Action@v5
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate version
+        id: generate-version
+        uses: paulhatch/semantic-version@v5.0.3
         with:
-            title: Keel runtime ${{ github.ref }}
+          tag_prefix: "v"
+          major_pattern: "^([A-Za-z]+.)*!:.*$"
+          major_regexp_flags: "g"
+          minor_pattern: "feat"
+          version_format: "${major}.${minor}.${patch}"
+
+      - name: Print release version
+        run: echo "NEW_VERSION=${{ steps.generate-version.outputs.version }}"
+        
+      - name: Publish Release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: "${{ steps.generate-version.outputs.version }}"
+          draft: true
+          makeLatest: false
+          prerelease: false
+          allowUpdates: true
+          updateOnlyUnreleased: true
