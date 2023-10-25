@@ -1430,10 +1430,12 @@ func TestPermissionQueryBuilder(t *testing.T) {
 				require.Nil(t, testCase.earlyAuth, "earlyAuth should be CouldNotAuthoriseEarly() because authorised could not be determined given early.")
 			}
 
+			rowsReturned := []map[string]any{{"id": "row1"}, {"id": "row2"}}
+
 			if !canResolveEarly {
 				permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
-				statement, err := actions.GeneratePermissionStatement(scope, permissions, testCase.input)
+				statement, err := actions.GeneratePermissionStatement(scope, permissions, testCase.input, rowsReturned)
 				if err != nil {
 					require.NoError(t, err)
 				}
