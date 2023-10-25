@@ -29,7 +29,7 @@ jobs:
           major_pattern: "^([A-Za-z]+.)*!:.*$"
           major_regexp_flags: "g"
           minor_pattern: "feat"
-          version_format: "${major}.${minor}.${patch}"
+          version_format: "v${major}.${minor}.${patch}"
 
       - name: Print release version
         run: echo "NEW_VERSION=${{ steps.generate-version.outputs.version }}"
@@ -39,8 +39,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: "${{ steps.generate-version.outputs.version }}"
+          name: Keel runtime ${{ steps.generate-version.outputs.version }}
           draft: true
           makeLatest: false
           prerelease: false
           allowUpdates: true
           updateOnlyUnreleased: true
+          generateReleaseNotes: true
