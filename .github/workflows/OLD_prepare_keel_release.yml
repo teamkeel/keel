@@ -1,4 +1,4 @@
-name: Prepare Keel Release
+name: OLD Prepare Keel Release
 
 on:
   workflow_dispatch:
@@ -16,20 +16,6 @@ on:
         required: false
         type: string
         default: "main"
-  workflow_call:
-    inputs:
-      backendBranch:
-        description: "The backend branch that triggered this release"
-        required: true
-        type: string
-      preReleaseVersion:
-        description: "Pre Release Version to release"
-        required: true
-        type: string
-      releaseNotesUrl:
-        description: "URL to release notes for version"
-        required: false
-        type: string
 
 jobs:
   create_branch:
