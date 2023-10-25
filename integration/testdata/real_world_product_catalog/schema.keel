@@ -1,0 +1,141 @@
+model User {
+    fields {
+        identity Identity @unique
+        brand Brand
+    }
+}
+
+model Brand {
+    fields {
+        name Text
+        code Text @unique
+        products Product[]
+        isActive Boolean @default(true)
+        editors User[]
+    }
+
+    actions {
+        get getBrand(code)
+        get getBrandForProduct(products.barcode)
+        create addBrand() with (
+            name,
+            code,
+            products.name,
+            products.barcode,
+            products.productCode,
+        )
+    }
+
+    @permission(
+        expression: true,
+        actions: [get, update, create, delete, list]
+    )
+}
+
+model Product {
+    fields {
+        name Text
+        barcode Text @unique
+        productCode Text
+        brand Brand
+        isActive Boolean @default(true)
+    }
+
+    actions {
+        get getProduct(productCode, brand.code) {
+            @where(product.isActive)
+            @where(product.brand.isActive)
+        }
+        create createProduct() with (name, barcode, productCode, brand.id) {
+            // TODO: permissions on create fix
+            // https://linear.app/keel/issue/KE-1178/permissions-issue-on-create-actions
+            // @permission(expression: ctx.identity.user in product.brand.editors)
+            @permission(expression: true)
+        }
+        update deactivateProduct(productCode, brand.code) {
+            @set(product.isActive = false)
+            @where(product.isActive)
+            @where(product.brand.isActive)
+            @permission(expression: ctx.identity.user in product.brand.editors)
+        }
+        delete deleteProduct(productCode, brand.code) {
+            @where(product.isActive)
+            @where(product.brand.isActive)
+            @permission(expression: ctx.identity.user in product.brand.editors)
+        }
+    }
+
+    @unique([productCode, brand])
+
+    @permission(
+        expression: true,
+        actions: [get, update, create, delete, list]
+    )
+}
+
+model Supplier {
+    fields {
+        name Text
+        code Text @unique
+        catalog Catalog[]
+    }
+
+    actions {
+        create addSupplier() with (
+            name,
+            code,
+            catalog.product.id,
+            catalog.supplierSku,
+            catalog.price,
+            catalog.stockCount,
+        )
+        list suppliersWithProduct(catalog.product.barcode) {
+            @where(supplier.catalog.product.isActive)
+            @where(supplier.catalog.product.brand.isActive)
+            @orderBy(name: asc)
+        }
+    }
+
+    @permission(
+        expression: true,
+        actions: [get, update, create, delete, list]
+    )
+}
+
+model Catalog {
+    fields {
+        supplier Supplier
+        product Product
+        supplierSku Text
+        price Number
+        stockCount Number
+    }
+
+    actions {
+        get getCatalogItem(supplier.code, product.productCode, product.brand.code) {
+            @where(catalog.stockCount > 0)
+            @where(catalog.product.isActive)
+            @where(catalog.product.brand.isActive)
+        }
+        list searchCatalog(product.name?, product.productCode?, product.brand.code?) {
+            @where(catalog.stockCount > 0)
+            @where(catalog.product.isActive)
+            @where(catalog.product.brand.isActive)
+            @sortable(
+                price,
+                stockCount
+            )
+        }
+    }
+
+    // A supplier does not offer duplicates of the same product
+    @unique([supplier, product])
+
+    // A supplier's SKU is unique for that supplier
+    @unique([supplier, supplierSku])
+
+    @permission(
+        expression: true,
+        actions: [get, update, create, delete, list]
+    )
+}

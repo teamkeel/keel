@@ -43,7 +43,7 @@ func AuthoriseForActionType(scope *Scope, opType proto.ActionType, rowsToAuthori
 }
 
 // authorise checks authorisation for rows using the slice of permission rules provided.
-func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[string]any, queryResults []map[string]any) (authorised bool, err error) {
+func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[string]any, rowsToAuthorise []map[string]any) (authorised bool, err error) {
 	ctx, span := tracer.Start(scope.Context, "Check permissions")
 	defer span.End()
 
@@ -85,15 +85,15 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 		return false, err
 	}
 
+	idsToAuthorise := lo.Map(rowsToAuthorise, func(row map[string]interface{}, _ int) string {
+		return row["id"].(string)
+	})
+
 	permissionResultIds := lo.Map(permissionResults, func(row map[string]interface{}, _ int) string {
 		return row["id"].(string)
 	})
 
-	queryResultIds := lo.Map(queryResults, func(row map[string]interface{}, _ int) string {
-		return row["id"].(string)
-	})
-
-	authorised = compare(permissionResultIds, queryResultIds)
+	authorised = compare(permissionResultIds, idsToAuthorise)
 
 	if !authorised {
 		span.SetAttributes(attribute.Bool("result", false))

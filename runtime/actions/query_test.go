@@ -2449,6 +2449,241 @@ var testCases = []testCase{
 			"free2", 8, // new_4_order_item
 		},
 	},
+	{
+		name: "update_by_unique_key",
+		keelSchema: `
+			model Product {
+				fields {
+					barcode Text @unique
+					isActive Boolean @default(true)
+				}
+				actions {
+					update deactivateProduct(barcode) {
+						@where(product.isActive)
+						@set(product.isActive = false)
+						@permission(expression: true)
+					}
+				}
+			}`,
+		actionName: "deactivateProduct",
+		input: map[string]any{
+			"where": map[string]any{
+				"barcode": "123",
+			},
+		},
+		expectedTemplate: `
+			UPDATE "product" 
+			SET is_active = ? 
+			WHERE 
+				"product"."barcode" IS NOT DISTINCT FROM ? AND 
+				"product"."is_active" IS NOT DISTINCT FROM ? 
+			RETURNING "product".*`,
+		expectedArgs: []any{false, "123", true},
+	},
+	{
+		name: "update_by_unique_composite_key",
+		keelSchema: `
+			model Brand {
+				fields {
+					code Text @unique
+					products Product[]
+				}
+			}
+			model Product {
+				fields {
+					productCode Text
+					brand Brand
+					isActive Boolean @default(true)
+				}
+				actions {
+					update deactivateProduct(productCode, brand.code) {
+						@set(product.isActive = false)
+						@permission(expression: true)
+					}
+				}
+				@unique([productCode, brand])
+			}`,
+		actionName: "deactivateProduct",
+		input: map[string]any{
+			"where": map[string]any{
+				"productCode": "prodcode",
+				"brandCode":   "brand",
+			},
+		},
+		expectedTemplate: `
+			UPDATE "product" 
+			SET is_active = ? 
+			FROM "brand" AS "product$brand" 
+			WHERE 
+				"product$brand"."id" = "product"."brand_id" AND
+				"product"."product_code" IS NOT DISTINCT FROM ? AND 
+				"product$brand"."code" IS NOT DISTINCT FROM ? 
+			RETURNING "product".*`,
+		expectedArgs: []any{false, "prodcode", "brand"},
+	},
+	{
+		name: "update_by_unique_composite_key_and_filters",
+		keelSchema: `
+			model Supplier {
+				fields {
+					products Product[]
+					isRegistered Boolean
+				}
+			}
+			model Brand {
+				fields {
+					code Text @unique
+					products Product[]
+				}
+			}
+			model Product {
+				fields {
+					productCode Text
+					brand Brand
+					supplier Supplier
+					isActive Boolean @default(true)
+				}
+				actions {
+					update deactivateProduct(productCode, brand.code) {
+						@where(product.isActive)
+						@where(product.supplier.isRegistered)
+						@set(product.isActive = false)
+						@permission(expression: true)
+					}
+				}
+				@unique([productCode, brand])
+			}`,
+		actionName: "deactivateProduct",
+		input: map[string]any{
+			"where": map[string]any{
+				"productCode": "prodcode",
+				"brandCode":   "brand",
+			},
+		},
+		expectedTemplate: `
+			UPDATE "product" 
+			SET is_active = ? 
+			FROM "brand" AS "product$brand" 
+			LEFT JOIN "supplier" AS "product$supplier" ON "product$supplier"."id" = "product"."supplier_id" 
+			WHERE 
+				"product$brand"."id" = "product"."brand_id" AND 
+				"product"."product_code" IS NOT DISTINCT FROM ? AND 
+				"product$brand"."code" IS NOT DISTINCT FROM ? AND 
+				"product"."is_active" IS NOT DISTINCT FROM ? AND 
+				"product$supplier"."is_registered" IS NOT DISTINCT FROM ? 
+			RETURNING "product".*`,
+		expectedArgs: []any{false, "prodcode", "brand", true, true},
+	},
+	{
+		name: "delete_by_unique_key",
+		keelSchema: `
+			model Product {
+				fields {
+					barcode Text @unique
+					isActive Boolean @default(true)
+				}
+				actions {
+					delete deleteProduct(barcode) {
+						@where(product.isActive)
+						@permission(expression: true)
+					}
+				}
+			}`,
+		actionName: "deleteProduct",
+		input: map[string]any{
+			"barcode": "123",
+		},
+		expectedTemplate: `
+			DELETE FROM "product" 
+			WHERE 
+				"product"."barcode" IS NOT DISTINCT FROM ? AND 
+				"product"."is_active" IS NOT DISTINCT FROM ? 
+			RETURNING "product"."id"`,
+		expectedArgs: []any{"123", true},
+	},
+	{
+		name: "delete_by_unique_composite_key",
+		keelSchema: `
+			model Brand {
+				fields {
+					code Text @unique
+					products Product[]
+				}
+			}
+			model Product {
+				fields {
+					productCode Text
+					brand Brand
+					isActive Boolean @default(true)
+				}
+				actions {
+					delete deleteProduct(productCode, brand.code) {
+						@permission(expression: true)
+					}
+				}
+				@unique([productCode, brand])
+			}`,
+		actionName: "deleteProduct",
+		input: map[string]any{
+			"productCode": "prodcode",
+			"brandCode":   "brand",
+		},
+		expectedTemplate: `
+			DELETE FROM "product" 
+			USING "brand" AS "product$brand" 
+			WHERE 
+				"product"."product_code" IS NOT DISTINCT FROM ? AND 
+				"product$brand"."code" IS NOT DISTINCT FROM ? 
+			RETURNING "product"."id"`,
+		expectedArgs: []any{"prodcode", "brand"},
+	},
+	{
+		name: "delete_by_unique_composite_key_and_filters",
+		keelSchema: `
+			model Supplier {
+				fields {
+					products Product[]
+					isLocked Boolean
+				}
+			}
+			model Brand {
+				fields {
+					code Text @unique
+					products Product[]
+				}
+			}
+			model Product {
+				fields {
+					productCode Text
+					brand Brand
+					supplier Supplier
+					isActive Boolean @default(true)
+				}
+				actions {
+					delete deleteProduct(productCode, brand.code) {
+						@where(product.isActive)
+						@where(product.supplier.isLocked)
+						@permission(expression: true)
+					}
+				}
+				@unique([productCode, brand])
+			}`,
+		actionName: "deleteProduct",
+		input: map[string]any{
+			"productCode": "prodcode",
+			"brandCode":   "brand",
+		},
+		expectedTemplate: `
+			DELETE FROM "product" 
+			USING "brand" AS "product$brand", "supplier" AS "product$supplier" 
+			WHERE 
+				"product"."product_code" IS NOT DISTINCT FROM ? AND 
+				"product$brand"."code" IS NOT DISTINCT FROM ? AND 
+				"product"."is_active" IS NOT DISTINCT FROM ? AND 
+				"product$supplier"."is_locked" IS NOT DISTINCT FROM ? 
+			RETURNING "product"."id"`,
+		expectedArgs: []any{"prodcode", "brand", true, true},
+	},
 }
 
 func TestQueryBuilder(t *testing.T) {

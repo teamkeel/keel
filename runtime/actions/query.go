@@ -811,6 +811,8 @@ func orderGraphNodes(graph *Row) []*Row {
 
 // Generates an executable UPDATE statement with the list of arguments.
 func (query *QueryBuilder) UpdateStatement() *Statement {
+	queryFilters := query.filters
+
 	joins := ""
 	filters := ""
 	returning := ""
@@ -884,13 +886,20 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 
 	args = append(args, query.args...)
 
+	var from string
 	if len(query.joins) > 0 {
-		for _, j := range query.joins {
-			joins += fmt.Sprintf("%s JOIN %s AS %s ON %s ", query.joinType, j.table, j.alias, j.condition)
+		for i, j := range query.joins {
+			if i == 0 {
+				from = fmt.Sprintf("FROM %s AS %s", j.table, j.alias)
+				queryFilters = append([]string{j.condition, "AND"}, queryFilters...)
+			} else {
+				joins += fmt.Sprintf("%s JOIN %s AS %s ON %s ", query.joinType, j.table, j.alias, j.condition)
+			}
+
 		}
 	}
 
-	conditions := trimRhsOperators(query.filters)
+	conditions := trimRhsOperators(queryFilters)
 	if len(conditions) > 0 {
 		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
 	}
@@ -914,10 +923,11 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 		commonTableExpressions = fmt.Sprintf("WITH %s", strings.Join(ctes, ", "))
 	}
 
-	template := fmt.Sprintf("%s UPDATE %s SET %s %s %s %s",
+	template := fmt.Sprintf("%s UPDATE %s SET %s %s %s %s %s",
 		commonTableExpressions,
 		sqlQuote(query.table),
 		strings.Join(sets, ", "),
+		from,
 		joins,
 		filters,
 		returning)
