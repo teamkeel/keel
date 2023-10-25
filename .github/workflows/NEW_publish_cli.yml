@@ -1,4 +1,4 @@
-name: Release CLI
+name: Publish CLI
 
 on:
   workflow_dispatch:
