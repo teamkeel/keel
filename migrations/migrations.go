@@ -12,11 +12,9 @@ import (
 	"github.com/teamkeel/keel/auditing"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
-	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/proto"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -83,12 +81,6 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	ctx, span := tracer.Start(ctx, "Apply Migrations")
 	defer span.End()
 
-	// Tracing is required because there may be data mutations which
-	// should log audits and fire events, if necessary.
-	if !span.SpanContext().IsValid() {
-		return errors.New("migrations cannot continue without active tracing enabled")
-	}
-
 	sql := strings.Builder{}
 
 	// Enable extensions
@@ -127,15 +119,6 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	_, err = m.database.ExecuteStatement(ctx, sql.String())
 	if err != nil {
 		return err
-	}
-
-	// Generate and send any events for this context.
-	// This must run regardless of the migration succeeding or failing.
-	// Failure to generate events fail silently.
-	eventsErr := events.SendEvents(ctx, m.Schema)
-	if eventsErr != nil {
-		span.RecordError(eventsErr)
-		span.SetStatus(codes.Error, eventsErr.Error())
 	}
 
 	return nil

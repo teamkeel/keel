@@ -9,7 +9,6 @@ import (
 	"github.com/karlseguin/typed"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/events"
-	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 )
@@ -402,92 +401,4 @@ func TestFailedEventHandling(t *testing.T) {
 
 	_, ok := result.(map[string]any)
 	require.True(t, ok)
-}
-
-func TestEventsDatabaseMigration(t *testing.T) {
-	var keelSchema = `
-		model Person {
-			fields {
-				name Text
-				age Number?
-				isActive Boolean?
-			}
-			actions {
-				create createPerson() with (name)
-			}
-			@on([update], doSomething)
-			@permission(expression: true, actions: [create])
-		}`
-
-	ctx, database, pSchema := newContext(t, keelSchema, true)
-
-	create := proto.FindAction(pSchema, "createPerson")
-	result, _, err := actions.Execute(
-		actions.NewScope(ctx, create, pSchema),
-		map[string]any{"name": "Dave"})
-	require.NoError(t, err)
-
-	person, ok := result.(map[string]any)
-	require.True(t, ok)
-
-	var updatedSchema = `
-		model Person {
-			fields {
-				name Text
-				age Number @default(0)
-				isActive Boolean @default(true)
-			}
-			actions {
-				create createPerson() with (name)
-			}
-			@on([update], doSomething)
-			@permission(expression: true, actions: [create])
-		}`
-
-	database.Close()
-	ctx, database, pSchema = newContext(t, updatedSchema, false)
-	defer database.Close()
-
-	handler := NewEventHandler(t)
-	ctx, err = events.WithEventHandler(ctx, handler.HandleEvent)
-	require.NoError(t, err)
-
-	// Migrate the database to the new schema.
-	m, err := migrations.New(ctx, pSchema, database)
-	require.NoError(t, err)
-
-	err = m.Apply(ctx)
-	require.NoError(t, err)
-
-	require.Len(t, handler.handledEvents, 1)
-
-	events, ok := handler.handledEvents["doSomething"]
-	require.True(t, ok)
-	require.Len(t, events, 2)
-
-	require.NotEmpty(t, events[0])
-	require.Equal(t, "person.updated", events[0].EventName)
-	require.Empty(t, events[0].IdentityId)
-	require.NotEmpty(t, events[0].OccurredAt)
-	require.NotNil(t, events[0].Target)
-	require.Equal(t, person["id"], events[0].Target.Id)
-	require.Equal(t, "Person", events[0].Target.Type)
-
-	data := typed.New(events[0].Target.Data)
-	require.Equal(t, person["id"], data.String("id"))
-	require.Equal(t, 0, data.IntMust("age"))
-	require.Empty(t, data.String("isActive"))
-
-	require.NotEmpty(t, events[1])
-	require.Equal(t, "person.updated", events[0].EventName)
-	require.Empty(t, events[1].IdentityId)
-	require.NotEmpty(t, events[1].OccurredAt)
-	require.NotNil(t, events[1].Target)
-	require.Equal(t, person["id"], events[1].Target.Id)
-	require.Equal(t, "Person", events[1].Target.Type)
-
-	data = typed.New(events[1].Target.Data)
-	require.Equal(t, person["id"], data.String("id"))
-	require.Equal(t, 0, data.IntMust("age"))
-	require.Equal(t, true, data.BoolMust("isActive"))
 }
