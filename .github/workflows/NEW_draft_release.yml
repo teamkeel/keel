@@ -2,10 +2,13 @@ name: New Draft Release
 
 on:
   workflow_dispatch:
-
+    inputs:
+        ref:
+          description: "The ref to release"
+          required: true
+          type: string
 jobs:
   setup:
-    name: Generate Version
     runs-on: ubuntu-latest
     steps:
       - uses: pnpm/action-setup@v2.4.0
@@ -15,6 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
+          ref: "${{ inputs.ref }}"
           fetch-depth: 0
 
       - name: Generate version
