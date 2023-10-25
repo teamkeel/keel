@@ -1,3 +1,10 @@
+model User {
+    fields {
+        identity Identity @unique
+        brand Brand
+    }
+}
+
 model Brand {
     fields {
         name Text
@@ -35,16 +42,15 @@ model Product {
     }
 
     actions {
-        get getProductByBarcode(barcode) {
-            @where(product.isActive)
-            @where(product.brand.isActive)
-        }
         get getProduct(productCode, brand.code) {
             @where(product.isActive)
             @where(product.brand.isActive)
         }
         create createProduct() with (name, barcode, productCode, brand.id) {
-            @permission(expression: ctx.identity.user in product.brand.editors)
+            // TODO: permissions on create fix
+            // https://linear.app/keel/issue/KE-1178/permissions-issue-on-create-actions
+            // @permission(expression: ctx.identity.user in product.brand.editors)
+            @permission(expression: true)
         }
         update deactivateProduct(productCode, brand.code) {
             @set(product.isActive = false)
@@ -106,17 +112,12 @@ model Catalog {
     }
 
     actions {
-        get getCatalogItem(supplier.code, product.productCode, product.brand.code)
-        list catalog(supplier.id) {
+        get getCatalogItem(supplier.code, product.productCode, product.brand.code) {
             @where(catalog.stockCount > 0)
             @where(catalog.product.isActive)
             @where(catalog.product.brand.isActive)
-            @sortable(
-                price,
-                stockCount
-            )
         }
-        list search(product.name?, product.productCode?, product.brand.code?) {
+        list searchCatalog(product.name?, product.productCode?, product.brand.code?) {
             @where(catalog.stockCount > 0)
             @where(catalog.product.isActive)
             @where(catalog.product.brand.isActive)
@@ -137,11 +138,4 @@ model Catalog {
         expression: true,
         actions: [get, update, create, delete, list]
     )
-}
-
-model User {
-    fields {
-        identity Identity @unique
-        brand Brand
-    }
 }
