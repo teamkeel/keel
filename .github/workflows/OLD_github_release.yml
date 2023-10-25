@@ -1,7 +1,7 @@
-name: Create Release
+name: OLD Create Release
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       branch:
         description: "The branch to run the release on"

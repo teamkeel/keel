@@ -1,11 +1,11 @@
 name: Initiate Pre-Release
 
 on:
-  push:
-    branches:
-      - main
-    tags-ignore:
-      - "*"
+  #push:
+  #  branches:
+  #    - main
+  #  tags-ignore:
+  #    - "*"
   workflow_dispatch:
 
 jobs:

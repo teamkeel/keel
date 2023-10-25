@@ -1,13 +1,7 @@
-name: Publish Keel Release
+name: OLD Publish Keel Release
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Release Version"
-        required: true
-        type: string
-  workflow_call:
     inputs:
       version:
         description: "Release Version"

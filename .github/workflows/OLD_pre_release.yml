@@ -1,7 +1,7 @@
-name: Make Pre Release
+name: OLD Make Pre Release
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       versionFormat:
         description: "Ref of where the release should be marked"
