@@ -256,7 +256,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.Mode == ModeRun {
 			cmds = append(
 				cmds,
-				StartWatcher(m.ProjectDir, m.watcherCh),
+				StartWatcher(m.ProjectDir, m.watcherCh, nil),
 				NextMsgCommand(m.watcherCh),
 			)
 		}
