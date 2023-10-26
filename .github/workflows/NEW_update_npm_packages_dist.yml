@@ -36,4 +36,3 @@ jobs:
         run: npm dist-tag add @teamkeel/${{ matrix.package }}@${{ inputs.version }} ${{ inputs.publishTag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
