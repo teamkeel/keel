@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
         ref:
-          description: "The ref to release"
+          description: "Branch, tag or SHA to release"
           required: true
           type: string
 jobs:
@@ -39,10 +39,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: "${{ steps.generate-version.outputs.version }}"
-          name: Keel runtime ${{ steps.generate-version.outputs.version }}
-          draft: true
+          name: ${{ steps.generate-version.outputs.version }}
+          draft: false
           makeLatest: false
-          prerelease: false
+          prerelease: true
           allowUpdates: true
           updateOnlyUnreleased: true
           generateReleaseNotes: true
