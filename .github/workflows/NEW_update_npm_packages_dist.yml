@@ -1,3 +1,4 @@
+name: Update SDKs dist-tags
 run-name: Update SDKs ${{ inputs.version }} with '${{ inputs.publishTag }}'
 
 on:
@@ -31,8 +32,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: npm dist-tag add ${{ matrix.package }}@${{ inputs.version }} ${{ inputs.publishTag }}
-        run: npm dist-tag add ${{ matrix.package }}@${{ inputs.version }} ${{ inputs.publishTag }}
+      - name: Adding `${{ inputs.publishTag }}` tag to ${{ matrix.package }}@${{ inputs.version }} 
+        run: npm dist-tag add @teamkeel/${{ matrix.package }}@${{ inputs.version }} ${{ inputs.publishTag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
