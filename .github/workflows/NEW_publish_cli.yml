@@ -1,10 +1,10 @@
-name: Publish CLI
+run-name: Publish CLI ${{ inputs.version }}
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Keel version to publish (tag)"
+        description: "Keel version to publish (e.g. v0.370.0)"
         required: true
         type: string
       isPrerelease:
