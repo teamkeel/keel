@@ -1,3 +1,4 @@
+name: Publish SDKs 
 run-name: Publish SDKs ${{ inputs.version }} to '${{ inputs.publishTag }}'
 
 on:
