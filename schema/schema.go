@@ -75,19 +75,17 @@ func (scm *Builder) ASTs() []*parser.AST {
 	return scm.asts
 }
 
-func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, error) {
+// PrepareAst will parse the ASTs and will add built-in models, fields, and other bits.
+func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, errorhandling.ValidationErrors, error) {
+	asts := []*parser.AST{}
+	parseErrors := errorhandling.ValidationErrors{}
+
 	// - For each of the .keel (schema) files specified...
 	// 		- Parse to AST
 	// 		- Add built-in fields
-	// - With the parsed (AST) schemas as a set:
-	// 		- Validate them (as a set)
-	// 		- Convert the set to a single / aggregate proto model
-	asts := []*parser.AST{}
-	parseErrors := errorhandling.ValidationErrors{}
 	for i, oneInputSchemaFile := range allInputFiles.SchemaFiles {
 		declarations, err := parser.Parse(&oneInputSchemaFile)
 		if err != nil {
-
 			// try to convert into a validation error and move to next schema file
 			if perr, ok := err.(parser.Error); ok {
 				verr := errorhandling.NewValidationError(errorhandling.ErrorInvalidSyntax, errorhandling.TemplateLiterals{
@@ -96,10 +94,9 @@ func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, err
 					},
 				}, perr)
 				parseErrors.Errors = append(parseErrors.Errors, verr)
-				//continue
+			} else {
+				return nil, parseErrors, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
 			}
-
-			//return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
 		}
 
 		// Insert built in models like Identity. We only want to call this once
@@ -139,75 +136,17 @@ func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, err
 		})
 	}
 
-	return asts, nil
+	return asts, parseErrors, nil
 }
 
 func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema, error) {
-	// - For each of the .keel (schema) files specified...
-	// 		- Parse to AST
-	// 		- Add built-in fields
-	// - With the parsed (AST) schemas as a set:
-	// 		- Validate them (as a set)
-	// 		- Convert the set to a single / aggregate proto model
-	asts := []*parser.AST{}
-	parseErrors := errorhandling.ValidationErrors{}
-	for i, oneInputSchemaFile := range allInputFiles.SchemaFiles {
-		declarations, err := parser.Parse(&oneInputSchemaFile)
-		if err != nil {
-
-			// try to convert into a validation error and move to next schema file
-			if perr, ok := err.(parser.Error); ok {
-				verr := errorhandling.NewValidationError(errorhandling.ErrorInvalidSyntax, errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Message": perr.Error(),
-					},
-				}, perr)
-				parseErrors.Errors = append(parseErrors.Errors, verr)
-				continue
-			}
-
-			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
-		}
-
-		// Insert built in models like Identity. We only want to call this once
-		// so that only one instance of the built in models are added if there
-		// are multiple ASTs at play.
-		// We want the insertion of built in models to happen
-		// before insertion of built in fields, so that built in fields such as
-		// primary key are added to the newly added built in models
-		if i == 0 {
-			scm.insertBuiltInModels(declarations, oneInputSchemaFile)
-		}
-
-		// This inserts the built in fields like "createdAt" etc. But it does not insert
-		// the relationship foreign key fields, because we need to defer that until all the
-		// models in the global set have been captured and modelled.
-		scm.insertBuiltInFields(declarations)
-
-		// Add environment variables to the ASTs
-		scm.addEnvironmentVariables(declarations)
-
-		// Add secrets to the ASTs
-		scm.addSecrets(declarations)
-
-		asts = append(asts, declarations)
+	asts, parseErrors, err := scm.PrepareAst(allInputFiles)
+	if err != nil {
+		return nil, err
 	}
 
-	// All the code below this point - depends on having access to the global
-	// i.e. aggregated asts from multiple files. Mostly in order to be able to
-	// reason over ALL models scope.
-
-	// Inject implied reverse relationship fields into the Identity model.
-	// This creates our "backlinks" feature from the Identity model.
-	errDetails := scm.insertAllBackLinkFields(asts)
-	if errDetails != nil {
-		parseErrors.Errors = append(parseErrors.Errors, &errorhandling.ValidationError{
-			ErrorDetails: errDetails,
-		})
-	}
-
-	// Now insert the foreign key fields (for relationships)
-	errDetails = scm.insertForeignKeyFields(asts)
+	// insert the foreign key fields (for relationships)
+	errDetails := scm.insertForeignKeyFields(asts)
 	if errDetails != nil {
 		parseErrors.Errors = append(parseErrors.Errors, &errorhandling.ValidationError{
 			ErrorDetails: errDetails,
@@ -220,7 +159,7 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	}
 
 	v := validation.NewValidator(asts)
-	err := v.RunAllValidators()
+	err = v.RunAllValidators()
 	if err != nil {
 		return nil, err
 	}

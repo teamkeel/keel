@@ -41,52 +41,15 @@ const (
 )
 
 func Completions(schemaFiles []reader.SchemaFile, pos *node.Position, cfg *config.ProjectConfig) []*CompletionItem {
-	//builder := sch.Builder{}
-	//_, _ = builder.MakeFromInputs(&reader.Inputs{SchemaFiles: schemaFiles})
-	//asts := builder.ASTs()
-
 	var schema string
-	asts := []*parser.AST{}
-
 	for _, f := range schemaFiles {
-		// parse the schema ignoring any errors, it's very likely the
-		// schema is not in a valid state
-		// ast, _ := parser.Parse(f)
-		// asts = append(asts, ast)
 		if f.FileName == pos.Filename {
 			schema = f.Contents
 		}
 	}
 
 	builder := sch.Builder{}
-	asts, _ = builder.PrepareAst(&reader.Inputs{SchemaFiles: schemaFiles})
-
-	// for i, oneInputSchemaFile := range schemaFiles {
-	// 	declarations, _ := parser.Parse(oneInputSchemaFile)
-
-	// 	// Insert built in models like Identity. We only want to call this once
-	// 	// so that only one instance of the built in models are added if there
-	// 	// are multiple ASTs at play.
-	// 	// We want the insertion of built in models to happen
-	// 	// before insertion of built in fields, so that built in fields such as
-	// 	// primary key are added to the newly added built in models
-	// 	if i == 0 {
-	// 		builder.insertBuiltInModels(declarations, oneInputSchemaFile)
-	// 	}
-
-	// 	// This inserts the built in fields like "createdAt" etc. But it does not insert
-	// 	// the relationship foreign key fields, because we need to defer that until all the
-	// 	// models in the global set have been captured and modelled.
-	// 	scm.insertBuiltInFields(declarations)
-
-	// 	// Add environment variables to the ASTs
-	// 	scm.addEnvironmentVariables(declarations)
-
-	// 	// Add secrets to the ASTs
-	// 	scm.addSecrets(declarations)
-
-	// 	asts = append(asts, declarations)
-	// }
+	asts, _, _ := builder.PrepareAst(&reader.Inputs{SchemaFiles: schemaFiles})
 
 	tokenAtPos := NewTokensAtPosition(schema, pos)
 
@@ -984,7 +947,7 @@ func getExpressionCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *conf
 		case previousIdents[1] == "env" && len(previousIdents) == 2:
 			completions = getEnvironmentVariableCompletions(cfg)
 		case previousIdents[1] == "secrets" && len(previousIdents) == 2:
-			completions = getEnvironmentVariableCompletions(cfg)
+			completions = getSecretsCompletions(cfg)
 		case previousIdents[1] == "identity":
 			model := query.Model(asts, "Identity")
 			fieldNames, ok := getFieldNamesAtPath(asts, model, previousIdents[2:])
