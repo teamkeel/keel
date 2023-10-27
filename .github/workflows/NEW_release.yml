@@ -1,4 +1,4 @@
-name: New Draft Release
+name: Create Draft Release
 
 on:
   workflow_dispatch:
@@ -40,7 +40,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: "${{ steps.generate-version.outputs.version }}"
           name: ${{ steps.generate-version.outputs.version }}
-          draft: false
+          draft: true
           makeLatest: false
           prerelease: true
           allowUpdates: true
