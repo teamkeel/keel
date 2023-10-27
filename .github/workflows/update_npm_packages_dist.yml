@@ -1,6 +1,8 @@
 name: Update SDKs dist-tags
 run-name: Update SDKs ${{ inputs.version }} with '${{ inputs.publishTag }}'
 
+# Currently not working due to authorisation issue
+
 on:
   workflow_dispatch:
     inputs:
