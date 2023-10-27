@@ -28,10 +28,10 @@ $ brew tap teamkeel/homebrew-keel
 $ brew install keel
 ```
 
-If the CLI has installed correctly, then `keel version` should output the latest version number:
+If the CLI has installed correctly, then `keel --version` will output the latest version number:
 
 ```bash
-$ keel version
+$ keel --version
 ```
 
 ### Creating a new project
@@ -83,7 +83,6 @@ This is an overview of the commands available to you once you are set up.
 | [run](https://docs.keel.so/docs/cli#validating)        | Run the application locally                                         |
 | [validate](https://docs.keel.so/docs/cli#validating)   | Validate a Keel schema                                            |
 | [generate](https://docs.keel.so/docs/cli#generating-code)   | Generates dynamic JavaScript code from your Keel schema          |
-| version    | Prints the current CLI version                                      |
 | [secrets](https://docs.keel.so/docs/secrets#secrets-in-development)    | Add, remove & list secrets                                          |
 | help       | Gives extra information about Keel CLI commands                                       |
 
