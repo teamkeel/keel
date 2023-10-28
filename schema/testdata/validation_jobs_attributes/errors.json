@@ -18,20 +18,20 @@
       }
     },
     {
-      "message": "Scheduled job 'MyJob2' cannot be defined with inputs",
-      "hint": "Remove the inputs section to define a scheduled job",
+      "message": "Job 'MyJob2' is scheduled and so cannot also have inputs",
+      "hint": "",
       "code": "JobDefinitionError",
       "pos": {
         "filename": "testdata/validation_jobs_attributes/schema.keel",
-        "offset": 111,
-        "line": 12,
+        "offset": 60,
+        "line": 7,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_jobs_attributes/schema.keel",
-        "offset": 120,
-        "line": 12,
-        "column": 14
+        "offset": 66,
+        "line": 7,
+        "column": 11
       }
     }
   ]
