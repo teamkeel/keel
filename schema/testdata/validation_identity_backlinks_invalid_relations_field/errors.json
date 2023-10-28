@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "You have a reserved field name createdAt",
-      "hint": "Try 'createdAter' instead",
-      "code": "E006",
+      "message": "You have duplicate field names createdAt",
+      "hint": "Remove 'createdAt' on line 0",
+      "code": "E003",
       "pos": {
         "filename": "",
         "offset": 0,

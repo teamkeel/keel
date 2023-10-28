@@ -1,0 +1,72 @@
+{
+  "errors": [
+    {
+      "message": "'unknown' not found on 'Identity'",
+      "hint": "Did you mean one of email, emailVerified, password, externalId, issuer, id, createdAt, or updatedAt?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 186,
+        "line": 9,
+        "column": 55
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 193,
+        "line": 9,
+        "column": 62
+      }
+    },
+    {
+      "message": "Cannot compare Password with operator '='",
+      "hint": "Did you mean ?",
+      "code": "E027",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 235,
+        "line": 10,
+        "column": 41
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 236,
+        "line": 10,
+        "column": 42
+      }
+    },
+    {
+      "message": "'unknown' not found on 'Identity'",
+      "hint": "Did you mean one of email, emailVerified, password, externalId, issuer, id, createdAt, or updatedAt?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 356,
+        "line": 13,
+        "column": 55
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 363,
+        "line": 13,
+        "column": 62
+      }
+    },
+    {
+      "message": "Cannot compare Password with operator '='",
+      "hint": "Did you mean ?",
+      "code": "E027",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 405,
+        "line": 14,
+        "column": 41
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 406,
+        "line": 14,
+        "column": 42
+      }
+    }
+  ]
+}

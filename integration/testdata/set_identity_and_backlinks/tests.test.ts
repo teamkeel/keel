@@ -223,3 +223,95 @@ test("update - @set with backlinks and no user backlink", async () => {
     message: "field 'isActive' cannot be null",
   });
 });
+
+test("create - @set with identity fields", async () => {
+  const { identityCreated } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
+  });
+  expect(identityCreated).toBeTruthy();
+
+  const identity =  await models.identity.update(
+    { email: "user@keel.xyz" },
+    { externalId: "extId" }
+  );
+
+  const org = await models.organisation.create({
+    name: "Keel",
+    isActive: true,
+  });
+  const user = await models.user.create({
+    name: "Keelson",
+    identityId: identity!.id,
+    organisationId: org.id,
+  });
+
+  const extension = await actions
+    .withIdentity(identity!)
+    .createExt({ n: "Keelson" });
+
+  expect(extension.name).toEqual("Keelson");
+  expect(extension.identity1Id).toEqual(identity?.id);
+  expect(extension.identity2Id).toEqual(identity?.id);
+  expect(extension.user1Id).toEqual(user.id);
+  expect(extension.user2Id).toEqual(user.id);
+  expect(extension.email).toEqual(identity?.email);
+  expect(extension.isVerified).toEqual(identity?.emailVerified);
+  expect(extension.issuer).toEqual(identity?.issuer);
+  // https://linear.app/keel/issue/KE-1192/datetime-precision-loss
+  //expect(extension.signedUpAt).toEqual(identity?.createdAt);
+  expect(extension.externalId).toEqual(identity?.externalId);
+});
+
+
+test("update - @set with identity fields", async () => {
+  const { identityCreated } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
+  });
+  expect(identityCreated).toBeTruthy();
+
+  const identity =  await models.identity.update(
+    { email: "user@keel.xyz" },
+    { externalId: "extId" }
+  );
+
+  const org = await models.organisation.create({
+    name: "Keel",
+    isActive: true,
+  });
+  const user = await models.user.create({
+    name: "Keelson",
+    identityId: identity!.id,
+    organisationId: org.id,
+  });
+
+
+  const {id} = await actions
+    .withIdentity(identity!)
+    .createExt({ n: "Keelson" });
+
+
+
+  const extension = await actions
+    .withIdentity(identity!)
+    .updateExt({ where: {id: id }, values: { n: "Keelson" }});
+
+  expect(extension.name).toEqual("Keelson");
+  expect(extension.identity1Id).toEqual(identity?.id);
+  expect(extension.identity2Id).toEqual(identity?.id);
+  expect(extension.user1Id).toEqual(user.id);
+  expect(extension.user2Id).toEqual(user.id);
+  expect(extension.email).toEqual(identity?.email);
+  expect(extension.isVerified).toEqual(identity?.emailVerified);
+  expect(extension.issuer).toEqual(identity?.issuer);
+  // https://linear.app/keel/issue/KE-1192/datetime-precision-loss
+  //expect(extension.signedUpAt).toEqual(identity?.createdAt);
+  expect(extension.externalId).toEqual(identity?.externalId);
+});

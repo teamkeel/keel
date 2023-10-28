@@ -1,0 +1,31 @@
+model User {
+    fields {
+        identity Identity @unique
+        name Text
+        documents Document[]
+    }
+}
+
+model Team {
+    fields {
+        name Text
+        documents Document[]
+    }
+}
+
+model Document {
+    fields {
+        title Text
+        user User
+        team Team?
+    }
+
+    actions {
+        list listDocuments(team.id)
+    }
+
+    @permission(
+        expression: document.user.identity == ctx.identity,
+        actions: [list]
+    )
+}

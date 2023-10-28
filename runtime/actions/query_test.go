@@ -2684,6 +2684,92 @@ var testCases = []testCase{
 			RETURNING "product"."id"`,
 		expectedArgs: []any{"prodcode", "brand", true, true},
 	},
+	{
+		name: "set_ctx_identity",
+		keelSchema: `
+			model Person {
+				fields {
+					email Text
+					created Timestamp
+					emailVerified Boolean
+					externalId Text
+					issuer Text
+				}
+				actions {
+					create createPerson() {
+						@set(person.email = ctx.identity.email)
+						@set(person.created = ctx.identity.createdAt)
+						@set(person.emailVerified = ctx.identity.emailVerified)
+						@set(person.externalId = ctx.identity.externalId)
+						@set(person.issuer = ctx.identity.issuer)
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		actionName: "createPerson",
+		input:      map[string]any{},
+		identity:   identity,
+		expectedTemplate: `
+			WITH 
+				select_identity (column_0, column_1, column_2, column_3, column_4) AS (
+					SELECT "identity"."email", "identity"."created_at", "identity"."email_verified", "identity"."external_id", "identity"."issuer" 
+					FROM "identity" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?), 
+				new_1_person AS (
+					INSERT INTO "person" (created, email, email_verified, external_id, issuer) 
+					VALUES (
+						(SELECT column_1 FROM select_identity), 
+						(SELECT column_0 FROM select_identity), 
+						(SELECT column_2 FROM select_identity), 
+						(SELECT column_3 FROM select_identity), 
+						(SELECT column_4 FROM select_identity)) 
+					RETURNING *) 
+			SELECT * FROM new_1_person`,
+		expectedArgs: []any{identity.Id},
+	},
+	{
+		name: "set_ctx_identity_fields",
+		keelSchema: `
+			model Person {
+				fields {
+					email Text
+					created Timestamp
+					emailVerified Boolean
+					externalId Text
+					issuer Text
+				}
+				actions {
+					create createPerson() {
+						@set(person.email = ctx.identity.email)
+						@set(person.created = ctx.identity.createdAt)
+						@set(person.emailVerified = ctx.identity.emailVerified)
+						@set(person.externalId = ctx.identity.externalId)
+						@set(person.issuer = ctx.identity.issuer)
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		actionName: "createPerson",
+		input:      map[string]any{},
+		identity:   identity,
+		expectedTemplate: `
+			WITH 
+				select_identity (column_0, column_1, column_2, column_3, column_4) AS (
+					SELECT "identity"."email", "identity"."created_at", "identity"."email_verified", "identity"."external_id", "identity"."issuer" 
+					FROM "identity" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?), 
+				new_1_person AS (
+					INSERT INTO "person" (created, email, email_verified, external_id, issuer) 
+					VALUES (
+						(SELECT column_1 FROM select_identity), 
+						(SELECT column_0 FROM select_identity), 
+						(SELECT column_2 FROM select_identity), 
+						(SELECT column_3 FROM select_identity), 
+						(SELECT column_4 FROM select_identity)) 
+					RETURNING *) 
+			SELECT * FROM new_1_person`,
+		expectedArgs: []any{identity.Id},
+	},
 }
 
 func TestQueryBuilder(t *testing.T) {

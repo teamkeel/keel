@@ -94,9 +94,10 @@ func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, err
 					},
 				}, perr)
 				parseErrors.Errors = append(parseErrors.Errors, verr)
-			} else {
-				return nil, parseErrors, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
-			}
+				continue
+			} //else {
+			return nil, parseErrors, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
+			//}
 		}
 
 		// Insert built in models like Identity. We only want to call this once
@@ -159,9 +160,9 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	}
 
 	v := validation.NewValidator(asts)
-	err = v.RunAllValidators()
-	if err != nil {
-		return nil, err
+	validationErrors := v.RunAllValidators()
+	if validationErrors != nil {
+		return nil, validationErrors
 	}
 
 	scm.asts = asts

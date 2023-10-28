@@ -1,0 +1,17 @@
+model UserExtension {
+    fields {
+        unknown Text
+        password Password
+    }
+
+    actions {
+        create createExt() {
+            @set(userExtension.unknown = ctx.identity.unknown)
+            @set(userExtension.password = ctx.identity.password)
+        }
+         update updateExt(id) {
+            @set(userExtension.unknown = ctx.identity.unknown)
+            @set(userExtension.password = ctx.identity.password)
+        }
+    }
+}

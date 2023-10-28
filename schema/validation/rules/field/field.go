@@ -3,7 +3,6 @@ package field
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
@@ -11,53 +10,28 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-var (
-	reservedFieldNames = []string{"id", "createdAt", "updatedAt"}
-)
-
-func ReservedNameRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-
-	for _, model := range query.Models(asts) {
-		for _, field := range query.ModelFields(model) {
-
-			if field.BuiltIn {
-				continue
-			}
-
-			for _, reserved := range reservedFieldNames {
-				if strings.EqualFold(reserved, field.Name.Value) {
-					errs.Append(errorhandling.ErrorReservedFieldName,
-						map[string]string{
-							"Name":       field.Name.Value,
-							"Suggestion": fmt.Sprintf("%ser", field.Name.Value),
-						},
-						field.Name,
-					)
-				}
-			}
-		}
-	}
-
-	return
-}
-
 func UniqueFieldNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		fieldNames := map[string]bool{}
 		for _, field := range query.ModelFields(model) {
-			// Ignore built in fields as usage of these field names is handled
-			// by reservedFieldNamesRule
-			if field.BuiltIn {
-				continue
-			}
 			if _, ok := fieldNames[field.Name.Value]; ok {
-				errs.Append(errorhandling.ErrorFieldNamesUniqueInModel,
-					map[string]string{
-						"Name": field.Name.Value,
-						"Line": fmt.Sprint(field.Name.Pos.Line),
-					},
-					field.Name,
-				)
+				if field.BuiltIn {
+					errs.Append(errorhandling.ErrorReservedFieldName,
+						map[string]string{
+							"Name": field.Name.Value,
+							"Line": fmt.Sprint(field.Name.Pos.Line),
+						},
+						field.Name,
+					)
+				} else {
+					errs.Append(errorhandling.ErrorFieldNamesUniqueInModel,
+						map[string]string{
+							"Name": field.Name.Value,
+							"Line": fmt.Sprint(field.Name.Pos.Line),
+						},
+						field.Name,
+					)
+				}
 			}
 
 			fieldNames[field.Name.Value] = true

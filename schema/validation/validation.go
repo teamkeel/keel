@@ -40,7 +40,6 @@ var validatorFuncs = []validationFunc{
 	actions.CreateOperationRequiredFieldsRule,
 	actions.ReservedActionNameRule,
 
-	field.ReservedNameRule,
 	field.ValidFieldTypesRule,
 	field.UniqueFieldNamesRule,
 

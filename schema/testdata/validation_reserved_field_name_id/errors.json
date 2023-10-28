@@ -2,19 +2,19 @@
   "errors": [
     {
       "message": "You have a reserved field name id",
-      "hint": "Try 'ider' instead",
+      "hint": "Try '\u003cno value\u003e' instead",
       "code": "E006",
       "pos": {
-        "filename": "testdata/validation_reserved_field_name_id/schema.keel",
-        "offset": 36,
-        "line": 3,
-        "column": 9
+        "filename": "",
+        "offset": 0,
+        "line": 0,
+        "column": 0
       },
       "endPos": {
-        "filename": "testdata/validation_reserved_field_name_id/schema.keel",
-        "offset": 38,
-        "line": 3,
-        "column": 11
+        "filename": "",
+        "offset": 0,
+        "line": 0,
+        "column": 0
       }
     }
   ]

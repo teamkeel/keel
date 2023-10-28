@@ -2,19 +2,19 @@
   "errors": [
     {
       "message": "You have a reserved field name createdAt",
-      "hint": "Try 'createdAter' instead",
+      "hint": "Try '\u003cno value\u003e' instead",
       "code": "E006",
       "pos": {
-        "filename": "testdata/validation_reserved_field_name_created_at/schema.keel",
-        "offset": 28,
-        "line": 3,
-        "column": 5
+        "filename": "",
+        "offset": 0,
+        "line": 0,
+        "column": 0
       },
       "endPos": {
-        "filename": "testdata/validation_reserved_field_name_created_at/schema.keel",
-        "offset": 37,
-        "line": 3,
-        "column": 14
+        "filename": "",
+        "offset": 0,
+        "line": 0,
+        "column": 0
       }
     }
   ]
