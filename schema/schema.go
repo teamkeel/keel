@@ -95,9 +95,8 @@ func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, err
 				}, perr)
 				parseErrors.Errors = append(parseErrors.Errors, verr)
 				continue
-			} //else {
+			}
 			return nil, parseErrors, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
-			//}
 		}
 
 		// Insert built in models like Identity. We only want to call this once
