@@ -5,18 +5,12 @@ en:
   E002:
     message: "Action names should be written in lowerCamelCase"
     hint: "Did you mean '{{ .Suggested }}'?"
-  E003:
-    message: "You have duplicate field names {{ .Name }}"
-    hint: "Remove '{{ .Name }}' on line {{ .Line }}"
   E004:
     message: "You have duplicate actions Model:{{ .Model }} Name:{{ .Name }}"
     hint: "Remove '{{ .Name }}' on line {{ .Line }}"
   E005:
     message: "Action inputs must be one of the fields defined in the model"
     hint: "{{ .Suggested }}"
-  E006:
-    message: "You have a reserved field name {{ .Name }}"
-    hint: "Try '{{ .Suggestion }}' instead"
   E008:
     message: "Action {{ .Name }} must either take a unique field as input or filter on a unique field using a @where attribute"
     hint: "Did you mean to add 'id' as an input?"

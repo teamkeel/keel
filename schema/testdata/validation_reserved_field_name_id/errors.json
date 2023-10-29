@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "You have a reserved field name id",
-      "hint": "Try '\u003cno value\u003e' instead",
+      "message": "Cannot use 'id' as it already exists as a built-in field",
+      "hint": "Rename this field to some other name which has not yet been defined",
       "code": "E006",
       "pos": {
-        "filename": "",
-        "offset": 0,
-        "line": 0,
-        "column": 0
+        "filename": "testdata/validation_reserved_field_name_id/schema.keel",
+        "offset": 36,
+        "line": 3,
+        "column": 9
       },
       "endPos": {
-        "filename": "",
-        "offset": 0,
-        "line": 0,
-        "column": 0
+        "filename": "testdata/validation_reserved_field_name_id/schema.keel",
+        "offset": 38,
+        "line": 3,
+        "column": 11
       }
     }
   ]

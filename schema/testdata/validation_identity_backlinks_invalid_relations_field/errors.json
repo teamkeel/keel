@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "You have duplicate field names createdAt",
-      "hint": "Remove 'createdAt' on line 0",
+      "message": "Cannot use 'createdAt' as it has already been defined on this model",
+      "hint": "Rename this field to some other name which has not yet been defined",
       "code": "E003",
       "pos": {
         "filename": "",

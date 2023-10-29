@@ -12,16 +12,16 @@ import (
 
 func UniqueFieldNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
-		fieldNames := map[string]bool{}
+		fieldNames := map[string]*parser.FieldNode{}
 		for _, field := range query.ModelFields(model) {
-			if _, ok := fieldNames[field.Name.Value]; ok {
+			if existingField, ok := fieldNames[field.Name.Value]; ok {
 				if field.BuiltIn {
 					errs.Append(errorhandling.ErrorReservedFieldName,
 						map[string]string{
 							"Name": field.Name.Value,
 							"Line": fmt.Sprint(field.Name.Pos.Line),
 						},
-						field.Name,
+						existingField.Name,
 					)
 				} else {
 					errs.Append(errorhandling.ErrorFieldNamesUniqueInModel,
@@ -34,7 +34,7 @@ func UniqueFieldNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErro
 				}
 			}
 
-			fieldNames[field.Name.Value] = true
+			fieldNames[field.Name.Value] = field
 		}
 	}
 
