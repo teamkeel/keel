@@ -156,25 +156,6 @@ func TestCompositeUniqueCompletions(t *testing.T) {
 			expected: []string{"subTitle", "title", "date"},
 		},
 		{
-			name: "available-fields-badly-formed-schema",
-			schema: `
-			model A {
-	
-				oops 
-
-				fields {
-					title Text
-					subTitle Text
-					date Date
-					timestamp Timestamp
-				}
-				@unique([<Cursor>
-
-					
-			`,
-			expected: []string{"subTitle", "title", "date"},
-		},
-		{
 			name: "existing-composite",
 			schema: `
 			model A {
@@ -801,7 +782,7 @@ func TestWhereAttributeCompletions(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "updatedAt", "user"},
+			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "password", "updatedAt", "user"},
 		},
 
 		{
@@ -997,41 +978,29 @@ func TestWhereAttributeCompletions(t *testing.T) {
 func TestSetAttributeCompletions(t *testing.T) {
 	cases := []testCase{
 		{
-			name: "set-expression-nested",
+			name: "set-expression",
 			schema: `
 			model User {
 				fields {
 					identity Identity
-					name Text
-				}
-
-				actions {
-					create createUser() with (name) {
-						@set(user.identity = ctx.identity)
-						@permission(expression: ctx.isAuthenticated)
-					}
 				}
 			}
-
 			model Team {
 				fields {
 					name Text
 				}
 			}
-
 			model UserTeam {
 				fields {
 					user User
 					team Team
 				}
-
 				actions {
 					create createTeam() with (team.name) {
 						@set(<Cursor>)
 					}
 				}
-			}
-			`,
+			}`,
 			expected: []string{"ctx", "userTeam"},
 		},
 		{
@@ -1074,7 +1043,7 @@ func TestSetAttributeCompletions(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "updatedAt", "user"},
+			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "password", "updatedAt", "user"},
 		},
 		{
 			name: "set-attribute-ctx-identity-user",
@@ -1112,11 +1081,11 @@ func TestSetAttributeCompletions(t *testing.T) {
 				}
 				actions {
 					list create() {
-						@set(ctx.identity.<Cursor>)
+						@set(user.owner = ctx.identity.<Cursor>)
 					}
 				}
 			}`,
-			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "updatedAt", "user"},
+			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "password", "updatedAt", "user"},
 		},
 	}
 

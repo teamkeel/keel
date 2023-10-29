@@ -1191,9 +1191,6 @@ func getFieldNamesAtPath(asts []*parser.AST, model *parser.ModelNode, idents []s
 func getModelFieldCompletions(model *parser.ModelNode) []*CompletionItem {
 	completions := []*CompletionItem{}
 	for _, field := range query.ModelFields(model) {
-		if field.Type.Value == parser.FieldTypeSecret || field.Type.Value == parser.FieldTypePassword {
-			continue
-		}
 		completions = append(completions, &CompletionItem{
 			Label:       field.Name.Value,
 			Description: field.Type.Value,
