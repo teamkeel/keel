@@ -156,6 +156,25 @@ func TestCompositeUniqueCompletions(t *testing.T) {
 			expected: []string{"subTitle", "title", "date"},
 		},
 		{
+			name: "available-fields-badly-formed-schema",
+			schema: `
+			model A {
+	
+				oops 
+
+				fields {
+					title Text
+					subTitle Text
+					date Date
+					timestamp Timestamp
+				}
+				@unique([<Cursor>
+
+					
+			`,
+			expected: []string{"subTitle", "title", "date"},
+		},
+		{
 			name: "existing-composite",
 			schema: `
 			model A {
@@ -208,6 +227,21 @@ func TestCompositeUniqueCompletions(t *testing.T) {
 			}
 			`,
 			expected: []string{"subTitle", "title"},
+		},
+		{
+			name: "relationship",
+			schema: `
+			model B {}
+			model A {
+				fields {
+					title Text
+					relation B
+					subTitle Text
+				}
+				@unique([relation.<Cursor>
+			}
+			`,
+			expected: []string{},
 		},
 	}
 

@@ -2685,7 +2685,7 @@ var testCases = []testCase{
 		expectedArgs: []any{"prodcode", "brand", true, true},
 	},
 	{
-		name: "set_ctx_identity",
+		name: "create_set_ctx_identity_fields",
 		keelSchema: `
 			model Person {
 				fields {
@@ -2728,7 +2728,7 @@ var testCases = []testCase{
 		expectedArgs: []any{identity.Id},
 	},
 	{
-		name: "set_ctx_identity_fields",
+		name: "update_set_ctx_identity_fields",
 		keelSchema: `
 			model Person {
 				fields {
@@ -2739,7 +2739,7 @@ var testCases = []testCase{
 					issuer Text
 				}
 				actions {
-					create createPerson() {
+					update updatePerson(id) {
 						@set(person.email = ctx.identity.email)
 						@set(person.created = ctx.identity.createdAt)
 						@set(person.emailVerified = ctx.identity.emailVerified)
@@ -2749,26 +2749,24 @@ var testCases = []testCase{
 				}
 				@permission(expression: true, actions: [create])
 			}`,
-		actionName: "createPerson",
-		input:      map[string]any{},
+		actionName: "updatePerson",
+		input:      map[string]any{"where": map[string]any{"id": "xyz"}},
 		identity:   identity,
 		expectedTemplate: `
 			WITH 
 				select_identity (column_0, column_1, column_2, column_3, column_4) AS (
 					SELECT "identity"."email", "identity"."created_at", "identity"."email_verified", "identity"."external_id", "identity"."issuer" 
 					FROM "identity" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?), 
-				new_1_person AS (
-					INSERT INTO "person" (created, email, email_verified, external_id, issuer) 
-					VALUES (
-						(SELECT column_1 FROM select_identity), 
-						(SELECT column_0 FROM select_identity), 
-						(SELECT column_2 FROM select_identity), 
-						(SELECT column_3 FROM select_identity), 
-						(SELECT column_4 FROM select_identity)) 
-					RETURNING *) 
-			SELECT * FROM new_1_person`,
-		expectedArgs: []any{identity.Id},
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?) 
+			UPDATE "person" SET 
+				created = (SELECT column_1 FROM select_identity), 
+				email = (SELECT column_0 FROM select_identity), 
+				email_verified = (SELECT column_2 FROM select_identity), 
+				external_id = (SELECT column_3 FROM select_identity), 
+				issuer = (SELECT column_4 FROM select_identity) 
+			WHERE "person"."id" IS NOT DISTINCT FROM ? 
+			RETURNING "person".*`,
+		expectedArgs: []any{identity.Id, "xyz"},
 	},
 }
 

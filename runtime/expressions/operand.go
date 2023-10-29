@@ -419,33 +419,3 @@ func toTime(s string) time.Time {
 	tm, _ := time.Parse(time.RFC3339, s)
 	return tm
 }
-
-// // isContextIdentityDbColumn works out if this operand traverses an Identity field and requires the database.
-// func (resolver *OperandResolver) isContextIdentityDbColumn() bool {
-// 	if resolver.operand.Ident == nil {
-// 		return false
-// 	}
-// 	fragments := lo.Map(resolver.operand.Ident.Fragments, func(frag *parser.IdentFragment, _ int) string {
-// 		return frag.Fragment
-// 	})
-
-// 	if len(fragments) < 3 {
-// 		return false
-// 	}
-// 	if fragments[0] != "ctx" {
-// 		return false
-// 	}
-// 	if fragments[1] != "identity" {
-// 		return false
-// 	}
-// 	if resolver.operand.is
-
-// 	return true
-
-// 	// field := proto.FindField(resolver.Schema.Models, "Identity", fragments[2])
-// 	// if field == nil {
-// 	// 	return false
-// 	// }
-
-// 	// return field.Type.Type == proto.Type_TYPE_MODEL
-// }

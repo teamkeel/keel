@@ -234,7 +234,7 @@ test("create - @set with identity fields", async () => {
   });
   expect(identityCreated).toBeTruthy();
 
-  const identity =  await models.identity.update(
+  const identity = await models.identity.update(
     { email: "user@keel.xyz" },
     { externalId: "extId" }
   );
@@ -266,7 +266,6 @@ test("create - @set with identity fields", async () => {
   expect(extension.externalId).toEqual(identity?.externalId);
 });
 
-
 test("update - @set with identity fields", async () => {
   const { identityCreated } = await actions.authenticate({
     createIfNotExists: true,
@@ -277,7 +276,7 @@ test("update - @set with identity fields", async () => {
   });
   expect(identityCreated).toBeTruthy();
 
-  const identity =  await models.identity.update(
+  const identity = await models.identity.update(
     { email: "user@keel.xyz" },
     { externalId: "extId" }
   );
@@ -292,16 +291,13 @@ test("update - @set with identity fields", async () => {
     organisationId: org.id,
   });
 
-
-  const {id} = await actions
+  const { id } = await actions
     .withIdentity(identity!)
     .createExt({ n: "Keelson" });
 
-
-
   const extension = await actions
     .withIdentity(identity!)
-    .updateExt({ where: {id: id }, values: { n: "Keelson" }});
+    .updateExt({ where: { id: id }, values: { n: "Keelson" } });
 
   expect(extension.name).toEqual("Keelson");
   expect(extension.identity1Id).toEqual(identity?.id);
