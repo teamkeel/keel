@@ -21,7 +21,7 @@ import (
 // from a given Keel Builder. Construct one, then call the Make method.
 type Builder struct {
 	asts        []*parser.AST
-	schemaFiles []reader.SchemaFile
+	schemaFiles []*reader.SchemaFile
 	Config      *config.ProjectConfig
 	proto       *proto.Schema
 }
@@ -51,7 +51,7 @@ func (scm *Builder) MakeFromDirectory(directory string) (*proto.Schema, error) {
 }
 
 func (scm *Builder) MakeFromString(schemaString string) (*proto.Schema, error) {
-	scm.schemaFiles = append(scm.schemaFiles, reader.SchemaFile{
+	scm.schemaFiles = append(scm.schemaFiles, &reader.SchemaFile{
 		Contents: schemaString,
 		FileName: "schema.keel",
 	})
@@ -67,7 +67,7 @@ func (scm *Builder) MakeFromInputs(inputs *reader.Inputs) (*proto.Schema, error)
 	return scm.makeFromInputs(inputs)
 }
 
-func (scm *Builder) SchemaFiles() []reader.SchemaFile {
+func (scm *Builder) SchemaFiles() []*reader.SchemaFile {
 	return scm.schemaFiles
 }
 
@@ -84,7 +84,7 @@ func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, err
 	// 		- Parse to AST
 	// 		- Add built-in fields
 	for i, oneInputSchemaFile := range allInputFiles.SchemaFiles {
-		declarations, err := parser.Parse(&oneInputSchemaFile)
+		declarations, err := parser.Parse(oneInputSchemaFile)
 		if err != nil {
 			// try to convert into a validation error and move to next schema file
 			if perr, ok := err.(parser.Error); ok {
@@ -323,11 +323,11 @@ func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) *errorhandling.Er
 	return nil
 }
 
-func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
+func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile *reader.SchemaFile) {
 	scm.insertIdentityModel(declarations, schemaFile)
 }
 
-func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile reader.SchemaFile) {
+func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *reader.SchemaFile) {
 	declaration := &parser.DeclarationNode{
 		Model: &parser.ModelNode{
 			BuiltIn: true,

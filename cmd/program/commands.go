@@ -42,7 +42,7 @@ func NextMsgCommand(ch chan tea.Msg) tea.Cmd {
 type LoadSchemaMsg struct {
 	Schema      *proto.Schema
 	Config      *config.ProjectConfig
-	SchemaFiles []reader.SchemaFile
+	SchemaFiles []*reader.SchemaFile
 	Secrets     map[string]string
 	Err         error
 }

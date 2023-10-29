@@ -40,7 +40,7 @@ const (
 	DescriptionSuggested = "Suggested"
 )
 
-func Completions(schemaFiles []reader.SchemaFile, pos *node.Position, cfg *config.ProjectConfig) []*CompletionItem {
+func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *config.ProjectConfig) []*CompletionItem {
 	var schema string
 	for _, f := range schemaFiles {
 		if f.FileName == pos.Filename {

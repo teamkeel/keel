@@ -13,7 +13,7 @@ import (
 // in the source file that produced the error
 //
 // The output is formatted using ANSI colours (if supported by the environment).
-func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) string {
+func (verrs *ValidationErrors) ToAnnotatedSchema(sources []*reader.SchemaFile) string {
 
 	// Number of lines of the source code to render before and after the line with the error
 	bufferLines := 3

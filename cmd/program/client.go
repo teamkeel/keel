@@ -32,7 +32,7 @@ type GenerateClientModel struct {
 
 	Err         error
 	Schema      *proto.Schema
-	SchemaFiles []reader.SchemaFile
+	SchemaFiles []*reader.SchemaFile
 	Secrets     map[string]string
 	Config      *config.ProjectConfig
 

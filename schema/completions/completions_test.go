@@ -1748,14 +1748,14 @@ func runTestsCases(t *testing.T, cases []testCase) {
 			configFile, err := config.Load(dir + "/fixtures")
 			assert.NoError(t, err)
 
-			schemaFiles := []reader.SchemaFile{
+			schemaFiles := []*reader.SchemaFile{
 				{
 					FileName: "schema.keel",
 					Contents: schema,
 				},
 			}
 			if tc.otherSchema != "" {
-				schemaFiles = append(schemaFiles, reader.SchemaFile{
+				schemaFiles = append(schemaFiles, &reader.SchemaFile{
 					FileName: "other.keel",
 					Contents: tc.otherSchema,
 				})

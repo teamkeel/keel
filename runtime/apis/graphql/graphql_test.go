@@ -55,7 +55,7 @@ func TestGraphQL(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			builder := schema.Builder{}
 			protoSchema, err := builder.MakeFromInputs(&reader.Inputs{
-				SchemaFiles: []reader.SchemaFile{
+				SchemaFiles: []*reader.SchemaFile{
 					{
 						Contents: tc.schema,
 					},

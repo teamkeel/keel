@@ -10,7 +10,7 @@ import (
 // given directory.
 type Inputs struct {
 	Directory   string
-	SchemaFiles []SchemaFile
+	SchemaFiles []*SchemaFile
 }
 
 type SchemaFile struct {
@@ -25,7 +25,7 @@ type SchemaFile struct {
 func FromDir(dirName string) (*Inputs, error) {
 	inputs := &Inputs{
 		Directory:   dirName,
-		SchemaFiles: []SchemaFile{},
+		SchemaFiles: []*SchemaFile{},
 	}
 	globPattern := filepath.Join(dirName, "*.keel")
 	schemaFileNames, err := filepath.Glob(globPattern)
@@ -37,7 +37,7 @@ func FromDir(dirName string) (*Inputs, error) {
 		if err != nil {
 			return nil, err
 		}
-		inputs.SchemaFiles = append(inputs.SchemaFiles, SchemaFile{
+		inputs.SchemaFiles = append(inputs.SchemaFiles, &SchemaFile{
 			FileName: fName,
 			Contents: string(fileBytes),
 		})
@@ -50,12 +50,12 @@ func FromFile(filename string) (*Inputs, error) {
 	if err != nil {
 		return nil, err
 	}
-	schemaFile := SchemaFile{
+	schemaFile := &SchemaFile{
 		FileName: filename,
 		Contents: string(fileBytes),
 	}
 	return &Inputs{
 		Directory:   path.Dir(filename),
-		SchemaFiles: []SchemaFile{schemaFile},
+		SchemaFiles: []*SchemaFile{schemaFile},
 	}, nil
 }

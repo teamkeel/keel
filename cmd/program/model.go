@@ -133,7 +133,7 @@ type Model struct {
 	Err               error
 	Schema            *proto.Schema
 	Config            *config.ProjectConfig
-	SchemaFiles       []reader.SchemaFile
+	SchemaFiles       []*reader.SchemaFile
 	Database          db.Database
 	DatabaseConnInfo  *db.ConnectionInfo
 	GeneratedFiles    codegen.GeneratedFiles
