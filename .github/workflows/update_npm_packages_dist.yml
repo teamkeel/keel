@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20.9.0
           token: ${{ secrets.NPM_TOKEN }}
       - name: Adding `${{ inputs.publishTag }}` tag to ${{ matrix.package }}@${{ inputs.version }} 
         run: npm dist-tag add @teamkeel/${{ matrix.package }}@${{ inputs.version }} ${{ inputs.publishTag }}
