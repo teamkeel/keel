@@ -338,3 +338,18 @@ func createAuditTriggerStmts(triggers []*TriggerRow, schema *proto.Schema, model
 
 	return strings.Join(statements, "\n"), nil
 }
+
+// createUpdatedAtTriggerStmts generates the CREATE TRIGGER statements for automatically updating each model's updatedAt column.
+// Only creates a trigger if the trigger does not already exist in the database.
+func createUpdatedAtTriggerStmts(triggers []*TriggerRow, schema *proto.Schema, model *proto.Model) (string, error) {
+	modelLower := casing.ToSnake(model.Name)
+	statements := []string{}
+
+	updatedAt := fmt.Sprintf("%s_updated_at", modelLower)
+	if _, found := lo.Find(triggers, func(t *TriggerRow) bool { return t.TriggerName == updatedAt && t.TableName == modelLower }); !found {
+		statements = append(statements, fmt.Sprintf(
+			`CREATE TRIGGER %s BEFORE UPDATE ON %s FOR EACH ROW EXECUTE PROCEDURE set_updated_at();`, updatedAt, Identifier(model.Name)))
+	}
+
+	return strings.Join(statements, "\n"), nil
+}

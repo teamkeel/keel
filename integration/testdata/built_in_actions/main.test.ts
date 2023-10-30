@@ -247,6 +247,30 @@ test("update action", async () => {
   expect(updatedPost.subTitle).toEqual("opm");
 });
 
+test("update action - updatedAt set", async () => {
+  const post = await models.post.create({
+    title: "watermelon",
+    subTitle: "opm",
+  });
+
+  expect(post.updatedAt).not.toBeNull();
+  expect(post.updatedAt).toEqual(post.createdAt);
+
+  await delay(100);
+
+  const updatedPost = await actions.updatePost({
+    where: { id: post.id },
+    values: { title: "big watermelon" },
+  });
+
+  expect(updatedPost.updatedAt.valueOf()).toBeGreaterThanOrEqual(
+    post.createdAt.valueOf() + 100
+  );
+  expect(updatedPost.updatedAt.valueOf()).toBeLessThan(
+    post.createdAt.valueOf() + 1000
+  );
+});
+
 test("update action - explicit set / args", async () => {
   const post = await models.post.create({
     title: "watermelon",
@@ -260,3 +284,7 @@ test("update action - explicit set / args", async () => {
 
   expect(updatedPost.title).toEqual("a really cool title");
 });
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
