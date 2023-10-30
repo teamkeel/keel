@@ -75,7 +75,7 @@ export class Executor {
       method: "POST",
       body: JSON.stringify(params),
       headers,
-    }).then(async (r) => {
+    }).then((r) => {
       if (r.status !== 200) {
         // For non-200 first read the response as text
         return r.text().then((t) => {
@@ -101,11 +101,11 @@ export class Executor {
         });
       }
 
-      return r.text().then((t) => {
-        if (this._parseJsonResult) {
+      if (this._parseJsonResult) {
+        return r.text().then((t) => {
           return JSON.parse(t, reviver);
-        }
-      });
+        });
+      }
     });
   }
 }

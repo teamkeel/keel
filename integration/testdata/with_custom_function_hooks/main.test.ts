@@ -30,14 +30,14 @@ describe("write hooks", () => {
       actions.withIdentity(identity).createPersonWithAfterWrite({
         title: "Bob",
         sex: Sex.Male,
-      })
+      }),
     ).toHaveAuthorizationError();
 
     await expect(
       actions.withIdentity(identity).createPersonWithBeforeWrite({
         title: "Alice",
         sex: Sex.Female,
-      })
+      }),
     ).not.toHaveAuthorizationError();
   });
 
@@ -83,12 +83,11 @@ describe("write hooks", () => {
           title: "Adam",
           sex: Sex.Male,
         },
-      })
+      }),
     ).toHaveAuthorizationError();
   });
 
-
-  test("update action - updatedAt set", async () => {
+  test("update.beforeWrite hook - updatedAt set", async () => {
     const identity = await models.identity.create({
       email: "adam@keel.xyz",
     });
@@ -104,7 +103,7 @@ describe("write hooks", () => {
 
     await delay(100);
 
-     const record = await actions
+    const record = await actions
       .withIdentity(identity)
       .updatePersonWithBeforeWrite({
         where: { id: person.id },
@@ -113,19 +112,17 @@ describe("write hooks", () => {
           sex: Sex.Female,
         },
       });
-      console.log(person);
-      console.log(record);
 
-      const person2 = await models.person.findOne({id: person.id});
-  console.log(person2);
-
-
-    expect(record.updatedAt.valueOf()).toBeGreaterThanOrEqual(person.createdAt.valueOf() + 100);
-    expect(record.updatedAt.valueOf()).toBeLessThan(person.createdAt.valueOf() + 1000);
+    expect(record.updatedAt.valueOf()).toBeGreaterThanOrEqual(
+      person.createdAt.valueOf() + 100,
+    );
+    expect(record.updatedAt.valueOf()).toBeLessThan(
+      person.createdAt.valueOf() + 1000,
+    );
   });
 
   function delay(ms: number) {
-    return new Promise( resolve => setTimeout(resolve, ms) );
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 });
 
@@ -140,7 +137,7 @@ describe("query hooks", () => {
     });
 
     await expect(
-      actions.withIdentity(identity).deletePersonBeforeQuery({ id: person.id })
+      actions.withIdentity(identity).deletePersonBeforeQuery({ id: person.id }),
     ).toHaveError({
       message: "record not found",
     });
@@ -188,7 +185,7 @@ describe("query hooks", () => {
     await expect(
       actions.withIdentity(identity).getPersonBeforeQuery({
         id: person.id,
-      })
+      }),
     ).toHaveError({
       message: "no result",
     });
@@ -274,7 +271,7 @@ describe("query hooks", () => {
           sex: Sex.Male,
           title: person.title,
         },
-      })
+      }),
     ).rejects.toThrowError("record not found");
   });
 
