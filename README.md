@@ -4,6 +4,8 @@
   </a>
 </p>
 
+  <p align="center">Your production-grade backend from one file<p>
+
 <p align="center">
    <a href="https://docs.keel.so">Documentation</a> | <a href="https://keel.so/discord">Join our Discord</a>
 </p>
