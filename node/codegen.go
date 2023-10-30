@@ -279,6 +279,9 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 			w.Write(" | ")
 			w.Write(toWhereConditionType(field))
 		}
+		if field.Optional {
+			w.Write(" | null")
+		}
 		w.Write(";")
 
 		w.Writeln("")

@@ -127,7 +127,7 @@ func TestWriteWhereConditionsInterface(t *testing.T) {
 	expected := `
 export interface PersonWhereConditions {
 	firstName?: string | runtime.StringWhereCondition;
-	lastName?: string | runtime.StringWhereCondition;
+	lastName?: string | runtime.StringWhereCondition | null;
 	age?: number | runtime.NumberWhereCondition;
 	dateOfBirth?: Date | runtime.DateWhereCondition;
 	gender?: Gender | GenderWhereCondition;
