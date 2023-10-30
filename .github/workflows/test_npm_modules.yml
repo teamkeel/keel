@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: 20.9.0
+          node-version: 18.12.1
       - uses: pnpm/action-setup@v2
         with:
           version: 8.5.1
@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: 20.9.0
+          node-version: 18.12.1
       - uses: pnpm/action-setup@v2
         with:
           version: 8.5.1
@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: 20.9.0 # vscode (electron) uses this so we want to make the tests use a comparable environment
+          node-version: 16.14.2 # vscode (electron) uses this so we want to make the tests use a comparable environment
       - uses: pnpm/action-setup@v2
         with:
           version: 8.10.0
