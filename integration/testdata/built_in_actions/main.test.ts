@@ -263,8 +263,12 @@ test("update action - updatedAt set", async () => {
     values: { title: "big watermelon" },
   });
 
-  expect(updatedPost.updatedAt.valueOf()).toBeGreaterThanOrEqual(post.createdAt.valueOf() + 100);
-  expect(updatedPost.updatedAt.valueOf()).toBeLessThan(post.createdAt.valueOf() + 1000);
+  expect(updatedPost.updatedAt.valueOf()).toBeGreaterThanOrEqual(
+    post.createdAt.valueOf() + 100
+  );
+  expect(updatedPost.updatedAt.valueOf()).toBeLessThan(
+    post.createdAt.valueOf() + 1000
+  );
 });
 
 test("update action - explicit set / args", async () => {
@@ -282,5 +286,5 @@ test("update action - explicit set / args", async () => {
 });
 
 function delay(ms: number) {
-  return new Promise( resolve => setTimeout(resolve, ms) );
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -30,14 +30,14 @@ describe("write hooks", () => {
       actions.withIdentity(identity).createPersonWithAfterWrite({
         title: "Bob",
         sex: Sex.Male,
-      }),
+      })
     ).toHaveAuthorizationError();
 
     await expect(
       actions.withIdentity(identity).createPersonWithBeforeWrite({
         title: "Alice",
         sex: Sex.Female,
-      }),
+      })
     ).not.toHaveAuthorizationError();
   });
 
@@ -83,7 +83,7 @@ describe("write hooks", () => {
           title: "Adam",
           sex: Sex.Male,
         },
-      }),
+      })
     ).toHaveAuthorizationError();
   });
 
@@ -114,10 +114,10 @@ describe("write hooks", () => {
       });
 
     expect(record.updatedAt.valueOf()).toBeGreaterThanOrEqual(
-      person.createdAt.valueOf() + 100,
+      person.createdAt.valueOf() + 100
     );
     expect(record.updatedAt.valueOf()).toBeLessThan(
-      person.createdAt.valueOf() + 1000,
+      person.createdAt.valueOf() + 1000
     );
   });
 
@@ -137,7 +137,7 @@ describe("query hooks", () => {
     });
 
     await expect(
-      actions.withIdentity(identity).deletePersonBeforeQuery({ id: person.id }),
+      actions.withIdentity(identity).deletePersonBeforeQuery({ id: person.id })
     ).toHaveError({
       message: "record not found",
     });
@@ -185,7 +185,7 @@ describe("query hooks", () => {
     await expect(
       actions.withIdentity(identity).getPersonBeforeQuery({
         id: person.id,
-      }),
+      })
     ).toHaveError({
       message: "no result",
     });
@@ -271,7 +271,7 @@ describe("query hooks", () => {
           sex: Sex.Male,
           title: person.title,
         },
-      }),
+      })
     ).rejects.toThrowError("record not found");
   });
 
