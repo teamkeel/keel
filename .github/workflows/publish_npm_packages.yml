@@ -40,7 +40,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 20.9.0
+          node-version: 18.12.1
           token: ${{ secrets.NPM_TOKEN }} 
 
       - uses: pnpm/action-setup@v2.4.0
