@@ -41,6 +41,9 @@ var (
 
 	//go:embed set_trace_id.sql
 	setTraceId string
+
+	//go:embed set_updated_at.sql
+	setUpdatedAt string
 )
 
 type DatabaseChange struct {
@@ -94,6 +97,8 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	sql.WriteString(setIdentityId)
 	sql.WriteString("\n")
 	sql.WriteString(setTraceId)
+	sql.WriteString("\n")
+	sql.WriteString(setUpdatedAt)
 	sql.WriteString("\n")
 
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema ( schema TEXT NOT NULL );\n")
@@ -219,6 +224,12 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	for _, model := range schema.Models {
 		if model.Name != strcase.ToCamel(auditing.TableName) {
 			stmt, err := createAuditTriggerStmts(triggers, schema, model)
+			if err != nil {
+				return nil, err
+			}
+			statements = append(statements, stmt)
+
+			stmt, err = createUpdatedAtTriggerStmts(triggers, schema, model)
 			if err != nil {
 				return nil, err
 			}

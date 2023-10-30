@@ -86,6 +86,47 @@ describe("write hooks", () => {
       })
     ).toHaveAuthorizationError();
   });
+
+
+  test("update action - updatedAt set", async () => {
+    const identity = await models.identity.create({
+      email: "adam@keel.xyz",
+    });
+    const name = "Alice";
+
+    const person = await models.person.create({
+      sex: Sex.Female,
+      title: name,
+    });
+
+    expect(person.updatedAt).not.toBeNull();
+    expect(person.updatedAt).toEqual(person.createdAt);
+
+    await delay(100);
+
+     const record = await actions
+      .withIdentity(identity)
+      .updatePersonWithBeforeWrite({
+        where: { id: person.id },
+        values: {
+          title: "Alice",
+          sex: Sex.Female,
+        },
+      });
+      console.log(person);
+      console.log(record);
+
+      const person2 = await models.person.findOne({id: person.id});
+  console.log(person2);
+
+
+    expect(record.updatedAt.valueOf()).toBeGreaterThanOrEqual(person.createdAt.valueOf() + 100);
+    expect(record.updatedAt.valueOf()).toBeLessThan(person.createdAt.valueOf() + 1000);
+  });
+
+  function delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
+  }
 });
 
 describe("query hooks", () => {

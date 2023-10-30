@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
@@ -811,6 +812,9 @@ func orderGraphNodes(graph *Row) []*Row {
 
 // Generates an executable UPDATE statement with the list of arguments.
 func (query *QueryBuilder) UpdateStatement() *Statement {
+	// Implicitly update the updatedAt column for any update to the model
+	query.AddWriteValue(Field(parser.ImplicitFieldNameUpdatedAt), Value(time.Now().UTC()))
+
 	queryFilters := query.filters
 
 	joins := ""
