@@ -1,3 +1,16 @@
+<p align="center">
+  <a href="https://keel.so/">
+    <img alt="Keel" src="https://raw.githubusercontent.com/teamkeel/keel/main/docs/keel.svg" width="300" />
+  </a>
+</p>
+
+<p align="center">
+   <a href="https://docs.keel.so">Documentation</a> | <a href="https://keel.so/discord">Join our Discord</a>
+</p>
+
+---
+
+
 # Keel 
 
 ## What is Keel?
