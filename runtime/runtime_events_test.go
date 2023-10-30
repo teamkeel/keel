@@ -177,7 +177,8 @@ func TestUpdateEvent(t *testing.T) {
 
 	updatedAt, err := time.Parse("2006-01-02T15:04:05.999999999-07:00", data.String("updatedAt"))
 	require.NoError(t, err)
-	require.Equal(t, wedding["updatedAt"], updatedAt)
+	require.NotEqual(t, wedding["updatedAt"], updatedAt)
+	require.Equal(t, updatedWedding["updatedAt"], updatedAt)
 }
 
 func TestDeleteEvent(t *testing.T) {
