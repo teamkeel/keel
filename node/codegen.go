@@ -273,13 +273,16 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 		w.Write(": ")
 		if field.Type.Type == proto.Type_TYPE_MODEL {
 			// Embed related models where conditions
-			w.Writef("%sWhereConditions | null;", field.Type.ModelName.Value)
+			w.Writef("%sWhereConditions", field.Type.ModelName.Value)
 		} else {
 			w.Write(toTypeScriptType(field.Type, false))
 			w.Write(" | ")
 			w.Write(toWhereConditionType(field))
-			w.Write(" | null;")
 		}
+		if field.Optional {
+			w.Write(" | null")
+		}
+		w.Write(";")
 
 		w.Writeln("")
 	}

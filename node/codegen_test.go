@@ -126,15 +126,15 @@ export interface PostCreateValues {
 func TestWriteWhereConditionsInterface(t *testing.T) {
 	expected := `
 export interface PersonWhereConditions {
-	firstName?: string | runtime.StringWhereCondition | null;
+	firstName?: string | runtime.StringWhereCondition;
 	lastName?: string | runtime.StringWhereCondition | null;
-	age?: number | runtime.NumberWhereCondition | null;
-	dateOfBirth?: Date | runtime.DateWhereCondition | null;
-	gender?: Gender | GenderWhereCondition | null;
-	hasChildren?: boolean | runtime.BooleanWhereCondition | null;
-	id?: string | runtime.IDWhereCondition | null;
-	createdAt?: Date | runtime.DateWhereCondition | null;
-	updatedAt?: Date | runtime.DateWhereCondition | null;
+	age?: number | runtime.NumberWhereCondition;
+	dateOfBirth?: Date | runtime.DateWhereCondition;
+	gender?: Gender | GenderWhereCondition;
+	hasChildren?: boolean | runtime.BooleanWhereCondition;
+	id?: string | runtime.IDWhereCondition;
+	createdAt?: Date | runtime.DateWhereCondition;
+	updatedAt?: Date | runtime.DateWhereCondition;
 }`
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
