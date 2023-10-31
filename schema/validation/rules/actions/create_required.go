@@ -265,6 +265,10 @@ func satisfiedBySetExpr(rootModelName string, dotDelimPath string, modelName str
 		}
 		lhs := assignment.LHS
 
+		if lhs.Ident == nil {
+			continue
+		}
+
 		fragStrings := lo.Map(lhs.Ident.Fragments, func(frag *parser.IdentFragment, _ int) string {
 			return frag.Fragment
 		})

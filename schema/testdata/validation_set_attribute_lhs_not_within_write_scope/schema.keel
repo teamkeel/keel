@@ -1,0 +1,69 @@
+model Post {
+    fields {
+        name Text?
+        published Boolean?
+        identity Identity?
+        publisher Publisher?
+    }
+
+    actions {
+        create nestedData1() with (name) {
+            @set(post.publisher.name = "someName")
+        }
+        create nestedData2() with (name) {
+            @set(post.publisher.admin = ctx.identity)
+        }
+        create nestedData3() with (
+            publisher.country.id,
+            publisher.departments.name,
+            publisher.departments.number,
+        ) {
+            @set(post.publisher.country.name = "some country")
+        }
+        create nestedData4() with (
+            publisher.departments.name,
+            publisher.departments.number,
+        ) {
+            @set(post.publisher.country.name = "some country")
+        }
+        create nestedData5() with (publisher.country.id) {
+            @set(post.publisher.departments.name = "some department")
+        }
+        create nestedData6() with (name) {
+            @set(post.publisher.admin.id = ctx.identity.id)
+        }
+    }
+}
+
+model Publisher {
+    fields {
+        name Text
+        owner Person
+        departments Department[]
+        country Country
+        admin Identity @unique
+    }
+}
+
+model Department {
+    fields {
+        publisher Publisher
+        head Person?
+        name Text
+        number Text
+    }
+}
+
+model Country {
+    fields {
+        name Text?
+        publishersCount Number?
+    }
+}
+
+model Person {
+    fields {
+        name Text
+        identity Identity @unique
+    }
+}

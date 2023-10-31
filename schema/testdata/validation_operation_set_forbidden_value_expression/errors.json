@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "Value-only conditions such as 'profile.identity' not permitted on @set",
-      "hint": "Please assign a value. Did you mean 'profile.identity = xxx'?",
-      "code": "E023",
+      "message": "The @set attribute cannot be a value condition and must express an assignment",
+      "hint": "For example, assign a value to a field on this model with @set(profile.isActive = true)",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_operation_set_forbidden_value_expression/schema.keel",
         "offset": 229,

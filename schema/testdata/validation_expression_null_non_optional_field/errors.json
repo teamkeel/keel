@@ -6,99 +6,31 @@
       "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 142,
+        "offset": 163,
         "line": 9,
         "column": 18
       },
       "endPos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 160,
+        "offset": 181,
         "line": 9,
         "column": 36
       }
     },
     {
-      "message": "name cannot be null",
+      "message": "country cannot be null",
       "hint": "You cannot evaluate a field against null unless it is defined as optional",
       "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 179,
+        "offset": 200,
         "line": 10,
         "column": 18
       },
       "endPos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 197,
+        "offset": 230,
         "line": 10,
-        "column": 36
-      }
-    },
-    {
-      "message": "name cannot be null",
-      "hint": "You cannot evaluate a field against null unless it is defined as optional",
-      "code": "E060",
-      "pos": {
-        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 216,
-        "line": 11,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 243,
-        "line": 11,
-        "column": 45
-      }
-    },
-    {
-      "message": "name cannot be null",
-      "hint": "You cannot evaluate a field against null unless it is defined as optional",
-      "code": "E060",
-      "pos": {
-        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 361,
-        "line": 16,
-        "column": 20
-      },
-      "endPos": {
-        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 380,
-        "line": 16,
-        "column": 39
-      }
-    },
-    {
-      "message": "name cannot be null",
-      "hint": "You cannot evaluate a field against null unless it is defined as optional",
-      "code": "E060",
-      "pos": {
-        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 401,
-        "line": 17,
-        "column": 20
-      },
-      "endPos": {
-        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 420,
-        "line": 17,
-        "column": 39
-      }
-    },
-    {
-      "message": "name cannot be null",
-      "hint": "You cannot evaluate a field against null unless it is defined as optional",
-      "code": "E060",
-      "pos": {
-        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 441,
-        "line": 18,
-        "column": 20
-      },
-      "endPos": {
-        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 469,
-        "line": 18,
         "column": 48
       }
     },
@@ -108,14 +40,65 @@
       "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 281,
-        "line": 12,
+        "offset": 348,
+        "line": 15,
+        "column": 20
+      },
+      "endPos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 367,
+        "line": 15,
+        "column": 39
+      }
+    },
+    {
+      "message": "name cannot be null",
+      "hint": "You cannot evaluate a field against null unless it is defined as optional",
+      "code": "E060",
+      "pos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 388,
+        "line": 16,
+        "column": 20
+      },
+      "endPos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 407,
+        "line": 16,
+        "column": 39
+      }
+    },
+    {
+      "message": "name cannot be null",
+      "hint": "You cannot evaluate a field against null unless it is defined as optional",
+      "code": "E060",
+      "pos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 428,
+        "line": 17,
+        "column": 20
+      },
+      "endPos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 456,
+        "line": 17,
+        "column": 48
+      }
+    },
+    {
+      "message": "name cannot be null",
+      "hint": "You cannot evaluate a field against null unless it is defined as optional",
+      "code": "E060",
+      "pos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 268,
+        "line": 11,
         "column": 37
       },
       "endPos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 300,
-        "line": 12,
+        "offset": 287,
+        "line": 11,
         "column": 56
       }
     },
@@ -125,14 +108,14 @@
       "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 507,
-        "line": 19,
+        "offset": 494,
+        "line": 18,
         "column": 37
       },
       "endPos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
-        "offset": 526,
-        "line": 19,
+        "offset": 513,
+        "line": 18,
         "column": 56
       }
     }

@@ -45,7 +45,6 @@ var validatorFuncs = []validationFunc{
 
 	attribute.AttributeLocationsRule,
 	attribute.SetWhereAttributeRule,
-	attribute.ValidateActionAttributeRule,
 	attribute.ValidateFieldAttributeRule,
 	attribute.UniqueAttributeArgsRule,
 
@@ -70,10 +69,11 @@ var visitorFuncs = []VisitorFunc{
 	UniqueAttributeRule,
 	OrderByAttributeRule,
 	SortableAttributeRule,
+	SetAttributeExpressionRules,
 	Jobs,
 	ScheduleAttributeRule,
 	DuplicateInputsRule,
-	AttributeArgumentsRule,
+	PermissionsAttributeArguments,
 	FunctionDisallowedBehavioursRule,
 	OnAttributeRule,
 	RelationshipsRules,

@@ -32,7 +32,6 @@ const (
 	ErrorUniqueEnumGlobally                  = "E019"
 	ErrorUnresolvableExpression              = "E020"
 	ErrorForbiddenExpressionAction           = "E022"
-	ErrorForbiddenValueCondition             = "E023"
 	ErrorIncorrectArguments                  = "E024"
 	ErrorInvalidSyntax                       = "E025"
 	ErrorExpressionTypeMismatch              = "E026"

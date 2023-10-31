@@ -59,9 +59,6 @@ en:
   E022:
     message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
     hint: "{{ .Suggestion }}"
-  E023:
-    message: "Value-only conditions such as '{{ .Value }}' not permitted on {{ .Attribute }}"
-    hint: "Please assign a value. Did you mean '{{ .Suggestion }}'?"
   E024:
     message: "{{ .ActualArgsCount }} argument(s) provided to @{{ .AttributeName }} but expected {{ .ExpectedArgsCount }}"
     hint: '{{ if eq .Signature "()" }}@{{ .AttributeName }} doesn''t accept any arguments{{ else }}the signature of this attribute is @{{ .AttributeName }}{{ .Signature }}{{ end }}'
