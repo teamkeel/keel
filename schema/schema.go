@@ -21,7 +21,7 @@ import (
 // from a given Keel Builder. Construct one, then call the Make method.
 type Builder struct {
 	asts        []*parser.AST
-	schemaFiles []reader.SchemaFile
+	schemaFiles []*reader.SchemaFile
 	Config      *config.ProjectConfig
 	proto       *proto.Schema
 }
@@ -50,19 +50,8 @@ func (scm *Builder) MakeFromDirectory(directory string) (*proto.Schema, error) {
 	return scm.makeFromInputs(allInputFiles)
 }
 
-// MakeFromFile constructs a proto.Schema from the given .keel file.
-func (scm *Builder) MakeFromFile(filename string) (*proto.Schema, error) {
-	allInputFiles, err := reader.FromFile(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	scm.schemaFiles = allInputFiles.SchemaFiles
-	return scm.makeFromInputs(allInputFiles)
-}
-
 func (scm *Builder) MakeFromString(schemaString string) (*proto.Schema, error) {
-	scm.schemaFiles = append(scm.schemaFiles, reader.SchemaFile{
+	scm.schemaFiles = append(scm.schemaFiles, &reader.SchemaFile{
 		Contents: schemaString,
 		FileName: "schema.keel",
 	})
@@ -78,7 +67,7 @@ func (scm *Builder) MakeFromInputs(inputs *reader.Inputs) (*proto.Schema, error)
 	return scm.makeFromInputs(inputs)
 }
 
-func (scm *Builder) SchemaFiles() []reader.SchemaFile {
+func (scm *Builder) SchemaFiles() []*reader.SchemaFile {
 	return scm.schemaFiles
 }
 
@@ -86,19 +75,17 @@ func (scm *Builder) ASTs() []*parser.AST {
 	return scm.asts
 }
 
-func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema, error) {
+// PrepareAst will parse the ASTs and will add built-in models, fields, and other bits.
+func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, errorhandling.ValidationErrors, error) {
+	asts := []*parser.AST{}
+	parseErrors := errorhandling.ValidationErrors{}
+
 	// - For each of the .keel (schema) files specified...
 	// 		- Parse to AST
 	// 		- Add built-in fields
-	// - With the parsed (AST) schemas as a set:
-	// 		- Validate them (as a set)
-	// 		- Convert the set to a single / aggregate proto model
-	asts := []*parser.AST{}
-	parseErrors := errorhandling.ValidationErrors{}
 	for i, oneInputSchemaFile := range allInputFiles.SchemaFiles {
-		declarations, err := parser.Parse(&oneInputSchemaFile)
+		declarations, err := parser.Parse(oneInputSchemaFile)
 		if err != nil {
-
 			// try to convert into a validation error and move to next schema file
 			if perr, ok := err.(parser.Error); ok {
 				verr := errorhandling.NewValidationError(errorhandling.ErrorInvalidSyntax, errorhandling.TemplateLiterals{
@@ -107,10 +94,9 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 					},
 				}, perr)
 				parseErrors.Errors = append(parseErrors.Errors, verr)
-				continue
+			} else {
+				return nil, parseErrors, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
 			}
-
-			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
 		}
 
 		// Insert built in models like Identity. We only want to call this once
@@ -150,8 +136,17 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 		})
 	}
 
-	// Now insert the foreign key fields (for relationships)
-	errDetails = scm.insertForeignKeyFields(asts)
+	return asts, parseErrors, nil
+}
+
+func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema, error) {
+	asts, parseErrors, err := scm.PrepareAst(allInputFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	// insert the foreign key fields (for relationships)
+	errDetails := scm.insertForeignKeyFields(asts)
 	if errDetails != nil {
 		parseErrors.Errors = append(parseErrors.Errors, &errorhandling.ValidationError{
 			ErrorDetails: errDetails,
@@ -164,9 +159,9 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	}
 
 	v := validation.NewValidator(asts)
-	err := v.RunAllValidators()
-	if err != nil {
-		return nil, err
+	validationErrors := v.RunAllValidators()
+	if validationErrors != nil {
+		return nil, validationErrors
 	}
 
 	scm.asts = asts
@@ -256,8 +251,7 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 // insertForeignKeyFields works with the given GLOBAL set of asts, i.e. a set that has been
 // built and combined from all input files. It analyses the foreign key fields that should be auto
 // generated and injected into each model.
-func (scm *Builder) insertForeignKeyFields(
-	asts []*parser.AST) *errorhandling.ErrorDetails {
+func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) *errorhandling.ErrorDetails {
 
 	for _, mdl := range query.Models(asts) {
 		fkFieldsToAdd := []*parser.FieldNode{}
@@ -329,11 +323,11 @@ func (scm *Builder) insertForeignKeyFields(
 	return nil
 }
 
-func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
+func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile *reader.SchemaFile) {
 	scm.insertIdentityModel(declarations, schemaFile)
 }
 
-func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile reader.SchemaFile) {
+func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *reader.SchemaFile) {
 	declaration := &parser.DeclarationNode{
 		Model: &parser.ModelNode{
 			BuiltIn: true,

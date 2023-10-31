@@ -147,11 +147,13 @@ func TestCompositeUniqueCompletions(t *testing.T) {
 				fields {
 					title Text
 					subTitle Text
+					date Date
+					timestamp Timestamp
 				}
 				@unique([<Cursor>
 			}
 			`,
-			expected: []string{"title", "subTitle"},
+			expected: []string{"subTitle", "title", "date"},
 		},
 		{
 			name: "existing-composite",
@@ -205,7 +207,22 @@ func TestCompositeUniqueCompletions(t *testing.T) {
 				@unique([<Cursor>
 			}
 			`,
-			expected: []string{"title", "subTitle"},
+			expected: []string{"subTitle", "title"},
+		},
+		{
+			name: "relationship",
+			schema: `
+			model B {}
+			model A {
+				fields {
+					title Text
+					relation B
+					subTitle Text
+				}
+				@unique([relation.<Cursor>
+			}
+			`,
+			expected: []string{},
 		},
 	}
 
@@ -530,67 +547,28 @@ func TestActionCompletions(t *testing.T) {
 			enum Sex {
 				Male
 				Female
-		}
+			}
 
-		model Author {
+			model Author {
 				fields {
-						name Text
+					name Text
 				}
-		}
+			}
 
-		model Person {
+			model Person {
 				fields {
-						title Text
+					title Text
 						author Author
 				}
 
 				actions {
-						create createPerson() with (title, author.<Cursor>) {
-								@permission(expression: true)
-						}
+					create createPerson() with (title, author.<Cursor>) {
+							@permission(expression: true)
+					}
 				}
-		}
-
+			}
 			`,
 			expected: []string{"createdAt", "id", "name", "updatedAt"},
-		},
-		{
-			name: "set-expression-nested",
-			schema: `
-			model User {
-				fields {
-						identity Identity
-						name Text
-				}
-
-				actions {
-						create createUser() with (name) {
-								@set(user.identity = ctx.identity)
-								@permission(expression: ctx.isAuthenticated)
-						}
-				}
-		}
-
-		model Team {
-				fields {
-						name Text
-				}
-		}
-
-		model UserTeam {
-				fields {
-						user User
-						team Team
-				}
-
-				actions {
-						create createTeam() with (team.name) {
-								@set(<Cursor>)
-						}
-				}
-		}
-			`,
-			expected: []string{"ctx", "userTeam"},
 		},
 		{
 			name: "model-field-inputs-relationship-multi-file",
@@ -698,21 +676,210 @@ func TestActionCompletions(t *testing.T) {
 		    }`,
 			expected: []string{"@function", "@orderBy", "@permission", "@set", "@sortable", "@validate", "@where"},
 		},
-		// @where tests
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestWhereAttributeCompletions(t *testing.T) {
+	cases := []testCase{
+		{
+			name: "where-attribute-ctx-env",
+			schema: `
+			model Post {
+				fields {
+					text Text
+				}
+				actions {
+					list Posts() {
+						@where(record.text == ctx.env.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{"TEST", "TEST_2"},
+		},
+		{
+			name: "where-attribute-ctx-env-no-completions",
+			schema: `
+			model Post {
+				actions {
+					fields {
+						text Text
+					}
+					list Posts() {
+						@where(post.text == ctx.env.TEST.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{},
+		},
+		{
+			name: "where-attribute-ctx-secrets",
+			schema: `
+			model Post {
+				fields {
+					text Text
+				}
+				actions {
+					list Posts() {
+						@where(post.text == ctx.secrets.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{"API_KEY"},
+		},
+		{
+			name: "where-attribute-ctx-isauthenticated-no-completions",
+			schema: `
+			model Post {
+				fields {
+					text Text
+				}
+				actions {
+					list Posts() {
+						@where(post.text == ctx.isAuthenticated.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{},
+		},
+		{
+			name: "where-attribute-ctx",
+			schema: `
+			model CompanyUser {
+				fields {
+					identity Identity @unique @relation(user)
+				}
+			}
+			model Record {
+				fields {
+					owner CompanyUser
+				}
+				actions {
+					list listRecords() {
+						@where(record.owner == ctx.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{"env", "headers", "identity", "isAuthenticated", "now", "secrets"},
+		},
+		{
+			name: "where-attribute-ctx-identity",
+			schema: `
+			model CompanyUser {
+				fields {
+					name Text
+					identity Identity @unique @relation(user)
+				}
+			}
+			model Record {
+				fields {
+					owner CompanyUser
+				}
+				actions {
+					list listRecords() {
+						@where(record.owner == ctx.identity.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "password", "updatedAt", "user"},
+		},
+
+		{
+			name: "where-attribute-ctx-identity-user",
+			schema: `
+			model CompanyUser {
+				fields {
+					name Text
+					identity Identity @unique @relation(user)
+					company Company
+				}
+			}
+			model Company {
+				fields {
+					name Text
+				}
+			}
+			model Record {
+				fields {
+					owner CompanyUser
+				}
+				actions {
+					list listRecords() {
+						@where(record.owner  == ctx.identity.user.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{"company", "createdAt", "id", "identity", "name", "updatedAt"},
+		},
+		{
+			name: "where-attribute-ctx-identity-user-company",
+			schema: `
+			model CompanyUser {
+				fields {
+					name Text
+					identity Identity @unique @relation(user)
+					company Company
+				}
+			}
+			model Company {
+				fields {
+					name Text
+				}
+			}
+			model Record {
+				fields {
+					owner CompanyUser
+				}
+				actions {
+					list listRecords() {
+						@where(record.owner == ctx.identity.user.company.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{"createdAt", "id", "name", "updatedAt"},
+		},
+		{
+			name: "where-attribute-ctx-identity-user-company-name-no-completions",
+			schema: `
+			model CompanyUser {
+				fields {
+					name Text
+					identity Identity @unique @relation(user)
+					company Company
+				}
+			}
+			model Company {
+				fields {
+					name Text
+				}
+			}
+			model Record {
+				fields {
+					owner CompanyUser
+				}
+				actions {
+					list listRecords() {
+						@where(record.owner == ctx.identity.user.company.name.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{},
+		},
 		{
 			name: "where-attribute-model-fields",
 			schema: `
 			model Person {
-			  fields {
-				name Text
-				age Number
-			  }
-		      actions {
-		        list people() {
-					@where(person.<Cursor>)
+				fields {
+					name Text
+					age Number
 				}
-			  }
-		    }`,
+				actions {
+					list people() {
+						@where(person.<Cursor>)
+					}
+				}
+			}`,
 			expected: []string{"name", "age", "id", "createdAt", "updatedAt"},
 		},
 		{
@@ -725,30 +892,30 @@ func TestActionCompletions(t *testing.T) {
 				}
 			}
 			model Person {
-			  fields {
-				dogs Dog[]
-			  }
-		      actions {
-		        list people() {
-					@where(person.dogs.<Cursor>)
+				fields {
+					dogs Dog[]
 				}
-			  }
-		    }`,
+				actions {
+					list people() {
+						@where(person.dogs.<Cursor>)
+					}
+				}
+			}`,
 			expected: []string{"breed", "id", "createdAt", "owner", "updatedAt"},
 		},
 		{
 			name: "where-attribute-model-fields-relationships-multi-file",
 			schema: `
 			model Person {
-			  fields {
-				dogs Dog[]
-			  }
-		      actions {
-		        list people() {
-					@where(person.dogs.<Cursor>)
+				fields {
+					dogs Dog[]
 				}
-			  }
-		    }`,
+				actions {
+					list people() {
+						@where(person.dogs.<Cursor>)
+					}
+				}
+			}`,
 			otherSchema: `
 			model Dog {
 				fields {
@@ -763,15 +930,15 @@ func TestActionCompletions(t *testing.T) {
 			name: "where-attribute-enums",
 			schema: `
 			model Pet {
-			  fields {
-				species Animal
-			  }
-		      actions {
-		        list pets() {
-					@where(pet.species == <Cursor>)
+				fields {
+					species Animal
 				}
-			  }
-		    }`,
+				actions {
+					list pets() {
+						@where(pet.species == <Cursor>)
+					}
+				}
+			}`,
 			otherSchema: `
 			enum Animal {
 				Dog
@@ -785,15 +952,15 @@ func TestActionCompletions(t *testing.T) {
 			name: "where-attribute-enum-values",
 			schema: `
 			model Pet {
-			  fields {
-				species Animal
-			  }
-		      actions {
-		        list pets() {
-					@where(pet.species == Animal.<Cursor>)
+				fields {
+					species Animal
 				}
-			  }
-		    }`,
+				actions {
+					list pets() {
+						@where(pet.species == Animal.<Cursor>)
+					}
+				}
+			}`,
 			otherSchema: `
 			enum Animal {
 				Dog
@@ -802,6 +969,123 @@ func TestActionCompletions(t *testing.T) {
 			}
 			`,
 			expected: []string{"Dog", "Cat", "Rabbit"},
+		},
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestSetAttributeCompletions(t *testing.T) {
+	cases := []testCase{
+		{
+			name: "set-expression",
+			schema: `
+			model User {
+				fields {
+					identity Identity
+				}
+			}
+			model Team {
+				fields {
+					name Text
+				}
+			}
+			model UserTeam {
+				fields {
+					user User
+					team Team
+				}
+				actions {
+					create createTeam() with (team.name) {
+						@set(<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{"ctx", "userTeam"},
+		},
+		{
+			name: "set-attribute-ctx",
+			schema: `
+			model User {
+				fields {
+					name Text
+					identity Identity @unique @relation(user)
+				}
+			}
+			model Post {
+				fields {
+					owner User
+				}
+				actions {
+					create create() {
+						@set(post.owner = ctx.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{"env", "headers", "identity", "isAuthenticated", "now", "secrets"},
+		},
+		{
+			name: "set-attribute-ctx-identity",
+			schema: `
+			model User {
+				fields {
+					name Text
+					identity Identity @unique @relation(user)
+				}
+			}
+			model Post {
+				fields {
+					owner User
+				}
+				actions {
+					list create() {
+						@set(post.owner = ctx.identity.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "password", "updatedAt", "user"},
+		},
+		{
+			name: "set-attribute-ctx-identity-user",
+			schema: `
+			model User {
+				fields {
+					name Text
+					identity Identity @unique @relation(user)
+				}
+			}
+			model Post {
+				fields {
+					owner User
+				}
+				actions {
+					list create() {
+						@set(post.owner = ctx.identity.user.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{"createdAt", "id", "identity", "name", "updatedAt"},
+		},
+		{
+			name: "set-attribute-first-operand-ctx-identity",
+			schema: `
+			model User {
+				fields {
+					name Text
+					identity Identity @unique @relation(user)
+				}
+			}
+			model Post {
+				fields {
+					owner User
+				}
+				actions {
+					list create() {
+						@set(user.owner = ctx.identity.<Cursor>)
+					}
+				}
+			}`,
+			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "password", "updatedAt", "user"},
 		},
 	}
 
@@ -1334,7 +1618,7 @@ func TestAPICompletions(t *testing.T) {
 				}
 			}
 			`,
-			expected: []string{"Person"},
+			expected: []string{"Identity", "Person"},
 		},
 	}
 

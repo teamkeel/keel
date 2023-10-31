@@ -131,10 +131,31 @@ func (ident *Ident) IsContext() bool {
 	return ident != nil && ident.Fragments[0].Fragment == "ctx"
 }
 
-func (ident *Ident) IsContextIdentityField() bool {
-	if ident.IsContext() && len(ident.Fragments) > 1 {
-		return ident.Fragments[1].Fragment == "identity"
+func (ident *Ident) IsContextIdentity() bool {
+	if !ident.IsContext() {
+		return false
 	}
+
+	if len(ident.Fragments) > 1 && ident.Fragments[1].Fragment == "identity" {
+		return true
+	}
+
+	return false
+}
+
+func (ident *Ident) IsContextIdentityId() bool {
+	if !ident.IsContextIdentity() {
+		return false
+	}
+
+	if len(ident.Fragments) == 2 {
+		return true
+	}
+
+	if len(ident.Fragments) == 3 && ident.Fragments[2].Fragment == "id" {
+		return true
+	}
+
 	return false
 }
 

@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "You have a reserved field name createdAt",
-      "hint": "Try 'createdAter' instead",
-      "code": "E006",
+      "message": "Cannot use 'createdAt' as it has already been defined on this model",
+      "hint": "Rename this field to some other name which has not yet been defined",
+      "code": "E003",
       "pos": {
         "filename": "",
         "offset": 0,

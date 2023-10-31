@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "You have duplicate field names name",
-      "hint": "Remove 'name' on line 4",
+      "message": "Cannot use 'name' as it has already been defined on this model",
+      "hint": "Rename this field to some other name which has not yet been defined",
       "code": "E003",
       "pos": {
         "filename": "testdata/validation_fields_unique_in_model/schema.keel",

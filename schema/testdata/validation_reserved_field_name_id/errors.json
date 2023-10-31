@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "You have a reserved field name id",
-      "hint": "Try 'ider' instead",
+      "message": "Cannot use 'id' as it already exists as a built-in field",
+      "hint": "Rename this field to some other name which has not yet been defined",
       "code": "E006",
       "pos": {
         "filename": "testdata/validation_reserved_field_name_id/schema.keel",

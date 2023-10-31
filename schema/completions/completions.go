@@ -8,6 +8,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/config"
+	sch "github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -40,19 +41,15 @@ const (
 )
 
 func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *config.ProjectConfig) []*CompletionItem {
-
 	var schema string
-	asts := []*parser.AST{}
-
 	for _, f := range schemaFiles {
-		// parse the schema ignoring any errors, it's very likely the
-		// schema is not in a valid state
-		ast, _ := parser.Parse(f)
-		asts = append(asts, ast)
 		if f.FileName == pos.Filename {
 			schema = f.Contents
 		}
 	}
+
+	builder := sch.Builder{}
+	asts, _, _ := builder.PrepareAst(&reader.Inputs{SchemaFiles: schemaFiles})
 
 	tokenAtPos := NewTokensAtPosition(schema, pos)
 
@@ -126,7 +123,7 @@ func getUndefinedFieldCompletions(asts []*parser.AST, tokenAtPos *TokensAtPositi
 
 			enum := query.Enum(asts, field.Type.Value)
 
-			if model == nil && enum == nil {
+			if model == nil && enum == nil && !parser.IsBuiltInFieldType(field.Type.Value) {
 				items = append(items, &CompletionItem{
 					Label: field.Type.Value,
 					Kind:  KindType,
@@ -407,24 +404,6 @@ func getJobCompletions() []*CompletionItem {
 	return completions
 }
 
-var builtInFieldCompletions = []*CompletionItem{
-	{
-		Label:       parser.ImplicitFieldNameId,
-		Description: parser.FieldTypeID,
-		Kind:        KindField,
-	},
-	{
-		Label:       parser.ImplicitFieldNameCreatedAt,
-		Description: parser.FieldTypeDatetime,
-		Kind:        KindField,
-	},
-	{
-		Label:       parser.ImplicitFieldNameUpdatedAt,
-		Description: parser.FieldTypeDatetime,
-		Kind:        KindField,
-	},
-}
-
 var modelBlockKeywords = []*CompletionItem{
 	{
 		Label: parser.KeywordFields,
@@ -540,16 +519,12 @@ func getBuiltInTypeCompletions() []*CompletionItem {
 			Kind:        KindType,
 		})
 	}
-	completions = append(completions, &CompletionItem{
-		Label: "Identity",
-		Kind:  KindModel,
-	})
 	return completions
 }
 
 func getActionInputCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
 	// inside action input args - auto-complete field names
-	completions := append([]*CompletionItem{}, builtInFieldCompletions...)
+	completions := []*CompletionItem{}
 
 	block := tokenAtPos.StartOfBlock()
 
@@ -661,7 +636,11 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 			model := query.Model(asts, modelName)
 
 			fields := query.ModelFields(model, func(f *parser.FieldNode) bool {
-				return f.IsScalar()
+				return f.IsScalar() &&
+					f.Type.Value != parser.FieldTypeDatetime &&
+					f.Type.Value != parser.FieldTypeSecret &&
+					f.Type.Value != parser.FieldTypePassword &&
+					f.Type.Value != parser.FieldTypeID
 			})
 
 			allFields := lo.Map(fields, func(f *parser.FieldNode, _ int) *CompletionItem {
@@ -729,8 +708,6 @@ func getSortableArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *con
 		})
 	}
 
-	completions = append(completions, builtInFieldCompletions...)
-
 	return completions
 }
 
@@ -776,18 +753,16 @@ func getOrderByArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *conf
 			})
 		}
 
-		completions = append(completions, builtInFieldCompletions...)
-
 		return completions
 	}
 
 	return []*CompletionItem{
 		{
-			Label: "asc",
+			Label: parser.OrderByAscending,
 			Kind:  KindKeyword,
 		},
 		{
-			Label: "desc",
+			Label: parser.OrderByDescending,
 			Kind:  KindKeyword,
 		},
 	}
@@ -807,8 +782,6 @@ func getScheduleArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *con
 			Kind:        KindField,
 		})
 	}
-
-	completions = append(completions, builtInFieldCompletions...)
 
 	return completions
 }
@@ -936,46 +909,56 @@ func getExpressionCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *conf
 	switch previousIdents[0] {
 	case "ctx":
 		var completions []*CompletionItem
-		completions = []*CompletionItem{
-			{
-				Label:       "identity",
-				Description: "Identity",
-				Kind:        KindField,
-			},
-			{
-				Label:       "now",
-				Description: "Timestamp",
-				Kind:        KindField,
-			},
-			{
-				Label:       "env",
-				Description: "Environment Variables",
-				Kind:        KindField,
-			},
-			{
-				Label:       "secrets",
-				Description: "Secrets",
-				Kind:        KindField,
-			},
-			{
-				Label:       "isAuthenticated",
-				Description: "Authentication Indicator",
-				Kind:        KindField,
-			},
-			{
-				Label:       "headers",
-				Description: "Request Headers",
-				Kind:        KindField,
-			},
-		}
 
-		if len(previousIdents) == 2 {
-			switch previousIdents[1] {
-			case "env":
-				completions = getEnvironmentVariableCompletions(cfg)
-			case "secrets":
-				completions = getSecretsCompletions(cfg)
+		switch {
+		case len(previousIdents) == 1:
+			completions = []*CompletionItem{
+				{
+					Label:       "identity",
+					Description: "Identity",
+					Kind:        KindModel,
+				},
+				{
+					Label:       "now",
+					Description: "Timestamp",
+					Kind:        KindField,
+				},
+				{
+					Label:       "env",
+					Description: "Environment Variables",
+					Kind:        KindField,
+				},
+				{
+					Label:       "secrets",
+					Description: "Secrets",
+					Kind:        KindField,
+				},
+				{
+					Label:       "isAuthenticated",
+					Description: "Authentication Indicator",
+					Kind:        KindField,
+				},
+				{
+					Label:       "headers",
+					Description: "Request Headers",
+					Kind:        KindField,
+				},
 			}
+		case previousIdents[1] == "env" && len(previousIdents) == 2:
+			completions = getEnvironmentVariableCompletions(cfg)
+		case previousIdents[1] == "secrets" && len(previousIdents) == 2:
+			completions = getSecretsCompletions(cfg)
+		case previousIdents[1] == "identity":
+			model := query.Model(asts, "Identity")
+			fieldNames, ok := getFieldNamesAtPath(asts, model, previousIdents[2:])
+			if !ok {
+				// if we were unable to resolve the relevant model
+				// return no completions as returning the default
+				// fields in this case could be unhelpful
+				return []*CompletionItem{}
+			}
+
+			return fieldNames
 		}
 
 		return completions
@@ -990,7 +973,6 @@ func getExpressionCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *conf
 			return []*CompletionItem{}
 		}
 
-		fieldNames = append(fieldNames, builtInFieldCompletions...)
 		return fieldNames
 
 	default:
@@ -1251,7 +1233,7 @@ func getEnvironmentVariableCompletions(cfg *config.ProjectConfig) []*CompletionI
 	for _, key := range cfg.AllEnvironmentVariables() {
 		builtInFieldCompletions = append(builtInFieldCompletions, &CompletionItem{
 			Label:       key,
-			Description: "Environment Variables",
+			Description: "Environment Variable",
 			Kind:        KindField,
 		})
 

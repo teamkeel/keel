@@ -1,0 +1,30 @@
+
+model UserExtension {
+    fields {
+        email Text
+        isVerified Boolean
+        signedUpAt Timestamp
+        issuer Text
+        externalId Text
+    }
+
+    actions {
+        create createExt() {
+            @set(userExtension.email = ctx.identity.email)
+            @set(userExtension.isVerified = ctx.identity.emailVerified)
+            @set(userExtension.signedUpAt = ctx.identity.createdAt)
+            @set(userExtension.issuer = ctx.identity.issuer)
+            @set(userExtension.externalId = ctx.identity.externalId)
+            @permission(expression: ctx.isAuthenticated)
+        }
+
+         update updateExt(id) {
+            @set(userExtension.email = ctx.identity.email)
+            @set(userExtension.isVerified = ctx.identity.emailVerified)
+            @set(userExtension.signedUpAt = ctx.identity.createdAt)
+            @set(userExtension.issuer = ctx.identity.issuer)
+            @set(userExtension.externalId = ctx.identity.externalId)
+            @permission(expression: ctx.isAuthenticated)
+        }
+    }
+}

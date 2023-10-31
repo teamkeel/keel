@@ -60,7 +60,7 @@ jobs:
           node-version: 16.14.2 # vscode (electron) uses this so we want to make the tests use a comparable environment
       - uses: pnpm/action-setup@v2
         with:
-          version: 8.5.1
+          version: 8.10.0
       - name: Setup golang
         uses: actions/setup-go@v3
         with:

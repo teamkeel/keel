@@ -165,8 +165,7 @@ func (resolver *OperandResolver) IsExplicitInput() bool {
 // such as: @where(post.author.isActive)
 func (resolver *OperandResolver) IsModelDbColumn() bool {
 	return !resolver.IsLiteral() &&
-		!resolver.IsContextField() &&
-		!resolver.IsContextDbColumn() &&
+		!resolver.IsContext() &&
 		!resolver.IsExplicitInput() &&
 		!resolver.IsImplicitInput()
 }
@@ -175,7 +174,7 @@ func (resolver *OperandResolver) IsModelDbColumn() bool {
 // which will require database access (such as with identity backlinks),
 // such as: @permission(expression: ctx.identity.user.isActive)
 func (resolver *OperandResolver) IsContextDbColumn() bool {
-	return resolver.operand.Ident.IsContext() && resolver.isContextIdentityDbColumn()
+	return resolver.operand.Ident.IsContextIdentity() && !resolver.operand.Ident.IsContextIdentityId()
 }
 
 // IsContextField returns true if the expression operand refers to a value on the context
@@ -189,7 +188,11 @@ func (resolver *OperandResolver) IsContextDbColumn() bool {
 // then it returns false, because that can no longer be resolved solely from the
 // in memory context data.
 func (resolver *OperandResolver) IsContextField() bool {
-	return resolver.operand.Ident.IsContext() && !resolver.isContextIdentityDbColumn()
+	return resolver.operand.Ident.IsContext() && !resolver.IsContextDbColumn()
+}
+
+func (resolver *OperandResolver) IsContext() bool {
+	return resolver.operand.Ident.IsContext()
 }
 
 // GetOperandType returns the equivalent protobuf type for the expression operand.
@@ -322,7 +325,7 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 	case resolver.IsModelDbColumn(), resolver.IsContextDbColumn():
 		// todo: https://linear.app/keel/issue/RUN-153/set-attribute-to-support-targeting-database-fields
 		panic("cannot resolve operand value from the database")
-	case resolver.operand.Ident.IsContextIdentityField():
+	case resolver.operand.Ident.IsContextIdentityId():
 		isAuthenticated := auth.IsAuthenticated(resolver.Context)
 		if !isAuthenticated {
 			return nil, nil
@@ -415,29 +418,4 @@ func toDate(s string) time.Time {
 func toTime(s string) time.Time {
 	tm, _ := time.Parse(time.RFC3339, s)
 	return tm
-}
-
-// isContextIdentityDbColumn works out if this operand traverses an Identity field and requires the database.
-func (resolver *OperandResolver) isContextIdentityDbColumn() bool {
-	if resolver.operand.Ident == nil {
-		return false
-	}
-	fragments := lo.Map(resolver.operand.Ident.Fragments, func(frag *parser.IdentFragment, _ int) string {
-		return frag.Fragment
-	})
-
-	if len(fragments) < 3 {
-		return false
-	}
-	if fragments[0] != "ctx" {
-		return false
-	}
-	if fragments[1] != "identity" {
-		return false
-	}
-	if fragments[2] == parser.ImplicitFieldNameId {
-		return false
-	}
-
-	return true
 }

@@ -207,10 +207,10 @@ func validate(this js.Value, args []js.Value) any {
 	return newPromise(func() (any, error) {
 
 		schemaFilesArg := args[0].Get("schemaFiles")
-		schemaFiles := []reader.SchemaFile{}
+		schemaFiles := []*reader.SchemaFile{}
 		for i := 0; i < schemaFilesArg.Length(); i++ {
 			f := schemaFilesArg.Index(i)
-			schemaFiles = append(schemaFiles, reader.SchemaFile{
+			schemaFiles = append(schemaFiles, &reader.SchemaFile{
 				FileName: f.Get("filename").String(),
 				Contents: f.Get("contents").String(),
 			})

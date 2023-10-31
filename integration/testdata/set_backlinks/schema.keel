@@ -62,3 +62,54 @@ model Record {
         actions: [create, update]
     )
 }
+
+model UserExtension {
+    fields {
+        name Text
+        identity1 Identity {
+            @unique
+            @relation(user1)
+        }
+        identity2 Identity {
+            @unique
+            @relation(user2)
+        }
+        user1 User
+        user2 User
+        email Text
+        isVerified Boolean
+        signedUpAt Timestamp
+        issuer Text
+        externalId Text
+    }
+
+    actions {
+        create createExt() with (n: Text) {
+            @set(userExtension.name = n)
+            @set(userExtension.identity1 = ctx.identity)
+            @set(userExtension.identity2.id = ctx.identity.id)
+            @set(userExtension.user1 = ctx.identity.user)
+            @set(userExtension.user2.id = ctx.identity.user.id)
+            @set(userExtension.email = ctx.identity.email)
+            @set(userExtension.isVerified = ctx.identity.emailVerified)
+            @set(userExtension.signedUpAt = ctx.identity.createdAt)
+            @set(userExtension.issuer = ctx.identity.issuer)
+            @set(userExtension.externalId = ctx.identity.externalId)
+            @permission(expression: ctx.isAuthenticated)
+        }
+
+        update updateExt(id) with (n: Text) {
+            @set(userExtension.name = n)
+            @set(userExtension.identity1 = ctx.identity)
+            @set(userExtension.identity2.id = ctx.identity.id)
+            @set(userExtension.user1 = ctx.identity.user)
+            @set(userExtension.user2.id = ctx.identity.user.id)
+            @set(userExtension.email = ctx.identity.email)
+            @set(userExtension.isVerified = ctx.identity.emailVerified)
+            @set(userExtension.signedUpAt = ctx.identity.createdAt)
+            @set(userExtension.issuer = ctx.identity.issuer)
+            @set(userExtension.externalId = ctx.identity.externalId)
+            @permission(expression: ctx.isAuthenticated)
+        }
+    }
+}

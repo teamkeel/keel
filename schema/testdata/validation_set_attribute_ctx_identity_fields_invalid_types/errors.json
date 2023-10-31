@@ -1,0 +1,174 @@
+{
+  "errors": [
+    {
+      "message": "userExtension.email is Number and ctx.identity.email is Text",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 224,
+        "line": 13,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 264,
+        "line": 13,
+        "column": 58
+      }
+    },
+    {
+      "message": "userExtension.isVerified is Number and ctx.identity.emailVerified is Boolean",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 283,
+        "line": 14,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 336,
+        "line": 14,
+        "column": 71
+      }
+    },
+    {
+      "message": "userExtension.signedUpAt is Number and ctx.identity.createdAt is Timestamp",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 355,
+        "line": 15,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 404,
+        "line": 15,
+        "column": 67
+      }
+    },
+    {
+      "message": "userExtension.issuer is Number and ctx.identity.issuer is Text",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 423,
+        "line": 16,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 465,
+        "line": 16,
+        "column": 60
+      }
+    },
+    {
+      "message": "userExtension.externalId is Number and ctx.identity.externalId is Text",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 484,
+        "line": 17,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 534,
+        "line": 17,
+        "column": 68
+      }
+    },
+    {
+      "message": "userExtension.email is Number and ctx.identity.email is Text",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 652,
+        "line": 22,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 692,
+        "line": 22,
+        "column": 58
+      }
+    },
+    {
+      "message": "userExtension.isVerified is Number and ctx.identity.emailVerified is Boolean",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 711,
+        "line": 23,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 764,
+        "line": 23,
+        "column": 71
+      }
+    },
+    {
+      "message": "userExtension.signedUpAt is Number and ctx.identity.createdAt is Timestamp",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 783,
+        "line": 24,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 832,
+        "line": 24,
+        "column": 67
+      }
+    },
+    {
+      "message": "userExtension.issuer is Number and ctx.identity.issuer is Text",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 851,
+        "line": 25,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 893,
+        "line": 25,
+        "column": 60
+      }
+    },
+    {
+      "message": "userExtension.externalId is Number and ctx.identity.externalId is Text",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 912,
+        "line": 26,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_fields_invalid_types/schema.keel",
+        "offset": 962,
+        "line": 26,
+        "column": 68
+      }
+    }
+  ]
+}

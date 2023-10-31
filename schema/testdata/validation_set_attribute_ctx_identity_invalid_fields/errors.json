@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "message": "'unknown' not found on 'Identity'",
+      "hint": "Did you mean one of email, emailVerified, password, externalId, issuer, id, createdAt, or updatedAt?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 160,
+        "line": 8,
+        "column": 55
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 167,
+        "line": 8,
+        "column": 62
+      }
+    },
+    {
+      "message": "'unknown' not found on 'Identity'",
+      "hint": "Did you mean one of email, emailVerified, password, externalId, issuer, id, createdAt, or updatedAt?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 264,
+        "line": 11,
+        "column": 55
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_ctx_identity_invalid_fields/schema.keel",
+        "offset": 271,
+        "line": 11,
+        "column": 62
+      }
+    }
+  ]
+}
