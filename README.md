@@ -15,8 +15,6 @@
 
 # Keel 
 
-## What is Keel?
-
 Keel is the all-in-one backend platform that gives you everything you need to build your product.  
 
 🔥 A fully-managed relational database  
@@ -31,26 +29,21 @@ Keel is the all-in-one backend platform that gives you everything you need to bu
 
 Keel is currently in private beta, [join the waiting list](https://keel.so/) for access to the platform. In the meantime you can run your Keel projects locally without an account using the CLI
 
-## Getting started
+## Getting Started
 
+To install and use Keel locally, let's start by building it. Follow these steps to get set up:
 
-### Installing the CLI via Homebrew
+1. Clone this repo
+2. Ensure you've got the required tools. You need [**Go (Golang)**](https://go.dev) installed locally.
+3. Run `make` to build the Keel CLI
 
-The best way to get started with Keel is to install the CLI via Homebrew:
+The Keel CLI is now available in your `./bin` directory. You can add this to your `PATH` if you want to use it globally.
 
-```bash
-$ brew tap teamkeel/homebrew-keel
-$ brew install keel
-```
+You've now got the full power of Keel locally.
 
-If the CLI has installed correctly, then `keel --version` will output the latest version number:
+## Creating a New Project
 
-```bash
-$ keel --version
-```
-
-### Creating a new project
-Creating a new project with the CLI is easy! You can create a new Keel project locally by running:
+Creating a new project with the CLI is easy! Assuming you've added `./bin/keel` to your `PATH`, you can create a new Keel project locally by running:
 
 ```bash
 $ mkdir my-keel-project && cd my-keel-project
@@ -61,15 +54,15 @@ This will create a skeleton project containing a `keel.schema` file, a `.gitigno
 
 _Run `keel init --help` to see all of the available options for `init`._
 
-### Setting up your editor
+## Setting up Your Editor
 
 Keel has created a handy [VSCode extension](https://marketplace.visualstudio.com/items?itemName=teamkeel.vscode-keel) that accelerates your development experience by providing syntax highlighting, autocompletions and validation of schemas.
 
-### Your very first Keel schema
+## Your Very First Keel Schema
 
 To create your first Keel schema, follow our [Quickstart Tutorial](https://docs.keel.so/get-started/tutorial#the-keel-schema).
 
-### Running your Keel app
+### Running your Keel App
 
 Now that you've created your first Keel schema, you can start using your APIs by starting the Keel development server:
 
