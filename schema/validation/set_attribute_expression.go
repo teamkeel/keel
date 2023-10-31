@@ -2,6 +2,7 @@ package validation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
@@ -118,16 +119,16 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				}
 
 				if i > 0 {
+					// get the next field in the relationship fragments
 					currentField = query.ModelField(currentModel, fragment.Fragment)
+					// currentModel will be null if this is not a model field
 					currentModel = query.Model(asts, currentField.Type.Value)
 				}
 
 				// The purpose of this part is to check that the nested field being set
 				// is part of the nested create inputs. You can set any field within the models
 				// being created. You cannot set fields on models which already reside in the database.
-				//if i > 1 {
 				if i < len(fragments)-1 {
-
 					withinWriteScope := false
 
 					if i < 2 {
@@ -169,6 +170,45 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 							lhs,
 						))
 						return
+					}
+				}
+
+				// The purpose of this part is to check that the nested model/id being set
+				// is not being provided in the nested create inputs, because that means it
+				// is being created and not associated.
+				if i == len(fragments)-1 && currentModel != nil {
+					// We know this is setting (associating to an existing model) at this point
+					setFrags := lo.Map(fragments, func(f *parser.IdentFragment, _ int) string {
+						return f.Fragment
+					})
+
+					setFragsString := strings.Join(setFrags[1:], ".")
+
+					for _, input := range action.With {
+						inputFrags := lo.Map(input.Type.Fragments, func(f *parser.IdentFragment, _ int) string {
+							return f.Fragment
+						})
+
+						inputFragsString := strings.Join(inputFrags, ".")
+
+						cut, has := strings.CutPrefix(inputFragsString, setFragsString)
+						if has {
+							if cut == ".id" || len(cut) == 0 {
+								errs.AppendError(makeSetExpressionError(
+									fmt.Sprintf("Cannot associate to the %s model here as it is already provided as an action input.", currentModel.Name.Value),
+									"",
+									lhs,
+								))
+								return
+							} else {
+								errs.AppendError(makeSetExpressionError(
+									fmt.Sprintf("The %s model is being created during this action and so cannot be associated to an existing record here.", currentModel.Name.Value),
+									"Change the action inputs if you want to set to an existing record",
+									lhs,
+								))
+								return
+							}
+						}
 					}
 				}
 			}
