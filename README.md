@@ -39,7 +39,7 @@ To install and use Keel locally, let's start by building it. Follow these steps 
 
 The Keel CLI is now available in your `./bin` directory. You can add this to your `PATH` if you want to use it globally.
 
-You've now got the full power of Keel locally.
+You will also need [Node.js](https://nodejs.org/) and [Docker](https://docker.com/) to run Keel. Once you grab those, you've now got the full power of Keel locally.
 
 ## Creating a New Project
 
