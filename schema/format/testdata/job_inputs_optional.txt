@@ -1,18 +1,16 @@
 job MyJob {
     inputs {
-        name      Text
- Age Number
+        name      Text ?
     }
 
-    @permission( "admin")
+    @permission("admin")
 }
 
 ===
 
 job MyJob {
     inputs {
-        name Text
-        age Number
+        name Text?
     }
 
     @permission("admin")

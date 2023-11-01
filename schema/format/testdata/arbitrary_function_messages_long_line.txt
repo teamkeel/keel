@@ -22,6 +22,8 @@ message LongLongLongLongReturns {
 
 model Person {
     actions {
-        read longLongLongLongLongLongTitle(LongLongLongInputName) returns (LongLongLongLongReturns)
+        read longLongLongLongLongLongTitle(LongLongLongInputName) returns (
+            LongLongLongLongReturns
+        )
     }
 }

@@ -216,13 +216,16 @@ func printJob(writer *Writer, job *parser.JobNode) {
 					case len(section.Inputs) > 0:
 						writer.Write("inputs")
 						writer.Block(func() {
-							for _, model := range section.Inputs {
-								writer.Comments(model, func() {
+							for _, input := range section.Inputs {
+								writer.Comments(input, func() {
 									writer.Write(
 										"%s %s",
-										lowerCamel(model.Name.Value),
-										camel(model.Type.Value),
+										lowerCamel(input.Name.Value),
+										camel(input.Type.Value),
 									)
+									if input.Optional {
+										writer.Write("?")
+									}
 									writer.WriteLine("")
 								})
 							}
@@ -414,7 +417,7 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 	}
 
 	for i, arg := range inputs {
-		if !isArbitraryFunction && isMultiline {
+		if isMultiline {
 			writer.WriteLine("")
 		}
 
@@ -445,7 +448,7 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 			}
 		})
 
-		if !isArbitraryFunction {
+		if len(inputs) > 1 {
 			if isMultiline {
 				writer.Write(",")
 			} else if i < len(inputs)-1 {
@@ -454,7 +457,7 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 		}
 	}
 
-	if !isArbitraryFunction && isMultiline {
+	if isMultiline {
 		writer.WriteLine("")
 	}
 
