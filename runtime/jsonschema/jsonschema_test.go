@@ -53,9 +53,6 @@ func TestJSONSchemaGeneration(t *testing.T) {
 	}
 
 	for name, c := range cases {
-		// if name != "no_with_inputs" {
-		// 	continue
-		// }
 		t.Run(name, func(t *testing.T) {
 			builder := schema.Builder{}
 			schema, err := builder.MakeFromString(c.keelSchema)
