@@ -64,6 +64,12 @@ jobs:
         working-directory: ./packages/${{ matrix.package }}
         run: pnpm install --frozen-lockfile
 
+      - name: "Update NPM version ${{ matrix.package }}"
+        uses: reedyuk/npm-version@1.2.1
+        with:
+          version: ${{ inputs.version }}
+          package: ./packages/${{ matrix.package }}
+
       - name: NPM Publish ${{ matrix.package }}
         uses: JS-DevTools/npm-publish@v2
         with:
