@@ -1,0 +1,21 @@
+model Account {
+    fields {
+        username Text @unique
+        email Text
+        name Text
+        isActive Boolean
+        identity Identity @unique
+    }
+
+    actions {
+        update updateAccount(username) with (name, username, isActive)
+
+        update updateAccount2(username, isActive) with (name, username, isActive)
+
+        update updateAccount3(identity.id) with (identity.id)
+
+        update updateAccount4(identity.email, identity.issuer) with (email)
+
+        update updateAccount5(identity.email, identity.issuer) with (identity.email)
+    }
+}

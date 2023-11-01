@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "'name' has already been defined as an input on this action",
+      "message": "'name' has already been defined as a write input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -18,7 +18,7 @@
       }
     },
     {
-      "message": "'name' has already been defined as an input on this action",
+      "message": "'name' has already been defined as a query input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -35,7 +35,7 @@
       }
     },
     {
-      "message": "'id' has already been defined as an input on this action",
+      "message": "'id' has already been defined as a query input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -52,7 +52,7 @@
       }
     },
     {
-      "message": "'id' has already been defined as an input on this action",
+      "message": "'id' has already been defined as a query input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -69,7 +69,7 @@
       }
     },
     {
-      "message": "'name' has already been defined as an input on this action",
+      "message": "'name' has already been defined as a write input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -86,7 +86,7 @@
       }
     },
     {
-      "message": "'id' has already been defined as an input on this action",
+      "message": "'id' has already been defined as a query input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -103,7 +103,7 @@
       }
     },
     {
-      "message": "'name' has already been defined as an input on this action",
+      "message": "'name' has already been defined as a write input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -120,7 +120,7 @@
       }
     },
     {
-      "message": "'name' has already been defined as an input on this action",
+      "message": "'name' has already been defined as a query input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -137,7 +137,7 @@
       }
     },
     {
-      "message": "'id' has already been defined as an input on this action",
+      "message": "'id' has already been defined as a query input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -154,7 +154,7 @@
       }
     },
     {
-      "message": "'id' has already been defined as an input on this action",
+      "message": "'id' has already been defined as a query input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -171,7 +171,7 @@
       }
     },
     {
-      "message": "'name' has already been defined as an input on this action",
+      "message": "'name' has already been defined as a write input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -188,7 +188,7 @@
       }
     },
     {
-      "message": "'id' has already been defined as an input on this action",
+      "message": "'id' has already been defined as a query input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -205,7 +205,7 @@
       }
     },
     {
-      "message": "'name' has already been defined as an input on this action",
+      "message": "'name' has already been defined as a query input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
@@ -222,7 +222,7 @@
       }
     },
     {
-      "message": "'name' has already been defined as an input on this action",
+      "message": "'name' has already been defined as a query input on this action",
       "hint": "",
       "code": "NamingError",
       "pos": {
