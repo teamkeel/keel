@@ -232,8 +232,8 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				if i == len(fragments)-1 && currentModel == nil {
 					if lo.Contains(fieldsNotMutable, currentField.Name.Value) {
 						errs.AppendError(makeSetExpressionError(
-							fmt.Sprintf("The field '%s' cannot be set as it is a built-in field and can only be mutated internally", currentField.Name.Value),
-							"Set this value to another field on the model or remove the @set attribute entirely",
+							fmt.Sprintf("Cannot set the field '%s' as it is a built-in field and can only be mutated internally", currentField.Name.Value),
+							"Target another field on the model or remove the @set attribute entirely",
 							fragment,
 						))
 						return

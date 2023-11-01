@@ -1,0 +1,23 @@
+model Person {
+    fields {
+        name Text
+        passport Text @unique
+        employer Company
+    }
+
+    actions {
+        update updatePost1(passport) with (id, name, createdAt, updatedAt) 
+
+        // This is valid
+        update updatePost2(id, createdAt, updatedAt) with (name) 
+
+        // This is valid
+        update updatePost3(id, employer.createdAt, employer.updatedAt) with (name) 
+    }
+}
+
+model Company {
+    fields {
+        name Text
+    }
+}
