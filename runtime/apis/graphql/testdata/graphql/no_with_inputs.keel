@@ -1,0 +1,22 @@
+model Account {
+    fields {
+        name Text?
+        email Text
+    }
+
+    actions {
+        create createAccount() {
+            @set(account.email = ctx.identity.email)
+        }
+
+        update updateAccount(id)  {
+            @set(account.email = ctx.identity.email)
+        }
+    }
+}
+
+api Test {
+    models {
+        Account
+    }
+}

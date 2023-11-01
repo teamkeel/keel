@@ -662,6 +662,64 @@ export interface CreateCompanyCompanyProfileTaxProfileInput {
 	})
 }
 
+func TestCreateActionEmptyInputs(t *testing.T) {
+	schema := `
+model Account {
+    fields {
+        name Text?
+        email Text
+    }
+
+    actions {
+        create createAccount() {
+            @set(account.email = ctx.identity.email)
+        }
+    }
+}
+
+api Test {
+    models {
+        Account
+    }
+}`
+	expected := `
+export interface CreateAccountInput {
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
+func TestCreateActionEmptyInputsTestingType(t *testing.T) {
+	schema := `
+model Account {
+    fields {
+        name Text?
+        email Text
+    }
+
+    actions {
+        create createAccount() {
+            @set(account.email = ctx.identity.email)
+        }
+    }
+}
+
+api Test {
+    models {
+        Account
+    }
+}`
+	expected := `
+createAccount(i?: CreateAccountInput): Promise<sdk.Account>;`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeTestingTypes(w, s)
+	})
+
+}
+
 func TestWriteActionInputTypesUpdate(t *testing.T) {
 	schema := `
 model Person {
