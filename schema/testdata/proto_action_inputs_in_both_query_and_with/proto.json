@@ -1,0 +1,769 @@
+{
+  "models": [
+    {
+      "name": "Account",
+      "fields": [
+        {
+          "modelName": "Account",
+          "name": "username",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "unique": true
+        },
+        {
+          "modelName": "Account",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Account",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Account",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "modelName": "Account",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "identityId",
+          "inverseFieldName": "account"
+        },
+        {
+          "modelName": "Account",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Account",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Account",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Account",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Account",
+          "name": "updateAccount",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "UpdateAccountInput"
+        },
+        {
+          "modelName": "Account",
+          "name": "updateAccount2",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "UpdateAccount2Input"
+        },
+        {
+          "modelName": "Account",
+          "name": "updateAccount3",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "UpdateAccount3Input"
+        },
+        {
+          "modelName": "Account",
+          "name": "updateAccount4",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "UpdateAccount4Input"
+        },
+        {
+          "modelName": "Account",
+          "name": "updateAccount5",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "UpdateAccount5Input"
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "issuer"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "account",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Account"
+          },
+          "optional": true,
+          "inverseFieldName": "identity"
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Account"
+        },
+        {
+          "modelName": "Identity"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "UpdateAccountWhere",
+      "fields": [
+        {
+          "messageName": "UpdateAccountWhere",
+          "name": "username",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Account",
+            "fieldName": "username"
+          },
+          "target": [
+            "username"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccountValues",
+      "fields": [
+        {
+          "messageName": "UpdateAccountValues",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Account",
+            "fieldName": "name"
+          },
+          "target": [
+            "name"
+          ]
+        },
+        {
+          "messageName": "UpdateAccountValues",
+          "name": "username",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Account",
+            "fieldName": "username"
+          },
+          "target": [
+            "username"
+          ]
+        },
+        {
+          "messageName": "UpdateAccountValues",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL",
+            "modelName": "Account",
+            "fieldName": "isActive"
+          },
+          "target": [
+            "isActive"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccountInput",
+      "fields": [
+        {
+          "messageName": "UpdateAccountInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccountWhere"
+          }
+        },
+        {
+          "messageName": "UpdateAccountInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccountValues"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount2Where",
+      "fields": [
+        {
+          "messageName": "UpdateAccount2Where",
+          "name": "username",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Account",
+            "fieldName": "username"
+          },
+          "target": [
+            "username"
+          ]
+        },
+        {
+          "messageName": "UpdateAccount2Where",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL",
+            "modelName": "Account",
+            "fieldName": "isActive"
+          },
+          "target": [
+            "isActive"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount2Values",
+      "fields": [
+        {
+          "messageName": "UpdateAccount2Values",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Account",
+            "fieldName": "name"
+          },
+          "target": [
+            "name"
+          ]
+        },
+        {
+          "messageName": "UpdateAccount2Values",
+          "name": "username",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Account",
+            "fieldName": "username"
+          },
+          "target": [
+            "username"
+          ]
+        },
+        {
+          "messageName": "UpdateAccount2Values",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL",
+            "modelName": "Account",
+            "fieldName": "isActive"
+          },
+          "target": [
+            "isActive"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount2Input",
+      "fields": [
+        {
+          "messageName": "UpdateAccount2Input",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccount2Where"
+          }
+        },
+        {
+          "messageName": "UpdateAccount2Input",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccount2Values"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount3Where",
+      "fields": [
+        {
+          "messageName": "UpdateAccount3Where",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Identity",
+            "fieldName": "id"
+          },
+          "target": [
+            "identity",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount3Values",
+      "fields": [
+        {
+          "messageName": "UpdateAccount3Values",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccount3IdentityInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount3IdentityInput",
+      "fields": [
+        {
+          "messageName": "UpdateAccount3IdentityInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Identity",
+            "fieldName": "id"
+          },
+          "target": [
+            "identity",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount3Input",
+      "fields": [
+        {
+          "messageName": "UpdateAccount3Input",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccount3Where"
+          }
+        },
+        {
+          "messageName": "UpdateAccount3Input",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccount3Values"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount4Where",
+      "fields": [
+        {
+          "messageName": "UpdateAccount4Where",
+          "name": "identityEmail",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Identity",
+            "fieldName": "email"
+          },
+          "nullable": true,
+          "target": [
+            "identity",
+            "email"
+          ]
+        },
+        {
+          "messageName": "UpdateAccount4Where",
+          "name": "identityIssuer",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Identity",
+            "fieldName": "issuer"
+          },
+          "nullable": true,
+          "target": [
+            "identity",
+            "issuer"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount4Values",
+      "fields": [
+        {
+          "messageName": "UpdateAccount4Values",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Account",
+            "fieldName": "email"
+          },
+          "target": [
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount4Input",
+      "fields": [
+        {
+          "messageName": "UpdateAccount4Input",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccount4Where"
+          }
+        },
+        {
+          "messageName": "UpdateAccount4Input",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccount4Values"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount5Where",
+      "fields": [
+        {
+          "messageName": "UpdateAccount5Where",
+          "name": "identityEmail",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Identity",
+            "fieldName": "email"
+          },
+          "nullable": true,
+          "target": [
+            "identity",
+            "email"
+          ]
+        },
+        {
+          "messageName": "UpdateAccount5Where",
+          "name": "identityIssuer",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Identity",
+            "fieldName": "issuer"
+          },
+          "nullable": true,
+          "target": [
+            "identity",
+            "issuer"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount5Values",
+      "fields": [
+        {
+          "messageName": "UpdateAccount5Values",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccount5IdentityInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount5IdentityInput",
+      "fields": [
+        {
+          "messageName": "UpdateAccount5IdentityInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Identity",
+            "fieldName": "email"
+          },
+          "nullable": true,
+          "target": [
+            "identity",
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount5Input",
+      "fields": [
+        {
+          "messageName": "UpdateAccount5Input",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccount5Where"
+          }
+        },
+        {
+          "messageName": "UpdateAccount5Input",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccount5Values"
+          }
+        }
+      ]
+    },
+    {
+      "name": "EmailPasswordInput",
+      "fields": [
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateInput",
+      "fields": [
+        {
+          "messageName": "AuthenticateInput",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "AuthenticateInput",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    }
+  ]
+}
