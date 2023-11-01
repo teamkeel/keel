@@ -27,7 +27,6 @@ model Person {
     actions {
         read longLongLongLongLongLongTitle(
             name,
-            
             age,
             preferredName: Number,
             somethingElse: Text,

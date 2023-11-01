@@ -208,6 +208,9 @@
       "name": "Any"
     },
     {
+      "name": "CreateAccountInput"
+    },
+    {
       "name": "UpdateAccountWhere",
       "fields": [
         {
@@ -223,6 +226,9 @@
           ]
         }
       ]
+    },
+    {
+      "name": "UpdateAccountValues"
     },
     {
       "name": "UpdateAccountInput",
