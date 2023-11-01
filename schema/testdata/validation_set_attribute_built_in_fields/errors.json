@@ -1,0 +1,208 @@
+{
+  "errors": [
+    {
+      "message": "The field 'createdAt' cannot be set as it is a built-in field and can only be mutated internally",
+      "hint": "Set this value to another field on the model or remove the @set attribute entirely",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 232,
+        "line": 11,
+        "column": 23
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 241,
+        "line": 11,
+        "column": 32
+      }
+    },
+    {
+      "message": "The field 'updatedAt' cannot be set as it is a built-in field and can only be mutated internally",
+      "hint": "Set this value to another field on the model or remove the @set attribute entirely",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 275,
+        "line": 12,
+        "column": 23
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 284,
+        "line": 12,
+        "column": 32
+      }
+    },
+    {
+      "message": "The field 'createdAt' cannot be set as it is a built-in field and can only be mutated internally",
+      "hint": "Set this value to another field on the model or remove the @set attribute entirely",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 408,
+        "line": 15,
+        "column": 33
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 417,
+        "line": 15,
+        "column": 42
+      }
+    },
+    {
+      "message": "The field 'updatedAt' cannot be set as it is a built-in field and can only be mutated internally",
+      "hint": "Set this value to another field on the model or remove the @set attribute entirely",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 461,
+        "line": 16,
+        "column": 33
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 470,
+        "line": 16,
+        "column": 42
+      }
+    },
+    {
+      "message": "Cannot assign to the root model of the action",
+      "hint": "The @set attribute is intended for setting a field. For example, @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 540,
+        "line": 19,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 547,
+        "line": 19,
+        "column": 25
+      }
+    },
+    {
+      "message": "Cannot assign to the root model of the action",
+      "hint": "The @set attribute is intended for setting a field. For example, @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 630,
+        "line": 22,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 634,
+        "line": 22,
+        "column": 22
+      }
+    },
+    {
+      "message": "The field 'createdAt' cannot be set as it is a built-in field and can only be mutated internally",
+      "hint": "Set this value to another field on the model or remove the @set attribute entirely",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 743,
+        "line": 25,
+        "column": 23
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 752,
+        "line": 25,
+        "column": 32
+      }
+    },
+    {
+      "message": "The field 'updatedAt' cannot be set as it is a built-in field and can only be mutated internally",
+      "hint": "Set this value to another field on the model or remove the @set attribute entirely",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 786,
+        "line": 26,
+        "column": 23
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 795,
+        "line": 26,
+        "column": 32
+      }
+    },
+    {
+      "message": "Cannot set a field which is beyond scope of the data being created or updated",
+      "hint": "Use a field which is part of a model being created or updated within this action's inputs",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 890,
+        "line": 29,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 914,
+        "line": 29,
+        "column": 42
+      }
+    },
+    {
+      "message": "Cannot set a field which is beyond scope of the data being created or updated",
+      "hint": "Use a field which is part of a model being created or updated within this action's inputs",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 943,
+        "line": 30,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 967,
+        "line": 30,
+        "column": 42
+      }
+    },
+    {
+      "message": "Cannot assign to the root model of the action",
+      "hint": "The @set attribute is intended for setting a field. For example, @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 1048,
+        "line": 33,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 1055,
+        "line": 33,
+        "column": 25
+      }
+    },
+    {
+      "message": "Cannot assign to the root model of the action",
+      "hint": "The @set attribute is intended for setting a field. For example, @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 1149,
+        "line": 36,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
+        "offset": 1153,
+        "line": 36,
+        "column": 22
+      }
+    }
+  ]
+}

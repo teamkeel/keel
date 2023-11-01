@@ -13,6 +13,14 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
+var (
+	fieldsNotMutable = []string{
+		parser.ImplicitFieldNameId,
+		parser.ImplicitFieldNameCreatedAt,
+		parser.ImplicitFieldNameUpdatedAt,
+	}
+)
+
 func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var model *parser.ModelNode
 	var action *parser.ActionNode
@@ -74,8 +82,8 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				return
 			}
 
-			// We resolve whether the actual fragments exist somewhere else,
-			// but we need to exit here if they dont resolve.
+			// We resolve whether the actual fragments are valid idents in other validations,
+			// but we need to exit early here if they dont resolve.
 			resolver := expressions.NewConditionResolver(conditions[0], asts, &expressionContext)
 			_, _, err := resolver.Resolve()
 			if err != nil {
@@ -113,6 +121,15 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 					errs.AppendError(makeSetExpressionError(
 						"The @set attribute can only be used to set model fields",
 						fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+						lhs,
+					))
+					return
+				}
+
+				if i == 0 && fragment.Fragment == strcase.ToLowerCamel(model.Name.Value) && len(fragments) == 1 {
+					errs.AppendError(makeSetExpressionError(
+						"Cannot assign to the root model of the action",
+						fmt.Sprintf("The @set attribute is intended for setting a field. For example, @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
 						lhs,
 					))
 					return
@@ -209,6 +226,17 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 								return
 							}
 						}
+					}
+				}
+
+				if i == len(fragments)-1 && currentModel == nil {
+					if lo.Contains(fieldsNotMutable, currentField.Name.Value) {
+						errs.AppendError(makeSetExpressionError(
+							fmt.Sprintf("The field '%s' cannot be set as it is a built-in field and can only be mutated internally", currentField.Name.Value),
+							"Set this value to another field on the model or remove the @set attribute entirely",
+							fragment,
+						))
+						return
 					}
 				}
 			}
