@@ -1,0 +1,12 @@
+model Account {
+    fields {
+        name Text?
+        email Text
+    }
+
+    actions {
+        create createAccount() with () {
+            @set(account.email = ctx.identity.email)
+        }
+    }
+}

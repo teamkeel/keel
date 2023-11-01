@@ -1,0 +1,18 @@
+model Account {
+    fields {
+        name Text?
+        email Text
+    }
+
+    actions {
+        create testAction() {
+            @set(account.email = ctx.identity.email)
+        }
+    }
+}
+
+api Test {
+    models {
+        Account
+    }
+}
