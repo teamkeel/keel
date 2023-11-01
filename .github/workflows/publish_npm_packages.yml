@@ -64,6 +64,19 @@ jobs:
         working-directory: ./packages/${{ matrix.package }}
         run: pnpm install --frozen-lockfile
 
+      - uses: mad9000/actions-find-and-replace-string@2
+        id: make_package_version
+        with:
+          source: ${{ inputs.version }}
+          find: 'v'        
+          replace: ''
+
+      - name: "Update NPM version ${{ matrix.package }}"
+        uses: reedyuk/npm-version@1.2.1
+        with:
+          version: ${{ steps.make_package_version.outputs.value }}
+          package: ./packages/${{ matrix.package }}
+
       - name: NPM Publish ${{ matrix.package }}
         uses: JS-DevTools/npm-publish@v2
         with:
