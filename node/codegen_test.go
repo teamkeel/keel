@@ -712,7 +712,7 @@ api Test {
     }
 }`
 	expected := `
-createAccount(i: CreateAccountInput): Promise<Account>;`
+createAccount(i?: CreateAccountInput): Promise<sdk.Account>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeTestingTypes(w, s)
