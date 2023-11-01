@@ -1,0 +1,35 @@
+
+message LongLongLongLongReturns {
+
+}
+model Person {
+  fields {
+    name Text
+    age Number
+  }
+  actions {
+    read longLongLongLongLongLongTitle(name, age, preferredName: Number, somethingElse: Text) returns (LongLongLongLongReturns)
+  }
+}
+
+
+===
+
+message LongLongLongLongReturns {
+}
+
+model Person {
+    fields {
+        name Text
+        age Number
+    }
+
+    actions {
+        read longLongLongLongLongLongTitle(
+            name,
+            age,
+            preferredName: Number,
+            somethingElse: Text,
+        ) returns (LongLongLongLongReturns)
+    }
+}

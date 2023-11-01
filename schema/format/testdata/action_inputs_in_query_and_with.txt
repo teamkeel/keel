@@ -1,0 +1,26 @@
+model Order {
+    fields {
+        items Item[]
+        promoCode Text
+        orderNumber Text @unique
+        isActive Boolean
+    }
+    actions {
+        update updateOrder( orderNumber,isActive,) with (  orderNumber,  promoCode, ) 
+    }
+}
+
+===
+
+model Order {
+    fields {
+        items Item[]
+        promoCode Text
+        orderNumber Text @unique
+        isActive Boolean
+    }
+
+    actions {
+        update updateOrder(orderNumber, isActive) with (orderNumber, promoCode)
+    }
+}
