@@ -12,12 +12,9 @@
 
 ---
 
+# Keel
 
-# Keel 
-
-## What is Keel?
-
-Keel is the all-in-one backend platform that gives you everything you need to build your product.  
+Keel is the all-in-one platform that solves the backend puzzle by combining all the essential technology and tools your team needs to build a business that thrives.
 
 🔥 A fully-managed relational database  
 🔨 Scalable infrastructure  
@@ -28,13 +25,15 @@ Keel is the all-in-one backend platform that gives you everything you need to bu
 ⚡️ Configuration and secret management  
 🧐 Observability  
 🚀 Git-based deployments  
+🎟️ Pub/Sub  
+💼 Cron jobs 
 
 Keel is currently in private beta, [join the waiting list](https://keel.so/) for access to the platform. In the meantime you can run your Keel projects locally without an account using the CLI
 
+
 ## Getting started
 
-
-### Installing the CLI via Homebrew
+### Installing the CLI
 
 The best way to get started with Keel is to install the CLI via Homebrew:
 
@@ -48,6 +47,8 @@ If the CLI has installed correctly, then `keel --version` will output the latest
 ```bash
 $ keel --version
 ```
+
+You will also need [Node.js](https://nodejs.org/) and [Docker](https://docker.com/) to run Keel. Once you grab those, you've now got the full power of Keel locally.
 
 ### Creating a new project
 Creating a new project with the CLI is easy! You can create a new Keel project locally by running:
@@ -105,7 +106,7 @@ If you want to know more about any of the CLI commands, you can run `keel [comma
 
 ## Contributing
 
-We are not currently looking for active contributors at this time as we are still pre-release, but we are happy to accept bug fixes, tests or docs changes. If you would like to build and run the Keel Runtime locally, you can find out how to get set up for development from our [Contributors](CONTRIBUTING.md) page. 
+If you would like to build and run the Keel Runtime locally, you can find out how to get set up for development from our [Contributors](CONTRIBUTING.md) page. 
 
 ## Reporting a problem
 
