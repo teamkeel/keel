@@ -113,24 +113,6 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 	return
 }
 
-func ValidateActionAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
-			for _, attr := range action.Attributes {
-				if attr.Name.Value != parser.AttributeValidate {
-					continue
-				}
-
-				errs.Concat(
-					validateActionAttributeWithExpression(asts, model, action, attr),
-				)
-			}
-		}
-	}
-
-	return
-}
-
 func ValidateFieldAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
@@ -251,7 +233,6 @@ func validateActionAttributeWithExpression(
 
 	if attr.Name.Value == parser.AttributeSet {
 		rules = append(rules, expression.OperatorAssignmentRule)
-		rules = append(rules, expression.PreventValueConditionRule)
 	} else {
 		rules = append(rules, expression.OperatorLogicalRule)
 	}

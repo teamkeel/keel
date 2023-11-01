@@ -1,12 +1,13 @@
 model Record {
     fields {
+        name Text
         owner User?
         parent Record?
         children Record[]
     }
 
     actions {
-        create createRecordWithChildren() {
+        create createRecordWithChildren() with (name, children.name) {
             @set(record.children.owner = ctx.identity.user.records.owner)
         }
     }

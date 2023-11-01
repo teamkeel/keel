@@ -1,0 +1,1313 @@
+{
+  "models": [
+    {
+      "name": "Post",
+      "fields": [
+        {
+          "modelName": "Post",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Post",
+          "name": "published",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Post",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
+          "optional": true,
+          "foreignKeyFieldName": "identityId"
+        },
+        {
+          "modelName": "Post",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Publisher"
+          },
+          "optional": true,
+          "foreignKeyFieldName": "publisherId"
+        },
+        {
+          "modelName": "Post",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Post",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Post",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Post",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Post",
+          "name": "publisherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Publisher",
+            "relatedModelField": "id"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Post",
+          "name": "nestedData1",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "post.publisher.departments.head.id = ctx.identity.person.id"
+            }
+          ],
+          "inputMessageName": "NestedData1Input"
+        },
+        {
+          "modelName": "Post",
+          "name": "nestedData2",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "post.publisher.id = ctx.identity.publisher.id"
+            }
+          ],
+          "inputMessageName": "NestedData2Input"
+        },
+        {
+          "modelName": "Post",
+          "name": "nestedData3",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "post.publisher.name = \"someName\""
+            }
+          ],
+          "inputMessageName": "NestedData3Input"
+        },
+        {
+          "modelName": "Post",
+          "name": "nestedData4",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "post.name = \"some name\""
+            }
+          ],
+          "inputMessageName": "NestedData4Input"
+        },
+        {
+          "modelName": "Post",
+          "name": "nestedData5",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "post.publisher = ctx.identity.publisher"
+            }
+          ],
+          "inputMessageName": "NestedData5Input"
+        },
+        {
+          "modelName": "Post",
+          "name": "nestedData6",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "post.publisher.name = \"someName\""
+            }
+          ],
+          "inputMessageName": "NestedData6Input"
+        },
+        {
+          "modelName": "Post",
+          "name": "nestedData7",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "post.publisher.country.publishersCount = 1"
+            }
+          ],
+          "inputMessageName": "NestedData7Input"
+        },
+        {
+          "modelName": "Post",
+          "name": "nestedData8",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "post.publisher.departments.head = ctx.identity.person"
+            }
+          ],
+          "inputMessageName": "NestedData8Input"
+        }
+      ]
+    },
+    {
+      "name": "Publisher",
+      "fields": [
+        {
+          "modelName": "Publisher",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Publisher",
+          "name": "owner",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Person"
+          },
+          "foreignKeyFieldName": "ownerId"
+        },
+        {
+          "modelName": "Publisher",
+          "name": "departments",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Department",
+            "repeated": true
+          },
+          "inverseFieldName": "publisher"
+        },
+        {
+          "modelName": "Publisher",
+          "name": "country",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Country"
+          },
+          "foreignKeyFieldName": "countryId"
+        },
+        {
+          "modelName": "Publisher",
+          "name": "admin",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "adminId",
+          "inverseFieldName": "publisher"
+        },
+        {
+          "modelName": "Publisher",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Publisher",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Publisher",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Publisher",
+          "name": "ownerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Person",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Publisher",
+          "name": "countryId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Country",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Publisher",
+          "name": "adminId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Department",
+      "fields": [
+        {
+          "modelName": "Department",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Publisher"
+          },
+          "foreignKeyFieldName": "publisherId",
+          "inverseFieldName": "departments"
+        },
+        {
+          "modelName": "Department",
+          "name": "head",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Person"
+          },
+          "optional": true,
+          "foreignKeyFieldName": "headId"
+        },
+        {
+          "modelName": "Department",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Department",
+          "name": "number",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Department",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Department",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Department",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Department",
+          "name": "publisherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Publisher",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Department",
+          "name": "headId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Person",
+            "relatedModelField": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Country",
+      "fields": [
+        {
+          "modelName": "Country",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Country",
+          "name": "publishersCount",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Country",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Country",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Country",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Person",
+      "fields": [
+        {
+          "modelName": "Person",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Person",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "identityId",
+          "inverseFieldName": "person"
+        },
+        {
+          "modelName": "Person",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Person",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Person",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Person",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "issuer"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Publisher"
+          },
+          "optional": true,
+          "inverseFieldName": "admin"
+        },
+        {
+          "modelName": "Identity",
+          "name": "person",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Person"
+          },
+          "optional": true,
+          "inverseFieldName": "identity"
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Country"
+        },
+        {
+          "modelName": "Department"
+        },
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Person"
+        },
+        {
+          "modelName": "Post"
+        },
+        {
+          "modelName": "Publisher"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "NestedData1Input",
+      "fields": [
+        {
+          "messageName": "NestedData1Input",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData1PublisherInput"
+          },
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "NestedData1PublisherInput",
+      "fields": [
+        {
+          "messageName": "NestedData1PublisherInput",
+          "name": "country",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData1PublisherCountryInput"
+          }
+        },
+        {
+          "messageName": "NestedData1PublisherInput",
+          "name": "departments",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData1PublisherDepartmentsInput",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "NestedData1PublisherCountryInput",
+      "fields": [
+        {
+          "messageName": "NestedData1PublisherCountryInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Country",
+            "fieldName": "id"
+          },
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData1PublisherDepartmentsInput",
+      "fields": [
+        {
+          "messageName": "NestedData1PublisherDepartmentsInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Department",
+            "fieldName": "name"
+          },
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
+        },
+        {
+          "messageName": "NestedData1PublisherDepartmentsInput",
+          "name": "number",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Department",
+            "fieldName": "number"
+          },
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData2Input",
+      "fields": [
+        {
+          "messageName": "NestedData2Input",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Post",
+            "fieldName": "name"
+          },
+          "nullable": true,
+          "target": [
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData3Input",
+      "fields": [
+        {
+          "messageName": "NestedData3Input",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData3PublisherInput"
+          },
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "NestedData3PublisherInput",
+      "fields": [
+        {
+          "messageName": "NestedData3PublisherInput",
+          "name": "country",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData3PublisherCountryInput"
+          }
+        },
+        {
+          "messageName": "NestedData3PublisherInput",
+          "name": "departments",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData3PublisherDepartmentsInput",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "NestedData3PublisherCountryInput",
+      "fields": [
+        {
+          "messageName": "NestedData3PublisherCountryInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Country",
+            "fieldName": "id"
+          },
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData3PublisherDepartmentsInput",
+      "fields": [
+        {
+          "messageName": "NestedData3PublisherDepartmentsInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Department",
+            "fieldName": "name"
+          },
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
+        },
+        {
+          "messageName": "NestedData3PublisherDepartmentsInput",
+          "name": "number",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Department",
+            "fieldName": "number"
+          },
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData4Input",
+      "fields": [
+        {
+          "messageName": "NestedData4Input",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData4PublisherInput"
+          },
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "NestedData4PublisherInput",
+      "fields": [
+        {
+          "messageName": "NestedData4PublisherInput",
+          "name": "country",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData4PublisherCountryInput"
+          }
+        },
+        {
+          "messageName": "NestedData4PublisherInput",
+          "name": "departments",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData4PublisherDepartmentsInput",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "NestedData4PublisherCountryInput",
+      "fields": [
+        {
+          "messageName": "NestedData4PublisherCountryInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Country",
+            "fieldName": "id"
+          },
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData4PublisherDepartmentsInput",
+      "fields": [
+        {
+          "messageName": "NestedData4PublisherDepartmentsInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Department",
+            "fieldName": "name"
+          },
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
+        },
+        {
+          "messageName": "NestedData4PublisherDepartmentsInput",
+          "name": "number",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Department",
+            "fieldName": "number"
+          },
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData5Input",
+      "fields": [
+        {
+          "messageName": "NestedData5Input",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Post",
+            "fieldName": "name"
+          },
+          "nullable": true,
+          "target": [
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData6Input",
+      "fields": [
+        {
+          "messageName": "NestedData6Input",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData6PublisherInput"
+          },
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "NestedData6PublisherInput",
+      "fields": [
+        {
+          "messageName": "NestedData6PublisherInput",
+          "name": "country",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData6PublisherCountryInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "NestedData6PublisherCountryInput",
+      "fields": [
+        {
+          "messageName": "NestedData6PublisherCountryInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Country",
+            "fieldName": "id"
+          },
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData7Input",
+      "fields": [
+        {
+          "messageName": "NestedData7Input",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData7PublisherInput"
+          },
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "NestedData7PublisherInput",
+      "fields": [
+        {
+          "messageName": "NestedData7PublisherInput",
+          "name": "country",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData7PublisherCountryInput"
+          }
+        },
+        {
+          "messageName": "NestedData7PublisherInput",
+          "name": "departments",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData7PublisherDepartmentsInput",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "NestedData7PublisherCountryInput",
+      "fields": [
+        {
+          "messageName": "NestedData7PublisherCountryInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Country",
+            "fieldName": "name"
+          },
+          "nullable": true,
+          "target": [
+            "publisher",
+            "country",
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData7PublisherDepartmentsInput",
+      "fields": [
+        {
+          "messageName": "NestedData7PublisherDepartmentsInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Department",
+            "fieldName": "name"
+          },
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
+        },
+        {
+          "messageName": "NestedData7PublisherDepartmentsInput",
+          "name": "number",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Department",
+            "fieldName": "number"
+          },
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData8Input",
+      "fields": [
+        {
+          "messageName": "NestedData8Input",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData8PublisherInput"
+          },
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "NestedData8PublisherInput",
+      "fields": [
+        {
+          "messageName": "NestedData8PublisherInput",
+          "name": "country",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData8PublisherCountryInput"
+          }
+        },
+        {
+          "messageName": "NestedData8PublisherInput",
+          "name": "departments",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "NestedData8PublisherDepartmentsInput",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "NestedData8PublisherCountryInput",
+      "fields": [
+        {
+          "messageName": "NestedData8PublisherCountryInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Country",
+            "fieldName": "id"
+          },
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NestedData8PublisherDepartmentsInput",
+      "fields": [
+        {
+          "messageName": "NestedData8PublisherDepartmentsInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Department",
+            "fieldName": "name"
+          },
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
+        },
+        {
+          "messageName": "NestedData8PublisherDepartmentsInput",
+          "name": "number",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Department",
+            "fieldName": "number"
+          },
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EmailPasswordInput",
+      "fields": [
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateInput",
+      "fields": [
+        {
+          "messageName": "AuthenticateInput",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "AuthenticateInput",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    }
+  ]
+}

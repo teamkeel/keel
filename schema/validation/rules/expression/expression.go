@@ -190,31 +190,6 @@ func OperatorLogicalRule(asts []*parser.AST, expression *parser.Expression, cont
 	return errors
 }
 
-// Validates that no value conditions are used
-func PreventValueConditionRule(asts []*parser.AST, expression *parser.Expression, context expressions.ExpressionContext) (errors []error) {
-	conditions := expression.Conditions()
-
-	for _, condition := range conditions {
-		if condition.Type() == parser.ValueCondition {
-			errors = append(errors,
-				errorhandling.NewValidationError(
-					errorhandling.ErrorForbiddenValueCondition,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"Value":      condition.ToString(),
-							"Attribute":  fmt.Sprintf("@%s", context.Attribute.Name.Value),
-							"Suggestion": fmt.Sprintf("%s = xxx", condition.ToString()),
-						},
-					},
-					condition,
-				),
-			)
-		}
-	}
-
-	return errors
-}
-
 func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *parser.Condition, context expressions.ExpressionContext, permittedOperators []string) (errors []error) {
 	resolver := expressions.NewConditionResolver(condition, asts, &context)
 	resolvedLHS, resolvedRHS, _ := resolver.Resolve()

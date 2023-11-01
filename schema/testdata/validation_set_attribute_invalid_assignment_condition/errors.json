@@ -1,0 +1,123 @@
+{
+  "errors": [
+    {
+      "message": "Operator '==' not permitted on @set",
+      "hint": "Did you mean =?",
+      "code": "E022",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 532,
+        "line": 22,
+        "column": 33
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 534,
+        "line": 22,
+        "column": 35
+      }
+    },
+    {
+      "message": "The @set attribute cannot be a value condition and must express an assignment",
+      "hint": "For example, assign a value to a field on this model with @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 187,
+        "line": 10,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 190,
+        "line": 10,
+        "column": 21
+      }
+    },
+    {
+      "message": "The @set attribute cannot be a value condition and must express an assignment",
+      "hint": "For example, assign a value to a field on this model with @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 273,
+        "line": 13,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 280,
+        "line": 13,
+        "column": 25
+      }
+    },
+    {
+      "message": "The @set attribute cannot be a value condition and must express an assignment",
+      "hint": "For example, assign a value to a field on this model with @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 360,
+        "line": 16,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 364,
+        "line": 16,
+        "column": 22
+      }
+    },
+    {
+      "message": "The @set attribute cannot be a value condition and must express an assignment",
+      "hint": "For example, assign a value to a field on this model with @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 434,
+        "line": 19,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 448,
+        "line": 19,
+        "column": 32
+      }
+    },
+    {
+      "message": "The @set attribute cannot be a logical condition and must express an assignment",
+      "hint": "For example, assign a value to a field on this model with @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 517,
+        "line": 22,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 539,
+        "line": 22,
+        "column": 40
+      }
+    },
+    {
+      "message": "A @set attribute can only consist of a single assignment expression",
+      "hint": "For example, assign a value to a field on this model with @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 606,
+        "line": 25,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_invalid_assignment_condition/schema.keel",
+        "offset": 651,
+        "line": 25,
+        "column": 63
+      }
+    }
+  ]
+}

@@ -11,7 +11,7 @@ import (
 )
 
 // Validates the arguments to any attribute expression.
-func AttributeArgumentsRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
+func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var model *parser.ModelNode
 	var action *parser.ActionNode
 	var job *parser.JobNode

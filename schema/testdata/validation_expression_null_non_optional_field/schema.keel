@@ -5,10 +5,9 @@ model Person {
     }
 
     actions {
-        create createPerson() {
+        create createPerson() with (employer.name) {
             @set(person.name = null)
-            @set(null = person.name)
-            @set(person.employer.name = null)
+            @set(person.employer.country = null)
             @permission(expression: person.name != null)
         }
 
@@ -24,6 +23,7 @@ model Person {
 model Company {
     fields {
         name Text
+        country Text
         employees Person[]
     }
 }
