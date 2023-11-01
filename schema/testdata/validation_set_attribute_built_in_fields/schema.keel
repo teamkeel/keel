@@ -1,0 +1,45 @@
+model Post {
+    fields {
+        name Text?
+        published Boolean?
+        publisher Publisher?
+        identity Identity? @unique
+    }
+
+    actions {
+        create createPost() with (name, published) {
+            @set(post.createdAt = ctx.now)
+            @set(post.updatedAt = ctx.now)
+        }
+        create createPost2() with (name, published, publisher.name) {
+            @set(post.publisher.createdAt = ctx.now)
+            @set(post.publisher.updatedAt = ctx.now)
+        }
+        create createPost3() {
+            @set(post.id = ctx.identity.post.id)
+        }
+        create createPost4() {
+            @set(post = ctx.identity.post)
+        }
+        update updatePost(id) with (name, published) {
+            @set(post.createdAt = ctx.now)
+            @set(post.updatedAt = ctx.now)
+        }
+        update updatePost2(id) with (name, published) {
+            @set(post.publisher.createdAt = ctx.now)
+            @set(post.publisher.updatedAt = ctx.now)
+        }
+        update updatePost3(identity.id) {
+            @set(post.id = ctx.identity.post.id)
+        }
+        update updatePost4(identity.id) {
+            @set(post = ctx.identity.post)
+        }
+    }
+}
+
+model Publisher {
+    fields {
+        name Text
+    }
+}

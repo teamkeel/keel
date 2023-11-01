@@ -62,6 +62,7 @@ var (
 	AssignmentCondition = "assignment"
 	LogicalCondition    = "logical"
 	ValueCondition      = "value"
+	UnknownCondition    = "unknown"
 )
 
 func (c *Condition) Type() string {
@@ -73,7 +74,11 @@ func (c *Condition) Type() string {
 		return AssignmentCondition
 	}
 
-	return LogicalCondition
+	if lo.Contains(LogicalOperators, c.Operator.Symbol) {
+		return LogicalCondition
+	}
+
+	return UnknownCondition
 }
 
 type Operator struct {
@@ -107,8 +112,6 @@ var (
 
 var AssignmentOperators = []string{
 	OperatorAssignment,
-	OperatorIncrement,
-	OperatorDecrement,
 }
 
 var LogicalOperators = []string{

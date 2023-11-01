@@ -191,6 +191,30 @@
             }
           ],
           "inputMessageName": "NestedData8Input"
+        },
+        {
+          "modelName": "Post",
+          "name": "nestedData9",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "post.publisher.id = ctx.identity.publisher.id"
+            }
+          ],
+          "inputMessageName": "NestedData9Input"
+        },
+        {
+          "modelName": "Post",
+          "name": "nestedData10",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "post.publisher = ctx.identity.publisher"
+            }
+          ],
+          "inputMessageName": "NestedData10Input"
         }
       ]
     },
@@ -1205,6 +1229,12 @@
           ]
         }
       ]
+    },
+    {
+      "name": "NestedData9Input"
+    },
+    {
+      "name": "NestedData10Input"
     },
     {
       "name": "EmailPasswordInput",

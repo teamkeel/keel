@@ -2,6 +2,7 @@ package validation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
@@ -10,6 +11,14 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+)
+
+var (
+	fieldsNotMutable = []string{
+		parser.ImplicitFieldNameId,
+		parser.ImplicitFieldNameCreatedAt,
+		parser.ImplicitFieldNameUpdatedAt,
+	}
 )
 
 func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
@@ -73,8 +82,8 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				return
 			}
 
-			// We resolve whether the actual fragments exist somewhere else,
-			// but we need to exit here if they dont resolve.
+			// We resolve whether the actual fragments are valid idents in other validations,
+			// but we need to exit early here if they dont resolve.
 			resolver := expressions.NewConditionResolver(conditions[0], asts, &expressionContext)
 			_, _, err := resolver.Resolve()
 			if err != nil {
@@ -117,17 +126,26 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 					return
 				}
 
+				if i == 0 && fragment.Fragment == strcase.ToLowerCamel(model.Name.Value) && len(fragments) == 1 {
+					errs.AppendError(makeSetExpressionError(
+						"Cannot assign to the root model of the action",
+						fmt.Sprintf("The @set attribute is intended for setting a field. For example, @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+						lhs,
+					))
+					return
+				}
+
 				if i > 0 {
+					// get the next field in the relationship fragments
 					currentField = query.ModelField(currentModel, fragment.Fragment)
+					// currentModel will be null if this is not a model field
 					currentModel = query.Model(asts, currentField.Type.Value)
 				}
 
 				// The purpose of this part is to check that the nested field being set
 				// is part of the nested create inputs. You can set any field within the models
 				// being created. You cannot set fields on models which already reside in the database.
-				//if i > 1 {
 				if i < len(fragments)-1 {
-
 					withinWriteScope := false
 
 					if i < 2 {
@@ -167,6 +185,56 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 							"Cannot set a field which is beyond scope of the data being created or updated",
 							"Use a field which is part of a model being created or updated within this action's inputs",
 							lhs,
+						))
+						return
+					}
+				}
+
+				// The purpose of this part is to check that the nested model/id being set
+				// is not being provided in the nested create inputs, because that means it
+				// is being created and not associated.
+				if i == len(fragments)-1 && currentModel != nil {
+					// We know this is setting (associating to an existing model) at this point
+					setFrags := lo.Map(fragments, func(f *parser.IdentFragment, _ int) string {
+						return f.Fragment
+					})
+
+					setFragsString := strings.Join(setFrags[1:], ".")
+
+					for _, input := range action.With {
+						inputFrags := lo.Map(input.Type.Fragments, func(f *parser.IdentFragment, _ int) string {
+							return f.Fragment
+						})
+
+						inputFragsString := strings.Join(inputFrags, ".")
+
+						cut, has := strings.CutPrefix(inputFragsString, setFragsString)
+						if has {
+							if cut == ".id" || len(cut) == 0 {
+								errs.AppendError(makeSetExpressionError(
+									fmt.Sprintf("Cannot associate to the %s model here as it is already provided as an action input.", currentModel.Name.Value),
+									"",
+									lhs,
+								))
+								return
+							} else {
+								errs.AppendError(makeSetExpressionError(
+									fmt.Sprintf("The %s model is being created during this action and so cannot be associated to an existing record here.", currentModel.Name.Value),
+									"Change the action inputs if you want to set to an existing record",
+									lhs,
+								))
+								return
+							}
+						}
+					}
+				}
+
+				if i == len(fragments)-1 && currentModel == nil {
+					if lo.Contains(fieldsNotMutable, currentField.Name.Value) {
+						errs.AppendError(makeSetExpressionError(
+							fmt.Sprintf("Cannot set the field '%s' as it is a built-in field and can only be mutated internally", currentField.Name.Value),
+							"Target another field on the model or remove the @set attribute entirely",
+							fragment,
 						))
 						return
 					}

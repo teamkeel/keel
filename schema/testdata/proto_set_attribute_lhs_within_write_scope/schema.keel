@@ -51,6 +51,12 @@ model Post {
         ) {
             @set(post.publisher.departments.head = ctx.identity.person)
         }
+        create nestedData9()  {
+            @set(post.publisher.id = ctx.identity.publisher.id)
+        }
+        create nestedData10()  {
+            @set(post.publisher = ctx.identity.publisher)
+        }
     }
 }
 
