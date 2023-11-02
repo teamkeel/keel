@@ -435,15 +435,15 @@ func connectAndWaitForDbServer(serverConnectionInfo *db.ConnectionInfo) (server 
 		return nil, err
 	}
 
-	// ping() the database for 5 seconds until it is available.
+	// ping() the database server until it is available.
 	var pingError error
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 10; i++ {
 		if pingError = server.Ping(); pingError == nil {
 			break
 		}
 		time.Sleep(250 * time.Millisecond)
 	}
-	return server, pingError
+	return server, nil
 }
 
 // createVolume creates the Docker volume we'll persist the database(s) on,
