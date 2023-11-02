@@ -74,12 +74,13 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
-				DISTINCT ON("thing"."id") "thing"."id"
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM
 				"thing"
 			WHERE
-				("thing"."created_by_id" IS NOT DISTINCT FROM ?)`,
-		expectedArgs: []any{unverifiedIdentity.Id},
+				("thing"."created_by_id" IS NOT DISTINCT FROM ?)
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -99,14 +100,15 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "listThings",
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing"."id" 
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM 
 				"thing" 
 			LEFT JOIN "identity" AS "thing$created_by" ON 
 				"thing$created_by"."id" = "thing"."created_by_id" 
 			WHERE 
-				("thing$created_by"."id" IS NOT DISTINCT FROM ?)`,
-		expectedArgs: []any{unverifiedIdentity.Id},
+				("thing$created_by"."id" IS NOT DISTINCT FROM ?)
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -126,12 +128,14 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
-				DISTINCT ON("thing"."id") "thing"."id"
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM
 				"thing"
 			WHERE
-				( "thing"."created_by_id" IS NOT DISTINCT FROM NULL )`,
-		earlyAuth: CouldNotAuthoriseEarly(),
+				( "thing"."created_by_id" IS NOT DISTINCT FROM NULL )
+				AND "thing"."id" IN (?)`,
+		earlyAuth:    CouldNotAuthoriseEarly(),
+		expectedArgs: []any{"idToAuthorise"},
 	},
 	{
 		name: "identity_on_related_model",
@@ -154,7 +158,7 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
-				DISTINCT ON("thing"."id") "thing"."id"
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM
 				"thing"
 			LEFT JOIN
@@ -162,8 +166,9 @@ var authorisationTestCases = []authorisationTestCase{
 			ON
 				"thing$related"."id" = "thing"."related_id"
 			WHERE
-				( "thing$related"."created_by_id" IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{unverifiedIdentity.Id},
+				( "thing$related"."created_by_id" IS NOT DISTINCT FROM ? )
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -184,12 +189,13 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
-				DISTINCT ON("thing"."id") "thing"."id"
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM
 				"thing"
 			WHERE
-				( "thing"."is_active" IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{true},
+				( "thing"."is_active" IS NOT DISTINCT FROM ? )
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{true, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -214,7 +220,7 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
-				DISTINCT ON("thing"."id") "thing"."id"
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM
 				"thing"
 			LEFT JOIN
@@ -222,8 +228,10 @@ var authorisationTestCases = []authorisationTestCase{
 			ON
 				"thing$related"."id" = "thing"."related_id"
 			WHERE
-				( "thing$related"."created_by_id" IS NOT DISTINCT FROM "thing"."created_by_id" )`,
-		earlyAuth: CouldNotAuthoriseEarly(),
+				( "thing$related"."created_by_id" IS NOT DISTINCT FROM "thing"."created_by_id" )
+				AND "thing"."id" IN (?)`,
+		earlyAuth:    CouldNotAuthoriseEarly(),
+		expectedArgs: []any{"idToAuthorise"},
 	},
 	{
 		name: "multiple_conditions_and",
@@ -242,12 +250,13 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
-				DISTINCT ON("thing"."id") "thing"."id"
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM
 				"thing"
 			WHERE
-				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )`,
-		expectedArgs: []any{true, unverifiedIdentity.Id},
+				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{true, unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -268,12 +277,13 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
-				DISTINCT ON("thing"."id") "thing"."id"
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM
 				"thing"
 			WHERE
-				( ( "thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )`,
-		expectedArgs: []any{true, unverifiedIdentity.Id},
+				( ( "thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{true, unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -295,14 +305,15 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
-				DISTINCT ON("thing"."id") "thing"."id"
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM
 				"thing"
 			WHERE
 				( "thing"."is_active" IS NOT DISTINCT FROM ?
 					OR
-				 "thing"."created_by_id" IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{true, unverifiedIdentity.Id},
+				 "thing"."created_by_id" IS NOT DISTINCT FROM ? )
+				 AND "thing"."id" IN (?)`,
+		expectedArgs: []any{true, unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -330,14 +341,15 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "listThings",
 		expectedTemplate: `
 			SELECT
-				DISTINCT ON("thing"."id") "thing"."id"
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM
 				"thing"
 			LEFT JOIN "related" AS
 				"thing$related" ON "thing$related"."id" = "thing"."related_id"
 			WHERE
-				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) OR "thing"."created_by_id" IS NOT DISTINCT FROM "thing$related"."created_by_id" )`,
-		expectedArgs: []any{true, unverifiedIdentity.Id},
+				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) OR "thing"."created_by_id" IS NOT DISTINCT FROM "thing$related"."created_by_id" )
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{true, unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -461,15 +473,16 @@ var authorisationTestCases = []authorisationTestCase{
 		earlyAuth:  CouldNotAuthoriseEarly(),
 		expectedTemplate: `
 			SELECT
-				DISTINCT ON("thing"."id") "thing"."id"
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM
 				"thing"
 			LEFT JOIN "identity" AS "thing$created_by" ON
 				"thing$created_by"."id" = "thing"."created_by_id"
 			WHERE 
 				"thing"."id" IS NOT DISTINCT FROM ? AND 
-				( ( ? IS NOT DISTINCT FROM ? AND "thing$created_by"."id" IS NOT DISTINCT FROM ? ) )`,
-		expectedArgs: []any{"123", true, true, unverifiedIdentity.Id},
+				( ( ? IS NOT DISTINCT FROM ? AND "thing$created_by"."id" IS NOT DISTINCT FROM ? ) )
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{"123", true, true, unverifiedIdentity.Id, "idToAuthorise"},
 		identity:     unverifiedIdentity,
 	},
 	{
@@ -980,7 +993,7 @@ var authorisationTestCases = []authorisationTestCase{
 		earlyAuth:  CouldNotAuthoriseEarly(),
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing"."id" 
+				COUNT(DISTINCT "thing"."id") = 1 AS authorised
 			FROM 
 				"thing" 
 			LEFT JOIN 
@@ -989,8 +1002,9 @@ var authorisationTestCases = []authorisationTestCase{
 				"identity" AS "thing$updated_by" ON "thing$updated_by"."id" = "thing"."updated_by_id" 
 			WHERE 
 				"thing"."id" IS NOT DISTINCT FROM ? AND 
-				( "thing$created_by"."id" IS NOT DISTINCT FROM ? OR "thing$updated_by"."id" IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id, unverifiedIdentity.Id},
+				( "thing$created_by"."id" IS NOT DISTINCT FROM ? OR "thing$updated_by"."id" IS NOT DISTINCT FROM ? )
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{"123", unverifiedIdentity.Id, unverifiedIdentity.Id, "idToAuthorise"},
 		identity:     unverifiedIdentity,
 	},
 	{
@@ -1028,7 +1042,7 @@ var authorisationTestCases = []authorisationTestCase{
 		earlyAuth: CouldNotAuthoriseEarly(),
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("user"."id") "user"."id" 
+				COUNT(DISTINCT "user"."id") = 1 AS authorised
 			FROM 
 				"user" 
 			LEFT JOIN 
@@ -1041,8 +1055,9 @@ var authorisationTestCases = []authorisationTestCase{
 				"user" AS "user$organisations$organisation$users$user" ON "user$organisations$organisation$users$user"."id" = "user$organisations$organisation$users"."user_id" 
 			WHERE 
 				"user$organisations$organisation"."id" IS NOT DISTINCT FROM ? AND ( ? IS NOT DISTINCT FROM "user$organisations$organisation$users$user"."identity_id" )
+				AND "user"."id" IN (?)
 			`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id},
+		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
 		identity:     unverifiedIdentity,
 	},
 	{
@@ -1060,10 +1075,13 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "list",
 		expectedTemplate: `
-			SELECT DISTINCT ON("thing"."id") "thing"."id" 
-			FROM "thing" LEFT JOIN "identity" AS "thing$identity" ON "thing$identity"."id" = "thing"."identity_id" 
-			WHERE ( "thing$identity"."email" IS DISTINCT FROM ? )`,
-		expectedArgs: []any{"weaveton@weave.xyz"},
+			SELECT COUNT(DISTINCT "thing"."id") = 1 AS authorised
+			FROM "thing" 
+			LEFT JOIN "identity" AS "thing$identity" ON "thing$identity"."id" = "thing"."identity_id" 
+			WHERE 
+				( "thing$identity"."email" IS DISTINCT FROM ? )
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{"weaveton@weave.xyz", "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -1081,14 +1099,16 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "list",
 		expectedTemplate: `
-			SELECT DISTINCT ON("thing"."id") "thing"."id" FROM "thing" 
+			SELECT COUNT(DISTINCT "thing"."id") = 1 AS authorised
+			FROM "thing"
 			WHERE (
 				(SELECT "identity"."email" 
 				FROM "identity" 
 				WHERE 
 					"identity"."id" IS NOT DISTINCT FROM ? AND 
-					"identity"."email" IS DISTINCT FROM NULL) IS DISTINCT FROM ?)`,
-		expectedArgs: []any{unverifiedIdentity.Id, "weaveton@weave.xyz"},
+					"identity"."email" IS DISTINCT FROM NULL) IS DISTINCT FROM ?)
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{unverifiedIdentity.Id, "weaveton@weave.xyz", "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1107,14 +1127,16 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "list",
 		expectedTemplate: `
-			SELECT DISTINCT ON("thing"."id") "thing"."id" FROM "thing" 
+			SELECT COUNT(DISTINCT "thing"."id") = 1 AS authorised
+			FROM "thing"
 			WHERE (
 				(SELECT "identity"."email" 
 				FROM "identity" 
 				WHERE 
 					"identity"."id" IS NOT DISTINCT FROM ? AND 
-					"identity"."email" IS DISTINCT FROM NULL) IS DISTINCT FROM ?)`,
-		expectedArgs: []any{"", "weaveton@weave.xyz"},
+					"identity"."email" IS DISTINCT FROM NULL) IS DISTINCT FROM ?)
+				AND "thing"."id" IN (?)`,
+		expectedArgs: []any{"", "weaveton@weave.xyz", "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -1141,12 +1163,14 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "admit",
 		expectedTemplate: `
-			SELECT DISTINCT ON("admit"."id") "admit"."id" 
+			SELECT COUNT(DISTINCT "admit"."id") = 1 AS authorised
 			FROM "admit" 
 			LEFT JOIN "identity" AS "admit$identity" ON "admit$identity"."id" = "admit"."identity_id" 
 			LEFT JOIN "user" AS "admit$identity$user" ON "admit$identity$user"."identity_id" = "admit$identity"."id" 
-			WHERE ( "admit$identity$user"."is_adult" IS NOT DISTINCT FROM ? )`,
-		expectedArgs: []any{true},
+			WHERE 
+				( "admit$identity$user"."is_adult" IS NOT DISTINCT FROM ? )
+				AND "admit"."id" IN (?)`,
+		expectedArgs: []any{true, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
@@ -1168,15 +1192,16 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "getFilm",
 		input:      map[string]any{"id": "123"},
 		expectedTemplate: `
-			SELECT DISTINCT ON("adult_film"."id") "adult_film"."id" 
+			SELECT COUNT(DISTINCT "adult_film"."id") = 1 AS authorised
 			FROM "adult_film" 
 			WHERE 
 				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
 					((SELECT "identity$user"."is_adult" 
 					FROM "identity" 
 					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."is_adult" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM ?)`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id, true},
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."is_adult" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM ?)
+				AND "adult_film"."id" IN (?)`,
+		expectedArgs: []any{"123", unverifiedIdentity.Id, true, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1202,7 +1227,7 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "getFilm",
 		input:      map[string]any{"id": "123"},
 		expectedTemplate: `
-			SELECT DISTINCT ON("adult_film"."id") "adult_film"."id" 
+			SELECT COUNT(DISTINCT "adult_film"."id") = 1 AS authorised
 			FROM "adult_film" 
 			LEFT JOIN "identity" AS "adult_film$identity" ON "adult_film$identity"."id" = "adult_film"."identity_id" 
 			LEFT JOIN "user" AS "adult_film$identity$user" ON "adult_film$identity$user"."identity_id" = "adult_film$identity"."id" 
@@ -1211,8 +1236,9 @@ var authorisationTestCases = []authorisationTestCase{
 					((SELECT "identity$user"."id" 
 					FROM "identity" 
 					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?  AND "identity$user"."id" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM "adult_film$identity$user"."id")`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id},
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?  AND "identity$user"."id" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM "adult_film$identity$user"."id")
+				AND "adult_film"."id" IN (?)`,
+		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1238,7 +1264,7 @@ var authorisationTestCases = []authorisationTestCase{
 		actionName: "getFilm",
 		input:      map[string]any{"id": "123"},
 		expectedTemplate: `
-			SELECT DISTINCT ON("adult_film"."id") "adult_film"."id" 
+			SELECT COUNT(DISTINCT "adult_film"."id") = 1 AS authorised
 			FROM "adult_film" 
 			LEFT JOIN "identity" AS "adult_film$identity" ON "adult_film$identity"."id" = "adult_film"."identity_id" 
 			LEFT JOIN "user" AS "adult_film$identity$user" ON "adult_film$identity$user"."identity_id" = "adult_film$identity"."id" 
@@ -1247,8 +1273,9 @@ var authorisationTestCases = []authorisationTestCase{
 					((SELECT "identity$user"."id" 
 					FROM "identity" 
 					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?  AND "identity$user"."id" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM "adult_film$identity$user"."id")`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id},
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?  AND "identity$user"."id" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM "adult_film$identity$user"."id")
+				AND "adult_film"."id" IN (?)`,
+		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1274,13 +1301,14 @@ var authorisationTestCases = []authorisationTestCase{
 		input:      map[string]any{"id": "123"},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("bank_account"."id") "bank_account"."id" 
+				COUNT(DISTINCT "bank_account"."id") = 1 AS authorised
 			FROM 
 				"bank_account" 
 			WHERE 
 				"bank_account"."id" IS NOT DISTINCT FROM ? AND 
-				(? IS NOT DISTINCT FROM "bank_account"."identity_id")`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id},
+				(? IS NOT DISTINCT FROM "bank_account"."identity_id")
+				AND "bank_account"."id" IN (?)`,
+		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1320,7 +1348,7 @@ var authorisationTestCases = []authorisationTestCase{
 		input:      map[string]any{"entity": map[string]any{"id": map[string]any{"equals": "123"}}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("entity_user"."id") "entity_user"."id" 
+				COUNT(DISTINCT "entity_user"."id") = 1 AS authorised
 			FROM 
 				"entity_user" 
 			LEFT JOIN 
@@ -1334,8 +1362,9 @@ var authorisationTestCases = []authorisationTestCase{
 					LEFT JOIN "entity_access" AS "identity$administrator$access" ON "identity$administrator$access"."admin_id" = "identity$administrator"."id" 
 					LEFT JOIN "entity" AS "identity$administrator$access$entity" ON "identity$administrator$access$entity"."id" = "identity$administrator$access"."entity_id" 
 					LEFT JOIN "entity_user" AS "identity$administrator$access$entity$users" ON "identity$administrator$access$entity$users"."entity_id" = "identity$administrator$access$entity"."id" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$administrator$access$entity$users"."id" IS DISTINCT FROM NULL))`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id},
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$administrator$access$entity$users"."id" IS DISTINCT FROM NULL))
+				AND "entity_user"."id" IN (?)`,
+		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1375,7 +1404,7 @@ var authorisationTestCases = []authorisationTestCase{
 		input:      map[string]any{"entity": map[string]any{"id": map[string]any{"equals": "123"}}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("entity_user"."id") "entity_user"."id" 
+				COUNT(DISTINCT "entity_user"."id") = 1 AS authorised
 			FROM 
 				"entity_user" 
 			LEFT JOIN 
@@ -1389,8 +1418,9 @@ var authorisationTestCases = []authorisationTestCase{
 					LEFT JOIN "entity_access" AS "identity$administrator$access" ON "identity$administrator$access"."admin_id" = "identity$administrator"."id" 
 					LEFT JOIN "entity" AS "identity$administrator$access$entity" ON "identity$administrator$access$entity"."id" = "identity$administrator$access"."entity_id" 
 					LEFT JOIN "entity_user" AS "identity$administrator$access$entity$users" ON "identity$administrator$access$entity$users"."entity_id" = "identity$administrator$access$entity"."id" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$administrator$access$entity$users"."id" IS DISTINCT FROM NULL))`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id},
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$administrator$access$entity$users"."id" IS DISTINCT FROM NULL))
+				AND "entity_user"."id" IN (?)`,
+		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1433,7 +1463,7 @@ func TestPermissionQueryBuilder(t *testing.T) {
 			if !canResolveEarly {
 				permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
-				statement, err := actions.GeneratePermissionStatement(scope, permissions, testCase.input)
+				statement, err := actions.GeneratePermissionStatement(scope, permissions, testCase.input, []string{"idToAuthorise"})
 				if err != nil {
 					require.NoError(t, err)
 				}

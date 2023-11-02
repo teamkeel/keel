@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -1147,7 +1148,18 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			// The IN operator on an a value slice needs to have its template structured like this:
 			// WHERE x IN (?, ?, ?)
 			inPlaceholders := []string{}
-			inValues := rhs.value.([]any)
+
+			// Check that rhs is a slice
+			slice := reflect.ValueOf(rhs.value)
+			if slice.Kind() != reflect.Slice || slice.IsNil() {
+				return "", nil, errors.New("rhs operand in sql condition must be a slice")
+			}
+
+			// Safely map rhs slice to []any
+			inValues := make([]any, slice.Len())
+			for i := 0; i < slice.Len(); i++ {
+				inValues[i] = slice.Index(i).Interface()
+			}
 
 			// if the inValues is empty, then it is invalid SQL to have "IN ()"
 			// so therefore we should just apply a constraint that evaluates to false
@@ -1270,10 +1282,7 @@ func toRuntimeError(err error) error {
 		case db.PgForeignKeyConstraintViolation:
 			return common.NewForeignKeyConstraintError(value.Columns[0])
 		default:
-			return common.RuntimeError{
-				Code:    common.ErrInvalidInput,
-				Message: "action failed to complete",
-			}
+			return common.NewInternalServerError()
 		}
 	}
 	return err
