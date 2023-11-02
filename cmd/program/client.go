@@ -206,9 +206,17 @@ func (m *GenerateClientModel) renderGenerate() string {
 				parts := strings.Split(generatedFile.Path, "/")
 				prePath := filepath.Join(parts[0 : len(parts)-1]...)
 
+				if m.OutputDir != "" {
+					if prePath != "" {
+						prePath = fmt.Sprintf("%s/%s", m.OutputDir, prePath)
+					} else {
+						prePath = m.OutputDir
+					}
+				}
+
 				b.WriteString(
 					colors.Gray(
-						fmt.Sprintf("- %s/%s%s", prePath, colors.Cyan(functionName).String(), colors.Gray(".ts").String()),
+						fmt.Sprintf("%s/%s%s", prePath, colors.Cyan(functionName).String(), colors.Gray(".ts").String()),
 					).Highlight().String(),
 				)
 				b.WriteString("\n")
