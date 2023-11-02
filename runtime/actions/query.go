@@ -1282,7 +1282,10 @@ func toRuntimeError(err error) error {
 		case db.PgForeignKeyConstraintViolation:
 			return common.NewForeignKeyConstraintError(value.Columns[0])
 		default:
-			return common.NewInternalServerError()
+			return common.RuntimeError{
+				Code:    common.ErrInvalidInput,
+				Message: "action failed to complete",
+			}
 		}
 	}
 	return err

@@ -184,41 +184,40 @@ test("create product with duplicated product code - invalid inputs response", as
   expect(product).not.toBeNull();
 });
 
-test('create product without brand permissions - permission error', async () => {
-    const samsung = await actions.getBrand({ code: "SMSG"});
-    expect(samsung).not.toBeNull();
-
-    await expect(
-        actions.withIdentity(appleIdentity).createProduct({
-            name: "Pad",
-            barcode: "398328223",
-            productCode: "KA222",
-            brand: {
-                id: samsung!.id
-            }
-        })
-    ).toHaveError({
-        code: "ERR_PERMISSION_DENIED",
-        message: "not authorized to access this action"
-    });
-});
-
-test('create product with brand permissions - product created', async () => {
-  const samsung = await actions.getBrand({ code: "SMSG"});
+test("create product without brand permissions - permission error", async () => {
+  const samsung = await actions.getBrand({ code: "SMSG" });
   expect(samsung).not.toBeNull();
 
+  await expect(
+    actions.withIdentity(appleIdentity).createProduct({
+      name: "Pad",
+      barcode: "398328223",
+      productCode: "KA222",
+      brand: {
+        id: samsung!.id,
+      },
+    })
+  ).toHaveError({
+    code: "ERR_PERMISSION_DENIED",
+    message: "not authorized to access this action",
+  });
+});
 
-   const product = await   actions.withIdentity(samsungIdentity).createProduct({
-          name: "Samsung Watch",
-          barcode: "29387928",
-          productCode: "SMW111",
-          brand: {
-              id: samsung!.id
-          }
-      })
-  
-    expect(product).not.toBeNull();
-    expect(product.barcode).toEqual("29387928");
+test("create product with brand permissions - product created", async () => {
+  const samsung = await actions.getBrand({ code: "SMSG" });
+  expect(samsung).not.toBeNull();
+
+  const product = await actions.withIdentity(samsungIdentity).createProduct({
+    name: "Samsung Watch",
+    barcode: "29387928",
+    productCode: "SMW111",
+    brand: {
+      id: samsung!.id,
+    },
+  });
+
+  expect(product).not.toBeNull();
+  expect(product.barcode).toEqual("29387928");
 });
 
 test("create product with duplicate barcode - invalid inputs response", async () => {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/samber/lo"
@@ -267,20 +266,4 @@ func getEmailAndDomain(ctx context.Context) (email string, domain string, verifi
 	segments := strings.Split(identity.Email, "@")
 	domain = segments[1]
 	return identity.Email, domain, identity.EmailVerified, nil
-}
-
-func compare(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	sort.Strings(a)
-	sort.Strings(b)
-
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
-	}
-	return true
 }
