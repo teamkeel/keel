@@ -68,7 +68,7 @@ Keel has created a handy [VSCode extension](https://marketplace.visualstudio.com
 
 ### Your very first Keel schema
 
-To create your first Keel schema, follow our [Quickstart Tutorial](https://docs.keel.so/get-started/tutorial#the-keel-schema).
+To create your first Keel schema, follow our [Quickstart Tutorial](https://docs.keel.so/tutorial#the-keel-schema).
 
 ### Running your Keel app
 
@@ -96,10 +96,10 @@ This is an overview of the commands available to you once you are set up.
 | Command    | Description                                                         |
 | ---------- | ------------------------------------------------------------------- |
 | init       | Initialise a new Keel project                                       |
-| [run](https://docs.keel.so/docs/cli#validating)        | Run the application locally                                         |
-| [validate](https://docs.keel.so/docs/cli#validating)   | Validate a Keel schema                                            |
-| [generate](https://docs.keel.so/docs/cli#generating-code)   | Generates dynamic JavaScript code from your Keel schema          |
-| [secrets](https://docs.keel.so/docs/secrets#secrets-in-development)    | Add, remove & list secrets                                          |
+| [run](https://docs.keel.so/cli#running-your-project)        | Run the application locally                                         |
+| [validate](https://docs.keel.so/cli#validating)   | Validate a Keel schema                                            |
+| [generate](https://docs.keel.so/cli#generating-code)   | Generates dynamic JavaScript code from your Keel schema          |
+| [secrets](https://docs.keel.so/secrets#secrets-in-development)    | Add, remove & list secrets                                          |
 | help       | Gives extra information about Keel CLI commands                                       |
 
 If you want to know more about any of the CLI commands, you can run `keel [command] --help`. 
