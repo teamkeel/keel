@@ -1,40 +1,6 @@
 {
   "errors": [
     {
-      "message": "'name' not found",
-      "hint": "Did you mean ctx, or post?",
-      "code": "E020",
-      "pos": {
-        "filename": "testdata/validation_set_attribute_lhs_is_invalid/schema.keel",
-        "offset": 197,
-        "line": 10,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_set_attribute_lhs_is_invalid/schema.keel",
-        "offset": 201,
-        "line": 10,
-        "column": 22
-      }
-    },
-    {
-      "message": "'n' not found",
-      "hint": "Did you mean ctx, or post?",
-      "code": "E020",
-      "pos": {
-        "filename": "testdata/validation_set_attribute_lhs_is_invalid/schema.keel",
-        "offset": 296,
-        "line": 13,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_set_attribute_lhs_is_invalid/schema.keel",
-        "offset": 297,
-        "line": 13,
-        "column": 19
-      }
-    },
-    {
       "message": "'publisher' not found",
       "hint": "Did you mean ctx, or post?",
       "code": "E020",
@@ -49,6 +15,40 @@
         "offset": 907,
         "line": 31,
         "column": 27
+      }
+    },
+    {
+      "message": "The @set attribute can only be used to set model fields",
+      "hint": "For example, assign a value to a field on this model with @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_lhs_is_invalid/schema.keel",
+        "offset": 197,
+        "line": 10,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_lhs_is_invalid/schema.keel",
+        "offset": 201,
+        "line": 10,
+        "column": 22
+      }
+    },
+    {
+      "message": "The @set attribute can only be used to set model fields",
+      "hint": "For example, assign a value to a field on this model with @set(post.isActive = true)",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_set_attribute_lhs_is_invalid/schema.keel",
+        "offset": 296,
+        "line": 13,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_set_attribute_lhs_is_invalid/schema.keel",
+        "offset": 297,
+        "line": 13,
+        "column": 19
       }
     },
     {

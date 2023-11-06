@@ -8,31 +8,8 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Person",
-          "name": "public",
-          "type": {
-            "type": "TYPE_BOOL"
-          }
-        },
-        {
-          "modelName": "Person",
-          "name": "dateOfDeath",
-          "type": {
-            "type": "TYPE_DATE"
           },
           "optional": true
-        },
-        {
-          "modelName": "Person",
-          "name": "identity",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
-          },
-          "foreignKeyFieldName": "identityId"
         },
         {
           "modelName": "Person",
@@ -64,40 +41,38 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Person",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
         }
       ],
       "actions": [
         {
           "modelName": "Person",
-          "name": "getPeople",
-          "type": "ACTION_TYPE_LIST",
+          "name": "getBob",
+          "type": "ACTION_TYPE_GET",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "permissions": [
-            {
-              "modelName": "Person",
-              "actionName": "getPeople",
-              "expression": {
-                "source": "person.public == true"
-              }
-            }
-          ],
           "whereExpressions": [
             {
-              "source": "person.public == true"
+              "source": "n == \"Bob\""
+            },
+            {
+              "source": "\"Bob\" == n"
             }
           ],
-          "inputMessageName": "GetPeopleInput"
+          "inputMessageName": "GetBobInput"
+        },
+        {
+          "modelName": "Person",
+          "name": "getPerson",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
+            {
+              "source": "n == person.name"
+            },
+            {
+              "source": "person.name == n"
+            }
+          ],
+          "inputMessageName": "GetPersonInput"
         },
         {
           "modelName": "Person",
@@ -106,25 +81,10 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "setExpressions": [
             {
-              "source": "person.identity = ctx.identity"
-            },
-            {
-              "source": "person.public = true"
+              "source": "person.name = n"
             }
           ],
           "inputMessageName": "CreatePersonInput"
-        },
-        {
-          "modelName": "Person",
-          "name": "kill",
-          "type": "ACTION_TYPE_UPDATE",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "setExpressions": [
-            {
-              "source": "person.dateOfDeath = ctx.now"
-            }
-          ],
-          "inputMessageName": "KillInput"
         }
       ]
     },
@@ -259,144 +219,10 @@
       "name": "Any"
     },
     {
-      "name": "StringQueryInput",
+      "name": "GetBobInput",
       "fields": [
         {
-          "messageName": "StringQueryInput",
-          "name": "equals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true,
-          "nullable": true
-        },
-        {
-          "messageName": "StringQueryInput",
-          "name": "notEquals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true,
-          "nullable": true
-        },
-        {
-          "messageName": "StringQueryInput",
-          "name": "startsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "StringQueryInput",
-          "name": "endsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "StringQueryInput",
-          "name": "contains",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "StringQueryInput",
-          "name": "oneOf",
-          "type": {
-            "type": "TYPE_STRING",
-            "repeated": true
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
-      "name": "GetPeopleWhere",
-      "fields": [
-        {
-          "messageName": "GetPeopleWhere",
-          "name": "name",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
-          },
-          "target": [
-            "name"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "GetPeopleInput",
-      "fields": [
-        {
-          "messageName": "GetPeopleInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "GetPeopleWhere"
-          }
-        },
-        {
-          "messageName": "GetPeopleInput",
-          "name": "first",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "GetPeopleInput",
-          "name": "after",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "GetPeopleInput",
-          "name": "last",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "GetPeopleInput",
-          "name": "before",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
-      "name": "CreatePersonInput",
-      "fields": [
-        {
-          "messageName": "CreatePersonInput",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Person",
-            "fieldName": "name"
-          },
-          "target": [
-            "name"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "KillWhere",
-      "fields": [
-        {
-          "messageName": "KillWhere",
+          "messageName": "GetBobInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -406,31 +232,49 @@
           "target": [
             "id"
           ]
+        },
+        {
+          "messageName": "GetBobInput",
+          "name": "n",
+          "type": {
+            "type": "TYPE_STRING"
+          }
         }
       ]
     },
     {
-      "name": "KillValues"
-    },
-    {
-      "name": "KillInput",
+      "name": "GetPersonInput",
       "fields": [
         {
-          "messageName": "KillInput",
-          "name": "where",
+          "messageName": "GetPersonInput",
+          "name": "id",
           "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "KillWhere"
-          }
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
         },
         {
-          "messageName": "KillInput",
-          "name": "values",
+          "messageName": "GetPersonInput",
+          "name": "n",
           "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "KillValues"
-          },
-          "optional": true
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreatePersonInput",
+      "fields": [
+        {
+          "messageName": "CreatePersonInput",
+          "name": "n",
+          "type": {
+            "type": "TYPE_STRING"
+          }
         }
       ]
     },
