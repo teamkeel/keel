@@ -47,10 +47,7 @@ model Product {
             @where(product.brand.isActive)
         }
         create createProduct() with (name, barcode, productCode, brand.id) {
-            // TODO: permissions on create fix
-            // https://linear.app/keel/issue/KE-1178/permissions-issue-on-create-actions
-            // @permission(expression: ctx.identity.user in product.brand.editors)
-            @permission(expression: true)
+             @permission(expression: ctx.identity.user in product.brand.editors)
         }
         update deactivateProduct(productCode, brand.code) {
             @set(product.isActive = false)

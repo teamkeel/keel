@@ -3,7 +3,7 @@ package actions
 import (
 	"context"
 	"errors"
-	"sort"
+	"fmt"
 	"strings"
 
 	"github.com/samber/lo"
@@ -69,8 +69,12 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 		return false, nil
 	}
 
+	idsToAuthorise := lo.Map(rowsToAuthorise, func(row map[string]interface{}, _ int) string {
+		return row["id"].(string)
+	})
+
 	// Generate SQL for the permission expressions.
-	stmt, err := GeneratePermissionStatement(scope, permissions, input)
+	stmt, err := GeneratePermissionStatement(scope, permissions, input, idsToAuthorise)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -85,19 +89,13 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 		return false, err
 	}
 
-	idsToAuthorise := lo.Map(rowsToAuthorise, func(row map[string]interface{}, _ int) string {
-		return row["id"].(string)
-	})
+	if len(permissionResults) != 1 {
+		return false, errors.New("could not parse permission result as there are multiple rows")
+	}
 
-	permissionResultIds := lo.Map(permissionResults, func(row map[string]interface{}, _ int) string {
-		return row["id"].(string)
-	})
-
-	authorised = compare(permissionResultIds, idsToAuthorise)
-
-	if !authorised {
-		span.SetAttributes(attribute.Bool("result", false))
-		return false, err
+	authorised, ok := permissionResults[0]["authorised"].(bool)
+	if !ok {
+		return false, errors.New("could not parse authorised result")
 	}
 
 	span.SetAttributes(attribute.Bool("result", authorised))
@@ -190,7 +188,7 @@ func resolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permis
 	return authorised, nil
 }
 
-func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRule, input map[string]any) (*Statement, error) {
+func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRule, input map[string]any, idsToAuthorise []string) (*Statement, error) {
 	permissions = proto.PermissionsWithExpression(permissions)
 	query := NewQuery(scope.Context, scope.Model, WithJoinType(JoinTypeLeft))
 
@@ -235,9 +233,15 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 		query.CloseParenthesis()
 	}
 
-	// Select distinct IDs.
-	query.AppendSelect(IdField())
-	query.AppendDistinctOn(IdField())
+	// Filter by the ids we want to authorise
+	query.And()
+	err = query.Where(IdField(), OneOf, Value(idsToAuthorise))
+	if err != nil {
+		return nil, err
+	}
+
+	// Check that the number of authorised rows matches
+	query.AppendSelectClause(fmt.Sprintf("COUNT(DISTINCT %s) = %v AS authorised", IdField().toSqlOperandString(query), len(idsToAuthorise)))
 
 	return query.SelectStatement(), nil
 }
@@ -262,20 +266,4 @@ func getEmailAndDomain(ctx context.Context) (email string, domain string, verifi
 	segments := strings.Split(identity.Email, "@")
 	domain = segments[1]
 	return identity.Email, domain, identity.EmailVerified, nil
-}
-
-func compare(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	sort.Strings(a)
-	sort.Strings(b)
-
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
-	}
-	return true
 }
