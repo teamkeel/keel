@@ -1,0 +1,19 @@
+model Person {
+    fields {
+        name Text?
+    }
+
+    actions {
+        get getBob(id, n: Text) {
+            @where(n == "Bob")
+            @where("Bob" == n)
+        }
+        get getPerson(id, n: Text) {
+            @where(n == person.name)
+            @where(person.name == n)
+        }
+        create createPerson() with (n: Text) {
+            @set(person.name = n)
+        }
+    }
+}
