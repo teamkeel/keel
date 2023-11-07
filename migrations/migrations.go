@@ -101,7 +101,7 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	sql.WriteString(setUpdatedAt)
 	sql.WriteString("\n")
 
-	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema ( schema TEXT NOT NULL );\n")
+	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema (schema TEXT NOT NULL);\n")
 	sql.WriteString("DELETE FROM keel_schema;\n")
 
 	b, err := protojson.Marshal(m.Schema)
@@ -111,6 +111,9 @@ func (m *Migrations) Apply(ctx context.Context) error {
 
 	escapedJSON := db.QuoteLiteral(string(b))
 	sql.WriteString(fmt.Sprintf("INSERT INTO keel_schema (schema) VALUES (%s);", escapedJSON))
+	sql.WriteString("\n")
+
+	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_refresh_token (token TEXT NOT NULL PRIMARY KEY, identity_id TEXT NOT NULL, created_at TIMESTAMP, expires_at TIMESTAMP);\n")
 	sql.WriteString("\n")
 
 	sql.WriteString(fmt.Sprintf("SELECT set_trace_id('%s');\n", span.SpanContext().TraceID().String()))

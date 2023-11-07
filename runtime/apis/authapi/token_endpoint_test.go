@@ -9,23 +9,23 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/apis/authapi"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/oauth/oauthtest"
 	"github.com/teamkeel/keel/runtime/runtimectx"
-	"github.com/teamkeel/keel/schema"
-	"github.com/teamkeel/keel/testhelpers"
+	keeltesting "github.com/teamkeel/keel/testing"
 )
 
 var authTestSchema = `model Post{}`
 
 func TestTokenExchange_ValidNewIdentity(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
 	// Set up auth config
@@ -56,6 +56,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	require.NotEmpty(t, validResponse.AccessToken)
 	require.Equal(t, "bearer", validResponse.TokenType)
 	require.NotEmpty(t, validResponse.ExpiresIn)
+	require.NotEmpty(t, validResponse.RefreshToken)
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 
 	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken, "")
@@ -84,7 +85,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 }
 
 func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
 	// Set up auth config
@@ -159,7 +160,7 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 }
 
 func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
 	// Set up auth config
@@ -222,24 +223,11 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 }
 
 func TestTokenEndpoint_HttpGet(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
-	require.NoError(t, err)
-
-	server.SetUser("id|285620", &oauth.UserClaims{
-		Email: "keelson@keel.so",
-		Name:  "Keelson",
-	})
-
-	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
-	require.NoError(t, err)
-
 	// Make a token exchange grant request
-	request := makeTokenExchangeRequest(ctx, idToken)
+	request := makeTokenExchangeRequest(ctx, "mock_token")
 
 	request.Method = http.MethodGet
 
@@ -254,25 +242,11 @@ func TestTokenEndpoint_HttpGet(t *testing.T) {
 }
 
 func TestTokenEndpoint_ApplicationJsonRequest(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
-	require.NoError(t, err)
-
-	server.SetUser("id|285620", &oauth.UserClaims{
-		Email: "keelson@keel.so",
-		Name:  "Keelson",
-	})
-
-	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
-	require.NoError(t, err)
-
 	// Make a token exchange grant request
-	request := makeTokenExchangeRequest(ctx, idToken)
-
+	request := makeTokenExchangeRequest(ctx, "mock_token")
 	request.Header = http.Header{}
 	request.Header.Add("Content-Type", "application/json")
 
@@ -287,27 +261,13 @@ func TestTokenEndpoint_ApplicationJsonRequest(t *testing.T) {
 }
 
 func TestTokenEndpoint_MissingGrantType(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
-	require.NoError(t, err)
-
-	server.SetUser("id|285620", &oauth.UserClaims{
-		Email: "keelson@keel.so",
-		Name:  "Keelson",
-	})
-
-	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
-	require.NoError(t, err)
-
 	// Make a token exchange grant request
-	request := makeTokenExchangeRequest(ctx, idToken)
-
+	request := makeTokenExchangeRequest(ctx, "mock_token")
 	form := url.Values{}
-	form.Add("subject_token", idToken)
+	form.Add("subject_token", "mock_token")
 	request.URL.RawQuery = form.Encode()
 
 	// Handle runtime request, expecting TokenErrorResponse
@@ -321,28 +281,14 @@ func TestTokenEndpoint_MissingGrantType(t *testing.T) {
 }
 
 func TestTokenEndpoint_WrongGrantType(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
-	require.NoError(t, err)
-
-	server.SetUser("id|285620", &oauth.UserClaims{
-		Email: "keelson@keel.so",
-		Name:  "Keelson",
-	})
-
-	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
-	require.NoError(t, err)
-
 	// Make a token exchange grant request
-	request := makeTokenExchangeRequest(ctx, idToken)
-
+	request := makeTokenExchangeRequest(ctx, "mock_token")
 	form := url.Values{}
 	form.Add("grant_type", "password")
-	form.Add("subject_token", idToken)
+	form.Add("subject_token", "mock_token")
 	request.URL.RawQuery = form.Encode()
 
 	// Handle runtime request, expecting TokenErrorResponse
@@ -356,25 +302,11 @@ func TestTokenEndpoint_WrongGrantType(t *testing.T) {
 }
 
 func TestTokenExchange_NoSubjectToken(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
-	require.NoError(t, err)
-
-	server.SetUser("id|285620", &oauth.UserClaims{
-		Email: "keelson@keel.so",
-		Name:  "Keelson",
-	})
-
-	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
-	require.NoError(t, err)
-
 	// Make a token exchange grant request
-	request := makeTokenExchangeRequest(ctx, idToken)
-
+	request := makeTokenExchangeRequest(ctx, "mock_token")
 	form := url.Values{}
 	form.Add("grant_type", "token_exchange")
 	request.URL.RawQuery = form.Encode()
@@ -390,25 +322,11 @@ func TestTokenExchange_NoSubjectToken(t *testing.T) {
 }
 
 func TestTokenExchange_EmptySubjectToken(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
-	require.NoError(t, err)
-
-	server.SetUser("id|285620", &oauth.UserClaims{
-		Email: "keelson@keel.so",
-		Name:  "Keelson",
-	})
-
-	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
-	require.NoError(t, err)
-
 	// Make a token exchange grant request
-	request := makeTokenExchangeRequest(ctx, idToken)
-
+	request := makeTokenExchangeRequest(ctx, "mock_token")
 	form := url.Values{}
 	form.Add("grant_type", "token_exchange")
 	form.Add("subject_token", "")
@@ -425,28 +343,14 @@ func TestTokenExchange_EmptySubjectToken(t *testing.T) {
 }
 
 func TestTokenExchange_WrongSubjectTokenType(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
-	require.NoError(t, err)
-
-	server.SetUser("id|285620", &oauth.UserClaims{
-		Email: "keelson@keel.so",
-		Name:  "Keelson",
-	})
-
-	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
-	require.NoError(t, err)
-
 	// Make a token exchange grant request
-	request := makeTokenExchangeRequest(ctx, idToken)
-
+	request := makeTokenExchangeRequest(ctx, "mock_token")
 	form := url.Values{}
 	form.Add("grant_type", "token_exchange")
-	form.Add("subject_token", idToken)
+	form.Add("subject_token", "mock_token")
 	form.Add("subject_token_type", "access_token")
 	form.Add("requested_token_type", "access_token")
 	request.URL.RawQuery = form.Encode()
@@ -462,28 +366,14 @@ func TestTokenExchange_WrongSubjectTokenType(t *testing.T) {
 }
 
 func TestTokenExchange_WrongRequestedTokenType(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
-	require.NoError(t, err)
-
-	server.SetUser("id|285620", &oauth.UserClaims{
-		Email: "keelson@keel.so",
-		Name:  "Keelson",
-	})
-
-	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
-	require.NoError(t, err)
-
 	// Make a token exchange grant request
-	request := makeTokenExchangeRequest(ctx, idToken)
-
+	request := makeTokenExchangeRequest(ctx, "mock_token")
 	form := url.Values{}
 	form.Add("grant_type", "token_exchange")
-	form.Add("subject_token", idToken)
+	form.Add("subject_token", "mock_token")
 	form.Add("subject_token_type", "id_token")
 	form.Add("requested_token_type", "id_token")
 	request.URL.RawQuery = form.Encode()
@@ -499,7 +389,7 @@ func TestTokenExchange_WrongRequestedTokenType(t *testing.T) {
 }
 
 func TestTokenExchange_BadIdToken(t *testing.T) {
-	ctx, database, schema := newContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -517,7 +407,6 @@ func TestTokenExchange_BadIdToken(t *testing.T) {
 
 	// Make a token exchange grant request
 	request := makeTokenExchangeRequest(ctx, idToken)
-
 	form := url.Values{}
 	form.Add("grant_type", "token_exchange")
 	form.Add("subject_token", "this is not a jwt token")
@@ -533,35 +422,113 @@ func TestTokenExchange_BadIdToken(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func newContext(t *testing.T, keelSchema string, resetDatabase bool) (context.Context, db.Database, *proto.Schema) {
-	dbConnInfo := &db.ConnectionInfo{
-		Host:     "localhost",
-		Port:     "8001",
-		Username: "postgres",
-		Password: "postgres",
-		Database: "keel",
-	}
+func TestRefreshToken_Valid(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
 
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	// Set up auth config
+	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
+		AllowAnyIssuers: true,
+	})
+
+	// OIDC test server
+	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	ctx := context.Background()
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email: "keelson@keel.so",
+	})
 
-	// Add private key to context
-	pk, err := testhelpers.GetEmbeddedPrivateKey()
-	require.NoError(t, err)
-	ctx = runtimectx.WithPrivateKey(ctx, pk)
-
-	ctx, err = testhelpers.WithTracing(ctx)
+	// Get ID token from server
+	idToken, err := server.FetchIdToken("id|285620", []string{})
 	require.NoError(t, err)
 
-	// Add database to context
-	database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, "runtime_test", resetDatabase)
-	require.NoError(t, err)
-	ctx = db.WithDatabase(ctx, database)
+	// Make a token exchange grant request
+	request := makeTokenExchangeRequest(ctx, idToken)
 
-	return ctx, database, schema
+	// Handle runtime request, expecting TokenErrorResponse
+	tokenExchangeResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+
+	// We need 1 second to pass in order to get a different access token
+	time.Sleep(1000 * time.Millisecond)
+
+	// Make a refresh token grant request
+	request = makeRefreshTokenRequest(ctx, tokenExchangeResponse.RefreshToken)
+
+	// Handle runtime request, expecting TokenErrorResponse
+	refreshGrantResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.NotEmpty(t, refreshGrantResponse.AccessToken)
+	require.Equal(t, "bearer", refreshGrantResponse.TokenType)
+	require.NotEmpty(t, refreshGrantResponse.ExpiresIn)
+	require.NotEmpty(t, refreshGrantResponse.RefreshToken)
+	require.NotEqual(t, refreshGrantResponse.RefreshToken, tokenExchangeResponse.RefreshToken)
+	require.NotEqual(t, refreshGrantResponse.AccessToken, tokenExchangeResponse.AccessToken)
+	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+
+	accessToken1Issuer, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "iss")
+	require.NoError(t, err)
+	accessToken2Issuer, err := auth.ExtractClaimFromToken(refreshGrantResponse.AccessToken, "iss")
+	require.NoError(t, err)
+	require.NotEmpty(t, accessToken1Issuer)
+	require.Equal(t, accessToken1Issuer, accessToken2Issuer)
+
+	accessToken1Sub, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "sub")
+	require.NoError(t, err)
+	accessToken2Sub, err := auth.ExtractClaimFromToken(refreshGrantResponse.AccessToken, "sub")
+	require.NoError(t, err)
+	require.NotEmpty(t, accessToken1Sub)
+	require.Equal(t, accessToken1Sub, accessToken2Sub)
+
+	// Make a refresh token grant request using the original refresh token
+	request = makeRefreshTokenRequest(ctx, tokenExchangeResponse.RefreshToken)
+
+	// Handle runtime request, expecting TokenErrorResponse
+	secondRefreshGrantResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
+	require.Equal(t, "possible causes may be that the refresh token has been revoked or has expired", secondRefreshGrantResponse.ErrorDescription)
+}
+
+func TestRefreshToken_NoRefreshToken(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// Make a refresh token grant request
+	request := makeRefreshTokenRequest(ctx, "")
+	form := url.Values{}
+	form.Add("grant_type", "refresh_token")
+	request.URL.RawQuery = form.Encode()
+
+	// Handle runtime request, expecting TokenErrorResponse
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
+	require.Equal(t, "invalid_request", errorResponse.Error)
+	require.Equal(t, "the refresh token must be provided in the refresh_token field", errorResponse.ErrorDescription)
+	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+}
+
+func TestRefreshToken_EmptyRefreshToken(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// Make a refresh token grant request
+	request := makeRefreshTokenRequest(ctx, "")
+
+	// Handle runtime request, expecting TokenErrorResponse
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
+	require.Equal(t, "invalid_request", errorResponse.Error)
+	require.Equal(t, "the refresh token in the refresh_token field cannot be an empty string", errorResponse.ErrorDescription)
+	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func handleRuntimeRequest[T any](schema *proto.Schema, req *http.Request) (T, *http.Response, error) {
@@ -595,7 +562,19 @@ func makeTokenExchangeRequest(ctx context.Context, token string) *http.Request {
 	form.Add("subject_token_type", "id_token")
 	form.Add("requested_token_type", "access_token")
 	request.URL.RawQuery = form.Encode()
+	request = request.WithContext(ctx)
 
+	return request
+}
+
+func makeRefreshTokenRequest(ctx context.Context, token string) *http.Request {
+	request := httptest.NewRequest(http.MethodPost, "http://mykeelapp.keel.so/auth/token", nil)
+	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	form := url.Values{}
+	form.Add("grant_type", "refresh_token")
+	form.Add("refresh_token", token)
+	request.URL.RawQuery = form.Encode()
 	request = request.WithContext(ctx)
 
 	return request

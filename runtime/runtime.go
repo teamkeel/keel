@@ -96,6 +96,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 func NewAuthHandler(schema *proto.Schema) common.HandlerFunc {
 	handleToken := authapi.TokenEndpointHandler(schema)
 	handleOAuth := authapi.OAuthHandler(schema)
+	handleRevoke := authapi.RevokeHandler(schema)
 
 	return func(r *http.Request) common.Response {
 		switch {
@@ -103,6 +104,8 @@ func NewAuthHandler(schema *proto.Schema) common.HandlerFunc {
 			return handleToken(r)
 		case strings.HasPrefix(r.URL.Path, "/auth/oauth"):
 			return handleOAuth(r)
+		case r.URL.Path == "/auth/revoke":
+			return handleRevoke(r)
 		default:
 			return common.Response{
 				Status: http.StatusNotFound,

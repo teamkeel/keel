@@ -21,6 +21,11 @@ const (
 	ArgSubjectToken      = "subject_token"
 	ArgSubjectTokenType  = "subject_token_type"
 	ArgRequestedTokeType = "requested_token_type"
+	ArgRefreshToken      = "refresh_token"
+)
+
+const (
+	TokenType = "bearer"
 )
 
 // https://openid.net/specs/openid-connect-standard-1_0-21_orig.html#AccessTokenResponse
@@ -90,7 +95,50 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 		switch grantType {
 		case GrantTypeRefreshToken:
-			return common.Response{Status: http.StatusNotImplemented}
+			if !r.Form.Has(ArgRefreshToken) {
+				return common.NewJsonResponse(http.StatusBadRequest, &TokenErrorResponse{
+					Error:            TokenEndpointInvalidRequest,
+					ErrorDescription: "the refresh token must be provided in the refresh_token field",
+				}, nil)
+			}
+
+			refreshTokenRaw := r.Form.Get(ArgRefreshToken)
+
+			if refreshTokenRaw == "" {
+				return common.NewJsonResponse(http.StatusBadRequest, &TokenErrorResponse{
+					Error:            TokenEndpointInvalidRequest,
+					ErrorDescription: "the refresh token in the refresh_token field cannot be an empty string",
+				}, nil)
+			}
+
+			isValid, newRefreshToken, identityId, err := oauth.RotateRefreshToken(ctx, refreshTokenRaw)
+			if err != nil {
+				span.RecordError(err)
+				return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
+			}
+
+			if !isValid {
+				return common.NewJsonResponse(http.StatusUnauthorized, &TokenErrorResponse{
+					Error:            TokenEndpointInvalidClient,
+					ErrorDescription: "possible causes may be that the refresh token has been revoked or has expired",
+				}, nil)
+			}
+
+			// Generate an access token for this identity.
+			accessTokenRaw, expiresIn, err := oauth.GenerateAccessToken(ctx, identityId)
+			if err != nil {
+				span.RecordError(err)
+				return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
+			}
+
+			response := &TokenResponse{
+				AccessToken:  accessTokenRaw,
+				TokenType:    TokenType,
+				ExpiresIn:    int(expiresIn.Seconds()),
+				RefreshToken: newRefreshToken,
+			}
+
+			return common.NewJsonResponse(http.StatusOK, response, nil)
 		case GrantTypeTokenExchange:
 			if !r.Form.Has(ArgSubjectToken) {
 				return common.NewJsonResponse(http.StatusBadRequest, &TokenErrorResponse{
@@ -176,10 +224,18 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
 			}
 
+			// Generate a refresh token.
+			refreshTokenRaw, err := oauth.NewRefreshToken(ctx, identity.Id)
+			if err != nil {
+				span.RecordError(err)
+				return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
+			}
+
 			response := &TokenResponse{
-				AccessToken: accessTokenRaw,
-				TokenType:   "bearer",
-				ExpiresIn:   int(expiresIn.Seconds()),
+				AccessToken:  accessTokenRaw,
+				TokenType:    TokenType,
+				ExpiresIn:    int(expiresIn.Seconds()),
+				RefreshToken: refreshTokenRaw,
 			}
 
 			return common.NewJsonResponse(http.StatusOK, response, nil)

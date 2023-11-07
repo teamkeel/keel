@@ -321,10 +321,6 @@ func RunMigrations(schema *proto.Schema, database db.Database) tea.Cmd {
 			Changes: m.Changes,
 		}
 
-		if !m.HasModelFieldChanges() {
-			return msg
-		}
-
 		err = m.Apply(context.Background())
 		if err != nil {
 			msg.Err = &ApplyMigrationsError{
