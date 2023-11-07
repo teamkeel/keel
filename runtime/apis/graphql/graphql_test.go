@@ -63,7 +63,7 @@ func TestGraphQL(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			handler := runtime.NewHandler(protoSchema)
+			handler := runtime.NewApiHandler(protoSchema)
 
 			body, err := json.Marshal(map[string]string{
 				"query": testutil.IntrospectionQuery,

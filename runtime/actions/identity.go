@@ -9,6 +9,7 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/attribute"
@@ -89,6 +90,7 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 	return mapToIdentity(result)
 }
 
+// Deprecated: used by the the authenticate action which is to be deprecated.
 func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
@@ -109,6 +111,7 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 	return mapToIdentity(result)
 }
 
+// Deprecated: used by the the authenticate action which is to be deprecated.
 func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalId string, issuer string, jwt string) (*auth.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Create external identity")
 	defer span.End()
@@ -119,7 +122,10 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
 	// fetch email and verified email from the openid provider if they are a known issuer
-	config, _ := runtimectx.GetAuthConfig(ctx)
+	config, err := runtimectx.GetAuthConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	match := false
 	if config != nil {
@@ -152,6 +158,76 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 	query.AppendReturning(IdField())
 
 	result, err := query.InsertStatement().ExecuteToSingle(ctx)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	return mapToIdentity(result)
+}
+
+func CreateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, claims oauth.IdTokenClaims) (*auth.Identity, error) {
+	ctx, span := tracer.Start(ctx, "Create external identity")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("externalId", externalId))
+	span.SetAttributes(attribute.String("issuer", issuer))
+
+	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+
+	query := NewQuery(ctx, identityModel)
+
+	query.AddWriteValues(map[string]*QueryOperand{
+		"externalId":    Value(externalId),
+		"issuer":        Value(issuer),
+		"email":         Value(claims.Email),
+		"emailVerified": Value(claims.EmailVerified),
+	})
+
+	query.AppendSelect(AllFields())
+	query.AppendReturning(IdField())
+
+	result, err := query.InsertStatement().ExecuteToSingle(ctx)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	return mapToIdentity(result)
+}
+
+func UpdateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, claims oauth.IdTokenClaims) (*auth.Identity, error) {
+	ctx, span := tracer.Start(ctx, "Update external identity")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("externalId", claims.Subject))
+	span.SetAttributes(attribute.String("issuer", claims.Issuer))
+
+	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+
+	query := NewQuery(ctx, identityModel)
+
+	err := query.Where(Field("externalId"), Equals, Value(claims.Subject))
+	if err != nil {
+		return nil, err
+	}
+	query.And()
+	err = query.Where(Field("issuer"), Equals, Value(claims.Issuer))
+	if err != nil {
+		return nil, err
+	}
+
+	query.AddWriteValues(map[string]*QueryOperand{
+		"email":         Value(claims.Email),
+		"emailVerified": Value(claims.EmailVerified),
+	})
+
+	query.AppendSelect(AllFields())
+	query.AppendReturning(AllFields())
+
+	result, err := query.UpdateStatement().ExecuteToSingle(ctx)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())

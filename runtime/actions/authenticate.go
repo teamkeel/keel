@@ -56,6 +56,8 @@ type Claims struct {
 }
 
 // Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
+//
+// Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints
 func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, error) {
 	typedInput := typed.New(input)
 
@@ -128,6 +130,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 	}, nil
 }
 
+// Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints
 func ResetRequestPassword(scope *Scope, input map[string]any) error {
 	var err error
 	typedInput := typed.New(input)
@@ -175,6 +178,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 	return err
 }
 
+// Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints
 func ResetPassword(scope *Scope, input map[string]any) error {
 	typedInput := typed.New(input)
 
@@ -227,6 +231,7 @@ func GenerateBearerToken(ctx context.Context, identityId string) (string, error)
 	return generateToken(ctx, identityId, []string{}, expiry)
 }
 
+// Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints
 func GenerateResetToken(ctx context.Context, identityId string) (string, error) {
 	return generateToken(ctx, identityId, []string{resetPasswordAudClaim}, ResetTokenExpiry)
 }
@@ -261,11 +266,15 @@ func generateToken(ctx context.Context, sub string, aud []string, expiresIn time
 }
 
 // Verifies the bearer token and returns the JWT subject and issuer.
+//
+// Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints
 func ValidateBearerToken(ctx context.Context, tokenString string) (string, string, error) {
 	return validateToken(ctx, tokenString, "")
 }
 
 // Verifies the reset token and returns the JWT subject.
+//
+// Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints
 func ValidateResetToken(ctx context.Context, tokenString string) (string, error) {
 	subject, issuer, err := validateToken(ctx, tokenString, resetPasswordAudClaim)
 	if issuer != keelIssuerClaim && issuer != "" {
@@ -274,6 +283,7 @@ func ValidateResetToken(ctx context.Context, tokenString string) (string, error)
 	return subject, err
 }
 
+// Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints
 func validateToken(ctx context.Context, tokenString string, audienceClaim string) (string, string, error) {
 	privateKey, err := runtimectx.GetPrivateKey(ctx)
 	if err != nil {
@@ -418,6 +428,7 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 	}
 }
 
+// Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints
 func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, headers http.Header) (*auth.Identity, error) {
 	header := headers.Get("Authorization")
 	if header == "" {
@@ -442,6 +453,7 @@ func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, header
 	return nil, nil
 }
 
+// Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints
 func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) (*auth.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Authorization")
 	defer span.End()

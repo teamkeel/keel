@@ -38,7 +38,7 @@ func TestRuntimeRPC(t *testing.T) {
 				Password: "postgres",
 			}
 
-			handler := runtime.NewHandler(schema)
+			handler := runtime.NewApiHandler(schema)
 
 			request := &http.Request{
 				URL: &url.URL{

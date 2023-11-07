@@ -71,7 +71,6 @@ func init() {
 }
 
 func GetOpenIDConnectConfig(ctx context.Context, issuer string) (*OpenidConfig, error) {
-
 	ctx, span := tracer.Start(ctx, "Fetching OpenID configuration")
 	defer span.End()
 
@@ -103,15 +102,13 @@ func GetOpenIDConnectConfig(ctx context.Context, issuer string) (*OpenidConfig, 
 	}
 
 	return config, nil
-
 }
 
 func GetUserInfo(ctx context.Context, issuer string, token string) (*UserInfo, error) {
-
 	ctx, span := tracer.Start(ctx, "Fetch OpenID user info")
 	defer span.End()
 
-	sub, err := extractSubFromToken(token)
+	sub, err := ExtractClaimFromToken(token, "sub")
 	if err != nil {
 		return nil, err
 	}
@@ -143,26 +140,26 @@ func GetUserInfo(ctx context.Context, issuer string, token string) (*UserInfo, e
 
 }
 
-func extractSubFromToken(token string) (string, error) {
+func ExtractClaimFromToken(token string, claim string) (string, error) {
 	// Parse the JWT without verifying the signature
 	t, _, err := new(jwt.Parser).ParseUnverified(token, jwt.MapClaims{})
 	if err != nil {
-		return "", fmt.Errorf("Error parsing JWT: %s", err)
+		return "", fmt.Errorf("error parsing JWT: %s", err)
 	}
 
-	// Extract the "sub" claim
+	// Extract the claim
 	claims, ok := t.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", fmt.Errorf("Claims not found")
+		return "", fmt.Errorf("claims not found")
 
 	}
 
-	subClaim, ok := claims["sub"].(string)
+	value, ok := claims[claim].(string)
 	if !ok {
-		return "", fmt.Errorf("Sub claim not found or not a string")
+		return "", fmt.Errorf("%s claim not found or not a string", claim)
 	}
 
-	return subClaim, nil
+	return value, nil
 }
 
 func GetJWKS(ctx context.Context, issuer string) (jwk.Set, error) {

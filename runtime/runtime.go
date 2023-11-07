@@ -13,6 +13,7 @@ import (
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/apis/authapi"
 	"github.com/teamkeel/keel/runtime/apis/graphql"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/apis/jsonrpc"
@@ -37,13 +38,14 @@ func GetVersion() string {
 }
 
 func NewHttpHandler(currSchema *proto.Schema) http.Handler {
-	var handler common.ApiHandlerFunc
+	var apiHandler common.ApiHandlerFunc
+	var authHandler common.ApiHandlerFunc
 	if currSchema != nil {
-		handler = NewHandler(currSchema)
+		apiHandler = NewApiHandler(currSchema)
+		authHandler = NewAuthHandler(currSchema)
 	}
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
-
 		ctx, span := tracer.Start(r.Context(), "Runtime")
 		defer span.End()
 
@@ -51,26 +53,25 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			attribute.String("runtime_version", Version),
 		)
 
-		w.Header().Add("Content-Type", "application/json")
-
-		if handler == nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte("Cannot serve requests when schema contains errors"))
+		if apiHandler == nil || authHandler == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte("cannot serve requests when handlers are not set up"))
 			return
 		}
 
 		ctx = runtimectx.WithIssuersFromEnv(ctx)
-
-		// Collect request headers and add to runtime context
-		// These are exposed in custom functions and in expressions
-		headers := map[string][]string{}
-		for k := range r.Header {
-			headers[k] = r.Header.Values(k)
-		}
-		ctx = runtimectx.WithRequestHeaders(ctx, headers)
 		r = r.WithContext(ctx)
 
-		response := handler(r)
+		var response common.Response
+		path := r.URL.Path
+		switch {
+		case strings.HasPrefix(path, "/auth"):
+			w.Header().Add("Content-Type", "application/json")
+			response = authHandler(r)
+		default:
+			w.Header().Add("Content-Type", "application/json")
+			response = apiHandler(r)
+		}
 
 		// Add any custom headers to response, and join
 		// into a single string where multi values exists
@@ -91,7 +92,27 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	return http.HandlerFunc(httpHandler)
 }
 
-func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
+// NewAuthHandler handles requests to the authentication endpoints
+func NewAuthHandler(schema *proto.Schema) common.ApiHandlerFunc {
+	handleToken := authapi.TokenEndpointHandler(schema)
+	handleOAuth := authapi.OAuthHandler(schema)
+
+	return func(r *http.Request) common.Response {
+		switch {
+		case r.URL.Path == "/auth/token":
+			return handleToken(r)
+		case strings.HasPrefix(r.URL.Path, "/auth/oauth"):
+			return handleOAuth(r)
+		default:
+			return common.Response{
+				Status: http.StatusNotFound,
+			}
+		}
+	}
+}
+
+// NewApiHandler handles requests to the customers APIs
+func NewApiHandler(s *proto.Schema) common.ApiHandlerFunc {
 	handlers := map[string]common.ApiHandlerFunc{}
 
 	for _, api := range s.Apis {
@@ -108,13 +129,24 @@ func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
 	}
 
 	return withRequestResponseLogging(func(r *http.Request) common.Response {
+		ctx := r.Context()
+
 		handler, ok := handlers[strings.ToLower(r.URL.Path)]
 		if !ok {
 			return common.Response{
-				Status: 404,
+				Status: http.StatusNotFound,
 				Body:   []byte("Not found"),
 			}
 		}
+
+		// Collect request headers and add to runtime context
+		// These are exposed in custom functions and in expressions
+		headers := map[string][]string{}
+		for k := range r.Header {
+			headers[k] = r.Header.Values(k)
+		}
+		ctx = runtimectx.WithRequestHeaders(ctx, headers)
+		r = r.WithContext(ctx)
 
 		return handler(r)
 	})

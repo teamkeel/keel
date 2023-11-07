@@ -5,3 +5,8 @@ linters:
     - unused 
   disable:
     - govet
+linters-settings:
+ staticcheck:
+    checks:
+      - all
+      - '-SA1019' # allow the use of deprecated functions (since we have some)

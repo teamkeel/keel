@@ -45,7 +45,7 @@ func TestRuntimeGraphQL(t *testing.T) {
 			}
 
 			// Construct the runtime API Handler.
-			handler := runtime.NewHandler(schema)
+			handler := runtime.NewApiHandler(schema)
 
 			reqBody := queryAsJSONPayload(t, tCase.gqlOperation, tCase.variables)
 
