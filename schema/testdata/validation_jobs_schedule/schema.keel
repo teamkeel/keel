@@ -1,23 +1,31 @@
-job MyJob {
-    @schedule("0 2 1 1 2")
+job NoArgs {
+    @schedule
 }
 
-job MyJob {
-    @schedule("0 6 * * *", "America/New_York")
+job TooManyArgs {
+    @schedule(
+        "every 10 minutes",
+        "also mondays"
+    )
 }
 
-job MyJob {
-    @schedule("121212")
+job WrongArgType {
+    @schedule(1234)
 }
 
-job MyJob {
-    @schedule("")
+job Labelled {
+    @schedule(cron: "foo")
 }
 
-job MyJob {
-    @schedule(cron: "")
+job InvalidSchedule {
+    @schedule("every 10 cats")
 }
 
-job MyJob {
-    @schedule(1234123)
+job InvalidCron {
+    @schedule("*/10 * * * BOB")
+}
+
+job TwoSchedules {
+    @schedule("every 10 minutes")
+    @schedule("every 2 hours")
 }

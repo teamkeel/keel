@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "Job with name 'MyJob' already exists",
-      "hint": "Rename the job with a unique name",
-      "code": "DuplicateDefinitionError",
+      "message": "There is already a job with the name MyJob",
+      "hint": "Job names must be unique",
+      "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_jobs_duplicate_names/schema.keel",
         "offset": 46,

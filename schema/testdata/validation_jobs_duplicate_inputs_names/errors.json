@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "Job input with name 'myField' already exists",
-      "hint": "Rename the input with a unique name",
+      "hint": "",
       "code": "DuplicateDefinitionError",
       "pos": {
         "filename": "testdata/validation_jobs_duplicate_inputs_names/schema.keel",

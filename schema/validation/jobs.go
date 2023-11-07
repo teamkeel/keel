@@ -9,68 +9,36 @@ import (
 )
 
 func Jobs(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
-	jobs := []string{}
 	jobInputs := []string{}
-	attributes := []string{}
+	hasSchedule := false
+	hasPermission := false
 
 	return Visitor{
 		EnterJob: func(job *parser.JobNode) {
-			if lo.Contains(jobs, job.Name.Value) {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.DuplicateDefinitionError,
-					errorhandling.ErrorDetails{
-						Message: fmt.Sprintf("Job with name '%s' already exists", job.Name.Value),
-						Hint:    "Rename the job with a unique name",
-					},
-					job.Name,
-				))
-			}
-
-			jobs = append(jobs, job.Name.Value)
-
-			isScheduledJob := false
-			var scheduleAttributeNode *parser.AttributeNode
-			isAdhocJob := false
-			hasInputs := false
-			for _, section := range job.Sections {
-				if section.Attribute != nil {
-					switch section.Attribute.Name.Value {
-					case parser.AttributePermission:
-						isAdhocJob = true
-					case parser.AttributeSchedule:
-						isScheduledJob = true
-						scheduleAttributeNode = section.Attribute
-					}
-				}
-				if section.Inputs != nil {
-					hasInputs = true
-				}
-			}
-
-			if !isAdhocJob && !isScheduledJob {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.JobDefinitionError,
-					errorhandling.ErrorDetails{
-						Message: fmt.Sprintf("Job '%s' must be defined with either @schedule or @permission", job.Name.Value),
-					},
-					job.Name,
-				))
-			}
-
-			if isScheduledJob && hasInputs {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.JobDefinitionError,
-					errorhandling.ErrorDetails{
-						Message: fmt.Sprintf("Scheduled job '%s' cannot be defined with inputs", job.Name.Value),
-						Hint:    "Remove the inputs section to define a scheduled job",
-					},
-					scheduleAttributeNode.Name,
-				))
-			}
+			hasSchedule = false
+			hasPermission = false
+			jobInputs = []string{}
 		},
 		LeaveJob: func(n *parser.JobNode) {
-			jobInputs = []string{}
-			attributes = []string{}
+			if !hasPermission && !hasSchedule {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.JobDefinitionError,
+					errorhandling.ErrorDetails{
+						Message: fmt.Sprintf("Job '%s' must be defined with either @schedule or @permission", n.Name.Value),
+					},
+					n.Name,
+				))
+			}
+
+			if hasSchedule && len(jobInputs) > 0 {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.JobDefinitionError,
+					errorhandling.ErrorDetails{
+						Message: fmt.Sprintf("Job '%s' is scheduled and so cannot also have inputs", n.Name.Value),
+					},
+					n.Name,
+				))
+			}
 		},
 		EnterJobInput: func(input *parser.JobInputNode) {
 			if lo.Contains(jobInputs, input.Name.Value) {
@@ -78,7 +46,6 @@ func Jobs(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 					errorhandling.DuplicateDefinitionError,
 					errorhandling.ErrorDetails{
 						Message: fmt.Sprintf("Job input with name '%s' already exists", input.Name.Value),
-						Hint:    "Rename the input with a unique name",
 					},
 					input.Name,
 				))
@@ -87,8 +54,23 @@ func Jobs(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 			jobInputs = append(jobInputs, input.Name.Value)
 		},
 		EnterAttribute: func(n *parser.AttributeNode) {
-			attributes = append(attributes, n.Name.Value)
+			if n.Name.Value == "schedule" {
+				if hasSchedule {
+					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+						errorhandling.AttributeNotAllowedError,
+						errorhandling.ErrorDetails{
+							Message: "A job cannot have more than one @schedule attribute",
+						},
+						n.Name,
+					))
+				}
+
+				hasSchedule = true
+			}
+
+			if n.Name.Value == "permission" {
+				hasPermission = true
+			}
 		},
 	}
-
 }

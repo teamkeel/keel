@@ -233,9 +233,21 @@
   ],
   "jobs": [
     {
-      "name": "MyJob",
+      "name": "UnixCron",
       "schedule": {
-        "expression": "\"* * * * *\""
+        "expression": "*/10 * ? * MON-WED *"
+      }
+    },
+    {
+      "name": "IntervalCron",
+      "schedule": {
+        "expression": "*/10 * ? * * *"
+      }
+    },
+    {
+      "name": "DayCron",
+      "schedule": {
+        "expression": "0 9 ? * MON *"
       }
     }
   ]

@@ -6,6 +6,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/cron"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -1663,13 +1664,15 @@ func (scm *Builder) applyJobAttribute(parserJob *parser.JobNode, protoJob *proto
 	case parser.AttributePermission:
 		protoJob.Permissions = append(protoJob.Permissions, scm.permissionAttributeToProtoPermission(attribute))
 	case parser.AttributeSchedule:
-		schedule, err := attribute.Arguments[0].Expression.ToString()
-		if err != nil {
-			panic(err)
-		}
+		val, _ := attribute.Arguments[0].Expression.ToValue()
+
+		src := strings.TrimPrefix(*val.String, `"`)
+		src = strings.TrimSuffix(src, `"`)
+
+		c, _ := cron.Parse(src)
 
 		protoJob.Schedule = &proto.Schedule{
-			Expression: schedule,
+			Expression: c.String(),
 		}
 	}
 }

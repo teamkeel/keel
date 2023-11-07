@@ -1,156 +1,122 @@
 {
   "errors": [
     {
-      "message": "Job with name 'MyJob' already exists",
-      "hint": "Rename the job with a unique name",
-      "code": "DuplicateDefinitionError",
+      "message": "@schedule must have exactly one argument",
+      "hint": "",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 46,
-        "line": 5,
+        "offset": 17,
+        "line": 2,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 51,
-        "line": 5,
-        "column": 10
+        "offset": 26,
+        "line": 2,
+        "column": 14
       }
     },
     {
       "message": "@schedule must have exactly one argument",
       "hint": "",
-      "code": "AttributeNotAllowedError",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 58,
+        "offset": 52,
         "line": 6,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 67,
+        "offset": 61,
         "line": 6,
         "column": 14
       }
     },
     {
-      "message": "Job with name 'MyJob' already exists",
-      "hint": "Rename the job with a unique name",
-      "code": "DuplicateDefinitionError",
+      "message": "argument must be a string",
+      "hint": "e.g. @schedule(\"every 10 minutes\")",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 108,
-        "line": 9,
-        "column": 5
-      },
-      "endPos": {
-        "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 113,
-        "line": 9,
-        "column": 10
-      }
-    },
-    {
-      "message": "Job with name 'MyJob' already exists",
-      "hint": "Rename the job with a unique name",
-      "code": "DuplicateDefinitionError",
-      "pos": {
-        "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 147,
+        "offset": 156,
         "line": 13,
-        "column": 5
+        "column": 15
       },
       "endPos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 152,
+        "offset": 160,
         "line": 13,
-        "column": 10
+        "column": 19
       }
     },
     {
-      "message": "@schedule argument is not correctly formatted",
-      "hint": "schedule should be in the following format @schedule(\"0 6 * * * *\")",
-      "code": "AttributeNotAllowedError",
+      "message": "argument to @schedule cannot be labelled",
+      "hint": "",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 159,
-        "line": 14,
-        "column": 5
+        "offset": 194,
+        "line": 17,
+        "column": 15
       },
       "endPos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 168,
-        "line": 14,
-        "column": 14
+        "offset": 198,
+        "line": 17,
+        "column": 19
       }
     },
     {
-      "message": "Job with name 'MyJob' already exists",
-      "hint": "Rename the job with a unique name",
-      "code": "DuplicateDefinitionError",
+      "message": "unexpected token 'cats' - expected 'minutes' or 'hours'",
+      "hint": "",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 180,
-        "line": 17,
-        "column": 5
+        "offset": 256,
+        "line": 21,
+        "column": 25
       },
       "endPos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 185,
-        "line": 17,
-        "column": 10
+        "offset": 260,
+        "line": 21,
+        "column": 29
       }
     },
     {
-      "message": "@schedule must not have a label",
+      "message": "invalid value 'BOB' for day-of-week field",
+      "hint": "",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_jobs_schedule/schema.keel",
+        "offset": 310,
+        "line": 25,
+        "column": 27
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_schedule/schema.keel",
+        "offset": 313,
+        "line": 25,
+        "column": 30
+      }
+    },
+    {
+      "message": "A job cannot have more than one @schedule attribute",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 192,
-        "line": 18,
+        "offset": 376,
+        "line": 30,
         "column": 5
       },
       "endPos": {
         "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 201,
-        "line": 18,
+        "offset": 385,
+        "line": 30,
         "column": 14
-      }
-    },
-    {
-      "message": "@schedule argument is not correctly formatted",
-      "hint": "schedule should be in the following format @schedule(\"0 6 * * * *\")",
-      "code": "AttributeNotAllowedError",
-      "pos": {
-        "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 192,
-        "line": 18,
-        "column": 5
-      },
-      "endPos": {
-        "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 201,
-        "line": 18,
-        "column": 14
-      }
-    },
-    {
-      "message": "Job with name 'MyJob' already exists",
-      "hint": "Rename the job with a unique name",
-      "code": "DuplicateDefinitionError",
-      "pos": {
-        "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 219,
-        "line": 21,
-        "column": 5
-      },
-      "endPos": {
-        "filename": "testdata/validation_jobs_schedule/schema.keel",
-        "offset": 224,
-        "line": 21,
-        "column": 10
       }
     }
   ]
