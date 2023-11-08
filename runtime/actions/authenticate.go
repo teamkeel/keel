@@ -22,6 +22,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/oauth"
 
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
@@ -469,7 +470,7 @@ func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) 
 	// Check that identity actually does exist as it could
 	// have been deleted after the bearer token was generated.
 	var identity *auth.Identity
-	if issuer == "keel" || issuer == "" {
+	if issuer == "keel" || issuer == "" || issuer == oauth.KeelIssuer {
 		identity, err = FindIdentityById(ctx, schema, subject)
 	} else {
 		identity, err = FindIdentityByExternalId(ctx, schema, subject, issuer)

@@ -168,7 +168,7 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 }
 
 func CreateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, claims oauth.IdTokenClaims) (*auth.Identity, error) {
-	ctx, span := tracer.Start(ctx, "Create external identity")
+	ctx, span := tracer.Start(ctx, "Create Identity")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("externalId", externalId))
@@ -199,7 +199,7 @@ func CreateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, 
 }
 
 func UpdateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, claims oauth.IdTokenClaims) (*auth.Identity, error) {
-	ctx, span := tracer.Start(ctx, "Update external identity")
+	ctx, span := tracer.Start(ctx, "Update Identity")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("externalId", claims.Subject))

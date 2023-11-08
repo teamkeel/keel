@@ -16,13 +16,16 @@ var tracer = otel.Tracer("github.com/teamkeel/keel/runtime")
 // AuthenticateWithIdToken will verify the ID token from an OpenID Connect provider, authenticate the user,
 // and will subsequently create or update the identity with the standard claims in the token.
 func AuthenticateWithIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error) {
-	ctx, span := tracer.Start(ctx, "OIDC Exchange")
+	ctx, span := tracer.Start(ctx, "Authenticate with ID Token")
 	defer span.End()
 
 	issuer, err := auth.ExtractClaimFromToken(idTokenRaw, "iss")
 	if issuer == "" {
 		return nil, err
 	}
+	span.AddEvent("Issuer extracted from ID Token")
+
+	span.SetAttributes(attribute.String("issuer", issuer))
 
 	authConfig, err := runtimectx.GetAuthConfig(ctx)
 	if err != nil {
@@ -38,11 +41,6 @@ func AuthenticateWithIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDTo
 		}
 	}
 
-	span.SetAttributes(
-		attribute.String("issuer", issuer),
-		attribute.Bool("issuer_permitted", issuerPermitted),
-	)
-
 	if !issuerPermitted {
 		return nil, fmt.Errorf("issuer %s not registered to authenticate on this server", issuer)
 	}
@@ -52,6 +50,7 @@ func AuthenticateWithIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDTo
 	if err != nil {
 		return nil, err
 	}
+	span.AddEvent("Provider's ODIC config fetched")
 
 	// TODO: what are we missing by skipping the client ID check?
 	verifier := provider.Verifier(&oidc.Config{SkipClientIDCheck: true})
@@ -61,6 +60,7 @@ func AuthenticateWithIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDTo
 	if err != nil {
 		return nil, err
 	}
+	span.AddEvent("ID Token verified")
 
 	return idToken, nil
 }
