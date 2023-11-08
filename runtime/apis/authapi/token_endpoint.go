@@ -179,7 +179,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.ApiHandlerFunc {
 
 			response := &TokenResponse{
 				AccessToken: accessTokenRaw,
-				TokenType:   "Bearer",
+				TokenType:   "bearer",
 				ExpiresIn:   int(expiresIn.Seconds()),
 			}
 

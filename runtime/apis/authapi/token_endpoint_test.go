@@ -24,7 +24,7 @@ import (
 
 var authTestSchema = `model Post{}`
 
-func TestTokenExchangeValidNewIdentity(t *testing.T) {
+func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -83,7 +83,7 @@ func TestTokenExchangeValidNewIdentity(t *testing.T) {
 	require.Equal(t, issuer, server.Issuer)
 }
 
-func TestTokenExchangeValidNewIdentityAllUserInfo(t *testing.T) {
+func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -158,7 +158,7 @@ func TestTokenExchangeValidNewIdentityAllUserInfo(t *testing.T) {
 	// TODO: test all the user info
 }
 
-func TestTokenExchangeValidUpdatedIdentity(t *testing.T) {
+func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -221,7 +221,7 @@ func TestTokenExchangeValidUpdatedIdentity(t *testing.T) {
 	require.Equal(t, issuer, server.Issuer)
 }
 
-func TestTokenEndpointHttpGet(t *testing.T) {
+func TestTokenEndpoint_HttpGet(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -253,7 +253,7 @@ func TestTokenEndpointHttpGet(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenEndpointApplicationJsonRequest(t *testing.T) {
+func TestTokenEndpoint_ApplicationJsonRequest(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -286,7 +286,7 @@ func TestTokenEndpointApplicationJsonRequest(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenEndpointMissingGrantType(t *testing.T) {
+func TestTokenEndpoint_MissingGrantType(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -320,7 +320,7 @@ func TestTokenEndpointMissingGrantType(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenEndpointWrongGrantType(t *testing.T) {
+func TestTokenEndpoint_WrongGrantType(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -355,7 +355,7 @@ func TestTokenEndpointWrongGrantType(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenExchangeNoSubjectToken(t *testing.T) {
+func TestTokenExchange_NoSubjectToken(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -389,7 +389,7 @@ func TestTokenExchangeNoSubjectToken(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenExchangeEmptySubjectToken(t *testing.T) {
+func TestTokenExchange_EmptySubjectToken(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -424,7 +424,7 @@ func TestTokenExchangeEmptySubjectToken(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenExchangeWrongSubjectTokenType(t *testing.T) {
+func TestTokenExchange_WrongSubjectTokenType(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -461,7 +461,7 @@ func TestTokenExchangeWrongSubjectTokenType(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenExchangeWrongRequestedTokenType(t *testing.T) {
+func TestTokenExchange_WrongRequestedTokenType(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -498,7 +498,7 @@ func TestTokenExchangeWrongRequestedTokenType(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenExchangeBadIdToken(t *testing.T) {
+func TestTokenExchange_BadIdToken(t *testing.T) {
 	ctx, database, schema := newContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -539,7 +539,7 @@ func newContext(t *testing.T, keelSchema string, resetDatabase bool) (context.Co
 		Port:     "8001",
 		Username: "postgres",
 		Password: "postgres",
-		Database: "keel-oauth",
+		Database: "keel",
 	}
 
 	builder := &schema.Builder{}
