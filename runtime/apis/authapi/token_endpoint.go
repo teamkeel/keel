@@ -130,8 +130,8 @@ func TokenEndpointHandler(schema *proto.Schema) common.ApiHandlerFunc {
 				attribute.String(ArgRequestedTokeType, r.Form.Get(ArgRequestedTokeType)),
 			)
 
-			// Authenticate the OIDC token.
-			idToken, err := oauth.AuthenticateWithIdToken(ctx, idTokenRaw)
+			// Verify the ID token with the OIDC provider
+			idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
 			if err != nil {
 				span.RecordError(err)
 				return common.NewJsonResponse(http.StatusUnauthorized, &TokenErrorResponse{
@@ -140,7 +140,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.ApiHandlerFunc {
 				}, nil)
 			}
 
-			// Extract claims.
+			// Extract claims
 			var claims oauth.IdTokenClaims
 			if err := idToken.Claims(&claims); err != nil {
 				span.RecordError(err)
@@ -170,7 +170,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.ApiHandlerFunc {
 				}
 			}
 
-			// Generate an access token for the identity.
+			// Generate an access token for this identity.
 			accessTokenRaw, expiresIn, err := oauth.GenerateAccessToken(ctx, identity.Id)
 			if err != nil {
 				span.RecordError(err)

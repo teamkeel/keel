@@ -27,7 +27,7 @@ type OidcServer struct {
 	users      map[string]*oauth.UserClaims
 }
 
-func (o *OidcServer) User(sub string, claims *oauth.UserClaims) {
+func (o *OidcServer) SetUser(sub string, claims *oauth.UserClaims) {
 	o.users[sub] = claims
 }
 

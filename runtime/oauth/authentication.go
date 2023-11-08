@@ -13,10 +13,9 @@ import (
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime")
 
-// AuthenticateWithIdToken will verify the ID token from an OpenID Connect provider, authenticate the user,
-// and will subsequently create or update the identity with the standard claims in the token.
-func AuthenticateWithIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error) {
-	ctx, span := tracer.Start(ctx, "Authenticate with ID Token")
+// VerifyIdToken will verify the ID token from an OpenID Connect provider.
+func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error) {
+	ctx, span := tracer.Start(ctx, "Verify ID Token")
 	defer span.End()
 
 	issuer, err := auth.ExtractClaimFromToken(idTokenRaw, "iss")

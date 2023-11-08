@@ -24,7 +24,7 @@ func TestIdTokenAuth_Valid(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 	})
 
@@ -32,7 +32,7 @@ func TestIdTokenAuth_Valid(t *testing.T) {
 	idTokenRaw, err := server.FetchIdToken("id|285620", []string{})
 	require.NoError(t, err)
 
-	idToken, err := oauth.AuthenticateWithIdToken(ctx, idTokenRaw)
+	idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
 
 	require.NoError(t, err)
 	require.NotNil(t, idToken)
@@ -50,7 +50,7 @@ func TestIdTokenAuth_IncorrectlySigned(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 	})
 
@@ -62,7 +62,7 @@ func TestIdTokenAuth_IncorrectlySigned(t *testing.T) {
 	err = server.RenewPrivateKey()
 	require.NoError(t, err)
 
-	idToken, err := oauth.AuthenticateWithIdToken(ctx, idTokenRaw)
+	idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
 
 	require.Error(t, err)
 	require.Equal(t, "failed to verify signature: failed to verify id token signature", err.Error())
@@ -83,7 +83,7 @@ func TestIdTokenAuth_IssuerMismatch(t *testing.T) {
 
 	issuer := server.Config["issuer"]
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 	})
 
@@ -93,7 +93,7 @@ func TestIdTokenAuth_IssuerMismatch(t *testing.T) {
 
 	server.Config["issuer"] = "http://accounts.google.com"
 
-	idToken, err := oauth.AuthenticateWithIdToken(ctx, idTokenRaw)
+	idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
 
 	require.Error(t, err)
 	require.Equal(t, fmt.Sprintf("oidc: issuer did not match the issuer returned by provider, expected \"%s\" got \"http://accounts.google.com\"", issuer), err.Error())
@@ -112,7 +112,7 @@ func TestIdTokenAuth_IssuerNotRegistered(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 	})
 
@@ -120,7 +120,7 @@ func TestIdTokenAuth_IssuerNotRegistered(t *testing.T) {
 	idTokenRaw, err := server.FetchIdToken("id|285620", []string{})
 	require.NoError(t, err)
 
-	idToken, err := oauth.AuthenticateWithIdToken(ctx, idTokenRaw)
+	idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
 
 	require.Error(t, err)
 	require.Equal(t, fmt.Sprintf("issuer %s not registered to authenticate on this server", server.Issuer), err.Error())
@@ -141,7 +141,7 @@ func TestIdTokenAuth_ExpiredIdToken(t *testing.T) {
 
 	server.IdTokenLifespan = 0 * time.Second
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 	})
 
@@ -149,7 +149,7 @@ func TestIdTokenAuth_ExpiredIdToken(t *testing.T) {
 	idTokenRaw, err := server.FetchIdToken("id|285620", []string{})
 	require.NoError(t, err)
 
-	idToken, err := oauth.AuthenticateWithIdToken(ctx, idTokenRaw)
+	idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "oidc: token is expired")

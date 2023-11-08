@@ -37,7 +37,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 	})
 
@@ -96,7 +96,7 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email:               "keelson@keel.so",
 		EmailVerified:       true,
 		Name:                "Keely",
@@ -175,7 +175,7 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	database.GetDB().Raw(fmt.Sprintf("INSERT INTO identity (external_id, issuer, email) VALUES ('id|285620','%s','weaveton@keel.so') RETURNING *", server.Issuer)).Scan(&inserted)
 	require.Len(t, inserted, 1)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 	})
 
@@ -229,7 +229,7 @@ func TestTokenEndpoint_HttpGet(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 		Name:  "Keelson",
 	})
@@ -261,7 +261,7 @@ func TestTokenEndpoint_ApplicationJsonRequest(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 		Name:  "Keelson",
 	})
@@ -294,7 +294,7 @@ func TestTokenEndpoint_MissingGrantType(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 		Name:  "Keelson",
 	})
@@ -328,7 +328,7 @@ func TestTokenEndpoint_WrongGrantType(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 		Name:  "Keelson",
 	})
@@ -363,7 +363,7 @@ func TestTokenExchange_NoSubjectToken(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 		Name:  "Keelson",
 	})
@@ -397,7 +397,7 @@ func TestTokenExchange_EmptySubjectToken(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 		Name:  "Keelson",
 	})
@@ -432,7 +432,7 @@ func TestTokenExchange_WrongSubjectTokenType(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 		Name:  "Keelson",
 	})
@@ -469,7 +469,7 @@ func TestTokenExchange_WrongRequestedTokenType(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 		Name:  "Keelson",
 	})
@@ -506,7 +506,7 @@ func TestTokenExchange_BadIdToken(t *testing.T) {
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
 
-	server.User("id|285620", &oauth.UserClaims{
+	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
 		Name:  "Keelson",
 	})
