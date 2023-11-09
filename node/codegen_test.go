@@ -1931,7 +1931,7 @@ job JobWithoutInputs {
 job AdHocJobWithInputs {
 	inputs {
 		nameField Text
-		someBool Bool?
+		someBool Boolean?
 	}
 	@permission(roles: [Admin])
 }
@@ -1960,7 +1960,7 @@ job JobWithoutInputs {
 job AdHocJobWithInputs {
 	inputs {
 		nameField Text
-		someBool Bool?
+		someBool Boolean?
 	}
 	@permission(roles: [Admin])
 }
@@ -1972,7 +1972,7 @@ role Admin {}`
 	expected := `
 export interface AdHocJobWithInputsMessage {
 	nameField: string;
-	someBool?: any;
+	someBool?: boolean;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -2080,7 +2080,7 @@ job JobWithoutInputs {
 job AdHocJobWithInputs {
 	inputs {
 		nameField Text
-		someBool Bool?
+		someBool Boolean?
 	}
 	@permission(roles: [Admin])
 }
@@ -2096,7 +2096,7 @@ import "@teamkeel/testing-runtime";
 
 export interface AdHocJobWithInputsMessage {
 	nameField: string;
-	someBool?: any;
+	someBool?: boolean;
 }
 export interface EmailPasswordInput {
 	email: string;

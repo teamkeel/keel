@@ -1,0 +1,19 @@
+job MyJob {
+    inputs {
+        id ID
+        text Text
+        number Number
+        bool Boolean
+        array Text[]
+        enum MyEnum
+    }
+  
+    @permission(roles: [Admin])
+}
+
+role Admin {}
+
+enum MyEnum {
+    One
+    Two
+}

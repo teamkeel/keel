@@ -53,7 +53,7 @@ model WeddingInvitee {
 
 job UpdateHeadCount {
     inputs {
-        weddingId Id
+        weddingId ID
     }
 
     @permission(expression: true)
@@ -61,7 +61,7 @@ job UpdateHeadCount {
 
 job UpdateHeadCountWithKysely {
     inputs {
-        weddingId Id
+        weddingId ID
     }
 
     @permission(expression: true)

@@ -5,6 +5,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -41,6 +42,16 @@ func Jobs(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 			}
 		},
 		EnterJobInput: func(input *parser.JobInputNode) {
+			if !parser.IsBuiltInFieldType(input.Type.Value) && !query.IsEnum(asts, input.Type.Value) {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.JobDefinitionError,
+					errorhandling.ErrorDetails{
+						Message: fmt.Sprintf("Job input '%s' is defined with unsupported type %s", input.Name.Value, input.Type.Value),
+					},
+					input.Name,
+				))
+			}
+
 			if lo.Contains(jobInputs, input.Name.Value) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.DuplicateDefinitionError,
