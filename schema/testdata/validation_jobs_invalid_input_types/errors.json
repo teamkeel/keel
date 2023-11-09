@@ -33,6 +33,23 @@
         "line": 4,
         "column": 16
       }
+    },
+    {
+      "message": "Job input 'model' is defined with unsupported type MyModel",
+      "hint": "",
+      "code": "JobDefinitionError",
+      "pos": {
+        "filename": "testdata/validation_jobs_invalid_input_types/schema.keel",
+        "offset": 76,
+        "line": 5,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_invalid_input_types/schema.keel",
+        "offset": 81,
+        "line": 5,
+        "column": 14
+      }
     }
   ]
 }

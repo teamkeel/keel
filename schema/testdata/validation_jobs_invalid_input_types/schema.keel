@@ -2,12 +2,19 @@ job MyJob1 {
     inputs {
         foo Foo
         message MyMessage
+        model MyModel
     }
 
     @permission(roles: [Admin])
 }
 
 role Admin {}
+
+model MyModel {
+    fields {
+        name Text
+    }
+}
 
 message MyMessage {
     name Text
