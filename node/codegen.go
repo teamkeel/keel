@@ -1457,6 +1457,8 @@ expect.extend({
 }
 
 func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
+	w.Writeln(`/// <reference path="@teamkeel/functions-runtime/index.d.ts" /`)
+
 	w.Writeln(`import * as sdk from "@teamkeel/sdk";`)
 	w.Writeln(`import * as runtime from "@teamkeel/functions-runtime";`)
 
