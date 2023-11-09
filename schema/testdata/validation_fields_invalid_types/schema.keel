@@ -1,0 +1,18 @@
+model Foo {
+    fields {
+        nope Nope
+        nopeArray Nope[]
+        nopeOptional Nope?
+        array Text[]
+        message MyMessage
+        job MyJob
+    }
+}
+
+message MyMessage {
+    name Text
+}
+
+job MyJob {
+    @schedule("* * * * *")
+}

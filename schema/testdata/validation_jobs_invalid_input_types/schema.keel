@@ -1,0 +1,14 @@
+job MyJob1 {
+    inputs {
+        foo Foo
+        message MyMessage
+    }
+
+    @permission(roles: [Admin])
+}
+
+role Admin {}
+
+message MyMessage {
+    name Text
+}
