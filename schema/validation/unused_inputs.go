@@ -20,6 +20,8 @@ func UnusedInputRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 			isAction = true
 		},
 		LeaveAction: func(n *parser.ActionNode) {
+			isAction = false
+
 			// if the action is implemented as a function, then we don't know how the function
 			// uses the inputs (if at all), so not a validation error.
 			if n.IsFunction() {
@@ -37,8 +39,6 @@ func UnusedInputRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 					),
 				)
 			}
-
-			isAction = false
 		},
 		EnterActionInput: func(n *parser.ActionInputNode) {
 			if n.Label == nil {
