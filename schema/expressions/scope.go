@@ -362,15 +362,8 @@ func applyAdditionalOperandScopes(asts []*parser.AST, scope *ExpressionScope, co
 	switch attribute.Name.Value {
 	case parser.AttributePermission:
 		// no inputs allowed in permissions
-	case parser.AttributeValidate:
-		if position == OperandPositionLhs {
-			scope = applyInputsInScope(asts, context, scope)
-		}
 	default:
-		// todo: is this correct?
-		if position == OperandPositionRhs {
-			scope = applyInputsInScope(asts, context, scope)
-		}
+		scope = applyInputsInScope(asts, context, scope)
 	}
 
 	return scope.Merge(additionalScope)

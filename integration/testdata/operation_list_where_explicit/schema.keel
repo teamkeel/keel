@@ -11,6 +11,9 @@ model Post {
         list listPostsEqualString(whereArg: Text) {
             @where(post.title == whereArg)
         }
+        list listPostsEqualStringInverse(whereArg: Text) {
+            @where(whereArg == post.title)
+        }
         list listPostsNotEqualString(whereArg: Text) {
             @where(post.title != whereArg)
         }

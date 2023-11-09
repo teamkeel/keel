@@ -17,6 +17,20 @@ test("List Where filters - using equal operator (string) - filters correctly", a
   expect(results[0].title).toEqual("Fred");
 });
 
+test("List Where filters inverse - using equal operator (string) - filters correctly", async () => {
+  await actions.createPost({ title: "Fred" });
+  await actions.createPost({ title: "NotFred" });
+
+  const { results } = await actions.listPostsEqualStringInverse({
+    where: {
+      whereArg: "Fred",
+    },
+  });
+
+  expect(results.length).toEqual(1);
+  expect(results[0].title).toEqual("Fred");
+});
+
 test("List Where filters - using not equal operator (string) - filters correctly", async () => {
   await actions.createPost({ title: "Fred" });
   await actions.createPost({ title: "NotFred" });
