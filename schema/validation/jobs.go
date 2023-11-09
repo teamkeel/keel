@@ -5,6 +5,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -41,7 +42,7 @@ func Jobs(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 			}
 		},
 		EnterJobInput: func(input *parser.JobInputNode) {
-			if !parser.IsBuiltInFieldType(input.Type.Value) {
+			if !parser.IsBuiltInFieldType(input.Type.Value) && !query.IsEnum(asts, input.Type.Value) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.JobDefinitionError,
 					errorhandling.ErrorDetails{
