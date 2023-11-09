@@ -31,6 +31,7 @@
           "type": {
             "type": "TYPE_ID"
           },
+          "unique": true,
           "primaryKey": true,
           "defaultValue": {
             "useZeroValue": true
@@ -78,6 +79,7 @@
           "type": {
             "type": "TYPE_ID"
           },
+          "unique": true,
           "primaryKey": true,
           "defaultValue": {
             "useZeroValue": true
@@ -164,6 +166,7 @@
           "type": {
             "type": "TYPE_ID"
           },
+          "unique": true,
           "primaryKey": true,
           "defaultValue": {
             "useZeroValue": true
