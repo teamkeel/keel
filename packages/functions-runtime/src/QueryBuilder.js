@@ -134,8 +134,7 @@ class QueryBuilder {
 
       span.setAttribute("sql", builder.compile().sql);
 
-      const row = await builder.executeTakeFirstOrThrow();
-
+      const row = await builder.executeTakeFirst();
       if (!row) {
         return null;
       }

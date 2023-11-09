@@ -40,6 +40,11 @@ test("get action", async () => {
   expect(fetchedPost!.id).toEqual(post.id);
 });
 
+test("get action - no result", async () => {
+  const fetchedPost = await actions.getPost({ id: "1234" });
+  expect(fetchedPost).toEqual(null);
+});
+
 test("list action - equals", async () => {
   await models.post.create({ title: "apple", subTitle: "def" });
   await models.post.create({ title: "apple", subTitle: "efg" });

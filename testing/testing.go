@@ -123,7 +123,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		functionsServer, err = node.StartDevelopmentServer(ctx, opts.Dir, &node.ServerOpts{
 			EnvVars: functionEnvVars,
 			Output:  os.Stdout,
-			Debug:   true, // todo: configurable
+			Debug:   os.Getenv("DEBUG_FUNCTIONS") == "true",
 		})
 
 		if err != nil {
