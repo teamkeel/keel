@@ -7,7 +7,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 )
 
-func OAuthHandler(schema *proto.Schema) common.ApiHandlerFunc {
+func OAuthHandler(schema *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		return common.Response{
 			Status: http.StatusNotImplemented,

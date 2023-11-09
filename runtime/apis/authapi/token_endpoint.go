@@ -56,7 +56,7 @@ const (
 // TokenEndpointHandler handles requests to the token endpoint for the various grant types we support.
 // OAuth2.0 specification: https://datatracker.ietf.org/doc/html/rfc6749#section-3.2
 // OpenID Connect specification for Token Endpoint: https://openid.net/specs/openid-connect-standard-1_0-21_orig.html#token_ep
-func TokenEndpointHandler(schema *proto.Schema) common.ApiHandlerFunc {
+func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "Token Endpoint")
 		defer span.End()
@@ -125,7 +125,6 @@ func TokenEndpointHandler(schema *proto.Schema) common.ApiHandlerFunc {
 			}
 
 			span.SetAttributes(
-				attribute.String(ArgSubjectToken, idTokenRaw),
 				attribute.String(ArgSubjectTokenType, r.Form.Get(ArgSubjectTokenType)),
 				attribute.String(ArgRequestedTokeType, r.Form.Get(ArgRequestedTokeType)),
 			)

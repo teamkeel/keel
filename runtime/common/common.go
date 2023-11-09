@@ -26,7 +26,7 @@ func NewJsonResponse(status int, body any, headers map[string][]string) Response
 	}
 }
 
-type ApiHandlerFunc func(r *http.Request) Response
+type HandlerFunc func(r *http.Request) Response
 
 const (
 	// An unexpected internal error happened.

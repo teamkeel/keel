@@ -44,17 +44,19 @@ func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error
 		return nil, fmt.Errorf("issuer %s not registered to authenticate on this server", issuer)
 	}
 
-	// Establishes new OIDC provider. This will call the providers discovery endpoint.
+	// Establishes new OIDC provider. This will call the providers discovery endpoint
 	provider, err := oidc.NewProvider(ctx, issuer)
 	if err != nil {
 		return nil, err
 	}
 	span.AddEvent("Provider's ODIC config fetched")
 
-	// TODO: what are we missing by skipping the client ID check?
-	verifier := provider.Verifier(&oidc.Config{SkipClientIDCheck: true})
+	// TODO: Enable this check once we have the client ID as configurable
+	verifier := provider.Verifier(&oidc.Config{
+		SkipClientIDCheck: true,
+	})
 
-	// Verify that the ID token legitimately was signed by the provider and that it has not expired.
+	// Verify that the ID token legitimately was signed by the provider and that it has not expired
 	idToken, err := verifier.Verify(ctx, idTokenRaw)
 	if err != nil {
 		return nil, err

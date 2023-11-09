@@ -31,7 +31,7 @@ const (
 	JsonRpcForbidden          = -32003 // Not part of the official spec
 )
 
-func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
+func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "JsonRpc")
 		defer span.End()

@@ -38,8 +38,8 @@ func GetVersion() string {
 }
 
 func NewHttpHandler(currSchema *proto.Schema) http.Handler {
-	var apiHandler common.ApiHandlerFunc
-	var authHandler common.ApiHandlerFunc
+	var apiHandler common.HandlerFunc
+	var authHandler common.HandlerFunc
 	if currSchema != nil {
 		apiHandler = NewApiHandler(currSchema)
 		authHandler = NewAuthHandler(currSchema)
@@ -93,7 +93,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 }
 
 // NewAuthHandler handles requests to the authentication endpoints
-func NewAuthHandler(schema *proto.Schema) common.ApiHandlerFunc {
+func NewAuthHandler(schema *proto.Schema) common.HandlerFunc {
 	handleToken := authapi.TokenEndpointHandler(schema)
 	handleOAuth := authapi.OAuthHandler(schema)
 
@@ -112,8 +112,8 @@ func NewAuthHandler(schema *proto.Schema) common.ApiHandlerFunc {
 }
 
 // NewApiHandler handles requests to the customers APIs
-func NewApiHandler(s *proto.Schema) common.ApiHandlerFunc {
-	handlers := map[string]common.ApiHandlerFunc{}
+func NewApiHandler(s *proto.Schema) common.HandlerFunc {
+	handlers := map[string]common.HandlerFunc{}
 
 	for _, api := range s.Apis {
 		root := "/" + strings.ToLower(api.Name)
@@ -249,7 +249,7 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 	return err
 }
 
-func withRequestResponseLogging(handler common.ApiHandlerFunc) common.ApiHandlerFunc {
+func withRequestResponseLogging(handler common.HandlerFunc) common.HandlerFunc {
 	return func(request *http.Request) common.Response {
 		log.WithFields(log.Fields{
 			"url":     request.URL,

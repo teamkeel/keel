@@ -33,7 +33,7 @@ type GraphQLRequest struct {
 	Variables     map[string]interface{} `json:"variables"`
 }
 
-func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
+func NewHandler(s *proto.Schema, api *proto.Api) common.HandlerFunc {
 	var schema *graphql.Schema
 	var mutex sync.Mutex
 
