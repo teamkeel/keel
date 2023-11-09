@@ -15,17 +15,11 @@ func UnusedInputRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 	unused := map[string]*parser.NameNode{}
 
 	return Visitor{
-		EnterModelSection: func(n *parser.ModelSectionNode) {
-			isAction = len(n.Actions) > 0
-		},
-		LeaveModelSection: func(n *parser.ModelSectionNode) {
-			isAction = false
+		EnterAction: func(n *parser.ActionNode) {
+			unused = map[string]*parser.NameNode{}
+			isAction = true
 		},
 		LeaveAction: func(n *parser.ActionNode) {
-			if !isAction {
-				return
-			}
-
 			// if the action is implemented as a function, then we don't know how the function
 			// uses the inputs (if at all), so not a validation error.
 			if n.IsFunction() {
@@ -44,10 +38,10 @@ func UnusedInputRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 				)
 			}
 
-			unused = map[string]*parser.NameNode{}
+			isAction = false
 		},
 		EnterActionInput: func(n *parser.ActionInputNode) {
-			if n.Label == nil || !isAction {
+			if n.Label == nil {
 				return
 			}
 			unused[n.Label.Value] = n.Label
