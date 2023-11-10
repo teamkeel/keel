@@ -24,7 +24,7 @@ import (
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/apis/httpjson")
 
-func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
+func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "HttpJson")
 		defer span.End()

@@ -576,8 +576,6 @@ func OIDCMockResponse(req *http.Request) (*http.Response, error) {
 		resBody = res
 	}
 
-	// fmt.Printf("Request: %s \n Response: %s \n", req.URL.Path, resBody)
-
 	r := io.NopCloser(bytes.NewReader([]byte(resBody)))
 	res := &http.Response{
 		StatusCode: http.StatusOK,
