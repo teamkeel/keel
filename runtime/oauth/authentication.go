@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/coreos/go-oidc"
@@ -19,8 +20,11 @@ func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error
 	defer span.End()
 
 	issuer, err := auth.ExtractClaimFromToken(idTokenRaw, "iss")
-	if issuer == "" {
+	if err != nil {
 		return nil, err
+	}
+	if issuer == "" {
+		return nil, errors.New("iss claim cannot be an empty string")
 	}
 	span.AddEvent("Issuer extracted from ID Token")
 

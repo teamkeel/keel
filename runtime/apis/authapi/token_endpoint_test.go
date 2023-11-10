@@ -48,7 +48,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	// Make a token exchange grant request
 	request := makeTokenExchangeRequest(ctx, idToken)
 
-	// Handle runtime request, expecting TokenErrorResponse
+	// Handle runtime request, expecting TokenResponse
 	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
 	require.NoError(t, err)
 
@@ -122,7 +122,7 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	// Make a token exchange grant request
 	request := makeTokenExchangeRequest(ctx, idToken)
 
-	// Handle runtime request, expecting TokenErrorResponse
+	// Handle runtime request, expecting TokenResponse
 	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
 	require.NoError(t, err)
 
@@ -186,7 +186,7 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	// Make a token exchange grant request
 	request := makeTokenExchangeRequest(ctx, idToken)
 
-	// Handle runtime request, expecting TokenErrorResponse
+	// Handle runtime request, expecting TokenResponse
 	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
 	require.NoError(t, err)
 
