@@ -23,7 +23,10 @@ test("testing raw kysely", async () => {
   // because the post was created before 2020 and our custom function adds an additional
   // sql constraint to ensure any post found in the db by id was also created after 1/1/2020
   // we expect the return value of the function to be nothing so a no result error will be thrown
-  await expect(() =>
+  await expect(
     actions.getPostButOnlyIfItsAfter2020({ id: postCreatedBefore2020.id })
-  ).rejects.toThrow("no result");
+  ).rejects.toEqual({
+    code: "ERR_RECORD_NOT_FOUND",
+    message: "record not found",
+  });
 });
