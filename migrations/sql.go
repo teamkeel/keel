@@ -85,7 +85,7 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 				PrimaryKeyConstraintName(model.Name, field.Name),
 				Identifier(field.Name)))
 		}
-		if field.Unique {
+		if field.Unique && !field.PrimaryKey {
 			uniqueStmt, err := addUniqueConstraintStmt(schema, model.Name, []string{field.Name})
 			if err != nil {
 				return "", err
@@ -150,7 +150,7 @@ func addColumnStmt(schema *proto.Schema, modelName string, field *proto.Field) (
 		fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", Identifier(modelName), stmt),
 	)
 
-	if field.Unique {
+	if field.Unique && !field.PrimaryKey {
 		stmt, err := addUniqueConstraintStmt(schema, modelName, []string{field.Name})
 		if err != nil {
 			return "", err
