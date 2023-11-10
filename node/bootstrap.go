@@ -42,7 +42,7 @@ func GetDependencies(options *bootstrapOptions) (map[string]string, map[string]s
 		"@types/node": "18.11.18",
 		"tsx":         "3.12.6",
 		"typescript":  "4.9.4",
-		"vitest":      "0.27.2",
+		"vitest":      "0.34.6",
 	}
 
 	return deps, devDeps

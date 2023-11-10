@@ -1,5 +1,6 @@
 // See https://vitest.dev/guide/extending-matchers.html for docs
 // on typing custom matchers
+import type { Assertion, AsymmetricMatchersContaining } from "vitest";
 
 interface ActionError {
   code: string;
@@ -12,11 +13,7 @@ interface CustomMatchers<R = unknown> {
   toHaveError(err: Partial<ActionError>): void;
 }
 
-declare global {
-  namespace Vi {
-    interface Assertion extends CustomMatchers {}
-    interface AsymmetricMatchersContaining extends CustomMatchers {}
-  }
+declare module "vitest" {
+  interface Assertion<T = any> extends CustomMatchers<T> {}
+  interface AsymmetricMatchersContaining extends CustomMatchers {}
 }
-
-export {};
