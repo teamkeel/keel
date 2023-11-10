@@ -182,13 +182,10 @@ describe("query hooks", () => {
     });
 
     // the beforeQuery adds a constraint that also adds gender = Female to the query
-    await expect(
-      actions.withIdentity(identity).getPersonBeforeQuery({
-        id: person.id,
-      })
-    ).toHaveError({
-      message: "no result",
+    const res = await actions.withIdentity(identity).getPersonBeforeQuery({
+      id: person.id,
     });
+    expect(res).toEqual(null);
   });
 
   test("get.afterQuery", async () => {

@@ -61,6 +61,11 @@ test("fetching a person by id", async () => {
   expect(person.id).toEqual(fetchedPerson!.id);
 });
 
+test("fetching a person by id - no result", async () => {
+  const fetchedPerson = await actions.getPerson({ id: "1234" });
+  expect(fetchedPerson).toEqual(null);
+});
+
 test("fetching person by additional unique field (not PK)", async () => {
   const person = await models.person.create({
     name: "bar",
