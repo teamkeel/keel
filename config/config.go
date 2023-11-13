@@ -254,7 +254,7 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 	}
 
 	missingProviderNames := findAuthProviderMissingName(config.Auth.Providers)
-	for i, _ := range missingProviderNames {
+	for i := range missingProviderNames {
 		errors = append(errors, &ConfigError{
 			Type:    "missing",
 			Message: fmt.Sprintf(ConfigAuthProviderMissingFieldAtIndexErrorString, i, "name"),

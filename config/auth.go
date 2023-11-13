@@ -22,9 +22,8 @@ var (
 )
 
 type AuthConfig struct {
-	Tokens              *TokensConfig `yaml:"tokens"`
-	AllowAnyOidcIssuers bool          `yaml:"allowAnyOidcIssuer"`
-	Providers           []Provider    `yaml:"providers"`
+	Tokens    *TokensConfig `yaml:"tokens"`
+	Providers []Provider    `yaml:"providers"`
 }
 
 type TokensConfig struct {
