@@ -239,14 +239,14 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 		}
 	}
 
-	if config.Auth.Tokens.AccessTokenExpiry <= 0 {
+	if config.Auth.Tokens != nil && config.Auth.Tokens.AccessTokenExpiry <= 0 {
 		errors = append(errors, &ConfigError{
 			Type:    "invalid",
 			Message: fmt.Sprintf(ConfigAuthTokenExpiryMustBePositive, "access", "accessTokenExpiry"),
 		})
 	}
 
-	if config.Auth.Tokens.RefreshTokenExpiry <= 0 {
+	if config.Auth.Tokens != nil && config.Auth.Tokens.RefreshTokenExpiry <= 0 {
 		errors = append(errors, &ConfigError{
 			Type:    "invalid",
 			Message: fmt.Sprintf(ConfigAuthTokenExpiryMustBePositive, "refresh", "refreshTokenExpiry"),
