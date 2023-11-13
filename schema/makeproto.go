@@ -1558,6 +1558,7 @@ func (scm *Builder) applyFieldAttributes(parserField *parser.FieldNode, protoFie
 			protoField.Unique = true
 		case parser.AttributePrimaryKey:
 			protoField.PrimaryKey = true
+			protoField.Unique = true
 		case parser.AttributeDefault:
 			defaultValue := &proto.DefaultValue{}
 			if len(fieldAttribute.Arguments) == 1 {

@@ -289,7 +289,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				return c.TableName == tableName && c.ConstraintType == "u" && len(c.ConstrainedColumns) == 1 && c.ConstrainedColumns[0] == int64(column.ColumnNum)
 			})
 
-			if field.Unique && !hasUniqueConstraint {
+			if field.Unique && !field.PrimaryKey && !hasUniqueConstraint {
 				uniqueStmt, err := addUniqueConstraintStmt(schema, model.Name, []string{field.Name})
 				if err != nil {
 					return nil, err
