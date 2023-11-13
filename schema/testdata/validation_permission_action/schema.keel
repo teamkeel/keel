@@ -1,0 +1,23 @@
+model Person {
+    fields {
+        identity Identity
+    }
+
+    actions {
+        get getPerson(id) {
+            // Invalid to provide actions inside an action
+            @permission(
+                actions: [create],
+                expression: true
+            )
+        }
+        read customFunction(Any) returns (Any) {
+            // Cannot use row-based permission inside a custom function
+            @permission(expression: person.identity == ctx.identity)
+        }
+        read otherCustomFunction(Any) returns (Any) {
+            // Cannot use row-based permission inside a custom function (RHS check)
+            @permission(expression: ctx.identity == person.identity)
+        }
+    }
+}
