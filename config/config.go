@@ -122,6 +122,7 @@ const (
 	ConfigRequiredErrorString                        = "environment variable %s is required but not defined in the following environments: %s"
 	ConfigIncorrectNamingErrorString                 = "%s must be written in upper snakecase"
 	ConfigReservedNameErrorString                    = "environment variable %s cannot start with %s as it is reserved"
+	ConfigAuthTokenExpiryMustBePositive              = "%s token lifespan cannot be negative or zero for field: %s"
 	ConfigAuthProviderMissingFieldAtIndexErrorString = "auth provider at index %v is missing field: %s"
 	ConfigAuthProviderMissingFieldErrorString        = "auth provider '%s' is missing field: %s"
 	ConfigAuthProviderInvalidTypeErrorString         = "auth provider '%s' has invalid type '%s' which must be one of: %s"
@@ -238,6 +239,20 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 		}
 	}
 
+	if config.Auth.Tokens.AccessTokenExpiry <= 0 {
+		errors = append(errors, &ConfigError{
+			Type:    "invalid",
+			Message: fmt.Sprintf(ConfigAuthTokenExpiryMustBePositive, "access", "accessTokenExpiry"),
+		})
+	}
+
+	if config.Auth.Tokens.RefreshTokenExpiry <= 0 {
+		errors = append(errors, &ConfigError{
+			Type:    "invalid",
+			Message: fmt.Sprintf(ConfigAuthTokenExpiryMustBePositive, "refresh", "refreshTokenExpiry"),
+		})
+	}
+
 	missingProviderNames := findAuthProviderMissingName(config.Auth.Providers)
 	for i, _ := range missingProviderNames {
 		errors = append(errors, &ConfigError{
@@ -258,7 +273,6 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 	}
 
 	duplicateProviders := findAuthProviderDuplicateName(config.Auth.Providers)
-
 	for _, p := range duplicateProviders {
 		if p.Name == "" {
 			continue

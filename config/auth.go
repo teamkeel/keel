@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"net/url"
 
 	"github.com/samber/lo"
@@ -50,13 +51,32 @@ func (c *AuthConfig) GetOidcProviders() []Provider {
 	return oidcProviders
 }
 
-func (c *AuthConfig) HasOidcIssuer(issuer string) bool {
+func (c *AuthConfig) HasOidcIssuer(issuer string) (bool, error) {
 	for _, p := range c.Providers {
-		if p.IssuerUrl == issuer {
-			return true
+		if p.Type == OAuthProvider {
+			continue
+		}
+
+		issuerUrl, err := p.GetIssuer()
+		if err != nil {
+			return false, err
+		}
+		if issuerUrl == issuer {
+			return true, nil
 		}
 	}
-	return false
+	return false, nil
+}
+
+func (c *Provider) GetIssuer() (string, error) {
+	switch c.Type {
+	case GoogleProvider:
+		return "https://accounts.google.com/", nil
+	case OpenIdConnectProvider:
+		return c.IssuerUrl, nil
+	default:
+		return "", fmt.Errorf("the provider type '%s' should not have an issuer url configured", c.Type)
+	}
 }
 
 func (c *AuthConfig) GetOAuthProviders() []Provider {
@@ -67,6 +87,28 @@ func (c *AuthConfig) GetOAuthProviders() []Provider {
 		}
 	}
 	return oidcProviders
+}
+
+func (c *Provider) GetTokenUrl() (string, error) {
+	switch c.Type {
+	case GoogleProvider:
+		return "https://accounts.google.com/o/oauth2/token", nil
+	case OAuthProvider:
+		return c.TokenUrl, nil
+	default:
+		return "", fmt.Errorf("the provider type '%s' should not have a token url configured", c.Type)
+	}
+}
+
+func (c *Provider) GetAuthorizationUrl() (string, error) {
+	switch c.Type {
+	case GoogleProvider:
+		return "https://accounts.google.com/o/oauth2/auth", nil
+	case OAuthProvider:
+		return c.AuthorizationUrl, nil
+	default:
+		return "", fmt.Errorf("the provider type '%s' should not have a token url configured", c.Type)
+	}
 }
 
 // findAuthProviderMissingName checks for missing provider names

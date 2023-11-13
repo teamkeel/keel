@@ -66,7 +66,12 @@ func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error
 		return nil, err
 	}
 
-	if !authConfig.HasOidcIssuer(issuer) {
+	hasIssuer, err := authConfig.HasOidcIssuer(issuer)
+	if err != nil {
+		return nil, err
+	}
+
+	if !hasIssuer {
 		return nil, fmt.Errorf("issuer %s not registered to authenticate on this server", issuer)
 	}
 

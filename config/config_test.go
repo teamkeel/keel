@@ -123,6 +123,13 @@ func TestAuthTokens(t *testing.T) {
 	assert.Equal(t, 604800, config.Auth.Tokens.RefreshTokenExpiry)
 }
 
+func TestAuthNegativeTokenLifespan(t *testing.T) {
+	_, err := Load("fixtures/test_auth_negative_token_lifespan.yaml")
+
+	assert.Contains(t, err.Error(), "access token lifespan cannot be negative or zero for field: accessTokenExpiry\n")
+	assert.Contains(t, err.Error(), "refresh token lifespan cannot be negative or zero for field: refreshTokenExpiry\n")
+}
+
 func TestAuthProviders(t *testing.T) {
 	config, err := Load("fixtures/test_auth.yaml")
 	assert.NoError(t, err)
@@ -192,4 +199,21 @@ func TestMissingOrInvalidTokenEndpoint(t *testing.T) {
 	assert.Contains(t, err.Error(), "auth provider 'not-https' has missing or invalid https url for field: tokenUrl\n")
 	assert.Contains(t, err.Error(), "auth provider 'missing-schema' has missing or invalid https url for field: tokenUrl\n")
 	assert.Contains(t, err.Error(), "auth provider 'missing-endpoint' has missing or invalid https url for field: tokenUrl\n")
+}
+
+func TestHasIssuer(t *testing.T) {
+	config, err := Load("fixtures/test_auth.yaml")
+	assert.NoError(t, err)
+
+	hasGoogleIssuer, err := config.Auth.HasOidcIssuer("https://accounts.google.com/")
+	assert.NoError(t, err)
+	assert.True(t, hasGoogleIssuer)
+
+	hasCustomIssuer, err := config.Auth.HasOidcIssuer("https://dev-skhlutl45lbqkvhv.us.auth0.com")
+	assert.NoError(t, err)
+	assert.True(t, hasCustomIssuer)
+
+	hasUnknownIssuer, err := config.Auth.HasOidcIssuer("https://nope.com")
+	assert.NoError(t, err)
+	assert.False(t, hasUnknownIssuer)
 }

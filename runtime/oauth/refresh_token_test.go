@@ -18,9 +18,6 @@ func TestNewRefreshToken_NotEmpty(t *testing.T) {
 	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Set up auth config
-	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{})
-
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
 	require.NoError(t, err)
 	require.NotEmpty(t, refreshToken)
@@ -29,9 +26,6 @@ func TestNewRefreshToken_NotEmpty(t *testing.T) {
 func TestNewRefreshToken_ErrorOnEmptyIdentityId(t *testing.T) {
 	ctx := context.Background()
 
-	// Set up auth config
-	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{})
-
 	_, err := oauth.NewRefreshToken(ctx, "")
 	require.Error(t, err)
 }
@@ -39,9 +33,6 @@ func TestNewRefreshToken_ErrorOnEmptyIdentityId(t *testing.T) {
 func TestRotateRefreshToken_Valid(t *testing.T) {
 	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
-
-	// Set up auth config
-	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{})
 
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
 	require.NoError(t, err)
@@ -87,9 +78,6 @@ func TestRotateRefreshToken_ReuseRefreshTokenNotValid(t *testing.T) {
 	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Set up auth config
-	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{})
-
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
 	require.NoError(t, err)
 
@@ -110,9 +98,6 @@ func TestRevokeRefreshToken_Unauthorised(t *testing.T) {
 	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Set up auth config
-	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{})
-
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
 	require.NoError(t, err)
 
@@ -127,9 +112,6 @@ func TestRevokeRefreshToken_Unauthorised(t *testing.T) {
 func TestRevokeRefreshToken_MultipleForIdentity(t *testing.T) {
 	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
-
-	// Set up auth config
-	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{})
 
 	refreshToken1, err := oauth.NewRefreshToken(ctx, "identity_id")
 	require.NoError(t, err)

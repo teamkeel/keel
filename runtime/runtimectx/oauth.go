@@ -3,7 +3,6 @@ package runtimectx
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/teamkeel/keel/config"
 )
@@ -18,10 +17,9 @@ func WithOAuthConfig(ctx context.Context, config *config.AuthConfig) context.Con
 }
 
 func GetOAuthConfig(ctx context.Context) (*config.AuthConfig, error) {
-
 	v := ctx.Value(oauthContextKey)
 	if v == nil {
-		return nil, fmt.Errorf("context does not have a :%s key", oauthContextKey)
+		return &config.AuthConfig{}, nil
 	}
 
 	config, ok := v.(*config.AuthConfig)

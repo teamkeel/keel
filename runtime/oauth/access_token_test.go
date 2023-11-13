@@ -22,7 +22,6 @@ func newContextWithPK() context.Context {
 
 	pk, _ := testhelpers.GetEmbeddedPrivateKey()
 	ctx = runtimectx.WithPrivateKey(ctx, pk)
-	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{})
 
 	return ctx
 }
