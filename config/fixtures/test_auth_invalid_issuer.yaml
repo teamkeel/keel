@@ -1,0 +1,30 @@
+auth:
+  tokens:
+    accessTokenExpiry: 3600
+    refreshTokenExpiry: 604800
+    
+  providers:
+    - type: oidc
+      name: not-https
+      issuerUrl: 'http://not-https.com'
+      clientId: 'kasj28fnq09ak'
+
+    - type: oidc
+      name: missing-issuer
+      clientId: 'kasj28fnq09ak'
+
+    - type: oidc
+      name: no-schema
+      issuerUrl: 'not-https.com'
+      clientId: 'kasj28fnq09ak'
+
+    - type: oidc
+      name: invalid-url
+      issuerUrl: 'whoops'
+      clientId: 'kasj28fnq09ak'
+
+    - type: oauth
+      name: myOAuthProvider
+      clientId: 'kasj28fnq09ak'
+      issuerUrl: 'not an error'
+

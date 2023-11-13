@@ -400,6 +400,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		ctx = db.WithDatabase(ctx, m.Database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
+		ctx = runtimectx.WithOAuthConfig(ctx, &m.Config.Auth)
 
 		mailClient := mail.NewSMTPClientFromEnv()
 		if mailClient != nil {

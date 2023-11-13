@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/samber/lo"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -31,11 +30,14 @@ type AccessTokenClaims struct {
 
 func GenerateAccessToken(ctx context.Context, identityId string) (string, time.Duration, error) {
 	expiry := DefaultAccessTokenExpiry
-	config, err := runtimectx.GetAuthConfig(ctx)
-	if err == nil {
-		if config != nil && config.Keel != nil {
-			expiry = time.Duration(config.Keel.TokenDuration) * time.Second
-		}
+
+	config, err := runtimectx.GetOAuthConfig(ctx)
+	if err != nil {
+		return "", 0, err
+	}
+
+	if config != nil && config.Tokens != nil && config.Tokens.AccessTokenExpiry != 0 {
+		expiry = time.Duration(config.Tokens.AccessTokenExpiry) * time.Second
 	}
 
 	token, err := generateToken(ctx, identityId, []string{}, expiry)
@@ -75,7 +77,7 @@ func generateToken(ctx context.Context, sub string, aud []string, expiresIn time
 	return tokenString, nil
 }
 
-func ValidateAccessToken(ctx context.Context, tokenString string, audienceClaim string) (string, string, error) {
+func ValidateAccessToken(ctx context.Context, tokenString string) (string, string, error) {
 	ctx, span := tracer.Start(ctx, "Validate access token")
 	defer span.End()
 
@@ -106,12 +108,6 @@ func ValidateAccessToken(ctx context.Context, tokenString string, audienceClaim 
 
 	if !claims.VerifyExpiresAt(time.Now().UTC(), true) {
 		return "", "", ErrTokenExpired
-	}
-
-	if audienceClaim != "" {
-		if !lo.Contains(claims.Audience, audienceClaim) {
-			return "", "", ErrInvalidToken
-		}
 	}
 
 	if err != nil || !token.Valid {

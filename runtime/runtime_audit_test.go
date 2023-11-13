@@ -452,7 +452,7 @@ func TestAuditDatabaseMigration(t *testing.T) {
 	var updatedSchema = `
 		model Person {
 			fields {
-				name Text
+			name Text
 				age Number @default(0)
 				isActive Boolean @default(true)
 			}

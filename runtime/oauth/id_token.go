@@ -61,21 +61,12 @@ func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error
 
 	span.SetAttributes(attribute.String("issuer", issuer))
 
-	authConfig, err := runtimectx.GetAuthConfig(ctx)
+	authConfig, err := runtimectx.GetOAuthConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	issuerPermitted := authConfig.AllowAnyIssuers
-	if !issuerPermitted {
-		for _, e := range authConfig.Issuers {
-			if e.Iss == issuer {
-				issuerPermitted = true
-			}
-		}
-	}
-
-	if !issuerPermitted {
+	if !authConfig.HasOidcIssuer(issuer) {
 		return nil, fmt.Errorf("issuer %s not registered to authenticate on this server", issuer)
 	}
 

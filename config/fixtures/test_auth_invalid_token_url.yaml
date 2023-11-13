@@ -1,0 +1,22 @@
+auth:
+  tokens:
+    accessTokenExpiry: 3600
+    refreshTokenExpiry: 604800
+    
+  providers:
+    - type: oauth
+      name: not-https
+      clientId: hfjuw983h1hfsdf
+      authorizationUrl: https://github.com/auth
+      tokenUrl: http://github.com/token
+
+    - type: oauth
+      name: missing-schema
+      clientId: hfjuw983h1hfsdf
+      authorizationUrl: https://github.com/auth
+      tokenUrl: github.com/token
+
+    - type: oauth
+      name: missing-endpoint
+      clientId: hfjuw983h1hfsdf
+      authorizationUrl: https://github.com/auth

@@ -526,10 +526,11 @@ func SetSecret(path, environment, key, value string) error {
 	if err != nil {
 		return err
 	}
-
+	fmt.Println(projectPath)
 	config := cliconfig.New(&cliconfig.Options{
 		WorkingDir: projectPath,
 	})
+	fmt.Println(path)
 
 	return config.SetSecret(path, environment, key, value)
 }

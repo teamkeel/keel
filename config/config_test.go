@@ -114,3 +114,82 @@ func TestReservedNameValidateFormat(t *testing.T) {
 	assert.Contains(t, err.Error(), "environment variable OPENCOLLECTOR_CONFIG_NOT_ALLOWED4 cannot start with OPENCOLLECTOR_CONFIG as it is reserved\n")
 	assert.Contains(t, err.Error(), "environment variable _NOT_ALLOWED5 cannot start with _ as it is reserved\n")
 }
+
+func TestAuthTokens(t *testing.T) {
+	config, err := Load("fixtures/test_auth.yaml")
+	assert.NoError(t, err)
+
+	assert.Equal(t, 3600, config.Auth.Tokens.AccessTokenExpiry)
+	assert.Equal(t, 604800, config.Auth.Tokens.RefreshTokenExpiry)
+}
+
+func TestAuthProviders(t *testing.T) {
+	config, err := Load("fixtures/test_auth.yaml")
+	assert.NoError(t, err)
+
+	assert.Equal(t, "google", config.Auth.Providers[0].Type)
+	assert.Equal(t, "google-1", config.Auth.Providers[0].Name)
+	assert.Equal(t, "foo_1", config.Auth.Providers[0].ClientId)
+
+	assert.Equal(t, "google", config.Auth.Providers[1].Type)
+	assert.Equal(t, "google_2", config.Auth.Providers[1].Name)
+	assert.Equal(t, "foo_2", config.Auth.Providers[1].ClientId)
+
+	assert.Equal(t, "oidc", config.Auth.Providers[2].Type)
+	assert.Equal(t, "Baidu", config.Auth.Providers[2].Name)
+	assert.Equal(t, "https://dev-skhlutl45lbqkvhv.us.auth0.com", config.Auth.Providers[2].IssuerUrl)
+	assert.Equal(t, "kasj28fnq09ak", config.Auth.Providers[2].ClientId)
+
+	assert.Equal(t, "oauth", config.Auth.Providers[3].Type)
+	assert.Equal(t, "Github", config.Auth.Providers[3].Name)
+	assert.Equal(t, "hfjuw983h1hfsdf", config.Auth.Providers[3].ClientId)
+	assert.Equal(t, "https://github.com/auth", config.Auth.Providers[3].AuthorizationUrl)
+	assert.Equal(t, "https://github.com/token", config.Auth.Providers[3].TokenUrl)
+}
+
+func TestMissingProviderName(t *testing.T) {
+	_, err := Load("fixtures/test_auth_missing_names.yaml")
+
+	assert.Contains(t, err.Error(), "auth provider at index 0 is missing field: name\n")
+	assert.Contains(t, err.Error(), "auth provider at index 1 is missing field: name\n")
+	assert.Contains(t, err.Error(), "auth provider at index 2 is missing field: name\n")
+}
+
+func TestDuplicateProviderName(t *testing.T) {
+	_, err := Load("fixtures/test_auth_duplicate_names.yaml")
+
+	assert.Equal(t, "auth provider name 'my_google' has been defined more than once, but must be unique\n", err.Error())
+}
+
+func TestInvalidProviderTypes(t *testing.T) {
+	_, err := Load("fixtures/test_auth_invalid_types.yaml")
+
+	assert.Contains(t, err.Error(), "auth provider 'google_1' has invalid type 'google_1' which must be one of: google, oidc, oauth\n")
+	assert.Contains(t, err.Error(), "auth provider 'google_2' has invalid type 'Google' which must be one of: google, oidc, oauth\n")
+	assert.Contains(t, err.Error(), "auth provider 'Baidu' has invalid type 'whoops' which must be one of: google, oidc, oauth\n")
+}
+
+func TestMissingClientId(t *testing.T) {
+	_, err := Load("fixtures/test_auth_missing_client_ids.yaml")
+
+	assert.Contains(t, err.Error(), "auth provider 'google_1' is missing field: clientId\n")
+	assert.Contains(t, err.Error(), "auth provider 'Baidu' is missing field: clientId\n")
+	assert.Contains(t, err.Error(), "auth provider 'Github' is missing field: clientId\n")
+}
+
+func TestMissingOrInvalidIssuerUrl(t *testing.T) {
+	_, err := Load("fixtures/test_auth_invalid_issuer.yaml")
+
+	assert.Contains(t, err.Error(), "auth provider 'not-https' has missing or invalid https url for field: issuerUrl\n")
+	assert.Contains(t, err.Error(), "auth provider 'missing-issuer' has missing or invalid https url for field: issuerUrl\n")
+	assert.Contains(t, err.Error(), "auth provider 'no-schema' has missing or invalid https url for field: issuerUrl\n")
+	assert.Contains(t, err.Error(), "auth provider 'invalid-url' has missing or invalid https url for field: issuerUrl\n")
+}
+
+func TestMissingOrInvalidTokenEndpoint(t *testing.T) {
+	_, err := Load("fixtures/test_auth_invalid_token_url.yaml")
+
+	assert.Contains(t, err.Error(), "auth provider 'not-https' has missing or invalid https url for field: tokenUrl\n")
+	assert.Contains(t, err.Error(), "auth provider 'missing-schema' has missing or invalid https url for field: tokenUrl\n")
+	assert.Contains(t, err.Error(), "auth provider 'missing-endpoint' has missing or invalid https url for field: tokenUrl\n")
+}

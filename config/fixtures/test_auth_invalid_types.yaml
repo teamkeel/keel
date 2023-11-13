@@ -1,0 +1,20 @@
+auth:
+  providers:
+    - type: google_1
+      name: google_1
+      clientId: foo_1
+
+    - type: Google
+      name: google_2
+      clientId: foo_2
+
+    - type: oauth
+      name: Github
+      clientId: hfjuw983h1hfsdf
+      authorizationUrl: https://github.com/auth
+      tokenUrl: https://github.com/token
+
+    - type: whoops
+      name: Baidu
+      issuerUrl: 'https://dev-skhlutl45lbqkvhv.us.auth0.com'
+      clientId: 'kasj28fnq09ak'
