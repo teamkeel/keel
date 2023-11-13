@@ -21,10 +21,9 @@ type OidcServer struct {
 	Issuer          string
 	Config          map[string]any
 	IdTokenLifespan time.Duration
-
-	server     *httptest.Server
-	PrivateKey *rsa.PrivateKey
-	users      map[string]*oauth.UserClaims
+	server          *httptest.Server
+	PrivateKey      *rsa.PrivateKey
+	users           map[string]*oauth.UserClaims
 }
 
 func (o *OidcServer) SetUser(sub string, claims *oauth.UserClaims) {

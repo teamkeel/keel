@@ -201,19 +201,28 @@ func TestMissingOrInvalidTokenEndpoint(t *testing.T) {
 	assert.Contains(t, err.Error(), "auth provider 'missing-endpoint' has missing or invalid https url for field: tokenUrl\n")
 }
 
-func TestHasIssuer(t *testing.T) {
+func TestGetOidcIssuer(t *testing.T) {
 	config, err := Load("fixtures/test_auth.yaml")
 	assert.NoError(t, err)
 
-	hasGoogleIssuer, err := config.Auth.HasOidcIssuer("https://accounts.google.com/")
+	googleIssuer, err := config.Auth.GetProvidersOidcIssuer("https://accounts.google.com/")
 	assert.NoError(t, err)
-	assert.True(t, hasGoogleIssuer)
+	assert.Len(t, googleIssuer, 2)
 
-	hasCustomIssuer, err := config.Auth.HasOidcIssuer("https://dev-skhlutl45lbqkvhv.us.auth0.com")
+	auth0Issuer, err := config.Auth.GetProvidersOidcIssuer("https://dev-skhlutl45lbqkvhv.us.auth0.com")
 	assert.NoError(t, err)
-	assert.True(t, hasCustomIssuer)
+	assert.Len(t, auth0Issuer, 1)
 
-	hasUnknownIssuer, err := config.Auth.HasOidcIssuer("https://nope.com")
+	nopeIssuer, err := config.Auth.GetProvidersOidcIssuer("https://nope.com")
 	assert.NoError(t, err)
-	assert.False(t, hasUnknownIssuer)
+	assert.Len(t, nopeIssuer, 0)
+}
+
+func TestGetOidcSameIssuers(t *testing.T) {
+	config, err := Load("fixtures/test_auth_same_issuers.yaml")
+	assert.NoError(t, err)
+
+	googleIssuer, err := config.Auth.GetProvidersOidcIssuer("https://accounts.google.com/")
+	assert.NoError(t, err)
+	assert.Len(t, googleIssuer, 3)
 }

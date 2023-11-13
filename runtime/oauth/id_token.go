@@ -66,12 +66,12 @@ func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error
 		return nil, err
 	}
 
-	hasIssuer, err := authConfig.HasOidcIssuer(issuer)
+	providers, err := authConfig.GetProvidersOidcIssuer(issuer)
 	if err != nil {
 		return nil, err
 	}
 
-	if !hasIssuer {
+	if len(providers) == 0 {
 		return nil, fmt.Errorf("issuer %s not registered to authenticate on this server", issuer)
 	}
 
@@ -82,17 +82,25 @@ func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error
 	}
 	span.AddEvent("Provider's ODIC config fetched")
 
-	// TODO: Enable this check once we have the client ID as configurable
-	verifier := provider.Verifier(&oidc.Config{
-		SkipClientIDCheck: true,
-	})
+	var verificationErrs error
 
-	// Verify that the ID token legitimately was signed by the provider and that it has not expired
-	idToken, err := verifier.Verify(ctx, idTokenRaw)
-	if err != nil {
-		return nil, err
+	// Verify against each configuired client ID for this issuer
+	for _, p := range providers {
+		// Checking the clientId during verification ensures that the ID token was intended for this client,
+		// because it could have been stolen from any other application with an ID token from this same issuer.
+		oidcConfig := &oidc.Config{
+			ClientID: p.ClientId,
+		}
+
+		// Verify that the ID token legitimately was signed by the provider and that it has not expired
+		idToken, err := provider.Verifier(oidcConfig).Verify(ctx, idTokenRaw)
+		if err != nil {
+			verificationErrs = errors.Join(err, verificationErrs)
+		} else {
+			span.AddEvent("ID Token verified")
+			return idToken, nil
+		}
 	}
-	span.AddEvent("ID Token verified")
 
-	return idToken, nil
+	return nil, verificationErrs
 }
