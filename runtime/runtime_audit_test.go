@@ -11,14 +11,12 @@ import (
 	"github.com/nsf/jsondiff"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/runtime/runtimectx"
-	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
+	keeltesting "github.com/teamkeel/keel/testing"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -44,37 +42,6 @@ model WeddingInvitee {
 	}
 }`
 
-func newContext(t *testing.T, keelSchema string, resetDatabase bool) (context.Context, db.Database, *proto.Schema) {
-	dbConnInfo := &db.ConnectionInfo{
-		Host:     "localhost",
-		Port:     "8001",
-		Username: "postgres",
-		Password: "postgres",
-		Database: "keel",
-	}
-
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
-	require.NoError(t, err)
-
-	ctx := context.Background()
-
-	// Add private key to context
-	pk, err := testhelpers.GetEmbeddedPrivateKey()
-	require.NoError(t, err)
-	ctx = runtimectx.WithPrivateKey(ctx, pk)
-
-	ctx, err = testhelpers.WithTracing(ctx)
-	require.NoError(t, err)
-
-	// Add database to context
-	database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, "runtime_test", resetDatabase)
-	require.NoError(t, err)
-	ctx = db.WithDatabase(ctx, database)
-
-	return ctx, database, schema
-}
-
 func withIdentity(t *testing.T, ctx context.Context, schema *proto.Schema) (context.Context, *auth.Identity) {
 	identity, err := actions.CreateIdentity(ctx, schema, "dave.new@keel.xyz", "1234")
 	require.NoError(t, err)
@@ -82,7 +49,7 @@ func withIdentity(t *testing.T, ctx context.Context, schema *proto.Schema) (cont
 }
 
 func TestAuditCreateAction(t *testing.T) {
-	ctx, database, schema := newContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -126,7 +93,7 @@ func TestAuditCreateAction(t *testing.T) {
 }
 
 func TestAuditNestedCreateAction(t *testing.T) {
-	ctx, database, schema := newContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -233,7 +200,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 }
 
 func TestAuditUpdateAction(t *testing.T) {
-	ctx, database, schema := newContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -291,7 +258,7 @@ func TestAuditUpdateAction(t *testing.T) {
 }
 
 func TestAuditDeleteAction(t *testing.T) {
-	ctx, database, schema := newContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -347,7 +314,7 @@ func TestAuditDeleteAction(t *testing.T) {
 }
 
 func TestAuditTablesWithOnlyIdentity(t *testing.T) {
-	ctx, database, schema := newContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -378,7 +345,7 @@ func TestAuditTablesWithOnlyIdentity(t *testing.T) {
 }
 
 func TestAuditTablesWithOnlyTracing(t *testing.T) {
-	ctx, database, schema := newContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -404,7 +371,7 @@ func TestAuditTablesWithOnlyTracing(t *testing.T) {
 }
 
 func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
-	ctx, database, schema := newContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -445,7 +412,7 @@ func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
 }
 
 func TestAuditFieldsAreDroppedOnCreate(t *testing.T) {
-	ctx, database, schema := newContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
 	defer database.Close()
 
 	ctx, _ = withIdentity(t, ctx, schema)
@@ -474,7 +441,7 @@ func TestAuditDatabaseMigration(t *testing.T) {
 			@permission(expression: true, actions: [create, update, delete])
 		}`
 
-	ctx, database, pSchema := newContext(t, keelSchema, true)
+	ctx, database, pSchema := keeltesting.MakeContext(t, keelSchema, true)
 
 	create := proto.FindAction(pSchema, "createPerson")
 	_, _, err := actions.Execute(
@@ -496,7 +463,7 @@ func TestAuditDatabaseMigration(t *testing.T) {
 		}`
 
 	database.Close()
-	ctx, database, pSchema = newContext(t, updatedSchema, false)
+	ctx, database, pSchema = keeltesting.MakeContext(t, updatedSchema, false)
 	db := database.GetDB()
 	defer database.Close()
 

@@ -11,6 +11,7 @@ import (
 	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	keeltesting "github.com/teamkeel/keel/testing"
 )
 
 var eventsSchema = `
@@ -80,7 +81,7 @@ func (handler *EventHandler) HandleEvent(ctx context.Context, subscriber string,
 }
 
 func TestCreateEvent(t *testing.T) {
-	ctx, database, schema := newContext(t, eventsSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, eventsSchema, true)
 	defer database.Close()
 
 	ctx, identity := withIdentity(t, ctx, schema)
@@ -124,7 +125,7 @@ func TestCreateEvent(t *testing.T) {
 }
 
 func TestUpdateEvent(t *testing.T) {
-	ctx, database, schema := newContext(t, eventsSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, eventsSchema, true)
 	defer database.Close()
 
 	result, _, err := actions.Execute(
@@ -182,7 +183,7 @@ func TestUpdateEvent(t *testing.T) {
 }
 
 func TestDeleteEvent(t *testing.T) {
-	ctx, database, schema := newContext(t, eventsSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, eventsSchema, true)
 	defer database.Close()
 
 	result, _, err := actions.Execute(
@@ -231,7 +232,7 @@ func TestDeleteEvent(t *testing.T) {
 }
 
 func TestNoIdentityEvent(t *testing.T) {
-	ctx, database, schema := newContext(t, eventsSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, eventsSchema, true)
 	defer database.Close()
 
 	handler := NewEventHandler(t)
@@ -252,7 +253,7 @@ func TestNoIdentityEvent(t *testing.T) {
 }
 
 func TestNestedCreateEvent(t *testing.T) {
-	ctx, database, schema := newContext(t, eventsSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, eventsSchema, true)
 	defer database.Close()
 
 	ctx, _ = withIdentity(t, ctx, schema)
@@ -294,7 +295,7 @@ func TestNestedCreateEvent(t *testing.T) {
 }
 
 func TestMultipleEvents(t *testing.T) {
-	ctx, database, schema := newContext(t, eventsSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, eventsSchema, true)
 	defer database.Close()
 
 	ctx, _ = withIdentity(t, ctx, schema)
@@ -342,7 +343,7 @@ func TestMultipleEvents(t *testing.T) {
 }
 
 func TestAuditTableEventCreatedAtUpdated(t *testing.T) {
-	ctx, database, schema := newContext(t, eventsSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, eventsSchema, true)
 	defer database.Close()
 
 	handler := NewEventHandler(t)
@@ -381,7 +382,7 @@ func TestAuditTableEventCreatedAtUpdated(t *testing.T) {
 }
 
 func TestFailedEventHandling(t *testing.T) {
-	ctx, database, schema := newContext(t, eventsSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, eventsSchema, true)
 	defer database.Close()
 
 	ctx, err := events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
