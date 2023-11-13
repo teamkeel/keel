@@ -19,6 +19,7 @@ type Config struct{}
 type ProjectConfig struct {
 	Environment EnvironmentConfig `yaml:"environment"`
 	Secrets     []Input           `yaml:"secrets"`
+	Auth        AuthConfig        `yaml:"auth"`
 	DisableAuth bool              `yaml:"disableKeelAuth"`
 }
 
@@ -117,10 +118,16 @@ type ConfigError struct {
 }
 
 const (
-	ConfigDuplicateErrorString       = "environment variable %s has a duplicate set in environment: %s"
-	ConfigRequiredErrorString        = "environment variable %s is required but not defined in the following environments: %s"
-	ConfigIncorrectNamingErrorString = "%s must be written in upper snakecase"
-	ConfigReservedNameErrorString    = "environment variable %s cannot start with %s as it is reserved"
+	ConfigDuplicateErrorString                       = "environment variable %s has a duplicate set in environment: %s"
+	ConfigRequiredErrorString                        = "environment variable %s is required but not defined in the following environments: %s"
+	ConfigIncorrectNamingErrorString                 = "%s must be written in upper snakecase"
+	ConfigReservedNameErrorString                    = "environment variable %s cannot start with %s as it is reserved"
+	ConfigAuthTokenExpiryMustBePositive              = "%s token lifespan cannot be negative or zero for field: %s"
+	ConfigAuthProviderMissingFieldAtIndexErrorString = "auth provider at index %v is missing field: %s"
+	ConfigAuthProviderMissingFieldErrorString        = "auth provider '%s' is missing field: %s"
+	ConfigAuthProviderInvalidTypeErrorString         = "auth provider '%s' has invalid type '%s' which must be one of: %s"
+	ConfigAuthProviderDuplicateErrorString           = "auth provider name '%s' has been defined more than once, but must be unique"
+	ConfigAuthProviderInvalidHttpUrlErrorString      = "auth provider '%s' has missing or invalid https url for field: %s"
 )
 
 type ConfigErrors struct {
@@ -230,6 +237,94 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 				Message: fmt.Sprintf(ConfigReservedNameErrorString, incorrectName, startsWith),
 			})
 		}
+	}
+
+	if config.Auth.Tokens != nil && config.Auth.Tokens.AccessTokenExpiry <= 0 {
+		errors = append(errors, &ConfigError{
+			Type:    "invalid",
+			Message: fmt.Sprintf(ConfigAuthTokenExpiryMustBePositive, "access", "accessTokenExpiry"),
+		})
+	}
+
+	if config.Auth.Tokens != nil && config.Auth.Tokens.RefreshTokenExpiry <= 0 {
+		errors = append(errors, &ConfigError{
+			Type:    "invalid",
+			Message: fmt.Sprintf(ConfigAuthTokenExpiryMustBePositive, "refresh", "refreshTokenExpiry"),
+		})
+	}
+
+	missingProviderNames := findAuthProviderMissingName(config.Auth.Providers)
+	for i := range missingProviderNames {
+		errors = append(errors, &ConfigError{
+			Type:    "missing",
+			Message: fmt.Sprintf(ConfigAuthProviderMissingFieldAtIndexErrorString, i, "name"),
+		})
+	}
+
+	invalidProviderTypes := findAuthProviderInvalidType(config.Auth.Providers)
+	for _, p := range invalidProviderTypes {
+		if p.Name == "" {
+			continue
+		}
+		errors = append(errors, &ConfigError{
+			Type:    "missing",
+			Message: fmt.Sprintf(ConfigAuthProviderInvalidTypeErrorString, p.Name, p.Type, strings.Join(SupportedProviderTypes, ", ")),
+		})
+	}
+
+	duplicateProviders := findAuthProviderDuplicateName(config.Auth.Providers)
+	for _, p := range duplicateProviders {
+		if p.Name == "" {
+			continue
+		}
+		errors = append(errors, &ConfigError{
+			Type:    "duplicate",
+			Message: fmt.Sprintf(ConfigAuthProviderDuplicateErrorString, p.Name),
+		})
+	}
+
+	missingClientIds := findAuthProviderMissingClientId(config.Auth.Providers)
+	for _, p := range missingClientIds {
+		if p.Name == "" {
+			continue
+		}
+		errors = append(errors, &ConfigError{
+			Type:    "missing",
+			Message: fmt.Sprintf(ConfigAuthProviderMissingFieldErrorString, p.Name, "clientId"),
+		})
+	}
+
+	missingOrInvalidIssuerUrls := findAuthProviderMissingOrInvalidIssuerUrl(config.Auth.GetOidcProviders())
+	for _, p := range missingOrInvalidIssuerUrls {
+		if p.Name == "" {
+			continue
+		}
+		errors = append(errors, &ConfigError{
+			Type:    "invalid",
+			Message: fmt.Sprintf(ConfigAuthProviderInvalidHttpUrlErrorString, p.Name, "issuerUrl"),
+		})
+	}
+
+	missingOrInvalidTokenUrls := findAuthProviderMissingOrInvalidTokenUrl(config.Auth.GetOAuthProviders())
+	for _, p := range missingOrInvalidTokenUrls {
+		if p.Name == "" {
+			continue
+		}
+		errors = append(errors, &ConfigError{
+			Type:    "invalid",
+			Message: fmt.Sprintf(ConfigAuthProviderInvalidHttpUrlErrorString, p.Name, "tokenUrl"),
+		})
+	}
+
+	missingOrInvalidAuthUrls := findAuthProviderMissingOrInvalidAuthorizationUrl(config.Auth.GetOAuthProviders())
+	for _, p := range missingOrInvalidAuthUrls {
+		if p.Name == "" {
+			continue
+		}
+		errors = append(errors, &ConfigError{
+			Type:    "invalid",
+			Message: fmt.Sprintf(ConfigAuthProviderInvalidHttpUrlErrorString, p.Name, "authorizationUrl"),
+		})
 	}
 
 	if len(errors) == 0 {

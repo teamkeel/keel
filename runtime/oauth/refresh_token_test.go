@@ -3,8 +3,10 @@ package oauth_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	keeltesting "github.com/teamkeel/keel/testing"
@@ -16,11 +18,6 @@ func TestNewRefreshToken_NotEmpty(t *testing.T) {
 	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
-
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
 	require.NoError(t, err)
 	require.NotEmpty(t, refreshToken)
@@ -29,11 +26,6 @@ func TestNewRefreshToken_NotEmpty(t *testing.T) {
 func TestNewRefreshToken_ErrorOnEmptyIdentityId(t *testing.T) {
 	ctx := context.Background()
 
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
-
 	_, err := oauth.NewRefreshToken(ctx, "")
 	require.Error(t, err)
 }
@@ -41,11 +33,6 @@ func TestNewRefreshToken_ErrorOnEmptyIdentityId(t *testing.T) {
 func TestRotateRefreshToken_Valid(t *testing.T) {
 	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
-
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
 
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
 	require.NoError(t, err)
@@ -64,14 +51,32 @@ func TestRotateRefreshToken_Valid(t *testing.T) {
 	require.NotEqual(t, newRefreshToken2, newRefreshToken1)
 }
 
-func TestRotateRefreshToken_ReuseRefreshTokenNotValid(t *testing.T) {
+func TestRotateRefreshToken_Expired(t *testing.T) {
 	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
 	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Tokens: &config.TokensConfig{
+			RefreshTokenExpiry: 1,
+		},
 	})
+
+	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
+	require.NoError(t, err)
+
+	time.Sleep(1100 * time.Millisecond)
+
+	isValid, newRefreshToken, identityId, err := oauth.RotateRefreshToken(ctx, refreshToken)
+	require.NoError(t, err)
+	require.False(t, isValid)
+	require.Empty(t, identityId)
+	require.Empty(t, newRefreshToken)
+}
+
+func TestRotateRefreshToken_ReuseRefreshTokenNotValid(t *testing.T) {
+	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
 
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
 	require.NoError(t, err)
@@ -93,11 +98,6 @@ func TestRevokeRefreshToken_Unauthorised(t *testing.T) {
 	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
-
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
 	require.NoError(t, err)
 
@@ -112,11 +112,6 @@ func TestRevokeRefreshToken_Unauthorised(t *testing.T) {
 func TestRevokeRefreshToken_MultipleForIdentity(t *testing.T) {
 	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
-
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
 
 	refreshToken1, err := oauth.NewRefreshToken(ctx, "identity_id")
 	require.NoError(t, err)

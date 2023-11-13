@@ -1,0 +1,11 @@
+auth:
+  tokens:
+    accessTokenExpiry: 3600
+    refreshTokenExpiry: 604800
+    
+  providers:
+    - type: google
+
+    - type: oidc
+
+    - type: oauth

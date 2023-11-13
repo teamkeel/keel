@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/apis/authapi"
@@ -28,14 +29,20 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
-
 	// OIDC test server
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
 
 	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
@@ -59,7 +66,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	require.NotEmpty(t, validResponse.RefreshToken)
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 
-	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken, "")
+	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
 	require.NoError(t, err)
 	require.Equal(t, "https://keel.so", iss)
 
@@ -88,14 +95,20 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
-
 	// OIDC test server
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
 
 	server.SetUser("id|285620", &oauth.UserClaims{
 		Email:               "keelson@keel.so",
@@ -132,7 +145,7 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	require.NotEmpty(t, validResponse.ExpiresIn)
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 
-	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken, "")
+	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
 	require.NoError(t, err)
 	require.Equal(t, "https://keel.so", iss)
 
@@ -163,14 +176,20 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
-
 	// OIDC test server
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
 
 	var inserted []map[string]any
 	database.GetDB().Raw(fmt.Sprintf("INSERT INTO identity (external_id, issuer, email) VALUES ('id|285620','%s','weaveton@keel.so') RETURNING *", server.Issuer)).Scan(&inserted)
@@ -196,7 +215,7 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	require.NotEmpty(t, validResponse.ExpiresIn)
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 
-	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken, "")
+	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
 	require.NoError(t, err)
 	require.Equal(t, "https://keel.so", iss)
 
@@ -426,14 +445,20 @@ func TestRefreshToken_Valid(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
-
 	// OIDC test server
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
 
 	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",

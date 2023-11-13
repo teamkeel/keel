@@ -1,0 +1,4 @@
+auth:
+  tokens:
+    accessTokenExpiry: -1
+    refreshTokenExpiry: -1

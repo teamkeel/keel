@@ -8,12 +8,13 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"golang.org/x/crypto/sha3"
 )
 
 const (
 	refreshTokenLength                      = 64
-	defaultRefreshTokenExpiry time.Duration = time.Hour * 24 * 90 // 3 months is the default
+	DefaultRefreshTokenExpiry time.Duration = time.Hour * 24 * 90 // 3 months is the default
 )
 
 // NewRefreshToken generates a new refresh token for the identity using the
@@ -38,7 +39,18 @@ func NewRefreshToken(ctx context.Context, identityId string) (string, error) {
 	}
 
 	now := time.Now().UTC()
-	expiry := now.Add(defaultRefreshTokenExpiry)
+	var expiresAt time.Time
+
+	authConfig, err := runtimectx.GetOAuthConfig(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	if authConfig != nil && authConfig.Tokens != nil && authConfig.Tokens.RefreshTokenExpiry != 0 {
+		expiresAt = now.Add(time.Duration(authConfig.Tokens.RefreshTokenExpiry) * time.Second)
+	} else {
+		expiresAt = now.Add(DefaultRefreshTokenExpiry)
+	}
 
 	sql := `
 		INSERT INTO 
@@ -46,7 +58,7 @@ func NewRefreshToken(ctx context.Context, identityId string) (string, error) {
 		VALUES 
 			(?, ?, ?, ?)`
 
-	db := database.GetDB().Exec(sql, hash, identityId, expiry, now)
+	db := database.GetDB().Exec(sql, hash, identityId, expiresAt, now)
 	if db.Error != nil {
 		return "", db.Error
 	}
@@ -98,6 +110,8 @@ func RotateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bo
 			?, identity_id, expires_at, now()
 		FROM 
 			revoked_token
+		WHERE
+			expires_at >= now()
 		RETURNING *;`
 
 	rows := []map[string]any{}

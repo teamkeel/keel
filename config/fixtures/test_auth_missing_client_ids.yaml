@@ -1,0 +1,13 @@
+auth:
+  providers:
+    - type: google
+      name: google_1
+
+    - type: oidc
+      name: Baidu
+      issuerUrl: 'https://dev-skhlutl45lbqkvhv.us.auth0.com'
+
+    - type: oauth
+      name: Github
+      authorizationUrl: https://github.com/auth
+      tokenUrl: https://github.com/token

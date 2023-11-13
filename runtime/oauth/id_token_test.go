@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/oauth/oauthtest"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -15,14 +16,20 @@ import (
 func TestIdTokenAuth_Valid(t *testing.T) {
 	ctx := context.Background()
 
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
-
 	// OIDC test server
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
 
 	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
@@ -41,14 +48,20 @@ func TestIdTokenAuth_Valid(t *testing.T) {
 func TestIdTokenAuth_IncorrectlySigned(t *testing.T) {
 	ctx := context.Background()
 
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
-
 	// OIDC test server
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
 
 	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
@@ -72,14 +85,20 @@ func TestIdTokenAuth_IncorrectlySigned(t *testing.T) {
 func TestIdTokenAuth_IssuerMismatch(t *testing.T) {
 	ctx := context.Background()
 
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
-
 	// OIDC test server
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
 
 	issuer := server.Config["issuer"]
 
@@ -100,17 +119,15 @@ func TestIdTokenAuth_IssuerMismatch(t *testing.T) {
 	require.Nil(t, idToken)
 }
 
-func TestIdTokenAuth_IssuerNotRegistered(t *testing.T) {
+func TestIdTokenAuth_IssuerNotConfigured(t *testing.T) {
 	ctx := context.Background()
-
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: false,
-	})
 
 	// OIDC test server
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
+
+	// Set up auth config with no issuer
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{})
 
 	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
@@ -130,14 +147,20 @@ func TestIdTokenAuth_IssuerNotRegistered(t *testing.T) {
 func TestIdTokenAuth_ExpiredIdToken(t *testing.T) {
 	ctx := context.Background()
 
-	// Set up auth config
-	ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-		AllowAnyIssuers: true,
-	})
-
 	// OIDC test server
 	server, err := oauthtest.NewOIDCServer()
 	require.NoError(t, err)
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
 
 	server.IdTokenLifespan = 0 * time.Second
 
