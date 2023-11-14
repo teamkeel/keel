@@ -49,13 +49,15 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 			}
 		}
 
-		for _, envVar := range parserSchema.EnvironmentVariables {
+	}
+
+	if scm.Config != nil {
+		for _, envVar := range scm.Config.AllEnvironmentVariables() {
 			scm.proto.EnvironmentVariables = append(scm.proto.EnvironmentVariables, &proto.EnvironmentVariable{
 				Name: envVar,
 			})
 		}
-
-		for _, secret := range parserSchema.Secrets {
+		for _, secret := range scm.Config.AllSecrets() {
 			scm.proto.Secrets = append(scm.proto.Secrets, &proto.Secret{
 				Name: secret,
 			})
