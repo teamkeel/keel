@@ -1,0 +1,18 @@
+auth:
+  tokens:
+    accessTokenExpiry: 3600
+    refreshTokenExpiry: 604800
+    
+  providers:
+    - type: google
+      name: google_1
+      clientId: 1234
+
+    - type: google
+      name: google_2
+      clientId: 1234
+
+    - type: oidc
+      name: google_3
+      issuerUrl: https://accounts.google.com/
+      clientId: 1234

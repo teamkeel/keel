@@ -50,7 +50,11 @@ func (c *AuthConfig) GetOidcProviders() []Provider {
 	return oidcProviders
 }
 
-func (c *AuthConfig) HasOidcIssuer(issuer string) (bool, error) {
+// GetProvidersOidcIssuer gets all providers by issuer url.
+// It's possible that multiple providers from the same issuer as configured.
+func (c *AuthConfig) GetProvidersOidcIssuer(issuer string) ([]Provider, error) {
+	providers := []Provider{}
+
 	for _, p := range c.Providers {
 		if p.Type == OAuthProvider {
 			continue
@@ -58,13 +62,14 @@ func (c *AuthConfig) HasOidcIssuer(issuer string) (bool, error) {
 
 		issuerUrl, err := p.GetIssuer()
 		if err != nil {
-			return false, err
+			return nil, err
 		}
 		if issuerUrl == issuer {
-			return true, nil
+			providers = append(providers, p)
 		}
 	}
-	return false, nil
+
+	return providers, nil
 }
 
 func (c *Provider) GetIssuer() (string, error) {

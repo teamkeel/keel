@@ -39,6 +39,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 			{
 				Type:      config.OpenIdConnectProvider,
 				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
 				IssuerUrl: server.Issuer,
 			},
 		},
@@ -49,7 +50,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	})
 
 	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
@@ -105,6 +106,7 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 			{
 				Type:      config.OpenIdConnectProvider,
 				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
 				IssuerUrl: server.Issuer,
 			},
 		},
@@ -130,7 +132,7 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	})
 
 	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
@@ -186,6 +188,7 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 			{
 				Type:      config.OpenIdConnectProvider,
 				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
 				IssuerUrl: server.Issuer,
 			},
 		},
@@ -200,7 +203,7 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	})
 
 	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
@@ -455,6 +458,7 @@ func TestRefreshToken_Valid(t *testing.T) {
 			{
 				Type:      config.OpenIdConnectProvider,
 				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
 				IssuerUrl: server.Issuer,
 			},
 		},
@@ -465,7 +469,7 @@ func TestRefreshToken_Valid(t *testing.T) {
 	})
 
 	// Get ID token from server
-	idToken, err := server.FetchIdToken("id|285620", []string{})
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
 	require.NoError(t, err)
 
 	// Make a token exchange grant request

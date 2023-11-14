@@ -26,6 +26,7 @@ func TestIdTokenAuth_Valid(t *testing.T) {
 			{
 				Type:      config.OpenIdConnectProvider,
 				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
 				IssuerUrl: server.Issuer,
 			},
 		},
@@ -36,7 +37,52 @@ func TestIdTokenAuth_Valid(t *testing.T) {
 	})
 
 	// Get ID token from server
-	idTokenRaw, err := server.FetchIdToken("id|285620", []string{})
+	idTokenRaw, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
+	require.NoError(t, err)
+
+	idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
+
+	require.NoError(t, err)
+	require.NotNil(t, idToken)
+}
+
+func TestIdTokenAuthMultipleIssuers_Valid(t *testing.T) {
+	ctx := context.Background()
+
+	// OIDC test server
+	server, err := oauthtest.NewOIDCServer()
+	require.NoError(t, err)
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id-1",
+				IssuerUrl: server.Issuer,
+			},
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id-2",
+				IssuerUrl: server.Issuer,
+			},
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id-3",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email: "keelson@keel.so",
+	})
+
+	// Get ID token from server
+	idTokenRaw, err := server.FetchIdToken("id|285620", []string{"oidc-client-id-3"})
 	require.NoError(t, err)
 
 	idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
@@ -58,6 +104,7 @@ func TestIdTokenAuth_IncorrectlySigned(t *testing.T) {
 			{
 				Type:      config.OpenIdConnectProvider,
 				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
 				IssuerUrl: server.Issuer,
 			},
 		},
@@ -68,7 +115,7 @@ func TestIdTokenAuth_IncorrectlySigned(t *testing.T) {
 	})
 
 	// Get ID token from server
-	idTokenRaw, err := server.FetchIdToken("id|285620", []string{})
+	idTokenRaw, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
 	require.NoError(t, err)
 
 	// Renew the public set, thus making the ID token invalid
@@ -95,6 +142,7 @@ func TestIdTokenAuth_IssuerMismatch(t *testing.T) {
 			{
 				Type:      config.OpenIdConnectProvider,
 				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
 				IssuerUrl: server.Issuer,
 			},
 		},
@@ -107,7 +155,7 @@ func TestIdTokenAuth_IssuerMismatch(t *testing.T) {
 	})
 
 	// Get ID token from server
-	idTokenRaw, err := server.FetchIdToken("id|285620", []string{})
+	idTokenRaw, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
 	require.NoError(t, err)
 
 	server.Config["issuer"] = "http://accounts.google.com"
@@ -116,6 +164,61 @@ func TestIdTokenAuth_IssuerMismatch(t *testing.T) {
 
 	require.Error(t, err)
 	require.Equal(t, fmt.Sprintf("oidc: issuer did not match the issuer returned by provider, expected \"%s\" got \"http://accounts.google.com\"", issuer), err.Error())
+	require.Nil(t, idToken)
+}
+
+func TestIdTokenAuth_ClientIdMismatch(t *testing.T) {
+	ctx := context.Background()
+
+	// OIDC test server
+	server, err := oauthtest.NewOIDCServer()
+	require.NoError(t, err)
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc-1",
+				ClientId:  "oidc-client-id-1",
+				IssuerUrl: server.Issuer,
+			},
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc-2",
+				ClientId:  "oidc-client-id-2",
+				IssuerUrl: server.Issuer,
+			},
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc-3",
+				ClientId:  "oidc-client-id-3",
+				IssuerUrl: server.Issuer,
+			},
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc-4",
+				ClientId:  "oidc-client-id-4",
+				IssuerUrl: "https://someother.com",
+			},
+		},
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email: "keelson@keel.so",
+	})
+
+	// Get ID token from server
+	idTokenRaw, err := server.FetchIdToken("id|285620", []string{"different-client-id"})
+	require.NoError(t, err)
+
+	idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "oidc: expected audience \"oidc-client-id-1\" got [\"different-client-id\"]")
+	require.Contains(t, err.Error(), "oidc: expected audience \"oidc-client-id-2\" got [\"different-client-id\"]")
+	require.Contains(t, err.Error(), "oidc: expected audience \"oidc-client-id-3\" got [\"different-client-id\"]")
+	require.NotContains(t, err.Error(), "oidc: expected audience \"oidc-client-id-4\" got [\"different-client-id\"]")
 	require.Nil(t, idToken)
 }
 
@@ -134,7 +237,7 @@ func TestIdTokenAuth_IssuerNotConfigured(t *testing.T) {
 	})
 
 	// Get ID token from server
-	idTokenRaw, err := server.FetchIdToken("id|285620", []string{})
+	idTokenRaw, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
 	require.NoError(t, err)
 
 	idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
@@ -157,6 +260,7 @@ func TestIdTokenAuth_ExpiredIdToken(t *testing.T) {
 			{
 				Type:      config.OpenIdConnectProvider,
 				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
 				IssuerUrl: server.Issuer,
 			},
 		},
@@ -169,7 +273,7 @@ func TestIdTokenAuth_ExpiredIdToken(t *testing.T) {
 	})
 
 	// Get ID token from server
-	idTokenRaw, err := server.FetchIdToken("id|285620", []string{})
+	idTokenRaw, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
 	require.NoError(t, err)
 
 	idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
