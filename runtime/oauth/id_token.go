@@ -66,7 +66,7 @@ func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error
 		return nil, err
 	}
 
-	providers, err := authConfig.GetProvidersOidcIssuer(issuer)
+	providers, err := authConfig.GetOidcProvidersByIssuer(issuer)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error
 
 	var verificationErrs error
 
-	// Verify against each configuired client ID for this issuer
+	// Verify against each configured provider with this issuer
 	for _, p := range providers {
 		// Checking the clientId during verification ensures that the ID token was intended for this client,
 		// because it could have been stolen from any other application with an ID token from this same issuer.

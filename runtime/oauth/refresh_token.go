@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	refreshTokenLength                      = 64
-	DefaultRefreshTokenExpiry time.Duration = time.Hour * 24 * 90 // 3 months is the default
+	// Character length of crypo-generated refresh token
+	refreshTokenLength = 64
 )
 
 // NewRefreshToken generates a new refresh token for the identity using the
@@ -38,19 +38,13 @@ func NewRefreshToken(ctx context.Context, identityId string) (string, error) {
 		return "", err
 	}
 
-	now := time.Now().UTC()
-	var expiresAt time.Time
-
-	authConfig, err := runtimectx.GetOAuthConfig(ctx)
+	config, err := runtimectx.GetOAuthConfig(ctx)
 	if err != nil {
 		return "", err
 	}
 
-	if authConfig != nil && authConfig.Tokens != nil && authConfig.Tokens.RefreshTokenExpiry != 0 {
-		expiresAt = now.Add(time.Duration(authConfig.Tokens.RefreshTokenExpiry) * time.Second)
-	} else {
-		expiresAt = now.Add(DefaultRefreshTokenExpiry)
-	}
+	now := time.Now().UTC()
+	expiresAt := now.Add(config.RefreshTokenExpiry())
 
 	sql := `
 		INSERT INTO 
@@ -94,7 +88,7 @@ func RotateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bo
 	}
 
 	// This query has the following (important) characteristics:
-	//  - find and delete the refresh token if it has not expired (the latter is for performance)
+	//  - find and delete the refresh token
 	//  - create a new refresh token with the identity_id and expire_at of the original token
 	//  - only creates the new token if the original token had not expired
 	sql := `
@@ -112,7 +106,7 @@ func RotateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bo
 			revoked_token
 		WHERE
 			expires_at >= now()
-		RETURNING *;`
+		RETURNING *`
 
 	rows := []map[string]any{}
 	err = database.GetDB().Raw(sql, tokenHash, newTokenHash).Scan(&rows).Error
@@ -131,6 +125,50 @@ func RotateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bo
 	}
 
 	return true, newRefreshToken, identityId, nil
+}
+
+// ValidateRefreshToken validates that the provided refresh token has no expired,
+// and also returns the identity it is associated with. The refresh token is not revoked.
+func ValidateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bool, identityId string, err error) {
+	ctx, span := tracer.Start(ctx, "Validate Refresh Token")
+	defer span.End()
+
+	tokenHash, err := hashToken(refreshTokenRaw)
+	if err != nil {
+		return false, "", err
+	}
+
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return false, "", err
+	}
+
+	sql := `
+		SELECT
+			token, identity_id, expires_at, now()
+		FROM 
+			keel_refresh_token
+		WHERE 
+			token = ? AND
+			expires_at >= now()`
+
+	rows := []map[string]any{}
+	err = database.GetDB().Raw(sql, tokenHash).Scan(&rows).Error
+	if err != nil {
+		return false, "", err
+	}
+
+	// There was no refresh token found, and thus it is not valid
+	if len(rows) != 1 {
+		return false, "", nil
+	}
+
+	identityId, ok := rows[0]["identity_id"].(string)
+	if !ok {
+		return false, "", errors.New("could not parse identity_id from database result")
+	}
+
+	return true, identityId, nil
 }
 
 // RevokeRefreshToken will delete (revoke) the provided refresh token,
@@ -153,18 +191,11 @@ func RevokeRefreshToken(ctx context.Context, refreshTokenRaw string) error {
 		DELETE FROM 
 			keel_refresh_token
 		WHERE 
-			token = ?
-		RETURNING *`
+			token = ?`
 
-	rows := []map[string]any{}
-	err = database.GetDB().Raw(sql, tokenHash).Scan(&rows).Error
+	err = database.GetDB().Exec(sql, tokenHash).Error
 	if err != nil {
 		return err
-	}
-
-	// There was no refresh token found, and thus none to revoke.
-	if len(rows) == 0 {
-		return nil
 	}
 
 	return nil

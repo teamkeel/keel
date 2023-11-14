@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	KeelIssuer                             = "https://keel.so"
-	DefaultAccessTokenExpiry time.Duration = time.Hour * 24
+	// Issuer 'iss' claim for access tokens issued by Keel
+	KeelIssuer = "https://keel.so"
 )
 
 var (
@@ -29,16 +29,16 @@ type AccessTokenClaims struct {
 }
 
 func GenerateAccessToken(ctx context.Context, identityId string) (string, time.Duration, error) {
-	expiry := DefaultAccessTokenExpiry
+	if identityId == "" {
+		return "", 0, errors.New("cannot generate access token with an empty identityId intended for the sub claim")
+	}
 
 	config, err := runtimectx.GetOAuthConfig(ctx)
 	if err != nil {
 		return "", 0, err
 	}
 
-	if config != nil && config.Tokens != nil && config.Tokens.AccessTokenExpiry != 0 {
-		expiry = time.Duration(config.Tokens.AccessTokenExpiry) * time.Second
-	}
+	expiry := config.AccessTokenExpiry()
 
 	token, err := generateToken(ctx, identityId, []string{}, expiry)
 	if err != nil {
