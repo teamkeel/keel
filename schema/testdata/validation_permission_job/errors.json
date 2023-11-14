@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "cannot provide 'actions' arguments when using @permission in a job",
+      "hint": "",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_permission_job/schema.keel",
+        "offset": 37,
+        "line": 3,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_permission_job/schema.keel",
+        "offset": 44,
+        "line": 3,
+        "column": 16
+      }
+    }
+  ]
+}

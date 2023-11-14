@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "Invalid value, expected any of the following identifiers - Admin, or Developer",
-      "hint": "",
-      "code": "E016",
+      "message": "NoRoleName is not a role defined in your schema",
+      "hint": "valid values are: Admin, Developer",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
         "offset": 37,
@@ -18,9 +18,9 @@
       }
     },
     {
-      "message": "Invalid value, expected any of the following identifiers - Admin, or Developer",
-      "hint": "",
-      "code": "E016",
+      "message": "NoRoleName is not a role defined in your schema",
+      "hint": "valid values are: Admin, Developer",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
         "offset": 96,
@@ -35,9 +35,9 @@
       }
     },
     {
-      "message": "Invalid value, expected an array containing any of the following identifiers - Admin, or Developer",
+      "message": "value should be a list e.g. [Admin]",
       "hint": "",
-      "code": "E016",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
         "offset": 148,
@@ -52,9 +52,9 @@
       }
     },
     {
-      "message": "permission requires all arguments to be named, for example @permission(roles: [MyRole])",
-      "hint": "Valid argument names for permission are 'actions', 'expression', or 'roles'",
-      "code": "E014",
+      "message": "@permission requires all arguments to be named, for example @permission(roles: [MyRole])",
+      "hint": "",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
         "offset": 187,
@@ -69,9 +69,9 @@
       }
     },
     {
-      "message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
+      "message": "@permission requires either the 'expressions' or 'roles' argument to be provided",
       "hint": "",
-      "code": "E015",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_permission_attribute_role_invalid_args/schema.keel",
         "offset": 175,

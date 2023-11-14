@@ -1,8 +1,11 @@
 package validation
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/formatting"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -10,7 +13,6 @@ import (
 	"github.com/teamkeel/keel/schema/validation/rules/expression"
 )
 
-// Validates the arguments to any attribute expression.
 func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var model *parser.ModelNode
 	var action *parser.ActionNode
@@ -35,192 +37,187 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 		LeaveJob: func(_ *parser.JobNode) {
 			job = nil
 		},
-		EnterAttribute: func(attribute *parser.AttributeNode) {
-			if attribute.Name.Value != parser.AttributePermission {
+		EnterAttribute: func(attr *parser.AttributeNode) {
+			if attr.Name.Value != parser.AttributePermission {
 				return
 			}
 
-			errors := validatePermissionAttribute(asts, attribute, model, action, job)
-			errs.Concat(errors)
+			hasActions := false
+			hasExpression := false
+			hasRoles := false
+
+			for _, arg := range attr.Arguments {
+				if arg.Label == nil || arg.Label.Value == "" {
+					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+						errorhandling.AttributeArgumentError,
+						errorhandling.ErrorDetails{
+							Message: "@permission requires all arguments to be named, for example @permission(roles: [MyRole])",
+						},
+						arg,
+					))
+					continue
+				}
+
+				switch arg.Label.Value {
+				case "actions":
+					hasActions = true
+
+					if action != nil || job != nil {
+						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+							errorhandling.AttributeArgumentError,
+							errorhandling.ErrorDetails{
+								Message: fmt.Sprintf(
+									"cannot provide 'actions' arguments when using @permission in %s",
+									lo.Ternary(action != nil, "an action", "a job"),
+								),
+							},
+							arg.Label,
+						))
+						continue
+					}
+
+					errs.Concat(validateIdentArray(arg.Expression, []string{
+						parser.ActionTypeGet,
+						parser.ActionTypeCreate,
+						parser.ActionTypeUpdate,
+						parser.ActionTypeList,
+						parser.ActionTypeDelete,
+					}, "valid action type"))
+				case "expression":
+					hasExpression = true
+
+					context := expressions.ExpressionContext{
+						Model:     model,
+						Attribute: attr,
+						Action:    action,
+					}
+					rules := []expression.Rule{
+						expression.OperatorLogicalRule,
+					}
+
+					expressionErrors := expression.ValidateExpression(
+						asts,
+						arg.Expression,
+						rules,
+						context,
+					)
+					for _, err := range expressionErrors {
+						// TODO: remove cast when expression.ValidateExpression returns correct type
+						errs.AppendError(err.(*errorhandling.ValidationError))
+					}
+
+					// Extra check for using row-based expression in a read/write function
+					// Ideally this would be done as part of the expression validation, but
+					// if we don't provide the model as context the error is not very helpful.
+					if action != nil && (action.Type.Value == "read" || action.Type.Value == "write") {
+						for _, cond := range arg.Expression.Conditions() {
+							for _, op := range []*parser.Operand{cond.LHS, cond.RHS} {
+								if op == nil || op.Ident == nil {
+									continue
+								}
+								// An ident must have at least one fragment - we only care about the first one
+								fragment := op.Ident.Fragments[0]
+								if fragment.Fragment == casing.ToLowerCamel(model.Name.Value) {
+									errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+										errorhandling.AttributeArgumentError,
+										errorhandling.ErrorDetails{
+											Message: fmt.Sprintf(
+												"cannot use row-based permissions in a %s action",
+												action.Type.Value,
+											),
+											Hint: "implement your permissions logic in your function code using the permissions API - https://docs.keel.so/functions#permissions",
+										},
+										fragment,
+									))
+								}
+							}
+						}
+					}
+
+				case "roles":
+					hasRoles = true
+
+					roles := []string{}
+					for _, role := range query.Roles(asts) {
+						roles = append(roles, role.Name.Value)
+					}
+
+					errs.Concat(validateIdentArray(arg.Expression, roles, "role defined in your schema"))
+				default:
+					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+						errorhandling.AttributeArgumentError,
+						errorhandling.ErrorDetails{
+							Message: fmt.Sprintf(
+								"'%s' is not a valid argument for @permission",
+								arg.Label.Value,
+							),
+							Hint: "Did you mean one of 'actions', 'expression', or 'roles'?",
+						},
+						arg.Label,
+					))
+				}
+			}
+
+			// Missing actions argument which is required
+			if job == nil && action == nil && !hasActions {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeArgumentError,
+					errorhandling.ErrorDetails{
+						Message: "required argument 'actions' missing",
+					},
+					attr.Name,
+				))
+			}
+
+			// One of expression or roles must be provided
+			if !hasExpression && !hasRoles {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeArgumentError,
+					errorhandling.ErrorDetails{
+						Message: "@permission requires either the 'expressions' or 'roles' argument to be provided",
+					},
+					attr.Name,
+				))
+			}
 		},
 	}
 }
 
-func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode, model *parser.ModelNode, action *parser.ActionNode, job *parser.JobNode) (errs errorhandling.ValidationErrors) {
-	hasActions := false
-	hasExpression := false
-	hasRoles := false
-	errs = errorhandling.ValidationErrors{}
-
-	for _, arg := range attr.Arguments {
-		if arg.Label == nil || arg.Label.Value == "" {
-			// All arguments to @permission should have a label
-			errs.Append(errorhandling.ErrorAttributeRequiresNamedArguments,
-				map[string]string{
-					"AttributeName":      "permission",
-					"ValidArgumentNames": "'actions', 'expression', or 'roles'",
-				},
-				arg,
-			)
-			continue
-		}
-
-		switch arg.Label.Value {
-		case "actions":
-			// The 'actions' argument should not be provided if the permission attribute
-			// is defined inside an actionn as that implicitly means the permission only
-			// applies to that action. It is also not valid in a job.
-			if model != nil {
-				allowedIdents := append([]string{}, validActionKeywords...)
-				errs.Concat(validateIdentArray(arg.Expression, allowedIdents))
-			} else {
-				errs.Append(errorhandling.ErrorInvalidAttributeArgument,
-					map[string]string{
-						"AttributeName": "permission",
-						"ArgumentName":  "actions",
-						"Location":      "action",
-					},
-					arg,
-				)
-			}
-			hasActions = true
-		case "expression":
-			hasExpression = true
-
-			var context expressions.ExpressionContext
-			var rules []expression.Rule
-			switch {
-			case action != nil || model != nil:
-				rules = []expression.Rule{
-					expression.OperatorLogicalRule,
-				}
-
-				context = expressions.ExpressionContext{
-					Model:     model,
-					Attribute: attr,
-					Action:    action,
-				}
-			case job != nil:
-				rules = []expression.Rule{
-
-					expression.OperatorLogicalRule,
-				}
-
-				context = expressions.ExpressionContext{
-					Attribute: attr,
-				}
-			}
-
-			expressionErrors := expression.ValidateExpression(
-				asts,
-				arg.Expression,
-				rules,
-				context,
-			)
-			for _, err := range expressionErrors {
-				// TODO: remove cast when expression.ValidateExpression returns correct type
-				errs.AppendError(err.(*errorhandling.ValidationError))
-			}
-		case "roles":
-			hasRoles = true
-			allowedIdents := []string{}
-			for _, role := range query.Roles(asts) {
-				allowedIdents = append(allowedIdents, role.Name.Value)
-			}
-			errs.Concat(validateIdentArray(arg.Expression, allowedIdents))
-		default:
-			// Unknown argument
-			errs.Append(errorhandling.ErrorInvalidAttributeArgument,
-				map[string]string{
-					"AttributeName":      "permission",
-					"ArgumentName":       arg.Label.Value,
-					"ValidArgumentNames": "'actions', 'expression', or 'roles'",
-				},
-				arg.Label,
-			)
-		}
-	}
-
-	// Missing actions argument which is required
-	if job == nil && action == nil && !hasActions {
-		errs.Append(errorhandling.ErrorAttributeMissingRequiredArgument,
-			map[string]string{
-				"AttributeName": "permission",
-				"ArgumentName":  "actions",
-			},
-			attr.Name,
-		)
-	}
-
-	// One of expression or roles must be provided
-	if !hasExpression && !hasRoles {
-		errs.Append(errorhandling.ErrorAttributeMissingRequiredArgument,
-			map[string]string{
-				"AttributeName": "permission",
-				"ArgumentName":  `"expression" or "roles"`,
-			},
-			attr.Name,
-		)
-	}
-
-	return
-}
-
-func validateIdentArray(expr *parser.Expression, allowedIdents []string) (errs errorhandling.ValidationErrors) {
+func validateIdentArray(expr *parser.Expression, allowed []string, identType string) (errs errorhandling.ValidationErrors) {
 	value, err := expr.ToValue()
 	if err != nil || value.Array == nil {
-		expected := ""
-		if len(allowedIdents) > 0 {
-			expected = "an array containing any of the following identifiers - " + formatting.HumanizeList(allowedIdents, formatting.DelimiterOr)
+		example := ""
+		if len(allowed) > 0 {
+			example = allowed[0]
 		}
-		// Check expression is an array
-		errs.Append(errorhandling.ErrorInvalidValue,
-			map[string]string{
-				"Expected": expected,
+		errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+			errorhandling.AttributeArgumentError,
+			errorhandling.ErrorDetails{
+				Message: fmt.Sprintf("value should be a list e.g. [%s]", example),
 			},
 			expr,
-		)
+		))
 		return
 	}
 
 	for _, item := range value.Array.Values {
-		// Each item should be a singular ident e.g. "foo" and not "foo.baz.bop"
-		// String literal idents e.g ["thisisinvalid"] are assumed not to be invalid
-		valid := false
-
-		if item.Ident != nil {
-			valid = len(item.Ident.Fragments) == 1
-		}
-
-		if valid {
-			// If it is a single ident check it's an allowed value
-			name := item.Ident.Fragments[0].Fragment
-			valid = lo.Contains(allowedIdents, name)
-		}
+		valid := item.Ident != nil && lo.Contains(allowed, item.ToString())
 
 		if !valid {
-			expected := ""
-			if len(allowedIdents) > 0 {
-				expected = "any of the following identifiers - " + formatting.HumanizeList(allowedIdents, formatting.DelimiterOr)
+			hint := ""
+			if len(allowed) > 0 {
+				hint = fmt.Sprintf("valid values are: %s", strings.Join(allowed, ", "))
 			}
-			errs.Append(errorhandling.ErrorInvalidValue,
-
-				map[string]string{
-					"Expected": expected,
+			errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+				errorhandling.AttributeArgumentError,
+				errorhandling.ErrorDetails{
+					Message: fmt.Sprintf("%s is not a %s", item.ToString(), identType),
+					Hint:    hint,
 				},
-
 				item,
-			)
+			))
 		}
 	}
 
 	return
-}
-
-var validActionKeywords = []string{
-	parser.ActionTypeGet,
-	parser.ActionTypeCreate,
-	parser.ActionTypeUpdate,
-	parser.ActionTypeList,
-	parser.ActionTypeDelete,
 }
