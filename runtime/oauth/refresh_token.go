@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	refreshTokenLength                      = 64
-	DefaultRefreshTokenExpiry time.Duration = time.Hour * 24 * 90 // 3 months is the default
+	// Character length of crypo-generated refresh token
+	refreshTokenLength = 64
 )
 
 // NewRefreshToken generates a new refresh token for the identity using the
@@ -38,19 +38,13 @@ func NewRefreshToken(ctx context.Context, identityId string) (string, error) {
 		return "", err
 	}
 
-	now := time.Now().UTC()
-	var expiresAt time.Time
-
-	authConfig, err := runtimectx.GetOAuthConfig(ctx)
+	config, err := runtimectx.GetOAuthConfig(ctx)
 	if err != nil {
 		return "", err
 	}
 
-	if authConfig != nil && authConfig.Tokens != nil && authConfig.Tokens.RefreshTokenExpiry != 0 {
-		expiresAt = now.Add(time.Duration(authConfig.Tokens.RefreshTokenExpiry) * time.Second)
-	} else {
-		expiresAt = now.Add(DefaultRefreshTokenExpiry)
-	}
+	now := time.Now().UTC()
+	expiresAt := now.Add(config.RefreshTokenExpiryOrDefault())
 
 	sql := `
 		INSERT INTO 
@@ -94,15 +88,23 @@ func RotateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bo
 	}
 
 	// This query has the following (important) characteristics:
-	//  - find and delete the refresh token if it has not expired (the latter is for performance)
-	//  - create a new refresh token with the identity_id and expire_at of the original token
-	//  - only creates the new token if the original token had not expired
+	//  - first,
+	//      - purge all expired token in the database
+	//      - delete this token only if it hasn't expired yet
+	//        NB: there is no ordering of CTE execution
+	//  - then, create a new refresh token with samne identity_id and expire_at of the original token if it ever existed as an unexpired token
 	sql := `
-		WITH revoked_token AS (
+		WITH purge_expired_tokens AS (
 			DELETE FROM 
 				keel_refresh_token
 			WHERE 
-				token = ?
+				expires_at < now()), 
+		revoked_token AS (
+			DELETE FROM 
+				keel_refresh_token
+			WHERE 
+				token = ? AND 
+				expires_at >= now()
 			RETURNING *)
 		INSERT INTO 
 			keel_refresh_token (token, identity_id, expires_at, created_at) 
@@ -110,8 +112,6 @@ func RotateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bo
 			?, identity_id, expires_at, now()
 		FROM 
 			revoked_token
-		WHERE
-			expires_at >= now()
 		RETURNING *;`
 
 	rows := []map[string]any{}
@@ -133,6 +133,58 @@ func RotateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bo
 	return true, newRefreshToken, identityId, nil
 }
 
+func ValidateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bool, identityId string, err error) {
+	ctx, span := tracer.Start(ctx, "Validate Refresh Token")
+	defer span.End()
+
+	tokenHash, err := hashToken(refreshTokenRaw)
+	if err != nil {
+		return false, "", err
+	}
+
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return false, "", err
+	}
+
+	// This query has the following (important) characteristics:
+	//  - first, purge all expired token in the database
+	//  - then, select this token from the database
+	//  - if it doesn't exist, then either it never existed or was purged
+	sql := `
+		WITH purge_expired_tokens AS (
+			DELETE FROM 
+				keel_refresh_token
+			WHERE 
+				expires_at < now()
+			RETURNING *)
+		SELECT
+			token, identity_id, expires_at, now()
+		FROM 
+			keel_refresh_token
+		WHERE
+			token = ? AND
+			token NOT IN (SELECT token FROM purge_expired_tokens);`
+
+	rows := []map[string]any{}
+	err = database.GetDB().Raw(sql, tokenHash).Scan(&rows).Error
+	if err != nil {
+		return false, "", err
+	}
+
+	// There was no refresh token found, and thus it is not valid
+	if len(rows) != 1 {
+		return false, "", nil
+	}
+
+	identityId, ok := rows[0]["identity_id"].(string)
+	if !ok {
+		return false, "", errors.New("could not parse identity_id from database result")
+	}
+
+	return true, identityId, nil
+}
+
 // RevokeRefreshToken will delete (revoke) the provided refresh token,
 // which will prevent it from being used again.
 func RevokeRefreshToken(ctx context.Context, refreshTokenRaw string) error {
@@ -149,22 +201,23 @@ func RevokeRefreshToken(ctx context.Context, refreshTokenRaw string) error {
 		return err
 	}
 
+	// This query has the following (important) characteristics:
+	//  - first, purge all expired token in the database
+	//  - then, explicitly delete this token from the database
 	sql := `
+		WITH purge_expired_tokens AS (
+			DELETE FROM 
+				keel_refresh_token
+			WHERE 
+				expires_at < now())
 		DELETE FROM 
 			keel_refresh_token
 		WHERE 
-			token = ?
-		RETURNING *`
+			token = ?`
 
-	rows := []map[string]any{}
-	err = database.GetDB().Raw(sql, tokenHash).Scan(&rows).Error
+	err = database.GetDB().Exec(sql, tokenHash).Error
 	if err != nil {
 		return err
-	}
-
-	// There was no refresh token found, and thus none to revoke.
-	if len(rows) == 0 {
-		return nil
 	}
 
 	return nil

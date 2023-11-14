@@ -3,12 +3,24 @@ package config
 import (
 	"fmt"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/samber/lo"
 )
 
 const (
+	// 24 hours is the default access token expiry period
+	DefaultAccessTokenExpiry time.Duration = time.Hour * 24
+	// 3 months is the default refresh token expiry period
+	DefaultRefreshTokenExpiry time.Duration = time.Hour * 24 * 90
+)
+
+const (
 	GoogleProvider        = "google"
+	FacebookProvider      = "facebook"
+	GitHubProvider        = "github"
+	GitLabProvider        = "gitlab"
 	OpenIdConnectProvider = "oidc"
 	OAuthProvider         = "oauth"
 )
@@ -16,19 +28,22 @@ const (
 var (
 	SupportedProviderTypes = []string{
 		GoogleProvider,
+		FacebookProvider,
+		GitLabProvider,
 		OpenIdConnectProvider,
 		OAuthProvider,
 	}
 )
 
 type AuthConfig struct {
-	Tokens    *TokensConfig `yaml:"tokens"`
-	Providers []Provider    `yaml:"providers"`
+	Tokens    TokensConfig `yaml:"tokens"`
+	Providers []Provider   `yaml:"providers"`
 }
 
 type TokensConfig struct {
-	AccessTokenExpiry  int `yaml:"accessTokenExpiry"`
-	RefreshTokenExpiry int `yaml:"refreshTokenExpiry"`
+	AccessTokenExpiry    *int  `yaml:"accessTokenExpiry,omitempty"`
+	RefreshTokenExpiry   *int  `yaml:"refreshTokenExpiry,omitempty"`
+	RefreshTokenRotation *bool `yaml:"refreshTokenRotation,omitempty"`
 }
 
 type Provider struct {
@@ -38,6 +53,33 @@ type Provider struct {
 	IssuerUrl        string `yaml:"issuerUrl"`
 	TokenUrl         string `yaml:"tokenUrl"`
 	AuthorizationUrl string `yaml:"authorizationUrl"`
+}
+
+// AccessTokenExpiryOrDefault retrieves the configured or default access token expiry
+func (c *AuthConfig) AccessTokenExpiryOrDefault() time.Duration {
+	if c.Tokens.AccessTokenExpiry != nil {
+		return time.Duration(*c.Tokens.AccessTokenExpiry) * time.Second
+	} else {
+		return DefaultAccessTokenExpiry
+	}
+}
+
+// RefreshTokenExpiryOrDefault retrieves the configured or default refresh token expiry
+func (c *AuthConfig) RefreshTokenExpiryOrDefault() time.Duration {
+	if c.Tokens.RefreshTokenExpiry != nil {
+		return time.Duration(*c.Tokens.RefreshTokenExpiry) * time.Second
+	} else {
+		return DefaultRefreshTokenExpiry
+	}
+}
+
+// RefreshTokenRotationEnabled retrieves the configured or default refresh token rotation
+func (c *AuthConfig) RefreshTokenRotationEnabled() bool {
+	if c.Tokens.RefreshTokenRotation != nil {
+		return *c.Tokens.RefreshTokenRotation
+	} else {
+		return true
+	}
 }
 
 func (c *AuthConfig) GetOidcProviders() []Provider {
@@ -50,13 +92,13 @@ func (c *AuthConfig) GetOidcProviders() []Provider {
 	return oidcProviders
 }
 
-// GetProvidersOidcIssuer gets all providers by issuer url.
-// It's possible that multiple providers from the same issuer as configured.
-func (c *AuthConfig) GetProvidersOidcIssuer(issuer string) ([]Provider, error) {
+// GetOidcProvidersByIssuer gets all OpenID Connect providers by issuer url.
+// It's possible that multiple providers from the same issuer are configured.
+func (c *AuthConfig) GetOidcProvidersByIssuer(issuer string) ([]Provider, error) {
 	providers := []Provider{}
 
 	for _, p := range c.Providers {
-		if p.Type == OAuthProvider {
+		if p.Type == OAuthProvider || p.Type == GitHubProvider {
 			continue
 		}
 
@@ -64,7 +106,7 @@ func (c *AuthConfig) GetProvidersOidcIssuer(issuer string) ([]Provider, error) {
 		if err != nil {
 			return nil, err
 		}
-		if issuerUrl == issuer {
+		if strings.TrimSuffix(issuerUrl, "/") == strings.TrimSuffix(issuer, "/") {
 			providers = append(providers, p)
 		}
 	}
@@ -75,7 +117,13 @@ func (c *AuthConfig) GetProvidersOidcIssuer(issuer string) ([]Provider, error) {
 func (c *Provider) GetIssuer() (string, error) {
 	switch c.Type {
 	case GoogleProvider:
-		return "https://accounts.google.com/", nil
+		return "https://accounts.google.com", nil
+	case FacebookProvider:
+		return "https://www.facebook.com", nil
+	case GitHubProvider:
+		return "https://token.actions.githubusercontent.com", nil
+	case GitLabProvider:
+		return "https://gitlab.com", nil
 	case OpenIdConnectProvider:
 		return c.IssuerUrl, nil
 	default:

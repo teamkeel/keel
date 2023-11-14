@@ -2,6 +2,7 @@ package config
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -119,8 +120,26 @@ func TestAuthTokens(t *testing.T) {
 	config, err := Load("fixtures/test_auth.yaml")
 	assert.NoError(t, err)
 
-	assert.Equal(t, 3600, config.Auth.Tokens.AccessTokenExpiry)
-	assert.Equal(t, 604800, config.Auth.Tokens.RefreshTokenExpiry)
+	assert.Equal(t, 3600, *config.Auth.Tokens.AccessTokenExpiry)
+	assert.Equal(t, 604800, *config.Auth.Tokens.RefreshTokenExpiry)
+	assert.Equal(t, true, *config.Auth.Tokens.RefreshTokenRotation)
+
+	assert.Equal(t, time.Duration(3600)*time.Second, config.Auth.AccessTokenExpiryOrDefault())
+	assert.Equal(t, time.Duration(604800)*time.Second, config.Auth.RefreshTokenExpiryOrDefault())
+	assert.Equal(t, true, config.Auth.RefreshTokenRotationEnabled())
+}
+
+func TestAuthDefaults(t *testing.T) {
+	config, err := Load("fixtures/test_auth_empty.yaml")
+	assert.NoError(t, err)
+
+	assert.Nil(t, config.Auth.Tokens.AccessTokenExpiry)
+	assert.Nil(t, config.Auth.Tokens.RefreshTokenExpiry)
+	assert.Nil(t, config.Auth.Tokens.RefreshTokenRotation)
+
+	assert.Equal(t, time.Duration(24)*time.Hour, config.Auth.AccessTokenExpiryOrDefault())
+	assert.Equal(t, time.Duration(24)*time.Hour*90, config.Auth.RefreshTokenExpiryOrDefault())
+	assert.Equal(t, true, config.Auth.RefreshTokenRotationEnabled())
 }
 
 func TestAuthNegativeTokenLifespan(t *testing.T) {
@@ -171,9 +190,9 @@ func TestDuplicateProviderName(t *testing.T) {
 func TestInvalidProviderTypes(t *testing.T) {
 	_, err := Load("fixtures/test_auth_invalid_types.yaml")
 
-	assert.Contains(t, err.Error(), "auth provider 'google_1' has invalid type 'google_1' which must be one of: google, oidc, oauth\n")
-	assert.Contains(t, err.Error(), "auth provider 'google_2' has invalid type 'Google' which must be one of: google, oidc, oauth\n")
-	assert.Contains(t, err.Error(), "auth provider 'Baidu' has invalid type 'whoops' which must be one of: google, oidc, oauth\n")
+	assert.Contains(t, err.Error(), "auth provider 'google_1' has invalid type 'google_1' which must be one of: google, facebook, gitlab, oidc, oauth\n")
+	assert.Contains(t, err.Error(), "auth provider 'google_2' has invalid type 'Google' which must be one of: google, facebook, gitlab, oidc, oauth\n")
+	assert.Contains(t, err.Error(), "auth provider 'Baidu' has invalid type 'whoops' which must be one of: google, facebook, gitlab, oidc, oauth\n")
 }
 
 func TestMissingClientId(t *testing.T) {
@@ -205,15 +224,15 @@ func TestGetOidcIssuer(t *testing.T) {
 	config, err := Load("fixtures/test_auth.yaml")
 	assert.NoError(t, err)
 
-	googleIssuer, err := config.Auth.GetProvidersOidcIssuer("https://accounts.google.com/")
+	googleIssuer, err := config.Auth.GetOidcProvidersByIssuer("https://accounts.google.com/")
 	assert.NoError(t, err)
 	assert.Len(t, googleIssuer, 2)
 
-	auth0Issuer, err := config.Auth.GetProvidersOidcIssuer("https://dev-skhlutl45lbqkvhv.us.auth0.com")
+	auth0Issuer, err := config.Auth.GetOidcProvidersByIssuer("https://dev-skhlutl45lbqkvhv.us.auth0.com")
 	assert.NoError(t, err)
 	assert.Len(t, auth0Issuer, 1)
 
-	nopeIssuer, err := config.Auth.GetProvidersOidcIssuer("https://nope.com")
+	nopeIssuer, err := config.Auth.GetOidcProvidersByIssuer("https://nope.com")
 	assert.NoError(t, err)
 	assert.Len(t, nopeIssuer, 0)
 }
@@ -222,7 +241,7 @@ func TestGetOidcSameIssuers(t *testing.T) {
 	config, err := Load("fixtures/test_auth_same_issuers.yaml")
 	assert.NoError(t, err)
 
-	googleIssuer, err := config.Auth.GetProvidersOidcIssuer("https://accounts.google.com/")
+	googleIssuer, err := config.Auth.GetOidcProvidersByIssuer("https://accounts.google.com/")
 	assert.NoError(t, err)
 	assert.Len(t, googleIssuer, 3)
 }

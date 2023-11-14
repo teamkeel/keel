@@ -323,7 +323,7 @@ func TestTokenEndpoint_WrongGrantType(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenExchange_NoSubjectToken(t *testing.T) {
+func TestTokenExchangeGrant_NoSubjectToken(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -343,7 +343,7 @@ func TestTokenExchange_NoSubjectToken(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenExchange_EmptySubjectToken(t *testing.T) {
+func TestTokenExchangeGrant_EmptySubjectToken(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -364,7 +364,7 @@ func TestTokenExchange_EmptySubjectToken(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenExchange_WrongSubjectTokenType(t *testing.T) {
+func TestTokenExchangeGrant_WrongSubjectTokenType(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -387,7 +387,7 @@ func TestTokenExchange_WrongSubjectTokenType(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenExchange_WrongRequestedTokenType(t *testing.T) {
+func TestTokenExchangeGrant_WrongRequestedTokenType(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -410,7 +410,7 @@ func TestTokenExchange_WrongRequestedTokenType(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestTokenExchange_BadIdToken(t *testing.T) {
+func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -444,7 +444,7 @@ func TestTokenExchange_BadIdToken(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestRefreshToken_Valid(t *testing.T) {
+func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -453,7 +453,11 @@ func TestRefreshToken_Valid(t *testing.T) {
 	require.NoError(t, err)
 
 	// Set up auth config
+	refreshTokenRotation := true
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Tokens: config.TokensConfig{
+			RefreshTokenRotation: &refreshTokenRotation,
+		},
 		Providers: []config.Provider{
 			{
 				Type:      config.OpenIdConnectProvider,
@@ -475,7 +479,7 @@ func TestRefreshToken_Valid(t *testing.T) {
 	// Make a token exchange grant request
 	request := makeTokenExchangeRequest(ctx, idToken)
 
-	// Handle runtime request, expecting TokenErrorResponse
+	// Handle runtime request, expecting TokenResponse
 	tokenExchangeResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
@@ -486,7 +490,7 @@ func TestRefreshToken_Valid(t *testing.T) {
 	// Make a refresh token grant request
 	request = makeRefreshTokenRequest(ctx, tokenExchangeResponse.RefreshToken)
 
-	// Handle runtime request, expecting TokenErrorResponse
+	// Handle runtime request, expecting TokenResponse
 	refreshGrantResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
 	require.NoError(t, err)
 
@@ -523,7 +527,89 @@ func TestRefreshToken_Valid(t *testing.T) {
 	require.Equal(t, "possible causes may be that the refresh token has been revoked or has expired", secondRefreshGrantResponse.ErrorDescription)
 }
 
-func TestRefreshToken_NoRefreshToken(t *testing.T) {
+func TestRefreshTokenGrantRotationDisabled_Valid(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// OIDC test server
+	server, err := oauthtest.NewOIDCServer()
+	require.NoError(t, err)
+
+	// Set up auth config
+	refreshTokenRotation := false
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Tokens: config.TokensConfig{
+			RefreshTokenRotation: &refreshTokenRotation,
+		},
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email: "keelson@keel.so",
+	})
+
+	// Get ID token from server
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
+	require.NoError(t, err)
+
+	// Make a token exchange grant request
+	request := makeTokenExchangeRequest(ctx, idToken)
+
+	// Handle runtime request, expecting TokenResponse
+	tokenExchangeResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+
+	// We need 1 second to pass in order to get a different access token
+	time.Sleep(1000 * time.Millisecond)
+
+	// Make a refresh token grant request
+	request = makeRefreshTokenRequest(ctx, tokenExchangeResponse.RefreshToken)
+
+	// Handle runtime request, expecting TokenResponse
+	refreshGrantResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.NotEmpty(t, refreshGrantResponse.AccessToken)
+	require.Equal(t, "bearer", refreshGrantResponse.TokenType)
+	require.NotEmpty(t, refreshGrantResponse.ExpiresIn)
+	require.NotEmpty(t, refreshGrantResponse.RefreshToken)
+	require.Equal(t, refreshGrantResponse.RefreshToken, tokenExchangeResponse.RefreshToken)
+	require.NotEqual(t, refreshGrantResponse.AccessToken, tokenExchangeResponse.AccessToken)
+	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+
+	accessToken1Issuer, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "iss")
+	require.NoError(t, err)
+	accessToken2Issuer, err := auth.ExtractClaimFromToken(refreshGrantResponse.AccessToken, "iss")
+	require.NoError(t, err)
+	require.NotEmpty(t, accessToken1Issuer)
+	require.Equal(t, accessToken1Issuer, accessToken2Issuer)
+
+	accessToken1Sub, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "sub")
+	require.NoError(t, err)
+	accessToken2Sub, err := auth.ExtractClaimFromToken(refreshGrantResponse.AccessToken, "sub")
+	require.NoError(t, err)
+	require.NotEmpty(t, accessToken1Sub)
+	require.Equal(t, accessToken1Sub, accessToken2Sub)
+
+	// Make a refresh token grant request using the original refresh token
+	request = makeRefreshTokenRequest(ctx, tokenExchangeResponse.RefreshToken)
+
+	secondRefreshGrantResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.Equal(t, tokenExchangeResponse.RefreshToken, secondRefreshGrantResponse.RefreshToken)
+}
+
+func TestRefreshTokenGrant_NoRefreshToken(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -543,7 +629,7 @@ func TestRefreshToken_NoRefreshToken(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestRefreshToken_EmptyRefreshToken(t *testing.T) {
+func TestRefreshTokenGrant_EmptyRefreshToken(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 

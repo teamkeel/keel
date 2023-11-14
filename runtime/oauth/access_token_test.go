@@ -167,19 +167,22 @@ func TestAccessTokenHasDefaultExpiryClaims(t *testing.T) {
 	expiry := claims.ExpiresAt.Time
 
 	require.Greater(t, expiry, time.Now())
-	require.Equal(t, issuedAt.Add(oauth.DefaultAccessTokenExpiry), expiry)
-	require.Equal(t, oauth.DefaultAccessTokenExpiry, lifespan)
+	require.Equal(t, issuedAt.Add(config.DefaultAccessTokenExpiry), expiry)
+	require.Equal(t, config.DefaultAccessTokenExpiry, lifespan)
 }
 
 func TestAccessTokenHasCustomClaims(t *testing.T) {
 	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
-	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
-		Tokens: &config.TokensConfig{
-			AccessTokenExpiry: 360,
+	seconds := 360
+	config := config.AuthConfig{
+		Tokens: config.TokensConfig{
+			AccessTokenExpiry: &seconds,
 		},
-	})
+	}
+
+	ctx = runtimectx.WithOAuthConfig(ctx, &config)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)
@@ -202,15 +205,17 @@ func TestAccessTokenHasCustomClaims(t *testing.T) {
 	require.Greater(t, expiry, time.Now())
 	require.Equal(t, issuedAt.Add(time.Second*360), expiry)
 	require.Equal(t, time.Second*360, lifespan)
+	require.Equal(t, config.AccessTokenExpiryOrDefault(), time.Second*360)
 }
 
 func TestShortExpiredAccessTokenIsInvalid(t *testing.T) {
 	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
+	seconds := 1
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
-		Tokens: &config.TokensConfig{
-			AccessTokenExpiry: 1,
+		Tokens: config.TokensConfig{
+			AccessTokenExpiry: &seconds,
 		},
 	})
 
@@ -236,7 +241,7 @@ func TestExpiredAccessTokenIsInvalid(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create the jwt 1 second expired.
-	now := time.Now().UTC().Add(-oauth.DefaultAccessTokenExpiry).Add(time.Second * -1)
+	now := time.Now().UTC().Add(-config.DefaultAccessTokenExpiry).Add(time.Second * -1)
 	claims := oauth.AccessTokenClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   identityId.String(),

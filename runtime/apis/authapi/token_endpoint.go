@@ -9,6 +9,7 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 )
@@ -66,6 +67,15 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 		ctx, span := tracer.Start(r.Context(), "Token Endpoint")
 		defer span.End()
 
+		var identityId string
+		var refreshToken string
+
+		config, err := runtimectx.GetOAuthConfig(ctx)
+		if err != nil {
+			span.RecordError(err)
+			return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
+		}
+
 		if r.Method != http.MethodPost {
 			return common.NewJsonResponse(http.StatusMethodNotAllowed, &TokenErrorResponse{
 				Error:            TokenEndpointInvalidRequest,
@@ -102,7 +112,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				}, nil)
 			}
 
-			refreshTokenRaw := r.Form.Get(ArgRefreshToken)
+			refreshTokenRaw := r.FormValue(ArgRefreshToken)
 
 			if refreshTokenRaw == "" {
 				return common.NewJsonResponse(http.StatusBadRequest, &TokenErrorResponse{
@@ -111,10 +121,24 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				}, nil)
 			}
 
-			isValid, newRefreshToken, identityId, err := oauth.RotateRefreshToken(ctx, refreshTokenRaw)
-			if err != nil {
-				span.RecordError(err)
-				return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
+			var isValid bool
+			if config.RefreshTokenRotationEnabled() {
+				// Rotate and revoke this refresh token, and mint a new one.
+				isValid, refreshToken, identityId, err = oauth.RotateRefreshToken(ctx, refreshTokenRaw)
+				if err != nil {
+					span.RecordError(err)
+					return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
+				}
+			} else {
+				// Response with the same refresh token when refresh token rotation is disabled
+				refreshToken = refreshTokenRaw
+
+				// Check that the refresh token exists and has not expired.
+				isValid, identityId, err = oauth.ValidateRefreshToken(ctx, refreshToken)
+				if err != nil {
+					span.RecordError(err)
+					return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
+				}
 			}
 
 			if !isValid {
@@ -124,21 +148,6 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				}, nil)
 			}
 
-			// Generate an access token for this identity.
-			accessTokenRaw, expiresIn, err := oauth.GenerateAccessToken(ctx, identityId)
-			if err != nil {
-				span.RecordError(err)
-				return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
-			}
-
-			response := &TokenResponse{
-				AccessToken:  accessTokenRaw,
-				TokenType:    TokenType,
-				ExpiresIn:    int(expiresIn.Seconds()),
-				RefreshToken: newRefreshToken,
-			}
-
-			return common.NewJsonResponse(http.StatusOK, response, nil)
 		case GrantTypeTokenExchange:
 			if !r.Form.Has(ArgSubjectToken) {
 				return common.NewJsonResponse(http.StatusBadRequest, &TokenErrorResponse{
@@ -217,28 +226,14 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				}
 			}
 
-			// Generate an access token for this identity.
-			accessTokenRaw, expiresIn, err := oauth.GenerateAccessToken(ctx, identity.Id)
-			if err != nil {
-				span.RecordError(err)
-				return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
-			}
-
 			// Generate a refresh token.
-			refreshTokenRaw, err := oauth.NewRefreshToken(ctx, identity.Id)
+			refreshToken, err = oauth.NewRefreshToken(ctx, identity.Id)
 			if err != nil {
 				span.RecordError(err)
 				return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
 			}
 
-			response := &TokenResponse{
-				AccessToken:  accessTokenRaw,
-				TokenType:    TokenType,
-				ExpiresIn:    int(expiresIn.Seconds()),
-				RefreshToken: refreshTokenRaw,
-			}
-
-			return common.NewJsonResponse(http.StatusOK, response, nil)
+			identityId = identity.Id
 
 		default:
 			return common.NewJsonResponse(http.StatusBadRequest, &TokenErrorResponse{
@@ -246,6 +241,22 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				ErrorDescription: "the only supported grants are 'refresh_token' and 'token_exchange'",
 			}, nil)
 		}
+
+		// Generate a new access token for this identity.
+		accessTokenRaw, expiresIn, err := oauth.GenerateAccessToken(ctx, identityId)
+		if err != nil {
+			span.RecordError(err)
+			return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
+		}
+
+		response := &TokenResponse{
+			AccessToken:  accessTokenRaw,
+			TokenType:    TokenType,
+			ExpiresIn:    int(expiresIn.Seconds()),
+			RefreshToken: refreshToken,
+		}
+
+		return common.NewJsonResponse(http.StatusOK, response, nil)
 	}
 }
 
