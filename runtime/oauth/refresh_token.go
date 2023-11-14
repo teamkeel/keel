@@ -44,7 +44,7 @@ func NewRefreshToken(ctx context.Context, identityId string) (string, error) {
 	}
 
 	now := time.Now().UTC()
-	expiresAt := now.Add(config.RefreshTokenExpiryOrDefault())
+	expiresAt := now.Add(config.RefreshTokenExpiry())
 
 	sql := `
 		INSERT INTO 

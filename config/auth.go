@@ -54,8 +54,8 @@ type Provider struct {
 	AuthorizationUrl string `yaml:"authorizationUrl"`
 }
 
-// AccessTokenExpiryOrDefault retrieves the configured or default access token expiry
-func (c *AuthConfig) AccessTokenExpiryOrDefault() time.Duration {
+// AccessTokenExpiry retrieves the configured or default access token expiry
+func (c *AuthConfig) AccessTokenExpiry() time.Duration {
 	if c.Tokens.AccessTokenExpiry != nil {
 		return time.Duration(*c.Tokens.AccessTokenExpiry) * time.Second
 	} else {
@@ -63,8 +63,8 @@ func (c *AuthConfig) AccessTokenExpiryOrDefault() time.Duration {
 	}
 }
 
-// RefreshTokenExpiryOrDefault retrieves the configured or default refresh token expiry
-func (c *AuthConfig) RefreshTokenExpiryOrDefault() time.Duration {
+// RefreshTokenExpiry retrieves the configured or default refresh token expiry
+func (c *AuthConfig) RefreshTokenExpiry() time.Duration {
 	if c.Tokens.RefreshTokenExpiry != nil {
 		return time.Duration(*c.Tokens.RefreshTokenExpiry) * time.Second
 	} else {

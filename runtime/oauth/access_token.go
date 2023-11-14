@@ -38,7 +38,7 @@ func GenerateAccessToken(ctx context.Context, identityId string) (string, time.D
 		return "", 0, err
 	}
 
-	expiry := config.AccessTokenExpiryOrDefault()
+	expiry := config.AccessTokenExpiry()
 
 	token, err := generateToken(ctx, identityId, []string{}, expiry)
 	if err != nil {

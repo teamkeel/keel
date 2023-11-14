@@ -147,7 +147,7 @@ func TestAccessTokenClaims(t *testing.T) {
 	require.Greater(t, expiry, time.Now())
 	require.Equal(t, issuedAt.Add(time.Second*360), expiry)
 	require.Equal(t, time.Second*360, lifespan)
-	require.Equal(t, config.AccessTokenExpiryOrDefault(), time.Second*360)
+	require.Equal(t, config.AccessTokenExpiry(), time.Second*360)
 	require.Equal(t, subject, identityId.String())
 	require.Equal(t, issuer, "https://keel.so")
 }

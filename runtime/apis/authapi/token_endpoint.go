@@ -12,6 +12,8 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime")
@@ -75,7 +77,8 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 		config, err := runtimectx.GetOAuthConfig(ctx)
 		if err != nil {
-			span.RecordError(err)
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
 			return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
 		}
 
@@ -129,7 +132,8 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				// Rotate and revoke this refresh token, and mint a new one.
 				isValid, refreshToken, identityId, err = oauth.RotateRefreshToken(ctx, refreshTokenRaw)
 				if err != nil {
-					span.RecordError(err)
+					span.RecordError(err, trace.WithStackTrace(true))
+					span.SetStatus(codes.Error, err.Error())
 					return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
 				}
 			} else {
@@ -139,7 +143,8 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				// Check that the refresh token exists and has not expired.
 				isValid, identityId, err = oauth.ValidateRefreshToken(ctx, refreshToken)
 				if err != nil {
-					span.RecordError(err)
+					span.RecordError(err, trace.WithStackTrace(true))
+					span.SetStatus(codes.Error, err.Error())
 					return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
 				}
 			}
@@ -192,7 +197,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			// Verify the ID token with the OIDC provider
 			idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
 			if err != nil {
-				span.RecordError(err)
+				span.RecordError(err, trace.WithStackTrace(true))
 				return common.NewJsonResponse(http.StatusUnauthorized, &ErrorResponse{
 					Error:            InvalidClient,
 					ErrorDescription: "possible causes may be that the id token is invalid, has expired, or has insufficient claims",
@@ -202,7 +207,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			// Extract claims
 			var claims oauth.IdTokenClaims
 			if err := idToken.Claims(&claims); err != nil {
-				span.RecordError(err)
+				span.RecordError(err, trace.WithStackTrace(true))
 				return common.NewJsonResponse(http.StatusBadRequest, &ErrorResponse{
 					Error:            InvalidRequest,
 					ErrorDescription: "insufficient claims on id_token",
@@ -211,20 +216,23 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 			identity, err := actions.FindIdentityByExternalId(ctx, schema, idToken.Subject, idToken.Issuer)
 			if err != nil {
-				span.RecordError(err)
+				span.RecordError(err, trace.WithStackTrace(true))
+				span.SetStatus(codes.Error, err.Error())
 				return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
 			}
 
 			if identity == nil {
 				identity, err = actions.CreateIdentityWithIdTokenClaims(ctx, schema, idToken.Subject, idToken.Issuer, claims)
 				if err != nil {
-					span.RecordError(err)
+					span.RecordError(err, trace.WithStackTrace(true))
+					span.SetStatus(codes.Error, err.Error())
 					return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
 				}
 			} else {
 				identity, err = actions.UpdateIdentityWithIdTokenClaims(ctx, schema, idToken.Subject, idToken.Issuer, claims)
 				if err != nil {
-					span.RecordError(err)
+					span.RecordError(err, trace.WithStackTrace(true))
+					span.SetStatus(codes.Error, err.Error())
 					return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
 				}
 			}
@@ -232,7 +240,8 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			// Generate a refresh token.
 			refreshToken, err = oauth.NewRefreshToken(ctx, identity.Id)
 			if err != nil {
-				span.RecordError(err)
+				span.RecordError(err, trace.WithStackTrace(true))
+				span.SetStatus(codes.Error, err.Error())
 				return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
 			}
 
@@ -248,7 +257,8 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 		// Generate a new access token for this identity.
 		accessTokenRaw, expiresIn, err := oauth.GenerateAccessToken(ctx, identityId)
 		if err != nil {
-			span.RecordError(err)
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
 			return common.NewJsonResponse(http.StatusInternalServerError, nil, nil)
 		}
 

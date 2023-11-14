@@ -85,7 +85,7 @@ func TestRevokeEndpoint_HttpGet(t *testing.T) {
 
 	require.Equal(t, http.StatusMethodNotAllowed, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
-	require.Equal(t, "the token endpoint only accepts POST", errorResponse.ErrorDescription)
+	require.Equal(t, "the revoke endpoint only accepts POST", errorResponse.ErrorDescription)
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 

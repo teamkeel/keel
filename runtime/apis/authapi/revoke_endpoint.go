@@ -6,9 +6,8 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
+	"go.opentelemetry.io/otel/trace"
 )
-
-const ()
 
 type RevokeEndpointErrorResponse struct {
 	Error            string `json:"error,omitempty"`
@@ -46,7 +45,7 @@ func RevokeHandler(schema *proto.Schema) common.HandlerFunc {
 		// Revoke the refresh token
 		err := oauth.RevokeRefreshToken(ctx, refreshTokenRaw)
 		if err != nil {
-			span.RecordError(err)
+			span.RecordError(err, trace.WithStackTrace(true))
 			return common.NewJsonResponse(http.StatusUnauthorized, &ErrorResponse{
 				Error:            InvalidClient,
 				ErrorDescription: "possible causes may be that the id token is invalid, has expired, or has insufficient claims",
