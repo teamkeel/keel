@@ -83,15 +83,15 @@ func (c *AuthConfig) RefreshTokenRotationEnabled() bool {
 }
 
 // AddOidcProvider adds a OpenID Connect provider to the list of supported authentication providers
-func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId string) error {
+func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId string) (*AuthConfig, error) {
 	if name == "" {
-		return errors.New("provider name cannot be empty")
+		return nil, errors.New("provider name cannot be empty")
 	}
 	if invalidUrl(issuerUrl) {
-		return fmt.Errorf("invalid issuerUrl: %s", issuerUrl)
+		return nil, fmt.Errorf("invalid issuerUrl: %s", issuerUrl)
 	}
 	if clientId == "" {
-		return errors.New("provider clientId cannot be empty")
+		return nil, errors.New("provider clientId cannot be empty")
 	}
 
 	provider := Provider{
@@ -103,7 +103,7 @@ func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId str
 
 	c.Providers = append(c.Providers, provider)
 
-	return nil
+	return c, nil
 }
 
 func (c *AuthConfig) GetOidcProviders() []Provider {
