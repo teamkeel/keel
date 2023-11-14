@@ -52,9 +52,9 @@
       }
     },
     {
-      "message": "permission requires all arguments to be named, for example @permission(roles: [MyRole])",
-      "hint": "Valid argument names for permission are 'actions', 'expression', or 'roles'",
-      "code": "E014",
+      "message": "@permission requires all arguments to be named, for example @permission(roles: [MyRole])",
+      "hint": "",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_permission_attribute_expression_invalid_args/schema.keel",
         "offset": 206,
@@ -69,9 +69,9 @@
       }
     },
     {
-      "message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
+      "message": "@permission requires either the 'expressions' or 'roles' argument to be provided",
       "hint": "",
-      "code": "E015",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_permission_attribute_expression_invalid_args/schema.keel",
         "offset": 194,
@@ -86,9 +86,9 @@
       }
     },
     {
-      "message": "The permission attribute doesn't accept the argument expr",
+      "message": "'expr' is not a valid argument for @permission",
       "hint": "Did you mean one of 'actions', 'expression', or 'roles'?",
-      "code": "E013",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_permission_attribute_expression_invalid_args/schema.keel",
         "offset": 259,
@@ -103,9 +103,9 @@
       }
     },
     {
-      "message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
+      "message": "@permission requires either the 'expressions' or 'roles' argument to be provided",
       "hint": "",
-      "code": "E015",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_jobs_permission_attribute_expression_invalid_args/schema.keel",
         "offset": 247,

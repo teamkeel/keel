@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "Invalid value, expected any of the following identifiers - get, create, update, list, or delete",
-      "hint": "",
-      "code": "E016",
+      "message": "true is not a valid action type",
+      "hint": "valid values are: get, create, update, list, delete",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_permission_attribute_invalid_actiontype_arg/schema.keel",
         "offset": 110,

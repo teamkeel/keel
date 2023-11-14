@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "Invalid value, expected any of the following identifiers - Admin",
-      "hint": "",
-      "code": "E016",
+      "message": "NotValidRole is not a role defined in your schema",
+      "hint": "valid values are: Admin",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
         "offset": 94,
@@ -18,9 +18,9 @@
       }
     },
     {
-      "message": "Invalid value, expected an array containing any of the following identifiers - Admin",
+      "message": "value should be a list e.g. [Admin]",
       "hint": "",
-      "code": "E016",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
         "offset": 170,
@@ -35,9 +35,9 @@
       }
     },
     {
-      "message": "Invalid value, expected an array containing any of the following identifiers - Admin",
+      "message": "value should be a list e.g. [Admin]",
       "hint": "",
-      "code": "E016",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
         "offset": 237,
@@ -52,9 +52,9 @@
       }
     },
     {
-      "message": "Invalid value, expected any of the following identifiers - Admin",
-      "hint": "",
-      "code": "E016",
+      "message": "\"thisisnotvalid\" is not a role defined in your schema",
+      "hint": "valid values are: Admin",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_permission_attribute_invalid_roles/schema.keel",
         "offset": 307,

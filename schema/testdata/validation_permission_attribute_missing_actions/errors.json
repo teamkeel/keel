@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "The @permission attribute is missing required argument actions",
+      "message": "required argument 'actions' missing",
       "hint": "",
-      "code": "E015",
+      "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_permission_attribute_missing_actions/schema.keel",
         "offset": 19,

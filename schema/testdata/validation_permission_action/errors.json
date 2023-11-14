@@ -1,0 +1,55 @@
+{
+  "errors": [
+    {
+      "message": "cannot provide 'actions' arguments when using @permission in an action",
+      "hint": "",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_permission_action/schema.keel",
+        "offset": 203,
+        "line": 10,
+        "column": 17
+      },
+      "endPos": {
+        "filename": "testdata/validation_permission_action/schema.keel",
+        "offset": 210,
+        "line": 10,
+        "column": 24
+      }
+    },
+    {
+      "message": "cannot use row-based permissions in a read action",
+      "hint": "implement your permissions logic in your function code using the permissions API - https://docs.keel.so/functions#permissions",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_permission_action/schema.keel",
+        "offset": 436,
+        "line": 16,
+        "column": 37
+      },
+      "endPos": {
+        "filename": "testdata/validation_permission_action/schema.keel",
+        "offset": 442,
+        "line": 16,
+        "column": 43
+      }
+    },
+    {
+      "message": "cannot use row-based permissions in a read action",
+      "hint": "implement your permissions logic in your function code using the permissions API - https://docs.keel.so/functions#permissions",
+      "code": "AttributeArgumentError",
+      "pos": {
+        "filename": "testdata/validation_permission_action/schema.keel",
+        "offset": 669,
+        "line": 20,
+        "column": 53
+      },
+      "endPos": {
+        "filename": "testdata/validation_permission_action/schema.keel",
+        "offset": 675,
+        "line": 20,
+        "column": 59
+      }
+    }
+  ]
+}
