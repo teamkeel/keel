@@ -254,7 +254,7 @@ func TestTokenEndpoint_HttpGet(t *testing.T) {
 	request.Method = http.MethodGet
 
 	// Handle runtime request, expecting TokenErrorResponse
-	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusMethodNotAllowed, httpResponse.StatusCode)
@@ -273,7 +273,7 @@ func TestTokenEndpoint_ApplicationJsonRequest(t *testing.T) {
 	request.Header.Add("Content-Type", "application/json")
 
 	// Handle runtime request, expecting TokenErrorResponse
-	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
@@ -293,7 +293,7 @@ func TestTokenEndpoint_MissingGrantType(t *testing.T) {
 	request.URL.RawQuery = form.Encode()
 
 	// Handle runtime request, expecting TokenErrorResponse
-	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
@@ -314,7 +314,7 @@ func TestTokenEndpoint_WrongGrantType(t *testing.T) {
 	request.URL.RawQuery = form.Encode()
 
 	// Handle runtime request, expecting TokenErrorResponse
-	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
@@ -334,7 +334,7 @@ func TestTokenExchangeGrant_NoSubjectToken(t *testing.T) {
 	request.URL.RawQuery = form.Encode()
 
 	// Handle runtime request, expecting TokenErrorResponse
-	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
@@ -355,7 +355,7 @@ func TestTokenExchangeGrant_EmptySubjectToken(t *testing.T) {
 	request.URL.RawQuery = form.Encode()
 
 	// Handle runtime request, expecting TokenErrorResponse
-	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
@@ -378,7 +378,7 @@ func TestTokenExchangeGrant_WrongSubjectTokenType(t *testing.T) {
 	request.URL.RawQuery = form.Encode()
 
 	// Handle runtime request, expecting TokenErrorResponse
-	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
@@ -401,7 +401,7 @@ func TestTokenExchangeGrant_WrongRequestedTokenType(t *testing.T) {
 	request.URL.RawQuery = form.Encode()
 
 	// Handle runtime request, expecting TokenErrorResponse
-	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
@@ -435,7 +435,7 @@ func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
 	request.URL.RawQuery = form.Encode()
 
 	// Handle runtime request, expecting TokenErrorResponse
-	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
@@ -521,7 +521,7 @@ func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
 	request = makeRefreshTokenRequest(ctx, tokenExchangeResponse.RefreshToken)
 
 	// Handle runtime request, expecting TokenErrorResponse
-	secondRefreshGrantResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	secondRefreshGrantResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
 	require.Equal(t, "possible causes may be that the refresh token has been revoked or has expired", secondRefreshGrantResponse.ErrorDescription)
@@ -620,7 +620,7 @@ func TestRefreshTokenGrant_NoRefreshToken(t *testing.T) {
 	request.URL.RawQuery = form.Encode()
 
 	// Handle runtime request, expecting TokenErrorResponse
-	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
@@ -637,7 +637,7 @@ func TestRefreshTokenGrant_EmptyRefreshToken(t *testing.T) {
 	request := makeRefreshTokenRequest(ctx, "")
 
 	// Handle runtime request, expecting TokenErrorResponse
-	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenErrorResponse](schema, request)
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
