@@ -88,23 +88,15 @@ func RotateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bo
 	}
 
 	// This query has the following (important) characteristics:
-	//  - first,
-	//      - purge all expired token in the database
-	//      - delete this token only if it hasn't expired yet
-	//        NB: there is no ordering of CTE execution
-	//  - then, create a new refresh token with samne identity_id and expire_at of the original token if it ever existed as an unexpired token
+	//  - find and delete the refresh token
+	//  - create a new refresh token with the identity_id and expire_at of the original token
+	//  - only creates the new token if the original token had not expired
 	sql := `
-		WITH purge_expired_tokens AS (
+		WITH revoked_token AS (
 			DELETE FROM 
 				keel_refresh_token
 			WHERE 
-				expires_at < now()), 
-		revoked_token AS (
-			DELETE FROM 
-				keel_refresh_token
-			WHERE 
-				token = ? AND 
-				expires_at >= now()
+				token = ?
 			RETURNING *)
 		INSERT INTO 
 			keel_refresh_token (token, identity_id, expires_at, created_at) 
@@ -112,7 +104,9 @@ func RotateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bo
 			?, identity_id, expires_at, now()
 		FROM 
 			revoked_token
-		RETURNING *;`
+		WHERE
+			expires_at >= now()
+		RETURNING *`
 
 	rows := []map[string]any{}
 	err = database.GetDB().Raw(sql, tokenHash, newTokenHash).Scan(&rows).Error
@@ -133,6 +127,8 @@ func RotateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bo
 	return true, newRefreshToken, identityId, nil
 }
 
+// ValidateRefreshToken validates that the provided refresh token has no expired,
+// and also returns the identity it is associated with. The refresh token is not revoked.
 func ValidateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid bool, identityId string, err error) {
 	ctx, span := tracer.Start(ctx, "Validate Refresh Token")
 	defer span.End()
@@ -147,24 +143,14 @@ func ValidateRefreshToken(ctx context.Context, refreshTokenRaw string) (isValid 
 		return false, "", err
 	}
 
-	// This query has the following (important) characteristics:
-	//  - first, purge all expired token in the database
-	//  - then, select this token from the database
-	//  - if it doesn't exist, then either it never existed or was purged
 	sql := `
-		WITH purge_expired_tokens AS (
-			DELETE FROM 
-				keel_refresh_token
-			WHERE 
-				expires_at < now()
-			RETURNING *)
 		SELECT
 			token, identity_id, expires_at, now()
 		FROM 
 			keel_refresh_token
-		WHERE
+		WHERE 
 			token = ? AND
-			token NOT IN (SELECT token FROM purge_expired_tokens);`
+			expires_at >= now()`
 
 	rows := []map[string]any{}
 	err = database.GetDB().Raw(sql, tokenHash).Scan(&rows).Error
@@ -201,15 +187,7 @@ func RevokeRefreshToken(ctx context.Context, refreshTokenRaw string) error {
 		return err
 	}
 
-	// This query has the following (important) characteristics:
-	//  - first, purge all expired token in the database
-	//  - then, explicitly delete this token from the database
 	sql := `
-		WITH purge_expired_tokens AS (
-			DELETE FROM 
-				keel_refresh_token
-			WHERE 
-				expires_at < now())
 		DELETE FROM 
 			keel_refresh_token
 		WHERE 

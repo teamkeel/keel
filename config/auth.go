@@ -41,9 +41,9 @@ type AuthConfig struct {
 }
 
 type TokensConfig struct {
-	AccessTokenExpiry    *int  `yaml:"accessTokenExpiry,omitempty"`
-	RefreshTokenExpiry   *int  `yaml:"refreshTokenExpiry,omitempty"`
-	RefreshTokenRotation *bool `yaml:"refreshTokenRotation,omitempty"`
+	AccessTokenExpiry           *int  `yaml:"accessTokenExpiry,omitempty"`
+	RefreshTokenExpiry          *int  `yaml:"refreshTokenExpiry,omitempty"`
+	RefreshTokenRotationEnabled *bool `yaml:"refreshTokenRotationEnabled,omitempty"`
 }
 
 type Provider struct {
@@ -75,8 +75,8 @@ func (c *AuthConfig) RefreshTokenExpiryOrDefault() time.Duration {
 
 // RefreshTokenRotationEnabled retrieves the configured or default refresh token rotation
 func (c *AuthConfig) RefreshTokenRotationEnabled() bool {
-	if c.Tokens.RefreshTokenRotation != nil {
-		return *c.Tokens.RefreshTokenRotation
+	if c.Tokens.RefreshTokenRotationEnabled != nil {
+		return *c.Tokens.RefreshTokenRotationEnabled
 	} else {
 		return true
 	}

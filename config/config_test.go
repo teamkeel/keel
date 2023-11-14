@@ -122,11 +122,11 @@ func TestAuthTokens(t *testing.T) {
 
 	assert.Equal(t, 3600, *config.Auth.Tokens.AccessTokenExpiry)
 	assert.Equal(t, 604800, *config.Auth.Tokens.RefreshTokenExpiry)
-	assert.Equal(t, true, *config.Auth.Tokens.RefreshTokenRotation)
+	assert.Equal(t, false, *config.Auth.Tokens.RefreshTokenRotationEnabled)
 
 	assert.Equal(t, time.Duration(3600)*time.Second, config.Auth.AccessTokenExpiryOrDefault())
 	assert.Equal(t, time.Duration(604800)*time.Second, config.Auth.RefreshTokenExpiryOrDefault())
-	assert.Equal(t, true, config.Auth.RefreshTokenRotationEnabled())
+	assert.Equal(t, false, config.Auth.RefreshTokenRotationEnabled())
 }
 
 func TestAuthDefaults(t *testing.T) {
@@ -135,7 +135,7 @@ func TestAuthDefaults(t *testing.T) {
 
 	assert.Nil(t, config.Auth.Tokens.AccessTokenExpiry)
 	assert.Nil(t, config.Auth.Tokens.RefreshTokenExpiry)
-	assert.Nil(t, config.Auth.Tokens.RefreshTokenRotation)
+	assert.Nil(t, config.Auth.Tokens.RefreshTokenRotationEnabled)
 
 	assert.Equal(t, time.Duration(24)*time.Hour, config.Auth.AccessTokenExpiryOrDefault())
 	assert.Equal(t, time.Duration(24)*time.Hour*90, config.Auth.RefreshTokenExpiryOrDefault())

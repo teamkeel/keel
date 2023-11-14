@@ -26,7 +26,7 @@ func newContextWithPK() context.Context {
 	return ctx
 }
 
-func TestAccessTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
+func TestAccessTokenGeneration(t *testing.T) {
 	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
@@ -38,17 +38,28 @@ func TestAccessTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, identityId.String(), parsedId)
 	require.Equal(t, oauth.KeelIssuer, iss)
+}
+
+func TestAccessTokenValidationNoPrivateKey(t *testing.T) {
+	ctx := newContextWithPK()
+	identityId := ksuid.New()
+
+	bearerJwt, _, err := oauth.GenerateAccessToken(ctx, identityId.String())
+	require.NoError(t, err)
+	require.NotEmpty(t, bearerJwt)
+
+	ctx = runtimectx.WithPrivateKey(ctx, nil)
+
+	parsedId, iss, err := oauth.ValidateAccessToken(ctx, bearerJwt)
+	require.Error(t, err, "no private key set")
+	require.Empty(t, parsedId)
+	require.Empty(t, iss)
 }
 
 func TestAccessTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
 	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err)
-	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
-	require.NoError(t, err)
-
 	bearerJwt, _, err := oauth.GenerateAccessToken(ctx, identityId.String())
 	require.NoError(t, err)
 	require.NotEmpty(t, bearerJwt)
@@ -59,7 +70,7 @@ func TestAccessTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
 	require.Equal(t, oauth.KeelIssuer, iss)
 }
 
-func TestAccessTokenGenerationWithPrivateKeyAndParsingWithoutPrivateKey(t *testing.T) {
+func TestAccessTokenValidationDifferentPrivateKey(t *testing.T) {
 	ctx := newContextWithPK()
 	identityId := ksuid.New()
 
@@ -79,51 +90,8 @@ func TestAccessTokenGenerationWithPrivateKeyAndParsingWithoutPrivateKey(t *testi
 	require.Empty(t, iss)
 }
 
-func TestAccessTokenGenerationWithoutPrivateKeyAndParsingWithPrivateKey(t *testing.T) {
-	ctx := newContextWithPK()
-	identityId := ksuid.New()
-
-	bearerJwt, _, err := oauth.GenerateAccessToken(ctx, identityId.String())
-	require.NoError(t, err)
-	require.NotEmpty(t, bearerJwt)
-
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err)
-	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
-	require.NoError(t, err)
-
-	parsedId, iss, err := oauth.ValidateAccessToken(ctx, bearerJwt)
-	require.ErrorIs(t, oauth.ErrInvalidToken, err)
-	require.Empty(t, parsedId)
-	require.Empty(t, iss)
-}
-
-func TestAccessTokenGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
-	ctx := newContextWithPK()
-	identityId := ksuid.New()
-
-	privateKey1, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err)
-	ctx = runtimectx.WithPrivateKey(ctx, privateKey1)
-	require.NoError(t, err)
-
-	bearerJwt, _, err := oauth.GenerateAccessToken(ctx, identityId.String())
-	require.NoError(t, err)
-	require.NotEmpty(t, bearerJwt)
-
-	privateKey2, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err)
-	ctx = runtimectx.WithPrivateKey(ctx, privateKey2)
-	require.NoError(t, err)
-
-	parsedId, iss, err := oauth.ValidateAccessToken(ctx, bearerJwt)
-	require.ErrorIs(t, oauth.ErrInvalidToken, err)
-	require.Empty(t, parsedId)
-	require.Empty(t, iss)
-}
-
 func TestAccessTokenIsRSAMethodWithPrivateKey(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := context.Background()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -144,35 +112,8 @@ func TestAccessTokenIsRSAMethodWithPrivateKey(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestAccessTokenHasDefaultExpiryClaims(t *testing.T) {
-	ctx := newContextWithPK()
-	identityId := ksuid.New()
-
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err)
-	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
-	require.NoError(t, err)
-
-	jwtToken, lifespan, err := oauth.GenerateAccessToken(ctx, identityId.String())
-	require.NoError(t, err)
-	require.NotEmpty(t, jwtToken)
-
-	claims := &oauth.AccessTokenClaims{}
-	_, err = jwt.ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) {
-		return &privateKey.PublicKey, nil
-	})
-	require.NoError(t, err)
-
-	issuedAt := claims.IssuedAt.Time
-	expiry := claims.ExpiresAt.Time
-
-	require.Greater(t, expiry, time.Now())
-	require.Equal(t, issuedAt.Add(config.DefaultAccessTokenExpiry), expiry)
-	require.Equal(t, config.DefaultAccessTokenExpiry, lifespan)
-}
-
-func TestAccessTokenHasCustomClaims(t *testing.T) {
-	ctx := newContextWithPK()
+func TestAccessTokenClaims(t *testing.T) {
+	ctx := context.Background()
 	identityId := ksuid.New()
 
 	seconds := 360
@@ -181,7 +122,6 @@ func TestAccessTokenHasCustomClaims(t *testing.T) {
 			AccessTokenExpiry: &seconds,
 		},
 	}
-
 	ctx = runtimectx.WithOAuthConfig(ctx, &config)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -201,11 +141,15 @@ func TestAccessTokenHasCustomClaims(t *testing.T) {
 
 	issuedAt := claims.IssuedAt.Time
 	expiry := claims.ExpiresAt.Time
+	subject := claims.Subject
+	issuer := claims.Issuer
 
 	require.Greater(t, expiry, time.Now())
 	require.Equal(t, issuedAt.Add(time.Second*360), expiry)
 	require.Equal(t, time.Second*360, lifespan)
 	require.Equal(t, config.AccessTokenExpiryOrDefault(), time.Second*360)
+	require.Equal(t, subject, identityId.String())
+	require.Equal(t, issuer, "https://keel.so")
 }
 
 func TestShortExpiredAccessTokenIsInvalid(t *testing.T) {
@@ -258,26 +202,4 @@ func TestExpiredAccessTokenIsInvalid(t *testing.T) {
 	require.ErrorIs(t, oauth.ErrTokenExpired, err)
 	require.Empty(t, parsedId)
 	require.Empty(t, iss)
-}
-
-func TestAccessTokenIssueClaimIsKeel(t *testing.T) {
-	ctx := newContextWithPK()
-	identityId := ksuid.New()
-
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err)
-	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
-
-	bearerJwt, _, err := oauth.GenerateAccessToken(ctx, identityId.String())
-	require.NoError(t, err)
-	require.NotEmpty(t, bearerJwt)
-
-	claims := &oauth.AccessTokenClaims{}
-	_, err = jwt.ParseWithClaims(bearerJwt, claims, func(token *jwt.Token) (interface{}, error) {
-		return &privateKey.PublicKey, nil
-	})
-	require.NoError(t, err)
-
-	issuedAt := claims.Issuer
-	require.Equal(t, oauth.KeelIssuer, issuedAt)
 }

@@ -456,7 +456,7 @@ func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
 	refreshTokenRotation := true
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
 		Tokens: config.TokensConfig{
-			RefreshTokenRotation: &refreshTokenRotation,
+			RefreshTokenRotationEnabled: &refreshTokenRotation,
 		},
 		Providers: []config.Provider{
 			{
@@ -539,7 +539,7 @@ func TestRefreshTokenGrantRotationDisabled_Valid(t *testing.T) {
 	refreshTokenRotation := false
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
 		Tokens: config.TokensConfig{
-			RefreshTokenRotation: &refreshTokenRotation,
+			RefreshTokenRotationEnabled: &refreshTokenRotation,
 		},
 		Providers: []config.Provider{
 			{

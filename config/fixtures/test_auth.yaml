@@ -2,7 +2,7 @@ auth:
   tokens:
     accessTokenExpiry: 3600
     refreshTokenExpiry: 604800
-    refreshTokenRotation: true
+    refreshTokenRotationEnabled: false
 
   providers:
     # Built-in Google provider
