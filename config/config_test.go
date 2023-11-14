@@ -245,3 +245,19 @@ func TestGetOidcSameIssuers(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, googleIssuer, 3)
 }
+
+func TestAddOidcProvider(t *testing.T) {
+	config, err := Load("fixtures/test_auth.yaml")
+	assert.NoError(t, err)
+
+	assert.Len(t, config.Auth.GetOidcProviders(), 1)
+
+	err = config.Auth.AddOidcProvider("custom-auth", "https://mycustomoidc.com", "1234")
+	assert.NoError(t, err)
+
+	assert.Len(t, config.Auth.GetOidcProviders(), 2)
+
+	byIssuer, err := config.Auth.GetOidcProvidersByIssuer("https://mycustomoidc.com")
+	assert.NoError(t, err)
+	assert.Len(t, byIssuer, 1)
+}

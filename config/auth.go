@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -79,6 +80,30 @@ func (c *AuthConfig) RefreshTokenRotationEnabled() bool {
 	} else {
 		return true
 	}
+}
+
+// AddOidcProvider adds a OpenID Connect provider to the list of supported authentication providers
+func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId string) error {
+	if name == "" {
+		return errors.New("provider name cannot be empty")
+	}
+	if invalidUrl(issuerUrl) {
+		return fmt.Errorf("invalid issuerUrl: %s", issuerUrl)
+	}
+	if clientId == "" {
+		return errors.New("provider clientId cannot be empty")
+	}
+
+	provider := Provider{
+		Type:      OpenIdConnectProvider,
+		Name:      name,
+		IssuerUrl: issuerUrl,
+		ClientId:  clientId,
+	}
+
+	c.Providers = append(c.Providers, provider)
+
+	return nil
 }
 
 func (c *AuthConfig) GetOidcProviders() []Provider {
@@ -216,8 +241,7 @@ func findAuthProviderMissingClientId(providers []Provider) []Provider {
 func findAuthProviderMissingOrInvalidIssuerUrl(providers []Provider) []Provider {
 	invalid := []Provider{}
 	for _, p := range providers {
-		u, err := url.Parse(p.IssuerUrl)
-		if err != nil || u.Scheme != "https" {
+		if invalidUrl(p.IssuerUrl) {
 			invalid = append(invalid, p)
 			continue
 		}
@@ -230,8 +254,7 @@ func findAuthProviderMissingOrInvalidIssuerUrl(providers []Provider) []Provider 
 func findAuthProviderMissingOrInvalidTokenUrl(providers []Provider) []Provider {
 	invalid := []Provider{}
 	for _, p := range providers {
-		u, err := url.Parse(p.TokenUrl)
-		if err != nil || u.Scheme != "https" {
+		if invalidUrl(p.TokenUrl) {
 			invalid = append(invalid, p)
 			continue
 		}
@@ -244,12 +267,15 @@ func findAuthProviderMissingOrInvalidTokenUrl(providers []Provider) []Provider {
 func findAuthProviderMissingOrInvalidAuthorizationUrl(providers []Provider) []Provider {
 	invalid := []Provider{}
 	for _, p := range providers {
-		u, err := url.Parse(p.AuthorizationUrl)
-		if err != nil || u.Scheme != "https" {
+		if invalidUrl(p.AuthorizationUrl) {
 			invalid = append(invalid, p)
 			continue
 		}
 	}
-
 	return invalid
+}
+
+func invalidUrl(u string) bool {
+	parsed, err := url.Parse(u)
+	return err != nil || parsed.Scheme != "https"
 }
