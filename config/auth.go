@@ -19,7 +19,6 @@ const (
 const (
 	GoogleProvider        = "google"
 	FacebookProvider      = "facebook"
-	GitHubProvider        = "github"
 	GitLabProvider        = "gitlab"
 	OpenIdConnectProvider = "oidc"
 	OAuthProvider         = "oauth"
@@ -98,7 +97,7 @@ func (c *AuthConfig) GetOidcProvidersByIssuer(issuer string) ([]Provider, error)
 	providers := []Provider{}
 
 	for _, p := range c.Providers {
-		if p.Type == OAuthProvider || p.Type == GitHubProvider {
+		if p.Type == OAuthProvider {
 			continue
 		}
 
@@ -120,8 +119,6 @@ func (c *Provider) GetIssuer() (string, error) {
 		return "https://accounts.google.com", nil
 	case FacebookProvider:
 		return "https://www.facebook.com", nil
-	case GitHubProvider:
-		return "https://token.actions.githubusercontent.com", nil
 	case GitLabProvider:
 		return "https://gitlab.com", nil
 	case OpenIdConnectProvider:
