@@ -252,12 +252,12 @@ func TestAddOidcProvider(t *testing.T) {
 
 	assert.Len(t, config.Auth.GetOidcProviders(), 1)
 
-	auth, err := config.Auth.AddOidcProvider("custom-auth", "https://mycustomoidc.com", "1234")
+	err = config.Auth.AddOidcProvider("Custom Auth", "https://mycustomoidc.com", "1234")
 	assert.NoError(t, err)
 
-	assert.Len(t, auth.GetOidcProviders(), 2)
+	assert.Len(t, config.Auth.GetOidcProviders(), 2)
 
-	byIssuer, err := auth.GetOidcProvidersByIssuer("https://mycustomoidc.com")
+	byIssuer, err := config.Auth.GetOidcProvidersByIssuer("https://mycustomoidc.com")
 	assert.NoError(t, err)
 	assert.Len(t, byIssuer, 1)
 }

@@ -82,16 +82,16 @@ func (c *AuthConfig) RefreshTokenRotationEnabled() bool {
 	}
 }
 
-// AddOidcProvider adds a OpenID Connect provider to the list of supported authentication providers
-func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId string) (*AuthConfig, error) {
+// AddOidcProvider adds an OpenID Connect provider to the list of supported authentication providers
+func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId string) error {
 	if name == "" {
-		return nil, errors.New("provider name cannot be empty")
+		return errors.New("provider name cannot be empty")
 	}
 	if invalidUrl(issuerUrl) {
-		return nil, fmt.Errorf("invalid issuerUrl: %s", issuerUrl)
+		return fmt.Errorf("invalid issuerUrl: %s", issuerUrl)
 	}
 	if clientId == "" {
-		return nil, errors.New("provider clientId cannot be empty")
+		return errors.New("provider clientId cannot be empty")
 	}
 
 	provider := Provider{
@@ -102,10 +102,10 @@ func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId str
 	}
 
 	c.Providers = append(c.Providers, provider)
-
-	return c, nil
+	return nil
 }
 
+// GetOidcProviders returns all OpenID Connect compatible authentication providers
 func (c *AuthConfig) GetOidcProviders() []Provider {
 	oidcProviders := []Provider{}
 	for _, p := range c.Providers {
@@ -138,6 +138,7 @@ func (c *AuthConfig) GetOidcProvidersByIssuer(issuer string) ([]Provider, error)
 	return providers, nil
 }
 
+// GetIssuer retrieves the issuer URL for the provider
 func (c *Provider) GetIssuer() (string, error) {
 	switch c.Type {
 	case GoogleProvider:
