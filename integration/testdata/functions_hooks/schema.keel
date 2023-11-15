@@ -1,0 +1,55 @@
+model Book {
+    fields {
+        title Text
+        published Boolean @default(false)
+    }
+
+    actions {
+        create createBookBeforeWrite() with (title) @function
+        create createBookBeforeWriteSync() with (title) @function
+        create createBookAfterWrite() with (title, review: Text) @function
+        create createBookAfterWriteErrorRollback() with (title) @function
+        get getBookBeforeQueryFirstOrNull(title: Text) @function
+        get getBookBeforeQueryQueryBuilder(id, allowUnpublished: Boolean?) @function
+        get getBookAfterQuery(id) @function
+        get getBookAfterQueryPermissions(id, onlyPublished: Boolean?) @function
+        list listBooksBeforeQuery(title?) @function
+        list listBooksBeforeQueryReturnValues() @function
+        list listBooksAfterQuery() @function
+        list listBooksAfterQueryPermissions(onlyPublished: Boolean) @function
+        update updateBookBeforeQuery(id, returnRecord: Boolean) with (title) @function
+        update updateBookBeforeWrite(id) with (title) @function
+        update updateBookAfterWrite(id) with (title) @function
+        delete deleteBookBeforeQuery(id, allowPublished: Boolean) @function
+        delete deleteBookBeforeQueryReturnRecord(id) @function
+        delete deleteBookBeforeWrite(id, allowPublished: Boolean) @function
+        delete deleteBookAfterWrite(id, reason: Text) @function
+    }
+
+    @permission(
+        actions: [create, get, list, update, delete],
+        expression: true
+    )
+}
+
+model DeletedBook {
+    fields {
+        bookId ID
+        title Text
+        deletedAt Timestamp
+    }
+}
+
+model BookUpdates {
+    fields {
+        book Book @unique
+        updateCount Number
+    }
+}
+
+model Review {
+    fields {
+        book Book
+        review Text
+    }
+}

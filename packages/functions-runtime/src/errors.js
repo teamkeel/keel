@@ -26,25 +26,13 @@ const RuntimeErrors = {
 
 // errorToJSONRPCResponse transforms a JavaScript Error instance (or derivative) into a valid JSONRPC response object to pass back to the Keel runtime.
 function errorToJSONRPCResponse(request, e) {
-  if (!e.error) {
-    // it isnt wrapped
-
-    if (e instanceof PermissionError) {
+  switch (e.constructor.name) {
+    case "PermissionError":
       return createJSONRPCErrorResponse(
         request.id,
         RuntimeErrors.PermissionError,
         e.message
       );
-    }
-
-    return createJSONRPCErrorResponse(
-      request.id,
-      RuntimeErrors.UnknownError,
-      e.message
-    );
-  }
-  // we want to switch on instanceof but there is no way to do that in js, so best to check the constructor class of the error
-  switch (e.error.constructor.name) {
     // Any error thrown in the ModelAPI class is
     // wrapped in a DatabaseError in order to differentiate 'our code' vs the user's own code.
     case "NoResultError":
@@ -56,23 +44,38 @@ function errorToJSONRPCResponse(request, e) {
         e.message
       );
     case "DatabaseError":
-      const { error: originalError } = e;
+      let err = e;
 
-      // if the originalError responds to 'code' then assume it has other pg error message keys
+      // If wrapped error then unwrap
+      if (e instanceof DatabaseError) {
+        err = e.error;
+      }
+
+      if (err.constructor.name == "NoResultError") {
+        return createJSONRPCErrorResponse(
+          request.id,
+
+          // to be matched to https://github.com/teamkeel/keel/blob/e3115ffe381bfc371d4f45bbf96a15072a994ce5/runtime/actions/update.go#L54-L54
+          RuntimeErrors.RecordNotFoundError,
+          err.message
+        );
+      }
+
+      // if the error contains 'code' then assume it has other pg error message keys
       // todo: make this more ironclad.
       // when using lib-pq, should match https://github.com/brianc/node-postgres/blob/master/packages/pg-protocol/src/parser.ts#L371-L386
-      if ("code" in originalError) {
-        const { code, detail, table } = originalError;
+      if ("code" in err) {
+        const { code, detail, table } = err;
 
         let rpcErrorCode, column, value;
-        const [col, val] = parseKeyMessage(originalError.detail);
+        const [col, val] = parseKeyMessage(err.detail);
         column = col;
         value = val;
 
         switch (code) {
           case "23502":
             rpcErrorCode = RuntimeErrors.NotNullConstraintError;
-            column = originalError.column;
+            column = err.column;
             break;
           case "23503":
             rpcErrorCode = RuntimeErrors.ForeignKeyConstraintError;
