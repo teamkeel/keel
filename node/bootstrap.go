@@ -49,9 +49,10 @@ func GetDependencies(options *bootstrapOptions) (map[string]string, map[string]s
 }
 
 type bootstrapOptions struct {
-	packagesPath string
-	logger       func(string)
-	output       io.Writer
+	packagesPath   string
+	packageManager string
+	logger         func(string)
+	output         io.Writer
 }
 
 // WithPackagesPath causes any @teamkeel packages to be installed
@@ -75,6 +76,12 @@ func WithOutputWriter(w io.Writer) BootstrapOption {
 	}
 }
 
+func WithPackageManager(p string) BootstrapOption {
+	return func(o *bootstrapOptions) {
+		o.packageManager = p
+	}
+}
+
 type BootstrapOption func(o *bootstrapOptions)
 
 type PackageJson struct {
@@ -87,6 +94,7 @@ type PackageJson struct {
 // file has been generated
 func Bootstrap(dir string, opts ...BootstrapOption) error {
 	options := &bootstrapOptions{
+		packageManager: "npm",
 		logger: func(s string) {
 			fmt.Println(s)
 		},
@@ -94,6 +102,10 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 	}
 	for _, o := range opts {
 		o(options)
+	}
+
+	if !lo.Contains([]string{"npm", "pnpm"}, options.packageManager) {
+		return fmt.Errorf("unsupported package manager: %s", options.packageManager)
 	}
 
 	packageJsonPath := filepath.Join(dir, "package.json")
@@ -132,7 +144,7 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 	}
 	if len(toInstall) > 0 {
 		options.logger("Installing dependencies...")
-		err = installDeps(dir, toInstall, false, options.output)
+		err = installDeps(dir, toInstall, false, options)
 		if err != nil {
 			return err
 		}
@@ -144,7 +156,7 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 	}
 	if len(toInstall) > 0 {
 		options.logger("Installing dev dependencies...")
-		err = installDeps(dir, toInstall, true, options.output)
+		err = installDeps(dir, toInstall, true, options)
 		if err != nil {
 			return err
 		}
@@ -220,14 +232,22 @@ func getDepsToInstall(required map[string]string, existing map[string]string) ([
 	return toInstall, nil
 }
 
-func installDeps(dir string, deps []string, dev bool, out io.Writer) error {
-	args := []string{"install"}
-	args = append(args, deps...)
-	args = append(args, lo.Ternary(dev, "--save-dev", "--save"))
+func installDeps(dir string, deps []string, dev bool, options *bootstrapOptions) error {
+	args := []string{}
 
-	cmd := exec.Command("npm", args...)
-	cmd.Stdout = out
-	cmd.Stderr = out
+	switch options.packageManager {
+	case "npm":
+		args = append(args, "install")
+	case "pnpm":
+		args = append(args, "add")
+	}
+
+	args = append(args, deps...)
+	args = append(args, lo.Ternary(dev, "--save-dev", "--save-prod"))
+
+	cmd := exec.Command(options.packageManager, args...)
+	cmd.Stdout = options.output
+	cmd.Stderr = options.output
 	cmd.Dir = dir
 
 	return cmd.Run()

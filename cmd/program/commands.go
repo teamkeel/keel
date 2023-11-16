@@ -233,9 +233,13 @@ type SetupFunctionsMsg struct {
 	Err error
 }
 
-func SetupFunctions(dir string, nodePackagesPath string) tea.Cmd {
+func SetupFunctions(dir string, nodePackagesPath string, packageManager string) tea.Cmd {
 	return func() tea.Msg {
-		err := node.Bootstrap(dir, node.WithPackagesPath(nodePackagesPath))
+		err := node.Bootstrap(
+			dir,
+			node.WithPackageManager(packageManager),
+			node.WithPackagesPath(nodePackagesPath),
+		)
 		if err != nil {
 			return SetupFunctionsMsg{
 				Err: err,

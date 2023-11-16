@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/cmd/program"
@@ -32,9 +33,18 @@ var testCmd = &cobra.Command{
 		// Only do bootstrap if no node_modules directory present
 		_, err := os.Stat(filepath.Join(flagProjectDir, "node_modules"))
 		if os.IsNotExist(err) {
+			packageManager, err := resolvePackageManager(flagProjectDir, false)
+			if err == promptui.ErrAbort {
+				return nil
+			}
+			if err != nil {
+				panic(err)
+			}
+
 			logPrefix := colors.Green("|").String()
-			err := node.Bootstrap(
+			err = node.Bootstrap(
 				flagProjectDir,
+				node.WithPackageManager(packageManager),
 				node.WithPackagesPath(flagNodePackagesPath),
 				node.WithLogger(func(s string) {
 					fmt.Println(logPrefix, s)
