@@ -491,7 +491,7 @@ func TestAllowAllIssuers(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestEnVarFallback(t *testing.T) {
+func TestEnvVarFallback(t *testing.T) {
 
 	ctx := newContext()
 
