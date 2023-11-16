@@ -2,8 +2,12 @@ package node
 
 import (
 	"context"
+	"embed"
+	_ "embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
+	"path/filepath"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -61,21 +65,6 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	sdkTypes.Writeln("")
 	sdkTypes.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
 
-	// deepFreeze is used to make the inputs object to function hooks immutable
-	sdk.Writeln(`
-const deepFreeze = o => {
-	if (o===null || typeof o !== 'object') return o
-	return new Proxy(o, {
-		get(obj, prop) {
-			return deepFreeze(obj[prop])
-		},
-		set(obj, prop) {
-			throw new Error("Input " + JSON.stringify(obj) + " cannot be modified. Did you mean to modify values instead?")
-		}
-	})
-}
-	`)
-
 	writePermissions(sdk, schema)
 
 	writeMessages(sdkTypes, schema, false)
@@ -85,6 +74,13 @@ const deepFreeze = o => {
 		writeEnumWhereCondition(sdkTypes, enum)
 		writeEnumObject(sdk, enum)
 	}
+
+	writeFunctionHookHelpers(sdk)
+	writeFunctionHookTypes(sdkTypes)
+
+	writeTableConfig(sdk, schema.Models)
+	writeAPIFactory(sdk, schema)
+	sdk.Writeln("module.exports.useDatabase = runtime.useDatabase;")
 
 	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
@@ -114,11 +110,7 @@ const deepFreeze = o => {
 				// writes the default implementation of a function. the user can specify hooks which can
 				// override the behaviour of the default implementation
 				writeFunctionImplementation(sdk, schema, action)
-
-				sdk.Writef("module.exports.%s = %s;", casing.ToCamel(action.Name), casing.ToCamel(action.Name))
 			}
-
-			sdk.Writeln("")
 		}
 	}
 
@@ -134,14 +126,8 @@ const deepFreeze = o => {
 		sdk.Writeln("")
 	}
 
-	writeTableConfig(sdk, schema.Models)
-
-	writeAPIFactory(sdk, schema)
-
 	writeDatabaseInterface(sdkTypes, schema)
 	writeAPIDeclarations(sdkTypes, schema)
-
-	sdk.Writeln("module.exports.useDatabase = runtime.useDatabase;")
 
 	return []*codegen.GeneratedFile{
 		{
@@ -721,7 +707,8 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln(`module.exports.models = createModelAPI();`)
+	w.Writeln(`const models = createModelAPI();`)
+	w.Writeln(`module.exports.models = models;`)
 	w.Writeln(`module.exports.permissions = createPermissionApi();`)
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
 	w.Writeln("module.exports.createJobContextAPI = createJobContextAPI;")
@@ -771,334 +758,81 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 	w.Writeln(";")
 }
 
-func writeBeforeQueryHook(w *codegen.Writer, action *proto.Action) {
-	w.Writeln("")
+var (
+	//go:embed templates/**/*
+	templates embed.FS
+)
 
-	w.Writeln("// call beforeQuery hook (if defined)")
-	w.Writeln("if (hooks.beforeQuery) {")
-	w.Indent()
-	w.Writef("let builder = models.%s.where(wheres);\n", casing.ToLowerCamel(action.ModelName))
-	w.Writeln("")
-
-	w.Writeln("let resolvedValue;")
-
-	wrapWithSpan(w, fmt.Sprintf("%s.beforeQuery", action.Name), func(w *codegen.Writer) {
-		w.Writef("resolvedValue = await hooks.beforeQuery(ctx, deepFreeze(inputs), builder);\n")
-	})
-	w.Writeln("")
-
-	// we want to check if the resolved value is an instance of the runtime.QueryBuilder.
-	// instanceof has some gotchas particularly between esmodules, so we revert to checking the constuctor of the resolvedValue
-
-	w.Writeln("const constructor = resolvedValue?.constructor?.name")
-
-	w.Writeln("if (constructor === 'QueryBuilder') {")
-	w.Indent()
-
-	w.Writeln("span.addEvent('using QueryBuilder')")
-	w.Writeln("builder = resolvedValue;")
-
-	w.Writeln("// in order to populate data, we take the QueryBuilder instance and call the relevant 'terminating' method on it to execute the query")
-
-	w.Writeln("span.addEvent(builder.sql())")
-	switch action.Type {
-	case proto.ActionType_ACTION_TYPE_LIST:
-		// TODO: properly support pagination
-		w.Writeln("data = await builder.findMany({ limit: inputs.first });")
-	case proto.ActionType_ACTION_TYPE_GET, proto.ActionType_ACTION_TYPE_UPDATE, proto.ActionType_ACTION_TYPE_DELETE:
-		w.Writeln("data = await builder.findOne();")
+func writeFunctionHookHelpers(w *codegen.Writer) {
+	dir := "templates/functions"
+	entries, _ := fs.ReadDir(templates, dir)
+	for _, entry := range entries {
+		if filepath.Ext(entry.Name()) == ".js" {
+			b, _ := fs.ReadFile(templates, filepath.Join(dir, entry.Name()))
+			w.Writeln(string(b))
+		}
 	}
-	w.Dedent()
-	w.Writeln("} else {")
-	w.Indent()
-
-	w.Writeln("// in this case, the data is just the resolved value of the promise")
-	w.Writeln("span.addEvent('using Model API')")
-
-	w.Writeln("data = resolvedValue;")
-	w.Dedent()
-	w.Writeln("}")
-	w.Dedent()
-	w.Write("}")
-
 }
 
-func writeAfterQueryHook(w *codegen.Writer, action *proto.Action) {
-	w.Writeln("// call afterQuery hook (if defined)")
-	w.Writeln("if (hooks.afterQuery) {")
-	w.Indent()
-	wrapWithSpan(w, fmt.Sprintf("%s.afterQuery", action.Name), func(w *codegen.Writer) {
-		w.Writeln("data = await hooks.afterQuery(ctx, deepFreeze(inputs), data);")
-	})
-	w.Dedent()
-	w.Writeln("}")
-
-	w.Writeln("")
-}
-
-func writeAfterWriteHook(w *codegen.Writer, action *proto.Action) {
-	w.Writeln("")
-	w.Writeln("")
-
-	w.Writeln("// call afterWrite hook (if defined)")
-	w.Writeln("if (hooks.afterWrite) {")
-	w.Indent()
-
-	wrapWithSpan(w, fmt.Sprintf("%s.afterWrite", action.Name), func(w *codegen.Writer) {
-		w.Writeln("const v = await hooks.afterWrite(ctx, deepFreeze(inputs), data);")
-		w.Writeln("if (v !== undefined) {")
-		w.Indent()
-		w.Writeln("data = v;")
-		w.Dedent()
-		w.Writeln("}")
-	})
-
-	w.Dedent()
-	w.Writeln("}")
-
-	w.Writeln("")
-}
-
-func wrapWithSpan(w *codegen.Writer, name string, fn func(w *codegen.Writer)) {
-	w.Writef("await runtime.tracing.withSpan('%s', async (span) => {\n", name)
-	w.Indent()
-
-	fn(w)
-
-	w.Dedent()
-
-	w.Writeln("});")
+func writeFunctionHookTypes(w *codegen.Writer) {
+	b, _ := fs.ReadFile(templates, "templates/functions/types.d.ts")
+	w.Writeln(string(b))
 }
 
 func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action *proto.Action) {
-	w.Writef("const %s = (hooks = {}) => {\n", casing.ToCamel(action.Name))
-	w.Indent()
-	w.Writeln("return async function(ctx, inputs) {")
-	w.Indent()
+	msg := proto.FindMessage(schema.Messages, action.InputMessageName)
 
-	w.Write("return ")
+	var whereMsg *proto.Message
+	var valuesMsg *proto.Message
 
-	wrapWithSpan(w, fmt.Sprintf("%s.DefaultImplementation", action.Name), func(w *codegen.Writer) {
-		w.Writeln("const models = createModelAPI();")
+	wheres := []string{}
+	values := []string{}
 
-		switch action.Type {
-		case proto.ActionType_ACTION_TYPE_UPDATE:
-			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
-
-			// Only fields that target model fields are written into values
-			w.Writeln("let wheres = {};")
-			w.Writeln("let values = {};")
-			for _, f := range msg.Fields {
-				if f.Name == "where" {
-					wheres := proto.FindMessage(schema.Messages, f.Type.MessageName.Value)
-					for _, where := range wheres.Fields {
-						if len(where.Target) > 0 {
-							w.Writeln(fmt.Sprintf("if (inputs.where && '%s' in inputs.where) {", where.Name))
-							w.Indent()
-							w.Writeln(fmt.Sprintf("wheres.%s = inputs.where.%s;", where.Name, where.Name))
-							w.Dedent()
-							w.Writeln("}")
-						}
-					}
-				}
-				if f.Name == "values" {
-					values := proto.FindMessage(schema.Messages, f.Type.MessageName.Value)
-					for _, value := range values.Fields {
-						if len(value.Target) > 0 {
-							w.Writeln(fmt.Sprintf("if (inputs.values && '%s' in inputs.values) {", value.Name))
-							w.Indent()
-							w.Writeln(fmt.Sprintf("values.%s = inputs.values.%s;", value.Name, value.Name))
-							w.Dedent()
-							w.Writeln("}")
-						}
-					}
-				}
+	switch action.Type {
+	case proto.ActionType_ACTION_TYPE_UPDATE, proto.ActionType_ACTION_TYPE_LIST:
+		for _, f := range msg.Fields {
+			if f.Name == "where" {
+				whereMsg = proto.FindMessage(schema.Messages, f.Type.MessageName.Value)
 			}
-
-			w.Writeln("let data;")
-
-			writeBeforeQueryHook(w, action)
-
-			// the else covers cases were no beforeQuery hook was defined at all,
-			// so therefore we want to build up the base query without any additional help
-			// from the user-defined beforeQuery
-			w.Writeln(" else {")
-			w.Indent()
-			w.Writef("data = await models.%s.findOne(wheres);\n", casing.ToLowerCamel(action.ModelName))
-			w.Dedent()
-			w.Writeln("}")
-			w.Writeln("")
-
-			w.Writeln("if (!data) {")
-			w.Indent()
-			w.Writeln("throw new NoResultError();")
-			w.Dedent()
-			w.Writeln("}")
-
-			w.Writeln("if (hooks.beforeWrite) {")
-			w.Indent()
-			wrapWithSpan(w, fmt.Sprintf("%s.beforeWrite", action.Name), func(w *codegen.Writer) {
-				w.Writeln("values = await hooks.beforeWrite(ctx, inputs, values, data);")
-			})
-			w.Dedent()
-			w.Writeln("}")
-			w.Writeln("")
-
-			w.Writeln(fmt.Sprintf("data = await models.%s.update({id: data.id}, values);", casing.ToLowerCamel(action.ModelName)))
-			writeAfterWriteHook(w, action)
-
-			w.Writeln("return data;")
-		case proto.ActionType_ACTION_TYPE_DELETE:
-			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
-
-			// Only fields that target model fields are written into values
-			w.Writeln("let wheres = {};")
-			for _, f := range msg.Fields {
-				if len(f.Target) > 0 {
-					w.Writeln(fmt.Sprintf("if ('%s' in inputs) {", f.Name))
-					w.Indent()
-					w.Writeln(fmt.Sprintf("wheres.%s = inputs.%s;", f.Name, f.Name))
-					w.Dedent()
-					w.Writeln("}")
-				}
+			if f.Name == "values" {
+				valuesMsg = proto.FindMessage(schema.Messages, f.Type.MessageName.Value)
 			}
-
-			w.Writeln("let data;")
-
-			writeBeforeQueryHook(w, action)
-
-			// the else covers cases were no beforeQuery hook was defined at all,
-			// so therefore we want to build up the base query without any additional help
-			// from the user-defined beforeQuery
-			w.Writeln(" else {")
-			w.Indent()
-			w.Writeln("// when no beforeQuery hook is defined, use the default implementation")
-			w.Writef("data = await models.%s.findOne(wheres);\n", casing.ToLowerCamel(action.ModelName))
-			w.Dedent()
-			w.Writeln("}")
-
-			w.Writeln("if (!data) {")
-			w.Indent()
-			w.Writeln("throw new NoResultError();")
-			w.Dedent()
-			w.Writeln("}")
-
-			w.Writeln("if (hooks.beforeWrite) {")
-			w.Indent()
-			wrapWithSpan(w, fmt.Sprintf("%s.beforeWrite", action.Name), func(w *codegen.Writer) {
-				w.Writeln("await hooks.beforeWrite(ctx, inputs, data);")
-			})
-			w.Dedent()
-			w.Writeln("}")
-			w.Writeln("")
-
-			w.Writeln(fmt.Sprintf("await models.%s.delete({id: data.id});", casing.ToLowerCamel(action.ModelName)))
-			writeAfterWriteHook(w, action)
-
-			w.Writeln("return data.id;")
-
-		case proto.ActionType_ACTION_TYPE_LIST:
-			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
-
-			// Only fields that target model fields are written into values
-			w.Writeln("let wheres = {};")
-			for _, f := range msg.Fields {
-				if f.Name != "where" {
-					continue
-				}
-
-				wheres := proto.FindMessage(schema.Messages, f.Type.MessageName.Value)
-				for _, where := range wheres.Fields {
-					if len(where.Target) > 0 {
-						w.Writeln(fmt.Sprintf("if (inputs.where && '%s' in inputs.where) {", where.Name))
-						w.Indent()
-						w.Writeln(fmt.Sprintf("wheres.%s = inputs.where.%s;", where.Name, where.Name))
-						w.Dedent()
-						w.Writeln("}")
-					}
-				}
-			}
-
-			w.Writeln("let data;")
-
-			writeBeforeQueryHook(w, action)
-
-			// the else covers cases were no beforeQuery hook was defined at all,
-			// so therefore we want to build up the base query without any additional help
-			// from the user-defined beforeQuery
-			w.Writeln(" else {")
-			w.Indent()
-			w.Writef("data = await models.%s.findMany({where: wheres, limit: inputs.first});\n", casing.ToLowerCamel(action.ModelName))
-			w.Dedent()
-			w.Writeln("}")
-
-			writeAfterQueryHook(w, action)
-			w.Writeln("return data;")
-		case proto.ActionType_ACTION_TYPE_GET:
-			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
-
-			// Only fields that target model fields are written into values
-			w.Writeln("let wheres = {};")
-			for _, f := range msg.Fields {
-				if len(f.Target) > 0 {
-					w.Writeln(fmt.Sprintf("if ('%s' in inputs) {", f.Name))
-					w.Indent()
-					w.Writeln(fmt.Sprintf("wheres.%s = inputs.%s;", f.Name, f.Name))
-					w.Dedent()
-					w.Writeln("}")
-				}
-			}
-
-			w.Writeln("let data;")
-
-			writeBeforeQueryHook(w, action)
-
-			// the else covers cases were no beforeQuery hook was defined at all,
-			// so therefore we want to build up the base query without any additional help
-			// from the user-defined beforeQuery
-			w.Writeln(" else {")
-			w.Indent()
-			w.Writef("data = await models.%s.findOne(wheres);\n", casing.ToLowerCamel(action.ModelName))
-			w.Dedent()
-			w.Writeln("}")
-
-			writeAfterQueryHook(w, action)
-			w.Writeln("return data;")
-		case proto.ActionType_ACTION_TYPE_CREATE:
-			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
-
-			// Only fields that target model fields are written into values
-			w.Writeln("let values = {};")
-			for _, f := range msg.Fields {
-				if len(f.Target) > 0 {
-					w.Writeln(fmt.Sprintf("if ('%s' in inputs) {", f.Name))
-					w.Indent()
-					w.Writeln(fmt.Sprintf("values.%s = inputs.%s;", f.Name, f.Name))
-					w.Dedent()
-					w.Writeln("}")
-				}
-			}
-
-			w.Writeln("if (hooks.beforeWrite) {")
-			w.Indent()
-			wrapWithSpan(w, fmt.Sprintf("%s.beforeWrite", action.Name), func(w *codegen.Writer) {
-				w.Writeln("values = await hooks.beforeWrite(ctx, inputs, values);")
-			})
-			w.Dedent()
-			w.Writeln("}")
-			w.Writeln("")
-
-			w.Writef("let data = await models.%s.create(values);", casing.ToLowerCamel(action.ModelName))
-			writeAfterWriteHook(w, action)
-			w.Writeln("return data;")
 		}
-	})
+	case proto.ActionType_ACTION_TYPE_CREATE:
+		whereMsg = nil
+		valuesMsg = msg
+	default:
+		whereMsg = msg
+	}
 
-	w.Dedent()
-	w.Writeln("};")
+	// Using getter method for Fields here as it is safe even if the variables are nil
+	for _, f := range whereMsg.GetFields() {
+		if len(f.Target) > 0 {
+			wheres = append(wheres, fmt.Sprintf(`"%s"`, f.Name))
+		}
+	}
+	for _, f := range valuesMsg.GetFields() {
+		if len(f.Target) > 0 {
+			values = append(values, fmt.Sprintf(`"%s"`, f.Name))
+		}
+	}
 
-	w.Dedent()
-	w.Writeln("};")
+	functionName := map[proto.ActionType]string{
+		proto.ActionType_ACTION_TYPE_GET:    "getFunction",
+		proto.ActionType_ACTION_TYPE_UPDATE: "updateFunction",
+		proto.ActionType_ACTION_TYPE_CREATE: "createFunction",
+		proto.ActionType_ACTION_TYPE_LIST:   "listFunction",
+		proto.ActionType_ACTION_TYPE_DELETE: "deleteFunction",
+	}[action.Type]
+
+	w.Writeln(fmt.Sprintf(
+		"module.exports.%s = %s({model: models.%s, whereInputs: [%s], valueInputs: [%s]})",
+		casing.ToCamel(action.Name),
+		functionName,
+		casing.ToLowerCamel(action.ModelName),
+		strings.Join(wheres, ", "),
+		strings.Join(values, ", "),
+	))
 }
 
 func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *proto.Action) {
@@ -1107,8 +841,7 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 	// decorating existing js code with types.
 	w.Writef("export declare function %s", casing.ToCamel(action.Name))
 
-	switch {
-	case proto.ActionIsArbitraryFunction(action):
+	if proto.ActionIsArbitraryFunction(action) {
 		inputType := action.InputMessageName
 		if inputType == parser.MessageFieldTypeAny {
 			inputType = "any"
@@ -1119,147 +852,32 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 		w.Write("): ")
 		w.Write(toCustomFunctionReturnType(model, action, false))
 		w.Writeln(";")
-	default:
-		w.Writef("(hooks?: %s) : void\n", fmt.Sprintf("%sHooks", casing.ToCamel(action.Name)))
-
-		w.Writef("export type %sHooks = {\n", casing.ToCamel(action.Name))
-		w.Indent()
-
-		inputMessage := action.InputMessageName
-
-		switch {
-		case action.Type == proto.ActionType_ACTION_TYPE_UPDATE:
-			returnType := fmt.Sprintf("Promise<%s>", action.ModelName)
-			queryBuilderType := fmt.Sprintf("%sQueryBuilder", action.ModelName)
-			beforeQueryReturnType := fmt.Sprintf("%s | %s", model.Name, queryBuilderType)
-			beforeWriteReturnType := fmt.Sprintf("Partial<%s>", model.Name)
-
-			valuesType := fmt.Sprintf("%sValues", casing.ToCamel(action.Name))
-
-			w.Writef(`
-	/**
-	* beforeQuery can be used to modify the existing query, or replace it entirely.
-	* If the function is marked with the async keyword, then the expected return type is a %s.
-	* If the function is non-async, then the expected return type is an instance of QueryBuilder.
-	*/
-`, returnType)
-			w.Writef(
-				"beforeQuery?: (ctx: ContextAPI, inputs: %s, query: %s) => Promise<%s> | %s\n",
-				inputMessage, queryBuilderType, beforeQueryReturnType, beforeQueryReturnType)
-
-			w.Write(`
-	/**
-	* beforeWrite can be used to modify the values that will be used for the update 
-	*/
-`)
-			w.Writef(
-				"beforeWrite?: (ctx: ContextAPI, inputs: %s, values: %s, record: %s) => Promise<%s> | %s\n",
-				inputMessage, valuesType, model.Name, beforeWriteReturnType, beforeWriteReturnType)
-
-			w.Write(`
-	/**
-	* The afterWrite hook allows you to perform side effects after the record has been written to the database. Common use cases include creating other models, and performing custom permission checks.
-	*/
-	`)
-			w.Writef("afterWrite?: (ctx: ContextAPI, inputs: %s, data: %s) => Promise<%s | void> | %s | void\n", inputMessage, model.Name, model.Name, model.Name)
-		case action.Type == proto.ActionType_ACTION_TYPE_DELETE:
-			queryBuilderType := fmt.Sprintf("%sQueryBuilder", action.ModelName)
-			beforeQueryReturnType := fmt.Sprintf("%s | %s", model.Name, queryBuilderType)
-
-			w.Writef(`
-	/**
-	* beforeQuery can be used to affect which record will be deleted, by either modifying the existing query, returning a new query or a record.
-	*/
-`)
-			// the signature for beforeQuery for update is slightly different
-			// as we want to pass both the original inputs, and the version of values
-			// mutated by the beforeWrite hook to the function
-			w.Writef(
-				"beforeQuery?: (ctx: ContextAPI, inputs: %s, query: %s) => Promise<%s> | %s\n",
-				inputMessage, queryBuilderType, beforeQueryReturnType, beforeQueryReturnType)
-
-			w.Write(`
-	/**
-	* beforeWrite is called before the record is deleted from the database.
-	*/
-`)
-			w.Writef(
-				"beforeWrite?: (ctx: ContextAPI, inputs: %s, record: %s) => Promise<void> | void\n",
-				inputMessage, model.Name)
-
-			w.Write(`
-	/**
-	* afterWrite is called after the record has been deleted from the database.
-	*/
-	`)
-			w.Writef("afterWrite?: (ctx: ContextAPI, inputs: %s, data: %s) => Promise<void> | void\n", inputMessage, model.Name)
-		case action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_GET:
-			resolvedReturnType := "unknown"
-			beforeQueryReturnTypes := ""
-			queryBuilderType := fmt.Sprintf("%sQueryBuilder", action.ModelName)
-
-			switch action.Type {
-			case proto.ActionType_ACTION_TYPE_GET:
-				beforeQueryReturnTypes = fmt.Sprintf("%s | %s | null", queryBuilderType, action.ModelName)
-				resolvedReturnType = action.ModelName
-			case proto.ActionType_ACTION_TYPE_LIST:
-				beforeQueryReturnTypes = fmt.Sprintf("%s | Array<%s>", queryBuilderType, action.ModelName)
-				resolvedReturnType = fmt.Sprintf("%s[]", action.ModelName)
-			case proto.ActionType_ACTION_TYPE_DELETE:
-				// todo: we could support passing the whole deleted record
-				// but we'd need to read that first from the database.
-				beforeQueryReturnTypes = fmt.Sprintf("%s | string", queryBuilderType)
-				resolvedReturnType = "string" // the id of the deleted record
-			}
-
-			w.Writef(`
-	/**
-	* beforeQuery can be used to modify the existing query, or replace it entirely.
-	* If the function is marked with the async keyword, then the expected return type is a Promise<%s>.
-	* If the function is non-async, then the expected return type is an instance of QueryBuilder.
-	*/
-`, resolvedReturnType)
-			w.Writef("beforeQuery?: (ctx: ContextAPI, inputs: %s, query: %s) => Promise<%s> | %s\n", inputMessage, queryBuilderType, beforeQueryReturnTypes, beforeQueryReturnTypes)
-
-			dataVariableName := ""
-			switch action.Type {
-			case proto.ActionType_ACTION_TYPE_GET:
-				dataVariableName = "record"
-			case proto.ActionType_ACTION_TYPE_LIST:
-				dataVariableName = "records"
-			case proto.ActionType_ACTION_TYPE_DELETE:
-				dataVariableName = "deletedId"
-			}
-
-			w.Write(`
-	/**
-	* afterQuery is useful for modifying the response data purely for the purposes of presentation, performing custom permission checks, or performing other side effects. 
-	*/
-`)
-			// afterQuery returns a Promise<T> or T
-			w.Writef("afterQuery?: (ctx: ContextAPI, inputs: %s, %s: %s) => Promise<%s> | %s\n", inputMessage, dataVariableName, resolvedReturnType, resolvedReturnType, resolvedReturnType)
-
-		case action.Type == proto.ActionType_ACTION_TYPE_CREATE:
-			valuesType := fmt.Sprintf("%sCreateValues", action.ModelName)
-
-			w.Write(`
-	/**
-	* The beforeWrite hook allows you to modify the values that will be written to the database.
-	*/
-`)
-			w.Writef("beforeWrite?: (ctx: ContextAPI, inputs: %s, values: %s) => Promise<%s> | %s\n", inputMessage, valuesType, valuesType, valuesType)
-
-			w.Write(`
-	/**
-	* The afterWrite hook allows you to perform side effects after the record has been written to the database. Common use cases include creating other models, and performing custom permission checks.
-	*/
-	`)
-			w.Writef("afterWrite?: (ctx: ContextAPI, inputs: %s, data: %s) => Promise<%s | void> | %s | void\n", inputMessage, model.Name, model.Name, model.Name)
-		}
-
-		w.Dedent()
-		w.Writeln("}")
+		return
 	}
+
+	hooksType := fmt.Sprintf("%sHooks", casing.ToCamel(action.Name))
+
+	w.Writef("(hooks?: %s) : void\n", hooksType)
+	w.Writef("export type %s = ", hooksType)
+
+	modelName := action.ModelName
+	queryBuilder := modelName + "QueryBuilder"
+	inputs := action.InputMessageName
+
+	switch action.Type {
+	case proto.ActionType_ACTION_TYPE_GET:
+		w.Writef("GetFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputs)
+	case proto.ActionType_ACTION_TYPE_LIST:
+		w.Writef("ListFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputs)
+	case proto.ActionType_ACTION_TYPE_CREATE:
+		w.Writef("CreateFunctionHooks<%s, %s, %s, %sCreateValues>", modelName, queryBuilder, inputs, modelName)
+	case proto.ActionType_ACTION_TYPE_UPDATE:
+		w.Writef("UpdateFunctionHooks<%s, %s, %s, %sValues>", modelName, queryBuilder, inputs, casing.ToCamel(action.Name))
+	case proto.ActionType_ACTION_TYPE_DELETE:
+		w.Writef("DeleteFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputs)
+	}
+
+	w.Writeln(";")
 }
 
 func toCustomFunctionReturnType(model *proto.Model, op *proto.Action, isTestingPackage bool) string {
