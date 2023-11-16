@@ -3,6 +3,7 @@ package authapi_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,7 +31,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -97,7 +98,7 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -179,7 +180,7 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -415,7 +416,7 @@ func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	server.SetUser("id|285620", &oauth.UserClaims{
@@ -449,7 +450,7 @@ func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -532,7 +533,7 @@ func TestRefreshTokenGrantRotationDisabled_Valid(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -652,8 +653,12 @@ func handleRuntimeRequest[T any](schema *proto.Schema, req *http.Request) (T, *h
 	w := httptest.NewRecorder()
 
 	handler.ServeHTTP(w, req)
-
 	httpResponse := w.Result()
+
+	if httpResponse.StatusCode == http.StatusInternalServerError {
+		return response, nil, errors.New("internal server response from oidc server")
+	}
+
 	data, err := io.ReadAll(httpResponse.Body)
 	if err != nil {
 		return response, nil, err

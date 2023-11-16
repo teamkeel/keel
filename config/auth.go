@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -84,8 +86,8 @@ func (c *AuthConfig) RefreshTokenRotationEnabled() bool {
 
 // AddOidcProvider adds an OpenID Connect provider to the list of supported authentication providers
 func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId string) error {
-	if name == "" {
-		return errors.New("provider name cannot be empty")
+	if invalidName(name) {
+		return fmt.Errorf(ConfigAuthProviderInvalidName, name)
 	}
 	if invalidUrl(issuerUrl) {
 		return fmt.Errorf("invalid issuerUrl: %s", issuerUrl)
@@ -126,10 +128,11 @@ func (c *AuthConfig) GetOidcProvidersByIssuer(issuer string) ([]Provider, error)
 			continue
 		}
 
-		issuerUrl, err := p.GetIssuer()
-		if err != nil {
-			return nil, err
+		issuerUrl, hasIssuer := p.GetIssuer()
+		if !hasIssuer {
+			return nil, fmt.Errorf("issuer url has not been configured: %s", issuer)
 		}
+
 		if strings.TrimSuffix(issuerUrl, "/") == strings.TrimSuffix(issuer, "/") {
 			providers = append(providers, p)
 		}
@@ -139,19 +142,26 @@ func (c *AuthConfig) GetOidcProvidersByIssuer(issuer string) ([]Provider, error)
 }
 
 // GetIssuer retrieves the issuer URL for the provider
-func (c *Provider) GetIssuer() (string, error) {
+func (c *Provider) GetIssuer() (string, bool) {
 	switch c.Type {
 	case GoogleProvider:
-		return "https://accounts.google.com", nil
+		return "https://accounts.google.com", true
 	case FacebookProvider:
-		return "https://www.facebook.com", nil
+		return "https://www.facebook.com", true
 	case GitLabProvider:
-		return "https://gitlab.com", nil
+		return "https://gitlab.com", true
 	case OpenIdConnectProvider:
-		return c.IssuerUrl, nil
+		return c.IssuerUrl, true
 	default:
-		return "", fmt.Errorf("the provider type '%s' should not have an issuer url configured", c.Type)
+		return "", false
 	}
+}
+
+// GetClientSecret retrieves the client secret from the host's env vars
+func (c *Provider) GetClientSecret() (string, bool) {
+	envName := fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper(c.Name))
+	clientSecret := os.Getenv(envName)
+	return clientSecret, clientSecret != ""
 }
 
 func (c *AuthConfig) GetOAuthProviders() []Provider {
@@ -162,6 +172,16 @@ func (c *AuthConfig) GetOAuthProviders() []Provider {
 		}
 	}
 	return oidcProviders
+}
+
+// GetProvider retrieves the provider by its name (case insensitive)
+func (c *AuthConfig) GetProvider(name string) *Provider {
+	for _, p := range c.Providers {
+		if strings.EqualFold(p.Name, name) {
+			return &p
+		}
+	}
+	return nil
 }
 
 func (c *Provider) GetTokenUrl() (string, error) {
@@ -184,6 +204,18 @@ func (c *Provider) GetAuthorizationUrl() (string, error) {
 	default:
 		return "", fmt.Errorf("the provider type '%s' should not have a token url configured", c.Type)
 	}
+}
+
+// findAuthProviderInvalidName checks for invalid provider names
+func findAuthProviderInvalidName(providers []Provider) []Provider {
+	invalid := []Provider{}
+	for _, p := range providers {
+		if invalidName(p.Name) {
+			invalid = append(invalid, p)
+		}
+	}
+
+	return invalid
 }
 
 // findAuthProviderMissingName checks for missing provider names
@@ -274,6 +306,10 @@ func findAuthProviderMissingOrInvalidAuthorizationUrl(providers []Provider) []Pr
 		}
 	}
 	return invalid
+}
+
+func invalidName(name string) bool {
+	return !regexp.MustCompile(`^[A-Za-z0-9_-]*$`).MatchString(name)
 }
 
 func invalidUrl(u string) bool {

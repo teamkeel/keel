@@ -21,7 +21,7 @@ func TestRevokeToken_Success(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config

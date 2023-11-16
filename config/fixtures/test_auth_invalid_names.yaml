@@ -1,0 +1,20 @@
+auth:
+  providers:
+    - type: google
+      name: 12 34
+      clientId: foo_1
+
+    - type: google
+      name: Google Client
+      clientId: foo_2
+
+    - type: oidc
+      name: google/
+      issuerUrl: 'https://dev-skhlutl45lbqkvhv.us.auth0.com'
+      clientId: 'kasj28fnq09ak'
+
+    - type: oauth
+      name: google\client
+      clientId: hfjuw983h1hfsdf
+      authorizationUrl: https://github.com/auth
+      tokenUrl: https://github.com/token

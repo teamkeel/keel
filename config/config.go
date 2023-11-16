@@ -123,6 +123,7 @@ const (
 	ConfigIncorrectNamingErrorString                 = "%s must be written in upper snakecase"
 	ConfigReservedNameErrorString                    = "environment variable %s cannot start with %s as it is reserved"
 	ConfigAuthTokenExpiryMustBePositive              = "%s token lifespan cannot be negative or zero for field: %s"
+	ConfigAuthProviderInvalidName                    = "auth provider '%s' can only include alphanumeric characters, dashes and underscores"
 	ConfigAuthProviderMissingFieldAtIndexErrorString = "auth provider at index %v is missing field: %s"
 	ConfigAuthProviderMissingFieldErrorString        = "auth provider '%s' is missing field: %s"
 	ConfigAuthProviderInvalidTypeErrorString         = "auth provider '%s' has invalid type '%s' which must be one of: %s"
@@ -249,6 +250,14 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 		errors = append(errors, &ConfigError{
 			Type:    "invalid",
 			Message: fmt.Sprintf(ConfigAuthTokenExpiryMustBePositive, "refresh", "refreshTokenExpiry"),
+		})
+	}
+
+	invalidProviderNames := findAuthProviderInvalidName(config.Auth.Providers)
+	for _, p := range invalidProviderNames {
+		errors = append(errors, &ConfigError{
+			Type:    "invalid",
+			Message: fmt.Sprintf(ConfigAuthProviderInvalidName, p.Name),
 		})
 	}
 

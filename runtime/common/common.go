@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,6 +10,8 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/graphql/gqlerrors"
 	"github.com/teamkeel/keel/casing"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Response struct {
@@ -19,11 +22,29 @@ type Response struct {
 
 func NewJsonResponse(status int, body any, headers map[string][]string) Response {
 	b, _ := json.Marshal(body)
+
+	if headers == nil {
+		headers = map[string][]string{}
+	}
+
+	// Content-Type must only be a single value
+	// https://www.rfc-editor.org/rfc/rfc7230#section-3.2.2
+	headers["Content-Type"] = []string{"application/json"}
+
 	return Response{
 		Status:  status,
 		Body:    b,
 		Headers: headers,
 	}
+}
+
+func InternalServerErrorResponse(ctx context.Context, err error) Response {
+	span := trace.SpanFromContext(ctx)
+
+	span.RecordError(err, trace.WithStackTrace(true))
+	span.SetStatus(codes.Error, err.Error())
+
+	return NewJsonResponse(http.StatusInternalServerError, nil, nil)
 }
 
 type HandlerFunc func(r *http.Request) Response

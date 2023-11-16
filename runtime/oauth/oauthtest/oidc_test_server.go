@@ -11,11 +11,25 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"time"
 
+	"github.com/dchest/uniuri"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/teamkeel/keel/runtime/apis/authapi"
 	"github.com/teamkeel/keel/runtime/oauth"
 )
+
+type IodcTokenResponse struct {
+	authapi.TokenResponse
+	IdToken string `json:"id_token"`
+}
+
+type OAuthClient struct {
+	ClientId     string
+	ClientSecret string
+	RedirectUrl  string
+}
 
 type OidcServer struct {
 	Issuer          string
@@ -23,15 +37,16 @@ type OidcServer struct {
 	IdTokenLifespan time.Duration
 	server          *httptest.Server
 	PrivateKey      *rsa.PrivateKey
-	users           map[string]*oauth.UserClaims
+	Users           map[string]*oauth.UserClaims
+	clients         []*OAuthClient
 }
 
 func (o *OidcServer) SetUser(sub string, claims *oauth.UserClaims) {
-	o.users[sub] = claims
+	o.Users[sub] = claims
 }
 
 func (o *OidcServer) FetchIdToken(sub string, aud []string) (string, error) {
-	user, ok := o.users[sub]
+	user, ok := o.Users[sub]
 	if !ok {
 		return "", errors.New("user sub not found")
 	}
@@ -68,7 +83,11 @@ func (o *OidcServer) Close() {
 	o.server.Close()
 }
 
-func NewOIDCServer() (*OidcServer, error) {
+func (o *OidcServer) WithOAuthClient(client *OAuthClient) {
+	o.clients = append(o.clients, client)
+}
+
+func NewServer() (*OidcServer, error) {
 	oidcServer := &OidcServer{}
 
 	// Every server has its own private key
@@ -79,48 +98,155 @@ func NewOIDCServer() (*OidcServer, error) {
 
 	// Start test HTTP server
 	oidcServer.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		resBody := ""
-
-		switch r.URL.Path {
-		case "/.well-known/openid-configuration":
-			bytes, err := json.Marshal(oidcServer.Config)
-			if err != nil {
-				_, _ = w.Write([]byte("cannot marshell oidc config"))
-			}
-
-			resBody = string(bytes)
-		case "/jwks":
-			res, err := generateJWKSResponse(*oidcServer.PrivateKey)
-			if err != nil {
-				_, _ = w.Write([]byte(fmt.Sprintf("couldn't make jwks response: %s", err)))
-			}
-			resBody = res
-		}
-
 		res := &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       io.NopCloser(bytes.NewReader([]byte(resBody))),
 			Header:     make(http.Header),
 		}
 
-		if err != nil {
-			_, _ = w.Write([]byte(err.Error()))
+		switch r.URL.Path {
+		case "/.well-known/openid-configuration":
+			b, err := json.Marshal(oidcServer.Config)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte("cannot marshal oidc config"))
+			}
+
+			res.Body = io.NopCloser(bytes.NewReader(b))
+			res.Body.Close()
+		case "/jwks":
+			jwks, err := generateJWKSResponse(*oidcServer.PrivateKey)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte(fmt.Sprintf("couldn't make jwks response: %s", err)))
+			}
+
+			res.Body = io.NopCloser(bytes.NewReader([]byte(jwks)))
+			res.Body.Close()
+		case "/oauth2/authorize":
+			values := url.Values{}
+
+			// If an authorization request fails validation due to a missing,
+			// invalid, or mismatching redirection URI, the authorization server
+			// SHOULD inform the resource owner of the error and MUST NOT
+			// automatically redirect the user-agent to the invalid redirection URI.
+			// https://datatracker.ietf.org/doc/html/rfc6749#section-3.1.2.4
+			if !r.URL.Query().Has("redirect_uri") {
+				res.StatusCode = http.StatusNotFound
+				response := &authapi.ErrorResponse{
+					Error:            authapi.InvalidRequest,
+					ErrorDescription: "redirect uri missing",
+				}
+
+				b, _ := json.Marshal(response)
+				res.Body = io.NopCloser(bytes.NewReader(b))
+				res.Body.Close()
+				w.WriteHeader(http.StatusBadRequest)
+				break
+			}
+
+			redirectUrl, err := url.Parse(r.URL.Query().Get("redirect_uri"))
+			if err != nil {
+				res.StatusCode = http.StatusNotFound
+				response := &authapi.ErrorResponse{
+					Error:            authapi.InvalidRequest,
+					ErrorDescription: "redirect uri invalid",
+				}
+
+				b, _ := json.Marshal(response)
+				res.Body = io.NopCloser(bytes.NewReader(b))
+				res.Body.Close()
+				w.WriteHeader(http.StatusBadRequest)
+				break
+			}
+
+			if r.URL.Query().Get("response_type") != "code" {
+				values.Add("error", "unsupported_response_type")
+				values.Add("error_description", "only 'code' response_type supported")
+				redirectUrl.RawQuery = values.Encode()
+				http.Redirect(w, r, redirectUrl.String(), http.StatusTemporaryRedirect)
+				break
+			}
+
+			clientId := r.URL.Query().Get("client_id")
+			var client *OAuthClient
+			for _, v := range oidcServer.clients {
+				if v.ClientId == clientId {
+					client = v
+				}
+			}
+
+			// Client not found on the server
+			if client == nil {
+				values.Add("error", "invalid_request")
+				values.Add("error_description", "client id not registered on server")
+				redirectUrl.RawQuery = values.Encode()
+				http.Redirect(w, r, redirectUrl.String(), http.StatusTemporaryRedirect)
+				break
+			}
+
+			// The redirect URL does not match the server's registered client
+			// https://datatracker.ietf.org/doc/html/rfc6749#section-3.1.2.4
+			if client.RedirectUrl != redirectUrl.String() {
+				res.StatusCode = http.StatusNotFound
+				response := &authapi.ErrorResponse{
+					Error:            authapi.InvalidRequest,
+					ErrorDescription: "redirect uri does not match",
+				}
+
+				b, _ := json.Marshal(response)
+				res.Body = io.NopCloser(bytes.NewReader(b))
+				res.Body.Close()
+				w.WriteHeader(http.StatusBadRequest)
+				break
+			}
+
+			values.Add("iss", oidcServer.Issuer)
+			values.Add("code", uniuri.NewLen(10))
+			redirectUrl.RawQuery = values.Encode()
+
+			// If the end-user denies the login request or if the request fails for reasons other than an
+			// invalid client_id or redirect_uri, the OIDC server will pass any errors onto the redirect_uri.
+			http.Redirect(w, r, redirectUrl.String(), http.StatusTemporaryRedirect)
+
+		case "/oauth2/token":
+			idToken, _ := oidcServer.FetchIdToken("id|285620", []string{oidcServer.clients[0].ClientId})
+
+			tokenResponse := &IodcTokenResponse{
+				IdToken: idToken,
+				TokenResponse: authapi.TokenResponse{
+					AccessToken:  "opaque-access-token",
+					TokenType:    "bearer",
+					ExpiresIn:    int(360),
+					RefreshToken: "opaque-refresh-token",
+				},
+			}
+
+			b, _ := json.Marshal(tokenResponse)
+
+			w.Header().Add("Content-Type", "application/json")
+			res.Body = io.NopCloser(bytes.NewReader(b))
+			res.Body.Close()
+		default:
+			res.StatusCode = http.StatusNotFound
+			res.Body = io.NopCloser(bytes.NewReader([]byte("not found")))
+			res.Body.Close()
 		}
 
-		_, err = io.Copy(w, res.Body)
-		if err != nil {
-			_, _ = w.Write([]byte(err.Error()))
+		if res.Body != nil {
+			_, err = io.Copy(w, res.Body)
+			if err != nil {
+				_, _ = w.Write([]byte(err.Error()))
+			}
 		}
-
-		res.Body.Close()
 	}))
 
 	oidcServer.Issuer = oidcServer.server.URL
-	oidcServer.users = map[string]*oauth.UserClaims{}
+	oidcServer.Users = map[string]*oauth.UserClaims{}
 	oidcServer.IdTokenLifespan = 5 * time.Minute
 	oidcServer.Config = map[string]any{
 		"issuer":                                oidcServer.Issuer,
 		"authorization_endpoint":                fmt.Sprintf("%s/oauth2/authorize", oidcServer.Issuer),
+		"token_endpoint":                        fmt.Sprintf("%s/oauth2/token", oidcServer.Issuer),
 		"jwks_uri":                              fmt.Sprintf("%s/jwks", oidcServer.Issuer),
 		"userinfo_endpoint":                     fmt.Sprintf("%s/userinfo", oidcServer.Issuer),
 		"revocation_endpoint":                   fmt.Sprintf("%s/oauth2/revoke", oidcServer.Issuer),
