@@ -16,7 +16,7 @@ func ActionFunc(schema *proto.Schema, action *proto.Action) func(p graphql.Resol
 		scope := actions.NewScope(p.Context, action, schema)
 		input := p.Args["input"]
 
-		res, headers, err := actions.Execute(scope, input)
+		res, meta, err := actions.Execute(scope, input)
 		if err != nil {
 			var runtimeErr common.RuntimeError
 			if !errors.As(err, &runtimeErr) {
@@ -31,8 +31,11 @@ func ActionFunc(schema *proto.Schema, action *proto.Action) func(p graphql.Resol
 
 		rootValue := p.Info.RootValue.(map[string]interface{})
 		headersValue := rootValue["headers"].(map[string][]string)
-		for k, v := range headers {
-			headersValue[k] = v
+
+		if meta != nil {
+			for k, v := range meta.Headers {
+				headersValue[k] = v
+			}
 		}
 
 		if action.Type == proto.ActionType_ACTION_TYPE_LIST {

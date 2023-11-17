@@ -23,7 +23,13 @@ test("when the custom function returns expected value", async () => {
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createContextAPI: () => {},
+    createContextAPI: () => {
+      return {
+        response: {
+          headers: new Headers(),
+        },
+      };
+    },
   };
 
   const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
@@ -52,7 +58,13 @@ test("when the custom function doesnt return a value", async () => {
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createContextAPI: () => {},
+    createContextAPI: () => {
+      return {
+        response: {
+          headers: new Headers(),
+        },
+      };
+    },
   };
 
   const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
@@ -75,7 +87,13 @@ test("when there is no matching function for the path", async () => {
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createContextAPI: () => {},
+    createContextAPI: () => {
+      return {
+        response: {
+          headers: new Headers(),
+        },
+      };
+    },
   };
 
   const rpcReq = createJSONRPCRequest("123", "unknown", { title: "a post" });
@@ -100,7 +118,13 @@ test("when there is an unexpected error in the custom function", async () => {
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createContextAPI: () => {},
+    createContextAPI: () => {
+      return {
+        response: {
+          headers: new Headers(),
+        },
+      };
+    },
   };
 
   const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
@@ -128,7 +152,13 @@ test("when a role based permission has already been granted by the main runtime"
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
     createModelAPI: () => {},
-    createContextAPI: () => {},
+    createContextAPI: () => {
+      return {
+        response: {
+          headers: new Headers(),
+        },
+      };
+    },
   };
 
   let rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
@@ -159,7 +189,13 @@ test("when there is an unexpected object thrown in the custom function", async (
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createContextAPI: () => {},
+    createContextAPI: () => {
+      return {
+        response: {
+          headers: new Headers(),
+        },
+      };
+    },
   };
 
   const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
@@ -244,7 +280,13 @@ describe("ModelAPI error handling", () => {
           return deleted;
         },
       },
-      createContextAPI: () => ({}),
+      createContextAPI: () => {
+        return {
+          response: {
+            headers: new Headers(),
+          },
+        };
+      },
     };
   });
 

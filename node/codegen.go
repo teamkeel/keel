@@ -609,7 +609,7 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("function createContextAPI({ responseHeaders, meta }) {")
 	w.Indent()
-	w.Writeln("const headers = new runtime.RequestHeaders(meta.headers);")
+	w.Writeln("const headers = new Headers(meta.headers);")
 	w.Writeln("const response = { headers: responseHeaders }")
 	w.Writeln("const now = () => { return new Date(); };")
 	w.Writeln("const { identity } = meta;")

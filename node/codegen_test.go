@@ -366,7 +366,7 @@ job BatchPosts {
 func TestWriteAPIFactory(t *testing.T) {
 	expected := `
 function createContextAPI({ responseHeaders, meta }) {
-	const headers = new runtime.RequestHeaders(meta.headers);
+	const headers = new Headers(meta.headers);
 	const response = { headers: responseHeaders }
 	const now = () => { return new Date(); };
 	const { identity } = meta;
