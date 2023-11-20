@@ -410,7 +410,8 @@ function createModelAPI() {
 function createPermissionApi() {
 	return new runtime.Permissions();
 };
-module.exports.models = createModelAPI();
+const models = createModelAPI();
+module.exports.models = models;
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;
 module.exports.createJobContextAPI = createJobContextAPI;
