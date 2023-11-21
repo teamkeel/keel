@@ -17,13 +17,28 @@ type Response struct {
 	Headers map[string][]string
 }
 
-func NewJsonResponse(status int, body any, headers map[string][]string) Response {
+type ResponseMetadata struct {
+	Headers http.Header
+	Status  int
+}
+
+func NewJsonResponse(status int, body any, meta *ResponseMetadata) Response {
 	b, _ := json.Marshal(body)
-	return Response{
-		Status:  status,
-		Body:    b,
-		Headers: headers,
+
+	r := Response{
+		Status: status,
+		Body:   b,
 	}
+
+	if meta != nil {
+		r.Headers = meta.Headers
+
+		if meta.Status != 0 {
+			r.Status = meta.Status
+		}
+	}
+
+	return r
 }
 
 type HandlerFunc func(r *http.Request) Response

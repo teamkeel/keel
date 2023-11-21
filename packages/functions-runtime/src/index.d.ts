@@ -59,6 +59,7 @@ export type ContextAPI = {
 
 export type Response = {
   headers: Headers;
+  status?: number;
 };
 
 export type PageInfo = {
@@ -69,11 +70,8 @@ export type PageInfo = {
   count: number;
 };
 
-// Request headers query API
-export type RequestHeaders = {
-  get(name: string): string;
-  has(name: string): boolean;
-};
+// Request headers cannot be mutated, so remove any methods that mutate
+export type RequestHeaders = Omit<Headers, "append" | "delete" | "set">;
 
 export declare class Permissions {
   constructor();

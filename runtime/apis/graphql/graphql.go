@@ -148,7 +148,9 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.HandlerFunc {
 			span.SetStatus(codes.Error, strings.Join(messages, ", "))
 		}
 
-		return common.NewJsonResponse(http.StatusOK, result, headers)
+		return common.NewJsonResponse(http.StatusOK, result, &common.ResponseMetadata{
+			Headers: headers,
+		})
 	}
 }
 
