@@ -80,6 +80,7 @@ func TestSsoLogin_Success(t *testing.T) {
 	require.NotEmpty(t, tokenResponse.RefreshToken)
 	require.Equal(t, "bearer", tokenResponse.TokenType)
 	require.NotEmpty(t, tokenResponse.ExpiresIn)
+	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 
 	sub, iss, err := oauth.ValidateAccessToken(ctx, tokenResponse.AccessToken)
 	require.NoError(t, err)

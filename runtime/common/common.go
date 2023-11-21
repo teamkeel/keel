@@ -28,18 +28,10 @@ type ResponseMetadata struct {
 func NewJsonResponse(status int, body any, meta *ResponseMetadata) Response {
 	b, _ := json.Marshal(body)
 
-	if headers == nil {
-		headers = map[string][]string{}
-	}
-
-	// Content-Type must only be a single value
-	// https://www.rfc-editor.org/rfc/rfc7230#section-3.2.2
-	headers["Content-Type"] = []string{"application/json"}
-
-	return Response{
+	r := Response{
 		Status:  status,
 		Body:    b,
-		Headers: headers,
+		Headers: map[string][]string{},
 	}
 
 	if meta != nil {
@@ -49,6 +41,10 @@ func NewJsonResponse(status int, body any, meta *ResponseMetadata) Response {
 			r.Status = meta.Status
 		}
 	}
+
+	// Content-Type must only be a single value
+	// https://www.rfc-editor.org/rfc/rfc7230#section-3.2.2
+	r.Headers["Content-Type"] = []string{"application/json"}
 
 	return r
 }
