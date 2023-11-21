@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
@@ -82,7 +83,7 @@ func NewJobScope(
 	}
 }
 
-func Execute(scope *Scope, inputs any) (result any, headers map[string][]string, err error) {
+func Execute(scope *Scope, inputs any) (result any, meta *common.ResponseMetadata, err error) {
 	ctx, span := tracer.Start(scope.Context, scope.Action.Name)
 	defer span.End()
 
@@ -99,7 +100,7 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 
 	switch scope.Action.Implementation {
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM:
-		result, headers, err = executeCustomFunction(scope, inputs)
+		result, meta, err = executeCustomFunction(scope, inputs)
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME:
 		if !inputWasAMap {
 			if inputs == nil {
@@ -108,7 +109,7 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
 			}
 		}
-		result, headers, err = executeRuntimeAction(scope, inputsAsMap)
+		result, meta, err = executeRuntimeAction(scope, inputsAsMap)
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_AUTO:
 		if !inputWasAMap {
 			if inputs == nil {
@@ -117,7 +118,7 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
 			}
 		}
-		result, headers, err = executeAutoAction(scope, inputsAsMap)
+		result, meta, err = executeAutoAction(scope, inputsAsMap)
 	default:
 		return nil, nil, fmt.Errorf("unhandled unknown action %s of type %s", scope.Action.Name, scope.Action.Implementation)
 	}
@@ -134,7 +135,7 @@ func Execute(scope *Scope, inputs any) (result any, headers map[string][]string,
 	return
 }
 
-func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, error) {
+func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetadata, error) {
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
 	canAuthoriseEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
@@ -151,7 +152,7 @@ func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, 
 		}
 	}
 
-	resp, headers, err := functions.CallFunction(
+	resp, meta, err := functions.CallFunction(
 		scope.Context,
 		scope.Action.Name,
 		inputs,
@@ -160,6 +161,11 @@ func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, 
 
 	if err != nil {
 		return nil, nil, err
+	}
+
+	m := &common.ResponseMetadata{
+		Headers: http.Header(meta.Headers),
+		Status:  meta.Status,
 	}
 
 	// For now a custom list function just returns a list of records, but the API's
@@ -181,13 +187,13 @@ func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, 
 				"startCursor": "",
 				"endCursor":   "",
 			},
-		}, headers, nil
+		}, m, nil
 	}
 
-	return resp, headers, err
+	return resp, m, err
 }
 
-func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
+func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, *common.ResponseMetadata, error) {
 	switch scope.Action.Name {
 	case authenticateActionName:
 		result, err := Authenticate(scope, inputs)
@@ -203,7 +209,7 @@ func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, map[string]
 	}
 }
 
-func executeAutoAction(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
+func executeAutoAction(scope *Scope, inputs map[string]any) (any, *common.ResponseMetadata, error) {
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
 	// Attempt to resolve permissions early; i.e. before row-based database querying.

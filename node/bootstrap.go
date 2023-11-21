@@ -158,7 +158,7 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 		options.logger("Creating tsconfig.json")
 		tsConfig := map[string]any{
 			"compilerOptions": map[string]any{
-				"lib":               []string{"ES2016"},
+				"lib":               []string{"ES2016", "DOM"},
 				"target":            "ES2016",
 				"esModuleInterop":   true,
 				"moduleResolution":  "node",

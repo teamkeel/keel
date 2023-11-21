@@ -100,12 +100,12 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 
 		scope := actions.NewScope(ctx, action, p)
 
-		response, headers, err := actions.Execute(scope, inputs)
+		response, meta, err := actions.Execute(scope, inputs)
 		if err != nil {
 			return NewErrorResponse(ctx, err, nil)
 		}
 
-		return common.NewJsonResponse(http.StatusOK, response, headers)
+		return common.NewJsonResponse(http.StatusOK, response, meta)
 	}
 }
 

@@ -70,6 +70,7 @@ type FunctionsRuntimeResponse struct {
 
 type FunctionsRuntimeMeta struct {
 	Headers map[string][]string `json:"headers"`
+	Status  int                 `json:"status"`
 }
 
 // FunctionsRuntimeError follows the error object specification
@@ -91,7 +92,7 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 }
 
 // CallFunction will invoke the custom function on the runtime node server.
-func CallFunction(ctx context.Context, actionName string, body any, permissionState *common.PermissionState) (any, map[string][]string, error) {
+func CallFunction(ctx context.Context, actionName string, body any, permissionState *common.PermissionState) (any, *FunctionsRuntimeMeta, error) {
 	span := trace.SpanFromContext(ctx)
 
 	transport, ok := ctx.Value(contextKey).(Transport)
@@ -156,7 +157,7 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 		return nil, nil, toRuntimeError(resp.Error)
 	}
 
-	return resp.Result, resp.Meta.Headers, nil
+	return resp.Result, resp.Meta, nil
 }
 
 // CallJob will invoke the job function on the runtime node server.

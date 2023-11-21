@@ -366,7 +366,7 @@ job BatchPosts {
 func TestWriteAPIFactory(t *testing.T) {
 	expected := `
 function createContextAPI({ responseHeaders, meta }) {
-	const headers = new runtime.RequestHeaders(meta.headers);
+	const headers = new Headers(meta.headers);
 	const response = { headers: responseHeaders }
 	const now = () => { return new Date(); };
 	const { identity } = meta;
@@ -410,7 +410,8 @@ function createModelAPI() {
 function createPermissionApi() {
 	return new runtime.Permissions();
 };
-module.exports.models = createModelAPI();
+const models = createModelAPI();
+module.exports.models = models;
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;
 module.exports.createJobContextAPI = createJobContextAPI;

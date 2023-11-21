@@ -76,12 +76,12 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 
 		scope := actions.NewScope(ctx, action, p)
 
-		response, headers, err := actions.Execute(scope, inputs)
+		response, meta, err := actions.Execute(scope, inputs)
 		if err != nil {
 			return NewErrorResponse(ctx, &req.ID, err)
 		}
 
-		return NewSuccessResponse(ctx, req.ID, response, headers)
+		return NewSuccessResponse(ctx, req.ID, response, meta)
 	}
 }
 
@@ -114,12 +114,12 @@ type JsonRpcError struct {
 	Detail  any    `json:"detail,omitempty"`
 }
 
-func NewSuccessResponse(ctx context.Context, requestId string, response any, headers map[string][]string) common.Response {
+func NewSuccessResponse(ctx context.Context, requestId string, response any, meta *common.ResponseMetadata) common.Response {
 	return common.NewJsonResponse(http.StatusOK, JsonRpcSuccessResponse{
 		JsonRpc: "2.0",
 		ID:      requestId,
 		Result:  response,
-	}, headers)
+	}, meta)
 }
 
 func NewErrorResponse(ctx context.Context, requestId *string, err error) common.Response {
