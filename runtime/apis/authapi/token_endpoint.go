@@ -140,7 +140,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the authorization code in the code field cannot be an empty string")
 			}
 
-			// Consume the auth token
+			// Consume the auth code
 			var isValid bool
 			isValid, identityId, err = oauth.ConsumeAuthCode(ctx, authCode)
 			if err != nil {

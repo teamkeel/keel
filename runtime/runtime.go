@@ -83,13 +83,8 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			attribute.Int("response.status", response.Status),
 		)
 
-		if response.Status != 0 {
-			w.WriteHeader(response.Status)
-		}
-
-		if response.Body != nil {
-			_, _ = w.Write(response.Body)
-		}
+		w.WriteHeader(response.Status)
+		_, _ = w.Write(response.Body)
 	}
 
 	return http.HandlerFunc(httpHandler)

@@ -49,28 +49,6 @@ func NewJsonResponse(status int, body any, meta *ResponseMetadata) Response {
 	return r
 }
 
-// func NewRedirectResponse(w http.ResponseWriter, r *http.Request, url string) Response {
-
-// 	r := Response{
-// 		// Status code 303 will ensure the redirect uses HTTP GET
-// 		Status:  http.StatusSeeOther,
-// 	}
-
-// 	if meta != nil {
-// 		r.Headers = meta.Headers
-
-// 		if meta.Status != 0 {
-// 			r.Status = meta.Status
-// 		}
-// 	}
-
-// 	// Content-Type must only be a single value
-// 	// https://www.rfc-editor.org/rfc/rfc7230#section-3.2.2
-// 	r.Headers["Content-Type"] = []string{"application/json"}
-
-// 	return r
-// }
-
 func InternalServerErrorResponse(ctx context.Context, err error) Response {
 	span := trace.SpanFromContext(ctx)
 

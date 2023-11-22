@@ -184,7 +184,7 @@ func CallbackHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reque
 		}
 
 		if config.RedirectUrl == "" {
-			err := fmt.Errorf("callbackUrl not set")
+			err := fmt.Errorf("redirectUrl not set")
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
@@ -202,9 +202,9 @@ func CallbackHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reque
 		values.Add("code", authCode)
 		redirectUrl.RawQuery = values.Encode()
 
-		http.Redirect(w, r, redirectUrl.String(), http.StatusTemporaryRedirect)
+		http.Redirect(w, r, redirectUrl.String(), http.StatusFound)
 
-		return common.NewJsonResponse(http.StatusOK, nil, nil)
+		return common.NewJsonResponse(http.StatusFound, "callback handler redirect", nil)
 	}
 
 }
