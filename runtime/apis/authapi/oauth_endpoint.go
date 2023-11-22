@@ -78,21 +78,6 @@ func LoginHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request)
 	}
 }
 
-func authErrResponse(ctx context.Context, status int, errorType string, errorDescription string) common.Response {
-	span := trace.SpanFromContext(ctx)
-	span.SetStatus(codes.Error, errorType)
-
-	span.SetAttributes(
-		attribute.String("auth.error", errorType),
-		attribute.String("auth.error_description", errorDescription),
-	)
-
-	return common.NewJsonResponse(status, &ErrorResponse{
-		Error:            errorType,
-		ErrorDescription: errorDescription,
-	}, nil)
-}
-
 // CallbackHandler is called by the provider after the authentication process is complete
 func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
@@ -135,6 +120,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			ClientID:     provider.ClientId,
 			ClientSecret: secret,
 			Endpoint:     oidcProv.Endpoint(),
+			RedirectURL:  "http://" + r.Host + "/auth/callback/" + strings.ToLower(provider.Name),
 		}
 
 		code := r.FormValue("code")
@@ -144,6 +130,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 
 		token, err := oauthConfig.Exchange(ctx, code)
 		if err != nil {
+			// todo parse oauth error message from providers token endpoint
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
@@ -232,4 +219,19 @@ func providerFromPath(ctx context.Context, url *url.URL) (*config.Provider, erro
 	}
 
 	return provider, nil
+}
+
+func authErrResponse(ctx context.Context, status int, errorType string, errorDescription string) common.Response {
+	span := trace.SpanFromContext(ctx)
+	span.SetStatus(codes.Error, errorType)
+
+	span.SetAttributes(
+		attribute.String("auth.error", errorType),
+		attribute.String("auth.error_description", errorDescription),
+	)
+
+	return common.NewJsonResponse(status, &ErrorResponse{
+		Error:            errorType,
+		ErrorDescription: errorDescription,
+	}, nil)
 }
