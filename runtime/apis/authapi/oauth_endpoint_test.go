@@ -27,8 +27,10 @@ func TestSsoLogin_Success(t *testing.T) {
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
+	redirectUrl := "https://myapp.com/signedup"
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
 				Type:      config.OpenIdConnectProvider,
@@ -68,31 +70,14 @@ func TestSsoLogin_Success(t *testing.T) {
 	httpResponse, err := runtime.Client().Do(request)
 	require.NoError(t, err)
 
-	data, err := io.ReadAll(httpResponse.Body)
-	require.NoError(t, err)
-
-	var tokenResponse authapi.TokenResponse
-	err = json.Unmarshal(data, &tokenResponse)
-	require.NoError(t, err)
-
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
-	require.NotEmpty(t, tokenResponse.AccessToken)
-	require.NotEmpty(t, tokenResponse.RefreshToken)
-	require.Equal(t, "bearer", tokenResponse.TokenType)
-	require.NotEmpty(t, tokenResponse.ExpiresIn)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
-
-	sub, iss, err := oauth.ValidateAccessToken(ctx, tokenResponse.AccessToken)
-	require.NoError(t, err)
-	require.Equal(t, "https://keel.so", iss)
 
 	var identities []map[string]any
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
 	require.Len(t, identities, 1)
 
-	id, ok := identities[0]["id"].(string)
+	_, ok := identities[0]["id"].(string)
 	require.True(t, ok)
-	require.Equal(t, id, sub)
 
 	email, ok := identities[0]["email"].(string)
 	require.True(t, ok)
