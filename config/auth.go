@@ -39,7 +39,7 @@ var (
 
 type AuthConfig struct {
 	Tokens      TokensConfig `yaml:"tokens"`
-	RedirectUrl string       `yaml:"redirectUrl"`
+	RedirectUrl *string      `yaml:"redirectUrl,omitempty"`
 	Providers   []Provider   `yaml:"providers"`
 }
 

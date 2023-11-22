@@ -132,7 +132,7 @@ func TestAuthTokens(t *testing.T) {
 func TestAuthInvalidRedirectUrl(t *testing.T) {
 	_, err := Load("fixtures/test_auth_invalid_redirect_url.yaml")
 
-	assert.Contains(t, err.Error(), "auth redirectUrl 'not-a-url' is not a valid url\n")
+	assert.Contains(t, err.Error(), "auth redirectUrl 'not a url' is not a valid url\n")
 }
 
 func TestAuthDefaults(t *testing.T) {

@@ -183,7 +183,7 @@ func CallbackHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reque
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		if config.RedirectUrl == "" {
+		if config.RedirectUrl == nil {
 			err := fmt.Errorf("redirectUrl not set")
 			return common.InternalServerErrorResponse(ctx, err)
 		}
@@ -193,7 +193,7 @@ func CallbackHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reque
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		redirectUrl, err := url.Parse(config.RedirectUrl)
+		redirectUrl, err := url.Parse(*config.RedirectUrl)
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
 		}

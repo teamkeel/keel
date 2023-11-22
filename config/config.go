@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -336,12 +337,14 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 		})
 	}
 
-	redirectUrlInvalid := invalidUrl(config.Auth.RedirectUrl)
-	if redirectUrlInvalid {
-		errors = append(errors, &ConfigError{
-			Type:    "invalid",
-			Message: fmt.Sprintf(ConfigAuthInvalidRedirectUrlErrorString, config.Auth.RedirectUrl),
-		})
+	if config.Auth.RedirectUrl != nil {
+		_, err := url.ParseRequestURI(*config.Auth.RedirectUrl)
+		if err != nil {
+			errors = append(errors, &ConfigError{
+				Type:    "invalid",
+				Message: fmt.Sprintf(ConfigAuthInvalidRedirectUrlErrorString, *config.Auth.RedirectUrl),
+			})
+		}
 	}
 
 	if len(errors) == 0 {
