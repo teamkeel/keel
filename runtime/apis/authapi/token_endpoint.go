@@ -24,6 +24,7 @@ const (
 	ArgSubjectToken      = "subject_token"
 	ArgSubjectTokenType  = "subject_token_type"
 	ArgRequestedTokeType = "requested_token_type"
+	ArgCode              = "code"
 	ArgRefreshToken      = "refresh_token"
 	ArgToken             = "token"
 )
@@ -127,6 +128,33 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 			if !isValid {
 				return authErrResponse(ctx, http.StatusUnauthorized, InvalidClient, "possible causes may be that the refresh token has been revoked or has expired")
+			}
+
+		case GrantTypeAuthCode:
+			if !r.Form.Has(ArgCode) {
+				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the authorization code must be provided in the code field")
+			}
+
+			authCode := r.FormValue(ArgCode)
+			if authCode == "" {
+				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the authorization code in the code field cannot be an empty string")
+			}
+
+			// Consume the auth token
+			var isValid bool
+			isValid, identityId, err = oauth.ConsumeAuthCode(ctx, authCode)
+			if err != nil {
+				return common.InternalServerErrorResponse(ctx, err)
+			}
+
+			if !isValid {
+				return authErrResponse(ctx, http.StatusUnauthorized, InvalidClient, "possible causes may be that the auth code has been consumed or has expired")
+			}
+
+			// Generate a refresh token.
+			refreshToken, err = oauth.NewRefreshToken(ctx, identityId)
+			if err != nil {
+				return common.InternalServerErrorResponse(ctx, err)
 			}
 
 		case GrantTypeTokenExchange:

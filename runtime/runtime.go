@@ -83,8 +83,13 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			attribute.Int("response.status", response.Status),
 		)
 
-		w.WriteHeader(response.Status)
-		_, _ = w.Write(response.Body)
+		if response.Status != 0 {
+			w.WriteHeader(response.Status)
+		}
+
+		if response.Body != nil {
+			_, _ = w.Write(response.Body)
+		}
 	}
 
 	return http.HandlerFunc(httpHandler)
@@ -109,7 +114,7 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 		case strings.HasPrefix(r.URL.Path, "/auth/login"):
 			return handleLogin(w, r)
 		case strings.HasPrefix(r.URL.Path, "/auth/callback"):
-			return handleCallback(r)
+			return handleCallback(w, r)
 		default:
 			return common.Response{
 				Status: http.StatusNotFound,

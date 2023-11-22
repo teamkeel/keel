@@ -4,6 +4,8 @@ auth:
     refreshTokenExpiry: 604800
     refreshTokenRotationEnabled: false
 
+  callbackUrl: http://localhost:8000/signedin
+
   providers:
     # Built-in Google provider
     - type: google

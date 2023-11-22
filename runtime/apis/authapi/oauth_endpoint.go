@@ -74,13 +74,13 @@ func LoginHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request)
 		url := oauthConfig.AuthCodeURL(uniuri.New())
 		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 
-		return common.NewJsonResponse(http.StatusInternalServerError, "oauth redirect failed", nil)
+		return common.NewJsonResponse(http.StatusTemporaryRedirect, "login handler redirect", nil)
 	}
 }
 
 // CallbackHandler is called by the provider after the authentication process is complete
-func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
-	return func(r *http.Request) common.Response {
+func CallbackHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request) common.Response {
+	return func(w http.ResponseWriter, r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "Callback Endpoint")
 		defer span.End()
 
@@ -178,27 +178,35 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 		}
 
-		// Generate a new access token for this identity.
-		accessTokenRaw, expiresIn, err := oauth.GenerateAccessToken(ctx, identity.Id)
+		config, err := runtimectx.GetOAuthConfig(ctx)
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		// Generate a refresh token.
-		refreshToken, err := oauth.NewRefreshToken(ctx, identity.Id)
+		if config.RedirectUrl == "" {
+			err := fmt.Errorf("callbackUrl not set")
+			return common.InternalServerErrorResponse(ctx, err)
+		}
+
+		authCode, err := oauth.NewAuthCode(ctx, identity.Id)
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		response := &TokenResponse{
-			AccessToken:  accessTokenRaw,
-			TokenType:    TokenType,
-			ExpiresIn:    int(expiresIn.Seconds()),
-			RefreshToken: refreshToken,
+		redirectUrl, err := url.Parse(config.RedirectUrl)
+		if err != nil {
+			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		return common.NewJsonResponse(http.StatusOK, response, nil)
+		values := url.Values{}
+		values.Add("code", authCode)
+		redirectUrl.RawQuery = values.Encode()
+
+		http.Redirect(w, r, redirectUrl.String(), http.StatusTemporaryRedirect)
+
+		return common.NewJsonResponse(http.StatusOK, nil, nil)
 	}
+
 }
 
 func providerFromPath(ctx context.Context, url *url.URL) (*config.Provider, error) {
