@@ -400,6 +400,8 @@ type RuntimeRequestMsg struct {
 
 func StartRuntimeServer(port string, ch chan tea.Msg) tea.Cmd {
 	return func() tea.Msg {
+		os.Setenv("KEEL_API_URL", fmt.Sprintf("http://localhost:%s", port))
+
 		runtimeServer := http.Server{
 			Addr: fmt.Sprintf(":%s", port),
 			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

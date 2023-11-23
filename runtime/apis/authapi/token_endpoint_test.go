@@ -299,7 +299,7 @@ func TestTokenEndpoint_MissingGrantType(t *testing.T) {
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
-	require.Equal(t, "the grant-type field is required with either 'refresh_token' or 'token_exchange'", errorResponse.ErrorDescription)
+	require.Equal(t, "the grant-type field is required with either 'refresh_token', 'token_exchange' or 'authorization_code'", errorResponse.ErrorDescription)
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
@@ -320,7 +320,7 @@ func TestTokenEndpoint_WrongGrantType(t *testing.T) {
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "unsupported_grant_type", errorResponse.Error)
-	require.Equal(t, "the only supported grants are 'refresh_token' and 'token_exchange'", errorResponse.ErrorDescription)
+	require.Equal(t, "the only supported grants are 'refresh_token', 'token_exchange' or 'authorization_code'", errorResponse.ErrorDescription)
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
@@ -677,7 +677,7 @@ func TestAuthorizationCodeGrant_Valid(t *testing.T) {
 	require.Equal(t, accessToken1Sub, "identity_id")
 }
 
-func TestAuthorizationCodeGrant_NoExistsCode(t *testing.T) {
+func TestAuthorizationCodeGrant_InvalidCode(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -690,7 +690,7 @@ func TestAuthorizationCodeGrant_NoExistsCode(t *testing.T) {
 
 	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
 	require.Equal(t, "invalid_client", errorResponse.Error)
-	require.Equal(t, "the authorization code must be provided in the code field", errorResponse.ErrorDescription)
+	require.Equal(t, "possible causes may be that the auth code has been consumed or has expired", errorResponse.ErrorDescription)
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 

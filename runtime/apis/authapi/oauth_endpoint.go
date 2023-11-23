@@ -52,9 +52,19 @@ func LoginHandler(schema *proto.Schema) common.HandlerFunc {
 			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, "login url malformed or provider not found", err)
 		}
 
-		secret, hasSecret := provider.GetClientSecret()
+		config, err := runtimectx.GetOAuthConfig(ctx)
+		if err != nil {
+			return common.InternalServerErrorResponse(ctx, err)
+		}
+
+		if config.RedirectUrl == nil {
+			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, "redirectUrl must be specified in keelconfig.yaml", err)
+		}
+
+		// If the secret is not yet, then package this up and send it as an error with the redirectUrl
+		_, hasSecret := provider.GetClientSecret()
 		if !hasSecret {
-			err = fmt.Errorf("client secret not configured for provider: %s", provider.Name)
+			err := fmt.Errorf("client secret not configured for provider: %s", provider.Name)
 			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, err.Error(), err)
 		}
 
@@ -69,12 +79,18 @@ func LoginHandler(schema *proto.Schema) common.HandlerFunc {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
+		callbackUrl, err := provider.GetCallbackUrl()
+		if err != nil {
+			return common.InternalServerErrorResponse(ctx, err)
+		}
+
+		// RedirectURL is needed for provider to redirect back to Keel
+		// Secret is _not_ required when getting auth code
 		oauthConfig := &oauth2.Config{
-			ClientID:     provider.ClientId,
-			ClientSecret: secret,
-			Endpoint:     oidcProv.Endpoint(),
-			Scopes:       []string{"openid", "email", "profile"},
-			RedirectURL:  "http://" + r.Host + "/auth/callback/" + strings.ToLower(provider.Name),
+			ClientID:    provider.ClientId,
+			Endpoint:    oidcProv.Endpoint(),
+			Scopes:      []string{"openid", "email", "profile"},
+			RedirectURL: callbackUrl.String(),
 		}
 
 		u := oauthConfig.AuthCodeURL(uniuri.New())
@@ -133,18 +149,16 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		// If the secret is not yet, then package this up and send it as an error with the redirectUrl
 		secret, hasSecret := provider.GetClientSecret()
 		if !hasSecret {
-			err := fmt.Errorf("client secret not configured for provider: %s", provider.Name)
-			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, err.Error(), err)
+			return common.InternalServerErrorResponse(ctx, err)
 		}
 
+		// Secret is required for token exchange
 		oauthConfig := &oauth2.Config{
 			ClientID:     provider.ClientId,
 			ClientSecret: secret,
 			Endpoint:     oidcProv.Endpoint(),
-			RedirectURL:  "http://" + r.Host + "/auth/callback/" + strings.ToLower(provider.Name),
 		}
 
 		code := r.FormValue("code")

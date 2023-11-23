@@ -82,7 +82,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 		grantType := r.FormValue(ArgGrantType)
 		if grantType == "" {
-			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the grant-type field is required with either 'refresh_token' or 'token_exchange'", nil)
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the grant-type field is required with either 'refresh_token', 'token_exchange' or 'authorization_code'", nil)
 		}
 
 		span.SetAttributes(
@@ -212,7 +212,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			identityId = identity.Id
 
 		default:
-			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrUnsupportedGrantType, "the only supported grants are 'refresh_token' and 'token_exchange'", nil)
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrUnsupportedGrantType, "the only supported grants are 'refresh_token', 'token_exchange' or 'authorization_code'", nil)
 		}
 
 		// Generate a new access token for this identity.

@@ -189,7 +189,7 @@ func NewServer() (*OidcServer, error) {
 			if client.RedirectUrl != redirectUrl.String() {
 				res.StatusCode = http.StatusNotFound
 				response := &authapi.ErrorResponse{
-					Error:            authapi.TokenErrInvalidClient,
+					Error:            authapi.TokenErrInvalidRequest,
 					ErrorDescription: "redirect uri does not match",
 				}
 
