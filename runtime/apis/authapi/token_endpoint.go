@@ -12,7 +12,6 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime")
@@ -41,18 +40,11 @@ type TokenResponse struct {
 	RefreshToken string `json:"refresh_token,omitempty"`
 }
 
-// https://openid.net/specs/openid-connect-standard-1_0-21_orig.html#AccessTokenErrorResponse
-// https://datatracker.ietf.org/doc/html/rfc7009#section-2.2
-type ErrorResponse struct {
-	Error            string `json:"error,omitempty"`
-	ErrorDescription string `json:"error_description,omitempty"`
-}
-
 // https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
 const (
-	UnsupportedGrantType = "unsupported_grant_type"
-	InvalidClient        = "invalid_client"
-	InvalidRequest       = "invalid_request"
+	TokenErrUnsupportedGrantType = "unsupported_grant_type"
+	TokenErrInvalidClient        = "invalid_client"
+	TokenErrInvalidRequest       = "invalid_request"
 )
 
 const (
@@ -81,16 +73,16 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 		}
 
 		if r.Method != http.MethodPost {
-			return authErrResponse(ctx, http.StatusMethodNotAllowed, InvalidRequest, "the token endpoint only accepts POST")
+			return jsonErrResponse(ctx, http.StatusMethodNotAllowed, TokenErrInvalidRequest, "the token endpoint only accepts POST", nil)
 		}
 
 		if !HasContentType(r.Header, "application/x-www-form-urlencoded") {
-			return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the request must be an encoded form with Content-Type application/x-www-form-urlencoded")
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the request must be an encoded form with Content-Type application/x-www-form-urlencoded", nil)
 		}
 
 		grantType := r.FormValue(ArgGrantType)
 		if grantType == "" {
-			return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the grant-type field is required with either 'refresh_token' or 'token_exchange'")
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the grant-type field is required with either 'refresh_token' or 'token_exchange'", nil)
 		}
 
 		span.SetAttributes(
@@ -100,12 +92,12 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 		switch grantType {
 		case GrantTypeRefreshToken:
 			if !r.Form.Has(ArgRefreshToken) {
-				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the refresh token must be provided in the refresh_token field")
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the refresh token must be provided in the refresh_token field", nil)
 			}
 
 			refreshTokenRaw := r.FormValue(ArgRefreshToken)
 			if refreshTokenRaw == "" {
-				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the refresh token in the refresh_token field cannot be an empty string")
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the refresh token in the refresh_token field cannot be an empty string", nil)
 			}
 
 			var isValid bool
@@ -127,17 +119,17 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 			if !isValid {
-				return authErrResponse(ctx, http.StatusUnauthorized, InvalidClient, "possible causes may be that the refresh token has been revoked or has expired")
+				return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the refresh token has been revoked or has expired", nil)
 			}
 
 		case GrantTypeAuthCode:
 			if !r.Form.Has(ArgCode) {
-				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the authorization code must be provided in the code field")
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the authorization code must be provided in the code field", nil)
 			}
 
 			authCode := r.FormValue(ArgCode)
 			if authCode == "" {
-				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the authorization code in the code field cannot be an empty string")
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the authorization code in the code field cannot be an empty string", nil)
 			}
 
 			// Consume the auth code
@@ -148,7 +140,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 			if !isValid {
-				return authErrResponse(ctx, http.StatusUnauthorized, InvalidClient, "possible causes may be that the auth code has been consumed or has expired")
+				return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the auth code has been consumed or has expired", nil)
 			}
 
 			// Generate a refresh token.
@@ -159,22 +151,22 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 		case GrantTypeTokenExchange:
 			if !r.Form.Has(ArgSubjectToken) {
-				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the ID token must be provided in the subject_token field")
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the ID token must be provided in the subject_token field", nil)
 			}
 
 			// We do not require subject_token_type, but if provided we only support 'id_token'
 			if r.Form.Has(ArgSubjectTokenType) && r.Form.Get(ArgSubjectTokenType) != "id_token" {
-				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the only supported subject_token_type is 'id_token'")
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the only supported subject_token_type is 'id_token'", nil)
 			}
 
 			// We do not require requested_token_type, but if provided we only support 'access_token'
 			if r.Form.Has(ArgRequestedTokeType) && (r.Form.Get(ArgRequestedTokeType) != "urn:ietf:params:oauth:token-type:access_token" && r.Form.Get("requested_token_type") != "access_token") {
-				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the only supported requested_token_type is 'access_token'")
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the only supported requested_token_type is 'access_token'", nil)
 			}
 
 			idTokenRaw := r.Form.Get(ArgSubjectToken)
 			if idTokenRaw == "" {
-				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the ID token in the subject_token field cannot be an empty string")
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the ID token in the subject_token field cannot be an empty string", nil)
 			}
 
 			span.SetAttributes(
@@ -185,15 +177,13 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			// Verify the ID token with the OIDC provider
 			idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
 			if err != nil {
-				span.RecordError(err, trace.WithStackTrace(true))
-				return authErrResponse(ctx, http.StatusUnauthorized, InvalidClient, "possible causes may be that the id token is invalid, has expired, or has insufficient claims")
+				return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the id token is invalid, has expired, or has insufficient claims", err)
 			}
 
 			// Extract claims
 			var claims oauth.IdTokenClaims
 			if err := idToken.Claims(&claims); err != nil {
-				span.RecordError(err, trace.WithStackTrace(true))
-				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "insufficient claims on id_token")
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "insufficient claims on id_token", err)
 			}
 
 			identity, err := actions.FindIdentityByExternalId(ctx, schema, idToken.Subject, idToken.Issuer)
@@ -222,7 +212,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			identityId = identity.Id
 
 		default:
-			return authErrResponse(ctx, http.StatusBadRequest, UnsupportedGrantType, "the only supported grants are 'refresh_token' and 'token_exchange'")
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrUnsupportedGrantType, "the only supported grants are 'refresh_token' and 'token_exchange'", nil)
 		}
 
 		// Generate a new access token for this identity.

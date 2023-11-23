@@ -21,14 +21,14 @@ func RevokeHandler(schema *proto.Schema) common.HandlerFunc {
 
 		if r.Method != http.MethodPost {
 			return common.NewJsonResponse(http.StatusMethodNotAllowed, &ErrorResponse{
-				Error:            InvalidRequest,
+				Error:            TokenErrInvalidRequest,
 				ErrorDescription: "the revoke endpoint only accepts POST",
 			}, nil)
 		}
 
 		if !HasContentType(r.Header, "application/x-www-form-urlencoded") {
 			return common.NewJsonResponse(http.StatusBadRequest, &ErrorResponse{
-				Error:            InvalidRequest,
+				Error:            TokenErrInvalidRequest,
 				ErrorDescription: "the request must be an encoded form with Content-Type application/x-www-form-urlencoded",
 			}, nil)
 		}
@@ -37,7 +37,7 @@ func RevokeHandler(schema *proto.Schema) common.HandlerFunc {
 
 		if refreshTokenRaw == "" {
 			return common.NewJsonResponse(http.StatusBadRequest, &ErrorResponse{
-				Error:            InvalidRequest,
+				Error:            TokenErrInvalidRequest,
 				ErrorDescription: "the refresh token must be provided in the token field",
 			}, nil)
 		}
@@ -47,7 +47,7 @@ func RevokeHandler(schema *proto.Schema) common.HandlerFunc {
 		if err != nil {
 			span.RecordError(err, trace.WithStackTrace(true))
 			return common.NewJsonResponse(http.StatusUnauthorized, &ErrorResponse{
-				Error:            InvalidClient,
+				Error:            TokenErrInvalidClient,
 				ErrorDescription: "possible causes may be that the id token is invalid, has expired, or has insufficient claims",
 			}, nil)
 		}

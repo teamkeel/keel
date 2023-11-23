@@ -17,39 +17,45 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/oauth2"
 )
 
-func OAuthHandler(schema *proto.Schema) common.HandlerFunc {
-	return func(r *http.Request) common.Response {
-		return common.Response{
-			Status: http.StatusNotImplemented,
-		}
-	}
-}
+// Error response types for the authorization endpoint
+// https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2.1
+const (
+	// The request is missing a required parameter, includes an
+	// invalid parameter value, includes a parameter more than
+	// once, or is otherwise malformed.
+	AuthorizationErrInvalidRequest = "invalid_request"
+	// The client is not authorized to request an authorization
+	// code using this method.
+	AuthorizationErrUnauthorizedClient = "unauthorized_client"
+	// The resource owner or authorization server denied the
+	// request.
+	AuthorizationErrAccessDenied = "access_denied"
+	// The authorization server encountered an unexpected
+	// condition that prevented it from fulfilling the request.
+	// (This error code is needed because a 500 Internal Server
+	// Error HTTP status code cannot be returned to the client
+	// via an HTTP redirect.)
+	AuthorizationErrServerError = "server_error"
+)
 
-// LoginHandler will redirect to the specified provider in order to authenticate with the user
-func LoginHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request) common.Response {
-	return func(w http.ResponseWriter, r *http.Request) common.Response {
+// LoginHandler will redirect to the specified provider in order to authenticate the user
+func LoginHandler(schema *proto.Schema) common.HandlerFunc {
+	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "Login Endpoint")
 		defer span.End()
 
 		provider, err := providerFromPath(ctx, r.URL)
 		if err != nil {
-			span.RecordError(err, trace.WithStackTrace(true))
-			span.SetStatus(codes.Error, err.Error())
-			return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "login url malformed or provider not found")
+			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, "login url malformed or provider not found", err)
 		}
 
 		secret, hasSecret := provider.GetClientSecret()
 		if !hasSecret {
 			err = fmt.Errorf("client secret not configured for provider: %s", provider.Name)
-			span.RecordError(err, trace.WithStackTrace(true))
-			span.SetStatus(codes.Error, err.Error())
-			return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, err.Error())
+			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, err.Error(), err)
 		}
 
 		issuer, hasIssuer := provider.GetIssuer()
@@ -71,38 +77,55 @@ func LoginHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request)
 			RedirectURL:  "http://" + r.Host + "/auth/callback/" + strings.ToLower(provider.Name),
 		}
 
-		url := oauthConfig.AuthCodeURL(uniuri.New())
-		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+		u := oauthConfig.AuthCodeURL(uniuri.New())
 
-		return common.NewJsonResponse(http.StatusTemporaryRedirect, "login handler redirect", nil)
+		redirectUrl, err := url.Parse(u)
+		if err != nil {
+			return common.InternalServerErrorResponse(ctx, err)
+		}
+
+		return common.NewRedirectResponse(redirectUrl)
 	}
 }
 
 // CallbackHandler is called by the provider after the authentication process is complete
-func CallbackHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request) common.Response {
-	return func(w http.ResponseWriter, r *http.Request) common.Response {
+//
+// If there is something wrong with the syntax of the request, such as the redirect_uri or client_id is invalid,
+// then it’s important not to redirect the user and instead you should show the error message directly.
+// This is to avoid letting your authorization server be used as an open redirector.
+func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
+	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "Callback Endpoint")
 		defer span.End()
 
-		if callbackError := r.FormValue("error"); callbackError != "" {
-			err := fmt.Errorf("provider could not authenticate due to %s: %s", callbackError, r.FormValue("error_description"))
-			span.RecordError(err, trace.WithStackTrace(true))
-			span.SetStatus(codes.Error, err.Error())
-			return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, err.Error())
-		}
-
 		provider, err := providerFromPath(ctx, r.URL)
 		if err != nil {
-			err = fmt.Errorf("no issuer available for sso login with provider: %s", provider.Name)
-			span.RecordError(err, trace.WithStackTrace(true))
-			span.SetStatus(codes.Error, err.Error())
-			return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "callback url malformed or provider not found")
+			return common.InternalServerErrorResponse(ctx, err)
 		}
 
 		issuer, hasIssuer := provider.GetIssuer()
 		if !hasIssuer {
-			err = fmt.Errorf("no issuer available for sso login with provider: %s", provider.Name)
 			return common.InternalServerErrorResponse(ctx, err)
+		}
+
+		config, err := runtimectx.GetOAuthConfig(ctx)
+		if err != nil {
+			return common.InternalServerErrorResponse(ctx, err)
+		}
+
+		if config.RedirectUrl == nil {
+			return common.InternalServerErrorResponse(ctx, fmt.Errorf("redirectUrl not set"))
+		}
+
+		redirectUrl, err := url.Parse(*config.RedirectUrl)
+		if err != nil {
+			return common.InternalServerErrorResponse(ctx, err)
+		}
+
+		// If the auth provider errored, then package this up and send it as an error with the redirectUrl
+		if callbackError := r.FormValue("error"); callbackError != "" {
+			err := fmt.Errorf("provider error: %s. %s", callbackError, r.FormValue("error_description"))
+			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, err.Error(), err)
 		}
 
 		oidcProv, err := oidc.NewProvider(ctx, issuer)
@@ -110,10 +133,11 @@ func CallbackHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reque
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
+		// If the secret is not yet, then package this up and send it as an error with the redirectUrl
 		secret, hasSecret := provider.GetClientSecret()
 		if !hasSecret {
 			err := fmt.Errorf("client secret not configured for provider: %s", provider.Name)
-			return common.InternalServerErrorResponse(ctx, err)
+			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, err.Error(), err)
 		}
 
 		oauthConfig := &oauth2.Config{
@@ -128,20 +152,22 @@ func CallbackHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reque
 			return common.InternalServerErrorResponse(ctx, errors.New("code not returned with callback url"))
 		}
 
+		// If the token exchange fails, then package this up and send it as an error with the redirectUrl
 		token, err := oauthConfig.Exchange(ctx, code)
 		if err != nil {
-			// todo parse oauth error message from providers token endpoint
-			return common.InternalServerErrorResponse(ctx, err)
+			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, "failed to exchange code at provider token endpoint", err)
 		}
 
 		if !token.Valid() {
-			return authErrResponse(ctx, http.StatusUnauthorized, InvalidClient, "access token is not valid or has expired")
+			err := errors.New("access token is not valid or has expired")
+			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, err.Error(), err)
 		}
 
 		// Extract the ID Token from the OAuth2 request.
 		rawIDToken, ok := token.Extra("id_token").(string)
 		if !ok {
-			return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "provider did not respond with an id token")
+			err := errors.New("provider did not respond with an id token")
+			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrServerError, err.Error(), err)
 		}
 
 		var verifier = oidcProv.Verifier(&oidc.Config{
@@ -151,13 +177,13 @@ func CallbackHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reque
 		// Verify the ID token with the OIDC provider
 		idToken, err := verifier.Verify(ctx, rawIDToken)
 		if err != nil {
-			return common.InternalServerErrorResponse(ctx, err)
+			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, "falied to verify ID token with OIDC provider", err)
 		}
 
 		// Extract claims
 		var claims oauth.IdTokenClaims
 		if err := idToken.Claims(&claims); err != nil {
-			return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "insufficient claims on id_token")
+			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrServerError, "insufficient claims on id_token", err)
 		}
 
 		var identity *auth.Identity
@@ -178,22 +204,7 @@ func CallbackHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reque
 			}
 		}
 
-		config, err := runtimectx.GetOAuthConfig(ctx)
-		if err != nil {
-			return common.InternalServerErrorResponse(ctx, err)
-		}
-
-		if config.RedirectUrl == nil {
-			err := fmt.Errorf("redirectUrl not set")
-			return common.InternalServerErrorResponse(ctx, err)
-		}
-
 		authCode, err := oauth.NewAuthCode(ctx, identity.Id)
-		if err != nil {
-			return common.InternalServerErrorResponse(ctx, err)
-		}
-
-		redirectUrl, err := url.Parse(*config.RedirectUrl)
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
@@ -202,11 +213,8 @@ func CallbackHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reque
 		values.Add("code", authCode)
 		redirectUrl.RawQuery = values.Encode()
 
-		http.Redirect(w, r, redirectUrl.String(), http.StatusFound)
-
-		return common.NewJsonResponse(http.StatusFound, "callback handler redirect", nil)
+		return common.NewRedirectResponse(redirectUrl)
 	}
-
 }
 
 func providerFromPath(ctx context.Context, url *url.URL) (*config.Provider, error) {
@@ -227,19 +235,4 @@ func providerFromPath(ctx context.Context, url *url.URL) (*config.Provider, erro
 	}
 
 	return provider, nil
-}
-
-func authErrResponse(ctx context.Context, status int, errorType string, errorDescription string) common.Response {
-	span := trace.SpanFromContext(ctx)
-	span.SetStatus(codes.Error, errorType)
-
-	span.SetAttributes(
-		attribute.String("auth.error", errorType),
-		attribute.String("auth.error_description", errorDescription),
-	)
-
-	return common.NewJsonResponse(status, &ErrorResponse{
-		Error:            errorType,
-		ErrorDescription: errorDescription,
-	}, nil)
 }

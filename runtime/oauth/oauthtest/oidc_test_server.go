@@ -133,7 +133,7 @@ func NewServer() (*OidcServer, error) {
 			if !r.URL.Query().Has("redirect_uri") {
 				res.StatusCode = http.StatusNotFound
 				response := &authapi.ErrorResponse{
-					Error:            authapi.InvalidRequest,
+					Error:            authapi.TokenErrInvalidRequest,
 					ErrorDescription: "redirect uri missing",
 				}
 
@@ -148,7 +148,7 @@ func NewServer() (*OidcServer, error) {
 			if err != nil {
 				res.StatusCode = http.StatusNotFound
 				response := &authapi.ErrorResponse{
-					Error:            authapi.InvalidRequest,
+					Error:            authapi.TokenErrInvalidRequest,
 					ErrorDescription: "redirect uri invalid",
 				}
 
@@ -163,7 +163,7 @@ func NewServer() (*OidcServer, error) {
 				values.Add("error", "unsupported_response_type")
 				values.Add("error_description", "only 'code' response_type supported")
 				redirectUrl.RawQuery = values.Encode()
-				http.Redirect(w, r, redirectUrl.String(), http.StatusTemporaryRedirect)
+				http.Redirect(w, r, redirectUrl.String(), http.StatusFound)
 				break
 			}
 
@@ -180,7 +180,7 @@ func NewServer() (*OidcServer, error) {
 				values.Add("error", "invalid_request")
 				values.Add("error_description", "client id not registered on server")
 				redirectUrl.RawQuery = values.Encode()
-				http.Redirect(w, r, redirectUrl.String(), http.StatusTemporaryRedirect)
+				http.Redirect(w, r, redirectUrl.String(), http.StatusFound)
 				break
 			}
 
@@ -189,7 +189,7 @@ func NewServer() (*OidcServer, error) {
 			if client.RedirectUrl != redirectUrl.String() {
 				res.StatusCode = http.StatusNotFound
 				response := &authapi.ErrorResponse{
-					Error:            authapi.InvalidRequest,
+					Error:            authapi.TokenErrInvalidClient,
 					ErrorDescription: "redirect uri does not match",
 				}
 
@@ -206,10 +206,48 @@ func NewServer() (*OidcServer, error) {
 
 			// If the end-user denies the login request or if the request fails for reasons other than an
 			// invalid client_id or redirect_uri, the OIDC server will pass any errors onto the redirect_uri.
-			http.Redirect(w, r, redirectUrl.String(), http.StatusTemporaryRedirect)
+			http.Redirect(w, r, redirectUrl.String(), http.StatusFound)
 
 		case "/oauth2/token":
 			idToken, _ := oidcServer.FetchIdToken("id|285620", []string{oidcServer.clients[0].ClientId})
+
+			clientId := r.FormValue("client_id")
+			var client *OAuthClient
+			for _, v := range oidcServer.clients {
+				if v.ClientId == clientId {
+					client = v
+				}
+			}
+
+			// Client not found on the server
+			if client == nil {
+				res.StatusCode = http.StatusNotFound
+				response := &authapi.ErrorResponse{
+					Error:            authapi.TokenErrInvalidClient,
+					ErrorDescription: "client id not registered on server",
+				}
+
+				b, _ := json.Marshal(response)
+				res.Body = io.NopCloser(bytes.NewReader(b))
+				res.Body.Close()
+				w.WriteHeader(http.StatusBadRequest)
+				break
+			}
+
+			// Client secret incorrect
+			if client.ClientSecret != r.FormValue("client_secret") {
+				res.StatusCode = http.StatusNotFound
+				response := &authapi.ErrorResponse{
+					Error:            authapi.TokenErrInvalidRequest,
+					ErrorDescription: "client credentials are incorrect",
+				}
+
+				b, _ := json.Marshal(response)
+				res.Body = io.NopCloser(bytes.NewReader(b))
+				res.Body.Close()
+				w.WriteHeader(http.StatusBadRequest)
+				break
+			}
 
 			tokenResponse := &IodcTokenResponse{
 				IdToken: idToken,

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/samber/lo"
@@ -47,6 +48,23 @@ func NewJsonResponse(status int, body any, meta *ResponseMetadata) Response {
 	r.Headers["Content-Type"] = []string{"application/json"}
 
 	return r
+}
+
+func NewRedirectResponse(url *url.URL) Response {
+	// This response code means that the URI of requested resource has been changed temporarily.
+	// Further changes in the URI might be made in the future.
+	code := http.StatusFound
+
+	// The body content for a 302 usually contains a short hypertext note with a hyperlink to the different URI(s).
+	// https://www.rfc-editor.org/rfc/rfc9110.html#name-302-found
+	return Response{
+		Status: code,
+		Body:   []byte("<a href=\"" + url.String() + "\">" + http.StatusText(code) + "</a>.\n"),
+		Headers: map[string][]string{
+			"Location":     {url.String()},
+			"Content-Type": {"text/html; charset=utf-8"},
+		},
+	}
 }
 
 func InternalServerErrorResponse(ctx context.Context, err error) Response {
