@@ -27,7 +27,6 @@ func TestSsoLogin_Success(t *testing.T) {
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
-	redirectUrl := "https://myapp.com/signedup"
 	// Set up auth config
 	redirectUrl := "https://myapp.com/signedup"
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{

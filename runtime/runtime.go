@@ -106,7 +106,7 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 		case strings.HasPrefix(r.URL.Path, "/auth/login"):
 			return handleLogin(r)
 		case strings.HasPrefix(r.URL.Path, "/auth/callback"):
-			return handleCallback(w, r)
+			return handleCallback(r)
 		default:
 			return common.Response{
 				Status: http.StatusNotFound,

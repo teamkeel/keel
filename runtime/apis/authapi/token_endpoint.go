@@ -149,33 +149,6 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 
-		case GrantTypeAuthCode:
-			if !r.Form.Has(ArgCode) {
-				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the authorization code must be provided in the code field")
-			}
-
-			authCode := r.FormValue(ArgCode)
-			if authCode == "" {
-				return authErrResponse(ctx, http.StatusBadRequest, InvalidRequest, "the authorization code in the code field cannot be an empty string")
-			}
-
-			// Consume the auth code
-			var isValid bool
-			isValid, identityId, err = oauth.ConsumeAuthCode(ctx, authCode)
-			if err != nil {
-				return common.InternalServerErrorResponse(ctx, err)
-			}
-
-			if !isValid {
-				return authErrResponse(ctx, http.StatusUnauthorized, InvalidClient, "possible causes may be that the auth code has been consumed or has expired")
-			}
-
-			// Generate a refresh token.
-			refreshToken, err = oauth.NewRefreshToken(ctx, identityId)
-			if err != nil {
-				return common.InternalServerErrorResponse(ctx, err)
-			}
-
 		case GrantTypeTokenExchange:
 			if !r.Form.Has(ArgSubjectToken) {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the ID token must be provided in the subject_token field", nil)
