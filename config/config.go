@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -129,6 +130,7 @@ const (
 	ConfigAuthProviderInvalidTypeErrorString         = "auth provider '%s' has invalid type '%s' which must be one of: %s"
 	ConfigAuthProviderDuplicateErrorString           = "auth provider name '%s' has been defined more than once, but must be unique"
 	ConfigAuthProviderInvalidHttpUrlErrorString      = "auth provider '%s' has missing or invalid https url for field: %s"
+	ConfigAuthInvalidRedirectUrlErrorString          = "auth redirectUrl '%s' is not a valid url"
 )
 
 type ConfigErrors struct {
@@ -333,6 +335,16 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 			Type:    "invalid",
 			Message: fmt.Sprintf(ConfigAuthProviderInvalidHttpUrlErrorString, p.Name, "authorizationUrl"),
 		})
+	}
+
+	if config.Auth.RedirectUrl != nil {
+		_, err := url.ParseRequestURI(*config.Auth.RedirectUrl)
+		if err != nil {
+			errors = append(errors, &ConfigError{
+				Type:    "invalid",
+				Message: fmt.Sprintf(ConfigAuthInvalidRedirectUrlErrorString, *config.Auth.RedirectUrl),
+			})
+		}
 	}
 
 	if len(errors) == 0 {

@@ -116,6 +116,9 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_refresh_token (token TEXT NOT NULL PRIMARY KEY, identity_id TEXT NOT NULL, created_at TIMESTAMP, expires_at TIMESTAMP);\n")
 	sql.WriteString("\n")
 
+	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_auth_code (code TEXT NOT NULL PRIMARY KEY, identity_id TEXT NOT NULL, created_at TIMESTAMP, expires_at TIMESTAMP);\n")
+	sql.WriteString("\n")
+
 	sql.WriteString(fmt.Sprintf("SELECT set_trace_id('%s');\n", span.SpanContext().TraceID().String()))
 
 	sql.WriteString(m.SQL)
