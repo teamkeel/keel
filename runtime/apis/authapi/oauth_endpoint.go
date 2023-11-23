@@ -229,6 +229,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 
 		return common.NewRedirectResponse(redirectUrl)
 	}
+
 }
 
 func providerFromPath(ctx context.Context, url *url.URL) (*config.Provider, error) {
