@@ -19,6 +19,8 @@ const (
 	DefaultRefreshTokenExpiry time.Duration = time.Hour * 24 * 90
 )
 
+const ProviderSecretPrefix = "KEEL_AUTH_PROVIDER_SECRET_"
+
 const (
 	GoogleProvider        = "google"
 	FacebookProvider      = "facebook"
@@ -159,10 +161,20 @@ func (c *Provider) GetIssuer() (string, bool) {
 }
 
 // GetClientSecret retrieves the client secret from the host's env vars
-func (c *Provider) GetClientSecret() (string, bool) {
-	envName := fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper(c.Name))
+func (p *Provider) GetClientSecret() (string, bool) {
+	envName := fmt.Sprintf("%s%s", ProviderSecretPrefix, strings.ToUpper(p.Name))
 	clientSecret := os.Getenv(envName)
 	return clientSecret, clientSecret != ""
+}
+
+// GetCallbackUrl retrieves the callback URL for this provider
+func (p *Provider) GetCallbackUrl() (*url.URL, error) {
+	apiUrl, err := url.ParseRequestURI(os.Getenv("KEEL_API_URL"))
+	if err != nil {
+		return nil, err
+	}
+
+	return apiUrl.JoinPath("/auth/callback/" + strings.ToLower(p.Name)), nil
 }
 
 func (c *AuthConfig) GetOAuthProviders() []Provider {
@@ -185,25 +197,25 @@ func (c *AuthConfig) GetProvider(name string) *Provider {
 	return nil
 }
 
-func (c *Provider) GetTokenUrl() (string, error) {
-	switch c.Type {
+func (p *Provider) GetTokenUrl() (string, error) {
+	switch p.Type {
 	case GoogleProvider:
 		return "https://accounts.google.com/o/oauth2/token", nil
 	case OAuthProvider:
-		return c.TokenUrl, nil
+		return p.TokenUrl, nil
 	default:
-		return "", fmt.Errorf("the provider type '%s' should not have a token url configured", c.Type)
+		return "", fmt.Errorf("the provider type '%s' should not have a token url configured", p.Type)
 	}
 }
 
-func (c *Provider) GetAuthorizationUrl() (string, error) {
-	switch c.Type {
+func (p *Provider) GetAuthorizationUrl() (string, error) {
+	switch p.Type {
 	case GoogleProvider:
 		return "https://accounts.google.com/o/oauth2/auth", nil
 	case OAuthProvider:
-		return c.AuthorizationUrl, nil
+		return p.AuthorizationUrl, nil
 	default:
-		return "", fmt.Errorf("the provider type '%s' should not have a token url configured", c.Type)
+		return "", fmt.Errorf("the provider type '%s' should not have a token url configured", p.Type)
 	}
 }
 

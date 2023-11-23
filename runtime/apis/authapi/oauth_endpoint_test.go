@@ -27,8 +27,8 @@ func TestSsoLogin_Success(t *testing.T) {
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
-	redirectUrl := "https://myapp.com/signedup"
 	// Set up auth config
+	redirectUrl := "https://myapp.com/signedup"
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
@@ -52,6 +52,8 @@ func TestSsoLogin_Success(t *testing.T) {
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
 
+	t.Setenv("KEEL_API_URL", runtime.URL)
+
 	server.WithOAuthClient(&oauthtest.OAuthClient{
 		ClientId:     "oidc-client-id",
 		ClientSecret: "secret",
@@ -71,6 +73,11 @@ func TestSsoLogin_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.Contains(t, httpResponse.Request.Header["Referer"][0], "https://myapp.com/signedup?code=")
+	require.Equal(t, http.StatusMovedPermanently, httpResponse.Request.Response.StatusCode)
+
+	require.Contains(t, httpResponse.Request.Response.Request.Header["Referer"][0], runtime.URL+"/auth/callback/my-oidc?code=")
+	require.Equal(t, http.StatusFound, httpResponse.Request.Response.Request.Response.StatusCode)
 
 	var identities []map[string]any
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
@@ -92,6 +99,71 @@ func TestSsoLogin_Success(t *testing.T) {
 	require.Equal(t, issuer, server.Issuer)
 }
 
+func TestSsoLogin_WrongSecret(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// OIDC test server
+	server, err := oauthtest.NewServer()
+	require.NoError(t, err)
+
+	// Set up auth config
+	redirectUrl := "https://myapp.com/signedup"
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		RedirectUrl: &redirectUrl,
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
+
+	// Set secret for client
+	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("my-oidc")), "wrong-secret")
+
+	httpHandler := func(w http.ResponseWriter, r *http.Request) {
+		h := runtime.NewHttpHandler(schema)
+		r = r.WithContext(ctx)
+		h.ServeHTTP(w, r)
+	}
+	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
+	require.NoError(t, err)
+
+	t.Setenv("KEEL_API_URL", runtime.URL)
+
+	server.WithOAuthClient(&oauthtest.OAuthClient{
+		ClientId:     "oidc-client-id",
+		ClientSecret: "secret",
+		RedirectUrl:  runtime.URL + "/auth/callback/my-oidc",
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email:         "keelson@keel.so",
+		EmailVerified: true,
+	})
+
+	// Make an SSO login request
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/login/my-oidc", nil)
+	require.NoError(t, err)
+
+	httpResponse, err := runtime.Client().Do(request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.Contains(t, httpResponse.Request.Header["Referer"][0], "https://myapp.com/signedup?error=access_denied&error_description=failed+to+exchange+code+at+provider+token+endpoint")
+	require.Equal(t, http.StatusMovedPermanently, httpResponse.Request.Response.StatusCode)
+
+	require.Contains(t, httpResponse.Request.Response.Request.Header["Referer"][0], runtime.URL+"/auth/callback/my-oidc?code=")
+	require.Equal(t, http.StatusFound, httpResponse.Request.Response.Request.Response.StatusCode)
+
+	var identities []map[string]any
+	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
+	require.Len(t, identities, 0)
+}
+
 func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
@@ -101,7 +173,9 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	require.NoError(t, err)
 
 	// Set up auth config
+	redirectUrl := "https://myapp.com/signedup"
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
 				Type:      config.OpenIdConnectProvider,
@@ -122,6 +196,8 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+
+	t.Setenv("KEEL_API_URL", runtime.URL)
 
 	server.WithOAuthClient(&oauthtest.OAuthClient{
 		ClientId:     "oidc-client-id",
@@ -185,6 +261,10 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "login url malformed or provider not found", errorResponse.ErrorDescription)
+
+	var identities []map[string]any
+	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
+	require.Len(t, identities, 0)
 }
 
 func TestSsoLogin_MissingSecret(t *testing.T) {
@@ -196,7 +276,9 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 	require.NoError(t, err)
 
 	// Set up auth config
+	redirectUrl := "https://myapp.com/signedup"
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
 				Type:      config.OpenIdConnectProvider,
@@ -214,6 +296,8 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+
+	t.Setenv("KEEL_API_URL", runtime.URL)
 
 	server.WithOAuthClient(&oauthtest.OAuthClient{
 		ClientId:     "oidc-client-id",
@@ -243,6 +327,10 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "client secret not configured for provider: my-oidc", errorResponse.ErrorDescription)
+
+	var identities []map[string]any
+	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
+	require.Len(t, identities, 0)
 }
 
 func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
@@ -254,7 +342,9 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 	require.NoError(t, err)
 
 	// Set up auth config
+	redirectUrl := "https://myapp.com/signedup"
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
 				Type:      config.OpenIdConnectProvider,
@@ -275,6 +365,8 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+
+	t.Setenv("KEEL_API_URL", runtime.URL)
 
 	server.SetUser("id|285620", &oauth.UserClaims{
 		Email:         "keelson@keel.so",
@@ -288,16 +380,13 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 	httpResponse, err := runtime.Client().Do(request)
 	require.NoError(t, err)
 
-	data, err := io.ReadAll(httpResponse.Body)
-	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.Contains(t, httpResponse.Request.Header["Referer"][0], "https://myapp.com/signedup?error=access_denied&error_description=provider+error%3A+invalid_request.+client+id+not+registered+on+server")
+	require.Equal(t, http.StatusMovedPermanently, httpResponse.Request.Response.StatusCode)
 
-	var errorResponse authapi.ErrorResponse
-	err = json.Unmarshal(data, &errorResponse)
-	require.NoError(t, err)
-
-	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
-	require.Equal(t, "invalid_request", errorResponse.Error)
-	require.Equal(t, "provider could not authenticate due to invalid_request: client id not registered on server", errorResponse.ErrorDescription)
+	var identities []map[string]any
+	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
+	require.Len(t, identities, 0)
 }
 
 func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
@@ -309,7 +398,9 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 	require.NoError(t, err)
 
 	// Set up auth config
+	redirectUrl := "https://myapp.com/signedup"
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
 				Type:      config.OpenIdConnectProvider,
@@ -330,6 +421,8 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+
+	t.Setenv("KEEL_API_URL", runtime.URL)
 
 	server.WithOAuthClient(&oauthtest.OAuthClient{
 		ClientId:     "oidc-client-id",
@@ -359,4 +452,72 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "redirect uri does not match", errorResponse.ErrorDescription)
+
+	var identities []map[string]any
+	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
+	require.Len(t, identities, 0)
+}
+
+func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// OIDC test server
+	server, err := oauthtest.NewServer()
+	require.NoError(t, err)
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
+
+	// Set secret for client
+	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("my-oidc")), "secret")
+
+	httpHandler := func(w http.ResponseWriter, r *http.Request) {
+		h := runtime.NewHttpHandler(schema)
+		r = r.WithContext(ctx)
+		h.ServeHTTP(w, r)
+	}
+	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
+	require.NoError(t, err)
+
+	t.Setenv("KEEL_API_URL", runtime.URL)
+
+	server.WithOAuthClient(&oauthtest.OAuthClient{
+		ClientId:     "oidc-client-id",
+		ClientSecret: "secret",
+		RedirectUrl:  runtime.URL + "/auth/callback/mismatch",
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email:         "keelson@keel.so",
+		EmailVerified: true,
+	})
+
+	// Make an SSO login request
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/login/my-oidc", nil)
+	require.NoError(t, err)
+
+	httpResponse, err := runtime.Client().Do(request)
+	require.NoError(t, err)
+
+	data, err := io.ReadAll(httpResponse.Body)
+	require.NoError(t, err)
+
+	var errorResponse authapi.ErrorResponse
+	err = json.Unmarshal(data, &errorResponse)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
+	require.Equal(t, "invalid_request", errorResponse.Error)
+	require.Equal(t, "redirectUrl must be specified in keelconfig.yaml", errorResponse.ErrorDescription)
+
 }

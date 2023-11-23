@@ -12,7 +12,7 @@ import (
 const (
 	// Character length of crypo-generated auth code
 	authCodeLength = 32
-	authCodeExpiry = time.Duration(10) * time.Minute
+	authCodeExpiry = time.Duration(60) * time.Second
 )
 
 // NewAuthCode generates a new auth code for the identity using the

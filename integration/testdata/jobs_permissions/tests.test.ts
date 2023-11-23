@@ -110,8 +110,6 @@ test("job - authorised domain - permitted", async () => {
     emailVerified: true,
   });
 
-  console.log("created:", identity);
-
   await expect(
     jobs.withIdentity(identity).manualJob({ id })
   ).not.toHaveAuthorizationError();

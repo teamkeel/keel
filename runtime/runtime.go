@@ -93,7 +93,6 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 // NewAuthHandler handles requests to the authentication endpoints
 func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request) common.Response {
 	handleToken := authapi.TokenEndpointHandler(schema)
-	handleOAuth := authapi.OAuthHandler(schema)
 	handleRevoke := authapi.RevokeHandler(schema)
 	handleLogin := authapi.LoginHandler(schema)
 	handleCallback := authapi.CallbackHandler(schema)
@@ -102,14 +101,12 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 		switch {
 		case r.URL.Path == "/auth/token":
 			return handleToken(r)
-		case strings.HasPrefix(r.URL.Path, "/auth/oauth"):
-			return handleOAuth(r)
 		case r.URL.Path == "/auth/revoke":
 			return handleRevoke(r)
 		case strings.HasPrefix(r.URL.Path, "/auth/login"):
-			return handleLogin(w, r)
+			return handleLogin(r)
 		case strings.HasPrefix(r.URL.Path, "/auth/callback"):
-			return handleCallback(w, r)
+			return handleCallback(r)
 		default:
 			return common.Response{
 				Status: http.StatusNotFound,
