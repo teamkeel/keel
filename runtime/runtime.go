@@ -92,6 +92,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 
 // NewAuthHandler handles requests to the authentication endpoints
 func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request) common.Response {
+	handleProviders := authapi.ProvidersHandler(schema)
 	handleToken := authapi.TokenEndpointHandler(schema)
 	handleRevoke := authapi.RevokeHandler(schema)
 	handleAuthorize := authapi.AuthorizeHandler(schema)
@@ -99,6 +100,8 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 
 	return func(w http.ResponseWriter, r *http.Request) common.Response {
 		switch {
+		case r.URL.Path == "/auth/providers":
+			return handleProviders(r)
 		case r.URL.Path == "/auth/token":
 			return handleToken(r)
 		case r.URL.Path == "/auth/revoke":
@@ -115,7 +118,7 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 	}
 }
 
-// NewApiHandler handles requests to the customers APIs
+// NewApiHandler handles requests to the customer APIs
 func NewApiHandler(s *proto.Schema) common.HandlerFunc {
 	handlers := map[string]common.HandlerFunc{}
 
