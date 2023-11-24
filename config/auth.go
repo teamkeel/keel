@@ -35,7 +35,6 @@ var (
 		FacebookProvider,
 		GitLabProvider,
 		OpenIdConnectProvider,
-		OAuthProvider,
 	}
 )
 
@@ -199,8 +198,6 @@ func (c *AuthConfig) GetProvider(name string) *Provider {
 
 func (p *Provider) GetTokenUrl() (string, error) {
 	switch p.Type {
-	case GoogleProvider:
-		return "https://accounts.google.com/o/oauth2/token", nil
 	case OAuthProvider:
 		return p.TokenUrl, nil
 	default:
@@ -210,8 +207,6 @@ func (p *Provider) GetTokenUrl() (string, error) {
 
 func (p *Provider) GetAuthorizationUrl() (string, error) {
 	switch p.Type {
-	case GoogleProvider:
-		return "https://accounts.google.com/o/oauth2/auth", nil
 	case OAuthProvider:
 		return p.AuthorizationUrl, nil
 	default:
@@ -322,7 +317,7 @@ func findAuthProviderMissingOrInvalidAuthorizationUrl(providers []Provider) []Pr
 }
 
 func invalidName(name string) bool {
-	return !regexp.MustCompile(`^[A-Za-z0-9_-]*$`).MatchString(name)
+	return !regexp.MustCompile(`^[A-Za-z_]\w*$`).MatchString(name)
 }
 
 func invalidUrl(u string) bool {

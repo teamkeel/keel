@@ -9,7 +9,7 @@ auth:
   providers:
     # Built-in Google provider
     - type: google
-      name: google-1
+      name: _Google_Client
       clientId: foo_1
 
     # Built-in Google provider
@@ -22,10 +22,3 @@ auth:
       name: Baidu
       issuerUrl: 'https://dev-skhlutl45lbqkvhv.us.auth0.com'
       clientId: 'kasj28fnq09ak'
-
-    # Custom OAuth
-    - type: oauth
-      name: Github
-      clientId: hfjuw983h1hfsdf
-      authorizationUrl: https://github.com/auth
-      tokenUrl: https://github.com/token

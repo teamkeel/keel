@@ -66,7 +66,7 @@ func TestSsoLogin_Success(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/login/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
@@ -146,7 +146,7 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/login/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
@@ -211,7 +211,7 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	})
 
 	// Make an SSO login request with an unknown provider
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/login/unknown-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/unknown-oidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
@@ -229,7 +229,7 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	require.Equal(t, "login url malformed or provider not found", errorResponse.ErrorDescription)
 
 	// Make an SSO login request with additional fragment
-	request, err = http.NewRequest(http.MethodPost, runtime.URL+"/auth/login/my-oidc/oops", nil)
+	request, err = http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc/oops", nil)
 	require.NoError(t, err)
 
 	httpResponse, err = runtime.Client().Do(request)
@@ -246,7 +246,7 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	require.Equal(t, "login url malformed or provider not found", errorResponse.ErrorDescription)
 
 	// Make an SSO login request without a provider
-	request, err = http.NewRequest(http.MethodPost, runtime.URL+"/auth/login/", nil)
+	request, err = http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/", nil)
 	require.NoError(t, err)
 
 	httpResponse, err = runtime.Client().Do(request)
@@ -311,7 +311,7 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/login/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
@@ -374,7 +374,7 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/login/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
@@ -436,7 +436,7 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/login/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
@@ -503,7 +503,7 @@ func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/login/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)

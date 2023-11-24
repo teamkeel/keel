@@ -41,8 +41,8 @@ const (
 	AuthorizationErrServerError = "server_error"
 )
 
-// LoginHandler will redirect to the specified provider in order to authenticate the user
-func LoginHandler(schema *proto.Schema) common.HandlerFunc {
+// AuthorizeHandler is a redirection endpoint that will redirect to the provider's sign-in/auth page
+func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "Login Endpoint")
 		defer span.End()

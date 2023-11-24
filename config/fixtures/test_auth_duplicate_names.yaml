@@ -10,8 +10,7 @@ auth:
       clientId: 'kasj28fnq09ak'
 
     # Duplicate name
-    - type: oauth
+    - type: oidc
       name: my_google
-      clientId: hfjuw983h1hfsdf
-      authorizationUrl: https://github.com/auth
-      tokenUrl: https://github.com/token
+      issuerUrl: 'https://dev-232351356.us.auth0.com'
+      clientId: '3jdfh92h2'

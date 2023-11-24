@@ -94,7 +94,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request) common.Response {
 	handleToken := authapi.TokenEndpointHandler(schema)
 	handleRevoke := authapi.RevokeHandler(schema)
-	handleLogin := authapi.LoginHandler(schema)
+	handleAuthorize := authapi.AuthorizeHandler(schema)
 	handleCallback := authapi.CallbackHandler(schema)
 
 	return func(w http.ResponseWriter, r *http.Request) common.Response {
@@ -103,8 +103,8 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 			return handleToken(r)
 		case r.URL.Path == "/auth/revoke":
 			return handleRevoke(r)
-		case strings.HasPrefix(r.URL.Path, "/auth/login"):
-			return handleLogin(r)
+		case strings.HasPrefix(r.URL.Path, "/auth/authorize"):
+			return handleAuthorize(r)
 		case strings.HasPrefix(r.URL.Path, "/auth/callback"):
 			return handleCallback(r)
 		default:
