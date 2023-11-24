@@ -41,10 +41,10 @@ const (
 	AuthorizationErrServerError = "server_error"
 )
 
-// LoginHandler will redirect to the specified provider in order to authenticate the user
-func LoginHandler(schema *proto.Schema) common.HandlerFunc {
+// AuthorizeHandler is a redirection endpoint that will redirect to the provider's sign-in/auth page
+func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
-		ctx, span := tracer.Start(r.Context(), "Login Endpoint")
+		ctx, span := tracer.Start(r.Context(), "Authorize Endpoint")
 		defer span.End()
 
 		provider, err := providerFromPath(ctx, r.URL)
@@ -68,15 +68,14 @@ func LoginHandler(schema *proto.Schema) common.HandlerFunc {
 			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, err.Error(), err)
 		}
 
-		issuer, hasIssuer := provider.GetIssuer()
-		if !hasIssuer {
-			err = fmt.Errorf("no issuer available for sso login with provider: %s", provider.Name)
-			return common.InternalServerErrorResponse(ctx, err)
+		authUrl, hasAuthUrl := provider.GetAuthorizationUrl()
+		if !hasAuthUrl {
+			return common.InternalServerErrorResponse(ctx, errors.New("provider does not have an authorization endpoint configured"))
 		}
 
-		oidcProv, err := oidc.NewProvider(ctx, issuer)
-		if err != nil {
-			return common.InternalServerErrorResponse(ctx, err)
+		tokenUrl, hasTokenUrl := provider.GetTokenUrl()
+		if !hasTokenUrl {
+			return common.InternalServerErrorResponse(ctx, errors.New("provider does not have an token endpoint configured"))
 		}
 
 		callbackUrl, err := provider.GetCallbackUrl()
@@ -87,9 +86,12 @@ func LoginHandler(schema *proto.Schema) common.HandlerFunc {
 		// RedirectURL is needed for provider to redirect back to Keel
 		// Secret is _not_ required when getting auth code
 		oauthConfig := &oauth2.Config{
-			ClientID:    provider.ClientId,
-			Endpoint:    oidcProv.Endpoint(),
-			Scopes:      []string{"openid", "email", "profile"},
+			ClientID: provider.ClientId,
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  authUrl,
+				TokenURL: tokenUrl,
+			},
+			Scopes:      []string{"openid", "email"},
 			RedirectURL: callbackUrl.String(),
 		}
 
@@ -119,7 +121,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		issuer, hasIssuer := provider.GetIssuer()
+		issuer, hasIssuer := provider.GetIssuerUrl()
 		if !hasIssuer {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
@@ -154,11 +156,30 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		// Secret is required for token exchange
+		callbackUrl, err := provider.GetCallbackUrl()
+		if err != nil {
+			return common.InternalServerErrorResponse(ctx, err)
+		}
+
+		authUrl, hasAuthUrl := provider.GetAuthorizationUrl()
+		if !hasAuthUrl {
+			return common.InternalServerErrorResponse(ctx, errors.New("provider does not have an authorization endpoint configured"))
+		}
+
+		tokenUrl, hasTokenUrl := provider.GetTokenUrl()
+		if !hasTokenUrl {
+			return common.InternalServerErrorResponse(ctx, errors.New("provider does not have an token endpoint configured"))
+		}
+
+		// ClientSecret is required for token exchange
 		oauthConfig := &oauth2.Config{
 			ClientID:     provider.ClientId,
 			ClientSecret: secret,
-			Endpoint:     oidcProv.Endpoint(),
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  authUrl,
+				TokenURL: tokenUrl,
+			},
+			RedirectURL: callbackUrl.String(),
 		}
 
 		code := r.FormValue("code")
@@ -169,6 +190,11 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 		// If the token exchange fails, then package this up and send it as an error with the redirectUrl
 		token, err := oauthConfig.Exchange(ctx, code)
 		if err != nil {
+			var receiveErr *oauth2.RetrieveError
+			if errors.As(err, &receiveErr) && receiveErr.ErrorCode != "" {
+				return redirectErrResponse(ctx, redirectUrl, receiveErr.ErrorCode, receiveErr.ErrorDescription, receiveErr)
+			}
+
 			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, "failed to exchange code at provider token endpoint", err)
 		}
 

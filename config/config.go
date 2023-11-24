@@ -124,7 +124,7 @@ const (
 	ConfigIncorrectNamingErrorString                 = "%s must be written in upper snakecase"
 	ConfigReservedNameErrorString                    = "environment variable %s cannot start with %s as it is reserved"
 	ConfigAuthTokenExpiryMustBePositive              = "%s token lifespan cannot be negative or zero for field: %s"
-	ConfigAuthProviderInvalidName                    = "auth provider '%s' can only include alphanumeric characters, dashes and underscores"
+	ConfigAuthProviderInvalidName                    = "auth provider name '%s' must only include alphanumeric characters and underscores, and cannot start with a number"
 	ConfigAuthProviderMissingFieldAtIndexErrorString = "auth provider at index %v is missing field: %s"
 	ConfigAuthProviderMissingFieldErrorString        = "auth provider '%s' is missing field: %s"
 	ConfigAuthProviderInvalidTypeErrorString         = "auth provider '%s' has invalid type '%s' which must be one of: %s"

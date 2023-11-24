@@ -35,7 +35,6 @@ var (
 		FacebookProvider,
 		GitLabProvider,
 		OpenIdConnectProvider,
-		OAuthProvider,
 	}
 )
 
@@ -131,7 +130,7 @@ func (c *AuthConfig) GetOidcProvidersByIssuer(issuer string) ([]Provider, error)
 			continue
 		}
 
-		issuerUrl, hasIssuer := p.GetIssuer()
+		issuerUrl, hasIssuer := p.GetIssuerUrl()
 		if !hasIssuer {
 			return nil, fmt.Errorf("issuer url has not been configured: %s", issuer)
 		}
@@ -144,27 +143,21 @@ func (c *AuthConfig) GetOidcProvidersByIssuer(issuer string) ([]Provider, error)
 	return providers, nil
 }
 
-// GetIssuer retrieves the issuer URL for the provider
-func (c *Provider) GetIssuer() (string, bool) {
-	switch c.Type {
-	case GoogleProvider:
-		return "https://accounts.google.com", true
-	case FacebookProvider:
-		return "https://www.facebook.com", true
-	case GitLabProvider:
-		return "https://gitlab.com", true
-	case OpenIdConnectProvider:
-		return c.IssuerUrl, true
-	default:
-		return "", false
-	}
-}
-
 // GetClientSecret retrieves the client secret from the host's env vars
 func (p *Provider) GetClientSecret() (string, bool) {
 	envName := fmt.Sprintf("%s%s", ProviderSecretPrefix, strings.ToUpper(p.Name))
 	clientSecret := os.Getenv(envName)
 	return clientSecret, clientSecret != ""
+}
+
+// GetAuthorizeUrl retrieves the authorize URL for this provider
+func (p *Provider) GetAuthorizeUrl() (*url.URL, error) {
+	apiUrl, err := url.ParseRequestURI(os.Getenv("KEEL_API_URL"))
+	if err != nil {
+		return nil, err
+	}
+
+	return apiUrl.JoinPath("/auth/authorize/" + strings.ToLower(p.Name)), nil
 }
 
 // GetCallbackUrl retrieves the callback URL for this provider
@@ -197,25 +190,53 @@ func (c *AuthConfig) GetProvider(name string) *Provider {
 	return nil
 }
 
-func (p *Provider) GetTokenUrl() (string, error) {
+// GetIssuerUrl retrieves the issuer URL for the provider
+func (p *Provider) GetIssuerUrl() (string, bool) {
 	switch p.Type {
 	case GoogleProvider:
-		return "https://accounts.google.com/o/oauth2/token", nil
-	case OAuthProvider:
-		return p.TokenUrl, nil
+		return "https://accounts.google.com", true
+	case FacebookProvider:
+		return "https://www.facebook.com", true
+	case GitLabProvider:
+		return "https://gitlab.com", true
+	case OpenIdConnectProvider:
+		return p.IssuerUrl, true
 	default:
-		return "", fmt.Errorf("the provider type '%s' should not have a token url configured", p.Type)
+		return "", false
 	}
 }
 
-func (p *Provider) GetAuthorizationUrl() (string, error) {
+func (p *Provider) GetTokenUrl() (string, bool) {
 	switch p.Type {
 	case GoogleProvider:
-		return "https://accounts.google.com/o/oauth2/auth", nil
+		return "https://oauth2.googleapis.com/token", true
+	case FacebookProvider:
+		return "https://graph.facebook.com/v11.0/oauth/access_token", true
+	case GitLabProvider:
+		return "https://gitlab.com/oauth/token", true
+	case OpenIdConnectProvider:
+		return p.TokenUrl, true
 	case OAuthProvider:
-		return p.AuthorizationUrl, nil
+		return p.TokenUrl, true
 	default:
-		return "", fmt.Errorf("the provider type '%s' should not have a token url configured", p.Type)
+		return "", false
+	}
+}
+
+func (p *Provider) GetAuthorizationUrl() (string, bool) {
+	switch p.Type {
+	case GoogleProvider:
+		return "https://accounts.google.com/o/oauth2/auth", true
+	case FacebookProvider:
+		return "https://www.facebook.com/v11.0/dialog/oauth", true
+	case GitLabProvider:
+		return "https://gitlab.com/oauth/authorize", true
+	case OpenIdConnectProvider:
+		return p.AuthorizationUrl, true
+	case OAuthProvider:
+		return p.AuthorizationUrl, true
+	default:
+		return "", false
 	}
 }
 
@@ -322,7 +343,7 @@ func findAuthProviderMissingOrInvalidAuthorizationUrl(providers []Provider) []Pr
 }
 
 func invalidName(name string) bool {
-	return !regexp.MustCompile(`^[A-Za-z0-9_-]*$`).MatchString(name)
+	return !regexp.MustCompile(`^[A-Za-z_]\w*$`).MatchString(name)
 }
 
 func invalidUrl(u string) bool {

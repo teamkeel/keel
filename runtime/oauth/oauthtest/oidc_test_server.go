@@ -39,6 +39,8 @@ type OidcServer struct {
 	PrivateKey      *rsa.PrivateKey
 	Users           map[string]*oauth.UserClaims
 	clients         []*OAuthClient
+	TokenUrl        string
+	AuthorizeUrl    string
 }
 
 func (o *OidcServer) SetUser(sub string, claims *oauth.UserClaims) {
@@ -297,6 +299,9 @@ func NewServer() (*OidcServer, error) {
 		"code_challenge_methods_supported":      []string{"plain", "S256"},
 		"introspection_endpoint":                fmt.Sprintf("%s/oauth2/introspect", oidcServer.Issuer),
 	}
+
+	oidcServer.AuthorizeUrl = oidcServer.Config["authorization_endpoint"].(string)
+	oidcServer.TokenUrl = oidcServer.Config["token_endpoint"].(string)
 
 	return oidcServer, nil
 }

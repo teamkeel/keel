@@ -160,7 +160,7 @@ func TestAuthProviders(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, "google", config.Auth.Providers[0].Type)
-	assert.Equal(t, "google-1", config.Auth.Providers[0].Name)
+	assert.Equal(t, "_Google_Client", config.Auth.Providers[0].Name)
 	assert.Equal(t, "foo_1", config.Auth.Providers[0].ClientId)
 
 	assert.Equal(t, "google", config.Auth.Providers[1].Type)
@@ -171,21 +171,17 @@ func TestAuthProviders(t *testing.T) {
 	assert.Equal(t, "Baidu", config.Auth.Providers[2].Name)
 	assert.Equal(t, "https://dev-skhlutl45lbqkvhv.us.auth0.com", config.Auth.Providers[2].IssuerUrl)
 	assert.Equal(t, "kasj28fnq09ak", config.Auth.Providers[2].ClientId)
-
-	assert.Equal(t, "oauth", config.Auth.Providers[3].Type)
-	assert.Equal(t, "Github", config.Auth.Providers[3].Name)
-	assert.Equal(t, "hfjuw983h1hfsdf", config.Auth.Providers[3].ClientId)
-	assert.Equal(t, "https://github.com/auth", config.Auth.Providers[3].AuthorizationUrl)
-	assert.Equal(t, "https://github.com/token", config.Auth.Providers[3].TokenUrl)
 }
 
 func TestInvalidProviderName(t *testing.T) {
 	_, err := Load("fixtures/test_auth_invalid_names.yaml")
 
-	assert.Contains(t, err.Error(), "auth provider '12 34' can only include alphanumeric characters, dashes and underscores\n")
-	assert.Contains(t, err.Error(), "auth provider 'Google Client' can only include alphanumeric characters, dashes and underscores\n")
-	assert.Contains(t, err.Error(), "auth provider 'google/' can only include alphanumeric characters, dashes and underscores\n")
-	assert.Contains(t, err.Error(), "auth provider 'google\\client' can only include alphanumeric characters, dashes and underscores\n")
+	assert.Contains(t, err.Error(), "auth provider name '12 34' must only include alphanumeric characters and underscores, and cannot start with a number\n")
+	assert.Contains(t, err.Error(), "auth provider name 'Google Client' must only include alphanumeric characters and underscores, and cannot start with a number\n")
+	assert.Contains(t, err.Error(), "auth provider name 'google/' must only include alphanumeric characters and underscores, and cannot start with a number\n")
+	assert.Contains(t, err.Error(), "auth provider name 'google\\client' must only include alphanumeric characters and underscores, and cannot start with a number\n")
+	assert.Contains(t, err.Error(), "auth provider name '1google' must only include alphanumeric characters and underscores, and cannot start with a number\n")
+	assert.Contains(t, err.Error(), "auth provider name 'Google-Client' must only include alphanumeric characters and underscores, and cannot start with a number\n")
 }
 
 func TestMissingProviderName(t *testing.T) {
@@ -205,9 +201,10 @@ func TestDuplicateProviderName(t *testing.T) {
 func TestInvalidProviderTypes(t *testing.T) {
 	_, err := Load("fixtures/test_auth_invalid_types.yaml")
 
-	assert.Contains(t, err.Error(), "auth provider 'google_1' has invalid type 'google_1' which must be one of: google, facebook, gitlab, oidc, oauth\n")
-	assert.Contains(t, err.Error(), "auth provider 'google_2' has invalid type 'Google' which must be one of: google, facebook, gitlab, oidc, oauth\n")
-	assert.Contains(t, err.Error(), "auth provider 'Baidu' has invalid type 'whoops' which must be one of: google, facebook, gitlab, oidc, oauth\n")
+	assert.Contains(t, err.Error(), "auth provider 'google_1' has invalid type 'google_1' which must be one of: google, facebook, gitlab, oidc\n")
+	assert.Contains(t, err.Error(), "auth provider 'google_2' has invalid type 'Google' which must be one of: google, facebook, gitlab, oidc\n")
+	assert.Contains(t, err.Error(), "auth provider 'Github' has invalid type 'oauth' which must be one of: google, facebook, gitlab, oidc\n")
+	assert.Contains(t, err.Error(), "auth provider 'Baidu' has invalid type 'whoops' which must be one of: google, facebook, gitlab, oidc\n")
 }
 
 func TestMissingClientId(t *testing.T) {
@@ -280,7 +277,7 @@ func TestAddOidcProvider(t *testing.T) {
 func TestAddOidcProviderInvalidName(t *testing.T) {
 	auth := &AuthConfig{}
 	err := auth.AddOidcProvider("my client", "https://mycustomoidc.com", "1234")
-	assert.ErrorContains(t, err, "auth provider 'my client' can only include alphanumeric characters, dashes and underscores")
+	assert.ErrorContains(t, err, "auth provider name 'my client' must only include alphanumeric characters and underscores, and cannot start with a number")
 }
 
 func TestGetClientSecret(t *testing.T) {
