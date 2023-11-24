@@ -68,15 +68,14 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, err.Error(), err)
 		}
 
-		issuer, hasIssuer := provider.GetIssuerUrl()
-		if !hasIssuer {
-			err = fmt.Errorf("no issuer available for sso login with provider: %s", provider.Name)
-			return common.InternalServerErrorResponse(ctx, err)
+		authUrl, hasAuthUrl := provider.GetAuthorizationUrl()
+		if !hasAuthUrl {
+			return common.InternalServerErrorResponse(ctx, errors.New("provider does not have an authorization endpoint configured"))
 		}
 
-		oidcProv, err := oidc.NewProvider(ctx, issuer)
-		if err != nil {
-			return common.InternalServerErrorResponse(ctx, err)
+		tokenUrl, hasTokenUrl := provider.GetTokenUrl()
+		if !hasTokenUrl {
+			return common.InternalServerErrorResponse(ctx, errors.New("provider does not have an token endpoint configured"))
 		}
 
 		callbackUrl, err := provider.GetCallbackUrl()
@@ -87,8 +86,11 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 		// RedirectURL is needed for provider to redirect back to Keel
 		// Secret is _not_ required when getting auth code
 		oauthConfig := &oauth2.Config{
-			ClientID:    provider.ClientId,
-			Endpoint:    oidcProv.Endpoint(),
+			ClientID: provider.ClientId,
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  authUrl,
+				TokenURL: tokenUrl,
+			},
 			Scopes:      []string{"openid", "email"},
 			RedirectURL: callbackUrl.String(),
 		}
@@ -189,7 +191,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 		token, err := oauthConfig.Exchange(ctx, code)
 		if err != nil {
 			var receiveErr *oauth2.RetrieveError
-			if errors.As(err, &receiveErr) {
+			if errors.As(err, &receiveErr) && receiveErr.ErrorCode != "" {
 				return redirectErrResponse(ctx, redirectUrl, receiveErr.ErrorCode, receiveErr.ErrorDescription, receiveErr)
 			}
 

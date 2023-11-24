@@ -33,16 +33,18 @@ func TestSsoLogin_Success(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:      config.OpenIdConnectProvider,
-				Name:      "my-oidc",
-				ClientId:  "oidc-client-id",
-				IssuerUrl: server.Issuer,
+				Type:             config.OpenIdConnectProvider,
+				Name:             "myoidc",
+				ClientId:         "oidc-client-id",
+				IssuerUrl:        server.Issuer,
+				TokenUrl:         server.TokenUrl,
+				AuthorizationUrl: server.AuthorizeUrl,
 			},
 		},
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("my-oidc")), "secret")
+	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "secret")
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -57,7 +59,7 @@ func TestSsoLogin_Success(t *testing.T) {
 	server.WithOAuthClient(&oauthtest.OAuthClient{
 		ClientId:     "oidc-client-id",
 		ClientSecret: "secret",
-		RedirectUrl:  runtime.URL + "/auth/callback/my-oidc",
+		RedirectUrl:  runtime.URL + "/auth/callback/myoidc",
 	})
 
 	server.SetUser("id|285620", &oauth.UserClaims{
@@ -66,7 +68,7 @@ func TestSsoLogin_Success(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/myoidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
@@ -76,7 +78,7 @@ func TestSsoLogin_Success(t *testing.T) {
 	require.Contains(t, httpResponse.Request.Header["Referer"][0], "https://myapp.com/signedup?code=")
 	require.Equal(t, http.StatusMovedPermanently, httpResponse.Request.Response.StatusCode)
 
-	require.Contains(t, httpResponse.Request.Response.Request.Header["Referer"][0], runtime.URL+"/auth/callback/my-oidc?code=")
+	require.Contains(t, httpResponse.Request.Response.Request.Header["Referer"][0], runtime.URL+"/auth/callback/myoidc?code=")
 	require.Equal(t, http.StatusFound, httpResponse.Request.Response.Request.Response.StatusCode)
 
 	var identities []map[string]any
@@ -113,16 +115,18 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:      config.OpenIdConnectProvider,
-				Name:      "my-oidc",
-				ClientId:  "oidc-client-id",
-				IssuerUrl: server.Issuer,
+				Type:             config.OpenIdConnectProvider,
+				Name:             "myoidc",
+				ClientId:         "oidc-client-id",
+				IssuerUrl:        server.Issuer,
+				TokenUrl:         server.TokenUrl,
+				AuthorizationUrl: server.AuthorizeUrl,
 			},
 		},
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("my-oidc")), "wrong-secret")
+	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "wrong-secret")
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -137,7 +141,7 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 	server.WithOAuthClient(&oauthtest.OAuthClient{
 		ClientId:     "oidc-client-id",
 		ClientSecret: "secret",
-		RedirectUrl:  runtime.URL + "/auth/callback/my-oidc",
+		RedirectUrl:  runtime.URL + "/auth/callback/myoidc",
 	})
 
 	server.SetUser("id|285620", &oauth.UserClaims{
@@ -146,7 +150,7 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/myoidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
@@ -156,7 +160,7 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 	require.Contains(t, httpResponse.Request.Header["Referer"][0], "https://myapp.com/signedup?error=access_denied&error_description=failed+to+exchange+code+at+provider+token+endpoint")
 	require.Equal(t, http.StatusMovedPermanently, httpResponse.Request.Response.StatusCode)
 
-	require.Contains(t, httpResponse.Request.Response.Request.Header["Referer"][0], runtime.URL+"/auth/callback/my-oidc?code=")
+	require.Contains(t, httpResponse.Request.Response.Request.Header["Referer"][0], runtime.URL+"/auth/callback/myoidc?code=")
 	require.Equal(t, http.StatusFound, httpResponse.Request.Response.Request.Response.StatusCode)
 
 	var identities []map[string]any
@@ -178,16 +182,18 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:      config.OpenIdConnectProvider,
-				Name:      "my-oidc",
-				ClientId:  "oidc-client-id",
-				IssuerUrl: server.Issuer,
+				Type:             config.OpenIdConnectProvider,
+				Name:             "myoidc",
+				ClientId:         "oidc-client-id",
+				IssuerUrl:        server.Issuer,
+				TokenUrl:         server.TokenUrl,
+				AuthorizationUrl: server.AuthorizeUrl,
 			},
 		},
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("my-oidc")), "secret")
+	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "secret")
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -202,7 +208,7 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	server.WithOAuthClient(&oauthtest.OAuthClient{
 		ClientId:     "oidc-client-id",
 		ClientSecret: "secret",
-		RedirectUrl:  runtime.URL + "/auth/callback/my-oidc",
+		RedirectUrl:  runtime.URL + "/auth/callback/myoidc",
 	})
 
 	server.SetUser("id|285620", &oauth.UserClaims{
@@ -229,7 +235,7 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	require.Equal(t, "login url malformed or provider not found", errorResponse.ErrorDescription)
 
 	// Make an SSO login request with additional fragment
-	request, err = http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc/oops", nil)
+	request, err = http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/myoidc/oops", nil)
 	require.NoError(t, err)
 
 	httpResponse, err = runtime.Client().Do(request)
@@ -281,10 +287,12 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:      config.OpenIdConnectProvider,
-				Name:      "my-oidc",
-				ClientId:  "oidc-client-id",
-				IssuerUrl: server.Issuer,
+				Type:             config.OpenIdConnectProvider,
+				Name:             "myoidc",
+				ClientId:         "oidc-client-id",
+				IssuerUrl:        server.Issuer,
+				TokenUrl:         server.TokenUrl,
+				AuthorizationUrl: server.AuthorizeUrl,
 			},
 		},
 	})
@@ -302,7 +310,7 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 	server.WithOAuthClient(&oauthtest.OAuthClient{
 		ClientId:     "oidc-client-id",
 		ClientSecret: "secret",
-		RedirectUrl:  runtime.URL + "/auth/callback/my-oidc",
+		RedirectUrl:  runtime.URL + "/auth/callback/myoidc",
 	})
 
 	server.SetUser("id|285620", &oauth.UserClaims{
@@ -311,7 +319,7 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/myoidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
@@ -326,7 +334,7 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
-	require.Equal(t, "client secret not configured for provider: my-oidc", errorResponse.ErrorDescription)
+	require.Equal(t, "client secret not configured for provider: myoidc", errorResponse.ErrorDescription)
 
 	var identities []map[string]any
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
@@ -347,16 +355,18 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:      config.OpenIdConnectProvider,
-				Name:      "my-oidc",
-				ClientId:  "oidc-client-id",
-				IssuerUrl: server.Issuer,
+				Type:             config.OpenIdConnectProvider,
+				Name:             "myoidc",
+				ClientId:         "oidc-client-id",
+				IssuerUrl:        server.Issuer,
+				TokenUrl:         server.TokenUrl,
+				AuthorizationUrl: server.AuthorizeUrl,
 			},
 		},
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("my-oidc")), "secret")
+	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "secret")
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -374,7 +384,7 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/myoidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
@@ -403,16 +413,18 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:      config.OpenIdConnectProvider,
-				Name:      "my-oidc",
-				ClientId:  "oidc-client-id",
-				IssuerUrl: server.Issuer,
+				Type:             config.OpenIdConnectProvider,
+				Name:             "myoidc",
+				ClientId:         "oidc-client-id",
+				IssuerUrl:        server.Issuer,
+				TokenUrl:         server.TokenUrl,
+				AuthorizationUrl: server.AuthorizeUrl,
 			},
 		},
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("my-oidc")), "secret")
+	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "secret")
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -436,7 +448,7 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/myoidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
@@ -470,16 +482,18 @@ func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
 		Providers: []config.Provider{
 			{
-				Type:      config.OpenIdConnectProvider,
-				Name:      "my-oidc",
-				ClientId:  "oidc-client-id",
-				IssuerUrl: server.Issuer,
+				Type:             config.OpenIdConnectProvider,
+				Name:             "myoidc",
+				ClientId:         "oidc-client-id",
+				IssuerUrl:        server.Issuer,
+				TokenUrl:         server.TokenUrl,
+				AuthorizationUrl: server.AuthorizeUrl,
 			},
 		},
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("my-oidc")), "secret")
+	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "secret")
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -503,7 +517,7 @@ func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
 	})
 
 	// Make an SSO login request
-	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/my-oidc", nil)
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/myoidc", nil)
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
