@@ -61,6 +61,7 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 	if err != nil {
 		return nil, err
 	}
+	defer mainDB.Close()
 
 	_, err = mainDB.Exec("select pg_terminate_backend(pg_stat_activity.pid) from pg_stat_activity where datname = '" + dbName + "' and pg_stat_activity.pid <> pg_backend_pid();")
 	if err != nil {
@@ -86,7 +87,7 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 	// at the end of the test. We need to explicitly close the connection
 	// so the mainDB connection can drop the database.
 	testDBConnInfo := dbConnInfo.WithDatabase(dbName)
-
+	fmt.Println(testDBConnInfo.String())
 	database, err := db.New(ctx, testDBConnInfo.String())
 	if err != nil {
 		return nil, err

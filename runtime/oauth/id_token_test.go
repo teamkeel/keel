@@ -17,7 +17,7 @@ func TestIdTokenAuth_Valid(t *testing.T) {
 	ctx := context.Background()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -50,7 +50,7 @@ func TestIdTokenAuthMultipleIssuers_Valid(t *testing.T) {
 	ctx := context.Background()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -95,7 +95,7 @@ func TestIdTokenAuth_IncorrectlySigned(t *testing.T) {
 	ctx := context.Background()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -133,7 +133,7 @@ func TestIdTokenAuth_IssuerMismatch(t *testing.T) {
 	ctx := context.Background()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -171,7 +171,7 @@ func TestIdTokenAuth_ClientIdMismatch(t *testing.T) {
 	ctx := context.Background()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -226,7 +226,7 @@ func TestIdTokenAuth_IssuerNotConfigured(t *testing.T) {
 	ctx := context.Background()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config with no issuer
@@ -251,7 +251,7 @@ func TestIdTokenAuth_ExpiredIdToken(t *testing.T) {
 	ctx := context.Background()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config

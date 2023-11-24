@@ -3,6 +3,7 @@ package authapi_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,7 +31,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -97,7 +98,7 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -179,7 +180,7 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -298,7 +299,7 @@ func TestTokenEndpoint_MissingGrantType(t *testing.T) {
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
-	require.Equal(t, "the grant-type field is required with either 'refresh_token' or 'token_exchange'", errorResponse.ErrorDescription)
+	require.Equal(t, "the grant-type field is required with either 'refresh_token', 'token_exchange' or 'authorization_code'", errorResponse.ErrorDescription)
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
@@ -319,7 +320,7 @@ func TestTokenEndpoint_WrongGrantType(t *testing.T) {
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "unsupported_grant_type", errorResponse.Error)
-	require.Equal(t, "the only supported grants are 'refresh_token' and 'token_exchange'", errorResponse.ErrorDescription)
+	require.Equal(t, "the only supported grants are 'refresh_token', 'token_exchange' or 'authorization_code'", errorResponse.ErrorDescription)
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
@@ -415,7 +416,7 @@ func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	server.SetUser("id|285620", &oauth.UserClaims{
@@ -449,7 +450,7 @@ func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -532,7 +533,7 @@ func TestRefreshTokenGrantRotationDisabled_Valid(t *testing.T) {
 	defer database.Close()
 
 	// OIDC test server
-	server, err := oauthtest.NewOIDCServer()
+	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
 
 	// Set up auth config
@@ -619,7 +620,7 @@ func TestRefreshTokenGrant_NoRefreshToken(t *testing.T) {
 	form.Add("grant_type", "refresh_token")
 	request.URL.RawQuery = form.Encode()
 
-	// Handle runtime request, expecting TokenErrorResponse
+	// Handle runtime request, expecting ErrorResponse
 	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
@@ -636,7 +637,7 @@ func TestRefreshTokenGrant_EmptyRefreshToken(t *testing.T) {
 	// Make a refresh token grant request
 	request := makeRefreshTokenRequest(ctx, "")
 
-	// Handle runtime request, expecting TokenErrorResponse
+	// Handle runtime request, expecting ErrorResponse
 	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
 	require.NoError(t, err)
 
@@ -646,14 +647,85 @@ func TestRefreshTokenGrant_EmptyRefreshToken(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
+func TestAuthorizationCodeGrant_Valid(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	code, err := oauth.NewAuthCode(ctx, "identity_id")
+	require.NoError(t, err)
+
+	// Make a auth code grant request
+	request := makeAuthorizationCodeRequest(ctx, code)
+
+	// Handle runtime request, expecting TokenResponse
+	response, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.NotEmpty(t, response.AccessToken)
+	require.Equal(t, "bearer", response.TokenType)
+	require.NotEmpty(t, response.ExpiresIn)
+	require.NotEmpty(t, response.RefreshToken)
+	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+
+	accessToken1Issuer, err := auth.ExtractClaimFromToken(response.AccessToken, "iss")
+	require.NoError(t, err)
+	require.Equal(t, accessToken1Issuer, "https://keel.so")
+
+	accessToken1Sub, err := auth.ExtractClaimFromToken(response.AccessToken, "sub")
+	require.NoError(t, err)
+	require.Equal(t, accessToken1Sub, "identity_id")
+}
+
+func TestAuthorizationCodeGrant_InvalidCode(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// Make a auth code grant request
+	request := makeAuthorizationCodeRequest(ctx, "whoops")
+
+	// Handle runtime request, expecting ErrorResponse
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
+	require.Equal(t, "invalid_client", errorResponse.Error)
+	require.Equal(t, "possible causes may be that the auth code has been consumed or has expired", errorResponse.ErrorDescription)
+	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+}
+
+func TestAuthorizationCodeGrant_NoCode(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// Make a auth code grant request
+	request := makeAuthorizationCodeRequest(ctx, "")
+	form := url.Values{}
+	form.Add("grant_type", "authorization_code")
+	request.URL.RawQuery = form.Encode()
+
+	// Handle runtime request, expecting ErrorResponse
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
+	require.Equal(t, "invalid_request", errorResponse.Error)
+	require.Equal(t, "the authorization code must be provided in the code field", errorResponse.ErrorDescription)
+	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+}
+
 func handleRuntimeRequest[T any](schema *proto.Schema, req *http.Request) (T, *http.Response, error) {
 	var response T
 	handler := runtime.NewHttpHandler(schema)
 	w := httptest.NewRecorder()
 
 	handler.ServeHTTP(w, req)
-
 	httpResponse := w.Result()
+
+	if httpResponse.StatusCode == http.StatusInternalServerError {
+		return response, nil, errors.New("internal server response from oidc server")
+	}
+
 	data, err := io.ReadAll(httpResponse.Body)
 	if err != nil {
 		return response, nil, err
@@ -689,6 +761,19 @@ func makeRefreshTokenRequest(ctx context.Context, token string) *http.Request {
 	form := url.Values{}
 	form.Add("grant_type", "refresh_token")
 	form.Add("refresh_token", token)
+	request.URL.RawQuery = form.Encode()
+	request = request.WithContext(ctx)
+
+	return request
+}
+
+func makeAuthorizationCodeRequest(ctx context.Context, code string) *http.Request {
+	request := httptest.NewRequest(http.MethodPost, "http://mykeelapp.keel.so/auth/token", nil)
+	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	form := url.Values{}
+	form.Add("grant_type", "authorization_code")
+	form.Add("code", code)
 	request.URL.RawQuery = form.Encode()
 	request = request.WithContext(ctx)
 

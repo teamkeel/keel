@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -123,11 +124,13 @@ const (
 	ConfigIncorrectNamingErrorString                 = "%s must be written in upper snakecase"
 	ConfigReservedNameErrorString                    = "environment variable %s cannot start with %s as it is reserved"
 	ConfigAuthTokenExpiryMustBePositive              = "%s token lifespan cannot be negative or zero for field: %s"
+	ConfigAuthProviderInvalidName                    = "auth provider '%s' can only include alphanumeric characters, dashes and underscores"
 	ConfigAuthProviderMissingFieldAtIndexErrorString = "auth provider at index %v is missing field: %s"
 	ConfigAuthProviderMissingFieldErrorString        = "auth provider '%s' is missing field: %s"
 	ConfigAuthProviderInvalidTypeErrorString         = "auth provider '%s' has invalid type '%s' which must be one of: %s"
 	ConfigAuthProviderDuplicateErrorString           = "auth provider name '%s' has been defined more than once, but must be unique"
 	ConfigAuthProviderInvalidHttpUrlErrorString      = "auth provider '%s' has missing or invalid https url for field: %s"
+	ConfigAuthInvalidRedirectUrlErrorString          = "auth redirectUrl '%s' is not a valid url"
 )
 
 type ConfigErrors struct {
@@ -252,6 +255,14 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 		})
 	}
 
+	invalidProviderNames := findAuthProviderInvalidName(config.Auth.Providers)
+	for _, p := range invalidProviderNames {
+		errors = append(errors, &ConfigError{
+			Type:    "invalid",
+			Message: fmt.Sprintf(ConfigAuthProviderInvalidName, p.Name),
+		})
+	}
+
 	missingProviderNames := findAuthProviderMissingName(config.Auth.Providers)
 	for i := range missingProviderNames {
 		errors = append(errors, &ConfigError{
@@ -324,6 +335,16 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 			Type:    "invalid",
 			Message: fmt.Sprintf(ConfigAuthProviderInvalidHttpUrlErrorString, p.Name, "authorizationUrl"),
 		})
+	}
+
+	if config.Auth.RedirectUrl != nil {
+		_, err := url.ParseRequestURI(*config.Auth.RedirectUrl)
+		if err != nil {
+			errors = append(errors, &ConfigError{
+				Type:    "invalid",
+				Message: fmt.Sprintf(ConfigAuthInvalidRedirectUrlErrorString, *config.Auth.RedirectUrl),
+			})
+		}
 	}
 
 	if len(errors) == 0 {

@@ -39,7 +39,7 @@ func GetVersion() string {
 
 func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	var apiHandler common.HandlerFunc
-	var authHandler common.HandlerFunc
+	var authHandler func(http.ResponseWriter, *http.Request) common.Response
 	if currSchema != nil {
 		apiHandler = NewApiHandler(currSchema)
 		authHandler = NewAuthHandler(currSchema)
@@ -66,10 +66,8 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		path := r.URL.Path
 		switch {
 		case strings.HasPrefix(path, "/auth"):
-			w.Header().Add("Content-Type", "application/json")
-			response = authHandler(r)
+			response = authHandler(w, r)
 		default:
-			w.Header().Add("Content-Type", "application/json")
 			response = apiHandler(r)
 		}
 
@@ -93,19 +91,22 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 }
 
 // NewAuthHandler handles requests to the authentication endpoints
-func NewAuthHandler(schema *proto.Schema) common.HandlerFunc {
+func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request) common.Response {
 	handleToken := authapi.TokenEndpointHandler(schema)
-	handleOAuth := authapi.OAuthHandler(schema)
 	handleRevoke := authapi.RevokeHandler(schema)
+	handleLogin := authapi.LoginHandler(schema)
+	handleCallback := authapi.CallbackHandler(schema)
 
-	return func(r *http.Request) common.Response {
+	return func(w http.ResponseWriter, r *http.Request) common.Response {
 		switch {
 		case r.URL.Path == "/auth/token":
 			return handleToken(r)
-		case strings.HasPrefix(r.URL.Path, "/auth/oauth"):
-			return handleOAuth(r)
 		case r.URL.Path == "/auth/revoke":
 			return handleRevoke(r)
+		case strings.HasPrefix(r.URL.Path, "/auth/login"):
+			return handleLogin(r)
+		case strings.HasPrefix(r.URL.Path, "/auth/callback"):
+			return handleCallback(r)
 		default:
 			return common.Response{
 				Status: http.StatusNotFound,

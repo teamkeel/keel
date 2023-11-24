@@ -1,14 +1,18 @@
 package common
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/graphql/gqlerrors"
 	"github.com/teamkeel/keel/casing"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Response struct {
@@ -26,8 +30,9 @@ func NewJsonResponse(status int, body any, meta *ResponseMetadata) Response {
 	b, _ := json.Marshal(body)
 
 	r := Response{
-		Status: status,
-		Body:   b,
+		Status:  status,
+		Body:    b,
+		Headers: map[string][]string{},
 	}
 
 	if meta != nil {
@@ -38,7 +43,37 @@ func NewJsonResponse(status int, body any, meta *ResponseMetadata) Response {
 		}
 	}
 
+	// Content-Type must only be a single value
+	// https://www.rfc-editor.org/rfc/rfc7230#section-3.2.2
+	r.Headers["Content-Type"] = []string{"application/json"}
+
 	return r
+}
+
+func NewRedirectResponse(url *url.URL) Response {
+	// This response code means that the URI of requested resource has been changed temporarily.
+	// Further changes in the URI might be made in the future.
+	code := http.StatusFound
+
+	// The body content for a 302 usually contains a short hypertext note with a hyperlink to the different URI(s).
+	// https://www.rfc-editor.org/rfc/rfc9110.html#name-302-found
+	return Response{
+		Status: code,
+		Body:   []byte("<a href=\"" + url.String() + "\">" + http.StatusText(code) + "</a>.\n"),
+		Headers: map[string][]string{
+			"Location":     {url.String()},
+			"Content-Type": {"text/html; charset=utf-8"},
+		},
+	}
+}
+
+func InternalServerErrorResponse(ctx context.Context, err error) Response {
+	span := trace.SpanFromContext(ctx)
+
+	span.RecordError(err, trace.WithStackTrace(true))
+	span.SetStatus(codes.Error, err.Error())
+
+	return NewJsonResponse(http.StatusInternalServerError, nil, nil)
 }
 
 type HandlerFunc func(r *http.Request) Response

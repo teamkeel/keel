@@ -1,31 +1,20 @@
 auth:
-  tokens:
-    accessTokenExpiry: 3600
-    refreshTokenExpiry: 604800
-    refreshTokenRotationEnabled: false
-
-  redirectUrl: http://localhost:8000/signedin
-
   providers:
-    # Built-in Google provider
     - type: google
-      name: google-1
+      name: 12 34
       clientId: foo_1
 
-    # Built-in Google provider
     - type: google
-      name: google_2
+      name: Google Client
       clientId: foo_2
 
-    # Custom OIDC
     - type: oidc
-      name: Baidu
+      name: google/
       issuerUrl: 'https://dev-skhlutl45lbqkvhv.us.auth0.com'
       clientId: 'kasj28fnq09ak'
 
-    # Custom OAuth
     - type: oauth
-      name: Github
+      name: google\client
       clientId: hfjuw983h1hfsdf
       authorizationUrl: https://github.com/auth
       tokenUrl: https://github.com/token

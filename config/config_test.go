@@ -129,6 +129,12 @@ func TestAuthTokens(t *testing.T) {
 	assert.Equal(t, false, config.Auth.RefreshTokenRotationEnabled())
 }
 
+func TestAuthInvalidRedirectUrl(t *testing.T) {
+	_, err := Load("fixtures/test_auth_invalid_redirect_url.yaml")
+
+	assert.Contains(t, err.Error(), "auth redirectUrl 'not a url' is not a valid url\n")
+}
+
 func TestAuthDefaults(t *testing.T) {
 	config, err := Load("fixtures/test_auth_empty.yaml")
 	assert.NoError(t, err)
@@ -171,6 +177,15 @@ func TestAuthProviders(t *testing.T) {
 	assert.Equal(t, "hfjuw983h1hfsdf", config.Auth.Providers[3].ClientId)
 	assert.Equal(t, "https://github.com/auth", config.Auth.Providers[3].AuthorizationUrl)
 	assert.Equal(t, "https://github.com/token", config.Auth.Providers[3].TokenUrl)
+}
+
+func TestInvalidProviderName(t *testing.T) {
+	_, err := Load("fixtures/test_auth_invalid_names.yaml")
+
+	assert.Contains(t, err.Error(), "auth provider '12 34' can only include alphanumeric characters, dashes and underscores\n")
+	assert.Contains(t, err.Error(), "auth provider 'Google Client' can only include alphanumeric characters, dashes and underscores\n")
+	assert.Contains(t, err.Error(), "auth provider 'google/' can only include alphanumeric characters, dashes and underscores\n")
+	assert.Contains(t, err.Error(), "auth provider 'google\\client' can only include alphanumeric characters, dashes and underscores\n")
 }
 
 func TestMissingProviderName(t *testing.T) {
@@ -252,7 +267,7 @@ func TestAddOidcProvider(t *testing.T) {
 
 	assert.Len(t, config.Auth.GetOidcProviders(), 1)
 
-	err = config.Auth.AddOidcProvider("Custom Auth", "https://mycustomoidc.com", "1234")
+	err = config.Auth.AddOidcProvider("CustomAuth", "https://mycustomoidc.com", "1234")
 	assert.NoError(t, err)
 
 	assert.Len(t, config.Auth.GetOidcProviders(), 2)
@@ -260,4 +275,107 @@ func TestAddOidcProvider(t *testing.T) {
 	byIssuer, err := config.Auth.GetOidcProvidersByIssuer("https://mycustomoidc.com")
 	assert.NoError(t, err)
 	assert.Len(t, byIssuer, 1)
+}
+
+func TestAddOidcProviderInvalidName(t *testing.T) {
+	auth := &AuthConfig{}
+	err := auth.AddOidcProvider("my client", "https://mycustomoidc.com", "1234")
+	assert.ErrorContains(t, err, "auth provider 'my client' can only include alphanumeric characters, dashes and underscores")
+}
+
+func TestGetClientSecret(t *testing.T) {
+	provider := &Provider{
+		Name: "google",
+	}
+	t.Setenv("KEEL_AUTH_PROVIDER_SECRET_GOOGLE", "secret")
+
+	secret, hasSecret := provider.GetClientSecret()
+	assert.True(t, hasSecret)
+	assert.Equal(t, "secret", secret)
+}
+
+func TestGetClientSecret_WithUnderscore(t *testing.T) {
+	provider := &Provider{
+		Name: "google_client",
+	}
+	t.Setenv("KEEL_AUTH_PROVIDER_SECRET_GOOGLE_CLIENT", "secret")
+
+	secret, hasSecret := provider.GetClientSecret()
+	assert.True(t, hasSecret)
+	assert.Equal(t, "secret", secret)
+}
+
+func TestGetClientSecret_WithCapitals(t *testing.T) {
+	provider := &Provider{
+		Name: "GOOGLE_Client",
+	}
+	t.Setenv("KEEL_AUTH_PROVIDER_SECRET_GOOGLE_CLIENT", "secret")
+
+	secret, hasSecret := provider.GetClientSecret()
+	assert.True(t, hasSecret)
+	assert.Equal(t, "secret", secret)
+}
+
+func TestGetClientSecret_WithNumbers(t *testing.T) {
+	provider := &Provider{
+		Name: "client_2",
+	}
+	t.Setenv("KEEL_AUTH_PROVIDER_SECRET_CLIENT_2", "secret")
+
+	secret, hasSecret := provider.GetClientSecret()
+	assert.True(t, hasSecret)
+	assert.Equal(t, "secret", secret)
+}
+
+func TestGetClientSecret_NotExists(t *testing.T) {
+	provider := &Provider{
+		Name: "google",
+	}
+
+	secret, hasSecret := provider.GetClientSecret()
+	assert.False(t, hasSecret)
+	assert.Empty(t, secret)
+}
+
+func TestGetCallbackUrl_Localhost(t *testing.T) {
+	provider := &Provider{
+		Name: "google",
+	}
+	t.Setenv("KEEL_API_URL", "http://localhost:8000")
+
+	url, err := provider.GetCallbackUrl()
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost:8000/auth/callback/google", url.String())
+}
+
+func TestGetCallbackUrl_Web(t *testing.T) {
+	provider := &Provider{
+		Name: "google",
+	}
+	t.Setenv("KEEL_API_URL", "https://myapplication.com/keel/")
+
+	url, err := provider.GetCallbackUrl()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://myapplication.com/keel/auth/callback/google", url.String())
+}
+
+func TestGetCallbackUrl_WithUnderscoredAndCapitals(t *testing.T) {
+	provider := &Provider{
+		Name: "GOOGLE_Client_1",
+	}
+	t.Setenv("KEEL_API_URL", "http://localhost:8000")
+
+	url, err := provider.GetCallbackUrl()
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost:8000/auth/callback/google_client_1", url.String())
+}
+
+func TestGetCallbackUrl_NoKeelApiUrl(t *testing.T) {
+	provider := &Provider{
+		Name: "google",
+	}
+
+	url, err := provider.GetCallbackUrl()
+	assert.ErrorContains(t, err, "empty url")
+	assert.Nil(t, url)
 }
