@@ -141,8 +141,8 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 		}
 
 		// If the auth provider errored, then package this up and send it as an error with the redirectUrl
-		if callbackError := r.FormValue("error"); callbackError != "" {
-			err := fmt.Errorf("provider error: %s. %s", callbackError, r.FormValue("error_description"))
+		if callbackError := r.URL.Query().Get("error"); callbackError != "" {
+			err := fmt.Errorf("provider error: %s. %s", callbackError, r.URL.Query().Get("error_description"))
 			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, err.Error(), err)
 		}
 
@@ -182,8 +182,8 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			RedirectURL: callbackUrl.String(),
 		}
 
-		code := r.FormValue("code")
-		if !r.Form.Has("code") || code == "" {
+		code := r.URL.Query().Get("code")
+		if code == "" {
 			return common.InternalServerErrorResponse(ctx, errors.New("code not returned with callback url"))
 		}
 
