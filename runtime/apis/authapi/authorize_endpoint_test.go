@@ -30,8 +30,14 @@ func TestSsoLogin_Success(t *testing.T) {
 	require.NoError(t, err)
 	defer server.Close()
 
+	// Redirect handler
+	redirectHandler := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	require.NoError(t, err)
+
 	// Set up auth config
-	redirectUrl := "https://myapp.com/signedup"
+	redirectUrl := redirectHandler.URL + "/signedup"
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
@@ -58,7 +64,10 @@ func TestSsoLogin_Success(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+
 	defer runtime.Close()
+	runtime.CloseClientConnections()
+	runtime.Client().CloseIdleConnections()
 
 	t.Setenv("KEEL_API_URL", runtime.URL)
 
@@ -78,14 +87,12 @@ func TestSsoLogin_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
+	//httpResponse.Body.Close()
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
-	require.Contains(t, httpResponse.Request.Header["Referer"][0], "https://myapp.com/signedup?code=")
-	require.Equal(t, http.StatusMovedPermanently, httpResponse.Request.Response.StatusCode)
-
-	require.Contains(t, httpResponse.Request.Response.Request.Header["Referer"][0], runtime.URL+"/auth/callback/myoidc?code=")
-	require.Equal(t, http.StatusFound, httpResponse.Request.Response.Request.Response.StatusCode)
+	require.Equal(t, http.StatusFound, httpResponse.Request.Response.StatusCode)
+	require.Contains(t, httpResponse.Request.Response.Header["Location"][0], redirectUrl+"?code=")
 
 	var identities []map[string]any
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
@@ -116,8 +123,14 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 	require.NoError(t, err)
 	defer server.Close()
 
+	// Redirect handler
+	redirectHandler := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	require.NoError(t, err)
+
 	// Set up auth config
-	redirectUrl := "https://myapp.com/signedup"
+	redirectUrl := redirectHandler.URL + "/signedup"
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
@@ -167,11 +180,8 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
-	require.Contains(t, httpResponse.Request.Header["Referer"][0], "https://myapp.com/signedup?error=access_denied&error_description=failed+to+exchange+code+at+provider+token+endpoint")
-	require.Equal(t, http.StatusMovedPermanently, httpResponse.Request.Response.StatusCode)
-
-	require.Contains(t, httpResponse.Request.Response.Request.Header["Referer"][0], runtime.URL+"/auth/callback/myoidc?code=")
-	require.Equal(t, http.StatusFound, httpResponse.Request.Response.Request.Response.StatusCode)
+	require.Equal(t, http.StatusFound, httpResponse.Request.Response.StatusCode)
+	require.Contains(t, httpResponse.Request.Response.Header["Location"][0], redirectUrl+"?error=access_denied&error_description=failed+to+exchange+code+at+provider+token+endpoint")
 
 	var identities []map[string]any
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
@@ -366,8 +376,14 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 	require.NoError(t, err)
 	defer server.Close()
 
+	// Redirect handler
+	redirectHandler := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	require.NoError(t, err)
+
 	// Set up auth config
-	redirectUrl := "https://myapp.com/signedup"
+	redirectUrl := redirectHandler.URL + "/signedup"
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
@@ -411,8 +427,8 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
-	require.Contains(t, httpResponse.Request.Header["Referer"][0], "https://myapp.com/signedup?error=access_denied&error_description=provider+error%3A+invalid_request.+client+id+not+registered+on+server")
-	require.Equal(t, http.StatusMovedPermanently, httpResponse.Request.Response.StatusCode)
+	require.Equal(t, http.StatusFound, httpResponse.Request.Response.StatusCode)
+	require.Contains(t, httpResponse.Request.Response.Header["Location"][0], redirectUrl+"?error=access_denied&error_description=provider+error%3A+invalid_request.+client+id+not+registered+on+server")
 
 	var identities []map[string]any
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
@@ -601,7 +617,7 @@ func TestGetClientSecret_WithCapitals(t *testing.T) {
 
 	ctx := context.Background()
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
-		"KEEL_AUTH_PROVIDER_SECRET_GOOGLE": "secret",
+		"KEEL_AUTH_PROVIDER_SECRET_GOOGLE_CLIENT": "secret",
 	})
 
 	secret, hasSecret := authapi.GetClientSecret(ctx, provider)

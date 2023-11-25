@@ -209,7 +209,6 @@ func NewServer() (*OidcServer, error) {
 			// If the end-user denies the login request or if the request fails for reasons other than an
 			// invalid client_id or redirect_uri, the OIDC server will pass any errors onto the redirect_uri.
 			http.Redirect(w, r, redirectUrl.String(), http.StatusFound)
-
 		case "/oauth2/token":
 			idToken, _ := oidcServer.FetchIdToken("id|285620", []string{oidcServer.clients[0].ClientId})
 
