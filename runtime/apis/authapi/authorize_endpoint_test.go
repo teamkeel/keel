@@ -64,10 +64,7 @@ func TestSsoLogin_Success(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
-
 	defer runtime.Close()
-	runtime.CloseClientConnections()
-	runtime.Client().CloseIdleConnections()
 
 	t.Setenv("KEEL_API_URL", runtime.URL)
 
@@ -87,7 +84,6 @@ func TestSsoLogin_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	httpResponse, err := runtime.Client().Do(request)
-	//httpResponse.Body.Close()
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
