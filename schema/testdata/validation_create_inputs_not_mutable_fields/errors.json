@@ -1,23 +1,6 @@
 {
   "errors": [
     {
-      "message": "Cannot set the field 'id' as it is a built-in field and can only be mutated internally",
-      "hint": "Target another field on the model or remove the input entirely",
-      "code": "ActionInputError",
-      "pos": {
-        "filename": "testdata/validation_create_inputs_not_mutable_fields/schema.keel",
-        "offset": 158,
-        "line": 9,
-        "column": 37
-      },
-      "endPos": {
-        "filename": "testdata/validation_create_inputs_not_mutable_fields/schema.keel",
-        "offset": 160,
-        "line": 9,
-        "column": 39
-      }
-    },
-    {
       "message": "Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally",
       "hint": "Target another field on the model or remove the input entirely",
       "code": "ActionInputError",

@@ -319,7 +319,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 		// If the input is targeting a model field, then it is either:
 		//  - the id (primary key), in which case this is an association to an existing row, OR
 		//  - the remaining value fields, in which case we are adding this values to the newly related model.
-		if field.PrimaryKey {
+		if field.PrimaryKey && input.Name != "id" {
 			// We know this needs to be a FK on the referencing row.
 			fieldName := fmt.Sprintf("%sId", input.Target[len(input.Target)-2])
 
