@@ -62,7 +62,7 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 		}
 
 		// If the secret is not yet, then package this up and send it as an error with the redirectUrl
-		_, hasSecret := provider.GetClientSecret()
+		_, hasSecret := GetClientSecret(ctx, provider)
 		if !hasSecret {
 			err := fmt.Errorf("client secret not configured for provider: %s", provider.Name)
 			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, err.Error(), err)
@@ -151,7 +151,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		secret, hasSecret := provider.GetClientSecret()
+		secret, hasSecret := GetClientSecret(ctx, provider)
 		if !hasSecret {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
@@ -256,6 +256,12 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 		return common.NewRedirectResponse(redirectUrl)
 	}
 
+}
+
+func GetClientSecret(ctx context.Context, provider *config.Provider) (string, bool) {
+	name := provider.GetClientSecretName()
+	secret, err := runtimectx.GetSecret(ctx, name)
+	return secret, err == nil
 }
 
 func providerFromPath(ctx context.Context, url *url.URL) (*config.Provider, error) {

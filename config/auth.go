@@ -143,11 +143,9 @@ func (c *AuthConfig) GetOidcProvidersByIssuer(issuer string) ([]Provider, error)
 	return providers, nil
 }
 
-// GetClientSecret retrieves the client secret from the host's env vars
-func (p *Provider) GetClientSecret() (string, bool) {
-	envName := fmt.Sprintf("%s%s", ProviderSecretPrefix, strings.ToUpper(p.Name))
-	clientSecret := os.Getenv(envName)
-	return clientSecret, clientSecret != ""
+// GetClientSecret generates the name of the client secret
+func (p *Provider) GetClientSecretName() string {
+	return fmt.Sprintf("%s%s", ProviderSecretPrefix, strings.ToUpper(p.Name))
 }
 
 // GetAuthorizeUrl retrieves the authorize URL for this provider
@@ -166,7 +164,6 @@ func (p *Provider) GetCallbackUrl() (*url.URL, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return apiUrl.JoinPath("/auth/callback/" + strings.ToLower(p.Name)), nil
 }
 

@@ -1,6 +1,7 @@
 package authapi_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/runtime"
@@ -26,6 +28,7 @@ func TestSsoLogin_Success(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	redirectUrl := "https://myapp.com/signedup"
@@ -44,7 +47,9 @@ func TestSsoLogin_Success(t *testing.T) {
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "secret")
+	ctx = runtimectx.WithSecrets(ctx, map[string]string{
+		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
+	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -53,6 +58,7 @@ func TestSsoLogin_Success(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+	defer runtime.Close()
 
 	t.Setenv("KEEL_API_URL", runtime.URL)
 
@@ -108,6 +114,7 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	redirectUrl := "https://myapp.com/signedup"
@@ -126,7 +133,9 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "wrong-secret")
+	ctx = runtimectx.WithSecrets(ctx, map[string]string{
+		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "wrong-secret",
+	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -135,6 +144,7 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+	defer runtime.Close()
 
 	t.Setenv("KEEL_API_URL", runtime.URL)
 
@@ -175,6 +185,7 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	redirectUrl := "https://myapp.com/signedup"
@@ -193,7 +204,9 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "secret")
+	ctx = runtimectx.WithSecrets(ctx, map[string]string{
+		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
+	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -202,6 +215,7 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+	defer runtime.Close()
 
 	t.Setenv("KEEL_API_URL", runtime.URL)
 
@@ -280,6 +294,7 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	redirectUrl := "https://myapp.com/signedup"
@@ -304,6 +319,7 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+	defer runtime.Close()
 
 	t.Setenv("KEEL_API_URL", runtime.URL)
 
@@ -348,6 +364,7 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	redirectUrl := "https://myapp.com/signedup"
@@ -366,7 +383,9 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "secret")
+	ctx = runtimectx.WithSecrets(ctx, map[string]string{
+		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
+	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -375,6 +394,7 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+	defer runtime.Close()
 
 	t.Setenv("KEEL_API_URL", runtime.URL)
 
@@ -406,6 +426,7 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	redirectUrl := "https://myapp.com/signedup"
@@ -424,7 +445,9 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "secret")
+	ctx = runtimectx.WithSecrets(ctx, map[string]string{
+		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
+	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -433,6 +456,7 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+	defer runtime.Close()
 
 	t.Setenv("KEEL_API_URL", runtime.URL)
 
@@ -477,6 +501,7 @@ func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
@@ -493,7 +518,9 @@ func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
 	})
 
 	// Set secret for client
-	t.Setenv(fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")), "secret")
+	ctx = runtimectx.WithSecrets(ctx, map[string]string{
+		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
+	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		h := runtime.NewHttpHandler(schema)
@@ -502,6 +529,7 @@ func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
 	}
 	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
 	require.NoError(t, err)
+	defer runtime.Close()
 
 	t.Setenv("KEEL_API_URL", runtime.URL)
 
@@ -534,4 +562,74 @@ func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "redirectUrl must be specified in keelconfig.yaml", errorResponse.ErrorDescription)
 
+}
+
+func TestGetClientSecret(t *testing.T) {
+	provider := &config.Provider{
+		Name: "google",
+	}
+
+	ctx := context.Background()
+	ctx = runtimectx.WithSecrets(ctx, map[string]string{
+		"KEEL_AUTH_PROVIDER_SECRET_GOOGLE": "secret",
+	})
+
+	secret, hasSecret := authapi.GetClientSecret(ctx, provider)
+	assert.True(t, hasSecret)
+	assert.Equal(t, "secret", secret)
+}
+
+func TestGetClientSecret_WithUnderscore(t *testing.T) {
+	provider := &config.Provider{
+		Name: "google_client",
+	}
+
+	ctx := context.Background()
+	ctx = runtimectx.WithSecrets(ctx, map[string]string{
+		"KEEL_AUTH_PROVIDER_SECRET_GOOGLE_CLIENT": "secret",
+	})
+
+	secret, hasSecret := authapi.GetClientSecret(ctx, provider)
+	assert.True(t, hasSecret)
+	assert.Equal(t, "secret", secret)
+}
+
+func TestGetClientSecret_WithCapitals(t *testing.T) {
+	provider := &config.Provider{
+		Name: "GOOGLE_Client",
+	}
+
+	ctx := context.Background()
+	ctx = runtimectx.WithSecrets(ctx, map[string]string{
+		"KEEL_AUTH_PROVIDER_SECRET_GOOGLE": "secret",
+	})
+
+	secret, hasSecret := authapi.GetClientSecret(ctx, provider)
+	assert.True(t, hasSecret)
+	assert.Equal(t, "secret", secret)
+}
+
+func TestGetClientSecret_WithNumbers(t *testing.T) {
+	provider := &config.Provider{
+		Name: "client_2",
+	}
+
+	ctx := context.Background()
+	ctx = runtimectx.WithSecrets(ctx, map[string]string{
+		"KEEL_AUTH_PROVIDER_SECRET_CLIENT_2": "secret",
+	})
+
+	secret, hasSecret := authapi.GetClientSecret(ctx, provider)
+	assert.True(t, hasSecret)
+	assert.Equal(t, "secret", secret)
+}
+
+func TestGetClientSecret_NotExists(t *testing.T) {
+	provider := &config.Provider{
+		Name: "google",
+	}
+
+	secret, hasSecret := authapi.GetClientSecret(context.Background(), provider)
+	assert.False(t, hasSecret)
+	assert.Empty(t, secret)
 }
