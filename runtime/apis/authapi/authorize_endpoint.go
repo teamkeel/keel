@@ -62,7 +62,7 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 		}
 
 		// If the secret is not yet, then package this up and send it as an error with the redirectUrl
-		_, hasSecret := provider.GetClientSecret()
+		_, hasSecret := GetClientSecret(ctx, provider)
 		if !hasSecret {
 			err := fmt.Errorf("client secret not configured for provider: %s", provider.Name)
 			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, err.Error(), err)
@@ -141,8 +141,8 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 		}
 
 		// If the auth provider errored, then package this up and send it as an error with the redirectUrl
-		if callbackError := r.FormValue("error"); callbackError != "" {
-			err := fmt.Errorf("provider error: %s. %s", callbackError, r.FormValue("error_description"))
+		if callbackError := r.URL.Query().Get("error"); callbackError != "" {
+			err := fmt.Errorf("provider error: %s. %s", callbackError, r.URL.Query().Get("error_description"))
 			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, err.Error(), err)
 		}
 
@@ -151,7 +151,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		secret, hasSecret := provider.GetClientSecret()
+		secret, hasSecret := GetClientSecret(ctx, provider)
 		if !hasSecret {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
@@ -182,8 +182,8 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			RedirectURL: callbackUrl.String(),
 		}
 
-		code := r.FormValue("code")
-		if !r.Form.Has("code") || code == "" {
+		code := r.URL.Query().Get("code")
+		if code == "" {
 			return common.InternalServerErrorResponse(ctx, errors.New("code not returned with callback url"))
 		}
 
@@ -256,6 +256,12 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 		return common.NewRedirectResponse(redirectUrl)
 	}
 
+}
+
+func GetClientSecret(ctx context.Context, provider *config.Provider) (string, bool) {
+	name := provider.GetClientSecretName()
+	secret, err := runtimectx.GetSecret(ctx, name)
+	return secret, err == nil
 }
 
 func providerFromPath(ctx context.Context, url *url.URL) (*config.Provider, error) {

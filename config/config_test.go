@@ -280,60 +280,6 @@ func TestAddOidcProviderInvalidName(t *testing.T) {
 	assert.ErrorContains(t, err, "auth provider name 'my client' must only include alphanumeric characters and underscores, and cannot start with a number")
 }
 
-func TestGetClientSecret(t *testing.T) {
-	provider := &Provider{
-		Name: "google",
-	}
-	t.Setenv("KEEL_AUTH_PROVIDER_SECRET_GOOGLE", "secret")
-
-	secret, hasSecret := provider.GetClientSecret()
-	assert.True(t, hasSecret)
-	assert.Equal(t, "secret", secret)
-}
-
-func TestGetClientSecret_WithUnderscore(t *testing.T) {
-	provider := &Provider{
-		Name: "google_client",
-	}
-	t.Setenv("KEEL_AUTH_PROVIDER_SECRET_GOOGLE_CLIENT", "secret")
-
-	secret, hasSecret := provider.GetClientSecret()
-	assert.True(t, hasSecret)
-	assert.Equal(t, "secret", secret)
-}
-
-func TestGetClientSecret_WithCapitals(t *testing.T) {
-	provider := &Provider{
-		Name: "GOOGLE_Client",
-	}
-	t.Setenv("KEEL_AUTH_PROVIDER_SECRET_GOOGLE_CLIENT", "secret")
-
-	secret, hasSecret := provider.GetClientSecret()
-	assert.True(t, hasSecret)
-	assert.Equal(t, "secret", secret)
-}
-
-func TestGetClientSecret_WithNumbers(t *testing.T) {
-	provider := &Provider{
-		Name: "client_2",
-	}
-	t.Setenv("KEEL_AUTH_PROVIDER_SECRET_CLIENT_2", "secret")
-
-	secret, hasSecret := provider.GetClientSecret()
-	assert.True(t, hasSecret)
-	assert.Equal(t, "secret", secret)
-}
-
-func TestGetClientSecret_NotExists(t *testing.T) {
-	provider := &Provider{
-		Name: "google",
-	}
-
-	secret, hasSecret := provider.GetClientSecret()
-	assert.False(t, hasSecret)
-	assert.Empty(t, secret)
-}
-
 func TestGetCallbackUrl_Localhost(t *testing.T) {
 	provider := &Provider{
 		Name: "google",

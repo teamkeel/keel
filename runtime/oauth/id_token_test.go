@@ -19,6 +19,7 @@ func TestIdTokenAuth_Valid(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
@@ -52,6 +53,7 @@ func TestIdTokenAuthMultipleIssuers_Valid(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
@@ -97,6 +99,7 @@ func TestIdTokenAuth_IncorrectlySigned(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
@@ -135,6 +138,7 @@ func TestIdTokenAuth_IssuerMismatch(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
@@ -173,6 +177,7 @@ func TestIdTokenAuth_ClientIdMismatch(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
@@ -228,6 +233,7 @@ func TestIdTokenAuth_IssuerNotConfigured(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config with no issuer
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{})
@@ -253,6 +259,7 @@ func TestIdTokenAuth_ExpiredIdToken(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{

@@ -33,6 +33,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
@@ -100,6 +101,7 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
@@ -182,6 +184,7 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
@@ -418,6 +421,7 @@ func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	server.SetUser("id|285620", &oauth.UserClaims{
 		Email: "keelson@keel.so",
@@ -452,6 +456,7 @@ func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	refreshTokenRotation := true
@@ -535,6 +540,7 @@ func TestRefreshTokenGrantRotationDisabled_Valid(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	refreshTokenRotation := false

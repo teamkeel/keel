@@ -23,6 +23,7 @@ func TestRevokeToken_Success(t *testing.T) {
 	// OIDC test server
 	server, err := oauthtest.NewServer()
 	require.NoError(t, err)
+	defer server.Close()
 
 	// Set up auth config
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
