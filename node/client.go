@@ -8,6 +8,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 func GenerateClient(ctx context.Context, schema *proto.Schema, makePackage bool, apiName string) (codegen.GeneratedFiles, error) {
@@ -140,7 +141,7 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 
 			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
 
-			w.Writef("%s : (i", action.Name)
+			w.Writef("%s: (i", action.Name)
 
 			// Check that all of the top level fields in the matching message are optional
 			// If so, then we can make it so you don't even need to specify the key
@@ -155,7 +156,12 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 				w.Write("?")
 			}
 
-			w.Writef(`: %s) `, action.InputMessageName)
+			inputType := action.InputMessageName
+			if inputType == parser.MessageFieldTypeAny {
+				inputType = "any"
+			}
+
+			w.Writef(`: %s) `, inputType)
 			w.Writeln("=> {")
 
 			w.Indent()
@@ -231,27 +237,27 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 }
 
 func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
-	returnType := ""
-	sdkPrefix := ""
-
 	switch op.Type {
 	case proto.ActionType_ACTION_TYPE_CREATE:
-		returnType += sdkPrefix + model.Name
+		return model.Name
 	case proto.ActionType_ACTION_TYPE_UPDATE:
-		returnType += sdkPrefix + model.Name
+		return model.Name
 	case proto.ActionType_ACTION_TYPE_GET:
-		returnType += sdkPrefix + model.Name + " | null"
+		return model.Name + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
-		returnType += "{results: " + sdkPrefix + model.Name + "[], pageInfo: any}"
+		// TODO: type PageInfo properly
+		return "{results: " + model.Name + "[], pageInfo: any}"
 	case proto.ActionType_ACTION_TYPE_DELETE:
-		// todo: create ID type
-		returnType += "string"
+		return "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
-		returnType += op.ResponseMessageName
-	}
+		if op.ResponseMessageName == parser.MessageFieldTypeAny {
+			return "any"
+		}
 
-	returnType += ""
-	return returnType
+		return op.ResponseMessageName
+	default:
+		panic(fmt.Sprintf("unexpected action type: %s", op.Type.String()))
+	}
 }
 
 var clientCore = `type RequestHeaders = Record<string, string>;
