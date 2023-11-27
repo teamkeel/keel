@@ -190,3 +190,99 @@ test("create with nested will 1:1 (inverse) with id in @set", async () => {
   expect(will?.personId).toEqual("p1")
 });
 
+test("create action with id input - already exists", async () => {
+  await models.company.create({ id: "e1", name: "Keel" });
+  await models.person.create({ id: "p1" });
+
+  await expect(
+    actions.createPerson({ 
+      id: "p1", 
+      name: "Keelson",
+      employer: {
+        id: "e1"
+      }  
+    })
+  ).toHaveError({
+    code: "ERR_INVALID_INPUT",
+    message: "the value for the unique field 'id' must be unique",
+  });
+});
+
+test("update action with id input", async () => {
+  await models.person.create({ id: "p1", name: "Keelson" });
+
+  const person = await actions.updatePersonId({ 
+    where: { id: "p1" },
+    values: { id: "p2" }
+  });
+
+  expect(person.id).toEqual("p2");
+});
+
+test("update action with id in @set", async () => {
+  await models.person.create({ id: "p1", name: "Keelson" });
+
+  const person = await actions.updatePersonIdWithSet({ 
+    where: { id: "p1" },
+    values: { newId: "p2" }
+  });
+
+  expect(person.id).toEqual("p2");
+});
+
+test("update action with company id input", async () => {
+  await models.company.create({ id: "e1", name: "Keel" });
+  await models.company.create({ id: "e2", name: "Keel" });
+  await models.person.create({ id: "p1", name: "Keelson", employerId: "e1" });
+
+  const person = await actions.updatePersonCompanyId({ 
+    where: { id: "p1" },
+    values: { employer: { id: "e2" } }
+  });
+
+  expect(person.employerId).toEqual("e2");
+});
+
+test("update action with company id input - does not exist", async () => {
+  await models.company.create({ id: "e1", name: "Keel" });
+  await models.person.create({ id: "p1", name: "Keelson", employerId: "e1" });
+
+ await expect( actions.updatePersonCompanyId({ 
+    where: { id: "p1" },
+    values: { employer: { id: "nope" } }
+  })).toHaveError({
+    code: "ERR_INVALID_INPUT",
+    message: "the record referenced in field 'employerId' does not exist",
+  });
+});
+
+test("update action with id input - already exists", async () => {
+  await models.person.create({ id: "p1", name: "Keelson" });
+  await models.person.create({ id: "p2", name: "Keeler" });
+
+
+  await expect( actions.updatePersonId({ 
+    where: { id: "p1" },
+    values: { id: "p2" }
+  })
+  ).toHaveError({
+    code: "ERR_INVALID_INPUT",
+    message: "the value for the unique field 'id' must be unique",
+  });
+});
+
+test("update action with id input - has foreign key references", async () => {
+
+  await models.person.create({ id: "p1", name: "Keelson" });
+  await models.will.create({ personId: "p1", contents: "I declare..." });
+
+  await expect( actions.updatePersonId({ 
+    where: { id: "p1" },
+    values: { id: "p2" }
+  })
+  ).toHaveError({
+    code: "ERR_INVALID_INPUT",
+    message: "the record referenced in field 'id' does not exist",
+  });
+});
+

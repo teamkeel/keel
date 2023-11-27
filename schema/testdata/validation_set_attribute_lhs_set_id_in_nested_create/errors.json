@@ -6,16 +6,16 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 1323,
-        "line": 52,
+        "offset": 1117,
+        "line": 43,
         "column": 18
       },
       "endPos": {
         "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 1337,
-        "line": 52,
+        "offset": 1131,
+        "line": 43,
         "column": 32
       }
     }
-  ] 
+  ]
 }

@@ -12,6 +12,16 @@
         },
         {
           "modelName": "Person",
+          "name": "employer",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Company"
+          },
+          "foreignKeyFieldName": "employerId",
+          "inverseFieldName": "employees"
+        },
+        {
+          "modelName": "Person",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -41,15 +51,85 @@
           "defaultValue": {
             "useZeroValue": true
           }
+        },
+        {
+          "modelName": "Person",
+          "name": "employerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Company",
+            "relatedModelField": "id"
+          }
         }
       ],
       "actions": [
         {
           "modelName": "Person",
-          "name": "updatePerson",
+          "name": "updatePersonIdWithSet",
           "type": "ACTION_TYPE_UPDATE",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "UpdatePersonInput"
+          "setExpressions": [
+            {
+              "source": "person.id = id"
+            }
+          ],
+          "inputMessageName": "UpdatePersonIdWithSetInput"
+        }
+      ]
+    },
+    {
+      "name": "Company",
+      "fields": [
+        {
+          "modelName": "Company",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "employees",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Person",
+            "repeated": true
+          },
+          "inverseFieldName": "employer"
+        },
+        {
+          "modelName": "Company",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         }
       ]
     },
@@ -172,6 +252,9 @@
       "name": "Api",
       "apiModels": [
         {
+          "modelName": "Company"
+        },
+        {
           "modelName": "Identity"
         },
         {
@@ -185,10 +268,10 @@
       "name": "Any"
     },
     {
-      "name": "UpdatePersonWhere",
+      "name": "UpdatePersonIdWithSetWhere",
       "fields": [
         {
-          "messageName": "UpdatePersonWhere",
+          "messageName": "UpdatePersonIdWithSetWhere",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -202,51 +285,34 @@
       ]
     },
     {
-      "name": "UpdatePersonValues",
+      "name": "UpdatePersonIdWithSetValues",
       "fields": [
         {
-          "messageName": "UpdatePersonValues",
+          "messageName": "UpdatePersonIdWithSetValues",
           "name": "id",
           "type": {
-            "type": "TYPE_ID",
-            "modelName": "Person",
-            "fieldName": "id"
-          },
-          "target": [
-            "id"
-          ]
-        },
-        {
-          "messageName": "UpdatePersonValues",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Person",
-            "fieldName": "name"
-          },
-          "target": [
-            "name"
-          ]
+            "type": "TYPE_ID"
+          }
         }
       ]
     },
     {
-      "name": "UpdatePersonInput",
+      "name": "UpdatePersonIdWithSetInput",
       "fields": [
         {
-          "messageName": "UpdatePersonInput",
+          "messageName": "UpdatePersonIdWithSetInput",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "UpdatePersonWhere"
+            "messageName": "UpdatePersonIdWithSetWhere"
           }
         },
         {
-          "messageName": "UpdatePersonInput",
+          "messageName": "UpdatePersonIdWithSetInput",
           "name": "values",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "UpdatePersonValues"
+            "messageName": "UpdatePersonIdWithSetValues"
           }
         }
       ]

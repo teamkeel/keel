@@ -36,6 +36,16 @@ model Person {
             @set(person.will.id = willId)
         }
 
+        update updatePersonId(id) with (id)
+        update updatePersonIdWithSet(id) with (newId: ID) {
+            @set(person.id = newId)
+        }
+
+        update updatePersonCompanyId(id) with (employer.id) 
+        update updatePersonCompanyIdWithSet(id) with (newId: ID)  {
+            @set(person.employer.id = newId)
+        }
+
         get getPerson(id)
     }
 

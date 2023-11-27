@@ -1,9 +1,0 @@
-model Person {
-    fields {
-        name Text
-    }
-
-    actions {
-        update updatePerson(id) with (id, name)
-    }
-}
