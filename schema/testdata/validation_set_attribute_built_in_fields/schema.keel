@@ -15,12 +15,6 @@ model Post {
             @set(post.publisher.createdAt = ctx.now)
             @set(post.publisher.updatedAt = ctx.now)
         }
-        create createPost3() {
-            @set(post.id = ctx.identity.post.id)
-        }
-        create createPost4() {
-            @set(post = ctx.identity.post)
-        }
         update updatePost(id) with (name, published) {
             @set(post.createdAt = ctx.now)
             @set(post.updatedAt = ctx.now)
@@ -28,12 +22,6 @@ model Post {
         update updatePost2(id) with (name, published) {
             @set(post.publisher.createdAt = ctx.now)
             @set(post.publisher.updatedAt = ctx.now)
-        }
-        update updatePost3(identity.id) {
-            @set(post.id = ctx.identity.post.id)
-        }
-        update updatePost4(identity.id) {
-            @set(post = ctx.identity.post)
         }
     }
 }

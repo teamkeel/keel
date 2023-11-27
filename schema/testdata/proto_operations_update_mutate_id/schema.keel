@@ -5,15 +5,15 @@ model Person {
     }
 
     actions {
-       // update updatePerson(id) with (id, name)
+        update updatePerson(id) with (id, name)
         update updatePersonIdWithSet(id) with (id: ID) {
             @set(person.id = id)
         }
 
-       // update updatePersonCompanyId(id) with (employer.id) 
-       // update updatePersonCompanyIdWithSet(id) with (id: ID)  {
-       //     @set(person.employer.id = id)
-       // }
+        update updatePersonCompanyId(id) with (employer.id) 
+        update updatePersonCompanyIdWithSet(id) with (id: ID)  {
+            @set(person.employer.id = id)
+        }
     }
 }
 

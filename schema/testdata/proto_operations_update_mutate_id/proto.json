@@ -67,6 +67,13 @@
       "actions": [
         {
           "modelName": "Person",
+          "name": "updatePerson",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "UpdatePersonInput"
+        },
+        {
+          "modelName": "Person",
           "name": "updatePersonIdWithSet",
           "type": "ACTION_TYPE_UPDATE",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -76,6 +83,25 @@
             }
           ],
           "inputMessageName": "UpdatePersonIdWithSetInput"
+        },
+        {
+          "modelName": "Person",
+          "name": "updatePersonCompanyId",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "UpdatePersonCompanyIdInput"
+        },
+        {
+          "modelName": "Person",
+          "name": "updatePersonCompanyIdWithSet",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "person.employer.id = id"
+            }
+          ],
+          "inputMessageName": "UpdatePersonCompanyIdWithSetInput"
         }
       ]
     },
@@ -268,6 +294,73 @@
       "name": "Any"
     },
     {
+      "name": "UpdatePersonWhere",
+      "fields": [
+        {
+          "messageName": "UpdatePersonWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonValues",
+      "fields": [
+        {
+          "messageName": "UpdatePersonValues",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        },
+        {
+          "messageName": "UpdatePersonValues",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Person",
+            "fieldName": "name"
+          },
+          "target": [
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonInput",
+      "fields": [
+        {
+          "messageName": "UpdatePersonInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonWhere"
+          }
+        },
+        {
+          "messageName": "UpdatePersonInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonValues"
+          }
+        }
+      ]
+    },
+    {
       "name": "UpdatePersonIdWithSetWhere",
       "fields": [
         {
@@ -313,6 +406,125 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "UpdatePersonIdWithSetValues"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdWhere",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdValues",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdValues",
+          "name": "employer",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonCompanyIdEmployerInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdEmployerInput",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdEmployerInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Company",
+            "fieldName": "id"
+          },
+          "target": [
+            "employer",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdInput",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonCompanyIdWhere"
+          }
+        },
+        {
+          "messageName": "UpdatePersonCompanyIdInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonCompanyIdValues"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdWithSetWhere",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdWithSetWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdWithSetValues",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdWithSetValues",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdWithSetInput",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdWithSetInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonCompanyIdWithSetWhere"
+          }
+        },
+        {
+          "messageName": "UpdatePersonCompanyIdWithSetInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonCompanyIdWithSetValues"
           }
         }
       ]
