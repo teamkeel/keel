@@ -1,0 +1,64 @@
+model Person {
+    fields {
+        name Text?
+        employer Company?
+        passport Passport? @unique
+        will Will? 
+    }
+
+    actions {
+        // Root model creates
+        create createPerson() with (id, name, employer.id)
+        create createPersonOnlyId() with (id)
+        create createPersonOnlyIdWithSet() with (personId: ID) {
+            @set(person.id = personId)
+        }
+        create createPersonUsingSet() with (personId: ID, name, companyId: ID) {
+            @set(person.id = personId)
+            @set(person.employer.id = companyId)
+        }
+   
+        // Nested creates in 1:M
+        create createWithEmployer() with (id, name, employer.id, employer.name)
+        create createWithEmployerUsingSetId() with (id, name, employerId: ID, employer.name) {
+            @set(person.employer.id = employerId)
+        }
+
+         // Nested creates in 1:1
+        create createWithPassport() with (name, passport.id, passport.number)
+        create createWithPasswordUsingSetId() with (name, passportId: ID, passport.number) {
+            @set(person.passport.id = passportId)
+        }
+
+        // Nested creates in 1:1 (inverse)
+        create createWithWill() with (id, name, will.id, will.contents)
+        create createWithWillUsingSetId() with (id, name, willId: ID, will.contents) {
+            @set(person.will.id = willId)
+        }
+
+        get getPerson(id)
+    }
+
+    @permission(expression: true, actions: [get, create, update])
+}
+
+model Company {
+    fields {
+        name Text
+        employees Person[]
+    }
+}
+
+model Passport {
+    fields {
+        person Person 
+        number Text @unique
+    }
+}
+
+model Will {
+    fields {
+        person Person @unique
+        contents Text
+    }
+}

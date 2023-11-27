@@ -46,22 +46,10 @@
       "actions": [
         {
           "modelName": "Person",
-          "name": "createPerson",
-          "type": "ACTION_TYPE_CREATE",
+          "name": "updatePerson",
+          "type": "ACTION_TYPE_UPDATE",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "CreatePersonInput"
-        },
-        {
-          "modelName": "Person",
-          "name": "createPersonSet",
-          "type": "ACTION_TYPE_CREATE",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "setExpressions": [
-            {
-              "source": "person.id = id"
-            }
-          ],
-          "inputMessageName": "CreatePersonSetInput"
+          "inputMessageName": "UpdatePersonInput"
         }
       ]
     },
@@ -197,10 +185,27 @@
       "name": "Any"
     },
     {
-      "name": "CreatePersonInput",
+      "name": "UpdatePersonWhere",
       "fields": [
         {
-          "messageName": "CreatePersonInput",
+          "messageName": "UpdatePersonWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonValues",
+      "fields": [
+        {
+          "messageName": "UpdatePersonValues",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -212,7 +217,7 @@
           ]
         },
         {
-          "messageName": "CreatePersonInput",
+          "messageName": "UpdatePersonValues",
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
@@ -226,26 +231,23 @@
       ]
     },
     {
-      "name": "CreatePersonSetInput",
+      "name": "UpdatePersonInput",
       "fields": [
         {
-          "messageName": "CreatePersonSetInput",
-          "name": "id",
+          "messageName": "UpdatePersonInput",
+          "name": "where",
           "type": {
-            "type": "TYPE_ID"
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonWhere"
           }
         },
         {
-          "messageName": "CreatePersonSetInput",
-          "name": "name",
+          "messageName": "UpdatePersonInput",
+          "name": "values",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Person",
-            "fieldName": "name"
-          },
-          "target": [
-            "name"
-          ]
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonValues"
+          }
         }
       ]
     },

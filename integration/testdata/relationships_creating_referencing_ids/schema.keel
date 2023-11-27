@@ -1,0 +1,50 @@
+model President {
+    fields {
+        name Text
+        // A president leads one nation
+        nation Nation
+        // A party can only be lead by a single president
+        party Party @unique
+        // A member cannot hold multiple presidential roles
+        member Member @unique
+    }
+
+    actions {
+        create createPresident() with (
+            name, 
+            nation.name, 
+            party.id, 
+            party.name, 
+            party.members.name, 
+            party.members.party.id, 
+            member.name, 
+            member.party.id) {
+                @permission(expression: true)
+        }
+    }
+}
+
+model Nation {
+    fields {
+        name Text
+        // A president can only lead one party
+        president President @unique
+    }
+}
+
+model Party {
+    fields {
+        name Text
+        // A president belongs to a party
+        president President
+        // A party can have many members
+        members Member[]
+    }
+}
+
+model Member {
+    fields {
+        name Text
+        party Party
+    }
+}

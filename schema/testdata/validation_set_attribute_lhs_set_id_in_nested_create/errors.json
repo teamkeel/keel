@@ -1,106 +1,21 @@
 {
   "errors": [
     {
-      "message": "The Publisher model is being created during this action and so cannot be associated to an existing record here.",
-      "hint": "Change the action inputs if you want to set to an existing record",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 296,
-        "line": 14,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 313,
-        "line": 14,
-        "column": 35
-      }
-    },
-    {
-      "message": "The Person model is being created during this action and so cannot be associated to an existing record here.",
-      "hint": "Change the action inputs if you want to set to an existing record",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 463,
-        "line": 19,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 497,
-        "line": 19,
-        "column": 52
-      }
-    },
-    {
-      "message": "The Publisher model is being created during this action and so cannot be associated to an existing record here.",
-      "hint": "Change the action inputs if you want to set to an existing record",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 645,
-        "line": 25,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 662,
-        "line": 25,
-        "column": 35
-      }
-    },
-    {
-      "message": "The Publisher model is being created during this action and so cannot be associated to an existing record here.",
-      "hint": "Change the action inputs if you want to set to an existing record",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 813,
-        "line": 31,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 827,
-        "line": 31,
-        "column": 32
-      }
-    },
-    {
-      "message": "The Publisher model is being created during this action and so cannot be associated to an existing record here.",
-      "hint": "Change the action inputs if you want to set to an existing record",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 975,
-        "line": 37,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 989,
-        "line": 37,
-        "column": 32
-      }
-    },
-    {
       "message": "Cannot associate to the Publisher model here as it is already provided as an action input.",
       "hint": "",
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 1117,
-        "line": 43,
+        "offset": 1323,
+        "line": 52,
         "column": 18
       },
       "endPos": {
         "filename": "testdata/validation_set_attribute_lhs_set_id_in_nested_create/schema.keel",
-        "offset": 1131,
-        "line": 43,
+        "offset": 1337,
+        "line": 52,
         "column": 32
       }
     }
-  ]
+  ] 
 }
