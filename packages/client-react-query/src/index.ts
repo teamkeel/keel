@@ -1,9 +1,7 @@
 import {
   QueryKey,
-  UseInfiniteQueryOptions,
   UseMutationOptions,
   UseQueryOptions,
-  useInfiniteQuery,
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
@@ -38,38 +36,17 @@ export const keelQuery = <T extends (...args: any) => any>(useKeel: T) => {
       options?: Omit<UseQueryOptions<Result<F, K>, Error<F, K>>, "queryFn">
     ) => {
       const keel = useKeel();
-      return useQuery<Result<F, K>, Error<F, K>>(
-        queryKeys(key, args),
-        async () => {
-          const res = await keel["api"][key](args);
+      return useQuery<Result<F, K>, Error<F, K>>({
+        queryKey: queryKeys(key, args),
+        queryFn: async () => {
+          const res = await keel["api"]["queries"][key](args);
           if (res.error) {
             return Promise.reject(res.error);
           }
           return res.data;
         },
-        options
-      );
-    },
-    useInfiniteKeelQuery: <F extends "queries", K extends QueryKeys<"queries">>(
-      key: K,
-      args: QueryArgs<F, K>,
-      options?: Omit<
-        UseInfiniteQueryOptions<Result<F, K>, Error<F, K>>,
-        "queryFn"
-      >
-    ) => {
-      const keel = useKeel();
-      return useInfiniteQuery<Result<F, K>, Error<F, K>>(
-        queryKeys(key, args),
-        async () => {
-          const res = await keel["api"][key](args);
-          if (res.error) {
-            return Promise.reject(res.error);
-          }
-          return res.data;
-        },
-        options
-      );
+        ...options,
+      });
     },
     useKeelMutation: <F extends "mutations", K extends QueryKeys<"mutations">>(
       key: K,
@@ -79,17 +56,17 @@ export const keelQuery = <T extends (...args: any) => any>(useKeel: T) => {
       >
     ) => {
       const keel = useKeel();
-      return useMutation<Result<F, K>, Error<F, K>, QueryArgs<F, K>>(
-        [key],
-        async (args) => {
-          const res = await keel["api"][key](args);
+      return useMutation<Result<F, K>, Error<F, K>, QueryArgs<F, K>>({
+        mutationKey: [key],
+        mutationFn: async (args) => {
+          const res = await keel["api"]["mutations"][key](args);
           if (res.error) {
             return Promise.reject(res.error);
           }
           return res.data;
         },
-        options
-      );
+        ...options,
+      });
     },
   };
 };
