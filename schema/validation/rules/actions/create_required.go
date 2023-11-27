@@ -127,7 +127,7 @@ func checkHasOneRelationField(
 	//   @set(myModel.identityField = ctx.identity)
 	fieldIsSet := satisfiedBySetExpr(rootModelName, pathToReferencedModel, model.Name.Value, op)
 
-	// The id field of the relation can also be set in either a @set or an input. For examoke:
+	// The id field of the relation can also be set in either a @set or an input. For example:
 	//   @set(myModel.myField.id = someValue)
 	// or
 	//   create myAction() with (myField.id)
@@ -135,7 +135,6 @@ func checkHasOneRelationField(
 
 	// If the field is being set to an existing record then we make sure no other fields on the model are being set.
 	if fieldIsSet || fieldIdIsSet {
-		makeSureReferencedFieldsAreNotGiven(asts, nestedModel, rootModelName, pathToReferencedModel, op, errs)
 		return
 	}
 
@@ -181,39 +180,6 @@ func satisfied(rootModelName string, requiredField string, modelName string, op 
 		return true
 	}
 	return false
-}
-
-// makeSureReferencedFieldsAreNotGiven creates validation errors if the given operation has any
-// inputs, or @set expressions that target fields of the given referenced model using the given dotted
-// path ancestry. (apart from the one that ends in ".id")
-func makeSureReferencedFieldsAreNotGiven(
-	asts []*parser.AST,
-	referencedModel *parser.ModelNode,
-	rootModelName string,
-	pathToReferencedModel string,
-	op *parser.ActionNode,
-	errs *errorhandling.ValidationErrors) {
-
-	referencedModelName := casing.ToLowerCamel(referencedModel.Name.Value)
-	pathToIgnore := extendDotDelimPath(pathToReferencedModel, parser.ImplicitFieldNameId)
-	for _, referencedField := range query.ModelFields(referencedModel) {
-		pathToField := extendDotDelimPath(pathToReferencedModel, referencedField.Name.Value)
-		if pathToField == pathToIgnore {
-			continue
-		}
-		// Note we are making sure the path is NOT satisfied.
-		if satisfied(rootModelName, pathToField, referencedModelName, op) {
-			errs.Append(
-				errorhandling.ErrorCreateActionAmbiguousRelationship,
-				map[string]string{
-					"IdPath":          pathToIgnore,
-					"ConflictingPath": pathToField,
-					"ModelName":       referencedModelName,
-				},
-				op,
-			)
-		}
-	}
 }
 
 // setExpressions returns all the non-nil expressions from all

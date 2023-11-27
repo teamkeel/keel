@@ -1,0 +1,13 @@
+model Person {
+    fields {
+        name Text
+    }
+
+    actions {
+        create createPerson() with (id, name)
+
+        create createPersonSet() with (id: ID, name) {
+            @set(person.id = id)
+        }
+    }
+}

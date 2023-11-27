@@ -1,0 +1,636 @@
+{
+  "models": [
+    {
+      "name": "Person",
+      "fields": [
+        {
+          "modelName": "Person",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Person",
+          "name": "employer",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Company"
+          },
+          "foreignKeyFieldName": "employerId",
+          "inverseFieldName": "employees"
+        },
+        {
+          "modelName": "Person",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Person",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Person",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Person",
+          "name": "employerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Company",
+            "relatedModelField": "id"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Person",
+          "name": "updatePerson",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "UpdatePersonInput"
+        },
+        {
+          "modelName": "Person",
+          "name": "updatePersonIdWithSet",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "person.id = id"
+            }
+          ],
+          "inputMessageName": "UpdatePersonIdWithSetInput"
+        },
+        {
+          "modelName": "Person",
+          "name": "updatePersonCompanyId",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "UpdatePersonCompanyIdInput"
+        },
+        {
+          "modelName": "Person",
+          "name": "updatePersonCompanyIdWithSet",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "person.employer.id = id"
+            }
+          ],
+          "inputMessageName": "UpdatePersonCompanyIdWithSetInput"
+        }
+      ]
+    },
+    {
+      "name": "Company",
+      "fields": [
+        {
+          "modelName": "Company",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "employees",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Person",
+            "repeated": true
+          },
+          "inverseFieldName": "employer"
+        },
+        {
+          "modelName": "Company",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "issuer"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Company"
+        },
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Person"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "UpdatePersonWhere",
+      "fields": [
+        {
+          "messageName": "UpdatePersonWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonValues",
+      "fields": [
+        {
+          "messageName": "UpdatePersonValues",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        },
+        {
+          "messageName": "UpdatePersonValues",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Person",
+            "fieldName": "name"
+          },
+          "target": [
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonInput",
+      "fields": [
+        {
+          "messageName": "UpdatePersonInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonWhere"
+          }
+        },
+        {
+          "messageName": "UpdatePersonInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonValues"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonIdWithSetWhere",
+      "fields": [
+        {
+          "messageName": "UpdatePersonIdWithSetWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonIdWithSetValues",
+      "fields": [
+        {
+          "messageName": "UpdatePersonIdWithSetValues",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonIdWithSetInput",
+      "fields": [
+        {
+          "messageName": "UpdatePersonIdWithSetInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonIdWithSetWhere"
+          }
+        },
+        {
+          "messageName": "UpdatePersonIdWithSetInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonIdWithSetValues"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdWhere",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdValues",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdValues",
+          "name": "employer",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonCompanyIdEmployerInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdEmployerInput",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdEmployerInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Company",
+            "fieldName": "id"
+          },
+          "target": [
+            "employer",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdInput",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonCompanyIdWhere"
+          }
+        },
+        {
+          "messageName": "UpdatePersonCompanyIdInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonCompanyIdValues"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdWithSetWhere",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdWithSetWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdWithSetValues",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdWithSetValues",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdWithSetInput",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdWithSetInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonCompanyIdWithSetWhere"
+          }
+        },
+        {
+          "messageName": "UpdatePersonCompanyIdWithSetInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonCompanyIdWithSetValues"
+          }
+        }
+      ]
+    },
+    {
+      "name": "EmailPasswordInput",
+      "fields": [
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateInput",
+      "fields": [
+        {
+          "messageName": "AuthenticateInput",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "AuthenticateInput",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    }
+  ]
+}

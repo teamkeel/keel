@@ -16,7 +16,9 @@ import (
 // is also used in a @where expression.
 func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	isAction := false
-	modelInputs := map[*parser.ActionInputNode]bool{}
+	var action *parser.ActionNode
+	filterInputs := map[*parser.ActionInputNode]bool{}
+	writeInputs := map[*parser.ActionInputNode]bool{}
 
 	return Visitor{
 		EnterModelSection: func(n *parser.ModelSectionNode) {
@@ -26,11 +28,18 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 			isAction = false
 		},
 		EnterAction: func(n *parser.ActionNode) {
-			modelInputs = map[*parser.ActionInputNode]bool{}
+			filterInputs = map[*parser.ActionInputNode]bool{}
+			writeInputs = map[*parser.ActionInputNode]bool{}
+			action = n
 		},
 		EnterActionInput: func(n *parser.ActionInputNode) {
 			if n.Label == nil && isAction {
-				modelInputs[n] = true
+				if lo.Contains(action.Inputs, n) {
+					filterInputs[n] = true
+				}
+				if lo.Contains(action.With, n) {
+					writeInputs[n] = true
+				}
 			}
 		},
 		EnterAttribute: func(n *parser.AttributeNode) {
@@ -44,6 +53,13 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 				return
 			}
 
+			var inputs map[*parser.ActionInputNode]bool
+			if n.Name.Value == parser.AttributeWhere {
+				inputs = filterInputs
+			} else if n.Name.Value == parser.AttributeSet {
+				inputs = writeInputs
+			}
+
 			for _, cond := range expr.Conditions() {
 				operands := []*parser.Operand{cond.LHS}
 				if n.Name.Value == parser.AttributeWhere {
@@ -54,7 +70,7 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 					if operand == nil || operand.Ident == nil {
 						continue
 					}
-					for in := range modelInputs {
+					for in := range inputs {
 						// in an expression the first ident fragment will be the model name
 						// we create an indent without the first fragment
 						identWithoutModelName := &parser.Ident{

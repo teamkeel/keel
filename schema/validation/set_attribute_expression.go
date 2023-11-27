@@ -15,7 +15,6 @@ import (
 
 var (
 	fieldsNotMutable = []string{
-		parser.ImplicitFieldNameId,
 		parser.ImplicitFieldNameCreatedAt,
 		parser.ImplicitFieldNameUpdatedAt,
 	}
@@ -126,15 +125,6 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 					return
 				}
 
-				if i == 0 && fragment.Fragment == strcase.ToLowerCamel(model.Name.Value) && len(fragments) == 1 {
-					errs.AppendError(makeSetExpressionError(
-						"Cannot assign to the root model of the action",
-						fmt.Sprintf("The @set attribute is intended for setting a field. For example, @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-						lhs,
-					))
-					return
-				}
-
 				if i > 0 {
 					// get the next field in the relationship fragments
 					currentField = query.ModelField(currentModel, fragment.Fragment)
@@ -214,13 +204,6 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 								errs.AppendError(makeSetExpressionError(
 									fmt.Sprintf("Cannot associate to the %s model here as it is already provided as an action input.", currentModel.Name.Value),
 									"",
-									lhs,
-								))
-								return
-							} else {
-								errs.AppendError(makeSetExpressionError(
-									fmt.Sprintf("The %s model is being created during this action and so cannot be associated to an existing record here.", currentModel.Name.Value),
-									"Change the action inputs if you want to set to an existing record",
 									lhs,
 								))
 								return

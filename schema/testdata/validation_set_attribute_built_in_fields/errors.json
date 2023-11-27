@@ -69,53 +69,19 @@
       }
     },
     {
-      "message": "Cannot assign to the root model of the action",
-      "hint": "The @set attribute is intended for setting a field. For example, @set(post.isActive = true)",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 540,
-        "line": 19,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 547,
-        "line": 19,
-        "column": 25
-      }
-    },
-    {
-      "message": "Cannot assign to the root model of the action",
-      "hint": "The @set attribute is intended for setting a field. For example, @set(post.isActive = true)",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 630,
-        "line": 22,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 634,
-        "line": 22,
-        "column": 22
-      }
-    },
-    {
       "message": "Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally",
       "hint": "Target another field on the model or remove the @set attribute entirely",
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 743,
-        "line": 25,
+        "offset": 569,
+        "line": 19,
         "column": 23
       },
       "endPos": {
         "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 752,
-        "line": 25,
+        "offset": 578,
+        "line": 19,
         "column": 32
       }
     },
@@ -125,14 +91,14 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 786,
-        "line": 26,
+        "offset": 612,
+        "line": 20,
         "column": 23
       },
       "endPos": {
         "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 795,
-        "line": 26,
+        "offset": 621,
+        "line": 20,
         "column": 32
       }
     },
@@ -142,14 +108,14 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 890,
-        "line": 29,
+        "offset": 716,
+        "line": 23,
         "column": 18
       },
       "endPos": {
         "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 914,
-        "line": 29,
+        "offset": 740,
+        "line": 23,
         "column": 42
       }
     },
@@ -159,49 +125,15 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 943,
-        "line": 30,
+        "offset": 769,
+        "line": 24,
         "column": 18
       },
       "endPos": {
         "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 967,
-        "line": 30,
+        "offset": 793,
+        "line": 24,
         "column": 42
-      }
-    },
-    {
-      "message": "Cannot assign to the root model of the action",
-      "hint": "The @set attribute is intended for setting a field. For example, @set(post.isActive = true)",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 1048,
-        "line": 33,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 1055,
-        "line": 33,
-        "column": 25
-      }
-    },
-    {
-      "message": "Cannot assign to the root model of the action",
-      "hint": "The @set attribute is intended for setting a field. For example, @set(post.isActive = true)",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 1149,
-        "line": 36,
-        "column": 18
-      },
-      "endPos": {
-        "filename": "testdata/validation_set_attribute_built_in_fields/schema.keel",
-        "offset": 1153,
-        "line": 36,
-        "column": 22
       }
     }
   ]
