@@ -62,15 +62,9 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 		field := fragments[len(fragments)-1]
 		targetsLessField := fragments[:len(fragments)-1]
 
-		// // If the target field is id, then we need to update the foreign key field on the previous target fragment model
-		// if field == "id" && len(targetsLessField) != 1 {
-		// 	field = fmt.Sprintf("%sId", fragments[len(fragments)-2])
-		// 	targetsLessField = fragments[:len(fragments)-2]
-		// }
-
 		// If we are associating (as opposed to creating) then rather update the foreign key
 		// i.e. person.employerId and not person.employer.id
-		isAssoc := isAssociating(scope, fragments)
+		isAssoc := targetAssociating(scope, fragments)
 		if isAssoc {
 			field = fmt.Sprintf("%sId", fragments[len(fragments)-2])
 			targetsLessField = fragments[:len(fragments)-2]
@@ -170,71 +164,6 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any)
 	return err
 }
 
-// Is this nested message used to associate to an existing model,
-// or are we created a new row for that model.  This is determined
-// by whether any non-id fields are being set.  Note that 'id' can be
-// set in both _association_ and _creation_ forms.
-func associating(scope *Scope, message *proto.Message, model *proto.Model) bool {
-	for _, input := range message.Fields {
-		// Skip named/non-model inputs
-		if input.Target == nil {
-			continue
-		}
-
-		field := proto.FindField(scope.Schema.Models, model.Name, input.Name)
-
-		// If any non-id field is being set, then we are not associating.
-		// This indicates that we are creating.
-		if !field.PrimaryKey {
-			return false
-		}
-	}
-	return true
-}
-
-// Is this nested message used to associate to an existing model,
-// or are we created a new row for that model.  This is determined
-// by whether any non-id fields are being set.  Note that 'id' can be
-// set in both _association_ and _creation_ forms.
-func isAssociating(scope *Scope, target []string) bool {
-	// We are always creating the root model of the action
-	if len(target) < 3 {
-		return false
-	}
-
-	message := proto.FindMessage(scope.Schema.Messages, scope.Action.InputMessageName)
-	model := proto.FindModel(scope.Schema.Models, strcase.ToCamel(target[0]))
-	for _, t := range target[1 : len(target)-1] {
-		found := false
-		for _, f := range message.Fields {
-			if f.Name == t {
-				if f.Type.Type == proto.Type_TYPE_MESSAGE {
-					message = proto.FindMessage(scope.Schema.Messages, f.Type.MessageName.Value)
-					field := proto.FindField(scope.Schema.Models, model.Name, t)
-					model = proto.FindModel(scope.Schema.Models, field.Type.ModelName.Value)
-
-				}
-				found = true
-				break
-			}
-		}
-		if !found {
-			return true
-		}
-	}
-
-	for _, input := range message.Fields {
-		field := proto.FindField(scope.Schema.Models, model.Name, input.Name)
-
-		// If any non-id field is being set, then we are not associating.
-		// This indicates that we are creating.
-		if !field.PrimaryKey {
-			return false
-		}
-	}
-	return true
-}
-
 // Parses the input data and builds a graph of row data which is organised by how this data would be stored in the database.
 // Uses the protobuf schema to determine which rows are referenced by using (i.e. it determines where the foreign key sits).
 func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *proto.Message, model *proto.Model, currentTarget []string, args map[string]any) (map[string]any, *Row, error) {
@@ -268,8 +197,8 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 				var err error
 
 				if proto.IsHasMany(field) || proto.IsHasOne(field) {
-					// proto.IsHasMany(field) means that we have a 1:M relationship and the FK is on this model.
-					// proto.IsHasOne(field) means that we have a 1:1 relationship with the FK on this model.
+					// if proto.IsHasMany(field) then we have a 1:M relationship and the FK is on this model.
+					// if proto.IsHasOne(field) then we have a 1:1 relationship with the FK on this model.
 
 					arg, hasArg := args[input.Name]
 					if !hasArg && !input.Optional {
@@ -394,10 +323,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 			continue
 		}
 
-		// If the input is targeting a model field, then it is either:
-		//  - the id (primary key), in which case this is an association to an existing row, OR
-		//  - the remaining value fields, in which case we are adding ths values to the newly related model.
-		if associating(scope, message, model) && len(currentTarget) > 1 {
+		if messageAssociating(scope, message, model) && len(currentTarget) > 1 {
 			// We know this needs to be a FK on the referencing row.
 			fieldName := fmt.Sprintf("%sId", input.Target[len(input.Target)-2])
 
@@ -443,4 +369,58 @@ func (query *QueryBuilder) captureWriteValuesArrayFromMessage(scope *Scope, mess
 	}
 
 	return foreignKeys, rows, nil
+}
+
+// Is this target level used to associate to an existing model,
+// or are we creating a new row in the database?  This is determined
+// by whether any non-id fields are being set.  Note that 'id' can be
+// set in both _association_ and _creation_ forms.
+func targetAssociating(scope *Scope, target []string) bool {
+	// We are always creating the root model of the action
+	if len(target) < 3 {
+		return false
+	}
+
+	message := proto.FindMessage(scope.Schema.Messages, scope.Action.InputMessageName)
+	model := proto.FindModel(scope.Schema.Models, strcase.ToCamel(target[0]))
+	for _, t := range target[1 : len(target)-1] {
+		found := false
+		for _, f := range message.Fields {
+			if f.Name == t {
+				if f.Type.Type == proto.Type_TYPE_MESSAGE {
+					message = proto.FindMessage(scope.Schema.Messages, f.Type.MessageName.Value)
+					field := proto.FindField(scope.Schema.Models, model.Name, t)
+					model = proto.FindModel(scope.Schema.Models, field.Type.ModelName.Value)
+
+				}
+				found = true
+				break
+			}
+		}
+		if !found {
+			return true
+		}
+	}
+
+	return messageAssociating(scope, message, model)
+}
+
+// If this (nested) message going to be used to establish a related association, or
+// are we creating the related data?
+func messageAssociating(scope *Scope, message *proto.Message, model *proto.Model) bool {
+	for _, input := range message.Fields {
+		// Skip named/non-model inputs
+		if input.Target == nil {
+			continue
+		}
+
+		field := proto.FindField(scope.Schema.Models, model.Name, input.Name)
+
+		// If any non-id field is being set, then we are not associating.
+		// This indicates that we are creating.
+		if !field.PrimaryKey {
+			return false
+		}
+	}
+	return true
 }
