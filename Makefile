@@ -48,6 +48,8 @@ install:
 	cd ./packages/functions-runtime && pnpm install
 	cd ./packages/testing-runtime && pnpm install
 	cd ./packages/wasm && pnpm install
+	cd ./packages/client-react && pnpm install
+	cd ./packages/client-react-query && pnpm install
 
 setup-conventional-commits:
 	brew install pre-commit -q
