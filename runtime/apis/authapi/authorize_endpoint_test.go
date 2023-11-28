@@ -54,7 +54,7 @@ func TestSsoLogin_Success(t *testing.T) {
 
 	// Set secret for client
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
-		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
+		fmt.Sprintf("AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
 	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -143,7 +143,7 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 
 	// Set secret for client
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
-		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "wrong-secret",
+		fmt.Sprintf("AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "wrong-secret",
 	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -211,7 +211,7 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 
 	// Set secret for client
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
-		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
+		fmt.Sprintf("AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
 	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -396,7 +396,7 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 
 	// Set secret for client
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
-		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
+		fmt.Sprintf("AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
 	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -458,7 +458,7 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 
 	// Set secret for client
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
-		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
+		fmt.Sprintf("AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
 	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -531,7 +531,7 @@ func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
 
 	// Set secret for client
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
-		fmt.Sprintf("KEEL_AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
+		fmt.Sprintf("AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
 	})
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -583,7 +583,7 @@ func TestGetClientSecret(t *testing.T) {
 
 	ctx := context.Background()
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
-		"KEEL_AUTH_PROVIDER_SECRET_GOOGLE": "secret",
+		"AUTH_PROVIDER_SECRET_GOOGLE": "secret",
 	})
 
 	secret, hasSecret := authapi.GetClientSecret(ctx, provider)
@@ -598,7 +598,7 @@ func TestGetClientSecret_WithUnderscore(t *testing.T) {
 
 	ctx := context.Background()
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
-		"KEEL_AUTH_PROVIDER_SECRET_GOOGLE_CLIENT": "secret",
+		"AUTH_PROVIDER_SECRET_GOOGLE_CLIENT": "secret",
 	})
 
 	secret, hasSecret := authapi.GetClientSecret(ctx, provider)
@@ -613,7 +613,7 @@ func TestGetClientSecret_WithCapitals(t *testing.T) {
 
 	ctx := context.Background()
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
-		"KEEL_AUTH_PROVIDER_SECRET_GOOGLE_CLIENT": "secret",
+		"AUTH_PROVIDER_SECRET_GOOGLE_CLIENT": "secret",
 	})
 
 	secret, hasSecret := authapi.GetClientSecret(ctx, provider)
@@ -628,7 +628,7 @@ func TestGetClientSecret_WithNumbers(t *testing.T) {
 
 	ctx := context.Background()
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
-		"KEEL_AUTH_PROVIDER_SECRET_CLIENT_2": "secret",
+		"AUTH_PROVIDER_SECRET_CLIENT_2": "secret",
 	})
 
 	secret, hasSecret := authapi.GetClientSecret(ctx, provider)
