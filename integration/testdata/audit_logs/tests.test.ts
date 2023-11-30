@@ -722,7 +722,10 @@ test("identity model - audit table populated", async () => {
   });
   expect(identityCreated).toEqual(true);
 
-  const identity = await models.identity.findOne({ email: "user@keel.xyz" });
+  const identity = await models.identity.findOne({
+    email: "user@keel.xyz",
+    issuer: "keel",
+  });
   expect(identity).not.toBeNull();
 
   const logs = await sql<Audit<Identity>>`SELECT * FROM keel_audit`.execute(

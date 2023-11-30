@@ -235,7 +235,7 @@ test("create - @set with identity fields", async () => {
   expect(identityCreated).toBeTruthy();
 
   const identity = await models.identity.update(
-    { email: "user@keel.xyz" },
+    { email: "user@keel.xyz", issuer: "keel" },
     { externalId: "extId" }
   );
 
@@ -277,7 +277,7 @@ test("update - @set with identity fields", async () => {
   expect(identityCreated).toBeTruthy();
 
   const identity = await models.identity.update(
-    { email: "user@keel.xyz" },
+    { email: "user@keel.xyz", issuer: "keel" },
     { externalId: "extId" }
   );
 
