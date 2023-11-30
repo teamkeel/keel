@@ -88,6 +88,7 @@ test("permission role email is authorized", async () => {
   await models.identity.update(
     {
       email: "verified@agency.org",
+      issuer: "keel",
     },
     {
       emailVerified: true,
@@ -147,6 +148,7 @@ test("permission role domain is authorized", async () => {
   await models.identity.update(
     {
       email: "john.witherow@times.co.uk",
+      issuer: "keel",
     },
     {
       emailVerified: true,

@@ -145,3 +145,55 @@ const createNPosts = async (n: number) =>
       });
     })
   );
+
+test("findOne - compound unique with relationships", async () => {
+  const tom = await models.profile.create({
+    name: "Tom",
+  });
+  const benoit = await models.profile.create({
+    name: "Benoit",
+  });
+
+  await models.follow.create({
+    fromId: tom.id,
+    toId: benoit.id,
+  });
+
+  const dbFollow = await models.follow.findOne({
+    fromId: tom.id,
+    toId: benoit.id,
+  });
+
+  expect(dbFollow).not.toBeNull();
+});
+
+test("findOne - has-many", async () => {
+  const dickens = await models.author.create({
+    name: "Charles Dickens",
+  });
+  const book = await models.book.create({
+    authorId: dickens.id,
+    title: "Oliver Twist",
+  });
+
+  const dbAuthor = await models.author.findOne({
+    books: {
+      id: book.id,
+    },
+  });
+
+  expect(dbAuthor).not.toBeNull();
+});
+
+test("findOne - one-to-one", async () => {
+  const u = await models.user.create({});
+  const s = await models.settings.create({
+    userId: u.id,
+  });
+
+  const dbSettings = await models.settings.findOne({
+    userId: u.id,
+  });
+  expect(dbSettings).not.toBeNull();
+  expect(dbSettings!.id).toEqual(s.id);
+});

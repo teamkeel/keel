@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -325,24 +326,86 @@ func writeMessage(w *codegen.Writer, schema *proto.Schema, message *proto.Messag
 func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export type %sUniqueConditions = ", model.Name)
 	w.Indent()
+
+	type F struct {
+		key   string
+		value string
+	}
+
+	seenCompountUnique := map[string]bool{}
+
 	for _, f := range model.Fields {
-		var tsType string
+		entries := []*F{}
 
 		switch {
 		case f.Unique || f.PrimaryKey || len(f.UniqueWith) > 0:
-			tsType = toTypeScriptType(f.Type, false)
+			// Collect unique fields
+			fields := []*proto.Field{f}
+			fieldNames := []string{f.Name}
+			for _, v := range f.UniqueWith {
+				u, _ := lo.Find(model.Fields, func(f *proto.Field) bool {
+					return f.Name == v
+				})
+				fields = append(fields, u)
+				fieldNames = append(fieldNames, u.Name)
+			}
+
+			// De-dupe compound unqique constrains
+			sort.Strings(fieldNames)
+			k := strings.Join(fieldNames, ":")
+			if _, ok := seenCompountUnique[k]; ok {
+				continue
+			}
+			seenCompountUnique[k] = true
+
+			for _, f := range fields {
+				if f.Type.Type == proto.Type_TYPE_MODEL {
+					if f.ForeignKeyFieldName == nil {
+						// I'm not sure this can happen, but rather than have a cryptic nil-pointer error we'll
+						// panic with a hopefully more helpful error
+						panic(fmt.Sprintf(
+							"%s.%s is a relation field and part of a unique constraint but does not have a foreign key - this is unsupported",
+							model.Name, f.Name,
+						))
+					}
+
+					entries = append(entries, &F{
+						key:   f.ForeignKeyFieldName.Value,
+						value: "string",
+					})
+				} else {
+					entries = append(entries, &F{
+						key:   f.Name,
+						value: toTypeScriptType(f.Type, false),
+					})
+				}
+			}
 		case proto.IsHasMany(f):
-			// If a model "has one" of another model then you can
-			// do a lookup on any of that models unique fields
-			tsType = fmt.Sprintf("%sUniqueConditions", f.Type.ModelName.Value)
-		default:
-			// TODO: support f.UniqueWith for compound unique constraints
+			// If a field is has-many then the other side is has-one, meaning
+			// you can use that fields unique conditions to look up _this_ model.
+			// Example: an author has many books, but a book has one author, which
+			// means given a book id you can find a single author
+			entries = append(entries, &F{
+				key:   f.Name,
+				value: fmt.Sprintf("%sUniqueConditions", f.Type.ModelName.Value),
+			})
+		}
+
+		if len(entries) == 0 {
 			continue
 		}
 
 		w.Writeln("")
-		w.Writef("| {%s: %s}", f.Name, tsType)
+		w.Write("| {")
+		for i, f := range entries {
+			if i > 0 {
+				w.Write(", ")
+			}
+			w.Writef("%s: %s", f.key, f.value)
+		}
+		w.Writef("}")
 	}
+
 	w.Writeln(";")
 	w.Dedent()
 }

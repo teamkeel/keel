@@ -15,3 +15,44 @@ model Post {
         }
     }
 }
+
+model Profile {
+    fields {
+        name Text
+    }
+}
+
+model Follow {
+    fields {
+        from Profile
+        to Profile
+    }
+
+    @unique([from, to])
+}
+
+model Author {
+    fields {
+        name Text
+        books Book[]
+    }
+}
+
+model Book {
+    fields {
+        title Text
+        author Author
+    }
+}
+
+model User {
+    fields {
+        settings Settings
+    }
+}
+
+model Settings {
+    fields {
+        user User @unique
+    }
+}

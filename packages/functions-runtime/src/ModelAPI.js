@@ -1,3 +1,4 @@
+const { sql } = require("kysely");
 const { useDatabase } = require("./database");
 const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
@@ -54,14 +55,16 @@ class ModelAPI {
 
     return tracing.withSpan(name, async (span) => {
       try {
-        const query = db
-          .insertInto(this._tableName)
-          .values(
-            snakeCaseObject({
-              ...values,
-            })
-          )
-          .returningAll();
+        let query = db.insertInto(this._tableName);
+
+        if (values && Object.keys(values).length > 0) {
+          query = query.values(values);
+        } else {
+          // See https://github.com/kysely-org/kysely/issues/685#issuecomment-1711240534
+          query = query.expression(sql`default values`);
+        }
+
+        query = query.returningAll();
 
         span.setAttribute("sql", query.compile().sql);
         const row = await query.executeTakeFirstOrThrow();
