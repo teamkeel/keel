@@ -37,10 +37,11 @@ type ListFunctionHooks<M, QB, I> = {
  * @typeParam M - The Model this function is declared in
  * @typeParam QB - The QueryBuilder type for the model
  * @typeParam I - The function inputs
- * @typeParam C - The values that can be used to create an M record
+ * @typeParam I - The values that have been derived from the inputs
+ * @typeParam C - The values that will be used to create an M record
  */
-type CreateFunctionHooks<M, QB, I, C> = {
-  beforeWrite?: (ctx: ContextAPI, inputs: I, values: C) => Promise<C> | C;
+type CreateFunctionHooks<M, QB, I, V, C> = {
+  beforeWrite?: (ctx: ContextAPI, inputs: I, values: V) => Promise<C> | C;
   afterWrite?: (
     ctx: ContextAPI,
     inputs: I,

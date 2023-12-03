@@ -119,6 +119,14 @@ function init() {
   patchConsoleLog();
 }
 
+async function forceFlush() {
+  // The "delegate" is the actual provider set by the functions-runtime package
+  const provider = opentelemetry.trace.getTracerProvider().getDelegate();
+  if (provider && provider.forceFlush) {
+    await provider.forceFlush();
+  }
+}
+
 function getTracer() {
   return opentelemetry.trace.getTracer("functions");
 }
@@ -131,5 +139,6 @@ module.exports = {
   getTracer,
   withSpan,
   init,
+  forceFlush,
   spanNameForModelAPI,
 };

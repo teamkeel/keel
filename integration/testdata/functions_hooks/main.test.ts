@@ -67,6 +67,66 @@ test("create afterWrite - error and rollback", async () => {
   expect(books.length).toEqual(0);
 });
 
+test("create - with linked record", async () => {
+  const author = await models.author.create({
+    name: "Bob",
+  });
+  const book = await actions.createBookWithAuthor({
+    author: {
+      id: author.id,
+    },
+    title: "Great Gatsby",
+  });
+
+  expect(book.authorId).toEqual(author.id);
+
+  const dbBook = await models.book.findOne({
+    id: book.id,
+  });
+  expect(dbBook).not.toBeNull();
+  expect(dbBook!.authorId).toEqual(author.id);
+});
+
+test("create - with nested create", async () => {
+  const book = await actions.createBookAndAuthor({
+    author: {
+      name: "Harry",
+    },
+    title: "Great Gatsby",
+  });
+
+  expect(book.authorId).not.toBeNull();
+
+  const dbAuthor = await models.author.findOne({
+    id: book.authorId || "",
+  });
+  expect(dbAuthor).not.toBeNull();
+  expect(dbAuthor!.name).toEqual("Harry");
+});
+
+test("create - with nested create (has many)", async () => {
+  const author = await actions.createAuthorAndBooks({
+    name: "Philip K. Dick",
+    books: [
+      {
+        title: "Do Androids Dream of Electric Sheep",
+      },
+      {
+        title: "The Man in the High Castle",
+      },
+    ],
+  });
+
+  const books = await models.book.findMany({
+    where: {
+      authorId: author.id,
+    },
+  });
+  expect(books.length).toBe(2);
+  expect(books[0].published).toBe(true);
+  expect(books[1].published).toBe(true);
+});
+
 test("get beforeQuery - return null", async () => {
   const book = await actions.getBookBeforeQueryFirstOrNull({
     title: "This book doesnt exist",
@@ -195,6 +255,7 @@ test("list beforeQuery - return values", async () => {
     id: "1234",
     createdAt: new Date("2001-01-01"),
     updatedAt: new Date("2001-01-01"),
+    authorId: null,
     title: "Dreamcatcher",
     published: true,
   });

@@ -47,12 +47,58 @@ model Book {
 
 model User {
     fields {
-        settings Settings
+        settings Settings?
     }
 }
 
 model Settings {
     fields {
         user User @unique
+    }
+}
+
+model Product {
+    fields {
+        title Text
+        tags ProductTag[]
+    }
+}
+
+model Tag {
+    fields {
+        tag Text
+    }
+}
+
+model ProductTag {
+    fields {
+        product Product
+        tag Tag
+    }
+
+    @unique([product, tag])
+}
+
+model Course {
+    fields {
+        title Text
+        lessons Lesson[]
+    }
+}
+
+model Lesson {
+    fields {
+        title Text
+        course Course
+        readings Reading[]
+    }
+}
+
+model Reading {
+    fields {
+        lesson Lesson
+        book Text
+        fromPage Number
+        toPage Number
     }
 }

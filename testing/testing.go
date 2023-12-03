@@ -112,7 +112,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		functionEnvVars := map[string]string{
 			"KEEL_DB_CONN_TYPE":        "pg",
 			"KEEL_DB_CONN":             dbConnString,
-			"KEEL_TRACING_ENABLED":     "true",
+			"KEEL_TRACING_ENABLED":     os.Getenv("TRACING_ENABLED"),
 			"OTEL_RESOURCE_ATTRIBUTES": "service.name=functions",
 		}
 
@@ -153,7 +153,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 	runtimeServer := http.Server{
 		Addr: fmt.Sprintf(":%s", runtimePort),
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx, span := tracer.Start(ctx, strings.Trim(r.URL.Path, "/"))
+			ctx, span := tracer.Start(r.Context(), strings.Trim(r.URL.Path, "/"))
 			defer span.End()
 
 			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)

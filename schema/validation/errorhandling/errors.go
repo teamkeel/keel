@@ -125,8 +125,6 @@ func (v ValidationErrors) Error() string {
 	return str
 }
 
-func (e ValidationErrors) Unwrap() error { return e }
-
 type ErrorType string
 
 const (

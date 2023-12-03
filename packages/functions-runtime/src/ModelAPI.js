@@ -51,28 +51,10 @@ class ModelAPI {
 
   async create(values) {
     const name = tracing.spanNameForModelAPI(this._modelName, "create");
-    const db = useDatabase();
 
-    return tracing.withSpan(name, async (span) => {
-      try {
-        let query = db.insertInto(this._tableName);
-
-        if (values && Object.keys(values).length > 0) {
-          query = query.values(values);
-        } else {
-          // See https://github.com/kysely-org/kysely/issues/685#issuecomment-1711240534
-          query = query.expression(sql`default values`);
-        }
-
-        query = query.returningAll();
-
-        span.setAttribute("sql", query.compile().sql);
-        const row = await query.executeTakeFirstOrThrow();
-
-        return camelCaseObject(row);
-      } catch (e) {
-        throw new DatabaseError(e);
-      }
+    return tracing.withSpan(name, () => {
+      const db = useDatabase();
+      return create(db, this._tableName, this._tableConfigMap, values);
     });
   }
 
@@ -219,6 +201,111 @@ class ModelAPI {
 
     return new QueryBuilder(this._tableName, context, builder);
   }
+}
+
+async function create(conn, tableName, tableConfigs, values) {
+  try {
+    let query = conn.insertInto(tableName);
+
+    const keys = values ? Object.keys(values) : [];
+    const tableConfig = tableConfigs[tableName] || {};
+    const hasManyRecords = [];
+
+    if (keys.length === 0) {
+      // See https://github.com/kysely-org/kysely/issues/685#issuecomment-1711240534
+      query = query.expression(sql`default values`);
+    } else {
+      const row = {};
+      for (const key of keys) {
+        const value = values[key];
+        const columnConfig = tableConfig[key];
+
+        if (!columnConfig) {
+          row[key] = value;
+          continue;
+        }
+
+        switch (columnConfig.relationshipType) {
+          case "belongsTo":
+            if (!isPlainObject(value)) {
+              throw new Error(
+                `non-object provided for field ${key} of ${tableName}`
+              );
+            }
+
+            if (isReferencingExistingRecord(value)) {
+              row[columnConfig.foreignKey] = value.id;
+              break;
+            }
+
+            const created = await create(
+              conn,
+              columnConfig.referencesTable,
+              tableConfigs,
+              value
+            );
+            row[columnConfig.foreignKey] = created.id;
+            break;
+
+          case "hasMany":
+            if (!Array.isArray(value)) {
+              throw new Error(
+                `non-array provided for has-many field ${key} of ${tableName}`
+              );
+            }
+            for (const v of value) {
+              hasManyRecords.push({
+                key,
+                value: v,
+                columnConfig,
+              });
+            }
+            break;
+          default:
+            throw new Error(
+              `unsupported relationship type - ${tableName}.${key} (${columnConfig.relationshipType})`
+            );
+        }
+      }
+
+      query = query.values(row);
+    }
+
+    const created = await query.returningAll().executeTakeFirstOrThrow();
+
+    await Promise.all(
+      hasManyRecords.map(async ({ key, value, columnConfig }) => {
+        if (!isPlainObject(value)) {
+          throw new Error(
+            `non-object provided for field ${key} of ${tableName}`
+          );
+        }
+
+        if (isReferencingExistingRecord(value)) {
+          throw new Error(
+            `nested update as part of create not supported for ${key} of ${tableConfig}`
+          );
+        }
+
+        await create(conn, columnConfig.referencesTable, tableConfigs, {
+          ...value,
+          [columnConfig.foreignKey]: created.id,
+        });
+      })
+    );
+
+    return created;
+  } catch (e) {
+    throw new DatabaseError(e);
+  }
+}
+
+function isPlainObject(obj) {
+  return Object.prototype.toString.call(obj) === "[object Object]";
+}
+
+function isReferencingExistingRecord(value) {
+  return Object.keys(value).length === 1 && value.id;
 }
 
 module.exports = {

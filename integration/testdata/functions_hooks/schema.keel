@@ -1,5 +1,6 @@
 model Book {
     fields {
+        author Author?
         title Text
         published Boolean @default(false)
     }
@@ -9,6 +10,8 @@ model Book {
         create createBookBeforeWriteSync() with (title) @function
         create createBookAfterWrite() with (title, review: Text) @function
         create createBookAfterWriteErrorRollback() with (title) @function
+        create createBookWithAuthor() with (author.id, title) @function
+        create createBookAndAuthor() with (author.name, title) @function
         get getBookBeforeQueryFirstOrNull(title: Text) @function
         get getBookBeforeQueryQueryBuilder(id, allowUnpublished: Boolean?) @function
         get getBookAfterQuery(id) @function
@@ -28,6 +31,22 @@ model Book {
 
     @permission(
         actions: [create, get, list, update, delete],
+        expression: true
+    )
+}
+
+model Author {
+    fields {
+        name Text
+        books Book[]
+    }
+
+    actions {
+        create createAuthorAndBooks() with (name, books.title) @function
+    }
+
+    @permission(
+        actions: [create],
         expression: true
     )
 }

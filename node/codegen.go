@@ -86,7 +86,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
 		writeModelInterface(sdkTypes, model)
-		writeCreateValuesInterface(sdkTypes, model)
+		writeCreateValuesType(sdkTypes, schema, model)
 		writeWhereConditionsInterface(sdkTypes, model)
 		writeFindManyParamsInterface(sdkTypes, model, false)
 		writeUniqueConditionsInterface(sdkTypes, model)
@@ -101,7 +101,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 
 			// writes new types to the index.d.ts to annotate the underlying vanilla javascript
 			// implementation of a function with nice types
-			writeFunctionWrapperType(sdkTypes, model, action)
+			writeFunctionWrapperType(sdkTypes, schema, model, action)
 
 			// if the action type is read or write, then the signature of the exported method just takes the function
 			// defined by the user
@@ -189,28 +189,96 @@ func writeModelInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeCreateValuesInterface(w *codegen.Writer, model *proto.Model) {
-	w.Writef("export interface %sCreateValues {\n", model.Name)
+func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto.Model) {
+	w.Writef("export type %sCreateValues = {\n", model.Name)
 	w.Indent()
+
 	for _, field := range model.Fields {
-		// For now you can't create related models when creating a record
-		if field.Type.Type == proto.Type_TYPE_MODEL {
+		// For required relationship fields we don't include them in the main type but instead
+		// add them after using a union.
+		if (field.ForeignKeyFieldName != nil || field.ForeignKeyInfo != nil) && !field.Optional {
 			continue
 		}
+
+		if field.ForeignKeyFieldName != nil {
+			w.Writef("// if providing a value for this field do not also set %s\n", field.ForeignKeyFieldName.Value)
+		}
+		if field.ForeignKeyInfo != nil {
+			w.Writef("// if providing a value for this field do not also set %s\n", strings.TrimSuffix(field.Name, "Id"))
+		}
+
 		w.Write(field.Name)
-		if field.Optional || field.DefaultValue != nil {
+		if field.Optional || field.DefaultValue != nil || proto.IsHasMany(field) {
 			w.Write("?")
 		}
+
 		w.Write(": ")
-		t := toTypeScriptType(field.Type, false)
-		w.Write(t)
+
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			if proto.IsHasMany(field) {
+				w.Write("Array<")
+			}
+
+			relation := proto.FindModel(schema.Models, field.Type.ModelName.Value)
+
+			// For a has-many we need to omit the fields that relate to _this_ model.
+			// For example if we're making the create values type for author, and this
+			// field is "books" then we don't want the create values type for each book
+			// to expect you to provide "author" or "authorId" - as that field will be filled
+			// in when the author record is created
+			if proto.IsHasMany(field) {
+				inverseField := proto.FindField(schema.Models, relation.Name, field.InverseFieldName.Value)
+				w.Writef("Omit<%sCreateValues, '%s' | '%s'>", relation.Name, inverseField.Name, inverseField.ForeignKeyFieldName.Value)
+			} else {
+				w.Writef("%sCreateValues", relation.Name)
+			}
+
+			// ...or just an id. This API might not be ideal because by allowing just
+			// "id" we make the types less strict.
+			w.Writef(" | {%s: string}", proto.PrimaryKeyFieldName(relation))
+
+			if proto.IsHasMany(field) {
+				w.Write(">")
+			}
+		} else {
+			t := toTypeScriptType(field.Type, false)
+			w.Write(t)
+		}
+
 		if field.Optional {
 			w.Write(" | null")
 		}
 		w.Writeln("")
 	}
+
 	w.Dedent()
-	w.Writeln("}")
+	w.Write("}")
+
+	// For each required belongs-to relationship add a union that lets you either set
+	// the generated foreign key field or the actual model field, but not both.
+	for _, field := range model.Fields {
+		if field.ForeignKeyFieldName == nil || field.Optional {
+			continue
+		}
+
+		w.Writeln(" & (")
+		w.Indent()
+
+		fkName := field.ForeignKeyFieldName.Value
+
+		relation := proto.FindModel(schema.Models, field.Type.ModelName.Value)
+		relationPk := proto.PrimaryKeyFieldName(relation)
+
+		w.Writef("// Either %s or %s can be provided but not both\n", field.Name, fkName)
+		w.Writef("| {%s: %sCreateValues | {%s: string}, %s?: undefined}\n", field.Name, field.Type.ModelName.Value, relationPk, fkName)
+		w.Writef("| {%s: string, %s?: undefined}\n", fkName, field.Name)
+
+		w.Dedent()
+		w.Write(")")
+	}
+
+	w.Writeln("")
+	w.Writeln("")
 }
 
 func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model, isTestingPackage bool) {
@@ -870,12 +938,12 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 
 	// Using getter method for Fields here as it is safe even if the variables are nil
 	for _, f := range whereMsg.GetFields() {
-		if len(f.Target) > 0 {
+		if isModelInput(schema, f) {
 			wheres = append(wheres, fmt.Sprintf(`"%s"`, f.Name))
 		}
 	}
 	for _, f := range valuesMsg.GetFields() {
-		if len(f.Target) > 0 {
+		if isModelInput(schema, f) {
 			values = append(values, fmt.Sprintf(`"%s"`, f.Name))
 		}
 	}
@@ -898,7 +966,25 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 	))
 }
 
-func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *proto.Action) {
+// isModelInput returs true if `field` targets a model field, either directly
+// or via a child field)
+func isModelInput(schema *proto.Schema, field *proto.MessageField) bool {
+	if len(field.Target) > 0 {
+		return true
+	}
+	if field.Type.MessageName == nil {
+		return false
+	}
+	msg := proto.FindMessage(schema.Messages, field.Type.MessageName.Value)
+	for _, f := range msg.Fields {
+		if isModelInput(schema, f) {
+			return true
+		}
+	}
+	return false
+}
+
+func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *proto.Model, action *proto.Action) {
 	// we use the 'declare' keyword to indicate to the typescript compiler that the function
 	// has already been declared in the underlying vanilla javascript and therefore we are just
 	// decorating existing js code with types.
@@ -920,7 +1006,9 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 
 	hooksType := fmt.Sprintf("%sHooks", casing.ToCamel(action.Name))
 
-	w.Writef("(hooks?: %s) : void\n", hooksType)
+	// TODO: void return type here is wrong. It should be the type of the function e.g. (ctx, inputs) => ReturnType
+	w.Writef("(hooks?: %s): void\n", hooksType)
+
 	w.Writef("export type %s = ", hooksType)
 
 	modelName := action.ModelName
@@ -933,7 +1021,26 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 	case proto.ActionType_ACTION_TYPE_LIST:
 		w.Writef("ListFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputs)
 	case proto.ActionType_ACTION_TYPE_CREATE:
-		w.Writef("CreateFunctionHooks<%s, %s, %s, %sCreateValues>", modelName, queryBuilder, inputs, modelName)
+		msg := proto.FindMessage(schema.Messages, action.InputMessageName)
+		pickKeys := lo.FilterMap(msg.Fields, func(f *proto.MessageField, _ int) (string, bool) {
+			return fmt.Sprintf("'%s'", f.Name), isModelInput(schema, f)
+		})
+
+		beforeWriteValues := ""
+		switch len(pickKeys) {
+		case len(msg.Fields):
+			// All inputs target model fields, this means the beforeWriteValues are exactly the same as the inputs
+			beforeWriteValues = inputs
+		case 0:
+			// No inputs target model fields - need the "empty object" type
+			// https://www.totaltypescript.com/the-empty-object-type-in-typescript
+			beforeWriteValues = "Record<string, never>"
+		default:
+			// Some inputs target model fields - so create a new type by picking from inputs
+			beforeWriteValues = fmt.Sprintf("Pick<%s, %s>", inputs, strings.Join(pickKeys, " | "))
+		}
+
+		w.Writef("CreateFunctionHooks<%s, %s, %s, %s, %sCreateValues>", modelName, queryBuilder, inputs, beforeWriteValues, modelName)
 	case proto.ActionType_ACTION_TYPE_UPDATE:
 		w.Writef("UpdateFunctionHooks<%s, %s, %s, %sValues>", modelName, queryBuilder, inputs, casing.ToCamel(action.Name))
 	case proto.ActionType_ACTION_TYPE_DELETE:
@@ -941,6 +1048,7 @@ func writeFunctionWrapperType(w *codegen.Writer, model *proto.Model, action *pro
 	}
 
 	w.Writeln(";")
+	w.Writeln("")
 }
 
 func toCustomFunctionReturnType(model *proto.Model, op *proto.Action, isTestingPackage bool) string {
@@ -1137,6 +1245,9 @@ const listener = async (req, res) => {
 		res.setHeader('Content-Type', 'application/json');
 		res.write(JSON.stringify(rpcResponse));
 		res.end();
+		if (tracing.forceFlush) {
+			await tracing.forceFlush();
+		}
 		return;
 	}
 
