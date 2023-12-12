@@ -19,7 +19,7 @@ const (
 	DefaultRefreshTokenExpiry time.Duration = time.Hour * 24 * 90
 )
 
-const ProviderSecretPrefix = "KEEL_AUTH_PROVIDER_SECRET_"
+const ProviderSecretPrefix = "AUTH_PROVIDER_SECRET_"
 
 const (
 	GoogleProvider        = "google"
