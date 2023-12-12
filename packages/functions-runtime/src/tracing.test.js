@@ -33,7 +33,10 @@ test("withSpan span time", async () => {
 
   expect(spanEvents.map((e) => e.event)).toEqual(["onStart", "onEnd"]);
   const spanDuration = spanEvents.pop().span._duration.pop();
-  const waitTimeNanos = waitTimeMillis * 1000 * 1000;
+
+  // The '- 1' here is because sometimes the test fails due to the span duration
+  // being something like 99.87ms. As long as it's at least 99ms we're happy
+  const waitTimeNanos = (waitTimeMillis - 1) * 1000 * 1000;
   expect(spanDuration).toBeGreaterThan(waitTimeNanos);
 });
 

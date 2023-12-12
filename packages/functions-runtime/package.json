@@ -4,7 +4,7 @@
   "description": "Internal package used by @teamkeel/sdk",
   "main": "src/index.js",
   "scripts": {
-    "test": "DEBUG=true vitest run --reporter verbose --threads false",
+    "test": "vitest run --reporter verbose --threads false",
     "format": "npx prettier --write src/**/*.js"
   },
   "keywords": [],
