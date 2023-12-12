@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/program"
 )
@@ -17,6 +18,14 @@ var runCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		packageManager, err := resolvePackageManager(flagProjectDir, false)
+		if err == promptui.ErrAbort {
+			return
+		}
+		if err != nil {
+			panic(err)
+		}
+
 		program.Run(&program.Model{
 			Mode:             program.ModeRun,
 			ProjectDir:       flagProjectDir,
@@ -24,6 +33,7 @@ var runCmd = &cobra.Command{
 			Port:             flagPort,
 			TracingEnabled:   flagTracing,
 			NodePackagesPath: flagNodePackagesPath,
+			PackageManager:   packageManager,
 			PrivateKeyPath:   flagPrivateKeyPath,
 		})
 	},

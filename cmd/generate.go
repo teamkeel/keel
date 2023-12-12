@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/colors"
 	"github.com/teamkeel/keel/node"
@@ -18,8 +19,17 @@ var generateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logPrefix := colors.Green("|").String()
 
-		err := node.Bootstrap(
+		packageManager, err := resolvePackageManager(flagProjectDir, false)
+		if err == promptui.ErrAbort {
+			return nil
+		}
+		if err != nil {
+			panic(err)
+		}
+
+		err = node.Bootstrap(
 			flagProjectDir,
+			node.WithPackageManager(packageManager),
 			node.WithPackagesPath(flagNodePackagesPath),
 			node.WithLogger(func(s string) {
 				fmt.Println(logPrefix, s)

@@ -114,6 +114,9 @@ type Model struct {
 	// from this path, rather than NPM.
 	NodePackagesPath string
 
+	// Either 'npm' or 'pnpm'
+	PackageManager string
+
 	// If set then runtime will be configured with private key
 	// located at this path in pem format.
 	PrivateKeyPath string
@@ -236,7 +239,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.PrivateKey = msg.PrivateKey
 
 		m.Status = StatusSetupFunctions
-		return m, SetupFunctions(m.ProjectDir, m.NodePackagesPath)
+		return m, SetupFunctions(m.ProjectDir, m.NodePackagesPath, m.PackageManager)
 	case SetupFunctionsMsg:
 		m.Err = msg.Err
 
