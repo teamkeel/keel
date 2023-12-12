@@ -1,0 +1,4 @@
+model Person {
+    //expect-error:5:16:AttributeArgumentError:required argument 'actions' missing
+    @permission(expression: true)
+}

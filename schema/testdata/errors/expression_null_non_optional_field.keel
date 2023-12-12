@@ -1,0 +1,35 @@
+model Person {
+    fields {
+        name Text
+        employer Company?
+    }
+
+    actions {
+        create createPerson() with (employer.name) {
+            //expect-error:18:36:E060:name cannot be null
+            @set(person.name = null)
+            //expect-error:18:48:E060:country cannot be null
+            @set(person.employer.country = null)
+            //expect-error:37:56:E060:name cannot be null
+            @permission(expression: person.name != null)
+        }
+        list listPersons() {
+            //expect-error:20:39:E060:name cannot be null
+            @where(person.name == null)
+            //expect-error:20:39:E060:name cannot be null
+            @where(null == person.name)
+            //expect-error:20:48:E060:name cannot be null
+            @where(person.employer.name == null)
+            //expect-error:37:56:E060:name cannot be null
+            @permission(expression: person.name != null)
+        }
+    }
+}
+
+model Company {
+    fields {
+        name Text
+        country Text
+        employees Person[]
+    }
+}

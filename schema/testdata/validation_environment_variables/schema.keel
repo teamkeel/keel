@@ -1,3 +1,0 @@
-model MyModel {
-  @permission(expression: ctx.env.FOO == "d", actions: [get])
-}

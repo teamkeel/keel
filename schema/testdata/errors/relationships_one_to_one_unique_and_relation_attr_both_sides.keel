@@ -1,0 +1,19 @@
+model User {
+    fields {
+        student Student {
+            @unique
+            //expect-error:23:27:RelationshipError:Cannot create a relationship to the unique field 'user' on Student
+            @relation(user)
+        }
+    }
+}
+
+model Student {
+    fields {
+        user User {
+            @unique
+            //expect-error:23:30:RelationshipError:Cannot create a relationship to the unique field 'student' on User
+            @relation(student)
+        }
+    }
+}

@@ -1,0 +1,13 @@
+model Profile {
+    fields {
+        identity Identity @unique
+        username Text @unique
+    }
+
+    actions {
+        update updateProfile(id) with (username) {
+            //expect-error:37:38:E022:Operator '=' not permitted on @where
+            @where(profile.identity = ctx.identity)
+        }
+    }
+}

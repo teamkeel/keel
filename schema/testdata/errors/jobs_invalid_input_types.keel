@@ -1,0 +1,25 @@
+job MyJob1 {
+    inputs {
+        //expect-error:9:12:JobDefinitionError:Job input 'foo' is defined with unsupported type Foo
+        foo Foo
+        //expect-error:9:16:JobDefinitionError:Job input 'message' is defined with unsupported type MyMessage
+        message MyMessage
+        //expect-error:9:14:JobDefinitionError:Job input 'model' is defined with unsupported type MyModel
+        model MyModel
+    }
+
+    @permission(roles: [Admin])
+}
+
+role Admin {
+}
+
+model MyModel {
+    fields {
+        name Text
+    }
+}
+
+message MyMessage {
+    name Text
+}

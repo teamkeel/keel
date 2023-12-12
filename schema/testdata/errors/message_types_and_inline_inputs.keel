@@ -1,0 +1,14 @@
+message Foo {
+    bar Text
+}
+
+model Person {
+    fields {
+        name Text
+    }
+
+    actions {
+        //expect-error:24:27:ActionInputError:read and write functions must receive exactly one message-based input
+        read getPerson(Foo, baz: Text) returns (Foo)
+    }
+}

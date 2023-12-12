@@ -1,0 +1,13 @@
+model ModelA {
+    fields {
+        //expect-error:9:10:RelationshipError:The field 'b' does not have an associated field on ModelB
+        b ModelB[]
+    }
+}
+
+model ModelB {
+    fields {
+        //expect-error:9:10:RelationshipError:The field 'a' does not have an associated field on ModelA
+        a ModelA[]
+    }
+}

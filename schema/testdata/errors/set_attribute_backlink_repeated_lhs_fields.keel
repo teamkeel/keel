@@ -1,0 +1,24 @@
+model Record {
+    fields {
+        owner User?
+        parent Record?
+        children Record[]
+    }
+
+    actions {
+        create createRecordWithChildren() {
+            //expect-error:31:32:E030:ctx.identity.user.records.owner is an array of User. Only 'in' or 'not in' can be used
+            @set(record.owner = ctx.identity.user.records.owner)
+        }
+    }
+}
+
+model User {
+    fields {
+        identity Identity {
+            @unique
+            @relation(user)
+        }
+        records Record[]
+    }
+}

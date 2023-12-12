@@ -1,0 +1,6 @@
+model User {
+    fields {
+        //expect-error:9:18:E006:Cannot use 'createdAt' as it already exists as a built-in field
+        createdAt Text
+    }
+}

@@ -1,0 +1,12 @@
+role Admin {
+    emails {
+        "tom@keel.xyz"
+    }
+}
+
+//expect-error:6:11:E018:You have a duplicate definition for 'role Admin'
+role Admin {
+    emails {
+        "adam@keel.xyz"
+    }
+}

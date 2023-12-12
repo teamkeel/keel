@@ -1,0 +1,12 @@
+model Author {
+    fields {
+        written Post @unique
+    }
+}
+
+model Post {
+    fields {
+        //expect-error:33:40:RelationshipError:Cannot create a relationship to the unique field 'written' on Author
+        author Author @relation(written)
+    }
+}

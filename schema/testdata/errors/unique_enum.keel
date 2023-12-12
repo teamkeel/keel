@@ -1,0 +1,14 @@
+enum TheBeatles {
+    Paul
+    Ringo
+    John
+    George
+}
+
+//expect-error:7:17:NamingError:There is already a enum with the name TheBeatles
+model TheBeatles {
+}
+
+//expect-error:9:19:NamingError:There is already a enum with the name TheBeatles
+message TheBeatles {
+}

@@ -1,0 +1,29 @@
+model Profile {
+    fields {
+        name Text
+        identity Identity
+    }
+}
+
+model Post {
+    fields {
+        body Text
+        profile Profile
+    }
+
+    actions {
+        //expect-error:16:26:ActionInputError:the identity field of Profile is not set as part of this create operation
+        create createPost() with (body, profile.name)
+    }
+}
+
+model Comment {
+    fields {
+        post Post
+    }
+
+    actions {
+        //expect-error:16:29:ActionInputError:the identity field of Profile is not set as part of this create operation
+        create createComment() with (post.body, post.profile.name)
+    }
+}

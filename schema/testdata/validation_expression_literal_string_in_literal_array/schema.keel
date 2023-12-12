@@ -1,6 +1,0 @@
-model Post {
-  @permission(
-    expression: "bob" in [1, 2],
-    actions: [get]
-  )
-}

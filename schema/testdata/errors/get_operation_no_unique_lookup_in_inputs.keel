@@ -1,0 +1,10 @@
+model MyModel {
+    fields {
+        text Text
+    }
+
+    actions {
+        //expect-error:13:23:ActionInputError:The action 'getMyModel' can only get a single record and therefore must be filtered by unique fields
+        get getMyModel(text)
+    }
+}

@@ -63,7 +63,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot form a one to many relationship with field '%s' on %s as it is already associated with field '%s'", field.Name.Value, currentModel.Name.Value, pairedCandidate.Field.Name.Value),
 									fmt.Sprintf("Use @relation on '%s' to explicitly create a relationship with this field. For example, %s %s @relation(%s). %s", field.Name.Value, field.Name.Value, candidate.Model.Name.Value, candidate.Field.Name.Value, learnMore),
-									candidate.Field,
+									candidate.Field.Name,
 								))
 								alreadyErrored[field] = true
 							}
@@ -72,7 +72,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot associate with repeated field '%s' on %s to form a one to many relationship because it is already associated with field '%s'", field.Name.Value, currentModel.Name.Value, pairedCandidate.Field.Name.Value),
 									fmt.Sprintf("Use @relation to refer to another %s[] field on %s which is not yet in a relationship. %s", candidate.Model.Name.Value, currentModel.Name.Value, learnMore),
-									candidate.Field,
+									candidate.Field.Name,
 								))
 								alreadyErrored[candidate.Field] = true
 							}
@@ -86,7 +86,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot form a one to one relationship with field '%s' on %s as it is already associated with field '%s'", field.Name.Value, currentModel.Name.Value, pairedCandidate.Field.Name.Value),
 									fmt.Sprintf("Use @relation on '%s' to explicitly create a relationship with this field. For example, %s %s @unique @relation(%s). %s", field.Name.Value, field.Name.Value, candidate.Model.Name.Value, candidate.Field.Name.Value, learnMore),
-									candidate.Field,
+									candidate.Field.Name,
 								))
 								alreadyErrored[field] = true
 							}
@@ -95,7 +95,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot associate with field '%s' on %s to form a one to one relationship because it is already associated with '%s'", field.Name.Value, currentModel.Name.Value, pairedCandidate.Field.Name.Value),
 									fmt.Sprintf("Use @relation to refer to another %s field on %s which is not yet in a relationship. %s", candidate.Model.Name.Value, currentModel.Name.Value, learnMore),
-									candidate.Field,
+									candidate.Field.Name,
 								))
 								alreadyErrored[candidate.Field] = true
 							}
@@ -103,7 +103,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 							errs.AppendError(makeRelationshipError(
 								fmt.Sprintf("Cannot associate with field '%s' on model %s to form a relationship", candidate.Field.Name.Value, candidate.Model.Name.Value),
 								learnMore,
-								field,
+								field.Name,
 							))
 						}
 					}
@@ -126,9 +126,9 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			if otherModel == nil {
 				if relationAttr != nil {
 					errs.AppendError(makeRelationshipError(
-						"The @relation attribute cannot be used on non-model types",
+						"The @relation attribute cannot be used on non-model fields",
 						learnMore,
-						relationAttr,
+						relationAttr.Name,
 					))
 				}
 
@@ -154,7 +154,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 					errs.AppendError(makeRelationshipError(
 						fmt.Sprintf("The @relation argument must refer to a field on %s", otherModel.Name.Value),
 						fmt.Sprintf("For example, @relation(fieldName). %s", learnMore),
-						relationAttr,
+						relationAttr.Name,
 					))
 					return
 				}
@@ -166,7 +166,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 					errs.AppendError(makeRelationshipError(
 						"The @relation attribute must be defined on the other side of a one to many relationship",
 						learnMore,
-						relationAttr,
+						relationAttr.Name,
 					))
 					return
 				}
@@ -234,7 +234,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				errs.AppendError(makeRelationshipError(
 					fmt.Sprintf("The field '%s' does not have an associated field on %s", currentField.Name.Value, currentField.Type.Value),
 					fmt.Sprintf("In a one to many relationship, the related belongs-to field must exist on %s. %s", currentField.Type.Value, learnMore),
-					currentField,
+					currentField.Name,
 				))
 			}
 		},

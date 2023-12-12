@@ -1,0 +1,12 @@
+model Something {
+    fields {
+        foo Text
+    }
+
+    actions {
+        create createSomething() with (foo) {
+            //expect-error:76:80:E020:'KEY2' not found on 'Text'
+            @permission(expression: something.createdAt == ctx.headers.KEY.KEY2)
+        }
+    }
+}

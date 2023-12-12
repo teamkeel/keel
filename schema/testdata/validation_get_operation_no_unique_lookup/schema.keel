@@ -1,5 +1,0 @@
-model MyModel {
-    actions {
-        get getMyModel()
-    }
-}

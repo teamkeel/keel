@@ -1,0 +1,6 @@
+api Web {
+}
+
+//expect-error:5:8:E017:You have a duplicate definition for 'api Web'
+api Web {
+}

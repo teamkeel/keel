@@ -1,0 +1,19 @@
+model Publisher {
+}
+
+model Author {
+    fields {
+        publisher Publisher
+    }
+}
+
+model Book {
+    fields {
+        author Author @unique
+    }
+
+    actions {
+        //expect-error:13:27:ActionInputError:The action 'getByPublisher' can only get a single record and therefore must be filtered by unique fields
+        get getByPublisher(author.publisher.id)
+    }
+}

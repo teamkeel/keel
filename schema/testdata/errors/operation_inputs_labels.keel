@@ -1,0 +1,36 @@
+enum Fruit {
+    Apple
+    Orange
+}
+
+message Message1 {
+    field1 Text
+}
+
+model Person {
+    fields {
+        favFruit Fruit
+    }
+
+    actions {
+        // ok, because ID is a built in type
+        get getPerson1(personId: ID) {
+            @where(person.id == personId)
+        }
+        // invalid, because id is a field
+        //expect-error:24:36:ActionInputError:You're only allowed to use the name:type form for an input if the type is a built-in type (like Text), or an enum
+        get getPerson2(personId: id) {
+            @where(person.id == personId)
+        }
+        // ok, because thisFruit is an enum
+        list listPeopleByFruit(thisFruit: Fruit) {
+            @where(person.favFruit == thisFruit)
+        }
+    }
+
+    actions {
+        // invalid because you're not allowed to name Message inputs.
+        //expect-error:32:45:ActionInputError:You're only allowed to use the name:type form for an input if the type is a built-in type (like Text), or an enum
+        read doSomethingCustom(foo: Message1) returns (Message1)
+    }
+}

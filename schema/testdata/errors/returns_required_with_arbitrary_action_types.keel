@@ -1,0 +1,18 @@
+message Foo {
+    bar Text
+}
+
+model Person {
+    fields {
+        bar Text
+    }
+
+    actions {
+        //expect-error:14:23:TypeError:The 'returns' keyword must be specified when using a 'read' or 'write' action type
+        //expect-error:9:25:ActionInputError:read and write functions must return exactly one message-based response
+        read getPerson()
+        //expect-error:15:27:TypeError:The 'returns' keyword must be specified when using a 'read' or 'write' action type
+        //expect-error:9:29:ActionInputError:read and write functions must return exactly one message-based response
+        write updatePerson()
+    }
+}

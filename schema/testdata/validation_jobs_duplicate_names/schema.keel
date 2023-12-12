@@ -1,7 +1,0 @@
-job MyJob {
-    @schedule("* * * * *")
-}
-
-job MyJob {
-    @schedule("* * * * *")
-}

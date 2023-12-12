@@ -1,0 +1,109 @@
+message Foo {
+}
+
+model ModelWithActions {
+    fields {
+        foo Text
+    }
+
+    actions {
+        create createModel() with (foo)
+        list listModel()
+        update updateModel(id) with (foo)
+    }
+
+    actions {
+        read readModel(Foo) returns (Foo)
+    }
+}
+
+// Begin invalid names - model
+//expect-error:6:22:NamingError:Names cannot end with 'Input'
+enum CreateModelInput {
+}
+
+//expect-error:6:20:NamingError:Names cannot end with 'Input'
+enum ListModelInput {
+}
+
+//expect-error:6:25:NamingError:Names cannot end with 'Connection'
+enum ListModelConnection {
+}
+
+//expect-error:6:19:NamingError:Names cannot end with 'Edge'
+enum ListModelEdge {
+}
+
+//expect-error:6:22:NamingError:Names cannot end with 'Input'
+enum UpdateModelInput {
+}
+
+//expect-error:6:23:NamingError:Names cannot end with 'Input'
+enum AuthenticateInput {
+}
+
+//expect-error:6:26:NamingError:Names cannot end with 'Response'
+enum AuthenticateResponse {
+}
+
+//expect-error:6:26:NamingError:Names cannot end with 'Input'
+enum RequestPasswordInput {
+}
+
+//expect-error:6:29:NamingError:Names cannot end with 'Response'
+enum RequestPasswordResponse {
+}
+
+//expect-error:6:31:NamingError:Names cannot end with 'Input'
+enum RequestPasswordResetInput {
+}
+
+//expect-error:6:34:NamingError:Names cannot end with 'Response'
+enum RequestPasswordResetResponse {
+}
+
+//expect-error:6:14:NamingError:Reserved name 'PageInfo'
+enum PageInfo {
+}
+
+//expect-error:6:12:NamingError:Reserved name 'String'
+enum String {
+}
+
+//expect-error:6:12:NamingError:Reserved name 'Number'
+enum Number {
+}
+
+//expect-error:6:13:NamingError:Reserved name 'Boolean'
+enum Boolean {
+}
+
+enum Request {
+}
+
+enum Response {
+}
+
+//expect-error:6:11:NamingError:Reserved name 'Array'
+enum Array {
+}
+
+//expect-error:6:12:NamingError:Reserved name 'Object'
+enum Object {
+}
+
+//expect-error:6:11:NamingError:Reserved name 'Error'
+enum Error {
+}
+
+//expect-error:6:14:NamingError:Reserved name 'Mutation'
+enum Mutation {
+}
+
+//expect-error:6:11:NamingError:Reserved name 'Query'
+enum Query {
+}
+
+//expect-error:6:18:NamingError:Reserved name 'Subscription'
+enum Subscription {
+}

@@ -1,0 +1,21 @@
+model Post {
+    fields {
+        views Number
+    }
+
+    actions {
+        update incrementViews(id) {
+            //expect-error:29:31:E022:Operator '+=' not permitted on @set
+            @set(post.views += 1)
+        }
+        update decrementViews(id) {
+            //expect-error:29:31:E022:Operator '-=' not permitted on @set
+            @set(post.views -= 1)
+        }
+        update compareViews(id) {
+            //expect-error:29:31:E022:Operator '==' not permitted on @set
+            //expect-error:18:33:AttributeArgumentError:The @set attribute cannot be a logical condition and must express an assignment
+            @set(post.views == 1)
+        }
+    }
+}

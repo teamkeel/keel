@@ -1,5 +1,0 @@
-model Post {
-    fields {
-        author Author @relation(123)
-    }
-}

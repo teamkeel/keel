@@ -1,0 +1,20 @@
+model User {
+    fields {
+        student Student {
+            @unique
+            @relation(user)
+        }
+        //expect-error:9:17:RelationshipError:Cannot associate with field 'user' on Student to form a one to one relationship because it is already associated with 'student'
+        student2 Student {
+            @unique
+            @relation(user)
+        }
+    }
+}
+
+model Student {
+    fields {
+        user User
+        user2 User
+    }
+}

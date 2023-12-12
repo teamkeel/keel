@@ -1,0 +1,20 @@
+model Author {
+    fields {
+        // Requires @relation otherwise we don't know which Post field to relate with
+        coWritten Post @unique
+        // Requires @relation otherwise we don't know which Post field to relate with
+        //expect-error:9:16:RelationshipError:Cannot associate with field 'author' on Post to form a one to one relationship because it is already associated with 'coWritten'
+        written Post @unique
+    }
+}
+
+model Post {
+    fields {
+        // Not clear which Author field owns the relationship
+        author Author
+        // Not clear which Author field owns the relationship
+        //expect-error:9:17:RelationshipError:Cannot form a one to one relationship with field 'coWritten' on Author as it is already associated with field 'author'
+        //expect-error:9:17:RelationshipError:Cannot form a one to one relationship with field 'written' on Author as it is already associated with field 'author'
+        coAuthor Author
+    }
+}

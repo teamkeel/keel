@@ -1,0 +1,13 @@
+model Profile {
+    fields {
+        identity Identity @unique
+        username Text @unique
+    }
+
+    actions {
+        get getProfile(username) {
+            //expect-error:40:47:E020:'context' not found
+            @where(profile.identity == context.identity)
+        }
+    }
+}

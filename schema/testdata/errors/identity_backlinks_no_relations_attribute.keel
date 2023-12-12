@@ -1,0 +1,7 @@
+model CompanyEmployee {
+    fields {
+        abcIdentity Identity @unique
+        //expect-error:9:20:RelationshipError:Cannot associate with field 'companyEmployee' on Identity to form a one to one relationship because it is already associated with 'abcIdentity'
+        xyzIdentity Identity @unique
+    }
+}

@@ -1,0 +1,21 @@
+model Post {
+    fields {
+        name Text?
+        blog Blog?
+    }
+
+    actions {
+        create create() with (name, blog.name)
+        //expect-error:46:55:NamingError:'blog.name' has already been defined as a write input on this action
+        create createDups() with (blog.name, blog.name)
+        list list(name, blog.name)
+        //expect-error:34:43:NamingError:'blog.name' has already been defined as a query input on this action
+        list listDups(blog.name, blog.name)
+    }
+}
+
+model Blog {
+    fields {
+        name Text?
+    }
+}

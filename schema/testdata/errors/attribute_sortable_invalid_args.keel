@@ -1,0 +1,40 @@
+model Publisher {
+}
+
+model Author {
+    fields {
+        firstName Text
+        surname Text
+        publisher Publisher
+    }
+
+    actions {
+        list listAuthors() {
+            //expect-error:13:22:AttributeArgumentError:@sortable requires at least once argument
+            @sortable
+        }
+        list listAuthors2() {
+            @sortable(firstName)
+            //expect-error:13:22:AttributeNotAllowedError:@sortable can only be defined once per action
+            @sortable(surname)
+        }
+        list listAuthors3() {
+            @sortable(
+                firstName,
+                //expect-error:17:26:AttributeArgumentError:@sortable does not support ordering of relationships fields
+                publisher
+            )
+        }
+        list listAuthors4() {
+            @sortable(
+                firstName,
+                //expect-error:17:26:AttributeArgumentError:@sortable argument name 'firstName' already defined
+                firstName
+            )
+        }
+        list listAuthors5() {
+            //expect-error:23:26:AttributeArgumentError:@sortable argument is not correct formatted
+            @sortable(123)
+        }
+    }
+}

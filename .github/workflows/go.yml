@@ -1,5 +1,5 @@
 name: Go
-on: [ pull_request ]
+on: [pull_request]
 
 jobs:
   lint:
@@ -57,9 +57,9 @@ jobs:
       - name: Run tests
         run: go test ./... -v
 
-  makeGenerateNoOp:
+  proto:
     runs-on: ubuntu-latest
-    name: Check we didn't forget to run code generation
+    name: Proto check
     steps:
       - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v17
@@ -71,13 +71,5 @@ jobs:
         run: |
           if ! git diff --name-only --exit-code; then
               echo '::error ::"Please run `make proto` locally and commit the changes"'
-              exit 1
-          fi
-      - name: Run 'make testdata'
-        run: make testdata
-      - name: Error if there are any changes
-        run: |
-          if ! git diff --name-only --exit-code; then
-              echo '::error ::"Please run `make testdata` locally and commit the changes"'
               exit 1
           fi

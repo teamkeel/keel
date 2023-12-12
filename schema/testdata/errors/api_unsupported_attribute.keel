@@ -1,0 +1,4 @@
+api Web {
+    //expect-error:5:10:E011:api 'Web' has an unrecognised attribute @what
+    @what
+}

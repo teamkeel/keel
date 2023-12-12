@@ -1,7 +1,0 @@
-model Person {
-    actions {
-        write createBulkPeople(Any) returns (UnknownMessage) {
-            @function
-        }
-    }
-}

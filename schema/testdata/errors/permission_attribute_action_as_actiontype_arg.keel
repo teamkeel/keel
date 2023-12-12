@@ -1,0 +1,11 @@
+model Person {
+    actions {
+        get getPerson(id)
+    }
+
+    @permission(
+        expression: true,
+        //expect-error:19:28:AttributeArgumentError:getPerson is not a valid action type
+        actions: [getPerson]
+    )
+}

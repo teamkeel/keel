@@ -1,0 +1,48 @@
+model Post {
+    fields {
+        name Text?
+        published Boolean?
+        identity Identity?
+    }
+
+    actions {
+        create unknownIdentifier() with (name, published) {
+            //expect-error:18:22:AttributeArgumentError:The @set attribute can only be used to set model fields
+            @set(name = "hello")
+        }
+        create namedInput() with (n: Text, published) {
+            //expect-error:18:19:AttributeArgumentError:The @set attribute can only be used to set model fields
+            @set(n = post.name)
+        }
+        create literal() with (name, published) {
+            //expect-error:18:25:AttributeArgumentError:The @set attribute can only be used to set model fields
+            @set("hello" = post.name)
+        }
+        create null() with (name, published) {
+            //expect-error:18:22:AttributeArgumentError:The @set attribute can only be used to set model fields
+            @set(null = post.name)
+        }
+        create ctx() with (name, published) {
+            //expect-error:18:37:AttributeArgumentError:The @set attribute can only be used to set model fields
+            @set(ctx.isAuthenticated = post.published)
+        }
+        create ctxIdentity() with (name, published) {
+            //expect-error:18:30:AttributeArgumentError:The @set attribute can only be used to set model fields
+            @set(ctx.identity = post.identity)
+        }
+        create ctxIdentityEmail() with (name, published) {
+            //expect-error:18:36:AttributeArgumentError:The @set attribute can only be used to set model fields
+            @set(ctx.identity.email = "email")
+        }
+        create anotherModel() {
+            //expect-error:18:27:E020:'publisher' not found
+            @set(publisher.name = "email")
+        }
+    }
+}
+
+model Publisher {
+    fields {
+        name Text
+    }
+}

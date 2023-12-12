@@ -1,0 +1,26 @@
+model Person {
+    fields {
+        name Text
+        passport Text @unique
+        employer Company
+    }
+
+    actions {
+        //expect-error:70:79:ActionInputError:Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally
+        //expect-error:81:90:ActionInputError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
+        create createPerson() with (id, employer.id, passport, name, createdAt, updatedAt)
+        create createPersonWithCompany() with (
+            name,
+            passport,
+            employer.name,
+            //expect-error:13:31:ActionInputError:Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally
+            employer.createdAt,
+        )
+    }
+}
+
+model Company {
+    fields {
+        name Text
+    }
+}

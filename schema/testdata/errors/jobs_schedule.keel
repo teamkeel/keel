@@ -1,0 +1,38 @@
+job NoArgs {
+    //expect-error:5:14:AttributeArgumentError:@schedule must have exactly one argument
+    @schedule
+}
+
+job TooManyArgs {
+    //expect-error:5:14:AttributeArgumentError:@schedule must have exactly one argument
+    @schedule(
+        "every 10 minutes",
+        "also mondays"
+    )
+}
+
+job WrongArgType {
+    //expect-error:15:19:AttributeArgumentError:argument must be a string
+    @schedule(1234)
+}
+
+job Labelled {
+    //expect-error:15:19:AttributeArgumentError:argument to @schedule cannot be labelled
+    @schedule(cron: "foo")
+}
+
+job InvalidSchedule {
+    //expect-error:25:29:AttributeArgumentError:unexpected token 'cats' - expected 'minutes' or 'hours'
+    @schedule("every 10 cats")
+}
+
+job InvalidCron {
+    //expect-error:27:30:AttributeArgumentError:invalid value 'BOB' for day-of-week field
+    @schedule("*/10 * * * BOB")
+}
+
+job TwoSchedules {
+    @schedule("every 10 minutes")
+    //expect-error:5:14:AttributeNotAllowedError:A job cannot have more than one @schedule attribute
+    @schedule("every 2 hours")
+}

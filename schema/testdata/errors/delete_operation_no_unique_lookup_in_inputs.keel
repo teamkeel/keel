@@ -1,0 +1,10 @@
+model MyModel {
+    fields {
+        text Text
+    }
+
+    actions {
+        //expect-error:16:29:ActionInputError:The action 'deleteMyModel' can only delete a single record and therefore must be filtered by unique fields
+        delete deleteMyModel(text)
+    }
+}

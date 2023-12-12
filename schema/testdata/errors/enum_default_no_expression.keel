@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        //expect-error:23:31:E050:default requires an expression
+        type PostType @default
+    }
+}
+
+enum PostType {
+    Draft
+    Published
+}

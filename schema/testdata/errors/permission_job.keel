@@ -1,0 +1,10 @@
+job MyJob {
+    @permission(
+        //expect-error:9:16:AttributeArgumentError:cannot provide 'actions' arguments when using @permission in a job
+        actions: [get],
+        roles: [MyRole]
+    )
+}
+
+role MyRole {
+}

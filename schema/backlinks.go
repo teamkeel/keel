@@ -69,6 +69,14 @@ func (scm *Builder) insertBackLinkField(
 		backlinkName = relationValue.ToString()
 	}
 
+	// If the field already exists don't add another one as this will just create a
+	// duplicate field name error that is confusing. This is will be an error but will
+	// be caught by relationship validation since it is not possible for Identity
+	// to have any fields which use a user-defined model
+	if query.Field(identityModel, backlinkName) != nil {
+		return nil
+	}
+
 	backLinkField := &parser.FieldNode{
 		Name: parser.NameNode{
 			Value: backlinkName,

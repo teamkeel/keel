@@ -1,0 +1,9 @@
+model CompanyEmployee {
+    fields {
+        identity Identity {
+            @unique
+            //expect-error:23:32:RelationshipError:The field 'createdAt' on Identity must be of type CompanyEmployee in order to establish a relationship
+            @relation(createdAt)
+        }
+    }
+}

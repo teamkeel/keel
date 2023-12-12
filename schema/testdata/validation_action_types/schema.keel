@@ -1,9 +1,0 @@
-model Person {
-    fields {
-        name Text
-    }
-
-    actions {
-        foo something()
-    }
-}

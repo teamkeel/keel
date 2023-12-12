@@ -1,0 +1,18 @@
+model Author {
+    fields {
+        //expect-error:9:16:RelationshipError:The field 'written' does not have an associated field on Post
+        written Post[]
+        reviewed Post
+        starPost Post {
+            @unique
+            @relation(author)
+        }
+    }
+}
+
+model Post {
+    fields {
+        author Author
+        reviewedBy Author[]
+    }
+}

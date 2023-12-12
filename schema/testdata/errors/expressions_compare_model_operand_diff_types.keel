@@ -1,0 +1,18 @@
+model User {
+    fields {
+        identity Identity @unique
+    }
+}
+
+model BankAccount {
+    fields {
+        identity Identity @unique
+    }
+
+    actions {
+        get getBankAccount(id) {
+            //expect-error:37:78:E026:ctx.identity.user is User and bankAccount.identity is Identity
+            @permission(expression: ctx.identity.user == bankAccount.identity)
+        }
+    }
+}

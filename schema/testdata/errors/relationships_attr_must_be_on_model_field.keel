@@ -1,0 +1,12 @@
+model Post {
+    fields {
+        //expect-error:21:30:RelationshipError:The @relation attribute cannot be used on non-model fields
+        author Text @relation(author)
+    }
+}
+
+model Author {
+    fields {
+        author Post
+    }
+}

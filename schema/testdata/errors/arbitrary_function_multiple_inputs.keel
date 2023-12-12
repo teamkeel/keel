@@ -1,0 +1,19 @@
+message Foo {
+    bar Text
+}
+
+message Baz {
+    bar Text
+}
+
+message Bar {
+    id ID
+}
+
+model Person {
+    actions {
+        //expect-error:24:27:ActionInputError:read and write functions must receive exactly one message-based input
+        //expect-error:29:32:ActionInputError:read and write functions must receive exactly one message-based input
+        read getPerson(Foo, Baz) returns (Bar) @function
+    }
+}

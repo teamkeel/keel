@@ -1,0 +1,11 @@
+model Author {
+}
+
+model Post {
+    fields {
+        //expect-error:9:15:RelationshipError:The field 'author' does not have an associated field on Author
+        author Author[]
+        //expect-error:9:17:RelationshipError:The field 'coAuthor' does not have an associated field on Author
+        coAuthor Author[]
+    }
+}

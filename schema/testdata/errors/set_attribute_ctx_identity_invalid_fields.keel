@@ -1,0 +1,16 @@
+model UserExtension {
+    fields {
+        unknown Text
+    }
+
+    actions {
+        create createExt() {
+            //expect-error:55:62:E020:'unknown' not found on 'Identity'
+            @set(userExtension.unknown = ctx.identity.unknown)
+        }
+        update updateExt(id) {
+            //expect-error:55:62:E020:'unknown' not found on 'Identity'
+            @set(userExtension.unknown = ctx.identity.unknown)
+        }
+    }
+}

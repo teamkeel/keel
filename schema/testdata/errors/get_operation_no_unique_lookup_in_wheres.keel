@@ -1,0 +1,12 @@
+model MyModel {
+    fields {
+        nonUnique Text
+    }
+
+    actions {
+        //expect-error:13:23:ActionInputError:The action 'getMyModel' can only get a single record and therefore must be filtered by unique fields
+        get getMyModel() {
+            @where(myModel.nonUnique == "something")
+        }
+    }
+}

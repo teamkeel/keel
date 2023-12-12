@@ -1,0 +1,24 @@
+//expect-error:5:11:JobDefinitionError:Job 'MyJob1' must be defined with either @schedule or @permission
+job MyJob1 {
+    inputs {
+        myField Text
+    }
+
+}
+
+//expect-error:5:11:JobDefinitionError:Job 'MyJob2' is scheduled and so cannot also have inputs
+job MyJob2 {
+    inputs {
+        myField Text
+    }
+
+    @schedule("* * * * *")
+}
+
+job MyJob3 {
+    @permission(roles: [Admin])
+    @schedule("* * * * *")
+}
+
+role Admin {
+}

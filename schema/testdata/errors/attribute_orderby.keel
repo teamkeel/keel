@@ -1,0 +1,31 @@
+model Author {
+    fields {
+        //expect-error:24:32:E011:field 'firstName' has an unrecognised attribute @orderBy
+        firstName Text @orderBy
+        surname Text
+    }
+
+    actions {
+        create createAuthor() with (firstName, surname) {
+            //expect-error:13:21:AttributeNotAllowedError:@orderBy can only be used on list actions
+            @orderBy(firstName: asc)
+        }
+        list listAuthors() {
+            @orderBy(firstName: asc)
+            //expect-error:13:21:AttributeNotAllowedError:@orderBy can only be defined once per action
+            @orderBy(surname: asc)
+        }
+    }
+
+    actions {
+        list listAuthorsFn() {
+            @orderBy(
+                firstName: asc,
+                surname: asc
+            )
+        }
+    }
+
+    //expect-error:5:13:E011:model 'Author' has an unrecognised attribute @orderBy
+    @orderBy(firstName: asc)
+}

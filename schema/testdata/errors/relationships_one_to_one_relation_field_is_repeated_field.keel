@@ -1,0 +1,16 @@
+model User {
+    fields {
+        student Student {
+            @unique
+            //expect-error:23:27:RelationshipError:A one to one relationship cannot be made with repeated field 'user' on Student
+            @relation(user)
+        }
+    }
+}
+
+model Student {
+    fields {
+        //expect-error:9:13:RelationshipError:The field 'user' does not have an associated field on User
+        user User[]
+    }
+}

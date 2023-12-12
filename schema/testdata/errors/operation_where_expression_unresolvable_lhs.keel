@@ -1,0 +1,13 @@
+model Profile {
+    fields {
+        identity Identity @unique
+        username Text @unique
+    }
+
+    actions {
+        get getProfile(username) {
+            //expect-error:28:35:E020:'identit' not found on 'Profile'
+            @where(profile.identit == ctx.identity)
+        }
+    }
+}

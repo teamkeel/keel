@@ -1,0 +1,16 @@
+model User {
+    fields {
+        email Text
+    }
+
+    actions {
+        //expect-error:16:28:E042:You have a reserved action name 'authenticate'
+        create authenticate() with (email)
+    }
+}
+
+api Web {
+    models {
+        User
+    }
+}

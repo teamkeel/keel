@@ -1,0 +1,13 @@
+model Profile {
+    fields {
+        email Text @unique
+        username Text @unique
+    }
+
+    actions {
+        create createProfile() with (username, email) {
+            //expect-error:13:18:E011:actions 'createProfile' has an unrecognised attribute @save
+            @save(profile.identity = ctx.identity)
+        }
+    }
+}

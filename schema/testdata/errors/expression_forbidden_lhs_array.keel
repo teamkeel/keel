@@ -1,0 +1,18 @@
+model Post {
+    fields {
+        authors Author[]
+    }
+
+    @permission(
+        //expect-error:39:41:E031:Both sides of the expression cannot be an array
+        expression: post.authors.name in post.authors.name,
+        actions: [get]
+    )
+}
+
+model Author {
+    fields {
+        name Text
+        post Post
+    }
+}

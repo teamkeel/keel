@@ -1,0 +1,34 @@
+model Author {
+    fields {
+        //expect-error:24:33:E011:field 'firstName' has an unrecognised attribute @sortable
+        firstName Text @sortable
+        surname Text
+    }
+
+    actions {
+        create createAuthor() with (firstName, surname) {
+            //expect-error:13:22:AttributeNotAllowedError:@sortable can only be used on list actions
+            @sortable(
+                firstName,
+                surname
+            )
+        }
+        list listAuthors() {
+            @sortable(firstName)
+            //expect-error:13:22:AttributeNotAllowedError:@sortable can only be defined once per action
+            @sortable(surname)
+        }
+    }
+
+    actions {
+        list listAuthorsFn() {
+            @sortable(
+                firstName,
+                surname
+            )
+        }
+    }
+
+    //expect-error:5:14:E011:model 'Author' has an unrecognised attribute @sortable
+    @sortable(surname)
+}

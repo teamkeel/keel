@@ -1,0 +1,11 @@
+model Person {
+    fields {
+        name Text
+        age Number
+    }
+
+    actions {
+        //expect-error:16:28:E034:create actions must accept all required fields that have no default value
+        create createPerson() with (name)
+    }
+}

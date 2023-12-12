@@ -1,0 +1,11 @@
+model Profile {
+    fields {
+        username Text
+    }
+
+    actions {
+        create createProfile() with (username)
+        //expect-error:16:29:E004:You have duplicate actions Model:Profile Name:createProfile
+        create createProfile() with (username)
+    }
+}

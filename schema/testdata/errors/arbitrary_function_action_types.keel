@@ -1,0 +1,10 @@
+message Foo {
+    bar Text
+}
+
+model Person {
+    actions {
+        //expect-error:9:12:TypeError:The 'returns' keyword can only be used with 'read' or 'write' actions
+        get getPerson(id) returns (foo) @function
+    }
+}

@@ -87,7 +87,7 @@ func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 						Message: "The 'returns' keyword must be specified when using a 'read' or 'write' action type",
 						Hint:    "Try to append 'returns(MyMessageType)'",
 					},
-					function.Node,
+					function.Name,
 				))
 
 				continue

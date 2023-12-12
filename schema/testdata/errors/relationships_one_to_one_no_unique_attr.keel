@@ -1,0 +1,13 @@
+model User {
+    fields {
+        //expect-error:9:16:RelationshipError:A one to one relationship requires a single side to be @unique
+        student Student @relation(user)
+    }
+}
+
+model Student {
+    fields {
+        //expect-error:9:13:RelationshipError:A one to one relationship requires a single side to be @unique
+        user User @relation(student)
+    }
+}

@@ -1,7 +1,0 @@
-model Person {
-    actions {
-        get getPerson(id)
-    }
-
-    @permission(expression: true, actions:[getPerson])
-}

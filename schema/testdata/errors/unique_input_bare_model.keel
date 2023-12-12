@@ -1,0 +1,13 @@
+model Author {
+}
+
+model Book {
+    fields {
+        author Author @unique
+    }
+
+    actions {
+        //expect-error:25:31:ActionInputError:'author' refers to a model which cannot used as an input
+        get getByAuthor(author)
+    }
+}

@@ -1,0 +1,20 @@
+model Profile {
+    fields {
+        status Text
+    }
+
+    actions {
+        update updateStatus(id) with (status)
+    }
+}
+
+model Order {
+    fields {
+        status Text
+    }
+
+    actions {
+        //expect-error:16:28:E004:You have duplicate actions Model:Order Name:updateStatus
+        update updateStatus(id) with (status)
+    }
+}

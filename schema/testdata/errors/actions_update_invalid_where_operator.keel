@@ -1,0 +1,13 @@
+model Person {
+    fields {
+        name Text
+        niNumber Number @unique
+    }
+
+    actions {
+        //expect-error:16:26:ActionInputError:The action 'updateName' can only update a single record and therefore must be filtered by unique fields
+        update updateName() with (name) {
+            @where(person.niNumber > 100)
+        }
+    }
+}

@@ -1,0 +1,66 @@
+model House {
+    fields {
+        houseName Text
+        houseNumber Number
+        rooms Room[]
+        waterConnection Connection
+        owner Owner
+    }
+
+    actions {
+        //expect-error:16:27:E034:create actions must accept all required fields that have no default value
+        create createHouse() with (
+            houseName,
+            houseNumber,
+            waterConnection.supplierCo,
+            waterConnection.region,
+            owner.pet.typeOfAnimal,
+            //expect-error:13:38:E005:Action inputs must be one of the fields defined in the model
+            owner.ownerNameSpeltWrong,
+            owner.pet.favouriteToy.whatIsIt,
+        )
+    }
+}
+
+model Room {
+    fields {
+        house House
+        name Text
+        colour Text
+        floor Floor
+    }
+}
+
+model Floor {
+    fields {
+        covering Text
+        area Number
+    }
+}
+
+model Connection {
+    fields {
+        supplierCo Text
+        region Text
+    }
+}
+
+model Owner {
+    fields {
+        ownerName Text
+        pet Pet
+    }
+}
+
+model Pet {
+    fields {
+        typeOfAnimal Text
+        favouriteToy Toy
+    }
+}
+
+model Toy {
+    fields {
+        whatIsIt Text
+    }
+}

@@ -1,0 +1,12 @@
+job MyJob1 {
+    inputs {
+        myField Text
+        //expect-error:9:16:DuplicateDefinitionError:Job input with name 'myField' already exists
+        myField Text
+    }
+
+    @permission(roles: [Admin])
+}
+
+role Admin {
+}

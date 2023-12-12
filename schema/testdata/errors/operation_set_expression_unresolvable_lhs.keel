@@ -1,0 +1,12 @@
+model Profile {
+    fields {
+        username Text @unique
+    }
+
+    actions {
+        update createProfile(id) with (username) {
+            //expect-error:26:33:E020:'identit' not found on 'Profile'
+            @set(profile.identit = ctx.identity)
+        }
+    }
+}

@@ -1,0 +1,53 @@
+model Product {
+    fields {
+        name Text
+        sku Text @unique
+        stock ProductStock? @unique
+    }
+
+    actions {
+        //expect-error:13:30:ActionInputError:The action 'getBySupplierCode' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierCode(supplierCode: Text) {
+            @where(product.stock.supplier.supplierCode == supplierCode)
+        }
+        //expect-error:13:38:ActionInputError:The action 'getByBarcodeOrShampooExpr' can only get a single record and therefore must be filtered by unique fields
+        get getByBarcodeOrShampooExpr(barcode: Text) {
+            @where(product.stock.barcode == barcode or product.name == "Shampoo")
+        }
+        //expect-error:13:34:ActionInputError:The action 'getBySupplierSkuInput' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierSkuInput(stock.supplierSku)
+        //expect-error:13:33:ActionInputError:The action 'getBySupplierSkuExpr' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierSkuExpr(supplierSku: Text) {
+            @where(product.stock.supplierSku == supplierSku)
+        }
+        //expect-error:13:31:ActionInputError:The action 'getByStockIdIsNull' can only get a single record and therefore must be filtered by unique fields
+        get getByStockIdIsNull() {
+            @where(product.stock == null)
+        }
+        //expect-error:13:36:ActionInputError:The action 'getByNullStockIdInverse' can only get a single record and therefore must be filtered by unique fields
+        get getByNullStockIdInverse() {
+            @where(null == product.stock)
+        }
+    }
+}
+
+model ProductStock {
+    fields {
+        barcode Text @unique
+        supplierSku Text
+        supplier Supplier
+        product Product
+    }
+
+    actions {
+        //expect-error:13:29:ActionInputError:The action 'getByProductName' can only get a single record and therefore must be filtered by unique fields
+        get getByProductName(product.name)
+    }
+}
+
+model Supplier {
+    fields {
+        supplierCode Text @unique
+        stock ProductStock
+    }
+}
