@@ -1,0 +1,17 @@
+message One {
+    //expect-error:5:9:TypeError:a message cannot refer to itself unless the field is optional
+    self One
+    selfOptional One?
+    //expect-error:5:8:TypeError:a message cannot refer to itself unless the field is optional - 'Two' refers to 'Three', 'Three' refers to 'One'
+    two Two
+}
+
+message Two {
+    //expect-error:5:10:TypeError:a message cannot refer to itself unless the field is optional - 'Three' refers to 'One', 'One' refers to 'Two'
+    three Three
+}
+
+message Three {
+    //expect-error:5:8:TypeError:a message cannot refer to itself unless the field is optional - 'One' refers to 'Two', 'Two' refers to 'Three'
+    one One
+}

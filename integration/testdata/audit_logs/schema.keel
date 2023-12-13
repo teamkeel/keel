@@ -21,7 +21,7 @@ model Wedding {
 
 message Guests {
     names Text[]
-    weddingId Id
+    weddingId ID
 }
 
 enum InviteStatus {

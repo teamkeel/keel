@@ -1,0 +1,9 @@
+message Foo {
+    one Text
+    //expect-error:5:8:DuplicateDefinitionError:field 'one' already defined in message 'Foo'
+    one Text
+    //expect-error:9:21:TypeError:invalid type 'FibbleBibble' - must be a built-in type, model, enum, or message
+    two FibbleBibble
+    //expect-error:16:23:AttributeNotAllowedError:message fields do not support attributes
+    three Text @unique
+}
