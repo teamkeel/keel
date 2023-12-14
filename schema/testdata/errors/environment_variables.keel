@@ -1,0 +1,7 @@
+model MyModel {
+    @permission(
+        //expect-error:29:32:E020:'FOO' not found on 'Environment Variables'
+        expression: ctx.env.FOO == "d",
+        actions: [get]
+    )
+}

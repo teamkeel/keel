@@ -1,0 +1,14 @@
+model Author {
+    fields {
+        age Number
+        //expect-error:9:16:RelationshipError:The field 'written' does not have an associated field on Post
+        written Post[]
+    }
+}
+
+model Post {
+    fields {
+        //expect-error:33:36:RelationshipError:The field 'age' on Author must be of type Post in order to establish a relationship
+        author Author @relation(age)
+    }
+}

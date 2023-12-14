@@ -1,0 +1,10 @@
+model Person {
+    fields {
+        //expect-error:16:22:TypeError:The model 'Person' cannot have a field of its own type unless it is optional.
+        person Person
+    }
+
+    actions {
+        create createPerson()
+    }
+}

@@ -1,9 +1,0 @@
-model MyModel {
-    fields {
-        text Text
-    }
-
-    actions {
-        delete deleteMyModel(text)
-    }
-}

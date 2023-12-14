@@ -1,0 +1,26 @@
+job MyJob1 {
+    //expect-error:25:35:AttributeArgumentError:NoRoleName is not a role defined in your schema
+    @permission(roles: [NoRoleName])
+}
+
+job MyJob2 {
+    //expect-error:32:42:AttributeArgumentError:NoRoleName is not a role defined in your schema
+    @permission(roles: [Admin, NoRoleName])
+}
+
+job MyJob3 {
+    //expect-error:24:29:AttributeArgumentError:value should be a list e.g. [Admin]
+    @permission(roles: Admin)
+}
+
+job MyJob4 {
+    //expect-error:17:24:AttributeArgumentError:@permission requires all arguments to be named, for example @permission(roles: [MyRole])
+    //expect-error:5:16:AttributeArgumentError:@permission requires either the 'expressions' or 'roles' argument to be provided
+    @permission([Admin])
+}
+
+role Admin {
+}
+
+role Developer {
+}

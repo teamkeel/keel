@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        //expect-error:32:39:E048:"Draft" is Text but field type is PostType
+        type PostType @default("Draft")
+    }
+}
+
+enum PostType {
+    Draft
+    Published
+}

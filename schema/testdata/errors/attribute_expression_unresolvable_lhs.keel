@@ -1,0 +1,29 @@
+model Post {
+    fields {
+        author Author
+    }
+
+    @permission(
+        //expect-error:26:31:E020:'autho' not found on 'Post'
+        expression: post.autho.name == "adam",
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:21:27:E061:Non-boolean single operand conditions such as '"dave"' not permitted on @permission
+        expression: "dave",
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:21:37:E061:Non-boolean single operand conditions such as 'post.author.name' not permitted on @permission
+        expression: post.author.name,
+        actions: [get]
+    )
+}
+
+model Author {
+    fields {
+        name Text
+    }
+}

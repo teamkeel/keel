@@ -1,0 +1,3 @@
+//expect-error:5:10:JobDefinitionError:Job 'MyJob' must be defined with either @schedule or @permission
+job MyJob {
+}

@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        //expect-error:32:41:E020:'Gibberish' not found
+        type PostType @default(Gibberish)
+    }
+}
+
+enum PostType {
+    Draft
+    Published
+}

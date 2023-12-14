@@ -1,0 +1,68 @@
+//expect-error:9:25:NamingError:Reserved message name 'UpdateModelInput'
+message UpdateModelInput {
+}
+
+//expect-error:9:28:NamingError:Reserved message name 'UpdateModelResponse'
+message UpdateModelResponse {
+}
+
+model ModelWithActions {
+    fields {
+        foo Text
+    }
+
+    actions {
+        update updateModel(id) with (foo)
+    }
+
+    actions {
+        read readModel(UpdateModelInput) returns (UpdateModelResponse)
+    }
+}
+
+// Begin invalid names - model
+//expect-error:9:17:NamingError:Reserved name 'PageInfo'
+message PageInfo {
+}
+
+//expect-error:9:15:NamingError:Reserved name 'String'
+message String {
+}
+
+//expect-error:9:15:NamingError:Reserved name 'Number'
+message Number {
+}
+
+//expect-error:9:16:NamingError:Reserved name 'Boolean'
+message Boolean {
+}
+
+message Request {
+}
+
+message Response {
+}
+
+//expect-error:9:14:NamingError:Reserved name 'Array'
+message Array {
+}
+
+//expect-error:9:15:NamingError:Reserved name 'Object'
+message Object {
+}
+
+//expect-error:9:14:NamingError:Reserved name 'Error'
+message Error {
+}
+
+//expect-error:9:17:NamingError:Reserved name 'Mutation'
+message Mutation {
+}
+
+//expect-error:9:14:NamingError:Reserved name 'Query'
+message Query {
+}
+
+//expect-error:9:21:NamingError:Reserved name 'Subscription'
+message Subscription {
+}

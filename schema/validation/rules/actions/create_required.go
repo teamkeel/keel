@@ -96,7 +96,7 @@ func checkPlainField(
 			map[string]string{
 				"FieldName": requiredPath,
 			},
-			op,
+			op.Name,
 		)
 	}
 }

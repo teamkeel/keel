@@ -1,0 +1,13 @@
+model Post {
+    fields {
+        title Text
+        published Boolean
+    }
+
+    actions {
+        get posts(id) {
+            //expect-error:20:31:E061:Non-boolean single operand conditions such as '"something"' not permitted on @where
+            @where("something")
+        }
+    }
+}

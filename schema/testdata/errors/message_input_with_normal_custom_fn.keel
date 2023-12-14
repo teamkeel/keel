@@ -1,0 +1,10 @@
+message Foo {
+    bar Text
+}
+
+model Person {
+    actions {
+        //expect-error:37:40:E005:Action inputs must be one of the fields defined in the model
+        create createPerson() with (foo)
+    }
+}

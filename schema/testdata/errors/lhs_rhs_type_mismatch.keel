@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        title Text
+    }
+
+    @permission(
+        //expect-error:21:37:E026:post.title is Text and 12 is Number
+        expression: post.title == 12,
+        actions: [get]
+    )
+}

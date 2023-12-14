@@ -1,0 +1,18 @@
+model Post {
+    fields {
+        authors Author[]
+    }
+
+    @permission(
+        //expect-error:21:47:E026:"bob" is Text and post.authors.name is an array of Number
+        expression: "bob" in post.authors.name,
+        actions: [get]
+    )
+}
+
+model Author {
+    fields {
+        name Number
+        post Post
+    }
+}

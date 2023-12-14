@@ -1,0 +1,12 @@
+model Profile {
+    fields {
+        username Text
+    }
+
+    actions {
+        create createProfile() with (username) {
+            //expect-error:13:21:E011:actions 'createProfile' has an unrecognised attribute @unknown
+            @unknown
+        }
+    }
+}

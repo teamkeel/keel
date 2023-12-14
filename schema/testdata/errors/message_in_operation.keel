@@ -1,0 +1,11 @@
+message Foo {
+    bar Text
+}
+
+model Person {
+    actions {
+        //expect-error:29:32:E005:Action inputs must be one of the fields defined in the model
+        //expect-error:29:32:E033:create actions cannot take read inputs
+        create createPerson(foo)
+    }
+}

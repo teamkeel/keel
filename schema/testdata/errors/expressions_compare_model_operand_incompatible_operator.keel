@@ -1,0 +1,20 @@
+model User {
+    fields {
+        identity Identity @unique
+    }
+}
+
+model BankAccount {
+    fields {
+        identity Identity @unique
+    }
+
+    actions {
+        get getBankAccount(id) {
+            //expect-error:55:57:E027:Cannot compare User with operator 'in'
+            @permission(expression: ctx.identity.user in bankAccount.identity.user)
+            //expect-error:55:56:E027:Cannot compare User with operator '>'
+            @permission(expression: ctx.identity.user > bankAccount.identity.user)
+        }
+    }
+}

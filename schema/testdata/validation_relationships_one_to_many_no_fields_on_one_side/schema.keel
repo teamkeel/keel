@@ -1,9 +1,0 @@
-model Author {
-}
-
-model Post {
-    fields {
-        author Author[]
-        coAuthor Author[]
-    }
-}

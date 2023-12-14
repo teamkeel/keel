@@ -1,0 +1,44 @@
+model Person {
+    fields {
+        identity Identity
+        organisation Organisation
+    }
+
+    actions {
+        list listPeople() {
+            //expect-error:32:39:E020:'invalid' not found
+            @where(expression: invalid)
+        }
+        list listPeople2() {
+            //expect-error:32:34:E020:'ct' not found
+            @where(expression: ct.identity == person.identity)
+        }
+        list listPeople3() {
+            //expect-error:32:34:E020:'ct' not found
+            @where(expression: ct.invalid == person.identity)
+        }
+        list listPeople4() {
+            //expect-error:32:38:E061:Non-boolean single operand conditions such as '"true"' not permitted on @where
+            @where(expression: "true")
+        }
+        list listPeople5() {
+            //expect-error:68:75:E020:'invalid' not found on 'Organisation'
+            @where(expression: ctx.identity in person.organisation.invalid)
+        }
+        list listPeople6() {
+            //expect-error:92:99:E020:'invalid' not found on 'Organisation'
+            @where(expression: ctx.isAuthenticated and ctx.identity in person.organisation.invalid)
+        }
+        list listPeople7() {
+            //expect-error:52:59:E020:'invalid' not found on 'Boolean'
+            //expect-error:100:107:E020:'invalid' not found on 'Organisation'
+            @where(expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid)
+        }
+    }
+}
+
+model Organisation {
+    fields {
+        people Person[]
+    }
+}

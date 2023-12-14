@@ -1,0 +1,15 @@
+model BankAccount {
+    fields {
+        identity Identity {
+            @unique
+            @relation(mainAccount)
+        }
+    }
+
+    actions {
+        get getBankAccount(id) {
+            //expect-error:32:38:E027:Cannot compare BankAccount with operator 'notin'
+            @where(bankAccount not in ctx.identity.mainAccount)
+        }
+    }
+}

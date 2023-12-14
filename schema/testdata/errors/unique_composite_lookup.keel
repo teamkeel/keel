@@ -1,0 +1,80 @@
+model User {
+    fields {
+        assignedProduct Product
+        identity Identity @unique
+    }
+}
+
+model Product {
+    fields {
+        name Text
+        sku Text @unique
+        stock ProductStock @unique
+        supplierSku Text
+        supplier Supplier
+    }
+
+    actions {
+        //expect-error:13:29:ActionInputError:The action 'getBySupplierSku' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierSku(supplierSku)
+        //expect-error:13:30:ActionInputError:The action 'getBySupplierCode' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierCode(supplier.supplierCode)
+        //expect-error:13:29:ActionInputError:The action 'getBarcodeIsNull' can only get a single record and therefore must be filtered by unique fields
+        get getBarcodeIsNull() {
+            @where(product.stock.barcode == null)
+        }
+        //expect-error:13:54:ActionInputError:The action 'getBySupplierSkuExprAndNameExprMultiWhere' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierSkuExprAndNameExprMultiWhere(
+            supplierSku: Text,
+            name: Text,
+        ) {
+            @where(product.supplierSku == supplierSku)
+            @where(product.supplier.name == name)
+        }
+        //expect-error:13:28:ActionInputError:The action 'getBySupplierId' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierId(supplierId: ID) {
+            @where(product.supplier.id == supplierId)
+        }
+        //expect-error:13:33:ActionInputError:The action 'getBySupplierSkuOrId' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierSkuOrId(supplierSku: Text, supplierId: ID) {
+            @where(product.supplierSku == supplierSku or product.supplier.id == supplierId)
+        }
+        //expect-error:13:45:ActionInputError:The action 'getBySupplierSkuAndCodeOrShampoo' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierSkuAndCodeOrShampoo(supplierSku: Text, supplierCode: Text) {
+            @where(product.supplierSku == supplierSku and product.supplier.supplierCode == supplierCode or product.name == "Shampoo")
+        }
+        //expect-error:13:43:ActionInputError:The action 'getBySupplierSkuAndIdOrShampoo' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierSkuAndIdOrShampoo(supplierSku: Text, supplierId: ID) {
+            @where(product.supplierSku == supplierSku and (product.supplier.id == supplierId or product.name == "Shampoo"))
+        }
+        //expect-error:13:56:ActionInputError:The action 'getBySupplierSkuAndCodeOrShampooParenthesis' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierSkuAndCodeOrShampooParenthesis(
+            supplierSku: Text,
+            supplierCode: Text,
+        ) {
+            @where(product.supplierSku == supplierSku and (product.supplier.supplierCode == supplierCode or product.name == "Shampoo"))
+        }
+    }
+
+    @unique([supplierSku, supplier])
+}
+
+model ProductStock {
+    fields {
+        barcode Text? @unique
+        stockCount Number
+        product Product
+    }
+
+    actions {
+        //expect-error:13:36:ActionInputError:The action 'getBySupplierSkuAndName' can only get a single record and therefore must be filtered by unique fields
+        get getBySupplierSkuAndName(product.supplierSku, product.supplier.name)
+    }
+}
+
+model Supplier {
+    fields {
+        name Text
+        supplierCode Text @unique
+    }
+}

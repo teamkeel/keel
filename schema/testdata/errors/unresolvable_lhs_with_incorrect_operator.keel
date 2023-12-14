@@ -1,0 +1,13 @@
+model Post {
+    fields {
+        title Text
+        published Boolean
+    }
+
+    actions {
+        get posts(id) {
+            //expect-error:32:33:E022:Operator '=' not permitted on @where
+            @where(post.titles = 123)
+        }
+    }
+}

@@ -1,0 +1,10 @@
+model Person {
+    fields {
+        name Text
+    }
+
+    actions {
+        //expect-error:43:47:E005:Action inputs must be one of the fields defined in the model
+        create createPerson() with (name, blah)
+    }
+}

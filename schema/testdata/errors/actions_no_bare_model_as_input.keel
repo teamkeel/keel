@@ -1,0 +1,26 @@
+model Book {
+    fields {
+        author Author
+    }
+
+    actions {
+        //expect-error:36:42:ActionInputError:'author' refers to a model which cannot used as an input
+        create createBooks() with (author)
+        //expect-error:38:44:ActionInputError:'author' refers to a model which cannot used as an input
+        update updateBooks(id) with (author)
+        //expect-error:24:30:ActionInputError:'author' refers to a model which cannot used as an input
+        list listBooks(author)
+    }
+
+    actions {
+        //expect-error:44:50:ActionInputError:'author' refers to a model which cannot used as an input
+        create createBooksFunction() with (author)
+        //expect-error:46:52:ActionInputError:'author' refers to a model which cannot used as an input
+        update updateBooksFunction(id) with (author)
+        //expect-error:32:38:ActionInputError:'author' refers to a model which cannot used as an input
+        list listBooksFunction(author)
+    }
+}
+
+model Author {
+}

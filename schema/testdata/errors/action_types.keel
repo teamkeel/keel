@@ -1,0 +1,10 @@
+model Person {
+    fields {
+        name Text
+    }
+
+    actions {
+        //expect-error:9:12:TypeError:foo is not a valid action type. Valid types are get, create, update, list, or delete
+        foo something()
+    }
+}

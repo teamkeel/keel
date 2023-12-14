@@ -1,9 +1,0 @@
-job myJob {
-    inputs {
-        MyField Text
-    }
-
-    @permission(roles: [Admin])
-}
-
-role Admin {}

@@ -1,0 +1,40 @@
+model Account {
+    fields {
+        //expect-error:19:22:E011:field 'name' has an unrecognised attribute @on
+        name Text @on(
+            [update],
+            verifyEmail
+        )
+    }
+
+    actions {
+        create createAccount() with (name) {
+            //expect-error:13:16:E011:actions 'createAccount' has an unrecognised attribute @on
+            @on(
+                [create],
+                sendWelcomeMail
+            )
+        }
+        update updateAccount(id) {
+            //expect-error:13:16:E011:actions 'updateAccount' has an unrecognised attribute @on
+            //expect-error:13:16:AttributeArgumentError:@on requires two arguments - an array of action types and a subscriber name
+            //expect-error:17:32:AttributeArgumentError:@on action types argument must be an array
+            @on(sendWelcomeMail)
+            //expect-error:13:16:E011:actions 'updateAccount' has an unrecognised attribute @on
+            @on(
+                [update],
+                verifyEmail
+            )
+            @function
+        }
+    }
+}
+
+job CheckAccount {
+    @permission(expression: ctx.isAuthenticated)
+    //expect-error:5:8:E011:job 'CheckAccount' has an unrecognised attribute @on
+    @on(
+        [create],
+        sendWelcomeMail
+    )
+}

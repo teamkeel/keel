@@ -1,9 +1,0 @@
-model MyModel {
-    fields {
-        text Text
-    }
-
-    actions {
-        update updateMyModel(text)
-    }
-}

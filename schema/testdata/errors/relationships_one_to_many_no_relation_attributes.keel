@@ -1,0 +1,13 @@
+model Author {
+    fields {
+        written Post
+        //expect-error:9:18:RelationshipError:Cannot associate with repeated field 'author' on Post to form a one to many relationship because it is already associated with field 'written'
+        coWritten Post
+    }
+}
+
+model Post {
+    fields {
+        author Author[]
+    }
+}

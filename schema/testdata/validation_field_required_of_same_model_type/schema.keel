@@ -1,9 +1,0 @@
-model Person {
-    fields {
-        person Person
-    }
-
-    actions {
-        create createPerson()
-    }
-}

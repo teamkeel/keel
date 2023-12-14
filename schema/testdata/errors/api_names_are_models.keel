@@ -1,0 +1,10 @@
+model Post {
+}
+
+api Web {
+    models {
+        Post
+        //expect-error:9:21:E047:api 'Web' has an unrecognised model UnknownModel
+        UnknownModel
+    }
+}

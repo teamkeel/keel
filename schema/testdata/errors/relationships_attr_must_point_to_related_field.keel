@@ -1,0 +1,14 @@
+model Author {
+    fields {
+        age Number
+        //expect-error:9:16:RelationshipError:The field 'written' does not have an associated field on Post
+        written Post[]
+    }
+}
+
+model Post {
+    fields {
+        //expect-error:33:44:RelationshipError:The field 'noSuchField' does not exist on Author
+        author Author @relation(noSuchField)
+    }
+}

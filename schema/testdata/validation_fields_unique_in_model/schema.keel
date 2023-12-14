@@ -1,6 +1,0 @@
-model User {
-  fields {
-    name Text
-    name Text
-  }
-}

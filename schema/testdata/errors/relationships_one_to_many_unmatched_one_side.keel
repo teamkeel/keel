@@ -1,0 +1,15 @@
+model Book {
+    fields {
+        // Book having two Person HasOne relation fields is invalid, because
+        // Person has a HasMany reverse link. In such cases, only one is allowed.
+        author Person
+        //expect-error:9:15:RelationshipError:Cannot associate with repeated field 'loveThese' on Person to form a one to many relationship because it is already associated with field 'author'
+        editor Person
+    }
+}
+
+model Person {
+    fields {
+        loveThese Book[]
+    }
+}

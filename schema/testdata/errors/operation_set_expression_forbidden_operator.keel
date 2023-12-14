@@ -1,0 +1,14 @@
+model Profile {
+    fields {
+        identity Identity @unique
+        username Text @unique
+    }
+
+    actions {
+        update createProfile(id) with (username) {
+            //expect-error:35:37:E022:Operator '==' not permitted on @set
+            //expect-error:18:50:AttributeArgumentError:The @set attribute cannot be a logical condition and must express an assignment
+            @set(profile.identity == ctx.identity)
+        }
+    }
+}

@@ -1,0 +1,16 @@
+message Foo {
+    bar Text
+}
+
+//expect-error:9:12:NamingError:There is already a message with the name Foo
+message Foo {
+    baz Text
+}
+
+//expect-error:7:10:NamingError:There is already a message with the name Foo
+model Foo {
+}
+
+//expect-error:6:9:NamingError:There is already a message with the name Foo
+enum Foo {
+}

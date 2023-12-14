@@ -1,0 +1,4 @@
+model Person {
+    //expect-error:5:16:E011:model 'Person' has an unrecognised attribute @whatisthis
+    @whatisthis
+}

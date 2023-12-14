@@ -1,0 +1,47 @@
+model Publisher {
+}
+
+model Author {
+    fields {
+        firstName Text
+        surname Text
+        publisher Publisher
+    }
+
+    actions {
+        list listAuthors() {
+            //expect-error:13:21:AttributeArgumentError:@orderBy requires at least once argument
+            @orderBy
+            //expect-error:13:21:AttributeNotAllowedError:@orderBy can only be defined once per action
+            //expect-error:22:31:AttributeArgumentError:@orderBy arguments must be specified with a label corresponding with a field on this model
+            @orderBy(firstName)
+            //expect-error:13:21:AttributeNotAllowedError:@orderBy can only be defined once per action
+            @orderBy(
+                firstName: asc,
+                //expect-error:17:21:AttributeArgumentError:@orderBy argument label 'nope' must correspond to a field on this model
+                nope: asc
+            )
+            //expect-error:13:21:AttributeNotAllowedError:@orderBy can only be defined once per action
+            @orderBy(
+                firstName: asc,
+                //expect-error:17:26:AttributeArgumentError:@orderBy does not support ordering of relationships fields
+                publisher: asc
+            )
+            //expect-error:13:21:AttributeNotAllowedError:@orderBy can only be defined once per action
+            @orderBy(
+                firstName: asc,
+                //expect-error:17:26:AttributeArgumentError:@orderBy argument name 'firstName' already defined
+                firstName: asc
+            )
+            //expect-error:13:21:AttributeNotAllowedError:@orderBy can only be defined once per action
+            //expect-error:33:38:AttributeArgumentError:@orderBy argument value must either be asc or desc
+            @orderBy(firstName: "asc")
+            //expect-error:13:21:AttributeNotAllowedError:@orderBy can only be defined once per action
+            //expect-error:33:36:AttributeArgumentError:@orderBy argument value must either be asc or desc
+            @orderBy(firstName: 123)
+            //expect-error:13:21:AttributeNotAllowedError:@orderBy can only be defined once per action
+            //expect-error:33:36:AttributeArgumentError:@orderBy argument value must either be asc or desc
+            @orderBy(firstName: ASC)
+        }
+    }
+}

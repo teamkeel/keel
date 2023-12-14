@@ -1,9 +1,0 @@
-message Foo {
-  bar Text
-}
-
-model Person {
-  actions {
-    create createPerson() with(Foo)
-  }
-}

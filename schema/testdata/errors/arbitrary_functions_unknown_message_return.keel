@@ -1,0 +1,6 @@
+model Person {
+    actions {
+        //expect-error:46:60:ActionInputError:read and write functions must return a message-based response, or Any
+        write createBulkPeople(Any) returns (UnknownMessage) @function
+    }
+}

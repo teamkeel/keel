@@ -1,0 +1,22 @@
+model Post {
+    fields {
+        status PostStatus
+    }
+
+    actions {
+        update published(id) {
+            //expect-error:18:57:E026:post.status is PostStatus and OtherPostStatus.Something is OtherPostStatus
+            @set(post.status = OtherPostStatus.Something)
+        }
+    }
+}
+
+enum PostStatus {
+    Published
+    Draft
+}
+
+enum OtherPostStatus {
+    Something
+    Else
+}

@@ -1,0 +1,13 @@
+model Profile {
+    fields {
+        identity Identity @unique
+        username Text @unique
+    }
+
+    actions {
+        update createProfile(id) with (username) {
+            //expect-error:18:34:AttributeArgumentError:The @set attribute cannot be a value condition and must express an assignment
+            @set(profile.identity)
+        }
+    }
+}

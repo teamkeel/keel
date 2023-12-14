@@ -1,5 +1,0 @@
-model User {
-  fields {
-    updatedAt Text
-  }
-}

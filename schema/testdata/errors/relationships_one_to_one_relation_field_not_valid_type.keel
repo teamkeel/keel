@@ -1,0 +1,20 @@
+model User {
+    fields {
+        student Student {
+            @unique
+            //expect-error:23:32:RelationshipError:The field 'createdAt' on Student must be of type User in order to establish a relationship
+            @relation(createdAt)
+        }
+        student2 Student {
+            @unique
+            @relation(user2)
+        }
+    }
+}
+
+model Student {
+    fields {
+        user User
+        user2 User
+    }
+}

@@ -1,0 +1,14 @@
+message Foo {
+    bar Text
+}
+
+model Person {
+    actions {
+        //expect-error:9:13:TypeError:Only one type can be specified in a 'returns' statement
+        //expect-error:54:57:ActionInputError:read and write functions must return exactly one message-based response
+        read getPersonWithMultipleReturns() returns (Foo, Any)
+        //expect-error:9:13:TypeError:'any' is not a valid return type
+        //expect-error:51:54:ActionInputError:read and write functions must return a message-based response, or Any
+        read getPersonWithLowercaseAny() returns (any)
+    }
+}

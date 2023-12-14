@@ -1,0 +1,26 @@
+model Order {
+    fields {
+        customer Customer
+    }
+
+    @permission(
+        //expect-error:155:162:E020:'postCod' not found on 'Address'
+        expression: order.customer.address.firstLine == "123 Fake Street" or (order.customer.address.secondLine == "Fake Town" and order.customer.address.postCod == "ABC123"),
+        actions: [get]
+    )
+}
+
+model Customer {
+    fields {
+        name Text
+        address Address
+    }
+}
+
+model Address {
+    fields {
+        firstLine Text
+        secondLine Text
+        postCode Text
+    }
+}

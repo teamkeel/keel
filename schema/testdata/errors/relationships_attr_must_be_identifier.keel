@@ -1,0 +1,7 @@
+model Post {
+    fields {
+        //expect-error:9:15:E009:field author has an unsupported type Author
+        //expect-error:23:32:RelationshipError:The @relation attribute cannot be used on non-model fields
+        author Author @relation(123)
+    }
+}

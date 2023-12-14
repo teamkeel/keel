@@ -19,9 +19,6 @@ proto:
 		--go_opt=paths=source_relative \
 		proto/schema.proto"
 
-testdata:
-	nix-shell --command "cd ./schema && go run ./tools/generate_testdata.go ./testdata"
-
 test:
 	TZ=UTC go test $(PACKAGES) -count=1 $(RUNARG)
 

@@ -1,0 +1,25 @@
+model Post {
+    fields {
+        author Author
+        title Text
+    }
+
+    actions {
+        update updatePost(id) with (title) {
+            //expect-error:18:28:ActionInputError:title is already being used as an input so cannot also be used in an expression
+            @set(post.title = title)
+        }
+    }
+
+    @permission(
+        //expect-error:41:45:E020:'auth' not found on 'Post'
+        expression: post.author == post.auth,
+        actions: [get]
+    )
+}
+
+model Author {
+    fields {
+        posts Post[]
+    }
+}

@@ -1,0 +1,8 @@
+model Person {
+    actions {
+        get getPerson(id)
+    }
+
+    //expect-error:5:16:AttributeArgumentError:@permission requires either the 'expressions' or 'roles' argument to be provided
+    @permission(actions: [get])
+}

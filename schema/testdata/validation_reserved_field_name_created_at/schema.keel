@@ -1,6 +1,0 @@
-model User {
-  fields {
-    createdAt Text
-    
-  }
-}

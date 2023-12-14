@@ -1,5 +1,0 @@
-model Person {
-    fields {
-        smallBIG Text
-    }
-}

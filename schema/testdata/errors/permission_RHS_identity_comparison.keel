@@ -1,0 +1,24 @@
+model User {
+    fields {
+        identity Identity
+    }
+}
+
+model UserProject {
+    fields {
+        user User
+        project Project
+    }
+}
+
+model Project {
+    fields {
+        users UserProject[]
+    }
+
+    @permission(
+        //expect-error:21:64:E026:project.users.user.identity is an array of Identity and ctx.identity is Identity
+        expression: project.users.user.identity == ctx.identity,
+        actions: [create]
+    )
+}

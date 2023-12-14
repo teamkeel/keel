@@ -1,0 +1,14 @@
+model Person {
+    fields {
+        name Text
+    }
+
+    actions {
+        //expect-error:9:38:ActionInputError:The 'with' keyword cannot be used with the 'get' action type
+        get getPerson(id) with (name)
+        //expect-error:9:38:ActionInputError:The 'with' keyword cannot be used with the 'list' action type
+        list listPerson() with (name)
+        //expect-error:9:44:ActionInputError:The 'with' keyword cannot be used with the 'delete' action type
+        delete deletePerson(id) with (name)
+    }
+}

@@ -1,0 +1,26 @@
+model Address {
+    fields {
+        town Text
+    }
+}
+
+model Person {
+    fields {
+        title Text
+        age Number?
+        address Address
+    }
+
+    actions {
+        get getPerson(id) {
+            //expect-error:13:36:AttributeNotAllowedError:@where attributes are not supported when using the @function attribute
+            @where(person.age > 10)
+            @function
+        }
+        create createPerson() with (title, address.town) {
+            //expect-error:13:33:AttributeNotAllowedError:@set attributes are not supported when using the @function attribute
+            @set(person.age = 9)
+            @function
+        }
+    }
+}

@@ -1,0 +1,37 @@
+model B {
+    fields {
+        name Text
+    }
+
+    actions {
+        //expect-error:37:41:NamingError:'name' has already been defined as a write input on this action
+        create create() with (name, name)
+        //expect-error:25:29:NamingError:'name' has already been defined as a query input on this action
+        list list(name, name)
+        //expect-error:21:23:NamingError:'id' has already been defined as a query input on this action
+        get get(id, id)
+        //expect-error:27:29:NamingError:'id' has already been defined as a query input on this action
+        //expect-error:43:47:NamingError:'name' has already been defined as a write input on this action
+        update update(id, id) with (name, name)
+        //expect-error:27:29:NamingError:'id' has already been defined as a query input on this action
+        delete delete(id, id)
+    }
+
+    actions {
+        //expect-error:39:43:NamingError:'name' has already been defined as a write input on this action
+        create createFn() with (name, name)
+        //expect-error:27:31:NamingError:'name' has already been defined as a query input on this action
+        list listFn(name, name)
+        //expect-error:23:25:NamingError:'id' has already been defined as a query input on this action
+        get getFn(id, id)
+        //expect-error:29:31:NamingError:'id' has already been defined as a query input on this action
+        //expect-error:45:49:NamingError:'name' has already been defined as a write input on this action
+        update updateFn(id, id) with (name, name)
+        //expect-error:29:31:NamingError:'id' has already been defined as a query input on this action
+        delete deleteFn(id, id)
+        //expect-error:27:31:NamingError:'name' has already been defined as a query input on this action
+        read readFn(name, name) returns (Any)
+        //expect-error:29:33:NamingError:'name' has already been defined as a query input on this action
+        write writeFn(name, name) returns (Any)
+    }
+}

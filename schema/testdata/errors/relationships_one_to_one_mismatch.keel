@@ -1,0 +1,13 @@
+model User {
+    fields {
+        student Student @unique
+    }
+}
+
+model Student {
+    fields {
+        user User
+        //expect-error:9:14:RelationshipError:Cannot form a one to one relationship with field 'student' on User as it is already associated with field 'user'
+        user2 User
+    }
+}

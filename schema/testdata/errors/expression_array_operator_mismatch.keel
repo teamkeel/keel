@@ -1,0 +1,18 @@
+model Post {
+    fields {
+        authors Author[]
+    }
+
+    @permission(
+        //expect-error:27:28:E030:post.authors.name is an array of Text. Only 'in' or 'not in' can be used
+        expression: "bob" > post.authors.name,
+        actions: [get]
+    )
+}
+
+model Author {
+    fields {
+        name Text
+        post Post
+    }
+}

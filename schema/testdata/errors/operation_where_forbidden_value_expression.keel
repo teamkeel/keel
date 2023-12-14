@@ -1,0 +1,13 @@
+model Profile {
+    fields {
+        identity Identity @unique
+        username Text @unique
+    }
+
+    actions {
+        get getProfile(username) {
+            //expect-error:20:36:E061:Non-boolean single operand conditions such as 'profile.identity' not permitted on @where
+            @where(profile.identity)
+        }
+    }
+}

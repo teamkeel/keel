@@ -1,0 +1,21 @@
+message MyCustomFunctionInput {
+    titleSpecial Text
+}
+
+message MyCustomFunctionOutput {
+    id ID
+    title Text
+}
+
+model Post {
+    fields {
+        title Text
+    }
+
+    actions {
+        //expect-error:33:53:E005:Action inputs must be one of the fields defined in the model
+        write createPostSpecial(MyCustomFunctionInpu) returns (
+            MyCustomFunctionOutput
+        )
+    }
+}

@@ -1,0 +1,35 @@
+model Person {
+    actions {
+        get getPerson(id)
+    }
+
+    @permission(
+        //expect-error:17:29:AttributeArgumentError:NotValidRole is not a role defined in your schema
+        roles: [NotValidRole],
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:16:20:AttributeArgumentError:value should be a list e.g. [Admin]
+        roles: 1234,
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:16:22:AttributeArgumentError:value should be a list e.g. [Admin]
+        roles: "1234",
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:17:33:AttributeArgumentError:"thisisnotvalid" is not a role defined in your schema
+        roles: ["thisisnotvalid"],
+        actions: [get]
+    )
+}
+
+role Admin {
+    domains {
+        "myorg.com"
+    }
+}

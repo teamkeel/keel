@@ -1,0 +1,15 @@
+model Author {
+    fields {
+        written Post[]
+        reviewed Post
+        //expect-error:9:17:RelationshipError:Cannot associate with field 'author' on Post to form a one to one relationship because it is already associated with 'written'
+        starPost Post @unique
+    }
+}
+
+model Post {
+    fields {
+        author Author
+        reviewedBy Author[]
+    }
+}

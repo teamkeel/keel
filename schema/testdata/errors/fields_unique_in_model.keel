@@ -1,0 +1,7 @@
+model User {
+    fields {
+        name Text
+        //expect-error:9:13:E003:Cannot use 'name' as it has already been defined on this model
+        name Text
+    }
+}

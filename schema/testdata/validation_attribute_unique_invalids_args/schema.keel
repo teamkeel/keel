@@ -1,7 +1,0 @@
-model Post {
-  fields {
-    title Text {
-      @unique(arg)
-    }
-  }
-}

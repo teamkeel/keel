@@ -1,0 +1,6 @@
+model Person {
+    fields {
+        //expect-error:9:11:E006:Cannot use 'id' as it already exists as a built-in field
+        id Text
+    }
+}

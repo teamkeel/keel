@@ -1,6 +1,0 @@
-model CompanyEmployee {
-    fields {
-        abcIdentity Identity @unique
-        xyzIdentity Identity @unique
-    }
-}

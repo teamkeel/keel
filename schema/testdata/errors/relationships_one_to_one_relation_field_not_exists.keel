@@ -1,0 +1,20 @@
+model User {
+    fields {
+        student Student {
+            @unique
+            //expect-error:23:27:RelationshipError:The field 'nope' does not exist on Student
+            @relation(nope)
+        }
+        student2 Student {
+            @unique
+            @relation(user2)
+        }
+    }
+}
+
+model Student {
+    fields {
+        user User
+        user2 User
+    }
+}

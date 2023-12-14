@@ -1,0 +1,61 @@
+model Person {
+    fields {
+        identity Identity
+        organisation Organisation
+    }
+
+    @permission(
+        //expect-error:21:28:E020:'invalid' not found
+        expression: invalid,
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:21:23:E020:'ct' not found
+        expression: ct.isAuthenticated,
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:25:32:E020:'invalid' not found on 'Context'
+        expression: ctx.invalid,
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:21:27:E061:Non-boolean single operand conditions such as '"true"' not permitted on @permission
+        expression: "true",
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:29:30:E020:'c' not found
+        expression: true or c.isAuthenticated,
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:57:64:E020:'invalid' not found on 'Organisation'
+        expression: ctx.identity in person.organisation.invalid,
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:81:88:E020:'invalid' not found on 'Organisation'
+        expression: ctx.isAuthenticated and ctx.identity in person.organisation.invalid,
+        actions: [get]
+    )
+
+    @permission(
+        //expect-error:41:48:E020:'invalid' not found on 'Boolean'
+        //expect-error:89:96:E020:'invalid' not found on 'Organisation'
+        expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid,
+        actions: [get]
+    )
+}
+
+model Organisation {
+    fields {
+        people Person[]
+    }
+}

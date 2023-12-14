@@ -1,9 +1,0 @@
-job MyJob {
-    @permission(
-        actions: [get],
-        roles: [MyRole]
-    )
-}
-
-role MyRole {
-}

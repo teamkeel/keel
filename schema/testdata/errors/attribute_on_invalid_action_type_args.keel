@@ -1,0 +1,50 @@
+model Account {
+    fields {
+        name Text
+    }
+
+    actions {
+        create createAccount() with (name)
+    }
+
+    //expect-error:5:8:AttributeArgumentError:@on requires two arguments - an array of action types and a subscriber name
+    @on
+
+    @on(
+        //expect-error:10:13:AttributeArgumentError:@on only supports the following action types: create, delete, update
+        [123],
+        verifyEmail
+    )
+
+    @on(
+        //expect-error:9:15:AttributeArgumentError:@on action types argument must be an array
+        create,
+        verifyEmail
+    )
+
+    @on(
+        //expect-error:9:17:AttributeArgumentError:@on action types argument must be an array
+        (create),
+        verifyEmail
+    )
+
+    @on(
+        //expect-error:10:14:AttributeArgumentError:@on only supports the following action types: create, delete, update
+        [nope],
+        verifyEmail
+    )
+
+    @on(
+        //expect-error:10:19:AttributeArgumentError:@on only supports the following action types: create, delete, update
+        //expect-error:21:25:AttributeArgumentError:@on only supports the following action types: create, delete, update
+        [create.sd, nope],
+        verifyEmail
+    )
+
+    @on(
+        //expect-error:10:14:AttributeArgumentError:@on only supports the following action types: create, delete, update
+        //expect-error:16:19:AttributeArgumentError:@on only supports the following action types: create, delete, update
+        [list, get],
+        verifyEmail
+    )
+}

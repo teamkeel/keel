@@ -1,0 +1,14 @@
+model Person {
+}
+
+//expect-error:7:13:NamingError:There is already a model with the name Person
+model Person {
+}
+
+//expect-error:6:12:NamingError:There is already a model with the name Person
+enum Person {
+}
+
+//expect-error:9:15:NamingError:There is already a model with the name Person
+message Person {
+}
