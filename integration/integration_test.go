@@ -14,7 +14,6 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
-	"go.opentelemetry.io/otel/trace"
 
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/db"
@@ -25,7 +24,6 @@ import (
 )
 
 var pattern = flag.String("pattern", "", "Pattern to match individual test case names")
-var tracer = otel.Tracer("github.com/teamkeel/keel/testing")
 
 func TestIntegration(t *gotest.T) {
 	entries, err := os.ReadDir("./testdata")
@@ -67,8 +65,7 @@ func TestIntegration(t *gotest.T) {
 		t.Run(e.Name(), func(t *gotest.T) {
 			testDir := filepath.Join("./testdata", e.Name())
 
-			ctx, span := tracer.Start(ctx, e.Name(), trace.WithNewRoot())
-			defer span.End()
+			defer provider.ForceFlush(ctx)
 
 			// These files might be present when someone is working on tests
 			// but we don't want to copy them over to the test dir

@@ -82,7 +82,7 @@ export interface Person {
 
 func TestWriteCreateValuesInterface(t *testing.T) {
 	expected := `
-export interface PersonCreateValues {
+export type PersonCreateValues = {
 	firstName: string
 	lastName?: string | null
 	age: number
@@ -96,7 +96,7 @@ export interface PersonCreateValues {
 `
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeCreateValuesInterface(w, m)
+		writeCreateValuesType(w, s, m)
 	})
 }
 
@@ -110,16 +110,19 @@ model Post {
 }`
 
 	expected := `
-export interface PostCreateValues {
+export type PostCreateValues = {
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
-	authorId: string
-}
+} & (
+	// Either author or authorId can be provided but not both
+	| {author: AuthorCreateValues | {id: string}, authorId?: undefined}
+	| {authorId: string, author?: undefined}
+)
 `
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Post")
-		writeCreateValuesInterface(w, m)
+		writeCreateValuesType(w, s, m)
 	})
 }
 

@@ -1,3 +1,4 @@
+import { ProductTagCreateValues, useDatabase } from "@teamkeel/sdk";
 import { actions, models, resetDatabase } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
 
@@ -196,4 +197,144 @@ test("findOne - one-to-one", async () => {
   });
   expect(dbSettings).not.toBeNull();
   expect(dbSettings!.id).toEqual(s.id);
+});
+
+test("create - nested many-to-many with existing records", async () => {
+  const [tag1, tag2] = await Promise.all([
+    models.tag.create({
+      tag: "big",
+    }),
+    models.tag.create({
+      tag: "yellow",
+    }),
+  ]);
+
+  const bigBird = await models.product.create({
+    title: "Big Bird",
+    tags: [
+      {
+        tagId: tag1.id,
+      },
+      {
+        tagId: tag2.id,
+      },
+    ],
+  });
+
+  const dbBigBird = await models.product.findOne({
+    id: bigBird.id,
+  });
+  expect(dbBigBird).not.toBeNull();
+  expect(dbBigBird?.title).toBe("Big Bird");
+
+  const dbTags = await models.productTag.findMany({
+    where: {
+      productId: dbBigBird?.id,
+    },
+  });
+  expect(dbTags.length).toBe(2);
+
+  const tagIds = dbTags.map((x) => x.tagId);
+  expect(tagIds).toContain(tag1.id);
+  expect(tagIds).toContain(tag2.id);
+});
+
+test("create - nested many-to-many with new records", async () => {
+  const buzz = await models.product.create({
+    title: "Buzz Lightyear",
+    tags: [
+      {
+        tag: {
+          tag: "infinity",
+        },
+      },
+      {
+        tag: {
+          tag: "beyond",
+        },
+      },
+    ],
+  });
+
+  const dbBuzz = await models.product.findOne({
+    id: buzz.id,
+  });
+  expect(dbBuzz).not.toBeNull();
+  expect(dbBuzz?.title).toBe("Buzz Lightyear");
+
+  const dbTags = await useDatabase()
+    .selectFrom("tag")
+    .selectAll()
+    .whereExists((qb) => {
+      return qb
+        .selectFrom("product_tag")
+        .select("id")
+        .where("productId", "=", dbBuzz!.id);
+    })
+    .execute();
+
+  expect(dbTags.length).toBe(2);
+
+  const tagValues = dbTags.map((x) => x.tag);
+  expect(tagValues).toContain("infinity");
+  expect(tagValues).toContain("beyond");
+});
+
+test("create - nested has-many two-levels", async () => {
+  const course = await models.course.create({
+    title: "Computer Science",
+    lessons: [
+      {
+        title: "How to be a senior engineer",
+        readings: [
+          {
+            book: "It depends",
+            fromPage: 1,
+            toPage: 10,
+          },
+        ],
+      },
+      {
+        title: "How to get fired",
+        readings: [
+          {
+            book: "Rewriting your app in C over the weekend for fun and profit",
+            fromPage: 100,
+            toPage: 101,
+          },
+          {
+            book: "Who needs <a> when you can use <div> with onclick?",
+            fromPage: 10,
+            toPage: 14,
+          },
+        ],
+      },
+      {
+        title: "Data structures",
+        readings: [
+          {
+            book: "Everything is just a hashmap in the end",
+            fromPage: 100,
+            toPage: 101,
+          },
+        ],
+      },
+    ],
+  });
+
+  const dbLessons = await models.lesson.findMany({
+    where: {
+      courseId: course.id,
+    },
+  });
+  expect(dbLessons.length).toBe(3);
+
+  const dbReadings = await models.reading.findMany({
+    where: {
+      lessonId: {
+        oneOf: dbLessons.map((x) => x.id),
+      },
+    },
+  });
+  expect(dbReadings.length).toBe(4);
 });

@@ -2,7 +2,7 @@ model Entity {
     fields {
         name Text
         users EntityUser[]
-        account BankAccount
+        account BankAccount?
     }
 }
 
