@@ -1,0 +1,42 @@
+model User {
+    fields {
+        firstName Text
+        lastName Text
+        identity Identity @unique
+        blogPosts BlogPost[]
+    }
+
+    actions {
+        create createUser() with (firstName, lastName) {
+            @set(user.identity = ctx.identity)
+            @permission(expression: ctx.isAuthenticated)
+        }
+        get getUser() {
+            @where(user.identity == ctx.identity)
+        }
+    }
+
+    @permission(
+        actions: [get],
+        expression: user.identity == ctx.identity
+    )
+}
+
+model BlogPost {
+    fields {
+        title Text
+        content Text
+        user User
+    }
+
+    actions {
+        create createBlogPost() with (title, content) {
+            @set(blogPost.user = ctx.identity.user)
+            @permission(expression: ctx.isAuthenticated)
+        }
+        list blogPosts() {
+            @where(blogPost.user.id == ctx.identity.user.id)
+            @permission(expression: ctx.isAuthenticated)
+        }
+    }
+}

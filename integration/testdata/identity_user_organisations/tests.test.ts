@@ -116,7 +116,7 @@ test("user in a shared organisation has authorisation to read other user's recor
   ).not.toHaveAuthorizationError();
 });
 
-test("user does not have authorisation to read user's records from another organisation", async () => {
+test("can only view users who share an organisation membership", async () => {
   const organisationAdam = await models.organisation.create({
     name: "AdamCo",
   });
@@ -218,21 +218,21 @@ test("user has authorisation to list records from own organisation", async () =>
 });
 
 test("user does not have authorisation to list records from another organisation", async () => {
-  const organisationAdam = await models.organisation.create({
-    name: "AdamCo",
+  const meta = await models.organisation.create({
+    name: "Meta",
   });
-  const organisationDave = await models.organisation.create({
-    name: "DaveCo",
+  const netflix = await models.organisation.create({
+    name: "Netflix",
   });
-  const organisationKeel = await models.organisation.create({
-    name: "Keel",
+  const microsoft = await models.organisation.create({
+    name: "Microsoft",
   });
 
   const identityAdam = await models.identity.create({
     email: "adam@keel.xyz",
     password: "foo",
   });
-  const userAdam = await models.user.create({
+  const adam = await models.user.create({
     name: "Adam",
     identityId: identityAdam.id,
   });
@@ -241,33 +241,55 @@ test("user does not have authorisation to list records from another organisation
     email: "dave@keel.xyz",
     password: "foo",
   });
-  const userDave = await models.user.create({
+  const dave = await models.user.create({
     name: "Dave",
     identityId: identityDave.id,
   });
 
-  await models.userOrganisation.create({
-    organisationId: organisationAdam.id,
-    userId: userAdam.id,
+  const identityTom = await models.identity.create({
+    email: "tom@keel.xyz",
+    password: "foo",
   });
-  await models.userOrganisation.create({
-    organisationId: organisationDave.id,
-    userId: userDave.id,
-  });
-  await models.userOrganisation.create({
-    organisationId: organisationKeel.id,
-    userId: userDave.id,
-  });
-  await models.userOrganisation.create({
-    organisationId: organisationKeel.id,
-    userId: userAdam.id,
+  const tom = await models.user.create({
+    name: "Tom",
+    identityId: identityTom.id,
   });
 
+  // Adam work at Meta and Microsoft
+  await models.userOrganisation.create({
+    organisationId: meta.id,
+    userId: adam.id,
+  });
+  await models.userOrganisation.create({
+    organisationId: microsoft.id,
+    userId: adam.id,
+  });
+
+  // Tom works at Meta
+  await models.userOrganisation.create({
+    organisationId: meta.id,
+    userId: tom.id,
+  });
+
+  // Dave works at Netflix and Microsoft
+  await models.userOrganisation.create({
+    organisationId: netflix.id,
+    userId: dave.id,
+  });
+  await models.userOrganisation.create({
+    organisationId: microsoft.id,
+    userId: dave.id,
+  });
+
+  // Dave is trying to view the users of Meta, which are Adam + Tom.
+  // Dave is allowed to view Adam, as they both work at Microsoft
+  // Dave is NOT allowed to view Tom, as they do not work at any org together
+  // Because there are records that fail the permission rule (Tom) permission will be denied
   await expect(
     actions.withIdentity(identityDave).listUsersByOrganisation({
       where: {
         organisations: {
-          organisation: { id: { equals: organisationAdam.id } },
+          organisation: { id: { equals: meta.id } },
         },
       },
     })

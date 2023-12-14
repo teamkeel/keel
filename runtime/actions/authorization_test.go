@@ -478,11 +478,10 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing"
 			LEFT JOIN "identity" AS "thing$created_by" ON
 				"thing$created_by"."id" = "thing"."created_by_id"
-			WHERE 
-				"thing"."id" IS NOT DISTINCT FROM ? AND 
+			WHERE
 				( ( ? IS NOT DISTINCT FROM ? AND "thing$created_by"."id" IS NOT DISTINCT FROM ? ) )
 				AND "thing"."id" IN (?)`,
-		expectedArgs: []any{"123", true, true, unverifiedIdentity.Id, "idToAuthorise"},
+		expectedArgs: []any{true, true, unverifiedIdentity.Id, "idToAuthorise"},
 		identity:     unverifiedIdentity,
 	},
 	{
@@ -1001,10 +1000,9 @@ var authorisationTestCases = []authorisationTestCase{
 			LEFT JOIN 
 				"identity" AS "thing$updated_by" ON "thing$updated_by"."id" = "thing"."updated_by_id" 
 			WHERE 
-				"thing"."id" IS NOT DISTINCT FROM ? AND 
 				( "thing$created_by"."id" IS NOT DISTINCT FROM ? OR "thing$updated_by"."id" IS NOT DISTINCT FROM ? )
 				AND "thing"."id" IN (?)`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id, unverifiedIdentity.Id, "idToAuthorise"},
+		expectedArgs: []any{unverifiedIdentity.Id, unverifiedIdentity.Id, "idToAuthorise"},
 		identity:     unverifiedIdentity,
 	},
 	{
@@ -1054,10 +1052,10 @@ var authorisationTestCases = []authorisationTestCase{
 			LEFT JOIN 
 				"user" AS "user$organisations$organisation$users$user" ON "user$organisations$organisation$users$user"."id" = "user$organisations$organisation$users"."user_id" 
 			WHERE 
-				"user$organisations$organisation"."id" IS NOT DISTINCT FROM ? AND ( ? IS NOT DISTINCT FROM "user$organisations$organisation$users$user"."identity_id" )
+				( ? IS NOT DISTINCT FROM "user$organisations$organisation$users$user"."identity_id" )
 				AND "user"."id" IN (?)
 			`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
+		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		identity:     unverifiedIdentity,
 	},
 	{
@@ -1195,13 +1193,12 @@ var authorisationTestCases = []authorisationTestCase{
 			SELECT COUNT(DISTINCT "adult_film"."id") = 1 AS authorised
 			FROM "adult_film" 
 			WHERE 
-				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
-					((SELECT "identity$user"."is_adult" 
+				((SELECT "identity$user"."is_adult" 
 					FROM "identity" 
 					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
 					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."is_adult" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM ?)
 				AND "adult_film"."id" IN (?)`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id, true, "idToAuthorise"},
+		expectedArgs: []any{unverifiedIdentity.Id, true, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1232,13 +1229,12 @@ var authorisationTestCases = []authorisationTestCase{
 			LEFT JOIN "identity" AS "adult_film$identity" ON "adult_film$identity"."id" = "adult_film"."identity_id" 
 			LEFT JOIN "user" AS "adult_film$identity$user" ON "adult_film$identity$user"."identity_id" = "adult_film$identity"."id" 
 			WHERE 
-				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
-					((SELECT "identity$user"."id" 
+				((SELECT "identity$user"."id" 
 					FROM "identity" 
 					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
 					WHERE "identity"."id" IS NOT DISTINCT FROM ?  AND "identity$user"."id" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM "adult_film$identity$user"."id")
 				AND "adult_film"."id" IN (?)`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
+		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1268,14 +1264,13 @@ var authorisationTestCases = []authorisationTestCase{
 			FROM "adult_film" 
 			LEFT JOIN "identity" AS "adult_film$identity" ON "adult_film$identity"."id" = "adult_film"."identity_id" 
 			LEFT JOIN "user" AS "adult_film$identity$user" ON "adult_film$identity$user"."identity_id" = "adult_film$identity"."id" 
-			WHERE 
-				"adult_film"."id" IS NOT DISTINCT FROM ? AND 
-					((SELECT "identity$user"."id" 
+			WHERE
+				((SELECT "identity$user"."id" 
 					FROM "identity" 
 					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
 					WHERE "identity"."id" IS NOT DISTINCT FROM ?  AND "identity$user"."id" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM "adult_film$identity$user"."id")
 				AND "adult_film"."id" IN (?)`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
+		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1304,11 +1299,10 @@ var authorisationTestCases = []authorisationTestCase{
 				COUNT(DISTINCT "bank_account"."id") = 1 AS authorised
 			FROM 
 				"bank_account" 
-			WHERE 
-				"bank_account"."id" IS NOT DISTINCT FROM ? AND 
+			WHERE
 				(? IS NOT DISTINCT FROM "bank_account"."identity_id")
 				AND "bank_account"."id" IN (?)`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
+		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1351,10 +1345,7 @@ var authorisationTestCases = []authorisationTestCase{
 				COUNT(DISTINCT "entity_user"."id") = 1 AS authorised
 			FROM 
 				"entity_user" 
-			LEFT JOIN 
-				"entity" AS "entity_user$entity" ON "entity_user$entity"."id" = "entity_user"."entity_id" 
-			WHERE 
-				"entity_user$entity"."id" IS NOT DISTINCT FROM ? AND 
+			WHERE
 				("entity_user"."id" IN 
 					(SELECT "identity$administrator$access$entity$users"."id" 
 					FROM "identity" 
@@ -1364,7 +1355,7 @@ var authorisationTestCases = []authorisationTestCase{
 					LEFT JOIN "entity_user" AS "identity$administrator$access$entity$users" ON "identity$administrator$access$entity$users"."entity_id" = "identity$administrator$access$entity"."id" 
 					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$administrator$access$entity$users"."id" IS DISTINCT FROM NULL))
 				AND "entity_user"."id" IN (?)`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
+		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},
@@ -1406,11 +1397,8 @@ var authorisationTestCases = []authorisationTestCase{
 			SELECT 
 				COUNT(DISTINCT "entity_user"."id") = 1 AS authorised
 			FROM 
-				"entity_user" 
-			LEFT JOIN 
-				"entity" AS "entity_user$entity" ON "entity_user$entity"."id" = "entity_user"."entity_id" 
-			WHERE 
-				"entity_user$entity"."id" IS NOT DISTINCT FROM ? AND 
+				"entity_user"
+			WHERE
 				("entity_user"."id" IN 
 					(SELECT "identity$administrator$access$entity$users"."id" 
 					FROM "identity" 
@@ -1420,7 +1408,7 @@ var authorisationTestCases = []authorisationTestCase{
 					LEFT JOIN "entity_user" AS "identity$administrator$access$entity$users" ON "identity$administrator$access$entity$users"."entity_id" = "identity$administrator$access$entity"."id" 
 					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$administrator$access$entity$users"."id" IS DISTINCT FROM NULL))
 				AND "entity_user"."id" IN (?)`,
-		expectedArgs: []any{"123", unverifiedIdentity.Id, "idToAuthorise"},
+		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
 	},

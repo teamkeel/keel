@@ -2,7 +2,7 @@ import { test, expect } from "vitest";
 
 test("headers", async () => {
   const response = await fetch(
-    process.env.KEEL_TESTING_ACTIONS_API_URL + "/withHeaders",
+    process.env.KEEL_TESTING_ACTIONS_API_URL + "/json/withHeaders",
     {
       body: "{}",
       method: "POST",
@@ -19,7 +19,7 @@ test("headers", async () => {
 
 test("status", async () => {
   const response = await fetch(
-    process.env.KEEL_TESTING_ACTIONS_API_URL + "/withStatus",
+    process.env.KEEL_TESTING_ACTIONS_API_URL + "/json/withStatus",
     {
       body: "{}",
       method: "POST",
@@ -37,7 +37,7 @@ test("status", async () => {
 test("query params", async () => {
   const response = await fetch(
     process.env.KEEL_TESTING_ACTIONS_API_URL +
-      "/withQueryParams?a=1&b=foo&c=true"
+      "/json/withQueryParams?a=1&b=foo&c=true"
   );
 
   const body = await response.json();

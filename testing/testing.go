@@ -188,16 +188,16 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			}
 
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-			if len(pathParts) != 3 {
-				w.WriteHeader(http.StatusNotFound)
-				return
-			}
 
 			switch pathParts[0] {
 			case ActionApiPath:
 				r = r.WithContext(ctx)
 				runtime.NewHttpHandler(schema).ServeHTTP(w, r)
 			case JobPath:
+				if len(pathParts) != 3 {
+					w.WriteHeader(http.StatusBadRequest)
+					return
+				}
 				err := HandleJobExecutorRequest(ctx, schema, pathParts[2], r)
 				if err != nil {
 					response := httpjson.NewErrorResponse(ctx, err, nil)
@@ -205,6 +205,10 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 					_, _ = w.Write(response.Body)
 				}
 			case SubscriberPath:
+				if len(pathParts) != 3 {
+					w.WriteHeader(http.StatusBadRequest)
+					return
+				}
 				err := HandleSubscriberExecutorRequest(ctx, schema, pathParts[2], r)
 				if err != nil {
 					response := httpjson.NewErrorResponse(ctx, err, nil)
@@ -256,7 +260,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Env = append(os.Environ(), []string{
-		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/%s/json", runtimePort, ActionApiPath),
+		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/%s", runtimePort, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_JOBS_URL=http://localhost:%s/%s/json", runtimePort, JobPath),
 		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=http://localhost:%s/%s/json", runtimePort, SubscriberPath),
 		"KEEL_DB_CONN_TYPE=pg",
