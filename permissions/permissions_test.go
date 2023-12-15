@@ -83,6 +83,34 @@ func TestToSQL(t *testing.T) {
 			},
 		},
 		{
+			name: "boolean_expression",
+			schema: `
+				model Post {
+					fields {
+						isPublic Boolean
+					}
+					actions {
+						get getPost(id)
+					}
+					@permission(
+						expression: post.isPublic,
+						actions: [get]
+					)
+				}
+			`,
+			action: "getPost",
+			sql: `
+				SELECT DISTINCT "post"."id" 
+				FROM "post" 
+				WHERE ("post"."is_public") AND "post"."id" IN (?)
+			`,
+			values: []permissions.Value{
+				{
+					Type: permissions.ValueRecordIDs,
+				},
+			},
+		},
+		{
 			name: "equals_string",
 			schema: `
 				model Post {
@@ -510,7 +538,7 @@ func TestToSQL(t *testing.T) {
 			sql: `
 				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE ("post"."publish_date" <= ?) or ("post"."identity_id" IS NOT DISTINCT FROM ?) AND "post"."id" IN (?)
+				WHERE (("post"."publish_date" <= ?) or ("post"."identity_id" IS NOT DISTINCT FROM ?)) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -555,7 +583,7 @@ func TestToSQL(t *testing.T) {
 				SELECT DISTINCT "post"."id" 
 				FROM "post" 
 				LEFT JOIN "account" AS "post$account" ON "post"."account_id" = "post$account"."id" 
-				WHERE ("post$account"."identity_id" IS NOT DISTINCT FROM ?) or ("post$account"."posts_are_public") AND "post"."id" IN (?)
+				WHERE (("post$account"."identity_id" IS NOT DISTINCT FROM ?) or ("post$account"."posts_are_public")) AND "post"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
@@ -599,6 +627,171 @@ func TestToSQL(t *testing.T) {
 				LEFT JOIN "table" AS "join$inner" ON "join"."inner_id" = "join$inner"."id" 
 				LEFT JOIN "select" AS "join$inner$group" ON "join$inner"."group_id" = "join$inner$group"."id" 
 				WHERE ("join$inner$group"."by_id" IS NOT DISTINCT FROM ?) AND "join"."id" IN (?)
+			`,
+			values: []permissions.Value{
+				{
+					Type: permissions.ValueIdentityID,
+				},
+				{
+					Type: permissions.ValueRecordIDs,
+				},
+			},
+		},
+		{
+			name: "identity_backlink_compare_model",
+			schema: `
+				model Profile {
+					fields {
+						identity Identity @unique
+					}
+				}
+
+				model Post {
+					fields {
+						profile Profile
+					}
+
+					actions {
+						get getPost(id)
+					}
+				}
+
+				model Comment {
+					fields {
+						post Post
+						text Text
+					}
+
+					actions {
+						create addComment() with (post.id, text)
+					}
+
+					@permission(
+						expression: ctx.identity.profile == comment.post.profile,
+						actions: [create]
+					)
+				}
+			`,
+			action: "addComment",
+			sql: `
+				SELECT DISTINCT "comment"."id" 
+				FROM "comment" 
+				LEFT JOIN "post" AS "comment$post" ON "comment"."post_id" = "comment$post"."id" 
+				WHERE ((SELECT "identity$profile"."id" 
+					FROM "identity" 
+					LEFT JOIN "profile" AS "identity$profile" ON "identity"."id" = "identity$profile"."identity_id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?) IS NOT DISTINCT FROM "comment$post"."profile_id") 
+				AND "comment"."id" IN (?)
+			`,
+			values: []permissions.Value{
+				{
+					Type: permissions.ValueIdentityID,
+				},
+				{
+					Type: permissions.ValueRecordIDs,
+				},
+			},
+		},
+		{
+			name: "identity_backlink_compare_field",
+			schema: `
+				model Profile {
+					fields {
+						identity Identity @unique
+					}
+				}
+
+				model Post {
+					fields {
+						profile Profile
+					}
+
+					actions {
+						get getPost(id)
+					}
+				}
+
+				model Comment {
+					fields {
+						post Post
+						text Text
+					}
+
+					actions {
+						create addComment() with (post.id, text)
+					}
+
+					@permission(
+						expression: ctx.identity.profile.id == comment.post.profile.id,
+						actions: [create]
+					)
+				}
+			`,
+			action: "addComment",
+			sql: `
+				SELECT DISTINCT "comment"."id" 
+				FROM "comment" 
+				LEFT JOIN "post" AS "comment$post" ON "comment"."post_id" = "comment$post"."id" 
+				LEFT JOIN "profile" AS "comment$post$profile" ON "comment$post"."profile_id" = "comment$post$profile"."id"
+				WHERE ((SELECT "identity$profile"."id" 
+					FROM "identity" 
+					LEFT JOIN "profile" AS "identity$profile" ON "identity"."id" = "identity$profile"."identity_id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?) IS NOT DISTINCT FROM "comment$post$profile"."id") 
+				AND "comment"."id" IN (?)
+			`,
+			values: []permissions.Value{
+				{
+					Type: permissions.ValueIdentityID,
+				},
+				{
+					Type: permissions.ValueRecordIDs,
+				},
+			},
+		},
+		{
+			name: "identity_backlink_model_many_to_many",
+			schema: `
+				model User {
+					fields {
+						identity Identity @unique
+						orgs UserOrg[]
+					}
+					actions {
+						list listUserByOrg(orgs.org.id)
+					}
+					@permission(
+						expression: ctx.identity.user in user.orgs.org.users.user,
+						actions: [list]
+					)
+				}
+
+				model Org {
+					fields {
+						users UserOrg[]
+					}
+				}
+
+				model UserOrg {
+					fields {
+						user User
+						org Org
+					}
+
+					@unique([user, org])
+				}
+			`,
+			action: "listUserByOrg",
+			sql: `
+				SELECT DISTINCT "user"."id" 
+				FROM "user" 
+				LEFT JOIN "user_org" AS "user$orgs" ON "user"."id" = "user$orgs"."user_id" 
+				LEFT JOIN "org" AS "user$orgs$org" ON "user$orgs"."org_id" = "user$orgs$org"."id" 
+				LEFT JOIN "user_org" AS "user$orgs$org$users" ON "user$orgs$org"."id" = "user$orgs$org$users"."org_id" 
+				WHERE ((SELECT "identity$user"."id" 
+					FROM "identity" 
+					LEFT JOIN "user" AS "identity$user" ON "identity"."id" = "identity$user"."identity_id"
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?) IS NOT DISTINCT FROM "user$orgs$org$users"."user_id") 
+				AND "user"."id" IN (?)
 			`,
 			values: []permissions.Value{
 				{
