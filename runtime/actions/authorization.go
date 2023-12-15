@@ -192,50 +192,33 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 	permissions = proto.PermissionsWithExpression(permissions)
 	query := NewQuery(scope.Context, scope.Model, WithJoinType(JoinTypeLeft))
 
-	// Implicit and explicit filters need to be included in the permissions query,
-	// otherwise we'll be testing against records which aren't part of the the result set
-	if scope.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
-		err := query.applyImplicitFiltersForList(scope, input)
-		if err != nil {
-			return nil, err
-		}
-		query.And()
-	} else {
-		err := query.applyImplicitFilters(scope, input)
-		if err != nil {
-			return nil, err
-		}
-		query.And()
+	// We should never have an empty list of permissions as this is checked
+	// higher up in the code path, but just to be safe
+	if len(permissions) == 0 {
+		return nil, errors.New("no permission rules provided")
 	}
 
-	err := query.applyExplicitFilters(scope, input)
-	if err != nil {
-		return nil, err
+	// Append SQL where conditions for each permission attribute.
+	query.OpenParenthesis()
+	for _, permission := range permissions {
+		expression, err := parser.ParseExpression(permission.Expression.Source)
+		if err != nil {
+			return nil, err
+		}
+
+		err = query.whereByExpression(scope, expression, map[string]any{})
+		if err != nil {
+			return nil, err
+		}
+		// Or with the next permission attribute
+		query.Or()
 	}
+	query.CloseParenthesis()
+
 	query.And()
-
-	if len(permissions) > 0 {
-		// Append SQL where conditions for each permission attribute.
-		query.OpenParenthesis()
-		for _, permission := range permissions {
-			expression, err := parser.ParseExpression(permission.Expression.Source)
-			if err != nil {
-				return nil, err
-			}
-
-			err = query.whereByExpression(scope, expression, map[string]any{})
-			if err != nil {
-				return nil, err
-			}
-			// Or with the next permission attribute
-			query.Or()
-		}
-		query.CloseParenthesis()
-	}
 
 	// Filter by the ids we want to authorise
-	query.And()
-	err = query.Where(IdField(), OneOf, Value(idsToAuthorise))
+	err := query.Where(IdField(), OneOf, Value(idsToAuthorise))
 	if err != nil {
 		return nil, err
 	}

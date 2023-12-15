@@ -10,7 +10,7 @@ model User {
             @set(user.identity = ctx.identity)
         }
         get getUser(id)
-        list listUsersByOrganisation(organisations.organisation.id) 
+        list listUsersByOrganisation(organisations.organisation.id)
     }
 
     @permission(
