@@ -44,8 +44,9 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 	pkField := identifier(proto.PrimaryKeyFieldName(m))
 
 	stmt := &statement{}
+	permissions := proto.PermissionsForAction(s, action)
 
-	for _, p := range proto.PermissionsForAction(s, action) {
+	for _, p := range permissions {
 		if p.Expression == nil {
 			continue
 		}
@@ -76,7 +77,13 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 		// lo.Unique to dedupe joins
 		sql += " " + strings.Join(lo.Uniq(stmt.joins), " ")
 	}
-	sql += fmt.Sprintf(" WHERE %s AND %s.%s IN (?)", stmt.expression, tableName, pkField)
+
+	expr := stmt.expression
+	if len(permissions) > 1 {
+		expr = fmt.Sprintf("(%s)", expr)
+	}
+
+	sql += fmt.Sprintf(" WHERE %s AND %s.%s IN (?)", expr, tableName, pkField)
 
 	stmt.values = append(stmt.values, &Value{
 		Type: ValueRecordIDs,
@@ -163,9 +170,9 @@ func handleOperand(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt 
 	case o.Ident != nil:
 		switch o.Ident.Fragments[0].Fragment {
 		case "ctx":
-			return handleContext(o, stmt)
+			return handleContext(s, o, stmt)
 		case casing.ToLowerCamel(model.Name):
-			return handleModel(s, model, o, stmt)
+			return handleModel(s, model, o.Ident, stmt)
 		default:
 			// If not context of model must be enum, but still worth checking to be sure
 			enum := proto.FindEnum(s.Enums, o.Ident.Fragments[0].Fragment)
@@ -183,27 +190,49 @@ func handleOperand(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt 
 	return fmt.Errorf("unsupported operand: %s", o.ToString())
 }
 
-func handleContext(o *parser.Operand, stmt *statement) error {
+func handleContext(s *proto.Schema, o *parser.Operand, stmt *statement) error {
 	if len(o.Ident.Fragments) < 2 {
 		return errors.New("ctx used in expression with no properties")
 	}
 
 	switch o.Ident.Fragments[1].Fragment {
 	case "identity":
-		stmt.expression += "?"
+		// ctx.identity is the same as ctx.identity.id
 		if len(o.Ident.Fragments) == 2 {
+			stmt.expression += "?"
 			stmt.values = append(stmt.values, &Value{Type: ValueIdentityID})
 			return nil
 		}
 		switch o.Ident.Fragments[2].Fragment {
 		case "id":
+			stmt.expression += "?"
 			stmt.values = append(stmt.values, &Value{Type: ValueIdentityID})
 			return nil
 		case "email":
+			stmt.expression += "?"
 			stmt.values = append(stmt.values, &Value{Type: ValueIdentityEmail})
 			return nil
 		default:
-			return fmt.Errorf("unsupported field %s on ctx.identity in permission rule", o.Ident.Fragments[2].Fragment)
+			inner := &statement{}
+			err := handleModel(
+				s,
+				proto.FindModel(s.Models, "Identity"),
+				&parser.Ident{
+					// We can drop the first fragments, which is "ctx"
+					Fragments: o.Ident.Fragments[1:],
+				},
+				inner,
+			)
+			if err != nil {
+				return err
+			}
+
+			stmt.expression += fmt.Sprintf(
+				`(SELECT %s FROM "identity" %s WHERE "identity"."id" IS NOT DISTINCT FROM ?)`,
+				inner.expression, strings.Join(inner.joins, " "),
+			)
+			stmt.values = append(stmt.values, &Value{Type: ValueIdentityID})
+			return nil
 		}
 	case "isAuthenticated":
 		// Explicit cast to boolean as Kysely seems to send value as string
@@ -229,74 +258,82 @@ func handleContext(o *parser.Operand, stmt *statement) error {
 	}
 }
 
-func handleModel(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *statement) (err error) {
+func handleModel(s *proto.Schema, model *proto.Model, ident *parser.Ident, stmt *statement) (err error) {
 	fieldName := ""
-	for i, f := range o.Ident.Fragments {
+	for i, f := range ident.Fragments {
 		switch {
 		// The first fragment
 		case i == 0:
 			fieldName += casing.ToSnake(f.Fragment)
-			continue
 
-		// The last fragment
-		case i == len(o.Ident.Fragments)-1:
-			field := proto.FindField(s.Models, model.Name, f.Fragment)
-			if field == nil {
-				return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
-			}
-
-			// Turn the table into a quoted identifier
-			fieldName = identifier(fieldName)
-
-			// Then append the field name as a quoted identifier
-			if field.Type.Type == proto.Type_TYPE_MODEL {
-				fieldName += "." + identifier(field.ForeignKeyFieldName.Value)
-			} else {
-				fieldName += "." + identifier(f.Fragment)
-			}
-			continue
-
-		// Middle fragments are joins
+		// Remaining fragments
 		default:
-			// Left alias is the source table
-			leftAlias := fieldName
-
-			// Append fragment to identifer
-			fieldName += "$" + casing.ToSnake(f.Fragment)
-
-			// Right alias is the join table
-			rightAlias := fieldName
-
 			field := proto.FindField(s.Models, model.Name, f.Fragment)
 			if field == nil {
 				return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
 			}
 
-			joinModel := proto.FindModel(s.Models, field.Type.ModelName.Value)
-			if joinModel == nil {
-				return fmt.Errorf("model %s not found in schema", model.Name)
+			isLast := i == len(ident.Fragments)-1
+			isModel := field.Type.Type == proto.Type_TYPE_MODEL
+			hasFk := field.ForeignKeyFieldName != nil
+
+			if isModel && (!isLast || !hasFk) {
+				// Left alias is the source table
+				leftAlias := fieldName
+
+				// Append fragment to identifer
+				fieldName += "$" + casing.ToSnake(f.Fragment)
+
+				// Right alias is the join table
+				rightAlias := fieldName
+
+				field := proto.FindField(s.Models, model.Name, f.Fragment)
+				if field == nil {
+					return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
+				}
+
+				joinModel := proto.FindModel(s.Models, field.Type.ModelName.Value)
+				if joinModel == nil {
+					return fmt.Errorf("model %s not found in schema", model.Name)
+				}
+
+				leftFieldName := proto.GetForignKeyFieldName(s.Models, field)
+				rightFieldName := proto.PrimaryKeyFieldName(joinModel)
+
+				// If not belongs to then swap foreign/primary key
+				if !proto.IsBelongsTo(field) {
+					leftFieldName = proto.PrimaryKeyFieldName(model)
+					rightFieldName = proto.GetForignKeyFieldName(s.Models, field)
+				}
+
+				stmt.joins = append(stmt.joins, fmt.Sprintf(
+					"LEFT JOIN %s AS %s ON %s.%s = %s.%s",
+					identifier(joinModel.Name),
+					identifier(rightAlias),
+					identifier(leftAlias),
+					identifier(leftFieldName),
+					identifier(rightAlias),
+					identifier(rightFieldName),
+				))
+
+				model = joinModel
 			}
 
-			leftFieldName := proto.GetForignKeyFieldName(s.Models, field)
-			rightFieldName := proto.PrimaryKeyFieldName(joinModel)
+			if isLast {
+				// Turn the table into a quoted identifier
+				fieldName = identifier(fieldName)
 
-			// If not belongs to then swap foreign/primary key
-			if !proto.IsBelongsTo(field) {
-				leftFieldName = proto.PrimaryKeyFieldName(model)
-				rightFieldName = proto.GetForignKeyFieldName(s.Models, field)
+				// Then append the field name as a quoted identifier
+				if field.Type.Type == proto.Type_TYPE_MODEL {
+					if field.ForeignKeyFieldName != nil {
+						fieldName += "." + identifier(field.ForeignKeyFieldName.Value)
+					} else {
+						fieldName += "." + identifier("id")
+					}
+				} else {
+					fieldName += "." + identifier(f.Fragment)
+				}
 			}
-
-			stmt.joins = append(stmt.joins, fmt.Sprintf(
-				"LEFT JOIN %s AS %s ON %s.%s = %s.%s",
-				identifier(joinModel.Name),
-				identifier(rightAlias),
-				identifier(leftAlias),
-				identifier(leftFieldName),
-				identifier(rightAlias),
-				identifier(rightFieldName),
-			))
-
-			model = joinModel
 		}
 	}
 

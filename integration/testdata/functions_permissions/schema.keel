@@ -1,0 +1,84 @@
+model User {
+    fields {
+        identity Identity @unique
+        name Text
+        orgs UserOrganisation[]
+    }
+
+    actions {
+        create createUser() with (name) @function
+        get getUser(id) @function
+        list listUsersByOrganisation(orgs.org.id) @function
+    }
+
+    @permission(
+        expression: ctx.identity == user.identity,
+        actions: [create, get]
+    )
+
+    @permission(
+        expression: ctx.identity.user in user.orgs.org.users.user,
+        actions: [get, list]
+    )
+}
+
+model Organisation {
+    fields {
+        name Text
+        users UserOrganisation[]
+    }
+}
+
+model UserOrganisation {
+    fields {
+        user User
+        org Organisation
+    }
+
+    @unique([user, org])
+}
+
+model Film {
+    fields {
+        title Text
+        ageRestriction Number
+    }
+}
+
+model Admission {
+    fields {
+        film Film
+        audience Audience
+    }
+
+    actions {
+        create createAdmission() with (film.id) @function
+    }
+
+    // Critics can always watch films, unless they work for the Daily Mail
+    @permission(
+        expression: ctx.identity.audience.isCritic and ctx.identity.audience.publication.name != "Daily Mail",
+        actions: [create]
+    )
+
+    // Otherwise the audience member needs to be old enough to view the film
+    @permission(
+        expression: ctx.identity.audience.age >= admission.film.ageRestriction,
+        actions: [create]
+    )
+}
+
+model Audience {
+    fields {
+        identity Identity @unique
+        isCritic Boolean
+        age Number
+        publication Publication?
+    }
+}
+
+model Publication {
+    fields {
+        name Text
+    }
+}
