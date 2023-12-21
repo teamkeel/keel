@@ -34,7 +34,7 @@ var initCmd = &cobra.Command{
 		defer panicHandler()
 
 		state := &InitState{}
-		steps := []func(state *InitState) error{
+		steps := []func(state *InitState){
 			initState,
 			initStepDir,
 			initStepTemplate,
@@ -49,17 +49,7 @@ var initCmd = &cobra.Command{
 		fmt.Println("")
 
 		for _, step := range steps {
-			err := step(state)
-			if err != nil {
-				if err == promptui.ErrInterrupt {
-					fmt.Println("| Aborting...")
-					fmt.Println("")
-					return
-				}
-
-				panic(err)
-			}
-
+			step(state)
 			fmt.Println("")
 		}
 
@@ -70,6 +60,12 @@ var initCmd = &cobra.Command{
 
 func panicHandler() {
 	if r := recover(); r != nil {
+		if err, ok := r.(error); ok && err == promptui.ErrInterrupt {
+			fmt.Println("| Aborting...")
+			fmt.Println("")
+			return
+		}
+
 		errStyle := lipgloss.NewStyle().
 			Foreground(lipgloss.Color("15")).
 			Background(lipgloss.Color("1"))
@@ -97,7 +93,7 @@ type InitState struct {
 	packageManager string
 }
 
-func initState(state *InitState) error {
+func initState(state *InitState) {
 	wd, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -110,11 +106,9 @@ func initState(state *InitState) error {
 	if err == nil {
 		state.gitRoot = strings.TrimSpace(string(out))
 	}
-
-	return nil
 }
 
-func initStepDir(state *InitState) error {
+func initStepDir(state *InitState) {
 	initSectionHeading("Directory")
 
 	entries, err := os.ReadDir(state.cwd)
@@ -153,10 +147,9 @@ func initStepDir(state *InitState) error {
 	}
 
 	state.targetDir = dir
-	return nil
 }
 
-func initStepTemplate(state *InitState) error {
+func initStepTemplate(state *InitState) {
 	initSectionHeading("Template")
 
 	optionBlank := "Blank project"
@@ -204,7 +197,7 @@ environment:
 secrets:
 `,
 		})
-		return nil
+		return
 	}
 
 	res, err := http.Get("https://api.github.com/repos/teamkeel/starter-templates/zipball/main")
@@ -289,11 +282,9 @@ secrets:
 			})
 		}
 	}
-
-	return nil
 }
 
-func initStepPackageManager(state *InitState) error {
+func initStepPackageManager(state *InitState) {
 	initSectionHeading("Package Manager")
 
 	rootDir := state.cwd
@@ -303,19 +294,18 @@ func initStepPackageManager(state *InitState) error {
 
 	packageManager, err := resolvePackageManager(rootDir, true)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	state.packageManager = packageManager
-	return nil
 }
 
-func initStepGit(state *InitState) error {
+func initStepGit(state *InitState) {
 	initSectionHeading("Version Control")
 
 	if state.gitRoot != "" {
 		printSuccess(fmt.Sprintf("Git repo detected: %s", colors.Gray(state.gitRoot).String()))
-		return nil
+		return
 	}
 
 	starter := promptui.Prompt{
@@ -324,18 +314,14 @@ func initStepGit(state *InitState) error {
 	}
 
 	_, err := starter.Run()
-	if err == promptui.ErrAbort {
-		return nil
-	}
 	if err != nil {
 		panic(err)
 	}
 
 	state.initGitRepo = true
-	return nil
 }
 
-func initStepCreateProject(state *InitState) error {
+func initStepCreateProject(state *InitState) {
 	initSectionHeading("Generating Project")
 
 	err := state.files.Write(state.targetDir)
@@ -383,8 +369,6 @@ func initStepCreateProject(state *InitState) error {
 			panic(err)
 		}
 	}
-
-	return nil
 }
 
 func initSectionHeading(v string) {
