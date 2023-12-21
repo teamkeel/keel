@@ -56,6 +56,7 @@ type JSONSchema struct {
 	AdditionalProperties *bool                 `json:"additionalProperties,omitempty"`
 	Required             []string              `json:"required,omitempty"`
 	OneOf                []JSONSchema          `json:"oneOf,omitempty"`
+	Title                string                `json:"title,omitempty"`
 
 	// For arrays
 	Items *JSONSchema `json:"items,omitempty"`
@@ -167,22 +168,57 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 	}
 
 	if !isAny {
-		for _, field := range message.Fields {
-			prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable)
+		// Certain messages should only allow one field to be set per request so we set these as a oneOf property
+		if message.Name == "IdQueryInput" || message.Name == "StringQueryInput" {
+			oneOf := []JSONSchema{}
 
-			// Merge components from this request schema into OpenAPI components
-			if prop.Components != nil {
-				for name, comp := range prop.Components.Schemas {
-					components.Schemas[name] = comp
+			for _, field := range message.Fields {
+				oneOfOption := JSONSchema{
+					Type:                 "object",
+					Properties:           map[string]JSONSchema{},
+					AdditionalProperties: boolPtr(isAny),
 				}
-				prop.Components = nil
+
+				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable)
+
+				// Merge components from this request schema into OpenAPI components
+				if prop.Components != nil {
+					for name, comp := range prop.Components.Schemas {
+						components.Schemas[name] = comp
+					}
+					prop.Components = nil
+				}
+
+				oneOfOption.Properties[field.Name] = prop
+				oneOfOption.Title = field.Name
+
+				// If the input is not optional then mark it required in the JSON schema
+				if !field.Optional {
+					oneOfOption.Required = append(oneOfOption.Required, field.Name)
+				}
+				oneOf = append(oneOf, oneOfOption)
 			}
 
-			root.Properties[field.Name] = prop
+			root.OneOf = oneOf
 
-			// If the input is not optional then mark it required in the JSON schema
-			if !field.Optional {
-				root.Required = append(root.Required, field.Name)
+		} else {
+			for _, field := range message.Fields {
+				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable)
+
+				// Merge components from this request schema into OpenAPI components
+				if prop.Components != nil {
+					for name, comp := range prop.Components.Schemas {
+						components.Schemas[name] = comp
+					}
+					prop.Components = nil
+				}
+
+				root.Properties[field.Name] = prop
+
+				// If the input is not optional then mark it required in the JSON schema
+				if !field.Optional {
+					root.Required = append(root.Required, field.Name)
+				}
 			}
 		}
 	}

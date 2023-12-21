@@ -1,214 +1,310 @@
 {
-	"type": "object",
-	"properties": {
-		"after": {
-			"type": "string"
-		},
-		"before": {
-			"type": "string"
-		},
-		"first": {
-			"type": "number"
-		},
-		"last": {
-			"type": "number"
-		},
-		"where": {
-			"$ref": "#/components/schemas/TestActionWhere"
-		}
-	},
-	"additionalProperties": false,
-	"required": ["where"],
-	"components": {
-		"schemas": {
-			"BooleanQueryInput": {
-				"type": "object",
-				"properties": {
-					"equals": {
-						"type": ["boolean", "null"]
-					},
-					"notEquals": {
-						"type": ["boolean", "null"]
-					}
-				},
-				"additionalProperties": false
-			},
-			"DateQueryInput": {
-				"type": "object",
-				"properties": {
-					"after": {
-						"type": "string",
-						"format": "date"
-					},
-					"before": {
-						"type": "string",
-						"format": "date"
-					},
-					"equals": {
-						"type": ["string", "null"],
-						"format": "date"
-					},
-					"notEquals": {
-						"type": ["string", "null"],
-						"format": "date"
-					},
-					"onOrAfter": {
-						"type": "string",
-						"format": "date"
-					},
-					"onOrBefore": {
-						"type": "string",
-						"format": "date"
-					}
-				},
-				"additionalProperties": false
-			},
-			"HobbyQueryInput": {
-				"type": "object",
-				"properties": {
-					"equals": {
-						"enum": ["Tennis", "Chess", null]
-					},
-					"notEquals": {
-						"enum": ["Tennis", "Chess", null]
-					},
-					"oneOf": {
-						"type": "array",
-						"items": {
-							"enum": ["Tennis", "Chess"]
-						}
-					}
-				},
-				"additionalProperties": false
-			},
-			"IntQueryInput": {
-				"type": "object",
-				"properties": {
-					"equals": {
-						"type": ["number", "null"]
-					},
-					"greaterThan": {
-						"type": "number"
-					},
-					"greaterThanOrEquals": {
-						"type": "number"
-					},
-					"lessThan": {
-						"type": "number"
-					},
-					"lessThanOrEquals": {
-						"type": "number"
-					},
-					"notEquals": {
-						"type": ["number", "null"]
-					},
-					"oneOf": {
-						"type": "array",
-						"items": {
-							"type": "number"
-						}
-					}
-				},
-				"additionalProperties": false
-			},
-			"StringQueryInput": {
-				"type": "object",
-				"properties": {
-					"contains": {
-						"type": "string"
-					},
-					"endsWith": {
-						"type": "string"
-					},
-					"equals": {
-						"type": ["string", "null"]
-					},
-					"notEquals": {
-						"type": ["string", "null"]
-					},
-					"oneOf": {
-						"type": "array",
-						"items": {
-							"type": "string"
-						}
-					},
-					"startsWith": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false
-			},
-			"TestActionCurrentCityInput": {
-				"type": "object",
-				"properties": {
-					"name": {
-						"$ref": "#/components/schemas/StringQueryInput"
-					}
-				},
-				"additionalProperties": false,
-				"required": ["name"]
-			},
-			"TestActionPreviousCityInput": {
-				"type": "object",
-				"properties": {
-					"name": {
-						"$ref": "#/components/schemas/StringQueryInput"
-					}
-				},
-				"additionalProperties": false,
-				"required": ["name"]
-			},
-			"TestActionWhere": {
-				"type": "object",
-				"properties": {
-					"birthday": {
-						"$ref": "#/components/schemas/DateQueryInput"
-					},
-					"currentCity": {
-						"$ref": "#/components/schemas/TestActionCurrentCityInput"
-					},
-					"favouriteNumber": {
-						"$ref": "#/components/schemas/IntQueryInput"
-					},
-					"hobby": {
-						"$ref": "#/components/schemas/HobbyQueryInput"
-					},
-					"isAdmin": {
-						"$ref": "#/components/schemas/BooleanQueryInput"
-					},
-					"lastSeenAt": {
-						"$ref": "#/components/schemas/TimestampQueryInput"
-					},
-					"name": {
-						"$ref": "#/components/schemas/StringQueryInput"
-					},
-					"preferredName": {
-						"$ref": "#/components/schemas/StringQueryInput"
-					},
-					"previousCity": {
-						"$ref": "#/components/schemas/TestActionPreviousCityInput"
-					},
-					"secondHobby": {
-						"$ref": "#/components/schemas/HobbyQueryInput"
-					}
-				},
-				"additionalProperties": false,
-				"required": ["name", "preferredName", "favouriteNumber", "birthday", "hobby", "secondHobby", "isAdmin", "lastSeenAt", "currentCity", "previousCity"]
-			},
-			"TimestampQueryInput": {
-				"type": "object",
-				"properties": {
-					"after": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"before": {
-						"type": "string",
-						"format": "date-time"
-					}
-				},
-				"additionalProperties": false
-			}
-		}
-	}
+  "type": "object",
+  "properties": {
+    "after": {
+      "type": "string"
+    },
+    "before": {
+      "type": "string"
+    },
+    "first": {
+      "type": "number"
+    },
+    "last": {
+      "type": "number"
+    },
+    "where": {
+      "$ref": "#/components/schemas/TestActionWhere"
+    }
+  },
+  "additionalProperties": false,
+  "required": ["where"],
+  "components": {
+    "schemas": {
+      "BooleanQueryInput": {
+        "type": "object",
+        "properties": {
+          "equals": {
+            "type": ["boolean", "null"]
+          },
+          "notEquals": {
+            "type": ["boolean", "null"]
+          }
+        },
+        "additionalProperties": false
+      },
+      "DateQueryInput": {
+        "type": "object",
+        "properties": {
+          "after": {
+            "type": "string",
+            "format": "date"
+          },
+          "before": {
+            "type": "string",
+            "format": "date"
+          },
+          "equals": {
+            "type": ["string", "null"],
+            "format": "date"
+          },
+          "notEquals": {
+            "type": ["string", "null"],
+            "format": "date"
+          },
+          "onOrAfter": {
+            "type": "string",
+            "format": "date"
+          },
+          "onOrBefore": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "additionalProperties": false
+      },
+      "HobbyQueryInput": {
+        "type": "object",
+        "properties": {
+          "equals": {
+            "enum": ["Tennis", "Chess", null]
+          },
+          "notEquals": {
+            "enum": ["Tennis", "Chess", null]
+          },
+          "oneOf": {
+            "type": "array",
+            "items": {
+              "enum": ["Tennis", "Chess"]
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "IdQueryInput": {
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "equals": {
+                "type": ["string", "null"]
+              }
+            },
+            "title": "equals",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "oneOf": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "title": "oneOf",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "notEquals": {
+                "type": ["string", "null"]
+              }
+            },
+            "title": "notEquals",
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "IntQueryInput": {
+        "type": "object",
+        "properties": {
+          "equals": {
+            "type": ["number", "null"]
+          },
+          "greaterThan": {
+            "type": "number"
+          },
+          "greaterThanOrEquals": {
+            "type": "number"
+          },
+          "lessThan": {
+            "type": "number"
+          },
+          "lessThanOrEquals": {
+            "type": "number"
+          },
+          "notEquals": {
+            "type": ["number", "null"]
+          },
+          "oneOf": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StringQueryInput": {
+        "type": "object",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "equals": {
+                "type": ["string", "null"]
+              }
+            },
+            "title": "equals",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "notEquals": {
+                "type": ["string", "null"]
+              }
+            },
+            "title": "notEquals",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "startsWith": {
+                "type": "string"
+              }
+            },
+            "title": "startsWith",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "endsWith": {
+                "type": "string"
+              }
+            },
+            "title": "endsWith",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "type": "string"
+              }
+            },
+            "title": "contains",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "oneOf": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "title": "oneOf",
+            "type": "object"
+          }
+        ],
+        "additionalProperties": false
+      },
+      "TestActionCurrentCityInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/StringQueryInput"
+          }
+        },
+        "additionalProperties": false,
+        "required": ["name"]
+      },
+      "TestActionPreviousCityInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/StringQueryInput"
+          }
+        },
+        "additionalProperties": false,
+        "required": ["name"]
+      },
+      "TestActionWhere": {
+        "type": "object",
+        "properties": {
+          "birthday": {
+            "$ref": "#/components/schemas/DateQueryInput"
+          },
+          "currentCity": {
+            "$ref": "#/components/schemas/TestActionCurrentCityInput"
+          },
+          "favouriteNumber": {
+            "$ref": "#/components/schemas/IntQueryInput"
+          },
+          "hobby": {
+            "$ref": "#/components/schemas/HobbyQueryInput"
+          },
+          "id": {
+            "$ref": "#/components/schemas/IdQueryInput"
+          },
+          "isAdmin": {
+            "$ref": "#/components/schemas/BooleanQueryInput"
+          },
+          "lastSeenAt": {
+            "$ref": "#/components/schemas/TimestampQueryInput"
+          },
+          "name": {
+            "$ref": "#/components/schemas/StringQueryInput"
+          },
+          "preferredName": {
+            "$ref": "#/components/schemas/StringQueryInput"
+          },
+          "previousCity": {
+            "$ref": "#/components/schemas/TestActionPreviousCityInput"
+          },
+          "secondHobby": {
+            "$ref": "#/components/schemas/HobbyQueryInput"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "preferredName",
+          "favouriteNumber",
+          "birthday",
+          "hobby",
+          "secondHobby",
+          "isAdmin",
+          "lastSeenAt",
+          "currentCity",
+          "previousCity"
+        ]
+      },
+      "TimestampQueryInput": {
+        "type": "object",
+        "properties": {
+          "after": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "before": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
 }

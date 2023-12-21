@@ -24,6 +24,6 @@ model Person {
     }
 
     actions {
-        list testAction(name, preferredName, favouriteNumber, birthday, hobby, secondHobby, isAdmin, lastSeenAt, currentCity.name, previousCity.name)
+        list testAction(id, name, preferredName, favouriteNumber, birthday, hobby, secondHobby, isAdmin, lastSeenAt, currentCity.name, previousCity.name)
     }
 }
