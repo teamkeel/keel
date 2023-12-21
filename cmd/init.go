@@ -331,6 +331,7 @@ func initStepCreateProject(state *InitState) {
 
 	err = node.Bootstrap(
 		state.targetDir,
+		node.WithPackagesPath(flagNodePackagesPath),
 		node.WithPackageManager(state.packageManager),
 		node.WithLogger(func(s string) {
 			fmt.Println("|", colors.Gray(s))
@@ -426,4 +427,8 @@ func printLogo() {
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+
+	if enabledDebugFlags == "true" {
+		initCmd.Flags().StringVar(&flagNodePackagesPath, "node-packages-path", "", "path to local @teamkeel npm packages")
+	}
 }
