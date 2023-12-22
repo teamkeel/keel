@@ -9,8 +9,8 @@ dependencies:
     specifier: ^9.0.2
     version: 9.0.2
   kysely:
-    specifier: ^0.23.5
-    version: 0.23.5
+    specifier: ^0.26.3
+    version: 0.26.3
   lodash.ismatch:
     specifier: ^4.4.0
     version: 4.4.0
@@ -23,8 +23,8 @@ devDependencies:
     specifier: ^4.4.9
     version: 4.4.9
   prettier:
-    specifier: 2.7.1
-    version: 2.7.1
+    specifier: 3.1.1
+    version: 3.1.1
 
 packages:
 
@@ -574,8 +574,8 @@ packages:
       safe-buffer: 5.2.1
     dev: false
 
-  /kysely@0.23.5:
-    resolution: {integrity: sha512-TH+b56pVXQq0tsyooYLeNfV11j6ih7D50dyN8tkM0e7ndiUH28Nziojiog3qRFlmEj9XePYdZUrNJ2079Qjdow==}
+  /kysely@0.26.3:
+    resolution: {integrity: sha512-yWSgGi9bY13b/W06DD2OCDDHQmq1kwTGYlQ4wpZkMOJqMGCstVCFIvxCCVG4KfY1/3G0MhDAcZsip/Lw8/vJWw==}
     engines: {node: '>=14.0.0'}
     dev: false
 
@@ -695,9 +695,9 @@ packages:
       source-map-js: 1.0.2
     dev: false
 
-  /prettier@2.7.1:
-    resolution: {integrity: sha512-ujppO+MkdPqoVINuDFDRLClm7D78qbDt0/NR+wp5FqEZOoTNAjPHWj17QRhu7geIHJfcNhRk1XVQmF8Bp3ye+g==}
-    engines: {node: '>=10.13.0'}
+  /prettier@3.1.1:
+    resolution: {integrity: sha512-22UbSzg8luF4UuZtzgiUOfcGM8s4tjBv6dJRT7j275NXsy2jb4aJa4NNveul5x4eqlF1wuhuR2RElK71RvmVaw==}
+    engines: {node: '>=14'}
     hasBin: true
     dev: true
 
