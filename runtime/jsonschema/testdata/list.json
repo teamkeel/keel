@@ -82,7 +82,7 @@
         "additionalProperties": false
       },
       "IdQueryInput": {
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "oneOf": [
           {
             "additionalProperties": false,
@@ -91,6 +91,7 @@
                 "type": ["string", "null"]
               }
             },
+            "required": ["equals"],
             "title": "equals",
             "type": "object"
           },
@@ -104,6 +105,7 @@
                 "type": "array"
               }
             },
+            "required": ["oneOf"],
             "title": "oneOf",
             "type": "object"
           },
@@ -114,6 +116,7 @@
                 "type": ["string", "null"]
               }
             },
+            "required": ["notEquals"],
             "title": "notEquals",
             "type": "object"
           }
@@ -152,6 +155,7 @@
       },
       "StringQueryInput": {
         "type": "object",
+        "unevaluatedProperties": false,
         "oneOf": [
           {
             "additionalProperties": false,
@@ -160,6 +164,7 @@
                 "type": ["string", "null"]
               }
             },
+            "required": ["equals"],
             "title": "equals",
             "type": "object"
           },
@@ -170,6 +175,7 @@
                 "type": ["string", "null"]
               }
             },
+            "required": ["notEquals"],
             "title": "notEquals",
             "type": "object"
           },
@@ -180,6 +186,7 @@
                 "type": "string"
               }
             },
+            "required": ["startsWith"],
             "title": "startsWith",
             "type": "object"
           },
@@ -190,6 +197,7 @@
                 "type": "string"
               }
             },
+            "required": ["endsWith"],
             "title": "endsWith",
             "type": "object"
           },
@@ -200,6 +208,7 @@
                 "type": "string"
               }
             },
+            "required": ["contains"],
             "title": "contains",
             "type": "object"
           },
@@ -213,11 +222,11 @@
                 "type": "array"
               }
             },
+            "required": ["oneOf"],
             "title": "oneOf",
             "type": "object"
           }
-        ],
-        "additionalProperties": false
+        ]
       },
       "TestActionCurrentCityInput": {
         "type": "object",

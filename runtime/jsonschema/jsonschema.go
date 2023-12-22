@@ -52,11 +52,12 @@ type JSONSchema struct {
 	Format string `json:"format,omitempty"`
 
 	// Validation for objects
-	Properties           map[string]JSONSchema `json:"properties,omitempty"`
-	AdditionalProperties *bool                 `json:"additionalProperties,omitempty"`
-	Required             []string              `json:"required,omitempty"`
-	OneOf                []JSONSchema          `json:"oneOf,omitempty"`
-	Title                string                `json:"title,omitempty"`
+	Properties            map[string]JSONSchema `json:"properties,omitempty"`
+	AdditionalProperties  *bool                 `json:"additionalProperties,omitempty"`
+	UnevaluatedProperties *bool                 `json:"unevaluatedProperties,omitempty"`
+	Required              []string              `json:"required,omitempty"`
+	OneOf                 []JSONSchema          `json:"oneOf,omitempty"`
+	Title                 string                `json:"title,omitempty"`
 
 	// For arrays
 	Items *JSONSchema `json:"items,omitempty"`
@@ -191,11 +192,11 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 
 				oneOfOption.Properties[field.Name] = prop
 				oneOfOption.Title = field.Name
+				oneOfOption.Required = append(oneOfOption.Required, field.Name)
+				// https://json-schema.org/understanding-json-schema/reference/object#unevaluatedproperties
+				root.UnevaluatedProperties = boolPtr(false)
+				root.AdditionalProperties = nil
 
-				// If the input is not optional then mark it required in the JSON schema
-				if !field.Optional {
-					oneOfOption.Required = append(oneOfOption.Required, field.Name)
-				}
 				oneOf = append(oneOf, oneOfOption)
 			}
 
