@@ -459,8 +459,6 @@ func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) 
 	ctx, span := tracer.Start(ctx, "Authorization")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("token", token))
-
 	subject, issuer, err := ValidateBearerToken(ctx, token)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
