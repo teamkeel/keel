@@ -73,32 +73,74 @@ func TestScaffold(t *testing.T) {
 
 	expectedFiles := codegen.GeneratedFiles{
 		&codegen.GeneratedFile{
-			Contents: "import { CreatePost, CreatePostHooks } from '@teamkeel/sdk';\n\n// To learn more about what you can do with hooks,\n// visit https://docs.keel.so/functions\nconst hooks : CreatePostHooks = {};\n\nexport default CreatePost(hooks);\n\t",
-			Path:     "functions/createPost.ts",
+			Contents: `
+import { CreatePost, CreatePostHooks } from '@teamkeel/sdk';
+
+// To learn more about what you can do with hooks, visit https://docs.keel.so/functions
+const hooks : CreatePostHooks = {};
+
+export default CreatePost(hooks);`,
+			Path: "functions/createPost.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { ListPosts, ListPostsHooks } from '@teamkeel/sdk';\n\n// To learn more about what you can do with hooks,\n// visit https://docs.keel.so/functions\nconst hooks : ListPostsHooks = {};\n\nexport default ListPosts(hooks);\n\t",
-			Path:     "functions/listPosts.ts",
+			Contents: `
+import { ListPosts, ListPostsHooks } from '@teamkeel/sdk';
+
+// To learn more about what you can do with hooks, visit https://docs.keel.so/functions
+const hooks : ListPostsHooks = {};
+
+export default ListPosts(hooks);`,
+			Path: "functions/listPosts.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { UpdatePost, UpdatePostHooks } from '@teamkeel/sdk';\n\n// To learn more about what you can do with hooks,\n// visit https://docs.keel.so/functions\nconst hooks : UpdatePostHooks = {};\n\nexport default UpdatePost(hooks);\n\t",
-			Path:     "functions/updatePost.ts",
+			Contents: `
+import { UpdatePost, UpdatePostHooks } from '@teamkeel/sdk';
+
+// To learn more about what you can do with hooks, visit https://docs.keel.so/functions
+const hooks : UpdatePostHooks = {};
+
+export default UpdatePost(hooks);`,
+			Path: "functions/updatePost.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { GetPost, GetPostHooks } from '@teamkeel/sdk';\n\n// To learn more about what you can do with hooks,\n// visit https://docs.keel.so/functions\nconst hooks : GetPostHooks = {};\n\nexport default GetPost(hooks);\n\t",
-			Path:     "functions/getPost.ts",
+			Contents: `
+import { GetPost, GetPostHooks } from '@teamkeel/sdk';
+
+// To learn more about what you can do with hooks, visit https://docs.keel.so/functions
+const hooks : GetPostHooks = {};
+
+export default GetPost(hooks);`,
+			Path: "functions/getPost.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { DeletePost, DeletePostHooks } from '@teamkeel/sdk';\n\n// To learn more about what you can do with hooks,\n// visit https://docs.keel.so/functions\nconst hooks : DeletePostHooks = {};\n\nexport default DeletePost(hooks);\n\t",
-			Path:     "functions/deletePost.ts",
+			Contents: `
+import { DeletePost, DeletePostHooks } from '@teamkeel/sdk';
+
+// To learn more about what you can do with hooks, visit https://docs.keel.so/functions
+const hooks : DeletePostHooks = {};
+
+export default DeletePost(hooks);`,
+			Path: "functions/deletePost.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { CustomFunctionWrite } from '@teamkeel/sdk';\nexport default CustomFunctionWrite(async (ctx, inputs) => {\n\n})",
-			Path:     "functions/customFunctionWrite.ts",
+			Contents: `
+import { CustomFunctionWrite } from '@teamkeel/sdk';
+
+// To learn more about what you can do with custom functions, visit https://docs.keel.so/functions
+export default CustomFunctionWrite(async (ctx, inputs) => {
+
+});`,
+			Path: "functions/customFunctionWrite.ts",
 		},
 		&codegen.GeneratedFile{
-			Contents: "import { CustomFunctionRead } from '@teamkeel/sdk';\nexport default CustomFunctionRead(async (ctx, inputs) => {\n\n})",
-			Path:     "functions/customFunctionRead.ts",
+			Contents: `
+import { CustomFunctionRead } from '@teamkeel/sdk';
+
+// To learn more about what you can do with custom functions, visit https://docs.keel.so/functions
+export default CustomFunctionRead(async (ctx, inputs) => {
+
+});`,
+			Path: "functions/customFunctionRead.ts",
 		},
 		&codegen.GeneratedFile{
 			Contents: `

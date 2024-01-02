@@ -104,17 +104,18 @@ func writeFunctionWrapper(function *proto.Action) string {
 
 	if proto.ActionIsArbitraryFunction(function) {
 		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
+
+// To learn more about what you can do with custom functions, visit https://docs.keel.so/functions
 export default %s(async (ctx, inputs) => {
 
-})`, functionName, functionName)
+});`, functionName, functionName)
 	}
 
 	hookType := fmt.Sprintf("%sHooks", casing.ToCamel(function.Name))
 
 	return fmt.Sprintf(`import { %s, %s } from '@teamkeel/sdk';
 
-// To learn more about what you can do with hooks,
-// visit https://docs.keel.so/functions
+// To learn more about what you can do with hooks, visit https://docs.keel.so/functions
 const hooks : %s = {};
 
 export default %s(hooks);
