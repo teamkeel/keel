@@ -99,9 +99,6 @@ describe("ModelAPI error handling", () => {
   let db;
 
   beforeEach(async () => {
-    process.env.KEEL_DB_CONN_TYPE = "pg";
-    process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
-
     db = useDatabase();
 
     await sql`

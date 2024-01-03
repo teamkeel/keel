@@ -517,6 +517,46 @@ test("ModelAPI.findMany - orderBy", async () => {
   expect(descendingDates.map((r) => r.name)).toEqual(["Sally", "Bob", "Jim"]);
 });
 
+test("ModelAPI.findMany - orderBy ASC and DESC capitalised", async () => {
+  await personAPI.create({
+    id: KSUID.randomSync().string,
+    name: "Jim",
+    married: false,
+    favouriteNumber: 10,
+    date: new Date(2023, 12, 29),
+  });
+  await personAPI.create({
+    id: KSUID.randomSync().string,
+    name: "Bob",
+    married: true,
+    favouriteNumber: 11,
+    date: new Date(2023, 12, 30),
+  });
+  await personAPI.create({
+    id: KSUID.randomSync().string,
+    name: "Sally",
+    married: true,
+    favouriteNumber: 12,
+    date: new Date(2023, 12, 31),
+  });
+
+  const ascendingNames = await personAPI.findMany({
+    orderBy: {
+      name: "ASC",
+    },
+  });
+
+  expect(ascendingNames.map((r) => r.name)).toEqual(["Bob", "Jim", "Sally"]);
+
+  const descendingNames = await personAPI.findMany({
+    orderBy: {
+      name: "DESC",
+    },
+  });
+
+  expect(descendingNames.map((r) => r.name)).toEqual(["Sally", "Jim", "Bob"]);
+});
+
 test("ModelAPI.findMany - offset", async () => {
   await personAPI.create({
     id: KSUID.randomSync().string,

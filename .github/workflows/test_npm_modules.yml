@@ -18,7 +18,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432
+          - 7654:5432
 
     steps:
       - uses: actions/setup-node@v3
