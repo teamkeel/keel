@@ -79,6 +79,10 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		})
 	}
 
+	if err != nil {
+		return nil, err
+	}
+
 	if res == nil {
 		return nil, common.NewNotFoundError()
 	}

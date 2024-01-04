@@ -44,7 +44,6 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 		}
 
 	} else {
-
 		err = database.Transaction(scope.Context, func(ctx context.Context) error {
 			scope := scope.WithContext(ctx)
 			query := NewQuery(scope.Model)
@@ -84,6 +83,10 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 
 			return nil
 		})
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	if row == nil {
