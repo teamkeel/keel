@@ -52,7 +52,7 @@ test("list action with has-one relationship", async () => {
 
 async function graphql(query, token) {
   const res = await fetch(
-    process.env.KEEL_TESTING_ACTIONS_API_URL + "/graphql",
+    process.env.KEEL_TESTING_ACTIONS_API_URL!.replace("/json", "/graphql"),
     {
       method: "POST",
       body: JSON.stringify({
