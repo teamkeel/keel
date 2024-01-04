@@ -614,7 +614,6 @@
         "required": ["email", "password"]
       },
       "StringQueryInput": {
-        "type": "object",
         "unevaluatedProperties": false,
         "oneOf": [
           {

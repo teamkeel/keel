@@ -731,8 +731,8 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"id": null, "title": null, "genre": null, "price": null, "available": null, "createdAt": null}}`,
 					errors: map[string][]string{
-						"where.id":        {`Invalid type. Expected: object, given: null`},
-						"where.title":     {`Invalid type. Expected: object, given: null`},
+						"where.id":        {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
+						"where.title":     {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
 						"where.genre":     {`Invalid type. Expected: object, given: null`},
 						"where.price":     {`Invalid type. Expected: object, given: null`},
 						"where.available": {`Invalid type. Expected: object, given: null`},

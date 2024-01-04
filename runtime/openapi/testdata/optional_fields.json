@@ -619,7 +619,6 @@
         "required": ["addressLine1"]
       },
       "StringQueryInput": {
-        "type": "object",
         "unevaluatedProperties": false,
         "oneOf": [
           {

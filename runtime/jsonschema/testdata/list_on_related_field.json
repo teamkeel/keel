@@ -22,7 +22,6 @@
   "components": {
     "schemas": {
       "StringQueryInput": {
-        "type": "object",
         "unevaluatedProperties": false,
         "oneOf": [
           {

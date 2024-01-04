@@ -201,6 +201,7 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 			}
 
 			root.OneOf = oneOf
+			root.Type = nil
 
 		} else {
 			for _, field := range message.Fields {
