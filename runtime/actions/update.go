@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
@@ -13,49 +14,74 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		return nil, err
 	}
 
-	err = database.Transaction(scope.Context, func(ctx context.Context) error {
-		scope := scope.WithContext(ctx)
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
+	if err != nil {
+		return nil, err
+	}
+	if canResolveEarly && !authorised {
+		return nil, common.NewPermissionError()
+	}
+
+	if canResolveEarly {
 		query := NewQuery(scope.Context, scope.Model)
 
 		// Generate the SQL statement
 		statement, err := GenerateUpdateStatement(query, scope, input)
 		if err != nil {
-			return err
-		}
-
-		query.AppendSelect(IdField())
-		query.AppendDistinctOn(IdField())
-		rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.Context)
-		if err != nil {
-			return err
-		}
-
-		rowsToAuthorise := []map[string]any{}
-		if rowToAuthorise != nil {
-			rowsToAuthorise = append(rowsToAuthorise, rowToAuthorise)
-		}
-
-		isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
-		if err != nil {
-			return err
-		}
-
-		if !isAuthorised {
-			return common.NewPermissionError()
+			return nil, err
 		}
 
 		// Execute database request, expecting a single result
 		res, err = statement.ExecuteToSingle(scope.Context)
 		if err != nil {
-			return err
+			return nil, err
 		}
+	} else {
+		err = database.Transaction(scope.Context, func(ctx context.Context) error {
+			scope := scope.WithContext(ctx)
+			query := NewQuery(scope.Context, scope.Model)
 
-		if res == nil {
-			return common.NewNotFoundError()
-		}
+			// Generate the SQL statement
+			statement, err := GenerateUpdateStatement(query, scope, input)
+			if err != nil {
+				return err
+			}
 
-		return nil
-	})
+			query.AppendSelect(IdField())
+			query.AppendDistinctOn(IdField())
+			rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.Context)
+			if err != nil {
+				return err
+			}
+
+			rowsToAuthorise := []map[string]any{}
+			if rowToAuthorise != nil {
+				rowsToAuthorise = append(rowsToAuthorise, rowToAuthorise)
+			}
+
+			isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
+			if err != nil {
+				return err
+			}
+
+			if !isAuthorised {
+				return common.NewPermissionError()
+			}
+
+			// Execute database request, expecting a single result
+			res, err = statement.ExecuteToSingle(scope.Context)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		})
+	}
+
+	if res == nil {
+		return nil, common.NewNotFoundError()
+	}
 
 	return res, err
 }

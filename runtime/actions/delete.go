@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
@@ -14,56 +15,87 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 		return nil, err
 	}
 
-	err = database.Transaction(scope.Context, func(ctx context.Context) error {
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
+
+	// Attempt to resolve permissions early; i.e. before row-based database querying.
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
+	if err != nil {
+		return nil, err
+	}
+	if canResolveEarly && !authorised {
+		return nil, common.NewPermissionError()
+	}
+
+	var row map[string]any
+
+	if canResolveEarly {
 		query := NewQuery(scope.Context, scope.Model)
 
 		// Generate the SQL statement
 		statement, err := GenerateDeleteStatement(query, scope, input)
 		if err != nil {
-			return err
-		}
-
-		query.AppendSelect(IdField())
-		query.AppendDistinctOn(IdField())
-		rows, err := query.SelectStatement().ExecuteToSingle(scope.Context)
-		if err != nil {
-			return err
-		}
-
-		rowsToAuthorise := []map[string]any{}
-		if rows != nil {
-			rowsToAuthorise = append(rowsToAuthorise, rows)
-		}
-
-		isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
-		if err != nil {
-			return err
-		}
-
-		if !isAuthorised {
-			return common.NewPermissionError()
+			return nil, err
 		}
 
 		// Execute database request
-		row, err := statement.ExecuteToSingle(scope.Context)
+		row, err = statement.ExecuteToSingle(scope.Context)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		if row == nil {
-			return common.NewNotFoundError()
-		}
+	} else {
 
-		id, ok := row["id"].(string)
-		if !ok {
-			return errors.New("could not parse id key")
-		}
+		err = database.Transaction(scope.Context, func(ctx context.Context) error {
+			scope := scope.WithContext(ctx)
+			query := NewQuery(scope.Context, scope.Model)
 
-		res = &id
-		return nil
-	})
+			// Generate the SQL statement
+			statement, err := GenerateDeleteStatement(query, scope, input)
+			if err != nil {
+				return err
+			}
 
-	return res, err
+			query.AppendSelect(IdField())
+			query.AppendDistinctOn(IdField())
+			rows, err := query.SelectStatement().ExecuteToSingle(scope.Context)
+			if err != nil {
+				return err
+			}
+
+			rowsToAuthorise := []map[string]any{}
+			if rows != nil {
+				rowsToAuthorise = append(rowsToAuthorise, rows)
+			}
+
+			isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
+			if err != nil {
+				return err
+			}
+
+			if !isAuthorised {
+				return common.NewPermissionError()
+			}
+
+			// Execute database request
+			row, err = statement.ExecuteToSingle(scope.Context)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		})
+	}
+
+	if row == nil {
+		return nil, common.NewNotFoundError()
+	}
+
+	id, ok := row["id"].(string)
+	if !ok {
+		return nil, errors.New("could not parse id key")
+	}
+
+	return &id, err
 }
 
 func GenerateDeleteStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {
