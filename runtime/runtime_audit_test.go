@@ -385,11 +385,11 @@ func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
 	action := proto.FindAction(schema, "createWedding")
 
 	scope := actions.NewScope(ctx, action, schema)
-	query := actions.NewQuery(scope.Context, scope.Model)
+	query := actions.NewQuery(scope.Model)
 	err = query.Where(actions.IdField(), actions.Equals, actions.Value(result["id"]))
 	require.NoError(t, err)
 	query.AddWriteValue(actions.Field("name"), actions.Value("Devin"))
-	affected, err := query.UpdateStatement().Execute(ctx)
+	affected, err := query.UpdateStatement(scope.Context).Execute(ctx)
 	require.NoError(t, err)
 	require.Equal(t, 1, affected)
 

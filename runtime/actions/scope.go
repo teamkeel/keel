@@ -210,17 +210,6 @@ func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, *common.Res
 }
 
 func executeAutoAction(scope *Scope, inputs map[string]any) (any, *common.ResponseMetadata, error) {
-	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
-
-	// Attempt to resolve permissions early; i.e. before row-based database querying.
-	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
-	if err != nil {
-		return nil, nil, err
-	}
-	if canResolveEarly && !authorised {
-		return nil, nil, common.NewPermissionError()
-	}
-
 	switch scope.Action.Type {
 	case proto.ActionType_ACTION_TYPE_GET:
 		v, err := Get(scope, inputs)

@@ -29,7 +29,7 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 	var row map[string]any
 
 	if canResolveEarly {
-		query := NewQuery(scope.Context, scope.Model)
+		query := NewQuery(scope.Model)
 
 		// Generate the SQL statement
 		statement, err := GenerateDeleteStatement(query, scope, input)
@@ -47,7 +47,7 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 
 		err = database.Transaction(scope.Context, func(ctx context.Context) error {
 			scope := scope.WithContext(ctx)
-			query := NewQuery(scope.Context, scope.Model)
+			query := NewQuery(scope.Model)
 
 			// Generate the SQL statement
 			statement, err := GenerateDeleteStatement(query, scope, input)
@@ -111,5 +111,5 @@ func GenerateDeleteStatement(query *QueryBuilder, scope *Scope, input map[string
 
 	query.AppendReturning(Field("id"))
 
-	return query.DeleteStatement(), nil
+	return query.DeleteStatement(scope.Context), nil
 }

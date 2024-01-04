@@ -252,7 +252,7 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 
 		model := proto.FindModel(resolver.Schema.Models, strcase.ToCamel(fragments[0]))
 		ctxScope := NewModelScope(resolver.Context, model, resolver.Schema)
-		query := NewQuery(resolver.Context, model)
+		query := NewQuery(model)
 
 		identityId := ""
 		if auth.IsAuthenticated(resolver.Context) {

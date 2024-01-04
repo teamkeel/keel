@@ -19,7 +19,7 @@ import (
 
 func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
-	query := NewQuery(ctx, identityModel)
+	query := NewQuery(identityModel)
 	err := query.Where(Field("id"), Equals, Value(id))
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*au
 
 func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string, issuer string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
-	query := NewQuery(ctx, identityModel)
+	query := NewQuery(identityModel)
 	err := query.Where(Field("email"), Equals, Value(email))
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string
 
 func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
-	query := NewQuery(ctx, identityModel)
+	query := NewQuery(identityModel)
 	err := query.Where(Field("externalId"), Equals, Value(externalId))
 	if err != nil {
 		return nil, err
@@ -94,7 +94,7 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
-	query := NewQuery(ctx, identityModel)
+	query := NewQuery(identityModel)
 	query.AddWriteValues(map[string]*QueryOperand{
 		"email":    Value(email),
 		"password": Value(password),
@@ -103,7 +103,7 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 	query.AppendSelect(AllFields())
 	query.AppendReturning(IdField())
 
-	result, err := query.InsertStatement().ExecuteToSingle(ctx)
+	result, err := query.InsertStatement(ctx).ExecuteToSingle(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 		}
 	}
 
-	query := NewQuery(ctx, identityModel)
+	query := NewQuery(identityModel)
 	// even if we can't fetch the user data, create it with the core information
 	query.AddWriteValues(map[string]*QueryOperand{
 		"externalId": Value(externalId),
@@ -157,7 +157,7 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 	query.AppendSelect(AllFields())
 	query.AppendReturning(IdField())
 
-	result, err := query.InsertStatement().ExecuteToSingle(ctx)
+	result, err := query.InsertStatement(ctx).ExecuteToSingle(ctx)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -176,7 +176,7 @@ func CreateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, 
 
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
-	query := NewQuery(ctx, identityModel)
+	query := NewQuery(identityModel)
 
 	query.AddWriteValues(map[string]*QueryOperand{
 		"externalId":    Value(externalId),
@@ -188,7 +188,7 @@ func CreateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, 
 	query.AppendSelect(AllFields())
 	query.AppendReturning(IdField())
 
-	result, err := query.InsertStatement().ExecuteToSingle(ctx)
+	result, err := query.InsertStatement(ctx).ExecuteToSingle(ctx)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -207,7 +207,7 @@ func UpdateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, 
 
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
-	query := NewQuery(ctx, identityModel)
+	query := NewQuery(identityModel)
 
 	err := query.Where(Field("externalId"), Equals, Value(claims.Subject))
 	if err != nil {
@@ -227,7 +227,7 @@ func UpdateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, 
 	query.AppendSelect(AllFields())
 	query.AppendReturning(AllFields())
 
-	result, err := query.UpdateStatement().ExecuteToSingle(ctx)
+	result, err := query.UpdateStatement(ctx).ExecuteToSingle(ctx)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())

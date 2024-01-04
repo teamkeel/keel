@@ -316,7 +316,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				relatedModel := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
 
 				// Create a new query for the related model
-				query := actions.NewQuery(ctx, relatedModel)
+				query := actions.NewQuery(relatedModel)
 				query.AppendSelect(actions.AllFields())
 
 				foreignKeyField := proto.GetForignKeyFieldName(mk.proto.Models, field)

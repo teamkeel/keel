@@ -24,7 +24,7 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	}
 
 	if canResolveEarly {
-		query := NewQuery(scope.Context, scope.Model)
+		query := NewQuery(scope.Model)
 
 		// Generate the SQL statement
 		statement, err := GenerateUpdateStatement(query, scope, input)
@@ -40,7 +40,7 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	} else {
 		err = database.Transaction(scope.Context, func(ctx context.Context) error {
 			scope := scope.WithContext(ctx)
-			query := NewQuery(scope.Context, scope.Model)
+			query := NewQuery(scope.Model)
 
 			// Generate the SQL statement
 			statement, err := GenerateUpdateStatement(query, scope, input)
@@ -120,5 +120,5 @@ func GenerateUpdateStatement(query *QueryBuilder, scope *Scope, input map[string
 	// Return the updated row
 	query.AppendReturning(AllFields())
 
-	return query.UpdateStatement(), nil
+	return query.UpdateStatement(scope.Context), nil
 }

@@ -154,7 +154,6 @@ func (statement *Statement) SqlArgs() []any {
 }
 
 type QueryBuilder struct {
-	context context.Context
 	// The base model this query builder is acting on.
 	Model *proto.Model
 	// The table name in the database.
@@ -232,9 +231,8 @@ func WithJoinType(joinType JoinType) QueryBuilderOption {
 	}
 }
 
-func NewQuery(ctx context.Context, model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
+func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 	qb := &QueryBuilder{
-		context:    ctx,
 		Model:      model,
 		table:      casing.ToSnake(model.Name),
 		selection:  []string{},
@@ -477,7 +475,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 		for j := 0; j < i; j++ {
 			orderClause := query.orderBy[j]
 
-			inline := NewQuery(query.context, query.Model)
+			inline := NewQuery(query.Model)
 			inline.AppendSelect(orderClause.field)
 			err = inline.Where(IdField(), Equals, Value(cursor))
 			if err != nil {
@@ -493,7 +491,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 
 		orderClause := query.orderBy[i]
 
-		inline := NewQuery(query.context, query.Model)
+		inline := NewQuery(query.Model)
 		inline.AppendSelect(orderClause.field)
 		err = inline.Where(IdField(), Equals, Value(cursor))
 		if err != nil {
@@ -625,18 +623,18 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 }
 
 // Generates an executable INSERT statement with the list of arguments.
-func (query *QueryBuilder) InsertStatement() *Statement {
+func (query *QueryBuilder) InsertStatement(ctx context.Context) *Statement {
 	ctes := []string{}
 	args := []any{}
 	ctes, args, alias := query.generateInsertCte(ctes, args, query.writeValues, nil, "")
 
 	selection := []string{"*"}
-	if auth.IsAuthenticated(query.context) {
-		identity, _ := auth.GetIdentity(query.context)
+	if auth.IsAuthenticated(ctx) {
+		identity, _ := auth.GetIdentity(ctx)
 		selection = append(selection, setIdentityIdClause(identity.Id))
 	}
 
-	spanContext := trace.SpanContextFromContext(query.context)
+	spanContext := trace.SpanContextFromContext(ctx)
 	if spanContext.IsValid() {
 		selection = append(selection, setTraceIdClause(spanContext.TraceID().String()))
 	}
@@ -811,7 +809,7 @@ func orderGraphNodes(graph *Row) []*Row {
 }
 
 // Generates an executable UPDATE statement with the list of arguments.
-func (query *QueryBuilder) UpdateStatement() *Statement {
+func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 	queryFilters := query.filters
 
 	joins := ""
@@ -905,12 +903,12 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
 	}
 
-	if auth.IsAuthenticated(query.context) {
-		identity, _ := auth.GetIdentity(query.context)
+	if auth.IsAuthenticated(ctx) {
+		identity, _ := auth.GetIdentity(ctx)
 		query.returning = append(query.returning, setIdentityIdClause(identity.Id))
 	}
 
-	spanContext := trace.SpanContextFromContext(query.context)
+	spanContext := trace.SpanContextFromContext(ctx)
 	if spanContext.IsValid() {
 		query.returning = append(query.returning, setTraceIdClause(spanContext.TraceID().String()))
 	}
@@ -940,7 +938,7 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 }
 
 // Generates an executable DELETE statement with the list of arguments.
-func (query *QueryBuilder) DeleteStatement() *Statement {
+func (query *QueryBuilder) DeleteStatement(ctx context.Context) *Statement {
 	usings := ""
 	filters := ""
 	returning := ""
@@ -963,12 +961,12 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
 	}
 
-	if auth.IsAuthenticated(query.context) {
-		identity, _ := auth.GetIdentity(query.context)
+	if auth.IsAuthenticated(ctx) {
+		identity, _ := auth.GetIdentity(ctx)
 		query.returning = append(query.returning, setIdentityIdClause(identity.Id))
 	}
 
-	spanContext := trace.SpanContextFromContext(query.context)
+	spanContext := trace.SpanContextFromContext(ctx)
 	if spanContext.IsValid() {
 		query.returning = append(query.returning, setTraceIdClause(spanContext.TraceID().String()))
 	}

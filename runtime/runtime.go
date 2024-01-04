@@ -130,6 +130,7 @@ func NewApiHandler(s *proto.Schema) common.HandlerFunc {
 
 		httpJson := httpjson.NewHandler(s, api)
 		for _, name := range proto.GetActionNamesForApi(s, api) {
+			fmt.Println(root + "/json/" + strings.ToLower(name))
 			handlers[root+"/json/"+strings.ToLower(name)] = httpJson
 		}
 		handlers[root+"/json/openapi.json"] = httpJson
@@ -140,6 +141,7 @@ func NewApiHandler(s *proto.Schema) common.HandlerFunc {
 
 		handler, ok := handlers[strings.ToLower(r.URL.Path)]
 		if !ok {
+			fmt.Println(strings.ToLower(r.URL.Path))
 			return common.Response{
 				Status: http.StatusNotFound,
 				Body:   []byte("Not found"),
