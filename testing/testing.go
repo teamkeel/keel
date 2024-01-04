@@ -260,7 +260,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Env = append(os.Environ(), []string{
-		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/%s", runtimePort, ActionApiPath),
+		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/%s/json", runtimePort, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_JOBS_URL=http://localhost:%s/%s/json", runtimePort, JobPath),
 		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=http://localhost:%s/%s/json", runtimePort, SubscriberPath),
 		"KEEL_DB_CONN_TYPE=pg",
