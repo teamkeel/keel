@@ -7,4 +7,4 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=functions-runtime
     ports:
-      - "5432:5432"
+      - "7654:5432"

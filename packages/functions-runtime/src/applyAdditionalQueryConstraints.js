@@ -10,7 +10,7 @@ function applyOffset(context, qb, offset) {
 
 function applyOrderBy(context, qb, tableName, orderBy = {}) {
   Object.entries(orderBy).forEach(([key, sortOrder]) => {
-    qb = qb.orderBy(`${tableName}.${snakeCase(key)}`, sortOrder);
+    qb = qb.orderBy(`${tableName}.${snakeCase(key)}`, sortOrder.toLowerCase());
   });
   return qb;
 }
