@@ -1,73 +1,120 @@
 {
-	"type": "object",
-	"properties": {
-		"after": {
-			"type": "string"
-		},
-		"before": {
-			"type": "string"
-		},
-		"first": {
-			"type": "number"
-		},
-		"last": {
-			"type": "number"
-		},
-		"where": {
-			"$ref": "#/components/schemas/TestActionWhere"
-		}
-	},
-	"additionalProperties": false,
-	"components": {
-		"schemas": {
-			"StringQueryInput": {
-				"type": "object",
-				"properties": {
-					"contains": {
-						"type": "string"
-					},
-					"endsWith": {
-						"type": "string"
-					},
-					"equals": {
-						"type": ["string", "null"]
-					},
-					"notEquals": {
-						"type": ["string", "null"]
-					},
-					"oneOf": {
-						"type": "array",
-						"items": {
-							"type": "string"
-						}
-					},
-					"startsWith": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false
-			},
-			"TestActionCompanyInput": {
-				"type": "object",
-				"properties": {
-					"name": {
-						"$ref": "#/components/schemas/StringQueryInput"
-					}
-				},
-				"additionalProperties": false
-			},
-			"TestActionWhere": {
-				"type": "object",
-				"properties": {
-					"company": {
-						"$ref": "#/components/schemas/TestActionCompanyInput"
-					},
-					"firstName": {
-						"$ref": "#/components/schemas/StringQueryInput"
-					}
-				},
-				"additionalProperties": false
-			}
-		}
-	}
+  "type": "object",
+  "properties": {
+    "after": {
+      "type": "string"
+    },
+    "before": {
+      "type": "string"
+    },
+    "first": {
+      "type": "number"
+    },
+    "last": {
+      "type": "number"
+    },
+    "where": {
+      "$ref": "#/components/schemas/TestActionWhere"
+    }
+  },
+  "additionalProperties": false,
+  "components": {
+    "schemas": {
+      "StringQueryInput": {
+        "unevaluatedProperties": false,
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "equals": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": ["equals"],
+            "title": "equals",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "notEquals": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": ["notEquals"],
+            "title": "notEquals",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "startsWith": {
+                "type": "string"
+              }
+            },
+            "required": ["startsWith"],
+            "title": "startsWith",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "endsWith": {
+                "type": "string"
+              }
+            },
+            "required": ["endsWith"],
+            "title": "endsWith",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "type": "string"
+              }
+            },
+            "required": ["contains"],
+            "title": "contains",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "oneOf": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": ["oneOf"],
+            "title": "oneOf",
+            "type": "object"
+          }
+        ]
+      },
+      "TestActionCompanyInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/StringQueryInput"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TestActionWhere": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "$ref": "#/components/schemas/TestActionCompanyInput"
+          },
+          "firstName": {
+            "$ref": "#/components/schemas/StringQueryInput"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
 }
