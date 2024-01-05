@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
@@ -13,33 +14,56 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		return nil, err
 	}
 
-	err = database.Transaction(scope.Context, func(ctx context.Context) error {
-		scope := scope.WithContext(ctx)
-		query := NewQuery(scope.Context, scope.Model)
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
-		// Generate the SQL statement
-		statement, err := GenerateCreateStatement(query, scope, input)
-		if err != nil {
-			return err
-		}
+	// Attempt to resolve permissions early; i.e. before row-based database querying.
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
+	if err != nil {
+		return nil, err
+	}
 
-		// Execute database request, expecting a single result
+	// Generate the SQL statement
+	query := NewQuery(scope.Model)
+	statement, err := GenerateCreateStatement(query, scope, input)
+	if err != nil {
+		return nil, err
+	}
+
+	switch {
+	case canResolveEarly && !authorised:
+		err = common.NewPermissionError()
+	case canResolveEarly && authorised:
+		// Execute database request without starting a transaction or performing any row-based authorization
 		res, err = statement.ExecuteToSingle(scope.Context)
-		if err != nil {
-			return err
-		}
+	case !canResolveEarly:
+		err = database.Transaction(scope.Context, func(ctx context.Context) error {
+			scope := scope.WithContext(ctx)
+			query := NewQuery(scope.Model)
 
-		isAuthorised, err := AuthoriseAction(scope, input, []map[string]any{res})
-		if err != nil {
-			return err
-		}
+			// Generate the SQL statement
+			statement, err := GenerateCreateStatement(query, scope, input)
+			if err != nil {
+				return err
+			}
 
-		if !isAuthorised {
-			return common.NewPermissionError()
-		}
+			// Execute database request, expecting a single result
+			res, err = statement.ExecuteToSingle(scope.Context)
+			if err != nil {
+				return err
+			}
 
-		return nil
-	})
+			isAuthorised, err := AuthoriseAction(scope, input, []map[string]any{res})
+			if err != nil {
+				return err
+			}
+
+			if !isAuthorised {
+				return common.NewPermissionError()
+			}
+
+			return nil
+		})
+	}
 
 	return res, err
 }
@@ -58,5 +82,5 @@ func GenerateCreateStatement(query *QueryBuilder, scope *Scope, input map[string
 	// Return the inserted row
 	query.AppendReturning(AllFields())
 
-	return query.InsertStatement(), nil
+	return query.InsertStatement(scope.Context), nil
 }

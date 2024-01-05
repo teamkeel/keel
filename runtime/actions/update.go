@@ -1,33 +1,34 @@
 package actions
 
 import (
-	"context"
-
-	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
 func Update(scope *Scope, input map[string]any) (res map[string]any, err error) {
-	database, err := db.GetDatabase(scope.Context)
+	// Attempt to resolve permissions early; i.e. before row-based database querying.
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
 	if err != nil {
 		return nil, err
 	}
 
-	err = database.Transaction(scope.Context, func(ctx context.Context) error {
-		scope := scope.WithContext(ctx)
-		query := NewQuery(scope.Context, scope.Model)
+	// Generate SQL statement
+	query := NewQuery(scope.Model)
+	statement, err := GenerateUpdateStatement(query, scope, input)
+	if err != nil {
+		return nil, err
+	}
 
-		// Generate the SQL statement
-		statement, err := GenerateUpdateStatement(query, scope, input)
-		if err != nil {
-			return err
-		}
-
+	switch {
+	case canResolveEarly && !authorised:
+		return nil, common.NewPermissionError()
+	case !canResolveEarly:
 		query.AppendSelect(IdField())
 		query.AppendDistinctOn(IdField())
 		rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.Context)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		rowsToAuthorise := []map[string]any{}
@@ -37,25 +38,23 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 
 		isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if !isAuthorised {
-			return common.NewPermissionError()
+			return nil, common.NewPermissionError()
 		}
+	}
 
-		// Execute database request, expecting a single result
-		res, err = statement.ExecuteToSingle(scope.Context)
-		if err != nil {
-			return err
-		}
+	// Execute database request, expecting a single result
+	res, err = statement.ExecuteToSingle(scope.Context)
+	if err != nil {
+		return nil, err
+	}
 
-		if res == nil {
-			return common.NewNotFoundError()
-		}
-
-		return nil
-	})
+	if res == nil {
+		return nil, common.NewNotFoundError()
+	}
 
 	return res, err
 }
@@ -94,5 +93,5 @@ func GenerateUpdateStatement(query *QueryBuilder, scope *Scope, input map[string
 	// Return the updated row
 	query.AppendReturning(AllFields())
 
-	return query.UpdateStatement(), nil
+	return query.UpdateStatement(scope.Context), nil
 }

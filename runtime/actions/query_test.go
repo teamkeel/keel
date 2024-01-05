@@ -166,7 +166,7 @@ var testCases = []testCase{
 					VALUES 
 						(?) 
 					RETURNING *) 
-			SELECT * FROM new_1_person`,
+			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
 		expectedArgs: []any{"identityId"},
 	},
@@ -194,7 +194,7 @@ var testCases = []testCase{
 					VALUES 
 						(?) 
 					RETURNING *) 
-			SELECT * FROM new_1_person`,
+			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
 		expectedArgs: []any{"identityId"},
 	},
@@ -223,7 +223,7 @@ var testCases = []testCase{
 					VALUES 
 						(?, ?) 
 					RETURNING *) 
-			SELECT * FROM new_1_person`,
+			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
 		expectedArgs: []any{"Dave", "Dave"},
 	},
@@ -262,7 +262,7 @@ var testCases = []testCase{
 						?, 
 						(SELECT column_0 FROM select_identity)) 
 					RETURNING *) 
-			SELECT * FROM new_1_record`,
+			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_record`,
 		identity:     identity,
 		expectedArgs: []any{identity.Id, "Dave"},
 	},
@@ -305,7 +305,7 @@ var testCases = []testCase{
 						?, 
 						(SELECT column_0 FROM select_identity))
 					RETURNING *) 
-			SELECT * FROM new_1_record`,
+			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_record`,
 		identity:     identity,
 		expectedArgs: []any{identity.Id, "Dave"},
 	},
@@ -334,7 +334,7 @@ var testCases = []testCase{
 			UPDATE "person" 
 			SET main_identity_id = ? 
 			WHERE "person"."id" IS NOT DISTINCT FROM ? 
-			RETURNING "person".*`,
+			RETURNING "person".*, set_identity_id('identityId') AS __keel_identity_id`,
 		identity:     identity,
 		expectedArgs: []any{identity.Id, "xyz"},
 	},
@@ -362,7 +362,7 @@ var testCases = []testCase{
 			UPDATE "person" 
 			SET main_identity_id = ? 
 			WHERE "person"."id" IS NOT DISTINCT FROM ? 
-			RETURNING "person".*`,
+			RETURNING "person".*, set_identity_id('identityId') AS __keel_identity_id`,
 		identity:     identity,
 		expectedArgs: []any{identity.Id, "xyz"},
 	},
@@ -441,7 +441,7 @@ var testCases = []testCase{
 				user_id = (SELECT column_0 FROM select_identity) 
 			WHERE 
 				"record"."id" IS NOT DISTINCT FROM ? 
-			RETURNING "record".*`,
+			RETURNING "record".*, set_identity_id('identityId') AS __keel_identity_id`,
 		identity:     identity,
 		expectedArgs: []any{identity.Id, "xyz"},
 	},
@@ -2724,7 +2724,7 @@ var testCases = []testCase{
 						(SELECT column_3 FROM select_identity), 
 						(SELECT column_4 FROM select_identity)) 
 					RETURNING *) 
-			SELECT * FROM new_1_person`,
+			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_person`,
 		expectedArgs: []any{identity.Id},
 	},
 	{
@@ -2765,7 +2765,7 @@ var testCases = []testCase{
 				external_id = (SELECT column_3 FROM select_identity), 
 				issuer = (SELECT column_4 FROM select_identity) 
 			WHERE "person"."id" IS NOT DISTINCT FROM ? 
-			RETURNING "person".*`,
+			RETURNING "person".*, set_identity_id('identityId') AS __keel_identity_id`,
 		expectedArgs: []any{identity.Id, "xyz"},
 	},
 }
@@ -2837,7 +2837,7 @@ func generateQueryScope(ctx context.Context, schemaText string, actionName strin
 	}
 
 	model := proto.FindModel(schema.Models, action.ModelName)
-	query := actions.NewQuery(context.Background(), model)
+	query := actions.NewQuery(model)
 	scope := actions.NewScope(ctx, action, schema)
 
 	return scope, query, action, nil
@@ -2855,11 +2855,11 @@ func clean(sql string) string {
 
 func TestInsertStatement(t *testing.T) {
 	model := &proto.Model{Name: "Person"}
-	query := actions.NewQuery(context.Background(), model)
+	query := actions.NewQuery(model)
 	query.AddWriteValues(map[string]*actions.QueryOperand{"name": actions.Value("Fred")})
 	query.AppendSelect(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
-	stmt := query.InsertStatement()
+	stmt := query.InsertStatement(context.Background())
 
 	expected := `
 		WITH new_1_person AS (INSERT INTO "person" (name) VALUES (?) RETURNING *) 
@@ -2870,13 +2870,13 @@ func TestInsertStatement(t *testing.T) {
 
 func TestUpdateStatement(t *testing.T) {
 	model := &proto.Model{Name: "Person"}
-	query := actions.NewQuery(context.Background(), model)
+	query := actions.NewQuery(model)
 	query.AddWriteValue(actions.Field("name"), actions.Value("Fred"))
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
 	query.AppendSelect(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
-	stmt := query.UpdateStatement()
+	stmt := query.UpdateStatement(context.Background())
 
 	expected := `
 		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING "person".*`
@@ -2886,12 +2886,12 @@ func TestUpdateStatement(t *testing.T) {
 
 func TestDeleteStatement(t *testing.T) {
 	model := &proto.Model{Name: "Person"}
-	query := actions.NewQuery(context.Background(), model)
+	query := actions.NewQuery(model)
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
 	query.AppendSelect(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
-	stmt := query.DeleteStatement()
+	stmt := query.DeleteStatement(context.Background())
 
 	expected := `
 		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING "person".*`
@@ -2905,11 +2905,11 @@ func TestInsertStatementWithAuditing(t *testing.T) {
 	ctx = withTracing(t, ctx)
 
 	model := &proto.Model{Name: "Person"}
-	query := actions.NewQuery(ctx, model)
+	query := actions.NewQuery(model)
 	query.AddWriteValues(map[string]*actions.QueryOperand{"name": actions.Value("Fred")})
 	query.AppendSelect(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
-	stmt := query.InsertStatement()
+	stmt := query.InsertStatement(ctx)
 
 	expected := `
 		WITH new_1_person AS (INSERT INTO "person" (name) VALUES (?) RETURNING *) 
@@ -2928,13 +2928,13 @@ func TestUpdateStatementWithAuditing(t *testing.T) {
 	ctx = withTracing(t, ctx)
 
 	model := &proto.Model{Name: "Person"}
-	query := actions.NewQuery(ctx, model)
+	query := actions.NewQuery(model)
 	query.AddWriteValue(actions.Field("name"), actions.Value("Fred"))
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
 	query.AppendSelect(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
-	stmt := query.UpdateStatement()
+	stmt := query.UpdateStatement(ctx)
 
 	expected := `
 		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
@@ -2951,12 +2951,12 @@ func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
 	ctx = withTracing(t, ctx)
 
 	model := &proto.Model{Name: "Person"}
-	query := actions.NewQuery(ctx, model)
+	query := actions.NewQuery(model)
 	query.AddWriteValue(actions.Field("name"), actions.Value("Fred"))
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
 	query.AppendSelect(actions.AllFields())
-	stmt := query.UpdateStatement()
+	stmt := query.UpdateStatement(ctx)
 
 	expected := `
 		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
@@ -2972,12 +2972,12 @@ func TestDeleteStatementWithAuditing(t *testing.T) {
 	ctx = withTracing(t, ctx)
 
 	model := &proto.Model{Name: "Person"}
-	query := actions.NewQuery(ctx, model)
+	query := actions.NewQuery(model)
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
 	query.AppendSelect(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
-	stmt := query.DeleteStatement()
+	stmt := query.DeleteStatement(ctx)
 
 	expected := `
 		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
@@ -2994,11 +2994,11 @@ func TestDeleteStatementNoReturnWithAuditing(t *testing.T) {
 	ctx = withTracing(t, ctx)
 
 	model := &proto.Model{Name: "Person"}
-	query := actions.NewQuery(ctx, model)
+	query := actions.NewQuery(model)
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
 	query.AppendSelect(actions.AllFields())
-	stmt := query.DeleteStatement()
+	stmt := query.DeleteStatement(ctx)
 
 	expected := `
 		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 

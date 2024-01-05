@@ -17,7 +17,7 @@ import (
 func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
 	model := proto.FindModel(scope.Schema.Models, strcase.ToCamel("identity"))
 	ctxScope := NewModelScope(scope.Context, model, scope.Schema)
-	identityQuery := NewQuery(scope.Context, model)
+	identityQuery := NewQuery(model)
 
 	identityId := ""
 	if auth.IsAuthenticated(scope.Context) {
