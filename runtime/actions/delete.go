@@ -15,44 +15,31 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 		return nil, err
 	}
 
-	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
-
 	// Attempt to resolve permissions early; i.e. before row-based database querying.
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
 	if err != nil {
 		return nil, err
 	}
-	if canResolveEarly && !authorised {
-		return nil, common.NewPermissionError()
+
+	// Generate the SQL statement
+	query := NewQuery(scope.Model)
+	statement, err := GenerateDeleteStatement(query, scope, input)
+	if err != nil {
+		return nil, err
 	}
 
 	var row map[string]any
 
-	if canResolveEarly {
-		query := NewQuery(scope.Model)
-
-		// Generate the SQL statement
-		statement, err := GenerateDeleteStatement(query, scope, input)
-		if err != nil {
-			return nil, err
-		}
-
-		// Execute database request
+	switch {
+	case canResolveEarly && !authorised:
+		err = common.NewPermissionError()
+	case canResolveEarly && authorised:
+		// Execute database request without starting a transaction or performing any row-based authorization
 		row, err = statement.ExecuteToSingle(scope.Context)
-		if err != nil {
-			return nil, err
-		}
-
-	} else {
+	case !canResolveEarly:
 		err = database.Transaction(scope.Context, func(ctx context.Context) error {
 			scope := scope.WithContext(ctx)
-			query := NewQuery(scope.Model)
-
-			// Generate the SQL statement
-			statement, err := GenerateDeleteStatement(query, scope, input)
-			if err != nil {
-				return err
-			}
 
 			query.AppendSelect(IdField())
 			query.AppendDistinctOn(IdField())

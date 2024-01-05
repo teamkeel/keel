@@ -14,39 +14,29 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		return nil, err
 	}
 
+	// Attempt to resolve permissions early; i.e. before row-based database querying.
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
 	if err != nil {
 		return nil, err
 	}
-	if canResolveEarly && !authorised {
-		return nil, common.NewPermissionError()
+
+	// Generate update statement
+	query := NewQuery(scope.Model)
+	statement, err := GenerateUpdateStatement(query, scope, input)
+	if err != nil {
+		return nil, err
 	}
 
-	if canResolveEarly {
-		query := NewQuery(scope.Model)
-
-		// Generate the SQL statement
-		statement, err := GenerateUpdateStatement(query, scope, input)
-		if err != nil {
-			return nil, err
-		}
-
+	switch {
+	case canResolveEarly && !authorised:
+		err = common.NewPermissionError()
+	case canResolveEarly && authorised:
 		// Execute database request, expecting a single result
 		res, err = statement.ExecuteToSingle(scope.Context)
-		if err != nil {
-			return nil, err
-		}
-	} else {
+	case !canResolveEarly:
 		err = database.Transaction(scope.Context, func(ctx context.Context) error {
 			scope := scope.WithContext(ctx)
-			query := NewQuery(scope.Model)
-
-			// Generate the SQL statement
-			statement, err := GenerateUpdateStatement(query, scope, input)
-			if err != nil {
-				return err
-			}
 
 			query.AppendSelect(IdField())
 			query.AppendDistinctOn(IdField())

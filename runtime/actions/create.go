@@ -21,25 +21,21 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	if err != nil {
 		return nil, err
 	}
-	if canResolveEarly && !authorised {
-		return nil, common.NewPermissionError()
+
+	// Generate the SQL statement
+	query := NewQuery(scope.Model)
+	statement, err := GenerateCreateStatement(query, scope, input)
+	if err != nil {
+		return nil, err
 	}
 
-	if canResolveEarly {
-		query := NewQuery(scope.Model)
-
-		// Generate the SQL statement
-		statement, err := GenerateCreateStatement(query, scope, input)
-		if err != nil {
-			return nil, err
-		}
-
-		// Execute database request, expecting a single result
+	switch {
+	case canResolveEarly && !authorised:
+		err = common.NewPermissionError()
+	case canResolveEarly && authorised:
+		// Execute database request without starting a transaction or performing any row-based authorization
 		res, err = statement.ExecuteToSingle(scope.Context)
-		if err != nil {
-			return nil, err
-		}
-	} else {
+	case !canResolveEarly:
 		err = database.Transaction(scope.Context, func(ctx context.Context) error {
 			scope := scope.WithContext(ctx)
 			query := NewQuery(scope.Model)
