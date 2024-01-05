@@ -38,15 +38,33 @@ model Person {
     }
 
     actions {
-        read countName(name) returns (CountResponse)
-        read countNameAdvanced(AdvancedSearchInput) returns (CountResponse)
-        write createAndCount(name) returns (CountResponse)
-        write createManyAndCount(CreateManyInput) returns (CountResponse)
-        read people(PeopleInput) returns (PeopleResponse)
-        read customPersonSearch(CustomPersonSearchInput) returns (CustomPersonSearchResponse)
-        read customSearch(Any) returns (Any)
-        write bulkPersonUpload(BulkPersonUpload) returns (BulkPersonUpload)
-        read noInputs() returns (Any)
+        read countName(name) returns (CountResponse) {
+            @permission(expression: true)
+        }
+        read countNameAdvanced(AdvancedSearchInput) returns (CountResponse) {
+            @permission(expression: true)
+        }
+        write createAndCount(name) returns (CountResponse) {
+            @permission(expression: true)
+        }
+        write createManyAndCount(CreateManyInput) returns (CountResponse) {
+            @permission(expression: true)
+        }
+        read people(PeopleInput) returns (PeopleResponse) {
+            @permission(expression: true)
+        }
+        read customPersonSearch(CustomPersonSearchInput) returns (CustomPersonSearchResponse) {
+            @permission(expression: true)
+        }
+        read customSearch(Any) returns (Any) {
+            @permission(expression: true)
+        }
+        write bulkPersonUpload(BulkPersonUpload) returns (BulkPersonUpload) {
+            @permission(expression: true)
+        }
+        read noInputs() returns (Any) {
+            @permission(expression: true)
+        }
     }
 
     @permission(

@@ -1,7 +1,13 @@
 model TestModel {
     actions {
-        read withQueryParams(Any) returns (Any)
-        read withHeaders(Any) returns (Any)
-        read withStatus(Any) returns (Any)
+        read withQueryParams(Any) returns (Any) {
+            @permission(expression: true)
+        }
+        read withHeaders(Any) returns (Any) {
+            @permission(expression: true)
+        }
+        read withStatus(Any) returns (Any) {
+            @permission(expression: true)
+        }
     }
 }
