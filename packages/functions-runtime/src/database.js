@@ -145,6 +145,19 @@ function getDialect() {
       return new PostgresDialect({
         pool: new InstrumentedPool({
           Client: InstrumentedClient,
+          // Increased idle time before closing a connection in the local pool (from 10s default).
+          // Establising a new connection on (almost) every functions query can be expensive, so this
+          // will reduce having to open connections as regularly. https://node-postgres.com/apis/pool
+          //
+          // NOTE: We should consider setting this to 0 (i.e. never pool locally) and open and close
+          // connections with each invocation. This is because the freeze/thaw nature of lambdas can cause problems
+          // with long-lived connections - see https://github.com/brianc/node-postgres/issues/2718
+          // Once we're "fully regional" this should not be a performance problem anymore.
+          //
+          // Although I doubt we will run into these freeze/thaw issues if idleTimeoutMillis is always shorter than the 
+          // time is takes for a lambda to freeze (which is not a constant, but could be as short as several minutes,
+          // https://www.pluralsight.com/resources/blog/cloud/how-long-does-aws-lambda-keep-your-idle-functions-around-before-a-cold-start)
+          idleTimeoutMillis: 120000,
           connectionString: mustEnv("KEEL_DB_CONN"),
         }),
       });
