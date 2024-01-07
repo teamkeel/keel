@@ -154,7 +154,7 @@ function getDialect() {
           // with long-lived connections - see https://github.com/brianc/node-postgres/issues/2718
           // Once we're "fully regional" this should not be a performance problem anymore.
           //
-          // Although I doubt we will run into these freeze/thaw issues if idleTimeoutMillis is always shorter than the 
+          // Although I doubt we will run into these freeze/thaw issues if idleTimeoutMillis is always shorter than the
           // time is takes for a lambda to freeze (which is not a constant, but could be as short as several minutes,
           // https://www.pluralsight.com/resources/blog/cloud/how-long-does-aws-lambda-keep-your-idle-functions-around-before-a-cold-start)
           idleTimeoutMillis: 120000,
