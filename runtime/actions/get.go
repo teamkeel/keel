@@ -30,20 +30,18 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	if !canResolveEarly {
-		rowsToAuthorise := []map[string]any{}
-		if res != nil {
-			rowsToAuthorise = append(rowsToAuthorise, res)
-		}
+	rowsToAuthorise := []map[string]any{}
+	if res != nil {
+		rowsToAuthorise = append(rowsToAuthorise, res)
+	}
 
-		isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
-		if err != nil {
-			return nil, err
-		}
+	isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
+	if err != nil {
+		return nil, err
+	}
 
-		if !isAuthorised {
-			return nil, common.NewPermissionError()
-		}
+	if !isAuthorised {
+		return nil, common.NewPermissionError()
 	}
 
 	return res, err
