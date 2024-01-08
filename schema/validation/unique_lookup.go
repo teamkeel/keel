@@ -98,6 +98,11 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 				return
 			}
 
+			// We are only concerned with filters inputs (and not 'with' inputs)
+			if !lo.Contains(action.Inputs, input) {
+				return
+			}
+
 			// Ignore if it's a named input
 			// for example `get getMyThing(name: Text)`
 			if query.ResolveInputField(asts, input, model) == nil {

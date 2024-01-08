@@ -1,6 +1,13 @@
 model MyModel {
+    fields {
+        name Text @unique
+    }
+
     actions {
         //expect-error:16:29:ActionInputError:The action 'updateMyModel' can only update a single record and therefore must be filtered by unique fields
         update updateMyModel()
+
+        //expect-error:16:33:ActionInputError:The action 'updateMyModelName' can only update a single record and therefore must be filtered by unique fields
+        update updateMyModelName() with (name)
     }
 }
