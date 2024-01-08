@@ -121,9 +121,8 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, common.NewPermissionError()
 	}
 
-	query := NewQuery(scope.Model)
-
 	// Generate the SQL statement.
+	query := NewQuery(scope.Model)
 	statement, page, err := GenerateListStatement(query, scope, input)
 	if err != nil {
 		return nil, err
