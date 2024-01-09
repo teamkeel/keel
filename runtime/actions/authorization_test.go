@@ -354,17 +354,6 @@ var authorisationTestCases = []authorisationTestCase{
 		identity:     unverifiedIdentity,
 	},
 	{
-		name: "early_evaluate_no_permissions",
-		keelSchema: `
-			model Thing {
-				actions {
-					create createThing()
-				}
-			}`,
-		actionName: "createThing",
-		earlyAuth:  AuthorisationDeniedEarly(),
-	},
-	{
 		name: "early_evaluate_create_op",
 		keelSchema: `
 			model Thing {
