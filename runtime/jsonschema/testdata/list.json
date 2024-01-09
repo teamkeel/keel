@@ -64,22 +64,45 @@
         "additionalProperties": false
       },
       "HobbyQueryInput": {
-        "type": "object",
-        "properties": {
-          "equals": {
-            "enum": ["Tennis", "Chess", null]
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "equals": {
+                "enum": ["Tennis", "Chess", null]
+              }
+            },
+            "required": ["equals"],
+            "title": "equals",
+            "type": "object"
           },
-          "notEquals": {
-            "enum": ["Tennis", "Chess", null]
+          {
+            "additionalProperties": false,
+            "properties": {
+              "notEquals": {
+                "enum": ["Tennis", "Chess", null]
+              }
+            },
+            "required": ["notEquals"],
+            "title": "notEquals",
+            "type": "object"
           },
-          "oneOf": {
-            "type": "array",
-            "items": {
-              "enum": ["Tennis", "Chess"]
-            }
+          {
+            "additionalProperties": false,
+            "properties": {
+              "oneOf": {
+                "items": {
+                  "enum": ["Tennis", "Chess"]
+                },
+                "type": "array"
+              }
+            },
+            "required": ["oneOf"],
+            "title": "oneOf",
+            "type": "object"
           }
-        },
-        "additionalProperties": false
+        ],
+        "unevaluatedProperties": false
       },
       "IdQueryInput": {
         "unevaluatedProperties": false,

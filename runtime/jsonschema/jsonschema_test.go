@@ -733,7 +733,7 @@ func TestValidateRequest(t *testing.T) {
 					errors: map[string][]string{
 						"where.id":        {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
 						"where.title":     {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
-						"where.genre":     {`Invalid type. Expected: object, given: null`},
+						"where.genre":     {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
 						"where.price":     {`Invalid type. Expected: object, given: null`},
 						"where.available": {`Invalid type. Expected: object, given: null`},
 						"where.createdAt": {`Invalid type. Expected: object, given: null`},
@@ -752,6 +752,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"genre": {"equals": "Sci-fi"}}}`,
 					errors: map[string][]string{
+						"where.genre":        {`Must validate one and only one schema (oneOf)`},
 						"where.genre.equals": {`where.genre.equals must be one of the following: "Romance", "Horror", null`},
 					},
 				},
@@ -760,6 +761,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"genre": {"oneOf": ["Sci-fi"]}}}`,
 					errors: map[string][]string{
+						"where.genre":         {`Must validate one and only one schema (oneOf)`},
 						"where.genre.oneOf.0": {`where.genre.oneOf.0 must be one of the following: "Romance", "Horror"`},
 					},
 				},

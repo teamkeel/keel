@@ -148,6 +148,16 @@ func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, acti
 	}
 }
 
+func contains(s []*proto.MessageField, e string) bool {
+	for _, input := range s {
+		if input.Name == e {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Generates JSONSchema for an operation by generating properties for the root input message.
 // Any subsequent nested messages are referenced.
 func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *proto.Action, message *proto.Message) JSONSchema {
@@ -170,7 +180,8 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 
 	if !isAny {
 		// Certain messages should only allow one field to be set per request so we set these as a oneOf property
-		if message.Name == "IdQueryInput" || message.Name == "StringQueryInput" {
+		fieldsToGroup := (len(message.Fields) == 3 && contains(message.Fields, "equals") && contains(message.Fields, "notEquals") && contains(message.Fields, "oneOf"))
+		if message.Name == "StringQueryInput" || fieldsToGroup {
 			oneOf := []JSONSchema{}
 
 			for _, field := range message.Fields {
@@ -202,7 +213,6 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 
 			root.OneOf = oneOf
 			root.Type = nil
-
 		} else {
 			for _, field := range message.Fields {
 				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable)
