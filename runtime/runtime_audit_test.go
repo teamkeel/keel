@@ -471,7 +471,7 @@ func TestAuditDatabaseMigration(t *testing.T) {
 	m, err := migrations.New(ctx, pSchema, database)
 	require.NoError(t, err)
 
-	err = m.Apply(ctx)
+	err = m.Apply(ctx, false)
 	require.NoError(t, err)
 
 	var audits []map[string]any

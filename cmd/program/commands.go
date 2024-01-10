@@ -325,7 +325,7 @@ func RunMigrations(schema *proto.Schema, database db.Database) tea.Cmd {
 			Changes: m.Changes,
 		}
 
-		err = m.Apply(context.Background())
+		err = m.Apply(context.Background(), false)
 		if err != nil {
 			msg.Err = &ApplyMigrationsError{
 				Err: err,
