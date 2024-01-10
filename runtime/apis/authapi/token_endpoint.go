@@ -19,13 +19,13 @@ var tracer = otel.Tracer("github.com/teamkeel/keel/runtime")
 // https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
 // https://datatracker.ietf.org/doc/html/rfc7009#section-2.1
 const (
-	ArgGrantType         = "grant_type"
-	ArgSubjectToken      = "subject_token"
-	ArgSubjectTokenType  = "subject_token_type"
-	ArgRequestedTokeType = "requested_token_type"
-	ArgCode              = "code"
-	ArgRefreshToken      = "refresh_token"
-	ArgToken             = "token"
+	ArgGrantType          = "grant_type"
+	ArgSubjectToken       = "subject_token"
+	ArgSubjectTokenType   = "subject_token_type"
+	ArgRequestedTokenType = "requested_token_type"
+	ArgCode               = "code"
+	ArgRefreshToken       = "refresh_token"
+	ArgToken              = "token"
 )
 
 const (
@@ -76,12 +76,17 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			return jsonErrResponse(ctx, http.StatusMethodNotAllowed, TokenErrInvalidRequest, "the token endpoint only accepts POST", nil)
 		}
 
-		if !HasContentType(r.Header, "application/x-www-form-urlencoded") {
-			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the request must be an encoded form with Content-Type application/x-www-form-urlencoded", nil)
+		if !HasContentType(r.Header, "application/x-www-form-urlencoded") && !HasContentType(r.Header, "application/json") {
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the request body must either be an encoded form (Content-Type: application/x-www-form-urlencoded) or JSON (Content-Type: application/json)", nil)
 		}
 
-		grantType := r.FormValue(ArgGrantType)
-		if grantType == "" {
+		data, err := parsePostData(r)
+		if err != nil {
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "request payload is malformed", err)
+		}
+
+		grantType, hasGrantType := data[ArgGrantType]
+		if !hasGrantType || grantType == "" {
 			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the grant-type field is required with either 'refresh_token', 'token_exchange' or 'authorization_code'", nil)
 		}
 
@@ -91,13 +96,9 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 		switch grantType {
 		case GrantTypeRefreshToken:
-			if !r.Form.Has(ArgRefreshToken) {
-				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the refresh token must be provided in the refresh_token field", nil)
-			}
-
-			refreshTokenRaw := r.FormValue(ArgRefreshToken)
-			if refreshTokenRaw == "" {
-				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the refresh token in the refresh_token field cannot be an empty string", nil)
+			refreshTokenRaw, hasRefreshTokenRaw := data[ArgRefreshToken]
+			if !hasRefreshTokenRaw || refreshTokenRaw == "" {
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the refresh token in the 'refresh_token' field is required", nil)
 			}
 
 			var isValid bool
@@ -123,13 +124,9 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 		case GrantTypeAuthCode:
-			if !r.Form.Has(ArgCode) {
-				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the authorization code must be provided in the code field", nil)
-			}
-
-			authCode := r.FormValue(ArgCode)
-			if authCode == "" {
-				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the authorization code in the code field cannot be an empty string", nil)
+			authCode, hasAuthCode := data[ArgCode]
+			if !hasAuthCode || authCode == "" {
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the authorization code in the 'code' field is required", nil)
 			}
 
 			// Consume the auth code
@@ -150,28 +147,24 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 		case GrantTypeTokenExchange:
-			if !r.Form.Has(ArgSubjectToken) {
-				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the ID token must be provided in the subject_token field", nil)
+			idTokenRaw, hasIdTokenRaw := data[ArgSubjectToken]
+			if !hasIdTokenRaw || idTokenRaw == "" {
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the ID token must be provided in the 'subject_token' field", nil)
 			}
 
 			// We do not require subject_token_type, but if provided we only support 'id_token'
-			if r.Form.Has(ArgSubjectTokenType) && r.Form.Get(ArgSubjectTokenType) != "id_token" {
+			if tokenType, hasTokenType := data[ArgSubjectTokenType]; hasTokenType && tokenType != "id_token" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the only supported subject_token_type is 'id_token'", nil)
 			}
 
 			// We do not require requested_token_type, but if provided we only support 'access_token'
-			if r.Form.Has(ArgRequestedTokeType) && (r.Form.Get(ArgRequestedTokeType) != "urn:ietf:params:oauth:token-type:access_token" && r.Form.Get("requested_token_type") != "access_token") {
+			if reqTokenType, hasReqTokenType := data[ArgRequestedTokenType]; hasReqTokenType && reqTokenType != "access_token" && reqTokenType != "urn:ietf:params:oauth:token-type:access_token" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the only supported requested_token_type is 'access_token'", nil)
 			}
 
-			idTokenRaw := r.Form.Get(ArgSubjectToken)
-			if idTokenRaw == "" {
-				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the ID token in the subject_token field cannot be an empty string", nil)
-			}
-
 			span.SetAttributes(
-				attribute.String(ArgSubjectTokenType, r.Form.Get(ArgSubjectTokenType)),
-				attribute.String(ArgRequestedTokeType, r.Form.Get(ArgRequestedTokeType)),
+				attribute.String(ArgSubjectTokenType, data[ArgSubjectTokenType]),
+				attribute.String(ArgRequestedTokenType, data[ArgRequestedTokenType]),
 			)
 
 			// Verify the ID token with the OIDC provider

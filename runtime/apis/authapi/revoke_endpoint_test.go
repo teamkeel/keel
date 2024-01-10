@@ -1,7 +1,9 @@
 package authapi_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -16,7 +18,7 @@ import (
 	keeltesting "github.com/teamkeel/keel/testing"
 )
 
-func TestRevokeToken_Success(t *testing.T) {
+func TestRevokeTokenForm_Success(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
@@ -46,7 +48,7 @@ func TestRevokeToken_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
-	requestToken := makeTokenExchangeRequest(ctx, idToken)
+	requestToken := makeTokenExchangeFormRequest(ctx, idToken)
 
 	// Handle runtime request, expecting TokenResponse
 	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, requestToken)
@@ -54,7 +56,7 @@ func TestRevokeToken_Success(t *testing.T) {
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
 
 	// Make a token exchange grant request
-	requestRevoke := makeRevokeTokenRequest(ctx, validResponse.RefreshToken)
+	requestRevoke := makeRevokeTokenFormRequest(ctx, validResponse.RefreshToken)
 
 	// Handle runtime request, expecting TokenResponse
 	_, revokeHttpResponse, err := handleRuntimeRequest[any](schema, requestRevoke)
@@ -62,7 +64,62 @@ func TestRevokeToken_Success(t *testing.T) {
 	require.Equal(t, http.StatusOK, revokeHttpResponse.StatusCode)
 
 	// Make a token exchange grant request
-	refreshToken := makeRefreshTokenRequest(ctx, validResponse.RefreshToken)
+	refreshToken := makeRefreshTokenFormRequest(ctx, validResponse.RefreshToken)
+
+	// Handle runtime request, expecting TokenResponse
+	refreshResponse, refreshHttpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, refreshToken)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusUnauthorized, refreshHttpResponse.StatusCode)
+	require.Equal(t, "invalid_client", refreshResponse.Error)
+}
+
+func TestRevokeTokenJson_Success(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// OIDC test server
+	server, err := oauthtest.NewServer()
+	require.NoError(t, err)
+	defer server.Close()
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email: "keelson@keel.so",
+	})
+
+	// Get ID token from server
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
+	require.NoError(t, err)
+
+	// Make a token exchange grant request
+	requestToken := makeTokenExchangeJsonRequest(ctx, idToken)
+
+	// Handle runtime request, expecting TokenResponse
+	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, requestToken)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+
+	// Make a token exchange grant request
+	requestRevoke := makeRevokeTokenJsonRequest(ctx, validResponse.RefreshToken)
+
+	// Handle runtime request, expecting TokenResponse
+	_, revokeHttpResponse, err := handleRuntimeRequest[any](schema, requestRevoke)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, revokeHttpResponse.StatusCode)
+
+	// Make a token exchange grant request
+	refreshToken := makeRefreshTokenJsonRequest(ctx, validResponse.RefreshToken)
 
 	// Handle runtime request, expecting TokenResponse
 	refreshResponse, refreshHttpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, refreshToken)
@@ -76,7 +133,7 @@ func TestRevokeEndpoint_HttpGet(t *testing.T) {
 	defer database.Close()
 
 	// Make a token exchange grant request
-	request := makeRevokeTokenRequest(ctx, "mock_token")
+	request := makeRevokeTokenFormRequest(ctx, "mock_token")
 
 	request.Method = http.MethodGet
 
@@ -95,7 +152,7 @@ func TestRevokeEndpoint_EmptyToken(t *testing.T) {
 	defer database.Close()
 
 	// Make a revoke request
-	request := makeRevokeTokenRequest(ctx, "mock_token")
+	request := makeRevokeTokenFormRequest(ctx, "mock_token")
 	form := url.Values{}
 	form.Add("mock_token", "")
 	request.URL.RawQuery = form.Encode()
@@ -115,7 +172,7 @@ func TestRevokeEndpoint_NoToken(t *testing.T) {
 	defer database.Close()
 
 	// Make a revoke request
-	request := makeRevokeTokenRequest(ctx, "mock_token")
+	request := makeRevokeTokenFormRequest(ctx, "mock_token")
 	form := url.Values{}
 	form.Del("token")
 	request.URL.RawQuery = form.Encode()
@@ -135,7 +192,7 @@ func TestRevokeEndpoint_UnknownToken(t *testing.T) {
 	defer database.Close()
 
 	// Make a revoke request
-	request := makeRevokeTokenRequest(ctx, "mock_token")
+	request := makeRevokeTokenFormRequest(ctx, "mock_token")
 
 	// Handle runtime request, expecting TokenErrorResponse
 	_, httpResponse, err := handleRuntimeRequest[any](schema, request)
@@ -145,7 +202,7 @@ func TestRevokeEndpoint_UnknownToken(t *testing.T) {
 	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func makeRevokeTokenRequest(ctx context.Context, token string) *http.Request {
+func makeRevokeTokenFormRequest(ctx context.Context, token string) *http.Request {
 	request := httptest.NewRequest(http.MethodPost, "http://mykeelapp.keel.so/auth/revoke", nil)
 	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -155,4 +212,20 @@ func makeRevokeTokenRequest(ctx context.Context, token string) *http.Request {
 	request = request.WithContext(ctx)
 
 	return request
+}
+
+func makeRevokeTokenJsonRequest(ctx context.Context, token string) *http.Request {
+	values := map[string]string{
+		"token": token,
+	}
+
+	jsonValue, _ := json.Marshal(values)
+	responseBody := bytes.NewBuffer(jsonValue)
+
+	request := httptest.NewRequest(http.MethodPost, "http://mykeelapp.keel.so/auth/revoke", responseBody)
+	request.Header.Add("Content-Type", "application/json")
+	request = request.WithContext(ctx)
+
+	return request
+
 }
