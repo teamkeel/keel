@@ -6,7 +6,6 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type RevokeEndpointErrorResponse struct {
@@ -20,36 +19,27 @@ func RevokeHandler(schema *proto.Schema) common.HandlerFunc {
 		defer span.End()
 
 		if r.Method != http.MethodPost {
-			return common.NewJsonResponse(http.StatusMethodNotAllowed, &ErrorResponse{
-				Error:            TokenErrInvalidRequest,
-				ErrorDescription: "the revoke endpoint only accepts POST",
-			}, nil)
+			return jsonErrResponse(ctx, http.StatusMethodNotAllowed, TokenErrInvalidRequest, "the revoke endpoint only accepts POST", nil)
 		}
 
-		if !HasContentType(r.Header, "application/x-www-form-urlencoded") {
-			return common.NewJsonResponse(http.StatusBadRequest, &ErrorResponse{
-				Error:            TokenErrInvalidRequest,
-				ErrorDescription: "the request must be an encoded form with Content-Type application/x-www-form-urlencoded",
-			}, nil)
+		if !HasContentType(r.Header, "application/x-www-form-urlencoded") && !HasContentType(r.Header, "application/json") {
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the request body must either be an encoded form (Content-Type: application/x-www-form-urlencoded) or JSON (Content-Type: application/json)", nil)
 		}
 
-		refreshTokenRaw := r.FormValue(ArgToken)
+		data, err := parsePostData(r)
+		if err != nil {
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "request payload is malformed", err)
+		}
 
-		if refreshTokenRaw == "" {
-			return common.NewJsonResponse(http.StatusBadRequest, &ErrorResponse{
-				Error:            TokenErrInvalidRequest,
-				ErrorDescription: "the refresh token must be provided in the token field",
-			}, nil)
+		refreshTokenRaw, hasRefreshTokenRaw := data[ArgToken]
+		if !hasRefreshTokenRaw || refreshTokenRaw == "" {
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the refresh token must be provided in the token field", nil)
 		}
 
 		// Revoke the refresh token
-		err := oauth.RevokeRefreshToken(ctx, refreshTokenRaw)
+		err = oauth.RevokeRefreshToken(ctx, refreshTokenRaw)
 		if err != nil {
-			span.RecordError(err, trace.WithStackTrace(true))
-			return common.NewJsonResponse(http.StatusUnauthorized, &ErrorResponse{
-				Error:            TokenErrInvalidClient,
-				ErrorDescription: "possible causes may be that the id token is invalid, has expired, or has insufficient claims",
-			}, nil)
+			return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the id token is invalid, has expired, or has insufficient claims", err)
 		}
 
 		return common.NewJsonResponse(http.StatusOK, nil, nil)
