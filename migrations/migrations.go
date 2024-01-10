@@ -80,11 +80,18 @@ func (m *Migrations) HasModelFieldChanges() bool {
 }
 
 // Apply executes the migrations against the database
-func (m *Migrations) Apply(ctx context.Context) error {
+// If dryRun is true, then the changes are rolled back
+func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 	ctx, span := tracer.Start(ctx, "Apply Migrations")
 	defer span.End()
 
+	span.SetAttributes(attribute.Bool("dryRun", dryRun))
+
 	sql := strings.Builder{}
+
+	if dryRun {
+		sql.WriteString("BEGIN TRANSACTION;\n")
+	}
 
 	// Enable extensions
 	sql.WriteString("CREATE EXTENSION IF NOT EXISTS pg_stat_statements;\n")
@@ -127,8 +134,18 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	// For now, we do this here but this could belong in our proto once we start on the database indexing work.
 	sql.WriteString("CREATE INDEX IF NOT EXISTS idx_keel_audit_trace_id ON keel_audit USING HASH(trace_id);\n")
 
+	if dryRun {
+		sql.WriteString("ROLLBACK TRANSACTION;\n")
+	}
+
 	_, err = m.database.ExecuteStatement(ctx, sql.String())
 	if err != nil {
+		// Rollback the transaction if we're doing a dry run. This needs to be a separate exec
+		// because when a SQL migration error happens, then the rollback command won't be executed and
+		// then the transaction will be left open.
+		if dryRun {
+			_, _ = m.database.ExecuteStatement(ctx, "ROLLBACK TRANSACTION;")
+		}
 		return err
 	}
 

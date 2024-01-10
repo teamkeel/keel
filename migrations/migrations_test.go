@@ -91,7 +91,7 @@ func TestMigrations(t *testing.T) {
 
 				m, err := migrations.New(ctx, currProto, database)
 				require.NoError(t, err)
-				err = m.Apply(ctx)
+				err = m.Apply(ctx, false)
 				require.NoError(t, err)
 			}
 
@@ -118,7 +118,7 @@ func TestMigrations(t *testing.T) {
 			assertJSON(t, []byte(expectedChanges), actualChanges)
 
 			// Check the new migrations can be applied without error
-			require.NoError(t, m.Apply(ctx))
+			require.NoError(t, m.Apply(ctx, false))
 
 			// Now fetch the "current" schema from the database, which
 			// should be the new one we just applied

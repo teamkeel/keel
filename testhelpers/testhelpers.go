@@ -98,7 +98,7 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 		return nil, err
 	}
 
-	err = m.Apply(ctx)
+	err = m.Apply(ctx, false)
 	if err != nil {
 		return nil, err
 	}
