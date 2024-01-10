@@ -103,7 +103,7 @@ func TestRevokeTokenJson_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
-	requestToken := makeTokenExchangeFormRequest(ctx, idToken)
+	requestToken := makeTokenExchangeJsonRequest(ctx, idToken)
 
 	// Handle runtime request, expecting TokenResponse
 	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, requestToken)
@@ -111,7 +111,7 @@ func TestRevokeTokenJson_Success(t *testing.T) {
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
 
 	// Make a token exchange grant request
-	requestRevoke := makeRevokeTokenFormRequest(ctx, validResponse.RefreshToken)
+	requestRevoke := makeRevokeTokenJsonRequest(ctx, validResponse.RefreshToken)
 
 	// Handle runtime request, expecting TokenResponse
 	_, revokeHttpResponse, err := handleRuntimeRequest[any](schema, requestRevoke)
@@ -119,7 +119,7 @@ func TestRevokeTokenJson_Success(t *testing.T) {
 	require.Equal(t, http.StatusOK, revokeHttpResponse.StatusCode)
 
 	// Make a token exchange grant request
-	refreshToken := makeRefreshTokenFormRequest(ctx, validResponse.RefreshToken)
+	refreshToken := makeRefreshTokenJsonRequest(ctx, validResponse.RefreshToken)
 
 	// Handle runtime request, expecting TokenResponse
 	refreshResponse, refreshHttpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, refreshToken)
