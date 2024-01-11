@@ -57,6 +57,7 @@ type JSONSchema struct {
 	UnevaluatedProperties *bool                 `json:"unevaluatedProperties,omitempty"`
 	Required              []string              `json:"required,omitempty"`
 	OneOf                 []JSONSchema          `json:"oneOf,omitempty"`
+	AnyOf                 []JSONSchema          `json:"anyOf,omitempty"`
 	Title                 string                `json:"title,omitempty"`
 
 	// For arrays
@@ -175,7 +176,13 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 	}
 
 	if isAny {
-		root.Type = AnyTypes
+		anyOf := []JSONSchema{}
+		for _, v := range AnyTypes {
+			anyOf = append(anyOf, JSONSchema{Title: v, Type: v})
+		}
+
+		root.AnyOf = anyOf
+		root.Type = nil
 	}
 
 	if !isAny {
@@ -295,7 +302,11 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 
 	switch t.Type {
 	case proto.Type_TYPE_ANY:
-		prop.Type = AnyTypes
+		anyOf := []JSONSchema{}
+		for _, v := range AnyTypes {
+			anyOf = append(anyOf, JSONSchema{Title: v, Type: v})
+		}
+		prop.AnyOf = anyOf
 	case proto.Type_TYPE_MESSAGE:
 		// Add the nested message to schema components.
 		message := proto.FindMessage(schema.Messages, t.MessageName.Value)
