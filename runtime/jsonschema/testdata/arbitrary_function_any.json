@@ -1,4 +1,33 @@
 {
-  "type": ["string","object","array","integer","number","boolean","null"],
-  "additionalProperties":true
+  "additionalProperties": true,
+  "anyOf": [
+    {
+      "title": "string",
+      "type": "string"
+    },
+    {
+      "title": "object",
+      "type": "object"
+    },
+    {
+      "title": "array",
+      "type": "array"
+    },
+    {
+      "title": "integer",
+      "type": "integer"
+    },
+    {
+      "title": "number",
+      "type": "number"
+    },
+    {
+      "title": "boolean",
+      "type": "boolean"
+    },
+    {
+      "title": "null",
+      "type": "null"
+    }
+  ]
 }
