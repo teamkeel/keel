@@ -48,7 +48,6 @@ func generateClientSdkFile(schema *proto.Schema, api *proto.Api) codegen.Generat
 
 	client.Writeln(clientCore)
 	client.Writeln(clientTypes)
-	client.Writeln(authTypes)
 
 	client.Writeln("")
 	client.Writeln("// API")
@@ -490,7 +489,7 @@ export class Core {
       await this.auth.tokenRequest(req)
     },
 
-	// Refresh the session with the authentication server.
+    // Refresh the session with the authentication server.
     refreshSession: async () => {
       if (!this.session) {
         return;
@@ -557,6 +556,7 @@ export class Core {
       }
     },
 
+    // Logs the session out in the client and also attempts to revoke server-side.
     logout: async () => {
         const authUrl = this.config.baseUrl.replace("/api", "");
         const result = await globalThis.fetch(
@@ -595,7 +595,6 @@ function reviver(key: any, value: any) {
   }
   return value;
 }
-
 `
 
 var clientTypes = `// Result types
