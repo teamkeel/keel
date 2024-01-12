@@ -48,6 +48,7 @@ func generateClientSdkFile(schema *proto.Schema, api *proto.Api) codegen.Generat
 
 	client.Writeln(clientCore)
 	client.Writeln(clientTypes)
+	client.Writeln(authTypes)
 
 	client.Writeln("")
 	client.Writeln("// API")
@@ -284,7 +285,12 @@ export type RequestConfig = {
 export class Core {
 	constructor(private config: RequestConfig) {}
 
+	session: Session | null = null;
+
 	ctx = {
+		/**
+		 * @deprecated This has been deprecated in favour of APIClient.auth.getSession()
+		 */
 		token: "",
 		isAuthenticated: false,
 	};
@@ -307,11 +313,18 @@ export class Core {
       this.config.baseUrl = value;
       return this;
     },
+    /**
+     * @deprecated This has been deprecated in favour of the APIClient.auth authenticate 
+     * helper functions or APIClient.auth.setSession()
+     */
     setToken: (value: string): Core => {
       this.ctx.token = value;
       this.ctx.isAuthenticated = true;
       return this;
     },
+    /**
+     * @deprecated This has been deprecated in favour of APIClient.auth.logout()
+     */
     clearToken: (): Core => {
       this.ctx.token = "";
       this.ctx.isAuthenticated = false;
@@ -419,6 +432,152 @@ export class Core {
       }
     },
   };
+
+  auth = {
+    // Manually set the session with an access and refresh token acquired elsewhere.
+    // We recommend to rather use the built-in authentication functions provided in this client.
+    setSession: (accessToken: string, refreshToken: string) => {
+      this.session = { accessToken, refreshToken };
+    },
+
+    // Retrieves the current session's access and refresh tokens. This will also refresh the 
+    // session with the authentication server.
+    getSession: async () => {
+      await this.auth.refreshSession();
+      return this.session;
+    },
+
+    // Returns the list of supported auth providers and their SSO login URLs.
+    providers: async (): Promise<Provider[]> => {
+      const authUrl = this.config.baseUrl.replace("/api", "");
+
+      const result = await globalThis.fetch(
+        stripTrailingSlash(authUrl) + "/auth/providers",
+        {
+          method: "GET",
+          cache: "no-cache",
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      if (result.status == 200) {
+        const rawJson = await result.text();
+        return JSON.parse(rawJson);
+      } else {
+        throw new Error("unexpected status code response from /auth/providers: " + result.status)
+      }
+    },
+
+    // Authenticate with an OIDC token.
+    authenticateWithIdToken: async (idToken: string) => {
+      const req: TokenExchangeGrant = {
+        grant: "token_exchange",
+        subjectToken: idToken
+      }
+
+      await this.auth.tokenRequest(req)
+    },
+
+    // Authenticate with an SSO Login code.
+    authenticateWithSSOLoginCode: async (code: string) => {
+      const req: AuthorizationCodeGrant = {
+        grant: "authorization_code",
+        code: code
+      }
+
+      await this.auth.tokenRequest(req)
+    },
+
+	// Refresh the session with the authentication server.
+    refreshSession: async () => {
+      if (!this.session) {
+        return;
+      }
+
+      const req: RefreshGrant = {
+        grant:  "refresh_token",
+        refreshToken: this.session!.refreshToken
+      }
+
+      await this.auth.tokenRequest(req);
+    },
+
+    tokenRequest: async(req: TokenGrant) => {
+      let body = null;      
+      switch (req.grant) {
+        case "token_exchange":
+          body = {
+            "grant_type": req.grant,
+            "subject_token": req.subjectToken
+          };
+          break;
+        case "authorization_code":
+          body = {
+            "grant_type": req.grant,
+            "code": req.code
+          };
+          break;
+        case "refresh_token":
+          body = {
+            "grant_type": req.grant,
+            "refresh_token": req.refreshToken
+          };
+          break;
+        default:
+          throw new Error("grant not implemented")
+      }
+
+      const authUrl = this.config.baseUrl.replace("/api", "");
+      const result = await globalThis.fetch(
+        stripTrailingSlash(authUrl) + "/auth/token",
+        {
+          method: "POST",
+          cache: "no-cache",
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(body),
+        },
+      );
+     
+      if (result.status == 200) {
+        const rawJson = await result.text();
+        const data = JSON.parse(rawJson);
+        this.auth.setSession(data.access_token, data.refresh_token);
+        this.client.setToken(data.access_token); // Deprecate
+      } else {
+        this.auth.logout();
+        this.client.clearToken(); // Deprecate
+
+        const resp = await result.json();
+        throw new TokenError(resp.error, resp.error_description);
+      }
+    },
+
+    logout: async () => {
+        const authUrl = this.config.baseUrl.replace("/api", "");
+        const result = await globalThis.fetch(
+          stripTrailingSlash(authUrl) + "/auth/revoke",
+          {
+            method: "POST",
+            cache: "no-cache",
+            headers: {
+              accept: "application/json",
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({
+              token: this.session?.refreshToken,
+            }),
+          },
+        );
+  
+        this.session = null;
+        this.client.clearToken();
+    },
+  };
 }
 
 // Utils
@@ -507,4 +666,46 @@ export type APIError =
   | BadRequestError
   | InternalServerError
   | UnknownError;
+
+// Auth
+
+export interface Provider {
+  name: string;
+  type: string;
+  authorizeUrl: string;
+};
+
+export interface Session {
+  accessToken: string;
+  refreshToken: string;
+};
+
+export type TokenExchangeGrant = {
+  grant: "token_exchange";
+  subjectToken: string;
+};
+
+export type AuthorizationCodeGrant = {
+  grant: "authorization_code";
+  code: string;
+};
+
+export type RefreshGrant = {
+  grant: "refresh_token";
+  refreshToken: string;
+};
+
+export type TokenGrant = 
+  | TokenExchangeGrant 
+  | AuthorizationCodeGrant 
+  | RefreshGrant;
+
+export class TokenError extends Error {
+  errorDescription: string;
+  constructor( error: string, errorDescription: string ) {
+      super();
+      this.message = error;
+      this.errorDescription = errorDescription;
+  }
+}
 `
