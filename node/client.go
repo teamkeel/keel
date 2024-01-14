@@ -54,7 +54,7 @@ func generateClientSdkFile(schema *proto.Schema, api *proto.Api) codegen.Generat
 	client.Writeln("// API")
 	client.Writeln("")
 
-	writeClientAPIClass(client, schema, api)
+	writeClientApiClass(client, schema, api)
 
 	return []*codegen.GeneratedFile{
 		{
@@ -78,7 +78,7 @@ func generateClientSdkPackage(schema *proto.Schema, api *proto.Api) codegen.Gene
 
 	client.Writeln(`import { CoreClient, RequestConfig } from "./core";`)
 	client.Writeln("")
-	writeClientAPIClass(client, schema, api)
+	writeClientApiClass(client, schema, api)
 
 	return []*codegen.GeneratedFile{
 		{
@@ -105,40 +105,44 @@ func generateClientSdkPackage(schema *proto.Schema, api *proto.Api) codegen.Gene
 	}
 }
 
-func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
-
+func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	w.Writeln("export class APIClient extends Core {")
 
 	w.Indent()
 	w.Writeln(`constructor(config: RequestConfig) {
-      super(config);
+		super(config);
     }`)
-
-	apiModels := lo.Map(api.ApiModels, func(a *proto.ApiModel, index int) string {
-		return a.ModelName
-	})
-
-	queries := []string{}
-	mutations := []string{}
 
 	w.Writeln("private actions = {")
 	w.Indent()
 
-	for _, model := range schema.Models {
+	writeClientActions(w, schema, api)
 
-		// Skip any models not part of this api
-		if !lo.Contains(apiModels, model.Name) {
-			continue
-		}
+	w.Dedent()
+	w.Writeln("};")
+	w.Writeln("")
 
+	w.Writeln("api = {")
+	w.Indent()
+
+	writeClientApiDefinition(w, schema, api)
+
+	w.Dedent()
+	w.Writeln("};")
+
+	w.Dedent()
+	w.Writeln("}")
+
+	w.Writeln("")
+
+	writeClientTypes(w, schema, api)
+}
+
+func writeClientActions(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
+	models := proto.ApiModels(schema, api)
+
+	for _, model := range models {
 		for _, action := range model.Actions {
-
-			if action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_READ {
-				queries = append(queries, action.Name)
-			} else {
-				mutations = append(mutations, action.Name)
-			}
-
 			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
 
 			w.Writef("%s: (i", action.Name)
@@ -165,11 +169,13 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 			w.Writeln("=> {")
 
 			w.Indent()
+
+			model := proto.FindModel(schema.Models, action.ModelName)
 			w.Writef(`return this.client.rawRequest<%s>("%s", i)`, toClientActionReturnType(model, action), action.Name)
 
 			var setTokenChain = `.then((res) => {
-              if (res.data && res.data.token) this.client.setToken(res.data.token);
-              return res;
+				if (res.data && res.data.token) this.client.setToken(res.data.token);
+				return res;
             })`
 
 			if action.Name == "authenticate" {
@@ -181,12 +187,22 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 			w.Writeln("},")
 		}
 	}
-	w.Dedent()
-	w.Writeln("};")
-	w.Writeln("")
+}
 
-	w.Writeln("api = {")
-	w.Indent()
+func writeClientApiDefinition(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
+	queries := []string{}
+	mutations := []string{}
+
+	models := proto.ApiModels(schema, api)
+	for _, model := range models {
+		for _, action := range model.Actions {
+			if action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_READ {
+				queries = append(queries, action.Name)
+			} else {
+				mutations = append(mutations, action.Name)
+			}
+		}
+	}
 
 	w.Writeln("queries: {")
 	w.Indent()
@@ -205,15 +221,9 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 	}
 	w.Dedent()
 	w.Writeln("}")
+}
 
-	w.Dedent()
-	w.Writeln("};")
-	w.Writeln("")
-
-	w.Dedent()
-	w.Writeln("}")
-
-	w.Writeln("")
+func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	w.Writeln("// API Types")
 	w.Writeln("")
 
@@ -224,16 +234,11 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 		writeEnumWhereCondition(w, enum)
 	}
 
-	for _, model := range schema.Models {
+	models := proto.ApiModels(schema, api)
 
-		// Skip any models not part of this api
-		if !lo.Contains(apiModels, model.Name) {
-			continue
-		}
-
+	for _, model := range models {
 		writeModelInterface(w, model)
 	}
-
 }
 
 func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
