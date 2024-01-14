@@ -12,7 +12,6 @@ import (
 )
 
 func GenerateClient(ctx context.Context, schema *proto.Schema, makePackage bool, apiName string) (codegen.GeneratedFiles, error) {
-
 	api := schema.Apis[0]
 
 	if apiName != "" {
@@ -24,7 +23,7 @@ func GenerateClient(ctx context.Context, schema *proto.Schema, makePackage bool,
 			}
 		}
 		if !match {
-			return nil, fmt.Errorf("No %s API found", apiName)
+			return nil, fmt.Errorf("api not found: %s", apiName)
 		}
 	}
 
@@ -419,7 +418,6 @@ const stripTrailingSlash = (str: string) => {
   return str.endsWith("/") ? str.slice(0, -1) : str;
 };
 
-
 const RFC3339 = /^(?:\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01]))?(?:[T\s](?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?(?:\.\d+)?(?:[Zz]|[+-](?:[01]\d|2[0-3]):?[0-5]\d)?)?$/;
 function reviver(key: any, value: any) {
   // Convert any ISO8601/RFC3339 strings to dates
@@ -429,10 +427,9 @@ function reviver(key: any, value: any) {
   return value;
 }
 
-
 `
 
-var clientTypes = `// Result type
+var clientTypes = `// Result types
 
 export type APIResult<T> = Result<T, APIError>;
 

@@ -1,10 +1,13 @@
 package node
 
 import (
+	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema"
 )
 
 func TestClientActionsByApi(t *testing.T) {
@@ -511,4 +514,45 @@ export class APIClient extends Core {
 		api := proto.FindApi(s, "Api")
 		writeClientApiClass(w, s, api)
 	})
+}
+
+func TestGenerateClientFiles(t *testing.T) {
+	schemaString := `
+model Person {
+	actions {
+		get getPerson(id)
+	}
+}`
+
+	b := schema.Builder{}
+	schema, err := b.MakeFromString(schemaString)
+	require.NoError(t, err)
+
+	files, err := GenerateClient(context.Background(), schema, false, "Api")
+	require.NoError(t, err)
+
+	require.Len(t, files, 1)
+	require.Equal(t, files[0].Path, "keelClient.ts")
+}
+
+func TestGenerateClientPackagesFiles(t *testing.T) {
+	schemaString := `
+model Person {
+	actions {
+		get getPerson(id)
+	}
+}`
+
+	b := schema.Builder{}
+	schema, err := b.MakeFromString(schemaString)
+	require.NoError(t, err)
+
+	files, err := GenerateClient(context.Background(), schema, true, "Api")
+	require.NoError(t, err)
+
+	require.Len(t, files, 4)
+	require.Equal(t, files[0].Path, "@teamkeel/client/core.ts")
+	require.Equal(t, files[1].Path, "@teamkeel/client/index.ts")
+	require.Equal(t, files[2].Path, "@teamkeel/client/types.ts")
+	require.Equal(t, files[3].Path, "@teamkeel/client/package.json")
 }
