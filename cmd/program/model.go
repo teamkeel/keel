@@ -136,18 +136,17 @@ type Model struct {
 	TracingEnabled bool
 
 	// Model state - used in View()
-	Status           int
-	Err              error
-	Schema           *proto.Schema
-	Config           *config.ProjectConfig
-	SchemaFiles      []*reader.SchemaFile
-	Database         db.Database
-	DatabaseConnInfo *db.ConnectionInfo
-	GeneratedFiles   codegen.GeneratedFiles
-	MigrationChanges []*migrations.DatabaseChange
-	FunctionsServer  *node.DevelopmentServer
-	RuntimeHandler   http.Handler
-
+	Status            int
+	Err               error
+	Schema            *proto.Schema
+	Config            *config.ProjectConfig
+	SchemaFiles       []*reader.SchemaFile
+	Database          db.Database
+	DatabaseConnInfo  *db.ConnectionInfo
+	GeneratedFiles    codegen.GeneratedFiles
+	MigrationChanges  []*migrations.DatabaseChange
+	FunctionsServer   *node.DevelopmentServer
+	RuntimeHandler    http.Handler
 	JobHandler        runtime.JobHandler
 	SubscriberHandler runtime.SubscriberHandler
 	RpcHandler        http.Handler
