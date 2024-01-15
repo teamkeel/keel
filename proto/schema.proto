@@ -34,7 +34,7 @@ message Model {
 }
 
 message Field {
-    // The name of the model this field belongs to.
+    // The name of the model this field belongs to.q
     string model_name = 1;
 
     // The name of the field. Must be in lowerCamelCase and be unique within the model.
