@@ -25,7 +25,7 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/rpc/rpc"
-	rpcApiServer "github.com/teamkeel/keel/rpc/server"
+	rpcApi "github.com/teamkeel/keel/rpc/rpcApi"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
@@ -188,12 +188,8 @@ func (m *Model) Init() tea.Cmd {
 	m.functionsLogCh = make(chan tea.Msg, 1)
 	m.watcherCh = make(chan tea.Msg, 1)
 	m.Environment = "development"
-
-	rpcServer := &rpcApiServer.Server{}
-
-	m.RpcHandler = rpc.NewAPIServer(rpcServer, twirp.WithServerPathPrefix("/rpc"))
-
-	m.RpcPort = "8007"
+	m.RpcHandler = rpc.NewAPIServer(rpcApi.NewRpcApiServer(m.Schema), twirp.WithServerPathPrefix("/rpc"))
+	m.RpcPort = "34087"
 
 	m.Status = StatusCheckingDependencies
 	return CheckDependencies()
@@ -467,7 +463,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RpcRequestMsg:
 		ctx := msg.r.Context()
 		ctx = db.WithDatabase(ctx, m.Database)
-		ctx = context.WithValue(ctx, "schema", m.Schema)
 		r := msg.r.WithContext(ctx)
 		w := msg.w
 

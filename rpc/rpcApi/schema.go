@@ -1,4 +1,4 @@
-package rpcApiServer
+package rpcApi
 
 import (
 	"context"
@@ -10,10 +10,17 @@ import (
 	"github.com/twitchtv/twirp"
 )
 
-type Server struct{}
+func NewRpcApiServer(schema *proto.Schema) *Server {
+	return &Server{
+		Schema: schema,
+	}
+}
+
+type Server struct {
+	Schema *proto.Schema
+}
 
 func (s *Server) GetActiveSchema(ctx context.Context, req *rpc.GetSchemaRequest) (*rpc.GetSchemaResponse, error) {
-
 	schema, ok := ctx.Value("schema").(*proto.Schema)
 	if !ok {
 		return nil, twirp.NewError(twirp.NotFound, "schema not found")

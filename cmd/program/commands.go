@@ -443,8 +443,7 @@ func StartRpcServer(port string, ch chan tea.Msg) tea.Cmd {
 				<-done
 			}),
 		}
-		err := rpcServer.ListenAndServe()
-		fmt.Println(err.Error())
+		_ = rpcServer.ListenAndServe()
 		return nil
 	}
 }
