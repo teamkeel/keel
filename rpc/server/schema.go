@@ -38,7 +38,7 @@ func (s *Server) RunSQLQuery(ctx context.Context, input *rpc.SQLQueryInput) (*rp
 		return &rpc.SQLQueryResponse{
 			Status: rpc.SQLQueryStatus_failed,
 			Error:  err.Error(),
-		}, err
+		}, nil
 	}
 
 	b, err := json.Marshal(result.Rows)
