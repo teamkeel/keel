@@ -12,16 +12,24 @@ message GetSchemaResponse {
 	proto.Schema schema = 1;
 }
 
-message PingRequest {
-
+message SQLQueryInput {
+	string query = 3;
 }
 
-message PingResponse {
-	string message = 1;
+message SQLQueryResponse {
+	SQLQueryStatus status = 1;
+	int32 executionDuration = 2;
+	string resultsJSON = 3;
+	int32 totalRows = 4;
+	string error = 5;
 }
 
+enum SQLQueryStatus {
+	success = 0;
+	failed = 1;
+}
 
 service API {
-	rpc Ping(PingRequest) returns (PingResponse);
 	rpc GetActiveSchema(GetSchemaRequest) returns (GetSchemaResponse);
+	rpc RunSQLQuery(SQLQueryInput) returns (SQLQueryResponse);
 }

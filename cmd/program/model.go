@@ -151,7 +151,6 @@ type Model struct {
 	JobHandler        runtime.JobHandler
 	SubscriberHandler runtime.SubscriberHandler
 	RpcHandler        http.Handler
-	RpcServer         *rpcApiServer.Server
 	RuntimeRequests   []*RuntimeRequest
 	FunctionsLog      []*FunctionLog
 	TestOutput        string
@@ -190,8 +189,10 @@ func (m *Model) Init() tea.Cmd {
 	m.watcherCh = make(chan tea.Msg, 1)
 	m.Environment = "development"
 
-	m.RpcHandler = rpc.NewAPIServer(m.RpcServer, twirp.WithServerPathPrefix("/rpc"))
-	m.RpcServer = &rpcApiServer.Server{}
+	rpcServer := &rpcApiServer.Server{}
+
+	m.RpcHandler = rpc.NewAPIServer(rpcServer, twirp.WithServerPathPrefix("/rpc"))
+
 	m.RpcPort = "8007"
 
 	m.Status = StatusCheckingDependencies
@@ -465,6 +466,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Batch(cmds...)
 	case RpcRequestMsg:
 		ctx := msg.r.Context()
+		ctx = db.WithDatabase(ctx, m.Database)
 		ctx = context.WithValue(ctx, "schema", m.Schema)
 		r := msg.r.WithContext(ctx)
 		w := msg.w

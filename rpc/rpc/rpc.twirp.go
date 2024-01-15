@@ -32,9 +32,9 @@ const _ = twirp.TwirpPackageMinVersion_8_1_0
 // =============
 
 type API interface {
-	Ping(context.Context, *PingRequest) (*PingResponse, error)
-
 	GetActiveSchema(context.Context, *GetSchemaRequest) (*GetSchemaResponse, error)
+
+	RunSQLQuery(context.Context, *SQLQueryInput) (*SQLQueryResponse, error)
 }
 
 // ===================
@@ -72,8 +72,8 @@ func NewAPIProtobufClient(baseURL string, client HTTPClient, opts ...twirp.Clien
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "rpc", "API")
 	urls := [2]string{
-		serviceURL + "Ping",
 		serviceURL + "GetActiveSchema",
+		serviceURL + "RunSQLQuery",
 	}
 
 	return &aPIProtobufClient{
@@ -82,52 +82,6 @@ func NewAPIProtobufClient(baseURL string, client HTTPClient, opts ...twirp.Clien
 		interceptor: twirp.ChainInterceptors(clientOpts.Interceptors...),
 		opts:        clientOpts,
 	}
-}
-
-func (c *aPIProtobufClient) Ping(ctx context.Context, in *PingRequest) (*PingResponse, error) {
-	ctx = ctxsetters.WithPackageName(ctx, "rpc")
-	ctx = ctxsetters.WithServiceName(ctx, "API")
-	ctx = ctxsetters.WithMethodName(ctx, "Ping")
-	caller := c.callPing
-	if c.interceptor != nil {
-		caller = func(ctx context.Context, req *PingRequest) (*PingResponse, error) {
-			resp, err := c.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*PingRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*PingRequest) when calling interceptor")
-					}
-					return c.callPing(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*PingResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*PingResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-	return caller(ctx, in)
-}
-
-func (c *aPIProtobufClient) callPing(ctx context.Context, in *PingRequest) (*PingResponse, error) {
-	out := new(PingResponse)
-	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[0], in, out)
-	if err != nil {
-		twerr, ok := err.(twirp.Error)
-		if !ok {
-			twerr = twirp.InternalErrorWith(err)
-		}
-		callClientError(ctx, c.opts.Hooks, twerr)
-		return nil, err
-	}
-
-	callClientResponseReceived(ctx, c.opts.Hooks)
-
-	return out, nil
 }
 
 func (c *aPIProtobufClient) GetActiveSchema(ctx context.Context, in *GetSchemaRequest) (*GetSchemaResponse, error) {
@@ -161,6 +115,52 @@ func (c *aPIProtobufClient) GetActiveSchema(ctx context.Context, in *GetSchemaRe
 
 func (c *aPIProtobufClient) callGetActiveSchema(ctx context.Context, in *GetSchemaRequest) (*GetSchemaResponse, error) {
 	out := new(GetSchemaResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[0], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIProtobufClient) RunSQLQuery(ctx context.Context, in *SQLQueryInput) (*SQLQueryResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "RunSQLQuery")
+	caller := c.callRunSQLQuery
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *SQLQueryInput) (*SQLQueryResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*SQLQueryInput)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*SQLQueryInput) when calling interceptor")
+					}
+					return c.callRunSQLQuery(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*SQLQueryResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*SQLQueryResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callRunSQLQuery(ctx context.Context, in *SQLQueryInput) (*SQLQueryResponse, error) {
+	out := new(SQLQueryResponse)
 	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[1], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
@@ -211,8 +211,8 @@ func NewAPIJSONClient(baseURL string, client HTTPClient, opts ...twirp.ClientOpt
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "rpc", "API")
 	urls := [2]string{
-		serviceURL + "Ping",
 		serviceURL + "GetActiveSchema",
+		serviceURL + "RunSQLQuery",
 	}
 
 	return &aPIJSONClient{
@@ -221,52 +221,6 @@ func NewAPIJSONClient(baseURL string, client HTTPClient, opts ...twirp.ClientOpt
 		interceptor: twirp.ChainInterceptors(clientOpts.Interceptors...),
 		opts:        clientOpts,
 	}
-}
-
-func (c *aPIJSONClient) Ping(ctx context.Context, in *PingRequest) (*PingResponse, error) {
-	ctx = ctxsetters.WithPackageName(ctx, "rpc")
-	ctx = ctxsetters.WithServiceName(ctx, "API")
-	ctx = ctxsetters.WithMethodName(ctx, "Ping")
-	caller := c.callPing
-	if c.interceptor != nil {
-		caller = func(ctx context.Context, req *PingRequest) (*PingResponse, error) {
-			resp, err := c.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*PingRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*PingRequest) when calling interceptor")
-					}
-					return c.callPing(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*PingResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*PingResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-	return caller(ctx, in)
-}
-
-func (c *aPIJSONClient) callPing(ctx context.Context, in *PingRequest) (*PingResponse, error) {
-	out := new(PingResponse)
-	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[0], in, out)
-	if err != nil {
-		twerr, ok := err.(twirp.Error)
-		if !ok {
-			twerr = twirp.InternalErrorWith(err)
-		}
-		callClientError(ctx, c.opts.Hooks, twerr)
-		return nil, err
-	}
-
-	callClientResponseReceived(ctx, c.opts.Hooks)
-
-	return out, nil
 }
 
 func (c *aPIJSONClient) GetActiveSchema(ctx context.Context, in *GetSchemaRequest) (*GetSchemaResponse, error) {
@@ -300,6 +254,52 @@ func (c *aPIJSONClient) GetActiveSchema(ctx context.Context, in *GetSchemaReques
 
 func (c *aPIJSONClient) callGetActiveSchema(ctx context.Context, in *GetSchemaRequest) (*GetSchemaResponse, error) {
 	out := new(GetSchemaResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[0], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIJSONClient) RunSQLQuery(ctx context.Context, in *SQLQueryInput) (*SQLQueryResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "RunSQLQuery")
+	caller := c.callRunSQLQuery
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *SQLQueryInput) (*SQLQueryResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*SQLQueryInput)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*SQLQueryInput) when calling interceptor")
+					}
+					return c.callRunSQLQuery(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*SQLQueryResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*SQLQueryResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callRunSQLQuery(ctx context.Context, in *SQLQueryInput) (*SQLQueryResponse, error) {
+	out := new(SQLQueryResponse)
 	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[1], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
@@ -412,197 +412,17 @@ func (s *aPIServer) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	}
 
 	switch method {
-	case "Ping":
-		s.servePing(ctx, resp, req)
-		return
 	case "GetActiveSchema":
 		s.serveGetActiveSchema(ctx, resp, req)
+		return
+	case "RunSQLQuery":
+		s.serveRunSQLQuery(ctx, resp, req)
 		return
 	default:
 		msg := fmt.Sprintf("no handler for path %q", req.URL.Path)
 		s.writeError(ctx, resp, badRouteError(msg, req.Method, req.URL.Path))
 		return
 	}
-}
-
-func (s *aPIServer) servePing(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-	header := req.Header.Get("Content-Type")
-	i := strings.Index(header, ";")
-	if i == -1 {
-		i = len(header)
-	}
-	switch strings.TrimSpace(strings.ToLower(header[:i])) {
-	case "application/json":
-		s.servePingJSON(ctx, resp, req)
-	case "application/protobuf":
-		s.servePingProtobuf(ctx, resp, req)
-	default:
-		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
-		twerr := badRouteError(msg, req.Method, req.URL.Path)
-		s.writeError(ctx, resp, twerr)
-	}
-}
-
-func (s *aPIServer) servePingJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-	var err error
-	ctx = ctxsetters.WithMethodName(ctx, "Ping")
-	ctx, err = callRequestRouted(ctx, s.hooks)
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-
-	d := json.NewDecoder(req.Body)
-	rawReqBody := json.RawMessage{}
-	if err := d.Decode(&rawReqBody); err != nil {
-		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
-		return
-	}
-	reqContent := new(PingRequest)
-	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
-	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
-		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
-		return
-	}
-
-	handler := s.API.Ping
-	if s.interceptor != nil {
-		handler = func(ctx context.Context, req *PingRequest) (*PingResponse, error) {
-			resp, err := s.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*PingRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*PingRequest) when calling interceptor")
-					}
-					return s.API.Ping(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*PingResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*PingResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-
-	// Call service method
-	var respContent *PingResponse
-	func() {
-		defer ensurePanicResponses(ctx, resp, s.hooks)
-		respContent, err = handler(ctx, reqContent)
-	}()
-
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-	if respContent == nil {
-		s.writeError(ctx, resp, twirp.InternalError("received a nil *PingResponse and nil error while calling Ping. nil responses are not supported"))
-		return
-	}
-
-	ctx = callResponsePrepared(ctx, s.hooks)
-
-	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
-	respBytes, err := marshaler.Marshal(respContent)
-	if err != nil {
-		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
-		return
-	}
-
-	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
-	resp.Header().Set("Content-Type", "application/json")
-	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
-	resp.WriteHeader(http.StatusOK)
-
-	if n, err := resp.Write(respBytes); err != nil {
-		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
-		twerr := twirp.NewError(twirp.Unknown, msg)
-		ctx = callError(ctx, s.hooks, twerr)
-	}
-	callResponseSent(ctx, s.hooks)
-}
-
-func (s *aPIServer) servePingProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-	var err error
-	ctx = ctxsetters.WithMethodName(ctx, "Ping")
-	ctx, err = callRequestRouted(ctx, s.hooks)
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-
-	buf, err := io.ReadAll(req.Body)
-	if err != nil {
-		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
-		return
-	}
-	reqContent := new(PingRequest)
-	if err = proto1.Unmarshal(buf, reqContent); err != nil {
-		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
-		return
-	}
-
-	handler := s.API.Ping
-	if s.interceptor != nil {
-		handler = func(ctx context.Context, req *PingRequest) (*PingResponse, error) {
-			resp, err := s.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*PingRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*PingRequest) when calling interceptor")
-					}
-					return s.API.Ping(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*PingResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*PingResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-
-	// Call service method
-	var respContent *PingResponse
-	func() {
-		defer ensurePanicResponses(ctx, resp, s.hooks)
-		respContent, err = handler(ctx, reqContent)
-	}()
-
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-	if respContent == nil {
-		s.writeError(ctx, resp, twirp.InternalError("received a nil *PingResponse and nil error while calling Ping. nil responses are not supported"))
-		return
-	}
-
-	ctx = callResponsePrepared(ctx, s.hooks)
-
-	respBytes, err := proto1.Marshal(respContent)
-	if err != nil {
-		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
-		return
-	}
-
-	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
-	resp.Header().Set("Content-Type", "application/protobuf")
-	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
-	resp.WriteHeader(http.StatusOK)
-	if n, err := resp.Write(respBytes); err != nil {
-		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
-		twerr := twirp.NewError(twirp.Unknown, msg)
-		ctx = callError(ctx, s.hooks, twerr)
-	}
-	callResponseSent(ctx, s.hooks)
 }
 
 func (s *aPIServer) serveGetActiveSchema(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
@@ -762,6 +582,186 @@ func (s *aPIServer) serveGetActiveSchemaProtobuf(ctx context.Context, resp http.
 	}
 	if respContent == nil {
 		s.writeError(ctx, resp, twirp.InternalError("received a nil *GetSchemaResponse and nil error while calling GetActiveSchema. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveRunSQLQuery(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveRunSQLQueryJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveRunSQLQueryProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveRunSQLQueryJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "RunSQLQuery")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(SQLQueryInput)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.RunSQLQuery
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *SQLQueryInput) (*SQLQueryResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*SQLQueryInput)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*SQLQueryInput) when calling interceptor")
+					}
+					return s.API.RunSQLQuery(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*SQLQueryResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*SQLQueryResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *SQLQueryResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *SQLQueryResponse and nil error while calling RunSQLQuery. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveRunSQLQueryProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "RunSQLQuery")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(SQLQueryInput)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.RunSQLQuery
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *SQLQueryInput) (*SQLQueryResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*SQLQueryInput)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*SQLQueryInput) when calling interceptor")
+					}
+					return s.API.RunSQLQuery(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*SQLQueryResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*SQLQueryResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *SQLQueryResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *SQLQueryResponse and nil error while calling RunSQLQuery. nil responses are not supported"))
 		return
 	}
 
@@ -1366,20 +1366,28 @@ func callClientError(ctx context.Context, h *twirp.ClientHooks, err twirp.Error)
 }
 
 var twirpFileDescriptor0 = []byte{
-	// 231 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2d, 0x2a, 0x48, 0xd6,
-	0x2f, 0x2a, 0x48, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2e, 0x2a, 0x48, 0x96, 0x12,
-	0x02, 0xb3, 0xf5, 0x8b, 0x93, 0x33, 0x52, 0x73, 0x13, 0x21, 0x12, 0x4a, 0x96, 0x5c, 0x02, 0xee,
-	0xa9, 0x25, 0xc1, 0x60, 0xa1, 0xa0, 0xd4, 0xc2, 0xd2, 0xd4, 0xe2, 0x12, 0x21, 0x55, 0x2e, 0xbe,
-	0xd4, 0xbc, 0xb2, 0xcc, 0xa2, 0xfc, 0xbc, 0xdc, 0xd4, 0xbc, 0x92, 0xf8, 0xcc, 0x14, 0x09, 0x46,
-	0x05, 0x46, 0x0d, 0xce, 0x20, 0x5e, 0x24, 0x51, 0xcf, 0x14, 0x25, 0x2b, 0x2e, 0x41, 0x24, 0xad,
-	0xc5, 0x05, 0xf9, 0x79, 0xc5, 0xa9, 0x42, 0xaa, 0x5c, 0x6c, 0x10, 0xf3, 0xc1, 0x7a, 0xb8, 0x8d,
-	0x78, 0x21, 0xf6, 0xe8, 0x41, 0x95, 0x41, 0x25, 0x95, 0x78, 0xb9, 0xb8, 0x03, 0x32, 0xf3, 0xd2,
-	0xa1, 0x36, 0x2a, 0x69, 0x70, 0xf1, 0x40, 0xb8, 0x50, 0x53, 0x24, 0xb8, 0xd8, 0x73, 0x53, 0x8b,
-	0x8b, 0x13, 0xd3, 0x53, 0xa1, 0x56, 0xc3, 0xb8, 0x46, 0x25, 0x5c, 0xcc, 0x8e, 0x01, 0x9e, 0x42,
-	0xda, 0x5c, 0x2c, 0x20, 0x0d, 0x42, 0x02, 0x7a, 0x20, 0x3f, 0x22, 0x19, 0x25, 0x25, 0x88, 0x24,
-	0x02, 0x35, 0xcd, 0x81, 0x8b, 0xdf, 0x3d, 0xb5, 0xc4, 0x31, 0xb9, 0x24, 0xb3, 0x2c, 0x15, 0xe2,
-	0x0e, 0x21, 0x51, 0xb0, 0x2a, 0x74, 0x9f, 0x4b, 0x89, 0xa1, 0x0b, 0x43, 0x4c, 0x70, 0xe2, 0x8c,
-	0x62, 0x87, 0x86, 0x67, 0x12, 0x1b, 0xd8, 0x3f, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0x95,
-	0xf3, 0x88, 0xf7, 0x61, 0x01, 0x00, 0x00,
+	// 359 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x52, 0x4d, 0x4f, 0xea, 0x40,
+	0x14, 0x7d, 0x7d, 0x3c, 0x4a, 0xb8, 0x4d, 0x79, 0x65, 0x14, 0xd3, 0x10, 0x17, 0xa4, 0x09, 0x09,
+	0x7e, 0x04, 0x12, 0xdc, 0xa8, 0x2b, 0x31, 0x26, 0x04, 0x63, 0x54, 0xda, 0x9d, 0x1b, 0x53, 0x87,
+	0x6b, 0x6c, 0x02, 0x33, 0x65, 0x3e, 0x50, 0x97, 0xfe, 0x36, 0xff, 0x98, 0xe9, 0xb4, 0x55, 0xc0,
+	0x55, 0x7b, 0xcf, 0x3d, 0x77, 0xce, 0x9c, 0x73, 0x07, 0x5c, 0x91, 0xd2, 0x81, 0x48, 0x69, 0x3f,
+	0x15, 0x5c, 0x71, 0x52, 0x11, 0x29, 0x6d, 0x13, 0xf3, 0x3f, 0x90, 0xf4, 0x05, 0x17, 0x71, 0xde,
+	0x08, 0xce, 0xc0, 0x1b, 0xa3, 0x8a, 0x0c, 0x14, 0xe2, 0x52, 0xa3, 0x54, 0xa4, 0x0b, 0x0d, 0x64,
+	0xab, 0x44, 0x70, 0xb6, 0x40, 0xa6, 0x1e, 0x93, 0x99, 0x6f, 0x75, 0xac, 0x5e, 0x3d, 0x74, 0xd7,
+	0xd0, 0xc9, 0x2c, 0x38, 0x87, 0xe6, 0xda, 0xa8, 0x4c, 0x39, 0x93, 0x48, 0xba, 0x60, 0xe7, 0xe7,
+	0x9b, 0x19, 0x67, 0xe8, 0xe6, 0x3a, 0xfd, 0x82, 0x56, 0x34, 0x83, 0x2e, 0xb8, 0xd1, 0xf4, 0x66,
+	0xaa, 0x51, 0xbc, 0x4f, 0x58, 0xaa, 0x15, 0xd9, 0x85, 0xea, 0x32, 0xab, 0xfc, 0x8a, 0x91, 0xca,
+	0x8b, 0xe0, 0xd3, 0x02, 0xaf, 0xe4, 0x7d, 0x4b, 0x1c, 0x81, 0x2d, 0x55, 0xac, 0xb4, 0x34, 0x12,
+	0x8d, 0xe1, 0x4e, 0x3f, 0xf3, 0x59, 0xd2, 0x22, 0xd3, 0x0a, 0x0b, 0x0a, 0x39, 0x86, 0x26, 0xbe,
+	0x21, 0xd5, 0x2a, 0xe1, 0xec, 0x4a, 0x8b, 0x38, 0xfb, 0xfa, 0x7f, 0x3b, 0x56, 0xaf, 0x1a, 0xfe,
+	0x6e, 0x90, 0x0e, 0x38, 0x02, 0xa5, 0x9e, 0x2b, 0x79, 0x1d, 0xdd, 0xdd, 0x16, 0x77, 0x59, 0x87,
+	0xc8, 0x3e, 0xd4, 0x15, 0x57, 0xf1, 0x3c, 0xe4, 0xaf, 0xd2, 0xff, 0x67, 0xce, 0xf9, 0x01, 0x32,
+	0x17, 0x28, 0x04, 0x17, 0x7e, 0x35, 0x77, 0x61, 0x8a, 0xc3, 0x03, 0x68, 0x6c, 0xde, 0x8e, 0x38,
+	0x50, 0x93, 0x9a, 0x52, 0x94, 0xd2, 0xfb, 0x43, 0x00, 0xec, 0xe7, 0x38, 0x99, 0xe3, 0xcc, 0xb3,
+	0x86, 0x1f, 0x16, 0x54, 0x46, 0xf7, 0x13, 0x72, 0x01, 0xff, 0xc7, 0xa8, 0x46, 0x54, 0x25, 0x2b,
+	0xcc, 0xa3, 0x23, 0x2d, 0x63, 0x73, 0x7b, 0x59, 0xed, 0xbd, 0x6d, 0xb8, 0x48, 0xe9, 0x14, 0x9c,
+	0x50, 0xb3, 0x52, 0x97, 0x90, 0x8d, 0x90, 0x4c, 0xe6, 0xed, 0xd6, 0x06, 0x56, 0x4e, 0x5e, 0xd6,
+	0x1f, 0x6a, 0xc5, 0xe3, 0x79, 0xb2, 0xcd, 0xf2, 0x4e, 0xbe, 0x02, 0x00, 0x00, 0xff, 0xff, 0xff,
+	0x13, 0x96, 0xef, 0x4e, 0x02, 0x00, 0x00,
 }
