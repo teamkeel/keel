@@ -24,9 +24,12 @@ import (
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/rpc/rpc"
+	rpcApiServer "github.com/teamkeel/keel/rpc/server"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
+	"github.com/twitchtv/twirp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -103,8 +106,9 @@ type Model struct {
 	// The mode the Model is running in
 	Mode int
 
-	// Port to run the runtime server on in ModeRun
-	Port string
+	// Port to run the runtime servers on in ModeRun
+	Port    string
+	RpcPort string
 
 	// If true then the database will be reset. Only
 	// applies to ModeRun.
@@ -132,19 +136,22 @@ type Model struct {
 	TracingEnabled bool
 
 	// Model state - used in View()
-	Status            int
-	Err               error
-	Schema            *proto.Schema
-	Config            *config.ProjectConfig
-	SchemaFiles       []*reader.SchemaFile
-	Database          db.Database
-	DatabaseConnInfo  *db.ConnectionInfo
-	GeneratedFiles    codegen.GeneratedFiles
-	MigrationChanges  []*migrations.DatabaseChange
-	FunctionsServer   *node.DevelopmentServer
-	RuntimeHandler    http.Handler
+	Status           int
+	Err              error
+	Schema           *proto.Schema
+	Config           *config.ProjectConfig
+	SchemaFiles      []*reader.SchemaFile
+	Database         db.Database
+	DatabaseConnInfo *db.ConnectionInfo
+	GeneratedFiles   codegen.GeneratedFiles
+	MigrationChanges []*migrations.DatabaseChange
+	FunctionsServer  *node.DevelopmentServer
+	RuntimeHandler   http.Handler
+
 	JobHandler        runtime.JobHandler
 	SubscriberHandler runtime.SubscriberHandler
+	RpcHandler        http.Handler
+	RpcServer         *rpcApiServer.Server
 	RuntimeRequests   []*RuntimeRequest
 	FunctionsLog      []*FunctionLog
 	TestOutput        string
@@ -155,6 +162,7 @@ type Model struct {
 	// commands and the Bubbletea program
 	runtimeRequestsCh chan tea.Msg
 	functionsLogCh    chan tea.Msg
+	rpcRequestsCh     chan tea.Msg
 	watcherCh         chan tea.Msg
 
 	// Maintain the current dimensions of the user's terminal
@@ -177,9 +185,14 @@ var _ tea.Model = &Model{}
 
 func (m *Model) Init() tea.Cmd {
 	m.runtimeRequestsCh = make(chan tea.Msg, 1)
+	m.rpcRequestsCh = make(chan tea.Msg, 1)
 	m.functionsLogCh = make(chan tea.Msg, 1)
 	m.watcherCh = make(chan tea.Msg, 1)
 	m.Environment = "development"
+
+	m.RpcHandler = rpc.NewAPIServer(m.RpcServer, twirp.WithServerPathPrefix("/rpc"))
+	m.RpcServer = &rpcApiServer.Server{}
+	m.RpcPort = "8007"
 
 	m.Status = StatusCheckingDependencies
 	return CheckDependencies()
@@ -252,7 +265,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		cmds := []tea.Cmd{
 			StartRuntimeServer(m.Port, m.runtimeRequestsCh),
+			StartRpcServer(m.RpcPort, m.rpcRequestsCh),
 			NextMsgCommand(m.runtimeRequestsCh),
+			NextMsgCommand(m.rpcRequestsCh),
 			LoadSchema(m.ProjectDir, m.Environment),
 		}
 
@@ -446,6 +461,39 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			os.Unsetenv(k)
 		}
 
+		msg.done <- true
+		return m, tea.Batch(cmds...)
+	case RpcRequestMsg:
+		ctx := msg.r.Context()
+		ctx = context.WithValue(ctx, "schema", m.Schema)
+		r := msg.r.WithContext(ctx)
+		w := msg.w
+
+		cmds := []tea.Cmd{
+			NextMsgCommand(m.rpcRequestsCh),
+		}
+
+		if m.RpcHandler == nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Cannot serve requests while there are schema errors. Please see the CLI output for more info."))
+			msg.done <- true
+			return m, NextMsgCommand(m.runtimeRequestsCh)
+		}
+
+		cors := cors.New(cors.Options{
+			AllowedOrigins: []string{"*"},
+			AllowedMethods: []string{
+				http.MethodHead,
+				http.MethodGet,
+				http.MethodPost,
+				http.MethodPut,
+				http.MethodPatch,
+				http.MethodDelete,
+			},
+			AllowedHeaders:   []string{"*"},
+			AllowCredentials: true,
+		})
+		cors.Handler(m.RpcHandler).ServeHTTP(msg.w, r)
 		msg.done <- true
 		return m, tea.Batch(cmds...)
 	case WatcherMsg:

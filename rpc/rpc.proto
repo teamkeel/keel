@@ -1,0 +1,27 @@
+syntax = "proto3";
+package rpc;
+
+option go_package = "rpc/rpc";
+import "proto/schema.proto";
+
+message GetSchemaRequest {
+	string environment_id = 1;
+}
+
+message GetSchemaResponse {
+	proto.Schema schema = 1;
+}
+
+message PingRequest {
+
+}
+
+message PingResponse {
+	string message = 1;
+}
+
+
+service API {
+	rpc Ping(PingRequest) returns (PingResponse);
+	rpc GetActiveSchema(GetSchemaRequest) returns (GetSchemaResponse);
+}

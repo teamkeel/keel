@@ -423,6 +423,32 @@ func StartRuntimeServer(port string, ch chan tea.Msg) tea.Cmd {
 	}
 }
 
+type RpcRequestMsg struct {
+	w    http.ResponseWriter
+	r    *http.Request
+	done chan bool
+}
+
+func StartRpcServer(port string, ch chan tea.Msg) tea.Cmd {
+	return func() tea.Msg {
+		rpcServer := http.Server{
+			Addr: fmt.Sprintf(":%s", port),
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				done := make(chan bool, 1)
+				ch <- RpcRequestMsg{
+					w:    w,
+					r:    r,
+					done: done,
+				}
+				<-done
+			}),
+		}
+		err := rpcServer.ListenAndServe()
+		fmt.Println(err.Error())
+		return nil
+	}
+}
+
 type FunctionsOutputWriter struct {
 	Output []string
 	Buffer bool
