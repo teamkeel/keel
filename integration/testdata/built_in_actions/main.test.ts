@@ -1,7 +1,6 @@
 import { actions, models, resetDatabase } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
 import { Category } from "@teamkeel/sdk";
-import { APIClient } from "./keelClient";
 
 beforeEach(resetDatabase);
 
