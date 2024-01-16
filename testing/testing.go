@@ -49,6 +49,8 @@ type RunnerOpts struct {
 	DbConnInfo    *db.ConnectionInfo
 	Secrets       map[string]string
 	TestGroupName string
+	// Generates a Keel client package for the test
+	GenerateClientPackage bool
 }
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/testing")
@@ -100,17 +102,19 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		return err
 	}
 
-	clientFiles, err := node.GenerateClient(
-		ctx,
-		schema,
-		false,
-		ActionApiPath,
-	)
-	if err != nil {
-		return err
-	}
+	if opts.GenerateClientPackage {
+		clientFiles, err := node.GenerateClient(
+			ctx,
+			schema,
+			false,
+			ActionApiPath,
+		)
+		if err != nil {
+			return err
+		}
 
-	files = append(files, clientFiles...)
+		files = append(files, clientFiles...)
+	}
 
 	err = files.Write(opts.Dir)
 	if err != nil {
