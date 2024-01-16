@@ -3,6 +3,7 @@ package rpcApi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
@@ -10,20 +11,34 @@ import (
 	"github.com/twitchtv/twirp"
 )
 
-func NewRpcApiServer(schema *proto.Schema) *Server {
-	return &Server{
-		Schema: schema,
+type Server struct{}
+
+type schemaContextKey string
+
+var schemaKey schemaContextKey = "schema"
+
+func GetSchema(ctx context.Context) (*proto.Schema, error) {
+	v := ctx.Value(schemaKey)
+	schema, ok := v.(*proto.Schema)
+
+	if !ok {
+		return nil, errors.New("database in the context has wrong value type")
 	}
+	return schema, nil
 }
 
-type Server struct {
-	Schema *proto.Schema
+func WithSchema(ctx context.Context, schema *proto.Schema) context.Context {
+	return context.WithValue(ctx, schemaKey, schema)
 }
 
 func (s *Server) GetActiveSchema(ctx context.Context, req *rpc.GetSchemaRequest) (*rpc.GetSchemaResponse, error) {
-	schema, ok := ctx.Value("schema").(*proto.Schema)
-	if !ok {
-		return nil, twirp.NewError(twirp.NotFound, "schema not found")
+	schema, err := GetSchema(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	if schema == nil {
+		schema = &proto.Schema{}
 	}
 
 	return &rpc.GetSchemaResponse{
