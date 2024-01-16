@@ -251,8 +251,7 @@ func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
 	case proto.ActionType_ACTION_TYPE_GET:
 		return model.Name + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
-		// TODO: type PageInfo properly
-		return "{results: " + model.Name + "[], pageInfo: any}"
+		return "{results: " + model.Name + "[], pageInfo: PageInfo}"
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		return "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
@@ -444,6 +443,13 @@ type Err<U> = {
   data?: never;
   error: U;
 };
+
+type PageInfo = {
+    first?: number;
+    after?: string;
+    last?: number;
+    before?: string;
+}
 
 type Result<T, U> = NonNullable<Data<T> | Err<U>>;
 
