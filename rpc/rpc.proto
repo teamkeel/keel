@@ -2,7 +2,9 @@ syntax = "proto3";
 package rpc;
 
 option go_package = "rpc/rpc";
-import "proto/schema.proto";
+import "schema.proto";
+import "opentelemetry/proto/trace/v1/trace.proto";
+import "google/protobuf/timestamp.proto";
 
 message GetSchemaRequest {
 	string environment_id = 1;
@@ -31,17 +33,41 @@ enum SQLQueryStatus {
 	failed = 1;
 }
 
-message GetTraceRequest { }
-
-message GetTraceResponse {
-	string json = 1;
+message GetTraceRequest {
+	string trace_id = 1;
 }
 
+message GetTraceResponse {
+	opentelemetry.proto.trace.v1.TracesData trace = 1;
+}
 
-message ListTracesRequest { }
+message ListTracesRequest {
+	google.protobuf.Timestamp before = 1;
+	google.protobuf.Timestamp after = 2;
+	repeated ListTraceFilter filters = 3;
+	int32 limit = 4;
+}
+
+message ListTraceFilter {
+	string key = 1;
+	string value = 2;
+}
 
 message ListTracesResponse {
-	string json = 1;
+	repeated TraceItem traces = 1;
+}
+
+message TraceItem {
+	string trace_id = 1;
+	string environment_id = 2;
+	int64 start_time = 3;
+	int64 end_time = 4;
+	bool error = 5;
+	float duration_ms = 6;
+	string root_name = 7;
+	string project_id = 8;
+	string deployment_id = 9;
+	string runtime_version = 10;
 }
 
 service API {
