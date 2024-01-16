@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 
+	"github.com/teamkeel/keel/cmd/exporter"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/rpc/rpc"
@@ -76,4 +78,20 @@ func (s *Server) RunSQLQuery(ctx context.Context, input *rpc.SQLQueryInput) (*rp
 		ResultsJSON: string(b),
 		TotalRows:   int32(len(result.Rows)),
 	}, nil
+}
+
+func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (*rpc.ListTracesResponse, error) {
+	traces := exporter.AllTraces()
+	fmt.Println(traces)
+
+	return &rpc.ListTracesResponse{
+		Json: "hello there",
+	}, nil
+}
+
+func (s *Server) GetTrace(ctx context.Context, input *rpc.GetTraceRequest) (*rpc.GetTraceResponse, error) {
+	traces := exporter.AllTraces()
+	fmt.Println(traces)
+
+	return &rpc.GetTraceResponse{}, nil
 }
