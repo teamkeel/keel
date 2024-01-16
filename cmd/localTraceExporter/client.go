@@ -16,6 +16,7 @@ package localTraceExporter
 
 import (
 	"context"
+	"encoding/hex"
 
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	tracepb "go.opentelemetry.io/proto/otlp/trace/v1"
@@ -59,13 +60,12 @@ func (c *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.Resourc
 
 	// Unpack all the spans and store in memory by trace ID
 	// This is lossy as we're loosing the resource and service data so we may want to improve this later
-
 	for _, ResourceSpan := range protoSpans {
 		scopedSpans := ResourceSpan.GetScopeSpans()
 		for _, scopedSpans := range scopedSpans {
 			for _, span := range scopedSpans.Spans {
-				traceID := span.TraceId
-				traces[string(traceID)] = append(traces[string(traceID)], span)
+				traceID := hex.EncodeToString(span.TraceId)
+				traces[traceID] = append(traces[traceID], span)
 			}
 		}
 	}

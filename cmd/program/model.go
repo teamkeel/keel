@@ -15,7 +15,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/cmd/database"
-	"github.com/teamkeel/keel/cmd/exporter"
+	"github.com/teamkeel/keel/cmd/localTraceExporter"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -70,7 +70,10 @@ func Run(model *Model) {
 	// For now we just discard the logs as they are not useful in the CLI
 	logrus.SetOutput(io.Discard)
 
-	exportr, _ := exporter.New(exporter.WithPrettyPrint())
+	exportr, err := localTraceExporter.New(context.Background())
+	if err != nil {
+		panic(err.Error())
+	}
 
 	provider := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exportr),
@@ -108,7 +111,7 @@ func Run(model *Model) {
 		}
 	}()
 
-	_, err := tea.NewProgram(model).Run()
+	_, err = tea.NewProgram(model).Run()
 	if err != nil {
 		panic(err)
 	}
