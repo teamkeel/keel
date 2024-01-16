@@ -67,11 +67,11 @@ var testCmd = &cobra.Command{
 		}
 
 		err = testing.Run(context.Background(), &testing.RunnerOpts{
-			Dir:                   flagProjectDir,
-			Pattern:               flagPattern,
-			DbConnInfo:            connInfo,
-			Secrets:               secrets,
-			GenerateClientPackage: false,
+			Dir:            flagProjectDir,
+			Pattern:        flagPattern,
+			DbConnInfo:     connInfo,
+			Secrets:        secrets,
+			GenerateClient: false,
 		})
 
 		validationErrors := errorhandling.ValidationErrors{}
