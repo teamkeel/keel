@@ -3,6 +3,7 @@ package rpcApi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
@@ -12,10 +13,28 @@ import (
 
 type Server struct{}
 
-func (s *Server) GetActiveSchema(ctx context.Context, req *rpc.GetSchemaRequest) (*rpc.GetSchemaResponse, error) {
-	schema, ok := ctx.Value("schema").(*proto.Schema)
+type schemaContextKey string
+
+var schemaKey schemaContextKey = "schema"
+
+func GetSchema(ctx context.Context) (*proto.Schema, error) {
+	v := ctx.Value(schemaKey)
+	schema, ok := v.(*proto.Schema)
+
 	if !ok {
-		return nil, twirp.NewError(twirp.Internal, "schema not valid")
+		return nil, errors.New("database in the context has wrong value type")
+	}
+	return schema, nil
+}
+
+func WithSchema(ctx context.Context, schema *proto.Schema) context.Context {
+	return context.WithValue(ctx, schemaKey, schema)
+}
+
+func (s *Server) GetActiveSchema(ctx context.Context, req *rpc.GetSchemaRequest) (*rpc.GetSchemaResponse, error) {
+	schema, err := GetSchema(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
 	}
 
 	if schema == nil {

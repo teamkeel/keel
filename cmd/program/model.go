@@ -462,7 +462,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RpcRequestMsg:
 		ctx := msg.r.Context()
 		ctx = db.WithDatabase(ctx, m.Database)
-		ctx = context.WithValue(ctx, "schema", m.Schema)
+		ctx = rpcApi.WithSchema(ctx, m.Schema)
 		r := msg.r.WithContext(ctx)
 		w := msg.w
 
