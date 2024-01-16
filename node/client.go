@@ -240,6 +240,18 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	}
 
 	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC";`)
+
+	w.Writeln("")
+	w.Writeln("type PageInfo = {")
+	w.Indent()
+	w.Writeln("count: number;")
+	w.Writeln("endCursor: string;")
+	w.Writeln("hasNextPage: boolean;")
+	w.Writeln("startCursor: string;")
+	w.Writeln("totalCount: number;")
+	w.Dedent()
+	w.Writeln("};")
+
 }
 
 func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
@@ -251,8 +263,7 @@ func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
 	case proto.ActionType_ACTION_TYPE_GET:
 		return model.Name + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
-		// TODO: type PageInfo properly
-		return "{results: " + model.Name + "[], pageInfo: any}"
+		return "{results: " + model.Name + "[], pageInfo: PageInfo}"
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		return "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:

@@ -161,7 +161,7 @@ model Person {
 
 	expected := `
 listPeople: (i: ListPeopleInput) => {
-	return this.client.rawRequest<{results: Person[], pageInfo: any}>("listPeople", i);
+	return this.client.rawRequest<{results: Person[], pageInfo: PageInfo}>("listPeople", i);
 },`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -187,7 +187,7 @@ createPerson: (i?: CreatePersonInput) => {
 	return this.client.rawRequest<Person>("createPerson", i);
 },
 listPeople: (i?: ListPeopleInput) => {
-	return this.client.rawRequest<{results: Person[], pageInfo: any}>("listPeople", i);
+	return this.client.rawRequest<{results: Person[], pageInfo: PageInfo}>("listPeople", i);
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -210,7 +210,7 @@ model Person {
 
 	expected := `
 listPeople: (i?: ListPeopleInput) => {
-	return this.client.rawRequest<{results: Person[], pageInfo: any}>("listPeople", i);
+	return this.client.rawRequest<{results: Person[], pageInfo: PageInfo}>("listPeople", i);
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -233,7 +233,7 @@ model Person {
 
 	expected := `
 listPeople: (i: ListPeopleInput) => {
-	return this.client.rawRequest<{results: Person[], pageInfo: any}>("listPeople", i);
+	return this.client.rawRequest<{results: Person[], pageInfo: PageInfo}>("listPeople", i);
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
