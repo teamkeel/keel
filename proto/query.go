@@ -6,6 +6,22 @@ import (
 	"github.com/samber/lo"
 )
 
+// FindApi locates the API of the given name.
+func FindApi(s *Schema, name string) *Api {
+	api, _ := lo.Find(s.Apis, func(m *Api) bool {
+		return m.Name == name
+	})
+
+	return api
+}
+
+// ApiModels provides the models defined in an API.
+func ApiModels(s *Schema, api *Api) []*Model {
+	return lo.Map(api.ApiModels, func(a *ApiModel, _ int) *Model {
+		return FindModel(s.Models, a.ModelName)
+	})
+}
+
 // ModelNames provides a (sorted) list of all the Model names used in the
 // given schema.
 func ModelNames(p *Schema) []string {
