@@ -100,6 +100,18 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		return err
 	}
 
+	clientFiles, err := node.GenerateClient(
+		ctx,
+		schema,
+		false,
+		ActionApiPath,
+	)
+	if err != nil {
+		return err
+	}
+
+	files = append(files, clientFiles...)
+
 	err = files.Write(opts.Dir)
 	if err != nil {
 		return err
@@ -263,6 +275,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/%s/json", runtimePort, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_JOBS_URL=http://localhost:%s/%s/json", runtimePort, JobPath),
 		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=http://localhost:%s/%s/json", runtimePort, SubscriberPath),
+		fmt.Sprintf("KEEL_TESTING_CLIENT_API_URL=http://localhost:%s/%s", runtimePort, ActionApiPath),
 		"KEEL_DB_CONN_TYPE=pg",
 		fmt.Sprintf("KEEL_DB_CONN=%s", dbConnString),
 		// Disables experimental fetch warning that pollutes console experience when running tests

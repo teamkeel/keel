@@ -1,21 +1,9 @@
 import { actions, models, resetDatabase } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
 import { Category } from "@teamkeel/sdk";
-import { APIClient } from "./keelClient"
+import { APIClient } from "./keelClient";
 
 beforeEach(resetDatabase);
-
-test("clietn", async() => {
-  console.log(process.env.KEEL_TESTING_ACTIONS_API_URL);
-  const client = new APIClient({ baseUrl: process.env.KEEL_TESTING_ACTIONS_API_URL!.replace("/json", "") });
-  const post = await client.api.mutations.createPost({title:"hello", subTitle:"sub hello"});
-  
-  console.log(post);
-  expect(post.data?.title).toEqual("hello");
-
-  const retrieved = await client.api.queries.getPost({id: post.data!.id});
-  expect(post.data?.title).toEqual(retrieved.data?.title);
-});
 
 test("create action", async () => {
   const createdPost = await actions.createPost({

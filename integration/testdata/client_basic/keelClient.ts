@@ -252,17 +252,11 @@ export class APIClient extends Core {
     deletePost: (i: DeletePostInput) => {
       return this.client.rawRequest<string>("deletePost", i);
     },
-    deletePostBySubTitle: (i: DeletePostBySubTitleInput) => {
-      return this.client.rawRequest<string>("deletePostBySubTitle", i);
-    },
-    listPosts: (i?: ListPostsInput) => {
+    listPosts: (i: ListPostsInput) => {
       return this.client.rawRequest<{ results: Post[]; pageInfo: any }>(
         "listPosts",
         i
       );
-    },
-    updateWithExplicitSet: (i: UpdateWithExplicitSetInput) => {
-      return this.client.rawRequest<Post>("updateWithExplicitSet", i);
     },
     authenticate: (i: AuthenticateInput) => {
       return this.client
@@ -292,8 +286,6 @@ export class APIClient extends Core {
       createPost: this.actions.createPost,
       updatePost: this.actions.updatePost,
       deletePost: this.actions.deletePost,
-      deletePostBySubTitle: this.actions.deletePostBySubTitle,
-      updateWithExplicitSet: this.actions.updateWithExplicitSet,
       authenticate: this.actions.authenticate,
       requestPasswordReset: this.actions.requestPasswordReset,
       resetPassword: this.actions.resetPassword,
@@ -305,7 +297,8 @@ export class APIClient extends Core {
 
 export interface CreatePostInput {
   title: string;
-  subTitle: string;
+  category?: Category | null;
+  views?: number;
 }
 export interface GetPostInput {
   id: string;
@@ -315,6 +308,8 @@ export interface UpdatePostWhere {
 }
 export interface UpdatePostValues {
   title: string;
+  category?: Category | null;
+  views?: number;
 }
 export interface UpdatePostInput {
   where: UpdatePostWhere;
@@ -322,14 +317,6 @@ export interface UpdatePostInput {
 }
 export interface DeletePostInput {
   id: string;
-}
-export interface DeletePostBySubTitleInput {
-  subTitle: string;
-}
-export interface IdQueryInput {
-  equals?: string | null;
-  oneOf?: string[];
-  notEquals?: string | null;
 }
 export interface StringQueryInput {
   equals?: string | null;
@@ -354,27 +341,16 @@ export interface IntQueryInput {
   oneOf?: number[];
 }
 export interface ListPostsWhere {
-  id?: IdQueryInput;
-  title?: StringQueryInput;
+  title: StringQueryInput;
   category?: CategoryQueryInput;
-  rating?: IntQueryInput;
+  views?: IntQueryInput;
 }
 export interface ListPostsInput {
-  where?: ListPostsWhere;
+  where: ListPostsWhere;
   first?: number;
   after?: string;
   last?: number;
   before?: string;
-}
-export interface UpdateWithExplicitSetWhere {
-  id: string;
-}
-export interface UpdateWithExplicitSetValues {
-  coolTitle: string;
-}
-export interface UpdateWithExplicitSetInput {
-  where: UpdateWithExplicitSetWhere;
-  values: UpdateWithExplicitSetValues;
 }
 export interface EmailPasswordInput {
   email: string;
@@ -409,9 +385,8 @@ export interface CategoryWhereCondition {
 }
 export interface Post {
   title: string;
-  rating: number | null;
+  views: number;
   category: Category | null;
-  subTitle: string;
   id: string;
   createdAt: Date;
   updatedAt: Date;
