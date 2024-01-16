@@ -1,61 +1,66 @@
 {
-	"type": "object",
-	"properties": {
-		"after": {
-			"type": "string"
-		},
-		"before": {
-			"type": "string"
-		},
-		"first": {
-			"type": "number"
-		},
-		"last": {
-			"type": "number"
-		},
-		"orderBy": {
-			"type": "array",
-			"items": {
-				"oneOf": [{
-					"$ref": "#/components/schemas/TestActionOrderBySurname"
-				}, {
-					"$ref": "#/components/schemas/TestActionOrderByFirstName"
-				}]
-			}
-		},
-		"where": {
-			"$ref": "#/components/schemas/TestActionWhere"
-		}
-	},
-	"additionalProperties": false,
-	"components": {
-		"schemas": {
-			"TestActionOrderByFirstName": {
-				"type": "object",
-				"properties": {
-					"firstName": {
-						"type": "string",
-						"enum": ["asc", "desc"]
-					}
-				},
-				"additionalProperties": false,
-				"required": ["firstName"]
-			},
-			"TestActionOrderBySurname": {
-				"type": "object",
-				"properties": {
-					"surname": {
-						"type": "string",
-						"enum": ["asc", "desc"]
-					}
-				},
-				"additionalProperties": false,
-				"required": ["surname"]
-			},
-			"TestActionWhere": {
-				"type": "object",
-				"additionalProperties": false
-			}
-		}
-	}
+  "type": "object",
+  "properties": {
+    "after": {
+      "type": "string"
+    },
+    "before": {
+      "type": "string"
+    },
+    "first": {
+      "type": "number"
+    },
+    "last": {
+      "type": "number"
+    },
+    "orderBy": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TestActionOrderBySurname"
+          },
+          {
+            "$ref": "#/components/schemas/TestActionOrderByFirstName"
+          }
+        ]
+      }
+    },
+    "where": {
+      "$ref": "#/components/schemas/TestActionWhere"
+    }
+  },
+  "additionalProperties": false,
+  "components": {
+    "schemas": {
+      "TestActionOrderByFirstName": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "enum": ["asc", "desc"]
+          }
+        },
+        "additionalProperties": false,
+        "required": ["firstName"],
+        "title": "firstName"
+      },
+      "TestActionOrderBySurname": {
+        "type": "object",
+        "properties": {
+          "surname": {
+            "type": "string",
+            "enum": ["asc", "desc"]
+          }
+        },
+        "additionalProperties": false,
+        "required": ["surname"],
+        "title": "surname"
+      },
+      "TestActionWhere": {
+        "type": "object",
+        "additionalProperties": false
+      }
+    }
+  }
 }
