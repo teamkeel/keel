@@ -240,6 +240,18 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	}
 
 	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC";`)
+
+	w.Writeln("")
+	w.Writeln("type PageInfo = {")
+	w.Indent()
+	w.Writeln("count: number;")
+	w.Writeln("endCursor: string;")
+	w.Writeln("hasNextPage: boolean;")
+	w.Writeln("startCursor: string;")
+	w.Writeln("totalCount: number;")
+	w.Dedent()
+	w.Writeln("};")
+
 }
 
 func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
@@ -443,13 +455,6 @@ type Err<U> = {
   data?: never;
   error: U;
 };
-
-type PageInfo = {
-    first?: number;
-    after?: string;
-    last?: number;
-    before?: string;
-}
 
 type Result<T, U> = NonNullable<Data<T> | Err<U>>;
 
