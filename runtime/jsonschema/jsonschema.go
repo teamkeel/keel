@@ -172,7 +172,7 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 	root := JSONSchema{
 		Type:                 "object",
 		Properties:           map[string]JSONSchema{},
-		AdditionalProperties: boolPtr(isAny),
+		AdditionalProperties: boolPtr(false),
 	}
 
 	if isAny {
@@ -183,6 +183,7 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 
 		root.AnyOf = anyOf
 		root.Type = nil
+		root.AdditionalProperties = nil
 	}
 
 	if !isAny {
@@ -195,7 +196,7 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 				oneOfOption := JSONSchema{
 					Type:                 "object",
 					Properties:           map[string]JSONSchema{},
-					AdditionalProperties: boolPtr(isAny),
+					AdditionalProperties: boolPtr(false),
 				}
 
 				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable)
