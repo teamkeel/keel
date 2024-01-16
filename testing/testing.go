@@ -49,6 +49,8 @@ type RunnerOpts struct {
 	DbConnInfo    *db.ConnectionInfo
 	Secrets       map[string]string
 	TestGroupName string
+	// Generates a Keel client (keelClient.ts) for this test
+	GenerateClient bool
 }
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/testing")
@@ -98,6 +100,20 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 	)
 	if err != nil {
 		return err
+	}
+
+	if opts.GenerateClient {
+		clientFiles, err := node.GenerateClient(
+			ctx,
+			schema,
+			false,
+			ActionApiPath,
+		)
+		if err != nil {
+			return err
+		}
+
+		files = append(files, clientFiles...)
 	}
 
 	err = files.Write(opts.Dir)
@@ -263,6 +279,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/%s/json", runtimePort, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_JOBS_URL=http://localhost:%s/%s/json", runtimePort, JobPath),
 		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=http://localhost:%s/%s/json", runtimePort, SubscriberPath),
+		fmt.Sprintf("KEEL_TESTING_CLIENT_API_URL=http://localhost:%s/%s", runtimePort, ActionApiPath),
 		"KEEL_DB_CONN_TYPE=pg",
 		fmt.Sprintf("KEEL_DB_CONN=%s", dbConnString),
 		// Disables experimental fetch warning that pollutes console experience when running tests

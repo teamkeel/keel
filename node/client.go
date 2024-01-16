@@ -75,7 +75,7 @@ func generateClientSdkPackage(schema *proto.Schema, api *proto.Api) codegen.Gene
 
 	types.Writeln(clientTypes)
 
-	client.Writeln(`import { CoreClient, RequestConfig } from "./core";`)
+	client.Writeln(`import { Core, RequestConfig } from "./core";`)
 	client.Writeln("")
 	writeClientApiClass(client, schema, api)
 
@@ -238,6 +238,8 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	for _, model := range models {
 		writeModelInterface(w, model)
 	}
+
+	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC";`)
 }
 
 func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
@@ -264,14 +266,14 @@ func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
 	}
 }
 
-var clientCore = `type RequestHeaders = Record<string, string>;
+var clientCore = `type RequestHeaders = globalThis.Record<string, string>;
 
 export type RequestConfig = {
   baseUrl: string;
   headers?: RequestHeaders;
 };
 
-class Core {
+export class Core {
 	constructor(private config: RequestConfig) {}
 
 	ctx = {

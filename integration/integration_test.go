@@ -120,8 +120,9 @@ func TestIntegration(t *gotest.T) {
 					"TEST_API_KEY": "1232132_2323",
 					"NAME_API_KEY": "worf",
 				},
-				Pattern:       *pattern,
-				TestGroupName: e.Name(),
+				Pattern:        *pattern,
+				TestGroupName:  e.Name(),
+				GenerateClient: true,
 			})
 			require.NoError(t, err)
 		})
