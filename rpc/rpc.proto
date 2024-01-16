@@ -1,0 +1,37 @@
+syntax = "proto3";
+package rpc;
+
+option go_package = "rpc/rpc";
+import "proto/schema.proto";
+
+message GetSchemaRequest {
+	string environment_id = 1;
+}
+
+message GetSchemaResponse {
+	proto.Schema schema = 1;
+}
+
+message SQLQueryInput {
+	string projectID = 1;
+	string environmentID = 2;
+	string query = 3;
+}
+
+message SQLQueryResponse {
+	SQLQueryStatus status = 1;
+	int32 executionDuration = 2;
+	string resultsJSON = 3;
+	int32 totalRows = 4;
+	string error = 5;
+}
+
+enum SQLQueryStatus {
+	success = 0;
+	failed = 1;
+}
+
+service API {
+	rpc GetActiveSchema(GetSchemaRequest) returns (GetSchemaResponse);
+	rpc RunSQLQuery(SQLQueryInput) returns (SQLQueryResponse);
+}

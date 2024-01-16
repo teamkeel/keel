@@ -104,6 +104,11 @@ func renderRun(m *Model) string {
 			b.WriteString(colors.Yellow("\n - Your schema doesn't have any API's defined in it").String())
 		}
 
+		b.WriteString("\n")
+		b.WriteString("Live Console: ")
+		b.WriteString(colors.Blue("https://console.keel.so/local").Highlight().String())
+		b.WriteString("\n")
+
 		for _, api := range m.Schema.Apis {
 			b.WriteString("\n")
 			b.WriteString(api.Name)

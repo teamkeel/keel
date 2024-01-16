@@ -60,3 +60,8 @@ goreleaser:
 gen-pk:
 	go run ./util/privatekey/pkgen.go ./testing/testing/default.pem
 	
+rpc-api:
+	protoc \
+		--go_opt=Mschema.proto=github.com/teamkeel/keel/proto \
+		--twirp_out=Mschema.proto=github.com/teamkeel/keel/proto:. \
+		--go_out=./ rpc/rpc.proto
