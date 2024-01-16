@@ -31,7 +31,22 @@ enum SQLQueryStatus {
 	failed = 1;
 }
 
+message GetTraceRequest { }
+
+message GetTraceResponse {
+	string json = 1;
+}
+
+
+message ListTracesRequest { }
+
+message ListTracesResponse {
+	string json = 1;
+}
+
 service API {
 	rpc GetActiveSchema(GetSchemaRequest) returns (GetSchemaResponse);
 	rpc RunSQLQuery(SQLQueryInput) returns (SQLQueryResponse);
+	rpc GetTrace(GetTraceRequest) returns (GetTraceResponse);
+	rpc ListTraces(ListTracesRequest) returns (ListTracesResponse);
 }

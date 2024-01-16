@@ -35,6 +35,10 @@ type API interface {
 	GetActiveSchema(context.Context, *GetSchemaRequest) (*GetSchemaResponse, error)
 
 	RunSQLQuery(context.Context, *SQLQueryInput) (*SQLQueryResponse, error)
+
+	GetTrace(context.Context, *GetTraceRequest) (*GetTraceResponse, error)
+
+	ListTraces(context.Context, *ListTracesRequest) (*ListTracesResponse, error)
 }
 
 // ===================
@@ -43,7 +47,7 @@ type API interface {
 
 type aPIProtobufClient struct {
 	client      HTTPClient
-	urls        [2]string
+	urls        [4]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -71,9 +75,11 @@ func NewAPIProtobufClient(baseURL string, client HTTPClient, opts ...twirp.Clien
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "rpc", "API")
-	urls := [2]string{
+	urls := [4]string{
 		serviceURL + "GetActiveSchema",
 		serviceURL + "RunSQLQuery",
+		serviceURL + "GetTrace",
+		serviceURL + "ListTraces",
 	}
 
 	return &aPIProtobufClient{
@@ -176,13 +182,105 @@ func (c *aPIProtobufClient) callRunSQLQuery(ctx context.Context, in *SQLQueryInp
 	return out, nil
 }
 
+func (c *aPIProtobufClient) GetTrace(ctx context.Context, in *GetTraceRequest) (*GetTraceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "GetTrace")
+	caller := c.callGetTrace
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *GetTraceRequest) (*GetTraceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*GetTraceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*GetTraceRequest) when calling interceptor")
+					}
+					return c.callGetTrace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*GetTraceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*GetTraceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callGetTrace(ctx context.Context, in *GetTraceRequest) (*GetTraceResponse, error) {
+	out := new(GetTraceResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIProtobufClient) ListTraces(ctx context.Context, in *ListTracesRequest) (*ListTracesResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "ListTraces")
+	caller := c.callListTraces
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ListTracesRequest) (*ListTracesResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListTracesRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListTracesRequest) when calling interceptor")
+					}
+					return c.callListTraces(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListTracesResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListTracesResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callListTraces(ctx context.Context, in *ListTracesRequest) (*ListTracesResponse, error) {
+	out := new(ListTracesResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[3], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
 // ===============
 // API JSON Client
 // ===============
 
 type aPIJSONClient struct {
 	client      HTTPClient
-	urls        [2]string
+	urls        [4]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -210,9 +308,11 @@ func NewAPIJSONClient(baseURL string, client HTTPClient, opts ...twirp.ClientOpt
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "rpc", "API")
-	urls := [2]string{
+	urls := [4]string{
 		serviceURL + "GetActiveSchema",
 		serviceURL + "RunSQLQuery",
+		serviceURL + "GetTrace",
+		serviceURL + "ListTraces",
 	}
 
 	return &aPIJSONClient{
@@ -301,6 +401,98 @@ func (c *aPIJSONClient) RunSQLQuery(ctx context.Context, in *SQLQueryInput) (*SQ
 func (c *aPIJSONClient) callRunSQLQuery(ctx context.Context, in *SQLQueryInput) (*SQLQueryResponse, error) {
 	out := new(SQLQueryResponse)
 	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[1], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIJSONClient) GetTrace(ctx context.Context, in *GetTraceRequest) (*GetTraceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "GetTrace")
+	caller := c.callGetTrace
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *GetTraceRequest) (*GetTraceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*GetTraceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*GetTraceRequest) when calling interceptor")
+					}
+					return c.callGetTrace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*GetTraceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*GetTraceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callGetTrace(ctx context.Context, in *GetTraceRequest) (*GetTraceResponse, error) {
+	out := new(GetTraceResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIJSONClient) ListTraces(ctx context.Context, in *ListTracesRequest) (*ListTracesResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "ListTraces")
+	caller := c.callListTraces
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ListTracesRequest) (*ListTracesResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListTracesRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListTracesRequest) when calling interceptor")
+					}
+					return c.callListTraces(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListTracesResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListTracesResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callListTraces(ctx context.Context, in *ListTracesRequest) (*ListTracesResponse, error) {
+	out := new(ListTracesResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[3], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -417,6 +609,12 @@ func (s *aPIServer) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		return
 	case "RunSQLQuery":
 		s.serveRunSQLQuery(ctx, resp, req)
+		return
+	case "GetTrace":
+		s.serveGetTrace(ctx, resp, req)
+		return
+	case "ListTraces":
+		s.serveListTraces(ctx, resp, req)
 		return
 	default:
 		msg := fmt.Sprintf("no handler for path %q", req.URL.Path)
@@ -762,6 +960,366 @@ func (s *aPIServer) serveRunSQLQueryProtobuf(ctx context.Context, resp http.Resp
 	}
 	if respContent == nil {
 		s.writeError(ctx, resp, twirp.InternalError("received a nil *SQLQueryResponse and nil error while calling RunSQLQuery. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveGetTrace(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveGetTraceJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveGetTraceProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveGetTraceJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "GetTrace")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(GetTraceRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.GetTrace
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *GetTraceRequest) (*GetTraceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*GetTraceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*GetTraceRequest) when calling interceptor")
+					}
+					return s.API.GetTrace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*GetTraceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*GetTraceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *GetTraceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *GetTraceResponse and nil error while calling GetTrace. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveGetTraceProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "GetTrace")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(GetTraceRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.GetTrace
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *GetTraceRequest) (*GetTraceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*GetTraceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*GetTraceRequest) when calling interceptor")
+					}
+					return s.API.GetTrace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*GetTraceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*GetTraceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *GetTraceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *GetTraceResponse and nil error while calling GetTrace. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveListTraces(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveListTracesJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveListTracesProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveListTracesJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ListTraces")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(ListTracesRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.ListTraces
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ListTracesRequest) (*ListTracesResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListTracesRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListTracesRequest) when calling interceptor")
+					}
+					return s.API.ListTraces(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListTracesResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListTracesResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ListTracesResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ListTracesResponse and nil error while calling ListTraces. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveListTracesProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ListTraces")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(ListTracesRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.ListTraces
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ListTracesRequest) (*ListTracesResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListTracesRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListTracesRequest) when calling interceptor")
+					}
+					return s.API.ListTraces(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListTracesResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListTracesResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ListTracesResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ListTracesResponse and nil error while calling ListTraces. nil responses are not supported"))
 		return
 	}
 
@@ -1366,29 +1924,34 @@ func callClientError(ctx context.Context, h *twirp.ClientHooks, err twirp.Error)
 }
 
 var twirpFileDescriptor0 = []byte{
-	// 381 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x52, 0x4d, 0x6f, 0xda, 0x40,
-	0x10, 0xad, 0x4b, 0x31, 0x62, 0x2c, 0x53, 0xb3, 0x2d, 0x95, 0x85, 0x7a, 0x40, 0x56, 0x91, 0xfa,
-	0x25, 0x90, 0xe8, 0xa5, 0xc9, 0x29, 0x44, 0x96, 0x90, 0xa3, 0x28, 0x09, 0xf6, 0x2d, 0x97, 0xc8,
-	0x59, 0x26, 0x8a, 0x23, 0xf0, 0x9a, 0xfd, 0x20, 0xc9, 0x31, 0xbf, 0x2d, 0x7f, 0x2c, 0xf2, 0xda,
-	0x0e, 0x18, 0x4e, 0xf6, 0xbe, 0x37, 0x33, 0xef, 0xcd, 0xdb, 0x05, 0x9b, 0x67, 0x74, 0xcc, 0x33,
-	0x3a, 0xca, 0x38, 0x93, 0x8c, 0x34, 0x78, 0x46, 0xfb, 0x44, 0xff, 0x8f, 0x05, 0xbd, 0xc7, 0x55,
-	0x5c, 0x10, 0xde, 0x11, 0x38, 0x33, 0x94, 0x91, 0x86, 0x42, 0x5c, 0x2b, 0x14, 0x92, 0x0c, 0xa1,
-	0x83, 0xe9, 0x26, 0xe1, 0x2c, 0x5d, 0x61, 0x2a, 0x6f, 0x92, 0x85, 0x6b, 0x0c, 0x8c, 0x9f, 0xed,
-	0xd0, 0xde, 0x41, 0x83, 0x85, 0x77, 0x0c, 0xdd, 0x9d, 0x56, 0x91, 0xb1, 0x54, 0x20, 0x19, 0x82,
-	0x59, 0xcc, 0xd7, 0x3d, 0xd6, 0xc4, 0x2e, 0x74, 0x46, 0x65, 0x59, 0x49, 0x7a, 0x09, 0xd8, 0xd1,
-	0xfc, 0x7c, 0xae, 0x90, 0x3f, 0x07, 0x69, 0xa6, 0x24, 0xf9, 0x0e, 0xed, 0x8c, 0xb3, 0x07, 0xa4,
-	0x32, 0xf0, 0x4b, 0xb9, 0x2d, 0x40, 0x7e, 0x40, 0x4d, 0xdb, 0x77, 0x3f, 0x1e, 0x1a, 0xf2, 0xc9,
-	0x57, 0x68, 0xae, 0xf3, 0x89, 0x6e, 0x43, 0xb3, 0xc5, 0xc1, 0x7b, 0x35, 0xc0, 0xa9, 0xb4, 0xde,
-	0x6d, 0xfe, 0x01, 0x53, 0xc8, 0x58, 0x2a, 0xa1, 0xb5, 0x3a, 0x93, 0x2f, 0xa3, 0x3c, 0xab, 0xaa,
-	0x2c, 0xd2, 0x54, 0x58, 0x96, 0x90, 0xbf, 0xd0, 0xc5, 0x27, 0xa4, 0x4a, 0x26, 0x2c, 0xf5, 0x15,
-	0x8f, 0xf3, 0xaf, 0x76, 0xd0, 0x0c, 0x0f, 0x09, 0x32, 0x00, 0x8b, 0xa3, 0x50, 0x4b, 0x29, 0xce,
-	0xa2, 0xcb, 0x8b, 0xd2, 0xcb, 0x2e, 0x94, 0xef, 0x2a, 0x99, 0x8c, 0x97, 0x21, 0x7b, 0x14, 0xee,
-	0x27, 0x3d, 0x67, 0x0b, 0xe4, 0x5b, 0x20, 0xe7, 0x8c, 0xbb, 0xcd, 0x62, 0x0b, 0x7d, 0xf8, 0xfd,
-	0x0b, 0x3a, 0x75, 0x77, 0xc4, 0x82, 0x96, 0x50, 0x94, 0xa2, 0x10, 0xce, 0x07, 0x02, 0x60, 0xde,
-	0xc5, 0xc9, 0x12, 0x17, 0x8e, 0x31, 0x79, 0x31, 0xa0, 0x31, 0xbd, 0x0a, 0xc8, 0x09, 0x7c, 0x9e,
-	0xa1, 0x9c, 0x52, 0x99, 0x6c, 0xb0, 0x88, 0x9f, 0xf4, 0xf4, 0x9a, 0xfb, 0x17, 0xde, 0xff, 0xb6,
-	0x0f, 0x97, 0x29, 0xfd, 0x07, 0x2b, 0x54, 0x69, 0xa5, 0x4b, 0x48, 0x2d, 0x24, 0x7d, 0x6f, 0xfd,
-	0x5e, 0x0d, 0xab, 0x3a, 0x4f, 0xdb, 0xd7, 0xad, 0xf2, 0x01, 0xde, 0x9a, 0xfa, 0x01, 0xfc, 0x7b,
-	0x0b, 0x00, 0x00, 0xff, 0xff, 0xc2, 0xd8, 0xb7, 0xd2, 0x92, 0x02, 0x00, 0x00,
+	// 456 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x53, 0x4d, 0x6f, 0xd3, 0x40,
+	0x10, 0xc5, 0xa4, 0x49, 0xc9, 0x44, 0x09, 0xc9, 0xb4, 0x01, 0xcb, 0xe2, 0x50, 0x59, 0x14, 0x95,
+	0x0f, 0xa5, 0x52, 0x38, 0xf0, 0x21, 0x21, 0x51, 0x14, 0xa9, 0x0a, 0xaa, 0x80, 0xda, 0x9c, 0xb8,
+	0x20, 0xb3, 0x19, 0x84, 0xab, 0x74, 0xd7, 0xdd, 0x8f, 0x02, 0xbf, 0x8f, 0x5f, 0xc5, 0x0d, 0x79,
+	0x77, 0xdd, 0xd8, 0xb1, 0x38, 0x79, 0xf7, 0xcd, 0xbc, 0x99, 0x37, 0x6f, 0xd6, 0x30, 0x94, 0x05,
+	0x3b, 0x96, 0x05, 0x9b, 0x15, 0x52, 0x68, 0x81, 0x1d, 0x59, 0xb0, 0x08, 0xed, 0xf9, 0x58, 0xb1,
+	0x1f, 0x74, 0x99, 0xb9, 0x40, 0xfc, 0x0a, 0xc6, 0xa7, 0xa4, 0x53, 0x0b, 0x25, 0x74, 0x65, 0x48,
+	0x69, 0x3c, 0x84, 0x11, 0xf1, 0xeb, 0x5c, 0x0a, 0x7e, 0x49, 0x5c, 0x7f, 0xcd, 0x57, 0x61, 0x70,
+	0x10, 0x1c, 0xf5, 0x93, 0x61, 0x0d, 0x5d, 0xae, 0xe2, 0xd7, 0x30, 0xa9, 0x51, 0x55, 0x21, 0xb8,
+	0x22, 0x3c, 0x84, 0x9e, 0xab, 0x6f, 0x39, 0x83, 0xf9, 0xd0, 0xf5, 0x99, 0xf9, 0x34, 0x1f, 0x8c,
+	0x73, 0x18, 0xa6, 0xe7, 0x67, 0xe7, 0x86, 0xe4, 0xef, 0x25, 0x2f, 0x8c, 0xc6, 0x07, 0xd0, 0x2f,
+	0xa4, 0xb8, 0x20, 0xa6, 0x97, 0x0b, 0xdf, 0x6e, 0x03, 0xe0, 0x43, 0x68, 0xf4, 0x5e, 0x84, 0xb7,
+	0xdb, 0x82, 0x16, 0xb8, 0x0f, 0xdd, 0xab, 0xb2, 0x62, 0xd8, 0xb1, 0x51, 0x77, 0x89, 0xff, 0x04,
+	0x30, 0xae, 0x7a, 0xdd, 0xc8, 0x7c, 0x0a, 0x3d, 0xa5, 0x33, 0x6d, 0x94, 0xed, 0x35, 0x9a, 0xef,
+	0xcd, 0x4a, 0xaf, 0xaa, 0xb4, 0xd4, 0x86, 0x12, 0x9f, 0x82, 0xcf, 0x60, 0x42, 0xbf, 0x88, 0x19,
+	0x9d, 0x0b, 0xbe, 0x30, 0x32, 0x2b, 0xbf, 0x56, 0x41, 0x37, 0x69, 0x07, 0xf0, 0x00, 0x06, 0x92,
+	0x94, 0x59, 0x6b, 0xf5, 0x3e, 0xfd, 0xf8, 0xc1, 0x6b, 0xa9, 0x43, 0xe5, 0xac, 0x5a, 0xe8, 0x6c,
+	0x9d, 0x88, 0x9f, 0x2a, 0xdc, 0xb1, 0x75, 0x36, 0x40, 0x39, 0x05, 0x49, 0x29, 0x64, 0xd8, 0x75,
+	0x53, 0xd8, 0x4b, 0x3c, 0x81, 0xbb, 0xa7, 0xa4, 0x3f, 0xcb, 0x8c, 0x91, 0x5f, 0x53, 0xfc, 0xc8,
+	0xae, 0xce, 0x43, 0x7e, 0x2e, 0x84, 0x9d, 0x0b, 0x25, 0xb8, 0x77, 0xd0, 0x9e, 0xe3, 0x3d, 0x98,
+	0x9c, 0xe5, 0xca, 0x25, 0xaa, 0x8a, 0x7c, 0x04, 0x58, 0x07, 0xff, 0x4f, 0x7f, 0xf2, 0x18, 0x46,
+	0x4d, 0x5f, 0x70, 0x00, 0xbb, 0xca, 0x30, 0x46, 0x4a, 0x8d, 0x6f, 0x21, 0x40, 0xef, 0x7b, 0x96,
+	0xaf, 0x69, 0x35, 0x0e, 0xe6, 0x7f, 0x03, 0xe8, 0x9c, 0x7c, 0x5a, 0xe2, 0x5b, 0x2b, 0xf6, 0x84,
+	0xe9, 0xfc, 0x9a, 0xdc, 0xe2, 0x71, 0x6a, 0x0d, 0xde, 0x7e, 0x6a, 0xd1, 0xbd, 0x6d, 0xd8, 0x0b,
+	0x79, 0x09, 0x83, 0xc4, 0xf0, 0xaa, 0x2f, 0x62, 0x63, 0x3d, 0xf6, 0xc5, 0x44, 0xd3, 0x06, 0x76,
+	0xc3, 0x7c, 0x01, 0x77, 0x2a, 0x57, 0x70, 0xbf, 0xaa, 0x5e, 0xf7, 0x2d, 0x9a, 0x6e, 0xa1, 0x9e,
+	0xf8, 0x06, 0x60, 0xe3, 0x08, 0x3a, 0x61, 0x2d, 0xdf, 0xa2, 0xfb, 0x2d, 0xdc, 0xd1, 0xdf, 0xf5,
+	0xbf, 0xec, 0xfa, 0x5f, 0xee, 0x5b, 0xcf, 0x3e, 0xf9, 0xe7, 0xff, 0x02, 0x00, 0x00, 0xff, 0xff,
+	0x89, 0xed, 0xfd, 0xdc, 0x84, 0x03, 0x00, 0x00,
 }

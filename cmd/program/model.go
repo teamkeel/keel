@@ -15,6 +15,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/cmd/exporter"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -31,10 +32,7 @@ import (
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/twitchtv/twirp"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
@@ -55,32 +53,53 @@ const (
 	StatusQuitting
 )
 
+// func SetExporter(exporter sdktrace.SpanExporter) error {
+
+// 	provider := sdktrace.NewTracerProvider(
+// 		sdktrace.WithBatcher(exporter),
+// 	)
+
+// 	otel.SetTracerProvider(provider)
+// 	otel.SetTextMapPropagator(propagation.TraceContext{})
+
+// 	return nil
+// }
+
 func Run(model *Model) {
 	// The runtime currently does logging with logrus, which is super noisy.
 	// For now we just discard the logs as they are not useful in the CLI
 	logrus.SetOutput(io.Discard)
 
-	if model.TracingEnabled {
-		exporter, err := otlptracehttp.New(context.Background(), otlptracehttp.WithInsecure())
-		if err != nil {
-			panic(err)
-		}
+	exportr, _ := exporter.New(exporter.WithPrettyPrint())
 
-		provider := sdktrace.NewTracerProvider(
-			sdktrace.WithBatcher(exporter),
-			sdktrace.WithResource(
-				resource.NewSchemaless(attribute.String("service.name", "runtime")),
-			),
-		)
+	provider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exportr),
+	)
 
-		otel.SetTracerProvider(provider)
-		otel.SetTextMapPropagator(propagation.TraceContext{})
-	} else {
-		// We still need a tracing provider for auditing and events,
-		// even if the data is not being exported.
-		otel.SetTracerProvider(sdktrace.NewTracerProvider())
-		otel.SetTextMapPropagator(propagation.TraceContext{})
-	}
+	otel.SetTracerProvider(provider)
+	otel.SetTextMapPropagator(propagation.TraceContext{})
+
+	// if model.TracingEnabled {
+	// 	exporter, err := otlptracehttp.New(context.Background(), otlptracehttp.WithInsecure())
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+
+	// 	provider := sdktrace.NewTracerProvider(
+	// 		sdktrace.WithBatcher(exporter),
+	// 		sdktrace.WithResource(
+	// 			resource.NewSchemaless(attribute.String("service.name", "runtime")),
+	// 		),
+	// 	)
+
+	// 	otel.SetTracerProvider(provider)
+	// 	otel.SetTextMapPropagator(propagation.TraceContext{})
+	// } else {
+	// 	// We still need a tracing provider for auditing and events,
+	// 	// even if the data is not being exported.
+	// 	otel.SetTracerProvider(sdktrace.NewTracerProvider())
+	// 	otel.SetTextMapPropagator(propagation.TraceContext{})
+	// }
 
 	defer func() {
 		_ = database.Stop()
