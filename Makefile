@@ -68,10 +68,6 @@ rpc-api:
 		--proto_path=proto/ \
 		--go_opt=Mschema.proto=github.com/teamkeel/keel/proto \
 		--go_opt=Mrpc.proto=rpc/rpc \
-		--twirp_out=Mschema.proto=github.com/teamkeel/keel/proto:. \
 		--twirp_out=Mrpc.proto=rpc/rpc:rpc/rpc \
 		--go_out=./ \
 		rpc.proto
-
-
-# --go_opt=Mrpc.proto=rpc/rpc 
