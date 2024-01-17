@@ -48,6 +48,7 @@ message ListTracesRequest {
 	google.protobuf.Timestamp after = 3;
 	repeated ListTraceFilter filters = 4;
 	int32 limit = 5;
+	int32 offset = 6;
 }
 
 message ListTraceFilter {

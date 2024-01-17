@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"sort"
+	"strings"
 
 	"github.com/teamkeel/keel/cmd/localTraceExporter"
 	"github.com/teamkeel/keel/db"
@@ -11,6 +13,7 @@ import (
 	"github.com/teamkeel/keel/rpc/rpc"
 	"github.com/twitchtv/twirp"
 	v1 "go.opentelemetry.io/proto/otlp/trace/v1"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Server struct{}
@@ -81,23 +84,67 @@ func (s *Server) RunSQLQuery(ctx context.Context, input *rpc.SQLQueryInput) (*rp
 }
 
 func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (*rpc.ListTracesResponse, error) {
-	traces := localTraceExporter.AllTraces()
+	traces := localTraceExporter.Summary()
 
-	tracesSlice := []*rpc.TraceItem{}
+	list := []*rpc.TraceItem{}
 
-	for k, _ := range traces {
-		tracesSlice = append(tracesSlice, &rpc.TraceItem{
-			TraceId: k,
+	for k, v := range traces {
+
+		if input.After != nil && v.StartTime.Before(input.After.AsTime()) {
+			continue
+		}
+
+		if input.Before != nil && v.StartTime.After(input.Before.AsTime()) {
+			continue
+		}
+
+		if v.RootName == "GET /_health" {
+			continue
+		}
+		if strings.HasSuffix(v.RootName, "openapi.json") {
+			continue
+		}
+		if strings.HasPrefix(v.RootName, "OPTIONS") {
+			continue
+		}
+
+		list = append(list, &rpc.TraceItem{
+			TraceId:    k,
+			RootName:   v.RootName,
+			StartTime:  timestamppb.New(v.StartTime),
+			EndTime:    timestamppb.New(v.EndTime),
+			DurationMs: float32(v.Duration.Milliseconds()),
+			Error:      v.HasError,
 		})
 	}
 
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].StartTime.AsTime().After(list[j].StartTime.AsTime())
+	})
+
+	if int(input.Offset) > len(list) {
+		list = []*rpc.TraceItem{}
+	} else {
+		list = list[input.Offset:]
+	}
+
+	if input.Limit > int32(len(list)) {
+		input.Limit = int32(len(list))
+	}
+
+	list = list[:input.Limit]
+
 	return &rpc.ListTracesResponse{
-		Traces: tracesSlice,
+		Traces: list,
 	}, nil
 }
 
 func (s *Server) GetTrace(ctx context.Context, input *rpc.GetTraceRequest) (*rpc.GetTraceResponse, error) {
 	trace := localTraceExporter.GetTrace(input.TraceId)
+
+	if trace == nil {
+		return nil, twirp.NewError(twirp.NotFound, "trace not found")
+	}
 
 	traceData := v1.TracesData{
 		ResourceSpans: []*v1.ResourceSpans{

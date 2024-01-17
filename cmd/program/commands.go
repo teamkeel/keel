@@ -361,11 +361,8 @@ func StartFunctions(m *Model) tea.Cmd {
 		envVars := m.Config.GetEnvVars(envType)
 		envVars["KEEL_DB_CONN_TYPE"] = "pg"
 		envVars["KEEL_DB_CONN"] = m.DatabaseConnInfo.String()
-
-		if m.TracingEnabled {
-			envVars["KEEL_TRACING_ENABLED"] = "true"
-			envVars["OTEL_RESOURCE_ATTRIBUTES"] = "service.name=functions"
-		}
+		envVars["KEEL_TRACING_ENABLED"] = "true"
+		envVars["OTEL_RESOURCE_ATTRIBUTES"] = "service.name=functions"
 
 		output := &FunctionsOutputWriter{
 			// Initially buffer output inside the writer in case there's an error

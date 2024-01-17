@@ -3,6 +3,7 @@ package program
 import (
 	"context"
 	"crypto/rsa"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -32,7 +33,11 @@ import (
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/twitchtv/twirp"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
@@ -65,44 +70,36 @@ const (
 // 	return nil
 // }
 
+var tracer = otel.Tracer("github.com/teamkeel/keel/db")
+
 func Run(model *Model) {
 	// The runtime currently does logging with logrus, which is super noisy.
 	// For now we just discard the logs as they are not useful in the CLI
 	logrus.SetOutput(io.Discard)
 
-	exportr, err := localTraceExporter.New(context.Background())
-	if err != nil {
-		panic(err.Error())
+	var exporter *otlptrace.Exporter
+	var err error
+	if model.CustomTracing {
+		exporter, err = otlptracehttp.New(context.Background(), otlptracehttp.WithInsecure())
+		if err != nil {
+			panic(err.Error())
+		}
+	} else {
+		exporter, err = localTraceExporter.New(context.Background())
+		if err != nil {
+			panic(err.Error())
+		}
 	}
 
 	provider := sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(exportr),
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(
+			resource.NewSchemaless(attribute.String("service.name", "cli")),
+		),
 	)
 
 	otel.SetTracerProvider(provider)
 	otel.SetTextMapPropagator(propagation.TraceContext{})
-
-	// if model.TracingEnabled {
-	// 	exporter, err := otlptracehttp.New(context.Background(), otlptracehttp.WithInsecure())
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-
-	// 	provider := sdktrace.NewTracerProvider(
-	// 		sdktrace.WithBatcher(exporter),
-	// 		sdktrace.WithResource(
-	// 			resource.NewSchemaless(attribute.String("service.name", "runtime")),
-	// 		),
-	// 	)
-
-	// 	otel.SetTracerProvider(provider)
-	// 	otel.SetTextMapPropagator(propagation.TraceContext{})
-	// } else {
-	// 	// We still need a tracing provider for auditing and events,
-	// 	// even if the data is not being exported.
-	// 	otel.SetTracerProvider(sdktrace.NewTracerProvider())
-	// 	otel.SetTextMapPropagator(propagation.TraceContext{})
-	// }
 
 	defer func() {
 		_ = database.Stop()
@@ -153,9 +150,9 @@ type Model struct {
 	// Pattern to pass to vitest to isolate specific tests
 	TestPattern string
 
-	// If true then an OTLP export will be setup for the runtime and the
-	// env var KEEL_TRACING_ENABLED will be passed to the functions runtime
-	TracingEnabled bool
+	// If true then traces will be sent to localhost:4318 instead of the default exporter
+	// This does mean that the Console Monitoring page will not reflect any traces.
+	CustomTracing bool
 
 	// Model state - used in View()
 	Status            int
@@ -429,6 +426,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		ctx := msg.r.Context()
+
+		ctx, span := tracer.Start(ctx, fmt.Sprintf("%s %s", request.Method, request.Path))
+		defer span.End()
+
+		span.SetAttributes(
+			attribute.String("type", "request"),
+			attribute.String("http.method", request.Method),
+			attribute.String("http.path", request.Path),
+		)
 
 		if m.PrivateKey != nil {
 			ctx = runtimectx.WithPrivateKey(ctx, m.PrivateKey)
