@@ -1,10 +1,11 @@
 syntax = "proto3";
 package rpc;
 
-option go_package = "rpc/rpc";
+// option go_package = "apis/rpc";
 import "schema.proto";
 import "opentelemetry/proto/trace/v1/trace.proto";
 import "google/protobuf/timestamp.proto";
+
 
 message GetSchemaRequest {
 	string environment_id = 1;
@@ -42,14 +43,15 @@ message GetTraceResponse {
 }
 
 message ListTracesRequest {
-	google.protobuf.Timestamp before = 1;
-	google.protobuf.Timestamp after = 2;
-	repeated ListTraceFilter filters = 3;
-	int32 limit = 4;
+	string environment_id = 1;
+	google.protobuf.Timestamp before = 2;
+	google.protobuf.Timestamp after = 3;
+	repeated ListTraceFilter filters = 4;
+	int32 limit = 5;
 }
 
 message ListTraceFilter {
-	string key = 1;
+	string field = 1;
 	string value = 2;
 }
 
@@ -60,8 +62,8 @@ message ListTracesResponse {
 message TraceItem {
 	string trace_id = 1;
 	string environment_id = 2;
-	int64 start_time = 3;
-	int64 end_time = 4;
+	google.protobuf.Timestamp start_time = 3;
+	google.protobuf.Timestamp end_time = 4;
 	bool error = 5;
 	float duration_ms = 6;
 	string root_name = 7;

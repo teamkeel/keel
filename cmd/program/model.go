@@ -209,7 +209,7 @@ func (m *Model) Init() tea.Cmd {
 	m.functionsLogCh = make(chan tea.Msg, 1)
 	m.watcherCh = make(chan tea.Msg, 1)
 	m.Environment = "development"
-	m.RpcHandler = rpc.NewAPIServer(rpcApi.NewRpcApiServer(m.Schema), twirp.WithServerPathPrefix("/rpc"))
+	m.RpcHandler = rpc.NewAPIServer(&rpcApi.Server{}, twirp.WithServerPathPrefix("/rpc"))
 	m.RpcPort = "34087"
 
 	m.Status = StatusCheckingDependencies
@@ -484,6 +484,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RpcRequestMsg:
 		ctx := msg.r.Context()
 		ctx = db.WithDatabase(ctx, m.Database)
+		ctx = rpcApi.WithSchema(ctx, m.Schema)
 		r := msg.r.WithContext(ctx)
 		w := msg.w
 
