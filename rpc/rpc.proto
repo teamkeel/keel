@@ -1,8 +1,11 @@
 syntax = "proto3";
 package rpc;
 
-option go_package = "rpc/rpc";
-import "proto/schema.proto";
+// option go_package = "apis/rpc";
+import "schema.proto";
+import "opentelemetry/proto/trace/v1/trace.proto";
+import "google/protobuf/timestamp.proto";
+
 
 message GetSchemaRequest {
 	string environment_id = 1;
@@ -31,7 +34,48 @@ enum SQLQueryStatus {
 	failed = 1;
 }
 
+message GetTraceRequest {
+	string trace_id = 1;
+}
+
+message GetTraceResponse {
+	opentelemetry.proto.trace.v1.TracesData trace = 1;
+}
+
+message ListTracesRequest {
+	string environment_id = 1;
+	google.protobuf.Timestamp before = 2;
+	google.protobuf.Timestamp after = 3;
+	repeated ListTraceFilter filters = 4;
+	int32 limit = 5;
+	int32 offset = 6;
+}
+
+message ListTraceFilter {
+	string field = 1;
+	string value = 2;
+}
+
+message ListTracesResponse {
+	repeated TraceItem traces = 1;
+}
+
+message TraceItem {
+	string trace_id = 1;
+	string environment_id = 2;
+	google.protobuf.Timestamp start_time = 3;
+	google.protobuf.Timestamp end_time = 4;
+	bool error = 5;
+	float duration_ms = 6;
+	string root_name = 7;
+	string project_id = 8;
+	string deployment_id = 9;
+	string runtime_version = 10;
+}
+
 service API {
 	rpc GetActiveSchema(GetSchemaRequest) returns (GetSchemaResponse);
 	rpc RunSQLQuery(SQLQueryInput) returns (SQLQueryResponse);
+	rpc GetTrace(GetTraceRequest) returns (GetTraceResponse);
+	rpc ListTraces(ListTracesRequest) returns (ListTracesResponse);
 }

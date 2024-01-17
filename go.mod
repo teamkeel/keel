@@ -43,12 +43,15 @@ require (
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.4
 	github.com/teamkeel/graphql v0.8.2-0.20230531102419-995b8ab035b6
+	github.com/twitchtv/twirp v8.1.3+incompatible
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.46.1
 	go.opentelemetry.io/otel v1.21.0
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.21.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.21.0
 	go.opentelemetry.io/otel/sdk v1.21.0
 	go.opentelemetry.io/otel/trace v1.21.0
+	go.opentelemetry.io/proto/otlp v1.0.0
 	golang.org/x/exp v0.0.0-20220907003533-145caa8ea1d0
 	golang.org/x/oauth2 v0.13.0
 	google.golang.org/protobuf v1.31.0
@@ -95,12 +98,9 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/tkuchiki/go-timezone v0.2.0 // indirect
-	github.com/twitchtv/twirp v8.1.3+incompatible // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.21.0 // indirect
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
-	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

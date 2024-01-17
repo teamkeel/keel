@@ -61,7 +61,13 @@ gen-pk:
 	go run ./util/privatekey/pkgen.go ./testing/testing/default.pem
 	
 rpc-api:
+	PROTO_SRC_PATH=./ \
+	IMPORT_MAPPING="rpcutil/empty.proto=github.com/example/rpcutil" \
 	protoc \
+		--proto_path=rpc/ \
+		--proto_path=proto/ \
 		--go_opt=Mschema.proto=github.com/teamkeel/keel/proto \
-		--twirp_out=Mschema.proto=github.com/teamkeel/keel/proto:. \
-		--go_out=./ rpc/rpc.proto
+		--go_opt=Mrpc.proto=rpc/rpc \
+		--twirp_out=Mrpc.proto=rpc/rpc:rpc/rpc \
+		--go_out=./ \
+		rpc.proto
