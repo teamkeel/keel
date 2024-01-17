@@ -3,7 +3,6 @@ package rpcApi
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"sort"
 	"strings"
 
@@ -17,24 +16,6 @@ import (
 )
 
 type Server struct{}
-
-type schemaContextKey string
-
-var schemaKey schemaContextKey = "schema"
-
-func GetSchema(ctx context.Context) (*proto.Schema, error) {
-	v := ctx.Value(schemaKey)
-	schema, ok := v.(*proto.Schema)
-
-	if !ok {
-		return nil, errors.New("database in the context has wrong value type")
-	}
-	return schema, nil
-}
-
-func WithSchema(ctx context.Context, schema *proto.Schema) context.Context {
-	return context.WithValue(ctx, schemaKey, schema)
-}
 
 func (s *Server) GetActiveSchema(ctx context.Context, req *rpc.GetSchemaRequest) (*rpc.GetSchemaResponse, error) {
 	schema, err := GetSchema(ctx)

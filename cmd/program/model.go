@@ -58,18 +58,6 @@ const (
 	StatusQuitting
 )
 
-// func SetExporter(exporter sdktrace.SpanExporter) error {
-
-// 	provider := sdktrace.NewTracerProvider(
-// 		sdktrace.WithBatcher(exporter),
-// 	)
-
-// 	otel.SetTracerProvider(provider)
-// 	otel.SetTextMapPropagator(propagation.TraceContext{})
-
-// 	return nil
-// }
-
 var tracer = otel.Tracer("github.com/teamkeel/keel/db")
 
 func Run(model *Model) {
