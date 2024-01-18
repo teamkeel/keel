@@ -392,7 +392,12 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Fee"
+          "modelName": "Fee",
+          "modelActions": [
+            {
+              "actionName": "searchFees"
+            }
+          ]
         },
         {
           "modelName": "Fi"
@@ -401,10 +406,26 @@
           "modelName": "Fo"
         },
         {
-          "modelName": "Fum"
+          "modelName": "Fum",
+          "modelActions": [
+            {
+              "actionName": "searchFums"
+            }
+          ]
         },
         {
-          "modelName": "Identity"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

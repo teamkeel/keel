@@ -177,10 +177,26 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "ApiKey"
+          "modelName": "ApiKey",
+          "modelActions": [
+            {
+              "actionName": "createApiKey"
+            }
+          ]
         },
         {
-          "modelName": "Identity"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

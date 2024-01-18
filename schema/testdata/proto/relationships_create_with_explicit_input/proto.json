@@ -293,13 +293,35 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "ChildModel"
-        },
-        {
-          "modelName": "Identity"
+          "modelName": "ChildModel",
+          "modelActions": [
+            {
+              "actionName": "createChild1"
+            },
+            {
+              "actionName": "createChild2"
+            },
+            {
+              "actionName": "createChild3"
+            }
+          ]
         },
         {
           "modelName": "ParentModel"
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

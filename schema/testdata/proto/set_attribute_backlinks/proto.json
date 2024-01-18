@@ -448,16 +448,35 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Identity"
+          "modelName": "Record",
+          "modelActions": [
+            {
+              "actionName": "createRecord"
+            },
+            {
+              "actionName": "updateRecordOwner"
+            }
+          ]
+        },
+        {
+          "modelName": "User"
         },
         {
           "modelName": "Organisation"
         },
         {
-          "modelName": "Record"
-        },
-        {
-          "modelName": "User"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

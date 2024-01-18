@@ -259,10 +259,29 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Identity"
+          "modelName": "UserExtension",
+          "modelActions": [
+            {
+              "actionName": "createExt"
+            },
+            {
+              "actionName": "updateExt"
+            }
+          ]
         },
         {
-          "modelName": "UserExtension"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

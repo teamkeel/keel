@@ -334,16 +334,43 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Identity"
+          "modelName": "Sale",
+          "modelActions": [
+            {
+              "actionName": "createSaleAndItems"
+            },
+            {
+              "actionName": "createSaleAndProduct"
+            }
+          ]
+        },
+        {
+          "modelName": "SaleItem",
+          "modelActions": [
+            {
+              "actionName": "createSaleItem"
+            },
+            {
+              "actionName": "createSaleItemAndProduct"
+            }
+          ]
         },
         {
           "modelName": "Product"
         },
         {
-          "modelName": "Sale"
-        },
-        {
-          "modelName": "SaleItem"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

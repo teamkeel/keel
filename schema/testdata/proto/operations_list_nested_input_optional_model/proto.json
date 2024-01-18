@@ -310,16 +310,32 @@
       "name": "Api",
       "apiModels": [
         {
+          "modelName": "Publisher"
+        },
+        {
           "modelName": "Author"
         },
         {
-          "modelName": "Book"
+          "modelName": "Book",
+          "modelActions": [
+            {
+              "actionName": "listBooksByPublisherName"
+            }
+          ]
         },
         {
-          "modelName": "Identity"
-        },
-        {
-          "modelName": "Publisher"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

@@ -221,13 +221,24 @@
       "name": "Api",
       "apiModels": [
         {
+          "modelName": "Member"
+        },
+        {
           "modelName": "Employee"
         },
         {
-          "modelName": "Identity"
-        },
-        {
-          "modelName": "Member"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

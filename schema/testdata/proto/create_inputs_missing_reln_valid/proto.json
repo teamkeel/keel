@@ -251,10 +251,29 @@
           "modelName": "Author"
         },
         {
-          "modelName": "Identity"
+          "modelName": "Post",
+          "modelActions": [
+            {
+              "actionName": "createPostB"
+            },
+            {
+              "actionName": "createPostC"
+            }
+          ]
         },
         {
-          "modelName": "Post"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

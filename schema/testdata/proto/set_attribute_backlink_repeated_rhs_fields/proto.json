@@ -451,16 +451,32 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Identity"
+          "modelName": "Record",
+          "modelActions": [
+            {
+              "actionName": "createRecordWithChildren"
+            }
+          ]
+        },
+        {
+          "modelName": "User"
         },
         {
           "modelName": "Organisation"
         },
         {
-          "modelName": "Record"
-        },
-        {
-          "modelName": "User"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }
