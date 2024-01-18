@@ -1,7 +1,13 @@
 model Foo {
+    actions {
+        get getFoo(id)
+    }
 }
 
 model Bar {
+    actions {
+        get getBar(id)
+    }
 }
 
 api ApiOne {

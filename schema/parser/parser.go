@@ -102,14 +102,13 @@ type APIModelsNode struct {
 	node.Node
 
 	Name     NameNode               `@@`
-	Sections []*APIModelSectionNode `"{" @@* "}"`
-	//Actions []*APIActionNode `("actions" "{" @@* "}")`
+	Sections []*APIModelSectionNode `("{" @@* "}")*`
 }
 
 type APIModelSectionNode struct {
 	node.Node
 
-	Actions []*APIActionNode `("actions" "{" @@* "}")`
+	Actions []*APIActionNode `"actions" "{" @@* "}"`
 }
 
 type APIActionNode struct {

@@ -1,0 +1,16 @@
+model Person {
+    actions {
+        get getPerson(id)
+        create createPerson()
+    }
+}
+
+api Test {
+    models {
+        Person {
+            actions {
+                getPerson
+            }
+        }
+    }
+}

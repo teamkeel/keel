@@ -194,14 +194,19 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 	// schema, first by model, then by said model's actions. As a side effect
 	// we must define graphl types for the models involved.
 
-	namesOfModelsUsedByAPI := lo.Map(api.ApiModels, func(m *proto.ApiModel, _ int) string {
-		return m.ModelName
-	})
+	for _, apiModel := range api.ApiModels {
+		model := proto.FindModel(schema.Models, apiModel.ModelName)
+		var actions []*proto.Action
 
-	modelInstances := proto.FindModels(mk.proto.Models, namesOfModelsUsedByAPI)
+		if len(apiModel.ModelActions) > 0 {
+			for _, a := range apiModel.ModelActions {
+				actions = append(actions, proto.FindAction(schema, a.ActionName))
+			}
+		} else {
+			actions = model.Actions
+		}
 
-	for _, model := range modelInstances {
-		for _, action := range model.Actions {
+		for _, action := range actions {
 			err := mk.addAction(action, schema)
 
 			if err != nil {

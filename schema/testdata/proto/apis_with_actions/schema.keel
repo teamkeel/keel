@@ -15,11 +15,7 @@ model Book {
 
 api Admin {
 	models {
-		Author {
-			actions {
-				deleteAuthor
-			}
-		}
+		Author
 		Book {
 			actions {
 				deleteBook
