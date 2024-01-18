@@ -1,0 +1,23 @@
+model Post {
+    actions {
+        getPost(id)
+    }
+}
+
+model Blog {
+    actions {
+        getBlog(id)
+    }
+}
+
+api Web {
+    models {
+        Post {
+            getPost
+            getBlog
+        }
+        Blog {
+            Unknown
+        }
+    }
+}
