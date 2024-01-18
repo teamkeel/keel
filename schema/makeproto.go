@@ -824,6 +824,18 @@ func (scm *Builder) makeAuthenticate() *proto.Action {
 		},
 	})
 
+	for _, api := range scm.proto.Apis {
+		for _, v := range api.ApiModels {
+			if v.ModelName != parser.ImplicitIdentityModelName {
+				continue
+			}
+
+			v.ModelActions = append(v.ModelActions, &proto.ApiModelAction{
+				ActionName: parser.AuthenticateActionName,
+			})
+		}
+	}
+
 	return &action
 }
 
@@ -862,6 +874,18 @@ func (scm *Builder) makeRequestPasswordReset() *proto.Action {
 		Name:   responseMessageName,
 		Fields: []*proto.MessageField{},
 	})
+
+	for _, api := range scm.proto.Apis {
+		for _, v := range api.ApiModels {
+			if v.ModelName != parser.ImplicitIdentityModelName {
+				continue
+			}
+
+			v.ModelActions = append(v.ModelActions, &proto.ApiModelAction{
+				ActionName: parser.RequestPasswordResetActionName,
+			})
+		}
+	}
 
 	return &action
 }
@@ -902,6 +926,18 @@ func (scm *Builder) makePasswordReset() *proto.Action {
 		Fields: []*proto.MessageField{},
 	})
 
+	for _, api := range scm.proto.Apis {
+		for _, v := range api.ApiModels {
+			if v.ModelName != parser.ImplicitIdentityModelName {
+				continue
+			}
+
+			v.ModelActions = append(v.ModelActions, &proto.ApiModelAction{
+				ActionName: parser.PasswordResetActionName,
+			})
+		}
+	}
+
 	return &action
 }
 
@@ -938,6 +974,16 @@ func (scm *Builder) makeAPI(decl *parser.DeclarationNode) {
 				if len(parserApiModel.Sections) == 1 {
 					for _, a := range parserApiModel.Sections[0].Actions {
 						protoModel.ModelActions = append(protoModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name.Value})
+					}
+				} else {
+
+					model := query.Model(scm.asts, parserApiModel.Name.Value)
+					actions := query.ModelActions(model)
+
+					if model != nil {
+						for _, a := range actions {
+							protoModel.ModelActions = append(protoModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name.Value})
+						}
 					}
 				}
 

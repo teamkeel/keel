@@ -195,18 +195,20 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 	// we must define graphl types for the models involved.
 
 	for _, apiModel := range api.ApiModels {
-		model := proto.FindModel(schema.Models, apiModel.ModelName)
-		var actions []*proto.Action
+		// model := proto.FindModel(schema.Models, apiModel.ModelName)
+		// var actions []*proto.Action
 
-		if len(apiModel.ModelActions) > 0 {
-			for _, a := range apiModel.ModelActions {
-				actions = append(actions, proto.FindAction(schema, a.ActionName))
-			}
-		} else {
-			actions = model.Actions
-		}
+		// if len(apiModel.ModelActions) > 0 {
+		// 	for _, a := range  {
+		// 		actions = append(actions, proto.FindAction(schema, a.ActionName))
+		// 	}
+		// } else {
+		// 	actions = model.Actions
+		// }
 
-		for _, action := range actions {
+		for _, a := range apiModel.ModelActions {
+			action := proto.FindAction(schema, a.ActionName)
+
 			err := mk.addAction(action, schema)
 
 			if err != nil {

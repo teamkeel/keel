@@ -5,7 +5,6 @@ type Query {
 
 type Mutation {
   authenticate(input: AuthenticateInput!): AuthenticateResponse
-  createPerson(input: CreatePersonInput!): Person!
   requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
   resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
@@ -13,10 +12,6 @@ type Mutation {
 input AuthenticateInput {
   createIfNotExists: Boolean
   emailPassword: EmailPasswordInput!
-}
-
-input CreatePersonInput {
-  name: String!
 }
 
 input EmailPasswordInput {

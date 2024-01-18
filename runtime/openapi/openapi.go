@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/jsonschema"
 )
@@ -95,66 +94,67 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 		Schemas: map[string]jsonschema.JSONSchema{},
 	}
 
-	for _, model := range schema.Models {
-		if !lo.ContainsBy(api.ApiModels, func(m *proto.ApiModel) bool {
-			return model.Name == m.ModelName
-		}) {
-			continue
+	// for _, model := range schema.Models {
+	// 	if !lo.ContainsBy(api.ApiModels, func(m *proto.ApiModel) bool {
+	// 		return model.Name == m.ModelName
+	// 	}) {
+	// 		continue
+	// 	}
+
+	for _, actionName := range proto.GetActionNamesForApi(schema, api) {
+		action := proto.FindAction(schema, actionName)
+
+		inputSchema := jsonschema.JSONSchemaForActionInput(ctx, schema, action)
+		endpoint := fmt.Sprintf("/%s/json/%s", strings.ToLower(api.Name), action.Name)
+
+		// Merge components from this request schema into OpenAPI components
+		if inputSchema.Components != nil {
+			for name, comp := range inputSchema.Components.Schemas {
+				components.Schemas[name] = comp
+			}
+			inputSchema.Components = nil
 		}
 
-		for _, op := range model.Actions {
-			inputSchema := jsonschema.JSONSchemaForActionInput(ctx, schema, op)
-			endpoint := fmt.Sprintf("/%s/json/%s", strings.ToLower(api.Name), op.Name)
+		responseSchema := jsonschema.JSONSchemaForActionResponse(ctx, schema, action)
 
-			// Merge components from this request schema into OpenAPI components
-			if inputSchema.Components != nil {
-				for name, comp := range inputSchema.Components.Schemas {
-					components.Schemas[name] = comp
-				}
-				inputSchema.Components = nil
+		if responseSchema.Components != nil {
+			for name, comp := range responseSchema.Components.Schemas {
+				components.Schemas[name] = comp
 			}
 
-			responseSchema := jsonschema.JSONSchemaForActionResponse(ctx, schema, op)
+			responseSchema.Components = nil
+		}
 
-			if responseSchema.Components != nil {
-				for name, comp := range responseSchema.Components.Schemas {
-					components.Schemas[name] = comp
-				}
-
-				responseSchema.Components = nil
-			}
-
-			spec.Paths[endpoint] = PathItemObject{
-				Post: OperationObject{
-					OperationID: op.Name,
-					RequestBody: ResponseObject{
-						Description: op.Name + " Request",
+		spec.Paths[endpoint] = PathItemObject{
+			Post: OperationObject{
+				OperationID: action.Name,
+				RequestBody: ResponseObject{
+					Description: action.Name + " Request",
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: inputSchema,
+						},
+					},
+				},
+				Responses: map[string]ResponseObject{
+					"200": {
+						Description: action.Name + " Response",
 						Content: map[string]MediaTypeObject{
 							"application/json": {
-								Schema: inputSchema,
+								Schema: responseSchema,
 							},
 						},
 					},
-					Responses: map[string]ResponseObject{
-						"200": {
-							Description: op.Name + " Response",
-							Content: map[string]MediaTypeObject{
-								"application/json": {
-									Schema: responseSchema,
-								},
-							},
-						},
-						"400": {
-							Description: op.Name + " Response Errors",
-							Content: map[string]MediaTypeObject{
-								"application/json": {
-									Schema: responseErrorSchema,
-								},
+					"400": {
+						Description: action.Name + " Response Errors",
+						Content: map[string]MediaTypeObject{
+							"application/json": {
+								Schema: responseErrorSchema,
 							},
 						},
 					},
 				},
-			}
+			},
 		}
 	}
 
