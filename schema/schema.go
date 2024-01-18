@@ -450,7 +450,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		if d.API != nil {
 			for _, s := range d.API.Sections {
 				if s.Models != nil {
-					s.Models = append(s.Models, &parser.ModelsNode{
+					s.Models = append(s.Models, &parser.APIModelsNode{
 						Name: parser.NameNode{
 							Value: parser.ImplicitIdentityModelName,
 						},

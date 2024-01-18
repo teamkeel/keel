@@ -1,0 +1,39 @@
+model Author {
+    actions {
+        get getAuthor(id)
+        delete deleteAuthor(id)
+        write deleteAll(Any) returns (Any)
+    }
+}
+
+model Book {
+	 actions {
+        list searchBooks()
+        delete deleteBook(id)
+    }
+}
+
+api Admin {
+	models {
+		Author {
+			actions {
+				deleteAuthor
+			}
+		}
+		Book {
+			actions {
+				deleteBook
+				deleteAll
+			}
+		}
+	}
+}
+api Api {
+	models {
+		Book {
+			actions {
+				searchBooks
+			}
+		}
+	}
+}

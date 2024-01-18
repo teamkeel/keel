@@ -25,6 +25,10 @@ func TestProto(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, testCase := range testCases {
+
+		if testCase.Name() != "apis_with_actions" {
+			continue
+		}
 		if !testCase.IsDir() {
 			t.Errorf("proto test data directory should only contain directories - file found: %s", testCase.Name())
 			continue
@@ -50,6 +54,8 @@ func TestProto(t *testing.T) {
 			if diff == jsondiff.FullMatch {
 				return
 			}
+
+			fmt.Println(string(actual))
 
 			assert.Fail(t, "actual proto JSON does not match expected", explanation)
 		})

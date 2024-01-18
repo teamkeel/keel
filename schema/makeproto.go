@@ -932,8 +932,15 @@ func (scm *Builder) makeAPI(decl *parser.DeclarationNode) {
 		case len(section.Models) > 0:
 			for _, parserApiModel := range section.Models {
 				protoModel := &proto.ApiModel{
-					ModelName: parserApiModel.Name.Value,
+					ModelName:    parserApiModel.Name.Value,
+					ModelActions: []*proto.ApiModelAction{},
 				}
+				if len(parserApiModel.Sections) == 1 {
+					for _, a := range parserApiModel.Sections[0].Actions {
+						protoModel.ModelActions = append(protoModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name.Value})
+					}
+				}
+
 				protoAPI.ApiModels = append(protoAPI.ApiModels, protoModel)
 			}
 		}
