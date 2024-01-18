@@ -279,6 +279,7 @@ func FindJob(jobs []*Job, name string) *Job {
 	return job
 }
 
+// GetActionNamesForApi returns all the actions available on an API.
 func GetActionNamesForApi(p *Schema, api *Api) []string {
 	actions := []string{}
 	for _, v := range api.ApiModels {

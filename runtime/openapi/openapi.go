@@ -94,13 +94,6 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 		Schemas: map[string]jsonschema.JSONSchema{},
 	}
 
-	// for _, model := range schema.Models {
-	// 	if !lo.ContainsBy(api.ApiModels, func(m *proto.ApiModel) bool {
-	// 		return model.Name == m.ModelName
-	// 	}) {
-	// 		continue
-	// 	}
-
 	for _, actionName := range proto.GetActionNamesForApi(schema, api) {
 		action := proto.FindAction(schema, actionName)
 

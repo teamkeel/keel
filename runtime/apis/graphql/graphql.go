@@ -189,31 +189,11 @@ type graphqlSchemaBuilder struct {
 
 // build returns a graphql.Schema that implements the given API.
 func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*graphql.Schema, error) {
-	// The graphql top level query contents will be comprised ONLY of the
-	// actions from the keel schema. But to find these we have to traverse the
-	// schema, first by model, then by said model's actions. As a side effect
-	// we must define graphl types for the models involved.
-
-	for _, apiModel := range api.ApiModels {
-		// model := proto.FindModel(schema.Models, apiModel.ModelName)
-		// var actions []*proto.Action
-
-		// if len(apiModel.ModelActions) > 0 {
-		// 	for _, a := range  {
-		// 		actions = append(actions, proto.FindAction(schema, a.ActionName))
-		// 	}
-		// } else {
-		// 	actions = model.Actions
-		// }
-
-		for _, a := range apiModel.ModelActions {
-			action := proto.FindAction(schema, a.ActionName)
-
-			err := mk.addAction(action, schema)
-
-			if err != nil {
-				return nil, err
-			}
+	for _, actionName := range proto.GetActionNamesForApi(schema, api) {
+		action := proto.FindAction(schema, actionName)
+		err := mk.addAction(action, schema)
+		if err != nil {
+			return nil, err
 		}
 	}
 

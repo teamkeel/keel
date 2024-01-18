@@ -70,9 +70,15 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		Name: ActionApiPath,
 	}
 	for _, m := range schema.Models {
-		testApi.ApiModels = append(testApi.ApiModels, &proto.ApiModel{
-			ModelName: m.Name,
-		})
+		apiModel := &proto.ApiModel{
+			ModelName:    m.Name,
+			ModelActions: []*proto.ApiModelAction{},
+		}
+
+		testApi.ApiModels = append(testApi.ApiModels, apiModel)
+		for _, a := range m.Actions {
+			apiModel.ModelActions = append(apiModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name})
+		}
 	}
 
 	schema.Apis = append(schema.Apis, testApi)

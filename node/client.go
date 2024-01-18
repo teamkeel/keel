@@ -190,15 +190,14 @@ func writeClientApiDefinition(w *codegen.Writer, schema *proto.Schema, api *prot
 	queries := []string{}
 	mutations := []string{}
 
-	models := proto.ApiModels(schema, api)
-	for _, model := range models {
-		for _, action := range model.Actions {
-			if action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_READ {
-				queries = append(queries, action.Name)
-			} else {
-				mutations = append(mutations, action.Name)
-			}
+	for _, a := range proto.GetActionNamesForApi(schema, api) {
+		action := proto.FindAction(schema, a)
+		if action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_READ {
+			queries = append(queries, action.Name)
+		} else {
+			mutations = append(mutations, action.Name)
 		}
+
 	}
 
 	w.Writeln("queries: {")
