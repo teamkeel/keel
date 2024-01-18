@@ -404,12 +404,12 @@ queries: {
 	readPeople: this.actions.readPeople,
 },
 mutations: {
-	authenticate: this.actions.authenticate,
-	requestPasswordReset: this.actions.requestPasswordReset,
-	resetPassword: this.actions.resetPassword,
 	createPerson: this.actions.createPerson,
 	updatePerson: this.actions.updatePerson,
 	deletePerson: this.actions.deletePerson,
+	authenticate: this.actions.authenticate,
+	requestPasswordReset: this.actions.requestPasswordReset,
+	resetPassword: this.actions.resetPassword,
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -478,6 +478,14 @@ export interface ResetPasswordInput {
 }
 export interface ResetPasswordResponse {
 }
+export interface Person {
+	name: string
+	age: number
+	isRegistered: boolean
+	id: string
+	createdAt: Date
+	updatedAt: Date
+}
 export interface Identity {
 	email: string | null
 	emailVerified: boolean
@@ -488,14 +496,15 @@ export interface Identity {
 	createdAt: Date
 	updatedAt: Date
 }
-export interface Person {
-	name: string
-	age: number
-	isRegistered: boolean
-	id: string
-	createdAt: Date
-	updatedAt: Date
-}`
+export type SortDirection = "asc" | "desc" | "ASC" | "DESC";
+
+type PageInfo = {
+	count: number;
+	endCursor: string;
+	hasNextPage: boolean;
+	startCursor: string;
+	totalCount: number;
+};`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
@@ -520,6 +529,9 @@ export class APIClient extends Core {
 		super(config);
 	}
 	private actions = {
+		getPerson: (i: GetPersonInput) => {
+			return this.client.rawRequest<Person | null>("getPerson", i);
+		},
 		authenticate: (i: AuthenticateInput) => {
 			return this.client.rawRequest<AuthenticateResponse>("authenticate", i).then((res) => {
 				if (res.data && res.data.token) this.client.setToken(res.data.token);
@@ -531,9 +543,6 @@ export class APIClient extends Core {
 		},
 		resetPassword: (i: ResetPasswordInput) => {
 			return this.client.rawRequest<ResetPasswordResponse>("resetPassword", i);
-		},
-		getPerson: (i: GetPersonInput) => {
-			return this.client.rawRequest<Person | null>("getPerson", i);
 		},
 	};
 

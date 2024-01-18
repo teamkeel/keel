@@ -89,12 +89,24 @@ defaultAPI makes this:
 	}
 */
 func defaultAPI(scm *proto.Schema) *proto.Api {
-	allModels := lo.Map(proto.ModelNames(scm), func(name string, _ int) *proto.ApiModel {
-		return &proto.ApiModel{ModelName: name}
-	})
+	var apiModels []*proto.ApiModel
+
+	for _, m := range scm.Models {
+		apiModel := &proto.ApiModel{
+			ModelName:    m.Name,
+			ModelActions: []*proto.ApiModelAction{},
+		}
+
+		for _, a := range m.Actions {
+			apiModel.ModelActions = append(apiModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name})
+		}
+
+		apiModels = append(apiModels, apiModel)
+	}
+
 	return &proto.Api{
 		Name:      "Api",
-		ApiModels: allModels,
+		ApiModels: apiModels,
 	}
 }
 

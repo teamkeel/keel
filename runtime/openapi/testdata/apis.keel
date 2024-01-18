@@ -6,7 +6,7 @@ model Author {
 }
 
 model Book {
-	 actions {
+    actions {
         get getBooks(id)
         list searchBooks()
         delete deleteBook(id)
@@ -19,7 +19,7 @@ api Api {
 		Book {
 			actions {
                 getBooks
-				searchBooks
+                searchBooks
             }
 		}
 	}
