@@ -129,6 +129,7 @@ func NewApiHandler(s *proto.Schema) common.HandlerFunc {
 		handlers[root+"/rpc"] = jsonrpc.NewHandler(s, api)
 
 		httpJson := httpjson.NewHandler(s, api)
+
 		for _, name := range proto.GetActionNamesForApi(s, api) {
 			handlers[root+"/json/"+strings.ToLower(name)] = httpJson
 		}

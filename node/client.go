@@ -138,54 +138,52 @@ func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 }
 
 func writeClientActions(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
-	models := proto.ApiModels(schema, api)
+	for _, a := range proto.GetActionNamesForApi(schema, api) {
+		action := proto.FindAction(schema, a)
+		msg := proto.FindMessage(schema.Messages, action.InputMessageName)
 
-	for _, model := range models {
-		for _, action := range model.Actions {
-			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
+		w.Writef("%s: (i", action.Name)
 
-			w.Writef("%s: (i", action.Name)
+		// Check that all of the top level fields in the matching message are optional
+		// If so, then we can make it so you don't even need to specify the key
+		// example, this allows for:
+		// await actions.listActivePublishersWithActivePosts();
+		// instead of:
+		// const { results: publishers } =
+		// await actions.listActivePublishersWithActivePosts({ where: {} });
+		if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+			return f.Optional
+		}) {
+			w.Write("?")
+		}
 
-			// Check that all of the top level fields in the matching message are optional
-			// If so, then we can make it so you don't even need to specify the key
-			// example, this allows for:
-			// await actions.listActivePublishersWithActivePosts();
-			// instead of:
-			// const { results: publishers } =
-			// await actions.listActivePublishersWithActivePosts({ where: {} });
-			if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
-				return f.Optional
-			}) {
-				w.Write("?")
-			}
+		inputType := action.InputMessageName
+		if inputType == parser.MessageFieldTypeAny {
+			inputType = "any"
+		}
 
-			inputType := action.InputMessageName
-			if inputType == parser.MessageFieldTypeAny {
-				inputType = "any"
-			}
+		w.Writef(`: %s) `, inputType)
+		w.Writeln("=> {")
 
-			w.Writef(`: %s) `, inputType)
-			w.Writeln("=> {")
+		w.Indent()
 
-			w.Indent()
+		model := proto.FindModel(schema.Models, action.ModelName)
+		w.Writef(`return this.client.rawRequest<%s>("%s", i)`, toClientActionReturnType(model, action), action.Name)
 
-			model := proto.FindModel(schema.Models, action.ModelName)
-			w.Writef(`return this.client.rawRequest<%s>("%s", i)`, toClientActionReturnType(model, action), action.Name)
-
-			var setTokenChain = `.then((res) => {
+		var setTokenChain = `.then((res) => {
 				if (res.data && res.data.token) this.client.setToken(res.data.token);
 				return res;
             })`
 
-			if action.Name == "authenticate" {
-				w.Writef(setTokenChain)
-			}
-
-			w.Writeln(";")
-			w.Dedent()
-			w.Writeln("},")
+		if action.Name == "authenticate" {
+			w.Writef(setTokenChain)
 		}
+
+		w.Writeln(";")
+		w.Dedent()
+		w.Writeln("},")
 	}
+
 }
 
 func writeClientApiDefinition(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {

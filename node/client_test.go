@@ -35,6 +35,45 @@ getPerson: (i: GetPersonInput) => {
 	})
 }
 
+func TestClientActionsByApiExcludedAction(t *testing.T) {
+	schema := `
+model Person {
+	actions {
+		get getPerson(id)
+	}
+}
+model Company {
+	actions {
+		delete deleteCompany(id)
+		get getCompany(id)
+	}
+}
+
+api Api {
+	models {
+		Person 
+		Company {
+			actions {
+				getCompany
+			}
+		}
+	}
+}`
+
+	expected := `
+getPerson: (i: GetPersonInput) => {
+	return this.client.rawRequest<Person | null>("getPerson", i);
+},
+getCompany: (i: GetCompanyInput) => {
+	return this.client.rawRequest<Company | null>("getCompany", i);
+},`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		api := proto.FindApi(s, "Api")
+		writeClientActions(w, s, api)
+	})
+}
+
 func TestClientActionsByDifferentApi(t *testing.T) {
 	schema := `
 model Person {
