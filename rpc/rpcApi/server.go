@@ -67,6 +67,11 @@ func (s *Server) RunSQLQuery(ctx context.Context, input *rpc.SQLQueryInput) (*rp
 func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (*rpc.ListTracesResponse, error) {
 	traces := localTraceExporter.Summary()
 
+	verbose, err := GetTraceVerbosity(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	list := []*rpc.TraceItem{}
 
 	for k, v := range traces {
@@ -79,14 +84,20 @@ func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (
 			continue
 		}
 
-		if v.RootName == "GET /_health" {
-			continue
-		}
-		if strings.HasSuffix(v.RootName, "openapi.json") {
-			continue
-		}
-		if strings.HasPrefix(v.RootName, "OPTIONS") {
-			continue
+		if !verbose {
+
+			if v.Type != "request" {
+				continue
+			}
+			if v.RootName == "GET /_health" {
+				continue
+			}
+			if strings.HasSuffix(v.RootName, "openapi.json") {
+				continue
+			}
+			if strings.HasPrefix(v.RootName, "OPTIONS") {
+				continue
+			}
 		}
 
 		list = append(list, &rpc.TraceItem{

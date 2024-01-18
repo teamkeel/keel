@@ -16,7 +16,6 @@ import (
 	"github.com/patrickmn/go-cache"
 	"github.com/pquerna/cachecontrol"
 	"github.com/teamkeel/keel/runtime/runtimectx"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -65,7 +64,7 @@ type HTTPClient interface {
 }
 
 func init() {
-	HttpClient = &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
+	HttpClient = &http.Client{}
 	RequestCache = cache.New(5*time.Minute, 10*time.Minute)
 	JwkCache = jwk.NewCache(context.Background())
 }

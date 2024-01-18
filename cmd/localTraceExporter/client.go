@@ -41,6 +41,7 @@ type TraceSummary struct {
 	HasError  bool
 	Duration  time.Duration
 	RootName  string
+	Type      string
 }
 
 // NewClient creates a client that stores the spans in memory.
@@ -120,6 +121,12 @@ func (c *client) updateTraceSummary(traceID string, span *tracepb.Span) {
 
 	if span.ParentSpanId == nil {
 		summary.RootName = span.Name
+
+		for _, attr := range span.Attributes {
+			if attr.Key == "type" {
+				summary.Type = attr.Value.GetStringValue()
+			}
+		}
 	}
 
 	if span.Status.Code == tracepb.Status_STATUS_CODE_ERROR {

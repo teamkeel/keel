@@ -142,6 +142,10 @@ type Model struct {
 	// This does mean that the Console Monitoring page will not reflect any traces.
 	CustomTracing bool
 
+	// If true, do not filter events in the local trace exporter.
+	// This will then show all system events in the local console.
+	VerboseTracing bool
+
 	// Model state - used in View()
 	Status            int
 	Err               error
