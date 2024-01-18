@@ -1,490 +1,509 @@
 {
-    "models": [
+  "models": [
+    {
+      "name": "Author",
+      "fields": [
         {
-            "name": "Author",
-            "fields": [
-                {
-                    "modelName": "Author",
-                    "name": "id",
-                    "type": {
-                        "type": "TYPE_ID"
-                    },
-                    "unique": true,
-                    "primaryKey": true,
-                    "defaultValue": {
-                        "useZeroValue": true
-                    }
-                },
-                {
-                    "modelName": "Author",
-                    "name": "createdAt",
-                    "type": {
-                        "type": "TYPE_DATETIME"
-                    },
-                    "defaultValue": {
-                        "useZeroValue": true
-                    }
-                },
-                {
-                    "modelName": "Author",
-                    "name": "updatedAt",
-                    "type": {
-                        "type": "TYPE_DATETIME"
-                    },
-                    "defaultValue": {
-                        "useZeroValue": true
-                    }
-                }
-            ],
-            "actions": [
-                {
-                    "modelName": "Author",
-                    "name": "getAuthor",
-                    "type": "ACTION_TYPE_GET",
-                    "implementation": "ACTION_IMPLEMENTATION_AUTO",
-                    "inputMessageName": "GetAuthorInput"
-                },
-                {
-                    "modelName": "Author",
-                    "name": "deleteAuthor",
-                    "type": "ACTION_TYPE_DELETE",
-                    "implementation": "ACTION_IMPLEMENTATION_AUTO",
-                    "inputMessageName": "DeleteAuthorInput"
-                },
-                {
-                    "modelName": "Author",
-                    "name": "deleteAll",
-                    "type": "ACTION_TYPE_WRITE",
-                    "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
-                    "inputMessageName": "Any",
-                    "responseMessageName": "Any"
-                }
-            ]
+          "modelName": "Author",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
-            "name": "Book",
-            "fields": [
-                {
-                    "modelName": "Book",
-                    "name": "id",
-                    "type": {
-                        "type": "TYPE_ID"
-                    },
-                    "unique": true,
-                    "primaryKey": true,
-                    "defaultValue": {
-                        "useZeroValue": true
-                    }
-                },
-                {
-                    "modelName": "Book",
-                    "name": "createdAt",
-                    "type": {
-                        "type": "TYPE_DATETIME"
-                    },
-                    "defaultValue": {
-                        "useZeroValue": true
-                    }
-                },
-                {
-                    "modelName": "Book",
-                    "name": "updatedAt",
-                    "type": {
-                        "type": "TYPE_DATETIME"
-                    },
-                    "defaultValue": {
-                        "useZeroValue": true
-                    }
-                }
-            ],
-            "actions": [
-                {
-                    "modelName": "Book",
-                    "name": "searchBooks",
-                    "type": "ACTION_TYPE_LIST",
-                    "implementation": "ACTION_IMPLEMENTATION_AUTO",
-                    "inputMessageName": "SearchBooksInput"
-                },
-                {
-                    "modelName": "Book",
-                    "name": "deleteBook",
-                    "type": "ACTION_TYPE_DELETE",
-                    "implementation": "ACTION_IMPLEMENTATION_AUTO",
-                    "inputMessageName": "DeleteBookInput"
-                }
-            ]
+          "modelName": "Author",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
-            "name": "Identity",
-            "fields": [
-                {
-                    "modelName": "Identity",
-                    "name": "email",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    },
-                    "optional": true,
-                    "uniqueWith": [
-                        "issuer"
-                    ]
-                },
-                {
-                    "modelName": "Identity",
-                    "name": "emailVerified",
-                    "type": {
-                        "type": "TYPE_BOOL"
-                    },
-                    "defaultValue": {
-                        "expression": {
-                            "source": "false"
-                        }
-                    }
-                },
-                {
-                    "modelName": "Identity",
-                    "name": "password",
-                    "type": {
-                        "type": "TYPE_PASSWORD"
-                    },
-                    "optional": true
-                },
-                {
-                    "modelName": "Identity",
-                    "name": "externalId",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    },
-                    "optional": true
-                },
-                {
-                    "modelName": "Identity",
-                    "name": "issuer",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    },
-                    "optional": true,
-                    "uniqueWith": [
-                        "email"
-                    ]
-                },
-                {
-                    "modelName": "Identity",
-                    "name": "id",
-                    "type": {
-                        "type": "TYPE_ID"
-                    },
-                    "unique": true,
-                    "primaryKey": true,
-                    "defaultValue": {
-                        "useZeroValue": true
-                    }
-                },
-                {
-                    "modelName": "Identity",
-                    "name": "createdAt",
-                    "type": {
-                        "type": "TYPE_DATETIME"
-                    },
-                    "defaultValue": {
-                        "useZeroValue": true
-                    }
-                },
-                {
-                    "modelName": "Identity",
-                    "name": "updatedAt",
-                    "type": {
-                        "type": "TYPE_DATETIME"
-                    },
-                    "defaultValue": {
-                        "useZeroValue": true
-                    }
-                }
-            ],
-            "actions": [
-                {
-                    "modelName": "Identity",
-                    "name": "authenticate",
-                    "type": "ACTION_TYPE_WRITE",
-                    "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-                    "inputMessageName": "AuthenticateInput",
-                    "responseMessageName": "AuthenticateResponse"
-                },
-                {
-                    "modelName": "Identity",
-                    "name": "requestPasswordReset",
-                    "type": "ACTION_TYPE_WRITE",
-                    "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-                    "inputMessageName": "RequestPasswordResetInput",
-                    "responseMessageName": "RequestPasswordResetResponse"
-                },
-                {
-                    "modelName": "Identity",
-                    "name": "resetPassword",
-                    "type": "ACTION_TYPE_WRITE",
-                    "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-                    "inputMessageName": "ResetPasswordInput",
-                    "responseMessageName": "ResetPasswordResponse"
-                }
-            ]
+          "modelName": "Author",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         }
-    ],
-    "apis": [
+      ],
+      "actions": [
         {
-            "name": "Admin",
-            "apiModels": [
-                {
-                    "modelName": "Author",
-                    "modelActions": [
-                        {
-                            "actionName": "getAuthor"
-                        },
-                        {
-                            "actionName": "deleteAuthor"
-                        },
-                        {
-                            "actionName": "deleteAll"
-                        }
-                    ]
-                },
-                {
-                    "modelName": "Book",
-                    "modelActions": [
-                        {
-                            "actionName": "deleteBook"
-                        },
-                        {
-                            "actionName": "deleteAll"
-                        }
-                    ]
-                },
-                {
-                    "modelName": "Identity"
-                }
-            ]
+          "modelName": "Author",
+          "name": "getAuthor",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetAuthorInput"
         },
         {
-            "name": "Api",
-            "apiModels": [
-                {
-                    "modelName": "Book",
-                    "modelActions": [
-                        {
-                            "actionName": "searchBooks"
-                        }
-                    ]
-                },
-                {
-                    "modelName": "Identity"
-                }
-            ]
+          "modelName": "Author",
+          "name": "deleteAuthor",
+          "type": "ACTION_TYPE_DELETE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "DeleteAuthorInput"
         }
-    ],
-    "messages": [
+      ]
+    },
+    {
+      "name": "Book",
+      "fields": [
         {
-            "name": "Any"
+          "modelName": "Book",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
-            "name": "GetAuthorInput",
-            "fields": [
-                {
-                    "messageName": "GetAuthorInput",
-                    "name": "id",
-                    "type": {
-                        "type": "TYPE_ID",
-                        "modelName": "Author",
-                        "fieldName": "id"
-                    },
-                    "target": [
-                        "id"
-                    ]
-                }
-            ]
+          "modelName": "Book",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
-            "name": "DeleteAuthorInput",
-            "fields": [
-                {
-                    "messageName": "DeleteAuthorInput",
-                    "name": "id",
-                    "type": {
-                        "type": "TYPE_ID",
-                        "modelName": "Author",
-                        "fieldName": "id"
-                    },
-                    "target": [
-                        "id"
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "SearchBooksWhere"
-        },
-        {
-            "name": "SearchBooksInput",
-            "fields": [
-                {
-                    "messageName": "SearchBooksInput",
-                    "name": "where",
-                    "type": {
-                        "type": "TYPE_MESSAGE",
-                        "messageName": "SearchBooksWhere"
-                    },
-                    "optional": true
-                },
-                {
-                    "messageName": "SearchBooksInput",
-                    "name": "first",
-                    "type": {
-                        "type": "TYPE_INT"
-                    },
-                    "optional": true
-                },
-                {
-                    "messageName": "SearchBooksInput",
-                    "name": "after",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    },
-                    "optional": true
-                },
-                {
-                    "messageName": "SearchBooksInput",
-                    "name": "last",
-                    "type": {
-                        "type": "TYPE_INT"
-                    },
-                    "optional": true
-                },
-                {
-                    "messageName": "SearchBooksInput",
-                    "name": "before",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    },
-                    "optional": true
-                }
-            ]
-        },
-        {
-            "name": "DeleteBookInput",
-            "fields": [
-                {
-                    "messageName": "DeleteBookInput",
-                    "name": "id",
-                    "type": {
-                        "type": "TYPE_ID",
-                        "modelName": "Book",
-                        "fieldName": "id"
-                    },
-                    "target": [
-                        "id"
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "EmailPasswordInput",
-            "fields": [
-                {
-                    "messageName": "EmailPasswordInput",
-                    "name": "email",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    }
-                },
-                {
-                    "messageName": "EmailPasswordInput",
-                    "name": "password",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    }
-                }
-            ]
-        },
-        {
-            "name": "AuthenticateInput",
-            "fields": [
-                {
-                    "messageName": "AuthenticateInput",
-                    "name": "createIfNotExists",
-                    "type": {
-                        "type": "TYPE_BOOL"
-                    },
-                    "optional": true
-                },
-                {
-                    "messageName": "AuthenticateInput",
-                    "name": "emailPassword",
-                    "type": {
-                        "type": "TYPE_MESSAGE",
-                        "messageName": "EmailPasswordInput"
-                    }
-                }
-            ]
-        },
-        {
-            "name": "AuthenticateResponse",
-            "fields": [
-                {
-                    "messageName": "AuthenticateResponse",
-                    "name": "identityCreated",
-                    "type": {
-                        "type": "TYPE_BOOL"
-                    }
-                },
-                {
-                    "messageName": "AuthenticateResponse",
-                    "name": "token",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    }
-                }
-            ]
-        },
-        {
-            "name": "RequestPasswordResetInput",
-            "fields": [
-                {
-                    "messageName": "RequestPasswordResetInput",
-                    "name": "email",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    }
-                },
-                {
-                    "messageName": "RequestPasswordResetInput",
-                    "name": "redirectUrl",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    }
-                }
-            ]
-        },
-        {
-            "name": "RequestPasswordResetResponse"
-        },
-        {
-            "name": "ResetPasswordInput",
-            "fields": [
-                {
-                    "messageName": "ResetPasswordInput",
-                    "name": "token",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    }
-                },
-                {
-                    "messageName": "ResetPasswordInput",
-                    "name": "password",
-                    "type": {
-                        "type": "TYPE_STRING"
-                    }
-                }
-            ]
-        },
-        {
-            "name": "ResetPasswordResponse"
+          "modelName": "Book",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         }
-    ]
+      ],
+      "actions": [
+        {
+          "modelName": "Book",
+          "name": "searchBooks",
+          "type": "ACTION_TYPE_LIST",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "SearchBooksInput"
+        },
+        {
+          "modelName": "Book",
+          "name": "deleteBook",
+          "type": "ACTION_TYPE_DELETE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "DeleteBookInput"
+        },
+        {
+          "modelName": "Book",
+          "name": "deleteAll",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "issuer"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Admin",
+      "apiModels": [
+        {
+          "modelName": "Author",
+          "modelActions": [
+            {
+              "actionName": "getAuthor"
+            },
+            {
+              "actionName": "deleteAuthor"
+            }
+          ]
+        },
+        {
+          "modelName": "Book",
+          "modelActions": [
+            {
+              "actionName": "deleteBook"
+            },
+            {
+              "actionName": "deleteAll"
+            }
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Book",
+          "modelActions": [
+            {
+              "actionName": "searchBooks"
+            }
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "GetAuthorInput",
+      "fields": [
+        {
+          "messageName": "GetAuthorInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DeleteAuthorInput",
+      "fields": [
+        {
+          "messageName": "DeleteAuthorInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SearchBooksWhere"
+    },
+    {
+      "name": "SearchBooksInput",
+      "fields": [
+        {
+          "messageName": "SearchBooksInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "SearchBooksWhere"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "SearchBooksInput",
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "SearchBooksInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "SearchBooksInput",
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "SearchBooksInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "DeleteBookInput",
+      "fields": [
+        {
+          "messageName": "DeleteBookInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Book",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EmailPasswordInput",
+      "fields": [
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateInput",
+      "fields": [
+        {
+          "messageName": "AuthenticateInput",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "AuthenticateInput",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    }
+  ]
 }
