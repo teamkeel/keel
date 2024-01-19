@@ -9,7 +9,7 @@ model Book {
 	 actions {
         list searchBooks()
         delete deleteBook(id)
-		write deleteAll(Any) returns (Any)
+		    write deleteAll(Any) returns (Any)
     }
 }
 

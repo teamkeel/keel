@@ -2,7 +2,6 @@ model Author {
     actions {
         get getAuthor(id)
         delete deleteAuthor(id)
-      
     }
 }
 
@@ -10,7 +9,7 @@ model Book {
 	 actions {
         list searchBooks()
         delete deleteBook(id)
-		write deleteAll(Any) returns (Any)
+		    write deleteAll(Any) returns (Any)
     }
 }
 

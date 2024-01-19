@@ -52,6 +52,8 @@ func TestProto(t *testing.T) {
 				return
 			}
 
+			fmt.Println(string(actual))
+
 			assert.Fail(t, "actual proto JSON does not match expected", explanation)
 		})
 	}
