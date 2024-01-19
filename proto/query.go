@@ -285,7 +285,6 @@ func GetActionNamesForApi(p *Schema, api *Api) []string {
 	for _, v := range api.ApiModels {
 		for _, f := range v.ModelActions {
 			actions = append(actions, f.ActionName)
-
 		}
 	}
 

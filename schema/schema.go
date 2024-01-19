@@ -56,6 +56,8 @@ func (scm *Builder) MakeFromString(schemaString string) (*proto.Schema, error) {
 		FileName: "schema.keel",
 	})
 
+	scm.Config = &config.ProjectConfig{}
+
 	return scm.makeFromInputs(&reader.Inputs{
 		SchemaFiles: scm.schemaFiles,
 	})
