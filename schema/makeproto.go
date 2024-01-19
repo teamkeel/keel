@@ -62,14 +62,14 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 				Name: secret,
 			})
 		}
+
+		if scm.Config.DefaultApi() {
+			scm.proto.Apis = append(scm.proto.Apis, defaultAPI(scm.proto))
+		}
 	}
 
 	// Generate the input messages for all subscribers in the schema.
 	scm.makeSubscriberInputMessages()
-
-	if scm.Config.DefaultApi() {
-		scm.proto.Apis = append(scm.proto.Apis, defaultAPI(scm.proto))
-	}
 
 	return scm.proto
 }
