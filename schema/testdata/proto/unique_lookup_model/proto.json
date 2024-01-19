@@ -203,10 +203,26 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "BankAccount"
+          "modelName": "BankAccount",
+          "modelActions": [
+            {
+              "actionName": "getBankAccount"
+            }
+          ]
         },
         {
-          "modelName": "Identity"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

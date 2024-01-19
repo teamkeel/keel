@@ -378,13 +378,56 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Identity"
-        },
-        {
-          "modelName": "Product"
+          "modelName": "Product",
+          "modelActions": [
+            {
+              "actionName": "getbySku"
+            },
+            {
+              "actionName": "getbySkuInput"
+            },
+            {
+              "actionName": "getSpecificSkuAndByName"
+            },
+            {
+              "actionName": "getSpecificSku"
+            },
+            {
+              "actionName": "getbySkuAsInputAndShampoo"
+            },
+            {
+              "actionName": "getbySkuAndShampoo"
+            },
+            {
+              "actionName": "getbySkuAndShampooInverse"
+            },
+            {
+              "actionName": "getbySkuOrId"
+            },
+            {
+              "actionName": "getbySkuAndNotShampoo"
+            },
+            {
+              "actionName": "getbySkuFromCtx"
+            }
+          ]
         },
         {
           "modelName": "User"
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

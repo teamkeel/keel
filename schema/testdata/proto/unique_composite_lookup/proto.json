@@ -572,19 +572,72 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Identity"
-        },
-        {
-          "modelName": "Product"
-        },
-        {
-          "modelName": "Stock"
-        },
-        {
-          "modelName": "Supplier"
-        },
-        {
           "modelName": "User"
+        },
+        {
+          "modelName": "Product",
+          "modelActions": [
+            {
+              "actionName": "getBySupplierSkuInputAndIdInput"
+            },
+            {
+              "actionName": "getBySupplierSkuInputAndCodeInput"
+            },
+            {
+              "actionName": "getBySupplierSkuExprAndCodeExpr"
+            },
+            {
+              "actionName": "getBySupplierSkuExprAndIdExpr"
+            },
+            {
+              "actionName": "getBySupplierSkuExprAndIdExprMultiWhere"
+            },
+            {
+              "actionName": "getBySupplierSkuForXyz"
+            },
+            {
+              "actionName": "getByBarcode"
+            }
+          ]
+        },
+        {
+          "modelName": "Stock",
+          "modelActions": [
+            {
+              "actionName": "getBySupplierSkuAndCode"
+            },
+            {
+              "actionName": "getBySku"
+            },
+            {
+              "actionName": "getByAbcSku"
+            }
+          ]
+        },
+        {
+          "modelName": "Supplier",
+          "modelActions": [
+            {
+              "actionName": "getBySupplierCode"
+            },
+            {
+              "actionName": "getByProductSku"
+            }
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

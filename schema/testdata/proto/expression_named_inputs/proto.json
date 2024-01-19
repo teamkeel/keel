@@ -208,10 +208,32 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Identity"
+          "modelName": "Person",
+          "modelActions": [
+            {
+              "actionName": "getBob"
+            },
+            {
+              "actionName": "getPerson"
+            },
+            {
+              "actionName": "createPerson"
+            }
+          ]
         },
         {
-          "modelName": "Person"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

@@ -197,10 +197,29 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Account"
+          "modelName": "Account",
+          "modelActions": [
+            {
+              "actionName": "createAccount"
+            },
+            {
+              "actionName": "updateAccount"
+            }
+          ]
         },
         {
-          "modelName": "Identity"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

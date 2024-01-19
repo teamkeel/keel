@@ -193,10 +193,35 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Foo"
+          "modelName": "Foo",
+          "modelActions": [
+            {
+              "actionName": "operationA"
+            },
+            {
+              "actionName": "operationB"
+            },
+            {
+              "actionName": "operationC"
+            },
+            {
+              "actionName": "operationD"
+            }
+          ]
         },
         {
-          "modelName": "Identity"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

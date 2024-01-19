@@ -190,10 +190,29 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Identity"
+          "modelName": "Post",
+          "modelActions": [
+            {
+              "actionName": "removeTitle"
+            },
+            {
+              "actionName": "listPostsWithNoTitle"
+            }
+          ]
         },
         {
-          "modelName": "Post"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

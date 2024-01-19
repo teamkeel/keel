@@ -438,27 +438,6 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 	declaration.Model.Sections = append(declaration.Model.Sections, uniqueModelSection)
 
 	declarations.Declarations = append(declarations.Declarations, declaration)
-
-	// Making the identity model and operations available on all APIs
-
-	// Note this only applies to API's that the user has defined in their schema.
-	// You could say we "sneak the Identity model in to those APIs"/
-	//
-	// However, if the schema doesn't have any API's defined - there is code elsewhere that creates
-	// a default API for you - and that includes ALL models (which include the new auto generated Audit model.)
-	for _, d := range declarations.Declarations {
-		if d.API != nil {
-			for _, s := range d.API.Sections {
-				if s.Models != nil {
-					s.Models = append(s.Models, &parser.ModelsNode{
-						Name: parser.NameNode{
-							Value: parser.ImplicitIdentityModelName,
-						},
-					})
-				}
-			}
-		}
-	}
 }
 
 func (scm *Builder) addEnvironmentVariables(declarations *parser.AST) {

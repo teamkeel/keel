@@ -307,11 +307,70 @@ func TestAPI(t *testing.T) {
 			Author
 			Book
 		}
+	}
+	api Api {
+		models {
+			Book
+		}
 	}`})
 	assert.Equal(t, "Web", schema.Declarations[0].API.Name.Value)
-
 	assert.Equal(t, "Author", schema.Declarations[0].API.Sections[0].Models[0].Name.Value)
 	assert.Equal(t, "Book", schema.Declarations[0].API.Sections[0].Models[1].Name.Value)
+
+	assert.Equal(t, "Api", schema.Declarations[1].API.Name.Value)
+	assert.Equal(t, "Book", schema.Declarations[1].API.Sections[0].Models[0].Name.Value)
+}
+
+func TestAPIWithActions(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	api Admin {
+		models {
+			Author {
+				actions {
+					deleteAuthor
+					deleteAll
+				}
+			}
+			Book {
+				actions {
+					deleteBook
+					deleteAll
+				}
+			}
+		}
+	}
+	api Api {
+		models {
+			Author {
+				actions {
+					getAuthor
+				}
+			}
+			Book {
+				actions {
+					searchBooks
+				}
+			}
+		}
+	}`})
+
+	assert.Equal(t, "Admin", schema.Declarations[0].API.Name.Value)
+
+	assert.Equal(t, "Author", schema.Declarations[0].API.Sections[0].Models[0].Name.Value)
+	assert.Equal(t, "deleteAuthor", schema.Declarations[0].API.Sections[0].Models[0].Sections[0].Actions[0].Name.Value)
+	assert.Equal(t, "deleteAll", schema.Declarations[0].API.Sections[0].Models[0].Sections[0].Actions[1].Name.Value)
+
+	assert.Equal(t, "Book", schema.Declarations[0].API.Sections[0].Models[1].Name.Value)
+	assert.Equal(t, "deleteBook", schema.Declarations[0].API.Sections[0].Models[1].Sections[0].Actions[0].Name.Value)
+	assert.Equal(t, "deleteAll", schema.Declarations[0].API.Sections[0].Models[1].Sections[0].Actions[1].Name.Value)
+
+	assert.Equal(t, "Api", schema.Declarations[1].API.Name.Value)
+
+	assert.Equal(t, "Author", schema.Declarations[1].API.Sections[0].Models[0].Name.Value)
+	assert.Equal(t, "getAuthor", schema.Declarations[1].API.Sections[0].Models[0].Sections[0].Actions[0].Name.Value)
+
+	assert.Equal(t, "Book", schema.Declarations[1].API.Sections[0].Models[1].Name.Value)
+	assert.Equal(t, "searchBooks", schema.Declarations[1].API.Sections[0].Models[1].Sections[0].Actions[0].Name.Value)
 }
 
 func TestParserPos(t *testing.T) {

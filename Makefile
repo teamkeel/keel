@@ -71,3 +71,6 @@ rpc-api:
 		--twirp_out=Mrpc.proto=rpc/rpc:rpc/rpc \
 		--go_out=./ \
 		rpc.proto
+
+proto-tests:
+	nix-shell --command "cd ./schema && go run ./testdata/generate_testdata.go ./testdata/proto"

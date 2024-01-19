@@ -1,0 +1,26 @@
+model Author {
+    actions {
+        get getAuthor(id)
+        delete deleteAuthor(id)
+    }
+}
+
+model Book {
+    actions {
+        get getBooks(id)
+        list searchBooks()
+        delete deleteBook(id)
+    }
+}
+
+api Api {
+	models {
+		Author
+		Book {
+			actions {
+                getBooks
+                searchBooks
+            }
+		}
+	}
+}

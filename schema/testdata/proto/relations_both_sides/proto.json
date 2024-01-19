@@ -227,10 +227,21 @@
           "modelName": "Account"
         },
         {
-          "modelName": "Identity"
+          "modelName": "Post"
         },
         {
-          "modelName": "Post"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

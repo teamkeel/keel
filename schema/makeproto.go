@@ -89,12 +89,24 @@ defaultAPI makes this:
 	}
 */
 func defaultAPI(scm *proto.Schema) *proto.Api {
-	allModels := lo.Map(proto.ModelNames(scm), func(name string, _ int) *proto.ApiModel {
-		return &proto.ApiModel{ModelName: name}
-	})
+	var apiModels []*proto.ApiModel
+
+	for _, m := range scm.Models {
+		apiModel := &proto.ApiModel{
+			ModelName:    m.Name,
+			ModelActions: []*proto.ApiModelAction{},
+		}
+
+		for _, a := range m.Actions {
+			apiModel.ModelActions = append(apiModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name})
+		}
+
+		apiModels = append(apiModels, apiModel)
+	}
+
 	return &proto.Api{
 		Name:      "Api",
-		ApiModels: allModels,
+		ApiModels: apiModels,
 	}
 }
 
@@ -824,7 +836,34 @@ func (scm *Builder) makeAuthenticate() *proto.Action {
 		},
 	})
 
+	scm.addActionToAllApis(&action)
+
 	return &action
+}
+
+func (scm *Builder) addActionToAllApis(action *proto.Action) {
+	for _, api := range scm.proto.Apis {
+		var apiModel *proto.ApiModel
+		for _, a := range api.ApiModels {
+			if a.ModelName == action.ModelName {
+				apiModel = a
+				break
+			}
+		}
+
+		if apiModel == nil {
+			apiModel = &proto.ApiModel{
+				ModelName:    action.ModelName,
+				ModelActions: []*proto.ApiModelAction{},
+			}
+
+			api.ApiModels = append(api.ApiModels, apiModel)
+		}
+
+		apiModel.ModelActions = append(apiModel.ModelActions, &proto.ApiModelAction{
+			ActionName: action.Name,
+		})
+	}
 }
 
 func (scm *Builder) makeRequestPasswordReset() *proto.Action {
@@ -862,6 +901,8 @@ func (scm *Builder) makeRequestPasswordReset() *proto.Action {
 		Name:   responseMessageName,
 		Fields: []*proto.MessageField{},
 	})
+
+	scm.addActionToAllApis(&action)
 
 	return &action
 }
@@ -902,6 +943,8 @@ func (scm *Builder) makePasswordReset() *proto.Action {
 		Fields: []*proto.MessageField{},
 	})
 
+	scm.addActionToAllApis(&action)
+
 	return &action
 }
 
@@ -932,8 +975,25 @@ func (scm *Builder) makeAPI(decl *parser.DeclarationNode) {
 		case len(section.Models) > 0:
 			for _, parserApiModel := range section.Models {
 				protoModel := &proto.ApiModel{
-					ModelName: parserApiModel.Name.Value,
+					ModelName:    parserApiModel.Name.Value,
+					ModelActions: []*proto.ApiModelAction{},
 				}
+				if len(parserApiModel.Sections) == 1 {
+					for _, a := range parserApiModel.Sections[0].Actions {
+						protoModel.ModelActions = append(protoModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name.Value})
+					}
+				} else {
+
+					model := query.Model(scm.asts, parserApiModel.Name.Value)
+					actions := query.ModelActions(model)
+
+					if model != nil {
+						for _, a := range actions {
+							protoModel.ModelActions = append(protoModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name.Value})
+						}
+					}
+				}
+
 				protoAPI.ApiModels = append(protoAPI.ApiModels, protoModel)
 			}
 		}

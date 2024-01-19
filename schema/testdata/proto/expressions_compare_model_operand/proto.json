@@ -277,13 +277,29 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "BankAccount"
-        },
-        {
-          "modelName": "Identity"
-        },
-        {
           "modelName": "User"
+        },
+        {
+          "modelName": "BankAccount",
+          "modelActions": [
+            {
+              "actionName": "getBankAccount"
+            }
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

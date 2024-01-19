@@ -31,7 +31,7 @@ const (
 	JsonRpcForbidden          = -32003 // Not part of the official spec
 )
 
-func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
+func NewHandler(schema *proto.Schema, api *proto.Api) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "JsonRpc")
 		defer span.End()
@@ -41,7 +41,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 			return NewErrorResponse(ctx, nil, err)
 		}
 
-		identity, err := actions.HandleAuthorizationHeader(ctx, p, r.Header)
+		identity, err := actions.HandleAuthorizationHeader(ctx, schema, r.Header)
 		if err != nil {
 			return NewErrorResponse(ctx, nil, err)
 		}
@@ -68,13 +68,19 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 			attribute.String("api.protocol", "RPC"),
 		)
 
-		action := proto.FindAction(p, actionName)
+		var action *proto.Action
+		for _, a := range proto.GetActionNamesForApi(schema, api) {
+			if a == actionName {
+				action = proto.FindAction(schema, actionName)
+			}
+		}
+
 		if action == nil {
 			err = common.NewMethodNotFoundError()
 			return NewErrorResponse(ctx, &req.ID, err)
 		}
 
-		scope := actions.NewScope(ctx, action, p)
+		scope := actions.NewScope(ctx, action, schema)
 
 		response, meta, err := actions.Execute(scope, inputs)
 		if err != nil {

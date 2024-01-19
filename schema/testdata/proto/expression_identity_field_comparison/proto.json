@@ -342,13 +342,29 @@
           "modelName": "Author"
         },
         {
-          "modelName": "Identity"
-        },
-        {
-          "modelName": "Post"
-        },
-        {
           "modelName": "Publisher"
+        },
+        {
+          "modelName": "Post",
+          "modelActions": [
+            {
+              "actionName": "createPost"
+            }
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

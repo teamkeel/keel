@@ -241,13 +241,29 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Company"
+          "modelName": "Company",
+          "modelActions": [
+            {
+              "actionName": "createCompany"
+            }
+          ]
         },
         {
           "modelName": "CompanyProfile"
         },
         {
-          "modelName": "Identity"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

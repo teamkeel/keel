@@ -344,16 +344,42 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Company"
+          "modelName": "Company",
+          "modelActions": [
+            {
+              "actionName": "createCompany"
+            }
+          ]
         },
         {
-          "modelName": "CompanyProfile"
+          "modelName": "CompanyProfile",
+          "modelActions": [
+            {
+              "actionName": "findCompanyProfile"
+            }
+          ]
         },
         {
-          "modelName": "Identity"
+          "modelName": "TaxProfile",
+          "modelActions": [
+            {
+              "actionName": "findTaxProfile"
+            }
+          ]
         },
         {
-          "modelName": "TaxProfile"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

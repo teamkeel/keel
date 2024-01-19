@@ -1,10 +1,10 @@
 {
   "models": [
     {
-      "name": "Foo",
+      "name": "Author",
       "fields": [
         {
-          "modelName": "Foo",
+          "modelName": "Author",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -16,7 +16,7 @@
           }
         },
         {
-          "modelName": "Foo",
+          "modelName": "Author",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -26,44 +26,7 @@
           }
         },
         {
-          "modelName": "Foo",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        }
-      ]
-    },
-    {
-      "name": "Bar",
-      "fields": [
-        {
-          "modelName": "Bar",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Bar",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Bar",
+          "modelName": "Author",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -190,27 +153,24 @@
   ],
   "apis": [
     {
-      "name": "ApiOne",
+      "name": "Api",
       "apiModels": [
         {
-          "modelName": "Foo"
+          "modelName": "Author"
         },
         {
-          "modelName": "Bar"
-        },
-        {
-          "modelName": "Identity"
-        }
-      ]
-    },
-    {
-      "name": "ApiTwo",
-      "apiModels": [
-        {
-          "modelName": "Foo"
-        },
-        {
-          "modelName": "Identity"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

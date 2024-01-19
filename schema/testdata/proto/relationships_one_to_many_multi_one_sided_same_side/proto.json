@@ -233,13 +233,24 @@
       "name": "Api",
       "apiModels": [
         {
+          "modelName": "Post"
+        },
+        {
           "modelName": "Author"
         },
         {
-          "modelName": "Identity"
-        },
-        {
-          "modelName": "Post"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

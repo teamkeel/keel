@@ -294,10 +294,21 @@
           "modelName": "Company"
         },
         {
-          "modelName": "Identity"
+          "modelName": "Person"
         },
         {
-          "modelName": "Person"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

@@ -342,13 +342,52 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Identity"
+          "modelName": "Product",
+          "modelActions": [
+            {
+              "actionName": "getByStockIdInput"
+            },
+            {
+              "actionName": "getByBarcodeInput"
+            },
+            {
+              "actionName": "getByBarcodeExpr"
+            },
+            {
+              "actionName": "getByBarcodeInputAndShampooExpr"
+            },
+            {
+              "actionName": "getByBarcodeAndShampooExpr"
+            },
+            {
+              "actionName": "getByStockIdExpr"
+            },
+            {
+              "actionName": "getBySkuAndNullStockId"
+            }
+          ]
         },
         {
-          "modelName": "Product"
+          "modelName": "ProductStock",
+          "modelActions": [
+            {
+              "actionName": "getByProductSku"
+            }
+          ]
         },
         {
-          "modelName": "ProductStock"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }

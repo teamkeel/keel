@@ -94,8 +94,27 @@ type APINode struct {
 type APISectionNode struct {
 	node.Node
 
-	Models    []*ModelsNode  `("models" "{" @@* "}"`
-	Attribute *AttributeNode `| @@)`
+	Models    []*APIModelsNode `("models" "{" @@* "}"`
+	Attribute *AttributeNode   `| @@)`
+}
+
+type APIModelsNode struct {
+	node.Node
+
+	Name     NameNode               `@@`
+	Sections []*APIModelSectionNode `("{" @@* "}")*`
+}
+
+type APIModelSectionNode struct {
+	node.Node
+
+	Actions []*APIActionNode `"actions" "{" @@* "}"`
+}
+
+type APIActionNode struct {
+	node.Node
+
+	Name NameNode `@@`
 }
 
 type RoleNode struct {
@@ -122,12 +141,6 @@ type EmailsNode struct {
 	node.Node
 
 	Email string `@String`
-}
-
-type ModelsNode struct {
-	node.Node
-
-	Name NameNode `@@`
 }
 
 type JobNode struct {

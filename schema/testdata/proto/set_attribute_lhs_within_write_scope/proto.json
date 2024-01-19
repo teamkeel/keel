@@ -689,22 +689,65 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Country"
+          "modelName": "Post",
+          "modelActions": [
+            {
+              "actionName": "nestedData1"
+            },
+            {
+              "actionName": "nestedData2"
+            },
+            {
+              "actionName": "nestedData3"
+            },
+            {
+              "actionName": "nestedData4"
+            },
+            {
+              "actionName": "nestedData5"
+            },
+            {
+              "actionName": "nestedData6"
+            },
+            {
+              "actionName": "nestedData7"
+            },
+            {
+              "actionName": "nestedData8"
+            },
+            {
+              "actionName": "nestedData9"
+            },
+            {
+              "actionName": "nestedData10"
+            }
+          ]
+        },
+        {
+          "modelName": "Publisher"
         },
         {
           "modelName": "Department"
         },
         {
-          "modelName": "Identity"
+          "modelName": "Country"
         },
         {
           "modelName": "Person"
         },
         {
-          "modelName": "Post"
-        },
-        {
-          "modelName": "Publisher"
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
         }
       ]
     }
