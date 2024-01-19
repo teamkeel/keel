@@ -23,6 +23,7 @@ var (
 	flagPattern          string
 	flagTracing          bool
 	flagVersion          bool
+	flagVerboseTracing   bool
 )
 
 var rootCmd = &cobra.Command{
