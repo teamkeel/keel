@@ -52,8 +52,6 @@ func TestProto(t *testing.T) {
 				return
 			}
 
-			//	fmt.Println(string(actual))
-
 			assert.Fail(t, "actual proto JSON does not match expected", explanation)
 		})
 	}
@@ -67,10 +65,6 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, testCase := range testCases {
-		if testCase.Name() != "api_invalid_action_names.keel" {
-			continue
-		}
-
 		if testCase.IsDir() {
 			t.Errorf("errors test data directory should only contain keel schema files - directory found: %s", testCase.Name())
 			continue
