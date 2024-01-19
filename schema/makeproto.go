@@ -67,27 +67,14 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 	// Generate the input messages for all subscribers in the schema.
 	scm.makeSubscriberInputMessages()
 
-	// If the input schema doesn't specify any APIs, we create a default one.
-	// This is a temporary place holder.
-	// We expect the API block to evolve into something more expressive, and then
-	// the concept of there being a default one might disappear.
-	// See https://linear.app/keel/issue/BLD-588/automatically-create-default-api-api
-	if len(scm.proto.Apis) == 0 {
+	if scm.Config.DefaultApi() {
 		scm.proto.Apis = append(scm.proto.Apis, defaultAPI(scm.proto))
 	}
 
 	return scm.proto
 }
 
-/*
-defaultAPI makes this:
-
-	api API {
-	    models {
-	        ...all models
-	    }
-	}
-*/
+// defaultAPI creates an API with all the models and their actions included.
 func defaultAPI(scm *proto.Schema) *proto.Api {
 	var apiModels []*proto.ApiModel
 

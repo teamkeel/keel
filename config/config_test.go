@@ -116,6 +116,25 @@ func TestReservedNameValidateFormat(t *testing.T) {
 	assert.Contains(t, err.Error(), "environment variable _NOT_ALLOWED5 cannot start with _ as it is reserved\n")
 }
 
+func TestDefaultApiOmitted(t *testing.T) {
+	config, err := Load("fixtures/test_empty_config.yaml")
+	assert.NoError(t, err)
+
+	assert.True(t, config.DefaultApi())
+}
+func TestDefaultApiTrue(t *testing.T) {
+	config, err := Load("fixtures/test_default_api_true.yaml")
+	assert.NoError(t, err)
+
+	assert.True(t, config.DefaultApi())
+}
+func TestDefaultApiFalse(t *testing.T) {
+	config, err := Load("fixtures/test_default_api_false.yaml")
+	assert.NoError(t, err)
+
+	assert.False(t, config.DefaultApi())
+}
+
 func TestAuthTokens(t *testing.T) {
 	config, err := Load("fixtures/test_auth.yaml")
 	assert.NoError(t, err)
@@ -136,7 +155,7 @@ func TestAuthInvalidRedirectUrl(t *testing.T) {
 }
 
 func TestAuthDefaults(t *testing.T) {
-	config, err := Load("fixtures/test_auth_empty.yaml")
+	config, err := Load("fixtures/test_empty_config.yaml")
 	assert.NoError(t, err)
 
 	assert.Nil(t, config.Auth.Tokens.AccessTokenExpiry)
