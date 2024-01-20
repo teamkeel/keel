@@ -16,6 +16,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/jsonschema"
 	"github.com/teamkeel/keel/runtime/openapi"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -144,6 +145,10 @@ func NewErrorResponse(ctx context.Context, err error, data map[string]any) commo
 	code := common.ErrInternal
 	message := "error executing request"
 	httpCode := http.StatusInternalServerError
+
+	if runtimectx.GetEnv(ctx) == "test" {
+		message = fmt.Sprintf("%s (%s)", message, err.Error())
+	}
 
 	var runtimeError common.RuntimeError
 	if errors.As(err, &runtimeError) {
