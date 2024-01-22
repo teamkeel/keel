@@ -271,6 +271,26 @@ test("ModelAPI.findMany - oneOf", async () => {
   expect(rows.map((x) => x.id).sort()).toEqual([billy.id, sally.id].sort());
 });
 
+test("ModelAPI.findMany - notEquals on id", async () => {
+  const p1 = await personAPI.create({
+    id: KSUID.randomSync().string,
+    favouriteNumber: 1,
+  });
+  const p2 = await personAPI.create({
+    id: KSUID.randomSync().string,
+    favouriteNumber: 2,
+  });
+  const rows = await personAPI.findMany({
+    where: {
+      id: {
+        notEquals: p1.id,
+      },
+    },
+  });
+  expect(rows.length).toEqual(1);
+  expect(rows[0].id).toEqual(p2.id);
+});
+
 test("ModelAPI.findMany - greaterThan", async () => {
   await personAPI.create({
     id: KSUID.randomSync().string,

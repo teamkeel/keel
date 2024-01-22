@@ -1,5 +1,6 @@
 export type IDWhereCondition = {
   equals?: string | null;
+  notEquals?: string | null;
   oneOf?: string[] | null;
 };
 
@@ -8,8 +9,8 @@ export type StringWhereCondition = {
   endsWith?: string | null;
   oneOf?: string[] | null;
   contains?: string | null;
-  notEquals?: string | null;
   equals?: string | null;
+  notEquals?: string | null;
 };
 
 export type BooleanWhereCondition = {
