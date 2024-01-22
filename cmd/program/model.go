@@ -58,6 +58,11 @@ const (
 	StatusQuitting
 )
 
+const (
+	consoleAuthProviderIssuer   = "https://auth.keel.xyz/"
+	consoleAuthProviderClientId = "KvnOmNPy17WtMGBseDZRw3Hgn0ZOQpDd"
+)
+
 var tracer = otel.Tracer("github.com/teamkeel/keel/db")
 
 func Run(model *Model) {
@@ -436,6 +441,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
 		ctx = runtimectx.WithOAuthConfig(ctx, &m.Config.Auth)
 
+		// Add the OIDC auth provider used on the Console's internal tools
+		err := m.Config.Auth.AddOidcProvider("keel_console_auth", consoleAuthProviderIssuer, consoleAuthProviderClientId)
+		if err != nil {
+			span.RecordError(err)
+		}
+
 		mailClient := mail.NewSMTPClientFromEnv()
 		if mailClient != nil {
 			ctx = runtimectx.WithMailClient(ctx, mailClient)
@@ -457,7 +468,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Synchronous event handling for keel run.
 		// TODO: make asynchronous
-		ctx, err := events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
+		ctx, err = events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
 			return runtime.NewSubscriberHandler(m.Schema).RunSubscriber(ctx, subscriber, event)
 		})
 		if err != nil {
