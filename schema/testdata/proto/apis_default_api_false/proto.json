@@ -173,28 +173,6 @@
           ]
         }
       ]
-    },
-    {
-      "name": "Api",
-      "apiModels": [
-        {
-          "modelName": "Author"
-        },
-        {
-          "modelName": "Identity",
-          "modelActions": [
-            {
-              "actionName": "authenticate"
-            },
-            {
-              "actionName": "requestPasswordReset"
-            },
-            {
-              "actionName": "resetPassword"
-            }
-          ]
-        }
-      ]
     }
   ],
   "messages": [

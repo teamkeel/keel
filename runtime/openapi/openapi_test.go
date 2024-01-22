@@ -10,6 +10,7 @@ import (
 
 	"github.com/nsf/jsondiff"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/runtime/openapi"
 	"github.com/teamkeel/keel/schema"
 )
@@ -45,7 +46,7 @@ func TestGeneration(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			builder := schema.Builder{}
-			schema, err := builder.MakeFromString(c.keelSchema)
+			schema, err := builder.MakeFromString(c.keelSchema, config.Empty)
 			require.NoError(t, err)
 
 			if len(schema.Jobs) == 0 {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/codegen"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
@@ -573,7 +574,7 @@ model Person {
 }`
 
 	b := schema.Builder{}
-	schema, err := b.MakeFromString(schemaString)
+	schema, err := b.MakeFromString(schemaString, config.Empty)
 	require.NoError(t, err)
 
 	files, err := GenerateClient(context.Background(), schema, false, "Api")
@@ -592,7 +593,7 @@ model Person {
 }`
 
 	b := schema.Builder{}
-	schema, err := b.MakeFromString(schemaString)
+	schema, err := b.MakeFromString(schemaString, config.Empty)
 	require.NoError(t, err)
 
 	files, err := GenerateClient(context.Background(), schema, true, "Api")

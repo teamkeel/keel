@@ -50,11 +50,18 @@ func (scm *Builder) MakeFromDirectory(directory string) (*proto.Schema, error) {
 	return scm.makeFromInputs(allInputFiles)
 }
 
-func (scm *Builder) MakeFromString(schemaString string) (*proto.Schema, error) {
+func (scm *Builder) MakeFromString(schemaString string, configString string) (*proto.Schema, error) {
 	scm.schemaFiles = append(scm.schemaFiles, &reader.SchemaFile{
 		Contents: schemaString,
 		FileName: "schema.keel",
 	})
+
+	config, err := config.LoadFromBytes([]byte(configString))
+	if err != nil {
+		return nil, err
+	}
+
+	scm.Config = config
 
 	return scm.makeFromInputs(&reader.Inputs{
 		SchemaFiles: scm.schemaFiles,
@@ -63,7 +70,10 @@ func (scm *Builder) MakeFromString(schemaString string) (*proto.Schema, error) {
 
 // MakeFromFile constructs a proto.Schema from the given inputs
 func (scm *Builder) MakeFromInputs(inputs *reader.Inputs) (*proto.Schema, error) {
+	scm.Config = &config.ProjectConfig{}
+
 	scm.schemaFiles = inputs.SchemaFiles
+
 	return scm.makeFromInputs(inputs)
 }
 

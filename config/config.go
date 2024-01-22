@@ -13,15 +13,18 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const Empty = ""
+
 // Config is the configuration for the Keel runtime
 type Config struct{}
 
 // ProjectConfig is the configuration for a keel project
 type ProjectConfig struct {
-	Environment EnvironmentConfig `yaml:"environment"`
-	Secrets     []Input           `yaml:"secrets"`
-	Auth        AuthConfig        `yaml:"auth"`
-	DisableAuth bool              `yaml:"disableKeelAuth"`
+	Environment   EnvironmentConfig `yaml:"environment"`
+	UseDefaultApi *bool             `yaml:"useDefaultApi,omitempty"`
+	Secrets       []Input           `yaml:"secrets"`
+	Auth          AuthConfig        `yaml:"auth"`
+	DisableAuth   bool              `yaml:"disableKeelAuth"`
 }
 
 func (p *ProjectConfig) GetEnvVars(env string) map[string]string {
@@ -95,6 +98,16 @@ func (c *ProjectConfig) AllSecrets() []string {
 	}
 
 	return secrets
+}
+
+// DefaultApi provides the value of useDefaultApi from the config or a default value of true
+// if no value is specified in the config
+func (c *ProjectConfig) DefaultApi() bool {
+	if c.UseDefaultApi == nil {
+		return true
+	} else {
+		return *c.UseDefaultApi
+	}
 }
 
 // EnvironmentConfig is the configuration for a keel environment default, staging, production

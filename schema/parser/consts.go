@@ -33,6 +33,10 @@ const (
 	TypeModel = "Model"
 )
 
+const (
+	DefaultApi = "Api"
+)
+
 // Built in Keel types. Worth noting a field type can also reference
 // another user-defined model
 const (

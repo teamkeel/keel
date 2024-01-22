@@ -51,43 +51,40 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 
 	}
 
-	if scm.Config != nil {
-		for _, envVar := range scm.Config.AllEnvironmentVariables() {
-			scm.proto.EnvironmentVariables = append(scm.proto.EnvironmentVariables, &proto.EnvironmentVariable{
-				Name: envVar,
-			})
+	for _, envVar := range scm.Config.AllEnvironmentVariables() {
+		scm.proto.EnvironmentVariables = append(scm.proto.EnvironmentVariables, &proto.EnvironmentVariable{
+			Name: envVar,
+		})
+	}
+	for _, secret := range scm.Config.AllSecrets() {
+		scm.proto.Secrets = append(scm.proto.Secrets, &proto.Secret{
+			Name: secret,
+		})
+	}
+
+	// Only configure a default API if:
+	//  - the useDefaultApi config value is true, and
+	//  - 'Api' has not already been defined in the schema
+	if scm.Config.DefaultApi() {
+		defauftApiOverridden := false
+		for _, api := range scm.proto.Apis {
+			if api.Name == parser.DefaultApi {
+				defauftApiOverridden = true
+			}
 		}
-		for _, secret := range scm.Config.AllSecrets() {
-			scm.proto.Secrets = append(scm.proto.Secrets, &proto.Secret{
-				Name: secret,
-			})
+
+		if !defauftApiOverridden {
+			scm.proto.Apis = append(scm.proto.Apis, defaultAPI(scm.proto))
 		}
 	}
 
 	// Generate the input messages for all subscribers in the schema.
 	scm.makeSubscriberInputMessages()
 
-	// If the input schema doesn't specify any APIs, we create a default one.
-	// This is a temporary place holder.
-	// We expect the API block to evolve into something more expressive, and then
-	// the concept of there being a default one might disappear.
-	// See https://linear.app/keel/issue/BLD-588/automatically-create-default-api-api
-	if len(scm.proto.Apis) == 0 {
-		scm.proto.Apis = append(scm.proto.Apis, defaultAPI(scm.proto))
-	}
-
 	return scm.proto
 }
 
-/*
-defaultAPI makes this:
-
-	api API {
-	    models {
-	        ...all models
-	    }
-	}
-*/
+// defaultAPI creates an API with all the models and their actions included.
 func defaultAPI(scm *proto.Schema) *proto.Api {
 	var apiModels []*proto.ApiModel
 
@@ -758,7 +755,7 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	}
 
 	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
-		if !(scm != nil && scm.Config != nil && scm.Config.DisableAuth) {
+		if !scm.Config.DisableAuth {
 			protoModel.Actions = append(protoModel.Actions, scm.makeAuthenticate())
 			protoModel.Actions = append(protoModel.Actions, scm.makeRequestPasswordReset())
 			protoModel.Actions = append(protoModel.Actions, scm.makePasswordReset())

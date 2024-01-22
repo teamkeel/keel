@@ -268,6 +268,41 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Foo",
+          "modelActions": [
+            {
+              "actionName": "getFoo"
+            }
+          ]
+        },
+        {
+          "modelName": "Bar",
+          "modelActions": [
+            {
+              "actionName": "getBar"
+            }
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "authenticate"
+            },
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
+        }
+      ]
     }
   ],
   "messages": [

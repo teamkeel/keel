@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -23,7 +24,7 @@ func MakeContext(t *testing.T, keelSchema string, resetDatabase bool) (context.C
 	}
 
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
 	ctx := context.Background()

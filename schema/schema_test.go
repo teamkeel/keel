@@ -14,6 +14,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -79,7 +80,7 @@ func TestValidation(t *testing.T) {
 			require.NoError(t, err)
 
 			builder := &schema.Builder{}
-			_, err = builder.MakeFromString(string(b))
+			_, err = builder.MakeFromString(string(b), config.Empty)
 
 			verrs := &errorhandling.ValidationErrors{}
 			if !errors.As(err, &verrs) {

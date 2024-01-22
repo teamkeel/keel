@@ -35,6 +35,22 @@
             "useZeroValue": true
           }
         }
+      ],
+      "actions": [
+        {
+          "modelName": "Author",
+          "name": "getAuthor",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetAuthorInput"
+        },
+        {
+          "modelName": "Author",
+          "name": "deleteAuthor",
+          "type": "ACTION_TYPE_DELETE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "DeleteAuthorInput"
+        }
       ]
     },
     {
@@ -151,55 +167,43 @@
       ]
     }
   ],
-  "apis": [
+  "messages": [
     {
-      "name": "Admin",
-      "apiModels": [
+      "name": "Any"
+    },
+    {
+      "name": "GetAuthorInput",
+      "fields": [
         {
-          "modelName": "Author"
-        },
-        {
-          "modelName": "Identity",
-          "modelActions": [
-            {
-              "actionName": "authenticate"
-            },
-            {
-              "actionName": "requestPasswordReset"
-            },
-            {
-              "actionName": "resetPassword"
-            }
+          "messageName": "GetAuthorInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
           ]
         }
       ]
     },
     {
-      "name": "Api",
-      "apiModels": [
+      "name": "DeleteAuthorInput",
+      "fields": [
         {
-          "modelName": "Author"
-        },
-        {
-          "modelName": "Identity",
-          "modelActions": [
-            {
-              "actionName": "authenticate"
-            },
-            {
-              "actionName": "requestPasswordReset"
-            },
-            {
-              "actionName": "resetPassword"
-            }
+          "messageName": "DeleteAuthorInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
           ]
         }
       ]
-    }
-  ],
-  "messages": [
-    {
-      "name": "Any"
     },
     {
       "name": "EmailPasswordInput",

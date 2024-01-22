@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
@@ -37,7 +38,7 @@ func TestProcessEventSqlSingleEvent(t *testing.T) {
 		}`
 
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
 	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
@@ -65,7 +66,7 @@ func TestProcessEventSqlComplexTableName(t *testing.T) {
 		}`
 
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
 	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
@@ -93,7 +94,7 @@ func TestProcessEventSqlMultipleEventsOneAttribute(t *testing.T) {
 		}`
 
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
 	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
@@ -125,7 +126,7 @@ func TestProcessEventSqlMultipleEventsManyAttribute(t *testing.T) {
 		}`
 
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
 	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
@@ -154,7 +155,7 @@ func TestProcessEventSqlNoEvents(t *testing.T) {
 		}`
 
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
 	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
@@ -172,7 +173,7 @@ func TestProcessEventSqlEmptyTraceId(t *testing.T) {
 		}`
 
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
 	sql, err := processEventsSql(schema, "")
@@ -221,7 +222,7 @@ func TestProcessEventSqlWithMultipleModels(t *testing.T) {
 		}`
 
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
 	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")

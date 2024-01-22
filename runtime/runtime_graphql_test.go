@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/graphql/gqlerrors"
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
@@ -182,7 +183,7 @@ func initRow(with map[string]any) map[string]any {
 // keel schema.
 func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema)
+	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 	return schema
 }

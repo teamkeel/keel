@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/codegen"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema"
 )
 
@@ -54,7 +55,7 @@ func TestScaffold(t *testing.T) {
 
 	builder := schema.Builder{}
 
-	schema, err := builder.MakeFromString(schemaString)
+	schema, err := builder.MakeFromString(schemaString, config.Empty)
 
 	require.NoError(t, err)
 
@@ -221,7 +222,7 @@ func TestExistingFunction(t *testing.T) {
 	}
 `
 	builder := schema.Builder{}
-	schema, err := builder.MakeFromString(schemaString)
+	schema, err := builder.MakeFromString(schemaString, config.Empty)
 	assert.NoError(t, err)
 
 	err = os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(schemaString), 0777)
@@ -264,7 +265,7 @@ func TestExistingJob(t *testing.T) {
 	}
 `
 	builder := schema.Builder{}
-	schema, err := builder.MakeFromString(schemaString)
+	schema, err := builder.MakeFromString(schemaString, config.Empty)
 	assert.NoError(t, err)
 
 	err = os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(schemaString), 0777)
