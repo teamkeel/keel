@@ -15,6 +15,7 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
@@ -86,7 +87,7 @@ func TestMigrations(t *testing.T) {
 			var currProto *proto.Schema
 			if currSchema != "" {
 				builder := &schema.Builder{}
-				currProto, err = builder.MakeFromString(currSchema)
+				currProto, err = builder.MakeFromString(currSchema, config.Empty)
 				require.NoError(t, err)
 
 				m, err := migrations.New(ctx, currProto, database)
@@ -97,7 +98,7 @@ func TestMigrations(t *testing.T) {
 
 			// Create the new proto
 			builder := &schema.Builder{}
-			schema, err := builder.MakeFromString(newSchema)
+			schema, err := builder.MakeFromString(newSchema, config.Empty)
 			require.NoError(t, err)
 
 			// Create migrations from old (may be nil) to new

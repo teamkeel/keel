@@ -12,6 +12,7 @@ import (
 	"github.com/nsf/jsondiff"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/jsonschema"
 	"github.com/teamkeel/keel/schema"
@@ -55,7 +56,7 @@ func TestJSONSchemaGeneration(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			builder := schema.Builder{}
-			schema, err := builder.MakeFromString(c.keelSchema)
+			schema, err := builder.MakeFromString(c.keelSchema, config.Empty)
 			require.NoError(t, err)
 
 			action := proto.FindAction(schema, "testAction")
@@ -895,7 +896,7 @@ func TestValidateRequest(t *testing.T) {
 			t.Run(group.name+"/"+f.name, func(t *testing.T) {
 
 				builder := schema.Builder{}
-				schema, err := builder.MakeFromString(group.schema)
+				schema, err := builder.MakeFromString(group.schema, config.Empty)
 				require.NoError(t, err)
 
 				var req any

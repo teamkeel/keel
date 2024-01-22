@@ -51,17 +51,15 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 
 	}
 
-	if scm.Config != nil {
-		for _, envVar := range scm.Config.AllEnvironmentVariables() {
-			scm.proto.EnvironmentVariables = append(scm.proto.EnvironmentVariables, &proto.EnvironmentVariable{
-				Name: envVar,
-			})
-		}
-		for _, secret := range scm.Config.AllSecrets() {
-			scm.proto.Secrets = append(scm.proto.Secrets, &proto.Secret{
-				Name: secret,
-			})
-		}
+	for _, envVar := range scm.Config.AllEnvironmentVariables() {
+		scm.proto.EnvironmentVariables = append(scm.proto.EnvironmentVariables, &proto.EnvironmentVariable{
+			Name: envVar,
+		})
+	}
+	for _, secret := range scm.Config.AllSecrets() {
+		scm.proto.Secrets = append(scm.proto.Secrets, &proto.Secret{
+			Name: secret,
+		})
 	}
 
 	if scm.Config.DefaultApi() {
@@ -745,7 +743,7 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	}
 
 	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
-		if !(scm != nil && scm.Config != nil && scm.Config.DisableAuth) {
+		if !scm.Config.DisableAuth {
 			protoModel.Actions = append(protoModel.Actions, scm.makeAuthenticate())
 			protoModel.Actions = append(protoModel.Actions, scm.makeRequestPasswordReset())
 			protoModel.Actions = append(protoModel.Actions, scm.makePasswordReset())

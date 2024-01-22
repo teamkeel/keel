@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/permissions"
 	"github.com/teamkeel/keel/proto"
@@ -806,17 +805,14 @@ func TestToSQL(t *testing.T) {
 
 	for _, fixture := range fixtures {
 		t.Run(fixture.name, func(t *testing.T) {
-			builder := &schema.Builder{
-				Config: &config.ProjectConfig{
-					Secrets: []config.Input{
-						{
-							Name: "SECRET_KEY",
-						},
-					},
-				},
-			}
+			builder := &schema.Builder{}
 
-			s, err := builder.MakeFromString(fixture.schema)
+			config := `
+secrets: 
+  - name: SECRET_KEY
+`
+
+			s, err := builder.MakeFromString(fixture.schema, config)
 			require.NoError(t, err)
 
 			var model *proto.Model

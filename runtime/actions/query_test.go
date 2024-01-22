@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
@@ -2824,9 +2825,9 @@ func TestQueryBuilder(t *testing.T) {
 }
 
 // Generates a scope and query builder
-func generateQueryScope(ctx context.Context, schemaText string, actionName string) (*actions.Scope, *actions.QueryBuilder, *proto.Action, error) {
+func generateQueryScope(ctx context.Context, schemaString string, actionName string) (*actions.Scope, *actions.QueryBuilder, *proto.Action, error) {
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(schemaText)
+	schema, err := builder.MakeFromString(schemaString, config.Empty)
 	if err != nil {
 		return nil, nil, nil, err
 	}

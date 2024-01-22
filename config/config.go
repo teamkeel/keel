@@ -13,6 +13,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const Empty = ""
+
 // Config is the configuration for the Keel runtime
 type Config struct{}
 
@@ -98,6 +100,8 @@ func (c *ProjectConfig) AllSecrets() []string {
 	return secrets
 }
 
+// DefaultApi provides the value of useDefaultApi from the config or a default value of true
+// if no value is specified in the config
 func (c *ProjectConfig) DefaultApi() bool {
 	if c.UseDefaultApi == nil {
 		return true

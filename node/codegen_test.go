@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/colors"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
@@ -2229,7 +2230,7 @@ func normalise(s string) string {
 
 func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s *proto.Schema, w *codegen.Writer)) {
 	b := schema.Builder{}
-	s, err := b.MakeFromString(schemaString)
+	s, err := b.MakeFromString(schemaString, config.Empty)
 	require.NoError(t, err)
 	w := &codegen.Writer{}
 	fn(s, w)
@@ -2237,7 +2238,6 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 	diffs := diff.DiffMain(normalise(expected), normalise(w.String()), true)
 	if !strings.Contains(normalise(w.String()), normalise(expected)) {
 		t.Errorf("generated code does not match expected:\n%s", diffPrettyText(diffs))
-
 		t.Errorf("\nExpected:\n---------\n%s", normalise(expected))
 		t.Errorf("\nActual:\n---------\n%s", normalise(w.String()))
 	}
