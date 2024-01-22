@@ -338,3 +338,23 @@ test("create - nested has-many two-levels", async () => {
   });
   expect(dbReadings.length).toBe(4);
 });
+
+test("findMany - notEquals", async () => {
+  const dickens = await models.author.create({
+    name: "Charles Dickens",
+  });
+  const tolkien = await models.author.create({
+    name: "J.R.R. Tolkien",
+  });
+
+  const authors = await models.author.findMany({
+    where: {
+      id: {
+        notEquals: dickens.id,
+      },
+    },
+  });
+
+  expect(authors.length).toBe(1);
+  expect(authors[0].id).equals(tolkien.id);
+});
