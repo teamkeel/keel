@@ -62,8 +62,20 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 		})
 	}
 
+	// Only configure a default API if:
+	//  - the useDefaultApi config value is true, and
+	//  - 'Api' has not already been defined in the schema
 	if scm.Config.DefaultApi() {
-		scm.proto.Apis = append(scm.proto.Apis, defaultAPI(scm.proto))
+		defauftApiOverridden := false
+		for _, api := range scm.proto.Apis {
+			if api.Name == parser.DefaultApi {
+				defauftApiOverridden = true
+			}
+		}
+
+		if !defauftApiOverridden {
+			scm.proto.Apis = append(scm.proto.Apis, defaultAPI(scm.proto))
+		}
 	}
 
 	// Generate the input messages for all subscribers in the schema.

@@ -299,50 +299,6 @@
           ]
         }
       ]
-    },
-    {
-      "name": "Api",
-      "apiModels": [
-        {
-          "modelName": "Author",
-          "modelActions": [
-            {
-              "actionName": "getAuthor"
-            },
-            {
-              "actionName": "deleteAuthor"
-            },
-            {
-              "actionName": "deleteAll"
-            }
-          ]
-        },
-        {
-          "modelName": "Book",
-          "modelActions": [
-            {
-              "actionName": "searchBooks"
-            },
-            {
-              "actionName": "deleteBook"
-            }
-          ]
-        },
-        {
-          "modelName": "Identity",
-          "modelActions": [
-            {
-              "actionName": "authenticate"
-            },
-            {
-              "actionName": "requestPasswordReset"
-            },
-            {
-              "actionName": "resetPassword"
-            }
-          ]
-        }
-      ]
     }
   ],
   "messages": [

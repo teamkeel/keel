@@ -1,0 +1,6 @@
+model Author {
+    actions {
+        get getAuthor(id)
+        delete deleteAuthor(id)
+    }
+}
