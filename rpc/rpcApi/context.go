@@ -31,12 +31,12 @@ func WithTraceVerbosity(ctx context.Context, verbose bool) context.Context {
 	return context.WithValue(ctx, traceVerbosityKey, verbose)
 }
 
-func GetTraceVerbosity(ctx context.Context) (bool, error) {
+func GetTraceVerbosity(ctx context.Context) bool {
 	v := ctx.Value(traceVerbosityKey)
-	verbose, ok := v.(bool)
+	verbose, has := v.(bool)
 
-	if !ok {
-		return false, errors.New("trace verbosity in the context has wrong value type")
+	if !has {
+		return false
 	}
-	return verbose, nil
+	return verbose
 }

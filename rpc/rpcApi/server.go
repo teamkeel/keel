@@ -67,10 +67,7 @@ func (s *Server) RunSQLQuery(ctx context.Context, input *rpc.SQLQueryInput) (*rp
 func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (*rpc.ListTracesResponse, error) {
 	traces := localTraceExporter.Summary()
 
-	verbose, err := GetTraceVerbosity(ctx)
-	if err != nil {
-		return nil, err
-	}
+	verbose := GetTraceVerbosity(ctx)
 
 	list := []*rpc.TraceItem{}
 
