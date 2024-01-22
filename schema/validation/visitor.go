@@ -56,6 +56,12 @@ type Visitor struct {
 	EnterAPI func(n *parser.APINode)
 	LeaveAPI func(n *parser.APINode)
 
+	EnterAPIModel func(n *parser.APIModelNode)
+	LeaveAPIModel func(n *parser.APIModelNode)
+
+	EnterAPIModelAction func(n *parser.APIModelActionNode)
+	LeaveAPIModelAction func(n *parser.APIModelActionNode)
+
 	EnterJob func(n *parser.JobNode)
 	LeaveJob func(n *parser.JobNode)
 

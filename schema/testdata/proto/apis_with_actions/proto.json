@@ -50,14 +50,6 @@
           "type": "ACTION_TYPE_DELETE",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "DeleteAuthorInput"
-        },
-        {
-          "modelName": "Author",
-          "name": "deleteAll",
-          "type": "ACTION_TYPE_WRITE",
-          "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
-          "inputMessageName": "Any",
-          "responseMessageName": "Any"
         }
       ]
     },
@@ -111,6 +103,14 @@
           "type": "ACTION_TYPE_DELETE",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "DeleteBookInput"
+        },
+        {
+          "modelName": "Book",
+          "name": "deleteAll",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
         }
       ]
     },
@@ -240,9 +240,6 @@
             },
             {
               "actionName": "deleteAuthor"
-            },
-            {
-              "actionName": "deleteAll"
             }
           ]
         },

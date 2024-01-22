@@ -79,6 +79,7 @@ var visitorFuncs = []VisitorFunc{
 	FunctionDisallowedBehavioursRule,
 	OnAttributeRule,
 	RelationshipsRules,
+	ApiModelActions,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {

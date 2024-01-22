@@ -1,0 +1,29 @@
+model Post {
+    actions {
+        get getPost(id)
+    }
+}
+
+model Blog {
+    actions {
+        get getBlog(id)
+    }
+}
+
+api Web {
+    models {
+        Post {
+            actions {
+                getPost
+                //expect-error:17:24:AttributeArgumentError:getBlog does not exist as an action on the Post model
+                getBlog
+            }
+        }
+        Blog {
+            actions {
+                //expect-error:17:24:AttributeArgumentError:Unknown does not exist as an action on the Blog model
+                Unknown
+            }
+        }
+    }
+}
