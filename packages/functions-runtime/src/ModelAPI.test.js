@@ -71,6 +71,19 @@ test("ModelAPI.create", async () => {
   expect(KSUID.parse(row.id).string).toEqual(row.id);
 });
 
+test("ModelAPI.create - non-ksuid id", async () => {
+  const row = await personAPI.create({
+    id: "not-a-ksuid",
+    name: "Jim",
+    married: false,
+    favouriteNumber: 10,
+  });
+  expect(row.name).toEqual("Jim");
+  expect(row.married).toEqual(false);
+  expect(row.favouriteNumber).toEqual(10);
+  expect(row.id).toEqual(row.id);
+});
+
 test("ModelAPI.create - throws if not not null constraint violation", async () => {
   await expect(
     authorAPI.create({

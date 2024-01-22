@@ -13,7 +13,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/karlseguin/typed"
 	"github.com/samber/lo"
-	"github.com/segmentio/ksuid"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -82,12 +81,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 			return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "failed to authenticate"}
 		}
 
-		id, err := ksuid.Parse(identity.Id)
-		if err != nil {
-			return nil, err
-		}
-
-		token, err := GenerateBearerToken(scope.Context, id.String())
+		token, err := GenerateBearerToken(scope.Context, identity.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -415,18 +409,11 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		return "", "", ErrInvalidToken
 	}
 
-	if claims.Issuer == keelIssuerClaim || claims.Issuer == "" {
-		identifier, err := ksuid.Parse(claims.Subject)
-		if err != nil {
-			return "", "", err
-		}
-		return identifier.String(), claims.Issuer, nil
-	} else {
-		if claims.Subject == "" {
-			return "", "", errors.New("subject claim cannot be empty")
-		}
-		return claims.Subject, claims.Issuer, nil
+	if claims.Subject == "" {
+		return "", "", errors.New("subject claim cannot be empty")
 	}
+
+	return claims.Subject, claims.Issuer, nil
 }
 
 // Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints
