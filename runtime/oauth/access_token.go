@@ -114,7 +114,7 @@ func ValidateAccessToken(ctx context.Context, tokenString string) (string, strin
 	}
 
 	if claims.Subject == "" {
-		return "", "", errors.New("the identity id in the subject claim is required")
+		return "", "", errors.New("subject claim cannot be empty")
 	}
 
 	return claims.Subject, claims.Issuer, nil

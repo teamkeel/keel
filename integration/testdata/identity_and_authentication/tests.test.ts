@@ -665,20 +665,22 @@ test("create and authenticate - email exists for another issuer - success", asyn
   expect(created2).toEqual(false);
 });
 
-test('identity with custom non-ksuid id', async () => {
+test("identity with custom non-ksuid id", async () => {
   const johnDoe = await models.identity.create({
-    id: 'john',
-    email: 'john@example.com',
+    id: "not-a-ksuid",
+    email: "john@example.com",
   });
 
   const post = await models.post.create({
-    title: 'example post',
+    title: "example post",
     identityId: johnDoe.id,
   });
 
-  const fetchedRecord = await actions.withIdentity(johnDoe).getPostRequiresIdentity({ id: post.id });
+  const fetchedRecord = await actions
+    .withIdentity(johnDoe)
+    .getPostRequiresIdentity({ id: post.id });
   expect(fetchedRecord).toEqual(post);
 
-  const fetchedIdentity = await models.identity.findOne({ id: "john" });
+  const fetchedIdentity = await models.identity.findOne({ id: "not-a-ksuid" });
   expect(fetchedIdentity).toEqual(johnDoe);
 });
