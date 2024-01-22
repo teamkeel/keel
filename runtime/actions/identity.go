@@ -3,10 +3,8 @@ package actions
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
-	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/oauth"
@@ -246,9 +244,6 @@ func mapToIdentity(values map[string]any) (*auth.Identity, error) {
 	id, ok := values["id"].(string)
 	if !ok {
 		return nil, errors.New("id for identity is required")
-	}
-	if _, err := ksuid.Parse(id); err != nil {
-		return nil, fmt.Errorf("id for identity cannot be parsed: %s", values["id"])
 	}
 
 	externalId, ok := values["externalId"].(string)

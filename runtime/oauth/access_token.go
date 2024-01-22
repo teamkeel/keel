@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 )
@@ -114,10 +113,9 @@ func ValidateAccessToken(ctx context.Context, tokenString string) (string, strin
 		return "", "", ErrInvalidToken
 	}
 
-	identifier, err := ksuid.Parse(claims.Subject)
-	if err != nil {
-		return "", "", err
+	if claims.Subject == "" {
+		return "", "", errors.New("the identity id in the subject claim is required")
 	}
 
-	return identifier.String(), claims.Issuer, nil
+	return claims.Subject, claims.Issuer, nil
 }
