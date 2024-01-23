@@ -65,17 +65,17 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 	}
 
 	// Only configure a default API if:
-	//  - the useDefaultApi config value is true, and
+	//  - there is no config or the useDefaultApi config value is true, and
 	//  - 'Api' has not already been defined in the schema
 	if scm.Config == nil || scm.Config.DefaultApi() {
-		defauftApiOverridden := false
+		defaultApiOverridden := false
 		for _, api := range scm.proto.Apis {
 			if api.Name == parser.DefaultApi {
-				defauftApiOverridden = true
+				defaultApiOverridden = true
 			}
 		}
 
-		if !defauftApiOverridden {
+		if !defaultApiOverridden {
 			scm.proto.Apis = append(scm.proto.Apis, defaultAPI(scm.proto))
 		}
 	}
@@ -757,7 +757,7 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	}
 
 	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
-		if !scm.Config.DisableAuth {
+		if scm.Config == nil || !scm.Config.DisableAuth {
 			protoModel.Actions = append(protoModel.Actions, scm.makeAuthenticate())
 			protoModel.Actions = append(protoModel.Actions, scm.makeRequestPasswordReset())
 			protoModel.Actions = append(protoModel.Actions, scm.makePasswordReset())
