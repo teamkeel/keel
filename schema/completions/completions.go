@@ -26,6 +26,7 @@ type CompletionItem struct {
 
 const (
 	KindModel       = "model"
+	KindAction      = "action"
 	KindField       = "field"
 	KindVariable    = "variable"
 	KindType        = "type"
@@ -80,10 +81,43 @@ func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *conf
 	case parser.KeywordMessage:
 		return getMessageFieldCompletions(asts, tokenAtPos)
 	case parser.KeywordActions:
-		return getActionCompletions(asts, tokenAtPos, enclosingBlock)
+		if getTypeOfEnclosingBlock(tokenAtPos.StartOfBlock().Prev()) == parser.KeywordModels {
+			modelName := tokenAtPos.StartOfBlock().Prev().StartOfBlock().Prev().Value()
+			model := query.Model(asts, modelName)
+			if model == nil {
+				return []*CompletionItem{}
+			}
+
+			actions := query.ModelActions(model)
+			completions := []*CompletionItem{}
+			for _, a := range actions {
+				completions = append(completions, &CompletionItem{
+					Label: a.Name.Value,
+					Kind:  KindAction,
+				})
+
+			}
+			return completions
+		} else {
+			return getActionCompletions(asts, tokenAtPos, enclosingBlock)
+		}
 	case parser.KeywordModels:
-		// models block inside an api block - complete with model names
-		return getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordModel)
+		if tokenAtPos.StartOfBlock().Prev().Value() == parser.KeywordModels {
+			// models block inside an api block - complete with model names
+			return getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordModel)
+		} else {
+			modelName := tokenAtPos.StartOfBlock().Prev().Value()
+			model := query.Model(asts, modelName)
+			if model != nil {
+				completion := &CompletionItem{
+					Label: "actions",
+					Kind:  KindKeyword,
+				}
+				return []*CompletionItem{completion}
+			}
+		}
+
+		return []*CompletionItem{}
 	case parser.KeywordJob:
 		attributes := getAttributeCompletions(tokenAtPos, []string{parser.AttributePermission, parser.AttributeSchedule})
 		return append(attributes, getJobCompletions()...)
@@ -629,7 +663,6 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 		if enclosingBlock == parser.KeywordModel {
 			if t.Prev().Value() == parser.AttributeUnique {
 				// open array notation
-
 				return []*CompletionItem{{Label: "[", Kind: KindPunctuation}}
 			}
 			modelName := getParentModelName(t)
@@ -837,7 +870,6 @@ func getPermissionArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *c
 	}
 
 	// completion for values
-
 	label := colon.Prev().Value()
 	switch label {
 	case "expression":
@@ -1041,6 +1073,25 @@ func getTypeOfEnclosingBlock(t *TokensAtPosition) string {
 // model that `t` is within or an empty string if `t` is not
 // contained inside a model
 func getParentModelName(t *TokensAtPosition) string {
+	for {
+		t = t.StartOfBlock()
+		if t == nil {
+			break
+		}
+
+		if t.ValueAt(-2) == parser.KeywordModel {
+			return t.ValueAt(-1)
+		}
+
+		t = t.Prev()
+	}
+
+	return ""
+}
+
+// getApiModelName name returns the user-defined name of the
+// model that `t` is within in an `api` block
+func getApiModelName(t *TokensAtPosition) string {
 	for {
 		t = t.StartOfBlock()
 		if t == nil {
