@@ -119,8 +119,9 @@ type Model struct {
 	Mode int
 
 	// Port to run the runtime servers on in ModeRun
-	Port    string
-	RpcPort string
+	Port      string
+	RpcPort   string
+	TracePort string
 
 	// If true then the database will be reset. Only
 	// applies to ModeRun.
@@ -205,6 +206,7 @@ func (m *Model) Init() tea.Cmd {
 	m.Environment = "development"
 	m.RpcHandler = rpc.NewAPIServer(&rpcApi.Server{}, twirp.WithServerPathPrefix("/rpc"))
 	m.RpcPort = "34087"
+	m.TracePort = "4318"
 
 	m.Status = StatusCheckingDependencies
 	return CheckDependencies()
@@ -281,6 +283,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			NextMsgCommand(m.runtimeRequestsCh),
 			NextMsgCommand(m.rpcRequestsCh),
 			LoadSchema(m.ProjectDir, m.Environment),
+		}
+
+		if !m.CustomTracing {
+			cmds = append(cmds, StartTraceServer(m.TracePort))
 		}
 
 		if m.Mode == ModeRun {

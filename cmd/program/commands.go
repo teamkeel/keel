@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -20,6 +21,7 @@ import (
 	"github.com/radovskyb/watcher"
 	"github.com/teamkeel/keel/cmd/cliconfig"
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/cmd/localTraceExporter"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -28,6 +30,8 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
+	v1 "go.opentelemetry.io/proto/otlp/trace/v1"
+	p "google.golang.org/protobuf/proto"
 )
 
 //go:embed default.pem
@@ -415,7 +419,13 @@ func StartRuntimeServer(port string, ch chan tea.Msg) tea.Cmd {
 				<-done
 			}),
 		}
-		_ = runtimeServer.ListenAndServe()
+
+		err := runtimeServer.ListenAndServe()
+		if err != nil {
+			err = errors.Join(errors.New("could not start the http server"), err)
+			panic(err.Error())
+		}
+
 		return nil
 	}
 }
@@ -440,7 +450,43 @@ func StartRpcServer(port string, ch chan tea.Msg) tea.Cmd {
 				<-done
 			}),
 		}
-		_ = rpcServer.ListenAndServe()
+
+		err := rpcServer.ListenAndServe()
+		if err != nil {
+			err = errors.Join(errors.New("could not start the local rpc server"), err)
+			panic(err.Error())
+		}
+
+		return nil
+	}
+}
+
+func StartTraceServer(port string) tea.Cmd {
+	return func() tea.Msg {
+		traceServer := http.Server{
+			Addr: fmt.Sprintf(":%s", port),
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				b, err := io.ReadAll(r.Body)
+				if err != nil {
+					return
+				}
+
+				data := &v1.TracesData{}
+				err = p.Unmarshal(b, data)
+				if err != nil {
+					return
+				}
+
+				_ = localTraceExporter.NewClient().UploadTraces(r.Context(), data.ResourceSpans)
+			}),
+		}
+
+		err := traceServer.ListenAndServe()
+		if err != nil {
+			err = errors.Join(errors.New("could not start the local tracing server"), err)
+			panic(err.Error())
+		}
+
 		return nil
 	}
 }
