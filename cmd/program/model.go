@@ -208,10 +208,6 @@ func (m *Model) Init() tea.Cmd {
 	m.RpcPort = "34087"
 	m.TracePort = "4318"
 
-	// if !m.CustomTracing {
-	// 	StartTraceServer(m.TracePort)
-	// }
-
 	m.Status = StatusCheckingDependencies
 	return CheckDependencies()
 }
