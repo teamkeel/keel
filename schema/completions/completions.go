@@ -1089,25 +1089,6 @@ func getParentModelName(t *TokensAtPosition) string {
 	return ""
 }
 
-// getApiModelName name returns the user-defined name of the
-// model that `t` is within in an `api` block
-func getApiModelName(t *TokensAtPosition) string {
-	for {
-		t = t.StartOfBlock()
-		if t == nil {
-			break
-		}
-
-		if t.ValueAt(-2) == parser.KeywordModel {
-			return t.ValueAt(-1)
-		}
-
-		t = t.Prev()
-	}
-
-	return ""
-}
-
 var identRegex = regexp.MustCompile("^[a-zA-Z]+$")
 
 // getPreviousIdents returns the idents that are part of the same
