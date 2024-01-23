@@ -51,21 +51,23 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 
 	}
 
-	for _, envVar := range scm.Config.AllEnvironmentVariables() {
-		scm.proto.EnvironmentVariables = append(scm.proto.EnvironmentVariables, &proto.EnvironmentVariable{
-			Name: envVar,
-		})
-	}
-	for _, secret := range scm.Config.AllSecrets() {
-		scm.proto.Secrets = append(scm.proto.Secrets, &proto.Secret{
-			Name: secret,
-		})
+	if scm.Config != nil {
+		for _, envVar := range scm.Config.AllEnvironmentVariables() {
+			scm.proto.EnvironmentVariables = append(scm.proto.EnvironmentVariables, &proto.EnvironmentVariable{
+				Name: envVar,
+			})
+		}
+		for _, secret := range scm.Config.AllSecrets() {
+			scm.proto.Secrets = append(scm.proto.Secrets, &proto.Secret{
+				Name: secret,
+			})
+		}
 	}
 
 	// Only configure a default API if:
 	//  - the useDefaultApi config value is true, and
 	//  - 'Api' has not already been defined in the schema
-	if scm.Config.DefaultApi() {
+	if scm.Config == nil || scm.Config.DefaultApi() {
 		defauftApiOverridden := false
 		for _, api := range scm.proto.Apis {
 			if api.Name == parser.DefaultApi {
