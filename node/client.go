@@ -542,7 +542,7 @@ export class Core {
         },
       );
      
-      if (result.status == 200) {
+      if (result.ok) {
         const rawJson = await result.text();
         const data = JSON.parse(rawJson);
         this.auth.setSession(data.access_token, data.refresh_token);
