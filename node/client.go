@@ -525,7 +525,7 @@ export class Core {
           };
           break;
         default:
-          throw new Error("grant not implemented")
+          throw new Error("Unknown grant type. We currently support `authorization_code`, `token_exchange`, and `refresh_token` grant types. Please use one of those. For more info, please refer to the docs at https://docs.keel.so/authentication/endpoints#parameters")
       }
 
       const authUrl = this.config.baseUrl.replace("/api", "");
