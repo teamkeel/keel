@@ -1539,7 +1539,6 @@ func TestOnCompletions(t *testing.T) {
 }
 
 func TestRoleCompletions(t *testing.T) {
-
 	cases := []testCase{
 		{
 			name: "role-keyword",
@@ -1619,6 +1618,115 @@ func TestAPICompletions(t *testing.T) {
 			}
 			`,
 			expected: []string{"Identity", "Person"},
+		},
+		{
+			name: "actions-keyword",
+			schema: `
+			model Person {}
+
+			api Test {
+				models {
+					Person {
+						<Cursor>
+					}
+				}
+			}
+			`,
+			expected: []string{"actions"},
+		},
+		{
+			name: "api-action-names",
+			schema: `
+			model Person {
+				actions {
+					get getPerson(id)
+					create createPerson() @function
+				}
+			}
+
+			api Api {
+				models {
+					Person {
+						actions {
+							<Cursor>
+						}
+					}
+				}
+			}
+			`,
+			expected: []string{"getPerson", "createPerson"},
+		},
+		{
+			name: "api-action-names-multiple-actions",
+			schema: `
+			model Person {
+				actions {
+					get getPerson(id)
+					create createPerson() @function
+				}
+			}
+			api Api {
+				models {
+					Person {
+						actions {
+							getPerson
+							<Cursor>
+						}
+					}
+				}
+			}
+			`,
+			expected: []string{"getPerson", "createPerson"},
+		},
+		{
+			name: "api-action-names-multiple-models",
+			schema: `
+			model Person {
+				actions {
+					get getPerson(id)
+					create createPerson() @function
+				}
+			}
+			model Company {
+				actions {
+					write writeCompany(Any) returns (Any)
+				}
+			}
+			api Api {
+				models {
+					Person {
+						actions {
+							getPerson
+						}
+					}
+					Company {
+						actions {
+							<Cursor>
+						}
+					}
+				}
+			}
+			`,
+			expected: []string{"writeCompany"},
+		}, {
+			name: "api-action-names-model-not-exists",
+			schema: `
+			model Person {
+				actions {
+					get getPerson(id)
+				}
+			}
+			api Api {
+				models {
+					NotExists {
+						actions {
+							<Cursor>
+						}
+					}
+				}
+			}
+			`,
+			expected: []string{},
 		},
 	}
 
