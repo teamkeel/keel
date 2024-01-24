@@ -70,8 +70,6 @@ func (scm *Builder) MakeFromString(schemaString string, configString string) (*p
 
 // MakeFromFile constructs a proto.Schema from the given inputs
 func (scm *Builder) MakeFromInputs(inputs *reader.Inputs) (*proto.Schema, error) {
-	scm.Config = &config.ProjectConfig{}
-
 	scm.schemaFiles = inputs.SchemaFiles
 
 	return scm.makeFromInputs(inputs)
