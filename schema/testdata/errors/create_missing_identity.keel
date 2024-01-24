@@ -5,7 +5,7 @@ model Todo {
     }
 
     actions {
-        //expect-error:16:26:ActionInputError:the identity field of Todo is not set as part of this create operation
+        //expect-error:16:26:ActionInputError:the identity field of Todo is not set as part of this create action
         create createTodo() with (name)
     }
 }

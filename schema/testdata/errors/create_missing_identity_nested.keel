@@ -12,7 +12,7 @@ model Post {
     }
 
     actions {
-        //expect-error:16:26:ActionInputError:the identity field of Profile is not set as part of this create operation
+        //expect-error:16:26:ActionInputError:the identity field of Profile is not set as part of this create action
         create createPost() with (body, profile.name)
     }
 }
@@ -23,7 +23,7 @@ model Comment {
     }
 
     actions {
-        //expect-error:16:29:ActionInputError:the identity field of Profile is not set as part of this create operation
+        //expect-error:16:29:ActionInputError:the identity field of Profile is not set as part of this create action
         create createComment() with (post.body, post.profile.name)
     }
 }

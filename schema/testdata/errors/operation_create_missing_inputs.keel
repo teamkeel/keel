@@ -2,10 +2,11 @@ model Person {
     fields {
         name Text
         age Number
+        notRequired Text?
     }
 
     actions {
-        //expect-error:16:28:E034:create actions must accept all required fields that have no default value
+        //expect-error:16:28:E034:required field 'age' must be set by a non-optional input, a @set expression or with @default
         create createPerson() with (name)
     }
 }
