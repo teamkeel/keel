@@ -51,29 +51,31 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 
 	}
 
-	for _, envVar := range scm.Config.AllEnvironmentVariables() {
-		scm.proto.EnvironmentVariables = append(scm.proto.EnvironmentVariables, &proto.EnvironmentVariable{
-			Name: envVar,
-		})
-	}
-	for _, secret := range scm.Config.AllSecrets() {
-		scm.proto.Secrets = append(scm.proto.Secrets, &proto.Secret{
-			Name: secret,
-		})
+	if scm.Config != nil {
+		for _, envVar := range scm.Config.AllEnvironmentVariables() {
+			scm.proto.EnvironmentVariables = append(scm.proto.EnvironmentVariables, &proto.EnvironmentVariable{
+				Name: envVar,
+			})
+		}
+		for _, secret := range scm.Config.AllSecrets() {
+			scm.proto.Secrets = append(scm.proto.Secrets, &proto.Secret{
+				Name: secret,
+			})
+		}
 	}
 
 	// Only configure a default API if:
-	//  - the useDefaultApi config value is true, and
+	//  - there is no config or the useDefaultApi config value is true, and
 	//  - 'Api' has not already been defined in the schema
-	if scm.Config.DefaultApi() {
-		defauftApiOverridden := false
+	if scm.Config == nil || scm.Config.DefaultApi() {
+		defaultApiOverridden := false
 		for _, api := range scm.proto.Apis {
 			if api.Name == parser.DefaultApi {
-				defauftApiOverridden = true
+				defaultApiOverridden = true
 			}
 		}
 
-		if !defauftApiOverridden {
+		if !defaultApiOverridden {
 			scm.proto.Apis = append(scm.proto.Apis, defaultAPI(scm.proto))
 		}
 	}
@@ -755,7 +757,7 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	}
 
 	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
-		if !scm.Config.DisableAuth {
+		if scm.Config == nil || !scm.Config.DisableAuth {
 			protoModel.Actions = append(protoModel.Actions, scm.makeAuthenticate())
 			protoModel.Actions = append(protoModel.Actions, scm.makeRequestPasswordReset())
 			protoModel.Actions = append(protoModel.Actions, scm.makePasswordReset())
