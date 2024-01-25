@@ -80,9 +80,9 @@ export type APIError =
 // Auth
 
 export interface TokenStore {
-    set(token: string | null): void;
-    get(): string | null;
-  }  
+  set(token: string | null): void;
+  get(): string | null;
+}
 
 export type Provider = {
   name: string;

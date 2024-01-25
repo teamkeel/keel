@@ -57,6 +57,8 @@ export class Core {
       // If necessary, refresh the expired session before calling the action
       await this.auth.isAuthenticated();
 
+      const token = this.#session ? this.#session?.token : this.ctx.token;
+
       try {
         const result = await globalThis.fetch(
           stripTrailingSlash(this.config.baseUrl) + "/json/" + action,
@@ -67,10 +69,9 @@ export class Core {
               accept: "application/json",
               "content-type": "application/json",
               ...this.config.headers,
-              ...(this.#session || this.ctx.token != ""
+              ...(token != "" && action != "authenticate"
                 ? {
-                    Authorization:
-                      "Bearer " + this.#session?.token ?? this.ctx.token,
+                    Authorization: "Bearer " + token,
                   }
                 : {}),
             },
