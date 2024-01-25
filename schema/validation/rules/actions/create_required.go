@@ -14,7 +14,6 @@ import (
 // CreateOperationRequiredFieldsRule makes sure that all create operation are specified in such a way
 // that all the fields that must be populated during a create, are covered by either
 // inputs or set expressions.
-// Only applies to built in actions
 // This includes (recursively) the fields in nested models where appropriate.
 func CreateOperationRequiredFieldsRule(
 	asts []*parser.AST) (errs errorhandling.ValidationErrors) {
@@ -140,7 +139,7 @@ func checkHasOneRelationField(
 
 	// Special case to improve error message for Identity fields
 	if nestedModel.Name.Value == parser.ImplicitIdentityModelName {
-		message := fmt.Sprintf("the %s field of %s is not set as part of this create operation", field.Name.Value, model.Name.Value)
+		message := fmt.Sprintf("the %s field of %s is not set as part of this create action", field.Name.Value, model.Name.Value)
 		errs.AppendError(
 			errorhandling.NewValidationErrorWithDetails(
 				errorhandling.ActionInputError,
@@ -173,7 +172,7 @@ func checkHasOneRelationField(
 //
 // see checkField() for comments on the arguments.
 func satisfied(rootModelName string, requiredField string, modelName string, op *parser.ActionNode) bool {
-	if requiredFieldInWithClause(requiredField, op) {
+	if requiredFieldInWithInputs(requiredField, op) {
 		return true
 	}
 	if satisfiedBySetExpr(rootModelName, requiredField, modelName, op) {
@@ -200,11 +199,11 @@ func setExpressions(action *parser.ActionNode) []*parser.Expression {
 	return expressions
 }
 
-// requiredFieldInWithClause returns true if the given requiredField is
-// present the the given action's "With" inputs.
-func requiredFieldInWithClause(requiredField string, action *parser.ActionNode) bool {
+// requiredFieldInWithInputs returns true if the given requiredField is
+// present the the given action's "With" inputs and the input is required.
+func requiredFieldInWithInputs(requiredField string, action *parser.ActionNode) bool {
 	for _, input := range action.With {
-		if input.Label == nil && input.Type.ToString() == requiredField {
+		if input.Label == nil && input.Type.ToString() == requiredField && !input.Optional {
 			return true
 		}
 	}

@@ -51,7 +51,6 @@ const (
 	ErrorClashingImplicitInput               = "E043"
 	ErrorMissingRelationshipField            = "E044"
 	ErrorAmbiguousRelationship               = "E045"
-	ErrorCreateActionMissingInputAliases     = "E046"
 	ErrorModelNotFound                       = "E047"
 	ErrorExpressionFieldTypeMismatch         = "E048"
 	ErrorExpressionMultipleConditions        = "E049"

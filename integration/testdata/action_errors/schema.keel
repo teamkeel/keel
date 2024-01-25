@@ -1,7 +1,7 @@
 model Book {
     fields {
         title Text
-        lastUpdatedBy Identity
+        lastUpdatedBy Identity?
     }
 
     actions {
@@ -163,8 +163,29 @@ model Book {
     }
 }
 
+model BookWithIdentity {
+    fields {
+        title Text
+        lastUpdatedBy Identity
+    }
+
+    actions {
+        create createPermittedRequiresIdentity() with (title) {
+            @permission(expression: true)
+            @set(bookWithIdentity.lastUpdatedBy.id = ctx.identity.id)
+        }
+
+ 
+        create createDbPermissionRequiresIdentity() with (title) {
+            @permission(expression: bookWithIdentity.lastUpdatedBy == ctx.identity)
+            @set(bookWithIdentity.lastUpdatedBy.id = ctx.identity.id)
+        }
+    }
+}
+
 api Web {
     models {
         Book
+        BookWithIdentity
     }
 }

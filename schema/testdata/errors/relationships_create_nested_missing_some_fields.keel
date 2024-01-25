@@ -8,8 +8,8 @@ model House {
     }
 
     actions {
-        //expect-error:16:27:E034:create actions must accept all required fields that have no default value
-        //expect-error:16:27:E034:create actions must accept all required fields that have no default value
+        //expect-error:16:27:E034:required field 'owner.pet.typeOfAnimal' must be set by a non-optional input, a @set expression or with @default
+        //expect-error:16:27:E034:required field 'owner.pet.favouriteToy.whatIsIt' must be set by a non-optional input, a @set expression or with @default
         create createHouse() with (
             houseName,
             houseNumber,

@@ -4,7 +4,9 @@ import { actions, models, resetDatabase } from "@teamkeel/testing";
 beforeEach(resetDatabase);
 
 test("create action - permitted, @set to null - ERR_INVALID_INPUT", async () => {
-  await expect(actions.createPermitted({ title: "My Book" })).toHaveError({
+  await expect(
+    actions.createPermittedRequiresIdentity({ title: "My Book" })
+  ).toHaveError({
     code: "ERR_INVALID_INPUT",
     message: "field 'lastUpdatedById' cannot be null",
   });
@@ -39,7 +41,9 @@ test("create action - not authenticated, @set identity - ERR_PERMISSION_DENIED",
 });
 
 test("create action - database permission, @set to null - ERR_INVALID_INPUT", async () => {
-  await expect(actions.createDbPermission({ title: "My Book" })).toHaveError({
+  await expect(
+    actions.createDbPermissionRequiresIdentity({ title: "My Book" })
+  ).toHaveError({
     code: "ERR_INVALID_INPUT",
     message: "field 'lastUpdatedById' cannot be null",
   });

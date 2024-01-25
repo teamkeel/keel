@@ -4,7 +4,7 @@ model Person {
     }
 
     actions {
-        //expect-error:16:28:E034:create actions must accept all required fields that have no default value
+        //expect-error:16:28:E034:required field 'name' must be set by a non-optional input, a @set expression or with @default
         //expect-error:37:47:ActionInputError:personName is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute
         create createPerson() with (personName: name)
         //expect-error:39:49:ActionInputError:personName is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute
