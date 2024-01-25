@@ -293,10 +293,24 @@ func TestAddOidcProvider(t *testing.T) {
 	assert.Len(t, byIssuer, 1)
 }
 
+func TestAddOidcProviderReservedPrefix(t *testing.T) {
+	_, err := Load("fixtures/test_auth_reserved_prefix.yaml")
+	assert.ErrorContains(t, err, "cannot use reserved 'keel_' prefix in auth provider name: keel_client")
+	assert.ErrorContains(t, err, "cannot use reserved 'keel_' prefix in auth provider name: KEEL_CLIENT")
+}
+
 func TestAddOidcProviderInvalidName(t *testing.T) {
 	auth := &AuthConfig{}
 	err := auth.AddOidcProvider("my client", "https://mycustomoidc.com", "1234")
 	assert.ErrorContains(t, err, "auth provider name 'my client' must only include alphanumeric characters and underscores, and cannot start with a number")
+}
+
+func TestAddOidcProviderAlreadyExists(t *testing.T) {
+	auth := &AuthConfig{}
+	err := auth.AddOidcProvider("my_client", "https://mycustomoidc.com", "1234")
+	assert.NoError(t, err)
+	err = auth.AddOidcProvider("my_client", "https://anothercustomoidc.com", "abcd")
+	assert.ErrorContains(t, err, "auth provider name 'my_client' has already been defined")
 }
 
 func TestGetCallbackUrl_Localhost(t *testing.T) {

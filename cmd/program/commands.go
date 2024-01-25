@@ -74,6 +74,18 @@ func LoadSchema(dir, environment string) tea.Cmd {
 			b.Config = &config.ProjectConfig{}
 		}
 
+		// Add the OIDC auth provider used on the Console's internal tools
+		configErr = b.Config.Auth.AddOidcProvider(consoleAuthProviderName1, consoleAuthProviderIssuer1, consoleAuthProviderClientId1)
+		if configErr != nil {
+			err = configErr
+		}
+
+		// Add the OIDC auth provider used on the Console's internal tools
+		configErr = b.Config.Auth.AddOidcProvider(consoleAuthProviderName2, consoleAuthProviderIssuer2, consoleAuthProviderClientId2)
+		if configErr != nil {
+			err = configErr
+		}
+
 		invalid, invalidSecrets := b.Config.ValidateSecrets(secrets)
 		if invalid {
 			err = fmt.Errorf("missing secrets from local config in ~/.keel/config.yaml: %s", strings.Join(invalidSecrets, ", "))

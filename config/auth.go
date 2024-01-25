@@ -21,6 +21,8 @@ const (
 
 const ProviderSecretPrefix = "AUTH_PROVIDER_SECRET_"
 
+const ReservedProviderNamePrefix = "keel_"
+
 const (
 	GoogleProvider        = "google"
 	FacebookProvider      = "facebook"
@@ -90,6 +92,11 @@ func (c *AuthConfig) RefreshTokenRotationEnabled() bool {
 func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId string) error {
 	if invalidName(name) {
 		return fmt.Errorf(ConfigAuthProviderInvalidName, name)
+	}
+	for _, v := range c.Providers {
+		if v.Name == name {
+			return fmt.Errorf(ConfigAuthProviderNameExists, name)
+		}
 	}
 	if invalidUrl(issuerUrl) {
 		return fmt.Errorf("invalid issuerUrl: %s", issuerUrl)
@@ -275,6 +282,18 @@ func findAuthProviderDuplicateName(providers []Provider) []Provider {
 	}
 
 	return duplicates
+}
+
+// findAuthProviderReservedName checks for reserved names
+func findAuthProviderReservedName(providers []Provider) []Provider {
+	invalid := []Provider{}
+	for _, p := range providers {
+		if strings.HasPrefix(strings.ToLower(p.Name), ReservedProviderNamePrefix) {
+			invalid = append(invalid, p)
+		}
+	}
+
+	return invalid
 }
 
 // findAuthProviderInvalidType checks for invalid provider types

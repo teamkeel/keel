@@ -2,7 +2,9 @@ package authapi
 
 import (
 	"net/http"
+	"strings"
 
+	cfg "github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -28,6 +30,10 @@ func ProvidersHandler(schema *proto.Schema) common.HandlerFunc {
 		providers := []ProviderResponse{}
 
 		for _, p := range config.Providers {
+			if strings.HasPrefix(strings.ToLower(p.Name), cfg.ReservedProviderNamePrefix) {
+				continue
+			}
+
 			authUrl, err := p.GetAuthorizeUrl()
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
