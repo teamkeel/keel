@@ -310,7 +310,7 @@ func TestAddOidcProviderAlreadyExists(t *testing.T) {
 	err := auth.AddOidcProvider("my_client", "https://mycustomoidc.com", "1234")
 	assert.NoError(t, err)
 	err = auth.AddOidcProvider("my_client", "https://anothercustomoidc.com", "abcd")
-	assert.ErrorContains(t, err, "auth provider name 'my_client' has already been defined")
+	assert.ErrorContains(t, err, "auth provider name 'my_client' has been defined more than once, but must be unique")
 }
 
 func TestGetCallbackUrl_Localhost(t *testing.T) {

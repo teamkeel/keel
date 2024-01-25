@@ -138,7 +138,6 @@ const (
 	ConfigReservedNameErrorString                    = "environment variable %s cannot start with %s as it is reserved"
 	ConfigAuthTokenExpiryMustBePositive              = "%s token lifespan cannot be negative or zero for field: %s"
 	ConfigAuthProviderInvalidName                    = "auth provider name '%s' must only include alphanumeric characters and underscores, and cannot start with a number"
-	ConfigAuthProviderNameExists                     = "auth provider name '%s' has already been defined"
 	ConfigAuthProviderReservedPrefex                 = "cannot use reserved 'keel_' prefix in auth provider name: %s"
 	ConfigAuthProviderMissingFieldAtIndexErrorString = "auth provider at index %v is missing field: %s"
 	ConfigAuthProviderMissingFieldErrorString        = "auth provider '%s' is missing field: %s"

@@ -95,7 +95,7 @@ func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId str
 	}
 	for _, v := range c.Providers {
 		if v.Name == name {
-			return fmt.Errorf(ConfigAuthProviderNameExists, name)
+			return fmt.Errorf(ConfigAuthProviderDuplicateErrorString, name)
 		}
 	}
 	if invalidUrl(issuerUrl) {
