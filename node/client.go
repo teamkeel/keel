@@ -119,7 +119,7 @@ func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 	w.Writeln("export class APIClient extends Core {")
 
 	w.Indent()
-	w.Writeln("constructor(config: RequestConfig, refreshTokenStore: TokenStore) {")
+	w.Writeln("constructor(config: RequestConfig, refreshTokenStore: TokenStore = new InMemoryTokenStore()) {")
 	w.Indent()
 	w.Writeln("super(config, refreshTokenStore);")
 	w.Dedent()

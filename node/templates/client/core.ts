@@ -1,9 +1,9 @@
 export class Core {
   constructor(
     private config: RequestConfig,
-    private refreshToken: TokenStore = new LocalStateStore()
+    private refreshToken: TokenStore = new InMemoryTokenStore()
   ) {
-    this.auth.refreshSession();
+    this.auth.refresh();
   }
 
   #session: AccessTokenSession | null = null;
@@ -200,7 +200,7 @@ export class Core {
         Date.now() > this.#session!.expiresAt.getTime() - EXPIRY_BUFFER_IN_MS;
 
       if (isExpired) {
-        return await this.auth.refreshSession();
+        return await this.auth.refresh();
       }
 
       return true;
@@ -281,7 +281,7 @@ export class Core {
      * Creates or refreshes a session with a token request at the authentication server.
      */
     requestToken: async (req: TokenGrant) => {
-      let body = null;
+      let body;
       switch (req.grant) {
         case "token_exchange":
           body = {
@@ -352,7 +352,7 @@ function reviver(key: any, value: any) {
   return value;
 }
 
-class LocalStateStore {
+class InMemoryTokenStore {
   private token: string | null = null;
   get = () => {
     return this.token;
