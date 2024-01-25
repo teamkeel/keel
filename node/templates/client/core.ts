@@ -1,24 +1,25 @@
 export class Core {
-	constructor(
-    private config: RequestConfig, 
-    private refreshToken: TokenStore = new LocalStateStore()) {
-      this.auth.refreshSession();
-    }
+  constructor(
+    private config: RequestConfig,
+    private refreshToken: TokenStore = new LocalStateStore()
+  ) {
+    this.auth.refreshSession();
+  }
 
-	#session: AccessTokenSession | null = null;
+  #session: AccessTokenSession | null = null;
 
-	ctx = {
-		/**
-		 * @deprecated This has been deprecated in favour of APIClient.auth.getSession()
-		 */
-		token: "",
+  ctx = {
     /**
-		 * @deprecated This has been deprecated in favour of APIClient.auth.isAuthenticated()
-		 */
-		isAuthenticated: false
-	};
+     * @deprecated This has been deprecated in favour of APIClient.auth.getSession()
+     */
+    token: "",
+    /**
+     * @deprecated This has been deprecated in favour of APIClient.auth.isAuthenticated()
+     */
+    isAuthenticated: false,
+  };
 
-	client = {
+  client = {
     setHeaders: (headers: RequestHeaders): Core => {
       this.config.headers = headers;
       return this;
@@ -68,7 +69,8 @@ export class Core {
               ...this.config.headers,
               ...(this.#session || this.ctx.token != ""
                 ? {
-                    Authorization: "Bearer " + this.#session?.token ?? this.ctx.token,
+                    Authorization:
+                      "Bearer " + this.#session?.token ?? this.ctx.token,
                   }
                 : {}),
             },
@@ -164,22 +166,22 @@ export class Core {
      */
     providers: async (): Promise<Provider[]> => {
       let url = new URL(this.config.baseUrl);
-      const result = await globalThis.fetch(
-        url.origin + "/auth/providers",
-        {
-          method: "GET",
-          cache: "no-cache",
-          headers: {
-            "content-type": "application/json",
-          },
+      const result = await globalThis.fetch(url.origin + "/auth/providers", {
+        method: "GET",
+        cache: "no-cache",
+        headers: {
+          "content-type": "application/json",
         },
-      );
+      });
 
       if (result.status == 200) {
         const rawJson = await result.text();
         return JSON.parse(rawJson);
       } else {
-        throw new Error("unexpected status code response from /auth/providers: " + result.status)
+        throw new Error(
+          "unexpected status code response from /auth/providers: " +
+            result.status
+        );
       }
     },
 
@@ -190,11 +192,12 @@ export class Core {
       // If there is no session, then we don't attempt to refresh since
       // the client was not authenticated in the first place.
       if (!this.#session) {
-        return false
+        return false;
       }
 
       // Consider a token expired EXPIRY_BUFFER_IN_MS earlier than its real expiry time
-      const isExpired = Date.now() > (this.#session!.expiresAt.getTime() - EXPIRY_BUFFER_IN_MS);
+      const isExpired =
+        Date.now() > this.#session!.expiresAt.getTime() - EXPIRY_BUFFER_IN_MS;
 
       if (isExpired) {
         return await this.auth.refreshSession();
@@ -209,10 +212,10 @@ export class Core {
     authenticateWithIdToken: async (idToken: string) => {
       const req: TokenExchangeGrant = {
         grant: "token_exchange",
-        subjectToken: idToken
-      }
+        subjectToken: idToken,
+      };
 
-      await this.auth.requestToken(req)
+      await this.auth.requestToken(req);
     },
 
     /**
@@ -221,10 +224,10 @@ export class Core {
     authenticateWithSSOLoginCode: async (code: string) => {
       const req: AuthorizationCodeGrant = {
         grant: "authorization_code",
-        code: code
-      }
+        code: code,
+      };
 
-      await this.auth.requestToken(req)
+      await this.auth.requestToken(req);
     },
 
     /**
@@ -238,8 +241,8 @@ export class Core {
       }
 
       const authorised = await this.auth.requestToken({
-        grant:  "refresh_token",
-        refreshToken: refreshToken
+        grant: "refresh_token",
+        refreshToken: refreshToken,
       });
 
       if (!authorised) {
@@ -254,58 +257,13 @@ export class Core {
      */
     logoutSession: async () => {
       const refreshToken = this.refreshToken.get();
-      
+
       this.#session = null;
       this.refreshToken.set(null);
 
       if (refreshToken) {
         let url = new URL(this.config.baseUrl);
-        await globalThis.fetch(
-          url.origin + "/auth/revoke",
-          {
-            method: "POST",
-            cache: "no-cache",
-            headers: {
-              accept: "application/json",
-              "content-type": "application/json",
-            },
-            body: JSON.stringify({
-              token: refreshToken
-            }),
-          },
-        );
-      }
-    },
-
-    /**
-    * Creates or refreshes a session with a token request at the authentication server.
-    */
-    requestToken: async(req: TokenGrant) => {
-      let body = null;      
-      switch (req.grant) {
-        case "token_exchange":
-          body = {
-            "subject_token": req.subjectToken
-          };
-          break;
-        case "authorization_code":
-          body = {
-            "code": req.code
-          };
-          break;
-        case "refresh_token":
-          body = {
-            "refresh_token": req.refreshToken
-          };
-          break;
-        default:
-          throw new Error("Unknown grant type. We currently support 'authorization_code', 'token_exchange', and 'refresh_token' grant types. Please use one of those. For more info, please refer to the docs at https://docs.keel.so/authentication/endpoints#parameters")
-      }
-
-      let url = new URL(this.config.baseUrl);
-      const result = await globalThis.fetch(
-        url.origin + "/auth/token",
-        {
+        await globalThis.fetch(url.origin + "/auth/revoke", {
           method: "POST",
           cache: "no-cache",
           headers: {
@@ -313,17 +271,58 @@ export class Core {
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            "grant_type": req.grant,
-            ...body
+            token: refreshToken,
           }),
+        });
+      }
+    },
+
+    /**
+     * Creates or refreshes a session with a token request at the authentication server.
+     */
+    requestToken: async (req: TokenGrant) => {
+      let body = null;
+      switch (req.grant) {
+        case "token_exchange":
+          body = {
+            subject_token: req.subjectToken,
+          };
+          break;
+        case "authorization_code":
+          body = {
+            code: req.code,
+          };
+          break;
+        case "refresh_token":
+          body = {
+            refresh_token: req.refreshToken,
+          };
+          break;
+        default:
+          throw new Error(
+            "Unknown grant type. We currently support 'authorization_code', 'token_exchange', and 'refresh_token' grant types. Please use one of those. For more info, please refer to the docs at https://docs.keel.so/authentication/endpoints#parameters"
+          );
+      }
+
+      let url = new URL(this.config.baseUrl);
+      const result = await globalThis.fetch(url.origin + "/auth/token", {
+        method: "POST",
+        cache: "no-cache",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          grant_type: req.grant,
+          ...body,
+        }),
+      });
 
       if (result.ok) {
         const rawJson = await result.text();
         const data = JSON.parse(rawJson);
 
-        const expiresAt = new Date(Date.now() + (data.expires_in * 1000));
+        const expiresAt = new Date(Date.now() + data.expires_in * 1000);
         this.refreshToken.set(data.refresh_token);
         this.#session = { token: data.access_token, expiresAt: expiresAt };
 
@@ -343,11 +342,12 @@ const stripTrailingSlash = (str: string) => {
   return str.endsWith("/") ? str.slice(0, -1) : str;
 };
 
-const RFC3339 = /^(?:\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01]))?(?:[T\s](?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?(?:\.\d+)?(?:[Zz]|[+-](?:[01]\d|2[0-3]):?[0-5]\d)?)?$/;
+const RFC3339 =
+  /^(?:\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01]))?(?:[T\s](?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?(?:\.\d+)?(?:[Zz]|[+-](?:[01]\d|2[0-3]):?[0-5]\d)?)?$/;
 function reviver(key: any, value: any) {
   // Convert any ISO8601/RFC3339 strings to dates
   if (value && typeof value === "string" && RFC3339.test(value)) {
-	return new Date(value);
+    return new Date(value);
   }
   return value;
 }

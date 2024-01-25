@@ -49,8 +49,6 @@ func generateClientSdkFile(schema *proto.Schema, api *proto.Api) codegen.Generat
 
 	writeClientStandardTypes(client)
 	writeClientCore(client)
-	//client.Writeln(clientCore)
-	//client.Writeln(clientTypes)
 
 	client.Writeln("")
 	client.Writeln("// API")
@@ -85,10 +83,8 @@ func generateClientSdkPackage(schema *proto.Schema, api *proto.Api) codegen.Gene
 	core.Writeln(`import { APIError, APIResult } from "./types";`)
 	core.Writeln("")
 	writeClientStandardTypes(core)
-	//core.Writeln(clientCore)
 
 	writeClientCore(types)
-	//types.Writeln(clientTypes)
 
 	client.Writeln(`import { Core, RequestConfig } from "./core";`)
 	client.Writeln("")

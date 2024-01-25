@@ -1,4 +1,3 @@
-
 type RequestHeaders = globalThis.Record<string, string>;
 
 // Refresh the token 60 seconds before it expires
@@ -9,7 +8,7 @@ export type RequestConfig = {
   headers?: RequestHeaders;
 };
 
-export interface TokenStore  {
+export interface TokenStore {
   set(token: string | null): void;
   get(): string | null;
 }
@@ -18,10 +17,10 @@ class LocalStateStore {
   private token: string | null = null;
   get = () => {
     return this.token;
-  }
+  };
   set = (token: string) => {
     this.token = token;
-  }
+  };
 }
 
 // Result types
@@ -121,37 +120,34 @@ export type RefreshGrant = {
   refreshToken: string;
 };
 
-export type TokenGrant = 
-  | TokenExchangeGrant 
-  | AuthorizationCodeGrant 
+export type TokenGrant =
+  | TokenExchangeGrant
+  | AuthorizationCodeGrant
   | RefreshGrant;
 
 export class TokenError extends Error {
   errorDescription: string;
-  constructor( error: string, errorDescription: string ) {
-      super();
-      this.message = error;
-      this.errorDescription = errorDescription;
+  constructor(error: string, errorDescription: string) {
+    super();
+    this.message = error;
+    this.errorDescription = errorDescription;
   }
 }
 
-export type AuthenticateParams = 
-  | SsoLogin 
-  | IdToken 
-  | UsernamePassword;
+export type AuthenticateParams = SsoLogin | IdToken | UsernamePassword;
 
 export type SsoLogin = {
   kind: "sso_login";
   code: string;
-}
+};
 
 export type IdToken = {
   kind: "id_token";
   idToken: string;
-}
+};
 
 export type UsernamePassword = {
   kind: "username_password";
   username: string;
   password: string;
-}
+};
