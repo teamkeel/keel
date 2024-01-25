@@ -89,8 +89,8 @@ en:
     message: "create actions cannot take read inputs"
     hint: "maybe add {{ .Input }} to the with() inputs"
   E034:
-    message: "create actions must accept all required fields that have no default value"
-    hint: "maybe add {{ .FieldName }} to the with() inputs or a @set expression"
+    message: "required field '{{ .FieldName }}' must be set by a non-optional input, a @set expression or with @default"
+    hint: "To learn more about create action inputs, visit https://docs.keel.so/actions#create"
   E035:
     message: "{{ .Input }} is not a unique field. {{ .ActionType }} actions take only unique inputs"
     hint: ""
@@ -123,9 +123,6 @@ en:
   E045:
     message: "The @relation attribute must be used as more than one field on the {{ .ModelA }} model references {{ .ModelB }}"
     hint: "Define the @relation attribute on this field to indicate which field on {{ .ModelA }} it references"
-  E046:
-    message: "create actions must accept all required fields that have no default value"
-    hint: "maybe add one of {{ .WithNames }} to with() inputs, or one of {{ .SetNames }} to a @set expression"
   E047:
     message: "api '{{ .API }}' has an unrecognised model {{ .Model }}"
     hint: ""

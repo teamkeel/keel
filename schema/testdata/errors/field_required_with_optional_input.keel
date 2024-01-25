@@ -1,0 +1,10 @@
+model StockLocation {
+    fields {
+        title Text
+    }
+
+    actions {
+        //expect-error:16:35:E034:required field 'title' must be set by a non-optional input, a @set expression or with @default
+        create createStockLocation() with (title?)
+    }
+}
