@@ -10,7 +10,7 @@ export class Core {
 
   ctx = {
     /**
-     * @deprecated This has been deprecated in favour of APIClient.auth.getSession()
+     * @deprecated This has been deprecated in favour of using the APIClient.auth which handles sessions implicitly
      */
     token: "",
     /**
@@ -174,7 +174,7 @@ export class Core {
         },
       });
 
-      if (result.status == 200) {
+      if (result.ok) {
         const rawJson = await result.text();
         return JSON.parse(rawJson);
       } else {
@@ -207,7 +207,7 @@ export class Core {
     },
 
     /**
-     * Authenticate with an OIDC token.
+     * Authenticate with an ID token.
      */
     authenticateWithIdToken: async (idToken: string) => {
       const req: TokenExchangeGrant = {
@@ -219,9 +219,9 @@ export class Core {
     },
 
     /**
-     * Authenticate with an SSO Login code.
+     * Authenticate with Single Sign On using the auth code received from a successful SSO flow.
      */
-    authenticateWithSSOLoginCode: async (code: string) => {
+    authenticateWithSingleSignOn: async (code: string) => {
       const req: AuthorizationCodeGrant = {
         grant: "authorization_code",
         code: code,
@@ -233,7 +233,7 @@ export class Core {
     /**
      * Forcefully refreshes the session with the authentication server and returns true if authenticated.
      */
-    refreshSession: async () => {
+    refresh: async () => {
       const refreshToken = this.refreshToken.get();
 
       if (!refreshToken) {
@@ -255,7 +255,7 @@ export class Core {
     /**
      * Logs out the session on the client and also attempts to revoke the refresh token with the authentication server.
      */
-    logoutSession: async () => {
+    logout: async () => {
       const refreshToken = this.refreshToken.get();
 
       this.#session = null;
@@ -350,4 +350,14 @@ function reviver(key: any, value: any) {
     return new Date(value);
   }
   return value;
+}
+
+class LocalStateStore {
+  private token: string | null = null;
+  get = () => {
+    return this.token;
+  };
+  set = (token: string) => {
+    this.token = token;
+  };
 }

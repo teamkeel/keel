@@ -1,27 +1,12 @@
 type RequestHeaders = globalThis.Record<string, string>;
 
 // Refresh the token 60 seconds before it expires
-const EXPIRY_BUFFER_IN_MS = 1000;
+const EXPIRY_BUFFER_IN_MS = 60000;
 
 export type RequestConfig = {
   baseUrl: string;
   headers?: RequestHeaders;
 };
-
-export interface TokenStore {
-  set(token: string | null): void;
-  get(): string | null;
-}
-
-class LocalStateStore {
-  private token: string | null = null;
-  get = () => {
-    return this.token;
-  };
-  set = (token: string) => {
-    this.token = token;
-  };
-}
 
 // Result types
 
@@ -94,6 +79,11 @@ export type APIError =
 
 // Auth
 
+export interface TokenStore {
+    set(token: string | null): void;
+    get(): string | null;
+  }  
+
 export type Provider = {
   name: string;
   type: string;
@@ -133,21 +123,3 @@ export class TokenError extends Error {
     this.errorDescription = errorDescription;
   }
 }
-
-export type AuthenticateParams = SsoLogin | IdToken | UsernamePassword;
-
-export type SsoLogin = {
-  kind: "sso_login";
-  code: string;
-};
-
-export type IdToken = {
-  kind: "id_token";
-  idToken: string;
-};
-
-export type UsernamePassword = {
-  kind: "username_password";
-  username: string;
-  password: string;
-};
