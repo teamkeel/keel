@@ -1,0 +1,16 @@
+auth:
+  tokens:
+    accessTokenExpiry: 3600
+    refreshTokenExpiry: 604800
+    refreshTokenRotationEnabled: false
+
+  redirectUrl: http://localhost:8000/signedin
+
+  providers:
+    - type: google
+      name: keel_client
+      clientId: foo_1
+
+    - type: google
+      name: KEEL_CLIENT
+      clientId: foo_1

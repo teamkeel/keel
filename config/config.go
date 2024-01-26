@@ -138,6 +138,7 @@ const (
 	ConfigReservedNameErrorString                    = "environment variable %s cannot start with %s as it is reserved"
 	ConfigAuthTokenExpiryMustBePositive              = "%s token lifespan cannot be negative or zero for field: %s"
 	ConfigAuthProviderInvalidName                    = "auth provider name '%s' must only include alphanumeric characters and underscores, and cannot start with a number"
+	ConfigAuthProviderReservedPrefex                 = "cannot use reserved 'keel_' prefix in auth provider name: %s"
 	ConfigAuthProviderMissingFieldAtIndexErrorString = "auth provider at index %v is missing field: %s"
 	ConfigAuthProviderMissingFieldErrorString        = "auth provider '%s' is missing field: %s"
 	ConfigAuthProviderInvalidTypeErrorString         = "auth provider '%s' has invalid type '%s' which must be one of: %s"
@@ -303,6 +304,17 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 		errors = append(errors, &ConfigError{
 			Type:    "duplicate",
 			Message: fmt.Sprintf(ConfigAuthProviderDuplicateErrorString, p.Name),
+		})
+	}
+
+	reservedNames := findAuthProviderReservedName(config.Auth.Providers)
+	for _, p := range reservedNames {
+		if p.Name == "" {
+			continue
+		}
+		errors = append(errors, &ConfigError{
+			Type:    "reserved",
+			Message: fmt.Sprintf(ConfigAuthProviderReservedPrefex, p.Name),
 		})
 	}
 
