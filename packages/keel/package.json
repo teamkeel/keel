@@ -1,0 +1,25 @@
+{
+    "name": "keelcli",
+    "version": "0.0.1-prerelease1",
+    "description": "Keel CLI",
+    "author": "Keel (www.keel.so)",
+    "license": "ASL (Apache 2.0)",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/teamkeel/keel.git"
+    },
+    "dependencies": {
+        "go-npm": "^0.1.9"
+    },
+
+    "postinstall": "go-npm install",
+    "preuninstall": "go-npm uninstall",
+    "goBinary": {
+        "name": "keelcli",
+        "path": "./bin",
+        "url": "https://github.com/user/my-go-package/releases/download/v{{version}}/myGoPackage_{{version}}_{{platform}}_{{arch}}.tar.gz"
+    }
+}

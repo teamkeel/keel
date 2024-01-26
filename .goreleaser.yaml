@@ -22,7 +22,7 @@ archives:
 release:
   github:
     owner: teamkeel
-    name: cli
+    name: keel
   prerelease: auto
 brews:
   - name: "{{ .Env.HOMEBREW_ALIAS }}"
