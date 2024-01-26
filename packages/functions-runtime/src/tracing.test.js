@@ -1,6 +1,7 @@
 import { expect, test, beforeEach } from "vitest";
 import tracing from "./tracing";
 import { NodeTracerProvider, Span } from "@opentelemetry/sdk-trace-node";
+const opentelemetry = require("@opentelemetry/api");
 
 let spanEvents = [];
 const provider = new NodeTracerProvider({});
@@ -57,6 +58,27 @@ test("withSpan on error", async () => {
       "exception.message": "err",
     });
   }
+});
+
+test("withSpan console.log", async () => {
+  await tracing.withSpan("name", async () => {
+    console.log("test log");
+  });
+
+  const span = spanEvents.pop().span;
+  expect(span.events).toHaveLength(1);
+  expect(span.events[0].name).toEqual("test log");
+});
+
+test("withSpan console.error", async () => {
+  await tracing.withSpan("name", async () => {
+    console.error("test error");
+  });
+
+  const span = spanEvents.pop().span;
+  expect(span.events).toHaveLength(0);
+  expect(span.status.code).toEqual(opentelemetry.SpanStatusCode.ERROR);
+  expect(span.status.message).toEqual("test error");
 });
 
 test("fetch - 200", async () => {
