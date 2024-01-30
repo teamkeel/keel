@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/teamkeel/keel/proto"
@@ -52,7 +51,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 
 		switch r.Method {
 		case http.MethodGet:
-			inputs = parseQueryParams(r.URL.Query())
+			inputs = common.ParseQueryParams(r)
 		case http.MethodPost:
 			var err error
 			inputs, err = common.ParseRequestData(r)
@@ -61,7 +60,6 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 			}
 		default:
 			return NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP POST or GET accepted"), nil)
-
 		}
 
 		action := proto.FindAction(p, actionName)
@@ -106,14 +104,6 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 
 		return common.NewJsonResponse(http.StatusOK, response, meta)
 	}
-}
-
-func parseQueryParams(q url.Values) map[string]any {
-	inputs := map[string]any{}
-	for k := range q {
-		inputs[k] = q.Get(k)
-	}
-	return inputs
 }
 
 type HttpJsonErrorResponse struct {

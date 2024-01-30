@@ -236,9 +236,19 @@ func NewAuthenticationFailedMessageErr(message string) RuntimeError {
 	}
 }
 
+// ParseQueryParams will parse the parmeters in the request query string.
+func ParseQueryParams(r *http.Request) map[string]any {
+	q := r.URL.Query()
+	inputs := map[string]any{}
+	for k := range q {
+		inputs[k] = q.Get(k)
+	}
+	return inputs
+}
+
 // ParseRequestData will parse the request based on the Content-Type header.
 // Defaults to parsing as a JSON request body.
-func ParseRequestData(r *http.Request) (map[string]any, error) {
+func ParseRequestData(r *http.Request) (any, error) {
 	switch {
 	case HasContentType(r.Header, "application/x-www-form-urlencoded"):
 		return parseFormUrlEncoded(r)
@@ -249,7 +259,7 @@ func ParseRequestData(r *http.Request) (map[string]any, error) {
 	}
 }
 
-func parseFormUrlEncoded(r *http.Request) (map[string]any, error) {
+func parseFormUrlEncoded(r *http.Request) (any, error) {
 	data := map[string]any{}
 	err := r.ParseForm()
 	if err != nil {
@@ -263,15 +273,14 @@ func parseFormUrlEncoded(r *http.Request) (map[string]any, error) {
 	return data, nil
 }
 
-func parseJsonBody(r *http.Request) (map[string]any, error) {
-	data := map[string]any{}
+func parseJsonBody(r *http.Request) (data any, err error) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	if string(body) == "" {
-		return data, nil
+		return map[string]any{}, nil
 	}
 
 	err = json.Unmarshal(body, &data)

@@ -83,7 +83,12 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "request payload is malformed", err)
 		}
 
-		grantType, hasGrantType := data[ArgGrantType].(string)
+		inputs, ok := data.(map[string]any)
+		if !ok {
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "request payload is malformed", err)
+		}
+
+		grantType, hasGrantType := inputs[ArgGrantType].(string)
 		if !hasGrantType || grantType == "" {
 			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the grant-type field is required with either 'refresh_token', 'token_exchange' or 'authorization_code'", nil)
 		}
@@ -94,7 +99,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 		switch grantType {
 		case GrantTypeRefreshToken:
-			refreshTokenRaw, hasRefreshTokenRaw := data[ArgRefreshToken].(string)
+			refreshTokenRaw, hasRefreshTokenRaw := inputs[ArgRefreshToken].(string)
 			if !hasRefreshTokenRaw || refreshTokenRaw == "" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the refresh token in the 'refresh_token' field is required", nil)
 			}
@@ -122,7 +127,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 		case GrantTypeAuthCode:
-			authCode, hasAuthCode := data[ArgCode].(string)
+			authCode, hasAuthCode := inputs[ArgCode].(string)
 			if !hasAuthCode || authCode == "" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the authorization code in the 'code' field is required", nil)
 			}
@@ -145,20 +150,20 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 		case GrantTypeTokenExchange:
-			idTokenRaw, hasIdTokenRaw := data[ArgSubjectToken].(string)
+			idTokenRaw, hasIdTokenRaw := inputs[ArgSubjectToken].(string)
 			if !hasIdTokenRaw || idTokenRaw == "" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the ID token must be provided in the 'subject_token' field", nil)
 			}
 
 			// We do not require subject_token_type, but if provided we only support 'id_token'
-			if tokenType, hasTokenType := data[ArgSubjectTokenType]; hasTokenType && tokenType != "id_token" {
+			if tokenType, hasTokenType := inputs[ArgSubjectTokenType]; hasTokenType && tokenType != "id_token" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the only supported subject_token_type is 'id_token'", nil)
 			} else if hasTokenType {
 				span.SetAttributes(attribute.String(ArgSubjectTokenType, tokenType.(string)))
 			}
 
 			// We do not require requested_token_type, but if provided we only support 'access_token'
-			if reqTokenType, hasReqTokenType := data[ArgRequestedTokenType]; hasReqTokenType && reqTokenType != "access_token" && reqTokenType != "urn:ietf:params:oauth:token-type:access_token" {
+			if reqTokenType, hasReqTokenType := inputs[ArgRequestedTokenType]; hasReqTokenType && reqTokenType != "access_token" && reqTokenType != "urn:ietf:params:oauth:token-type:access_token" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the only supported requested_token_type is 'access_token'", nil)
 			} else if hasReqTokenType {
 				span.SetAttributes(attribute.String(ArgRequestedTokenType, reqTokenType.(string)))
