@@ -2,10 +2,8 @@ package httpjson
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -57,7 +55,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 			inputs = parseQueryParams(r.URL.Query())
 		case http.MethodPost:
 			var err error
-			inputs, err = parsePostBody(r.Body)
+			inputs, err = common.ParseRequestData(r)
 			if err != nil {
 				return NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
 			}
@@ -116,21 +114,6 @@ func parseQueryParams(q url.Values) map[string]any {
 		inputs[k] = q.Get(k)
 	}
 	return inputs
-}
-
-func parsePostBody(b io.ReadCloser) (inputs any, err error) {
-	body, err := io.ReadAll(b)
-	if err != nil {
-		return nil, err
-	}
-
-	// if no json body has been sent, just return an empty map for the inputs
-	if string(body) == "" {
-		return map[string]any{}, nil
-	}
-
-	err = json.Unmarshal(body, &inputs)
-	return inputs, err
 }
 
 type HttpJsonErrorResponse struct {

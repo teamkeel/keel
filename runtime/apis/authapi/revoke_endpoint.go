@@ -22,16 +22,16 @@ func RevokeHandler(schema *proto.Schema) common.HandlerFunc {
 			return jsonErrResponse(ctx, http.StatusMethodNotAllowed, TokenErrInvalidRequest, "the revoke endpoint only accepts POST", nil)
 		}
 
-		if !HasContentType(r.Header, "application/x-www-form-urlencoded") && !HasContentType(r.Header, "application/json") {
+		if !common.HasContentType(r.Header, "application/x-www-form-urlencoded") && !common.HasContentType(r.Header, "application/json") {
 			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the request body must either be an encoded form (Content-Type: application/x-www-form-urlencoded) or JSON (Content-Type: application/json)", nil)
 		}
 
-		data, err := parsePostData(r)
+		data, err := common.ParseRequestData(r)
 		if err != nil {
 			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "request payload is malformed", err)
 		}
 
-		refreshTokenRaw, hasRefreshTokenRaw := data[ArgToken]
+		refreshTokenRaw, hasRefreshTokenRaw := data[ArgToken].(string)
 		if !hasRefreshTokenRaw || refreshTokenRaw == "" {
 			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the refresh token must be provided in the token field", nil)
 		}

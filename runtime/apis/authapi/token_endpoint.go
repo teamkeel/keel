@@ -1,9 +1,7 @@
 package authapi
 
 import (
-	"mime"
 	"net/http"
-	"strings"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -76,16 +74,16 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			return jsonErrResponse(ctx, http.StatusMethodNotAllowed, TokenErrInvalidRequest, "the token endpoint only accepts POST", nil)
 		}
 
-		if !HasContentType(r.Header, "application/x-www-form-urlencoded") && !HasContentType(r.Header, "application/json") {
+		if !common.HasContentType(r.Header, "application/x-www-form-urlencoded") && !common.HasContentType(r.Header, "application/json") {
 			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the request body must either be an encoded form (Content-Type: application/x-www-form-urlencoded) or JSON (Content-Type: application/json)", nil)
 		}
 
-		data, err := parsePostData(r)
+		data, err := common.ParseRequestData(r)
 		if err != nil {
 			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "request payload is malformed", err)
 		}
 
-		grantType, hasGrantType := data[ArgGrantType]
+		grantType, hasGrantType := data[ArgGrantType].(string)
 		if !hasGrantType || grantType == "" {
 			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the grant-type field is required with either 'refresh_token', 'token_exchange' or 'authorization_code'", nil)
 		}
@@ -96,7 +94,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 		switch grantType {
 		case GrantTypeRefreshToken:
-			refreshTokenRaw, hasRefreshTokenRaw := data[ArgRefreshToken]
+			refreshTokenRaw, hasRefreshTokenRaw := data[ArgRefreshToken].(string)
 			if !hasRefreshTokenRaw || refreshTokenRaw == "" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the refresh token in the 'refresh_token' field is required", nil)
 			}
@@ -124,7 +122,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 		case GrantTypeAuthCode:
-			authCode, hasAuthCode := data[ArgCode]
+			authCode, hasAuthCode := data[ArgCode].(string)
 			if !hasAuthCode || authCode == "" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the authorization code in the 'code' field is required", nil)
 			}
@@ -147,7 +145,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 		case GrantTypeTokenExchange:
-			idTokenRaw, hasIdTokenRaw := data[ArgSubjectToken]
+			idTokenRaw, hasIdTokenRaw := data[ArgSubjectToken].(string)
 			if !hasIdTokenRaw || idTokenRaw == "" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the ID token must be provided in the 'subject_token' field", nil)
 			}
@@ -155,17 +153,16 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			// We do not require subject_token_type, but if provided we only support 'id_token'
 			if tokenType, hasTokenType := data[ArgSubjectTokenType]; hasTokenType && tokenType != "id_token" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the only supported subject_token_type is 'id_token'", nil)
+			} else if hasTokenType {
+				span.SetAttributes(attribute.String(ArgSubjectTokenType, tokenType.(string)))
 			}
 
 			// We do not require requested_token_type, but if provided we only support 'access_token'
 			if reqTokenType, hasReqTokenType := data[ArgRequestedTokenType]; hasReqTokenType && reqTokenType != "access_token" && reqTokenType != "urn:ietf:params:oauth:token-type:access_token" {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the only supported requested_token_type is 'access_token'", nil)
+			} else if hasReqTokenType {
+				span.SetAttributes(attribute.String(ArgRequestedTokenType, reqTokenType.(string)))
 			}
-
-			span.SetAttributes(
-				attribute.String(ArgSubjectTokenType, data[ArgSubjectTokenType]),
-				attribute.String(ArgRequestedTokenType, data[ArgRequestedTokenType]),
-			)
 
 			// Verify the ID token with the OIDC provider
 			idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
@@ -223,23 +220,4 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 		return common.NewJsonResponse(http.StatusOK, response, nil)
 	}
-}
-
-func HasContentType(headers http.Header, mimetype string) bool {
-	contentType := headers.Get("Content-type")
-	if contentType == "" {
-		return mimetype == "application/octet-stream"
-	}
-
-	for _, v := range strings.Split(contentType, ",") {
-		t, _, err := mime.ParseMediaType(v)
-		if err != nil {
-			break
-		}
-
-		if t == mimetype {
-			return true
-		}
-	}
-	return false
 }

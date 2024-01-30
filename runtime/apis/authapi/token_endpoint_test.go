@@ -19,6 +19,7 @@ import (
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/apis/authapi"
 	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/oauth/oauthtest"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -68,7 +69,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	require.Equal(t, "bearer", validResponse.TokenType)
 	require.NotEmpty(t, validResponse.ExpiresIn)
 	require.NotEmpty(t, validResponse.RefreshToken)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
 	require.NoError(t, err)
@@ -136,7 +137,7 @@ func TestTokenExchangeWithJson_ValidNewIdentity(t *testing.T) {
 	require.Equal(t, "bearer", validResponse.TokenType)
 	require.NotEmpty(t, validResponse.ExpiresIn)
 	require.NotEmpty(t, validResponse.RefreshToken)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
 	require.NoError(t, err)
@@ -217,7 +218,7 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
 	require.NotEmpty(t, validResponse.AccessToken)
 	require.NotEmpty(t, validResponse.ExpiresIn)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
 	require.NoError(t, err)
@@ -289,7 +290,7 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
 	require.NotEmpty(t, validResponse.AccessToken)
 	require.NotEmpty(t, validResponse.ExpiresIn)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
 	require.NoError(t, err)
@@ -333,7 +334,7 @@ func TestTokenEndpoint_HttpGet(t *testing.T) {
 	require.Equal(t, http.StatusMethodNotAllowed, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the token endpoint only accepts POST", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestTokenEndpoint_ApplicationTextRequest(t *testing.T) {
@@ -352,7 +353,7 @@ func TestTokenEndpoint_ApplicationTextRequest(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the request body must either be an encoded form (Content-Type: application/x-www-form-urlencoded) or JSON (Content-Type: application/json)", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestTokenEndpointJson_MissingGrantType(t *testing.T) {
@@ -379,7 +380,7 @@ func TestTokenEndpointJson_MissingGrantType(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the grant-type field is required with either 'refresh_token', 'token_exchange' or 'authorization_code'", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestTokenEndpoint_MissingGrantType(t *testing.T) {
@@ -399,7 +400,7 @@ func TestTokenEndpoint_MissingGrantType(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the grant-type field is required with either 'refresh_token', 'token_exchange' or 'authorization_code'", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestTokenEndpoint_WrongGrantType(t *testing.T) {
@@ -420,7 +421,7 @@ func TestTokenEndpoint_WrongGrantType(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "unsupported_grant_type", errorResponse.Error)
 	require.Equal(t, "the only supported grants are 'refresh_token', 'token_exchange' or 'authorization_code'", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestTokenExchangeGrant_NoSubjectToken(t *testing.T) {
@@ -440,7 +441,7 @@ func TestTokenExchangeGrant_NoSubjectToken(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the ID token must be provided in the 'subject_token' field", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestTokenEndpointJson_NoSubjectToken(t *testing.T) {
@@ -465,7 +466,7 @@ func TestTokenEndpointJson_NoSubjectToken(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the ID token must be provided in the 'subject_token' field", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestTokenExchangeGrant_EmptySubjectToken(t *testing.T) {
@@ -486,7 +487,7 @@ func TestTokenExchangeGrant_EmptySubjectToken(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the ID token must be provided in the 'subject_token' field", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestTokenExchangeGrant_WrongSubjectTokenType(t *testing.T) {
@@ -509,7 +510,7 @@ func TestTokenExchangeGrant_WrongSubjectTokenType(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the only supported subject_token_type is 'id_token'", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestTokenExchangeGrant_WrongRequestedTokenType(t *testing.T) {
@@ -532,7 +533,7 @@ func TestTokenExchangeGrant_WrongRequestedTokenType(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the only supported requested_token_type is 'access_token'", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
@@ -567,7 +568,7 @@ func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
 	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
 	require.Equal(t, "invalid_client", errorResponse.Error)
 	require.Equal(t, "possible causes may be that the id token is invalid, has expired, or has insufficient claims", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestRefreshTokenGrantJson_Valid(t *testing.T) {
@@ -628,7 +629,7 @@ func TestRefreshTokenGrantJson_Valid(t *testing.T) {
 	require.NotEmpty(t, refreshGrantResponse.RefreshToken)
 	require.NotEqual(t, refreshGrantResponse.RefreshToken, tokenExchangeResponse.RefreshToken)
 	require.NotEqual(t, refreshGrantResponse.AccessToken, tokenExchangeResponse.AccessToken)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	accessToken1Issuer, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "iss")
 	require.NoError(t, err)
@@ -712,7 +713,7 @@ func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
 	require.NotEmpty(t, refreshGrantResponse.RefreshToken)
 	require.NotEqual(t, refreshGrantResponse.RefreshToken, tokenExchangeResponse.RefreshToken)
 	require.NotEqual(t, refreshGrantResponse.AccessToken, tokenExchangeResponse.AccessToken)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	accessToken1Issuer, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "iss")
 	require.NoError(t, err)
@@ -796,7 +797,7 @@ func TestRefreshTokenGrantRotationDisabled_Valid(t *testing.T) {
 	require.NotEmpty(t, refreshGrantResponse.RefreshToken)
 	require.Equal(t, refreshGrantResponse.RefreshToken, tokenExchangeResponse.RefreshToken)
 	require.NotEqual(t, refreshGrantResponse.AccessToken, tokenExchangeResponse.AccessToken)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	accessToken1Issuer, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "iss")
 	require.NoError(t, err)
@@ -838,7 +839,7 @@ func TestRefreshTokenGrant_NoRefreshToken(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the refresh token in the 'refresh_token' field is required", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestRefreshTokenGrant_EmptyRefreshToken(t *testing.T) {
@@ -855,7 +856,7 @@ func TestRefreshTokenGrant_EmptyRefreshToken(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the refresh token in the 'refresh_token' field is required", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestAuthorizationCodeGrant_Valid(t *testing.T) {
@@ -877,7 +878,7 @@ func TestAuthorizationCodeGrant_Valid(t *testing.T) {
 	require.Equal(t, "bearer", response.TokenType)
 	require.NotEmpty(t, response.ExpiresIn)
 	require.NotEmpty(t, response.RefreshToken)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	accessToken1Issuer, err := auth.ExtractClaimFromToken(response.AccessToken, "iss")
 	require.NoError(t, err)
@@ -907,7 +908,7 @@ func TestAuthorizationCodeGrantJson_Valid(t *testing.T) {
 	require.Equal(t, "bearer", response.TokenType)
 	require.NotEmpty(t, response.ExpiresIn)
 	require.NotEmpty(t, response.RefreshToken)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	accessToken1Issuer, err := auth.ExtractClaimFromToken(response.AccessToken, "iss")
 	require.NoError(t, err)
@@ -932,7 +933,7 @@ func TestAuthorizationCodeGrant_InvalidCode(t *testing.T) {
 	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
 	require.Equal(t, "invalid_client", errorResponse.Error)
 	require.Equal(t, "possible causes may be that the auth code has been consumed or has expired", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestAuthorizationCodeGrant_NoCode(t *testing.T) {
@@ -952,7 +953,7 @@ func TestAuthorizationCodeGrant_NoCode(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the authorization code in the 'code' field is required", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func handleRuntimeRequest[T any](schema *proto.Schema, req *http.Request) (T, *http.Response, error) {
