@@ -190,7 +190,11 @@ func initStepTemplate(state *InitState) {
 
 		state.files = append(state.files, &codegen.GeneratedFile{
 			Path: "keelconfig.yaml",
-			Contents: `# Visit https://docs.keel.so/envvars for more information about environment variables
+			Contents: `
+# Visit https://docs.keel.so/authentication/getting-started for more information about authentication
+auth:
+
+# Visit https://docs.keel.so/envvars for more information about environment variables
 environment:
 
 # Visit https://docs.keel.so/secrets for more information about secrets
