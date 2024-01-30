@@ -72,7 +72,6 @@ func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (
 	list := []*rpc.TraceItem{}
 
 	for k, v := range traces {
-
 		if input.After != nil && v.StartTime.Before(input.After.AsTime()) {
 			continue
 		}
@@ -81,8 +80,26 @@ func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (
 			continue
 		}
 
-		if !verbose {
+		if input.Filters != nil {
+			filteredOut := false
+			for _, f := range input.Filters {
+				switch f.Field {
+				case "error":
+					if f.Value == "true" && !v.HasError {
+						filteredOut = true
+						break
+					} else if f.Value == "false" && v.HasError {
+						filteredOut = true
+						break
+					}
+				}
+			}
+			if filteredOut {
+				continue
+			}
+		}
 
+		if !verbose {
 			if v.Type != "request" {
 				continue
 			}
