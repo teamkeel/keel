@@ -3,6 +3,8 @@ package authapi
 import (
 	"net/http"
 
+	email "net/mail"
+
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
@@ -10,6 +12,7 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime")
@@ -24,6 +27,8 @@ const (
 	ArgCode               = "code"
 	ArgRefreshToken       = "refresh_token"
 	ArgToken              = "token"
+	ArgUsername           = "username"
+	ArgPassword           = "password"
 )
 
 const (
@@ -90,7 +95,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 		grantType, hasGrantType := inputs[ArgGrantType].(string)
 		if !hasGrantType || grantType == "" {
-			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the grant-type field is required with either 'refresh_token', 'token_exchange' or 'authorization_code'", nil)
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the grant-type field is required with either 'refresh_token', 'token_exchange', 'authorization_code', or 'password'", nil)
 		}
 
 		span.SetAttributes(
@@ -125,6 +130,51 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			if !isValid {
 				return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the refresh token has been revoked or has expired", nil)
 			}
+
+		case GrantTypePassword:
+			username, hasUsername := inputs[ArgUsername].(string)
+			if !hasUsername || username == "" {
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the identity's email in the 'username' field is required", nil)
+			}
+
+			if _, err := email.ParseAddress(username); err != nil {
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "invalid email address", nil)
+			}
+
+			password, hasPassword := inputs[ArgPassword].(string)
+			if !hasPassword || password == "" {
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the identity's password in the 'password' field is required", nil)
+			}
+
+			identity, err := actions.FindIdentityByEmail(ctx, schema, username, oauth.KeelIssuer)
+			if err != nil {
+				return common.InternalServerErrorResponse(ctx, err)
+			}
+
+			if identity == nil {
+				hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+				if err != nil {
+					return common.InternalServerErrorResponse(ctx, err)
+				}
+
+				identity, err = actions.CreateIdentity(ctx, schema, username, string(hashedBytes), oauth.KeelIssuer)
+				if err != nil {
+					return common.InternalServerErrorResponse(ctx, err)
+				}
+			} else {
+				correct := bcrypt.CompareHashAndPassword([]byte(identity.Password), []byte(password)) == nil
+				if !correct {
+					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the identity does not exist or the credentials are incorrect", nil)
+				}
+			}
+
+			// Generate a refresh token.
+			refreshToken, err = oauth.NewRefreshToken(ctx, identity.Id)
+			if err != nil {
+				return common.InternalServerErrorResponse(ctx, err)
+			}
+
+			identityId = identity.Id
 
 		case GrantTypeAuthCode:
 			authCode, hasAuthCode := inputs[ArgCode].(string)
@@ -207,7 +257,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			identityId = identity.Id
 
 		default:
-			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrUnsupportedGrantType, "the only supported grants are 'refresh_token', 'token_exchange' or 'authorization_code'", nil)
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrUnsupportedGrantType, "the only supported grants are 'refresh_token', 'token_exchange', 'authorization_code', or 'password'", nil)
 		}
 
 		// Generate a new access token for this identity.
