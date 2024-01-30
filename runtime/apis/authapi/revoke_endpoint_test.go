@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/runtime/apis/authapi"
+	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/oauth/oauthtest"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -144,7 +145,7 @@ func TestRevokeEndpoint_HttpGet(t *testing.T) {
 	require.Equal(t, http.StatusMethodNotAllowed, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the revoke endpoint only accepts POST", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestRevokeEndpoint_EmptyToken(t *testing.T) {
@@ -164,7 +165,7 @@ func TestRevokeEndpoint_EmptyToken(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the refresh token must be provided in the token field", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestRevokeEndpoint_NoToken(t *testing.T) {
@@ -184,7 +185,7 @@ func TestRevokeEndpoint_NoToken(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the refresh token must be provided in the token field", errorResponse.ErrorDescription)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func TestRevokeEndpoint_UnknownToken(t *testing.T) {
@@ -199,7 +200,7 @@ func TestRevokeEndpoint_UnknownToken(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
-	require.True(t, authapi.HasContentType(httpResponse.Header, "application/json"))
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
 func makeRevokeTokenFormRequest(ctx context.Context, token string) *http.Request {

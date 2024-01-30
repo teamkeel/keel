@@ -48,3 +48,28 @@ test("query params", async () => {
     c: "true",
   });
 });
+
+test("x-www-form-urlencoded", async () => {
+  const response = await fetch(
+    process.env.KEEL_TESTING_ACTIONS_API_URL + "/withForm",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        a: "1",
+        b: "foo",
+        c: "true",
+      }),
+    }
+  );
+
+  const body = await response.json();
+
+  expect(body).toEqual({
+    a: "1",
+    b: "foo",
+    c: "true",
+  });
+});

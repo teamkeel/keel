@@ -2,12 +2,9 @@ package httpjson
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/teamkeel/keel/proto"
@@ -54,16 +51,15 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 
 		switch r.Method {
 		case http.MethodGet:
-			inputs = parseQueryParams(r.URL.Query())
+			inputs = common.ParseQueryParams(r)
 		case http.MethodPost:
 			var err error
-			inputs, err = parsePostBody(r.Body)
+			inputs, err = common.ParseRequestData(r)
 			if err != nil {
 				return NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
 			}
 		default:
 			return NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP POST or GET accepted"), nil)
-
 		}
 
 		action := proto.FindAction(p, actionName)
@@ -108,29 +104,6 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 
 		return common.NewJsonResponse(http.StatusOK, response, meta)
 	}
-}
-
-func parseQueryParams(q url.Values) map[string]any {
-	inputs := map[string]any{}
-	for k := range q {
-		inputs[k] = q.Get(k)
-	}
-	return inputs
-}
-
-func parsePostBody(b io.ReadCloser) (inputs any, err error) {
-	body, err := io.ReadAll(b)
-	if err != nil {
-		return nil, err
-	}
-
-	// if no json body has been sent, just return an empty map for the inputs
-	if string(body) == "" {
-		return map[string]any{}, nil
-	}
-
-	err = json.Unmarshal(body, &inputs)
-	return inputs, err
 }
 
 type HttpJsonErrorResponse struct {
