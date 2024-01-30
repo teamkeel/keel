@@ -49,21 +49,19 @@ test("query params", async () => {
   });
 });
 
-
-
 test("x-www-form-urlencoded", async () => {
   const response = await fetch(
-    process.env.KEEL_TESTING_ACTIONS_API_URL +"/withForm",
+    process.env.KEEL_TESTING_ACTIONS_API_URL + "/withForm",
     {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        'a': '1',
-        'b': 'foo',
-        'c': 'true'
-      })
+        a: "1",
+        b: "foo",
+        c: "true",
+      }),
     }
   );
 
