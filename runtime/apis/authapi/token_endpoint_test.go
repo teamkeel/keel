@@ -379,7 +379,7 @@ func TestTokenEndpointJson_MissingGrantType(t *testing.T) {
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
-	require.Equal(t, "the grant-type field is required with either 'refresh_token', 'token_exchange', 'authorization_code', or 'password'", errorResponse.ErrorDescription)
+	require.Equal(t, "the grant-type field is required with either 'refresh_token', 'token_exchange', 'authorization_code' or 'password'", errorResponse.ErrorDescription)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
@@ -420,7 +420,7 @@ func TestTokenEndpoint_WrongGrantType(t *testing.T) {
 
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "unsupported_grant_type", errorResponse.Error)
-	require.Equal(t, "the only supported grants are 'refresh_token', 'token_exchange' or 'authorization_code' or 'password'", errorResponse.ErrorDescription)
+	require.Equal(t, "the only supported grants are 'refresh_token', 'token_exchange', 'authorization_code' or 'password'", errorResponse.ErrorDescription)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
