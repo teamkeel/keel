@@ -89,6 +89,44 @@ function patchConsoleLog() {
   }
 }
 
+function patchConsoleError() {
+  if (!console.error.patched) {
+    const originalConsoleError = console.error;
+
+    console.error = (...args) => {
+      const span = opentelemetry.trace.getActiveSpan();
+      if (span) {
+        const output = args
+          .map((arg) => {
+            if (arg instanceof Error) {
+              return arg.stack;
+            }
+            if (typeof arg === "object") {
+              try {
+                return JSON.stringify(arg, getCircularReplacer());
+              } catch (error) {
+                return "[Object with circular references]";
+              }
+            }
+            if (typeof arg === "function") {
+              return arg() || arg.name || arg.toString();
+            }
+            return String(arg);
+          })
+          .join(" ");
+
+        span.setStatus({
+          code: opentelemetry.SpanStatusCode.ERROR,
+          message: output,
+        });
+      }
+      originalConsoleError(...args);
+    };
+
+    console.error.patched = true;
+  }
+}
+
 // Utility to handle circular references in objects
 function getCircularReplacer() {
   const seen = new WeakSet();
@@ -117,6 +155,7 @@ function init() {
 
   patchFetch();
   patchConsoleLog();
+  patchConsoleError();
 }
 
 async function forceFlush() {

@@ -1,6 +1,7 @@
 model TestModel {
     actions {
         read withQueryParams(Any) returns (Any) 
+        read withForm(Any) returns (Any)
         read withHeaders(Any) returns (Any)
         read withStatus(Any) returns (Any)
     }

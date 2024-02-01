@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"strings"
@@ -232,4 +234,78 @@ func NewAuthenticationFailedMessageErr(message string) RuntimeError {
 		Code:    ErrAuthenticationFailed,
 		Message: message,
 	}
+}
+
+// ParseQueryParams will parse the parmeters in the request query string.
+func ParseQueryParams(r *http.Request) map[string]any {
+	q := r.URL.Query()
+	inputs := map[string]any{}
+	for k := range q {
+		inputs[k] = q.Get(k)
+	}
+	return inputs
+}
+
+// ParseRequestData will parse the request based on the Content-Type header.
+// Defaults to parsing as a JSON request body.
+func ParseRequestData(r *http.Request) (any, error) {
+	switch {
+	case HasContentType(r.Header, "application/x-www-form-urlencoded"):
+		return parseFormUrlEncoded(r)
+	case HasContentType(r.Header, "application/json"):
+		return parseJsonBody(r)
+	default:
+		return parseJsonBody(r)
+	}
+}
+
+func parseFormUrlEncoded(r *http.Request) (any, error) {
+	data := map[string]any{}
+	err := r.ParseForm()
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range r.Form {
+		data[k] = v[0]
+	}
+
+	return data, nil
+}
+
+func parseJsonBody(r *http.Request) (data any, err error) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if string(body) == "" {
+		return map[string]any{}, nil
+	}
+
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func HasContentType(headers http.Header, mimetype string) bool {
+	contentType := headers.Get("Content-type")
+	if contentType == "" {
+		return mimetype == "application/octet-stream"
+	}
+
+	for _, v := range strings.Split(contentType, ",") {
+		t, _, err := mime.ParseMediaType(v)
+		if err != nil {
+			break
+		}
+
+		if t == mimetype {
+			return true
+		}
+	}
+	return false
 }
