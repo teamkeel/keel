@@ -88,15 +88,14 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 	return mapToIdentity(result)
 }
 
-// Deprecated: used by the the authenticate action which is to be deprecated.
-func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string) (*auth.Identity, error) {
+func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string, issuer string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
 	query := NewQuery(identityModel)
 	query.AddWriteValues(map[string]*QueryOperand{
 		"email":    Value(email),
 		"password": Value(password),
-		"issuer":   Value(keelIssuerClaim),
+		"issuer":   Value(issuer),
 	})
 	query.AppendSelect(AllFields())
 	query.AppendReturning(IdField())

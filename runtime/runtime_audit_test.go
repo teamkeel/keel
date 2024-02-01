@@ -15,6 +15,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/testhelpers"
 	keeltesting "github.com/teamkeel/keel/testing"
 	"go.opentelemetry.io/otel/trace"
@@ -43,7 +44,7 @@ model WeddingInvitee {
 }`
 
 func withIdentity(t *testing.T, ctx context.Context, schema *proto.Schema) (context.Context, *auth.Identity) {
-	identity, err := actions.CreateIdentity(ctx, schema, "dave.new@keel.xyz", "1234")
+	identity, err := actions.CreateIdentity(ctx, schema, "dave.new@keel.xyz", "1234", oauth.KeelIssuer)
 	require.NoError(t, err)
 	return auth.WithIdentity(ctx, identity), identity
 }
