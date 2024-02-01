@@ -196,16 +196,6 @@ function install(callback) {
       "error",
       callback.bind(null, "Error downloading from URL: " + opts.url)
     );
-
-  // let req = request({ uri: opts.url });
-  // req.on('error', callback.bind(null, "Error downloading from URL: " + opts.url));
-  // req.on('response', function(res) {
-  //     if (res.statusCode !== 200) {
-  //         return callback("Error downloading binary. HTTP Status Code: " + res.statusCode);
-  //     }
-
-  //     req.pipe(ungz).pipe(untar);
-  // });
 }
 
 function uninstall(callback) {
