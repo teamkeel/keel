@@ -109,7 +109,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		return nil, err
 	}
 
-	identity, err = CreateIdentity(scope.Context, scope.Schema, emailPassword.String("email"), string(hashedBytes))
+	identity, err = CreateIdentity(scope.Context, scope.Schema, emailPassword.String("email"), string(hashedBytes), keelIssuerClaim)
 	if err != nil {
 		return nil, err
 	}
