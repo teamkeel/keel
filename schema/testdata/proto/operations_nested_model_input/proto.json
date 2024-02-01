@@ -283,9 +283,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -322,9 +320,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -470,12 +466,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "target": [
-            "theFi",
-            "theFo",
-            "theFum",
-            "theName"
-          ]
+          "target": ["theFi", "theFo", "theFum", "theName"]
         }
       ]
     },
@@ -629,12 +620,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "target": [
-            "theFos",
-            "theFis",
-            "theFees",
-            "theName"
-          ]
+          "target": ["theFos", "theFis", "theFees", "theName"]
         }
       ]
     },

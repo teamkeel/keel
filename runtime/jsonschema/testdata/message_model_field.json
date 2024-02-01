@@ -1,43 +1,36 @@
 {
-    "additionalProperties": false,
-    "components": {
-        "schemas": {
-            "Person": {
-                "properties": {
-                    "createdAt": {
-                        "format": "date-time",
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "updatedAt": {
-                        "format": "date-time",
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "id",
-                    "createdAt",
-                    "updatedAt"
-                ]
-            }
-        }
-    },
-    "properties": {
-        "people": {
-            "items": {
-                "$ref": "#/components/schemas/Person"
-            },
-            "type": "array"
+  "additionalProperties": false,
+  "components": {
+    "schemas": {
+      "Person": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
         },
-        "person": {
-            "$ref": "#/components/schemas/Person"
-        }
+        "required": ["id", "createdAt", "updatedAt"]
+      }
+    }
+  },
+  "properties": {
+    "people": {
+      "items": {
+        "$ref": "#/components/schemas/Person"
+      },
+      "type": "array"
     },
-    "required": [
-        "person",
-        "people"
-    ],
-    "type": "object"
+    "person": {
+      "$ref": "#/components/schemas/Person"
+    }
+  },
+  "required": ["person", "people"],
+  "type": "object"
 }

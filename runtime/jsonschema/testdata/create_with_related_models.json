@@ -1,59 +1,59 @@
 {
-	"type": "object",
-	"properties": {
-		"customer": {
-			"$ref": "#/components/schemas/TestActionCustomerInput"
-		},
-		"items": {
-			"type": "array",
-			"items": {
-				"$ref": "#/components/schemas/TestActionItemsInput"
-			}
-		},
-		"onPromotion": {
-			"type": "boolean"
-		}
-	},
-	"additionalProperties": false,
-	"required": ["customer", "onPromotion", "items"],
-	"components": {
-		"schemas": {
-			"TestActionCustomerInput": {
-				"type": "object",
-				"properties": {
-					"name": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"required": ["name"]
-			},
-			"TestActionItemsInput": {
-				"type": "object",
-				"properties": {
-					"price": {
-						"type": "number"
-					},
-					"product": {
-						"$ref": "#/components/schemas/TestActionItemsProductInput"
-					},
-					"quantity": {
-						"type": "number"
-					}
-				},
-				"additionalProperties": false,
-				"required": ["quantity", "price", "product"]
-			},
-			"TestActionItemsProductInput": {
-				"type": "object",
-				"properties": {
-					"name": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"required": ["name"]
-			}
-		}
-	}
+  "type": "object",
+  "properties": {
+    "customer": {
+      "$ref": "#/components/schemas/TestActionCustomerInput"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/TestActionItemsInput"
+      }
+    },
+    "onPromotion": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false,
+  "required": ["customer", "onPromotion", "items"],
+  "components": {
+    "schemas": {
+      "TestActionCustomerInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": ["name"]
+      },
+      "TestActionItemsInput": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number"
+          },
+          "product": {
+            "$ref": "#/components/schemas/TestActionItemsProductInput"
+          },
+          "quantity": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false,
+        "required": ["quantity", "price", "product"]
+      },
+      "TestActionItemsProductInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": ["name"]
+      }
+    }
+  }
 }
