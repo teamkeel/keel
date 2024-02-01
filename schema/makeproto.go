@@ -104,7 +104,7 @@ func defaultAPI(scm *proto.Schema) *proto.Api {
 	}
 
 	return &proto.Api{
-		Name:      "Api",
+		Name:      parser.DefaultApi,
 		ApiModels: apiModels,
 	}
 }
@@ -970,31 +970,28 @@ func (scm *Builder) makeAPI(decl *parser.DeclarationNode) {
 		ApiModels: []*proto.ApiModel{},
 	}
 	for _, section := range parserAPI.Sections {
-		switch {
-		case len(section.Models) > 0:
-			for _, parserApiModel := range section.Models {
-				protoModel := &proto.ApiModel{
-					ModelName:    parserApiModel.Name.Value,
-					ModelActions: []*proto.ApiModelAction{},
-				}
-				if len(parserApiModel.Sections) == 1 {
-					for _, a := range parserApiModel.Sections[0].Actions {
+		for _, parserApiModel := range section.Models {
+			protoModel := &proto.ApiModel{
+				ModelName:    parserApiModel.Name.Value,
+				ModelActions: []*proto.ApiModelAction{},
+			}
+
+			if parserApiModel.Sections == nil || len(parserApiModel.Sections) == 0 {
+				model := query.Model(scm.asts, parserApiModel.Name.Value)
+				actions := query.ModelActions(model)
+
+				if model != nil {
+					for _, a := range actions {
 						protoModel.ModelActions = append(protoModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name.Value})
 					}
-				} else {
-
-					model := query.Model(scm.asts, parserApiModel.Name.Value)
-					actions := query.ModelActions(model)
-
-					if model != nil {
-						for _, a := range actions {
-							protoModel.ModelActions = append(protoModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name.Value})
-						}
-					}
 				}
-
-				protoAPI.ApiModels = append(protoAPI.ApiModels, protoModel)
+			} else {
+				for _, a := range parserApiModel.Sections[0].Actions {
+					protoModel.ModelActions = append(protoModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name.Value})
+				}
 			}
+
+			protoAPI.ApiModels = append(protoAPI.ApiModels, protoModel)
 		}
 	}
 	scm.proto.Apis = append(scm.proto.Apis, protoAPI)

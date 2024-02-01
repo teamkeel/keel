@@ -26,7 +26,6 @@ func TestProto(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, testCase := range testCases {
-
 		if !testCase.IsDir() {
 			t.Errorf("proto test data directory should only contain directories - file found: %s", testCase.Name())
 			continue
