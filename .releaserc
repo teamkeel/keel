@@ -9,12 +9,6 @@
   "dryRun": false,
   "plugins": [
     "@semantic-release/commit-analyzer",
-    "@semantic-release/git",
-    [
-      "@semantic-release/exec",
-      {
-        "publishCmd": "goreleaser release --clean"
-      }
-    ]
+    "@semantic-release/git"
   ]
 } 
