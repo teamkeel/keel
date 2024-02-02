@@ -1,27 +1,16 @@
 {
-    "additionalProperties": false,
-    "properties": {
-        "favouriteSport": {
-            "enum": [
-                "Cricket",
-                "Rugby",
-                "Soccer",
-                null
-            ]
-        },
-        "sports": {
-            "items": {
-                "enum": [
-                    "Cricket",
-                    "Rugby",
-                    "Soccer"
-                ]
-            },
-            "type": "array"
-        }
+  "additionalProperties": false,
+  "properties": {
+    "favouriteSport": {
+      "enum": ["Cricket", "Rugby", "Soccer", null]
     },
-    "required": [
-        "sports"
-    ],
-    "type": "object"
+    "sports": {
+      "items": {
+        "enum": ["Cricket", "Rugby", "Soccer"]
+      },
+      "type": "array"
+    }
+  },
+  "required": ["sports"],
+  "type": "object"
 }

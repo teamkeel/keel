@@ -1,15 +1,13 @@
 {
   "additionalProperties": false,
   "properties": {
-      "ids": {
-          "items": {
-              "type": "string"
-          },
-          "type": "array"
-      }
+    "ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
   },
-  "required": [
-      "ids"
-  ],
+  "required": ["ids"],
   "type": "object"
 }

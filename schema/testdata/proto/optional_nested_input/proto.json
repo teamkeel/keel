@@ -171,9 +171,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -210,9 +208,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -327,10 +323,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "target": [
-            "company",
-            "name"
-          ]
+          "target": ["company", "name"]
         },
         {
           "messageName": "ListByCompanyCompanyInput",
@@ -339,10 +332,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "target": [
-            "company",
-            "tradingAs"
-          ]
+          "target": ["company", "tradingAs"]
         }
       ]
     },
@@ -470,10 +460,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "target": [
-            "previousCompany",
-            "name"
-          ]
+          "target": ["previousCompany", "name"]
         },
         {
           "messageName": "ListByPreviousCompanyPreviousCompanyInput",
@@ -482,10 +469,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "target": [
-            "previousCompany",
-            "tradingAs"
-          ]
+          "target": ["previousCompany", "tradingAs"]
         }
       ]
     },
@@ -558,10 +542,7 @@
             "messageName": "StringQueryInput"
           },
           "optional": true,
-          "target": [
-            "company",
-            "name"
-          ]
+          "target": ["company", "name"]
         },
         {
           "messageName": "ListByCompanyOptionalInputsCompanyInput",
@@ -571,10 +552,7 @@
             "messageName": "StringQueryInput"
           },
           "optional": true,
-          "target": [
-            "company",
-            "tradingAs"
-          ]
+          "target": ["company", "tradingAs"]
         }
       ]
     },
