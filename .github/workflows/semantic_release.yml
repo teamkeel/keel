@@ -19,7 +19,7 @@ jobs:
   semantic-release:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v3
       with:
         ref: "${{ inputs.branch }}"
@@ -28,5 +28,28 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: 20.9.0
+    - name: NPM install
+      run: npm install
     - name: release
       run: npx semantic-release@23
+
+  go-releaser:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:  
+        ref: "${{ inputs.branch }}"
+        fetch-depth: 0
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: "1.20"
+    - name: Run goreleaser
+      uses: goreleaser/goreleaser-action@v5
+      with:
+        distribution: goreleaser
+        version: latest
+        args: release --clean
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
