@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
         ref:
-          description: "Branch, tag or SHA to release"
+          description: "Branch, tag or SHA to release (e.g. main)"
           required: true
           type: string
 jobs:
