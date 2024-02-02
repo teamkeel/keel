@@ -1,6 +1,6 @@
 {
   "name": "keel",
-  "version": "0.377.2-build-keel-npm-package.4",
+  "version": "0.0.1",
   "description": "Your production-grade backend from one file",
   "author": "Keel (www.keel.so)",
   "license": "ASL (Apache 2.0)",

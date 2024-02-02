@@ -1,9 +1,7 @@
 name: Publish NPM packages
 run-name: Publish NPM packages ${{ github.ref_name }}
+
 on:
-  push:
-    tags:
-      - v*
   workflow_dispatch:
     inputs:
       version:
