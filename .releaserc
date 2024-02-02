@@ -9,6 +9,12 @@
   "dryRun": false,
   "plugins": [
     "@semantic-release/commit-analyzer",
-    "@semantic-release/git"
+    "@semantic-release/git",
+    [
+      "@semantic-release/exec",
+      {
+        "verifyReleaseCmd": "echo \"NEXT_RELEASE_VERSION=${nextRelease.version}\" >> $GITHUB_ENV"
+      }
+    ]
   ]
 } 
