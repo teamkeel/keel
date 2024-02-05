@@ -40,13 +40,17 @@ jobs:
     needs: distribution
     runs-on: ubuntu-latest
     outputs:
-      new_version: ${{ steps.semantic.outputs.outputs.new_release_version }}
+      new_version: ${{ steps.semantic.outputs.new_release_version }}
     steps:
+    - name: Using branch
+      shell: bash
+      run: |
+        echo ${{ env.BRANCH }}
     - name: Checkout
       uses: actions/checkout@v3
       with:
         persist-credentials: false
-        ref: ${{ github.ref_name }}
+        ref: ${{ env.BRANCH }}
         fetch-depth: 0
     - name: Semantic Release
       id: semantic
@@ -68,6 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Using tag
+      shell: bash
       run: |
         echo ${{ needs.semantic-release.outputs.new_version }}
     - name: Checkout
@@ -107,6 +112,7 @@ jobs:
           ]
     steps:
     - name: Using tag
+      shell: bash
       run: |
         echo ${{ needs.semantic-release.outputs.new_version }}
     - uses: actions/setup-go@v3
