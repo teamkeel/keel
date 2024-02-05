@@ -63,7 +63,7 @@ jobs:
       run: |
         echo ${{ needs.instantiate.outputs.branch }}
     - name: Instantiation check
-      if: ${{ needs.instantiate.outputs.branch != '' && needs.instantiate.outputs.channel != '' }}
+      if: ${{ needs.instantiate.outputs.branch == '' || needs.instantiate.outputs.channel == '' }}
       uses: actions/github-script@v6
       with:
         script: |
@@ -97,7 +97,7 @@ jobs:
       run: |
         echo ${{ needs.semantic-release.outputs.new_version }}
     - name: Instantiation check
-      if: ${{ needs.semantic-release.outputs.new_version != '' }}
+      if: ${{ needs.semantic-release.outputs.new_version == '' }}
       uses: actions/github-script@v6
       with:
         script: |
@@ -145,7 +145,7 @@ jobs:
         echo ${{ needs.semantic-release.outputs.new_version }}
         echo ${{ needs.instantiate.outputs.channel }}
     - name: Instantiation check
-      if: ${{ needs.semantic-release.outputs.new_version != '' && needs.instantiate.outputs.channel != '' }}
+      if: ${{ needs.semantic-release.outputs.new_version == '' || needs.instantiate.outputs.channel == '' }}
       uses: actions/github-script@v6
       with:
         script: |
