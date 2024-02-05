@@ -47,17 +47,15 @@ jobs:
         then
           echo "Set channel to 'latest' for main branch"
           echo "CHANNEL=latest" >> $GITHUB_ENV
-        elif ${{ github.event_name == 'push' }}
-        then
+        else
           echo "Set channel to '${{ env.BRANCH }}'"
           echo "CHANNEL=${{ env.BRANCH }}" >> $GITHUB_ENV
-        else 
-          echo "Unhandled trigger"
         fi
     
   semantic-release:
     needs: instantiate
     runs-on: ubuntu-latest
+    if: ${{ needs.instantiate.outputs.branch != '' && needs.instantiate.outputs.channel != '' }}
     outputs:
       new_version: ${{ steps.semantic.outputs.new_release_version }}
     steps:
@@ -88,6 +86,7 @@ jobs:
     needs: 
     - semantic-release
     runs-on: ubuntu-latest
+    if: ${{ needs.semantic-release.outputs.new_version != '' }}
     steps:
     - name: With version
       shell: bash
@@ -117,6 +116,7 @@ jobs:
     - semantic-release
     - instantiate
     runs-on: ubuntu-latest
+    if: ${{ needs.semantic-release.outputs.new_version != '' && needs.instantiate.outputs.branch != '' && needs.instantiate.outputs.channel != '' }}
     strategy:
       matrix:
         package:
