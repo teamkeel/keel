@@ -18,39 +18,58 @@ on:
           - prerelease
 
 jobs:
-  distribution:
+  instantiate:
     runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.assign-branch.outputs.BRANCH }}
+      channel: ${{ steps.assign-channel.outputs.CHANNEL }}
     steps:
     - name: Assign branch
+      id: assign-branch
       shell: bash
       run: |
         if ${{ github.event_name == 'workflow_dispatch' }}
         then
-          echo "Set branch to ${{ inputs.branch }} for manual trigger"
+          echo "Set branch to '${{ inputs.branch }}' for manual trigger"
           echo "BRANCH=${{ inputs.branch }}" >> $GITHUB_ENV
         elif ${{ github.event_name == 'push' }}
         then
-          echo "Set branch to ${{ github.ref_name }} for push trigger"
+          echo "Set branch to '${{ github.ref_name }}' for push trigger"
           echo "BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+        else 
+          echo "Unhandled trigger"
+        fi
+    - name: Assign channel
+      id: assign-channel
+      shell: bash
+      run: |
+        if ${{ env.BRANCH == 'main' }}
+        then
+          echo "Set channel to 'latest' for main branch"
+          echo "CHANNEL=latest" >> $GITHUB_ENV
+        elif ${{ github.event_name == 'push' }}
+        then
+          echo "Set channel to '${{ env.BRANCH }}'"
+          echo "CHANNEL=${{ env.BRANCH }}" >> $GITHUB_ENV
         else 
           echo "Unhandled trigger"
         fi
     
   semantic-release:
-    needs: distribution
+    needs: instantiate
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.semantic.outputs.new_release_version }}
     steps:
-    - name: Using branch
+    - name: With branch
       shell: bash
       run: |
-        echo ${{ env.BRANCH }}
+        echo ${{ needs.instantiate.outputs.branch }}
     - name: Checkout
       uses: actions/checkout@v3
       with:
         persist-credentials: false
-        ref: ${{ env.BRANCH }}
+        ref: ${{ needs.instantiate.outputs.branch }}
         fetch-depth: 0
     - name: Semantic Release
       id: semantic
@@ -68,10 +87,9 @@ jobs:
   go-releaser:
     needs: 
     - semantic-release
-    - distribution
     runs-on: ubuntu-latest
     steps:
-    - name: Using tag
+    - name: With tag
       shell: bash
       run: |
         echo ${{ needs.semantic-release.outputs.new_version }}
@@ -97,7 +115,7 @@ jobs:
   npm-publish:
     needs: 
     - semantic-release
-    - distribution
+    - instantiate
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -111,10 +129,11 @@ jobs:
             "keel"
           ]
     steps:
-    - name: Using tag
+    - name: With tag and channel
       shell: bash
       run: |
         echo ${{ needs.semantic-release.outputs.new_version }}
+        echo ${{ needs.instantiate.outputs.channel }}
     - uses: actions/setup-go@v3
       with:
         go-version: "1.20"
@@ -155,7 +174,7 @@ jobs:
       uses: JS-DevTools/npm-publish@v2
       with:
         token: ${{ secrets.NPM_TOKEN }}
-        tag: ${{ env.BRANCH == 'main' && 'latest' || env.BRANCH }}
+        tag: ${{ needs.instantiate.outputs.channel }}
         package: ./packages/${{ matrix.package }}
         dry-run: false
         strategy: all
