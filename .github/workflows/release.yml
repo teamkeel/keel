@@ -89,7 +89,7 @@ jobs:
     - semantic-release
     runs-on: ubuntu-latest
     steps:
-    - name: With tag
+    - name: With version
       shell: bash
       run: |
         echo ${{ needs.semantic-release.outputs.new_version }}
@@ -97,7 +97,7 @@ jobs:
       uses: actions/checkout@v3
       with:  
         persist-credentials: false
-        ref: ${{ needs.semantic-release.outputs.new_version }}
+        ref: v${{ needs.semantic-release.outputs.new_version }}
         fetch-depth: 0
     - name: Setup Go
       uses: actions/setup-go@v4
@@ -129,7 +129,7 @@ jobs:
             "keel"
           ]
     steps:
-    - name: With tag and channel
+    - name: With version and channel
       shell: bash
       run: |
         echo ${{ needs.semantic-release.outputs.new_version }}
@@ -147,7 +147,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: ${{ needs.semantic-release.outputs.new_version }}
+        ref: v${{ needs.semantic-release.outputs.new_version }}
         fetch-depth: 0
     - name: Install Go deps
       if: ${{ matrix.package  == 'wasm' }}
@@ -158,17 +158,10 @@ jobs:
     - name: Install ${{ matrix.package }} publish dependencies
       working-directory: ./packages/${{ matrix.package }}
       run: pnpm install --frozen-lockfile
-    - name: Find and replace
-      uses: mad9000/actions-find-and-replace-string@3
-      id: make_package_version
-      with:
-        source: ${{ needs.semantic-release.outputs.new_version }}
-        find: 'v'        
-        replace: ''
     - name: "Update NPM version ${{ matrix.package }}"
       uses: reedyuk/npm-version@1.2.1
       with:
-        version: ${{ steps.make_package_version.outputs.value }}
+        version: ${{ needs.semantic-release.outputs.new_version }}
         package: ./packages/${{ matrix.package }}
     - name: NPM Publish ${{ matrix.package }}
       uses: JS-DevTools/npm-publish@v2
