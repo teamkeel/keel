@@ -67,6 +67,9 @@ jobs:
     - distribution
     runs-on: ubuntu-latest
     steps:
+    - name: Using tag
+      run: |
+        echo ${{ needs.semantic-release.outputs.new_version }}
     - name: Checkout
       uses: actions/checkout@v3
       with:  
@@ -103,6 +106,9 @@ jobs:
             "keel"
           ]
     steps:
+    - name: Using tag
+      run: |
+        echo ${{ needs.semantic-release.outputs.new_version }}
     - uses: actions/setup-go@v3
       with:
         go-version: "1.20"
@@ -127,7 +133,8 @@ jobs:
     - name: Install ${{ matrix.package }} publish dependencies
       working-directory: ./packages/${{ matrix.package }}
       run: pnpm install --frozen-lockfile
-    - uses: mad9000/actions-find-and-replace-string@2
+    - name: Find and replace
+      uses: mad9000/actions-find-and-replace-string@3
       id: make_package_version
       with:
         source: ${{ needs.semantic-release.outputs.new_version }}
