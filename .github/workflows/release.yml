@@ -1,0 +1,148 @@
+name: Release 
+run-name: Release ${{ github.ref_name }}
+
+on: 
+  push:
+    branches: 
+      - next
+      - prerelease
+  workflow_dispatch:
+    inputs:
+      branch:
+        required: true
+        type: choice
+        default: main
+        options:
+          - main
+          - next
+          - prerelease
+
+jobs:
+  distribution:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Assign branch
+      shell: bash
+      run: |
+        if ${{ github.event_name == 'workflow_dispatch' }}
+        then
+          echo "Set branch to ${{ inputs.branch }} for manual trigger"
+          echo "BRANCH=${{ inputs.branch }}" >> $GITHUB_ENV
+        else if ${{ github.event_name == 'push' }}
+        echo "Set branch to ${{ github.ref_name }} for push trigger"
+        echo "BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+        fi
+    
+  semantic-release:
+    needs: distribution
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.semantic.outputs.outputs.new_release_version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        ref: ${{ github.ref_name }}
+        fetch-depth: 0
+    - name: Semantic Release
+      id: semantic
+      uses: cycjimmy/semantic-release-action@v4
+      with:
+        semantic_version: 21.1.1
+        extra_plugins: |
+          @semantic-release/git
+      env:
+        GITHUB_TOKEN: ${{ secrets.KEEL_CI_SEMANTIC_RELEASE }}
+    - name: Version tag created
+      run: |
+        echo ${{ steps.semantic.outputs.new_release_version }}
+
+  go-releaser:
+    needs: 
+    - semantic-release
+    - distribution
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:  
+        persist-credentials: false
+        ref: ${{ needs.semantic-release.outputs.new_version }}
+        fetch-depth: 0
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.20
+    - name: Run goreleaser
+      uses: goreleaser/goreleaser-action@v5
+      with:
+        distribution: goreleaser
+        version: latest
+        args: release --clean
+      env:
+        GITHUB_TOKEN: ${{ secrets.KEEL_CI_SEMANTIC_RELEASE }}
+
+  npm-publish:
+    needs: 
+    - semantic-release
+    - distribution
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          [
+            "wasm",
+            "functions-runtime",
+            "testing-runtime",
+            "client-react",
+            "client-react-query",
+            "keel"
+          ]
+    steps:
+    - uses: actions/setup-go@v3
+      with:
+        go-version: 1.20
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 18.12.1
+        token: ${{ secrets.NPM_TOKEN }} 
+    - uses: pnpm/action-setup@v2.4.0
+      with:
+        version: 8.10.0
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ needs.semantic-release.outputs.new_version }}
+        fetch-depth: 0
+    - name: Install Go deps
+      if: ${{ matrix.package  == 'wasm' }}
+      run: go mod download
+    - name: Generate wasm binary
+      if: ${{ matrix.package  == 'wasm' }}
+      run: make wasm
+    - name: Install ${{ matrix.package }} publish dependencies
+      working-directory: ./packages/${{ matrix.package }}
+      run: pnpm install --frozen-lockfile
+    - uses: mad9000/actions-find-and-replace-string@2
+      id: make_package_version
+      with:
+        source: ${{ needs.semantic-release.outputs.new_version }}
+        find: 'v'        
+        replace: ''
+    - name: "Update NPM version ${{ matrix.package }}"
+      uses: reedyuk/npm-version@1.2.1
+      with:
+        version: ${{ steps.make_package_version.outputs.value }}
+        package: ./packages/${{ matrix.package }}
+    - name: NPM Publish ${{ matrix.package }}
+      uses: JS-DevTools/npm-publish@v2
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        tag: ${{ env.BRANCH == 'main' && 'latest' || env.BRANCH }}
+        package: ./packages/${{ matrix.package }}
+        dry-run: false
+        strategy: all
+        ignore-scripts: false
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
