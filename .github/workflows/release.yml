@@ -1,5 +1,4 @@
-name: Release 
-run-name: Release ${{ github.ref_name }}
+name: Release Keel
 
 on: 
   push:
@@ -123,10 +122,10 @@ jobs:
 
   npm-publish:
     needs: 
-    - semantic-release
     - instantiate
+    - semantic-release
+    - go-releaser
     runs-on: ubuntu-latest
-    
     strategy:
       matrix:
         package:
