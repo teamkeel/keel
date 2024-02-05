@@ -31,11 +31,11 @@ jobs:
         if ${{ github.event_name == 'workflow_dispatch' }}
         then
           echo "Set branch to '${{ inputs.branch }}' for manual trigger"
-          echo "BRANCH=${{ inputs.branch }}" >> $GITHUB_ENV
+          echo "BRANCH=${{ inputs.branch }}" >> $GITHUB_OUTPUT
         elif ${{ github.event_name == 'push' }}
         then
           echo "Set branch to '${{ github.ref_name }}' for push trigger"
-          echo "BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "BRANCH=${{ github.ref_name }}" >> $GITHUB_OUTPUT
         else 
           echo "Unhandled trigger"
         fi
@@ -43,19 +43,18 @@ jobs:
       id: assign-channel
       shell: bash
       run: |
-        if ${{ env.BRANCH == 'main' }}
+        if ${{ steps.assign-branch.outputs.BRANCH == 'main' }}
         then
           echo "Set channel to 'latest' for main branch"
-          echo "CHANNEL=latest" >> $GITHUB_ENV
+          echo "CHANNEL=latest" >> $GITHUB_OUTPUT
         else
-          echo "Set channel to '${{ env.BRANCH }}'"
-          echo "CHANNEL=${{ env.BRANCH }}" >> $GITHUB_ENV
+          echo "Set channel to '${{ steps.assign-branch.outputs.BRANCH }}'"
+          echo "CHANNEL=${{ steps.assign-branch.outputs.BRANCH }}" >> $GITHUB_OUTPUT
         fi
     
   semantic-release:
     needs: instantiate
     runs-on: ubuntu-latest
-    if: ${{ needs.instantiate.outputs.branch != '' && needs.instantiate.outputs.channel != '' }}
     outputs:
       new_version: ${{ steps.semantic.outputs.new_release_version }}
     steps:
@@ -63,6 +62,12 @@ jobs:
       shell: bash
       run: |
         echo ${{ needs.instantiate.outputs.branch }}
+    - name: Instantiation check
+      if: ${{ needs.instantiate.outputs.branch != '' && needs.instantiate.outputs.channel != '' }}
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.setFailed('branch or channel not set')
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -86,12 +91,17 @@ jobs:
     needs: 
     - semantic-release
     runs-on: ubuntu-latest
-    if: ${{ needs.semantic-release.outputs.new_version != '' }}
     steps:
     - name: With version
       shell: bash
       run: |
         echo ${{ needs.semantic-release.outputs.new_version }}
+    - name: Instantiation check
+      if: ${{ needs.semantic-release.outputs.new_version != '' }}
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.setFailed('new_version not set')
     - name: Checkout
       uses: actions/checkout@v3
       with:  
@@ -116,7 +126,7 @@ jobs:
     - semantic-release
     - instantiate
     runs-on: ubuntu-latest
-    if: ${{ needs.semantic-release.outputs.new_version != '' && needs.instantiate.outputs.branch != '' && needs.instantiate.outputs.channel != '' }}
+    
     strategy:
       matrix:
         package:
@@ -134,6 +144,12 @@ jobs:
       run: |
         echo ${{ needs.semantic-release.outputs.new_version }}
         echo ${{ needs.instantiate.outputs.channel }}
+    - name: Instantiation check
+      if: ${{ needs.semantic-release.outputs.new_version != '' && needs.instantiate.outputs.channel != '' }}
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.setFailed('new_version or channel not set')
     - uses: actions/setup-go@v3
       with:
         go-version: "1.20"
