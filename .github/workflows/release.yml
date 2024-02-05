@@ -28,9 +28,12 @@ jobs:
         then
           echo "Set branch to ${{ inputs.branch }} for manual trigger"
           echo "BRANCH=${{ inputs.branch }}" >> $GITHUB_ENV
-        else if ${{ github.event_name == 'push' }}
-        echo "Set branch to ${{ github.ref_name }} for push trigger"
-        echo "BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+        elif ${{ github.event_name == 'push' }}
+        then
+          echo "Set branch to ${{ github.ref_name }} for push trigger"
+          echo "BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+        else 
+          echo "Unhandled trigger"
         fi
     
   semantic-release:
