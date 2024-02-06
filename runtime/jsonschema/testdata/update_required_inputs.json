@@ -9,19 +9,13 @@
             "type": "string"
           },
           "hobby": {
-            "enum": [
-              "Tennis",
-              "Chess"
-            ]
+            "enum": ["Tennis", "Chess"]
           },
           "name": {
             "type": "string"
           }
         },
-        "required": [
-          "name", 
-          "birthday", 
-          "hobby"],
+        "required": ["name", "birthday", "hobby"],
         "type": "object"
       },
       "TestActionWhere": {

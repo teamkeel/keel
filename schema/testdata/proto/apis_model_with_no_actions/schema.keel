@@ -1,7 +1,0 @@
-model Author { }
-
-api Admin {
-	models {
-		Author
-	}
-}

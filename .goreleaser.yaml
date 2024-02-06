@@ -3,40 +3,25 @@ before:
     - go mod tidy
     - go generate ./...
 builds:
-  - env:
+  - main: ./cmd/keel
+    id: "keel"
+    binary: keel
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
       - windows
       - darwin
-    main: ./cmd/keel
     ldflags:
       - -s -w -X 'github.com/teamkeel/keel/runtime.Version={{.Version}}' -X 'github.com/teamkeel/keel/cmd.enabledDebugFlags=false'
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+  - builds:
+     - keel
 release:
   github:
     owner: teamkeel
-    name: cli
-  prerelease: auto
-brews:
-  - name: "{{ .Env.HOMEBREW_ALIAS }}"
-    url_template: "https://github.com/teamkeel/cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    homepage: "https://github.com/teamkeel/cli"
-    skip_upload: auto
-    install: |
-      bin.install "cli" => "{{ .Env.HOMEBREW_ALIAS }}"
-    tap:
-      owner: teamkeel
-      name: "{{ .Env.HOMEBREW_REPO }}"
+    name: keel
+  mode: append
+  prerelease: true
 checksum:
   name_template: "checksums.txt"
-snapshot:
-  name_template: "{{ incpatch .Version }}-next"
-changelog:
-  sort: asc

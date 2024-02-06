@@ -1,483 +1,437 @@
 {
-    "components": {
-        "schemas": {
-            "EmailPasswordInput": {
+  "components": {
+    "schemas": {
+      "EmailPasswordInput": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": ["email", "password"],
+        "type": "object"
+      },
+      "Meta": {
+        "additionalProperties": false,
+        "properties": {
+          "creatorUsername": {
+            "type": "string"
+          }
+        },
+        "required": ["creatorUsername"],
+        "type": "object"
+      },
+      "Person": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["name", "id", "createdAt", "updatedAt"]
+      }
+    }
+  },
+  "info": {
+    "title": "Web",
+    "version": "1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/web/json/authenticate": {
+      "post": {
+        "operationId": "authenticate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
                 "additionalProperties": false,
                 "properties": {
-                    "email": {
-                        "type": "string"
-                    },
-                    "password": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "email",
-                    "password"
-                ],
-                "type": "object"
-            },
-            "Meta": {
-                "additionalProperties": false,
-                "properties": {
-                    "creatorUsername": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "creatorUsername"
-                ],
-                "type": "object"
-            },
-            "Person": {
-              "properties": {
-                  "createdAt": {
-                      "format": "date-time",
-                      "type": "string"
+                  "createIfNotExists": {
+                    "type": "boolean"
                   },
-                  "id": {
-                      "type": "string"
-                  },
-                  "name": {
-                      "type": "string"
-                  },
-                  "updatedAt": {
-                      "format": "date-time",
-                      "type": "string"
+                  "emailPassword": {
+                    "$ref": "#/components/schemas/EmailPasswordInput"
                   }
-              },
-              "required": [
-                "name",
-                "id",
-                "createdAt",
-                "updatedAt"
-            ]
+                },
+                "required": ["emailPassword"],
+                "type": "object"
+              }
+            }
+          },
+          "description": "authenticate Request"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "identityCreated": {
+                      "type": "boolean"
+                    },
+                    "token": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["identityCreated", "token"],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "authenticate Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "errors": {
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "authenticate Response Errors"
           }
         }
+      }
     },
-    "info": {
-        "title": "Web",
-        "version": "1"
-    },
-    "openapi": "3.1.0",
-    "paths": {
-        "/web/json/authenticate": {
-            "post": {
-                "operationId": "authenticate",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "additionalProperties": false,
-                                "properties": {
-                                    "createIfNotExists": {
-                                        "type": "boolean"
-                                    },
-                                    "emailPassword": {
-                                        "$ref": "#/components/schemas/EmailPasswordInput"
-                                    }
-                                },
-                                "required": [
-                                    "emailPassword"
-                                ],
-                                "type": "object"
-                            }
-                        }
-                    },
-                    "description": "authenticate Request"
+    "/web/json/requestPasswordReset": {
+      "post": {
+        "operationId": "requestPasswordReset",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "redirectUrl": {
+                    "type": "string"
+                  }
                 },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "additionalProperties": false,
-                                    "properties": {
-                                        "identityCreated": {
-                                            "type": "boolean"
-                                        },
-                                        "token": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "identityCreated",
-                                        "token"
-                                    ],
-                                    "type": "object"
-                                }
-                            }
-                        },
-                        "description": "authenticate Response"
-                    },
-                    "400": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "errors": {
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "type": "array"
-                                                }
-                                            },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        "description": "authenticate Response Errors"
-                    }
-                }
+                "required": ["email", "redirectUrl"],
+                "type": "object"
+              }
             }
+          },
+          "description": "requestPasswordReset Request"
         },
-        "/web/json/requestPasswordReset": {
-            "post": {
-                "operationId": "requestPasswordReset",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "additionalProperties": false,
-                                "properties": {
-                                    "email": {
-                                        "type": "string"
-                                    },
-                                    "redirectUrl": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "email",
-                                    "redirectUrl"
-                                ],
-                                "type": "object"
-                            }
-                        }
-                    },
-                    "description": "requestPasswordReset Request"
-                },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "additionalProperties": false,
-                                    "type": "object"
-                                }
-                            }
-                        },
-                        "description": "requestPasswordReset Response"
-                    },
-                    "400": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "errors": {
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "type": "array"
-                                                }
-                                            },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        "description": "requestPasswordReset Response Errors"
-                    }
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "type": "object"
                 }
-            }
-        },
-        "/web/json/resetPassword": {
-            "post": {
-                "operationId": "resetPassword",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "additionalProperties": false,
-                                "properties": {
-                                    "password": {
-                                        "type": "string"
-                                    },
-                                    "token": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "token",
-                                    "password"
-                                ],
-                                "type": "object"
+              }
+            },
+            "description": "requestPasswordReset Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "errors": {
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
                             }
+                          },
+                          "type": "array"
                         }
+                      },
+                      "type": ["object", "null"]
                     },
-                    "description": "resetPassword Request"
-                },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "additionalProperties": false,
-                                    "type": "object"
-                                }
-                            }
-                        },
-                        "description": "resetPassword Response"
-                    },
-                    "400": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "errors": {
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "type": "array"
-                                                }
-                                            },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        "description": "resetPassword Response Errors"
+                    "message": {
+                      "type": "string"
                     }
+                  }
                 }
-            }
-        },
-        "/web/json/search": {
-            "post": {
-                "operationId": "search",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "additionalProperties": false,
-                                "properties": {
-                                    "funnyName": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "funnyName"
-                                ],
-                                "type": "object"
-                            }
-                        }
-                    },
-                    "description": "search Request"
-                },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "additionalProperties": false,
-                                    "properties": {
-                                        "people": {
-                                            "items": {
-                                              "$ref": "#/components/schemas/Person"
-                                            },
-                                            "type": "array"
-                                        }
-                                    },
-                                    "required": [
-                                        "people"
-                                    ],
-                                    "type": "object"
-                                }
-                            }
-                        },
-                        "description": "search Response"
-                    },
-                    "400": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "errors": {
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "type": "array"
-                                                }
-                                            },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        "description": "search Response Errors"
-                    }
-                }
-            }
-        },
-        "/web/json/upload": {
-            "post": {
-                "operationId": "upload",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "additionalProperties": false,
-                                "properties": {
-                                    "meta": {
-                                        "$ref": "#/components/schemas/Meta"
-                                    },
-                                    "people": {
-                                        "items": {
-                                          "$ref": "#/components/schemas/Person"
-                                        },
-                                        "type": "array"
-                                    }
-                                },
-                                "required": [
-                                    "people",
-                                    "meta"
-                                ],
-                                "type": "object"
-                            }
-                        }
-                    },
-                    "description": "upload Request"
-                },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "additionalProperties": false,
-                                    "properties": {
-                                        "createdCount": {
-                                          "type": "number"
-                                        },
-                                        "meta": {
-                                            "$ref": "#/components/schemas/Meta"
-                                        }
-                                    },
-                                    "required": [
-                                        "createdCount",
-                                        "meta"
-                                    ],
-                                    "type": "object"
-                                }
-                            }
-                        },
-                        "description": "upload Response"
-                    },
-                    "400": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "errors": {
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "type": "array"
-                                                }
-                                            },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        "description": "upload Response Errors"
-                    }
-                }
-            }
+              }
+            },
+            "description": "requestPasswordReset Response Errors"
+          }
         }
+      }
+    },
+    "/web/json/resetPassword": {
+      "post": {
+        "operationId": "resetPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  },
+                  "token": {
+                    "type": "string"
+                  }
+                },
+                "required": ["token", "password"],
+                "type": "object"
+              }
+            }
+          },
+          "description": "resetPassword Request"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "type": "object"
+                }
+              }
+            },
+            "description": "resetPassword Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "errors": {
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "resetPassword Response Errors"
+          }
+        }
+      }
+    },
+    "/web/json/search": {
+      "post": {
+        "operationId": "search",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "funnyName": {
+                    "type": "string"
+                  }
+                },
+                "required": ["funnyName"],
+                "type": "object"
+              }
+            }
+          },
+          "description": "search Request"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "people": {
+                      "items": {
+                        "$ref": "#/components/schemas/Person"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": ["people"],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "search Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "errors": {
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "search Response Errors"
+          }
+        }
+      }
+    },
+    "/web/json/upload": {
+      "post": {
+        "operationId": "upload",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "meta": {
+                    "$ref": "#/components/schemas/Meta"
+                  },
+                  "people": {
+                    "items": {
+                      "$ref": "#/components/schemas/Person"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": ["people", "meta"],
+                "type": "object"
+              }
+            }
+          },
+          "description": "upload Request"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "createdCount": {
+                      "type": "number"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    }
+                  },
+                  "required": ["createdCount", "meta"],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "upload Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "errors": {
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "upload Response Errors"
+          }
+        }
+      }
     }
+  }
 }

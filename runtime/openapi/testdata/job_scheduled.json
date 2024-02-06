@@ -1,7 +1,7 @@
 {
-    "openapi": "3.1.0",
-    "info": {
-        "title": "TestScheduled",
-        "version": "1"
-    }
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TestScheduled",
+    "version": "1"
+  }
 }

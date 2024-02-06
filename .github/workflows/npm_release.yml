@@ -1,0 +1,87 @@
+name: Publish NPM packages
+run-name: Publish NPM packages ${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Keel tag to publish (e.g. v0.370.0)"
+        required: true
+        type: string
+      publishTag:
+        description: "NPM distribution tag"
+        required: true
+        default: "next"
+        type: string
+
+jobs:
+  publish_npm_dependencies:
+    name: NPM Publish Matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          [
+            "wasm",
+            "functions-runtime",
+            "testing-runtime",
+            "client-react",
+            "client-react-query",
+            "keel"
+          ]
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "1.20"
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+          token: ${{ secrets.NPM_TOKEN }} 
+
+      - uses: pnpm/action-setup@v2.4.0
+        with:
+          version: 8.10.0
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Install Go deps
+        if: ${{ matrix.package  == 'wasm' }}
+        run: go mod download
+
+      - name: Generate wasm binary
+        if: ${{ matrix.package  == 'wasm' }}
+        run: make wasm
+
+      - name: Install ${{ matrix.package }} publish dependencies
+        working-directory: ./packages/${{ matrix.package }}
+        run: pnpm install --frozen-lockfile
+
+      - uses: mad9000/actions-find-and-replace-string@2
+        id: make_package_version
+        with:
+          source: ${{ github.ref_name }}
+          find: 'v'        
+          replace: ''
+
+      - name: "Update NPM version ${{ matrix.package }}"
+        uses: reedyuk/npm-version@1.2.1
+        with:
+          version: ${{ steps.make_package_version.outputs.value }}
+          package: ./packages/${{ matrix.package }}
+
+      - name: NPM Publish ${{ matrix.package }}
+        uses: JS-DevTools/npm-publish@v2
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          tag: prerelease
+          package: ./packages/${{ matrix.package }}
+          dry-run: false
+          strategy: all
+          ignore-scripts: false
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

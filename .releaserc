@@ -1,0 +1,14 @@
+{
+  "branches": [
+    { "name": "main" }, 
+    { "name": "next", "prerelease": true }, 
+    { "name": "prerelease", "prerelease": true }
+  ],
+  "repositoryUrl": "https://github.com/teamkeel/keel",
+  "debug": true,
+  "dryRun": false,
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/git"
+  ]
+} 

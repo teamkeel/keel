@@ -92,25 +92,10 @@
       "actions": [
         {
           "modelName": "Book",
-          "name": "searchBooks",
-          "type": "ACTION_TYPE_LIST",
+          "name": "getBook",
+          "type": "ACTION_TYPE_GET",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "SearchBooksInput"
-        },
-        {
-          "modelName": "Book",
-          "name": "deleteBook",
-          "type": "ACTION_TYPE_DELETE",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "DeleteBookInput"
-        },
-        {
-          "modelName": "Book",
-          "name": "deleteAll",
-          "type": "ACTION_TYPE_WRITE",
-          "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
-          "inputMessageName": "Any",
-          "responseMessageName": "Any"
+          "inputMessageName": "GetBookInput"
         }
       ]
     },
@@ -124,9 +109,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -163,9 +146,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -230,54 +211,21 @@
   ],
   "apis": [
     {
-      "name": "Admin",
-      "apiModels": [
-        {
-          "modelName": "Author",
-          "modelActions": [
-            {
-              "actionName": "getAuthor"
-            },
-            {
-              "actionName": "deleteAuthor"
-            }
-          ]
-        },
-        {
-          "modelName": "Book",
-          "modelActions": [
-            {
-              "actionName": "deleteBook"
-            },
-            {
-              "actionName": "deleteAll"
-            }
-          ]
-        },
-        {
-          "modelName": "Identity",
-          "modelActions": [
-            {
-              "actionName": "authenticate"
-            },
-            {
-              "actionName": "requestPasswordReset"
-            },
-            {
-              "actionName": "resetPassword"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Api",
       "apiModels": [
         {
           "modelName": "Book",
           "modelActions": [
             {
-              "actionName": "searchBooks"
+              "actionName": "getBook"
+            }
+          ]
+        },
+        {
+          "modelName": "Author",
+          "modelActions": [
+            {
+              "actionName": "getAuthor"
             }
           ]
         },
@@ -313,9 +261,7 @@
             "modelName": "Author",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -330,75 +276,22 @@
             "modelName": "Author",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
     {
-      "name": "SearchBooksWhere"
-    },
-    {
-      "name": "SearchBooksInput",
+      "name": "GetBookInput",
       "fields": [
         {
-          "messageName": "SearchBooksInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "SearchBooksWhere"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "SearchBooksInput",
-          "name": "first",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "SearchBooksInput",
-          "name": "after",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "SearchBooksInput",
-          "name": "last",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "SearchBooksInput",
-          "name": "before",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
-      "name": "DeleteBookInput",
-      "fields": [
-        {
-          "messageName": "DeleteBookInput",
+          "messageName": "GetBookInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
             "modelName": "Book",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },

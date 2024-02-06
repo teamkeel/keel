@@ -184,9 +184,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -223,9 +221,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -341,9 +337,7 @@
             "modelName": "ChildModel",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         },
         {
           "messageName": "CreateChild1Input",
@@ -365,9 +359,7 @@
             "modelName": "ChildModel",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         },
         {
           "messageName": "CreateChild2Input",
@@ -389,9 +381,7 @@
             "modelName": "ChildModel",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         },
         {
           "messageName": "CreateChild3Input",

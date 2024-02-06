@@ -39,6 +39,10 @@ prettier:
 	npx prettier --write './integration/**/*.{ts,json,yaml}'
 	npx prettier --write './packages/**/*.{ts,js,mjs}'
 	npx prettier --write './node/templates/**/*.{ts,js,mjs}'
+	npx prettier --write './packages/**/package.json'
+	npx prettier --write './schema/testdata/proto/**/*.json'
+	npx prettier --write './runtime/jsonschema/testdata/**/*.json'
+	npx prettier --write './runtime/openapi/testdata/**/*.json'
 
 install:
 	go mod download

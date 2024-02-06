@@ -46,25 +46,16 @@
       "permissions": [
         {
           "modelName": "Foo",
-          "roleNames": [
-            "Admin"
-          ],
+          "roleNames": ["Admin"],
           "expression": {
             "source": "foo.f1 == true"
           },
-          "actionTypes": [
-            "ACTION_TYPE_LIST",
-            "ACTION_TYPE_GET"
-          ]
+          "actionTypes": ["ACTION_TYPE_LIST", "ACTION_TYPE_GET"]
         },
         {
           "modelName": "Foo",
-          "roleNames": [
-            "Restricted"
-          ],
-          "actionTypes": [
-            "ACTION_TYPE_UPDATE"
-          ]
+          "roleNames": ["Restricted"],
+          "actionTypes": ["ACTION_TYPE_UPDATE"]
         }
       ]
     },
@@ -78,9 +69,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -117,9 +106,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -185,15 +172,11 @@
   "roles": [
     {
       "name": "Admin",
-      "domains": [
-        "bar.com"
-      ]
+      "domains": ["bar.com"]
     },
     {
       "name": "Restricted",
-      "emails": [
-        "superuser@myorg.com"
-      ]
+      "emails": ["superuser@myorg.com"]
     }
   ],
   "apis": [
