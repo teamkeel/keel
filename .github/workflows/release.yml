@@ -55,6 +55,7 @@ jobs:
     needs: instantiate
     runs-on: ubuntu-latest
     outputs:
+      is_published: ${{ steps.semantic.outputs.new_release_published }}
       new_version: ${{ steps.semantic.outputs.new_release_version }}
     steps:
     - name: With branch
@@ -84,11 +85,12 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.KEEL_CI_SEMANTIC_RELEASE }}
     - name: Version tag created
       run: |
-        echo ${{ steps.semantic.outputs.new_release_version }}
+        echo v${{ steps.semantic.outputs.new_release_version }}
 
   go-releaser:
     needs: 
     - semantic-release
+    if: ${{ needs.semantic-release.outputs.is_published }}
     runs-on: ubuntu-latest
     steps:
     - name: With version
@@ -125,6 +127,7 @@ jobs:
     - instantiate
     - semantic-release
     - go-releaser
+    if: ${{ needs.semantic-release.outputs.is_published }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
