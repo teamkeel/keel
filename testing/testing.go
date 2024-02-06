@@ -33,6 +33,7 @@ import (
 )
 
 const (
+	AuthPath       = "auth"
 	ActionApiPath  = "testingactionsapi"
 	JobPath        = "testingjobs"
 	SubscriberPath = "testingsubscribers"
@@ -212,6 +213,9 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 
 			switch pathParts[0] {
+			case AuthPath:
+				r = r.WithContext(ctx)
+				runtime.NewHttpHandler(schema).ServeHTTP(w, r)
 			case ActionApiPath:
 				r = r.WithContext(ctx)
 				runtime.NewHttpHandler(schema).ServeHTTP(w, r)

@@ -1,12 +1,9 @@
 export class Core {
   constructor(
     private config: RequestConfig,
-    private refreshToken: TokenStore = new InMemoryTokenStore()
-  ) {
-    this.auth.refresh();
-  }
-
-  #session: AccessTokenSession | null = null;
+    private getTokens = InMemoryTokenStore.getInstance().getTokens,
+    private setTokens = InMemoryTokenStore.getInstance().setTokens
+  ) {}
 
   ctx = {
     /**
@@ -57,7 +54,7 @@ export class Core {
       // If necessary, refresh the expired session before calling the action
       await this.auth.isAuthenticated();
 
-      const token = this.#session ? this.#session?.token : this.ctx.token;
+      const token = this.getTokens().accessToken ?? this.ctx.token;
 
       try {
         const result = await globalThis.fetch(
@@ -166,7 +163,7 @@ export class Core {
      * Returns the list of supported authentication providers and their SSO login URLs.
      */
     providers: async (): Promise<Provider[]> => {
-      let url = new URL(this.config.baseUrl);
+      const url = new URL(this.config.baseUrl);
       const result = await globalThis.fetch(url.origin + "/auth/providers", {
         method: "GET",
         cache: "no-cache",
@@ -176,8 +173,7 @@ export class Core {
       });
 
       if (result.ok) {
-        const rawJson = await result.text();
-        return JSON.parse(rawJson);
+        return await result.json();
       } else {
         throw new Error(
           "unexpected status code response from /auth/providers: " +
@@ -187,18 +183,47 @@ export class Core {
     },
 
     /**
+     * Returns the time at which the session will expire.
+     */
+    expiresAt: (): Date | null => {
+      const token = this.getTokens().accessToken;
+
+      if (!token) {
+        return null;
+      }
+
+      const payload = Buffer.from(token.split(".")[1], "base64").toString(
+        "utf8"
+      );
+
+      var obj = JSON.parse(payload);
+      if (obj !== null && typeof obj === "object") {
+        const { exp } = obj as {
+          exp: number;
+        };
+
+        return new Date(exp * 1000);
+      }
+
+      throw new Error("jwt token could not be parsed");
+    },
+
+    /**
      * Returns true if the session has not expired. If expired, it will attempt to refresh the session from the authentication server.
      */
     isAuthenticated: async () => {
       // If there is no session, then we don't attempt to refresh since
       // the client was not authenticated in the first place.
-      if (!this.#session) {
+      if (!this.getTokens().accessToken) {
         return false;
       }
 
       // Consider a token expired EXPIRY_BUFFER_IN_MS earlier than its real expiry time
+      const expiresAt = this.auth.expiresAt();
       const isExpired =
-        Date.now() > this.#session!.expiresAt.getTime() - EXPIRY_BUFFER_IN_MS;
+        expiresAt != null
+          ? Date.now() > expiresAt.getTime() - EXPIRY_BUFFER_IN_MS
+          : false;
 
       if (isExpired) {
         return await this.auth.refresh();
@@ -208,12 +233,27 @@ export class Core {
     },
 
     /**
+     * Authenticate with email and password.
+     * Return true if successfully authenticated.
+     */
+    authenticateWithPassword: async (email: string, password: string) => {
+      const req: PasswordGrant = {
+        grant_type: "password",
+        username: email,
+        password: password,
+      };
+
+      await this.auth.requestToken(req);
+    },
+
+    /**
      * Authenticate with an ID token.
+     * Return true if successfully authenticated.
      */
     authenticateWithIdToken: async (idToken: string) => {
       const req: TokenExchangeGrant = {
-        grant: "token_exchange",
-        subjectToken: idToken,
+        grant_type: "token_exchange",
+        subject_token: idToken,
       };
 
       await this.auth.requestToken(req);
@@ -221,10 +261,11 @@ export class Core {
 
     /**
      * Authenticate with Single Sign On using the auth code received from a successful SSO flow.
+     * Return true if successfully authenticated.
      */
     authenticateWithSingleSignOn: async (code: string) => {
       const req: AuthorizationCodeGrant = {
-        grant: "authorization_code",
+        grant_type: "authorization_code",
         code: code,
       };
 
@@ -232,23 +273,20 @@ export class Core {
     },
 
     /**
-     * Forcefully refreshes the session with the authentication server and returns true if authenticated.
+     * Forcefully refreshes the session with the authentication server.
+     * Return true if successfully authenticated.
      */
     refresh: async () => {
-      const refreshToken = this.refreshToken.get();
+      const refreshToken = this.getTokens().refreshToken;
 
       if (!refreshToken) {
         return false;
       }
 
       const authorised = await this.auth.requestToken({
-        grant: "refresh_token",
-        refreshToken: refreshToken,
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
       });
-
-      if (!authorised) {
-        this.refreshToken.set(null);
-      }
 
       return authorised;
     },
@@ -257,13 +295,12 @@ export class Core {
      * Logs out the session on the client and also attempts to revoke the refresh token with the authentication server.
      */
     logout: async () => {
-      const refreshToken = this.refreshToken.get();
+      const refreshToken = this.getTokens().refreshToken;
 
-      this.#session = null;
-      this.refreshToken.set(null);
+      this.setTokens(null, null);
 
       if (refreshToken) {
-        let url = new URL(this.config.baseUrl);
+        const url = new URL(this.config.baseUrl);
         await globalThis.fetch(url.origin + "/auth/revoke", {
           method: "POST",
           cache: "no-cache",
@@ -281,31 +318,8 @@ export class Core {
     /**
      * Creates or refreshes a session with a token request at the authentication server.
      */
-    requestToken: async (req: TokenGrant) => {
-      let body;
-      switch (req.grant) {
-        case "token_exchange":
-          body = {
-            subject_token: req.subjectToken,
-          };
-          break;
-        case "authorization_code":
-          body = {
-            code: req.code,
-          };
-          break;
-        case "refresh_token":
-          body = {
-            refresh_token: req.refreshToken,
-          };
-          break;
-        default:
-          throw new Error(
-            "Unknown grant type. We currently support 'authorization_code', 'token_exchange', and 'refresh_token' grant types. Please use one of those. For more info, please refer to the docs at https://docs.keel.so/authentication/endpoints#parameters"
-          );
-      }
-
-      let url = new URL(this.config.baseUrl);
+    requestToken: async (req: TokenRequest) => {
+      const url = new URL(this.config.baseUrl);
       const result = await globalThis.fetch(url.origin + "/auth/token", {
         method: "POST",
         cache: "no-cache",
@@ -313,26 +327,29 @@ export class Core {
           accept: "application/json",
           "content-type": "application/json",
         },
-        body: JSON.stringify({
-          grant_type: req.grant,
-          ...body,
-        }),
+        body: JSON.stringify(req),
       });
 
       if (result.ok) {
-        const rawJson = await result.text();
-        const data = JSON.parse(rawJson);
-
-        const expiresAt = new Date(Date.now() + data.expires_in * 1000);
-        this.refreshToken.set(data.refresh_token);
-        this.#session = { token: data.access_token, expiresAt: expiresAt };
+        const data = await result.json();
+        this.setTokens(data.access_token, data.refresh_token);
 
         return true;
-      } else if (result.status == 401) {
-        return false;
       } else {
-        const resp = await result.json();
-        throw new TokenError(resp.error, resp.error_description);
+        this.setTokens(null, null);
+
+        if (result.status == 401) {
+          return false;
+        } else if (result.status == 400) {
+          const resp = await result.json();
+          throw new TokenError(resp.error, resp.error_description);
+        } else {
+          throw new Error(
+            "unexpected status code " +
+              result.status +
+              " when requesting a token"
+          );
+        }
       }
     },
   };
@@ -354,11 +371,28 @@ function reviver(key: any, value: any) {
 }
 
 class InMemoryTokenStore {
-  private token: string | null = null;
-  get = () => {
-    return this.token;
+  private static instance: InMemoryTokenStore;
+  private accessToken: string | null = null;
+  private refreshToken: string | null = null;
+
+  private constructor() {}
+
+  public static getInstance(): InMemoryTokenStore {
+    if (!InMemoryTokenStore.instance) {
+      InMemoryTokenStore.instance = new InMemoryTokenStore();
+    }
+    return InMemoryTokenStore.instance;
+  }
+
+  getTokens = () => {
+    return {
+      accessToken: this.accessToken,
+      refreshToken: this.refreshToken,
+    };
   };
-  set = (token: string) => {
-    this.token = token;
+
+  setTokens = (accessToken: string | null, refreshToken: string | null) => {
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
   };
 }
