@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://keel.so/">
-    <img alt="Keel" src="docs/keel.svg" width="300" />
+    <img alt="Keel" src="docs/images/keel.svg" width="300" />
   </a>
 </p>
 
@@ -28,18 +28,22 @@ Keel is the all-in-one platform that solves the backend puzzle by combining all 
 🎟️ Pub/Sub  
 💼 Cron jobs 
 
-Keel is currently in private beta, [join the waiting list](https://keel.so/) for access to the platform. In the meantime you can run your Keel projects locally without an account using the CLI
-
+Keel is currently in private beta, [join the waiting list](https://keel.so/) for access to the platform. In the meantime you can run your Keel projects locally without an account using the CLI.
 
 ## Getting started
 
+The best way to get started with Keel is with the CLI. 
+
+### Dependencies
+
+First, you will need to install [Node.js](https://nodejs.org/) and [Docker](https://docker.com/) as they are required to run Keel. 
+
 ### Installing the CLI
 
-The best way to get started with Keel is to install the CLI via Homebrew:
+Install the CLI globally:
 
 ```bash
-$ brew tap teamkeel/homebrew-keel
-$ brew install keel
+$ npm install --global keel
 ```
 
 If the CLI has installed correctly, then `keel --version` will output the latest version number:
@@ -48,27 +52,26 @@ If the CLI has installed correctly, then `keel --version` will output the latest
 $ keel --version
 ```
 
-You will also need [Node.js](https://nodejs.org/) and [Docker](https://docker.com/) to run Keel. Once you grab those, you've now got the full power of Keel locally.
-
 ### Creating a new project
+
 Creating a new project with the CLI is easy! You can create a new Keel project locally by running:
 
 ```bash
-$ mkdir my-keel-project && cd my-keel-project
+$ mkdir my-app && cd my-app
 $ keel init
 ```
 
-This will create a skeleton project containing a `keel.schema` file, a `.gitignore` and a `.keelconfig.yaml` file.
+This will create a skeleton project containing a `keel.schema` file, a `.gitignore` and a `keelconfig.yaml` file.
 
 _Run `keel init --help` to see all of the available options for `init`._
 
 ### Setting up your editor
 
-Keel has created a handy [VSCode extension](https://marketplace.visualstudio.com/items?itemName=teamkeel.vscode-keel) that accelerates your development experience by providing syntax highlighting, autocompletions and validation of schemas.
+Keel has created a handy [VSCode extension](https://marketplace.visualstudio.com/items?itemName=teamkeel.vscode-keel) that accelerates your development experience by providing syntax highlighting, autocompletions and schema validation.
 
 ### Your very first Keel schema
 
-To create your first Keel schema, follow our [Quickstart Tutorial](https://docs.keel.so/tutorial#the-keel-schema).
+To create your first Keel schema, follow our [Basic Tutorial](https://docs.keel.so/tutorial#the-keel-schema).
 
 ### Running your Keel app
 
@@ -82,10 +85,9 @@ _Run `keel run --help` to see all of the available options for `run`._
 
 If everything has been successful, you should see something like this in your terminal:
 
-![Keel CLI](https://i.imgur.com/gwkUdpU.png)
+![Keel CLI](docs/images/cli-run.png)
 
 You can now interact with your APIs at the URLs displayed. For more next steps, take a look at our [documentation](https://docs.keel.so/).
-
 
 Have fun with your new Keel backend!
 
@@ -110,10 +112,8 @@ If you would like to build and run the Keel Runtime locally, you can find out ho
 
 ## Reporting a problem
 
-If you need help, have questions, or want to contact us for any reason, you can do so by emailing us at [help@keel.so](mailto:help@keel.so).
+If you need help, have questions, or want to contact us for any reason, you can do so by emailing us at [help@keel.so](mailto:help@keel.so) or by visiting our [Discord community](https://keel.so/discord).
 
 If you find a bug and want to raise an issue, you can use [GitHub Issues](https://github.com/teamkeel/keel/issues) to do so. Please try to include as much information as you can, including steps to reproduce the issue, your expected outcome, the actual outcome and any details that could help such as envirnment details, traces or logs.
 
 We hold our values very dearly at Keel, and want our communities to be respectful, welcoming places to engage in. As such, we have a [Code Of Conduct](CODE_OF_CONDUCT.md) governing this project that we take very seriously. If you feel that you have had an experience while engaging with this project that violates this code of conduct and you want to report it, please do so by emailing us at [help@keel.so](mailto:help@keel.so). Please include as much detail as you feel able to so that we can look after you as well as we can.
-
-

@@ -2,11 +2,25 @@
   "name": "keel",
   "version": "0.0.1",
   "description": "Your production-grade backend from one file",
-  "author": "Keel (www.keel.so)",
-  "license": "ASL (Apache 2.0)",
+
+  "author": {
+    "name": "Keel",
+    "email": "help@keel.so",
+    "url": "https://keel.so"
+  },
+  "keywords": [
+    "keel",
+    "teamkeel"
+  ],
+  "license": "AGPL-3.0-only",
+  "homepage": "https://keel.so",
   "repository": {
     "type": "git",
     "url": "https://github.com/teamkeel/keel.git"
+  },
+  "bugs": {
+    "url": "https://github.com/teamkeel/keel/issues",
+    "email": "help@keel.so"
   },
   "scripts": {
     "postinstall": "node scripts/setup.js install",
