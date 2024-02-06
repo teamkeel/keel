@@ -526,9 +526,10 @@ model Person {
 
 	expected := `
 export class APIClient extends Core {
-	constructor(config: RequestConfig) {
-		super(config);
+	constructor(config: RequestConfig, refreshTokenStore: TokenStore = new InMemoryTokenStore()) {
+		super(config, refreshTokenStore);
 	}
+
 	private actions = {
 		getPerson: (i: GetPersonInput) => {
 			return this.client.rawRequest<Person | null>("getPerson", i);

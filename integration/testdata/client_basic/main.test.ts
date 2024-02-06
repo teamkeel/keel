@@ -5,7 +5,7 @@ import { APIClient } from "./keelClient";
 
 var client: APIClient;
 
-beforeAll(() => {
+beforeEach(() => {
   client = new APIClient({ baseUrl: process.env.KEEL_TESTING_CLIENT_API_URL! });
 });
 
