@@ -216,46 +216,6 @@
       "name": "Any"
     },
     {
-      "name": "PublishedWhere",
-      "fields": [
-        {
-          "messageName": "PublishedWhere",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Post",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
-      "name": "PublishedValues"
-    },
-    {
-      "name": "PublishedInput",
-      "fields": [
-        {
-          "messageName": "PublishedInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "PublishedWhere"
-          }
-        },
-        {
-          "messageName": "PublishedInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "PublishedValues"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -357,6 +317,46 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "PublishedWhere",
+      "fields": [
+        {
+          "messageName": "PublishedWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Post",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
+    },
+    {
+      "name": "PublishedValues"
+    },
+    {
+      "name": "PublishedInput",
+      "fields": [
+        {
+          "messageName": "PublishedInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "PublishedWhere"
+          }
+        },
+        {
+          "messageName": "PublishedInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "PublishedValues"
+          },
+          "optional": true
+        }
+      ]
     }
   ]
 }

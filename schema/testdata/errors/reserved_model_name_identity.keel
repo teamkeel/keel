@@ -1,0 +1,6 @@
+//expect-error:7:15:NamingError:There already exists a reserved model with the name 'Identity'
+model Identity {
+    fields {
+        email Text
+    }
+}

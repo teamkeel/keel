@@ -4,15 +4,7 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
   createCompany(input: CreateCompanyInput!): Company!
-  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
-  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
 }
 
 input CreateCompanyCompanyProfileInput {
@@ -27,11 +19,6 @@ input CreateCompanyCompanyProfileTaxProfileInput {
 input CreateCompanyInput {
   companyProfile: CreateCompanyCompanyProfileInput!
   name: String!
-}
-
-input EmailPasswordInput {
-  email: String!
-  password: String!
 }
 
 input FindTaxProfileCompanyProfileCompanyInput {
@@ -60,21 +47,6 @@ input IdQueryInput {
   oneOf: [ID]
 }
 
-input RequestPasswordResetInput {
-  email: String!
-  redirectUrl: String!
-}
-
-input ResetPasswordInput {
-  password: String!
-  token: String!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
-}
-
 type Company {
   companyProfile: CompanyProfile!
   companyProfileId: ID!
@@ -100,14 +72,6 @@ type PageInfo {
   hasNextPage: Boolean!
   startCursor: String!
   totalCount: Int!
-}
-
-type RequestPasswordResetResponse {
-  success: Boolean
-}
-
-type ResetPasswordResponse {
-  success: Boolean
 }
 
 type TaxProfile {

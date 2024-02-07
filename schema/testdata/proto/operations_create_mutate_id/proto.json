@@ -212,53 +212,6 @@
       "name": "Any"
     },
     {
-      "name": "CreatePersonInput",
-      "fields": [
-        {
-          "messageName": "CreatePersonInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Person",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        },
-        {
-          "messageName": "CreatePersonInput",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Person",
-            "fieldName": "name"
-          },
-          "target": ["name"]
-        }
-      ]
-    },
-    {
-      "name": "CreatePersonSetInput",
-      "fields": [
-        {
-          "messageName": "CreatePersonSetInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          }
-        },
-        {
-          "messageName": "CreatePersonSetInput",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Person",
-            "fieldName": "name"
-          },
-          "target": ["name"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -360,6 +313,53 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreatePersonInput",
+      "fields": [
+        {
+          "messageName": "CreatePersonInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        },
+        {
+          "messageName": "CreatePersonInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Person",
+            "fieldName": "name"
+          },
+          "target": ["name"]
+        }
+      ]
+    },
+    {
+      "name": "CreatePersonSetInput",
+      "fields": [
+        {
+          "messageName": "CreatePersonSetInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "CreatePersonSetInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Person",
+            "fieldName": "name"
+          },
+          "target": ["name"]
+        }
+      ]
     }
   ]
 }

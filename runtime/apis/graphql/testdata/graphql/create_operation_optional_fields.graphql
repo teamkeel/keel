@@ -3,16 +3,8 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
   createPerson(input: CreatePersonInput!): Person!
   createPersonAndCompany(input: CreatePersonAndCompanyInput!): Person!
-  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
-  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
 }
 
 input CreatePersonAndCompanyCompanyInput {
@@ -33,26 +25,6 @@ input CreatePersonInput {
   name: String
 }
 
-input EmailPasswordInput {
-  email: String!
-  password: String!
-}
-
-input RequestPasswordResetInput {
-  email: String!
-  redirectUrl: String!
-}
-
-input ResetPasswordInput {
-  password: String!
-  token: String!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
-}
-
 type Company {
   createdAt: Timestamp!
   id: ID!
@@ -67,14 +39,6 @@ type Person {
   id: ID!
   name: String
   updatedAt: Timestamp!
-}
-
-type RequestPasswordResetResponse {
-  success: Boolean
-}
-
-type ResetPasswordResponse {
-  success: Boolean
 }
 
 type Timestamp {

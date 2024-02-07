@@ -739,14 +739,14 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	protoModel := &proto.Model{
 		Name: parserModel.Name.Value,
 	}
+
 	for _, section := range parserModel.Sections {
 		switch {
 		case section.Fields != nil:
 			fields := scm.makeFields(section.Fields, protoModel.Name)
 			protoModel.Fields = append(protoModel.Fields, fields...)
-
 		case section.Actions != nil:
-			ops := scm.makeActions(section.Actions, protoModel.Name)
+			ops := scm.makeActions(section.Actions, protoModel.Name, parserModel.BuiltIn)
 			protoModel.Actions = append(protoModel.Actions, ops...)
 		case section.Attribute != nil:
 			scm.applyModelAttribute(parserModel, protoModel, section.Attribute)
@@ -756,195 +756,7 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 		}
 	}
 
-	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
-		if scm.Config == nil || !scm.Config.DisableAuth {
-			protoModel.Actions = append(protoModel.Actions, scm.makeAuthenticate())
-			protoModel.Actions = append(protoModel.Actions, scm.makeRequestPasswordReset())
-			protoModel.Actions = append(protoModel.Actions, scm.makePasswordReset())
-		}
-	}
-
 	scm.proto.Models = append(scm.proto.Models, protoModel)
-}
-
-func (scm *Builder) makeAuthenticate() *proto.Action {
-	inputMessageName := makeInputMessageName(parser.AuthenticateActionName)
-	responseMessageName := makeResponseMessageName(parser.AuthenticateActionName)
-	emailPasswordMessageName := makeInputMessageName("EmailPassword")
-
-	action := proto.Action{
-		ModelName:           parser.ImplicitIdentityModelName,
-		Name:                parser.AuthenticateActionName,
-		Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
-		Type:                proto.ActionType_ACTION_TYPE_WRITE,
-		InputMessageName:    inputMessageName,
-		ResponseMessageName: responseMessageName,
-	}
-
-	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-		Name: emailPasswordMessageName,
-		Fields: []*proto.MessageField{
-			{
-				Name:        "email",
-				MessageName: emailPasswordMessageName,
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-				Optional:    false,
-			},
-			{
-				Name:        "password",
-				MessageName: emailPasswordMessageName,
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-				Optional:    false,
-			},
-		},
-	})
-
-	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-		Name: inputMessageName,
-		Fields: []*proto.MessageField{
-			{
-				Name:        "createIfNotExists",
-				MessageName: inputMessageName,
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
-				Optional:    true,
-			},
-			{
-				Name:        "emailPassword",
-				MessageName: inputMessageName,
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_MESSAGE, MessageName: wrapperspb.String(emailPasswordMessageName)},
-				Optional:    false,
-			},
-		},
-	})
-
-	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-		Name: responseMessageName,
-		Fields: []*proto.MessageField{
-			{
-				Name:        "identityCreated",
-				MessageName: responseMessageName,
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
-				Optional:    false,
-			},
-			{
-				Name:        "token",
-				MessageName: responseMessageName,
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-				Optional:    false,
-			},
-		},
-	})
-
-	scm.addActionToAllApis(&action)
-
-	return &action
-}
-
-func (scm *Builder) addActionToAllApis(action *proto.Action) {
-	for _, api := range scm.proto.Apis {
-		var apiModel *proto.ApiModel
-		for _, a := range api.ApiModels {
-			if a.ModelName == action.ModelName {
-				apiModel = a
-				break
-			}
-		}
-
-		if apiModel == nil {
-			apiModel = &proto.ApiModel{
-				ModelName:    action.ModelName,
-				ModelActions: []*proto.ApiModelAction{},
-			}
-
-			api.ApiModels = append(api.ApiModels, apiModel)
-		}
-
-		apiModel.ModelActions = append(apiModel.ModelActions, &proto.ApiModelAction{
-			ActionName: action.Name,
-		})
-	}
-}
-
-func (scm *Builder) makeRequestPasswordReset() *proto.Action {
-	inputMessageName := makeInputMessageName(parser.RequestPasswordResetActionName)
-	responseMessageName := makeResponseMessageName(parser.RequestPasswordResetActionName)
-
-	action := proto.Action{
-		ModelName:           parser.ImplicitIdentityModelName,
-		Name:                parser.RequestPasswordResetActionName,
-		Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
-		Type:                proto.ActionType_ACTION_TYPE_WRITE,
-		InputMessageName:    inputMessageName,
-		ResponseMessageName: responseMessageName,
-	}
-
-	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-		Name: inputMessageName,
-		Fields: []*proto.MessageField{
-			{
-				Name:        "email",
-				MessageName: inputMessageName,
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-				Optional:    false,
-			},
-			{
-				Name:        "redirectUrl",
-				MessageName: inputMessageName,
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-				Optional:    false,
-			},
-		},
-	})
-
-	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-		Name:   responseMessageName,
-		Fields: []*proto.MessageField{},
-	})
-
-	scm.addActionToAllApis(&action)
-
-	return &action
-}
-
-func (scm *Builder) makePasswordReset() *proto.Action {
-	inputMessageName := makeInputMessageName(parser.PasswordResetActionName)
-	responseMessageName := makeResponseMessageName(parser.PasswordResetActionName)
-
-	action := proto.Action{
-		ModelName:           parser.ImplicitIdentityModelName,
-		Name:                parser.PasswordResetActionName,
-		Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
-		Type:                proto.ActionType_ACTION_TYPE_WRITE,
-		InputMessageName:    inputMessageName,
-		ResponseMessageName: responseMessageName,
-	}
-
-	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-		Name: inputMessageName,
-		Fields: []*proto.MessageField{
-			{
-				Name:        "token",
-				MessageName: inputMessageName,
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-				Optional:    false,
-			},
-			{
-				Name:        "password",
-				MessageName: inputMessageName,
-				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-				Optional:    false,
-			},
-		},
-	})
-
-	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-		Name:   responseMessageName,
-		Fields: []*proto.MessageField{},
-	})
-
-	scm.addActionToAllApis(&action)
-
-	return &action
 }
 
 func (scm *Builder) makeRole(decl *parser.DeclarationNode) {
@@ -1016,7 +828,6 @@ func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 				Repeated: f.Repeated,
 			},
 			Optional:    f.Optional,
-			Nullable:    f.Optional,
 			MessageName: parserMsg.Name.Value,
 		}
 
@@ -1220,20 +1031,22 @@ func attributeFirstArgAsIdentifier(attr *parser.AttributeNode) string {
 	return theString
 }
 
-func (scm *Builder) makeActions(actions []*parser.ActionNode, modelName string) []*proto.Action {
+func (scm *Builder) makeActions(actions []*parser.ActionNode, modelName string, builtIn bool) []*proto.Action {
 	protoOps := []*proto.Action{}
 
 	for _, action := range actions {
-		protoOp := scm.makeAction(action, modelName)
+		protoOp := scm.makeAction(action, modelName, builtIn)
 		protoOps = append(protoOps, protoOp)
 	}
 	return protoOps
 }
 
-func (scm *Builder) makeAction(action *parser.ActionNode, modelName string) *proto.Action {
+func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, builtIn bool) *proto.Action {
 	var implementation proto.ActionImplementation
 
 	switch {
+	case builtIn:
+		implementation = proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME
 	case action.IsFunction():
 		implementation = proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 	default:

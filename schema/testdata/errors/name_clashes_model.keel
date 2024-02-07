@@ -39,10 +39,12 @@ model UpdateModelInput {
 }
 
 //expect-error:7:24:NamingError:Names cannot end with 'Input'
+//expect-error:7:24:NamingError:There already exists a reserved message with the name 'AuthenticateInput'
 model AuthenticateInput {
 }
 
 //expect-error:7:27:NamingError:Names cannot end with 'Response'
+//expect-error:7:27:NamingError:There already exists a reserved message with the name 'AuthenticateResponse'
 model AuthenticateResponse {
 }
 
@@ -55,10 +57,12 @@ model RequestPasswordResponse {
 }
 
 //expect-error:7:32:NamingError:Names cannot end with 'Input'
+//expect-error:7:32:NamingError:There already exists a reserved message with the name 'RequestPasswordResetInput'
 model RequestPasswordResetInput {
 }
 
 //expect-error:7:35:NamingError:Names cannot end with 'Response'
+//expect-error:7:35:NamingError:There already exists a reserved message with the name 'RequestPasswordResetResponse'
 model RequestPasswordResetResponse {
 }
 

@@ -239,62 +239,6 @@
       "name": "Any"
     },
     {
-      "name": "GetBobInput",
-      "fields": [
-        {
-          "messageName": "GetBobInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Person",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        },
-        {
-          "messageName": "GetBobInput",
-          "name": "n",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
-      "name": "GetPersonInput",
-      "fields": [
-        {
-          "messageName": "GetPersonInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Person",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        },
-        {
-          "messageName": "GetPersonInput",
-          "name": "n",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
-      "name": "CreatePersonInput",
-      "fields": [
-        {
-          "messageName": "CreatePersonInput",
-          "name": "n",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -396,6 +340,62 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetBobInput",
+      "fields": [
+        {
+          "messageName": "GetBobInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        },
+        {
+          "messageName": "GetBobInput",
+          "name": "n",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GetPersonInput",
+      "fields": [
+        {
+          "messageName": "GetPersonInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        },
+        {
+          "messageName": "GetPersonInput",
+          "name": "n",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreatePersonInput",
+      "fields": [
+        {
+          "messageName": "CreatePersonInput",
+          "name": "n",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
     }
   ]
 }

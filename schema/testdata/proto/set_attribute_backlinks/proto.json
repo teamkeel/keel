@@ -482,61 +482,6 @@
       "name": "Any"
     },
     {
-      "name": "CreateRecordInput",
-      "fields": [
-        {
-          "messageName": "CreateRecordInput",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Record",
-            "fieldName": "name"
-          },
-          "target": ["name"]
-        }
-      ]
-    },
-    {
-      "name": "UpdateRecordOwnerWhere",
-      "fields": [
-        {
-          "messageName": "UpdateRecordOwnerWhere",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Record",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
-      "name": "UpdateRecordOwnerValues"
-    },
-    {
-      "name": "UpdateRecordOwnerInput",
-      "fields": [
-        {
-          "messageName": "UpdateRecordOwnerInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateRecordOwnerWhere"
-          }
-        },
-        {
-          "messageName": "UpdateRecordOwnerInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateRecordOwnerValues"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -638,6 +583,61 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreateRecordInput",
+      "fields": [
+        {
+          "messageName": "CreateRecordInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Record",
+            "fieldName": "name"
+          },
+          "target": ["name"]
+        }
+      ]
+    },
+    {
+      "name": "UpdateRecordOwnerWhere",
+      "fields": [
+        {
+          "messageName": "UpdateRecordOwnerWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Record",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
+    },
+    {
+      "name": "UpdateRecordOwnerValues"
+    },
+    {
+      "name": "UpdateRecordOwnerInput",
+      "fields": [
+        {
+          "messageName": "UpdateRecordOwnerInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateRecordOwnerWhere"
+          }
+        },
+        {
+          "messageName": "UpdateRecordOwnerInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateRecordOwnerValues"
+          },
+          "optional": true
+        }
+      ]
     }
   ]
 }

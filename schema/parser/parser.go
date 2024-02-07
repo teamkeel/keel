@@ -204,6 +204,8 @@ type ActionNode struct {
 	With       []*ActionInputNode `( ( "with" "(" ( @@ ( "," @@ )* ","? )? ")" )`
 	Returns    []*ActionInputNode `| ( "returns" "(" ( @@ ( "," @@ )* ) ")" ) )?`
 	Attributes []*AttributeNode   `( "{" @@+ "}" | @@+ )?`
+
+	BuiltIn bool
 }
 
 func (a *ActionNode) IsArbitraryFunction() bool {
@@ -258,10 +260,9 @@ type EnumValueNode struct {
 type MessageNode struct {
 	node.Node
 
-	Name NameNode `@@`
-
-	// todo: can we use field node here
-	Fields []*FieldNode `"{" @@* "}"`
+	Name    NameNode     `@@`
+	Fields  []*FieldNode `"{" @@* "}"`
+	BuiltIn bool
 }
 
 func (e *EnumNode) NameNode() NameNode {

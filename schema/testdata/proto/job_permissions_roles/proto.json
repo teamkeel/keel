@@ -145,18 +145,6 @@
       "name": "Any"
     },
     {
-      "name": "MyManualJobWithInputsMessage",
-      "fields": [
-        {
-          "messageName": "MyManualJobWithInputsMessage",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -258,6 +246,18 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "MyManualJobWithInputsMessage",
+      "fields": [
+        {
+          "messageName": "MyManualJobWithInputsMessage",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
     }
   ],
   "jobs": [

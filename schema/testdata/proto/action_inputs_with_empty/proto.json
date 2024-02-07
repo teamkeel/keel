@@ -225,49 +225,6 @@
       "name": "Any"
     },
     {
-      "name": "CreateAccountInput"
-    },
-    {
-      "name": "UpdateAccountWhere",
-      "fields": [
-        {
-          "messageName": "UpdateAccountWhere",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Account",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
-      "name": "UpdateAccountValues"
-    },
-    {
-      "name": "UpdateAccountInput",
-      "fields": [
-        {
-          "messageName": "UpdateAccountInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateAccountWhere"
-          }
-        },
-        {
-          "messageName": "UpdateAccountInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateAccountValues"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -369,6 +326,49 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreateAccountInput"
+    },
+    {
+      "name": "UpdateAccountWhere",
+      "fields": [
+        {
+          "messageName": "UpdateAccountWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Account",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccountValues"
+    },
+    {
+      "name": "UpdateAccountInput",
+      "fields": [
+        {
+          "messageName": "UpdateAccountInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccountWhere"
+          }
+        },
+        {
+          "messageName": "UpdateAccountInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccountValues"
+          },
+          "optional": true
+        }
+      ]
     }
   ]
 }

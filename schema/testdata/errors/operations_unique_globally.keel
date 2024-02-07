@@ -4,8 +4,9 @@ model Profile {
     }
 
     actions {
+        //expect-error:16:29:NamingError:There already exists an action with the name 'createProfile'
         create createProfile() with (username)
-        //expect-error:16:29:E004:You have duplicate actions Model:Profile Name:createProfile
+        //expect-error:16:29:NamingError:There already exists an action with the name 'createProfile'
         create createProfile() with (username)
     }
 }

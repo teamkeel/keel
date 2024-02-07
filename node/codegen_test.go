@@ -1359,32 +1359,30 @@ message Input {
 	sports Sport[]
 	favouriteSport Sport?
 }
-
 message Response {
 	sports Sport[]
 	favouriteSport Sport?
 }
-
 model Person {
 	actions {
 		write writeSportInterests(Input) returns (Response) @function
 	}
 }
-
 enum Sport {
 	Cricket
 	Rugby
 	Soccer
 }`
+
 	inputExpected := `
 export interface Input {
 	sports: Sport[];
-	favouriteSport?: Sport | null;
+	favouriteSport?: Sport;
 }`
 	responseExpected := `
 export interface Response {
 	sports: Sport[];
-	favouriteSport?: Sport | null;
+	favouriteSport?: Sport;
 }`
 
 	runWriterTest(t, schema, inputExpected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1462,13 +1460,13 @@ model Person {
 
 model Sale {
 
-}
-	`
+}`
+
 	expected := `
 export interface PersonResponse {
 	sales: Sale[];
 	person: Person;
-	topSale?: Sale | null;
+	topSale?: Sale;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1663,30 +1661,6 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface GetPersonInput {
-	id: string;
-}
-export interface CreatePersonInput {
-}
-export interface UpdatePersonWhere {
-}
-export interface UpdatePersonValues {
-}
-export interface UpdatePersonInput {
-	where?: UpdatePersonWhere;
-	values?: UpdatePersonValues;
-}
-export interface DeletePersonInput {
-}
-export interface ListPeopleWhere {
-}
-export interface ListPeopleInput {
-	where?: ListPeopleWhere;
-	first?: number;
-	after?: string;
-	last?: number;
-	before?: string;
-}
 export interface EmailPasswordInput {
 	email: string;
 	password: string;
@@ -1710,6 +1684,30 @@ export interface ResetPasswordInput {
 	password: string;
 }
 export interface ResetPasswordResponse {
+}
+export interface GetPersonInput {
+	id: string;
+}
+export interface CreatePersonInput {
+}
+export interface UpdatePersonWhere {
+}
+export interface UpdatePersonValues {
+}
+export interface UpdatePersonInput {
+	where?: UpdatePersonWhere;
+	values?: UpdatePersonValues;
+}
+export interface DeletePersonInput {
+}
+export interface ListPeopleWhere {
+}
+export interface ListPeopleInput {
+	where?: ListPeopleWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
@@ -1754,10 +1752,6 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface AdHocJobWithInputsMessage {
-	nameField: string;
-	someBool?: boolean;
-}
 export interface EmailPasswordInput {
 	email: string;
 	password: string;
@@ -1782,6 +1776,10 @@ export interface ResetPasswordInput {
 }
 export interface ResetPasswordResponse {
 }
+export interface AdHocJobWithInputsMessage {
+	nameField: string;
+	someBool?: boolean;
+}
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
@@ -1795,7 +1793,7 @@ declare class JobExecutor {
 	withAuthToken(token: string): JobExecutor;
 	jobWithoutInputs(o?: JobOptions): Promise<void>;
 	adHocJobWithInputs(i: AdHocJobWithInputsMessage, o?: JobOptions): Promise<void>;
-    adHocJobWithoutInputs(o?: JobOptions): Promise<void>;
+	adHocJobWithoutInputs(o?: JobOptions): Promise<void>;
 }
 export declare const jobs: JobExecutor;
 export declare const actions: ActionExecutor;
@@ -1930,21 +1928,6 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface HobbyQueryInput {
-	equals?: Hobby | null;
-	notEquals?: Hobby | null;
-	oneOf?: Hobby[];
-}
-export interface PeopleByHobbyWhere {
-	hobby: HobbyQueryInput;
-}
-export interface PeopleByHobbyInput {
-	where: PeopleByHobbyWhere;
-	first?: number;
-	after?: string;
-	last?: number;
-	before?: string;
-}
 export interface EmailPasswordInput {
 	email: string;
 	password: string;
@@ -1968,6 +1951,21 @@ export interface ResetPasswordInput {
 	password: string;
 }
 export interface ResetPasswordResponse {
+}
+export interface HobbyQueryInput {
+	equals?: Hobby | null;
+	notEquals?: Hobby | null;
+	oneOf?: Hobby[];
+}
+export interface PeopleByHobbyWhere {
+	hobby: HobbyQueryInput;
+}
+export interface PeopleByHobbyInput {
+	where: PeopleByHobbyWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;

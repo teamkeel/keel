@@ -214,55 +214,6 @@
       "name": "Any"
     },
     {
-      "name": "ListAuthorsWhere"
-    },
-    {
-      "name": "ListAuthorsInput",
-      "fields": [
-        {
-          "messageName": "ListAuthorsInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListAuthorsWhere"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListAuthorsInput",
-          "name": "first",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListAuthorsInput",
-          "name": "after",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListAuthorsInput",
-          "name": "last",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListAuthorsInput",
-          "name": "before",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -364,6 +315,55 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "ListAuthorsWhere"
+    },
+    {
+      "name": "ListAuthorsInput",
+      "fields": [
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListAuthorsWhere"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        }
+      ]
     }
   ]
 }

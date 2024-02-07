@@ -213,43 +213,6 @@
       "name": "Any"
     },
     {
-      "name": "UpdateMyModelWhere",
-      "fields": [
-        {
-          "messageName": "UpdateMyModelWhere",
-          "name": "explicitCode",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
-      "name": "UpdateMyModelValues"
-    },
-    {
-      "name": "UpdateMyModelInput",
-      "fields": [
-        {
-          "messageName": "UpdateMyModelInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateMyModelWhere"
-          }
-        },
-        {
-          "messageName": "UpdateMyModelInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateMyModelValues"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -351,6 +314,43 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "UpdateMyModelWhere",
+      "fields": [
+        {
+          "messageName": "UpdateMyModelWhere",
+          "name": "explicitCode",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateMyModelValues"
+    },
+    {
+      "name": "UpdateMyModelInput",
+      "fields": [
+        {
+          "messageName": "UpdateMyModelInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateMyModelWhere"
+          }
+        },
+        {
+          "messageName": "UpdateMyModelInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateMyModelValues"
+          },
+          "optional": true
+        }
+      ]
     }
   ]
 }

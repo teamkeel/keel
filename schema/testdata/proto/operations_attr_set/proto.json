@@ -209,21 +209,6 @@
       "name": "Any"
     },
     {
-      "name": "CreatePostInput",
-      "fields": [
-        {
-          "messageName": "CreatePostInput",
-          "name": "f2",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Foo",
-            "fieldName": "f2"
-          },
-          "target": ["f2"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -325,6 +310,21 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreatePostInput",
+      "fields": [
+        {
+          "messageName": "CreatePostInput",
+          "name": "f2",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Foo",
+            "fieldName": "f2"
+          },
+          "target": ["f2"]
+        }
+      ]
     }
   ]
 }

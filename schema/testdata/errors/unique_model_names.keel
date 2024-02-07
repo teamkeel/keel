@@ -1,14 +1,21 @@
+//expect-error:7:13:NamingError:There already exists a model with the name 'Person'
+//expect-error:7:13:NamingError:There already exists an enum with the name 'Person'
+//expect-error:7:13:NamingError:There already exists a message with the name 'Person'
 model Person {
 }
 
-//expect-error:7:13:NamingError:There is already a model with the name Person
+//expect-error:7:13:NamingError:There already exists a message with the name 'Person'
+//expect-error:7:13:NamingError:There already exists an enum with the name 'Person'
+//expect-error:7:13:NamingError:There already exists a model with the name 'Person'
 model Person {
 }
 
-//expect-error:6:12:NamingError:There is already a model with the name Person
+//expect-error:6:12:NamingError:There already exists a message with the name 'Person'
+//expect-error:6:12:NamingError:There already exists a model with the name 'Person'
 enum Person {
 }
 
-//expect-error:9:15:NamingError:There is already a model with the name Person
+//expect-error:9:15:NamingError:There already exists a model with the name 'Person'
+//expect-error:9:15:NamingError:There already exists an enum with the name 'Person'
 message Person {
 }

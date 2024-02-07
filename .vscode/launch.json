@@ -75,6 +75,17 @@
         ]
     },
     {
+        "name": "Run / debug schema proto test",
+        "type": "go",
+        "request": "launch",
+        "mode": "test",
+        "program": "${workspaceFolder}/schema",
+        "args": [
+            "-test.run",
+            "TestProto/${input:testCase}"
+        ]
+    },
+    {
         "name": "Run / debug schema validation test",
         "type": "go",
         "request": "launch",
@@ -82,7 +93,7 @@
         "program": "${workspaceFolder}/schema",
         "args": [
             "-test.run",
-            "TestSchema/${input:testCase}"
+            "TestValidation/${input:testCase}"
         ]
     },
     {
@@ -113,7 +124,7 @@
             "type": "promptString",
             "id": "testCase",
             "description": "The test case directory to isolate",
-            "default": "identity_and_authentication"
+            "default": ""
         },
         {
             "type": "promptString",

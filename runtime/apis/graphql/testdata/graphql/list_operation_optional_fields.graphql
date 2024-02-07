@@ -5,17 +5,6 @@ type Query {
   listPeopleAllOptional(input: ListPeopleAllOptionalInput): PersonConnection!
 }
 
-type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
-  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
-  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
 input DateQueryInput {
   after: ISO8601
   before: ISO8601
@@ -23,11 +12,6 @@ input DateQueryInput {
   notEquals: ISO8601
   onOrAfter: ISO8601
   onOrBefore: ISO8601
-}
-
-input EmailPasswordInput {
-  email: String!
-  password: String!
 }
 
 input GetPersonInput {
@@ -68,16 +52,6 @@ input OccupationQueryInput {
   oneOf: [Occupation]
 }
 
-input RequestPasswordResetInput {
-  email: String!
-  redirectUrl: String!
-}
-
-input ResetPasswordInput {
-  password: String!
-  token: String!
-}
-
 input StringQueryInput {
   contains: String
   endsWith: String
@@ -85,11 +59,6 @@ input StringQueryInput {
   notEquals: String
   oneOf: [String]
   startsWith: String
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
 }
 
 type Date {
@@ -121,14 +90,6 @@ type PersonConnection {
 
 type PersonEdge {
   node: Person!
-}
-
-type RequestPasswordResetResponse {
-  success: Boolean
-}
-
-type ResetPasswordResponse {
-  success: Boolean
 }
 
 type Timestamp {

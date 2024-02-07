@@ -296,106 +296,6 @@
       "name": "Any"
     },
     {
-      "name": "CreateChild1Input",
-      "fields": [
-        {
-          "messageName": "CreateChild1Input",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL",
-            "modelName": "ChildModel",
-            "fieldName": "isActive"
-          },
-          "target": ["isActive"]
-        },
-        {
-          "messageName": "CreateChild1Input",
-          "name": "parent",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "CreateChild1ParentInput"
-          }
-        }
-      ]
-    },
-    {
-      "name": "CreateChild1ParentInput",
-      "fields": [
-        {
-          "messageName": "CreateChild1ParentInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
-          },
-          "target": ["parent", "id"]
-        }
-      ]
-    },
-    {
-      "name": "CreateChild2Input",
-      "fields": [
-        {
-          "messageName": "CreateChild2Input",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL",
-            "modelName": "ChildModel",
-            "fieldName": "isActive"
-          },
-          "target": ["isActive"]
-        },
-        {
-          "messageName": "CreateChild2Input",
-          "name": "parent",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "CreateChild2ParentInput"
-          }
-        },
-        {
-          "messageName": "CreateChild2Input",
-          "name": "parentOptional",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "CreateChild2ParentOptionalInput"
-          },
-          "nullable": true
-        }
-      ]
-    },
-    {
-      "name": "CreateChild2ParentInput",
-      "fields": [
-        {
-          "messageName": "CreateChild2ParentInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
-          },
-          "target": ["parent", "id"]
-        }
-      ]
-    },
-    {
-      "name": "CreateChild2ParentOptionalInput",
-      "fields": [
-        {
-          "messageName": "CreateChild2ParentOptionalInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
-          },
-          "target": ["parentOptional", "id"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -497,6 +397,106 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreateChild1Input",
+      "fields": [
+        {
+          "messageName": "CreateChild1Input",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL",
+            "modelName": "ChildModel",
+            "fieldName": "isActive"
+          },
+          "target": ["isActive"]
+        },
+        {
+          "messageName": "CreateChild1Input",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateChild1ParentInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreateChild1ParentInput",
+      "fields": [
+        {
+          "messageName": "CreateChild1ParentInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "ParentModel",
+            "fieldName": "id"
+          },
+          "target": ["parent", "id"]
+        }
+      ]
+    },
+    {
+      "name": "CreateChild2Input",
+      "fields": [
+        {
+          "messageName": "CreateChild2Input",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL",
+            "modelName": "ChildModel",
+            "fieldName": "isActive"
+          },
+          "target": ["isActive"]
+        },
+        {
+          "messageName": "CreateChild2Input",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateChild2ParentInput"
+          }
+        },
+        {
+          "messageName": "CreateChild2Input",
+          "name": "parentOptional",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateChild2ParentOptionalInput"
+          },
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "CreateChild2ParentInput",
+      "fields": [
+        {
+          "messageName": "CreateChild2ParentInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "ParentModel",
+            "fieldName": "id"
+          },
+          "target": ["parent", "id"]
+        }
+      ]
+    },
+    {
+      "name": "CreateChild2ParentOptionalInput",
+      "fields": [
+        {
+          "messageName": "CreateChild2ParentOptionalInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "ParentModel",
+            "fieldName": "id"
+          },
+          "target": ["parentOptional", "id"]
+        }
+      ]
     }
   ]
 }

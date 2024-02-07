@@ -200,8 +200,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "Foo"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         }
       ]
     },
@@ -215,23 +214,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "UnusedMessage"
           },
-          "optional": true,
-          "nullable": true
-        }
-      ]
-    },
-    {
-      "name": "GetPersonInput",
-      "fields": [
-        {
-          "messageName": "GetPersonInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Person",
-            "fieldName": "id"
-          },
-          "target": ["id"]
+          "optional": true
         }
       ]
     },
@@ -337,6 +320,21 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetPersonInput",
+      "fields": [
+        {
+          "messageName": "GetPersonInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
     }
   ]
 }

@@ -47,7 +47,6 @@ const (
 	ErrorInvalidOneToOneRelationship         = "E039"
 	ErrorInvalidActionType                   = "E040"
 	ErrorModelNotAllowedAsInput              = "E041"
-	ErrorReservedActionName                  = "E042"
 	ErrorClashingImplicitInput               = "E043"
 	ErrorMissingRelationshipField            = "E044"
 	ErrorAmbiguousRelationship               = "E045"
