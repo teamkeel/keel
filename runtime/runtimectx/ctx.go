@@ -2,6 +2,8 @@ package runtimectx
 
 import "github.com/teamkeel/keel/proto"
 
+type contextKey string
+
 const ContextTarget string = "ctx"
 
 const (

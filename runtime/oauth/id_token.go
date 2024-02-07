@@ -7,7 +7,6 @@ import (
 
 	"github.com/coreos/go-oidc"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -50,7 +49,7 @@ func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error
 	ctx, span := tracer.Start(ctx, "Verify ID Token")
 	defer span.End()
 
-	issuer, err := auth.ExtractClaimFromToken(idTokenRaw, "iss")
+	issuer, err := ExtractClaimFromJwt(idTokenRaw, "iss")
 	if err != nil {
 		return nil, err
 	}

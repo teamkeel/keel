@@ -7,13 +7,15 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
 const (
-	// Issuer 'iss' claim for access tokens issued by Keel
-	KeelIssuer = "https://keel.so"
+	KeelIssuer                          = "https://keel.so"
+	resetPasswordAudClaim               = "password-reset"
+	ResetTokenExpiry      time.Duration = time.Minute * 15
 )
 
 var (
@@ -47,6 +49,24 @@ func GenerateAccessToken(ctx context.Context, identityId string) (string, time.D
 	return token, expiry, nil
 }
 
+func ValidateAccessToken(ctx context.Context, tokenString string) (string, error) {
+	return validateToken(ctx, tokenString, "")
+}
+
+func GenerateResetToken(ctx context.Context, identityId string) (string, error) {
+	if identityId == "" {
+		return "", errors.New("cannot generate access token with an empty identityId intended for the sub claim")
+	}
+
+	return generateToken(ctx, identityId, []string{resetPasswordAudClaim}, ResetTokenExpiry)
+}
+
+func ValidateResetToken(ctx context.Context, tokenString string) (string, error) {
+	subject, err := validateToken(ctx, tokenString, resetPasswordAudClaim)
+
+	return subject, err
+}
+
 func generateToken(ctx context.Context, sub string, aud []string, expiresIn time.Duration) (string, error) {
 	now := time.Now().UTC()
 	claims := AccessTokenClaims{
@@ -76,17 +96,17 @@ func generateToken(ctx context.Context, sub string, aud []string, expiresIn time
 	return tokenString, nil
 }
 
-func ValidateAccessToken(ctx context.Context, tokenString string) (string, string, error) {
+func validateToken(ctx context.Context, tokenString string, audienceClaim string) (string, error) {
 	ctx, span := tracer.Start(ctx, "Validate access token")
 	defer span.End()
 
 	privateKey, err := runtimectx.GetPrivateKey(ctx)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	if privateKey == nil {
-		return "", "", errors.New("no private key set")
+		return "", errors.New("no private key set")
 	}
 
 	var token *jwt.Token
@@ -98,24 +118,34 @@ func ValidateAccessToken(ctx context.Context, tokenString string) (string, strin
 
 	var validationErr *jwt.ValidationError
 	if errors.As(err, &validationErr) && validationErr.Errors == jwt.ValidationErrorExpired {
-		return "", "", ErrTokenExpired
+		return "", ErrTokenExpired
 	}
 
 	if err != nil {
-		return "", "", ErrInvalidToken
+		return "", ErrInvalidToken
 	}
 
 	if !claims.VerifyExpiresAt(time.Now().UTC(), true) {
-		return "", "", ErrTokenExpired
+		return "", ErrTokenExpired
+	}
+
+	if audienceClaim != "" {
+		if !lo.Contains(claims.Audience, audienceClaim) {
+			return "", ErrInvalidToken
+		}
 	}
 
 	if err != nil || !token.Valid {
-		return "", "", ErrInvalidToken
+		return "", ErrInvalidToken
 	}
 
 	if claims.Subject == "" {
-		return "", "", errors.New("subject claim cannot be empty")
+		return "", errors.New("subject claim cannot be empty")
 	}
 
-	return claims.Subject, claims.Issuer, nil
+	if claims.Issuer != KeelIssuer {
+		return "", errors.New("invalid issuer")
+	}
+
+	return claims.Subject, nil
 }

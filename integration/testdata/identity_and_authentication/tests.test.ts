@@ -173,7 +173,10 @@ test("withAuthToken - identity does not exist - authentication failed", async ()
     },
   });
 
-  await models.identity.delete({ email: "user@keel.xyz", issuer: "keel" });
+  await models.identity.delete({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   await expect(
     actions.withAuthToken(token).createPostWithIdentity({ title: "temp" })
@@ -215,7 +218,10 @@ test("withIdentity - identity does not exist - authentication failed", async () 
   });
   expect(identity).not.toBeNull();
 
-  await models.identity.delete({ email: "user@keel.xyz", issuer: "keel" });
+  await models.identity.delete({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   await expect(
     actions.withIdentity(identity!).createPostWithIdentity({ title: "temp" })

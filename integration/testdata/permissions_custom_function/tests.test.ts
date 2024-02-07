@@ -256,7 +256,7 @@ test("creating a post with a role based permission rule - email based - permitte
   await models.identity.update(
     {
       email: "verified@keel.xyz",
-      issuer: "keel",
+      issuer: "https://keel.so",
     },
     {
       emailVerified: true,
@@ -318,7 +318,7 @@ test("creating a post with a role based permission rule - domain based - permitt
   await models.identity.update(
     {
       email: "adam@abc.com",
-      issuer: "keel",
+      issuer: "https://keel.so",
     },
     {
       emailVerified: true,

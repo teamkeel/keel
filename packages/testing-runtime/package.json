@@ -15,7 +15,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/lodash.ismatch": "^4.4.9",
     "prettier": "3.1.1"
   },
   "dependencies": {

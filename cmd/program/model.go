@@ -484,11 +484,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		// In run mode we accept any external issuers but the tokens need to be signed correctly
-		ctx = runtimectx.WithAuthConfig(ctx, runtimectx.AuthConfig{
-			AllowAnyIssuers: true,
-		})
-
 		r = msg.r.WithContext(ctx)
 		m.RuntimeHandler.ServeHTTP(msg.w, r)
 

@@ -134,6 +134,9 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 	// For now, we do this here but this could belong in our proto once we start on the database indexing work.
 	sql.WriteString("CREATE INDEX IF NOT EXISTS idx_keel_audit_trace_id ON keel_audit USING HASH(trace_id);\n")
 
+	// Data migration when migrating to new authentication methods.
+	sql.WriteString("UPDATE identity SET issuer = 'https://keel.so' WHERE issuer = 'keel';\n")
+
 	if dryRun {
 		sql.WriteString("ROLLBACK TRANSACTION;\n")
 	}
