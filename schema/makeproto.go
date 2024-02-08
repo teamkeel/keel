@@ -1596,10 +1596,6 @@ func makeValuesMessageName(opName string) string {
 	return fmt.Sprintf("%sValues", casing.ToCamel(opName))
 }
 
-func makeResponseMessageName(opName string) string {
-	return fmt.Sprintf("%sResponse", casing.ToCamel(opName))
-}
-
 func makeJobMessageName(opName string) string {
 	return fmt.Sprintf("%sMessage", casing.ToCamel(opName))
 }
