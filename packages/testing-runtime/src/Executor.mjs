@@ -54,7 +54,7 @@ export class Executor {
           algorithm: privateKey ? "RS256" : "none",
           expiresIn: 60 * 60 * 24,
           subject: this._identity.id,
-          issuer: "keel",
+          issuer: "https://keel.so",
         });
     }
 

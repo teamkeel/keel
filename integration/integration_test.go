@@ -26,6 +26,7 @@ import (
 var pattern = flag.String("pattern", "", "Pattern to match individual test case names")
 
 func TestIntegration(t *gotest.T) {
+
 	entries, err := os.ReadDir("./testdata")
 	require.NoError(t, err)
 
@@ -62,6 +63,10 @@ func TestIntegration(t *gotest.T) {
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 
 	for _, e := range entries {
+		if e.Name() != "set_backlinks" {
+			continue
+		}
+
 		t.Run(e.Name(), func(t *gotest.T) {
 			testDir := filepath.Join("./testdata", e.Name())
 

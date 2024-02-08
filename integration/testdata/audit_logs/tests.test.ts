@@ -724,7 +724,7 @@ test("identity model - audit table populated", async () => {
 
   const identity = await models.identity.findOne({
     email: "user@keel.xyz",
-    issuer: "keel",
+    issuer: "https://keel.so",
   });
   expect(identity).not.toBeNull();
 
