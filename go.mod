@@ -24,7 +24,7 @@ require (
 	github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c
 	github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba
 	github.com/karlseguin/typed v1.1.8
-	github.com/lestrrat-go/jwx/v2 v2.0.11
+	github.com/lestrrat-go/jwx/v2 v2.0.19
 	github.com/lib/pq v1.10.9
 	github.com/manifoldco/promptui v0.9.0
 	github.com/nleeper/goment v1.4.4
@@ -74,7 +74,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
+	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/httprc v1.0.4 // indirect
 	github.com/lestrrat-go/iter v1.0.2 // indirect
