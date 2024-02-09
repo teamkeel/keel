@@ -1,40 +1,20 @@
 {
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "nested": { "$ref": "#/components/schemas/NestedObject" },
+    "optionalNested": { "$ref": "#/components/schemas/NestedObject" }
+  },
+  "additionalProperties": false,
+  "required": ["name", "nested"],
   "components": {
     "schemas": {
       "NestedObject": {
+        "type": "object",
+        "properties": { "bool": { "type": "boolean" } },
         "additionalProperties": false,
-        "properties": {
-          "bool": {
-            "type": "boolean"
-          }
-        },
-        "required": ["bool"],
-        "type": "object"
-      },
-      "NullableNestedObject": {
-        "additionalProperties": false,
-        "properties": {
-          "bool": {
-            "type": "boolean"
-          }
-        },
-        "required": ["bool"],
-        "type": ["object", "null"]
+        "required": ["bool"]
       }
     }
-  },
-  "type": "object",
-  "properties": {
-    "name": {
-      "type": "string"
-    },
-    "nested": {
-      "$ref": "#/components/schemas/NestedObject"
-    },
-    "optionalNested": {
-      "$ref": "#/components/schemas/NullableNestedObject"
-    }
-  },
-  "additionalProperties": false,
-  "required": ["name", "nested"]
+  }
 }

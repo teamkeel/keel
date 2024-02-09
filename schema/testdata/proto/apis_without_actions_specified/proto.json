@@ -221,20 +221,6 @@
               "actionName": "getBar"
             }
           ]
-        },
-        {
-          "modelName": "Identity",
-          "modelActions": [
-            {
-              "actionName": "authenticate"
-            },
-            {
-              "actionName": "requestPasswordReset"
-            },
-            {
-              "actionName": "resetPassword"
-            }
-          ]
         }
       ]
     },
@@ -246,20 +232,6 @@
           "modelActions": [
             {
               "actionName": "getFoo"
-            }
-          ]
-        },
-        {
-          "modelName": "Identity",
-          "modelActions": [
-            {
-              "actionName": "authenticate"
-            },
-            {
-              "actionName": "requestPasswordReset"
-            },
-            {
-              "actionName": "resetPassword"
             }
           ]
         }
@@ -304,36 +276,6 @@
   "messages": [
     {
       "name": "Any"
-    },
-    {
-      "name": "GetFooInput",
-      "fields": [
-        {
-          "messageName": "GetFooInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Foo",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
-      "name": "GetBarInput",
-      "fields": [
-        {
-          "messageName": "GetBarInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Bar",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
     },
     {
       "name": "EmailPasswordInput",
@@ -437,6 +379,36 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetFooInput",
+      "fields": [
+        {
+          "messageName": "GetFooInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Foo",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
+    },
+    {
+      "name": "GetBarInput",
+      "fields": [
+        {
+          "messageName": "GetBarInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Bar",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
     }
   ]
 }

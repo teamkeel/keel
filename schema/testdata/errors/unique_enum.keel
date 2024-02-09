@@ -1,3 +1,5 @@
+//expect-error:6:16:NamingError:There already exists a model with the name 'TheBeatles'
+//expect-error:6:16:NamingError:There already exists a message with the name 'TheBeatles'
 enum TheBeatles {
     Paul
     Ringo
@@ -5,10 +7,12 @@ enum TheBeatles {
     George
 }
 
-//expect-error:7:17:NamingError:There is already a enum with the name TheBeatles
+//expect-error:7:17:NamingError:There already exists an enum with the name 'TheBeatles'
+//expect-error:7:17:NamingError:There already exists a message with the name 'TheBeatles'
 model TheBeatles {
 }
 
-//expect-error:9:19:NamingError:There is already a enum with the name TheBeatles
+//expect-error:9:19:NamingError:There already exists an enum with the name 'TheBeatles'
+//expect-error:9:19:NamingError:There already exists a model with the name 'TheBeatles'
 message TheBeatles {
 }

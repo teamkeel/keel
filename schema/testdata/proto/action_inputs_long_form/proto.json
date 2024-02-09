@@ -232,87 +232,6 @@
       "name": "Any"
     },
     {
-      "name": "GetPersonInput",
-      "fields": [
-        {
-          "messageName": "GetPersonInput",
-          "name": "personId",
-          "type": {
-            "type": "TYPE_ID"
-          }
-        }
-      ]
-    },
-    {
-      "name": "CreatePersonInput",
-      "fields": [
-        {
-          "messageName": "CreatePersonInput",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
-      "name": "ListPersonWhere",
-      "fields": [
-        {
-          "messageName": "ListPersonWhere",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
-      "name": "ListPersonInput",
-      "fields": [
-        {
-          "messageName": "ListPersonInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListPersonWhere"
-          }
-        },
-        {
-          "messageName": "ListPersonInput",
-          "name": "first",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListPersonInput",
-          "name": "after",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListPersonInput",
-          "name": "last",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListPersonInput",
-          "name": "before",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -414,6 +333,87 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetPersonInput",
+      "fields": [
+        {
+          "messageName": "GetPersonInput",
+          "name": "personId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreatePersonInput",
+      "fields": [
+        {
+          "messageName": "CreatePersonInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ListPersonWhere",
+      "fields": [
+        {
+          "messageName": "ListPersonWhere",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ListPersonInput",
+      "fields": [
+        {
+          "messageName": "ListPersonInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListPersonWhere"
+          }
+        },
+        {
+          "messageName": "ListPersonInput",
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListPersonInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListPersonInput",
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListPersonInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        }
+      ]
     }
   ]
 }

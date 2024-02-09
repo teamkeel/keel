@@ -210,28 +210,6 @@
       ]
     },
     {
-      "name": "GetPostInput",
-      "fields": [
-        {
-          "messageName": "GetPostInput",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Post",
-            "fieldName": "name"
-          },
-          "target": ["name"]
-        },
-        {
-          "messageName": "GetPostInput",
-          "name": "someBool",
-          "type": {
-            "type": "TYPE_BOOL"
-          }
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -333,6 +311,28 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetPostInput",
+      "fields": [
+        {
+          "messageName": "GetPostInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Post",
+            "fieldName": "name"
+          },
+          "target": ["name"]
+        },
+        {
+          "messageName": "GetPostInput",
+          "name": "someBool",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        }
+      ]
     }
   ]
 }

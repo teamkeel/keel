@@ -234,12 +234,6 @@
           "modelActions": [
             {
               "actionName": "authenticate"
-            },
-            {
-              "actionName": "requestPasswordReset"
-            },
-            {
-              "actionName": "resetPassword"
             }
           ]
         }
@@ -249,51 +243,6 @@
   "messages": [
     {
       "name": "Any"
-    },
-    {
-      "name": "GetAuthorInput",
-      "fields": [
-        {
-          "messageName": "GetAuthorInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Author",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
-      "name": "DeleteAuthorInput",
-      "fields": [
-        {
-          "messageName": "DeleteAuthorInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Author",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
-      "name": "GetBookInput",
-      "fields": [
-        {
-          "messageName": "GetBookInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Book",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
     },
     {
       "name": "EmailPasswordInput",
@@ -397,6 +346,51 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetAuthorInput",
+      "fields": [
+        {
+          "messageName": "GetAuthorInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
+    },
+    {
+      "name": "DeleteAuthorInput",
+      "fields": [
+        {
+          "messageName": "DeleteAuthorInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
+    },
+    {
+      "name": "GetBookInput",
+      "fields": [
+        {
+          "messageName": "GetBookInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Book",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
     }
   ]
 }

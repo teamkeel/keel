@@ -479,45 +479,6 @@
       "name": "Any"
     },
     {
-      "name": "CreateRecordWithChildrenInput",
-      "fields": [
-        {
-          "messageName": "CreateRecordWithChildrenInput",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Record",
-            "fieldName": "name"
-          },
-          "target": ["name"]
-        },
-        {
-          "messageName": "CreateRecordWithChildrenInput",
-          "name": "children",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "CreateRecordWithChildrenChildrenInput",
-            "repeated": true
-          }
-        }
-      ]
-    },
-    {
-      "name": "CreateRecordWithChildrenChildrenInput",
-      "fields": [
-        {
-          "messageName": "CreateRecordWithChildrenChildrenInput",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Record",
-            "fieldName": "name"
-          },
-          "target": ["children", "name"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -619,6 +580,45 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreateRecordWithChildrenInput",
+      "fields": [
+        {
+          "messageName": "CreateRecordWithChildrenInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Record",
+            "fieldName": "name"
+          },
+          "target": ["name"]
+        },
+        {
+          "messageName": "CreateRecordWithChildrenInput",
+          "name": "children",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateRecordWithChildrenChildrenInput",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreateRecordWithChildrenChildrenInput",
+      "fields": [
+        {
+          "messageName": "CreateRecordWithChildrenChildrenInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Record",
+            "fieldName": "name"
+          },
+          "target": ["children", "name"]
+        }
+      ]
     }
   ]
 }

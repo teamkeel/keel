@@ -228,9 +228,6 @@
       "name": "Any"
     },
     {
-      "name": "GetBankAccountInput"
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -332,6 +329,9 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetBankAccountInput"
     }
   ]
 }

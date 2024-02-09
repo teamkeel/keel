@@ -80,7 +80,7 @@ func getReservedSuffixes() []string {
 }
 
 func getReservedKeelNames() []string {
-	return []string{"Any", "ID", "Identity", "Text", "Boolean", "Secret", "Image", "Float", "Image", "File", "Coordinate", "Location", "Email", "Phone", "PageInfo"}
+	return []string{"Any", "ID", "Text", "Boolean", "Secret", "Image", "Float", "Image", "File", "Coordinate", "Location", "Email", "Phone", "PageInfo"}
 }
 
 func getReservedGraphQLNames() []string {
@@ -147,7 +147,7 @@ func checkMessageName(asts []*parser.AST, message *parser.MessageNode) *errorhan
 			// against the prospective messsage name.
 			// e.g You shouldn't be allowed to have a message name called FooInput if there is already a built in
 			// action called foo
-			if message.Name.Value == fmt.Sprintf("%s%s", casing.ToCamel(a.Name.Value), suffix) {
+			if !message.BuiltIn && message.Name.Value == fmt.Sprintf("%s%s", casing.ToCamel(a.Name.Value), suffix) {
 				return errorhandling.NewValidationErrorWithDetails(
 					errorhandling.NamingError,
 					errorhandling.ErrorDetails{

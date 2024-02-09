@@ -203,9 +203,6 @@
       "name": "Any"
     },
     {
-      "name": "GetAuthorInput"
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -307,6 +304,9 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetAuthorInput"
     }
   ]
 }

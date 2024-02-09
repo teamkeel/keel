@@ -287,49 +287,6 @@
       "name": "Any"
     },
     {
-      "name": "CreateExtInput"
-    },
-    {
-      "name": "UpdateExtWhere",
-      "fields": [
-        {
-          "messageName": "UpdateExtWhere",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "UserExtension",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
-      "name": "UpdateExtValues"
-    },
-    {
-      "name": "UpdateExtInput",
-      "fields": [
-        {
-          "messageName": "UpdateExtInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateExtWhere"
-          }
-        },
-        {
-          "messageName": "UpdateExtInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateExtValues"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -431,6 +388,49 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreateExtInput"
+    },
+    {
+      "name": "UpdateExtWhere",
+      "fields": [
+        {
+          "messageName": "UpdateExtWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "UserExtension",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
+    },
+    {
+      "name": "UpdateExtValues"
+    },
+    {
+      "name": "UpdateExtInput",
+      "fields": [
+        {
+          "messageName": "UpdateExtInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateExtWhere"
+          }
+        },
+        {
+          "messageName": "UpdateExtInput",
+          "name": "values",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateExtValues"
+          },
+          "optional": true
+        }
+      ]
     }
   ]
 }

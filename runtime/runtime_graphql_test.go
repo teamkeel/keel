@@ -1327,6 +1327,7 @@ var testCases = []testCase{
 			api Test {
 				models {
 					Person
+					Identity
 				}
 			}
 		`,
@@ -1369,6 +1370,7 @@ var testCases = []testCase{
 			api Test {
 				models {
 					Person
+					Identity
 				}
 			}
 		`,

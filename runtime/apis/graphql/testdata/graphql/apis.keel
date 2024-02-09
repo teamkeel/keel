@@ -11,5 +11,6 @@ model Person {
 api Test {
     models {
         Person
+        Identity
     }
 }

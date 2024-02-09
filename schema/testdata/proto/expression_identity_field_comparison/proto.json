@@ -370,69 +370,6 @@
       "name": "Any"
     },
     {
-      "name": "CreatePostInput",
-      "fields": [
-        {
-          "messageName": "CreatePostInput",
-          "name": "title",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Post",
-            "fieldName": "title"
-          },
-          "target": ["title"]
-        },
-        {
-          "messageName": "CreatePostInput",
-          "name": "publisher",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "CreatePostPublisherInput"
-          },
-          "nullable": true
-        },
-        {
-          "messageName": "CreatePostInput",
-          "name": "owner",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "CreatePostOwnerInput"
-          },
-          "nullable": true
-        }
-      ]
-    },
-    {
-      "name": "CreatePostPublisherInput",
-      "fields": [
-        {
-          "messageName": "CreatePostPublisherInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Publisher",
-            "fieldName": "id"
-          },
-          "target": ["publisher", "id"]
-        }
-      ]
-    },
-    {
-      "name": "CreatePostOwnerInput",
-      "fields": [
-        {
-          "messageName": "CreatePostOwnerInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Author",
-            "fieldName": "id"
-          },
-          "target": ["owner", "id"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -534,6 +471,69 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreatePostInput",
+      "fields": [
+        {
+          "messageName": "CreatePostInput",
+          "name": "title",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Post",
+            "fieldName": "title"
+          },
+          "target": ["title"]
+        },
+        {
+          "messageName": "CreatePostInput",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreatePostPublisherInput"
+          },
+          "nullable": true
+        },
+        {
+          "messageName": "CreatePostInput",
+          "name": "owner",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreatePostOwnerInput"
+          },
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "CreatePostPublisherInput",
+      "fields": [
+        {
+          "messageName": "CreatePostPublisherInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Publisher",
+            "fieldName": "id"
+          },
+          "target": ["publisher", "id"]
+        }
+      ]
+    },
+    {
+      "name": "CreatePostOwnerInput",
+      "fields": [
+        {
+          "messageName": "CreatePostOwnerInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": ["owner", "id"]
+        }
+      ]
     }
   ]
 }

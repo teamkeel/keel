@@ -154,54 +154,6 @@
       "name": "Any"
     },
     {
-      "name": "MyJobMessage",
-      "fields": [
-        {
-          "messageName": "MyJobMessage",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          }
-        },
-        {
-          "messageName": "MyJobMessage",
-          "name": "text",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "messageName": "MyJobMessage",
-          "name": "number",
-          "type": {
-            "type": "TYPE_INT"
-          }
-        },
-        {
-          "messageName": "MyJobMessage",
-          "name": "bool",
-          "type": {
-            "type": "TYPE_BOOL"
-          }
-        },
-        {
-          "messageName": "MyJobMessage",
-          "name": "array",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "messageName": "MyJobMessage",
-          "name": "enum",
-          "type": {
-            "type": "TYPE_ENUM",
-            "enumName": "MyEnum"
-          }
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -303,6 +255,54 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "MyJobMessage",
+      "fields": [
+        {
+          "messageName": "MyJobMessage",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "MyJobMessage",
+          "name": "text",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "MyJobMessage",
+          "name": "number",
+          "type": {
+            "type": "TYPE_INT"
+          }
+        },
+        {
+          "messageName": "MyJobMessage",
+          "name": "bool",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "MyJobMessage",
+          "name": "array",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "MyJobMessage",
+          "name": "enum",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "MyEnum"
+          }
+        }
+      ]
     }
   ],
   "jobs": [

@@ -4,7 +4,7 @@ model User {
     }
 
     actions {
-        //expect-error:16:28:E042:You have a reserved action name 'authenticate'
+        //expect-error:16:28:NamingError:There already exists a reserved action with the name 'authenticate'
         create authenticate() with (email)
     }
 }

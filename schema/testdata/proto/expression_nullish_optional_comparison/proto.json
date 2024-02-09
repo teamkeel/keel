@@ -226,9 +226,6 @@
       "name": "Any"
     },
     {
-      "name": "CreatePostInput"
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -330,6 +327,9 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreatePostInput"
     }
   ]
 }

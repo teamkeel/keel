@@ -3,21 +3,8 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
-  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
-  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
   writePerson(input: WritePersonInput!): PersonResponse
   writePersonWithMessage(input: PersonInput!): PersonResponse
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
-  email: String!
-  password: String!
 }
 
 input PersonInput {
@@ -25,36 +12,13 @@ input PersonInput {
   optionalName: String
 }
 
-input RequestPasswordResetInput {
-  email: String!
-  redirectUrl: String!
-}
-
-input ResetPasswordInput {
-  password: String!
-  token: String!
-}
-
 input WritePersonInput {
   name: String!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
 }
 
 type PersonResponse {
   optionalText: String
   text: String!
-}
-
-type RequestPasswordResetResponse {
-  success: Boolean
-}
-
-type ResetPasswordResponse {
-  success: Boolean
 }
 
 scalar Any

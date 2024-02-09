@@ -5,7 +5,7 @@
       "type": "string"
     },
     "optionalName": {
-      "type": ["string", "null"]
+      "type": "string"
     }
   },
   "additionalProperties": false,

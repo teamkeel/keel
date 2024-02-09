@@ -219,21 +219,6 @@
       ]
     },
     {
-      "name": "GetPersonInput",
-      "fields": [
-        {
-          "messageName": "GetPersonInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Person",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -335,6 +320,21 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetPersonInput",
+      "fields": [
+        {
+          "messageName": "GetPersonInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Person",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
     }
   ]
 }

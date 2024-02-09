@@ -314,6 +314,109 @@
       "name": "Any"
     },
     {
+      "name": "EmailPasswordInput",
+      "fields": [
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateInput",
+      "fields": [
+        {
+          "messageName": "AuthenticateInput",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "AuthenticateInput",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    },
+    {
       "name": "ListByCompanyCompanyInput",
       "fields": [
         {
@@ -615,109 +718,6 @@
           "optional": true
         }
       ]
-    },
-    {
-      "name": "EmailPasswordInput",
-      "fields": [
-        {
-          "messageName": "EmailPasswordInput",
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "messageName": "EmailPasswordInput",
-          "name": "password",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
-      "name": "AuthenticateInput",
-      "fields": [
-        {
-          "messageName": "AuthenticateInput",
-          "name": "createIfNotExists",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "AuthenticateInput",
-          "name": "emailPassword",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
-          }
-        }
-      ]
-    },
-    {
-      "name": "AuthenticateResponse",
-      "fields": [
-        {
-          "messageName": "AuthenticateResponse",
-          "name": "identityCreated",
-          "type": {
-            "type": "TYPE_BOOL"
-          }
-        },
-        {
-          "messageName": "AuthenticateResponse",
-          "name": "token",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
-      "name": "RequestPasswordResetInput",
-      "fields": [
-        {
-          "messageName": "RequestPasswordResetInput",
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "messageName": "RequestPasswordResetInput",
-          "name": "redirectUrl",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
-      "name": "RequestPasswordResetResponse"
-    },
-    {
-      "name": "ResetPasswordInput",
-      "fields": [
-        {
-          "messageName": "ResetPasswordInput",
-          "name": "token",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "messageName": "ResetPasswordInput",
-          "name": "password",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
-      "name": "ResetPasswordResponse"
     }
   ]
 }
