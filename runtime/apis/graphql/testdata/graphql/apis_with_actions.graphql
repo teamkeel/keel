@@ -5,8 +5,6 @@ type Query {
 
 type Mutation {
   authenticate(input: AuthenticateInput!): AuthenticateResponse
-  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
-  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
 input AuthenticateInput {
@@ -23,16 +21,6 @@ input GetPersonInput {
   id: ID!
 }
 
-input RequestPasswordResetInput {
-  email: String!
-  redirectUrl: String!
-}
-
-input ResetPasswordInput {
-  password: String!
-  token: String!
-}
-
 type AuthenticateResponse {
   identityCreated: Boolean!
   token: String!
@@ -43,14 +31,6 @@ type Person {
   id: ID!
   name: String!
   updatedAt: Timestamp!
-}
-
-type RequestPasswordResetResponse {
-  success: Boolean
-}
-
-type ResetPasswordResponse {
-  success: Boolean
 }
 
 type Timestamp {

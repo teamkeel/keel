@@ -327,72 +327,6 @@
       "name": "Any"
     },
     {
-      "name": "CreateChild1Input",
-      "fields": [
-        {
-          "messageName": "CreateChild1Input",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL",
-            "modelName": "ChildModel",
-            "fieldName": "isActive"
-          },
-          "target": ["isActive"]
-        },
-        {
-          "messageName": "CreateChild1Input",
-          "name": "explicitParentId",
-          "type": {
-            "type": "TYPE_ID"
-          }
-        }
-      ]
-    },
-    {
-      "name": "CreateChild2Input",
-      "fields": [
-        {
-          "messageName": "CreateChild2Input",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL",
-            "modelName": "ChildModel",
-            "fieldName": "isActive"
-          },
-          "target": ["isActive"]
-        },
-        {
-          "messageName": "CreateChild2Input",
-          "name": "explicitParentId",
-          "type": {
-            "type": "TYPE_ID"
-          }
-        }
-      ]
-    },
-    {
-      "name": "CreateChild3Input",
-      "fields": [
-        {
-          "messageName": "CreateChild3Input",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL",
-            "modelName": "ChildModel",
-            "fieldName": "isActive"
-          },
-          "target": ["isActive"]
-        },
-        {
-          "messageName": "CreateChild3Input",
-          "name": "explicitParentId",
-          "type": {
-            "type": "TYPE_ID"
-          }
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -494,6 +428,72 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreateChild1Input",
+      "fields": [
+        {
+          "messageName": "CreateChild1Input",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL",
+            "modelName": "ChildModel",
+            "fieldName": "isActive"
+          },
+          "target": ["isActive"]
+        },
+        {
+          "messageName": "CreateChild1Input",
+          "name": "explicitParentId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreateChild2Input",
+      "fields": [
+        {
+          "messageName": "CreateChild2Input",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL",
+            "modelName": "ChildModel",
+            "fieldName": "isActive"
+          },
+          "target": ["isActive"]
+        },
+        {
+          "messageName": "CreateChild2Input",
+          "name": "explicitParentId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreateChild3Input",
+      "fields": [
+        {
+          "messageName": "CreateChild3Input",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL",
+            "modelName": "ChildModel",
+            "fieldName": "isActive"
+          },
+          "target": ["isActive"]
+        },
+        {
+          "messageName": "CreateChild3Input",
+          "name": "explicitParentId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
     }
   ]
 }

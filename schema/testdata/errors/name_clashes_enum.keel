@@ -38,12 +38,12 @@ enum ListModelEdge {
 enum UpdateModelInput {
 }
 
-//expect-error:6:23:NamingError:Names cannot end with 'Input'
-enum AuthenticateInput {
+//expect-error:6:17:NamingError:Names cannot end with 'Input'
+enum MyEnumInput {
 }
 
-//expect-error:6:26:NamingError:Names cannot end with 'Response'
-enum AuthenticateResponse {
+//expect-error:6:20:NamingError:Names cannot end with 'Response'
+enum MyEnumResponse {
 }
 
 //expect-error:6:26:NamingError:Names cannot end with 'Input'
@@ -55,10 +55,12 @@ enum RequestPasswordResponse {
 }
 
 //expect-error:6:31:NamingError:Names cannot end with 'Input'
+//expect-error:6:31:NamingError:There already exists a reserved message with the name 'RequestPasswordResetInput'
 enum RequestPasswordResetInput {
 }
 
 //expect-error:6:34:NamingError:Names cannot end with 'Response'
+//expect-error:6:34:NamingError:There already exists a reserved message with the name 'RequestPasswordResetResponse'
 enum RequestPasswordResetResponse {
 }
 

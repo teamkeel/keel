@@ -15,5 +15,10 @@ api Test {
                 getPerson
             }
         }
+        Identity {
+            actions {
+                authenticate
+            }
+        }
     }
 }

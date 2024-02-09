@@ -203,9 +203,6 @@
       "name": "Any"
     },
     {
-      "name": "OperationAInput"
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -307,6 +304,9 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "OperationAInput"
     }
   ]
 }

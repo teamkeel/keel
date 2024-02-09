@@ -22,5 +22,10 @@ api Api {
                 searchBooks
             }
 		}
+        Identity {
+            actions {
+                authenticate
+            }
+        }
 	}
 }

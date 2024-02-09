@@ -444,7 +444,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 	return prop
 }
 
-// allowNull makes sure that s allows null, either by modifying
+// allowNull makes sure that it allows null, either by modifying
 // the type field or the enum field
 //
 // This is an area where OpenAPI differs from JSON Schema, from

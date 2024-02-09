@@ -111,9 +111,6 @@ en:
   E041:
     message: "{{ .Input }} refers to the model {{ .ModelName }} which can't be used as an input to a {{ .ActionType }} action"
     hint: "did you mean {{ .Input }}.id?"
-  E042:
-    message: "You have a reserved action name '{{ .Name }}'"
-    hint: "Try '{{ .Suggestion }}' instead"
   E043:
     message: "You have overridden '{{ .ImplicitInputName }}' with an explicit input"
     hint: "Try removing '{{ .ImplicitInputName }}' from the inputs list"

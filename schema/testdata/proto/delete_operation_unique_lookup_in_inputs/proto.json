@@ -202,21 +202,6 @@
       "name": "Any"
     },
     {
-      "name": "DeleteMyModelInput",
-      "fields": [
-        {
-          "messageName": "DeleteMyModelInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "MyModel",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -318,6 +303,21 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "DeleteMyModelInput",
+      "fields": [
+        {
+          "messageName": "DeleteMyModelInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "MyModel",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
     }
   ]
 }

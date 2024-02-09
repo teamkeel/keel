@@ -336,7 +336,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile *re
 }
 
 func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *reader.SchemaFile) {
-	declaration := &parser.DeclarationNode{
+	identityModelDeclaration := &parser.DeclarationNode{
 		Model: &parser.ModelNode{
 			BuiltIn: true,
 			Name: parser.NameNode{
@@ -421,6 +421,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		},
 		Optional: true,
 	}
+
 	issuerField := &parser.FieldNode{
 		BuiltIn: true,
 		Name: parser.NameNode{
@@ -429,23 +430,239 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		Type: parser.NameNode{
 			Value: parser.FieldTypeText,
 		},
-
 		Optional: true,
 	}
 
-	section := &parser.ModelSectionNode{
+	authenticateAction := &parser.ActionNode{
+		BuiltIn: true,
+		Type:    parser.NameNode{Value: parser.ActionTypeWrite},
+		Name:    parser.NameNode{Value: parser.AuthenticateActionName},
+		Inputs: []*parser.ActionInputNode{
+			{
+				Type: parser.Ident{Fragments: []*parser.IdentFragment{{Fragment: "AuthenticateInput"}}}, Optional: false,
+			},
+		},
+		Returns: []*parser.ActionInputNode{
+			{
+				Type: parser.Ident{Fragments: []*parser.IdentFragment{{Fragment: "AuthenticateResponse"}}}, Optional: false,
+			},
+		},
+	}
+
+	requestPasswordReset := &parser.ActionNode{
+		BuiltIn: true,
+		Type:    parser.NameNode{Value: parser.ActionTypeWrite},
+		Name:    parser.NameNode{Value: parser.RequestPasswordResetActionName},
+		Inputs: []*parser.ActionInputNode{
+			{
+				Type: parser.Ident{Fragments: []*parser.IdentFragment{{Fragment: "RequestPasswordResetInput"}}}, Optional: false,
+			},
+		},
+		Returns: []*parser.ActionInputNode{
+			{
+				Type: parser.Ident{Fragments: []*parser.IdentFragment{{Fragment: "RequestPasswordResetResponse"}}}, Optional: false,
+			},
+		},
+	}
+
+	resetPasswordAction := &parser.ActionNode{
+		BuiltIn: true,
+		Type:    parser.NameNode{Value: parser.ActionTypeWrite},
+		Name:    parser.NameNode{Value: parser.PasswordResetActionName},
+		Inputs: []*parser.ActionInputNode{
+			{
+				Type: parser.Ident{Fragments: []*parser.IdentFragment{{Fragment: "ResetPasswordInput"}}}, Optional: false,
+			},
+		},
+		Returns: []*parser.ActionInputNode{
+			{
+				Type: parser.Ident{Fragments: []*parser.IdentFragment{{Fragment: "ResetPasswordResponse"}}}, Optional: false,
+			},
+		},
+	}
+
+	fieldsSection := &parser.ModelSectionNode{
 		Fields: []*parser.FieldNode{emailField, emailVerifiedField, passwordField, externalIdField, issuerField},
 	}
 
-	declaration.Model.Sections = append(declaration.Model.Sections, section)
+	actionsSection := &parser.ModelSectionNode{
+		Actions: []*parser.ActionNode{authenticateAction, requestPasswordReset, resetPasswordAction},
+	}
+
+	identityModelDeclaration.Model.Sections = append(identityModelDeclaration.Model.Sections, fieldsSection, actionsSection)
 
 	uniqueModelSection := &parser.ModelSectionNode{
 		Attribute: emailUniqueAttributeNode(),
 	}
 
-	declaration.Model.Sections = append(declaration.Model.Sections, uniqueModelSection)
+	identityModelDeclaration.Model.Sections = append(identityModelDeclaration.Model.Sections, uniqueModelSection)
 
-	declarations.Declarations = append(declarations.Declarations, declaration)
+	emailPasswordInputDeclaration := &parser.DeclarationNode{
+		Message: &parser.MessageNode{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: "EmailPasswordInput",
+			},
+			Fields: []*parser.FieldNode{
+				{
+					Name: parser.NameNode{
+						Value: "email",
+					},
+					Type: parser.NameNode{
+						Value: "Text",
+					},
+				},
+				{
+					Name: parser.NameNode{
+						Value: "password",
+					},
+					Type: parser.NameNode{
+						Value: "Text",
+					},
+				},
+			},
+		},
+	}
+
+	authenticationInputDeclaration := &parser.DeclarationNode{
+		Message: &parser.MessageNode{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: "AuthenticateInput",
+			},
+			Fields: []*parser.FieldNode{
+				{
+					Name: parser.NameNode{
+						Value: "createIfNotExists",
+					},
+					Type: parser.NameNode{
+						Value: "Boolean",
+					},
+					Optional: true,
+				},
+				{
+					Name: parser.NameNode{
+						Value: "emailPassword",
+					},
+					Type: parser.NameNode{
+						Value: "EmailPasswordInput",
+					},
+				},
+			},
+		},
+	}
+
+	authenticateResponseDeclaration := &parser.DeclarationNode{
+		Message: &parser.MessageNode{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: "AuthenticateResponse",
+			},
+			Fields: []*parser.FieldNode{
+				{
+					Name: parser.NameNode{
+						Value: "identityCreated",
+					},
+					Type: parser.NameNode{
+						Value: "Boolean",
+					},
+				},
+				{
+					Name: parser.NameNode{
+						Value: "token",
+					},
+					Type: parser.NameNode{
+						Value: "Text",
+					},
+				},
+			},
+		},
+	}
+
+	resetPasswordInputDeclaration := &parser.DeclarationNode{
+		Message: &parser.MessageNode{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: "ResetPasswordInput",
+			},
+			Fields: []*parser.FieldNode{
+				{
+					Name: parser.NameNode{
+						Value: "token",
+					},
+					Type: parser.NameNode{
+						Value: "Text",
+					},
+				},
+				{
+					Name: parser.NameNode{
+						Value: "password",
+					},
+					Type: parser.NameNode{
+						Value: "Text",
+					},
+				},
+			},
+		},
+	}
+
+	resetPasswordResponseDeclaration := &parser.DeclarationNode{
+		Message: &parser.MessageNode{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: "ResetPasswordResponse",
+			},
+			Fields: []*parser.FieldNode{},
+		},
+	}
+
+	requestPasswordResetInputDeclaration := &parser.DeclarationNode{
+		Message: &parser.MessageNode{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: "RequestPasswordResetInput",
+			},
+			Fields: []*parser.FieldNode{
+				{
+					Name: parser.NameNode{
+						Value: "email",
+					},
+					Type: parser.NameNode{
+						Value: "Text",
+					},
+				},
+				{
+					Name: parser.NameNode{
+						Value: "redirectUrl",
+					},
+					Type: parser.NameNode{
+						Value: "Text",
+					},
+				},
+			},
+		},
+	}
+
+	requestPasswordResetResponseDeclaration := &parser.DeclarationNode{
+		Message: &parser.MessageNode{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: "RequestPasswordResetResponse",
+			},
+			Fields: []*parser.FieldNode{},
+		},
+	}
+
+	declarations.Declarations = append(
+		declarations.Declarations,
+		identityModelDeclaration,
+		emailPasswordInputDeclaration,
+		authenticationInputDeclaration,
+		authenticateResponseDeclaration,
+		requestPasswordResetInputDeclaration,
+		requestPasswordResetResponseDeclaration,
+		resetPasswordInputDeclaration,
+		resetPasswordResponseDeclaration)
 }
 
 func (scm *Builder) addEnvironmentVariables(declarations *parser.AST) {

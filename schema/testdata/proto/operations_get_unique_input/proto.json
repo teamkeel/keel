@@ -190,21 +190,6 @@
       "name": "Any"
     },
     {
-      "name": "GetMyModelInput",
-      "fields": [
-        {
-          "messageName": "GetMyModelInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "MyModel",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -306,6 +291,21 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetMyModelInput",
+      "fields": [
+        {
+          "messageName": "GetMyModelInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "MyModel",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
     }
   ]
 }

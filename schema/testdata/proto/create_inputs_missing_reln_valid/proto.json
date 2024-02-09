@@ -279,66 +279,6 @@
       "name": "Any"
     },
     {
-      "name": "CreatePostBInput",
-      "fields": [
-        {
-          "messageName": "CreatePostBInput",
-          "name": "content",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Post",
-            "fieldName": "content"
-          },
-          "target": ["content"]
-        },
-        {
-          "messageName": "CreatePostBInput",
-          "name": "author",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "CreatePostBAuthorInput"
-          }
-        }
-      ]
-    },
-    {
-      "name": "CreatePostBAuthorInput",
-      "fields": [
-        {
-          "messageName": "CreatePostBAuthorInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Author",
-            "fieldName": "id"
-          },
-          "target": ["author", "id"]
-        }
-      ]
-    },
-    {
-      "name": "CreatePostCInput",
-      "fields": [
-        {
-          "messageName": "CreatePostCInput",
-          "name": "content",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Post",
-            "fieldName": "content"
-          },
-          "target": ["content"]
-        },
-        {
-          "messageName": "CreatePostCInput",
-          "name": "someAuthorId",
-          "type": {
-            "type": "TYPE_ID"
-          }
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -440,6 +380,66 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreatePostBInput",
+      "fields": [
+        {
+          "messageName": "CreatePostBInput",
+          "name": "content",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Post",
+            "fieldName": "content"
+          },
+          "target": ["content"]
+        },
+        {
+          "messageName": "CreatePostBInput",
+          "name": "author",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreatePostBAuthorInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreatePostBAuthorInput",
+      "fields": [
+        {
+          "messageName": "CreatePostBAuthorInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": ["author", "id"]
+        }
+      ]
+    },
+    {
+      "name": "CreatePostCInput",
+      "fields": [
+        {
+          "messageName": "CreatePostCInput",
+          "name": "content",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Post",
+            "fieldName": "content"
+          },
+          "target": ["content"]
+        },
+        {
+          "messageName": "CreatePostCInput",
+          "name": "someAuthorId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
     }
   ]
 }

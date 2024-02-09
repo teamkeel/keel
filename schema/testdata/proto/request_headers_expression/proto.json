@@ -202,9 +202,6 @@
       "name": "Any"
     },
     {
-      "name": "CreateApiKeyInput"
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -306,6 +303,9 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreateApiKeyInput"
     }
   ]
 }

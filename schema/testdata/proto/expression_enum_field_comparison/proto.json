@@ -228,21 +228,6 @@
       "name": "Any"
     },
     {
-      "name": "GetPostInput",
-      "fields": [
-        {
-          "messageName": "GetPostInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Post",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -344,6 +329,21 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetPostInput",
+      "fields": [
+        {
+          "messageName": "GetPostInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Post",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
     }
   ]
 }

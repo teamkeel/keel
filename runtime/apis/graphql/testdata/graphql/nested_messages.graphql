@@ -4,20 +4,7 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
-  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
-  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
   writePerson(input: WritePersonInput!): PersonResponse
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
-  email: String!
-  password: String!
 }
 
 input NestedInputObject {
@@ -28,23 +15,8 @@ input ReadPersonInput {
   nested: NestedInputObject!
 }
 
-input RequestPasswordResetInput {
-  email: String!
-  redirectUrl: String!
-}
-
-input ResetPasswordInput {
-  password: String!
-  token: String!
-}
-
 input WritePersonInput {
   nested: NestedInputObject!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
 }
 
 type NestedResponseObject {
@@ -53,14 +25,6 @@ type NestedResponseObject {
 
 type PersonResponse {
   nested: NestedResponseObject!
-}
-
-type RequestPasswordResetResponse {
-  success: Boolean
-}
-
-type ResetPasswordResponse {
-  success: Boolean
 }
 
 scalar Any

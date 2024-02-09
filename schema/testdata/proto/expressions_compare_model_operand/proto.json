@@ -305,21 +305,6 @@
       "name": "Any"
     },
     {
-      "name": "GetBankAccountInput",
-      "fields": [
-        {
-          "messageName": "GetBankAccountInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "BankAccount",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -421,6 +406,21 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetBankAccountInput",
+      "fields": [
+        {
+          "messageName": "GetBankAccountInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "BankAccount",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
     }
   ]
 }
