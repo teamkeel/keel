@@ -1206,49 +1206,54 @@ const listener = async (req, res) => {
 		return;
 	}
 
-	if (req.method === "POST") {
-		const buffers = [];
-		for await (const chunk of req) {
-			buffers.push(chunk);
-		}
-		const data = Buffer.concat(buffers).toString();
-		const json = JSON.parse(data);
+	try {
+		if (req.method === "POST") {
+			const buffers = [];
+			for await (const chunk of req) {
+				buffers.push(chunk);
+			}
+			const data = Buffer.concat(buffers).toString();
+			const json = JSON.parse(data);
 
-		let rpcResponse = null;
-		switch (json.type) {
-		case "action":
-			rpcResponse = await handleRequest(json, {
-				functions,
-				createContextAPI,
-				actionTypes,
-				permissionFns,
-			});
-			break;
-		case "job":
-			rpcResponse = await handleJob(json, {
-				jobs,
-				createJobContextAPI,
-			});
-			break;
-		case "subscriber":
-			rpcResponse = await handleSubscriber(json, {
-				subscribers,
-				createSubscriberContextAPI,
-			});
-			break;
-		default:
-			res.statusCode = 400;
+			let rpcResponse = null;
+			switch (json.type) {
+			case "action":
+				rpcResponse = await handleRequest(json, {
+					functions,
+					createContextAPI,
+					actionTypes,
+					permissionFns,
+				});
+				break;
+			case "job":
+				rpcResponse = await handleJob(json, {
+					jobs,
+					createJobContextAPI,
+				});
+				break;
+			case "subscriber":
+				rpcResponse = await handleSubscriber(json, {
+					subscribers,
+					createSubscriberContextAPI,
+				});
+				break;
+			default:
+				res.statusCode = 400;
+				res.end();
+			}
+			
+			res.statusCode = 200;
+			res.setHeader('Content-Type', 'application/json');
+			res.write(JSON.stringify(rpcResponse));
 			res.end();
+			return;
 		}
-		
-		res.statusCode = 200;
-		res.setHeader('Content-Type', 'application/json');
-		res.write(JSON.stringify(rpcResponse));
-		res.end();
+	} catch (e) {
+		console.error("Unexpected Handler Error", e)
+	} finally {
 		if (tracing.forceFlush) {
 			await tracing.forceFlush();
 		}
-		return;
 	}
 
 	res.statusCode = 400;
@@ -1256,6 +1261,11 @@ const listener = async (req, res) => {
 };
 
 tracing.init();
+
+const process = require('node:process');
+process.on('unhandledRejection', (reason, promise) => {
+	console.error('Unhandled Promise Rejection', promise, 'Reason:', reason);
+});
 
 const server = createServer(listener);
 const port = (process.env.PORT && parseInt(process.env.PORT, 10)) || 3001;

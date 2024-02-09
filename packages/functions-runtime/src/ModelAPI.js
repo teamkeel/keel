@@ -287,7 +287,7 @@ async function create(conn, tableName, tableConfigs, values) {
           );
         }
 
-        await create(conn, columnConfig.referencesTable, tableConfigs, {
+        return create(conn, columnConfig.referencesTable, tableConfigs, {
           ...value,
           [columnConfig.foreignKey]: created.id,
         });
