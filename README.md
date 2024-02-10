@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://keel.so/">
-    <img alt="Keel" src="https://raw.githubusercontent.com/teamkeel/keel/main/docs/images/keel-light.svg" width="300" />
+    <img alt="Keel" src="images/keel-dark.svg" width="300" />
   </a>
 </p>
 
@@ -46,7 +46,7 @@ Install the CLI globally:
 $ npm install --global keel
 ```
 
-If the CLI has installed correctly, then `keel --version` will output the latest version number:
+If the CLI has installed correctly, the following command will respond with the current version number:
 
 ```bash
 $ keel --version
