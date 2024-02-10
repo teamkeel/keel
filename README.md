@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://keel.so/">
-    <img alt="Keel" src="docs/images/keel.svg" width="300" />
+    <img alt="Keel" src="https://raw.githubusercontent.com/teamkeel/keel/main/docs/images/keel-light.svg" width="300" />
   </a>
 </p>
 
