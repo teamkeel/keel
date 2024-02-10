@@ -46,7 +46,7 @@ Install the CLI globally:
 $ npm install --global keel
 ```
 
-If the CLI has installed correctly, then running the following will output the current version number:
+If the CLI has installed correctly, the following command will respond with the current version number:
 
 ```bash
 $ keel --version
