@@ -27,12 +27,13 @@ type ComponentsObject struct {
 }
 
 type PathItemObject struct {
-	Post OperationObject `json:"post,omitempty"`
+	Post *OperationObject `json:"post,omitempty"`
+	Get  *OperationObject `json:"get,omitempty"`
 }
 
 type OperationObject struct {
-	OperationID string                    `json:"operationId"`
-	RequestBody ResponseObject            `json:"requestBody"`
+	OperationID *string                   `json:"operationId,omitempty"`
+	RequestBody *RequestBodyObject        `json:"requestBody,omitempty"`
 	Responses   map[string]ResponseObject `json:"responses,omitempty"`
 }
 
@@ -90,6 +91,7 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 		},
 		Paths: map[string]PathItemObject{},
 	}
+
 	components := ComponentsObject{
 		Schemas: map[string]jsonschema.JSONSchema{},
 	}
@@ -119,9 +121,9 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 		}
 
 		spec.Paths[endpoint] = PathItemObject{
-			Post: OperationObject{
-				OperationID: action.Name,
-				RequestBody: ResponseObject{
+			Post: &OperationObject{
+				OperationID: &action.Name,
+				RequestBody: &RequestBodyObject{
 					Description: action.Name + " Request",
 					Content: map[string]MediaTypeObject{
 						"application/json": {
@@ -198,9 +200,9 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 			spec.Paths = map[string]PathItemObject{}
 
 			spec.Paths[endpoint] = PathItemObject{
-				Post: OperationObject{
-					OperationID: job.Name,
-					RequestBody: ResponseObject{
+				Post: &OperationObject{
+					OperationID: &job.Name,
+					RequestBody: &RequestBodyObject{
 						Description: job.Name + " Request",
 						Content: map[string]MediaTypeObject{
 							"application/json": {

@@ -44,6 +44,8 @@ type JSONSchema struct {
 	// of one string, so we use any here so it can be either
 	Type any `json:"type,omitempty"`
 
+	Const any `json:"const,omitempty"`
+
 	// The enum field needs to be able to contains strings and null,
 	// so we use *string here
 	Enum []*string `json:"enum,omitempty"`
