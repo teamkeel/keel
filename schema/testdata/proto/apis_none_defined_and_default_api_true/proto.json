@@ -200,36 +200,6 @@
       "name": "Any"
     },
     {
-      "name": "GetAuthorInput",
-      "fields": [
-        {
-          "messageName": "GetAuthorInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Author",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
-      "name": "DeleteAuthorInput",
-      "fields": [
-        {
-          "messageName": "DeleteAuthorInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Author",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -331,6 +301,36 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetAuthorInput",
+      "fields": [
+        {
+          "messageName": "GetAuthorInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
+    },
+    {
+      "name": "DeleteAuthorInput",
+      "fields": [
+        {
+          "messageName": "DeleteAuthorInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
     }
   ]
 }

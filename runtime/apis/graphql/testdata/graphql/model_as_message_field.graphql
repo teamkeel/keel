@@ -4,21 +4,8 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
-  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
-  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
   setIdentity(input: SetIdentityInput!): User!
   updateUser(input: UpdateUserInput!): Any
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
-  email: String!
-  password: String!
 }
 
 input ListUsersInput {
@@ -26,16 +13,6 @@ input ListUsersInput {
   before: String
   first: Int
   last: Int
-}
-
-input RequestPasswordResetInput {
-  email: String!
-  redirectUrl: String!
-}
-
-input ResetPasswordInput {
-  password: String!
-  token: String!
 }
 
 input SetIdentityInput {
@@ -48,11 +25,6 @@ input SetIdentityWhere {
 
 input UpdateUserInput {
   user: User!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
 }
 
 type Identity {
@@ -71,14 +43,6 @@ type PageInfo {
   hasNextPage: Boolean!
   startCursor: String!
   totalCount: Int!
-}
-
-type RequestPasswordResetResponse {
-  success: Boolean
-}
-
-type ResetPasswordResponse {
-  success: Boolean
 }
 
 type Timestamp {

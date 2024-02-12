@@ -239,12 +239,6 @@
       ]
     },
     {
-      "name": "NoInputInput"
-    },
-    {
-      "name": "NoInputWriteInput"
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -346,6 +340,12 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "NoInputInput"
+    },
+    {
+      "name": "NoInputWriteInput"
     }
   ]
 }

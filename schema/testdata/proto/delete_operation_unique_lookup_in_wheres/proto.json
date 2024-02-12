@@ -213,18 +213,6 @@
       "name": "Any"
     },
     {
-      "name": "DeleteMyModelInput",
-      "fields": [
-        {
-          "messageName": "DeleteMyModelInput",
-          "name": "explicitCode",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -326,6 +314,18 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "DeleteMyModelInput",
+      "fields": [
+        {
+          "messageName": "DeleteMyModelInput",
+          "name": "explicitCode",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
     }
   ]
 }

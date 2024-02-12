@@ -1,16 +1,16 @@
 {
-  "additionalProperties": false,
+  "type": "object",
   "properties": {
     "favouriteSport": {
-      "enum": ["Cricket", "Rugby", "Soccer", null]
+      "enum": ["Cricket", "Rugby", "Soccer"]
     },
     "sports": {
+      "type": "array",
       "items": {
         "enum": ["Cricket", "Rugby", "Soccer"]
-      },
-      "type": "array"
+      }
     }
   },
-  "required": ["sports"],
-  "type": "object"
+  "additionalProperties": false,
+  "required": ["sports"]
 }

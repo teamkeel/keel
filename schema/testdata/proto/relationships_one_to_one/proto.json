@@ -259,34 +259,6 @@
       "name": "Any"
     },
     {
-      "name": "CreateCompanyInput",
-      "fields": [
-        {
-          "messageName": "CreateCompanyInput",
-          "name": "profile",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "CreateCompanyProfileInput"
-          }
-        }
-      ]
-    },
-    {
-      "name": "CreateCompanyProfileInput",
-      "fields": [
-        {
-          "messageName": "CreateCompanyProfileInput",
-          "name": "employeeCount",
-          "type": {
-            "type": "TYPE_INT",
-            "modelName": "CompanyProfile",
-            "fieldName": "employeeCount"
-          },
-          "target": ["profile", "employeeCount"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -388,6 +360,34 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreateCompanyInput",
+      "fields": [
+        {
+          "messageName": "CreateCompanyInput",
+          "name": "profile",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateCompanyProfileInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreateCompanyProfileInput",
+      "fields": [
+        {
+          "messageName": "CreateCompanyProfileInput",
+          "name": "employeeCount",
+          "type": {
+            "type": "TYPE_INT",
+            "modelName": "CompanyProfile",
+            "fieldName": "employeeCount"
+          },
+          "target": ["profile", "employeeCount"]
+        }
+      ]
     }
   ]
 }

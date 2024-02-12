@@ -59,7 +59,6 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			return
 		}
 
-		ctx = runtimectx.WithIssuersFromEnv(ctx)
 		r = r.WithContext(ctx)
 
 		var response common.Response

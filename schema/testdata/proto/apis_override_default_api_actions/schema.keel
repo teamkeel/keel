@@ -19,5 +19,10 @@ api Api {
                 getAuthor
             }
         }
+        Identity {
+            actions {
+                authenticate
+            }
+        }
     }
 }

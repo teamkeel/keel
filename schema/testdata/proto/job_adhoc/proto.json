@@ -141,18 +141,6 @@
       "name": "Any"
     },
     {
-      "name": "MyJobMessage",
-      "fields": [
-        {
-          "messageName": "MyJobMessage",
-          "name": "veryImportantValue",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -254,6 +242,18 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "MyJobMessage",
+      "fields": [
+        {
+          "messageName": "MyJobMessage",
+          "name": "veryImportantValue",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
     }
   ],
   "jobs": [

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -12,11 +11,6 @@ import (
 )
 
 var (
-	reservedActionNames = []string{
-		parser.AuthenticateActionName,
-		parser.RequestPasswordResetActionName,
-		parser.PasswordResetActionName,
-	}
 	validActionTypes = []string{
 		parser.ActionTypeGet,
 		parser.ActionTypeCreate,
@@ -177,25 +171,6 @@ func UniqueActionNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 	}
 
 	return
-}
-
-// ReservedActionNameRule ensures that all actions do not use a reserved name
-func ReservedActionNameRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, op := range query.ModelActions(model) {
-			if lo.Contains(reservedActionNames, op.Name.Value) {
-				errs.Append(errorhandling.ErrorReservedActionName,
-					map[string]string{
-						"Name":       op.Name.Value,
-						"Suggestion": fmt.Sprintf("perform%s", casing.ToCamel(op.Name.Value)),
-					},
-					op.Name,
-				)
-			}
-		}
-	}
-
-	return errs
 }
 
 func ActionModelInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {

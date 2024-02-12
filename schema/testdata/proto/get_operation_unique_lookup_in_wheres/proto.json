@@ -213,18 +213,6 @@
       "name": "Any"
     },
     {
-      "name": "GetMyModelInput",
-      "fields": [
-        {
-          "messageName": "GetMyModelInput",
-          "name": "explicitCode",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -326,6 +314,18 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "GetMyModelInput",
+      "fields": [
+        {
+          "messageName": "GetMyModelInput",
+          "name": "explicitCode",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
     }
   ]
 }

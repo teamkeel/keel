@@ -4,6 +4,7 @@ model Profile {
     }
 
     actions {
+        //expect-error:16:28:NamingError:There already exists an action with the name 'updateStatus'
         update updateStatus(id) with (status)
     }
 }
@@ -14,7 +15,7 @@ model Order {
     }
 
     actions {
-        //expect-error:16:28:E004:You have duplicate actions Model:Order Name:updateStatus
+        //expect-error:16:28:NamingError:There already exists an action with the name 'updateStatus'
         update updateStatus(id) with (status)
     }
 }

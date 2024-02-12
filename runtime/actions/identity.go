@@ -8,7 +8,6 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/oauth"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -102,62 +101,6 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 
 	result, err := query.InsertStatement(ctx).ExecuteToSingle(ctx)
 	if err != nil {
-		return nil, err
-	}
-
-	return mapToIdentity(result)
-}
-
-// Deprecated: used by the the authenticate action which is to be deprecated.
-func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalId string, issuer string, jwt string) (*auth.Identity, error) {
-	ctx, span := tracer.Start(ctx, "Create external identity")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("externalId", externalId))
-	span.SetAttributes(attribute.String("issuer", issuer))
-
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
-
-	// fetch email and verified email from the openid provider if they are a known issuer
-	config, err := runtimectx.GetAuthConfig(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	match := false
-	if config != nil {
-		for _, extIss := range config.Issuers {
-			if issuer == extIss.Iss {
-				match = true
-				break
-			}
-		}
-	}
-
-	query := NewQuery(identityModel)
-	// even if we can't fetch the user data, create it with the core information
-	query.AddWriteValues(map[string]*QueryOperand{
-		"externalId": Value(externalId),
-		"issuer":     Value(issuer),
-	})
-
-	if match {
-		externalUserDetails, err := auth.GetUserInfo(ctx, issuer, jwt)
-		if err == nil {
-			query.AddWriteValues(map[string]*QueryOperand{
-				"email":         Value(externalUserDetails.Email),
-				"emailVerified": Value(externalUserDetails.EmailVerified),
-			})
-		}
-	}
-
-	query.AppendSelect(AllFields())
-	query.AppendReturning(IdField())
-
-	result, err := query.InsertStatement(ctx).ExecuteToSingle(ctx)
-	if err != nil {
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 

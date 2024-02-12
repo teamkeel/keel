@@ -1,8 +1,9 @@
+//expect-error:5:10:NamingError:There already exists a job with the name 'MyJob'
 job MyJob {
     @schedule("* * * * *")
 }
 
-//expect-error:5:10:NamingError:There is already a job with the name MyJob
+//expect-error:5:10:NamingError:There already exists a job with the name 'MyJob'
 job MyJob {
     @schedule("* * * * *")
 }

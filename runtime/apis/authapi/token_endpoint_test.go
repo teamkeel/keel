@@ -18,7 +18,6 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/apis/authapi"
-	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/oauth/oauthtest"
@@ -71,9 +70,8 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	require.NotEmpty(t, validResponse.RefreshToken)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
-	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
+	sub, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
 	require.NoError(t, err)
-	require.Equal(t, "https://keel.so", iss)
 
 	var identities []map[string]any
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
@@ -139,9 +137,8 @@ func TestTokenExchangeWithJson_ValidNewIdentity(t *testing.T) {
 	require.NotEmpty(t, validResponse.RefreshToken)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
-	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
+	sub, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
 	require.NoError(t, err)
-	require.Equal(t, "https://keel.so", iss)
 
 	var identities []map[string]any
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
@@ -220,9 +217,8 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	require.NotEmpty(t, validResponse.ExpiresIn)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
-	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
+	sub, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
 	require.NoError(t, err)
-	require.Equal(t, "https://keel.so", iss)
 
 	var identities []map[string]any
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
@@ -292,9 +288,8 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	require.NotEmpty(t, validResponse.ExpiresIn)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
-	sub, iss, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
+	sub, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
 	require.NoError(t, err)
-	require.Equal(t, "https://keel.so", iss)
 
 	var identities []map[string]any
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
@@ -631,16 +626,16 @@ func TestRefreshTokenGrantJson_Valid(t *testing.T) {
 	require.NotEqual(t, refreshGrantResponse.AccessToken, tokenExchangeResponse.AccessToken)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
-	accessToken1Issuer, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "iss")
+	accessToken1Issuer, err := oauth.ExtractClaimFromJwt(tokenExchangeResponse.AccessToken, "iss")
 	require.NoError(t, err)
-	accessToken2Issuer, err := auth.ExtractClaimFromToken(refreshGrantResponse.AccessToken, "iss")
+	accessToken2Issuer, err := oauth.ExtractClaimFromJwt(refreshGrantResponse.AccessToken, "iss")
 	require.NoError(t, err)
 	require.NotEmpty(t, accessToken1Issuer)
 	require.Equal(t, accessToken1Issuer, accessToken2Issuer)
 
-	accessToken1Sub, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "sub")
+	accessToken1Sub, err := oauth.ExtractClaimFromJwt(tokenExchangeResponse.AccessToken, "sub")
 	require.NoError(t, err)
-	accessToken2Sub, err := auth.ExtractClaimFromToken(refreshGrantResponse.AccessToken, "sub")
+	accessToken2Sub, err := oauth.ExtractClaimFromJwt(refreshGrantResponse.AccessToken, "sub")
 	require.NoError(t, err)
 	require.NotEmpty(t, accessToken1Sub)
 	require.Equal(t, accessToken1Sub, accessToken2Sub)
@@ -715,16 +710,16 @@ func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
 	require.NotEqual(t, refreshGrantResponse.AccessToken, tokenExchangeResponse.AccessToken)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
-	accessToken1Issuer, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "iss")
+	accessToken1Issuer, err := oauth.ExtractClaimFromJwt(tokenExchangeResponse.AccessToken, "iss")
 	require.NoError(t, err)
-	accessToken2Issuer, err := auth.ExtractClaimFromToken(refreshGrantResponse.AccessToken, "iss")
+	accessToken2Issuer, err := oauth.ExtractClaimFromJwt(refreshGrantResponse.AccessToken, "iss")
 	require.NoError(t, err)
 	require.NotEmpty(t, accessToken1Issuer)
 	require.Equal(t, accessToken1Issuer, accessToken2Issuer)
 
-	accessToken1Sub, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "sub")
+	accessToken1Sub, err := oauth.ExtractClaimFromJwt(tokenExchangeResponse.AccessToken, "sub")
 	require.NoError(t, err)
-	accessToken2Sub, err := auth.ExtractClaimFromToken(refreshGrantResponse.AccessToken, "sub")
+	accessToken2Sub, err := oauth.ExtractClaimFromJwt(refreshGrantResponse.AccessToken, "sub")
 	require.NoError(t, err)
 	require.NotEmpty(t, accessToken1Sub)
 	require.Equal(t, accessToken1Sub, accessToken2Sub)
@@ -799,16 +794,16 @@ func TestRefreshTokenGrantRotationDisabled_Valid(t *testing.T) {
 	require.NotEqual(t, refreshGrantResponse.AccessToken, tokenExchangeResponse.AccessToken)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
-	accessToken1Issuer, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "iss")
+	accessToken1Issuer, err := oauth.ExtractClaimFromJwt(tokenExchangeResponse.AccessToken, "iss")
 	require.NoError(t, err)
-	accessToken2Issuer, err := auth.ExtractClaimFromToken(refreshGrantResponse.AccessToken, "iss")
+	accessToken2Issuer, err := oauth.ExtractClaimFromJwt(refreshGrantResponse.AccessToken, "iss")
 	require.NoError(t, err)
 	require.NotEmpty(t, accessToken1Issuer)
 	require.Equal(t, accessToken1Issuer, accessToken2Issuer)
 
-	accessToken1Sub, err := auth.ExtractClaimFromToken(tokenExchangeResponse.AccessToken, "sub")
+	accessToken1Sub, err := oauth.ExtractClaimFromJwt(tokenExchangeResponse.AccessToken, "sub")
 	require.NoError(t, err)
-	accessToken2Sub, err := auth.ExtractClaimFromToken(refreshGrantResponse.AccessToken, "sub")
+	accessToken2Sub, err := oauth.ExtractClaimFromJwt(refreshGrantResponse.AccessToken, "sub")
 	require.NoError(t, err)
 	require.NotEmpty(t, accessToken1Sub)
 	require.Equal(t, accessToken1Sub, accessToken2Sub)
@@ -880,11 +875,11 @@ func TestAuthorizationCodeGrant_Valid(t *testing.T) {
 	require.NotEmpty(t, response.RefreshToken)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
-	accessTokenIssuer, err := auth.ExtractClaimFromToken(response.AccessToken, "iss")
+	accessTokenIssuer, err := oauth.ExtractClaimFromJwt(response.AccessToken, "iss")
 	require.NoError(t, err)
 	require.Equal(t, accessTokenIssuer, "https://keel.so")
 
-	accessTokenSub, err := auth.ExtractClaimFromToken(response.AccessToken, "sub")
+	accessTokenSub, err := oauth.ExtractClaimFromJwt(response.AccessToken, "sub")
 	require.NoError(t, err)
 	require.Equal(t, accessTokenSub, "identity_id")
 }
@@ -910,11 +905,11 @@ func TestAuthorizationCodeGrantJson_Valid(t *testing.T) {
 	require.NotEmpty(t, response.RefreshToken)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
-	accessTokenIssuer, err := auth.ExtractClaimFromToken(response.AccessToken, "iss")
+	accessTokenIssuer, err := oauth.ExtractClaimFromJwt(response.AccessToken, "iss")
 	require.NoError(t, err)
 	require.Equal(t, accessTokenIssuer, "https://keel.so")
 
-	accessTokenSub, err := auth.ExtractClaimFromToken(response.AccessToken, "sub")
+	accessTokenSub, err := oauth.ExtractClaimFromJwt(response.AccessToken, "sub")
 	require.NoError(t, err)
 	require.Equal(t, accessTokenSub, "identity_id")
 }
@@ -998,11 +993,11 @@ func TestPasswordGrantForm_Valid(t *testing.T) {
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
 	require.Len(t, identities, 1)
 
-	accessTokenIssuer, err := auth.ExtractClaimFromToken(response.AccessToken, "iss")
+	accessTokenIssuer, err := oauth.ExtractClaimFromJwt(response.AccessToken, "iss")
 	require.NoError(t, err)
 	require.Equal(t, accessTokenIssuer, "https://keel.so")
 
-	accessTokenSub, err := auth.ExtractClaimFromToken(response.AccessToken, "sub")
+	accessTokenSub, err := oauth.ExtractClaimFromJwt(response.AccessToken, "sub")
 	require.NoError(t, err)
 	require.Equal(t, accessTokenSub, identities[0]["id"])
 }
@@ -1029,11 +1024,11 @@ func TestPasswordGrantJson_Valid(t *testing.T) {
 	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
 	require.Len(t, identities, 1)
 
-	accessTokenIssuer, err := auth.ExtractClaimFromToken(response.AccessToken, "iss")
+	accessTokenIssuer, err := oauth.ExtractClaimFromJwt(response.AccessToken, "iss")
 	require.NoError(t, err)
 	require.Equal(t, accessTokenIssuer, "https://keel.so")
 
-	accessTokenSub, err := auth.ExtractClaimFromToken(response.AccessToken, "sub")
+	accessTokenSub, err := oauth.ExtractClaimFromJwt(response.AccessToken, "sub")
 	require.NoError(t, err)
 	require.Equal(t, accessTokenSub, identities[0]["id"])
 }

@@ -5,22 +5,9 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
   createBeatle: Beatle!
   deleteBeatle: DeleteResponse
-  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
-  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
   switchBeatle: Beatle!
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
-  email: String!
-  password: String!
 }
 
 input ListBeatlesInput {
@@ -28,21 +15,6 @@ input ListBeatlesInput {
   before: String
   first: Int
   last: Int
-}
-
-input RequestPasswordResetInput {
-  email: String!
-  redirectUrl: String!
-}
-
-input ResetPasswordInput {
-  password: String!
-  token: String!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
 }
 
 type Beatle {
@@ -85,14 +57,6 @@ type PageInfo {
   hasNextPage: Boolean!
   startCursor: String!
   totalCount: Int!
-}
-
-type RequestPasswordResetResponse {
-  success: Boolean
-}
-
-type ResetPasswordResponse {
-  success: Boolean
 }
 
 type Timestamp {

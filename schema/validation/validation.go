@@ -31,14 +31,12 @@ type validationFunc func(asts []*parser.AST) errorhandling.ValidationErrors
 
 var validatorFuncs = []validationFunc{
 	actions.ActionTypesRule,
-	actions.UniqueActionNamesRule,
 	actions.ValidActionInputTypesRule,
 	actions.ValidActionInputLabelRule,
 	actions.ValidArbitraryFunctionReturns,
 	actions.ActionModelInputsRule,
 	actions.CreateOperationNoReadInputsRule,
 	actions.CreateOperationRequiredFieldsRule,
-	actions.ReservedActionNameRule,
 
 	field.ValidFieldTypesRule,
 	field.UniqueFieldNamesRule,
@@ -55,7 +53,11 @@ var validatorFuncs = []validationFunc{
 }
 
 var visitorFuncs = []VisitorFunc{
-	DuplicateDefinitionRule,
+	DuplicateModelNames,
+	DuplicateEnumNames,
+	DuplicateMessageNames,
+	DuplicateActionNames,
+	DuplicateJobNames,
 	CasingRule,
 	NameClashesRule,
 	RecursiveFieldsRule,

@@ -202,21 +202,6 @@
       "name": "Any"
     },
     {
-      "name": "CreatePersonInput",
-      "fields": [
-        {
-          "messageName": "CreatePersonInput",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Person",
-            "fieldName": "name"
-          },
-          "target": ["name"]
-        }
-      ]
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -318,6 +303,21 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreatePersonInput",
+      "fields": [
+        {
+          "messageName": "CreatePersonInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Person",
+            "fieldName": "name"
+          },
+          "target": ["name"]
+        }
+      ]
     }
   ]
 }

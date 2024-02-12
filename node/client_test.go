@@ -434,27 +434,6 @@ model Person {
 }`
 
 	expected := `
-export interface GetPersonInput {
-	id: string;
-}
-export interface StringQueryInput {
-	equals?: string | null;
-	notEquals?: string | null;
-	startsWith?: string;
-	endsWith?: string;
-	contains?: string;
-	oneOf?: string[];
-}
-export interface ListPeopleWhere {
-	name: StringQueryInput;
-}
-export interface ListPeopleInput {
-	where: ListPeopleWhere;
-	first?: number;
-	after?: string;
-	last?: number;
-	before?: string;
-}
 export interface EmailPasswordInput {
 	email: string;
 	password: string;
@@ -478,6 +457,27 @@ export interface ResetPasswordInput {
 	password: string;
 }
 export interface ResetPasswordResponse {
+}
+export interface GetPersonInput {
+	id: string;
+}
+export interface StringQueryInput {
+	equals?: string | null;
+	notEquals?: string | null;
+	startsWith?: string;
+	endsWith?: string;
+	contains?: string;
+	oneOf?: string[];
+}
+export interface ListPeopleWhere {
+	name: StringQueryInput;
+}
+export interface ListPeopleInput {
+	where: ListPeopleWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
 }
 export interface Person {
 	name: string
