@@ -9,6 +9,8 @@ import (
 	"github.com/teamkeel/keel/runtime/jsonschema"
 )
 
+const OpenApiSpecificationVersion = "3.1.0"
+
 // OpenAPI spec object - https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md
 type OpenAPI struct {
 	OpenAPI    string                    `json:"openapi"`
@@ -40,7 +42,7 @@ type OperationObject struct {
 type RequestBodyObject struct {
 	Description string                     `json:"description"`
 	Content     map[string]MediaTypeObject `json:"content,omitempty"`
-	Required    bool                       `json:"required"`
+	Required    *bool                      `json:"required,omitempty"`
 }
 
 type ResponseObject struct {
@@ -84,7 +86,7 @@ var (
 // Generate creates an OpenAPI 3.1 spec for the passed api.
 func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI {
 	spec := OpenAPI{
-		OpenAPI: "3.1.0",
+		OpenAPI: OpenApiSpecificationVersion,
 		Info: InfoObject{
 			Title:   api.Name,
 			Version: "1",

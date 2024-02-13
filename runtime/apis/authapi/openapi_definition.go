@@ -19,9 +19,9 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 		boolTrue := true
 
 		definition := openapi.OpenAPI{
-			OpenAPI: "3.1.0",
+			OpenAPI: openapi.OpenApiSpecificationVersion,
 			Info: openapi.InfoObject{
-				Title:   "Keel Auth",
+				Title:   "Keel OAuth",
 				Version: "1",
 			},
 			Paths:      map[string]openapi.PathItemObject{},
@@ -69,7 +69,7 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 							},
 						},
 					},
-					Required: true,
+					Required: &boolTrue,
 				},
 				Responses: map[string]openapi.ResponseObject{
 					"200": {
@@ -149,7 +149,7 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 							},
 						},
 					},
-					Required: true,
+					Required: &boolTrue,
 				},
 				Responses: map[string]openapi.ResponseObject{
 					"200": {
