@@ -96,6 +96,7 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 	handleRevoke := authapi.RevokeHandler(schema)
 	handleAuthorize := authapi.AuthorizeHandler(schema)
 	handleCallback := authapi.CallbackHandler(schema)
+	handleOpenApiRequest := authapi.OAuthOpenApiSchema()
 
 	return func(w http.ResponseWriter, r *http.Request) common.Response {
 		switch {
@@ -109,6 +110,8 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 			return handleAuthorize(r)
 		case strings.HasPrefix(r.URL.Path, "/auth/callback"):
 			return handleCallback(r)
+		case r.URL.Path == "/auth/openapi.json":
+			return handleOpenApiRequest(r)
 		default:
 			return common.Response{
 				Status: http.StatusNotFound,

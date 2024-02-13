@@ -44,6 +44,11 @@ type JSONSchema struct {
 	// of one string, so we use any here so it can be either
 	Type any `json:"type,omitempty"`
 
+	// New in draft 6
+	// Const is used to restrict a value to a single value.
+	// https://json-schema.org/understanding-json-schema/reference/const
+	Const any `json:"const,omitempty"`
+
 	// The enum field needs to be able to contains strings and null,
 	// so we use *string here
 	Enum []*string `json:"enum,omitempty"`
