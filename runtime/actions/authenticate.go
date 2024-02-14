@@ -25,76 +25,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type AuthenticateResult struct {
-	Token           string `json:"token"`
-	IdentityCreated bool   `json:"identityCreated"`
-}
-
 var (
 	ErrInvalidToken     = common.NewAuthenticationFailedMessageErr("cannot be parsed or verified as a valid JWT")
 	ErrTokenExpired     = common.NewAuthenticationFailedMessageErr("token has expired")
 	ErrIdentityNotFound = common.NewAuthenticationFailedMessageErr("identity not found")
 )
-
-// Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
-func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, error) {
-	typedInput := typed.New(input)
-
-	emailPassword := typedInput.Object("emailPassword")
-	if _, err := email.ParseAddress(emailPassword.String("email")); err != nil {
-		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "invalid email address"}
-	}
-
-	if emailPassword.String("password") == "" {
-		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "password cannot be empty"}
-	}
-
-	identity, err := FindIdentityByEmail(scope.Context, scope.Schema, emailPassword.String("email"), oauth.KeelIssuer)
-	if err != nil {
-		return nil, err
-	}
-
-	if identity != nil {
-		authenticated := bcrypt.CompareHashAndPassword([]byte(identity.Password), []byte(emailPassword.String("password"))) == nil
-		if !authenticated {
-			return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "failed to authenticate"}
-		}
-
-		token, _, err := oauth.GenerateAccessToken(scope.Context, identity.Id)
-		if err != nil {
-			return nil, err
-		}
-
-		return &AuthenticateResult{
-			Token:           token,
-			IdentityCreated: false,
-		}, nil
-	}
-
-	if !typedInput.Bool("createIfNotExists") {
-		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "failed to authenticate"}
-	}
-
-	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(emailPassword.String("password")), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, err
-	}
-
-	identity, err = CreateIdentity(scope.Context, scope.Schema, emailPassword.String("email"), string(hashedBytes), oauth.KeelIssuer)
-	if err != nil {
-		return nil, err
-	}
-
-	token, _, err := oauth.GenerateAccessToken(scope.Context, identity.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	return &AuthenticateResult{
-		Token:           token,
-		IdentityCreated: true,
-	}, nil
-}
 
 func ResetRequestPassword(scope *Scope, input map[string]any) error {
 	var err error

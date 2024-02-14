@@ -17,7 +17,6 @@ import (
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/actions")
 
 const (
-	authenticateActionName         = "authenticate"
 	requestPasswordResetActionName = "requestPasswordReset"
 	passwordResetActionName        = "resetPassword"
 )
@@ -195,9 +194,6 @@ func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetad
 
 func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, *common.ResponseMetadata, error) {
 	switch scope.Action.Name {
-	case authenticateActionName:
-		result, err := Authenticate(scope, inputs)
-		return result, nil, err
 	case requestPasswordResetActionName:
 		err := ResetRequestPassword(scope, inputs)
 		return map[string]any{}, nil, err
