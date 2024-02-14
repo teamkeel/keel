@@ -152,7 +152,7 @@ test("identity permission - correct identity in context - is authorized", async 
   const identity = await models.identity.create({
     email: "user@keel.xyz",
     password: "1234",
-  })
+  });
 
   await expect(
     actions.withIdentity(identity).createWithIdentityRequiresSameIdentity({})

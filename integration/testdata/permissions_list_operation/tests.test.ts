@@ -355,7 +355,6 @@ test("identity permission - correct identity in context - is authorized", async 
     issuer: "https://keel.so",
   });
 
-
   await actions.withIdentity(identity1).createWithIdentity({});
 
   await actions.withIdentity(identity1).createWithIdentity({});
@@ -364,8 +363,6 @@ test("identity permission - correct identity in context - is authorized", async 
     email: "anotheruser@keel.xyz",
     issuer: "https://keel.so",
   });
-
-
 
   await actions.withIdentity(identity2).createWithIdentity({ isActive: false });
 

@@ -283,7 +283,6 @@ test("creating a post with a role based permission rule - email based - unpermit
     issuer: "https://keel.so",
   });
 
-
   const identity2 = await models.identity.create({
     email: "businessowner@keel.xyz",
     password: "foo",

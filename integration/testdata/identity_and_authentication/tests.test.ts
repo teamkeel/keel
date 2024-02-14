@@ -1,39 +1,47 @@
 import { test, expect, beforeEach } from "vitest";
 import { actions, models, resetDatabase } from "@teamkeel/testing";
 
-
 beforeEach(resetDatabase);
 
 test("create identity", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response.status).toEqual(200);
 
-  const identity = await models.identity.findOne({ email:  "user@keel.xyz", issuer: "https://keel.so" });
+  const identity = await models.identity.findOne({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
+  });
   expect(identity).not.toBeNull();
 });
 
 test("authenticate - invalid email - respond with invalid email address error", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user",
+        password: "1234",
+      }),
+    }
+  );
   expect(response.status).toEqual(400);
 
   const body = await response.json();
@@ -45,100 +53,112 @@ test("authenticate - invalid email - respond with invalid email address error", 
 });
 
 test("authenticate - empty password - respond with password cannot be empty error", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": ""
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "",
+      }),
+    }
+  );
   expect(response.status).toEqual(400);
 
   const body = await response.json();
 
   expect(body).toEqual({
     error: "invalid_request",
-    error_description: "the identity's password in the 'password' field is required",
+    error_description:
+      "the identity's password in the 'password' field is required",
   });
 });
 
-
-
 test("authenticate - existing identity - authenticated", async () => {
-  const response1 = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response1 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response1.status).toEqual(200);
 
-  const response2 = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response2 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response2.status).toEqual(200);
-
 
   const identities = await models.identity.findMany();
   expect(identities).toHaveLength(1);
 });
 
-
 test("authenticate - incorrect credentials with existing identity - not authenticated", async () => {
-  const response1 = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response1 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response1.status).toEqual(200);
 
-  const response2 = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "wrong"
-    })
-  });
+  const response2 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "wrong",
+      }),
+    }
+  );
   expect(response2.status).toEqual(401);
 
   const body = await response2.json();
 
   expect(body).toEqual({
     error: "invalid_client",
-    error_description: "possible causes may be that the identity does not exist or the credentials are incorrect",
+    error_description:
+      "possible causes may be that the identity does not exist or the credentials are incorrect",
   });
 
   const identities = await models.identity.findMany();
   expect(identities).toHaveLength(1);
 });
-
 
 test("withAuthToken - invalid token - authentication failed", async () => {
   await expect(
@@ -163,17 +183,20 @@ test("withAuthToken - invalid token - authentication failed", async () => {
 });
 
 test("withAuthToken - identity does not exist - authentication failed", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response.status).toEqual(200);
 
   const body = await response.json();
@@ -209,19 +232,21 @@ test("withAuthToken - identity does not exist - authentication failed", async ()
   ).toHaveAuthenticationError();
 });
 
-
 test("identity context permission - correct identity - permission satisfied", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response.status).toEqual(200);
 
   const body = await response.json();
@@ -237,32 +262,38 @@ test("identity context permission - correct identity - permission satisfied", as
 });
 
 test("identity context permission - incorrect identity - permission not satisfied", async () => {
-  const response1 = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user1@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response1 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user1@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response1.status).toEqual(200);
   const body1 = await response1.json();
   const token1 = body1.access_token;
 
-  const response2 = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user2@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response2 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user2@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response2.status).toEqual(200);
   const body2 = await response2.json();
   const token2 = body2.access_token;
@@ -277,22 +308,24 @@ test("identity context permission - incorrect identity - permission not satisfie
 });
 
 test("isAuthenticated context permission - authenticated - permission satisfied", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response.status).toEqual(200);
 
   const body = await response.json();
   const token = body.access_token;
-
 
   const post = await actions
     .withAuthToken(token)
@@ -304,22 +337,24 @@ test("isAuthenticated context permission - authenticated - permission satisfied"
 });
 
 test("isAuthenticated context permission - not authenticated - permission not satisfied", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response.status).toEqual(200);
 
   const body = await response.json();
   const token = body.access_token;
-
 
   const post = await actions
     .withAuthToken(token)
@@ -331,22 +366,24 @@ test("isAuthenticated context permission - not authenticated - permission not sa
 });
 
 test("not isAuthenticated context permission - authenticated - permission satisfied", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response.status).toEqual(200);
 
   const body = await response.json();
   const token = body.access_token;
-
 
   const post = await actions
     .withAuthToken(token)
@@ -360,17 +397,20 @@ test("not isAuthenticated context permission - authenticated - permission satisf
 });
 
 test("not isAuthenticated context permission - not authenticated - permission satisfied", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response.status).toEqual(200);
 
   const body = await response.json();
@@ -386,22 +426,24 @@ test("not isAuthenticated context permission - not authenticated - permission sa
 });
 
 test("isAuthenticated context set - authenticated - is set to true", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response.status).toEqual(200);
 
   const body = await response.json();
   const token = body.access_token;
-
 
   const post = await actions
     .withAuthToken(token)
@@ -419,22 +461,24 @@ test("isAuthenticated context set - not authenticated - is set to false", async 
 });
 
 test("related model identity context permission - correct identity - permission satisfied", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response.status).toEqual(200);
 
   const body = await response.json();
   const token = body.access_token;
-
 
   const post = await actions
     .withAuthToken(token)
@@ -454,32 +498,38 @@ test("related model identity context permission - correct identity - permission 
 });
 
 test("related model identity context permission - incorrect identity - permission not satisfied", async () => {
-  const response1 = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user1@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response1 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user1@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response1.status).toEqual(200);
   const body1 = await response1.json();
   const token1 = body1.access_token;
 
-  const response2 = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user2@keel.xyz",
-      "password": "1234"
-    })
-  });
+  const response2 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user2@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
   expect(response2.status).toEqual(200);
   const body2 = await response2.json();
   const token2 = body2.access_token;
@@ -697,17 +747,20 @@ test("create and authenticate - email exists for another issuer - success", asyn
     externalId: "google-oauth2|117415937240512761581",
   });
 
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "keel@keelson.so",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "keel@keelson.so",
+        password: "1234",
+      }),
+    }
+  );
   expect(response.status).toEqual(200);
 
   const identities = await models.identity.findMany();
@@ -718,7 +771,7 @@ test("identity with custom non-ksuid id", async () => {
   const johnDoe = await models.identity.create({
     id: "not-a-ksuid",
     email: "john@example.com",
-    issuer: "https://keel.so"
+    issuer: "https://keel.so",
   });
 
   const post = await models.post.create({

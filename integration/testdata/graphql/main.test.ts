@@ -4,18 +4,21 @@ import { actions, models, resetDatabase } from "@teamkeel/testing";
 beforeEach(resetDatabase);
 
 test("list action with has-one relationship", async () => {
-  const response = await fetch(process.env.KEEL_TESTING_AUTH_API_URL + "/token", {
-    method: "POST",
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "grant_type": "password",
-      "username": "user@keel.so",
-      "password": "1234"
-    })
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.so",
+        password: "1234",
+      }),
+    }
+  );
 
   expect(response.status).toEqual(200);
   const token = (await response.json()).access_token;

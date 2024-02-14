@@ -7,7 +7,6 @@ import (
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/oauth"
 
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema/node"
@@ -421,32 +420,6 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		Optional: true,
 	}
 
-	defaultIssuerValue := fmt.Sprintf("\"%s\"", oauth.KeelIssuer)
-	issuerDefaultAttribute := &parser.AttributeNode{
-		Name: parser.AttributeNameToken{
-			Value: parser.AttributeDefault,
-		},
-		Arguments: []*parser.AttributeArgumentNode{
-			{
-				Expression: &parser.Expression{
-					Or: []*parser.OrExpression{
-						{
-							And: []*parser.ConditionWrap{
-								{
-									Condition: &parser.Condition{
-										LHS: &parser.Operand{
-											String: &defaultIssuerValue,
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
 	issuerField := &parser.FieldNode{
 		BuiltIn: true,
 		Name: parser.NameNode{
@@ -455,8 +428,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		Type: parser.NameNode{
 			Value: parser.FieldTypeText,
 		},
-		Optional:   true,
-		Attributes: []*parser.AttributeNode{issuerDefaultAttribute},
+		Optional: true,
 	}
 
 	requestPasswordReset := &parser.ActionNode{

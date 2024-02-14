@@ -78,9 +78,9 @@ test("enum literal comparisons - all expressions fail - is not authorized", asyn
 
 test("permission role email is authorized", async () => {
   const identity = await models.identity.create({
-      email: "verified@agency.org",
-      issuer: "https://keel.so",
-  })
+    email: "verified@agency.org",
+    issuer: "https://keel.so",
+  });
 
   await models.identity.update(
     {
@@ -105,7 +105,7 @@ test("permission role email is authorized but not verified", async () => {
   const identity = await models.identity.create({
     email: "notVerified@agency.org",
     issuer: "https://keel.so",
-  })
+  });
 
   await expect(
     actions

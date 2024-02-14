@@ -370,8 +370,6 @@ test("identity permission - correct identity in context - is authorized", async 
     issuer: "https://keel.so",
   });
 
-
-
   const post = await actions.withIdentity(identity).createWithIdentity({});
 
   await expect(
@@ -388,13 +386,10 @@ test("identity permission - incorrect identity in context - is not authorized", 
     issuer: "https://keel.so",
   });
 
-
   const identity2 = await models.identity.create({
     email: "user2@keel.xyz",
     issuer: "https://keel.so",
   });
-
-
 
   const post = await actions.withIdentity(identity1).createWithIdentity({});
 

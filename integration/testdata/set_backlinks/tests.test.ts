@@ -226,11 +226,13 @@ test("update - @set with backlinks and no user backlink", async () => {
 });
 
 test("create - @set with identity fields", async () => {
-  await models.identity.create({ email: "user@keel.xyz" });
-
+  const { id } = await models.identity.create({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const identity = await models.identity.update(
-    { email: "user@keel.xyz", issuer: "https://keel.so" },
+    { id: id },
     { externalId: "extId" }
   );
 
@@ -262,12 +264,13 @@ test("create - @set with identity fields", async () => {
 });
 
 test("update - @set with identity fields", async () => {
-
-  await models.identity.create({ email: "user@keel.xyz" });
-
+  const { id: identityId } = await models.identity.create({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const identity = await models.identity.update(
-    { email: "user@keel.xyz", issuer: "https://keel.so" },
+    { id: identityId },
     { externalId: "extId" }
   );
 

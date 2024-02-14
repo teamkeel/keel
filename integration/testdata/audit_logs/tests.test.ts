@@ -718,11 +718,10 @@ test("identity model - audit table populated", async () => {
     password: "1234",
   });
 
-
   const identity = await models.identity.findOne({
     email: "user@keel.xyz",
-    issuer: "https://keel.so",
   });
+
   expect(identity).not.toBeNull();
 
   const logs = await sql<Audit<Identity>>`SELECT * FROM keel_audit`.execute(
