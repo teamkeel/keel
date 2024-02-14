@@ -479,33 +479,6 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 
 	identityModelDeclaration.Model.Sections = append(identityModelDeclaration.Model.Sections, uniqueModelSection)
 
-	emailPasswordInputDeclaration := &parser.DeclarationNode{
-		Message: &parser.MessageNode{
-			BuiltIn: true,
-			Name: parser.NameNode{
-				Value: "EmailPasswordInput",
-			},
-			Fields: []*parser.FieldNode{
-				{
-					Name: parser.NameNode{
-						Value: "email",
-					},
-					Type: parser.NameNode{
-						Value: "Text",
-					},
-				},
-				{
-					Name: parser.NameNode{
-						Value: "password",
-					},
-					Type: parser.NameNode{
-						Value: "Text",
-					},
-				},
-			},
-		},
-	}
-
 	resetPasswordInputDeclaration := &parser.DeclarationNode{
 		Message: &parser.MessageNode{
 			BuiltIn: true,
@@ -583,7 +556,6 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 	declarations.Declarations = append(
 		declarations.Declarations,
 		identityModelDeclaration,
-		emailPasswordInputDeclaration,
 		requestPasswordResetInputDeclaration,
 		requestPasswordResetResponseDeclaration,
 		resetPasswordInputDeclaration,

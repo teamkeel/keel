@@ -433,10 +433,6 @@ model Person {
 }`
 
 	expected := `
-export interface EmailPasswordInput {
-	email: string;
-	password: string;
-}
 export interface RequestPasswordResetInput {
 	email: string;
 	redirectUrl: string;

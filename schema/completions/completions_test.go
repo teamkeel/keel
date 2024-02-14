@@ -1125,7 +1125,7 @@ func TestFunctionCompletions(t *testing.T) {
 					read getPerson(<Cursor>
 				}
 			}`,
-			expected: []string{"Any", "AuthenticateInput", "AuthenticateResponse", "EmailPasswordInput", "GetPersonInput", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse", "createdAt", "id", "updatedAt"},
+			expected: []string{"Any", "GetPersonInput", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse", "createdAt", "id", "updatedAt"},
 		},
 		{
 			name: "arbitrary-function-input-completions-multi-file",
@@ -1138,7 +1138,7 @@ func TestFunctionCompletions(t *testing.T) {
 			otherSchema: `
 			message GetPersonInput {}
 			`,
-			expected: []string{"Any", "AuthenticateInput", "AuthenticateResponse", "EmailPasswordInput", "GetPersonInput", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse", "createdAt", "id", "updatedAt"},
+			expected: []string{"Any", "GetPersonInput", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse", "createdAt", "id", "updatedAt"},
 		},
 		// returns keyword tests
 		{
@@ -1152,7 +1152,7 @@ func TestFunctionCompletions(t *testing.T) {
 				}
 			}
 			`,
-			expected: []string{"AuthenticateInput", "AuthenticateResponse", "EmailPasswordInput", "GetPersonInput", "GetPersonResponse", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse"},
+			expected: []string{"GetPersonInput", "GetPersonResponse", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse"},
 		},
 		{
 			name: "arbitrary-function-returns-keyword-completions",
@@ -1177,7 +1177,7 @@ func TestFunctionCompletions(t *testing.T) {
 				}
 			}
 			`,
-			expected: []string{"Any", "AuthenticateInput", "AuthenticateResponse", "EmailPasswordInput", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse", "createdAt", "id", "updatedAt"},
+			expected: []string{"Any", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse", "createdAt", "id", "updatedAt"},
 		},
 		{
 			name: "arbitrary-function-create-with-completion",
@@ -1779,7 +1779,7 @@ func TestMessageCompletions(t *testing.T) {
 				foo <Cursor>
 			}
 			`,
-			expected: []string{"AnotherMessage", "AuthenticateInput", "AuthenticateResponse", "Boolean", "Date", "EmailPasswordInput", "ID", "Identity", "MyMessage", "Number", "Password", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse", "Secret", "Text", "Timestamp"},
+			expected: []string{"AnotherMessage", "Boolean", "Date", "ID", "Identity", "MyMessage", "Number", "Password", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse", "Secret", "Text", "Timestamp"},
 		},
 	}
 

@@ -802,17 +802,6 @@ func TestValidateRequest(t *testing.T) {
 			},
 		},
 		{
-			name:   "authenticate",
-			schema: `model Whatever {}`,
-			cases: []fixture{
-				{
-					name:    "valid",
-					opName:  "authenticate",
-					request: `{"emailPassword": {"email": "foo@bar.com", "password": "pa33w0rd"}}`,
-				},
-			},
-		},
-		{
 			name: "arbitrary functions",
 			schema: `
 			    message In {}

@@ -1661,10 +1661,6 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface EmailPasswordInput {
-	email: string;
-	password: string;
-}
 export interface RequestPasswordResetInput {
 	email: string;
 	redirectUrl: string;
@@ -1743,10 +1739,6 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface EmailPasswordInput {
-	email: string;
-	password: string;
-}
 export interface RequestPasswordResetInput {
 	email: string;
 	redirectUrl: string;
@@ -1909,10 +1901,6 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface EmailPasswordInput {
-	email: string;
-	password: string;
-}
 export interface RequestPasswordResetInput {
 	email: string;
 	redirectUrl: string;
