@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/Masterminds/semver/v3"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/rs/cors"
@@ -180,6 +181,9 @@ type Model struct {
 	Secrets           map[string]string
 	Environment       string
 
+	// The current latest version of Keel in NPM
+	LatestVersion *semver.Version
+
 	// Channels for communication between long-running
 	// commands and the Bubbletea program
 	runtimeRequestsCh chan tea.Msg
@@ -216,7 +220,13 @@ func (m *Model) Init() tea.Cmd {
 	m.TracePort = "4318"
 
 	m.Status = StatusCheckingDependencies
-	return CheckDependencies()
+
+	cmds := []tea.Cmd{
+		FetchLatestVersion(),
+		CheckDependencies(),
+	}
+
+	return tea.Batch(cmds...)
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -233,6 +243,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// resizes their terminal window.
 		m.width = msg.Width
 		m.height = msg.Height
+
+		return m, nil
+
+	case FetchLatestVersionMsg:
+		m.LatestVersion = msg.LatestVersion
 
 		return m, nil
 	case CheckDependenciesMsg:

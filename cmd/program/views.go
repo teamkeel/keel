@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/teamkeel/keel/colors"
@@ -13,6 +14,7 @@ import (
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/node"
+	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -33,6 +35,16 @@ func renderRun(m *Model) string {
 		b.WriteString("Connect to your database using: ")
 		b.WriteString(colors.Cyan(fmt.Sprintf("psql -Atx \"%s\"", m.DatabaseConnInfo.String())).Highlight().String())
 		b.WriteString("\n")
+	}
+
+	if m.LatestVersion != nil {
+		currentVersion, _ := semver.NewVersion(runtime.GetVersion())
+		if currentVersion != nil && currentVersion.LessThan(m.LatestVersion) {
+			b.WriteString("\n")
+			b.WriteString(colors.Red(fmt.Sprintf("❗️ Your version of Keel is outdated. Please update to v%s with: ", m.LatestVersion.String())).String())
+			b.WriteString(colors.Red("npm install -g keel").String())
+			b.WriteString("\n")
+		}
 	}
 
 	b.WriteString("\n")
@@ -126,6 +138,7 @@ func renderRun(m *Model) string {
 				b.WriteString(colors.White(fmt.Sprintf(" (%s)", values[1])).String())
 			}
 		}
+
 	}
 
 	b.WriteString("\n")
