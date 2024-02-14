@@ -108,12 +108,11 @@ func renderRun(m *Model) string {
 			}
 			b.WriteString("\n")
 		}
-		b.WriteString("\n")
 	}
 
 	if m.Status == StatusRunning {
 		if len(m.Schema.Apis) == 0 {
-			b.WriteString(colors.Yellow("\n - Your schema doesn't have any API's defined in it").String())
+			b.WriteString(colors.Yellow("\n - Your schema doesn't have any API's defined in it\n").String())
 		}
 
 		b.WriteString("\n")
@@ -125,24 +124,26 @@ func renderRun(m *Model) string {
 			b.WriteString("\n")
 			b.WriteString(api.Name)
 			b.WriteString(colors.White(" endpoints:").String())
+
 			endpoints := [][]string{
 				{"graphiql", "GraphiQL Playground"},
 				{"graphql", "GraphQL"},
 				{"json", "JSON"},
 				{"rpc", "JSON-RPC"},
 			}
+
 			for _, values := range endpoints {
 				b.WriteString("\n")
 				b.WriteString(" - ")
 				b.WriteString(colors.Blue(fmt.Sprintf("http://localhost:%s/%s/%s", m.Port, strings.ToLower(api.Name), values[0])).Highlight().String())
 				b.WriteString(colors.White(fmt.Sprintf(" (%s)", values[1])).String())
 			}
+			b.WriteString("\n")
 		}
-
 	}
 
 	b.WriteString("\n")
-	b.WriteString(colors.White(" - press ").String())
+	b.WriteString(colors.White("Press ").String())
 	b.WriteString("q")
 	b.WriteString(colors.White(" to quit").String())
 	b.WriteString("\n")
