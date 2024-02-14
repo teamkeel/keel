@@ -135,25 +135,6 @@
       "name": "Any"
     },
     {
-      "name": "EmailPasswordInput",
-      "fields": [
-        {
-          "messageName": "EmailPasswordInput",
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "messageName": "EmailPasswordInput",
-          "name": "password",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
       "name": "RequestPasswordResetInput",
       "fields": [
         {
