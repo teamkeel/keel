@@ -41,8 +41,11 @@ func renderRun(m *Model) string {
 		currentVersion, _ := semver.NewVersion(runtime.GetVersion())
 		if currentVersion != nil && currentVersion.LessThan(m.LatestVersion) {
 			b.WriteString("\n")
-			b.WriteString(colors.Red(fmt.Sprintf("❗️ Your version of Keel is outdated. Please update to v%s with: ", m.LatestVersion.String())).String())
-			b.WriteString(colors.Red("npm install -g keel").String())
+			b.WriteString(colors.Red(fmt.Sprintf("Your version of Keel is outdated. Please update to v%s by running this command:", m.LatestVersion.String())).String())
+
+			b.WriteString("\n")
+			b.WriteString(colors.White("$ ").String())
+			b.WriteString(colors.Yellow("npm install -g keel").String())
 			b.WriteString("\n")
 		}
 	}
