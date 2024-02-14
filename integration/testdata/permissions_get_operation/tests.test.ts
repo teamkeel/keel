@@ -1,4 +1,4 @@
-import { actions } from "@teamkeel/testing";
+import { actions, models } from "@teamkeel/testing";
 import { test, expect } from "vitest";
 import { PostType } from "@teamkeel/sdk";
 
@@ -187,56 +187,46 @@ test("enum permission on field name - null value - is not authorized", async () 
 });
 
 test("identity permission - correct identity in context - is authorized", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
+  const identity = await models.identity.create({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
   });
 
-  const post = await actions.withAuthToken(token).createWithIdentity({});
+  const post = await actions.withIdentity(identity).createWithIdentity({});
 
   const p = await actions
-    .withAuthToken(token)
+    .withAuthToken(identity)
     .getWithIdentityPermission({ id: post.id });
   expect(p!.id).toEqual(post.id);
 });
 
 test("identity permission - incorrect identity in context - is not authorized", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user1@keel.xyz",
-      password: "1234",
-    },
+  const identity1 = await models.identity.create({
+    email: "user1@keel.xyz",
+    issuer: "https://keel.so",
   });
 
-  const { token: token2 } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user2@keel.xyz",
-      password: "1234",
-    },
+
+  const identity2 = await models.identity.create({
+    email: "user2@keel.xyz",
+    issuer: "https://keel.so",
   });
 
-  const post = await actions.withAuthToken(token).createWithIdentity({});
+  const post = await actions.withIdentity(identity1).createWithIdentity({});
 
   await expect(
-    actions.withAuthToken(token2).getWithIdentityPermission({ id: post.id })
+    actions.withIdentity(identity2).getWithIdentityPermission({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("identity permission - no identity in context - is not authorized", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
+  const identity = await models.identity.create({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
   });
 
-  const post = await actions.withAuthToken(token).createWithIdentity({});
+
+  const post = await actions.withIdentity(identity).createWithIdentity({});
 
   await expect(
     actions.getWithIdentityPermission({ id: post.id })

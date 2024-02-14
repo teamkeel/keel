@@ -245,12 +245,9 @@ test("deleting a post with a permission rule", async () => {
 });
 
 test("creating a post with a role based permission rule - email based - permitted", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "verified@keel.xyz",
-      password: "1234",
-    },
+  const identity1 = await models.identity.create({
+    email: "verified@keel.xyz",
+    issuer: "https://keel.so",
   });
 
   await models.identity.update(
@@ -263,17 +260,17 @@ test("creating a post with a role based permission rule - email based - permitte
     }
   );
 
-  const identity = await models.identity.create({
+  const identity2 = await models.identity.create({
     email: "businessowner@keel.xyz",
     password: "foo",
   });
   const business = await models.business.create({
     name: "Adam Inc",
-    identityId: identity.id,
+    identityId: identity2.id,
   });
 
   await expect(
-    actions.withAuthToken(token).createPostWithRole({
+    actions.withIdentity(identity1).createPostWithRole({
       title: "a post created via a special role",
       business: { id: business.id },
     })
@@ -281,25 +278,23 @@ test("creating a post with a role based permission rule - email based - permitte
 });
 
 test("creating a post with a role based permission rule - email based - unpermitted", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "disallowed@keel.xyz",
-      password: "1234",
-    },
+  const identity1 = await models.identity.create({
+    email: "disallowed@keel.xyz",
+    issuer: "https://keel.so",
   });
 
-  const identity = await models.identity.create({
+
+  const identity2 = await models.identity.create({
     email: "businessowner@keel.xyz",
     password: "foo",
   });
   const business = await models.business.create({
     name: "Adam Inc",
-    identityId: identity.id,
+    identityId: identity2.id,
   });
 
   await expect(
-    actions.withAuthToken(token).createPostWithRole({
+    actions.withIdentity(identity1).createPostWithRole({
       title: "a post created via a special role",
       business: { id: business.id },
     })
@@ -307,12 +302,9 @@ test("creating a post with a role based permission rule - email based - unpermit
 });
 
 test("creating a post with a role based permission rule - domain based - permitted", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "adam@abc.com",
-      password: "1234",
-    },
+  const identity1 = await models.identity.create({
+    email: "adam@abc.com",
+    issuer: "https://keel.so",
   });
 
   await models.identity.update(
@@ -325,17 +317,17 @@ test("creating a post with a role based permission rule - domain based - permitt
     }
   );
 
-  const identity = await models.identity.create({
+  const identity2 = await models.identity.create({
     email: "businessowner@keel.xyz",
     password: "foo",
   });
   const business = await models.business.create({
     name: "Adam Inc",
-    identityId: identity.id,
+    identityId: identity2.id,
   });
 
   await expect(
-    actions.withAuthToken(token).createPostWithRole({
+    actions.withIdentity(identity1).createPostWithRole({
       title: "a post created via a special role",
       business: { id: business.id },
     })
@@ -343,25 +335,22 @@ test("creating a post with a role based permission rule - domain based - permitt
 });
 
 test("creating a post with a role based permission rule - domain based - unpermitted", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "blah@bca.com",
-      password: "1234",
-    },
+  const identity1 = await models.identity.create({
+    email: "blah@bca.com",
+    issuer: "https://keel.so",
   });
 
-  const identity = await models.identity.create({
+  const identity2 = await models.identity.create({
     email: "businessowner@keel.xyz",
     password: "foo",
   });
   const business = await models.business.create({
     name: "Adam Inc",
-    identityId: identity.id,
+    identityId: identity2.id,
   });
 
   await expect(
-    actions.withAuthToken(token).createPostWithRole({
+    actions.withIdentity(identity1).createPostWithRole({
       title: "a post created via a special role",
       business: { id: business.id },
     })

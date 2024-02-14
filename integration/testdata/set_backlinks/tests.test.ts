@@ -30,6 +30,7 @@ test("create - @set with backlinks and 1:M nested create", async () => {
     isActive: true,
   });
   const identity = await models.identity.create({ email: "keelson@keel.so" });
+  console.log(identity);
   const user = await models.user.create({
     name: "Keelson",
     identityId: identity.id,
@@ -201,7 +202,7 @@ test("update - @set with backlinks and no user backlink", async () => {
     name: "Keel",
     isActive: true,
   });
-  const identity = await models.identity.create({ email: "keelson@keel.so" });
+  const identity = await models.identity.create({ email: "keelson1@keel.so" });
   const user = await models.user.create({
     name: "Keelson",
     identityId: identity.id,
@@ -212,7 +213,7 @@ test("update - @set with backlinks and no user backlink", async () => {
     name: "Tax Records",
   });
 
-  const identity2 = await models.identity.create({ email: "keelson@keel.so" });
+  const identity2 = await models.identity.create({ email: "keelson2@keel.so" });
 
   await expect(
     actions.withIdentity(identity2).updateRecordOwner({
@@ -225,14 +226,8 @@ test("update - @set with backlinks and no user backlink", async () => {
 });
 
 test("create - @set with identity fields", async () => {
-  const { identityCreated } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
-  expect(identityCreated).toBeTruthy();
+  await models.identity.create({ email: "user@keel.xyz" });
+
 
   const identity = await models.identity.update(
     { email: "user@keel.xyz", issuer: "https://keel.so" },
@@ -267,14 +262,9 @@ test("create - @set with identity fields", async () => {
 });
 
 test("update - @set with identity fields", async () => {
-  const { identityCreated } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
-  expect(identityCreated).toBeTruthy();
+
+  await models.identity.create({ email: "user@keel.xyz" });
+
 
   const identity = await models.identity.update(
     { email: "user@keel.xyz", issuer: "https://keel.so" },

@@ -408,7 +408,6 @@ mutations: {
 	createPerson: this.actions.createPerson,
 	updatePerson: this.actions.updatePerson,
 	deletePerson: this.actions.deletePerson,
-	authenticate: this.actions.authenticate,
 	requestPasswordReset: this.actions.requestPasswordReset,
 	resetPassword: this.actions.resetPassword,
 }`
@@ -437,14 +436,6 @@ model Person {
 export interface EmailPasswordInput {
 	email: string;
 	password: string;
-}
-export interface AuthenticateInput {
-	createIfNotExists?: boolean;
-	emailPassword: EmailPasswordInput;
-}
-export interface AuthenticateResponse {
-	identityCreated: boolean;
-	token: string;
 }
 export interface RequestPasswordResetInput {
 	email: string;
@@ -533,12 +524,6 @@ export class APIClient extends Core {
 		getPerson: (i: GetPersonInput) => {
 			return this.client.rawRequest<Person | null>("getPerson", i);
 		},
-		authenticate: (i: AuthenticateInput) => {
-			return this.client.rawRequest<AuthenticateResponse>("authenticate", i).then((res) => {
-				if (res.data && res.data.token) this.client.setToken(res.data.token);
-				return res;
-			});
-		},
 		requestPasswordReset: (i: RequestPasswordResetInput) => {
 			return this.client.rawRequest<RequestPasswordResetResponse>("requestPasswordReset", i);
 		},
@@ -552,7 +537,6 @@ export class APIClient extends Core {
 			getPerson: this.actions.getPerson,
 		},
 		mutations: {
-			authenticate: this.actions.authenticate,
 			requestPasswordReset: this.actions.requestPasswordReset,
 			resetPassword: this.actions.resetPassword,
 		}
