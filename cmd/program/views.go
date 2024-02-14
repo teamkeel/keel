@@ -41,8 +41,7 @@ func renderRun(m *Model) string {
 		currentVersion, _ := semver.NewVersion(runtime.GetVersion())
 		if currentVersion != nil && currentVersion.LessThan(m.LatestVersion) {
 			b.WriteString("\n")
-			b.WriteString(colors.Red(fmt.Sprintf("Your version of Keel is outdated. Please update to v%s by running this command:", m.LatestVersion.String())).String())
-
+			b.WriteString(colors.Red(fmt.Sprintf("There is a new version of Keel available. Please update to v%s by running this command:", m.LatestVersion.String())).String())
 			b.WriteString("\n")
 			b.WriteString(colors.White("$ ").String())
 			b.WriteString(colors.Yellow("npm install -g keel").String())
@@ -119,7 +118,7 @@ func renderRun(m *Model) string {
 		}
 
 		b.WriteString("\n")
-		b.WriteString("Live Console: ")
+		b.WriteString("Local development console: ")
 		b.WriteString(colors.Blue("https://console.keel.so/local").Highlight().String())
 		b.WriteString("\n")
 
@@ -129,7 +128,6 @@ func renderRun(m *Model) string {
 			b.WriteString(colors.White(" endpoints:").String())
 
 			endpoints := [][]string{
-				{"graphiql", "GraphiQL Playground"},
 				{"graphql", "GraphQL"},
 				{"json", "JSON"},
 				{"rpc", "JSON-RPC"},
