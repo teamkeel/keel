@@ -318,11 +318,12 @@ func initStepGit(state *InitState) {
 	}
 
 	_, err := starter.Run()
-	if err != nil {
+	confirmed := !errors.Is(err, promptui.ErrAbort)
+	if err != nil && confirmed {
 		panic(err)
 	}
 
-	state.initGitRepo = true
+	state.initGitRepo = confirmed
 }
 
 func initStepCreateProject(state *InitState) {
