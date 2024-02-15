@@ -116,7 +116,6 @@ const (
 )
 
 const (
-	AuthenticateActionName         = "authenticate"
 	RequestPasswordResetActionName = "requestPasswordReset"
 	PasswordResetActionName        = "resetPassword"
 )

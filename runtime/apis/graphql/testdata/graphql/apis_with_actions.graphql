@@ -4,25 +4,21 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
-  email: String!
-  password: String!
+  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
+  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
 input GetPersonInput {
   id: ID!
 }
 
-type AuthenticateResponse {
-  identityCreated: Boolean!
+input RequestPasswordResetInput {
+  email: String!
+  redirectUrl: String!
+}
+
+input ResetPasswordInput {
+  password: String!
   token: String!
 }
 
@@ -31,6 +27,14 @@ type Person {
   id: ID!
   name: String!
   updatedAt: Timestamp!
+}
+
+type RequestPasswordResetResponse {
+  success: Boolean
+}
+
+type ResetPasswordResponse {
+  success: Boolean
 }
 
 type Timestamp {

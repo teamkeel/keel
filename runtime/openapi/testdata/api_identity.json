@@ -2,72 +2,6 @@
   "openapi": "3.1.0",
   "info": { "title": "Admin", "version": "1" },
   "paths": {
-    "/admin/json/authenticate": {
-      "post": {
-        "operationId": "authenticate",
-        "requestBody": {
-          "description": "authenticate Request",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "createIfNotExists": { "type": "boolean" },
-                  "emailPassword": {
-                    "$ref": "#/components/schemas/EmailPasswordInput"
-                  }
-                },
-                "additionalProperties": false,
-                "required": ["emailPassword"]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "authenticate Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "identityCreated": { "type": "boolean" },
-                    "token": { "type": "string" }
-                  },
-                  "additionalProperties": false,
-                  "required": ["identityCreated", "token"]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "authenticate Response Errors",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "code": { "type": "string" },
-                    "data": {
-                      "type": ["object", "null"],
-                      "properties": {
-                        "errors": {
-                          "type": "array",
-                          "properties": {
-                            "error": { "type": "string" },
-                            "field": { "type": "string" }
-                          }
-                        }
-                      }
-                    },
-                    "message": { "type": "string" }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/admin/json/requestPasswordReset": {
       "post": {
         "operationId": "requestPasswordReset",
@@ -178,19 +112,6 @@
             }
           }
         }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "EmailPasswordInput": {
-        "type": "object",
-        "properties": {
-          "email": { "type": "string" },
-          "password": { "type": "string" }
-        },
-        "additionalProperties": false,
-        "required": ["email", "password"]
       }
     }
   }

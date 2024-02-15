@@ -170,15 +170,6 @@ func writeClientActions(w *codegen.Writer, schema *proto.Schema, api *proto.Api)
 		model := proto.FindModel(schema.Models, action.ModelName)
 		w.Writef(`return this.client.rawRequest<%s>("%s", i)`, toClientActionReturnType(model, action), action.Name)
 
-		var setTokenChain = `.then((res) => {
-				if (res.data && res.data.token) this.client.setToken(res.data.token);
-				return res;
-            })`
-
-		if action.Name == "authenticate" {
-			w.Writef(setTokenChain)
-		}
-
 		w.Writeln(";")
 		w.Dedent()
 		w.Writeln("},")

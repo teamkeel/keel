@@ -713,19 +713,15 @@ test("job function using kysely with identity - audit table populated", async ()
 });
 
 test("identity model - audit table populated", async () => {
-  const { identityCreated } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
+  await models.identity.create({
+    email: "user@keel.xyz",
+    password: "1234",
   });
-  expect(identityCreated).toEqual(true);
 
   const identity = await models.identity.findOne({
     email: "user@keel.xyz",
-    issuer: "https://keel.so",
   });
+
   expect(identity).not.toBeNull();
 
   const logs = await sql<Audit<Identity>>`SELECT * FROM keel_audit`.execute(
