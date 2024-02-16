@@ -12,12 +12,27 @@
   "components": {
     "schemas": {
       "BooleanQueryInput": {
-        "type": "object",
-        "properties": {
-          "equals": { "type": ["boolean", "null"] },
-          "notEquals": { "type": ["boolean", "null"] }
-        },
-        "additionalProperties": false
+        "unevaluatedProperties": false,
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "equals": { "type": ["boolean", "null"] }
+            },
+            "additionalProperties": false,
+            "required": ["equals"],
+            "title": "equals"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "notEquals": { "type": ["boolean", "null"] }
+            },
+            "additionalProperties": false,
+            "required": ["notEquals"],
+            "title": "notEquals"
+          }
+        ]
       },
       "DateQueryInput": {
         "type": "object",

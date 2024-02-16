@@ -194,7 +194,7 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 	if !isAny {
 		// Certain messages should only allow one field to be set per request so we set these as a oneOf property
 		fieldsToGroup := (len(message.Fields) == 3 && contains(message.Fields, "equals") && contains(message.Fields, "notEquals") && contains(message.Fields, "oneOf"))
-		if message.Name == "StringQueryInput" || fieldsToGroup {
+		if message.Name == "StringQueryInput" || message.Name == "BooleanQueryInput" || fieldsToGroup {
 			oneOf := []JSONSchema{}
 
 			for _, field := range message.Fields {

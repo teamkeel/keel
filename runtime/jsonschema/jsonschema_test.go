@@ -736,7 +736,7 @@ func TestValidateRequest(t *testing.T) {
 						"where.title":     {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
 						"where.genre":     {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
 						"where.price":     {`Invalid type. Expected: object, given: null`},
-						"where.available": {`Invalid type. Expected: object, given: null`},
+						"where.available": {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
 						"where.createdAt": {`Invalid type. Expected: object, given: null`},
 					},
 				},
