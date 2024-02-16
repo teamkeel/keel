@@ -217,6 +217,7 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 						},
 					},
 					Required:             []string{"grant_type", "username", "password"},
+					Title:                "Password",
 					AdditionalProperties: &boolFalse,
 				},
 				{
@@ -230,6 +231,7 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 						},
 					},
 					Required:             []string{"grant_type", "subject_token"},
+					Title:                "Token Exchange",
 					AdditionalProperties: &boolFalse,
 				},
 				{
@@ -243,6 +245,7 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 						},
 					},
 					Required:             []string{"grant_type", "code"},
+					Title:                "Authorization Code",
 					AdditionalProperties: &boolFalse,
 				},
 				{
@@ -256,6 +259,7 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 						},
 					},
 					Required:             []string{"grant_type", "refresh_token"},
+					Title:                "Refresh Token",
 					AdditionalProperties: &boolFalse,
 				},
 			},
