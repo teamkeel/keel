@@ -108,7 +108,7 @@ func generateClientSdkPackage(schema *proto.Schema, api *proto.Api) codegen.Gene
 			Contents: `{
 	"name": "@teamkeel/client",
 	"dependencies": {
-		"cross-fetch": "4.0.0"
+		"cross-fetch": "^4.0.0"
 	}
 }`,
 		},
@@ -119,9 +119,9 @@ func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 	w.Writeln("export class APIClient extends Core {")
 
 	w.Indent()
-	w.Writeln("constructor(config: RequestConfig, refreshTokenStore: TokenStore = new InMemoryTokenStore()) {")
+	w.Writeln("constructor(config: Config) {")
 	w.Indent()
-	w.Writeln("super(config, refreshTokenStore);")
+	w.Writeln("super(config);")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("")

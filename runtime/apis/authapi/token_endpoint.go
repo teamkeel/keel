@@ -95,7 +95,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 		grantType, hasGrantType := inputs[ArgGrantType].(string)
 		if !hasGrantType || grantType == "" {
-			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the grant-type field is required with either 'refresh_token', 'token_exchange', 'authorization_code' or 'password'", nil)
+			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the grant_type field is required with either 'refresh_token', 'token_exchange', 'authorization_code' or 'password'", nil)
 		}
 
 		span.SetAttributes(

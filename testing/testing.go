@@ -33,6 +33,7 @@ import (
 )
 
 const (
+	AuthPath       = "auth"
 	ActionApiPath  = "testingactionsapi"
 	JobPath        = "testingjobs"
 	SubscriberPath = "testingsubscribers"
@@ -181,6 +182,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 			ctx = db.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
+			ctx = runtimectx.WithOAuthConfig(ctx, &builder.Config.Auth)
 
 			span.SetAttributes(attribute.String("request.url", r.URL.String()))
 
@@ -212,6 +214,9 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 
 			switch pathParts[0] {
+			case AuthPath:
+				r = r.WithContext(ctx)
+				runtime.NewHttpHandler(schema).ServeHTTP(w, r)
 			case ActionApiPath:
 				r = r.WithContext(ctx)
 				runtime.NewHttpHandler(schema).ServeHTTP(w, r)
