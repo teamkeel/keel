@@ -526,8 +526,8 @@ model Person {
 
 	expected := `
 export class APIClient extends Core {
-	constructor(config: RequestConfig, getTokens = InMemoryTokenStore.getInstance().getTokens, setTokens = InMemoryTokenStore.getInstance().setTokens) {
-		super(config, getTokens, setTokens);
+	constructor(config: Config) {
+		super(config);
 	}
 
 	private actions = {

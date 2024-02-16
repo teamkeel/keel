@@ -1,11 +1,13 @@
 type RequestHeaders = globalThis.Record<string, string>;
 
-// Refresh the token 60 seconds before it expires
+// Refresh the token EXPIRY_BUFFER_IN_MS seconds before it expires
 const EXPIRY_BUFFER_IN_MS = 60000;
 
-export type RequestConfig = {
+export type Config = {
   baseUrl: string;
   headers?: RequestHeaders;
+  refreshToken?: TokenStore;
+  accessToken?: TokenStore;
 };
 
 // Result types

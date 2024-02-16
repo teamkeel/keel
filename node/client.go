@@ -119,9 +119,9 @@ func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 	w.Writeln("export class APIClient extends Core {")
 
 	w.Indent()
-	w.Writeln("constructor(config: RequestConfig, getTokens = InMemoryTokenStore.getInstance().getTokens, setTokens = InMemoryTokenStore.getInstance().setTokens) {")
+	w.Writeln("constructor(config: Config) {")
 	w.Indent()
-	w.Writeln("super(config, getTokens, setTokens);")
+	w.Writeln("super(config);")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("")

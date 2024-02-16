@@ -1,13 +1,145 @@
+// GENERATED DO NOT EDIT
+
+type RequestHeaders = globalThis.Record<string, string>;
+
+// Refresh the token EXPIRY_BUFFER_IN_MS seconds before it expires
+const EXPIRY_BUFFER_IN_MS = 60000;
+
+export type Config = {
+  baseUrl: string;
+  headers?: RequestHeaders;
+  refreshToken?: TokenStore;
+  accessToken?: TokenStore;
+};
+
+// Result types
+
+export type APIResult<T> = Result<T, APIError>;
+
+type Data<T> = {
+  data: T;
+  error?: never;
+};
+
+type Err<U> = {
+  data?: never;
+  error: U;
+};
+
+type Result<T, U> = NonNullable<Data<T> | Err<U>>;
+
+// Error types
+
+/* 400 */
+type BadRequestError = {
+  type: "bad_request";
+  message: string;
+  requestId?: string;
+};
+
+/* 401 */
+type UnauthorizedError = {
+  type: "unauthorized";
+  message: string;
+  requestId?: string;
+};
+
+/* 403 */
+type ForbiddenError = {
+  type: "forbidden";
+  message: string;
+  requestId?: string;
+};
+
+/* 404 */
+type NotFoundError = {
+  type: "not_found";
+  message: string;
+  requestId?: string;
+};
+
+/* 500 */
+type InternalServerError = {
+  type: "internal_server_error";
+  message: string;
+  requestId?: string;
+};
+
+/* Unhandled/unexpected errors */
+type UnknownError = {
+  type: "unknown";
+  message: string;
+  error?: unknown;
+  requestId?: string;
+};
+
+export type APIError =
+  | UnauthorizedError
+  | ForbiddenError
+  | NotFoundError
+  | BadRequestError
+  | InternalServerError
+  | UnknownError;
+
+// Auth
+
+export interface TokenStore {
+  set(token: string | null): void;
+  get(): string | null;
+}
+
+export type Provider = {
+  name: string;
+  type: string;
+  authorizeUrl: string;
+};
+
+export type PasswordGrant = {
+  grant_type: "password";
+  username: string;
+  password: string;
+};
+
+export type TokenExchangeGrant = {
+  grant_type: "token_exchange";
+  subject_token: string;
+};
+
+export type AuthorizationCodeGrant = {
+  grant_type: "authorization_code";
+  code: string;
+};
+
+export type RefreshGrant = {
+  grant_type: "refresh_token";
+  refresh_token: string;
+};
+
+export type TokenRequest =
+  | PasswordGrant
+  | TokenExchangeGrant
+  | AuthorizationCodeGrant
+  | RefreshGrant;
+
+export class TokenError extends Error {
+  errorDescription: string;
+  constructor(error: string, errorDescription: string) {
+    super();
+    this.message = error;
+    this.errorDescription = errorDescription;
+  }
+}
+
 export class Core {
   constructor(private config: Config) {}
 
   ctx = {
     /**
-     * @deprecated This has been deprecated. See https://docs.keel.so/apis/client
+     * @deprecated This has been deprecated in favour of using the APIClient.auth which handles sessions implicitly
      */
     token: "",
     /**
-     * @deprecated This has been deprecated. See https://docs.keel.so/apis/client
+     * @deprecated This has been deprecated in favour of APIClient.auth.isAuthenticated()
      */
     isAuthenticated: false,
   };
@@ -31,7 +163,7 @@ export class Core {
       return this;
     },
     /**
-     * @deprecated This has been deprecated. See https://docs.keel.so/apis/client
+     * @deprecated This has been deprecated in favour of the APIClient.auth authenticate helper functions
      */
     setToken: (value: string): Core => {
       this.ctx.token = value;
@@ -39,7 +171,7 @@ export class Core {
       return this;
     },
     /**
-     * @deprecated This has been deprecated. See https://docs.keel.so/apis/client
+     * @deprecated This has been deprecated in favour of APIClient.auth.logout()
      */
     clearToken: (): Core => {
       this.ctx.token = "";
@@ -400,3 +532,129 @@ export class InMemoryStore implements TokenStore {
     this.token = token;
   };
 }
+
+// API
+
+export class APIClient extends Core {
+  constructor(config: Config) {
+    super(config);
+  }
+
+  private actions = {
+    createPost: (i: CreatePostInput) => {
+      return this.client.rawRequest<Post>("createPost", i);
+    },
+    myPosts: (i?: MyPostsInput) => {
+      return this.client.rawRequest<{ results: Post[]; pageInfo: PageInfo }>(
+        "myPosts",
+        i
+      );
+    },
+    allPosts: (i?: AllPostsInput) => {
+      return this.client.rawRequest<{ results: Post[]; pageInfo: PageInfo }>(
+        "allPosts",
+        i
+      );
+    },
+    authenticate: (i: AuthenticateInput) => {
+      return this.client
+        .rawRequest<AuthenticateResponse>("authenticate", i)
+        .then((res) => {
+          if (res.data && res.data.token) this.client.setToken(res.data.token);
+          return res;
+        });
+    },
+    requestPasswordReset: (i: RequestPasswordResetInput) => {
+      return this.client.rawRequest<RequestPasswordResetResponse>(
+        "requestPasswordReset",
+        i
+      );
+    },
+    resetPassword: (i: ResetPasswordInput) => {
+      return this.client.rawRequest<ResetPasswordResponse>("resetPassword", i);
+    },
+  };
+
+  api = {
+    queries: {
+      myPosts: this.actions.myPosts,
+      allPosts: this.actions.allPosts,
+    },
+    mutations: {
+      createPost: this.actions.createPost,
+      authenticate: this.actions.authenticate,
+      requestPasswordReset: this.actions.requestPasswordReset,
+      resetPassword: this.actions.resetPassword,
+    },
+  };
+}
+
+// API Types
+
+export interface CreatePostInput {
+  title: string;
+}
+export interface MyPostsWhere {}
+export interface MyPostsInput {
+  where?: MyPostsWhere;
+  first?: number;
+  after?: string;
+  last?: number;
+  before?: string;
+}
+export interface AllPostsWhere {}
+export interface AllPostsInput {
+  where?: AllPostsWhere;
+  first?: number;
+  after?: string;
+  last?: number;
+  before?: string;
+}
+export interface EmailPasswordInput {
+  email: string;
+  password: string;
+}
+export interface AuthenticateInput {
+  createIfNotExists?: boolean;
+  emailPassword: EmailPasswordInput;
+}
+export interface AuthenticateResponse {
+  identityCreated: boolean;
+  token: string;
+}
+export interface RequestPasswordResetInput {
+  email: string;
+  redirectUrl: string;
+}
+export interface RequestPasswordResetResponse {}
+export interface ResetPasswordInput {
+  token: string;
+  password: string;
+}
+export interface ResetPasswordResponse {}
+export interface Post {
+  title: string;
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  identityId: string | null;
+}
+export interface Identity {
+  email: string | null;
+  emailVerified: boolean;
+  password: any | null;
+  externalId: string | null;
+  issuer: string | null;
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export type SortDirection = "asc" | "desc" | "ASC" | "DESC";
+
+type PageInfo = {
+  count: number;
+  endCursor: string;
+  hasNextPage: boolean;
+  startCursor: string;
+  totalCount: number;
+};

@@ -182,6 +182,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 			ctx = db.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
+			ctx = runtimectx.WithOAuthConfig(ctx, &builder.Config.Auth)
 
 			span.SetAttributes(attribute.String("request.url", r.URL.String()))
 
