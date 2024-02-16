@@ -336,14 +336,6 @@ export class Core {
         body: JSON.stringify(req),
       });
 
-      console.debug(
-        "Received status " +
-          result.status +
-          " from /auth/token for " +
-          req.grant_type +
-          " grant"
-      );
-
       if (result.ok) {
         const data = await result.json();
 
