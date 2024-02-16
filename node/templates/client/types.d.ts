@@ -1,11 +1,13 @@
 type RequestHeaders = globalThis.Record<string, string>;
 
-// Refresh the token 60 seconds before it expires
+// Refresh the token EXPIRY_BUFFER_IN_MS seconds before it expires
 const EXPIRY_BUFFER_IN_MS = 60000;
 
-export type RequestConfig = {
+export type Config = {
   baseUrl: string;
   headers?: RequestHeaders;
+  refreshToken?: TokenStore;
+  accessToken?: TokenStore;
 };
 
 // Result types
@@ -90,27 +92,29 @@ export type Provider = {
   authorizeUrl: string;
 };
 
-export type AccessTokenSession = {
-  token: string;
-  expiresAt: Date;
+export type PasswordGrant = {
+  grant_type: "password";
+  username: string;
+  password: string;
 };
 
 export type TokenExchangeGrant = {
-  grant: "token_exchange";
-  subjectToken: string;
+  grant_type: "token_exchange";
+  subject_token: string;
 };
 
 export type AuthorizationCodeGrant = {
-  grant: "authorization_code";
+  grant_type: "authorization_code";
   code: string;
 };
 
 export type RefreshGrant = {
-  grant: "refresh_token";
-  refreshToken: string;
+  grant_type: "refresh_token";
+  refresh_token: string;
 };
 
-export type TokenGrant =
+export type TokenRequest =
+  | PasswordGrant
   | TokenExchangeGrant
   | AuthorizationCodeGrant
   | RefreshGrant;
