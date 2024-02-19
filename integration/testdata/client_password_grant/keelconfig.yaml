@@ -1,0 +1,4 @@
+auth:
+  tokens:
+    accessTokenExpiry: 61 # An extra 60 to cater for the buffer built into the keelClient refresh cycle
+    refreshTokenExpiry: 4

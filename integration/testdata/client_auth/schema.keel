@@ -1,0 +1,23 @@
+model Post {
+    fields {
+        title Text
+        identity Identity?
+    }
+
+    actions {
+        create createPost() with (title){
+            @set(post.identity = ctx.identity)
+            @permission(expression: ctx.isAuthenticated)
+        }
+        get getPost(id){
+            @permission(expression: post.identity == ctx.identity)
+        }
+        list myPosts() {
+            @permission(expression: ctx.isAuthenticated)
+            @where(post.identity == ctx.identity)
+        }
+        list allPosts() {
+            @permission(expression: true)
+        }
+    }
+}

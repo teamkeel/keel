@@ -513,9 +513,10 @@ model Person {
 
 	expected := `
 export class APIClient extends Core {
-	constructor(config: RequestConfig) {
+	constructor(config: Config) {
 		super(config);
 	}
+
 	private actions = {
 		getPerson: (i: GetPersonInput) => {
 			return this.client.rawRequest<Person | null>("getPerson", i);
