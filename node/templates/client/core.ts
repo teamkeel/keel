@@ -1,17 +1,6 @@
 export class Core {
   constructor(private config: Config) {}
 
-  ctx = {
-    /**
-     * @deprecated This has been deprecated. See https://docs.keel.so/apis/client
-     */
-    token: "",
-    /**
-     * @deprecated This has been deprecated. See https://docs.keel.so/apis/client
-     */
-    isAuthenticated: false,
-  };
-
   client = {
     setHeaders: (headers: RequestHeaders): Core => {
       this.config.headers = headers;
@@ -30,27 +19,11 @@ export class Core {
       this.config.baseUrl = value;
       return this;
     },
-    /**
-     * @deprecated This has been deprecated. See https://docs.keel.so/apis/client
-     */
-    setToken: (value: string): Core => {
-      this.ctx.token = value;
-      this.ctx.isAuthenticated = true;
-      return this;
-    },
-    /**
-     * @deprecated This has been deprecated. See https://docs.keel.so/apis/client
-     */
-    clearToken: (): Core => {
-      this.ctx.token = "";
-      this.ctx.isAuthenticated = false;
-      return this;
-    },
     rawRequest: async <T>(action: string, body: any): Promise<APIResult<T>> => {
       // If necessary, refresh the expired session before calling the action
       await this.auth.isAuthenticated();
 
-      const token = this.auth.accessToken.get() ?? this.ctx.token;
+      const token = this.auth.accessToken.get();
 
       try {
         const result = await globalThis.fetch(
