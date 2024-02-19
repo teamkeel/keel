@@ -498,83 +498,85 @@ export class InMemoryStore implements TokenStore {
   };
 }
 
-
 // API
 
 export class APIClient extends Core {
-    constructor(config: Config) {
-        super(config);
-    }
+  constructor(config: Config) {
+    super(config);
+  }
 
-    private actions = {
-        allPosts: (i?: AllPostsInput) => {
-            return this.client.rawRequest<{results: Post[], pageInfo: PageInfo}>("allPosts", i);
-        },
-        requestPasswordReset: (i: RequestPasswordResetInput) => {
-            return this.client.rawRequest<RequestPasswordResetResponse>("requestPasswordReset", i);
-        },
-        resetPassword: (i: ResetPasswordInput) => {
-            return this.client.rawRequest<ResetPasswordResponse>("resetPassword", i);
-        },
-    };
+  private actions = {
+    allPosts: (i?: AllPostsInput) => {
+      return this.client.rawRequest<{ results: Post[]; pageInfo: PageInfo }>(
+        "allPosts",
+        i
+      );
+    },
+    requestPasswordReset: (i: RequestPasswordResetInput) => {
+      return this.client.rawRequest<RequestPasswordResetResponse>(
+        "requestPasswordReset",
+        i
+      );
+    },
+    resetPassword: (i: ResetPasswordInput) => {
+      return this.client.rawRequest<ResetPasswordResponse>("resetPassword", i);
+    },
+  };
 
-    api = {
-        queries: {
-            allPosts: this.actions.allPosts,
-        },
-        mutations: {
-            requestPasswordReset: this.actions.requestPasswordReset,
-            resetPassword: this.actions.resetPassword,
-        }
-    };
+  api = {
+    queries: {
+      allPosts: this.actions.allPosts,
+    },
+    mutations: {
+      requestPasswordReset: this.actions.requestPasswordReset,
+      resetPassword: this.actions.resetPassword,
+    },
+  };
 }
 
 // API Types
 
 export interface RequestPasswordResetInput {
-    email: string;
-    redirectUrl: string;
+  email: string;
+  redirectUrl: string;
 }
-export interface RequestPasswordResetResponse {
-}
+export interface RequestPasswordResetResponse {}
 export interface ResetPasswordInput {
-    token: string;
-    password: string;
+  token: string;
+  password: string;
 }
-export interface ResetPasswordResponse {
-}
-export interface AllPostsWhere {
-}
+export interface ResetPasswordResponse {}
+export interface AllPostsWhere {}
 export interface AllPostsInput {
-    where?: AllPostsWhere;
-    first?: number;
-    after?: string;
-    last?: number;
-    before?: string;
+  where?: AllPostsWhere;
+  first?: number;
+  after?: string;
+  last?: number;
+  before?: string;
 }
 export interface Post {
-    title: string
-    id: string
-    createdAt: Date
-    updatedAt: Date
-    identityId: string | null
+  title: string;
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  identityId: string | null;
 }
 export interface Identity {
-    email: string | null
-    emailVerified: boolean
-    password: any | null
-    externalId: string | null
-    issuer: string | null
-    id: string
-    createdAt: Date
-    updatedAt: Date
+  email: string | null;
+  emailVerified: boolean;
+  password: any | null;
+  externalId: string | null;
+  issuer: string | null;
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 export type SortDirection = "asc" | "desc" | "ASC" | "DESC";
 
 type PageInfo = {
-    count: number;
-    endCursor: string;
-    hasNextPage: boolean;
-    startCursor: string;
-    totalCount: number;
+  count: number;
+  endCursor: string;
+  hasNextPage: boolean;
+  startCursor: string;
+  totalCount: number;
 };

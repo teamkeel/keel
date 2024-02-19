@@ -15,20 +15,26 @@ test("authentication - forbidden", async () => {
   expect(await client.auth.isAuthenticated()).toBeTruthy();
   const response1 = await client.api.mutations.createPost({ title: "Test" });
   expect(response1.data).not.toBeNull();
-  
-  const response2 = await client.api.queries.getPost({ id: response1.data!.id });
+
+  const response2 = await client.api.queries.getPost({
+    id: response1.data!.id,
+  });
   expect(response2.data?.id).toEqual(response1.data!.id);
 
   await client.auth.logout();
   expect(await client.auth.isAuthenticated()).not.toBeTruthy();
 
-  const response3 = await client.api.queries.getPost({ id: response1.data!.id });
+  const response3 = await client.api.queries.getPost({
+    id: response1.data!.id,
+  });
   expect(response3.error?.type).toEqual("forbidden");
 
   await client.auth.authenticateWithPassword("user2@example.com", "1234");
   expect(await client.auth.isAuthenticated()).toBeTruthy();
 
-  const response4 = await client.api.queries.getPost({ id: response1.data!.id });
+  const response4 = await client.api.queries.getPost({
+    id: response1.data!.id,
+  });
   expect(response4.error?.type).toEqual("forbidden");
 });
 
