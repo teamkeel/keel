@@ -193,12 +193,16 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 
 	if !isAny {
 		// Certain messages should only allow one field to be set per request so we set these as a oneOf property
-		fieldsToGroup := (len(message.Fields) == 3 && contains(message.Fields, "equals") && contains(message.Fields, "notEquals") && contains(message.Fields, "oneOf"))
-		if message.Name == "StringQueryInput" || fieldsToGroup {
-			oneOf := []JSONSchema{}
+		oneOfGroupFields := (len(message.Fields) == 3 && contains(message.Fields, "equals") && contains(message.Fields, "notEquals") && contains(message.Fields, "oneOf"))
+		oneOfConditions := message.Name == "StringQueryInput" || message.Name == "BooleanQueryInput" || oneOfGroupFields
+		// For these query inputs, we should allow multiple fields
+		anyOfConditions := message.Name == "DateQueryInput" || message.Name == "TimestampQueryInput" || message.Name == "IntQueryInput"
+
+		if oneOfConditions || anyOfConditions {
+			jsonSchema := []JSONSchema{}
 
 			for _, field := range message.Fields {
-				oneOfOption := JSONSchema{
+				jsonSchemaOption := JSONSchema{
 					Type:                 "object",
 					Properties:           map[string]JSONSchema{},
 					AdditionalProperties: boolPtr(false),
@@ -214,17 +218,22 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 					prop.Components = nil
 				}
 
-				oneOfOption.Properties[field.Name] = prop
-				oneOfOption.Title = field.Name
-				oneOfOption.Required = append(oneOfOption.Required, field.Name)
+				jsonSchemaOption.Properties[field.Name] = prop
+				jsonSchemaOption.Title = field.Name
+				jsonSchemaOption.Required = append(jsonSchemaOption.Required, field.Name)
 				// https://json-schema.org/understanding-json-schema/reference/object#unevaluatedproperties
 				root.UnevaluatedProperties = boolPtr(false)
 				root.AdditionalProperties = nil
 
-				oneOf = append(oneOf, oneOfOption)
+				jsonSchema = append(jsonSchema, jsonSchemaOption)
 			}
 
-			root.OneOf = oneOf
+			if anyOfConditions {
+				root.AnyOf = jsonSchema
+			} else {
+				root.OneOf = jsonSchema
+			}
+
 			root.Type = nil
 		} else {
 			for _, field := range message.Fields {

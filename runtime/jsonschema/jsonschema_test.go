@@ -716,7 +716,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooksByPublisherDateFounded",
 					request: `{"where": {"author": { "publisher": { "dateFounded": null}}}}`,
 					errors: map[string][]string{
-						"where.author.publisher.dateFounded": {`Invalid type. Expected: object, given: null`},
+						"where.author.publisher.dateFounded": {`Must validate at least one schema (anyOf)`, `Invalid type. Expected: object, given: null`},
 					},
 				},
 				{
@@ -735,9 +735,9 @@ func TestValidateRequest(t *testing.T) {
 						"where.id":        {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
 						"where.title":     {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
 						"where.genre":     {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
-						"where.price":     {`Invalid type. Expected: object, given: null`},
-						"where.available": {`Invalid type. Expected: object, given: null`},
-						"where.createdAt": {`Invalid type. Expected: object, given: null`},
+						"where.price":     {`Must validate at least one schema (anyOf)`, `Invalid type. Expected: object, given: null`},
+						"where.available": {`Must validate one and only one schema (oneOf)`, `Invalid type. Expected: object, given: null`},
+						"where.createdAt": {`Must validate at least one schema (anyOf)`, `Invalid type. Expected: object, given: null`},
 					},
 				},
 				{
@@ -771,6 +771,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"createdAt": {"after": "not-a-date-time"}}}`,
 					errors: map[string][]string{
+						"where.createdAt":       {`Must validate at least one schema (anyOf)`},
 						"where.createdAt.after": {`Does not match format 'date-time'`},
 					},
 				},
@@ -779,6 +780,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"releaseDate": {"after": "12:00:00Z"}}}`,
 					errors: map[string][]string{
+						"where.releaseDate":       {`Must validate at least one schema (anyOf)`},
 						"where.releaseDate.after": {`Does not match format 'date'`},
 					},
 				},
@@ -787,6 +789,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"releaseDate": {"after": "not-a-date-time"}}}`,
 					errors: map[string][]string{
+						"where.releaseDate":       {`Must validate at least one schema (anyOf)`},
 						"where.releaseDate.after": {`Does not match format 'date'`},
 					},
 				},

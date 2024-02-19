@@ -12,24 +12,86 @@
   "components": {
     "schemas": {
       "BooleanQueryInput": {
-        "type": "object",
-        "properties": {
-          "equals": { "type": ["boolean", "null"] },
-          "notEquals": { "type": ["boolean", "null"] }
-        },
-        "additionalProperties": false
+        "unevaluatedProperties": false,
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "equals": { "type": ["boolean", "null"] }
+            },
+            "additionalProperties": false,
+            "required": ["equals"],
+            "title": "equals"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "notEquals": { "type": ["boolean", "null"] }
+            },
+            "additionalProperties": false,
+            "required": ["notEquals"],
+            "title": "notEquals"
+          }
+        ]
       },
       "DateQueryInput": {
-        "type": "object",
-        "properties": {
-          "after": { "type": "string", "format": "date" },
-          "before": { "type": "string", "format": "date" },
-          "equals": { "type": ["string", "null"], "format": "date" },
-          "notEquals": { "type": ["string", "null"], "format": "date" },
-          "onOrAfter": { "type": "string", "format": "date" },
-          "onOrBefore": { "type": "string", "format": "date" }
-        },
-        "additionalProperties": false
+        "unevaluatedProperties": false,
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "equals": { "type": ["string", "null"], "format": "date" }
+            },
+            "additionalProperties": false,
+            "required": ["equals"],
+            "title": "equals"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "notEquals": { "type": ["string", "null"], "format": "date" }
+            },
+            "additionalProperties": false,
+            "required": ["notEquals"],
+            "title": "notEquals"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "before": { "type": "string", "format": "date" }
+            },
+            "additionalProperties": false,
+            "required": ["before"],
+            "title": "before"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "onOrBefore": { "type": "string", "format": "date" }
+            },
+            "additionalProperties": false,
+            "required": ["onOrBefore"],
+            "title": "onOrBefore"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "after": { "type": "string", "format": "date" }
+            },
+            "additionalProperties": false,
+            "required": ["after"],
+            "title": "after"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "onOrAfter": { "type": "string", "format": "date" }
+            },
+            "additionalProperties": false,
+            "required": ["onOrAfter"],
+            "title": "onOrAfter"
+          }
+        ]
       },
       "HobbyQueryInput": {
         "unevaluatedProperties": false,
@@ -93,17 +155,72 @@
         ]
       },
       "IntQueryInput": {
-        "type": "object",
-        "properties": {
-          "equals": { "type": ["number", "null"] },
-          "greaterThan": { "type": "number" },
-          "greaterThanOrEquals": { "type": "number" },
-          "lessThan": { "type": "number" },
-          "lessThanOrEquals": { "type": "number" },
-          "notEquals": { "type": ["number", "null"] },
-          "oneOf": { "type": "array", "items": { "type": "number" } }
-        },
-        "additionalProperties": false
+        "unevaluatedProperties": false,
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "equals": { "type": ["number", "null"] }
+            },
+            "additionalProperties": false,
+            "required": ["equals"],
+            "title": "equals"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "notEquals": { "type": ["number", "null"] }
+            },
+            "additionalProperties": false,
+            "required": ["notEquals"],
+            "title": "notEquals"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "lessThan": { "type": "number" }
+            },
+            "additionalProperties": false,
+            "required": ["lessThan"],
+            "title": "lessThan"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "lessThanOrEquals": { "type": "number" }
+            },
+            "additionalProperties": false,
+            "required": ["lessThanOrEquals"],
+            "title": "lessThanOrEquals"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "greaterThan": { "type": "number" }
+            },
+            "additionalProperties": false,
+            "required": ["greaterThan"],
+            "title": "greaterThan"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "greaterThanOrEquals": { "type": "number" }
+            },
+            "additionalProperties": false,
+            "required": ["greaterThanOrEquals"],
+            "title": "greaterThanOrEquals"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "oneOf": { "type": "array", "items": { "type": "number" } }
+            },
+            "additionalProperties": false,
+            "required": ["oneOf"],
+            "title": "oneOf"
+          }
+        ]
       },
       "StringQueryInput": {
         "unevaluatedProperties": false,
@@ -205,12 +322,27 @@
         ]
       },
       "TimestampQueryInput": {
-        "type": "object",
-        "properties": {
-          "after": { "type": "string", "format": "date-time" },
-          "before": { "type": "string", "format": "date-time" }
-        },
-        "additionalProperties": false
+        "unevaluatedProperties": false,
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "before": { "type": "string", "format": "date-time" }
+            },
+            "additionalProperties": false,
+            "required": ["before"],
+            "title": "before"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "after": { "type": "string", "format": "date-time" }
+            },
+            "additionalProperties": false,
+            "required": ["after"],
+            "title": "after"
+          }
+        ]
       }
     }
   }
