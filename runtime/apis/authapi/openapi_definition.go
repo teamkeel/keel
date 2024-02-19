@@ -17,6 +17,7 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 		ctx := r.Context()
 
 		boolTrue := true
+		boolFalse := false
 
 		definition := openapi.OpenAPI{
 			OpenAPI: openapi.OpenApiSpecificationVersion,
@@ -199,7 +200,8 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 		}
 
 		definition.Components.Schemas["TokenRequest"] = jsonschema.JSONSchema{
-			Type: "object",
+			Type:                  "object",
+			UnevaluatedProperties: &boolFalse,
 			OneOf: []jsonschema.JSONSchema{
 				{
 					Type: "object",
@@ -215,7 +217,8 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 						},
 					},
 					Required:             []string{"grant_type", "username", "password"},
-					AdditionalProperties: &boolTrue,
+					Title:                "Password",
+					AdditionalProperties: &boolFalse,
 				},
 				{
 					Type: "object",
@@ -228,7 +231,8 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 						},
 					},
 					Required:             []string{"grant_type", "subject_token"},
-					AdditionalProperties: &boolTrue,
+					Title:                "Token Exchange",
+					AdditionalProperties: &boolFalse,
 				},
 				{
 					Type: "object",
@@ -241,7 +245,8 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 						},
 					},
 					Required:             []string{"grant_type", "code"},
-					AdditionalProperties: &boolTrue,
+					Title:                "Authorization Code",
+					AdditionalProperties: &boolFalse,
 				},
 				{
 					Type: "object",
@@ -254,7 +259,8 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 						},
 					},
 					Required:             []string{"grant_type", "refresh_token"},
-					AdditionalProperties: &boolTrue,
+					Title:                "Refresh Token",
+					AdditionalProperties: &boolFalse,
 				},
 			},
 		}
