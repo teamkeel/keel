@@ -8,8 +8,8 @@ const EXPIRY_BUFFER_IN_MS = 60000;
 export type Config = {
   baseUrl: string;
   headers?: RequestHeaders;
-  refreshToken?: TokenStore;
-  accessToken?: TokenStore;
+  refreshTokenStore?: TokenStore;
+  accessTokenStore?: TokenStore;
 };
 
 // Result types
@@ -133,17 +133,6 @@ export class TokenError extends Error {
 export class Core {
   constructor(private config: Config) {}
 
-  ctx = {
-    /**
-     * @deprecated This has been deprecated in favour of using the APIClient.auth which handles sessions implicitly
-     */
-    token: "",
-    /**
-     * @deprecated This has been deprecated in favour of APIClient.auth.isAuthenticated()
-     */
-    isAuthenticated: false,
-  };
-
   client = {
     setHeaders: (headers: RequestHeaders): Core => {
       this.config.headers = headers;
@@ -162,27 +151,11 @@ export class Core {
       this.config.baseUrl = value;
       return this;
     },
-    /**
-     * @deprecated This has been deprecated in favour of the APIClient.auth authenticate helper functions
-     */
-    setToken: (value: string): Core => {
-      this.ctx.token = value;
-      this.ctx.isAuthenticated = true;
-      return this;
-    },
-    /**
-     * @deprecated This has been deprecated in favour of APIClient.auth.logout()
-     */
-    clearToken: (): Core => {
-      this.ctx.token = "";
-      this.ctx.isAuthenticated = false;
-      return this;
-    },
     rawRequest: async <T>(action: string, body: any): Promise<APIResult<T>> => {
       // If necessary, refresh the expired session before calling the action
       await this.auth.isAuthenticated();
 
-      const token = this.auth.accessToken.get() ?? this.ctx.token;
+      const token = this.auth.accessToken.get();
 
       try {
         const result = await globalThis.fetch(
@@ -290,12 +263,12 @@ export class Core {
     /**
      * Get or set the access token from the configured token store.
      */
-    accessToken: this.config.accessToken || new InMemoryStore(),
+    accessToken: this.config.accessTokenStore || new InMemoryStore(),
 
     /**
      * Get or set the refresh token from the configured token store.
      */
-    refreshToken: this.config.refreshToken || new InMemoryStore(),
+    refreshToken: this.config.refreshTokenStore || new InMemoryStore(),
 
     /**
      * Returns the list of supported authentication providers and their SSO login URLs.
@@ -468,14 +441,6 @@ export class Core {
         body: JSON.stringify(req),
       });
 
-      console.debug(
-        "Received status " +
-          result.status +
-          " from /auth/token for " +
-          req.grant_type +
-          " grant"
-      );
-
       if (result.ok) {
         const data = await result.json();
 
@@ -533,106 +498,83 @@ export class InMemoryStore implements TokenStore {
   };
 }
 
+
 // API
 
 export class APIClient extends Core {
-  constructor(config: Config) {
-    super(config);
-  }
+    constructor(config: Config) {
+        super(config);
+    }
 
-  private actions = {
-    allPosts: (i?: AllPostsInput) => {
-      return this.client.rawRequest<{ results: Post[]; pageInfo: PageInfo }>(
-        "allPosts",
-        i
-      );
-    },
-    authenticate: (i: AuthenticateInput) => {
-      return this.client
-        .rawRequest<AuthenticateResponse>("authenticate", i)
-        .then((res) => {
-          if (res.data && res.data.token) this.client.setToken(res.data.token);
-          return res;
-        });
-    },
-    requestPasswordReset: (i: RequestPasswordResetInput) => {
-      return this.client.rawRequest<RequestPasswordResetResponse>(
-        "requestPasswordReset",
-        i
-      );
-    },
-    resetPassword: (i: ResetPasswordInput) => {
-      return this.client.rawRequest<ResetPasswordResponse>("resetPassword", i);
-    },
-  };
+    private actions = {
+        allPosts: (i?: AllPostsInput) => {
+            return this.client.rawRequest<{results: Post[], pageInfo: PageInfo}>("allPosts", i);
+        },
+        requestPasswordReset: (i: RequestPasswordResetInput) => {
+            return this.client.rawRequest<RequestPasswordResetResponse>("requestPasswordReset", i);
+        },
+        resetPassword: (i: ResetPasswordInput) => {
+            return this.client.rawRequest<ResetPasswordResponse>("resetPassword", i);
+        },
+    };
 
-  api = {
-    queries: {
-      allPosts: this.actions.allPosts,
-    },
-    mutations: {
-      authenticate: this.actions.authenticate,
-      requestPasswordReset: this.actions.requestPasswordReset,
-      resetPassword: this.actions.resetPassword,
-    },
-  };
+    api = {
+        queries: {
+            allPosts: this.actions.allPosts,
+        },
+        mutations: {
+            requestPasswordReset: this.actions.requestPasswordReset,
+            resetPassword: this.actions.resetPassword,
+        }
+    };
 }
 
 // API Types
 
-export interface AllPostsWhere {}
-export interface AllPostsInput {
-  where?: AllPostsWhere;
-  first?: number;
-  after?: string;
-  last?: number;
-  before?: string;
-}
-export interface EmailPasswordInput {
-  email: string;
-  password: string;
-}
-export interface AuthenticateInput {
-  createIfNotExists?: boolean;
-  emailPassword: EmailPasswordInput;
-}
-export interface AuthenticateResponse {
-  identityCreated: boolean;
-  token: string;
-}
 export interface RequestPasswordResetInput {
-  email: string;
-  redirectUrl: string;
+    email: string;
+    redirectUrl: string;
 }
-export interface RequestPasswordResetResponse {}
+export interface RequestPasswordResetResponse {
+}
 export interface ResetPasswordInput {
-  token: string;
-  password: string;
+    token: string;
+    password: string;
 }
-export interface ResetPasswordResponse {}
+export interface ResetPasswordResponse {
+}
+export interface AllPostsWhere {
+}
+export interface AllPostsInput {
+    where?: AllPostsWhere;
+    first?: number;
+    after?: string;
+    last?: number;
+    before?: string;
+}
 export interface Post {
-  title: string;
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  identityId: string | null;
+    title: string
+    id: string
+    createdAt: Date
+    updatedAt: Date
+    identityId: string | null
 }
 export interface Identity {
-  email: string | null;
-  emailVerified: boolean;
-  password: any | null;
-  externalId: string | null;
-  issuer: string | null;
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+    email: string | null
+    emailVerified: boolean
+    password: any | null
+    externalId: string | null
+    issuer: string | null
+    id: string
+    createdAt: Date
+    updatedAt: Date
 }
 export type SortDirection = "asc" | "desc" | "ASC" | "DESC";
 
 type PageInfo = {
-  count: number;
-  endCursor: string;
-  hasNextPage: boolean;
-  startCursor: string;
-  totalCount: number;
+    count: number;
+    endCursor: string;
+    hasNextPage: boolean;
+    startCursor: string;
+    totalCount: number;
 };

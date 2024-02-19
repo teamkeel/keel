@@ -43,8 +43,8 @@ test("authenticateWithPassword - with custom token stores", async () => {
 
   const client = new APIClient({
     baseUrl,
-    accessToken: accessTokenStore,
-    refreshToken: refreshTokenStore,
+    accessTokenStore: accessTokenStore,
+    refreshTokenStore: refreshTokenStore,
   });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
@@ -92,7 +92,7 @@ test("valid access token", async () => {
 
   const client = new APIClient({
     baseUrl,
-    accessToken: accessTokenStore,
+    accessTokenStore: accessTokenStore,
   });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
@@ -114,7 +114,7 @@ test("valid refresh token", async () => {
 
   const client = new APIClient({
     baseUrl,
-    refreshToken: refreshTokenStore,
+    refreshTokenStore: refreshTokenStore,
   });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
@@ -248,7 +248,7 @@ test("volatile access token - refreshes correctly on isAuthenticated()", async (
 
   let client = new APIClient({
     baseUrl,
-    refreshToken: refreshTokenStore,
+    refreshTokenStore: refreshTokenStore,
   });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
@@ -258,7 +258,7 @@ test("volatile access token - refreshes correctly on isAuthenticated()", async (
 
   client = new APIClient({
     baseUrl,
-    refreshToken: refreshTokenStore,
+    refreshTokenStore: refreshTokenStore,
   });
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
@@ -273,7 +273,7 @@ test("volatile access token - refreshes correctly refresh()", async () => {
 
   let client = new APIClient({
     baseUrl,
-    refreshToken: refreshTokenStore,
+    refreshTokenStore: refreshTokenStore,
   });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
@@ -283,7 +283,7 @@ test("volatile access token - refreshes correctly refresh()", async () => {
 
   client = new APIClient({
     baseUrl,
-    refreshToken: refreshTokenStore,
+    refreshTokenStore: refreshTokenStore,
   });
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
@@ -298,7 +298,7 @@ test("volatile access token - refreshes correctly refresh()", async () => {
 
   let client = new APIClient({
     baseUrl,
-    refreshToken: refreshTokenStore,
+    refreshTokenStore: refreshTokenStore,
   });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
@@ -308,7 +308,7 @@ test("volatile access token - refreshes correctly refresh()", async () => {
 
   client = new APIClient({
     baseUrl,
-    refreshToken: refreshTokenStore,
+    refreshTokenStore: refreshTokenStore,
   });
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();

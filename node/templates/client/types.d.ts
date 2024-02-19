@@ -6,8 +6,8 @@ const EXPIRY_BUFFER_IN_MS = 60000;
 export type Config = {
   baseUrl: string;
   headers?: RequestHeaders;
-  refreshToken?: TokenStore;
-  accessToken?: TokenStore;
+  refreshTokenStore?: TokenStore;
+  accessTokenStore?: TokenStore;
 };
 
 // Result types

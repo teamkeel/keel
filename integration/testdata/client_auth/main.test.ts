@@ -10,12 +10,29 @@ beforeEach(() => {
 
 beforeEach(resetDatabase);
 
-test("not authenticated - not permitted", async () => {
-  const response = await client.api.mutations.createPost({ title: "Test" });
-  expect(response.error?.type).toEqual("forbidden");
+test("authentication - forbidden", async () => {
+  await client.auth.authenticateWithPassword("user1@example.com", "1234");
+  expect(await client.auth.isAuthenticated()).toBeTruthy();
+  const response1 = await client.api.mutations.createPost({ title: "Test" });
+  expect(response1.data).not.toBeNull();
+  
+  const response2 = await client.api.queries.getPost({ id: response1.data!.id });
+  expect(response2.data?.id).toEqual(response1.data!.id);
+
+  await client.auth.logout();
+  expect(await client.auth.isAuthenticated()).not.toBeTruthy();
+
+  const response3 = await client.api.queries.getPost({ id: response1.data!.id });
+  expect(response3.error?.type).toEqual("forbidden");
+
+  await client.auth.authenticateWithPassword("user2@example.com", "1234");
+  expect(await client.auth.isAuthenticated()).toBeTruthy();
+
+  const response4 = await client.api.queries.getPost({ id: response1.data!.id });
+  expect(response4.error?.type).toEqual("forbidden");
 });
 
-test("not authenticated - permitted", async () => {
+test("authentication - not authenticated and no permissions", async () => {
   await models.post.create({ title: "Test" });
 
   const response = await client.api.queries.allPosts();
