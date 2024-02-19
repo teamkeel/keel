@@ -149,16 +149,13 @@ test("enum permission on field name - null value - is not authorized", async () 
 });
 
 test("identity permission - correct identity in context - is authorized", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
+  const identity = await models.identity.create({
+    email: "user@keel.xyz",
+    password: "1234",
   });
 
   await expect(
-    actions.withAuthToken(token).createWithIdentityRequiresSameIdentity({})
+    actions.withIdentity(identity).createWithIdentityRequiresSameIdentity({})
   ).resolves.toMatchObject({ id: expect.any(String) });
 });
 

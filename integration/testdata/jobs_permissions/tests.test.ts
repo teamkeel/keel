@@ -59,16 +59,12 @@ test("job - with identity, ctx.isAuthenticated - permitted", async () => {
 
 test("job - with token, ctx.isAuthenticated - permitted", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "weave@gmail.com",
-      password: "1234",
-    },
+  const identity = await models.identity.create({
+    email: "weave@gmail.com",
   });
 
   await expect(
-    jobs.withAuthToken(token).manualJobIsAuthenticatedExpression({ id })
+    jobs.withIdentity(identity).manualJobIsAuthenticatedExpression({ id })
   ).not.toHaveAuthorizationError();
   expect(await jobRan(id)).toBeTruthy();
 });

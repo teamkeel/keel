@@ -1,90 +1,7 @@
 {
   "openapi": "3.1.0",
-  "info": {
-    "title": "Api",
-    "version": "1"
-  },
+  "info": { "title": "Api", "version": "1" },
   "paths": {
-    "/api/json/authenticate": {
-      "post": {
-        "operationId": "authenticate",
-        "requestBody": {
-          "description": "authenticate Request",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "createIfNotExists": {
-                    "type": "boolean"
-                  },
-                  "emailPassword": {
-                    "$ref": "#/components/schemas/EmailPasswordInput"
-                  }
-                },
-                "additionalProperties": false,
-                "required": ["emailPassword"]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "authenticate Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "identityCreated": {
-                      "type": "boolean"
-                    },
-                    "token": {
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false,
-                  "required": ["identityCreated", "token"]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "authenticate Response Errors",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "code": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": ["object", "null"],
-                      "properties": {
-                        "errors": {
-                          "type": "array",
-                          "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/json/deleteAuthor": {
       "post": {
         "operationId": "deleteAuthor",
@@ -94,11 +11,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  }
-                },
+                "properties": { "id": { "type": "string" } },
                 "additionalProperties": false,
                 "required": ["id"]
               }
@@ -109,11 +22,7 @@
           "200": {
             "description": "deleteAuthor Response",
             "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
+              "application/json": { "schema": { "type": "string" } }
             }
           },
           "400": {
@@ -122,28 +31,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -161,11 +62,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  }
-                },
+                "properties": { "id": { "type": "string" } },
                 "additionalProperties": false,
                 "required": ["id"]
               }
@@ -177,9 +74,7 @@
             "description": "getAuthor Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Author"
-                }
+                "schema": { "$ref": "#/components/schemas/Author" }
               }
             }
           },
@@ -189,28 +84,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -228,11 +115,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  }
-                },
+                "properties": { "id": { "type": "string" } },
                 "additionalProperties": false,
                 "required": ["id"]
               }
@@ -244,9 +127,7 @@
             "description": "getBooks Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Book"
-                }
+                "schema": { "$ref": "#/components/schemas/Book" }
               }
             }
           },
@@ -256,28 +137,76 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/json/requestPasswordReset": {
+      "post": {
+        "operationId": "requestPasswordReset",
+        "requestBody": {
+          "description": "requestPasswordReset Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "redirectUrl": { "type": "string" }
+                },
+                "additionalProperties": false,
+                "required": ["email", "redirectUrl"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "requestPasswordReset Response",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "additionalProperties": false }
+              }
+            }
+          },
+          "400": {
+            "description": "requestPasswordReset Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -296,21 +225,11 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "after": {
-                    "type": "string"
-                  },
-                  "before": {
-                    "type": "string"
-                  },
-                  "first": {
-                    "type": "number"
-                  },
-                  "last": {
-                    "type": "number"
-                  },
-                  "where": {
-                    "$ref": "#/components/schemas/SearchBooksWhere"
-                  }
+                  "after": { "type": "string" },
+                  "before": { "type": "string" },
+                  "first": { "type": "number" },
+                  "last": { "type": "number" },
+                  "where": { "$ref": "#/components/schemas/SearchBooksWhere" }
                 },
                 "additionalProperties": false
               }
@@ -326,28 +245,16 @@
                   "properties": {
                     "pageInfo": {
                       "properties": {
-                        "count": {
-                          "type": "number"
-                        },
-                        "endCursor": {
-                          "type": "string"
-                        },
-                        "hasNextPage": {
-                          "type": "boolean"
-                        },
-                        "startCursor": {
-                          "type": "string"
-                        },
-                        "totalCount": {
-                          "type": "number"
-                        }
+                        "count": { "type": "number" },
+                        "endCursor": { "type": "string" },
+                        "hasNextPage": { "type": "boolean" },
+                        "startCursor": { "type": "string" },
+                        "totalCount": { "type": "number" }
                       }
                     },
                     "results": {
                       "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Book"
-                      }
+                      "items": { "$ref": "#/components/schemas/Book" }
                     }
                   }
                 }
@@ -360,28 +267,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -395,53 +294,21 @@
     "schemas": {
       "Author": {
         "properties": {
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "id": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
+          "createdAt": { "type": "string", "format": "date-time" },
+          "id": { "type": "string" },
+          "updatedAt": { "type": "string", "format": "date-time" }
         },
         "required": ["id", "createdAt", "updatedAt"]
       },
       "Book": {
         "properties": {
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "id": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
+          "createdAt": { "type": "string", "format": "date-time" },
+          "id": { "type": "string" },
+          "updatedAt": { "type": "string", "format": "date-time" }
         },
         "required": ["id", "createdAt", "updatedAt"]
       },
-      "EmailPasswordInput": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "required": ["email", "password"]
-      },
-      "SearchBooksWhere": {
-        "type": "object",
-        "additionalProperties": false
-      }
+      "SearchBooksWhere": { "type": "object", "additionalProperties": false }
     }
   }
 }

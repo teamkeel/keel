@@ -17,7 +17,8 @@ api Test {
         }
         Identity {
             actions {
-                authenticate
+                requestPasswordReset
+                resetPassword
             }
         }
     }

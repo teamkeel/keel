@@ -1661,18 +1661,6 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface EmailPasswordInput {
-	email: string;
-	password: string;
-}
-export interface AuthenticateInput {
-	createIfNotExists?: boolean;
-	emailPassword: EmailPasswordInput;
-}
-export interface AuthenticateResponse {
-	identityCreated: boolean;
-	token: string;
-}
 export interface RequestPasswordResetInput {
 	email: string;
 	redirectUrl: string;
@@ -1717,7 +1705,6 @@ declare class ActionExecutor {
 	updatePerson(i?: UpdatePersonInput): Promise<sdk.Person>;
 	deletePerson(i?: DeletePersonInput): Promise<string>;
 	listPeople(i?: ListPeopleInput): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
-	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }
@@ -1752,18 +1739,6 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface EmailPasswordInput {
-	email: string;
-	password: string;
-}
-export interface AuthenticateInput {
-	createIfNotExists?: boolean;
-	emailPassword: EmailPasswordInput;
-}
-export interface AuthenticateResponse {
-	identityCreated: boolean;
-	token: string;
-}
 export interface RequestPasswordResetInput {
 	email: string;
 	redirectUrl: string;
@@ -1783,7 +1758,6 @@ export interface AdHocJobWithInputsMessage {
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
-	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }
@@ -1838,7 +1812,6 @@ export interface VerifyEmailClubHouseUpdatedEventTarget {
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
-	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }
@@ -1928,18 +1901,6 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface EmailPasswordInput {
-	email: string;
-	password: string;
-}
-export interface AuthenticateInput {
-	createIfNotExists?: boolean;
-	emailPassword: EmailPasswordInput;
-}
-export interface AuthenticateResponse {
-	identityCreated: boolean;
-	token: string;
-}
 export interface RequestPasswordResetInput {
 	email: string;
 	redirectUrl: string;
@@ -1971,7 +1932,6 @@ declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
 	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
-	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }

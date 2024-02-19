@@ -1,0 +1,12 @@
+model Post {
+    fields {
+        title Text
+        identity Identity?
+    }
+
+    actions {
+        list allPosts() {
+            @permission(expression: ctx.isAuthenticated)
+        }
+    }
+}

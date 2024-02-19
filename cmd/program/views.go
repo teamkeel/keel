@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/teamkeel/keel/colors"
@@ -13,6 +14,7 @@ import (
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/node"
+	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -33,6 +35,18 @@ func renderRun(m *Model) string {
 		b.WriteString("Connect to your database using: ")
 		b.WriteString(colors.Cyan(fmt.Sprintf("psql -Atx \"%s\"", m.DatabaseConnInfo.String())).Highlight().String())
 		b.WriteString("\n")
+	}
+
+	if m.LatestVersion != nil {
+		currentVersion, _ := semver.NewVersion(runtime.GetVersion())
+		if currentVersion != nil && currentVersion.LessThan(m.LatestVersion) {
+			b.WriteString("\n")
+			b.WriteString(colors.Red(fmt.Sprintf("There is a new version of Keel available. Please update to v%s by running this command:", m.LatestVersion.String())).String())
+			b.WriteString("\n")
+			b.WriteString(colors.White("$ ").String())
+			b.WriteString(colors.Yellow("npm install -g keel").String())
+			b.WriteString("\n")
+		}
 	}
 
 	b.WriteString("\n")
@@ -96,16 +110,15 @@ func renderRun(m *Model) string {
 			}
 			b.WriteString("\n")
 		}
-		b.WriteString("\n")
 	}
 
 	if m.Status == StatusRunning {
 		if len(m.Schema.Apis) == 0 {
-			b.WriteString(colors.Yellow("\n - Your schema doesn't have any API's defined in it").String())
+			b.WriteString(colors.Yellow("\n - Your schema doesn't have any API's defined in it\n").String())
 		}
 
 		b.WriteString("\n")
-		b.WriteString("Live Console: ")
+		b.WriteString("Local development console: ")
 		b.WriteString(colors.Blue("https://console.keel.so/local").Highlight().String())
 		b.WriteString("\n")
 
@@ -113,23 +126,25 @@ func renderRun(m *Model) string {
 			b.WriteString("\n")
 			b.WriteString(api.Name)
 			b.WriteString(colors.White(" endpoints:").String())
+
 			endpoints := [][]string{
-				{"graphiql", "GraphiQL Playground"},
 				{"graphql", "GraphQL"},
 				{"json", "JSON"},
 				{"rpc", "JSON-RPC"},
 			}
+
 			for _, values := range endpoints {
 				b.WriteString("\n")
 				b.WriteString(" - ")
 				b.WriteString(colors.Blue(fmt.Sprintf("http://localhost:%s/%s/%s", m.Port, strings.ToLower(api.Name), values[0])).Highlight().String())
 				b.WriteString(colors.White(fmt.Sprintf(" (%s)", values[1])).String())
 			}
+			b.WriteString("\n")
 		}
 	}
 
 	b.WriteString("\n")
-	b.WriteString(colors.White(" - press ").String())
+	b.WriteString(colors.White("Press ").String())
 	b.WriteString("q")
 	b.WriteString(colors.White(" to quit").String())
 	b.WriteString("\n")

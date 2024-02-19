@@ -4,142 +4,160 @@ import { actions, models, resetDatabase } from "@teamkeel/testing";
 beforeEach(resetDatabase);
 
 test("create identity", async () => {
-  const { identityCreated } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response.status).toEqual(200);
 
-  expect(identityCreated).toEqual(true);
+  const identity = await models.identity.findOne({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  expect(identity).not.toBeNull();
 });
 
 test("authenticate - invalid email - respond with invalid email address error", async () => {
-  await expect(
-    actions.authenticate({
-      createIfNotExists: true,
-      emailPassword: {
-        email: "user",
-        password: "1234",
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    })
-  ).rejects.toEqual({
-    code: "ERR_INVALID_INPUT",
-    message: "invalid email address",
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response.status).toEqual(400);
+
+  const body = await response.json();
+
+  expect(body).toEqual({
+    error: "invalid_request",
+    error_description: "invalid email address",
   });
 });
 
 test("authenticate - empty password - respond with password cannot be empty error", async () => {
-  await expect(
-    actions.authenticate({
-      createIfNotExists: true,
-      emailPassword: {
-        email: "user@keel.xyz",
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
         password: "",
-      },
-    })
-  ).rejects.toEqual({
-    code: "ERR_INVALID_INPUT",
-    message: "password cannot be empty",
+      }),
+    }
+  );
+  expect(response.status).toEqual(400);
+
+  const body = await response.json();
+
+  expect(body).toEqual({
+    error: "invalid_request",
+    error_description:
+      "the identity's password in the 'password' field is required",
   });
-});
-
-test("authenticate - new identity and createIfNotExists false - respond with failed to authenticate error", async () => {
-  await expect(
-    actions.authenticate({
-      createIfNotExists: false,
-      emailPassword: {
-        email: "user@keel.xyz",
-        password: "1234",
-      },
-    })
-  ).rejects.toEqual({
-    code: "ERR_INVALID_INPUT",
-    message: "failed to authenticate",
-  });
-});
-
-test("authenticate - existing identity and createIfNotExists false - authenticated", async () => {
-  const { identityCreated: created1 } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
-
-  const { identityCreated: created2 } = await actions.authenticate({
-    createIfNotExists: false,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
-
-  const count = (await models.identity.findMany()).length;
-
-  expect(count).toEqual(1);
-  expect(created1).toEqual(true);
-  expect(created2).toEqual(false);
-});
-
-test("authenticate - new identity - new identity created", async () => {
-  const authResponse = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
-  expect(authResponse.token).toBeTruthy();
-  expect(authResponse.identityCreated).toEqual(true);
 });
 
 test("authenticate - existing identity - authenticated", async () => {
-  const { identityCreated: created1 } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response1 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response1.status).toEqual(200);
 
-  const { identityCreated: created2 } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response2 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response2.status).toEqual(200);
 
-  expect(created1).toEqual(true);
-  expect(created2).toEqual(false);
+  const identities = await models.identity.findMany();
+  expect(identities).toHaveLength(1);
 });
 
 test("authenticate - incorrect credentials with existing identity - not authenticated", async () => {
-  const { identityCreated: created1 } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
-
-  expect(created1).toEqual(true);
-
-  await expect(
-    actions.authenticate({
-      createIfNotExists: true,
-      emailPassword: {
-        email: "user@keel.xyz",
-        password: "zzzz",
+  const response1 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    })
-  ).rejects.toEqual({
-    code: "ERR_INVALID_INPUT",
-    message: "failed to authenticate",
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response1.status).toEqual(200);
+
+  const response2 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "wrong",
+      }),
+    }
+  );
+  expect(response2.status).toEqual(401);
+
+  const body = await response2.json();
+
+  expect(body).toEqual({
+    error: "invalid_client",
+    error_description:
+      "possible causes may be that the identity does not exist or the credentials are incorrect",
   });
+
+  const identities = await models.identity.findMany();
+  expect(identities).toHaveLength(1);
 });
 
 test("withAuthToken - invalid token - authentication failed", async () => {
@@ -165,13 +183,24 @@ test("withAuthToken - invalid token - authentication failed", async () => {
 });
 
 test("withAuthToken - identity does not exist - authentication failed", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response.status).toEqual(200);
+
+  const body = await response.json();
+  const token = body.access_token;
 
   await models.identity.delete({
     email: "user@keel.xyz",
@@ -203,61 +232,27 @@ test("withAuthToken - identity does not exist - authentication failed", async ()
   ).toHaveAuthenticationError();
 });
 
-test("withIdentity - identity does not exist - authentication failed", async () => {
-  await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
-
-  const identity = await models.identity.findOne({
-    email: "user@keel.xyz",
-    issuer: "keel",
-  });
-  expect(identity).not.toBeNull();
-
-  await models.identity.delete({
-    email: "user@keel.xyz",
-    issuer: "https://keel.so",
-  });
-
-  await expect(
-    actions.withIdentity(identity!).createPostWithIdentity({ title: "temp" })
-  ).toHaveAuthenticationError();
-
-  await expect(
-    actions.withIdentity(identity!).createPostWithIdentity({ title: "temp" })
-  ).toHaveAuthenticationError();
-
-  await expect(
-    actions
-      .withIdentity(identity!)
-      .getPostRequiresAuthentication({ id: "temp" })
-  ).toHaveAuthenticationError();
-
-  await expect(
-    actions
-      .withIdentity(identity!)
-      .getPostRequiresNoAuthentication({ id: "temp" })
-  ).toHaveAuthenticationError();
-
-  await expect(
-    actions.withIdentity(identity!).getPostPublic({ id: "temp" })
-  ).toHaveAuthenticationError();
-});
-
 test("identity context permission - correct identity - permission satisfied", async () => {
-  const authResponse = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response.status).toEqual(200);
 
-  const authedActions = actions.withAuthToken(authResponse.token);
+  const body = await response.json();
+  const token = body.access_token;
+
+  const authedActions = actions.withAuthToken(token);
 
   const post = await authedActions.createPostWithIdentity({ title: "temp" });
 
@@ -267,21 +262,41 @@ test("identity context permission - correct identity - permission satisfied", as
 });
 
 test("identity context permission - incorrect identity - permission not satisfied", async () => {
-  const { token: token1 } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user1@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response1 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user1@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response1.status).toEqual(200);
+  const body1 = await response1.json();
+  const token1 = body1.access_token;
 
-  const { token: token2 } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user2@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response2 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user2@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response2.status).toEqual(200);
+  const body2 = await response2.json();
+  const token2 = body2.access_token;
 
   const post = await actions
     .withAuthToken(token1)
@@ -293,13 +308,24 @@ test("identity context permission - incorrect identity - permission not satisfie
 });
 
 test("isAuthenticated context permission - authenticated - permission satisfied", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response.status).toEqual(200);
+
+  const body = await response.json();
+  const token = body.access_token;
 
   const post = await actions
     .withAuthToken(token)
@@ -311,13 +337,24 @@ test("isAuthenticated context permission - authenticated - permission satisfied"
 });
 
 test("isAuthenticated context permission - not authenticated - permission not satisfied", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response.status).toEqual(200);
+
+  const body = await response.json();
+  const token = body.access_token;
 
   const post = await actions
     .withAuthToken(token)
@@ -329,13 +366,24 @@ test("isAuthenticated context permission - not authenticated - permission not sa
 });
 
 test("not isAuthenticated context permission - authenticated - permission satisfied", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response.status).toEqual(200);
+
+  const body = await response.json();
+  const token = body.access_token;
 
   const post = await actions
     .withAuthToken(token)
@@ -349,13 +397,24 @@ test("not isAuthenticated context permission - authenticated - permission satisf
 });
 
 test("not isAuthenticated context permission - not authenticated - permission satisfied", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response.status).toEqual(200);
+
+  const body = await response.json();
+  const token = body.access_token;
 
   const post = await actions
     .withAuthToken(token)
@@ -367,13 +426,24 @@ test("not isAuthenticated context permission - not authenticated - permission sa
 });
 
 test("isAuthenticated context set - authenticated - is set to true", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response.status).toEqual(200);
+
+  const body = await response.json();
+  const token = body.access_token;
 
   const post = await actions
     .withAuthToken(token)
@@ -390,18 +460,25 @@ test("isAuthenticated context set - not authenticated - is set to false", async 
   expect(post.isAuthenticated).toEqual(false);
 });
 
-// todo:  permission test against null.  Requires this fix:  https://linear.app/keel/issue/DEV-195/permissions-support-null-operand-with-identity-type
-
-// todo:  permission test against another identity field.  Requires this fix: https://linear.app/keel/issue/DEV-196/permissions-support-identity-type-operand-with-identity-comparison
-
 test("related model identity context permission - correct identity - permission satisfied", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user1@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response.status).toEqual(200);
+
+  const body = await response.json();
+  const token = body.access_token;
 
   const post = await actions
     .withAuthToken(token)
@@ -421,21 +498,41 @@ test("related model identity context permission - correct identity - permission 
 });
 
 test("related model identity context permission - incorrect identity - permission not satisfied", async () => {
-  const { token: token1 } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user1@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response1 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user1@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response1.status).toEqual(200);
+  const body1 = await response1.json();
+  const token1 = body1.access_token;
 
-  const { token: token2 } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user2@keel.xyz",
-      password: "1234",
-    },
-  });
+  const response2 = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "user2@keel.xyz",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response2.status).toEqual(200);
+  const body2 = await response2.json();
+  const token2 = body2.access_token;
 
   const post = await actions
     .withAuthToken(token1)
@@ -650,31 +747,31 @@ test("create and authenticate - email exists for another issuer - success", asyn
     externalId: "google-oauth2|117415937240512761581",
   });
 
-  const { identityCreated: created1 } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "keel@keelson.so",
-      password: "1234",
-    },
-  });
+  const response = await fetch(
+    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: "keel@keelson.so",
+        password: "1234",
+      }),
+    }
+  );
+  expect(response.status).toEqual(200);
 
-  expect(created1).toEqual(true);
-
-  const { identityCreated: created2 } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "keel@keelson.so",
-      password: "1234",
-    },
-  });
-
-  expect(created2).toEqual(false);
+  const identities = await models.identity.findMany();
+  expect(identities).toHaveLength(2);
 });
 
 test("identity with custom non-ksuid id", async () => {
   const johnDoe = await models.identity.create({
     id: "not-a-ksuid",
     email: "john@example.com",
+    issuer: "https://keel.so",
   });
 
   const post = await models.post.create({

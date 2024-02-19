@@ -24,7 +24,7 @@ api Api {
 		}
         Identity {
             actions {
-                authenticate
+                requestPasswordReset
             }
         }
 	}

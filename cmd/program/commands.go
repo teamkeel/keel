@@ -1,6 +1,7 @@
 package program
 
 import (
+	"bytes"
 	"context"
 	"crypto/rsa"
 	"crypto/x509"
@@ -17,6 +18,7 @@ import (
 
 	_ "embed"
 
+	"github.com/Masterminds/semver/v3"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/radovskyb/watcher"
 	"github.com/teamkeel/keel/cmd/cliconfig"
@@ -43,12 +45,44 @@ func NextMsgCommand(ch chan tea.Msg) tea.Cmd {
 	}
 }
 
+type FetchLatestVersionMsg struct {
+	LatestVersion *semver.Version
+}
+
 type LoadSchemaMsg struct {
 	Schema      *proto.Schema
 	Config      *config.ProjectConfig
 	SchemaFiles []*reader.SchemaFile
 	Secrets     map[string]string
 	Err         error
+}
+
+func FetchLatestVersion() tea.Cmd {
+	return func() tea.Msg {
+		var stdout bytes.Buffer
+		var stderr bytes.Buffer
+		cmd := exec.Command("npm", "view", "keel@latest", "version")
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+
+		err := cmd.Run()
+		if err != nil || stderr.String() != "" {
+			return nil
+		}
+
+		output := strings.TrimSuffix(stdout.String(), "\n")
+
+		version, err := semver.StrictNewVersion(output)
+		if err != nil {
+			return nil
+		}
+
+		msg := FetchLatestVersionMsg{
+			LatestVersion: version,
+		}
+
+		return msg
+	}
 }
 
 func LoadSchema(dir, environment string) tea.Cmd {

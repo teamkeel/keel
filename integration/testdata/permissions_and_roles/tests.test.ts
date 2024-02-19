@@ -77,12 +77,9 @@ test("enum literal comparisons - all expressions fail - is not authorized", asyn
 });
 
 test("permission role email is authorized", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "verified@agency.org",
-      password: "1234",
-    },
+  const identity = await models.identity.create({
+    email: "verified@agency.org",
+    issuer: "https://keel.so",
   });
 
   await models.identity.update(
@@ -97,7 +94,7 @@ test("permission role email is authorized", async () => {
 
   await expect(
     actions
-      .withAuthToken(token)
+      .withIdentity(identity)
       .createUsingRole({ title: "nothing special about this title" })
   ).resolves.toMatchObject({
     title: "nothing special about this title",
@@ -105,44 +102,35 @@ test("permission role email is authorized", async () => {
 });
 
 test("permission role email is authorized but not verified", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "notVerified@agency.org",
-      password: "1234",
-    },
+  const identity = await models.identity.create({
+    email: "notVerified@agency.org",
+    issuer: "https://keel.so",
   });
 
   await expect(
     actions
-      .withAuthToken(token)
+      .withIdentity(identity)
       .createUsingRole({ title: "nothing special about this title" })
   ).toHaveAuthorizationError();
 });
 
 test("permission role wrong email is not authorized", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "editorFred42@agency.org",
-      password: "1234",
-    },
+  const identity = await models.identity.create({
+    email: "editorFred42@agency.org",
+    issuer: "https://keel.so",
   });
 
   await expect(
     actions
-      .withAuthToken(token)
+      .withIdentity(identity)
       .createUsingRole({ title: "nothing special about this title" })
   ).toHaveAuthorizationError();
 });
 
 test("permission role domain is authorized", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "john.witherow@times.co.uk",
-      password: "1234",
-    },
+  const identity = await models.identity.create({
+    email: "john.witherow@times.co.uk",
+    issuer: "https://keel.so",
   });
 
   await models.identity.update(
@@ -157,7 +145,7 @@ test("permission role domain is authorized", async () => {
 
   await expect(
     actions
-      .withAuthToken(token)
+      .withIdentity(identity)
       .createUsingRole({ title: "nothing special about this title" })
   ).resolves.toMatchObject({
     title: "nothing special about this title",
@@ -165,32 +153,26 @@ test("permission role domain is authorized", async () => {
 });
 
 test("permission role wrong domain is not authorized", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "jon.sargent@bbc.co.uk",
-      password: "1234",
-    },
+  const identity = await models.identity.create({
+    email: "jon.sargent@bbc.co.uk",
+    issuer: "https://keel.so",
   });
 
   await expect(
     actions
-      .withAuthToken(token)
+      .withIdentity(identity)
       .createUsingRole({ title: "nothing special about this title" })
   ).toHaveAuthorizationError();
 });
 
 // Regression test for: https://linear.app/keel/issue/RUN-179/role-based-permission-bug-fix
 test("permission from unauthorized email is denied when model has only role-based permissions", async () => {
-  const { token } = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "imposter@gmail.com",
-      password: "1234",
-    },
+  const identity = await models.identity.create({
+    email: "imposter@gmail.com",
+    issuer: "https://keel.so",
   });
 
   await expect(
-    actions.withAuthToken(token).doProcedure({ name: "frontal lobotomy" })
+    actions.withIdentity(identity).doProcedure({ name: "frontal lobotomy" })
   ).toHaveAuthorizationError();
 });

@@ -4,24 +4,13 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
   createPerson(input: CreatePersonInput!): Person!
   requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
   resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
 input CreatePersonInput {
   name: String!
-}
-
-input EmailPasswordInput {
-  email: String!
-  password: String!
 }
 
 input GetPersonInput {
@@ -35,11 +24,6 @@ input RequestPasswordResetInput {
 
 input ResetPasswordInput {
   password: String!
-  token: String!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
   token: String!
 }
 

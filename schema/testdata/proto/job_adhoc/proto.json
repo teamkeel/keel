@@ -85,14 +85,6 @@
       "actions": [
         {
           "modelName": "Identity",
-          "name": "authenticate",
-          "type": "ACTION_TYPE_WRITE",
-          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "AuthenticateInput",
-          "responseMessageName": "AuthenticateResponse"
-        },
-        {
-          "modelName": "Identity",
           "name": "requestPasswordReset",
           "type": "ACTION_TYPE_WRITE",
           "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -123,9 +115,6 @@
           "modelName": "Identity",
           "modelActions": [
             {
-              "actionName": "authenticate"
-            },
-            {
               "actionName": "requestPasswordReset"
             },
             {
@@ -139,65 +128,6 @@
   "messages": [
     {
       "name": "Any"
-    },
-    {
-      "name": "EmailPasswordInput",
-      "fields": [
-        {
-          "messageName": "EmailPasswordInput",
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "messageName": "EmailPasswordInput",
-          "name": "password",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
-      "name": "AuthenticateInput",
-      "fields": [
-        {
-          "messageName": "AuthenticateInput",
-          "name": "createIfNotExists",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "AuthenticateInput",
-          "name": "emailPassword",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
-          }
-        }
-      ]
-    },
-    {
-      "name": "AuthenticateResponse",
-      "fields": [
-        {
-          "messageName": "AuthenticateResponse",
-          "name": "identityCreated",
-          "type": {
-            "type": "TYPE_BOOL"
-          }
-        },
-        {
-          "messageName": "AuthenticateResponse",
-          "name": "token",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
     },
     {
       "name": "RequestPasswordResetInput",
