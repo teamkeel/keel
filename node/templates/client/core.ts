@@ -171,9 +171,8 @@ export class Core {
         return null;
       }
 
-      const payload = Buffer.from(token.split(".")[1], "base64").toString(
-        "utf8"
-      );
+      const base64Payload = token.split(".")[1];
+      const payload = atob(base64Payload);
 
       var obj = JSON.parse(payload);
       if (obj !== null && typeof obj === "object") {
