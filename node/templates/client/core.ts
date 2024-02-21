@@ -176,7 +176,7 @@ export class Core {
         const base64Payload = token.split(".")[1];
         payload = atob(base64Payload);
       } catch (e) {
-        throw new Error("jwt token could not be parsed: " + e.message);
+        throw new Error("jwt token could not be parsed: " + (e as Error).message);
       }
 
       var obj = JSON.parse(payload);
