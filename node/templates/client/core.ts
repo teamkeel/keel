@@ -171,9 +171,13 @@ export class Core {
         return null;
       }
 
-      const payload = Buffer.from(token.split(".")[1], "base64").toString(
-        "utf8"
-      );
+      let payload;
+      try {
+        const base64Payload = token.split(".")[1];
+        payload = atob(base64Payload);
+      } catch (e) {
+        throw new Error("jwt token could not be parsed: " + e.message);
+      }
 
       var obj = JSON.parse(payload);
       if (obj !== null && typeof obj === "object") {
@@ -184,7 +188,7 @@ export class Core {
         return new Date(exp * 1000);
       }
 
-      throw new Error("jwt token could not be parsed");
+      throw new Error("jwt token could not be parsed from json");
     },
 
     /**
