@@ -201,11 +201,16 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 		if oneOfConditions || anyOfConditions {
 			jsonSchema := []JSONSchema{}
 
+			var additionalProperties *bool
+			if oneOfConditions {
+				additionalProperties = boolPtr(false)
+			}
+
 			for _, field := range message.Fields {
 				jsonSchemaOption := JSONSchema{
 					Type:                 "object",
 					Properties:           map[string]JSONSchema{},
-					AdditionalProperties: boolPtr(anyOfConditions),
+					AdditionalProperties: additionalProperties,
 				}
 
 				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable)

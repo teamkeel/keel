@@ -42,7 +42,6 @@
             "properties": {
               "equals": { "type": ["string", "null"], "format": "date" }
             },
-            "additionalProperties": true,
             "required": ["equals"],
             "title": "equals"
           },
@@ -51,7 +50,6 @@
             "properties": {
               "notEquals": { "type": ["string", "null"], "format": "date" }
             },
-            "additionalProperties": true,
             "required": ["notEquals"],
             "title": "notEquals"
           },
@@ -60,7 +58,6 @@
             "properties": {
               "before": { "type": "string", "format": "date" }
             },
-            "additionalProperties": true,
             "required": ["before"],
             "title": "before"
           },
@@ -69,7 +66,6 @@
             "properties": {
               "onOrBefore": { "type": "string", "format": "date" }
             },
-            "additionalProperties": true,
             "required": ["onOrBefore"],
             "title": "onOrBefore"
           },
@@ -78,7 +74,6 @@
             "properties": {
               "after": { "type": "string", "format": "date" }
             },
-            "additionalProperties": true,
             "required": ["after"],
             "title": "after"
           },
@@ -87,7 +82,6 @@
             "properties": {
               "onOrAfter": { "type": "string", "format": "date" }
             },
-            "additionalProperties": true,
             "required": ["onOrAfter"],
             "title": "onOrAfter"
           }
@@ -162,7 +156,6 @@
             "properties": {
               "equals": { "type": ["number", "null"] }
             },
-            "additionalProperties": true,
             "required": ["equals"],
             "title": "equals"
           },
@@ -171,7 +164,6 @@
             "properties": {
               "notEquals": { "type": ["number", "null"] }
             },
-            "additionalProperties": true,
             "required": ["notEquals"],
             "title": "notEquals"
           },
@@ -180,7 +172,6 @@
             "properties": {
               "lessThan": { "type": "number" }
             },
-            "additionalProperties": true,
             "required": ["lessThan"],
             "title": "lessThan"
           },
@@ -189,7 +180,6 @@
             "properties": {
               "lessThanOrEquals": { "type": "number" }
             },
-            "additionalProperties": true,
             "required": ["lessThanOrEquals"],
             "title": "lessThanOrEquals"
           },
@@ -198,7 +188,6 @@
             "properties": {
               "greaterThan": { "type": "number" }
             },
-            "additionalProperties": true,
             "required": ["greaterThan"],
             "title": "greaterThan"
           },
@@ -207,7 +196,6 @@
             "properties": {
               "greaterThanOrEquals": { "type": "number" }
             },
-            "additionalProperties": true,
             "required": ["greaterThanOrEquals"],
             "title": "greaterThanOrEquals"
           },
@@ -216,7 +204,6 @@
             "properties": {
               "oneOf": { "type": "array", "items": { "type": "number" } }
             },
-            "additionalProperties": true,
             "required": ["oneOf"],
             "title": "oneOf"
           }
@@ -329,7 +316,6 @@
             "properties": {
               "before": { "type": "string", "format": "date-time" }
             },
-            "additionalProperties": true,
             "required": ["before"],
             "title": "before"
           },
@@ -338,7 +324,6 @@
             "properties": {
               "after": { "type": "string", "format": "date-time" }
             },
-            "additionalProperties": true,
             "required": ["after"],
             "title": "after"
           }
