@@ -205,7 +205,7 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 				jsonSchemaOption := JSONSchema{
 					Type:                 "object",
 					Properties:           map[string]JSONSchema{},
-					AdditionalProperties: boolPtr(false),
+					AdditionalProperties: boolPtr(anyOfConditions),
 				}
 
 				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable)
