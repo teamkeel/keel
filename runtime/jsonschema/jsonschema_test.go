@@ -696,6 +696,11 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"where": {"releaseDate": {"after": "1999-12-07"}}}`,
 				},
 				{
+					name:    "date valid format with two filters",
+					opName:  "listBooks",
+					request: `{"where": {"releaseDate": {"after": "1999-12-07", "before": "1999-11-07"}}}`,
+				},
+				{
 					name:    "date valid format with date and time component",
 					opName:  "listBooks",
 					request: `{"where": {"releaseDate": {"after": "1999-12-07T12:33:43.22Z"}}}`,
