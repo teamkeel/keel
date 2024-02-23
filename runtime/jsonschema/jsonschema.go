@@ -64,6 +64,7 @@ type JSONSchema struct {
 	OneOf                 []JSONSchema          `json:"oneOf,omitempty"`
 	AnyOf                 []JSONSchema          `json:"anyOf,omitempty"`
 	Title                 string                `json:"title,omitempty"`
+	Default               string                `json:"default,omitempty"`
 
 	// For arrays
 	Items *JSONSchema `json:"items,omitempty"`

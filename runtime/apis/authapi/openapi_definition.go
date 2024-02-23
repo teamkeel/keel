@@ -200,14 +200,14 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 		}
 
 		definition.Components.Schemas["TokenRequest"] = jsonschema.JSONSchema{
-			Type:                  "object",
 			UnevaluatedProperties: &boolFalse,
 			OneOf: []jsonschema.JSONSchema{
 				{
 					Type: "object",
 					Properties: map[string]jsonschema.JSONSchema{
 						"grant_type": {
-							Const: "password",
+							Const:   "password",
+							Default: "password",
 						},
 						"username": {
 							Type: "string",
@@ -224,7 +224,8 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 					Type: "object",
 					Properties: map[string]jsonschema.JSONSchema{
 						"grant_type": {
-							Const: "token_exchange",
+							Const:   "token_exchange",
+							Default: "token_exchange",
 						},
 						"subject_token": {
 							Type: "string",
@@ -238,7 +239,8 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 					Type: "object",
 					Properties: map[string]jsonschema.JSONSchema{
 						"grant_type": {
-							Const: "authorization_code",
+							Const:   "authorization_code",
+							Default: "authorization_code",
 						},
 						"code": {
 							Type: "string",
@@ -252,7 +254,8 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 					Type: "object",
 					Properties: map[string]jsonschema.JSONSchema{
 						"grant_type": {
-							Const: "refresh_token",
+							Const:   "refresh_token",
+							Default: "refresh_token",
 						},
 						"refresh_token": {
 							Type: "string",
