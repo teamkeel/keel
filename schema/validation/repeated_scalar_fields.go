@@ -1,8 +1,6 @@
 package validation
 
 import (
-	"fmt"
-
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -28,16 +26,16 @@ func RepeatedScalarFieldRule(_ []*parser.AST, errs *errorhandling.ValidationErro
 			}
 
 			if f.Repeated && f.IsScalar() {
-				errs.AppendError(
-					errorhandling.NewValidationErrorWithDetails(
-						errorhandling.TypeError,
-						errorhandling.ErrorDetails{
-							Message: fmt.Sprintf("Repeated fields of type '%s' are not supported", f.Type.Value),
-							Hint:    fmt.Sprintf("If this was a mistake, remove [] from '%s[]'", f.Type.Value),
-						},
-						f.Type,
-					),
-				)
+				// errs.AppendError(
+				// 	errorhandling.NewValidationErrorWithDetails(
+				// 		errorhandling.TypeError,
+				// 		errorhandling.ErrorDetails{
+				// 			Message: fmt.Sprintf("Repeated fields of type '%s' are not supported", f.Type.Value),
+				// 			Hint:    fmt.Sprintf("If this was a mistake, remove [] from '%s[]'", f.Type.Value),
+				// 		},
+				// 		f.Type,
+				// 	),
+				// )
 			}
 		},
 	}

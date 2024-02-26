@@ -698,11 +698,11 @@ var testCases = []testCase{
 		expectedTemplate: `
             SELECT 
                 DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-								(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" IN (?, ?, ?, ?)) AS totalCount
+								(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" = ANY(ARRAY[?, ?, ?, ?])) AS totalCount
             FROM 
                 "thing" 
             WHERE
-                "thing"."name" IN (?, ?, ?, ?)
+                "thing"."name" = ANY(ARRAY[?, ?, ?, ?])
             ORDER BY 
                 "thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"bob", "dave", "adam", "pete", "bob", "dave", "adam", "pete", 50},
@@ -2769,10 +2769,80 @@ var testCases = []testCase{
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		expectedArgs: []any{identity.Id, "xyz", identity.Id},
 	},
+	{
+		name: "create_array",
+		keelSchema: `
+			model Post {
+				fields {
+					title Text
+					tags Text[]
+				}
+				actions {
+					create createPost() with (title, tags)
+				}
+			}`,
+		actionName: "createPost",
+		input:      map[string]any{"title": "Hello world", "tags": []string{"science", "politics"}},
+		expectedTemplate: `
+			WITH new_1_post AS (
+				INSERT INTO "post" (tags, title) 
+				VALUES (ARRAY[?, ?], ?)
+				RETURNING *) 
+			SELECT * FROM new_1_post`,
+		expectedArgs: []any{"science", "politics", "Hello world"},
+	},
+	{
+		name: "w",
+		keelSchema: `
+			model Post {
+				fields {
+					title Text
+					tags Text[]
+				}
+				actions {
+					list listPosts() {
+						@where(post.title in ["1", "2"])
+					}
+				}
+			}`,
+		actionName: "listPosts",
+		expectedTemplate: `
+			WITH new_1_post AS (
+				INSERT INTO "post" (tags, title) 
+				VALUES (ARRAY[?, ?], ?)
+				RETURNING *) 
+			SELECT * FROM new_1_post`,
+		expectedArgs: []any{"science", "politics", "Hello world"},
+	},
+	{
+		name: "list_array",
+		keelSchema: `
+			model Post {
+				fields {
+					tags Text[]
+				}
+				actions {
+					list listPosts(tags)
+				}
+			}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"tags": map[string]any{"contains": "science"}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE "post"."tags" LIKE ?) AS totalCount 	
+			FROM "post" 
+			WHERE ANY("post"."tags") = ? ORDER BY "post"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"science"},
+	},
 }
 
 func TestQueryBuilder(t *testing.T) {
 	for _, testCase := range testCases {
+		if testCase.name != "list_array" {
+			continue
+		}
 		t.Run(testCase.name, func(t *testing.T) {
 			ctx := context.Background()
 

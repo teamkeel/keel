@@ -34,7 +34,6 @@ func TestProto(t *testing.T) {
 		testCaseDir := filepath.Join(testdataDir, testCase.Name())
 
 		t.Run(testCase.Name(), func(t *testing.T) {
-
 			expected, err := os.ReadFile(filepath.Join(testCaseDir, "proto.json"))
 			require.NoError(t, err)
 

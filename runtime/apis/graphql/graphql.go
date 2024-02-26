@@ -749,7 +749,7 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 			out = mk.makeConnectionType(out)
 		} else {
 			out = graphql.NewList(out)
-			out = graphql.NewNonNull(out)
+			//out = graphql.NewNonNull(out)
 		}
 	} else if !field.Optional {
 		out = graphql.NewNonNull(out)

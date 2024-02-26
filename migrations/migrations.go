@@ -417,7 +417,6 @@ func compositeUniqueConstraints(schema *proto.Schema, model *proto.Model, constr
 }
 
 func keelSchemaTableExists(ctx context.Context, database db.Database) (bool, error) {
-
 	// to_regclass docs - https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE
 	// translates a textual relation name to its OID ... this function will
 	// return NULL rather than throwing an error if the name is not found.

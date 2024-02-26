@@ -38,6 +38,7 @@ model Person {
 		dateOfBirth Date
 		gender Gender
 		hasChildren Boolean
+		tags Text[]
 	}
 }`
 
@@ -50,6 +51,7 @@ export interface PersonTable {
 	dateOfBirth: Date
 	gender: Gender
 	hasChildren: boolean
+	tags: string[]
 	id: Generated<string>
 	createdAt: Generated<Date>
 	updatedAt: Generated<Date>
@@ -71,6 +73,7 @@ export interface Person {
 	gender: Gender
 	hasChildren: boolean
 	id: string
+	tags: string[]
 	createdAt: Date
 	updatedAt: Date
 }
@@ -91,10 +94,10 @@ export type PersonCreateValues = {
 	gender: Gender
 	hasChildren: boolean
 	id?: string
+	tags: string[]
 	createdAt?: Date
 	updatedAt?: Date
-}
-`
+}`
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
 		writeCreateValuesType(w, s, m)
@@ -119,8 +122,7 @@ export type PostCreateValues = {
 	// Either author or authorId can be provided but not both
 	| {author: AuthorCreateValues | {id: string}, authorId?: undefined}
 	| {authorId: string, author?: undefined}
-)
-`
+)`
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Post")
 		writeCreateValuesType(w, s, m)
@@ -136,7 +138,8 @@ export interface PersonWhereConditions {
 	dateOfBirth?: Date | runtime.DateWhereCondition;
 	gender?: Gender | GenderWhereCondition;
 	hasChildren?: boolean | runtime.BooleanWhereCondition;
-	id?: string | runtime.IDWhereCondition;
+	tags?: string[] | runtime.ArrayWhereCondition<string>;
+	id?: string | runtime.StringArrayWhereCondition;
 	createdAt?: Date | runtime.DateWhereCondition;
 	updatedAt?: Date | runtime.DateWhereCondition;
 }`

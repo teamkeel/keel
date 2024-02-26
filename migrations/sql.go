@@ -238,6 +238,10 @@ func fieldDefinition(field *proto.Field) (string, error) {
 		"jsonb",
 		PostgresFieldTypes[field.Type.Type])
 
+	if field.Type.Repeated {
+		fieldType = fmt.Sprintf("%s[]", fieldType)
+	}
+
 	output := fmt.Sprintf("%s %s", columnName, fieldType)
 
 	if !field.Optional {

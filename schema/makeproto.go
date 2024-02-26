@@ -110,6 +110,38 @@ func defaultAPI(scm *proto.Schema) *proto.Api {
 }
 
 func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error) {
+	if typeInfo.Repeated {
+		msgName := makeInputMessageName("ArrayQuery")
+		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
+			{
+				MessageName: msgName,
+				Name:        "equals",
+				Optional:    true,
+				Nullable:    true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				MessageName: msgName,
+				Name:        "notEquals",
+				Optional:    true,
+				Nullable:    true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				MessageName: msgName,
+				Name:        "contains",
+				Optional:    true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+		}}, nil
+	}
+
 	switch typeInfo.Type {
 	case proto.Type_TYPE_ID:
 		msgName := makeInputMessageName("IDQuery")
@@ -1114,6 +1146,7 @@ func (scm *Builder) inferParserInputType(
 	var modelName *wrapperspb.StringValue
 	var fieldName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
+	repeated := false
 
 	if protoType == proto.Type_TYPE_ENUM {
 		enumName = &wrapperspb.StringValue{
@@ -1155,6 +1188,8 @@ func (scm *Builder) inferParserInputType(
 			Value: field.Name.Value,
 		}
 
+		repeated = field.Repeated
+
 		if protoType == proto.Type_TYPE_ENUM {
 			enumName = &wrapperspb.StringValue{
 				Value: field.Type.Value,
@@ -1164,7 +1199,7 @@ func (scm *Builder) inferParserInputType(
 
 	return &proto.TypeInfo{
 		Type:      protoType,
-		Repeated:  false,
+		Repeated:  repeated,
 		ModelName: modelName,
 		FieldName: fieldName,
 		EnumName:  enumName,

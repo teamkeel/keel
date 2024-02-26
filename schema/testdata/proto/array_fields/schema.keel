@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        name Text
+        tags Text[] 
+        ratings Number[]
+    }
+
+    actions {
+        create createPost() with (name, tags, ratings)
+    }
+}

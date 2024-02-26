@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "title": { "type": "string" }
+  },
+  "additionalProperties": false,
+  "required": ["title", "tags"]
+}

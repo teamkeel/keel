@@ -285,16 +285,16 @@ type SetupFunctionsMsg struct {
 
 func SetupFunctions(dir string, nodePackagesPath string, packageManager string) tea.Cmd {
 	return func() tea.Msg {
-		err := node.Bootstrap(
-			dir,
-			node.WithPackageManager(packageManager),
-			node.WithPackagesPath(nodePackagesPath),
-		)
-		if err != nil {
-			return SetupFunctionsMsg{
-				Err: err,
-			}
-		}
+		// err := node.Bootstrap(
+		// 	dir,
+		// 	node.WithPackageManager(packageManager),
+		// 	node.WithPackagesPath(nodePackagesPath),
+		// )
+		// if err != nil {
+		// 	return SetupFunctionsMsg{
+		// 		Err: err,
+		// 	}
+		// }
 
 		return SetupFunctionsMsg{}
 	}

@@ -51,6 +51,13 @@ export type TimestampQueryInput = {
   after: string | null;
 };
 
+// Date database API
+export type ArrayWhereCondition<T> = {
+  equals?: T[] | null;
+  notEquals?: T[] | null;
+  contains?: T | null;
+};
+
 export type ContextAPI = {
   headers: RequestHeaders;
   response: Response;

@@ -98,14 +98,35 @@ func (o *QueryOperand) IsValue() bool {
 	return o.value != nil && o.query == nil
 }
 
+func (o *QueryOperand) IsArrayValue() bool {
+	if !o.IsValue() {
+		return false
+	}
+
+	// Check that it is a slice
+	slice := reflect.ValueOf(o.value)
+	if slice.Kind() != reflect.Slice || slice.IsNil() {
+		return false
+	}
+
+	return true
+}
+
 func (o *QueryOperand) IsNull() bool {
 	return o.query == nil && o.table == "" && o.column == "" && o.value == nil && o.raw == ""
 }
 
 func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	switch {
-	case o.IsValue():
+	case o.IsValue() && !o.IsArrayValue():
 		return "?"
+	case o.IsValue() && o.IsArrayValue():
+		operands := []string{}
+		for i := 0; i < reflect.ValueOf(o.value).Len(); i++ {
+			operands = append(operands, "?")
+		}
+
+		return fmt.Sprintf("ARRAY[%s]", strings.Join(operands, ", "))
 	case o.IsField():
 		table := o.table
 		// If no model table is specified, then use the base model in the query builder
@@ -126,8 +147,19 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 
 func (o *QueryOperand) toSqlArgs() []any {
 	switch {
-	case o.IsValue():
+	case o.IsValue() && !o.IsArrayValue():
 		return []any{o.value}
+	case o.IsValue() && o.IsArrayValue():
+		// Check that rhs is a slice
+		slice := reflect.ValueOf(o.value)
+
+		// Safely map rhs slice to []any
+		inValues := make([]any, slice.Len())
+		for i := 0; i < slice.Len(); i++ {
+			inValues[i] = slice.Index(i).Interface()
+		}
+
+		return inValues
 	case o.IsField(), o.IsNull(), o.IsRaw():
 		return []any{}
 	case o.IsInlineQuery():
@@ -1122,13 +1154,15 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	var lhsSqlOperand, rhsSqlOperand any
 	args := []any{}
 
-	switch operator {
-	case StartsWith:
-		rhs.value = rhs.value.(string) + "%%"
-	case EndsWith:
-		rhs.value = "%%" + rhs.value.(string)
-	case Contains, NotContains:
-		rhs.value = "%%" + rhs.value.(string) + "%%"
+	if rhs.IsValue() && !rhs.IsArrayValue() {
+		switch operator {
+		case StartsWith:
+			rhs.value = rhs.value.(string) + "%%"
+		case EndsWith:
+			rhs.value = "%%" + rhs.value.(string)
+		case Contains, NotContains:
+			rhs.value = "%%" + rhs.value.(string) + "%%"
+		}
 	}
 
 	switch {
@@ -1147,41 +1181,39 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		rhsArgs := rhs.toSqlArgs()
 
 		args = append(args, rhsArgs...)
-	case rhs.IsValue():
-		if operator == OneOf || operator == NotOneOf {
-			// The IN operator on an a value slice needs to have its template structured like this:
-			// WHERE x IN (?, ?, ?)
-			inPlaceholders := []string{}
+	case rhs.IsArrayValue():
+		// The IN operator on an a value slice needs to have its template structured like this:
+		// WHERE x = ANY(ARRAY[?, ?, ?])
+		arrPlaceholders := []string{}
 
-			// Check that rhs is a slice
-			slice := reflect.ValueOf(rhs.value)
-			if slice.Kind() != reflect.Slice || slice.IsNil() {
-				return "", nil, errors.New("rhs operand in sql condition must be a slice")
-			}
-
-			// Safely map rhs slice to []any
-			inValues := make([]any, slice.Len())
-			for i := 0; i < slice.Len(); i++ {
-				inValues[i] = slice.Index(i).Interface()
-			}
-
-			// if the inValues is empty, then it is invalid SQL to have "IN ()"
-			// so therefore we should just apply a constraint that evaluates to false
-			// to the query
-			if len(inValues) < 1 {
-				return "false", nil, nil
-			}
-
-			for _, v := range inValues {
-				inPlaceholders = append(inPlaceholders, "?")
-				args = append(args, v)
-			}
-
-			rhsSqlOperand = fmt.Sprintf("(%s)", strings.Join(inPlaceholders, ", "))
-		} else {
-			rhsSqlOperand = "?"
-			args = append(args, rhs.value)
+		// Check that rhs is a slice
+		slice := reflect.ValueOf(rhs.value)
+		if slice.Kind() != reflect.Slice || slice.IsNil() {
+			return "", nil, errors.New("rhs operand in sql condition must be a slice")
 		}
+
+		// Safely map rhs slice to []any
+		inValues := make([]any, slice.Len())
+		for i := 0; i < slice.Len(); i++ {
+			inValues[i] = slice.Index(i).Interface()
+		}
+
+		// if the inValues is empty, then it is invalid SQL to have "IN ()"
+		// so therefore we should just apply a constraint that evaluates to false
+		// to the query
+		if len(inValues) < 1 {
+			return "false", nil, nil
+		}
+
+		for _, v := range inValues {
+			arrPlaceholders = append(arrPlaceholders, "?")
+			args = append(args, v)
+		}
+
+		rhsSqlOperand = fmt.Sprintf("ANY(ARRAY[%s])", strings.Join(arrPlaceholders, ", "))
+	case rhs.IsValue() && !rhs.IsArrayValue():
+		rhsSqlOperand = "?"
+		args = append(args, rhs.value)
 	default:
 		return "", nil, errors.New("no handling for rhs QueryOperand type")
 	}
@@ -1191,21 +1223,33 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		template = fmt.Sprintf("%s IS NOT DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
 	case NotEquals:
 		template = fmt.Sprintf("%s IS DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
-	case StartsWith, EndsWith, Contains:
-		template = fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand)
+	case StartsWith, EndsWith:
+	case Contains:
+		if rhs.IsArrayValue() {
+			template = fmt.Sprintf("%s = %s", lhsSqlOperand, rhsSqlOperand)
+		} else {
+			template = fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand)
+		}
 	case NotContains:
 		template = fmt.Sprintf("%s NOT LIKE %s", lhsSqlOperand, rhsSqlOperand)
 	case OneOf:
+
 		if rhs.IsField() {
 			template = fmt.Sprintf("%s IS NOT DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
-		} else {
+		} else if rhs.IsInlineQuery() {
 			template = fmt.Sprintf("%s IN %s", lhsSqlOperand, rhsSqlOperand)
+
+		} else {
+			template = fmt.Sprintf("%s = %s", lhsSqlOperand, rhsSqlOperand)
 		}
 	case NotOneOf:
 		if rhs.IsField() {
 			template = fmt.Sprintf("%s IS DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
-		} else {
+		} else if rhs.IsInlineQuery() {
 			template = fmt.Sprintf("%s NOT IN %s", lhsSqlOperand, rhsSqlOperand)
+
+		} else {
+			template = fmt.Sprintf("NOT %s = %s", lhsSqlOperand, rhsSqlOperand)
 		}
 	case LessThan:
 		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)

@@ -1,0 +1,10 @@
+model Post {
+    fields {
+        title Text
+        tags Text[]
+    }
+
+    actions {
+        create testAction() with (title, tags)
+    }
+}
