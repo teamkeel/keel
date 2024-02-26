@@ -61,12 +61,12 @@ func checkField(
 // isNotNeeded works out if the given field is not needed for a create operation
 // by definition. This IS the case for:
 // - optional fields
-// - repeated fields
+// - relationship repeated fields
 // - fields which have a default
 // - built-in fields like CreatedAt, Id etc.
 func isNotNeeded(f *parser.FieldNode) bool {
 	switch {
-	case f.Optional, f.Repeated, query.FieldHasAttribute(f, parser.AttributeDefault), f.BuiltIn:
+	case f.Optional, (f.Repeated && !f.IsScalar()), query.FieldHasAttribute(f, parser.AttributeDefault), f.BuiltIn:
 		return true
 	default:
 		return false

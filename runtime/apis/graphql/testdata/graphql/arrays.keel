@@ -1,0 +1,23 @@
+model Thing {
+    fields {
+        texts Text[]
+        numbers Number[]
+        enums MyEnum[]
+        dates Date[]
+    }
+    actions {
+        list things(texts, numbers, enums, dates)
+    }
+}
+
+enum MyEnum {
+    One
+    Two
+    Three
+}
+
+api Test {
+    models {
+        Thing 
+    }
+}

@@ -1,0 +1,34 @@
+model Thing {
+    fields {
+        texts Text[]
+        numbers Number[]
+    }
+
+    actions {
+        list listThings1() {
+            //expect-error:20:48:E026:["science"] is an array of Text and thing.numbers is an array of Number
+            @where(["science"] == thing.numbers)
+        }
+
+         list listThings2() {
+            //expect-error:20:43:E026:[10, 20] is an array of Number and thing.texts is an array of Text
+            @where([10, 20] == thing.texts)
+        }
+
+        list listThings3() {
+            //expect-error:20:48:E026:thing.numbers is an array of Number and ["science"] is an array of Text
+            @where(thing.numbers == ["science"])
+        }
+
+        list listThings4() {
+            //expect-error:20:48:E026:thing.texts is an array of Text and thing.numbers is an array of Number
+            @where(thing.texts == thing.numbers)
+        }
+
+        list listThings5() {
+            //expect-error:20:38:E026:100 is Number and thing.texts is an array of Text
+            @where(100 in thing.texts)
+        }
+    }
+}
+

@@ -39,7 +39,7 @@ func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]an
 }
 
 // Applies all exlicit where attribute filters to the query.
-func (query *QueryBuilder) applyExplicitFilters(scope *Scope, args map[string]any) error {
+func (query *QueryBuilder) applyExpressionFilters(scope *Scope, args map[string]any) error {
 	for _, where := range scope.Action.WhereExpressions {
 		expression, err := parser.ParseExpression(where.Source)
 		if err != nil {

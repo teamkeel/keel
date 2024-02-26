@@ -1,0 +1,32 @@
+model Thing {
+    fields {
+        texts Text[]?
+        enums MyEnum[]?
+        numbers Number[]?
+    }
+
+    actions {
+        create createThing() {
+           @set(thing.texts = ["science"])
+           @set(thing.enums = [MyEnum.One, MyEnum.Two])
+           @set(thing.numbers = [123,456])
+        }
+
+        create createEmptyThing() {
+            @set(thing.texts = [])
+            @set(thing.enums = [])
+            @set(thing.numbers = [])
+        }
+
+         create createNullThing() {
+            @set(thing.texts = null)
+            @set(thing.enums = null)
+            @set(thing.numbers = null)
+        }
+    }
+}
+
+enum MyEnum {
+    One
+    Two
+}

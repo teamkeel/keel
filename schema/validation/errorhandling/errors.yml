@@ -73,15 +73,9 @@ en:
   E028:
     message: "Cannot use '{{ .Value }}' as a single value in {{ .Attribute }}"
     hint: "Only boolean literals are allowed e.g true or false"
-  E029:
-    message: "{{ .LHS }} is a {{ .LHSType }} and {{ .RHS }} is an array of {{ .RHSType }}s"
-    hint: "Left hand side {{ .LHS }} can only be compared to an array of {{ .LHSType }}s"
   E030:
-    message: "{{ .RHS }} is an array of {{ .RHSType }}. Only 'in' or 'not in' can be used"
+    message: "{{ .RHS }} is an array. Only 'in' or 'not in' can be used"
     hint: "Change '{{ .Operator }}' to either 'in' or 'not in'."
-  E031:
-    message: "Both sides of the expression cannot be an array"
-    hint: "Left hand side of expression ('{{ .LHS }}') produced more than one result because one of the relationships was a collection."
   E032:
     message: "Cannot have mixed types in an array literal"
     hint: "Expected {{ .Item }} to be of type {{ .Type }}"

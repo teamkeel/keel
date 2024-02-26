@@ -1,0 +1,556 @@
+{
+  "models": [
+    {
+      "name": "Thing",
+      "fields": [
+        {
+          "modelName": "Thing",
+          "name": "texts",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          }
+        },
+        {
+          "modelName": "Thing",
+          "name": "numbers",
+          "type": {
+            "type": "TYPE_INT",
+            "repeated": true
+          }
+        },
+        {
+          "modelName": "Thing",
+          "name": "booleans",
+          "type": {
+            "type": "TYPE_BOOL",
+            "repeated": true
+          }
+        },
+        {
+          "modelName": "Thing",
+          "name": "dates",
+          "type": {
+            "type": "TYPE_DATE",
+            "repeated": true
+          }
+        },
+        {
+          "modelName": "Thing",
+          "name": "timestamps",
+          "type": {
+            "type": "TYPE_DATETIME",
+            "repeated": true
+          }
+        },
+        {
+          "modelName": "Thing",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Thing",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Thing",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Thing",
+          "name": "createThing",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "CreateThingInput"
+        },
+        {
+          "modelName": "Thing",
+          "name": "listThings",
+          "type": "ACTION_TYPE_LIST",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "ListThingsInput"
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": ["issuer"]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": ["email"]
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Thing",
+          "modelActions": [
+            {
+              "actionName": "createThing"
+            },
+            {
+              "actionName": "listThings"
+            }
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreateThingInput",
+      "fields": [
+        {
+          "messageName": "CreateThingInput",
+          "name": "texts",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Thing",
+            "fieldName": "texts",
+            "repeated": true
+          },
+          "target": ["texts"]
+        },
+        {
+          "messageName": "CreateThingInput",
+          "name": "numbers",
+          "type": {
+            "type": "TYPE_INT",
+            "modelName": "Thing",
+            "fieldName": "numbers",
+            "repeated": true
+          },
+          "target": ["numbers"]
+        },
+        {
+          "messageName": "CreateThingInput",
+          "name": "booleans",
+          "type": {
+            "type": "TYPE_BOOL",
+            "modelName": "Thing",
+            "fieldName": "booleans",
+            "repeated": true
+          },
+          "target": ["booleans"]
+        },
+        {
+          "messageName": "CreateThingInput",
+          "name": "dates",
+          "type": {
+            "type": "TYPE_DATE",
+            "modelName": "Thing",
+            "fieldName": "dates",
+            "repeated": true
+          },
+          "target": ["dates"]
+        },
+        {
+          "messageName": "CreateThingInput",
+          "name": "timestamps",
+          "type": {
+            "type": "TYPE_DATETIME",
+            "modelName": "Thing",
+            "fieldName": "timestamps",
+            "repeated": true
+          },
+          "target": ["timestamps"]
+        }
+      ]
+    },
+    {
+      "name": "StringArrayQueryInput",
+      "fields": [
+        {
+          "messageName": "StringArrayQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "StringArrayQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "IntArrayQueryInput",
+      "fields": [
+        {
+          "messageName": "IntArrayQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_INT",
+            "repeated": true
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "IntArrayQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_INT",
+            "repeated": true
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "BooleanArrayQueryInput",
+      "fields": [
+        {
+          "messageName": "BooleanArrayQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_BOOL",
+            "repeated": true
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "BooleanArrayQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_BOOL",
+            "repeated": true
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "DateArrayQueryInput",
+      "fields": [
+        {
+          "messageName": "DateArrayQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_DATE",
+            "repeated": true
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "DateArrayQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_DATE",
+            "repeated": true
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "TimestampArrayQueryInput",
+      "fields": [
+        {
+          "messageName": "TimestampArrayQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_DATETIME",
+            "repeated": true
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "TimestampArrayQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_DATETIME",
+            "repeated": true
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "ListThingsWhere",
+      "fields": [
+        {
+          "messageName": "ListThingsWhere",
+          "name": "texts",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringArrayQueryInput"
+          },
+          "target": ["texts"]
+        },
+        {
+          "messageName": "ListThingsWhere",
+          "name": "numbers",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "IntArrayQueryInput"
+          },
+          "target": ["numbers"]
+        },
+        {
+          "messageName": "ListThingsWhere",
+          "name": "booleans",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "BooleanArrayQueryInput"
+          },
+          "target": ["booleans"]
+        },
+        {
+          "messageName": "ListThingsWhere",
+          "name": "dates",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "DateArrayQueryInput"
+          },
+          "target": ["dates"]
+        },
+        {
+          "messageName": "ListThingsWhere",
+          "name": "timestamps",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "TimestampArrayQueryInput"
+          },
+          "target": ["timestamps"]
+        }
+      ]
+    },
+    {
+      "name": "ListThingsInput",
+      "fields": [
+        {
+          "messageName": "ListThingsInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListThingsWhere"
+          }
+        },
+        {
+          "messageName": "ListThingsInput",
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListThingsInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListThingsInput",
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListThingsInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        }
+      ]
+    }
+  ]
+}

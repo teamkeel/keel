@@ -1,0 +1,63 @@
+model Thing {
+    fields {
+        texts Text[]?
+        numbers Number[]?
+        dates Date[]?
+        booleans Boolean[]?
+        timestamps Timestamp[]?
+        enums MyEnum[]?
+    }
+
+    actions {
+        get getThing(id) {
+            @permission(expression: true)
+        }
+
+        create createThing() with (texts?, numbers?, dates?, booleans?, timestamps?, enums?) {
+            @permission(expression: true)
+        }
+
+        update updateThing(id) with (texts?, numbers?, dates?, booleans?, timestamps?, enums?) {
+            @permission(expression: true)
+        }
+
+        list listThings(texts?, numbers?, dates?, booleans?, timestamps?, enums?) {
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+
+        create createSet() {
+            @set(thing.texts = ["Keel", "Weave"])
+            @set(thing.numbers = [1,2,3])
+            @set(thing.booleans = [true, true, false])
+            @set(thing.enums = [MyEnum.One, MyEnum.Two,MyEnum.Three])
+            @permission(expression: true)
+        }
+
+        update updateSetToEmpty(id) {
+            @set(thing.texts = [])
+            @set(thing.numbers = [])
+            @set(thing.booleans = [])
+            @set(thing.enums = [])
+            @set(thing.timestamps = [])
+            @set(thing.dates = [])
+            @permission(expression: true)
+        }
+
+        update updateSetToNull(id) {
+            @set(thing.texts = null)
+            @set(thing.numbers = null)
+            @set(thing.booleans = null)
+            @set(thing.enums = null)
+            @set(thing.timestamps = null)
+            @set(thing.dates = null)
+            @permission(expression: true)
+        }
+    }
+}
+
+enum MyEnum {
+    One 
+    Two
+    Three 
+}

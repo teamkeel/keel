@@ -264,7 +264,6 @@ const listImplicitAndExplicitInputs string = `
 // multiSchema is a schema with a model that exhibits all the simple field types.
 const multiSchema string = `
 	model Multi {
-
 		@permission(
 			expression: true,
 			actions: [create, get, list, update, delete]
@@ -736,7 +735,6 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, data, "createMulti.aText", "Petunia")
 			rtt.AssertValueAtPath(t, data, "createMulti.aBool", true)
 			rtt.AssertValueAtPath(t, data, "createMulti.aNumber", float64(8086))
-			// todo assert time-based field types - currently don't work properly / not implemented in gql
 		},
 		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
 			id := rtt.GetValueAtPath(t, data, "createMulti.id")
@@ -2721,6 +2719,61 @@ var testCases = []testCase{
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
 			require.Equal(t, "not authorized to access this action", errors[0].Message)
+		},
+	},
+	{
+		name: "create_arrays",
+		keelSchema: `
+			model Thing {
+				fields {
+					texts Text[]
+					bools Boolean[]
+					numbers Number[]
+					dates Date[]
+					timestamps Timestamp[]
+				}
+				actions {
+					create createThing() with (texts, bools, numbers, dates, timestamps) {
+						@permission(expression: true)
+					}
+				}
+			}
+			api Test {
+				models {
+					Thing
+				}
+			}
+		`,
+		gqlOperation: `
+			mutation CreateThing {
+				createThing(input: {
+					texts: ["science", "technology"],
+					bools: [true, true, false],
+					numbers: [1, 2, 3],
+					dates: ["2023-03-13T17:00:00.00+07:00", "2024-01-01T00:00:00.00Z"],
+					timestamps: ["2023-03-13T17:00:45+07:00", "2024-01-01T00:00:00.3Z"]
+				}) {
+					texts
+					bools
+					numbers
+					dates {
+						iso8601
+					}
+					timestamps {
+						iso8601
+					}
+				}
+				}`,
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "createThing.texts", []any{"science", "technology"})
+			rtt.AssertValueAtPath(t, data, "createThing.bools", []any{true, true, false})
+			rtt.AssertValueAtPath(t, data, "createThing.numbers", []any{1.0, 2.0, 3.0})
+			rtt.AssertValueAtPath(t, data, "createThing.dates", []any{
+				map[string]any{"iso8601": "2023-03-13T00:00:00.00Z"},
+				map[string]any{"iso8601": "2024-01-01T00:00:00.00Z"}})
+			rtt.AssertValueAtPath(t, data, "createThing.timestamps", []any{
+				map[string]any{"iso8601": "2023-03-13T10:00:45.00Z"},
+				map[string]any{"iso8601": "2024-01-01T00:00:00.30Z"}})
 		},
 	},
 }

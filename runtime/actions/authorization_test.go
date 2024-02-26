@@ -79,7 +79,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing"
 			WHERE
 				("thing"."created_by_id" IS NOT DISTINCT FROM ?)
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -107,7 +107,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing$created_by"."id" = "thing"."created_by_id" 
 			WHERE 
 				("thing$created_by"."id" IS NOT DISTINCT FROM ?)
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -133,7 +133,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing"
 			WHERE
 				( "thing"."created_by_id" IS NOT DISTINCT FROM NULL )
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		expectedArgs: []any{"idToAuthorise"},
 	},
@@ -167,7 +167,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing$related"."id" = "thing"."related_id"
 			WHERE
 				( "thing$related"."created_by_id" IS NOT DISTINCT FROM ? )
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -194,7 +194,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing"
 			WHERE
 				( "thing"."is_active" IS NOT DISTINCT FROM ? )
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{true, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
@@ -229,7 +229,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing$related"."id" = "thing"."related_id"
 			WHERE
 				( "thing$related"."created_by_id" IS NOT DISTINCT FROM "thing"."created_by_id" )
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		expectedArgs: []any{"idToAuthorise"},
 	},
@@ -255,7 +255,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing"
 			WHERE
 				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{true, unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -282,7 +282,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing"
 			WHERE
 				( ( "thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{true, unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -312,7 +312,7 @@ var authorisationTestCases = []authorisationTestCase{
 				( "thing"."is_active" IS NOT DISTINCT FROM ?
 					OR
 				 "thing"."created_by_id" IS NOT DISTINCT FROM ? )
-				 AND "thing"."id" IN (?)`,
+				 AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{true, unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -348,7 +348,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing$related" ON "thing$related"."id" = "thing"."related_id"
 			WHERE
 				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) OR "thing"."created_by_id" IS NOT DISTINCT FROM "thing$related"."created_by_id" )
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{true, unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -480,7 +480,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"thing$created_by"."id" = "thing"."created_by_id"
 			WHERE
 				( ( ? IS NOT DISTINCT FROM ? AND "thing$created_by"."id" IS NOT DISTINCT FROM ? ) )
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{true, true, unverifiedIdentity.Id, "idToAuthorise"},
 		identity:     unverifiedIdentity,
 	},
@@ -1001,7 +1001,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"identity" AS "thing$updated_by" ON "thing$updated_by"."id" = "thing"."updated_by_id" 
 			WHERE 
 				( "thing$created_by"."id" IS NOT DISTINCT FROM ? OR "thing$updated_by"."id" IS NOT DISTINCT FROM ? )
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{unverifiedIdentity.Id, unverifiedIdentity.Id, "idToAuthorise"},
 		identity:     unverifiedIdentity,
 	},
@@ -1053,7 +1053,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"user" AS "user$organisations$organisation$users$user" ON "user$organisations$organisation$users$user"."id" = "user$organisations$organisation$users"."user_id" 
 			WHERE 
 				( ? IS NOT DISTINCT FROM "user$organisations$organisation$users$user"."identity_id" )
-				AND "user"."id" IN (?)
+				AND "user"."id" = ANY(ARRAY[?]::TEXT[])
 			`,
 		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		identity:     unverifiedIdentity,
@@ -1078,7 +1078,7 @@ var authorisationTestCases = []authorisationTestCase{
 			LEFT JOIN "identity" AS "thing$identity" ON "thing$identity"."id" = "thing"."identity_id" 
 			WHERE 
 				( "thing$identity"."email" IS DISTINCT FROM ? )
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{"weaveton@weave.xyz", "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
@@ -1105,7 +1105,7 @@ var authorisationTestCases = []authorisationTestCase{
 				WHERE 
 					"identity"."id" IS NOT DISTINCT FROM ? AND 
 					"identity"."email" IS DISTINCT FROM NULL) IS DISTINCT FROM ?)
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{unverifiedIdentity.Id, "weaveton@weave.xyz", "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -1133,7 +1133,7 @@ var authorisationTestCases = []authorisationTestCase{
 				WHERE 
 					"identity"."id" IS NOT DISTINCT FROM ? AND 
 					"identity"."email" IS DISTINCT FROM NULL) IS DISTINCT FROM ?)
-				AND "thing"."id" IN (?)`,
+				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{"", "weaveton@weave.xyz", "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
@@ -1167,7 +1167,7 @@ var authorisationTestCases = []authorisationTestCase{
 			LEFT JOIN "user" AS "admit$identity$user" ON "admit$identity$user"."identity_id" = "admit$identity"."id" 
 			WHERE 
 				( "admit$identity$user"."is_adult" IS NOT DISTINCT FROM ? )
-				AND "admit"."id" IN (?)`,
+				AND "admit"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{true, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
@@ -1197,7 +1197,7 @@ var authorisationTestCases = []authorisationTestCase{
 					FROM "identity" 
 					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
 					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."is_adult" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM ?)
-				AND "adult_film"."id" IN (?)`,
+				AND "adult_film"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{unverifiedIdentity.Id, true, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -1233,7 +1233,7 @@ var authorisationTestCases = []authorisationTestCase{
 					FROM "identity" 
 					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
 					WHERE "identity"."id" IS NOT DISTINCT FROM ?  AND "identity$user"."id" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM "adult_film$identity$user"."id")
-				AND "adult_film"."id" IN (?)`,
+				AND "adult_film"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -1269,7 +1269,7 @@ var authorisationTestCases = []authorisationTestCase{
 					FROM "identity" 
 					LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
 					WHERE "identity"."id" IS NOT DISTINCT FROM ?  AND "identity$user"."id" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM "adult_film$identity$user"."id")
-				AND "adult_film"."id" IN (?)`,
+				AND "adult_film"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -1301,7 +1301,7 @@ var authorisationTestCases = []authorisationTestCase{
 				"bank_account" 
 			WHERE
 				(? IS NOT DISTINCT FROM "bank_account"."identity_id")
-				AND "bank_account"."id" IN (?)`,
+				AND "bank_account"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -1354,7 +1354,7 @@ var authorisationTestCases = []authorisationTestCase{
 					LEFT JOIN "entity" AS "identity$administrator$access$entity" ON "identity$administrator$access$entity"."id" = "identity$administrator$access"."entity_id" 
 					LEFT JOIN "entity_user" AS "identity$administrator$access$entity$users" ON "identity$administrator$access$entity$users"."entity_id" = "identity$administrator$access$entity"."id" 
 					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$administrator$access$entity$users"."id" IS DISTINCT FROM NULL))
-				AND "entity_user"."id" IN (?)`,
+				AND "entity_user"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,
@@ -1407,7 +1407,7 @@ var authorisationTestCases = []authorisationTestCase{
 					LEFT JOIN "entity" AS "identity$administrator$access$entity" ON "identity$administrator$access$entity"."id" = "identity$administrator$access"."entity_id" 
 					LEFT JOIN "entity_user" AS "identity$administrator$access$entity$users" ON "identity$administrator$access$entity$users"."entity_id" = "identity$administrator$access$entity"."id" 
 					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$administrator$access$entity$users"."id" IS DISTINCT FROM NULL))
-				AND "entity_user"."id" IN (?)`,
+				AND "entity_user"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{unverifiedIdentity.Id, "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
 		identity:     unverifiedIdentity,

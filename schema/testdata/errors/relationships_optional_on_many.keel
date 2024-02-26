@@ -1,0 +1,12 @@
+model Author {
+    fields {
+        //expect-error:9:14:RelationshipError:Cannot define a repeated model field as optional
+        posts Post[]?
+    }
+}
+
+model Post {
+    fields {
+        author Author
+    }
+}

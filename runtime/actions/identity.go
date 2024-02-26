@@ -17,7 +17,7 @@ import (
 func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(identityModel)
-	err := query.Where(Field("id"), Equals, Value(id))
+	err := query.Where(IdField(), Equals, Value(id))
 	if err != nil {
 		return nil, err
 	}

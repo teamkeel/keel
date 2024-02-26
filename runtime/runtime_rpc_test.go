@@ -554,4 +554,45 @@ var rpcTestCases = []rpcTestCase{
 			rtt.AssertValueAtPath(t, data, "data.errors[1].error", "Additional property total is not allowed")
 		},
 	},
+	{
+		name: "create_arrays",
+		keelSchema: `
+			model Thing {
+				fields {
+					texts Text[]
+					bools Boolean[]
+					numbers Number[]
+					dates Date[]
+					timestamps Timestamp[]
+				}
+				actions {
+					create createThing() with (texts, bools, numbers, dates, timestamps) {
+						@permission(expression: true)
+					}
+				}
+			}
+			api Test {
+				models {
+					Thing
+				}
+			}
+		`,
+		Path: "createThing",
+		Body: `{
+				"texts": ["science", "technology"],
+				"bools": [true, true, false],
+				"numbers": [1, 2, 3],
+				"dates": ["2023-03-13T17:00:00.00+07:00", "2024-01-01T00:00:00.00Z"],
+				"timestamps": ["2023-03-13T17:00:45+07:00", "2024-01-01T00:00:00.3Z"]
+			}`,
+		Method: http.MethodPost,
+		assertError: func(t *testing.T, data map[string]any, statusCode int) {
+			assert.Equal(t, statusCode, http.StatusOK)
+			rtt.AssertValueAtPath(t, data, "texts", []any{"science", "technology"})
+			rtt.AssertValueAtPath(t, data, "bools", []any{true, true, false})
+			rtt.AssertValueAtPath(t, data, "numbers", []any{1.0, 2.0, 3.0})
+			rtt.AssertValueAtPath(t, data, "dates", []any{"2023-03-13T00:00:00Z", "2024-01-01T00:00:00Z"})
+			rtt.AssertValueAtPath(t, data, "timestamps", []any{"2023-03-13T10:00:45Z", "2024-01-01T00:00:00.3Z"})
+		},
+	},
 }

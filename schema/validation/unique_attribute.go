@@ -13,6 +13,7 @@ import (
 // UniqueAttributeRule validates that unique attributes are valid according to the following rules:
 // - @unique can't be used on Timestamp fields
 // - @unique can't be used on has-many relations
+// - @unique can't be used on array fields
 // - composite @unique attributes must not have duplicate field names
 // - composite @unique can't specify has-many fields
 func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
@@ -136,8 +137,8 @@ func findDuplicateConstraints(constraints []string) (dupes []string) {
 
 func uniquePermitted(f *parser.FieldNode) (bool, string) {
 	// if the field is repeated and not a scalar type, then it is a has-many relationship
-	if f.Repeated && !f.IsScalar() {
-		return false, "@unique is not permitted on has many relationships"
+	if f.Repeated {
+		return false, "@unique is not permitted on has many relationships or arrays"
 	}
 
 	if f.Type.Value == parser.FieldTypeDatetime {

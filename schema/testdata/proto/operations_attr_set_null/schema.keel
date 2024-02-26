@@ -1,0 +1,12 @@
+model Foo {
+    fields {
+        text Text?
+        number Number?
+    }
+    actions {
+        create createPost() {
+            @set(foo.text = null)
+            @set(foo.number = null)
+        }
+    }
+}

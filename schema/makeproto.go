@@ -110,9 +110,62 @@ func defaultAPI(scm *proto.Schema) *proto.Api {
 }
 
 func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error) {
+	var prefix string
 	switch typeInfo.Type {
 	case proto.Type_TYPE_ID:
-		msgName := makeInputMessageName("IDQuery")
+		prefix = "ID"
+	case proto.Type_TYPE_STRING:
+		prefix = "String"
+	case proto.Type_TYPE_INT:
+		prefix = "Int"
+	case proto.Type_TYPE_BOOL:
+		prefix = "Boolean"
+	case proto.Type_TYPE_DATE:
+		prefix = "Date"
+	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+		prefix = "Timestamp"
+	case proto.Type_TYPE_ENUM:
+		prefix = typeInfo.EnumName.Value
+	}
+
+	if typeInfo.Repeated {
+		msgName := makeInputMessageName(fmt.Sprintf("%sArrayQuery", prefix))
+
+		var enumName *wrapperspb.StringValue
+		if typeInfo.Type == proto.Type_TYPE_ENUM {
+			enumName = typeInfo.EnumName
+		}
+
+		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
+			{
+				MessageName: msgName,
+				Name:        "equals",
+				Optional:    true,
+				Nullable:    true,
+				Type: &proto.TypeInfo{
+					Type:     typeInfo.Type,
+					EnumName: enumName,
+					Repeated: true,
+				},
+			},
+			{
+				MessageName: msgName,
+				Name:        "notEquals",
+				Optional:    true,
+				Nullable:    true,
+				Type: &proto.TypeInfo{
+					Type:     typeInfo.Type,
+					EnumName: enumName,
+					Repeated: true,
+				},
+			},
+		}}, nil
+	}
+
+	msgName := makeInputMessageName(fmt.Sprintf("%sQuery", prefix))
+
+	switch typeInfo.Type {
+	case proto.Type_TYPE_ID:
 		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
 				MessageName: msgName,
@@ -143,7 +196,6 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			},
 		}}, nil
 	case proto.Type_TYPE_STRING:
-		msgName := makeInputMessageName("StringQuery")
 		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
 				MessageName: msgName,
@@ -198,7 +250,6 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			},
 		}}, nil
 	case proto.Type_TYPE_INT:
-		msgName := makeInputMessageName("IntQuery")
 		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
 				MessageName: msgName,
@@ -261,7 +312,6 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			},
 		}}, nil
 	case proto.Type_TYPE_BOOL:
-		msgName := makeInputMessageName("BooleanQuery")
 		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
 				MessageName: msgName,
@@ -283,7 +333,6 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			},
 		}}, nil
 	case proto.Type_TYPE_DATE:
-		msgName := makeInputMessageName("DateQuery")
 		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
 				MessageName: msgName,
@@ -337,7 +386,6 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			},
 		}}, nil
 	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		msgName := makeInputMessageName("TimestampQuery")
 		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
 				MessageName: msgName,
@@ -357,7 +405,6 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			},
 		}}, nil
 	case proto.Type_TYPE_ENUM:
-		msgName := makeInputMessageName(fmt.Sprintf("%sQuery", typeInfo.EnumName.Value))
 		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
 				MessageName: msgName,
@@ -1114,6 +1161,7 @@ func (scm *Builder) inferParserInputType(
 	var modelName *wrapperspb.StringValue
 	var fieldName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
+	repeated := false
 
 	if protoType == proto.Type_TYPE_ENUM {
 		enumName = &wrapperspb.StringValue{
@@ -1155,6 +1203,8 @@ func (scm *Builder) inferParserInputType(
 			Value: field.Name.Value,
 		}
 
+		repeated = field.Repeated
+
 		if protoType == proto.Type_TYPE_ENUM {
 			enumName = &wrapperspb.StringValue{
 				Value: field.Type.Value,
@@ -1164,7 +1214,7 @@ func (scm *Builder) inferParserInputType(
 
 	return &proto.TypeInfo{
 		Type:      protoType,
-		Repeated:  false,
+		Repeated:  repeated,
 		ModelName: modelName,
 		FieldName: fieldName,
 		EnumName:  enumName,

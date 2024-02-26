@@ -53,7 +53,7 @@ func GenerateGetStatement(query *QueryBuilder, scope *Scope, input map[string]an
 		return nil, err
 	}
 
-	err = query.applyExplicitFilters(scope, input)
+	err = query.applyExpressionFilters(scope, input)
 	if err != nil {
 		return nil, err
 	}

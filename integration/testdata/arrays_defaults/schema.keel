@@ -1,0 +1,23 @@
+model Thing {
+    fields {
+        texts Text[] @default(["Keel", "Weave"])
+        numbers Number[] @default([1,2,3])
+        booleans Boolean[] @default([true,true,false])
+        enums MyEnum[] @default([MyEnum.One, MyEnum.Two, MyEnum.Three])
+        enumsEmpty MyEnum[] @default([])
+        dates Date[] @default([])
+        timestamps Timestamp[] @default([])
+    }
+
+    actions {
+        create createThing() with () {
+            @permission(expression: true)
+        }
+    }
+}
+
+enum MyEnum {
+    One 
+    Two
+    Three 
+}
