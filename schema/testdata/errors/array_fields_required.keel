@@ -1,0 +1,12 @@
+model Thing {
+    fields {
+        name Text
+        texts Text[]
+    }
+
+    actions {
+        //expect-error:16:27:E034:required field 'texts' must be set by a non-optional input, a @set expression or with @default
+        create createThing() with (name)
+    }
+}
+

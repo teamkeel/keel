@@ -57,7 +57,10 @@ test("update action - unique constraint error", async () => {
   });
 
   await expect(
-    actions.updateProduct({ where: { id: id }, values: { supplierCode: "S1" } })
+    actions.updateProduct({
+      where: { id: id },
+      values: { supplierCode: "S1" },
+    })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
     message:

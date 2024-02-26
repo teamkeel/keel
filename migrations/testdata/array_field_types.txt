@@ -1,0 +1,70 @@
+===
+
+enum MyEnum {
+    Value
+}
+
+model Person {
+    fields {
+        text Text[]
+        bool Boolean[]
+        number Number[]
+        enum MyEnum[]
+        date Date[]
+        timestamp Timestamp[]
+    }
+}
+
+===
+
+CREATE TABLE "identity" (
+"email" TEXT,
+"email_verified" BOOL NOT NULL DEFAULT false,
+"password" TEXT,
+"external_id" TEXT,
+"issuer" TEXT,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "identity" ADD CONSTRAINT identity_email_issuer_udx UNIQUE ("email", "issuer");
+CREATE TABLE "keel_audit" (
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"table_name" TEXT NOT NULL,
+"op" TEXT NOT NULL,
+"data" jsonb NOT NULL,
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"identity_id" TEXT,
+"trace_id" TEXT,
+"event_processed_at" TIMESTAMPTZ
+);
+ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "person" (
+"text" TEXT[] NOT NULL,
+"bool" BOOL[] NOT NULL,
+"number" INTEGER[] NOT NULL,
+"enum" TEXT[] NOT NULL,
+"date" DATE[] NOT NULL,
+"timestamp" TIMESTAMPTZ[] NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "person" ADD CONSTRAINT person_id_pkey PRIMARY KEY ("id");
+CREATE TRIGGER person_create AFTER INSERT ON "person" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER person_update AFTER UPDATE ON "person" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER person_delete AFTER DELETE ON "person" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER person_updated_at BEFORE UPDATE ON "person" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_updated_at BEFORE UPDATE ON "identity" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+
+===
+
+[
+    {"Model":"Identity","Field":"","Type":"ADDED"},
+    {"Model":"KeelAudit","Field":"","Type":"ADDED"},
+    {"Model":"Person","Field":"","Type":"ADDED"}
+]

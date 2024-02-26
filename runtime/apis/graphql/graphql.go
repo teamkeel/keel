@@ -232,7 +232,7 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 func (mk *graphqlSchemaBuilder) addGlobals() {
 	mk.globals = map[string]*graphql.Scalar{}
 	mk.globals[anyType.Name()] = anyType
-	mk.globals[iso8601Type.Name()] = iso8601Type
+	mk.globals[timestampType.Name()] = timestampInputType
 }
 
 // addModel generates the graphql type to represent the given proto.Model, and inserts it into
@@ -749,7 +749,6 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 			out = mk.makeConnectionType(out)
 		} else {
 			out = graphql.NewList(out)
-			out = graphql.NewNonNull(out)
 		}
 	} else if !field.Optional {
 		out = graphql.NewNonNull(out)

@@ -153,13 +153,21 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 		if field.Type.Type == proto.Type_TYPE_MODEL {
 			continue
 		}
+
 		w.Write(casing.ToLowerCamel(field.Name))
 		w.Write(": ")
 		t := toTypeScriptType(field.Type, false)
+
+		if field.Type.Repeated {
+			t = fmt.Sprintf("%s[]", t)
+		}
+
 		if field.DefaultValue != nil {
 			t = fmt.Sprintf("Generated<%s>", t)
 		}
+
 		w.Write(t)
+
 		if field.Optional {
 			w.Write(" | null")
 		}
@@ -176,13 +184,21 @@ func writeModelInterface(w *codegen.Writer, model *proto.Model) {
 		if field.Type.Type == proto.Type_TYPE_MODEL {
 			continue
 		}
+
 		w.Write(field.Name)
 		w.Write(": ")
 		t := toTypeScriptType(field.Type, false)
+
+		if field.Type.Repeated {
+			t = fmt.Sprintf("%s[]", t)
+		}
+
 		w.Write(t)
+
 		if field.Optional {
 			w.Write(" | null")
 		}
+
 		w.Writeln("")
 	}
 	w.Dedent()
@@ -242,6 +258,11 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 			}
 		} else {
 			t := toTypeScriptType(field.Type, false)
+
+			if field.Type.Repeated {
+				t = fmt.Sprintf("%s[]", t)
+			}
+
 			w.Write(t)
 		}
 
@@ -286,6 +307,10 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Indent()
 
 	relevantFields := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
+		if f.Type.Repeated {
+			return false
+		}
+
 		switch f.Type.Type {
 		// scalar types are only permitted to sort by
 		case proto.Type_TYPE_BOOL, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_INT, proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_ID:
@@ -331,9 +356,15 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 			w.Writef("%sWhereConditions", field.Type.ModelName.Value)
 		} else {
 			w.Write(toTypeScriptType(field.Type, false))
+
+			if field.Type.Repeated {
+				w.Write("[]")
+			}
+
 			w.Write(" | ")
 			w.Write(toWhereConditionType(field))
 		}
+
 		if field.Optional {
 			w.Write(" | null")
 		}
@@ -496,6 +527,10 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 		for i, f := range nonOptionalFields {
 			w.Writef("%s: ", casing.ToLowerCamel(f.Name))
 
+			if f.Type.Repeated {
+				w.Write("[")
+			}
+
 			switch f.Type.Type {
 			case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
 				w.Write("''")
@@ -507,6 +542,10 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 				w.Write("new Date()")
 			default:
 				w.Write("undefined")
+			}
+
+			if f.Type.Repeated {
+				w.Write("]")
 			}
 
 			if i < len(nonOptionalFields)-1 {
@@ -1516,6 +1555,10 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 }
 
 func toWhereConditionType(f *proto.Field) string {
+	if f.Type.Repeated {
+		return fmt.Sprintf("runtime.ArrayWhereCondition<%s>", toTypeScriptType(f.Type, false))
+	}
+
 	switch f.Type.Type {
 	case proto.Type_TYPE_ID:
 		return "runtime.IDWhereCondition"

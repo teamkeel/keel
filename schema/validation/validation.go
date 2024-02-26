@@ -68,7 +68,6 @@ var visitorFuncs = []VisitorFunc{
 	ConflictingInputsRule,
 	UniqueLookup,
 	InvalidWithUsage,
-	RepeatedScalarFieldRule,
 	UniqueAttributeRule,
 	OrderByAttributeRule,
 	SortableAttributeRule,

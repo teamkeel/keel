@@ -1,19 +1,24 @@
 package actions
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/types"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -98,14 +103,55 @@ func (o *QueryOperand) IsValue() bool {
 	return o.value != nil && o.query == nil
 }
 
+func (o *QueryOperand) IsArrayValue() bool {
+	if !o.IsValue() {
+		return false
+	}
+
+	// Check that it is a slice
+	slice := reflect.ValueOf(o.value)
+	if slice.Kind() != reflect.Slice || slice.IsNil() {
+		return false
+	}
+
+	return true
+}
+
 func (o *QueryOperand) IsNull() bool {
 	return o.query == nil && o.table == "" && o.column == "" && o.value == nil && o.raw == ""
 }
 
 func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	switch {
-	case o.IsValue():
+	case o.IsValue() && !o.IsArrayValue():
 		return "?"
+	case o.IsValue() && o.IsArrayValue():
+		operands := []string{}
+		for i := 0; i < reflect.ValueOf(o.value).Len(); i++ {
+			operands = append(operands, "?")
+		}
+
+		values := o.toSqlArgs()
+
+		var cast string
+		if len(values) > 0 {
+			switch values[0].(type) {
+			case int, int64, int32:
+				cast = "::INTEGER[]"
+			case types.Date:
+				cast = "::DATE[]"
+			case types.Timestamp:
+				cast = "::TIMESTAMPTZ[]"
+			case bool:
+				cast = "::BOOL[]"
+			default:
+				cast = "::TEXT[]"
+			}
+		} else {
+			return "'{}'"
+		}
+
+		return fmt.Sprintf("ARRAY[%s]%s", strings.Join(operands, ", "), cast)
 	case o.IsField():
 		table := o.table
 		// If no model table is specified, then use the base model in the query builder
@@ -126,8 +172,17 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 
 func (o *QueryOperand) toSqlArgs() []any {
 	switch {
-	case o.IsValue():
+	case o.IsValue() && !o.IsArrayValue():
 		return []any{o.value}
+	case o.IsValue() && o.IsArrayValue():
+		// Safely map rhs slice to []any
+		slice := reflect.ValueOf(o.value)
+		inValues := make([]any, slice.Len())
+		for i := 0; i < slice.Len(); i++ {
+			inValues[i] = slice.Index(i).Interface()
+		}
+
+		return inValues
 	case o.IsField(), o.IsNull(), o.IsRaw():
 		return []any{}
 	case o.IsInlineQuery():
@@ -139,6 +194,8 @@ func (o *QueryOperand) toSqlArgs() []any {
 
 // The templated SQL statement and associated values, ready to be executed.
 type Statement struct {
+	// The model that represents the table.
+	model *proto.Model
 	// The generated SQL template.
 	template string
 	// The arguments associated with the generated SQL template.
@@ -619,6 +676,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	return &Statement{
 		template: sql,
 		args:     query.args,
+		model:    query.Model,
 	}
 }
 
@@ -647,6 +705,7 @@ func (query *QueryBuilder) InsertStatement(ctx context.Context) *Statement {
 		alias)
 
 	return &Statement{
+		model:    query.Model,
 		template: statement,
 		args:     args,
 	}
@@ -938,6 +997,7 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 	return &Statement{
 		template: template,
 		args:     args,
+		model:    query.Model,
 	}
 }
 
@@ -990,6 +1050,7 @@ func (query *QueryBuilder) DeleteStatement(ctx context.Context) *Statement {
 	return &Statement{
 		template: template,
 		args:     query.args,
+		model:    query.Model,
 	}
 }
 
@@ -1097,6 +1158,47 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		EndCursor:   endCursor,
 	}
 
+	// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
+	// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
+	for _, f := range statement.model.Fields {
+		if f.Type.Type != proto.Type_TYPE_MODEL && f.Type.Repeated {
+			for _, row := range rows {
+				col := strcase.ToSnake(f.Name)
+				if val, ok := row[col]; ok && val != nil {
+					arr := val.(string)
+					switch f.Type.Type {
+					case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_ID, proto.Type_TYPE_MARKDOWN:
+						row[col], err = ParsePostgresArray[string](arr, func(s string) (string, error) {
+							return s, nil
+						})
+					case proto.Type_TYPE_INT:
+						row[col], err = ParsePostgresArray[int](arr, func(s string) (int, error) {
+							return strconv.Atoi(s)
+						})
+					case proto.Type_TYPE_BOOL:
+						row[col], err = ParsePostgresArray[bool](arr, func(s string) (bool, error) {
+							return strconv.ParseBool(s)
+						})
+					case proto.Type_TYPE_DATE:
+						row[col], err = ParsePostgresArray[time.Time](arr, func(s string) (time.Time, error) {
+							return time.Parse("2006-01-02", s)
+						})
+					case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATETIME:
+						row[col], err = ParsePostgresArray[time.Time](arr, func(s string) (time.Time, error) {
+							return time.Parse("2006-01-02 15:04:05.999999999-07", s)
+						})
+					default:
+						return nil, nil, fmt.Errorf("missing parsing implementation for type %s", f.Type.Type)
+					}
+
+					if err != nil {
+						return nil, nil, err
+					}
+				}
+			}
+		}
+	}
+
 	return toLowerCamelMaps(rows), pageInfo, nil
 }
 
@@ -1116,23 +1218,80 @@ func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any
 	return results[0], nil
 }
 
+func ParsePostgresArray[T any](array string, parse func(string) (T, error)) ([]T, error) {
+	out := []T{}
+	var arrayOpened, quoteOpened, escapeOpened bool
+	item := &bytes.Buffer{}
+	for _, r := range array {
+		switch {
+		case !arrayOpened:
+			if r != '{' {
+				return nil, errors.New("not a postgres array as doesn't start with an opening curly brace")
+			}
+			arrayOpened = true
+		case escapeOpened:
+
+			item.WriteRune(r)
+			escapeOpened = false
+		case quoteOpened:
+			switch r {
+			case '\\':
+				escapeOpened = true
+			case '"':
+				quoteOpened = false
+			default:
+				item.WriteRune(r)
+			}
+		case r == '"':
+			quoteOpened = true
+		case r == ',':
+			// end of item
+			val, err := parse(item.String())
+			if err != nil {
+				return nil, err
+			}
+
+			out = append(out, val)
+			item.Reset()
+		case r == '}':
+			// done
+			if item.Len() == 0 {
+				return out, nil
+			}
+
+			val, err := parse(item.String())
+			if err != nil {
+				return nil, err
+			}
+
+			out = append(out, val)
+			return out, nil
+		default:
+			item.WriteRune(r)
+		}
+	}
+	return nil, errors.New("not a postgres array as premature end of string")
+}
+
 // Builds a condition SQL template using the ? placeholder for values.
 func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator ActionOperator, rhs *QueryOperand) (string, []any, error) {
 	var template string
 	var lhsSqlOperand, rhsSqlOperand any
 	args := []any{}
 
-	switch operator {
-	case StartsWith:
-		rhs.value = rhs.value.(string) + "%%"
-	case EndsWith:
-		rhs.value = "%%" + rhs.value.(string)
-	case Contains, NotContains:
-		rhs.value = "%%" + rhs.value.(string) + "%%"
+	if rhs.IsValue() {
+		switch operator {
+		case StartsWith:
+			rhs.value = rhs.value.(string) + "%%"
+		case EndsWith:
+			rhs.value = "%%" + rhs.value.(string)
+		case Contains, NotContains:
+			rhs.value = "%%" + rhs.value.(string) + "%%"
+		}
 	}
 
 	switch {
-	case lhs.IsField(), lhs.IsValue(), lhs.IsNull(), lhs.IsInlineQuery(), lhs.IsRaw():
+	case lhs.IsField(), lhs.IsValue(), lhs.IsArrayValue(), lhs.IsNull(), lhs.IsInlineQuery(), lhs.IsRaw():
 		lhsSqlOperand = lhs.toSqlOperandString(query)
 		lhsArgs := lhs.toSqlArgs()
 
@@ -1142,46 +1301,12 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	}
 
 	switch {
-	case rhs.IsField(), rhs.IsNull(), rhs.IsInlineQuery(), rhs.IsRaw():
+	case rhs.IsField(), rhs.IsValue(), rhs.IsArrayValue(), rhs.IsNull(), rhs.IsInlineQuery(), rhs.IsRaw():
 		rhsSqlOperand = rhs.toSqlOperandString(query)
 		rhsArgs := rhs.toSqlArgs()
 
 		args = append(args, rhsArgs...)
-	case rhs.IsValue():
-		if operator == OneOf || operator == NotOneOf {
-			// The IN operator on an a value slice needs to have its template structured like this:
-			// WHERE x IN (?, ?, ?)
-			inPlaceholders := []string{}
 
-			// Check that rhs is a slice
-			slice := reflect.ValueOf(rhs.value)
-			if slice.Kind() != reflect.Slice || slice.IsNil() {
-				return "", nil, errors.New("rhs operand in sql condition must be a slice")
-			}
-
-			// Safely map rhs slice to []any
-			inValues := make([]any, slice.Len())
-			for i := 0; i < slice.Len(); i++ {
-				inValues[i] = slice.Index(i).Interface()
-			}
-
-			// if the inValues is empty, then it is invalid SQL to have "IN ()"
-			// so therefore we should just apply a constraint that evaluates to false
-			// to the query
-			if len(inValues) < 1 {
-				return "false", nil, nil
-			}
-
-			for _, v := range inValues {
-				inPlaceholders = append(inPlaceholders, "?")
-				args = append(args, v)
-			}
-
-			rhsSqlOperand = fmt.Sprintf("(%s)", strings.Join(inPlaceholders, ", "))
-		} else {
-			rhsSqlOperand = "?"
-			args = append(args, rhs.value)
-		}
 	default:
 		return "", nil, errors.New("no handling for rhs QueryOperand type")
 	}
@@ -1196,16 +1321,20 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case NotContains:
 		template = fmt.Sprintf("%s NOT LIKE %s", lhsSqlOperand, rhsSqlOperand)
 	case OneOf:
-		if rhs.IsField() {
-			template = fmt.Sprintf("%s IS NOT DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
-		} else {
+		if rhs.IsInlineQuery() {
 			template = fmt.Sprintf("%s IN %s", lhsSqlOperand, rhsSqlOperand)
+		} else {
+			template = fmt.Sprintf("%s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
 		}
 	case NotOneOf:
-		if rhs.IsField() {
-			template = fmt.Sprintf("%s IS DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
-		} else {
+		if rhs.IsInlineQuery() {
 			template = fmt.Sprintf("%s NOT IN %s", lhsSqlOperand, rhsSqlOperand)
+		} else {
+			if rhs.IsField() {
+				template = fmt.Sprintf("(NOT %[1]s = ANY(%[2]s) OR %[2]s IS NOT DISTINCT FROM NULL)", lhsSqlOperand, rhsSqlOperand)
+			} else {
+				template = fmt.Sprintf("NOT %s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
+			}
 		}
 	case LessThan:
 		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
@@ -1287,11 +1416,12 @@ func toRuntimeError(err error) error {
 			return common.NewForeignKeyConstraintError(value.Columns[0])
 		default:
 			return common.RuntimeError{
-				Code:    common.ErrInvalidInput,
+				Code:    common.ErrInternal,
 				Message: "action failed to complete",
 			}
 		}
 	}
+
 	return err
 }
 

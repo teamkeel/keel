@@ -14,12 +14,12 @@ model Author {
         joinedDate Timestamp @unique
         // has many cant be unique
         //expect-error:9:14:RelationshipError:Cannot use @unique on a repeated model field
-        //expect-error:22:29:TypeError:@unique is not permitted on has many relationships
+        //expect-error:22:29:TypeError:@unique is not permitted on has many relationships or arrays
         posts Post[] @unique
     }
 
     // this is invalid because posts is a has-many
-    //expect-error:20:25:TypeError:@unique is not permitted on has many relationships
+    //expect-error:20:25:TypeError:@unique is not permitted on has many relationships or arrays
     @unique([name, posts])
 
     // invalid because of duplicate field names

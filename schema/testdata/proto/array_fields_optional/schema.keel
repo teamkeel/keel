@@ -1,0 +1,13 @@
+model Post {
+    fields {
+        texts Text[]?
+        numbers Number[]?
+        booleans Boolean[]?
+        dates Date[]?
+        timestamps Timestamp[]?
+    }
+
+    actions {
+        create createThing() with (texts?, numbers?, booleans?, dates?, timestamps?)
+    }
+}

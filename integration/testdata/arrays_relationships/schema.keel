@@ -1,0 +1,48 @@
+model Collection {
+    fields {
+        name Text
+        books Book[]
+    }
+
+    actions {
+        create createCollection() with (name, books.title, books.genres) {
+            @permission(expression: true)
+        }
+
+        create createCollectionSetGenres() with (name, books.title) {
+            @set(collection.books.genres = ["all", "new"])
+            @permission(expression: true)
+        }
+
+        list listCollection(books.genres) {
+            @orderBy(name: asc)
+            @permission(expression: true)
+        }
+
+         list listEqualsCollection() {
+            @where(collection.books.genres == ["fantasy", "science fiction"])
+            @orderBy(name: asc)
+            @permission(expression: true)
+        }
+
+         list listInCollection() {
+            @where("fantasy" in collection.books.genres)
+            @orderBy(name: asc)
+            @permission(expression: true)
+        }
+
+         list listNotInCollection() {
+            @where("thriller" not in collection.books.genres)
+            @orderBy(name: asc)
+            @permission(expression: true)
+        }
+    }
+}
+
+model Book {
+    fields {
+        col Collection
+        title Text
+        genres Text[]
+    }
+}

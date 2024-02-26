@@ -203,5 +203,5 @@ type IdentFragment struct {
 type Array struct {
 	node.Node
 
-	Values []*Operand `"[" @@ ( "," @@ )* "]"`
+	Values []*Operand `"[" @@* ( "," @@ )* "]"`
 }

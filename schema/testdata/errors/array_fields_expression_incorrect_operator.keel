@@ -1,0 +1,35 @@
+model Thing {
+    fields {
+        texts Text[]
+        texts2 Text[]
+        numbers Text[]
+    }
+
+    actions {
+        list listThings1() {
+            //expect-error:20:44:E026:thing.texts is Text[] but "science" is Text
+            @where(thing.texts in "science")
+        }
+
+        list listThings2() {
+            //expect-error:20:31:E027:left hand side operand cannot be an array for 'in' and 'not in'
+            @where(thing.texts in ["science"])
+        }
+
+        list listThings3() {
+            //expect-error:20:31:E027:left hand side operand cannot be an array for 'in' and 'not in'
+            @where(["science"] in thing.texts)
+        }
+
+        list listThings4() {
+            //expect-error:20:44:E026:thing.texts is Text[] but "science" is Text
+            @where(thing.texts == "science")
+        }
+
+        list listThings5() {
+            //expect-error:30:32:E030:thing.texts is an array. Only 'in' or 'not in' can be used
+            @where("science" == thing.texts)
+        }
+    }
+}
+

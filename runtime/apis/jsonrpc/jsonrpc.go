@@ -61,27 +61,19 @@ func NewHandler(schema *proto.Schema, api *proto.Api) common.HandlerFunc {
 		}
 
 		inputs := req.Params
-		actionName := req.Method
 
 		span.SetAttributes(
 			attribute.String("request.id", req.ID),
 			attribute.String("api.protocol", "RPC"),
 		)
 
-		var action *proto.Action
-		for _, a := range proto.GetActionNamesForApi(schema, api) {
-			if a == actionName {
-				action = proto.FindAction(schema, actionName)
-			}
-		}
-
+		action := proto.FindAction(schema, req.Method)
 		if action == nil {
 			err = common.NewMethodNotFoundError()
 			return NewErrorResponse(ctx, &req.ID, err)
 		}
 
 		scope := actions.NewScope(ctx, action, schema)
-
 		response, meta, err := actions.Execute(scope, inputs)
 		if err != nil {
 			return NewErrorResponse(ctx, &req.ID, err)

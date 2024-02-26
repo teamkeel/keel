@@ -51,6 +51,12 @@ export type TimestampQueryInput = {
   after: string | null;
 };
 
+// Array query input
+export type ArrayWhereCondition<T> = {
+  equals?: T[] | null;
+  notEquals?: T[] | null;
+};
+
 export type ContextAPI = {
   headers: RequestHeaders;
   response: Response;

@@ -116,6 +116,17 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				return
 			}
 
+			if modelField.Repeated {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeArgumentError,
+					errorhandling.ErrorDetails{
+						Message: "@orderBy does not support ordering of array fields",
+					},
+					arg.Label,
+				))
+				return
+			}
+
 			if lo.SomeBy(argumentLabels, func(a string) bool { return a == arg.Label.Value }) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,

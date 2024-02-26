@@ -195,7 +195,7 @@ func (e *ExpressionScopeEntity) AllowedOperators(asts []*parser.AST) []string {
 		t = parser.TypeArray
 	}
 
-	if e.IsEnumField() || e.IsEnumValue() {
+	if (e.IsEnumField() || e.IsEnumValue()) && !arrayEntity {
 		t = parser.TypeEnum
 	}
 
