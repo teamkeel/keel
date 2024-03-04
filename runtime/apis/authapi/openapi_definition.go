@@ -215,6 +215,9 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 						"password": {
 							Type: "string",
 						},
+						"create_if_not_exists": {
+							Type: "boolean",
+						},
 					},
 					Required:             []string{"grant_type", "username", "password"},
 					Title:                "Password",
@@ -228,6 +231,9 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 						},
 						"subject_token": {
 							Type: "string",
+						},
+						"create_if_not_exists": {
+							Type: "boolean",
 						},
 					},
 					Required:             []string{"grant_type", "subject_token"},
@@ -291,6 +297,9 @@ func OAuthOpenApiSchema() common.HandlerFunc {
 				},
 				"refresh_token": {
 					Type: "string",
+				},
+				"identity_created": {
+					Type: "boolean",
 				},
 			},
 		}
