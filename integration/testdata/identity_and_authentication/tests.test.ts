@@ -153,7 +153,7 @@ test("authenticate - incorrect credentials with existing identity - not authenti
   expect(body).toEqual({
     error: "invalid_client",
     error_description:
-      "possible causes may be that the identity does not exist or the credentials are incorrect",
+      "the identity does not exist or the credentials are incorrect",
   });
 
   const identities = await models.identity.findMany();

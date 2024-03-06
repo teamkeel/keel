@@ -1215,7 +1215,7 @@ func TestPasswordGrantCreateIfNotExistsFalse_IdentityNotCreated(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
 	require.Equal(t, "invalid_client", errorResponse.Error)
-	require.Equal(t, "possible causes may be that the identity does not exist or the credentials are incorrect", errorResponse.ErrorDescription)
+	require.Equal(t, "the identity does not exist or the credentials are incorrect", errorResponse.ErrorDescription)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
@@ -1312,7 +1312,7 @@ func TestPasswordGrant_IncorrectCredentials(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
 	require.Equal(t, "invalid_client", errorResponse.Error)
-	require.Equal(t, "possible causes may be that the identity does not exist or the credentials are incorrect", errorResponse.ErrorDescription)
+	require.Equal(t, "the identity does not exist or the credentials are incorrect", errorResponse.ErrorDescription)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 

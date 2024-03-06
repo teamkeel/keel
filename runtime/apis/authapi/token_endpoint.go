@@ -165,7 +165,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 			if identity == nil {
 				if !createIfNotExists {
-					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the identity does not exist or the credentials are incorrect", nil)
+					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist or the credentials are incorrect", nil)
 				}
 
 				hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -182,7 +182,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			} else {
 				correct := bcrypt.CompareHashAndPassword([]byte(identity.Password), []byte(password)) == nil
 				if !correct {
-					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the identity does not exist or the credentials are incorrect", nil)
+					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist or the credentials are incorrect", nil)
 				}
 			}
 
