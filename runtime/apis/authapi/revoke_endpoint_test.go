@@ -49,7 +49,7 @@ func TestRevokeTokenForm_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
-	requestToken := makeTokenExchangeFormRequest(ctx, idToken)
+	requestToken := makeTokenExchangeFormRequest(ctx, idToken, nil)
 
 	// Handle runtime request, expecting TokenResponse
 	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, requestToken)

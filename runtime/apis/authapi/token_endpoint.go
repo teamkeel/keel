@@ -2,6 +2,7 @@ package authapi
 
 import (
 	"net/http"
+	"strconv"
 
 	email "net/mail"
 
@@ -29,6 +30,7 @@ const (
 	ArgToken              = "token"
 	ArgUsername           = "username"
 	ArgPassword           = "password"
+	ArgCreateIfNotExists  = "create_if_not_exists"
 )
 
 const (
@@ -41,6 +43,7 @@ type TokenResponse struct {
 	TokenType    string `json:"token_type"`
 	ExpiresIn    int    `json:"expires_in"`
 	RefreshToken string `json:"refresh_token,omitempty"`
+	Created      bool   `json:"identity_created"`
 }
 
 // https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
@@ -69,6 +72,8 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 		var identityId string
 		var refreshToken string
+		createIfNotExists := true
+		identityCreated := false
 
 		config, err := runtimectx.GetOAuthConfig(ctx)
 		if err != nil {
@@ -101,6 +106,13 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 		span.SetAttributes(
 			attribute.String(ArgGrantType, grantType),
 		)
+
+		argCreateIfNotExists, hasCreateIfNotExists := inputs[ArgCreateIfNotExists].(string)
+		if hasCreateIfNotExists {
+			if createIfNotExists, err = strconv.ParseBool(argCreateIfNotExists); err != nil {
+				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the create_if_not_exists field is invalid and must be either 'true' or 'false'", nil)
+			}
+		}
 
 		switch grantType {
 		case GrantTypeRefreshToken:
@@ -152,6 +164,10 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 			if identity == nil {
+				if !createIfNotExists {
+					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist or the credentials are incorrect", nil)
+				}
+
 				hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 				if err != nil {
 					return common.InternalServerErrorResponse(ctx, err)
@@ -161,10 +177,12 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				if err != nil {
 					return common.InternalServerErrorResponse(ctx, err)
 				}
+
+				identityCreated = true
 			} else {
 				correct := bcrypt.CompareHashAndPassword([]byte(identity.Password), []byte(password)) == nil
 				if !correct {
-					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the identity does not exist or the credentials are incorrect", nil)
+					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist or the credentials are incorrect", nil)
 				}
 			}
 
@@ -222,7 +240,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			// Verify the ID token with the OIDC provider
 			idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
 			if err != nil {
-				return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the id token is invalid, has expired, or has insufficient claims", err)
+				return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the identity does not exist or the id token is invalid, has expired, or has insufficient claims", err)
 			}
 
 			// Extract claims
@@ -237,10 +255,16 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 			if identity == nil {
+				if !createIfNotExists {
+					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the identity does not exist or the id token is invalid, has expired, or has insufficient claims", err)
+				}
+
 				identity, err = actions.CreateIdentityWithIdTokenClaims(ctx, schema, idToken.Subject, idToken.Issuer, claims)
 				if err != nil {
 					return common.InternalServerErrorResponse(ctx, err)
 				}
+
+				identityCreated = true
 			} else {
 				identity, err = actions.UpdateIdentityWithIdTokenClaims(ctx, schema, idToken.Subject, idToken.Issuer, claims)
 				if err != nil {
@@ -271,6 +295,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			TokenType:    TokenType,
 			ExpiresIn:    int(expiresIn.Seconds()),
 			RefreshToken: refreshToken,
+			Created:      identityCreated,
 		}
 
 		return common.NewJsonResponse(http.StatusOK, response, nil)

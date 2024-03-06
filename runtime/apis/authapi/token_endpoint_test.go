@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"testing"
 	"time"
 
@@ -57,7 +58,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, idToken)
+	request := makeTokenExchangeFormRequest(ctx, idToken, nil)
 
 	// Handle runtime request, expecting TokenResponse
 	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
@@ -68,6 +69,7 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	require.Equal(t, "bearer", validResponse.TokenType)
 	require.NotEmpty(t, validResponse.ExpiresIn)
 	require.NotEmpty(t, validResponse.RefreshToken)
+	require.True(t, validResponse.Created)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	sub, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
@@ -135,6 +137,7 @@ func TestTokenExchangeWithJson_ValidNewIdentity(t *testing.T) {
 	require.Equal(t, "bearer", validResponse.TokenType)
 	require.NotEmpty(t, validResponse.ExpiresIn)
 	require.NotEmpty(t, validResponse.RefreshToken)
+	require.True(t, validResponse.Created)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	sub, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
@@ -206,7 +209,7 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, idToken)
+	request := makeTokenExchangeFormRequest(ctx, idToken, nil)
 
 	// Handle runtime request, expecting TokenResponse
 	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
@@ -277,7 +280,7 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, idToken)
+	request := makeTokenExchangeFormRequest(ctx, idToken, nil)
 
 	// Handle runtime request, expecting TokenResponse
 	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
@@ -286,6 +289,7 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
 	require.NotEmpty(t, validResponse.AccessToken)
 	require.NotEmpty(t, validResponse.ExpiresIn)
+	require.False(t, validResponse.Created)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	sub, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
@@ -313,12 +317,147 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	require.Equal(t, issuer, server.Issuer)
 }
 
+func TestTokenExchangeCreateIfNotExistsFalse_IdentityNotExists(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// OIDC test server
+	server, err := oauthtest.NewServer()
+	require.NoError(t, err)
+	defer server.Close()
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email: "keelson@keel.so",
+	})
+
+	// Get ID token from server
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
+	require.NoError(t, err)
+
+	// Make a token exchange grant request
+	createIfNotExists := false
+	request := makeTokenExchangeFormRequest(ctx, idToken, &createIfNotExists)
+
+	// Handle runtime request, expecting TokenResponse
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
+	require.Equal(t, "invalid_client", errorResponse.Error)
+	require.Equal(t, "possible causes may be that the identity does not exist or the id token is invalid, has expired, or has insufficient claims", errorResponse.ErrorDescription)
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
+}
+
+func TestTokenExchangeCreateIfNotExistsTrue_IdentityAuthorisedAndNotCreated(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// OIDC test server
+	server, err := oauthtest.NewServer()
+	require.NoError(t, err)
+	defer server.Close()
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
+
+	var inserted []map[string]any
+	database.GetDB().Raw(fmt.Sprintf("INSERT INTO identity (external_id, issuer, email) VALUES ('id|285620','%s','keelson@keel.so') RETURNING *", server.Issuer)).Scan(&inserted)
+	require.Len(t, inserted, 1)
+
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email: "keelson@keel.so",
+	})
+
+	// Get ID token from server
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
+	require.NoError(t, err)
+
+	// Make a token exchange grant request
+	createIfNotExists := true
+	request := makeTokenExchangeFormRequest(ctx, idToken, &createIfNotExists)
+
+	// Handle runtime request, expecting TokenResponse
+	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.NotEmpty(t, validResponse.AccessToken)
+	require.NotEmpty(t, validResponse.ExpiresIn)
+	require.False(t, validResponse.Created)
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
+}
+
+func TestTokenExchangeCreateIfNotExistsTrue_IdentityCreated(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// OIDC test server
+	server, err := oauthtest.NewServer()
+	require.NoError(t, err)
+	defer server.Close()
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email: "keelson@keel.so",
+	})
+
+	// Get ID token from server
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
+	require.NoError(t, err)
+
+	// Make a token exchange grant request
+	createIfNotExists := true
+	request := makeTokenExchangeFormRequest(ctx, idToken, &createIfNotExists)
+
+	// Handle runtime request, expecting TokenResponse
+	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.NotEmpty(t, validResponse.AccessToken)
+	require.NotEmpty(t, validResponse.ExpiresIn)
+	require.True(t, validResponse.Created)
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
+}
+
 func TestTokenEndpoint_HttpGet(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, "mock_token")
+	request := makeTokenExchangeFormRequest(ctx, "mock_token", nil)
 
 	request.Method = http.MethodGet
 
@@ -337,7 +476,7 @@ func TestTokenEndpoint_ApplicationTextRequest(t *testing.T) {
 	defer database.Close()
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, "mock_token")
+	request := makeTokenExchangeFormRequest(ctx, "mock_token", nil)
 	request.Header = http.Header{}
 	request.Header.Add("Content-Type", "application/text")
 
@@ -383,7 +522,7 @@ func TestTokenEndpoint_MissingGrantType(t *testing.T) {
 	defer database.Close()
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, "mock_token")
+	request := makeTokenExchangeFormRequest(ctx, "mock_token", nil)
 	form := url.Values{}
 	form.Add("subject_token", "mock_token")
 	request.URL.RawQuery = form.Encode()
@@ -403,7 +542,7 @@ func TestTokenEndpoint_WrongGrantType(t *testing.T) {
 	defer database.Close()
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, "mock_token")
+	request := makeTokenExchangeFormRequest(ctx, "mock_token", nil)
 	form := url.Values{}
 	form.Add("grant_type", "unknown")
 	form.Add("subject_token", "mock_token")
@@ -424,7 +563,7 @@ func TestTokenExchangeGrant_NoSubjectToken(t *testing.T) {
 	defer database.Close()
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, "mock_token")
+	request := makeTokenExchangeFormRequest(ctx, "mock_token", nil)
 	form := url.Values{}
 	form.Add("grant_type", "token_exchange")
 	request.URL.RawQuery = form.Encode()
@@ -469,7 +608,7 @@ func TestTokenExchangeGrant_EmptySubjectToken(t *testing.T) {
 	defer database.Close()
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, "mock_token")
+	request := makeTokenExchangeFormRequest(ctx, "mock_token", nil)
 	form := url.Values{}
 	form.Add("grant_type", "token_exchange")
 	form.Add("subject_token", "")
@@ -490,7 +629,7 @@ func TestTokenExchangeGrant_WrongSubjectTokenType(t *testing.T) {
 	defer database.Close()
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, "mock_token")
+	request := makeTokenExchangeFormRequest(ctx, "mock_token", nil)
 	form := url.Values{}
 	form.Add("grant_type", "token_exchange")
 	form.Add("subject_token", "mock_token")
@@ -513,7 +652,7 @@ func TestTokenExchangeGrant_WrongRequestedTokenType(t *testing.T) {
 	defer database.Close()
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, "mock_token")
+	request := makeTokenExchangeFormRequest(ctx, "mock_token", nil)
 	form := url.Values{}
 	form.Add("grant_type", "token_exchange")
 	form.Add("subject_token", "mock_token")
@@ -528,6 +667,29 @@ func TestTokenExchangeGrant_WrongRequestedTokenType(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the only supported requested_token_type is 'access_token'", errorResponse.ErrorDescription)
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
+}
+
+func TestTokenExchangeGrant_InvalidCreateIfNotExists(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// Make a token exchange grant request
+	request := makeTokenExchangeFormRequest(ctx, "mock_token", nil)
+	form := url.Values{}
+	form.Add("grant_type", "token_exchange")
+	form.Add("subject_token", "mock_token")
+	form.Add("subject_token_type", "id_token")
+	form.Add("create_if_not_exists", "invalid")
+	request.URL.RawQuery = form.Encode()
+
+	// Handle runtime request, expecting TokenErrorResponse
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
+	require.Equal(t, "invalid_request", errorResponse.Error)
+	require.Equal(t, "the create_if_not_exists field is invalid and must be either 'true' or 'false'", errorResponse.ErrorDescription)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
@@ -550,7 +712,7 @@ func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, idToken)
+	request := makeTokenExchangeFormRequest(ctx, idToken, nil)
 	form := url.Values{}
 	form.Add("grant_type", "token_exchange")
 	form.Add("subject_token", "this is not a jwt token")
@@ -562,7 +724,7 @@ func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
 
 	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
 	require.Equal(t, "invalid_client", errorResponse.Error)
-	require.Equal(t, "possible causes may be that the id token is invalid, has expired, or has insufficient claims", errorResponse.ErrorDescription)
+	require.Equal(t, "possible causes may be that the identity does not exist or the id token is invalid, has expired, or has insufficient claims", errorResponse.ErrorDescription)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
@@ -624,6 +786,7 @@ func TestRefreshTokenGrantJson_Valid(t *testing.T) {
 	require.NotEmpty(t, refreshGrantResponse.RefreshToken)
 	require.NotEqual(t, refreshGrantResponse.RefreshToken, tokenExchangeResponse.RefreshToken)
 	require.NotEqual(t, refreshGrantResponse.AccessToken, tokenExchangeResponse.AccessToken)
+	require.False(t, refreshGrantResponse.Created)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	accessToken1Issuer, err := oauth.ExtractClaimFromJwt(tokenExchangeResponse.AccessToken, "iss")
@@ -684,7 +847,7 @@ func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, idToken)
+	request := makeTokenExchangeFormRequest(ctx, idToken, nil)
 
 	// Handle runtime request, expecting TokenResponse
 	tokenExchangeResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
@@ -708,6 +871,7 @@ func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
 	require.NotEmpty(t, refreshGrantResponse.RefreshToken)
 	require.NotEqual(t, refreshGrantResponse.RefreshToken, tokenExchangeResponse.RefreshToken)
 	require.NotEqual(t, refreshGrantResponse.AccessToken, tokenExchangeResponse.AccessToken)
+	require.False(t, refreshGrantResponse.Created)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	accessToken1Issuer, err := oauth.ExtractClaimFromJwt(tokenExchangeResponse.AccessToken, "iss")
@@ -768,7 +932,7 @@ func TestRefreshTokenGrantRotationDisabled_Valid(t *testing.T) {
 	require.NoError(t, err)
 
 	// Make a token exchange grant request
-	request := makeTokenExchangeFormRequest(ctx, idToken)
+	request := makeTokenExchangeFormRequest(ctx, idToken, nil)
 
 	// Handle runtime request, expecting TokenResponse
 	tokenExchangeResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
@@ -792,6 +956,7 @@ func TestRefreshTokenGrantRotationDisabled_Valid(t *testing.T) {
 	require.NotEmpty(t, refreshGrantResponse.RefreshToken)
 	require.Equal(t, refreshGrantResponse.RefreshToken, tokenExchangeResponse.RefreshToken)
 	require.NotEqual(t, refreshGrantResponse.AccessToken, tokenExchangeResponse.AccessToken)
+	require.False(t, refreshGrantResponse.Created)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	accessToken1Issuer, err := oauth.ExtractClaimFromJwt(tokenExchangeResponse.AccessToken, "iss")
@@ -971,12 +1136,12 @@ func TestAuthorizationCodeGrantJson_NoCode(t *testing.T) {
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
-func TestPasswordGrantForm_Valid(t *testing.T) {
+func TestPasswordGrantForm_IdentityCreated(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
 	// Make a password grant request
-	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!")
+	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!", nil)
 
 	// Handle runtime request, expecting TokenResponse
 	response, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
@@ -987,6 +1152,98 @@ func TestPasswordGrantForm_Valid(t *testing.T) {
 	require.Equal(t, "bearer", response.TokenType)
 	require.NotEmpty(t, response.ExpiresIn)
 	require.NotEmpty(t, response.RefreshToken)
+	require.True(t, response.Created)
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
+
+	var identities []map[string]any
+	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
+	require.Len(t, identities, 1)
+
+	accessTokenIssuer, err := oauth.ExtractClaimFromJwt(response.AccessToken, "iss")
+	require.NoError(t, err)
+	require.Equal(t, accessTokenIssuer, "https://keel.so")
+
+	accessTokenSub, err := oauth.ExtractClaimFromJwt(response.AccessToken, "sub")
+	require.NoError(t, err)
+	require.Equal(t, accessTokenSub, identities[0]["id"])
+}
+
+func TestPasswordGrantCreateIfNotExistsTrue_IdentityCreated(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// Make a password grant request
+	createIfNotExists := true
+	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!", &createIfNotExists)
+
+	// Handle runtime request, expecting TokenResponse
+	response, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.NotEmpty(t, response.AccessToken)
+	require.Equal(t, "bearer", response.TokenType)
+	require.NotEmpty(t, response.ExpiresIn)
+	require.NotEmpty(t, response.RefreshToken)
+	require.True(t, response.Created)
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
+
+	var identities []map[string]any
+	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
+	require.Len(t, identities, 1)
+
+	accessTokenIssuer, err := oauth.ExtractClaimFromJwt(response.AccessToken, "iss")
+	require.NoError(t, err)
+	require.Equal(t, accessTokenIssuer, "https://keel.so")
+
+	accessTokenSub, err := oauth.ExtractClaimFromJwt(response.AccessToken, "sub")
+	require.NoError(t, err)
+	require.Equal(t, accessTokenSub, identities[0]["id"])
+}
+
+func TestPasswordGrantCreateIfNotExistsFalse_IdentityNotCreated(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// Make a password grant request
+	createIfNotExists := false
+	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!", &createIfNotExists)
+
+	// Handle runtime request, expecting TokenResponse
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
+
+	require.NoError(t, err)
+	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
+	require.Equal(t, "invalid_client", errorResponse.Error)
+	require.Equal(t, "the identity does not exist or the credentials are incorrect", errorResponse.ErrorDescription)
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
+}
+
+func TestPasswordGrantCreateIfNotExistsFalse_Authorised(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!", nil)
+
+	// Handle runtime request, expecting TokenResponse
+	_, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+
+	// Make a password grant request
+	createIfNotExists := false
+	request = makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!", &createIfNotExists)
+
+	// Handle runtime request, expecting TokenResponse
+	response, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.NotEmpty(t, response.AccessToken)
+	require.Equal(t, "bearer", response.TokenType)
+	require.NotEmpty(t, response.ExpiresIn)
+	require.NotEmpty(t, response.RefreshToken)
+	require.False(t, response.Created)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	var identities []map[string]any
@@ -1018,6 +1275,7 @@ func TestPasswordGrantJson_Valid(t *testing.T) {
 	require.Equal(t, "bearer", response.TokenType)
 	require.NotEmpty(t, response.ExpiresIn)
 	require.NotEmpty(t, response.RefreshToken)
+	require.True(t, response.Created)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 
 	var identities []map[string]any
@@ -1038,7 +1296,7 @@ func TestPasswordGrant_IncorrectCredentials(t *testing.T) {
 	defer database.Close()
 
 	// Make a password grant request
-	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!")
+	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!", nil)
 
 	// Handle runtime request, expecting TokenResponse
 	_, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
@@ -1046,14 +1304,15 @@ func TestPasswordGrant_IncorrectCredentials(t *testing.T) {
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
 
 	// Make another password grant request
-	request = makePasswordFormRequest(ctx, "user@example.com", "whoops!")
+	request = makePasswordFormRequest(ctx, "user@example.com", "whoops!", nil)
 
 	// Handle runtime request, expecting TokenResponse
 	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
+
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
 	require.Equal(t, "invalid_client", errorResponse.Error)
-	require.Equal(t, "possible causes may be that the identity does not exist or the credentials are incorrect", errorResponse.ErrorDescription)
+	require.Equal(t, "the identity does not exist or the credentials are incorrect", errorResponse.ErrorDescription)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
@@ -1062,7 +1321,7 @@ func TestPasswordGrant_CorrectCredentials(t *testing.T) {
 	defer database.Close()
 
 	// Make a password grant request
-	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!")
+	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!", nil)
 
 	// Handle runtime request, expecting TokenResponse
 	_, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
@@ -1070,7 +1329,7 @@ func TestPasswordGrant_CorrectCredentials(t *testing.T) {
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
 
 	// Make another password grant request
-	request = makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!")
+	request = makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!", nil)
 
 	// Handle runtime request, expecting TokenResponse
 	_, httpResponse, err = handleRuntimeRequest[authapi.TokenResponse](schema, request)
@@ -1082,8 +1341,8 @@ func TestPasswordGrant_InvalidEmail(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Make a token exchange grant request
-	request := makePasswordFormRequest(ctx, "user", "myP@ssword1234!")
+	// Make a password grant request
+	request := makePasswordFormRequest(ctx, "user", "myP@ssword1234!", nil)
 
 	// Handle runtime request, expecting TokenErrorResponse
 	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
@@ -1099,8 +1358,8 @@ func TestPasswordGrant_MissingEmail(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Make a token exchange grant request
-	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!")
+	// Make a password grant request
+	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!", nil)
 	form := url.Values{}
 	form.Add("grant_type", "password")
 	form.Add("password", "myP@ssword1234!")
@@ -1120,8 +1379,8 @@ func TestPasswordGrant_MissingPassword(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
 	defer database.Close()
 
-	// Make a token exchange grant request
-	request := makePasswordFormRequest(ctx, "user", "myP@ssword1234!")
+	// Make a password grant request
+	request := makePasswordFormRequest(ctx, "user", "myP@ssword1234!", nil)
 	form := url.Values{}
 	form.Add("grant_type", "password")
 	form.Add("username", "user@example.com")
@@ -1134,6 +1393,30 @@ func TestPasswordGrant_MissingPassword(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "the identity's password in the 'password' field is required", errorResponse.ErrorDescription)
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
+}
+
+func TestPasswordGrant_InvalidCreateIfNotExists(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	defer database.Close()
+
+	// Make a password grant request
+	request := makePasswordFormRequest(ctx, "user", "myP@ssword1234!", nil)
+	form := url.Values{}
+	form.Add("grant_type", "password")
+	form.Add("username", "user@example.com")
+	form.Add("create_if_not_exists", "invalid")
+	request.URL.RawQuery = form.Encode()
+
+	request.URL.RawQuery = form.Encode()
+
+	// Handle runtime request, expecting TokenErrorResponse
+	errorResponse, httpResponse, err := handleRuntimeRequest[authapi.ErrorResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
+	require.Equal(t, "invalid_request", errorResponse.Error)
+	require.Equal(t, "the create_if_not_exists field is invalid and must be either 'true' or 'false'", errorResponse.ErrorDescription)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
@@ -1162,7 +1445,7 @@ func handleRuntimeRequest[T any](schema *proto.Schema, req *http.Request) (T, *h
 	return response, httpResponse, nil
 }
 
-func makeTokenExchangeFormRequest(ctx context.Context, token string) *http.Request {
+func makeTokenExchangeFormRequest(ctx context.Context, token string, createIfNotExists *bool) *http.Request {
 	request := httptest.NewRequest(http.MethodPost, "http://mykeelapp.keel.so/auth/token", nil)
 	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -1171,6 +1454,11 @@ func makeTokenExchangeFormRequest(ctx context.Context, token string) *http.Reque
 	form.Add("subject_token", token)
 	form.Add("subject_token_type", "id_token")
 	form.Add("requested_token_type", "access_token")
+
+	if createIfNotExists != nil {
+		form.Add("create_if_not_exists", strconv.FormatBool(*createIfNotExists))
+	}
+
 	request.URL.RawQuery = form.Encode()
 	request = request.WithContext(ctx)
 
@@ -1253,7 +1541,7 @@ func makeAuthorizationCodeJsonRequest(ctx context.Context, code string) *http.Re
 	return request
 }
 
-func makePasswordFormRequest(ctx context.Context, username string, password string) *http.Request {
+func makePasswordFormRequest(ctx context.Context, username string, password string, createIfNotExists *bool) *http.Request {
 	request := httptest.NewRequest(http.MethodPost, "http://mykeelapp.keel.so/auth/token", nil)
 	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -1261,6 +1549,11 @@ func makePasswordFormRequest(ctx context.Context, username string, password stri
 	form.Add("grant_type", "password")
 	form.Add("username", username)
 	form.Add("password", password)
+
+	if createIfNotExists != nil {
+		form.Add("create_if_not_exists", strconv.FormatBool(*createIfNotExists))
+	}
+
 	request.URL.RawQuery = form.Encode()
 	request = request.WithContext(ctx)
 
