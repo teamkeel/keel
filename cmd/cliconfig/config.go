@@ -1,6 +1,7 @@
 package cliconfig
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -21,7 +22,12 @@ type UserConfig struct {
 }
 
 type Project struct {
-	Secrets map[string]string `yaml:"secrets"`
+	Secrets EnvironmentSecret `yaml:"secrets"`
+}
+
+type EnvironmentSecret struct {
+	Development map[string]string `yaml:"development"`
+	Test        map[string]string `yaml:"test"`
 }
 
 type Options struct {
@@ -108,14 +114,40 @@ func (c *Config) GetProject(path string) (*Project, error) {
 	return &project, nil
 }
 
-func (c *Config) SetSecret(path, key, value string) error {
+func (c *Config) SetSecret(path, environment, key, value string) error {
 	cfg, err := c.GetConfig(path)
 	if err != nil {
 		return err
 	}
 
 	currentSecrets := cfg.Projects[path].Secrets
-	currentSecrets[key] = value
+	secrets, err := createSecretEnvironments(environment, key, value, &currentSecrets)
+	if err != nil {
+		return err
+	}
+	cfg.Projects[path] = Project{
+		Secrets: secrets,
+	}
+
+	return c.writeConfig(*cfg)
+}
+
+func (c *Config) RemoveSecret(path, environment, key string) error {
+	cfg, err := c.GetConfig(path)
+	if err != nil {
+		return err
+	}
+
+	currentSecrets := cfg.Projects[path].Secrets
+
+	switch environment {
+	case "development":
+		delete(currentSecrets.Development, key)
+	case "test":
+		delete(currentSecrets.Test, key)
+	default:
+		return errors.New("invalid environment " + environment)
+	}
 
 	cfg.Projects[path] = Project{
 		Secrets: currentSecrets,
@@ -124,29 +156,20 @@ func (c *Config) SetSecret(path, key, value string) error {
 	return c.writeConfig(*cfg)
 }
 
-func (c *Config) RemoveSecret(path, key string) error {
-	cfg, err := c.GetConfig(path)
-	if err != nil {
-		return err
-	}
-
-	currentSecrets := cfg.Projects[path].Secrets
-	delete(currentSecrets, key)
-
-	cfg.Projects[path] = Project{
-		Secrets: currentSecrets,
-	}
-
-	return c.writeConfig(*cfg)
-}
-
-func (c *Config) GetSecrets(path string) (map[string]string, error) {
+func (c *Config) GetSecrets(path, environment string) (map[string]string, error) {
 	project, err := c.GetProject(path)
 	if err != nil {
 		return nil, err
 	}
 
-	return project.Secrets, nil
+	switch environment {
+	case "development":
+		return project.Secrets.Development, nil
+	case "test":
+		return project.Secrets.Test, nil
+	default:
+		return nil, errors.New("invalid environment " + environment)
+	}
 }
 
 func (c *Config) writeConfig(cfg interface{}) error {
@@ -174,7 +197,7 @@ func createEmptyConfig(v *viper.Viper, configPath, wd string) (*UserConfig, erro
 
 	projects := make(map[string]Project)
 	project := Project{
-		Secrets: make(map[string]string),
+		Secrets: createEnvironments(),
 	}
 
 	projects[wd] = project
@@ -216,7 +239,7 @@ func createProject(c *Config, wd string) (*UserConfig, error) {
 
 	projects := cfg.Projects
 	project := Project{
-		Secrets: make(map[string]string),
+		Secrets: createEnvironments(),
 	}
 
 	projects[wd] = project
@@ -230,6 +253,34 @@ func createProject(c *Config, wd string) (*UserConfig, error) {
 	return &UserConfig{
 		Projects: projects,
 	}, nil
+}
+
+func createSecretEnvironments(environment, key, value string, secrets *EnvironmentSecret) (EnvironmentSecret, error) {
+	var environments EnvironmentSecret
+
+	if secrets.Development == nil || secrets.Test == nil {
+		return createEnvironments(), nil
+	} else {
+		environments = *secrets
+	}
+
+	switch environment {
+	case "development":
+		environments.Development[key] = value
+	case "test":
+		environments.Test[key] = value
+	default:
+		return EnvironmentSecret{}, errors.New("invalid environment " + environment)
+	}
+
+	return environments, nil
+}
+
+func createEnvironments() EnvironmentSecret {
+	return EnvironmentSecret{
+		Development: make(map[string]string),
+		Test:        make(map[string]string),
+	}
 }
 
 func checkConfigFileExists(viper *viper.Viper, configPath, wd string) error {

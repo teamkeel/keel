@@ -99,7 +99,7 @@ func LoadSchema(dir, environment string) tea.Cmd {
 			WorkingDir: dir,
 		})
 
-		secrets, configErr := cliConfig.GetSecrets(absolutePath)
+		secrets, configErr := cliConfig.GetSecrets(absolutePath, environment)
 		if configErr != nil {
 			err = configErr
 		}
@@ -624,7 +624,7 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 }
 
 // LoadSecrets lists secrets from the given file and returns a command
-func LoadSecrets(path string) (map[string]string, error) {
+func LoadSecrets(path, environment string) (map[string]string, error) {
 	projectPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -634,14 +634,14 @@ func LoadSecrets(path string) (map[string]string, error) {
 		WorkingDir: projectPath,
 	})
 
-	secrets, err := config.GetSecrets(path)
+	secrets, err := config.GetSecrets(path, environment)
 	if err != nil {
 		return nil, err
 	}
 	return secrets, nil
 }
 
-func SetSecret(path, key, value string) error {
+func SetSecret(path, environment, key, value string) error {
 	projectPath, err := filepath.Abs(path)
 	if err != nil {
 		return err
@@ -651,10 +651,10 @@ func SetSecret(path, key, value string) error {
 		WorkingDir: projectPath,
 	})
 
-	return config.SetSecret(path, key, value)
+	return config.SetSecret(path, environment, key, value)
 }
 
-func RemoveSecret(path, key string) error {
+func RemoveSecret(path, environment, key string) error {
 	projectPath, err := filepath.Abs(path)
 	if err != nil {
 		return err
@@ -664,5 +664,5 @@ func RemoveSecret(path, key string) error {
 		WorkingDir: projectPath,
 	})
 
-	return config.RemoveSecret(path, key)
+	return config.RemoveSecret(path, environment, key)
 }

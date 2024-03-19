@@ -26,21 +26,21 @@ func TestSetAndUpdateConfig(t *testing.T) {
 
 	assert.Equal(t, &expected, cfg)
 
-	err = c.SetSecret(wd, "TEST_API_KEY", "test_secret")
+	err = c.SetSecret(wd, "development", "TEST_API_KEY", "test_secret")
 	assert.NoError(t, err)
 
 	cfg, err = c.GetConfig(wd)
 	assert.NoError(t, err)
-	assert.Equal(t, "test_secret", cfg.Projects[wd].Secrets["TEST_API_KEY"])
+	assert.Equal(t, "test_secret", cfg.Projects[wd].Secrets.Development["TEST_API_KEY"])
 
-	err = c.SetSecret(wd, "TEST_API_KEY", "updated")
+	err = c.SetSecret(wd, "development", "TEST_API_KEY", "updated")
 	assert.NoError(t, err)
-	err = c.SetSecret(wd, "TEST_API_KEY_2", "updated2")
+	err = c.SetSecret(wd, "development", "TEST_API_KEY_2", "updated2")
 	assert.NoError(t, err)
 
 	cfg, err = c.GetConfig(wd)
 	assert.NoError(t, err)
-	assert.Equal(t, "updated", cfg.Projects[wd].Secrets["TEST_API_KEY"])
+	assert.Equal(t, "updated", cfg.Projects[wd].Secrets.Development["TEST_API_KEY"])
 
 	err = os.Remove(fileName)
 	assert.NoError(t, err)

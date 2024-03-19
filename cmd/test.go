@@ -61,7 +61,7 @@ var testCmd = &cobra.Command{
 			return err
 		}
 
-		secrets, err := program.LoadSecrets(flagProjectDir)
+		secrets, err := program.LoadSecrets(flagProjectDir, "test")
 		if err != nil {
 			return err
 		}
