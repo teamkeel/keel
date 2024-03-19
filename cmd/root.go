@@ -24,6 +24,7 @@ var (
 	flagTracing          bool
 	flagVersion          bool
 	flagVerboseTracing   bool
+	flagEnvironment      string
 )
 
 var rootCmd = &cobra.Command{
