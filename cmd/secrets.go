@@ -12,9 +12,9 @@ import (
 var secretsCmd = &cobra.Command{
 	Use:   "secrets",
 	Short: "Interact with your Keel App's secrets",
-	Long: `The secrets command allows you to interact with your 
-Keel App's secrets locally. This will allow you to add, remove, 
-and list secrets that are stored in your cli config usually 
+	Long: `The secrets command allows you to interact with your
+Keel App's secrets locally. This will allow you to add, remove,
+and list secrets that are stored in your cli config usually
 found at ~/.keel/config.yaml.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// list subcommands
@@ -27,22 +27,17 @@ func init() {
 	secretsCmd.AddCommand(secretsListCmd)
 	secretsCmd.AddCommand(secretsSetCmd)
 	secretsCmd.AddCommand(secretsRemoveCmd)
+	secretsCmd.PersistentFlags().StringVarP(&flagEnvironment, "env", "e", "development", "environment")
 }
 
 var secretsListCmd = &cobra.Command{
-	Use:   "list <env>",
+	Use:   "list",
 	Short: "List all secrets for your Keel App",
 	Long: `The list command will list all secrets that are
-stored in your cli config usually found at ~/.keel/config.yaml. 
-The default environment is development.`,
+stored in your cli config usually found at ~/.keel/config.yaml.`,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		environment := "development"
-		if len(args) > 0 {
-			environment = args[0]
-		}
-
-		secrets, err := program.LoadSecrets(flagProjectDir, environment)
+		secrets, err := program.LoadSecrets(flagProjectDir, flagEnvironment)
 		if err != nil {
 			return program.RenderError(err)
 		}
@@ -50,6 +45,7 @@ The default environment is development.`,
 			return program.RenderError(errors.New("No secrets found"))
 		}
 
+		program.RenderSuccess(fmt.Sprintf("Listing secrets for environment: %s", flagEnvironment))
 		fmt.Println(program.RenderSecrets(secrets))
 
 		return nil
@@ -57,49 +53,47 @@ The default environment is development.`,
 }
 
 var secretsSetCmd = &cobra.Command{
-	Use:   "set <env> <key> <value>",
+	Use:   "set <key> <value>",
 	Short: "Set a secret for your Keel App",
 	Long:  "The set command will set a secret for your Keel App. The default environment is development.",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 3 {
-			return program.RenderError(errors.New("Not enough arguments, please provide an environment, key, and value"))
+		if len(args) < 2 {
+			return program.RenderError(errors.New("Not enough arguments, please provide a key and value"))
 		}
 
-		environment := args[0]
-		key := args[1]
-		value := args[2]
+		key := args[0]
+		value := args[1]
 
-		err := program.SetSecret(flagProjectDir, environment, key, value)
+		err := program.SetSecret(flagProjectDir, flagEnvironment, key, value)
 		if err != nil {
 			return program.RenderError(err)
 		}
 
-		program.RenderSuccess(fmt.Sprintf("Secret %s set for environment %s", key, environment))
+		program.RenderSuccess(fmt.Sprintf("Secret %s set for environment %s", key, flagEnvironment))
 
 		return nil
 	},
 }
 
 var secretsRemoveCmd = &cobra.Command{
-	Use:   "remove <env> <key>",
+	Use:   "remove <key>",
 	Short: "Remove a secret for your Keel App",
 	Long:  "The remove command will remove a secret for your Keel App. The default environment is development.",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 2 {
-			return program.RenderError(errors.New("Not enough arguments, please provide an environment and key"))
+		if len(args) < 1 {
+			return program.RenderError(errors.New("Not enough arguments, please provide a key"))
 		}
 
-		environment := args[0]
-		key := args[1]
+		key := args[0]
 
-		err := program.RemoveSecret(flagProjectDir, environment, key)
+		err := program.RemoveSecret(flagProjectDir, flagEnvironment, key)
 		if err != nil {
 			return program.RenderError(err)
 		}
 
-		program.RenderSuccess(fmt.Sprintf("Secrets updated for environment %s", environment))
+		program.RenderSuccess(fmt.Sprintf("Secrets updated for environment %s", flagEnvironment))
 
 		return nil
 	},
