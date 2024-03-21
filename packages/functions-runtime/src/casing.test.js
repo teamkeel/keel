@@ -39,12 +39,12 @@ const cases = {
       test_1_test: "test",
       test_20: "test",
     },
-  }
+  },
 };
 
 Object.entries(cases).map(([key, { input, expected }]) => {
   test(key, () => {
-    let result
+    let result;
     if (key === "FROM_SNAKE") {
       result = camelCaseObject(input);
     } else {
