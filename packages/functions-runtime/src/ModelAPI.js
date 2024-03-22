@@ -10,11 +10,7 @@ const {
   applyOffset,
   applyOrderBy,
 } = require("./applyAdditionalQueryConstraints");
-const {
-  camelCaseObject,
-  snakeCaseObject,
-  upperCamelCase,
-} = require("./casing");
+import { camelCaseObject, snakeCaseObject, upperCamelCase } from "./casing";
 const tracing = require("./tracing");
 const { DatabaseError } = require("./errors");
 

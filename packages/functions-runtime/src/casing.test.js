@@ -10,6 +10,7 @@ const cases = {
       test_11: "1234",
       test_1_test: "1234",
       test12: "1234",
+      abc123_test: "1234",
     },
     expected: {
       id: "123",
@@ -18,6 +19,7 @@ const cases = {
       test11: "1234",
       test1Test: "1234",
       test12: "1234",
+      abc123Test: "1234",
     },
   },
   FROM_CAMEL: {
@@ -29,6 +31,7 @@ const cases = {
       testA1: "test",
       test1Test: "test",
       test20: "test",
+      testURL: "test",
     },
     expected: {
       id: "123",
@@ -38,6 +41,7 @@ const cases = {
       test_a_1: "test",
       test_1_test: "test",
       test_20: "test",
+      test_url: "test",
     },
   },
 };
