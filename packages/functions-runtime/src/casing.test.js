@@ -48,12 +48,7 @@ const cases = {
 
 Object.entries(cases).map(([key, { input, expected }]) => {
   test(key, () => {
-    let result;
-    if (key === "FROM_SNAKE") {
-      result = camelCaseObject(input);
-    } else {
-      result = snakeCaseObject(input);
-    }
+    const result = key === "FROM_SNAKE" ? camelCaseObject(input) : snakeCaseObject(input)
 
     expect(result).toEqual(expected);
   });
