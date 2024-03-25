@@ -44,6 +44,7 @@ type AuditLog struct {
 	EventProcessedAt time.Time
 }
 
+// Previous return the previous log entry for the given data row.
 func Previous(ctx context.Context, log *AuditLog) (*AuditLog, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
@@ -57,14 +58,11 @@ func Previous(ctx context.Context, log *AuditLog) (*AuditLog, error) {
 		return nil, err
 	}
 
-	for _, row := range result.Rows {
-		if row["id"] == log.Id {
-			continue
-		}
-		return fromRow(row)
+	if len(result.Rows) != 1 {
+		return nil, nil
 	}
 
-	return nil, nil
+	return fromRow(result.Rows[0])
 }
 
 // ProcessEventsFromAuditTrail inspects the audit table for logs which need to be

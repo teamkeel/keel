@@ -39,9 +39,9 @@ type EventTarget struct {
 	Id string `json:"id"`
 	// The type of event target, e.g. Employee
 	Type string `json:"type"`
-	// The data relevant to this target type.
+	// The model data at the time of the event.
 	Data map[string]any `json:"data"`
-	// The previous state of the data.
+	// The previous state of the model data before the event.
 	PreviousData map[string]any `json:"previousData"`
 }
 
