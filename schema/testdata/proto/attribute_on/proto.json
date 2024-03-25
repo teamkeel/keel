@@ -490,7 +490,7 @@
         },
         {
           "messageName": "VerifyEmailMemberUpdatedEventTarget",
-          "name": "previous",
+          "name": "previousData",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Member"
@@ -624,7 +624,7 @@
         },
         {
           "messageName": "VerifyEmailEmployeeUpdatedEventTarget",
-          "name": "previous",
+          "name": "previousData",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Employee"
@@ -704,7 +704,7 @@
         },
         {
           "messageName": "SendGoodbyeMailMemberDeletedEventTarget",
-          "name": "previous",
+          "name": "previousData",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Member"

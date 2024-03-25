@@ -110,7 +110,7 @@ func TestCreateEvent(t *testing.T) {
 	require.NotNil(t, events[0].Target)
 	require.Equal(t, wedding["id"], events[0].Target.Id)
 	require.Equal(t, "Wedding", events[0].Target.Type)
-	require.Nil(t, events[0].Target.Previous)
+	require.Nil(t, events[0].Target.PreviousData)
 
 	data := typed.New(events[0].Target.Data)
 	require.Equal(t, wedding["id"], data.String("id"))
@@ -182,7 +182,7 @@ func TestUpdateEvent(t *testing.T) {
 	require.NotEqual(t, wedding["updatedAt"], updatedAt)
 	require.Equal(t, updatedWedding["updatedAt"], updatedAt)
 
-	previous := typed.New(events[0].Target.Previous)
+	previous := typed.New(events[0].Target.PreviousData)
 	require.Equal(t, wedding["id"], previous.String("id"))
 	require.Equal(t, wedding["name"], previous.String("name"))
 	require.NotEqual(t, updatedWedding["name"], previous.String("name"))
@@ -245,7 +245,7 @@ func TestDeleteEvent(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, wedding["updatedAt"], updatedAt)
 
-	previous := typed.New(events[0].Target.Previous)
+	previous := typed.New(events[0].Target.PreviousData)
 	require.Equal(t, wedding["id"], previous.String("id"))
 	require.Equal(t, wedding["name"], previous.String("name"))
 
@@ -367,7 +367,7 @@ func TestMultipleEvents(t *testing.T) {
 
 	require.Equal(t, "wedding_invitee.updated", verifyDetailsEvent[1].EventName)
 	require.Equal(t, "Adam", verifyDetailsEvent[1].Target.Data["firstName"])
-	require.Equal(t, "Dave", verifyDetailsEvent[1].Target.Previous["firstName"])
+	require.Equal(t, "Dave", verifyDetailsEvent[1].Target.PreviousData["firstName"])
 }
 
 func TestAuditTableEventCreatedAtUpdated(t *testing.T) {

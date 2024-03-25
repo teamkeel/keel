@@ -1384,7 +1384,7 @@ func (scm *Builder) makeSubscriberInputMessages() {
 			if event.ActionType != proto.ActionType_ACTION_TYPE_CREATE {
 				eventTargetMessage.Fields = append(eventTargetMessage.Fields, &proto.MessageField{
 					MessageName: eventTargetMessage.Name,
-					Name:        "previous",
+					Name:        "previousData",
 					Type: &proto.TypeInfo{
 						Type:      proto.Type_TYPE_MODEL,
 						ModelName: wrapperspb.String(event.ModelName),

@@ -42,7 +42,7 @@ type EventTarget struct {
 	// The data relevant to this target type.
 	Data map[string]any `json:"data"`
 	// The previous state of the data.
-	Previous map[string]any `json:"previous"`
+	PreviousData map[string]any `json:"previousData"`
 }
 
 // The event handler function to be executed for each subscriber event generated.
@@ -156,10 +156,10 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 				OccurredAt: time.Now().UTC(),
 				IdentityId: identityId,
 				Target: &EventTarget{
-					Id:       log.Data["id"].(string),
-					Type:     strcase.ToCamel(log.TableName),
-					Data:     toLowerCamelMap(log.Data),
-					Previous: toLowerCamelMap(previous),
+					Id:           log.Data["id"].(string),
+					Type:         strcase.ToCamel(log.TableName),
+					Data:         toLowerCamelMap(log.Data),
+					PreviousData: toLowerCamelMap(previous),
 				},
 			}
 
