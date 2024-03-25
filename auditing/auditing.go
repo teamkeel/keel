@@ -44,6 +44,29 @@ type AuditLog struct {
 	EventProcessedAt time.Time
 }
 
+func Previous(ctx context.Context, log *AuditLog) (*AuditLog, error) {
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	sql := fmt.Sprintf("SELECT * FROM %s WHERE table_name = ? AND data->>'id' = ? and created_at < ? ORDER BY created_at desc LIMIT 1", TableName)
+
+	result, err := database.ExecuteQuery(ctx, sql, log.TableName, log.Data["id"], log.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, row := range result.Rows {
+		if row["id"] == log.Id {
+			continue
+		}
+		return fromRow(row)
+	}
+
+	return nil, nil
+}
+
 // ProcessEventsFromAuditTrail inspects the audit table for logs which need to be
 // turned into events, updates their event_processed_at column, and then returns them.
 func ProcessEventsFromAuditTrail(ctx context.Context, schema *proto.Schema, traceId string) ([]*AuditLog, error) {
