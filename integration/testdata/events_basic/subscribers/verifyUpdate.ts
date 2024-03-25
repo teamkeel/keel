@@ -5,6 +5,10 @@ export default VerifyUpdate(async (ctx: SubscriberContextAPI, event) => {
     throw new Error("name cannot be empty");
   }
 
+  if (event.target.previous == null) {
+    throw new Error("previous data cannot be null");
+  }
+
   if (!event.target.data.verifiedUpdate) {
     await models.person.update(
       { id: event.target.data.id },

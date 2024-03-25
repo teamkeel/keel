@@ -110,6 +110,7 @@ func TestCreateEvent(t *testing.T) {
 	require.NotNil(t, events[0].Target)
 	require.Equal(t, wedding["id"], events[0].Target.Id)
 	require.Equal(t, "Wedding", events[0].Target.Type)
+	require.Nil(t, events[0].Target.PreviousData)
 
 	data := typed.New(events[0].Target.Data)
 	require.Equal(t, wedding["id"], data.String("id"))
@@ -180,6 +181,20 @@ func TestUpdateEvent(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEqual(t, wedding["updatedAt"], updatedAt)
 	require.Equal(t, updatedWedding["updatedAt"], updatedAt)
+
+	previous := typed.New(events[0].Target.PreviousData)
+	require.Equal(t, wedding["id"], previous.String("id"))
+	require.Equal(t, wedding["name"], previous.String("name"))
+	require.NotEqual(t, updatedWedding["name"], previous.String("name"))
+
+	previousCreatedAt, err := time.Parse("2006-01-02T15:04:05.999999999-07:00", previous.String("createdAt"))
+	require.NoError(t, err)
+	require.Equal(t, wedding["createdAt"], previousCreatedAt)
+
+	previousUpdatedAt, err := time.Parse("2006-01-02T15:04:05.999999999-07:00", previous.String("updatedAt"))
+	require.NoError(t, err)
+	require.Equal(t, wedding["updatedAt"], previousUpdatedAt)
+	require.NotEqual(t, updatedWedding["updatedAt"], previousUpdatedAt)
 }
 
 func TestDeleteEvent(t *testing.T) {
@@ -229,6 +244,18 @@ func TestDeleteEvent(t *testing.T) {
 	updatedAt, err := time.Parse("2006-01-02T15:04:05.999999999-07:00", data.String("updatedAt"))
 	require.NoError(t, err)
 	require.Equal(t, wedding["updatedAt"], updatedAt)
+
+	previous := typed.New(events[0].Target.PreviousData)
+	require.Equal(t, wedding["id"], previous.String("id"))
+	require.Equal(t, wedding["name"], previous.String("name"))
+
+	previousCreatedAt, err := time.Parse("2006-01-02T15:04:05.999999999-07:00", previous.String("createdAt"))
+	require.NoError(t, err)
+	require.Equal(t, wedding["createdAt"], previousCreatedAt)
+
+	previousUpdatedAt, err := time.Parse("2006-01-02T15:04:05.999999999-07:00", previous.String("updatedAt"))
+	require.NoError(t, err)
+	require.Equal(t, wedding["updatedAt"], previousUpdatedAt)
 }
 
 func TestNoIdentityEvent(t *testing.T) {
@@ -340,6 +367,7 @@ func TestMultipleEvents(t *testing.T) {
 
 	require.Equal(t, "wedding_invitee.updated", verifyDetailsEvent[1].EventName)
 	require.Equal(t, "Adam", verifyDetailsEvent[1].Target.Data["firstName"])
+	require.Equal(t, "Dave", verifyDetailsEvent[1].Target.PreviousData["firstName"])
 }
 
 func TestAuditTableEventCreatedAtUpdated(t *testing.T) {

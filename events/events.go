@@ -39,8 +39,10 @@ type EventTarget struct {
 	Id string `json:"id"`
 	// The type of event target, e.g. Employee
 	Type string `json:"type"`
-	// The data relevant to this target type.
+	// The model data at the time of the event.
 	Data map[string]any `json:"data"`
+	// The previous state of the model data before the event.
+	PreviousData map[string]any `json:"previousData"`
 }
 
 // The event handler function to be executed for each subscriber event generated.
@@ -136,15 +138,28 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 			return fmt.Errorf("event '%s' must have at least one subscriber", eventName)
 		}
 
+		var previous map[string]any
+		if log.Op != Created {
+			p, err := auditing.Previous(ctx, log)
+			if err != nil {
+				return err
+			}
+
+			if p != nil {
+				previous = p.Data
+			}
+		}
+
 		for _, subscriber := range subscribers {
 			event := &Event{
 				EventName:  eventName,
 				OccurredAt: time.Now().UTC(),
 				IdentityId: identityId,
 				Target: &EventTarget{
-					Id:   log.Data["id"].(string),
-					Type: strcase.ToCamel(log.TableName),
-					Data: toLowerCamelMap(log.Data),
+					Id:           log.Data["id"].(string),
+					Type:         strcase.ToCamel(log.TableName),
+					Data:         toLowerCamelMap(log.Data),
+					PreviousData: toLowerCamelMap(previous),
 				},
 			}
 
@@ -181,6 +196,10 @@ func eventNameFromAudit(tableName string, op string) (string, error) {
 }
 
 func toLowerCamelMap(m map[string]any) map[string]any {
+	if m == nil {
+		return nil
+	}
+
 	res := map[string]any{}
 	for key, value := range m {
 		res[casing.ToLowerCamel(key)] = value

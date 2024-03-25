@@ -1540,6 +1540,7 @@ export interface VerifyEmailMemberUpdatedEventTarget {
 	id: string;
 	type: string;
 	data: Member;
+	previousData: Member;
 }
 export type SendWelcomeEmailEvent = (SendWelcomeEmailMemberCreatedEvent);
 export interface SendWelcomeEmailMemberCreatedEvent {
@@ -1808,6 +1809,7 @@ export interface VerifyEmailClubHouseUpdatedEventTarget {
 	id: string;
 	type: string;
 	data: sdk.ClubHouse;
+	previousData: sdk.ClubHouse;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;

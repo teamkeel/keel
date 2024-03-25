@@ -1381,6 +1381,17 @@ func (scm *Builder) makeSubscriberInputMessages() {
 				},
 			})
 
+			if event.ActionType != proto.ActionType_ACTION_TYPE_CREATE {
+				eventTargetMessage.Fields = append(eventTargetMessage.Fields, &proto.MessageField{
+					MessageName: eventTargetMessage.Name,
+					Name:        "previousData",
+					Type: &proto.TypeInfo{
+						Type:      proto.Type_TYPE_MODEL,
+						ModelName: wrapperspb.String(event.ModelName),
+					},
+				})
+			}
+
 			message.Type.UnionNames = append(message.Type.UnionNames, wrapperspb.String(eventMessage.Name))
 			scm.proto.Messages = append(scm.proto.Messages, eventMessage)
 			scm.proto.Messages = append(scm.proto.Messages, eventTargetMessage)
