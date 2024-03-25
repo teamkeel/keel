@@ -44,7 +44,7 @@ type AuditLog struct {
 	EventProcessedAt time.Time
 }
 
-// Previous return the previous log entry for the given data row.
+// Previous returns the previous log entry for the given data row.
 func Previous(ctx context.Context, log *AuditLog) (*AuditLog, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
