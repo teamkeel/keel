@@ -1,24 +1,23 @@
 package migrations
 
 import (
-	"context"
 	_ "embed"
 
 	"github.com/lib/pq"
 	"github.com/teamkeel/keel/db"
 )
 
-func getConstraints(ctx context.Context, database db.Database) ([]*ConstraintRow, error) {
+func getConstraints(database db.Database) ([]*ConstraintRow, error) {
 	rows := []*ConstraintRow{}
 	return rows, database.GetDB().Raw(constraintsQuery).Scan(&rows).Error
 }
 
-func getTriggers(ctx context.Context, database db.Database) ([]*TriggerRow, error) {
+func getTriggers(database db.Database) ([]*TriggerRow, error) {
 	rows := []*TriggerRow{}
 	return rows, database.GetDB().Raw(triggersQuery).Scan(&rows).Error
 }
 
-func getColumns(ctx context.Context, database db.Database) ([]*ColumnRow, error) {
+func getColumns(database db.Database) ([]*ColumnRow, error) {
 	rows := []*ColumnRow{}
 	return rows, database.GetDB().Raw(columnsQuery).Scan(&rows).Error
 }
