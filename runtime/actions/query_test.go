@@ -167,9 +167,9 @@ var testCases = []testCase{
 					VALUES 
 						(?) 
 					RETURNING *) 
-			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_person`,
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
-		expectedArgs: []any{"identityId"},
+		expectedArgs: []any{"identityId", identity.Id},
 	},
 	{
 		name: "create_op_set_attribute_context_identity",
@@ -195,9 +195,9 @@ var testCases = []testCase{
 					VALUES 
 						(?) 
 					RETURNING *) 
-			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_person`,
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
-		expectedArgs: []any{"identityId"},
+		expectedArgs: []any{"identityId", identity.Id},
 	},
 	{
 		name: "create_op_set_attribute_input",
@@ -224,9 +224,9 @@ var testCases = []testCase{
 					VALUES 
 						(?, ?) 
 					RETURNING *) 
-			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_person`,
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
-		expectedArgs: []any{"Dave", "Dave"},
+		expectedArgs: []any{"Dave", "Dave", identity.Id},
 	},
 	{
 		name: "create_op_set_attribute_identity_user_backlink",
@@ -263,9 +263,9 @@ var testCases = []testCase{
 						?, 
 						(SELECT column_0 FROM select_identity)) 
 					RETURNING *) 
-			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_record`,
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_record`,
 		identity:     identity,
-		expectedArgs: []any{identity.Id, "Dave"},
+		expectedArgs: []any{identity.Id, "Dave", identity.Id},
 	},
 	{
 		name: "create_op_set_attribute_identity_user_backlink_field",
@@ -306,9 +306,9 @@ var testCases = []testCase{
 						?, 
 						(SELECT column_0 FROM select_identity))
 					RETURNING *) 
-			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_record`,
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_record`,
 		identity:     identity,
-		expectedArgs: []any{identity.Id, "Dave"},
+		expectedArgs: []any{identity.Id, "Dave", identity.Id},
 	},
 
 	{
@@ -335,9 +335,9 @@ var testCases = []testCase{
 			UPDATE "person" 
 			SET main_identity_id = ? 
 			WHERE "person"."id" IS NOT DISTINCT FROM ? 
-			RETURNING "person".*, set_identity_id('identityId') AS __keel_identity_id`,
+			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
-		expectedArgs: []any{identity.Id, "xyz"},
+		expectedArgs: []any{identity.Id, "xyz", identity.Id},
 	},
 	{
 		name: "update_op_set_attribute_context_identity",
@@ -363,9 +363,9 @@ var testCases = []testCase{
 			UPDATE "person" 
 			SET main_identity_id = ? 
 			WHERE "person"."id" IS NOT DISTINCT FROM ? 
-			RETURNING "person".*, set_identity_id('identityId') AS __keel_identity_id`,
+			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
-		expectedArgs: []any{identity.Id, "xyz"},
+		expectedArgs: []any{identity.Id, "xyz", identity.Id},
 	},
 	{
 		name: "update_op_set_attribute_input",
@@ -442,9 +442,9 @@ var testCases = []testCase{
 				user_id = (SELECT column_0 FROM select_identity) 
 			WHERE 
 				"record"."id" IS NOT DISTINCT FROM ? 
-			RETURNING "record".*, set_identity_id('identityId') AS __keel_identity_id`,
+			RETURNING "record".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
-		expectedArgs: []any{identity.Id, "xyz"},
+		expectedArgs: []any{identity.Id, "xyz", identity.Id},
 	},
 	{
 		name: "create_op_optional_inputs",
@@ -2725,8 +2725,8 @@ var testCases = []testCase{
 						(SELECT column_3 FROM select_identity), 
 						(SELECT column_4 FROM select_identity)) 
 					RETURNING *) 
-			SELECT *, set_identity_id('identityId') AS __keel_identity_id FROM new_1_person`,
-		expectedArgs: []any{identity.Id},
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
+		expectedArgs: []any{identity.Id, identity.Id},
 	},
 	{
 		name: "update_set_ctx_identity_fields",
@@ -2766,8 +2766,8 @@ var testCases = []testCase{
 				external_id = (SELECT column_3 FROM select_identity), 
 				issuer = (SELECT column_4 FROM select_identity) 
 			WHERE "person"."id" IS NOT DISTINCT FROM ? 
-			RETURNING "person".*, set_identity_id('identityId') AS __keel_identity_id`,
-		expectedArgs: []any{identity.Id, "xyz"},
+			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
+		expectedArgs: []any{identity.Id, "xyz", identity.Id},
 	},
 }
 
@@ -2916,11 +2916,14 @@ func TestInsertStatementWithAuditing(t *testing.T) {
 		WITH new_1_person AS (INSERT INTO "person" (name) VALUES (?) RETURNING *) 
 		SELECT 
 			*, 
-			set_identity_id('2V1gEtq4GEhvtRofqwiN9ZfapxN') AS __keel_identity_id, 
-			set_trace_id('71f835dc7ac2750bed2135c7b30dc7fe') AS __keel_trace_id
+			set_identity_id(?) AS __keel_identity_id, 
+			set_trace_id(?) AS __keel_trace_id
 		FROM new_1_person`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+	require.Equal(t, "Fred", stmt.SqlArgs()[0])
+	require.Equal(t, "2V1gEtq4GEhvtRofqwiN9ZfapxN", stmt.SqlArgs()[1])
+	require.Equal(t, "71f835dc7ac2750bed2135c7b30dc7fe", stmt.SqlArgs()[2])
 }
 
 func TestUpdateStatementWithAuditing(t *testing.T) {
@@ -2940,10 +2943,14 @@ func TestUpdateStatementWithAuditing(t *testing.T) {
 	expected := `
 		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
 			"person".*, 
-			set_identity_id('2V1gEtq4GEhvtRofqwiN9ZfapxN') AS __keel_identity_id, 
-			set_trace_id('71f835dc7ac2750bed2135c7b30dc7fe') AS __keel_trace_id`
+			set_identity_id(?) AS __keel_identity_id, 
+			set_trace_id(?) AS __keel_trace_id`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+	require.Equal(t, "Fred", stmt.SqlArgs()[0])
+	require.Equal(t, "1234", stmt.SqlArgs()[1])
+	require.Equal(t, "2V1gEtq4GEhvtRofqwiN9ZfapxN", stmt.SqlArgs()[2])
+	require.Equal(t, "71f835dc7ac2750bed2135c7b30dc7fe", stmt.SqlArgs()[3])
 }
 
 func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
@@ -2961,10 +2968,14 @@ func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
 
 	expected := `
 		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
-			set_identity_id('2V1gEtq4GEhvtRofqwiN9ZfapxN') AS __keel_identity_id, 
-			set_trace_id('71f835dc7ac2750bed2135c7b30dc7fe') AS __keel_trace_id`
+			set_identity_id(?) AS __keel_identity_id, 
+			set_trace_id(?) AS __keel_trace_id`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+	require.Equal(t, "Fred", stmt.SqlArgs()[0])
+	require.Equal(t, "1234", stmt.SqlArgs()[1])
+	require.Equal(t, "2V1gEtq4GEhvtRofqwiN9ZfapxN", stmt.SqlArgs()[2])
+	require.Equal(t, "71f835dc7ac2750bed2135c7b30dc7fe", stmt.SqlArgs()[3])
 }
 
 func TestDeleteStatementWithAuditing(t *testing.T) {
@@ -2983,10 +2994,13 @@ func TestDeleteStatementWithAuditing(t *testing.T) {
 	expected := `
 		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
 			"person".*, 
-			set_identity_id('2V1gEtq4GEhvtRofqwiN9ZfapxN') AS __keel_identity_id, 
-			set_trace_id('71f835dc7ac2750bed2135c7b30dc7fe') AS __keel_trace_id`
+			set_identity_id(?) AS __keel_identity_id, 
+			set_trace_id(?) AS __keel_trace_id`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+	require.Equal(t, "1234", stmt.SqlArgs()[0])
+	require.Equal(t, "2V1gEtq4GEhvtRofqwiN9ZfapxN", stmt.SqlArgs()[1])
+	require.Equal(t, "71f835dc7ac2750bed2135c7b30dc7fe", stmt.SqlArgs()[2])
 }
 
 func TestDeleteStatementNoReturnWithAuditing(t *testing.T) {
@@ -3003,10 +3017,13 @@ func TestDeleteStatementNoReturnWithAuditing(t *testing.T) {
 
 	expected := `
 		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
-			set_identity_id('2V1gEtq4GEhvtRofqwiN9ZfapxN') AS __keel_identity_id, 
-			set_trace_id('71f835dc7ac2750bed2135c7b30dc7fe') AS __keel_trace_id`
+			set_identity_id(?) AS __keel_identity_id, 
+			set_trace_id(?) AS __keel_trace_id`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
+	require.Equal(t, "1234", stmt.SqlArgs()[0])
+	require.Equal(t, "2V1gEtq4GEhvtRofqwiN9ZfapxN", stmt.SqlArgs()[1])
+	require.Equal(t, "71f835dc7ac2750bed2135c7b30dc7fe", stmt.SqlArgs()[2])
 }
 
 func withIdentity(t *testing.T, ctx context.Context) (context.Context, *auth.Identity) {

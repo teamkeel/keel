@@ -52,12 +52,12 @@ func ProcessEventsFromAuditTrail(ctx context.Context, schema *proto.Schema, trac
 		return nil, err
 	}
 
-	sql, err := processEventsSql(schema, traceId)
+	sql, args, err := processEventsSql(schema, traceId)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := database.ExecuteQuery(ctx, sql)
+	result, err := database.ExecuteQuery(ctx, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -120,24 +120,27 @@ func fromRow(row map[string]any) (*AuditLog, error) {
 
 // processEventsSql generates SQL which updates and returns the relevant audit log
 // entries which are to be turned into events.
-func processEventsSql(schema *proto.Schema, traceId string) (string, error) {
+func processEventsSql(schema *proto.Schema, traceId string) (string, []any, error) {
 	if traceId == "" {
-		return "", errors.New("traceId cannot be empty")
+		return "", nil, errors.New("traceId cannot be empty")
 	}
 
 	if len(schema.Events) == 0 {
-		return "", errors.New("there are no events defined in this schema")
+		return "", nil, errors.New("there are no events defined in this schema")
 	}
+
+	args := []any{}
 
 	conditions := []string{}
 	for _, e := range schema.Events {
 		table := casing.ToSnake(e.ModelName)
 		op, err := opFromActionType(e.ActionType)
 		if err != nil {
-			return "", err
+			return "", nil, err
 		}
 
-		conditions = append(conditions, fmt.Sprintf("(%s = '%s' AND %s = '%s')", ColumnTableName, table, ColumnOp, op))
+		conditions = append(conditions, fmt.Sprintf("(%s = ? AND %s = ?)", ColumnTableName, ColumnOp))
+		args = append(args, table, op)
 	}
 
 	filter := strings.Join(conditions, " OR ")
@@ -146,10 +149,12 @@ func processEventsSql(schema *proto.Schema, traceId string) (string, error) {
 	}
 
 	sql := fmt.Sprintf(
-		"UPDATE %s SET %s = now() WHERE %s = '%s' AND %s IS NULL AND %s RETURNING *",
-		TableName, ColumnEventProcessedAt, ColumnTraceId, traceId, ColumnEventProcessedAt, filter)
+		"UPDATE %s SET %s = now() WHERE %s = ? AND %s IS NULL AND %s RETURNING *",
+		TableName, ColumnEventProcessedAt, ColumnTraceId, ColumnEventProcessedAt, filter)
 
-	return sql, nil
+	args = append([]any{traceId}, args...)
+
+	return sql, args, nil
 }
 
 // opFromActionType gets the audit operation for a specific action type.

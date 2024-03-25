@@ -159,20 +159,20 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 // Introspection is performed on the database to work out what schema changes
 // need to be applied to result in the database schema matching the Keel schema
 func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migrations, error) {
-	ctx, span := tracer.Start(ctx, "Generate Migrations")
+	_, span := tracer.Start(ctx, "Generate Migrations")
 	defer span.End()
 
-	columns, err := getColumns(ctx, database)
+	columns, err := getColumns(database)
 	if err != nil {
 		return nil, err
 	}
 
-	constraints, err := getConstraints(ctx, database)
+	constraints, err := getConstraints(database)
 	if err != nil {
 		return nil, err
 	}
 
-	triggers, err := getTriggers(ctx, database)
+	triggers, err := getTriggers(database)
 	if err != nil {
 		return nil, err
 	}
