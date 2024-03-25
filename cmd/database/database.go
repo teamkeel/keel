@@ -435,9 +435,9 @@ func connectAndWaitForDbServer(serverConnectionInfo *db.ConnectionInfo) (server 
 		return nil, err
 	}
 
-	// ping() the database for 5 seconds until it is available.
+	// ping() the database for 10 seconds until it is available.
 	var pingError error
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 40; i++ {
 		if pingError = server.Ping(); pingError == nil {
 			break
 		}

@@ -31,9 +31,10 @@ type client struct {
 // Compile time check *client implements otlptrace.Client.
 var _ otlptrace.Client = (*client)(nil)
 
-var traces = make(map[string][]*tracepb.Span)
-
-var traceSummary = make(map[string]*TraceSummary)
+var (
+	traces       = make(map[string][]*tracepb.Span)
+	traceSummary = make(map[string]*TraceSummary)
+)
 
 type TraceSummary struct {
 	StartTime time.Time
@@ -75,6 +76,9 @@ func (c *client) Stop(ctx context.Context) error {
 }
 
 func (c *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.ResourceSpans) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	// Unpack all the spans and store in memory by trace ID
 	// This is lossy as we're loosing the resource and service data so we may want to improve this later
 	for _, ResourceSpan := range protoSpans {
@@ -82,6 +86,7 @@ func (c *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.Resourc
 		for _, scopedSpans := range scopedSpans {
 			for _, span := range scopedSpans.Spans {
 				traceID := hex.EncodeToString(span.TraceId)
+
 				traces[traceID] = append(traces[traceID], span)
 
 				c.updateTraceSummary(traceID, span)
@@ -93,8 +98,6 @@ func (c *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.Resourc
 }
 
 func (c *client) updateTraceSummary(traceID string, span *tracepb.Span) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
 
 	start := time.Unix(0, int64(span.StartTimeUnixNano))
 	end := time.Unix(0, int64(span.EndTimeUnixNano))
