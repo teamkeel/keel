@@ -86,7 +86,6 @@ func (c *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.Resourc
 		for _, scopedSpans := range scopedSpans {
 			for _, span := range scopedSpans.Spans {
 				traceID := hex.EncodeToString(span.TraceId)
-
 				traces[traceID] = append(traces[traceID], span)
 
 				c.updateTraceSummary(traceID, span)
