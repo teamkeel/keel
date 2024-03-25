@@ -98,7 +98,7 @@ func (query *QueryBuilder) applySchemaOrdering(scope *Scope) error {
 }
 
 // Applies ordering of @sortable fields to the query.
-func (query *QueryBuilder) applyRequestOrdering(scope *Scope, orderBy []any) error {
+func (query *QueryBuilder) applyRequestOrdering(orderBy []any) error {
 	for _, item := range orderBy {
 		obj := item.(map[string]any)
 		for field, direction := range obj {
@@ -175,7 +175,7 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 		return nil, nil, err
 	}
 
-	err = query.applyRequestOrdering(scope, orderBy)
+	err = query.applyRequestOrdering(orderBy)
 	if err != nil {
 		return nil, nil, err
 	}

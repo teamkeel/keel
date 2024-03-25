@@ -631,12 +631,14 @@ func (query *QueryBuilder) InsertStatement(ctx context.Context) *Statement {
 	selection := []string{"*"}
 	if auth.IsAuthenticated(ctx) {
 		identity, _ := auth.GetIdentity(ctx)
-		selection = append(selection, setIdentityIdClause(identity.Id))
+		selection = append(selection, setIdentityIdClause())
+		args = append(args, identity.Id)
 	}
 
 	spanContext := trace.SpanContextFromContext(ctx)
 	if spanContext.IsValid() {
-		selection = append(selection, setTraceIdClause(spanContext.TraceID().String()))
+		selection = append(selection, setTraceIdClause())
+		args = append(args, spanContext.TraceID().String())
 	}
 
 	statement := fmt.Sprintf("WITH %s SELECT %s FROM %s",
@@ -905,12 +907,14 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 
 	if auth.IsAuthenticated(ctx) {
 		identity, _ := auth.GetIdentity(ctx)
-		query.returning = append(query.returning, setIdentityIdClause(identity.Id))
+		query.returning = append(query.returning, setIdentityIdClause())
+		args = append(args, identity.Id)
 	}
 
 	spanContext := trace.SpanContextFromContext(ctx)
 	if spanContext.IsValid() {
-		query.returning = append(query.returning, setTraceIdClause(spanContext.TraceID().String()))
+		query.returning = append(query.returning, setTraceIdClause())
+		args = append(args, spanContext.TraceID().String())
 	}
 
 	if len(query.returning) > 0 {
@@ -963,12 +967,14 @@ func (query *QueryBuilder) DeleteStatement(ctx context.Context) *Statement {
 
 	if auth.IsAuthenticated(ctx) {
 		identity, _ := auth.GetIdentity(ctx)
-		query.returning = append(query.returning, setIdentityIdClause(identity.Id))
+		query.returning = append(query.returning, setIdentityIdClause())
+		query.args = append(query.args, identity.Id)
 	}
 
 	spanContext := trace.SpanContextFromContext(ctx)
 	if spanContext.IsValid() {
-		query.returning = append(query.returning, setTraceIdClause(spanContext.TraceID().String()))
+		query.returning = append(query.returning, setTraceIdClause())
+		query.args = append(query.args, spanContext.TraceID().String())
 	}
 
 	if len(query.returning) > 0 {
@@ -1294,10 +1300,10 @@ const (
 	setTraceIdAlias    = "__keel_trace_id"
 )
 
-func setIdentityIdClause(value string) string {
-	return fmt.Sprintf("set_identity_id('%s') AS %s", value, setIdentityIdAlias)
+func setIdentityIdClause() string {
+	return fmt.Sprintf("set_identity_id(?) AS %s", setIdentityIdAlias)
 }
 
-func setTraceIdClause(value string) string {
-	return fmt.Sprintf("set_trace_id('%s') AS %s", value, setTraceIdAlias)
+func setTraceIdClause() string {
+	return fmt.Sprintf("set_trace_id(?) AS %s", setTraceIdAlias)
 }

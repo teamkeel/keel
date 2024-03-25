@@ -41,19 +41,23 @@ func TestProcessEventSqlSingleEvent(t *testing.T) {
 	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
-	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, args, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.NoError(t, err)
 
 	expectedSql := `
 		UPDATE keel_audit 
-		SET event_processed_at = NOW() 
+		SET event_processed_at = now() 
 		WHERE 
-			trace_id = '0ffe82e8dcfd9f9fbe4c639d5ef4f1ba' AND 
+			trace_id = ? AND 
 			event_processed_at IS NULL AND 
-			(table_name = 'person' AND op = 'update')
+			(table_name = ? AND op = ?)
 		RETURNING *`
 
 	require.Equal(t, clean(expectedSql), clean(sql))
+	require.Len(t, args, 3)
+	require.Equal(t, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba", args[0])
+	require.Equal(t, "person", args[1])
+	require.Equal(t, "update", args[2])
 }
 
 func TestProcessEventSqlComplexTableName(t *testing.T) {
@@ -69,19 +73,23 @@ func TestProcessEventSqlComplexTableName(t *testing.T) {
 	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
-	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, args, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.NoError(t, err)
 
 	expectedSql := `
 		UPDATE keel_audit 
-		SET event_processed_at = NOW() 
+		SET event_processed_at = now() 
 		WHERE 
-			trace_id = '0ffe82e8dcfd9f9fbe4c639d5ef4f1ba' AND 
+			trace_id = ? AND 
 			event_processed_at IS NULL AND 
-			(table_name = 'employee_of_company_1' AND op = 'update')
+			(table_name = ? AND op = ?)
 		RETURNING *`
 
 	require.Equal(t, clean(expectedSql), clean(sql))
+	require.Len(t, args, 3)
+	require.Equal(t, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba", args[0])
+	require.Equal(t, "employee_of_company_1", args[1])
+	require.Equal(t, "update", args[2])
 }
 
 func TestProcessEventSqlMultipleEventsOneAttribute(t *testing.T) {
@@ -97,21 +105,29 @@ func TestProcessEventSqlMultipleEventsOneAttribute(t *testing.T) {
 	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
-	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, args, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.NoError(t, err)
 
 	expectedSql := `
 		UPDATE keel_audit 
-		SET event_processed_at = NOW() 
+		SET event_processed_at = now() 
 		WHERE 
-			trace_id = '0ffe82e8dcfd9f9fbe4c639d5ef4f1ba' AND 
+			trace_id = ? AND 
 			event_processed_at IS NULL AND 
-			((table_name = 'person' AND op = 'update') OR 
-			(table_name = 'person' AND op = 'insert') OR 
-			(table_name = 'person' AND op = 'delete')) 
+			((table_name = ? AND op = ?) OR 
+			(table_name = ? AND op = ?) OR 
+			(table_name = ? AND op = ?)) 
 		RETURNING *`
 
 	require.Equal(t, clean(expectedSql), clean(sql))
+	require.Len(t, args, 7)
+	require.Equal(t, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba", args[0])
+	require.Equal(t, "person", args[1])
+	require.Equal(t, "update", args[2])
+	require.Equal(t, "person", args[3])
+	require.Equal(t, "insert", args[4])
+	require.Equal(t, "person", args[5])
+	require.Equal(t, "delete", args[6])
 }
 
 func TestProcessEventSqlMultipleEventsManyAttribute(t *testing.T) {
@@ -129,21 +145,29 @@ func TestProcessEventSqlMultipleEventsManyAttribute(t *testing.T) {
 	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
-	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, args, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.NoError(t, err)
 
 	expectedSql := `
 		UPDATE keel_audit 
-		SET event_processed_at = NOW() 
+		SET event_processed_at = now() 
 		WHERE 
-			trace_id = '0ffe82e8dcfd9f9fbe4c639d5ef4f1ba' AND 
+			trace_id = ? AND 
 			event_processed_at IS NULL AND 
-			((table_name = 'person' AND op = 'update') OR 
-			(table_name = 'person' AND op = 'insert') OR 
-			(table_name = 'person' AND op = 'delete')) 
+			((table_name = ? AND op = ?) OR 
+			(table_name = ? AND op = ?) OR 
+			(table_name = ? AND op = ?)) 
 		RETURNING *`
 
 	require.Equal(t, clean(expectedSql), clean(sql))
+	require.Len(t, args, 7)
+	require.Equal(t, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba", args[0])
+	require.Equal(t, "person", args[1])
+	require.Equal(t, "update", args[2])
+	require.Equal(t, "person", args[3])
+	require.Equal(t, "insert", args[4])
+	require.Equal(t, "person", args[5])
+	require.Equal(t, "delete", args[6])
 }
 
 func TestProcessEventSqlNoEvents(t *testing.T) {
@@ -158,7 +182,7 @@ func TestProcessEventSqlNoEvents(t *testing.T) {
 	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
-	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, _, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.Error(t, err)
 	require.Empty(t, sql)
 }
@@ -176,7 +200,7 @@ func TestProcessEventSqlEmptyTraceId(t *testing.T) {
 	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
-	sql, err := processEventsSql(schema, "")
+	sql, _, err := processEventsSql(schema, "")
 	require.Error(t, err)
 	require.Empty(t, sql)
 }
@@ -225,24 +249,38 @@ func TestProcessEventSqlWithMultipleModels(t *testing.T) {
 	schema, err := builder.MakeFromString(keelSchema, config.Empty)
 	require.NoError(t, err)
 
-	sql, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
+	sql, args, err := processEventsSql(schema, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba")
 	require.NoError(t, err)
 
 	expectedSql := `
 		UPDATE keel_audit 
-		SET event_processed_at = NOW() 
+		SET event_processed_at = now() 
 		WHERE 
-			trace_id = '0ffe82e8dcfd9f9fbe4c639d5ef4f1ba' AND 
+			trace_id = ? AND 
 			event_processed_at IS NULL AND 
-			((table_name = 'wedding' AND op = 'insert') OR 
-			(table_name = 'wedding' AND op = 'update') OR 
-			(table_name = 'wedding' AND op = 'delete') OR 
-			(table_name = 'wedding_invitee' AND op = 'insert') OR 
-			(table_name = 'wedding_invitee' AND op = 'update') OR 
-			(table_name = 'person' AND op = 'update')) 
+			((table_name = ? AND op = ?) OR 
+			(table_name = ? AND op = ?) OR 
+			(table_name = ? AND op = ?) OR 
+			(table_name = ? AND op = ?) OR 
+			(table_name = ? AND op = ?) OR 
+			(table_name = ? AND op = ?)) 
 		RETURNING *`
 
 	require.Equal(t, clean(expectedSql), clean(sql))
+	require.Len(t, args, 13)
+	require.Equal(t, "0ffe82e8dcfd9f9fbe4c639d5ef4f1ba", args[0])
+	require.Equal(t, "wedding", args[1])
+	require.Equal(t, "update", args[2])
+	require.Equal(t, "wedding", args[3])
+	require.Equal(t, "insert", args[4])
+	require.Equal(t, "wedding", args[5])
+	require.Equal(t, "delete", args[6])
+	require.Equal(t, "wedding_invitee", args[7])
+	require.Equal(t, "insert", args[8])
+	require.Equal(t, "wedding_invitee", args[9])
+	require.Equal(t, "update", args[10])
+	require.Equal(t, "person", args[11])
+	require.Equal(t, "update", args[12])
 }
 
 // Trims and removes redundant spacing
