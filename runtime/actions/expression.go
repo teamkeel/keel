@@ -12,7 +12,7 @@ import (
 )
 
 // Include a filter (where condition) on the query based on an implicit input filter.
-func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []string, fieldName string, operator ActionOperator, value any) error {
+func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []string, operator ActionOperator, value any) error {
 	// Implicit inputs don't include the base model as the first fragment (unlike expressions), so we include it
 	fragments := append([]string{casing.ToLowerCamel(scope.Action.ModelName)}, targetField...)
 

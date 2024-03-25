@@ -350,11 +350,11 @@ func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage boo
 		if msg.Name == parser.MessageFieldTypeAny {
 			continue
 		}
-		writeMessage(w, schema, msg, isTestingPackage)
+		writeMessage(w, msg, isTestingPackage)
 	}
 }
 
-func writeMessage(w *codegen.Writer, schema *proto.Schema, message *proto.Message, isTestingPackage bool) {
+func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool) {
 	if message.Type != nil {
 		w.Writef("export type %s = ", message.Name)
 		w.Write(toTypeScriptType(message.Type, isTestingPackage))

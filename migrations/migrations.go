@@ -294,7 +294,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 				// When the field added is a foreign key field, we add a corresponding foreign key constraint.
 				if field.ForeignKeyInfo != nil {
-					statements = append(statements, fkConstraint(field, model, schema))
+					statements = append(statements, fkConstraint(field, model))
 				}
 				continue
 			}
@@ -302,7 +302,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			// Column already exists - see if any changes need to be applied
 			hasChanged := false
 
-			alterSQL, err := alterColumnStmt(schema, model.Name, field, column)
+			alterSQL, err := alterColumnStmt(model.Name, field, column)
 			if err != nil {
 				return nil, err
 			}
@@ -474,14 +474,14 @@ func GetCurrentSchema(ctx context.Context, database db.Database) (*proto.Schema,
 func fkConstraintsForModel(model *proto.Model, schema *proto.Schema) (fkStatements []string) {
 	fkFields := proto.ForeignKeyFields(model)
 	for _, field := range fkFields {
-		stmt := fkConstraint(field, model, schema)
+		stmt := fkConstraint(field, model)
 		fkStatements = append(fkStatements, stmt)
 	}
 	return fkStatements
 }
 
 // fkConstraint generates a foreign key constraint statement for the given foreign key field.
-func fkConstraint(field *proto.Field, thisModel *proto.Model, schema *proto.Schema) (fkStatement string) {
+func fkConstraint(field *proto.Field, thisModel *proto.Model) (fkStatement string) {
 	fki := field.ForeignKeyInfo
 	onDelete := lo.Ternary(field.Optional, "SET NULL", "CASCADE")
 	stmt := addForeignKeyConstraintStmt(

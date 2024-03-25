@@ -2902,7 +2902,7 @@ func TestDeleteStatement(t *testing.T) {
 
 func TestInsertStatementWithAuditing(t *testing.T) {
 	ctx := context.Background()
-	ctx, _ = withIdentity(t, ctx)
+	ctx, _ = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
 	model := &proto.Model{Name: "Person"}
@@ -2925,7 +2925,7 @@ func TestInsertStatementWithAuditing(t *testing.T) {
 
 func TestUpdateStatementWithAuditing(t *testing.T) {
 	ctx := context.Background()
-	ctx, _ = withIdentity(t, ctx)
+	ctx, _ = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
 	model := &proto.Model{Name: "Person"}
@@ -2948,7 +2948,7 @@ func TestUpdateStatementWithAuditing(t *testing.T) {
 
 func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
 	ctx := context.Background()
-	ctx, _ = withIdentity(t, ctx)
+	ctx, _ = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
 	model := &proto.Model{Name: "Person"}
@@ -2969,7 +2969,7 @@ func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
 
 func TestDeleteStatementWithAuditing(t *testing.T) {
 	ctx := context.Background()
-	ctx, _ = withIdentity(t, ctx)
+	ctx, _ = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
 	model := &proto.Model{Name: "Person"}
@@ -2991,7 +2991,7 @@ func TestDeleteStatementWithAuditing(t *testing.T) {
 
 func TestDeleteStatementNoReturnWithAuditing(t *testing.T) {
 	ctx := context.Background()
-	ctx, _ = withIdentity(t, ctx)
+	ctx, _ = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
 	model := &proto.Model{Name: "Person"}
@@ -3009,7 +3009,7 @@ func TestDeleteStatementNoReturnWithAuditing(t *testing.T) {
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
 }
 
-func withIdentity(t *testing.T, ctx context.Context) (context.Context, *auth.Identity) {
+func withIdentity(ctx context.Context) (context.Context, *auth.Identity) {
 	identity := &auth.Identity{Id: identityId}
 	return auth.WithIdentity(ctx, identity), identity
 }

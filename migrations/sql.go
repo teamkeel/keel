@@ -173,7 +173,7 @@ func addForeignKeyConstraintStmt(thisTable string, thisColumn string, otherTable
 	)
 }
 
-func alterColumnStmt(schema *proto.Schema, modelName string, field *proto.Field, column *ColumnRow) (string, error) {
+func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (string, error) {
 	stmts := []string{}
 
 	alterColumnStmtPrefix := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s", Identifier(modelName), Identifier(column.ColumnName))
@@ -184,7 +184,7 @@ func alterColumnStmt(schema *proto.Schema, modelName string, field *proto.Field,
 	}
 
 	if field.DefaultValue != nil {
-		value, err := getDefaultValue(schema, field)
+		value, err := getDefaultValue(field)
 		if err != nil {
 			return "", err
 		}
@@ -209,7 +209,7 @@ func alterColumnStmt(schema *proto.Schema, modelName string, field *proto.Field,
 
 			// Update all existing rows to the default value if they are null
 			if field.DefaultValue != nil {
-				value, err := getDefaultValue(schema, field)
+				value, err := getDefaultValue(field)
 				if err != nil {
 					return "", err
 				}
@@ -245,7 +245,7 @@ func fieldDefinition(schema *proto.Schema, field *proto.Field) (string, error) {
 	}
 
 	if field.DefaultValue != nil {
-		value, err := getDefaultValue(schema, field)
+		value, err := getDefaultValue(field)
 		if err != nil {
 			return "", err
 		}
@@ -256,7 +256,7 @@ func fieldDefinition(schema *proto.Schema, field *proto.Field) (string, error) {
 	return output, nil
 }
 
-func getDefaultValue(schema *proto.Schema, field *proto.Field) (string, error) {
+func getDefaultValue(field *proto.Field) (string, error) {
 	if field.DefaultValue.UseZeroValue {
 		switch field.Type.Type {
 		case proto.Type_TYPE_STRING:

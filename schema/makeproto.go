@@ -421,10 +421,10 @@ func makeListOrderByMessages(actionName string, fieldNames []string) []*proto.Me
 }
 
 // Creates a proto.Message from a slice of action inputs.
-func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode, impl proto.ActionImplementation) *proto.Message {
+func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parser.ActionInputNode, model *parser.ModelNode) *proto.Message {
 	fields := []*proto.MessageField{}
 	for _, input := range inputs {
-		typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
+		typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, input)
 
 		fields = append(fields, &proto.MessageField{
 			Name:        input.Name(),
@@ -443,7 +443,7 @@ func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parse
 }
 
 // Creates the message structure from an implicit input. For relationships, this will create a nested hierarchy of messages.
-func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Message, input *parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode, impl proto.ActionImplementation) {
+func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Message, input *parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode) {
 	target := lo.Map(input.Type.Fragments, func(ident *parser.IdentFragment, _ int) string {
 		return ident.Fragment
 	})
@@ -506,7 +506,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 
 			currModel = field.Type.Value
 		} else {
-			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
+			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, input)
 
 			if action.Type.Value == parser.ActionTypeList {
 				queryMessage, err := makeListQueryInputMessage(typeInfo)
@@ -544,7 +544,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 }
 
 // Adds a set of proto.Messages to top level Messages registry for all inputs of an Action
-func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode, impl proto.ActionImplementation) {
+func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode) {
 	switch action.Type.Value {
 	case parser.ActionTypeCreate:
 		rootMessage := &proto.Message{
@@ -556,7 +556,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 		for _, input := range action.With {
 			if input.Label == nil {
 				// If its an implicit input, then create a nested object input structure.
-				scm.makeMessageHierarchyFromImplicitInput(rootMessage, input, model, action, impl)
+				scm.makeMessageHierarchyFromImplicitInput(rootMessage, input, model, action)
 			} else {
 				// This is an explicit input, so the first and only fragment will reference the type used.
 				typeInfo := scm.explicitInputToTypeInfo(input)
@@ -573,12 +573,12 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 	case parser.ActionTypeGet, parser.ActionTypeDelete, parser.ActionTypeRead, parser.ActionTypeWrite:
 		// Create message and add it to the proto schema
 		messageName := makeInputMessageName(action.Name.Value)
-		message := scm.makeMessageFromActionInputNodes(messageName, action.Inputs, model, action, impl)
+		message := scm.makeMessageFromActionInputNodes(messageName, action.Inputs, model)
 		scm.proto.Messages = append(scm.proto.Messages, message)
 	case parser.ActionTypeUpdate:
 		// Create where message and add it to the proto schema
 		whereMessageName := makeWhereMessageName(action.Name.Value)
-		whereMessage := scm.makeMessageFromActionInputNodes(whereMessageName, action.Inputs, model, action, impl)
+		whereMessage := scm.makeMessageFromActionInputNodes(whereMessageName, action.Inputs, model)
 		scm.proto.Messages = append(scm.proto.Messages, whereMessage)
 
 		// Create values message and add it to the proto schema
@@ -590,7 +590,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 		for _, input := range action.With {
 			if input.Label == nil {
 				// If its an implicit input, then create a nested object input structure.
-				scm.makeMessageHierarchyFromImplicitInput(valuesMessage, input, model, action, impl)
+				scm.makeMessageHierarchyFromImplicitInput(valuesMessage, input, model, action)
 			} else {
 				// This is an explicit input, so the first and only fragment will reference the type used.
 				typeInfo := scm.explicitInputToTypeInfo(input)
@@ -641,7 +641,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 
 		for _, input := range action.Inputs {
 			if input.Label == nil {
-				scm.makeMessageHierarchyFromImplicitInput(whereMessage, input, model, action, impl)
+				scm.makeMessageHierarchyFromImplicitInput(whereMessage, input, model, action)
 			} else {
 				typeInfo := scm.explicitInputToTypeInfo(input)
 
@@ -882,9 +882,9 @@ func (scm *Builder) makeJob(decl *parser.DeclarationNode) {
 	for _, section := range parserJob.Sections {
 		switch {
 		case section.Attribute != nil:
-			scm.applyJobAttribute(parserJob, job, section.Attribute)
+			scm.applyJobAttribute(job, section.Attribute)
 		case section.Inputs != nil:
-			scm.applyJobInputs(parserJob, message, section.Inputs)
+			scm.applyJobInputs(message, section.Inputs)
 		default:
 			panic(fmt.Sprintf("unhandled section when parsing job '%s'", job.Name))
 		}
@@ -1083,7 +1083,7 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, buil
 			case usesAny:
 				protoAction.InputMessageName = action.Inputs[0].Type.ToString()
 			case usingInlineInputs:
-				scm.makeActionInputMessages(model, action, implementation)
+				scm.makeActionInputMessages(model, action)
 			default:
 				protoAction.InputMessageName = action.Inputs[0].Type.ToString()
 			}
@@ -1096,7 +1096,7 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, buil
 		protoAction.ResponseMessageName = action.Returns[0].Type.ToString()
 	} else {
 		// we need to generate the messages representing the inputs to the scm.Messages
-		scm.makeActionInputMessages(model, action, implementation)
+		scm.makeActionInputMessages(model, action)
 	}
 
 	scm.applyActionAttributes(action, protoAction, modelName)
@@ -1106,9 +1106,7 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, buil
 
 func (scm *Builder) inferParserInputType(
 	model *parser.ModelNode,
-	action *parser.ActionNode,
 	input *parser.ActionInputNode,
-	impl proto.ActionImplementation,
 ) (t *proto.TypeInfo, target []string, targetsOptionalField bool) {
 	idents := input.Type.Fragments
 	protoType := scm.parserTypeToProtoType(idents[0].Fragment)
@@ -1531,7 +1529,7 @@ func mapToOrderByDirection(parsedDirection string) proto.OrderDirection {
 	}
 }
 
-func (scm *Builder) applyJobAttribute(parserJob *parser.JobNode, protoJob *proto.Job, attribute *parser.AttributeNode) {
+func (scm *Builder) applyJobAttribute(protoJob *proto.Job, attribute *parser.AttributeNode) {
 	switch attribute.Name.Value {
 	case parser.AttributePermission:
 		protoJob.Permissions = append(protoJob.Permissions, scm.permissionAttributeToProtoPermission(attribute))
@@ -1549,7 +1547,7 @@ func (scm *Builder) applyJobAttribute(parserJob *parser.JobNode, protoJob *proto
 	}
 }
 
-func (scm *Builder) applyJobInputs(parserJob *parser.JobNode, protoMessage *proto.Message, inputs []*parser.JobInputNode) {
+func (scm *Builder) applyJobInputs(protoMessage *proto.Message, inputs []*parser.JobInputNode) {
 	for _, input := range inputs {
 		protoField := &proto.MessageField{
 			Name:        input.Name.Value,
