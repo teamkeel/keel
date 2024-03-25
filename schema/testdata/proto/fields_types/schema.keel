@@ -5,6 +5,7 @@ model Foo {
         c Date
         d Timestamp
         e Boolean
+        f Markdown
         g Beatles
     }
 }

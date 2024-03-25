@@ -38,6 +38,7 @@ model Person {
 		dateOfBirth Date
 		gender Gender
 		hasChildren Boolean
+		bio Markdown
 	}
 }`
 
@@ -50,6 +51,7 @@ export interface PersonTable {
 	dateOfBirth: Date
 	gender: Gender
 	hasChildren: boolean
+	bio: string
 	id: Generated<string>
 	createdAt: Generated<Date>
 	updatedAt: Generated<Date>
@@ -70,6 +72,7 @@ export interface Person {
 	dateOfBirth: Date
 	gender: Gender
 	hasChildren: boolean
+	bio: string
 	id: string
 	createdAt: Date
 	updatedAt: Date
@@ -90,6 +93,7 @@ export type PersonCreateValues = {
 	dateOfBirth: Date
 	gender: Gender
 	hasChildren: boolean
+	bio: string
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
@@ -136,6 +140,7 @@ export interface PersonWhereConditions {
 	dateOfBirth?: Date | runtime.DateWhereCondition;
 	gender?: Gender | GenderWhereCondition;
 	hasChildren?: boolean | runtime.BooleanWhereCondition;
+	bio?: string | runtime.StringWhereCondition;
 	id?: string | runtime.IDWhereCondition;
 	createdAt?: Date | runtime.DateWhereCondition;
 	updatedAt?: Date | runtime.DateWhereCondition;
@@ -201,7 +206,8 @@ export type PersonAPI = {
 		age: 0,
 		dateOfBirth: new Date(),
 		gender: undefined,
-		hasChildren: false
+		hasChildren: false,
+		bio: ''
 	});
 	%[1]s
 	*/
