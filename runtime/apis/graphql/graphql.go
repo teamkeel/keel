@@ -709,10 +709,6 @@ func (mk *graphqlSchemaBuilder) inputTypeForModelField(field *proto.Field) (in g
 		}
 	}
 
-	if err != nil {
-		return in, err
-	}
-
 	if field.Type.Repeated {
 		if field.Type.Type == proto.Type_TYPE_MODEL {
 			in = mk.makeConnectionType(in)
@@ -746,10 +742,6 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 		if !ok {
 			return out, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
 		}
-	}
-
-	if err != nil {
-		return out, err
 	}
 
 	if field.Type.Repeated {

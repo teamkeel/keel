@@ -164,7 +164,7 @@ func TestWriteUniqueConditionsInterface(t *testing.T) {
 	// You can't find a single book by author, because an author
 	// writes many books
 	expectedBookType := `
-export type BookUniqueConditions = 
+export type BookUniqueConditions =
 	| {title: string}
 	| {id: string};
 	`
@@ -173,7 +173,7 @@ export type BookUniqueConditions =
 	// is written by a single author. So we include the
 	// BookUniqueConditions type within AuthorUniqueConditions
 	expectedAuthorType := `
-export type AuthorUniqueConditions = 
+export type AuthorUniqueConditions =
 	| {books: BookUniqueConditions}
 	| {id: string};
 	`
@@ -277,7 +277,7 @@ export interface PersonFindManyParams {
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeFindManyParamsInterface(w, m, false)
+		writeFindManyParamsInterface(w, m)
 	})
 }
 
@@ -976,21 +976,21 @@ func TestWriteActionInputTypesListRelationshipOptionalFields(t *testing.T) {
 			name Text?
 			authors Author[]
 		}
-	
+
 	}
-	
+
 	model Author {
 		fields {
 			publisher Publisher?
 			books Book[]
 		}
 	}
-	
+
 	model Book {
 		fields {
 			author Author?
 		}
-	
+
 		actions {
 			list listBooks(author.publisher.name) @function
 		}
@@ -1034,21 +1034,21 @@ func TestWriteActionInputTypesListRelationshipOptionalInput(t *testing.T) {
 			name Text
 			authors Author[]
 		}
-	
+
 	}
-	
+
 	model Author {
 		fields {
 			publisher Publisher
 			books Book[]
 		}
 	}
-	
+
 	model Book {
 		fields {
 			author Author
 		}
-	
+
 		actions {
 			list listBooks(author.publisher.name?) @function
 		}
@@ -2083,7 +2083,7 @@ func TestSDKTypings(t *testing.T) {
 			name: "findOne",
 			code: `
 				import { models, GetPerson } from "@teamkeel/sdk";
-		
+
 				export default GetPerson({
 					beforeQuery: async (ctx, inputs, query) => {
 						const p = await models.person.findOne({
@@ -2100,7 +2100,7 @@ func TestSDKTypings(t *testing.T) {
 			name: "findOne - can return null",
 			code: `
 				import { models, GetPerson } from "@teamkeel/sdk";
-		
+
 				export default GetPerson({
 					beforeQuery: async (ctx, inputs, query) => {
 						const r = await models.person.findOne({
@@ -2118,7 +2118,7 @@ func TestSDKTypings(t *testing.T) {
 			name: "testing actions executor - input types",
 			code: `
 				import { actions } from "@teamkeel/testing";
-		
+
 				async function foo() {
 					await actions.getPerson({
 						id: "1234",
@@ -2131,7 +2131,7 @@ func TestSDKTypings(t *testing.T) {
 			name: "testing actions executor - return types",
 			code: `
 				import { actions } from "@teamkeel/testing";
-		
+
 				async function foo() {
 					const p = await actions.getPerson({
 						id: 1234,
@@ -2145,7 +2145,7 @@ func TestSDKTypings(t *testing.T) {
 			name: "testing actions executor - withIdentity",
 			code: `
 				import { actions } from "@teamkeel/testing";
-		
+
 				async function foo() {
 					await actions.withIdentity(null).getPerson({
 						id: 1234,

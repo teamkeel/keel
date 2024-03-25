@@ -101,9 +101,8 @@ func NewOperandResolver(operand *parser.Operand, asts []*parser.AST, context *Ex
 func (o *OperandResolver) Resolve() (entity *ExpressionScopeEntity, err *ResolutionError) {
 	// build the default expression scope for all expressions
 	o.scope = buildRootExpressionScope(o.asts, o.context)
-	// build additional root scopes based on position of operand
-	// and also what type attribute the expression is used in.
-	o.scope = applyAdditionalOperandScopes(o.asts, o.scope, o.context, o.position)
+	// build additional root scopes based on what type attribute the expression is used in.
+	o.scope = applyAdditionalOperandScopes(o.asts, o.scope, o.context)
 
 	// If it is a literal then handle differently.
 	if ok, _ := o.operand.IsLiteralType(); ok {

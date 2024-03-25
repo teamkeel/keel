@@ -348,7 +348,7 @@ func scopeFromEnum(parentScope *ExpressionScope, parentEntity *ExpressionScopeEn
 	}
 }
 
-func applyAdditionalOperandScopes(asts []*parser.AST, scope *ExpressionScope, context *ExpressionContext, position OperandPosition) *ExpressionScope {
+func applyAdditionalOperandScopes(asts []*parser.AST, scope *ExpressionScope, context *ExpressionContext) *ExpressionScope {
 	additionalScope := &ExpressionScope{}
 
 	attribute := context.Attribute
