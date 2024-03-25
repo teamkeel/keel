@@ -103,7 +103,7 @@ func (o *OperandResolver) Resolve() (entity *ExpressionScopeEntity, err *Resolut
 	o.scope = buildRootExpressionScope(o.asts, o.context)
 	// build additional root scopes based on position of operand
 	// and also what type attribute the expression is used in.
-	o.scope = applyAdditionalOperandScopes(o.asts, o.scope, o.context, o.position)
+	o.scope = applyAdditionalOperandScopes(o.asts, o.scope, o.context)
 
 	// If it is a literal then handle differently.
 	if ok, _ := o.operand.IsLiteralType(); ok {

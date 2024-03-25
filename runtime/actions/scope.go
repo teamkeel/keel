@@ -108,7 +108,7 @@ func Execute(scope *Scope, inputs any) (result any, meta *common.ResponseMetadat
 				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
 			}
 		}
-		result, meta, err = executeRuntimeAction(scope, inputsAsMap)
+		result, err = executeRuntimeAction(scope, inputsAsMap)
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_AUTO:
 		if !inputWasAMap {
 			if inputs == nil {
@@ -117,7 +117,7 @@ func Execute(scope *Scope, inputs any) (result any, meta *common.ResponseMetadat
 				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
 			}
 		}
-		result, meta, err = executeAutoAction(scope, inputsAsMap)
+		result, err = executeAutoAction(scope, inputsAsMap)
 	default:
 		return nil, nil, fmt.Errorf("unhandled unknown action %s of type %s", scope.Action.Name, scope.Action.Implementation)
 	}
@@ -192,20 +192,20 @@ func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetad
 	return resp, m, err
 }
 
-func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, *common.ResponseMetadata, error) {
+func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, error) {
 	switch scope.Action.Name {
 	case requestPasswordResetActionName:
 		err := ResetRequestPassword(scope, inputs)
-		return map[string]any{}, nil, err
+		return map[string]any{}, err
 	case passwordResetActionName:
 		err := ResetPassword(scope, inputs)
-		return map[string]any{}, nil, err
+		return map[string]any{}, err
 	default:
-		return nil, nil, fmt.Errorf("unhandled runtime action: %s", scope.Action.Name)
+		return nil, fmt.Errorf("unhandled runtime action: %s", scope.Action.Name)
 	}
 }
 
-func executeAutoAction(scope *Scope, inputs map[string]any) (any, *common.ResponseMetadata, error) {
+func executeAutoAction(scope *Scope, inputs map[string]any) (any, error) {
 	switch scope.Action.Type {
 	case proto.ActionType_ACTION_TYPE_GET:
 		v, err := Get(scope, inputs)
@@ -214,22 +214,22 @@ func executeAutoAction(scope *Scope, inputs map[string]any) (any, *common.Respon
 		// odd.
 		// Simple repo of this: https://play.golang.com/p/MbBzvhrdOm_f
 		if v == nil {
-			return nil, nil, err
+			return nil, err
 		}
-		return v, nil, err
+		return v, err
 	case proto.ActionType_ACTION_TYPE_UPDATE:
 		result, err := Update(scope, inputs)
-		return result, nil, err
+		return result, err
 	case proto.ActionType_ACTION_TYPE_CREATE:
 		result, err := Create(scope, inputs)
-		return result, nil, err
+		return result, err
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		result, err := Delete(scope, inputs)
-		return result, nil, err
+		return result, err
 	case proto.ActionType_ACTION_TYPE_LIST:
 		result, err := List(scope, inputs)
-		return result, nil, err
+		return result, err
 	default:
-		return nil, nil, fmt.Errorf("unhandled auto action type: %s", scope.Action.Type.String())
+		return nil, fmt.Errorf("unhandled auto action type: %s", scope.Action.Type.String())
 	}
 }

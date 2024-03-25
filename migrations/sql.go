@@ -64,7 +64,7 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 	})
 
 	for i, field := range fields {
-		stmt, err := fieldDefinition(schema, field)
+		stmt, err := fieldDefinition(field)
 		if err != nil {
 			return "", err
 		}
@@ -141,7 +141,7 @@ func dropConstraintStmt(tableName string, constraintName string) string {
 func addColumnStmt(schema *proto.Schema, modelName string, field *proto.Field) (string, error) {
 	statements := []string{}
 
-	stmt, err := fieldDefinition(schema, field)
+	stmt, err := fieldDefinition(field)
 	if err != nil {
 		return "", err
 	}
@@ -224,7 +224,7 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 	return strings.Join(stmts, "\n"), nil
 }
 
-func fieldDefinition(schema *proto.Schema, field *proto.Field) (string, error) {
+func fieldDefinition(field *proto.Field) (string, error) {
 	columnName := Identifier(field.Name)
 
 	// We don't yet support Postgres JSON field types in Keel schemas.
@@ -314,7 +314,7 @@ func dropColumnStmt(modelName string, fieldName string) string {
 
 // createAuditTriggerStmts generates the CREATE TRIGGER statements for auditing.
 // Only creates a trigger if the trigger does not already exist in the database.
-func createAuditTriggerStmts(triggers []*TriggerRow, schema *proto.Schema, model *proto.Model) (string, error) {
+func createAuditTriggerStmts(triggers []*TriggerRow, model *proto.Model) string {
 	modelLower := casing.ToSnake(model.Name)
 	statements := []string{}
 
@@ -336,12 +336,12 @@ func createAuditTriggerStmts(triggers []*TriggerRow, schema *proto.Schema, model
 			`CREATE TRIGGER %s AFTER DELETE ON %s REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();`, delete, Identifier(model.Name)))
 	}
 
-	return strings.Join(statements, "\n"), nil
+	return strings.Join(statements, "\n")
 }
 
 // createUpdatedAtTriggerStmts generates the CREATE TRIGGER statements for automatically updating each model's updatedAt column.
 // Only creates a trigger if the trigger does not already exist in the database.
-func createUpdatedAtTriggerStmts(triggers []*TriggerRow, schema *proto.Schema, model *proto.Model) (string, error) {
+func createUpdatedAtTriggerStmts(triggers []*TriggerRow, model *proto.Model) string {
 	modelLower := casing.ToSnake(model.Name)
 	statements := []string{}
 
@@ -351,5 +351,5 @@ func createUpdatedAtTriggerStmts(triggers []*TriggerRow, schema *proto.Schema, m
 			`CREATE TRIGGER %s BEFORE UPDATE ON %s FOR EACH ROW EXECUTE PROCEDURE set_updated_at();`, updatedAt, Identifier(model.Name)))
 	}
 
-	return strings.Join(statements, "\n"), nil
+	return strings.Join(statements, "\n")
 }

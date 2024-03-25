@@ -80,7 +80,7 @@ func validateInputType(
 	inputIsMsg := query.Message(asts, input.Type.ToString()) != nil
 
 	if inputIsMsg {
-		return validateInputMessage(input, numberOfInputs, model, action)
+		return validateInputMessage(input, numberOfInputs, action)
 	} else {
 		// I.e. we expect the input type to specify a built-in type like "Text",
 		// or the name of a field on this or a related model, or an enum.
@@ -96,7 +96,6 @@ func validateInputType(
 func validateInputMessage(
 	input *parser.ActionInputNode,
 	numberOfInputs int,
-	model *parser.ModelNode,
 	action *parser.ActionNode) *errorhandling.ValidationError {
 
 	messageName := input.Type.ToString()

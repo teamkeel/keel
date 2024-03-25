@@ -3,6 +3,7 @@ linters:
     - errcheck
     - unconvert
     - unused 
+    - unparam
   disable:
     - govet
 linters-settings:

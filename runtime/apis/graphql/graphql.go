@@ -709,10 +709,6 @@ func (mk *graphqlSchemaBuilder) inputTypeForModelField(field *proto.Field) (in g
 		}
 	}
 
-	if err != nil {
-		return in, err
-	}
-
 	if field.Type.Repeated {
 		if field.Type.Type == proto.Type_TYPE_MODEL {
 			in = mk.makeConnectionType(in)
@@ -748,10 +744,6 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 		}
 	}
 
-	if err != nil {
-		return out, err
-	}
-
 	if field.Type.Repeated {
 		if field.Type.Type == proto.Type_TYPE_MODEL {
 			out = mk.makeConnectionType(out)
@@ -767,7 +759,7 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 }
 
 // inputTypeFromMessageField maps the type in the given proto.MessageField to a suitable graphql.Input type.
-func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageField, action *proto.Action) (graphql.Input, error) {
+func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageField) (graphql.Input, error) {
 	var in graphql.Input
 	var err error
 
@@ -794,7 +786,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		})
 
 		for _, input := range message.Fields {
-			inputField, err := mk.inputTypeFromMessageField(input, action)
+			inputField, err := mk.inputTypeFromMessageField(input)
 			if err != nil {
 				return nil, err
 			}
@@ -821,7 +813,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 			for _, typeField := range fieldMessage.Fields {
 				typeField.Optional = true
 				typeField.Nullable = true
-				inputField, err := mk.inputTypeFromMessageField(typeField, action)
+				inputField, err := mk.inputTypeFromMessageField(typeField)
 				if err != nil {
 					return nil, err
 				}
@@ -889,7 +881,7 @@ func (mk *graphqlSchemaBuilder) makeActionInputType(action *proto.Action) (*grap
 	})
 
 	for _, field := range message.Fields {
-		fieldType, err := mk.inputTypeFromMessageField(field, action)
+		fieldType, err := mk.inputTypeFromMessageField(field)
 		if err != nil {
 			return nil, false, err
 		}

@@ -159,20 +159,20 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 // Introspection is performed on the database to work out what schema changes
 // need to be applied to result in the database schema matching the Keel schema
 func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migrations, error) {
-	ctx, span := tracer.Start(ctx, "Generate Migrations")
+	_, span := tracer.Start(ctx, "Generate Migrations")
 	defer span.End()
 
-	columns, err := getColumns(ctx, database)
+	columns, err := getColumns(database)
 	if err != nil {
 		return nil, err
 	}
 
-	constraints, err := getConstraints(ctx, database)
+	constraints, err := getConstraints(database)
 	if err != nil {
 		return nil, err
 	}
 
-	triggers, err := getTriggers(ctx, database)
+	triggers, err := getTriggers(database)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +223,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 	// Foreign key constraints for new models (done after all tables have been created)
 	for _, model := range modelsAdded {
-		statements = append(statements, fkConstraintsForModel(model, schema)...)
+		statements = append(statements, fkConstraintsForModel(model)...)
 	}
 
 	// Drop tables if models removed from schema
@@ -249,16 +249,10 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	// Add audit log triggers all model tables excluding the audit table itself.
 	for _, model := range schema.Models {
 		if model.Name != strcase.ToCamel(auditing.TableName) {
-			stmt, err := createAuditTriggerStmts(triggers, schema, model)
-			if err != nil {
-				return nil, err
-			}
+			stmt := createAuditTriggerStmts(triggers, model)
 			statements = append(statements, stmt)
 
-			stmt, err = createUpdatedAtTriggerStmts(triggers, schema, model)
-			if err != nil {
-				return nil, err
-			}
+			stmt = createUpdatedAtTriggerStmts(triggers, model)
 			statements = append(statements, stmt)
 		}
 	}
@@ -471,7 +465,7 @@ func GetCurrentSchema(ctx context.Context, database db.Database) (*proto.Schema,
 
 // fkConstraintsForModel generates foreign key constraint statements for each of fields marked as
 // being foreign keys in the given model.
-func fkConstraintsForModel(model *proto.Model, schema *proto.Schema) (fkStatements []string) {
+func fkConstraintsForModel(model *proto.Model) (fkStatements []string) {
 	fkFields := proto.ForeignKeyFields(model)
 	for _, field := range fkFields {
 		stmt := fkConstraint(field, model)
