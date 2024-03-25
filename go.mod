@@ -14,7 +14,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/dchest/uniuri v1.2.0
-	github.com/docker/docker v24.0.7+incompatible
+	github.com/docker/docker v24.0.9+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/golang-jwt/jwt/v4 v4.4.2
