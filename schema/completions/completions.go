@@ -99,7 +99,7 @@ func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *conf
 			}
 			return completions
 		} else {
-			return getActionCompletions(asts, tokenAtPos, enclosingBlock)
+			return getActionCompletions(asts, tokenAtPos)
 		}
 	case parser.KeywordModels:
 		if tokenAtPos.StartOfBlock().Prev().Value() == parser.KeywordModels {
@@ -138,7 +138,7 @@ func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *conf
 
 		if ok {
 			if lastToken == parser.KeywordModel || lastToken == parser.KeywordEnum {
-				return getUndefinedFieldCompletions(asts, tokenAtPos)
+				return getUndefinedFieldCompletions(asts)
 			} else {
 				// api / role etc - no name completions possible
 				return []*CompletionItem{}
@@ -149,7 +149,7 @@ func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *conf
 	}
 }
 
-func getUndefinedFieldCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) (items []*CompletionItem) {
+func getUndefinedFieldCompletions(asts []*parser.AST) (items []*CompletionItem) {
 	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
 			// check that model exists
@@ -341,7 +341,7 @@ func getBlockCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, keywo
 	return results
 }
 
-func getActionCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, enclosingBlock string) []*CompletionItem {
+func getActionCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
 	// if we are inside enclosing parenthesis then we are completing for
 	// action inputs, or for returns
 	if tokenAtPos.StartOfParen() != nil {
@@ -651,13 +651,13 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 	case parser.AttributePermission:
 		return getPermissionArgCompletions(asts, t, cfg)
 	case parser.AttributeSortable:
-		return getSortableArgCompletions(asts, t, cfg)
+		return getSortableArgCompletions(asts, t)
 	case parser.AttributeOrderBy:
-		return getOrderByArgCompletions(asts, t, cfg)
+		return getOrderByArgCompletions(asts, t)
 	case parser.AttributeSchedule:
-		return getScheduleArgCompletions(asts, t, cfg)
+		return getScheduleArgCompletions(asts)
 	case parser.AttributeOn:
-		return getOnArgCompletions(asts, t, cfg)
+		return getOnArgCompletions(asts, t)
 	case parser.AttributeUnique:
 		// composite
 		if enclosingBlock == parser.KeywordModel {
@@ -720,7 +720,7 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 	return []*CompletionItem{}
 }
 
-func getSortableArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
+func getSortableArgCompletions(asts []*parser.AST, t *TokensAtPosition) []*CompletionItem {
 	modelName := getParentModelName(t)
 	model := query.Model(asts, modelName)
 	fields := query.ModelFields(model)
@@ -744,7 +744,7 @@ func getSortableArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *con
 	return completions
 }
 
-func getOrderByArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
+func getOrderByArgCompletions(asts []*parser.AST, t *TokensAtPosition) []*CompletionItem {
 
 	argStart := t.StartOfParen()
 	for {
@@ -801,7 +801,7 @@ func getOrderByArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *conf
 	}
 }
 
-func getScheduleArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
+func getScheduleArgCompletions(asts []*parser.AST) []*CompletionItem {
 	jobs := query.Jobs(asts)
 
 	completions := []*CompletionItem{}
@@ -891,7 +891,7 @@ func getPermissionArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *c
 	}
 }
 
-func getOnArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
+func getOnArgCompletions(asts []*parser.AST, t *TokensAtPosition) []*CompletionItem {
 	// If the first argument and no array bracket has been opened
 	if t.Prev().Value() == parser.AttributeOn {
 		return []*CompletionItem{{Label: "[", Kind: KindPunctuation}}

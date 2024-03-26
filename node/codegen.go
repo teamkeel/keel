@@ -88,7 +88,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		writeModelInterface(sdkTypes, model)
 		writeCreateValuesType(sdkTypes, schema, model)
 		writeWhereConditionsInterface(sdkTypes, model)
-		writeFindManyParamsInterface(sdkTypes, model, false)
+		writeFindManyParamsInterface(sdkTypes, model)
 		writeUniqueConditionsInterface(sdkTypes, model)
 		writeModelAPIDeclaration(sdkTypes, model)
 		writeModelQueryBuilderDeclaration(sdkTypes, model)
@@ -281,7 +281,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 	w.Writeln("")
 }
 
-func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model, isTestingPackage bool) {
+func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export type %sOrderBy = {\n", model.Name)
 	w.Indent()
 
@@ -350,11 +350,11 @@ func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage boo
 		if msg.Name == parser.MessageFieldTypeAny {
 			continue
 		}
-		writeMessage(w, schema, msg, isTestingPackage)
+		writeMessage(w, msg, isTestingPackage)
 	}
 }
 
-func writeMessage(w *codegen.Writer, schema *proto.Schema, message *proto.Message, isTestingPackage bool) {
+func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool) {
 	if message.Type != nil {
 		w.Writef("export type %s = ", message.Name)
 		w.Write(toTypeScriptType(message.Type, isTestingPackage))

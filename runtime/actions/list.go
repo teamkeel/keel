@@ -45,22 +45,21 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 			continue
 		}
 
-		fieldName := input.Name
-		value, ok := args[fieldName]
+		value, ok := args[input.Name]
 
 		// Not found in arguments
 		if !ok {
 			if input.Optional {
 				continue
 			}
-			return fmt.Errorf("did not find required '%s' input in where clause", fieldName)
+			return fmt.Errorf("did not find required '%s' input in where clause", input.Name)
 		}
 
 		valueMap, ok := value.(map[string]any)
 
 		// Cannot be parsed into map
 		if !ok {
-			return fmt.Errorf("'%s' input value %v is not in correct format", fieldName, value)
+			return fmt.Errorf("'%s' input value %v is not in correct format", input.Name, value)
 		}
 
 		for operatorStr, operand := range valueMap {
@@ -70,7 +69,7 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 			}
 
 			// Resolve the database statement for this expression
-			err = query.whereByImplicitFilter(scope, input.Target, fieldName, operator, operand)
+			err = query.whereByImplicitFilter(scope, input.Target, operator, operand)
 			if err != nil {
 				return err
 			}
@@ -98,15 +97,13 @@ func (query *QueryBuilder) applySchemaOrdering(scope *Scope) error {
 }
 
 // Applies ordering of @sortable fields to the query.
-func (query *QueryBuilder) applyRequestOrdering(orderBy []any) error {
+func (query *QueryBuilder) applyRequestOrdering(orderBy []any) {
 	for _, item := range orderBy {
 		obj := item.(map[string]any)
 		for field, direction := range obj {
 			query.AppendOrderBy(Field(field), direction.(string))
 		}
 	}
-
-	return nil
 }
 
 func List(scope *Scope, input map[string]any) (map[string]any, error) {
@@ -175,10 +172,7 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 		return nil, nil, err
 	}
 
-	err = query.applyRequestOrdering(orderBy)
-	if err != nil {
-		return nil, nil, err
-	}
+	query.applyRequestOrdering(orderBy)
 
 	page, err := ParsePage(input)
 	if err != nil {

@@ -20,14 +20,13 @@ func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]an
 			continue
 		}
 
-		fieldName := input.Name
-		value, ok := args[fieldName]
+		value, ok := args[input.Name]
 
 		if !ok {
-			return fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args)
+			return fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", input.Name, args)
 		}
 
-		err := query.whereByImplicitFilter(scope, input.Target, fieldName, Equals, value)
+		err := query.whereByImplicitFilter(scope, input.Target, Equals, value)
 		if err != nil {
 			return err
 		}

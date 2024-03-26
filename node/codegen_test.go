@@ -277,7 +277,7 @@ export interface PersonFindManyParams {
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeFindManyParamsInterface(w, m, false)
+		writeFindManyParamsInterface(w, m)
 	})
 }
 

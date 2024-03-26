@@ -54,7 +54,7 @@ func checkField(
 	case query.IsHasOneModelField(asts, field):
 		checkHasOneRelationField(asts, field, model, rootModelName, dotDelimPath, op, errs)
 	default:
-		checkPlainField(asts, field, model, rootModelName, dotDelimPath, op, errs)
+		checkPlainField(field, rootModelName, dotDelimPath, op, errs)
 	}
 }
 
@@ -78,9 +78,7 @@ func isNotNeeded(f *parser.FieldNode) bool {
 //
 // see checkField() for comments on the arguments.
 func checkPlainField(
-	asts []*parser.AST,
 	field *parser.FieldNode,
-	model *parser.ModelNode,
 	rootModelName string,
 	dotDelimPath string,
 	op *parser.ActionNode,
@@ -89,7 +87,7 @@ func checkPlainField(
 
 	requiredPath := extendDotDelimPath(dotDelimPath, field.Name.Value)
 
-	if !satisfied(rootModelName, requiredPath, model.Name.Value, op) {
+	if !satisfied(rootModelName, requiredPath, op) {
 		errs.Append(
 			errorhandling.ErrorCreateActionMissingInput,
 			map[string]string{
@@ -114,7 +112,7 @@ func checkHasOneRelationField(
 	model *parser.ModelNode,
 	rootModelName string,
 	dotDelimPath string,
-	op *parser.ActionNode,
+	action *parser.ActionNode,
 	errs *errorhandling.ValidationErrors,
 ) {
 
@@ -124,13 +122,13 @@ func checkHasOneRelationField(
 
 	// The field itself can be set in a @set expression. An example of this is identity e.g.
 	//   @set(myModel.identityField = ctx.identity)
-	fieldIsSet := satisfiedBySetExpr(rootModelName, pathToReferencedModel, model.Name.Value, op)
+	fieldIsSet := satisfiedBySetExpr(rootModelName, pathToReferencedModel, action)
 
 	// The id field of the relation can also be set in either a @set or an input. For example:
 	//   @set(myModel.myField.id = someValue)
 	// or
 	//   create myAction() with (myField.id)
-	fieldIdIsSet := satisfied(rootModelName, pathToReferencedModelDotID, model.Name.Value, op)
+	fieldIdIsSet := satisfied(rootModelName, pathToReferencedModelDotID, action)
 
 	// If the field is being set to an existing record then we make sure no other fields on the model are being set.
 	if fieldIsSet || fieldIdIsSet {
@@ -147,7 +145,7 @@ func checkHasOneRelationField(
 					Message: message,
 					Hint:    fmt.Sprintf("set the field using: @set(%s.%s = ctx.identity)", rootModelName, pathToReferencedModel),
 				},
-				op.Name),
+				action.Name),
 		)
 		return
 	}
@@ -163,7 +161,7 @@ func checkHasOneRelationField(
 			continue
 		}
 		// This is where the recursion happens.
-		checkField(asts, nestedModelField, nestedModel, rootModelName, nestedPath, op, errs)
+		checkField(asts, nestedModelField, nestedModel, rootModelName, nestedPath, action, errs)
 	}
 }
 
@@ -171,11 +169,11 @@ func checkHasOneRelationField(
 // is set either by a with() clause on the operation, or by one of its @set expressions.
 //
 // see checkField() for comments on the arguments.
-func satisfied(rootModelName string, requiredField string, modelName string, op *parser.ActionNode) bool {
+func satisfied(rootModelName string, requiredField string, op *parser.ActionNode) bool {
 	if requiredFieldInWithInputs(requiredField, op) {
 		return true
 	}
-	if satisfiedBySetExpr(rootModelName, requiredField, modelName, op) {
+	if satisfiedBySetExpr(rootModelName, requiredField, op) {
 		return true
 	}
 	return false
@@ -219,7 +217,7 @@ func requiredFieldInWithInputs(requiredField string, action *parser.ActionNode) 
 // It copes with an arbitrary number of fragments.
 //
 // see checkField() for comments on the arguments.
-func satisfiedBySetExpr(rootModelName string, dotDelimPath string, modelName string, action *parser.ActionNode) bool {
+func satisfiedBySetExpr(rootModelName string, dotDelimPath string, action *parser.ActionNode) bool {
 	setExpressions := setExpressions(action)
 
 	for _, expr := range setExpressions {

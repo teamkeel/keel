@@ -19,7 +19,7 @@ func ValidActionInputLabelRule(asts []*parser.AST) (errs errorhandling.Validatio
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			for _, input := range action.Inputs {
-				errs.AppendError(validateInputLabel(asts, input, model, action))
+				errs.AppendError(validateInputLabel(asts, input))
 			}
 		}
 	}
@@ -29,9 +29,7 @@ func ValidActionInputLabelRule(asts []*parser.AST) (errs errorhandling.Validatio
 // validateInputLabel executes this rule on ONE particular action input.
 func validateInputLabel(
 	asts []*parser.AST,
-	input *parser.ActionInputNode,
-	model *parser.ModelNode,
-	action *parser.ActionNode) *errorhandling.ValidationError {
+	input *parser.ActionInputNode) *errorhandling.ValidationError {
 
 	if input.Label == nil {
 		return nil

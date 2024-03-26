@@ -224,7 +224,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 	// Foreign key constraints for new models (done after all tables have been created)
 	for _, model := range modelsAdded {
-		statements = append(statements, fkConstraintsForModel(model, schema)...)
+		statements = append(statements, fkConstraintsForModel(model)...)
 	}
 
 	// Drop tables if models removed from schema
@@ -250,16 +250,10 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	// Add audit log triggers all model tables excluding the audit table itself.
 	for _, model := range schema.Models {
 		if model.Name != strcase.ToCamel(auditing.TableName) {
-			stmt, err := createAuditTriggerStmts(triggers, schema, model)
-			if err != nil {
-				return nil, err
-			}
+			stmt := createAuditTriggerStmts(triggers, model)
 			statements = append(statements, stmt)
 
-			stmt, err = createUpdatedAtTriggerStmts(triggers, schema, model)
-			if err != nil {
-				return nil, err
-			}
+			stmt = createUpdatedAtTriggerStmts(triggers, model)
 			statements = append(statements, stmt)
 		}
 	}
@@ -295,7 +289,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 				// When the field added is a foreign key field, we add a corresponding foreign key constraint.
 				if field.ForeignKeyInfo != nil {
-					statements = append(statements, fkConstraint(field, model, schema))
+					statements = append(statements, fkConstraint(field, model))
 				}
 				continue
 			}
@@ -303,7 +297,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			// Column already exists - see if any changes need to be applied
 			hasChanged := false
 
-			alterSQL, err := alterColumnStmt(schema, model.Name, field, column)
+			alterSQL, err := alterColumnStmt(model.Name, field, column)
 			if err != nil {
 				return nil, err
 			}
@@ -472,17 +466,17 @@ func GetCurrentSchema(ctx context.Context, database db.Database) (*proto.Schema,
 
 // fkConstraintsForModel generates foreign key constraint statements for each of fields marked as
 // being foreign keys in the given model.
-func fkConstraintsForModel(model *proto.Model, schema *proto.Schema) (fkStatements []string) {
+func fkConstraintsForModel(model *proto.Model) (fkStatements []string) {
 	fkFields := proto.ForeignKeyFields(model)
 	for _, field := range fkFields {
-		stmt := fkConstraint(field, model, schema)
+		stmt := fkConstraint(field, model)
 		fkStatements = append(fkStatements, stmt)
 	}
 	return fkStatements
 }
 
 // fkConstraint generates a foreign key constraint statement for the given foreign key field.
-func fkConstraint(field *proto.Field, thisModel *proto.Model, schema *proto.Schema) (fkStatement string) {
+func fkConstraint(field *proto.Field, thisModel *proto.Model) (fkStatement string) {
 	fki := field.ForeignKeyInfo
 	onDelete := lo.Ternary(field.Optional, "SET NULL", "CASCADE")
 	stmt := addForeignKeyConstraintStmt(

@@ -135,7 +135,7 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		}
 	}
 
-	if err != nil || !token.Valid {
+	if !token.Valid {
 		return "", ErrInvalidToken
 	}
 

@@ -43,8 +43,8 @@ func (scm *Builder) insertAllBackLinkFields(
 			backlinkFields = append(backlinkFields, f)
 		}
 
-		for i, f := range backlinkFields {
-			if errorDetails := scm.insertBackLinkField(identityModel, asts, model, f, i); errorDetails != nil {
+		for _, f := range backlinkFields {
+			if errorDetails := scm.insertBackLinkField(identityModel, model, f); errorDetails != nil {
 				return errorDetails
 			}
 		}
@@ -54,10 +54,8 @@ func (scm *Builder) insertAllBackLinkFields(
 
 func (scm *Builder) insertBackLinkField(
 	identityModel *parser.ModelNode,
-	asts []*parser.AST,
 	parentModel *parser.ModelNode,
-	forwardRelnField *parser.FieldNode,
-	i int) *errorhandling.ErrorDetails {
+	forwardRelnField *parser.FieldNode) *errorhandling.ErrorDetails {
 
 	// The backlink field is named after the name of the model it is back
 	// linking to unless @relation is defined.  If @relation(myFieldName) exists,
