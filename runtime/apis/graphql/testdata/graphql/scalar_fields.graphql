@@ -11,6 +11,7 @@ type Person {
   createdAt: Timestamp!
   id: ID!
   someBoolean: Boolean!
+  someMarkdown: String!
   someNumber: Int!
   someText: String!
   updatedAt: Timestamp!
