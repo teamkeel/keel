@@ -42,6 +42,13 @@
         },
         {
           "modelName": "Foo",
+          "name": "f",
+          "type": {
+            "type": "TYPE_MARKDOWN"
+          }
+        },
+        {
+          "modelName": "Foo",
           "name": "g",
           "type": {
             "type": "TYPE_ENUM",

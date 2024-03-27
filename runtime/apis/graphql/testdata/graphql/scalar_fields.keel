@@ -3,6 +3,7 @@ model Person {
         someBoolean Boolean
         someNumber Number
         someText Text
+        someMarkdown Markdown
     }
 
     actions {

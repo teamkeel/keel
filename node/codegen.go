@@ -497,7 +497,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 			w.Writef("%s: ", casing.ToLowerCamel(f.Name))
 
 			switch f.Type.Type {
-			case proto.Type_TYPE_STRING:
+			case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
 				w.Write("''")
 			case proto.Type_TYPE_BOOL:
 				w.Write("false")
@@ -1241,7 +1241,7 @@ const listener = async (req, res) => {
 				res.statusCode = 400;
 				res.end();
 			}
-			
+
 			res.statusCode = 200;
 			res.setHeader('Content-Type', 'application/json');
 			res.write(JSON.stringify(rpcResponse));
@@ -1344,7 +1344,7 @@ export default defineConfig({
 		// npm modules. This is necessary because vitest isn't aware of the 'paths' configuration in typescript world at all
     alias: {
 			// the __dirname below is relative to the .build directory which contains the sdk and testing directories containing
-			// the codegenned sdk and testing packages. 
+			// the codegenned sdk and testing packages.
       '@teamkeel/testing': path.resolve(__dirname, './testing'),
 			'@teamkeel/sdk': path.resolve(__dirname, './sdk')
     }
@@ -1474,7 +1474,7 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_ID:
 		ret = "string"
-	case proto.Type_TYPE_STRING:
+	case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
 		ret = "string"
 	case proto.Type_TYPE_BOOL:
 		ret = "boolean"
@@ -1519,7 +1519,7 @@ func toWhereConditionType(f *proto.Field) string {
 	switch f.Type.Type {
 	case proto.Type_TYPE_ID:
 		return "runtime.IDWhereCondition"
-	case proto.Type_TYPE_STRING:
+	case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
 		return "runtime.StringWhereCondition"
 	case proto.Type_TYPE_BOOL:
 		return "runtime.BooleanWhereCondition"

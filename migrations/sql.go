@@ -26,6 +26,7 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 	proto.Type_TYPE_ENUM:      "TEXT",
 	proto.Type_TYPE_SECRET:    "TEXT",
 	proto.Type_TYPE_PASSWORD:  "TEXT",
+	proto.Type_TYPE_MARKDOWN:  "TEXT",
 }
 
 // Matches the type cast on a Postgrs value eg. on "'foo'::text" matches "::text"
@@ -259,7 +260,7 @@ func fieldDefinition(field *proto.Field) (string, error) {
 func getDefaultValue(field *proto.Field) (string, error) {
 	if field.DefaultValue.UseZeroValue {
 		switch field.Type.Type {
-		case proto.Type_TYPE_STRING:
+		case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
 			return db.QuoteLiteral(""), nil
 		case proto.Type_TYPE_INT:
 			return "0", nil

@@ -78,4 +78,9 @@ var operatorsForType = map[string][]string{
 		parser.OperatorNotEquals,
 		parser.OperatorAssignment,
 	},
+	parser.FieldTypeMarkdown: {
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
+		parser.OperatorAssignment,
+	},
 }

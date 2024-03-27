@@ -286,6 +286,7 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 	// Possibly this only applies to Date and Timestamp
 	comparable := [][]string{
 		{parser.FieldTypeDate, parser.FieldTypeDatetime},
+		{parser.FieldTypeMarkdown, parser.FieldTypeText},
 	}
 	for _, c := range comparable {
 		if lo.Contains(c, resolvedLHS.GetType()) && lo.Contains(c, resolvedRHS.GetType()) {

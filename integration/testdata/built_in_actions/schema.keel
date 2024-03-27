@@ -4,12 +4,13 @@ model Post {
         rating Number?
         category Category?
         subTitle Text @unique
+        content Markdown?
     }
 
     actions {
-        create createPost() with (title, subTitle)
+        create createPost() with (title, subTitle, content?)
         get getPost(id)
-        update updatePost(id) with (title)
+        update updatePost(id) with (title, content?)
         delete deletePost(id)
         delete deletePostBySubTitle(subTitle)
         list listPosts(id?, title?, category?, rating?)

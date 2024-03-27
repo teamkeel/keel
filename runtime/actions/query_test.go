@@ -104,11 +104,11 @@ var testCases = []testCase{
 		actionName: "createPerson",
 		input:      map[string]any{},
 		expectedTemplate: `
-			WITH 
-				new_1_person AS 
-					(INSERT INTO "person" 
+			WITH
+				new_1_person AS
+					(INSERT INTO "person"
 					DEFAULT VALUES
-					RETURNING *) 
+					RETURNING *)
 			SELECT * FROM new_1_person`,
 		expectedArgs: []any{},
 	},
@@ -120,12 +120,14 @@ var testCases = []testCase{
 					name Text
 					age Number
 					isActive Boolean
+					bio Markdown
 				}
 				actions {
 					create createPerson() {
 						@set(person.name = "Bob")
 						@set(person.age = 100)
 						@set(person.isActive = true)
+						@set(person.bio = "# Biography")
 					}
 				}
 				@permission(expression: true, actions: [create])
@@ -133,15 +135,15 @@ var testCases = []testCase{
 		actionName: "createPerson",
 		input:      map[string]any{},
 		expectedTemplate: `
-			WITH 
-				new_1_person AS 
-					(INSERT INTO "person" 
-						(age, is_active, name) 
-					VALUES 
-						(?, ?, ?) 
-					RETURNING *) 
+			WITH
+				new_1_person AS
+					(INSERT INTO "person"
+						(age, bio, is_active, name)
+					VALUES
+						(?, ?, ?, ?)
+					RETURNING *)
 			SELECT * FROM new_1_person`,
-		expectedArgs: []any{int64(100), true, "Bob"},
+		expectedArgs: []any{int64(100), "# Biography", true, "Bob"},
 	},
 	{
 		name: "create_op_set_attribute_context_identity_id",
@@ -160,13 +162,13 @@ var testCases = []testCase{
 		actionName: "createPerson",
 		input:      map[string]any{},
 		expectedTemplate: `
-			WITH 
-				new_1_person AS 
-					(INSERT INTO "person" 
-						(main_identity_id) 
-					VALUES 
-						(?) 
-					RETURNING *) 
+			WITH
+				new_1_person AS
+					(INSERT INTO "person"
+						(main_identity_id)
+					VALUES
+						(?)
+					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
 		expectedArgs: []any{"identityId", identity.Id},
@@ -188,13 +190,13 @@ var testCases = []testCase{
 		actionName: "createPerson",
 		input:      map[string]any{},
 		expectedTemplate: `
-			WITH 
-				new_1_person AS 
-					(INSERT INTO "person" 
-						(main_identity_id) 
-					VALUES 
-						(?) 
-					RETURNING *) 
+			WITH
+				new_1_person AS
+					(INSERT INTO "person"
+						(main_identity_id)
+					VALUES
+						(?)
+					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
 		expectedArgs: []any{"identityId", identity.Id},
@@ -217,13 +219,13 @@ var testCases = []testCase{
 		actionName: "createPerson",
 		input:      map[string]any{"name": "Dave"},
 		expectedTemplate: `
-			WITH 
-				new_1_person AS 
-					(INSERT INTO "person" 
-						(name, nick_name) 
-					VALUES 
-						(?, ?) 
-					RETURNING *) 
+			WITH
+				new_1_person AS
+					(INSERT INTO "person"
+						(name, nick_name)
+					VALUES
+						(?, ?)
+					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
 		expectedArgs: []any{"Dave", "Dave", identity.Id},
@@ -251,18 +253,18 @@ var testCases = []testCase{
 		actionName: "createRecord",
 		input:      map[string]any{"name": "Dave"},
 		expectedTemplate: `
-			WITH 
+			WITH
 				select_identity (column_0) AS (
-					SELECT "identity$user"."id" 
-					FROM "identity" 
-					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?), 
+					SELECT "identity$user"."id"
+					FROM "identity"
+					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
 				new_1_record AS (
-					INSERT INTO "record" (name, user_id) 
+					INSERT INTO "record" (name, user_id)
 					VALUES (
-						?, 
-						(SELECT column_0 FROM select_identity)) 
-					RETURNING *) 
+						?,
+						(SELECT column_0 FROM select_identity))
+					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_record`,
 		identity:     identity,
 		expectedArgs: []any{identity.Id, "Dave", identity.Id},
@@ -293,19 +295,19 @@ var testCases = []testCase{
 		actionName: "createRecord",
 		input:      map[string]any{"name": "Dave"},
 		expectedTemplate: `
-			WITH 
+			WITH
 				select_identity (column_0, column_1) AS (
-					SELECT "identity$user"."id", "identity$user"."is_active" 
-					FROM "identity" 
-					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?), 
+					SELECT "identity$user"."id", "identity$user"."is_active"
+					FROM "identity"
+					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
 				new_1_record AS (
 					INSERT INTO "record" (is_active, name, user_id)
 					VALUES (
-						(SELECT column_1 FROM select_identity), 
-						?, 
+						(SELECT column_1 FROM select_identity),
+						?,
 						(SELECT column_0 FROM select_identity))
-					RETURNING *) 
+					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_record`,
 		identity:     identity,
 		expectedArgs: []any{identity.Id, "Dave", identity.Id},
@@ -332,9 +334,9 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			UPDATE "person" 
-			SET main_identity_id = ? 
-			WHERE "person"."id" IS NOT DISTINCT FROM ? 
+			UPDATE "person"
+			SET main_identity_id = ?
+			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
 		expectedArgs: []any{identity.Id, "xyz", identity.Id},
@@ -360,9 +362,9 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			UPDATE "person" 
-			SET main_identity_id = ? 
-			WHERE "person"."id" IS NOT DISTINCT FROM ? 
+			UPDATE "person"
+			SET main_identity_id = ?
+			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
 		expectedArgs: []any{identity.Id, "xyz", identity.Id},
@@ -392,11 +394,11 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			UPDATE "person" 
-			SET 
-				name = ?, 
-				nick_name = ? 
-			WHERE "person"."id" IS NOT DISTINCT FROM ? 
+			UPDATE "person"
+			SET
+				name = ?,
+				nick_name = ?
+			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*`,
 		expectedArgs: []any{"Dave", "Dave", "xyz"},
 	},
@@ -430,18 +432,18 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			WITH 
+			WITH
 				select_identity (column_0, column_1) AS (
-					SELECT "identity$user"."id", "identity$user"."is_active" 
-					FROM "identity" 
-					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?) 
-			UPDATE "record" 
-			SET 
-				is_active = (SELECT column_1 FROM select_identity), 
-				user_id = (SELECT column_0 FROM select_identity) 
-			WHERE 
-				"record"."id" IS NOT DISTINCT FROM ? 
+					SELECT "identity$user"."id", "identity$user"."is_active"
+					FROM "identity"
+					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?)
+			UPDATE "record"
+			SET
+				is_active = (SELECT column_1 FROM select_identity),
+				user_id = (SELECT column_0 FROM select_identity)
+			WHERE
+				"record"."id" IS NOT DISTINCT FROM ?
 			RETURNING "record".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
 		expectedArgs: []any{identity.Id, "xyz", identity.Id},
@@ -463,11 +465,11 @@ var testCases = []testCase{
 		actionName: "createPerson",
 		input:      map[string]any{},
 		expectedTemplate: `
-			WITH 
-				new_1_person AS 
-					(INSERT INTO "person" 
+			WITH
+				new_1_person AS
+					(INSERT INTO "person"
 					DEFAULT VALUES
-					RETURNING *) 
+					RETURNING *)
 			SELECT * FROM new_1_person`,
 		expectedArgs: []any{},
 	},
@@ -485,20 +487,20 @@ var testCases = []testCase{
 				@permission(expression: true, actions: [create])
 			}
 			model Company {
-				
+
 			}`,
 		actionName: "createPerson",
 		input: map[string]any{
 			"name": "Bob",
 		},
 		expectedTemplate: `
-			WITH 
-				new_1_person AS 
-					(INSERT INTO "person" 
-						(name) 
-					VALUES 
-						(?) 
-					RETURNING *) 
+			WITH
+				new_1_person AS
+					(INSERT INTO "person"
+						(name)
+					VALUES
+						(?)
+					RETURNING *)
 			SELECT * FROM new_1_person`,
 		expectedArgs: []any{"Bob"},
 	},
@@ -510,12 +512,14 @@ var testCases = []testCase{
 					name Text
 					age Number
 					isActive Boolean
+					bio Markdown
 				}
 				actions {
 					update updatePerson(id) {
 						@set(person.name = "Bob")
 						@set(person.age = 100)
 						@set(person.isActive = true)
+						@set(person.bio = "## Biography")
 					}
 				}
 				@permission(expression: true, actions: [create])
@@ -527,15 +531,15 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			UPDATE 
-				"person" 
+			UPDATE
+				"person"
 			SET
-			    age = ?, is_active = ?, name = ?
+			    age = ?, bio = ?, is_active = ?, name = ?
 			WHERE
 				"person"."id" IS NOT DISTINCT FROM ?
-			RETURNING 
+			RETURNING
 				"person".*`,
-		expectedArgs: []any{int64(100), true, "Bob", "xyz"},
+		expectedArgs: []any{int64(100), "## Biography", true, "Bob", "xyz"},
 	},
 	{
 		name: "update_op_optional_inputs",
@@ -561,13 +565,13 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			UPDATE 
-				"person" 
+			UPDATE
+				"person"
 			SET
 			    name = ?
 			WHERE
 				"person"."id" IS NOT DISTINCT FROM ?
-			RETURNING 
+			RETURNING
 				"person".*`,
 		expectedArgs: []any{"Bob", "xyz"},
 	},
@@ -576,18 +580,18 @@ var testCases = []testCase{
 		keelSchema: `
 			model Thing {
 				actions {
-					list listThings() 
+					list listThings()
 				}
 				@permission(expression: true, actions: [list])
 			}`,
 		actionName: "listThings",
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount
-			FROM 
-				"thing" 
-			ORDER BY 
+			FROM
+				"thing"
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{50},
 	},
@@ -599,7 +603,7 @@ var testCases = []testCase{
 					name Text
 				}
 				actions {
-					list listThings(name) 
+					list listThings(name)
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -609,14 +613,14 @@ var testCases = []testCase{
 				"name": map[string]any{
 					"contains": "bob"}}},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" LIKE ?) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
 				"thing"."name" LIKE ?
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"%%bob%%", "%%bob%%", 50},
 	},
@@ -628,7 +632,7 @@ var testCases = []testCase{
 					name Text
 				}
 				actions {
-					list listThings(name) 
+					list listThings(name)
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -638,14 +642,14 @@ var testCases = []testCase{
 				"name": map[string]any{
 					"startsWith": "bob"}}},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" LIKE ?) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
 				"thing"."name" LIKE ?
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"bob%%", "bob%%", 50},
 	},
@@ -657,7 +661,7 @@ var testCases = []testCase{
 					name Text
 				}
 				actions {
-					list listThings(name) 
+					list listThings(name)
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -667,14 +671,14 @@ var testCases = []testCase{
 				"name": map[string]any{
 					"endsWith": "bob"}}},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" LIKE ?) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
 				"thing"."name" LIKE ?
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"%%bob", "%%bob", 50},
 	},
@@ -686,7 +690,7 @@ var testCases = []testCase{
                     name Text
                 }
                 actions {
-                    list listThings(name) 
+                    list listThings(name)
                 }
                 @permission(expression: true, actions: [list])
             }`,
@@ -696,14 +700,14 @@ var testCases = []testCase{
 				"name": map[string]any{
 					"oneOf": []any{"bob", "dave", "adam", "pete"}}}},
 		expectedTemplate: `
-            SELECT 
+            SELECT
                 DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 								(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" IN (?, ?, ?, ?)) AS totalCount
-            FROM 
-                "thing" 
+            FROM
+                "thing"
             WHERE
                 "thing"."name" IN (?, ?, ?, ?)
-            ORDER BY 
+            ORDER BY
                 "thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"bob", "dave", "adam", "pete", "bob", "dave", "adam", "pete", 50},
 	},
@@ -715,7 +719,7 @@ var testCases = []testCase{
                     category Category
                 }
                 actions {
-                    list listThings(category) 
+                    list listThings(category)
                 }
                 @permission(expression: true, actions: [list])
             }
@@ -730,14 +734,14 @@ var testCases = []testCase{
 				"category": map[string]any{
 					"oneOf": []any{"Technical", "Food"}}}},
 		expectedTemplate: `
-            SELECT 
+            SELECT
                 DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 								(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."category" IN (?, ?)) AS totalCount
-            FROM 
-                "thing" 
+            FROM
+                "thing"
             WHERE
                 "thing"."category" IN (?, ?)
-            ORDER BY 
+            ORDER BY
                 "thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"Technical", "Food", "Technical", "Food", 50},
 	},
@@ -746,7 +750,7 @@ var testCases = []testCase{
 		keelSchema: `
 			model Thing {
 				actions {
-					list listThings(createdAt) 
+					list listThings(createdAt)
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -756,14 +760,14 @@ var testCases = []testCase{
 				"createdAt": map[string]any{
 					"after": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" > ?) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
-				"thing"."created_at" > ? 
-			ORDER BY 
+				"thing"."created_at" > ?
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), 50},
 	},
@@ -772,7 +776,7 @@ var testCases = []testCase{
 		keelSchema: `
 			model Thing {
 				actions {
-					list listThings(createdAt) 
+					list listThings(createdAt)
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -782,14 +786,14 @@ var testCases = []testCase{
 				"createdAt": map[string]any{
 					"onOrAfter": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" >= ?) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
-				"thing"."created_at" >= ? 
-			ORDER BY 
+				"thing"."created_at" >= ?
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), 50},
 	},
@@ -798,7 +802,7 @@ var testCases = []testCase{
 		keelSchema: `
 			model Thing {
 				actions {
-					list listThings(createdAt) 
+					list listThings(createdAt)
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -808,14 +812,14 @@ var testCases = []testCase{
 				"createdAt": map[string]any{
 					"before": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" < ?) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
-				"thing"."created_at" < ? 
-			ORDER BY 
+				"thing"."created_at" < ?
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), 50},
 	},
@@ -824,7 +828,7 @@ var testCases = []testCase{
 		keelSchema: `
 			model Thing {
 				actions {
-					list listThings(createdAt) 
+					list listThings(createdAt)
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -834,14 +838,14 @@ var testCases = []testCase{
 				"createdAt": map[string]any{
 					"onOrBefore": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" <= ?) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
-				"thing"."created_at" <= ? 
-			ORDER BY 
+				"thing"."created_at" <= ?
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), 50},
 	},
@@ -855,21 +859,21 @@ var testCases = []testCase{
 				actions {
 					list listThings() {
 						@where(thing.title in ["title1", "title2"])
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
 		actionName: "listThings",
 		input:      map[string]any{},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."title" IN (?, ?)) AS totalCount
-			FROM 
-				"thing" 
-			WHERE 
+			FROM
+				"thing"
+			WHERE
 				"thing"."title" IN (?, ?)
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"title1", "title2", "title1", "title2", 50},
 	},
@@ -890,28 +894,28 @@ var testCases = []testCase{
 				actions {
 					list listRepeatedThings() {
 						@where(thing.title in thing.repeatedThings.name)
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
 		actionName: "listRepeatedThings",
 		input:      map[string]any{},
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, 
-				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT "thing"."id") 
-					FROM 
-						"thing" 
-					LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
-						"thing$repeated_things"."thing_id" = "thing"."id" 
-					WHERE 
-						"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name") AS totalCount FROM "thing" 
-			LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
-				"thing$repeated_things"."thing_id" = "thing"."id" 
-			WHERE 
-				"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name" 
-			ORDER BY 
+			SELECT
+				DISTINCT ON("thing"."id") "thing".*,
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id")
+					FROM
+						"thing"
+					LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON
+						"thing$repeated_things"."thing_id" = "thing"."id"
+					WHERE
+						"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name") AS totalCount FROM "thing"
+			LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON
+				"thing$repeated_things"."thing_id" = "thing"."id"
+			WHERE
+				"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name"
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{50},
 	},
@@ -925,21 +929,21 @@ var testCases = []testCase{
 				actions {
 					list listThings() {
 						@where(thing.title not in ["title1", "title2"])
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
 		actionName: "listThings",
 		input:      map[string]any{},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."title" NOT IN (?, ?)) AS totalCount
-			FROM 
-				"thing" 
-			WHERE 
+			FROM
+				"thing"
+			WHERE
 				"thing"."title" NOT IN (?, ?)
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"title1", "title2", "title1", "title2", 50},
 	},
@@ -953,21 +957,21 @@ var testCases = []testCase{
 				actions {
 					list listThings() {
 						@where(thing.age in [10, 20])
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
 		actionName: "listThings",
 		input:      map[string]any{},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."age" IN (?, ?)) AS totalCount
-			FROM 
-				"thing" 
-			WHERE 
+			FROM
+				"thing"
+			WHERE
 				"thing"."age" IN (?, ?)
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{int64(10), int64(20), int64(10), int64(20), 50},
 	},
@@ -981,21 +985,21 @@ var testCases = []testCase{
 				actions {
 					list listThings() {
 						@where(thing.age not in [10, 20])
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
 		actionName: "listThings",
 		input:      map[string]any{},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."age" NOT IN (?, ?)) AS totalCount
-			FROM 
-				"thing" 
-			WHERE 
+			FROM
+				"thing"
+			WHERE
 				"thing"."age" NOT IN (?, ?)
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{int64(10), int64(20), int64(10), int64(20), 50},
 	},
@@ -1009,7 +1013,7 @@ var testCases = []testCase{
 					followers Follow[]
 					following Follow[]
 				}
-			
+
 				actions {
 					list accountsFollowed() {
 						@where(account in ctx.identity.account.following.followee)
@@ -1029,20 +1033,20 @@ var testCases = []testCase{
 		input:      map[string]any{},
 		identity:   identity,
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("account"."username", "account"."id") "account".*, 
-				CASE WHEN LEAD("account"."id") OVER (ORDER BY "account"."username" ASC, "account"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."id" IN (SELECT "identity$account$following"."followee_id" FROM "identity" LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$account$following"."followee_id" IS DISTINCT FROM NULL )) AS totalCount 
-			FROM 
-				"account" 
-			WHERE "account"."id" IN 
-				(SELECT "identity$account$following"."followee_id" 
-				FROM "identity" 
-				LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" 
-				LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" 
-				WHERE 
-					"identity"."id" IS NOT DISTINCT FROM ? AND 
-					"identity$account$following"."followee_id" IS DISTINCT FROM NULL ) 
+			SELECT
+				DISTINCT ON("account"."username", "account"."id") "account".*,
+				CASE WHEN LEAD("account"."id") OVER (ORDER BY "account"."username" ASC, "account"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."id" IN (SELECT "identity$account$following"."followee_id" FROM "identity" LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$account$following"."followee_id" IS DISTINCT FROM NULL )) AS totalCount
+			FROM
+				"account"
+			WHERE "account"."id" IN
+				(SELECT "identity$account$following"."followee_id"
+				FROM "identity"
+				LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id"
+				LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id"
+				WHERE
+					"identity"."id" IS NOT DISTINCT FROM ? AND
+					"identity$account$following"."followee_id" IS DISTINCT FROM NULL )
 			ORDER BY "account"."username" ASC, "account"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"identityId", "identityId", 50},
 	},
@@ -1056,7 +1060,7 @@ var testCases = []testCase{
 					followers Follow[]
 					following Follow[]
 				}
-			
+
 				actions {
 					list accountsFollowed() {
 						@where(account.id in ctx.identity.account.following.account.id)
@@ -1076,24 +1080,24 @@ var testCases = []testCase{
 		input:      map[string]any{},
 		identity:   identity,
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("account"."username", "account"."id") "account".*, 
-				CASE WHEN LEAD("account"."id") OVER (ORDER BY "account"."username" ASC, "account"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."id" IN (SELECT "identity$account$following$account"."id" FROM "identity" LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" LEFT JOIN "account" AS "identity$account$following$account" ON "identity$account$following$account"."id" = "identity$account$following"."account_id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$account$following$account"."id" IS DISTINCT FROM NULL )) AS totalCount 
-			FROM 
-				"account" 
-			WHERE 
-				"account"."id" IN 
-					(SELECT "identity$account$following$account"."id" 
-					FROM "identity" 
-					LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" 
-					LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" 
-					LEFT JOIN "account" AS "identity$account$following$account" ON "identity$account$following$account"."id" = "identity$account$following"."account_id" 
-					WHERE 
-						"identity"."id" IS NOT DISTINCT FROM ? AND 
-						"identity$account$following$account"."id" IS DISTINCT FROM NULL ) 
-			ORDER BY 
-				"account"."username" ASC, 
+			SELECT
+				DISTINCT ON("account"."username", "account"."id") "account".*,
+				CASE WHEN LEAD("account"."id") OVER (ORDER BY "account"."username" ASC, "account"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."id" IN (SELECT "identity$account$following$account"."id" FROM "identity" LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" LEFT JOIN "account" AS "identity$account$following$account" ON "identity$account$following$account"."id" = "identity$account$following"."account_id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$account$following$account"."id" IS DISTINCT FROM NULL )) AS totalCount
+			FROM
+				"account"
+			WHERE
+				"account"."id" IN
+					(SELECT "identity$account$following$account"."id"
+					FROM "identity"
+					LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id"
+					LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id"
+					LEFT JOIN "account" AS "identity$account$following$account" ON "identity$account$following$account"."id" = "identity$account$following"."account_id"
+					WHERE
+						"identity"."id" IS NOT DISTINCT FROM ? AND
+						"identity$account$following$account"."id" IS DISTINCT FROM NULL )
+			ORDER BY
+				"account"."username" ASC,
 				"account"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"identityId", "identityId", 50},
 	},
@@ -1107,7 +1111,7 @@ var testCases = []testCase{
 					followers Follow[]
 					following Follow[]
 				}
-			
+
 				actions {
 					list accountsNotFollowed() {
 						@where(account.identity != ctx.identity)
@@ -1128,25 +1132,25 @@ var testCases = []testCase{
 		input:      map[string]any{},
 		identity:   identity,
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("account"."username", "account"."id") "account".*, 
-				CASE WHEN LEAD("account"."id") OVER (ORDER BY "account"."username" ASC, "account"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."identity_id" IS DISTINCT FROM ? AND "account"."id" NOT IN (SELECT "identity$primary_account$following$followee"."id" FROM "identity" LEFT JOIN "account" AS "identity$primary_account" ON "identity$primary_account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$primary_account$following" ON "identity$primary_account$following"."follower_id" = "identity$primary_account"."id" LEFT JOIN "account" AS "identity$primary_account$following$followee" ON "identity$primary_account$following$followee"."id" = "identity$primary_account$following"."followee_id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$primary_account$following$followee"."id" IS DISTINCT FROM NULL )) AS totalCount 
-			FROM 
-				"account" 
-			WHERE 
-				"account"."identity_id" IS DISTINCT FROM ? AND 
-				"account"."id" NOT IN 
-					(SELECT "identity$primary_account$following$followee"."id" 
-					FROM "identity" 
-					LEFT JOIN "account" AS "identity$primary_account" ON "identity$primary_account"."identity_id" = "identity"."id" 
-					LEFT JOIN "follow" AS "identity$primary_account$following" ON "identity$primary_account$following"."follower_id" = "identity$primary_account"."id" 
-					LEFT JOIN "account" AS "identity$primary_account$following$followee" ON "identity$primary_account$following$followee"."id" = "identity$primary_account$following"."followee_id" 
-					WHERE 
-						"identity"."id" IS NOT DISTINCT FROM ? AND 
-						"identity$primary_account$following$followee"."id" IS DISTINCT FROM NULL ) 
+			SELECT
+				DISTINCT ON("account"."username", "account"."id") "account".*,
+				CASE WHEN LEAD("account"."id") OVER (ORDER BY "account"."username" ASC, "account"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."identity_id" IS DISTINCT FROM ? AND "account"."id" NOT IN (SELECT "identity$primary_account$following$followee"."id" FROM "identity" LEFT JOIN "account" AS "identity$primary_account" ON "identity$primary_account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$primary_account$following" ON "identity$primary_account$following"."follower_id" = "identity$primary_account"."id" LEFT JOIN "account" AS "identity$primary_account$following$followee" ON "identity$primary_account$following$followee"."id" = "identity$primary_account$following"."followee_id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$primary_account$following$followee"."id" IS DISTINCT FROM NULL )) AS totalCount
+			FROM
+				"account"
+			WHERE
+				"account"."identity_id" IS DISTINCT FROM ? AND
+				"account"."id" NOT IN
+					(SELECT "identity$primary_account$following$followee"."id"
+					FROM "identity"
+					LEFT JOIN "account" AS "identity$primary_account" ON "identity$primary_account"."identity_id" = "identity"."id"
+					LEFT JOIN "follow" AS "identity$primary_account$following" ON "identity$primary_account$following"."follower_id" = "identity$primary_account"."id"
+					LEFT JOIN "account" AS "identity$primary_account$following$followee" ON "identity$primary_account$following$followee"."id" = "identity$primary_account$following"."followee_id"
+					WHERE
+						"identity"."id" IS NOT DISTINCT FROM ? AND
+						"identity$primary_account$following$followee"."id" IS DISTINCT FROM NULL )
 			ORDER BY
-				"account"."username" ASC, 
+				"account"."username" ASC,
 				"account"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"identityId", "identityId", "identityId", "identityId", 50},
 	},
@@ -1173,14 +1177,14 @@ var testCases = []testCase{
 		actionName: "record",
 		input:      map[string]any{"id": "xyz"},
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("record"."id") "record".* FROM "record" 
-			WHERE 
-				"record"."id" IS NOT DISTINCT FROM ? AND 
+			SELECT
+				DISTINCT ON("record"."id") "record".* FROM "record"
+			WHERE
+				"record"."id" IS NOT DISTINCT FROM ? AND
 				"record"."owner_id" IS NOT DISTINCT FROM (
-					SELECT "identity$primary_user"."id" 
-					FROM "identity" 
-					LEFT JOIN "company_user" AS "identity$primary_user" ON "identity$primary_user"."identity_id" = "identity"."id" 
+					SELECT "identity$primary_user"."id"
+					FROM "identity"
+					LEFT JOIN "company_user" AS "identity$primary_user" ON "identity$primary_user"."identity_id" = "identity"."id"
 					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$primary_user"."id" IS DISTINCT FROM NULL)`,
 		identity:     identity,
 		expectedArgs: []any{"xyz", "identityId"},
@@ -1208,13 +1212,13 @@ var testCases = []testCase{
 		actionName: "record",
 		input:      map[string]any{"id": "xyz"},
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("record"."id") "record".* FROM "record" 
-			WHERE 
-				"record"."id" IS NOT DISTINCT FROM ? AND 
-					(SELECT "identity$primary_user"."is_active" 
-					FROM "identity" 
-					LEFT JOIN "company_user" AS "identity$primary_user" ON "identity$primary_user"."identity_id" = "identity"."id" 
+			SELECT
+				DISTINCT ON("record"."id") "record".* FROM "record"
+			WHERE
+				"record"."id" IS NOT DISTINCT FROM ? AND
+					(SELECT "identity$primary_user"."is_active"
+					FROM "identity"
+					LEFT JOIN "company_user" AS "identity$primary_user" ON "identity$primary_user"."identity_id" = "identity"."id"
 					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$primary_user"."is_active" IS DISTINCT FROM NULL) IS NOT DISTINCT FROM ?`,
 		identity:     identity,
 		expectedArgs: []any{"xyz", "identityId", true},
@@ -1232,9 +1236,9 @@ var testCases = []testCase{
 				fields {
 					name Text
 					users EntityUser[]
-					account BankAccount 
+					account BankAccount
 				}
-			}	
+			}
 			model EntityUser {
 				fields {
 					name Text
@@ -1251,20 +1255,20 @@ var testCases = []testCase{
 		input:      map[string]any{"where": map[string]any{"entity": map[string]any{"account": map[string]any{"id": map[string]any{"equals": "123"}}}}},
 		identity:   identity,
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("entity_user"."name", "entity_user"."id") "entity_user".*, 
-				CASE WHEN LEAD("entity_user"."id") OVER (ORDER BY "entity_user"."name" ASC, "entity_user"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT ("entity_user"."name", "entity_user"."id")) FROM "entity_user" LEFT JOIN "entity" AS "entity_user$entity" ON "entity_user$entity"."id" = "entity_user"."entity_id" LEFT JOIN "bank_account" AS "entity_user$entity$account" ON "entity_user$entity$account"."entity_id" = "entity_user$entity"."id" WHERE "entity_user$entity$account"."id" IS NOT DISTINCT FROM ?) AS totalCount 
-			FROM 
-				"entity_user" 
-			LEFT JOIN 
-				"entity" AS "entity_user$entity" ON "entity_user$entity"."id" = "entity_user"."entity_id" 
-			LEFT JOIN 
-				"bank_account" AS "entity_user$entity$account" ON "entity_user$entity$account"."entity_id" = "entity_user$entity"."id" 
-			WHERE 
-				"entity_user$entity$account"."id" IS NOT DISTINCT FROM ? 
-			ORDER BY 
-				"entity_user"."name" ASC, 
+			SELECT
+				DISTINCT ON("entity_user"."name", "entity_user"."id") "entity_user".*,
+				CASE WHEN LEAD("entity_user"."id") OVER (ORDER BY "entity_user"."name" ASC, "entity_user"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT ("entity_user"."name", "entity_user"."id")) FROM "entity_user" LEFT JOIN "entity" AS "entity_user$entity" ON "entity_user$entity"."id" = "entity_user"."entity_id" LEFT JOIN "bank_account" AS "entity_user$entity$account" ON "entity_user$entity$account"."entity_id" = "entity_user$entity"."id" WHERE "entity_user$entity$account"."id" IS NOT DISTINCT FROM ?) AS totalCount
+			FROM
+				"entity_user"
+			LEFT JOIN
+				"entity" AS "entity_user$entity" ON "entity_user$entity"."id" = "entity_user"."entity_id"
+			LEFT JOIN
+				"bank_account" AS "entity_user$entity$account" ON "entity_user$entity$account"."entity_id" = "entity_user$entity"."id"
+			WHERE
+				"entity_user$entity$account"."id" IS NOT DISTINCT FROM ?
+			ORDER BY
+				"entity_user"."name" ASC,
 				"entity_user"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"123", "123", 50},
 	},
@@ -1275,13 +1279,13 @@ var testCases = []testCase{
 				fields {
 					name Text
 				}
-			}	
+			}
 			model Thing {
 				fields {
 					parent Parent
 				}
 				actions {
-					list listThings(parent.name) 
+					list listThings(parent.name)
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -1292,17 +1296,17 @@ var testCases = []testCase{
 					"name": map[string]any{
 						"equals": "bob"}}}},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" LEFT JOIN "parent" AS "thing$parent" ON "thing$parent"."id" = "thing"."parent_id" WHERE "thing$parent"."name" IS NOT DISTINCT FROM ?) AS totalCount
-			FROM 
-				"thing" 
-			LEFT JOIN 
-				"parent" AS "thing$parent" 
-					ON "thing$parent"."id" = "thing"."parent_id" 
-			WHERE 
+			FROM
+				"thing"
+			LEFT JOIN
+				"parent" AS "thing$parent"
+					ON "thing$parent"."id" = "thing"."parent_id"
+			WHERE
 				"thing$parent"."name" IS NOT DISTINCT FROM ?
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"bob", "bob", 50},
 	},
@@ -1314,7 +1318,7 @@ var testCases = []testCase{
 					name Text
 					isActive Boolean
 				}
-			}	
+			}
 			model Thing {
 				fields {
 					parent Parent
@@ -1322,7 +1326,7 @@ var testCases = []testCase{
 				actions {
 					list listThings() {
 						@where(thing.parent.isActive == false)
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -1330,17 +1334,17 @@ var testCases = []testCase{
 		input: map[string]any{
 			"where": map[string]any{}},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" LEFT JOIN "parent" AS "thing$parent" ON "thing$parent"."id" = "thing"."parent_id" WHERE "thing$parent"."is_active" IS NOT DISTINCT FROM ?) AS totalCount
-			FROM 
-				"thing" 
-			LEFT JOIN 
-				"parent" AS "thing$parent" 
-					ON "thing$parent"."id" = "thing"."parent_id" 
-			WHERE 
+			FROM
+				"thing"
+			LEFT JOIN
+				"parent" AS "thing$parent"
+					ON "thing$parent"."id" = "thing"."parent_id"
+			WHERE
 				"thing$parent"."is_active" IS NOT DISTINCT FROM ?
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{false, false, 50},
 	},
@@ -1355,7 +1359,7 @@ var testCases = []testCase{
 				actions {
 					list listThings() {
 						@orderBy(name: asc, views: desc)
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -1363,16 +1367,16 @@ var testCases = []testCase{
 		input: map[string]any{
 			"where": map[string]any{}},
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
-				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
-			FROM 
-				"thing" 
-			ORDER BY 
-				"thing"."name" ASC, 
-				"thing"."views" DESC, 
-				"thing"."id" ASC 
+			SELECT
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*,
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount
+			FROM
+				"thing"
+			ORDER BY
+				"thing"."name" ASC,
+				"thing"."views" DESC,
+				"thing"."id" ASC
 			LIMIT ?`,
 		expectedArgs: []any{50},
 	},
@@ -1387,7 +1391,7 @@ var testCases = []testCase{
 				actions {
 					list listThings() {
 						@orderBy(name: asc, views: desc)
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -1396,23 +1400,23 @@ var testCases = []testCase{
 			"after": "xyz",
 			"where": map[string]any{}},
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
-				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
-			FROM 
-				"thing" 
-			WHERE 
-				( 
-					"thing"."name" > (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) 
-					OR 
-					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" < (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) ) 
-					OR 
-					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" IS NOT DISTINCT FROM (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."id" > (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) ) 
-				) 
-			ORDER BY 
-				"thing"."name" ASC, 
-				"thing"."views" DESC, 
+			SELECT
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*,
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount
+			FROM
+				"thing"
+			WHERE
+				(
+					"thing"."name" > (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? )
+					OR
+					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" < (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) )
+					OR
+					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" IS NOT DISTINCT FROM (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."id" > (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) )
+				)
+			ORDER BY
+				"thing"."name" ASC,
+				"thing"."views" DESC,
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"xyz", "xyz", "xyz", "xyz", "xyz", "xyz", 50},
 	},
@@ -1427,7 +1431,7 @@ var testCases = []testCase{
 				actions {
 					list listThings() {
 						@sortable(name, views)
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -1439,16 +1443,16 @@ var testCases = []testCase{
 				map[string]any{"views": "desc"}},
 		},
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
-				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
-			FROM 
-				"thing" 
-			ORDER BY 
-				"thing"."name" ASC, 
-				"thing"."views" DESC, 
-				"thing"."id" ASC 
+			SELECT
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*,
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount
+			FROM
+				"thing"
+			ORDER BY
+				"thing"."name" ASC,
+				"thing"."views" DESC,
+				"thing"."id" ASC
 			LIMIT ?`,
 		expectedArgs: []any{50},
 	},
@@ -1463,7 +1467,7 @@ var testCases = []testCase{
 				actions {
 					list listThings() {
 						@sortable(name, views)
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -1476,23 +1480,23 @@ var testCases = []testCase{
 				map[string]any{"views": "desc"}},
 		},
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
-				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
-			FROM 
-				"thing" 
-			WHERE 
-				( 
-					"thing"."name" > (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) 
-					OR 
-					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" < (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) ) 
-					OR 
-					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" IS NOT DISTINCT FROM (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."id" > (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) ) 
-				) 
-			ORDER BY 
-				"thing"."name" ASC, 
-				"thing"."views" DESC, 
+			SELECT
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*,
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount
+			FROM
+				"thing"
+			WHERE
+				(
+					"thing"."name" > (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? )
+					OR
+					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" < (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) )
+					OR
+					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" IS NOT DISTINCT FROM (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."id" > (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) )
+				)
+			ORDER BY
+				"thing"."name" ASC,
+				"thing"."views" DESC,
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"xyz", "xyz", "xyz", "xyz", "xyz", "xyz", 50},
 	},
@@ -1508,7 +1512,7 @@ var testCases = []testCase{
 					list listThings() {
 						@orderBy(name: desc)
 						@sortable(name, views)
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -1520,16 +1524,16 @@ var testCases = []testCase{
 				map[string]any{"views": "desc"}},
 		},
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
-				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
-			FROM 
-				"thing" 
-			ORDER BY 
-				"thing"."name" ASC, 
-				"thing"."views" DESC, 
-				"thing"."id" ASC 
+			SELECT
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*,
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount
+			FROM
+				"thing"
+			ORDER BY
+				"thing"."name" ASC,
+				"thing"."views" DESC,
+				"thing"."id" ASC
 			LIMIT ?`,
 		expectedArgs: []any{50},
 	},
@@ -1545,7 +1549,7 @@ var testCases = []testCase{
 					list listThings() {
 						@sortable(name, views)
 						@orderBy(name: asc)
-					} 
+					}
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -1556,16 +1560,16 @@ var testCases = []testCase{
 				map[string]any{"views": "desc"}},
 		},
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
-				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
-			FROM 
-				"thing" 
-			ORDER BY 
-				"thing"."name" ASC, 
-				"thing"."views" DESC, 
-				"thing"."id" ASC 
+			SELECT
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*,
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount
+			FROM
+				"thing"
+			ORDER BY
+				"thing"."name" ASC,
+				"thing"."views" DESC,
+				"thing"."id" ASC
 			LIMIT ?`,
 		expectedArgs: []any{50},
 	},
@@ -1576,7 +1580,7 @@ var testCases = []testCase{
 				fields {
 					name Text
 				}
-			}	
+			}
 			model Thing {
 				fields {
 					name Text
@@ -1595,13 +1599,13 @@ var testCases = []testCase{
 			"parent": map[string]any{"id": "123"},
 		},
 		expectedTemplate: `
-			WITH 
-				new_1_thing AS 
-					(INSERT INTO "thing" 
-						(age, name, parent_id) 
-					VALUES 
-						(?, ?, ?) 
-					RETURNING *) 
+			WITH
+				new_1_thing AS
+					(INSERT INTO "thing"
+						(age, name, parent_id)
+					VALUES
+						(?, ?, ?)
+					RETURNING *)
 			SELECT * FROM new_1_thing`,
 		expectedArgs: []any{21, "bob", "123"},
 	},
@@ -1613,11 +1617,11 @@ var testCases = []testCase{
 				name Text
 				orders Order[]
 			}
-		
+
 			actions {
 				create createCustomer() with (name, orders.deliveryAddress?)
 			}
-		
+
 			@permission(
 				actions: [get, list, update, delete, create],
 				expression: true
@@ -1636,7 +1640,7 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			WITH new_1_customer AS (
-				INSERT INTO "customer" (name) VALUES (?) RETURNING *) 
+				INSERT INTO "customer" (name) VALUES (?) RETURNING *)
 			SELECT * FROM new_1_customer`,
 		expectedArgs: []any{"fred"},
 	},
@@ -1647,7 +1651,7 @@ var testCases = []testCase{
 				fields {
 					name Text
 				}
-			}	
+			}
 			model Thing {
 				fields {
 					name Text
@@ -1674,15 +1678,15 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			UPDATE 
-				"thing" 
-			SET 
-				age = ?, 
-				name = ?, 
+			UPDATE
+				"thing"
+			SET
+				age = ?,
+				name = ?,
 				parent_id = ?
-			WHERE 
-				"thing"."id" IS NOT DISTINCT FROM ? 
-			RETURNING 
+			WHERE
+				"thing"."id" IS NOT DISTINCT FROM ?
+			RETURNING
 				"thing".*`,
 		expectedArgs: []any{21, "bob", "123", "789"},
 	},
@@ -1698,9 +1702,9 @@ var testCases = []testCase{
 		actionName: "deleteThing",
 		input:      map[string]any{"id": "123"},
 		expectedTemplate: `
-			DELETE FROM 
-				"thing" 
-			WHERE 
+			DELETE FROM
+				"thing"
+			WHERE
 				"thing"."id" IS NOT DISTINCT FROM ?
 			RETURNING "thing"."id"`,
 		expectedArgs: []any{"123"},
@@ -1712,7 +1716,7 @@ var testCases = []testCase{
 				fields {
 					name Text
 				}
-			}	
+			}
 			model Thing {
 				fields {
 					parent Parent
@@ -1727,13 +1731,13 @@ var testCases = []testCase{
 		actionName: "deleteThing",
 		input:      map[string]any{"id": "123"},
 		expectedTemplate: `
-			DELETE FROM 
-				"thing" 
-			USING 
-				"parent" AS "thing$parent" 
-			WHERE 
+			DELETE FROM
+				"thing"
+			USING
+				"parent" AS "thing$parent"
+			WHERE
 				"thing"."id" IS NOT DISTINCT FROM ? AND
-				"thing$parent"."name" IS NOT DISTINCT FROM ? 
+				"thing$parent"."name" IS NOT DISTINCT FROM ?
 			RETURNING "thing"."id"`,
 		expectedArgs: []any{"123", "XYZ"},
 	},
@@ -1742,7 +1746,7 @@ var testCases = []testCase{
 		keelSchema: `
 			model Thing {
 				actions {
-					list listThings() 
+					list listThings()
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -1752,15 +1756,15 @@ var testCases = []testCase{
 			"after": "123",
 		},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount
-			FROM 
-				"thing" 
-			WHERE 
+			FROM
+				"thing"
+			WHERE
 				"thing"."id" > (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? )
-			ORDER BY 
-				"thing"."id" ASC 
+			ORDER BY
+				"thing"."id" ASC
 			LIMIT ?`,
 		expectedArgs: []any{"123", 2},
 	},
@@ -1769,7 +1773,7 @@ var testCases = []testCase{
 		keelSchema: `
 			model Thing {
 				actions {
-					list listThings() 
+					list listThings()
 				}
 				@permission(expression: true, actions: [list])
 			}`,
@@ -1779,15 +1783,15 @@ var testCases = []testCase{
 			"before": "123",
 		},
 		expectedTemplate: `
-			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, 
-				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount 
-			FROM 
-				"thing" 
-			WHERE 
-				"thing"."id" < (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) 
-			ORDER BY 
+			SELECT
+				DISTINCT ON("thing"."id") "thing".*,
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount
+			FROM
+				"thing"
+			WHERE
+				"thing"."id" < (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? )
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"123", 2},
 	},
@@ -1809,17 +1813,17 @@ var testCases = []testCase{
 			}`,
 		actionName: "listThing",
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE ( "thing"."first" IS NOT DISTINCT FROM ? AND "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? AND "thing"."second" > ? )) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
 				( "thing"."first" IS NOT DISTINCT FROM ? AND
 				"thing"."second" IS NOT DISTINCT FROM ? OR
 				"thing"."third" IS NOT DISTINCT FROM ? AND
 				"thing"."second" > ? )
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"first", int64(10), true, int64(100), "first", int64(10), true, int64(100), 50},
 	},
@@ -1841,16 +1845,16 @@ var testCases = []testCase{
 			}`,
 		actionName: "listThing",
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE ( ( "thing"."first" IS NOT DISTINCT FROM ? AND "thing"."second" IS NOT DISTINCT FROM ? ) OR ( "thing"."third" IS NOT DISTINCT FROM ? AND "thing"."second" > ? ) )) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
-				( ( "thing"."first" IS NOT DISTINCT FROM ? AND "thing"."second" IS NOT DISTINCT FROM ? ) 
+				( ( "thing"."first" IS NOT DISTINCT FROM ? AND "thing"."second" IS NOT DISTINCT FROM ? )
 					OR
 				( "thing"."third" IS NOT DISTINCT FROM ? AND "thing"."second" > ? ) )
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"first", int64(10), true, int64(100), "first", int64(10), true, int64(100), 50},
 	},
@@ -1872,16 +1876,16 @@ var testCases = []testCase{
 			}`,
 		actionName: "listThing",
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE ( ( "thing"."first" IS NOT DISTINCT FROM ? OR "thing"."second" IS NOT DISTINCT FROM ? ) AND ( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? ) )) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
-				( ( "thing"."first" IS NOT DISTINCT FROM ? OR "thing"."second" IS NOT DISTINCT FROM ? ) 
+				( ( "thing"."first" IS NOT DISTINCT FROM ? OR "thing"."second" IS NOT DISTINCT FROM ? )
 					AND
 				( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? ) )
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"first", int64(10), true, int64(100), "first", int64(10), true, int64(100), 50},
 	},
@@ -1903,16 +1907,16 @@ var testCases = []testCase{
 			}`,
 		actionName: "listThing",
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE ( "thing"."first" IS NOT DISTINCT FROM ? OR ( "thing"."second" IS NOT DISTINCT FROM ? AND ( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? ) ) )) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
 				( "thing"."first" IS NOT DISTINCT FROM ? OR
 					( "thing"."second" IS NOT DISTINCT FROM ? AND
 						( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? ) ) )
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"first", int64(10), true, int64(100), "first", int64(10), true, int64(100), 50},
 	},
@@ -1939,15 +1943,15 @@ var testCases = []testCase{
 					"equals": "first"},
 				"explicitSecond": int64(10)}},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."first" IS NOT DISTINCT FROM ? AND ( "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? )) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
 				"thing"."first" IS NOT DISTINCT FROM ? AND
 				( "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? )
-			ORDER BY 
+			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"first", int64(10), false, "first", int64(10), false, 50},
 	},
@@ -1976,17 +1980,17 @@ var testCases = []testCase{
 					"equals": "first"},
 				"explicitSecond": int64(10)}},
 		expectedTemplate: `
-			SELECT 
+			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."first" IS NOT DISTINCT FROM ? AND ( "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? )) AS totalCount
-			FROM 
-				"thing" 
+			FROM
+				"thing"
 			WHERE
-				"thing"."first" IS NOT DISTINCT FROM ? AND 
-				( "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? ) AND 
-				"thing"."id" > (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) 
-			ORDER BY 
-				"thing"."id" ASC 
+				"thing"."first" IS NOT DISTINCT FROM ? AND
+				( "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? ) AND
+				"thing"."id" > (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? )
+			ORDER BY
+				"thing"."id" ASC
 			LIMIT ?`,
 		expectedArgs: []any{"first", int64(10), false, "first", int64(10), false, "123", 2},
 	},
@@ -1997,7 +2001,7 @@ var testCases = []testCase{
 				fields {
 					name Text
 				}
-			}	
+			}
 			model Thing {
 				fields {
 					name Text
@@ -2020,14 +2024,14 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			UPDATE 
-				"thing" 
-			SET 
+			UPDATE
+				"thing"
+			SET
 				name = ?
-			WHERE 
+			WHERE
 				"thing"."id" IS NOT DISTINCT FROM ? AND
 				( "thing"."code" IS NOT DISTINCT FROM ? OR "thing"."code" IS NOT DISTINCT FROM ? )
-			RETURNING 
+			RETURNING
 				"thing".*`,
 		expectedArgs: []any{"bob", "789", "XYZ", "ABC"},
 	},
@@ -2038,7 +2042,7 @@ var testCases = []testCase{
 				fields {
 					name Text
 				}
-			}	
+			}
 			model Thing {
 				fields {
 					name Text
@@ -2057,11 +2061,11 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			DELETE FROM
-				"thing" 
-			WHERE 
+				"thing"
+			WHERE
 				"thing"."id" IS NOT DISTINCT FROM ? AND
 				( "thing"."code" IS NOT DISTINCT FROM ? OR "thing"."code" IS NOT DISTINCT FROM ? )
-			RETURNING 
+			RETURNING
 				"thing"."id"`,
 		expectedArgs: []any{"789", "XYZ", "ABC"},
 	},
@@ -2077,7 +2081,7 @@ var testCases = []testCase{
 					create createOrder() with (onPromotion, items.quantity, items.product.id)
 				}
 				@permission(expression: true, actions: [create])
-			}	
+			}
 			model Product {
 				fields {
 					name Text
@@ -2109,25 +2113,25 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			WITH 
-				new_1_order AS 
-					(INSERT INTO "order" 
-						(on_promotion) 
-					VALUES 
-						(?) 
-					RETURNING *), 
-				new_1_order_item AS 
-					(INSERT INTO "order_item" 
-						(order_id, product_id, quantity) 
-					VALUES 
-						((SELECT id FROM new_1_order), ?, ?) 
-					RETURNING *), 
-				new_2_order_item AS 
-					(INSERT INTO "order_item" 
-						(order_id, product_id, quantity) 
-					VALUES 
-						((SELECT id FROM new_1_order), ?, ?) 
-					RETURNING *) 
+			WITH
+				new_1_order AS
+					(INSERT INTO "order"
+						(on_promotion)
+					VALUES
+						(?)
+					RETURNING *),
+				new_1_order_item AS
+					(INSERT INTO "order_item"
+						(order_id, product_id, quantity)
+					VALUES
+						((SELECT id FROM new_1_order), ?, ?)
+					RETURNING *),
+				new_2_order_item AS
+					(INSERT INTO "order_item"
+						(order_id, product_id, quantity)
+					VALUES
+						((SELECT id FROM new_1_order), ?, ?)
+					RETURNING *)
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
 			true,     // new_1_order
@@ -2148,7 +2152,7 @@ var testCases = []testCase{
 					}
 				}
 				@permission(expression: true, actions: [create])
-			}	
+			}
 			model Product {
 				fields {
 					name Text
@@ -2187,31 +2191,31 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			WITH 
-				new_1_product AS 
-					(INSERT INTO "product" 
-						(created_on_order, name) 
-					VALUES 
-						(?, ?) 
-					RETURNING *), 
-				new_1_product_attribute AS 
-					(INSERT INTO "product_attribute" 
-						(name, product_id, status) 
-					VALUES 
-						(?, (SELECT id FROM new_1_product), ?) 
-					RETURNING *), 
-				new_2_product_attribute AS 
-					(INSERT INTO "product_attribute" 
-						(name, product_id, status) 
-					VALUES 
-						(?, (SELECT id FROM new_1_product), ?) 
-					RETURNING *), 
-				new_1_order AS 
-					(INSERT INTO "order" 
-						(product_id) 
-					VALUES 
-						((SELECT id FROM new_1_product)) 
-					RETURNING *) 
+			WITH
+				new_1_product AS
+					(INSERT INTO "product"
+						(created_on_order, name)
+					VALUES
+						(?, ?)
+					RETURNING *),
+				new_1_product_attribute AS
+					(INSERT INTO "product_attribute"
+						(name, product_id, status)
+					VALUES
+						(?, (SELECT id FROM new_1_product), ?)
+					RETURNING *),
+				new_2_product_attribute AS
+					(INSERT INTO "product_attribute"
+						(name, product_id, status)
+					VALUES
+						(?, (SELECT id FROM new_1_product), ?)
+					RETURNING *),
+				new_1_order AS
+					(INSERT INTO "order"
+						(product_id)
+					VALUES
+						((SELECT id FROM new_1_product))
+					RETURNING *)
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
 			true, "Child Bicycle", // new_1_product
@@ -2230,7 +2234,7 @@ var testCases = []testCase{
 					create createOrder() with (items.quantity, items.product.name)
 				}
 				@permission(expression: true, actions: [create])
-			}	
+			}
 			model Product {
 				fields {
 					name Text
@@ -2264,35 +2268,35 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			WITH 
-				new_1_order AS 
-					(INSERT INTO "order" 
-					DEFAULT VALUES 
-					RETURNING *), 
-				new_1_product AS 
-					(INSERT INTO "product" 
-						(name) 
-					VALUES 
-						(?) 
+			WITH
+				new_1_order AS
+					(INSERT INTO "order"
+					DEFAULT VALUES
 					RETURNING *),
-				new_1_order_item AS 
-					(INSERT INTO "order_item" 
-						(order_id, product_id, quantity) 
-					VALUES 
-						((SELECT id FROM new_1_order), (SELECT id FROM new_1_product), ?) 
-					RETURNING *), 
-				new_2_product AS 
-					(INSERT INTO "product" 
-						(name) 
-					VALUES 
-						(?) 
+				new_1_product AS
+					(INSERT INTO "product"
+						(name)
+					VALUES
+						(?)
 					RETURNING *),
-				new_2_order_item AS 
-					(INSERT INTO "order_item" 
-						(order_id, product_id, quantity) 
-					VALUES 
-						((SELECT id FROM new_1_order), (SELECT id FROM new_2_product), ?) 
-					RETURNING *) 
+				new_1_order_item AS
+					(INSERT INTO "order_item"
+						(order_id, product_id, quantity)
+					VALUES
+						((SELECT id FROM new_1_order), (SELECT id FROM new_1_product), ?)
+					RETURNING *),
+				new_2_product AS
+					(INSERT INTO "product"
+						(name)
+					VALUES
+						(?)
+					RETURNING *),
+				new_2_order_item AS
+					(INSERT INTO "order_item"
+						(order_id, product_id, quantity)
+					VALUES
+						((SELECT id FROM new_1_order), (SELECT id FROM new_2_product), ?)
+					RETURNING *)
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
 			"Hair dryer", // new_1_product
@@ -2313,7 +2317,7 @@ var testCases = []testCase{
 					create createOrder() with (product1.name, product2.name)
 				}
 				@permission(expression: true, actions: [create])
-			}	
+			}
 			model Product {
 				fields {
 					name Text
@@ -2330,25 +2334,25 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			WITH 
-				new_1_product AS 
-					(INSERT INTO "product" 
-						(name) 
-					VALUES 
-						(?) 
-					RETURNING *), 
-				new_2_product AS 
-					(INSERT INTO "product" 
-						(name) 
-					VALUES 
-						(?) 
-					RETURNING *), 
-				new_1_order AS 
-					(INSERT INTO "order" 
-						(product_1_id, product_2_id) 
-					VALUES 
-						((SELECT id FROM new_1_product), (SELECT id FROM new_2_product)) 
-					RETURNING *) 
+			WITH
+				new_1_product AS
+					(INSERT INTO "product"
+						(name)
+					VALUES
+						(?)
+					RETURNING *),
+				new_2_product AS
+					(INSERT INTO "product"
+						(name)
+					VALUES
+						(?)
+					RETURNING *),
+				new_1_order AS
+					(INSERT INTO "order"
+						(product_1_id, product_2_id)
+					VALUES
+						((SELECT id FROM new_1_product), (SELECT id FROM new_2_product))
+					RETURNING *)
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
 			"Child Bicycle", // new_1_product
@@ -2360,14 +2364,14 @@ var testCases = []testCase{
 		keelSchema: `
 			model Order {
 				fields {
-					items OrderItem[] 
+					items OrderItem[]
 					freeItems OrderItem[]
 				}
 				actions {
 					create createOrder() with (items.quantity, items.product.id, freeItems.quantity, freeItems.product.id)
 				}
 				@permission(expression: true, actions: [create])
-			}	
+			}
 			model Product {
 				fields {
 					name Text
@@ -2413,35 +2417,35 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			WITH 
-				new_1_order AS 
-					(INSERT INTO "order" 
-					DEFAULT VALUES 
-					RETURNING *), 
-				new_1_order_item AS 
-					(INSERT INTO "order_item" 
-						(order_id, product_id, quantity) 
-					VALUES 
-						((SELECT id FROM new_1_order), ?, ?) 
-					RETURNING *), 
-				new_2_order_item AS 
-					(INSERT INTO "order_item" 
-						(order_id, product_id, quantity) 
-					VALUES 
-						((SELECT id FROM new_1_order), ?, ?) 
-					RETURNING *), 
-				new_3_order_item AS 
-					(INSERT INTO "order_item" 
-						(free_on_order_id, product_id, quantity) 
-					VALUES 
-						((SELECT id FROM new_1_order), ?, ?) 
-					RETURNING *), 
-				new_4_order_item AS 
-					(INSERT INTO "order_item" 
-						(free_on_order_id, product_id, quantity) 
-					VALUES 
-						((SELECT id FROM new_1_order), ?, ?) 
-					RETURNING *) 
+			WITH
+				new_1_order AS
+					(INSERT INTO "order"
+					DEFAULT VALUES
+					RETURNING *),
+				new_1_order_item AS
+					(INSERT INTO "order_item"
+						(order_id, product_id, quantity)
+					VALUES
+						((SELECT id FROM new_1_order), ?, ?)
+					RETURNING *),
+				new_2_order_item AS
+					(INSERT INTO "order_item"
+						(order_id, product_id, quantity)
+					VALUES
+						((SELECT id FROM new_1_order), ?, ?)
+					RETURNING *),
+				new_3_order_item AS
+					(INSERT INTO "order_item"
+						(free_on_order_id, product_id, quantity)
+					VALUES
+						((SELECT id FROM new_1_order), ?, ?)
+					RETURNING *),
+				new_4_order_item AS
+					(INSERT INTO "order_item"
+						(free_on_order_id, product_id, quantity)
+					VALUES
+						((SELECT id FROM new_1_order), ?, ?)
+					RETURNING *)
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
 			"paid1", 2, // new_1_order_item
@@ -2473,11 +2477,11 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			UPDATE "product" 
-			SET is_active = ? 
-			WHERE 
-				"product"."barcode" IS NOT DISTINCT FROM ? AND 
-				"product"."is_active" IS NOT DISTINCT FROM ? 
+			UPDATE "product"
+			SET is_active = ?
+			WHERE
+				"product"."barcode" IS NOT DISTINCT FROM ? AND
+				"product"."is_active" IS NOT DISTINCT FROM ?
 			RETURNING "product".*`,
 		expectedArgs: []any{false, "123", true},
 	},
@@ -2512,13 +2516,13 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			UPDATE "product" 
-			SET is_active = ? 
-			FROM "brand" AS "product$brand" 
-			WHERE 
+			UPDATE "product"
+			SET is_active = ?
+			FROM "brand" AS "product$brand"
+			WHERE
 				"product$brand"."id" = "product"."brand_id" AND
-				"product"."product_code" IS NOT DISTINCT FROM ? AND 
-				"product$brand"."code" IS NOT DISTINCT FROM ? 
+				"product"."product_code" IS NOT DISTINCT FROM ? AND
+				"product$brand"."code" IS NOT DISTINCT FROM ?
 			RETURNING "product".*`,
 		expectedArgs: []any{false, "prodcode", "brand"},
 	},
@@ -2562,16 +2566,16 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			UPDATE "product" 
-			SET is_active = ? 
-			FROM "brand" AS "product$brand" 
-			LEFT JOIN "supplier" AS "product$supplier" ON "product$supplier"."id" = "product"."supplier_id" 
-			WHERE 
-				"product$brand"."id" = "product"."brand_id" AND 
-				"product"."product_code" IS NOT DISTINCT FROM ? AND 
-				"product$brand"."code" IS NOT DISTINCT FROM ? AND 
-				"product"."is_active" IS NOT DISTINCT FROM ? AND 
-				"product$supplier"."is_registered" IS NOT DISTINCT FROM ? 
+			UPDATE "product"
+			SET is_active = ?
+			FROM "brand" AS "product$brand"
+			LEFT JOIN "supplier" AS "product$supplier" ON "product$supplier"."id" = "product"."supplier_id"
+			WHERE
+				"product$brand"."id" = "product"."brand_id" AND
+				"product"."product_code" IS NOT DISTINCT FROM ? AND
+				"product$brand"."code" IS NOT DISTINCT FROM ? AND
+				"product"."is_active" IS NOT DISTINCT FROM ? AND
+				"product$supplier"."is_registered" IS NOT DISTINCT FROM ?
 			RETURNING "product".*`,
 		expectedArgs: []any{false, "prodcode", "brand", true, true},
 	},
@@ -2595,10 +2599,10 @@ var testCases = []testCase{
 			"barcode": "123",
 		},
 		expectedTemplate: `
-			DELETE FROM "product" 
-			WHERE 
-				"product"."barcode" IS NOT DISTINCT FROM ? AND 
-				"product"."is_active" IS NOT DISTINCT FROM ? 
+			DELETE FROM "product"
+			WHERE
+				"product"."barcode" IS NOT DISTINCT FROM ? AND
+				"product"."is_active" IS NOT DISTINCT FROM ?
 			RETURNING "product"."id"`,
 		expectedArgs: []any{"123", true},
 	},
@@ -2630,11 +2634,11 @@ var testCases = []testCase{
 			"brandCode":   "brand",
 		},
 		expectedTemplate: `
-			DELETE FROM "product" 
-			USING "brand" AS "product$brand" 
-			WHERE 
-				"product"."product_code" IS NOT DISTINCT FROM ? AND 
-				"product$brand"."code" IS NOT DISTINCT FROM ? 
+			DELETE FROM "product"
+			USING "brand" AS "product$brand"
+			WHERE
+				"product"."product_code" IS NOT DISTINCT FROM ? AND
+				"product$brand"."code" IS NOT DISTINCT FROM ?
 			RETURNING "product"."id"`,
 		expectedArgs: []any{"prodcode", "brand"},
 	},
@@ -2675,13 +2679,13 @@ var testCases = []testCase{
 			"brandCode":   "brand",
 		},
 		expectedTemplate: `
-			DELETE FROM "product" 
-			USING "brand" AS "product$brand", "supplier" AS "product$supplier" 
-			WHERE 
-				"product"."product_code" IS NOT DISTINCT FROM ? AND 
-				"product$brand"."code" IS NOT DISTINCT FROM ? AND 
-				"product"."is_active" IS NOT DISTINCT FROM ? AND 
-				"product$supplier"."is_locked" IS NOT DISTINCT FROM ? 
+			DELETE FROM "product"
+			USING "brand" AS "product$brand", "supplier" AS "product$supplier"
+			WHERE
+				"product"."product_code" IS NOT DISTINCT FROM ? AND
+				"product$brand"."code" IS NOT DISTINCT FROM ? AND
+				"product"."is_active" IS NOT DISTINCT FROM ? AND
+				"product$supplier"."is_locked" IS NOT DISTINCT FROM ?
 			RETURNING "product"."id"`,
 		expectedArgs: []any{"prodcode", "brand", true, true},
 	},
@@ -2711,20 +2715,20 @@ var testCases = []testCase{
 		input:      map[string]any{},
 		identity:   identity,
 		expectedTemplate: `
-			WITH 
+			WITH
 				select_identity (column_0, column_1, column_2, column_3, column_4) AS (
-					SELECT "identity"."email", "identity"."created_at", "identity"."email_verified", "identity"."external_id", "identity"."issuer" 
-					FROM "identity" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?), 
+					SELECT "identity"."email", "identity"."created_at", "identity"."email_verified", "identity"."external_id", "identity"."issuer"
+					FROM "identity"
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
 				new_1_person AS (
-					INSERT INTO "person" (created, email, email_verified, external_id, issuer) 
+					INSERT INTO "person" (created, email, email_verified, external_id, issuer)
 					VALUES (
-						(SELECT column_1 FROM select_identity), 
-						(SELECT column_0 FROM select_identity), 
-						(SELECT column_2 FROM select_identity), 
-						(SELECT column_3 FROM select_identity), 
-						(SELECT column_4 FROM select_identity)) 
-					RETURNING *) 
+						(SELECT column_1 FROM select_identity),
+						(SELECT column_0 FROM select_identity),
+						(SELECT column_2 FROM select_identity),
+						(SELECT column_3 FROM select_identity),
+						(SELECT column_4 FROM select_identity))
+					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
 		expectedArgs: []any{identity.Id, identity.Id},
 	},
@@ -2754,18 +2758,18 @@ var testCases = []testCase{
 		input:      map[string]any{"where": map[string]any{"id": "xyz"}},
 		identity:   identity,
 		expectedTemplate: `
-			WITH 
+			WITH
 				select_identity (column_0, column_1, column_2, column_3, column_4) AS (
-					SELECT "identity"."email", "identity"."created_at", "identity"."email_verified", "identity"."external_id", "identity"."issuer" 
-					FROM "identity" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?) 
-			UPDATE "person" SET 
-				created = (SELECT column_1 FROM select_identity), 
-				email = (SELECT column_0 FROM select_identity), 
-				email_verified = (SELECT column_2 FROM select_identity), 
-				external_id = (SELECT column_3 FROM select_identity), 
-				issuer = (SELECT column_4 FROM select_identity) 
-			WHERE "person"."id" IS NOT DISTINCT FROM ? 
+					SELECT "identity"."email", "identity"."created_at", "identity"."email_verified", "identity"."external_id", "identity"."issuer"
+					FROM "identity"
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?)
+			UPDATE "person" SET
+				created = (SELECT column_1 FROM select_identity),
+				email = (SELECT column_0 FROM select_identity),
+				email_verified = (SELECT column_2 FROM select_identity),
+				external_id = (SELECT column_3 FROM select_identity),
+				issuer = (SELECT column_4 FROM select_identity)
+			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		expectedArgs: []any{identity.Id, "xyz", identity.Id},
 	},
@@ -2863,7 +2867,7 @@ func TestInsertStatement(t *testing.T) {
 	stmt := query.InsertStatement(context.Background())
 
 	expected := `
-		WITH new_1_person AS (INSERT INTO "person" (name) VALUES (?) RETURNING *) 
+		WITH new_1_person AS (INSERT INTO "person" (name) VALUES (?) RETURNING *)
 		SELECT * FROM new_1_person`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
@@ -2913,10 +2917,10 @@ func TestInsertStatementWithAuditing(t *testing.T) {
 	stmt := query.InsertStatement(ctx)
 
 	expected := `
-		WITH new_1_person AS (INSERT INTO "person" (name) VALUES (?) RETURNING *) 
-		SELECT 
-			*, 
-			set_identity_id(?) AS __keel_identity_id, 
+		WITH new_1_person AS (INSERT INTO "person" (name) VALUES (?) RETURNING *)
+		SELECT
+			*,
+			set_identity_id(?) AS __keel_identity_id,
 			set_trace_id(?) AS __keel_trace_id
 		FROM new_1_person`
 
@@ -2941,9 +2945,9 @@ func TestUpdateStatementWithAuditing(t *testing.T) {
 	stmt := query.UpdateStatement(ctx)
 
 	expected := `
-		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
-			"person".*, 
-			set_identity_id(?) AS __keel_identity_id, 
+		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING
+			"person".*,
+			set_identity_id(?) AS __keel_identity_id,
 			set_trace_id(?) AS __keel_trace_id`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
@@ -2967,8 +2971,8 @@ func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
 	stmt := query.UpdateStatement(ctx)
 
 	expected := `
-		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
-			set_identity_id(?) AS __keel_identity_id, 
+		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING
+			set_identity_id(?) AS __keel_identity_id,
 			set_trace_id(?) AS __keel_trace_id`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
@@ -2992,9 +2996,9 @@ func TestDeleteStatementWithAuditing(t *testing.T) {
 	stmt := query.DeleteStatement(ctx)
 
 	expected := `
-		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
-			"person".*, 
-			set_identity_id(?) AS __keel_identity_id, 
+		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING
+			"person".*,
+			set_identity_id(?) AS __keel_identity_id,
 			set_trace_id(?) AS __keel_trace_id`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
@@ -3016,8 +3020,8 @@ func TestDeleteStatementNoReturnWithAuditing(t *testing.T) {
 	stmt := query.DeleteStatement(ctx)
 
 	expected := `
-		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING 
-			set_identity_id(?) AS __keel_identity_id, 
+		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING
+			set_identity_id(?) AS __keel_identity_id,
 			set_trace_id(?) AS __keel_trace_id`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))

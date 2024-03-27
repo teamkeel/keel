@@ -10,6 +10,7 @@ model Customer {
         name Text
         dateOfBirth Date
         address Address
+        details Markdown
     }
 
     actions {
@@ -19,8 +20,9 @@ model Customer {
             dateOfBirth,
             address.addressLine1,
             address.town,
+            details,
         )
-        update updateCustomer(id) with (name?, dateOfBirth?)
+        update updateCustomer(id) with (name?, dateOfBirth?, details?)
         list customers(name?)
     }
 }

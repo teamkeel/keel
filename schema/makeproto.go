@@ -1198,6 +1198,8 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_MESSAGE
 	case parserType == parser.MessageFieldTypeAny:
 		return proto.Type_TYPE_ANY
+	case parserType == parser.FieldTypeMarkdown:
+		return proto.Type_TYPE_MARKDOWN
 	default:
 		return proto.Type_TYPE_UNKNOWN
 	}
