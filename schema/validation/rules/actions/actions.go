@@ -193,7 +193,7 @@ func ActionModelInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 					errorhandling.NewValidationErrorWithDetails(
 						errorhandling.ActionInputError,
 						errorhandling.ErrorDetails{
-							Message: fmt.Sprintf("'%s' refers to a model which cannot used as an input", input.Type.ToString()),
+							Message: fmt.Sprintf("'%s' refers to a model which cannot be used as an input", input.Type.ToString()),
 							Hint:    fmt.Sprintf("Inputs must target fields on models only, e.g %s.id", input.Type.ToString()),
 						},
 						input.Type,
