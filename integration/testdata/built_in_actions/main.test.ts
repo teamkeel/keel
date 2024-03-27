@@ -50,7 +50,11 @@ test("get action - no result", async () => {
 });
 
 test("list action - equals", async () => {
-  await models.post.create({ title: "apple", subTitle: "def", content: "# Title"});
+  await models.post.create({
+    title: "apple",
+    subTitle: "def",
+    content: "# Title",
+  });
   await models.post.create({ title: "apple", subTitle: "efg" });
 
   const posts = await actions.listPosts({
@@ -64,7 +68,11 @@ test("list action - equals", async () => {
 });
 
 test("list action - notEquals on id", async () => {
-  await models.post.create({ title: "apple", subTitle: "def", content: "# Apple" });
+  await models.post.create({
+    title: "apple",
+    subTitle: "def",
+    content: "# Apple",
+  });
   const orange = await models.post.create({ title: "orange", subTitle: "efg" });
 
   const posts = await actions.listPosts({
