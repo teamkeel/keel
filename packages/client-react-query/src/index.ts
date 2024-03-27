@@ -17,7 +17,7 @@ export const keelQuery = <T extends (...args: any) => any>(useKeel: T) => {
   >[0];
   type QueryResult<
     F extends FunctionTypes,
-    K extends QueryKeys<F>,
+    K extends QueryKeys<F>
   > = ReturnType<KeelType["api"][F][K]>;
 
   type Result<F extends FunctionTypes, K extends QueryKeys<F>> = Exclude<
