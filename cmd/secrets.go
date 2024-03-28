@@ -35,8 +35,9 @@ var secretsListCmd = &cobra.Command{
 	Short: "List all secrets for your Keel App",
 	Long: `The list command will list all secrets that are
 stored in your cli config usually found at ~/.keel/config.yaml.`,
-
+	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+
 		secrets, err := program.LoadSecrets(flagProjectDir, flagEnvironment)
 		if err != nil {
 			return program.RenderError(err)
@@ -56,12 +57,8 @@ var secretsSetCmd = &cobra.Command{
 	Use:   "set <key> <value>",
 	Short: "Set a secret for your Keel App",
 	Long:  "The set command will set a secret for your Keel App. The default environment is development.",
-
+	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 2 {
-			return program.RenderError(errors.New("Not enough arguments, please provide a key and value"))
-		}
-
 		key := args[0]
 		value := args[1]
 
@@ -80,12 +77,8 @@ var secretsRemoveCmd = &cobra.Command{
 	Use:   "remove <key>",
 	Short: "Remove a secret for your Keel App",
 	Long:  "The remove command will remove a secret for your Keel App. The default environment is development.",
-
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return program.RenderError(errors.New("Not enough arguments, please provide a key"))
-		}
-
 		key := args[0]
 
 		err := program.RemoveSecret(flagProjectDir, flagEnvironment, key)

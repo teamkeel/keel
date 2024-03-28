@@ -16,6 +16,7 @@ import (
 var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generates supporting SDK for a Keel schema and scaffolds missing custom functions",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logPrefix := colors.Green("|").String()
 

@@ -24,6 +24,7 @@ import (
 var testCmd = &cobra.Command{
 	Use:   "test",
 	Short: "Run tests",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// We still need a tracing provider for auditing and events,
 		// even if the data is not being exported.
