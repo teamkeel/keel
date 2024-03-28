@@ -37,6 +37,10 @@ var secretsListCmd = &cobra.Command{
 stored in your cli config usually found at ~/.keel/config.yaml.`,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) > 0 {
+			return program.RenderError(errors.New("Too many arguments"))
+		}
+
 		secrets, err := program.LoadSecrets(flagProjectDir, flagEnvironment)
 		if err != nil {
 			return program.RenderError(err)
@@ -61,6 +65,9 @@ var secretsSetCmd = &cobra.Command{
 		if len(args) < 2 {
 			return program.RenderError(errors.New("Not enough arguments, please provide a key and value"))
 		}
+		if len(args) > 2 {
+			return program.RenderError(errors.New("Too many arguments"))
+		}
 
 		key := args[0]
 		value := args[1]
@@ -84,6 +91,9 @@ var secretsRemoveCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return program.RenderError(errors.New("Not enough arguments, please provide a key"))
+		}
+		if len(args) > 1 {
+			return program.RenderError(errors.New("Too many arguments"))
 		}
 
 		key := args[0]
