@@ -395,8 +395,11 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 			prop = JSONSchema{OneOf: oneOf}
 		}
 
-	case proto.Type_TYPE_ID, proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
+	case proto.Type_TYPE_ID, proto.Type_TYPE_STRING:
 		prop.Type = "string"
+	case proto.Type_TYPE_MARKDOWN:
+		prop.Type = "string"
+		prop.Format = "markdown"
 	case proto.Type_TYPE_BOOL:
 		prop.Type = "boolean"
 	case proto.Type_TYPE_INT:

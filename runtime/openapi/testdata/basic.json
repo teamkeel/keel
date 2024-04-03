@@ -16,7 +16,7 @@
                     "$ref": "#/components/schemas/CreateCustomerAddressInput"
                   },
                   "dateOfBirth": { "type": "string", "format": "date" },
-                  "details": { "type": "string" },
+                  "details": { "type": "string", "format": "markdown" },
                   "name": { "type": "string" }
                 },
                 "additionalProperties": false,
@@ -266,7 +266,7 @@
           "addressId": { "type": "string" },
           "createdAt": { "type": "string", "format": "date-time" },
           "dateOfBirth": { "type": "string", "format": "date" },
-          "details": { "type": "string" },
+          "details": { "type": "string", "format": "markdown" },
           "id": { "type": "string" },
           "name": { "type": "string" },
           "updatedAt": { "type": "string", "format": "date-time" }
@@ -341,7 +341,7 @@
         "type": "object",
         "properties": {
           "dateOfBirth": { "type": "string", "format": "date" },
-          "details": { "type": "string" },
+          "details": { "type": "string", "format": "markdown" },
           "name": { "type": "string" }
         },
         "additionalProperties": false
