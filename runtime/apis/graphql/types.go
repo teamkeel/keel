@@ -295,6 +295,7 @@ var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_DATETIME: timestampType,
 	proto.Type_TYPE_DATE:     dateType,
 	proto.Type_TYPE_SECRET:   graphql.String,
+	proto.Type_TYPE_MARKDOWN: graphql.String,
 	proto.Type_TYPE_ANY:      anyType,
 }
 
@@ -314,6 +315,7 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_PASSWORD:       graphql.String,
 	proto.Type_TYPE_ANY:            anyType,
 	proto.Type_TYPE_SORT_DIRECTION: sortDirectionType,
+	proto.Type_TYPE_MARKDOWN:       graphql.String,
 }
 
 // for fields where the underlying source is a date/datetime

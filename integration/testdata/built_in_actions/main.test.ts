@@ -8,21 +8,25 @@ test("create action", async () => {
   const createdPost = await actions.createPost({
     title: "foo",
     subTitle: "abc",
+    content: "# Title",
   });
 
   expect(createdPost.title).toEqual("foo");
+  expect(createdPost.content).toEqual("# Title");
 });
 
 test("create action - required field is null - returns error", async () => {
   await actions.createPost({
     title: "foo",
     subTitle: "not unique",
+    content: "# Title",
   });
 
   await expect(
     actions.createPost({
       title: "foo2",
       subTitle: "not unique",
+      content: "# Title",
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
@@ -46,7 +50,11 @@ test("get action - no result", async () => {
 });
 
 test("list action - equals", async () => {
-  await models.post.create({ title: "apple", subTitle: "def" });
+  await models.post.create({
+    title: "apple",
+    subTitle: "def",
+    content: "# Title",
+  });
   await models.post.create({ title: "apple", subTitle: "efg" });
 
   const posts = await actions.listPosts({
@@ -56,10 +64,15 @@ test("list action - equals", async () => {
   });
 
   expect(posts.results.length).toEqual(2);
+  expect(posts.results[0].content).toEqual("# Title");
 });
 
 test("list action - notEquals on id", async () => {
-  await models.post.create({ title: "apple", subTitle: "def" });
+  await models.post.create({
+    title: "apple",
+    subTitle: "def",
+    content: "# Apple",
+  });
   const orange = await models.post.create({ title: "orange", subTitle: "efg" });
 
   const posts = await actions.listPosts({
@@ -70,6 +83,7 @@ test("list action - notEquals on id", async () => {
 
   expect(posts.results.length).toEqual(1);
   expect(posts.results[0].title).toEqual("apple");
+  expect(posts.results[0].content).toEqual("# Apple");
 });
 
 test("list action - notEquals with string", async () => {
