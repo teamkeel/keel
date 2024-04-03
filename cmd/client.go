@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"os"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/program"
@@ -16,7 +14,8 @@ var flagClientApiName string
 var clientCmd = &cobra.Command{
 	Use:   "client",
 	Short: "Generates client SDK for a Keel project",
-	Run: func(cmd *cobra.Command, args []string) {
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
 		model := &program.GenerateClientModel{
 			ProjectDir: flagProjectDir,
 			Package:    flagClientPackage,
@@ -27,12 +26,10 @@ var clientCmd = &cobra.Command{
 
 		_, err := tea.NewProgram(model).Run()
 		if err != nil {
-			panic(err)
+			return err
 		}
 
-		if model.Err != nil {
-			os.Exit(1)
-		}
+		return model.Err
 	},
 }
 

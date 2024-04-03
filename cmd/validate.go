@@ -14,11 +14,8 @@ import (
 var validateCmd = &cobra.Command{
 	Use:   "validate",
 	Short: "Validate your project",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) > 0 {
-			return fmt.Errorf("unexpected arguments: %v", args)
-		}
-
 		b := schema.Builder{}
 		_, err := b.MakeFromDirectory(flagProjectDir)
 		if err == nil {

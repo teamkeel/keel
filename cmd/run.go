@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/program"
@@ -11,12 +9,7 @@ import (
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run your Keel App for development",
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) > 0 {
-			return fmt.Errorf("unexpected arguments: %v", args)
-		}
-		return nil
-	},
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		packageManager, err := resolvePackageManager(flagProjectDir, false)
 		if err == promptui.ErrAbort {
