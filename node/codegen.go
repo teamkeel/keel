@@ -536,7 +536,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 				w.Write("''")
 			case proto.Type_TYPE_BOOL:
 				w.Write("false")
-			case proto.Type_TYPE_INT:
+			case proto.Type_TYPE_INT, proto.Type_TYPE_DECIMAL:
 				w.Write("0")
 			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_DATE, proto.Type_TYPE_TIMESTAMP:
 				w.Write("new Date()")
@@ -1547,7 +1547,7 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 		ret = "string"
 	case proto.Type_TYPE_BOOL:
 		ret = "boolean"
-	case proto.Type_TYPE_INT:
+	case proto.Type_TYPE_INT, proto.Type_TYPE_DECIMAL:
 		ret = "number"
 	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		ret = "Date"
@@ -1607,7 +1607,7 @@ func toWhereConditionType(f *proto.Field) string {
 		return "runtime.StringWhereCondition"
 	case proto.Type_TYPE_BOOL:
 		return "runtime.BooleanWhereCondition"
-	case proto.Type_TYPE_INT:
+	case proto.Type_TYPE_INT, proto.Type_TYPE_DECIMAL:
 		return "runtime.NumberWhereCondition"
 	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		return "runtime.DateWhereCondition"
