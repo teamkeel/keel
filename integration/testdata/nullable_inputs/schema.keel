@@ -4,14 +4,15 @@ model Person {
         preferredName Text?
         employmentStatus Status?
         employer Company?
+        height Decimal?
     }
 
     actions {
         get getPerson(id)
-        create createPerson() with (name, preferredName, employmentStatus, employer.id)
+        create createPerson() with (name, preferredName, employmentStatus, height, employer.id)
         create createPersonAndEmployer() with (name, employer.tradingAs)
         update updatePerson(id) with (preferredName, employmentStatus, employer.id)
-        list listPersons(preferredName?, employmentStatus?, employer.tradingAs?)
+        list listPersons(preferredName?, employmentStatus?, employer.tradingAs?, height?)
     }
 
     @permission(expression: true, actions: [get, list, update, delete, create])

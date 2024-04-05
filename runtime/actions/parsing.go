@@ -56,6 +56,8 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 
 			case proto.Type_TYPE_INT:
 				input[f.Name], err = parseItem(v, f.Type.Repeated, toInt)
+			case proto.Type_TYPE_DECIMAL:
+				input[f.Name], err = parseItem(v, f.Type.Repeated, toFloat)
 			case proto.Type_TYPE_BOOL:
 				input[f.Name], err = parseItem(v, f.Type.Repeated, toBool)
 			case proto.Type_TYPE_DATE:
@@ -133,6 +135,19 @@ var toInt = func(value any) (int, error) {
 		return strconv.Atoi(t)
 	default:
 		return 0, fmt.Errorf("incompatible type %T parsing to int", t)
+	}
+}
+
+var toFloat = func(value any) (float64, error) {
+	switch t := value.(type) {
+	case int:
+		return float64(t), nil
+	case float32:
+		return float64(t), nil
+	case float64:
+		return t, nil
+	default:
+		return 0, fmt.Errorf("incompatible type %T parsing to float", t)
 	}
 }
 

@@ -9,13 +9,14 @@ import (
 type Operand struct {
 	node.Node
 
-	Number *int64  `  @('-'? Int)`
-	String *string `| @String`
-	Null   bool    `| @"null"`
-	True   bool    `| @"true"`
-	False  bool    `| @"false"`
-	Array  *Array  `| @@`
-	Ident  *Ident  `| @@`
+	Number  *int64   `  @('-'? Int)`
+	Decimal *float64 `| @('-'? Float)`
+	String  *string  `| @String`
+	Null    bool     `| @"null"`
+	True    bool     `| @"true"`
+	False   bool     `| @"false"`
+	Array   *Array   `| @@`
+	Ident   *Ident   `| @@`
 }
 
 func (o *Operand) ToString() string {
@@ -24,6 +25,8 @@ func (o *Operand) ToString() string {
 	}
 
 	switch o.Type() {
+	case TypeDecimal:
+		return fmt.Sprintf("%f", *o.Decimal)
 	case TypeNumber:
 		return fmt.Sprintf("%d", *o.Number)
 	case TypeText:
@@ -54,6 +57,8 @@ func (o *Operand) ToString() string {
 
 func (o *Operand) Type() string {
 	switch {
+	case o.Decimal != nil:
+		return TypeDecimal
 	case o.Number != nil:
 		return TypeNumber
 	case o.String != nil:
@@ -76,6 +81,8 @@ func (o *Operand) Type() string {
 func (o *Operand) IsLiteralType() (bool, string) {
 	switch {
 	case o.Number != nil:
+		return true, o.ToString()
+	case o.Decimal != nil:
 		return true, o.ToString()
 	case o.String != nil:
 		return true, o.ToString()

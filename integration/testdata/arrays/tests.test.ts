@@ -20,6 +20,7 @@ test("array fields - create action", async () => {
       new Date("2024-02-01 23:00:30"),
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
+    decimals: [1.1, 1.2, 1.3],
   });
 
   expect(thing.texts).toHaveLength(2);
@@ -50,6 +51,11 @@ test("array fields - create action", async () => {
   expect(thing.enums![0]).toEqual(MyEnum.One);
   expect(thing.enums![1]).toEqual(MyEnum.Two);
   expect(thing.enums![2]).toEqual(MyEnum.Three);
+
+  expect(thing.decimals).toHaveLength(3);
+  expect(thing.decimals![0]).toEqual(1.1);
+  expect(thing.decimals![1]).toEqual(1.2);
+  expect(thing.decimals![2]).toEqual(1.3);
 });
 
 test("array fields - empty arrays", async () => {
@@ -60,6 +66,7 @@ test("array fields - empty arrays", async () => {
     dates: [],
     timestamps: [],
     enums: [],
+    decimals: [],
   });
 
   expect(thing.texts).not.toBeNull();
@@ -79,6 +86,9 @@ test("array fields - empty arrays", async () => {
 
   expect(thing.enums).not.toBeNull();
   expect(thing.enums).toHaveLength(0);
+
+  expect(thing.decimals).not.toBeNull();
+  expect(thing.decimals).toHaveLength(0);
 });
 
 test("array fields - null arrays", async () => {
@@ -89,6 +99,7 @@ test("array fields - null arrays", async () => {
     dates: null,
     timestamps: null,
     enums: null,
+    decimals: null,
   });
 
   expect(thing.texts).toBeNull();
@@ -97,6 +108,7 @@ test("array fields - null arrays", async () => {
   expect(thing.dates).toBeNull();
   expect(thing.timestamps).toBeNull();
   expect(thing.enums).toBeNull();
+  expect(thing.decimals).toBeNull();
 });
 
 test("array fields - update action", async () => {
@@ -107,6 +119,7 @@ test("array fields - update action", async () => {
     dates: [new Date("1999-01-02")],
     timestamps: [new Date("2023-01-02 23:00:30")],
     enums: [MyEnum.Three],
+    decimals: [101.123],
   });
 
   const thing = await actions.updateThing({
@@ -126,6 +139,7 @@ test("array fields - update action", async () => {
         new Date("2024-02-01 23:00:30"),
       ],
       enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
+      decimals: [1.1, 1.2, 1.3],
     },
   });
 
@@ -157,6 +171,11 @@ test("array fields - update action", async () => {
   expect(thing.enums![0]).toEqual(MyEnum.One);
   expect(thing.enums![1]).toEqual(MyEnum.Two);
   expect(thing.enums![2]).toEqual(MyEnum.Three);
+
+  expect(thing.decimals).toHaveLength(3);
+  expect(thing.decimals![0]).toEqual(1.1);
+  expect(thing.decimals![1]).toEqual(1.2);
+  expect(thing.decimals![2]).toEqual(1.3);
 });
 
 test("array fields - get action", async () => {
@@ -175,6 +194,7 @@ test("array fields - get action", async () => {
       new Date("2024-02-01 23:00:30"),
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
+    decimals: [1.1, 1.2, 1.3],
   });
 
   const thing = await actions.getThing({
@@ -209,6 +229,11 @@ test("array fields - get action", async () => {
   expect(thing?.enums![0]).toEqual(MyEnum.One);
   expect(thing?.enums![1]).toEqual(MyEnum.Two);
   expect(thing?.enums![2]).toEqual(MyEnum.Three);
+
+  expect(thing?.decimals).toHaveLength(3);
+  expect(thing?.decimals![0]).toEqual(1.1);
+  expect(thing?.decimals![1]).toEqual(1.2);
+  expect(thing?.decimals![2]).toEqual(1.3);
 });
 
 test("array fields - list action", async () => {
@@ -227,6 +252,7 @@ test("array fields - list action", async () => {
       new Date("2024-02-01 23:00:30"),
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
+    decimals: [1.1, 1.2, 1.3],
   });
 
   const things = await actions.listThings();
@@ -263,6 +289,11 @@ test("array fields - list action", async () => {
   expect(thing.enums![0]).toEqual(MyEnum.One);
   expect(thing.enums![1]).toEqual(MyEnum.Two);
   expect(thing.enums![2]).toEqual(MyEnum.Three);
+
+  expect(thing.decimals).toHaveLength(3);
+  expect(thing.decimals![0]).toEqual(1.1);
+  expect(thing.decimals![1]).toEqual(1.2);
+  expect(thing.decimals![2]).toEqual(1.3);
 });
 
 test("array fields - list action implicit querying - text", async () => {
@@ -442,7 +473,7 @@ test("array fields - list action implicit querying - text", async () => {
       },
     },
   });
-  console.log(things11.results);
+
   expect(things11.results).toHaveLength(6);
   expect(things11.results[0].id).toEqual(t1.id);
   expect(things11.results[1].id).toEqual(t2.id);
@@ -455,26 +486,32 @@ test("array fields - list action implicit querying - text", async () => {
 test("array fields - list action implicit querying - number", async () => {
   const t1 = await actions.createThing({
     numbers: [1, 2],
+    decimals: [1.1, 1.2],
   });
 
   const t2 = await actions.createThing({
     numbers: [1, 2, 3, 4],
+    decimals: [1.1, 1.2, 1.3, 1.4],
   });
 
   const t3 = await actions.createThing({
     numbers: [1, 2],
+    decimals: [1.1, 1.2],
   });
 
   const t4 = await actions.createThing({
     numbers: null,
+    decimals: null,
   });
 
   const t5 = await actions.createThing({
     numbers: [],
+    decimals: [],
   });
 
   const t6 = await actions.createThing({
     numbers: [2, 1],
+    decimals: [1.2, 1.1],
   });
 
   const things = await actions.listThings({
@@ -488,6 +525,18 @@ test("array fields - list action implicit querying - number", async () => {
   expect(things.results).toHaveLength(2);
   expect(things.results[0].id).toEqual(t1.id);
   expect(things.results[1].id).toEqual(t3.id);
+
+  const decimalThings = await actions.listThings({
+    where: {
+      decimals: {
+        equals: [1.1, 1.2],
+      },
+    },
+  });
+
+  expect(decimalThings.results).toHaveLength(2);
+  expect(decimalThings.results[0].id).toEqual(t1.id);
+  expect(decimalThings.results[1].id).toEqual(t3.id);
 });
 
 test("array fields - list action implicit querying - date", async () => {

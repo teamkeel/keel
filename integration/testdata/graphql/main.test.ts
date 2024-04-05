@@ -35,6 +35,7 @@ test("list action with has-one relationship", async () => {
   await authed.createBlogPost({
     title: "Why I left The Beatles",
     content: "blah blah blah",
+    rating: 4.5,
   });
 
   const resp = await graphql(
@@ -44,6 +45,7 @@ test("list action with has-one relationship", async () => {
           edges {
             node {
               id
+              rating
               user {
                 id
                 firstName
@@ -61,6 +63,7 @@ test("list action with has-one relationship", async () => {
     id: user.id,
     firstName: user.firstName,
   });
+  expect(resp.data.blogPosts.edges[0].node.rating).toEqual(4.5);
 });
 
 async function graphql(query, token) {
