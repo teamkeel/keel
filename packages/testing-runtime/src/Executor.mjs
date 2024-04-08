@@ -110,7 +110,7 @@ export class Executor {
   }
 }
 
-const dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:(\d{2}(?:\.\d*))Z$/;
+const dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:(\d{2}(?:\.\d*)?)Z$/;
 
 function reviver(key, value) {
   if (typeof value === "string" && dateFormat.test(value)) {
