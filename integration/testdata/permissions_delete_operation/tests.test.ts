@@ -289,7 +289,7 @@ test("identity permission - incorrect identity in context - is not authorized", 
 
 test("identity permission - no identity in context - is not authorized", async () => {
   const identity = await models.identity.create({
-    email: "user@keel.xyz",
+    email: "user3@keel.xyz",
     issuer: "https://keel.so",
   });
 
