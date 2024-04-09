@@ -63,10 +63,6 @@ func TestIntegration(t *gotest.T) {
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 
 	for _, e := range entries {
-		if e.Name() != "set_backlinks" {
-			continue
-		}
-
 		t.Run(e.Name(), func(t *gotest.T) {
 			testDir := filepath.Join("./testdata", e.Name())
 
