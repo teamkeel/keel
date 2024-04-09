@@ -28,9 +28,19 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 	case canResolveEarly && !authorised:
 		return nil, common.NewPermissionError()
 	case !canResolveEarly:
-		query.AppendSelect(IdField())
-		query.AppendDistinctOn(IdField())
-		rows, err := query.SelectStatement().ExecuteToSingle(scope.Context)
+		authQuery := NewQuery(scope.Model)
+		err := authQuery.applyImplicitFilters(scope, input)
+		if err != nil {
+			return nil, err
+		}
+
+		err = authQuery.applyExplicitFilters(scope, input)
+		if err != nil {
+			return nil, err
+		}
+		authQuery.AppendSelect(IdField())
+		authQuery.AppendDistinctOn(IdField())
+		rows, err := authQuery.SelectStatement().ExecuteToSingle(scope.Context)
 		if err != nil {
 			return nil, err
 		}
