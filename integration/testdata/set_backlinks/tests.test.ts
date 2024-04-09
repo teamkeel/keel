@@ -30,7 +30,7 @@ test("create - @set with backlinks and 1:M nested create", async () => {
     isActive: true,
   });
   const identity = await models.identity.create({ email: "keelson@keel.so" });
-  
+
   const user = await models.user.create({
     name: "Keelson",
     identityId: identity.id,
