@@ -357,18 +357,9 @@ test("identity permission - correct identity in context - is authorized", async 
 
   await actions.withIdentity(identity1).createWithIdentity({});
 
-  await actions.withIdentity(identity1).createWithIdentity({});
-
-  const identity2 = await models.identity.create({
-    email: "anotheruser@keel.xyz",
-    issuer: "https://keel.so",
-  });
-
-  await actions.withIdentity(identity2).createWithIdentity({ isActive: false });
-
   await expect(
     actions
-      .withIdentity(identity2)
+      .withIdentity(identity1)
       .listWithIdentityPermission({ where: { isActive: { equals: true } } })
   ).not.toHaveAuthorizationError();
 });

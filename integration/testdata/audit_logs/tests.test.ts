@@ -121,7 +121,10 @@ test("delete action - audit table populated", async () => {
 });
 
 test("create action with identity - audit table populated", async () => {
-  const identity = await models.identity.create({ email: "keelson@keel.xyz" });
+  const identity = await models.identity.create({
+    email: "keelson@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const wedding = await actions.withIdentity(identity).createWedding({
     name: "Mary & Bob",
@@ -141,7 +144,10 @@ test("create action with identity - audit table populated", async () => {
 });
 
 test("update action with identity - audit table populated", async () => {
-  const identity = await models.identity.create({ email: "keelson@keel.xyz" });
+  const identity = await models.identity.create({
+    email: "keelson@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const { id } = await actions.createWedding({
     name: "Mary & Bob",
@@ -165,7 +171,10 @@ test("update action with identity - audit table populated", async () => {
 });
 
 test("delete action with identity - audit table populated", async () => {
-  const identity = await models.identity.create({ email: "keelson@keel.xyz" });
+  const identity = await models.identity.create({
+    email: "keelson@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const wedding = await actions.createWedding({
     name: "Mary & Bob",
@@ -188,7 +197,10 @@ test("delete action with identity - audit table populated", async () => {
 });
 
 test("nested create action - audit table populated", async () => {
-  const identity = await models.identity.create({ email: "mary@keel.xyz" });
+  const identity = await models.identity.create({
+    email: "mary@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const wedding = await actions.withIdentity(identity).createWeddingWithGuests({
     name: "Mary & Bob",
@@ -270,8 +282,14 @@ test("nested create action - audit table populated", async () => {
 });
 
 test("built-in actions with multiple identities - audit table populated", async () => {
-  const keelson = await models.identity.create({ email: "keelson@keel.xyz" });
-  const weave = await models.identity.create({ email: "weave@keel.xyz" });
+  const keelson = await models.identity.create({
+    email: "keelson@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const weave = await models.identity.create({
+    email: "weave@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const wedding = await actions.withIdentity(keelson).createWedding({
     name: "Mary & Bob",
@@ -310,7 +328,10 @@ test("built-in actions with multiple identities - audit table populated", async 
 });
 
 test("hook function - audit table populated", async () => {
-  const identity = await models.identity.create({ email: "keelson@keel.xyz" });
+  const identity = await models.identity.create({
+    email: "keelson@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const guest = await actions.withIdentity(identity).inviteGuest({
     firstName: "Keelson",
@@ -366,7 +387,10 @@ test("hook function - audit table populated", async () => {
 });
 
 test("write function with identity - audit table populated", async () => {
-  const identity = await models.identity.create({ email: "keelson@keel.xyz" });
+  const identity = await models.identity.create({
+    email: "keelson@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const wedding = await actions.createWedding({
     name: "Mary & Bob",
@@ -413,7 +437,10 @@ test("write function with identity - audit table populated", async () => {
 });
 
 test("write function with error and rollback - model and audit table empty", async () => {
-  const identity = await models.identity.create({ email: "keelson@keel.xyz" });
+  const identity = await models.identity.create({
+    email: "keelson@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const wedding = await actions.createWedding({
     name: "Mary & Bob",
@@ -439,7 +466,10 @@ test("write function with error and rollback - model and audit table empty", asy
 });
 
 test("job function with identity - audit table populated", async () => {
-  const identity = await models.identity.create({ email: "keelson@keel.xyz" });
+  const identity = await models.identity.create({
+    email: "keelson@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const wedding = await actions.createWedding({
     name: "Mary & Bob",
@@ -529,7 +559,10 @@ test("job function with identity - audit table populated", async () => {
 });
 
 test("job function with error and no rollback - audit table is not rolled back", async () => {
-  const identity = await models.identity.create({ email: "keelson@keel.xyz" });
+  const identity = await models.identity.create({
+    email: "keelson@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const wedding = await actions.createWedding({
     name: "Mary & Bob",
@@ -621,7 +654,10 @@ test("job function with error and no rollback - audit table is not rolled back",
 });
 
 test("job function using kysely with identity - audit table populated", async () => {
-  const identity = await models.identity.create({ email: "keelson@keel.xyz" });
+  const identity = await models.identity.create({
+    email: "keelson@keel.xyz",
+    issuer: "https://keel.so",
+  });
 
   const wedding = await actions.createWedding({
     name: "Mary & Bob",
@@ -715,11 +751,12 @@ test("job function using kysely with identity - audit table populated", async ()
 test("identity model - audit table populated", async () => {
   await models.identity.create({
     email: "user@keel.xyz",
-    password: "1234",
+    issuer: "https://keel.so",
   });
 
   const identity = await models.identity.findOne({
     email: "user@keel.xyz",
+    issuer: "https://keel.so",
   });
 
   expect(identity).not.toBeNull();
