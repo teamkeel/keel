@@ -1331,27 +1331,48 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			template = fmt.Sprintf("%s NOT IN %s", lhsSqlOperand, rhsSqlOperand)
 		} else {
 			if rhs.IsField() {
-				template = fmt.Sprintf("(NOT %[1]s = ANY(%[2]s) OR %[2]s IS NOT DISTINCT FROM NULL)", lhsSqlOperand, rhsSqlOperand)
+				template = fmt.Sprintf("(NOT %s = ANY(%s) OR %s IS NOT DISTINCT FROM NULL)", lhsSqlOperand, rhsSqlOperand, rhsSqlOperand)
 			} else {
 				template = fmt.Sprintf("NOT %s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
 			}
 		}
-	case LessThan:
+	case LessThan, Before:
 		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
-	case LessThanEquals:
+	case LessThanEquals, OnOrBefore:
 		template = fmt.Sprintf("%s <= %s", lhsSqlOperand, rhsSqlOperand)
-	case GreaterThan:
+	case GreaterThan, After:
 		template = fmt.Sprintf("%s > %s", lhsSqlOperand, rhsSqlOperand)
-	case GreaterThanEquals:
+	case GreaterThanEquals, OnOrAfter:
 		template = fmt.Sprintf("%s >= %s", lhsSqlOperand, rhsSqlOperand)
-	case Before:
-		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
-	case After:
-		template = fmt.Sprintf("%s > %s", lhsSqlOperand, rhsSqlOperand)
-	case OnOrBefore:
-		template = fmt.Sprintf("%s <= %s", lhsSqlOperand, rhsSqlOperand)
-	case OnOrAfter:
-		template = fmt.Sprintf("%s >= %s", lhsSqlOperand, rhsSqlOperand)
+
+	/* Any query operators */
+	case AnyEquals:
+		template = fmt.Sprintf("%s = ANY(%s)", rhsSqlOperand, lhsSqlOperand)
+	case AnyNotEquals:
+		template = fmt.Sprintf("(NOT %s = ANY(%s) OR %s IS NOT DISTINCT FROM NULL)", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
+	case AnyLessThan, AnyBefore:
+		template = fmt.Sprintf("%s > ANY(%s)", rhsSqlOperand, lhsSqlOperand)
+	case AnyLessThanEquals, AnyOnOrBefore:
+		template = fmt.Sprintf("%s >= ANY(%s)", rhsSqlOperand, lhsSqlOperand)
+	case AnyGreaterThan, AnyAfter:
+		template = fmt.Sprintf("%s < ANY(%s)", rhsSqlOperand, lhsSqlOperand)
+	case AnyGreaterThanEquals, AnyOnOrAfter:
+		template = fmt.Sprintf("%s <= ANY(%s)", rhsSqlOperand, lhsSqlOperand)
+
+	/* All query operators */
+	case AllEquals:
+		template = fmt.Sprintf("(%s = ALL(%s) AND %s IS DISTINCT FROM '{}')", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
+	case AllNotEquals:
+		template = fmt.Sprintf("(NOT %s = ALL(%s) OR %s IS NOT DISTINCT FROM '{}' OR %s IS NOT DISTINCT FROM NULL)", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
+	case AllLessThan, AllBefore:
+		template = fmt.Sprintf("%s > ALL(%s)", rhsSqlOperand, lhsSqlOperand)
+	case AllLessThanEquals, AllOnOrBefore:
+		template = fmt.Sprintf("%s >= ALL(%s)", rhsSqlOperand, lhsSqlOperand)
+	case AllGreaterThan, AllAfter:
+		template = fmt.Sprintf("%s < ALL(%s)", rhsSqlOperand, lhsSqlOperand)
+	case AllGreaterThanEquals, AllOnOrAfter:
+		template = fmt.Sprintf("%s <= ALL(%s)", rhsSqlOperand, lhsSqlOperand)
+
 	default:
 		return "", nil, fmt.Errorf("operator: %v is not yet supported", operator)
 	}

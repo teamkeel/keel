@@ -1095,6 +1095,76 @@ export interface ListBooksInput {
 	})
 }
 
+func TestWriteActionArrayInputTypesListAction(t *testing.T) {
+	schema := `
+enum Sport {
+	Football
+	Tennis
+}
+model Person {
+	fields {
+		favouriteNumbers Number[]
+		favouriteSports Sport[]
+	}
+	actions {
+		list listPeople(favouriteNumbers, favouriteSports)
+	}
+}
+	`
+	expected :=
+		`export interface IntArrayAllQueryInput {
+	equals?: number;
+	notEquals?: number;
+	lessThan?: number;
+	lessThanOrEquals?: number;
+	greaterThan?: number;
+	greaterThanOrEquals?: number;
+}
+export interface IntArrayAnyQueryInput {
+	equals?: number;
+	notEquals?: number;
+	lessThan?: number;
+	lessThanOrEquals?: number;
+	greaterThan?: number;
+	greaterThanOrEquals?: number;
+}
+export interface IntArrayQueryInput {
+	equals?: number[] | null;
+	notEquals?: number[] | null;
+	any?: IntArrayAnyQueryInput;
+	all?: IntArrayAllQueryInput;
+}
+export interface SportArrayAllQueryInput {
+	equals?: Sport;
+	notEquals?: Sport;
+}
+export interface SportArrayAnyQueryInput {
+	equals?: Sport;
+	notEquals?: Sport;
+}
+export interface SportArrayQueryInput {
+	equals?: Sport[] | null;
+	notEquals?: Sport[] | null;
+	any?: SportArrayAnyQueryInput;
+	all?: SportArrayAllQueryInput;
+}
+export interface ListPeopleWhere {
+	favouriteNumbers: IntArrayQueryInput;
+	favouriteSports: SportArrayQueryInput;
+}
+export interface ListPeopleInput {
+	where: ListPeopleWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
 func TestWriteActionInputTypesListSortable(t *testing.T) {
 	schema := `
 enum Sport {

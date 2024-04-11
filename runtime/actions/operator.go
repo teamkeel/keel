@@ -20,28 +20,49 @@ type ActionOperator int
 const (
 	Unknown ActionOperator = iota
 
-	After
-	Before
 	Contains
+	NotContains
 	Equals
+	NotEquals
+	StartsWith
 	EndsWith
 	GreaterThan
 	GreaterThanEquals
 	LessThan
 	LessThanEquals
-	NotContains
-	NotEquals
-	NotOneOf
 	OneOf
+	NotOneOf
+	After
+	Before
 	OnOrAfter
 	OnOrBefore
-	StartsWith
+
+	AllEquals
+	AnyEquals
+	AllNotEquals
+	AnyNotEquals
+	AllGreaterThan
+	AnyGreaterThan
+	AllGreaterThanEquals
+	AnyGreaterThanEquals
+	AllLessThan
+	AnyLessThan
+	AllLessThanEquals
+	AnyLessThanEquals
+	AllAfter
+	AnyAfter
+	AllBefore
+	AnyBefore
+	AllOnOrAfter
+	AnyOnOrAfter
+	AllOnOrBefore
+	AnyOnOrBefore
 )
 
-// graphQlOperatorToActionOperator converts the conditional operators that are used
+// queryOperatorToActionOperator converts the conditional operators that are used
 // in GraphQL request input structures (such as "lessThanOrEquals") to its symbolic constant,
 // machine-readable, ActionOperator value.
-func graphQlOperatorToActionOperator(in string) (out ActionOperator, err error) {
+func queryOperatorToActionOperator(in string) (out ActionOperator, err error) {
 	switch in {
 	case "equals":
 		return Equals, nil
@@ -73,6 +94,60 @@ func graphQlOperatorToActionOperator(in string) (out ActionOperator, err error) 
 		return OnOrAfter, nil
 	default:
 		return out, fmt.Errorf("unrecognized operator: %s", in)
+	}
+}
+
+func anyQueryOperationToActionOperator(in string) (out ActionOperator, err error) {
+	switch in {
+	case "equals":
+		return AnyEquals, nil
+	case "notEquals":
+		return AnyNotEquals, nil
+	case "lessThan":
+		return AnyLessThan, nil
+	case "lessThanOrEquals":
+		return AnyLessThanEquals, nil
+	case "greaterThan":
+		return AnyGreaterThan, nil
+	case "greaterThanOrEquals":
+		return AnyGreaterThanEquals, nil
+	case "before":
+		return AnyBefore, nil
+	case "after":
+		return AnyAfter, nil
+	case "onOrBefore":
+		return AnyOnOrBefore, nil
+	case "onOrAfter":
+		return AnyOnOrAfter, nil
+	default:
+		return out, fmt.Errorf("unrecognized operator for any query: %s", in)
+	}
+}
+
+func allQueryOperatorToActionOperator(in string) (out ActionOperator, err error) {
+	switch in {
+	case "equals":
+		return AllEquals, nil
+	case "notEquals":
+		return AllNotEquals, nil
+	case "lessThan":
+		return AllLessThan, nil
+	case "lessThanOrEquals":
+		return AllLessThanEquals, nil
+	case "greaterThan":
+		return AllGreaterThan, nil
+	case "greaterThanOrEquals":
+		return AllGreaterThanEquals, nil
+	case "before":
+		return AllBefore, nil
+	case "after":
+		return AllAfter, nil
+	case "onOrBefore":
+		return AllOnOrBefore, nil
+	case "onOrAfter":
+		return AllOnOrAfter, nil
+	default:
+		return out, fmt.Errorf("unrecognized operator for all query: %s", in)
 	}
 }
 

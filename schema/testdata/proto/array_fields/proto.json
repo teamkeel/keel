@@ -103,7 +103,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -140,7 +142,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -284,7 +288,9 @@
             "fieldName": "texts",
             "repeated": true
           },
-          "target": ["texts"]
+          "target": [
+            "texts"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -295,7 +301,9 @@
             "fieldName": "numbers",
             "repeated": true
           },
-          "target": ["numbers"]
+          "target": [
+            "numbers"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -306,7 +314,9 @@
             "fieldName": "booleans",
             "repeated": true
           },
-          "target": ["booleans"]
+          "target": [
+            "booleans"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -317,7 +327,9 @@
             "fieldName": "dates",
             "repeated": true
           },
-          "target": ["dates"]
+          "target": [
+            "dates"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -328,7 +340,55 @@
             "fieldName": "timestamps",
             "repeated": true
           },
-          "target": ["timestamps"]
+          "target": [
+            "timestamps"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "StringArrayAllQueryInput",
+      "fields": [
+        {
+          "messageName": "StringArrayAllQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "StringArrayAllQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "StringArrayAnyQueryInput",
+      "fields": [
+        {
+          "messageName": "StringArrayAnyQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "StringArrayAnyQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "nullable": true
         }
       ]
     },
@@ -354,6 +414,136 @@
           },
           "optional": true,
           "nullable": true
+        },
+        {
+          "messageName": "StringArrayQueryInput",
+          "name": "any",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringArrayAnyQueryInput"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "StringArrayQueryInput",
+          "name": "all",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringArrayAllQueryInput"
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "IntArrayAllQueryInput",
+      "fields": [
+        {
+          "messageName": "IntArrayAllQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "IntArrayAllQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "IntArrayAllQueryInput",
+          "name": "lessThan",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IntArrayAllQueryInput",
+          "name": "lessThanOrEquals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IntArrayAllQueryInput",
+          "name": "greaterThan",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IntArrayAllQueryInput",
+          "name": "greaterThanOrEquals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "IntArrayAnyQueryInput",
+      "fields": [
+        {
+          "messageName": "IntArrayAnyQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "IntArrayAnyQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "IntArrayAnyQueryInput",
+          "name": "lessThan",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IntArrayAnyQueryInput",
+          "name": "lessThanOrEquals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IntArrayAnyQueryInput",
+          "name": "greaterThan",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IntArrayAnyQueryInput",
+          "name": "greaterThanOrEquals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
         }
       ]
     },
@@ -376,6 +566,72 @@
           "type": {
             "type": "TYPE_INT",
             "repeated": true
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "IntArrayQueryInput",
+          "name": "any",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "IntArrayAnyQueryInput"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "IntArrayQueryInput",
+          "name": "all",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "IntArrayAllQueryInput"
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "BooleanArrayAllQueryInput",
+      "fields": [
+        {
+          "messageName": "BooleanArrayAllQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "BooleanArrayAllQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "BooleanArrayAnyQueryInput",
+      "fields": [
+        {
+          "messageName": "BooleanArrayAnyQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "BooleanArrayAnyQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_BOOL"
           },
           "optional": true,
           "nullable": true
@@ -404,6 +660,136 @@
           },
           "optional": true,
           "nullable": true
+        },
+        {
+          "messageName": "BooleanArrayQueryInput",
+          "name": "any",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "BooleanArrayAnyQueryInput"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "BooleanArrayQueryInput",
+          "name": "all",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "BooleanArrayAllQueryInput"
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "DateArrayAllQueryInput",
+      "fields": [
+        {
+          "messageName": "DateArrayAllQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "DateArrayAllQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "DateArrayAllQueryInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DateArrayAllQueryInput",
+          "name": "onOrBefore",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DateArrayAllQueryInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DateArrayAllQueryInput",
+          "name": "onOrAfter",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "DateArrayAnyQueryInput",
+      "fields": [
+        {
+          "messageName": "DateArrayAnyQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "DateArrayAnyQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "DateArrayAnyQueryInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DateArrayAnyQueryInput",
+          "name": "onOrBefore",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DateArrayAnyQueryInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DateArrayAnyQueryInput",
+          "name": "onOrAfter",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true
         }
       ]
     },
@@ -429,6 +815,68 @@
           },
           "optional": true,
           "nullable": true
+        },
+        {
+          "messageName": "DateArrayQueryInput",
+          "name": "any",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "DateArrayAnyQueryInput"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "DateArrayQueryInput",
+          "name": "all",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "DateArrayAllQueryInput"
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "TimestampArrayAllQueryInput",
+      "fields": [
+        {
+          "messageName": "TimestampArrayAllQueryInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_TIMESTAMP"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "TimestampArrayAllQueryInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_TIMESTAMP"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "TimestampArrayAnyQueryInput",
+      "fields": [
+        {
+          "messageName": "TimestampArrayAnyQueryInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_TIMESTAMP"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "TimestampArrayAnyQueryInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_TIMESTAMP"
+          },
+          "optional": true
         }
       ]
     },
@@ -454,6 +902,26 @@
           },
           "optional": true,
           "nullable": true
+        },
+        {
+          "messageName": "TimestampArrayQueryInput",
+          "name": "any",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "TimestampArrayAnyQueryInput"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "TimestampArrayQueryInput",
+          "name": "all",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "TimestampArrayAllQueryInput"
+          },
+          "optional": true,
+          "nullable": true
         }
       ]
     },
@@ -467,7 +935,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringArrayQueryInput"
           },
-          "target": ["texts"]
+          "target": [
+            "texts"
+          ]
         },
         {
           "messageName": "ListThingsWhere",
@@ -476,7 +946,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "IntArrayQueryInput"
           },
-          "target": ["numbers"]
+          "target": [
+            "numbers"
+          ]
         },
         {
           "messageName": "ListThingsWhere",
@@ -485,7 +957,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "BooleanArrayQueryInput"
           },
-          "target": ["booleans"]
+          "target": [
+            "booleans"
+          ]
         },
         {
           "messageName": "ListThingsWhere",
@@ -494,7 +968,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "DateArrayQueryInput"
           },
-          "target": ["dates"]
+          "target": [
+            "dates"
+          ]
         },
         {
           "messageName": "ListThingsWhere",
@@ -503,7 +979,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "TimestampArrayQueryInput"
           },
-          "target": ["timestamps"]
+          "target": [
+            "timestamps"
+          ]
         }
       ]
     },
