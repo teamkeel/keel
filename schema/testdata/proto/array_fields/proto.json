@@ -355,8 +355,7 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "StringArrayAllQueryInput",
@@ -364,8 +363,7 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         }
       ]
     },
@@ -378,8 +376,7 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "StringArrayAnyQueryInput",
@@ -387,8 +384,7 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         }
       ]
     },
@@ -422,8 +418,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringArrayAnyQueryInput"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "StringArrayQueryInput",
@@ -432,8 +427,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringArrayAllQueryInput"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         }
       ]
     },
@@ -446,8 +440,7 @@
           "type": {
             "type": "TYPE_INT"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "IntArrayAllQueryInput",
@@ -455,8 +448,7 @@
           "type": {
             "type": "TYPE_INT"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "IntArrayAllQueryInput",
@@ -501,8 +493,7 @@
           "type": {
             "type": "TYPE_INT"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "IntArrayAnyQueryInput",
@@ -510,8 +501,7 @@
           "type": {
             "type": "TYPE_INT"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "IntArrayAnyQueryInput",
@@ -577,8 +567,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "IntArrayAnyQueryInput"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "IntArrayQueryInput",
@@ -587,8 +576,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "IntArrayAllQueryInput"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         }
       ]
     },
@@ -601,8 +589,7 @@
           "type": {
             "type": "TYPE_BOOL"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "BooleanArrayAllQueryInput",
@@ -610,8 +597,7 @@
           "type": {
             "type": "TYPE_BOOL"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         }
       ]
     },
@@ -624,8 +610,7 @@
           "type": {
             "type": "TYPE_BOOL"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "BooleanArrayAnyQueryInput",
@@ -633,8 +618,7 @@
           "type": {
             "type": "TYPE_BOOL"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         }
       ]
     },
@@ -668,8 +652,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "BooleanArrayAnyQueryInput"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "BooleanArrayQueryInput",
@@ -678,8 +661,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "BooleanArrayAllQueryInput"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         }
       ]
     },
@@ -692,8 +674,7 @@
           "type": {
             "type": "TYPE_DATE"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "DateArrayAllQueryInput",
@@ -701,8 +682,7 @@
           "type": {
             "type": "TYPE_DATE"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "DateArrayAllQueryInput",
@@ -747,8 +727,7 @@
           "type": {
             "type": "TYPE_DATE"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "DateArrayAnyQueryInput",
@@ -756,8 +735,7 @@
           "type": {
             "type": "TYPE_DATE"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "DateArrayAnyQueryInput",
@@ -823,8 +801,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "DateArrayAnyQueryInput"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "DateArrayQueryInput",
@@ -833,8 +810,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "DateArrayAllQueryInput"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         }
       ]
     },
@@ -910,8 +886,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "TimestampArrayAnyQueryInput"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         },
         {
           "messageName": "TimestampArrayQueryInput",
@@ -920,8 +895,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "TimestampArrayAllQueryInput"
           },
-          "optional": true,
-          "nullable": true
+          "optional": true
         }
       ]
     },
