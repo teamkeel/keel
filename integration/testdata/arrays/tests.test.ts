@@ -379,7 +379,7 @@ test("array fields - list action implicit querying - text", async () => {
     where: {
       texts: {
         any: {
-          equals: "Weave"
+          equals: "Weave",
         },
       },
     },
@@ -395,7 +395,7 @@ test("array fields - list action implicit querying - text", async () => {
     where: {
       texts: {
         all: {
-          equals: "Keelson"
+          equals: "Keelson",
         },
       },
     },
@@ -409,7 +409,7 @@ test("array fields - list action implicit querying - text", async () => {
       texts: {
         any: {
           equals: "Keelson",
-          notEquals: "Weave"
+          notEquals: "Weave",
         },
       },
     },
@@ -422,7 +422,7 @@ test("array fields - list action implicit querying - text", async () => {
     where: {
       texts: {
         any: {
-          notEquals: "Weave"
+          notEquals: "Weave",
         },
       },
     },
@@ -437,12 +437,12 @@ test("array fields - list action implicit querying - text", async () => {
     where: {
       texts: {
         all: {
-          notEquals: "Keelson"
+          notEquals: "Keelson",
         },
       },
     },
   });
-console.log(things11.results);
+  console.log(things11.results);
   expect(things11.results).toHaveLength(6);
   expect(things11.results[0].id).toEqual(t1.id);
   expect(things11.results[1].id).toEqual(t2.id);
@@ -450,7 +450,6 @@ console.log(things11.results);
   expect(things11.results[3].id).toEqual(t4.id);
   expect(things11.results[4].id).toEqual(t5.id);
   expect(things11.results[5].id).toEqual(t6.id);
-
 });
 
 test("array fields - list action implicit querying - number", async () => {
@@ -744,5 +743,3 @@ test("array fields - model api - create", async () => {
   ]);
   expect(thing?.enums).toEqual([MyEnum.One, MyEnum.Two, MyEnum.Three]);
 });
-
-

@@ -103,9 +103,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -142,9 +140,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -288,9 +284,7 @@
             "fieldName": "texts",
             "repeated": true
           },
-          "target": [
-            "texts"
-          ]
+          "target": ["texts"]
         },
         {
           "messageName": "CreateThingInput",
@@ -301,9 +295,7 @@
             "fieldName": "numbers",
             "repeated": true
           },
-          "target": [
-            "numbers"
-          ]
+          "target": ["numbers"]
         },
         {
           "messageName": "CreateThingInput",
@@ -314,9 +306,7 @@
             "fieldName": "booleans",
             "repeated": true
           },
-          "target": [
-            "booleans"
-          ]
+          "target": ["booleans"]
         },
         {
           "messageName": "CreateThingInput",
@@ -327,9 +317,7 @@
             "fieldName": "dates",
             "repeated": true
           },
-          "target": [
-            "dates"
-          ]
+          "target": ["dates"]
         },
         {
           "messageName": "CreateThingInput",
@@ -340,9 +328,7 @@
             "fieldName": "timestamps",
             "repeated": true
           },
-          "target": [
-            "timestamps"
-          ]
+          "target": ["timestamps"]
         }
       ]
     },
@@ -909,9 +895,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringArrayQueryInput"
           },
-          "target": [
-            "texts"
-          ]
+          "target": ["texts"]
         },
         {
           "messageName": "ListThingsWhere",
@@ -920,9 +904,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "IntArrayQueryInput"
           },
-          "target": [
-            "numbers"
-          ]
+          "target": ["numbers"]
         },
         {
           "messageName": "ListThingsWhere",
@@ -931,9 +913,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "BooleanArrayQueryInput"
           },
-          "target": [
-            "booleans"
-          ]
+          "target": ["booleans"]
         },
         {
           "messageName": "ListThingsWhere",
@@ -942,9 +922,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "DateArrayQueryInput"
           },
-          "target": [
-            "dates"
-          ]
+          "target": ["dates"]
         },
         {
           "messageName": "ListThingsWhere",
@@ -953,9 +931,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "TimestampArrayQueryInput"
           },
-          "target": [
-            "timestamps"
-          ]
+          "target": ["timestamps"]
         }
       ]
     },
