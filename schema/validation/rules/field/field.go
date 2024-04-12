@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -73,6 +74,28 @@ func ValidFieldTypesRule(asts []*parser.AST) (errs errorhandling.ValidationError
 				},
 				field.Name,
 			)
+		}
+	}
+
+	return
+}
+
+// FieldNamesMaxLengthRule will validate that field names are smaller than the maximum allowed by postgres (63 bytes).
+func FieldNamesMaxLengthRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+	const MAX_BYTES = 63
+
+	for _, model := range query.Models(asts) {
+		for _, field := range query.ModelFields(model) {
+			identifier := casing.ToSnake(field.Name.Value)
+
+			if len(identifier) > MAX_BYTES {
+				errs.Append(errorhandling.ErrorFieldNamesMaxLength,
+					map[string]string{
+						"Name": field.Name.Value,
+					},
+					field.Name,
+				)
+			}
 		}
 	}
 

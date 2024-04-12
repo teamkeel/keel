@@ -135,6 +135,12 @@ en:
   E051:
     message: "default expression doesn't support operators"
     hint: "Try removing '{{ .Op }}'"
+  E052:
+    message: "Cannot use '{{ .Name }}' as a field name as it is too long."
+    hint: "Rename this field to a shorter name"
+  E053:
+    message: "Cannot use '{{ .Name }}' as a model name as it is too long."
+    hint: "Rename this model to a shorter name"
   E059:
     message: "You cannot set values for both {{.IdPath}} and {{.ConflictingPath}} in this create action - because the first one indicates that you want to refer to an existing {{.ModelName}}"
     hint: "Either 1) use the .id form, and none of the {{.ModelName}} fields, or 2) omit the .id form and specify all of the fields of {{.ModelName}} that are needed to create one."
