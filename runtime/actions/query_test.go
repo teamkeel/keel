@@ -1792,7 +1792,7 @@ var testCases = []testCase{
 			WHERE
 				"thing"."id" < (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? )
 			ORDER BY
-				"thing"."id" ASC LIMIT ?`,
+				"thing"."id" DESC LIMIT ?`,
 		expectedArgs: []any{"123", 2},
 	},
 	{
