@@ -409,7 +409,6 @@ func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 
 // Apply pagination filters to the query.
 func (query *QueryBuilder) ApplyPaging(page Page) error {
-
 	// Paging condition is ANDed to any existing conditions
 	query.And()
 
@@ -442,23 +441,28 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	query.args = append(query.args, query.args...)
 
 	// Add where condition to implement the after/before paging request
-	switch {
-	case page.After != "":
-		err := query.applyCursorFilter(page.After, false)
+	if page.Cursor() != "" {
+		err := query.applyCursorFilter(page.Cursor(), page.IsBackwards())
 		if err != nil {
 			return err
 		}
-	case page.Before != "":
-		err := query.applyCursorFilter(page.Before, true)
-		if err != nil {
-			return err
+	}
+
+	// if the page has backwards pagination, we will be reversing the order fields. The results will be reversed after retrieval in .ExecuteToMany()
+	if page.IsBackwards() {
+		for _, ob := range query.orderBy {
+			if strings.EqualFold(ob.direction, "ASC") {
+				ob.direction = "DESC"
+			} else {
+				ob.direction = "ASC"
+			}
 		}
 	}
 
 	return nil
 }
 
-// Apply forward pagination 'after' cursor filter to the query.
+// Apply forward pagination 'after' cursor filter to the query, or backwards `before` cursor
 func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) error {
 	query.And()
 
@@ -1058,7 +1062,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 	var startCursor string
 	var endCursor string
 
-	if page != nil && page.Last != 0 {
+	if page != nil && page.IsBackwards() {
 		rows = lo.Reverse(rows)
 	}
 	if returnedCount > 0 {
