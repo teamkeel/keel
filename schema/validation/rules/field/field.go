@@ -82,13 +82,13 @@ func ValidFieldTypesRule(asts []*parser.AST) (errs errorhandling.ValidationError
 
 // FieldNamesMaxLengthRule will validate that field names are smaller than the maximum allowed by postgres (63 bytes).
 func FieldNamesMaxLengthRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	const MAX_BYTES = 63
+	const maxBytes = 63
 
 	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
 			identifier := casing.ToSnake(field.Name.Value)
 
-			if len(identifier) > MAX_BYTES {
+			if len(identifier) > maxBytes {
 				errs.Append(errorhandling.ErrorFieldNamesMaxLength,
 					map[string]string{
 						"Name": field.Name.Value,

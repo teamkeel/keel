@@ -13,14 +13,14 @@ import (
 // This maximum length is applied to the snake cased version of the field name.
 func ModelNamesMaxLengthRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	const (
-		MAX_BYTES  = 63
-		MAX_SUFFIX = "_updated_at"
+		maxBytes  = 63
+		maxSuffix = "_updated_at"
 	)
 
 	for _, model := range query.Models(asts) {
-		identifier := casing.ToSnake(model.Name.Value) + MAX_SUFFIX
+		identifier := casing.ToSnake(model.Name.Value) + maxSuffix
 
-		if len(identifier) > MAX_BYTES {
+		if len(identifier) > maxBytes {
 			errs.Append(errorhandling.ErrorModelNamesMaxLength,
 				map[string]string{
 					"Name": model.Name.Value,
