@@ -55,6 +55,8 @@ const (
 	ErrorExpressionMultipleConditions        = "E049"
 	ErrorDefaultExpressionNeeded             = "E050"
 	ErrorDefaultExpressionOperatorPresent    = "E051"
+	ErrorFieldNamesMaxLength                 = "E052"
+	ErrorModelNamesMaxLength                 = "E053"
 	ErrorCreateActionAmbiguousRelationship   = "E059"
 	ErrorExpressionTypeNotNullable           = "E060"
 	ErrorExpressionSingleConditionNotBoolean = "E061"

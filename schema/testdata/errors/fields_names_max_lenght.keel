@@ -1,0 +1,7 @@
+model Foo {
+    fields {
+        //expect-error:9:62:E052:Cannot use 'aVeryLongLongLongLongLongFieldNameThatIsTrulyVeryLong' as a field name as it is too long.
+        aVeryLongLongLongLongLongFieldNameThatIsTrulyVeryLong Text
+        aLongLongLongLongLongFieldNameThatIsNotVeryLong Text
+    }
+}
