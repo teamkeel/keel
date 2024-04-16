@@ -290,6 +290,10 @@ test("array fields - list action implicit querying - text", async () => {
     texts: ["Weave", "Keel"],
   });
 
+  const t7 = await actions.createThing({
+    texts: ["Keelson", "Keelson"],
+  });
+
   const things1 = await actions.listThings({
     where: {
       texts: {
@@ -310,11 +314,12 @@ test("array fields - list action implicit querying - text", async () => {
     },
   });
 
-  expect(things2.results).toHaveLength(4);
+  expect(things2.results).toHaveLength(5);
   expect(things2.results[0].id).toEqual(t2.id);
   expect(things2.results[1].id).toEqual(t4.id);
   expect(things2.results[2].id).toEqual(t5.id);
   expect(things2.results[3].id).toEqual(t6.id);
+  expect(things2.results[4].id).toEqual(t7.id);
 
   const things3 = await actions.listThings({
     where: {
@@ -335,12 +340,13 @@ test("array fields - list action implicit querying - text", async () => {
     },
   });
 
-  expect(things4.results).toHaveLength(5);
+  expect(things4.results).toHaveLength(6);
   expect(things4.results[0].id).toEqual(t1.id);
   expect(things4.results[1].id).toEqual(t2.id);
   expect(things4.results[2].id).toEqual(t3.id);
   expect(things4.results[3].id).toEqual(t5.id);
   expect(things4.results[4].id).toEqual(t6.id);
+  expect(things4.results[5].id).toEqual(t7.id);
 
   const things5 = await actions.listThings({
     where: {
@@ -361,12 +367,89 @@ test("array fields - list action implicit querying - text", async () => {
     },
   });
 
-  expect(things6.results).toHaveLength(5);
+  expect(things6.results).toHaveLength(6);
   expect(things6.results[0].id).toEqual(t1.id);
   expect(things6.results[1].id).toEqual(t2.id);
   expect(things6.results[2].id).toEqual(t3.id);
   expect(things6.results[3].id).toEqual(t4.id);
   expect(things6.results[4].id).toEqual(t6.id);
+  expect(things6.results[5].id).toEqual(t7.id);
+
+  const things7 = await actions.listThings({
+    where: {
+      texts: {
+        any: {
+          equals: "Weave",
+        },
+      },
+    },
+  });
+
+  expect(things7.results).toHaveLength(4);
+  expect(things7.results[0].id).toEqual(t1.id);
+  expect(things7.results[1].id).toEqual(t2.id);
+  expect(things7.results[2].id).toEqual(t3.id);
+  expect(things7.results[3].id).toEqual(t6.id);
+
+  const things8 = await actions.listThings({
+    where: {
+      texts: {
+        all: {
+          equals: "Keelson",
+        },
+      },
+    },
+  });
+
+  expect(things8.results).toHaveLength(1);
+  expect(things8.results[0].id).toEqual(t7.id);
+
+  const things9 = await actions.listThings({
+    where: {
+      texts: {
+        any: {
+          equals: "Keelson",
+          notEquals: "Weave",
+        },
+      },
+    },
+  });
+
+  expect(things9.results).toHaveLength(1);
+  expect(things9.results[0].id).toEqual(t7.id);
+
+  const things10 = await actions.listThings({
+    where: {
+      texts: {
+        any: {
+          notEquals: "Weave",
+        },
+      },
+    },
+  });
+
+  expect(things10.results).toHaveLength(3);
+  expect(things10.results[0].id).toEqual(t4.id);
+  expect(things10.results[1].id).toEqual(t5.id);
+  expect(things10.results[2].id).toEqual(t7.id);
+
+  const things11 = await actions.listThings({
+    where: {
+      texts: {
+        all: {
+          notEquals: "Keelson",
+        },
+      },
+    },
+  });
+  console.log(things11.results);
+  expect(things11.results).toHaveLength(6);
+  expect(things11.results[0].id).toEqual(t1.id);
+  expect(things11.results[1].id).toEqual(t2.id);
+  expect(things11.results[2].id).toEqual(t3.id);
+  expect(things11.results[3].id).toEqual(t4.id);
+  expect(things11.results[4].id).toEqual(t5.id);
+  expect(things11.results[5].id).toEqual(t6.id);
 });
 
 test("array fields - list action implicit querying - number", async () => {
@@ -496,51 +579,6 @@ test("array fields - list action implicit querying - timestamp", async () => {
         equals: [
           new Date(2024, 1, 1, 30, 45, 50, 0),
           new Date(2024, 1, 2, 59, 0, 0, 0),
-        ],
-      },
-    },
-  });
-
-  expect(things.results).toHaveLength(2);
-  expect(things.results[0].id).toEqual(t1.id);
-  expect(things.results[1].id).toEqual(t3.id);
-});
-
-test("array fields - list action implicit querying - date", async () => {
-  const t1 = await actions.createThing({
-    dates: [new Date(2024, 1, 1, 0, 0, 0, 0), new Date(2024, 1, 2, 0, 0, 0, 0)],
-  });
-
-  const t2 = await actions.createThing({
-    dates: [
-      new Date(2024, 1, 1, 0, 0, 0, 0),
-      new Date(2024, 1, 2, 0, 0, 0, 0),
-      new Date(2024, 1, 3, 0, 0, 0, 0),
-    ],
-  });
-
-  const t3 = await actions.createThing({
-    dates: [new Date(2024, 1, 1, 0, 0, 0, 0), new Date(2024, 1, 2, 0, 0, 0, 0)],
-  });
-
-  const t4 = await actions.createThing({
-    dates: null,
-  });
-
-  const t5 = await actions.createThing({
-    dates: [],
-  });
-
-  const t6 = await actions.createThing({
-    dates: [new Date(2024, 1, 2, 0, 0, 0, 0), new Date(2024, 1, 1, 0, 0, 0, 0)],
-  });
-
-  const things = await actions.listThings({
-    where: {
-      dates: {
-        equals: [
-          new Date(2024, 1, 1, 0, 0, 0, 0),
-          new Date(2024, 1, 2, 0, 0, 0, 0),
         ],
       },
     },

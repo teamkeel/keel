@@ -56,26 +56,59 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 		}
 
 		valueMap, ok := value.(map[string]any)
-
-		// Cannot be parsed into map
 		if !ok {
 			return fmt.Errorf("'%s' input value %v is not in correct format", input.Name, value)
 		}
 
 		for operatorStr, operand := range valueMap {
-			operator, err := graphQlOperatorToActionOperator(operatorStr)
-			if err != nil {
-				return err
+			var operator ActionOperator
+			var err error
+
+			switch operatorStr {
+			case "any", "all":
+				arrayQueryValueMap, ok := value.(map[string]any)
+				if !ok {
+					return fmt.Errorf("'%s' input value %v is not in correct format", operatorStr, value)
+				}
+
+				for arrayOperatorStr, arrayOperand := range arrayQueryValueMap[operatorStr].(map[string]any) {
+					switch operatorStr {
+					case "any":
+						operator, err = anyQueryOperationToActionOperator(arrayOperatorStr)
+					case "all":
+						operator, err = allQueryOperatorToActionOperator(arrayOperatorStr)
+					}
+
+					if err != nil {
+						return err
+					}
+
+					// Resolve the database statement for this expression
+					err = query.whereByImplicitFilter(scope, input.Target, operator, arrayOperand)
+					if err != nil {
+						return err
+					}
+
+					// Implicit input conditions are ANDed together
+					query.And()
+				}
+
+			default:
+				operator, err = queryOperatorToActionOperator(operatorStr)
+				if err != nil {
+					return err
+				}
+
+				// Resolve the database statement for this expression
+				err = query.whereByImplicitFilter(scope, input.Target, operator, operand)
+				if err != nil {
+					return err
+				}
+
+				// Implicit input conditions are ANDed together
+				query.And()
 			}
 
-			// Resolve the database statement for this expression
-			err = query.whereByImplicitFilter(scope, input.Target, operator, operand)
-			if err != nil {
-				return err
-			}
-
-			// Implicit input conditions are ANDed together
-			query.And()
 		}
 	}
 

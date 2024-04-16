@@ -3,22 +3,86 @@ type Query {
   things(input: ThingsInput!): ThingConnection!
 }
 
+input DateArrayAllQueryInput {
+  after: ISO8601
+  before: ISO8601
+  equals: ISO8601
+  notEquals: ISO8601
+  onOrAfter: ISO8601
+  onOrBefore: ISO8601
+}
+
+input DateArrayAnyQueryInput {
+  after: ISO8601
+  before: ISO8601
+  equals: ISO8601
+  notEquals: ISO8601
+  onOrAfter: ISO8601
+  onOrBefore: ISO8601
+}
+
 input DateArrayQueryInput {
+  all: DateArrayAllQueryInput
+  any: DateArrayAnyQueryInput
   equals: [ISO8601]
   notEquals: [ISO8601]
 }
 
+input IntArrayAllQueryInput {
+  equals: Int
+  greaterThan: Int
+  greaterThanOrEquals: Int
+  lessThan: Int
+  lessThanOrEquals: Int
+  notEquals: Int
+}
+
+input IntArrayAnyQueryInput {
+  equals: Int
+  greaterThan: Int
+  greaterThanOrEquals: Int
+  lessThan: Int
+  lessThanOrEquals: Int
+  notEquals: Int
+}
+
 input IntArrayQueryInput {
+  all: IntArrayAllQueryInput
+  any: IntArrayAnyQueryInput
   equals: [Int]
   notEquals: [Int]
 }
 
+input MyEnumArrayAllQueryInput {
+  equals: MyEnum
+  notEquals: MyEnum
+}
+
+input MyEnumArrayAnyQueryInput {
+  equals: MyEnum
+  notEquals: MyEnum
+}
+
 input MyEnumArrayQueryInput {
+  all: MyEnumArrayAllQueryInput
+  any: MyEnumArrayAnyQueryInput
   equals: [MyEnum]
   notEquals: [MyEnum]
 }
 
+input StringArrayAllQueryInput {
+  equals: String
+  notEquals: String
+}
+
+input StringArrayAnyQueryInput {
+  equals: String
+  notEquals: String
+}
+
 input StringArrayQueryInput {
+  all: StringArrayAllQueryInput
+  any: StringArrayAnyQueryInput
   equals: [String]
   notEquals: [String]
 }
