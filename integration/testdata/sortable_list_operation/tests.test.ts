@@ -171,6 +171,7 @@ test("sortable - before cursor - better than John", async () => {
   const cursor = winners.results[3].id;
   const betterThanJohn = await actions.listRankings({
     before: cursor,
+    last: 10,
     orderBy: [{ gold: "desc" }, { silver: "desc" }, { bronze: "desc" }],
   });
 
