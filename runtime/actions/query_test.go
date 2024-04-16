@@ -2980,6 +2980,126 @@ var testCases = []testCase{
 		expectedArgs: []any{"science", "science", 50},
 	},
 	{
+		name: "list_array_implicit_any_equals",
+		keelSchema: `
+		model Post {
+			fields {
+				tags Text[]
+			}
+			actions {
+				list listPosts(tags)
+			}
+		}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"tags": map[string]any{"any": map[string]any{"equals": "science"}}}},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ? = ANY("post"."tags")) AS totalCount 	
+			FROM "post" 
+			WHERE ? = ANY("post"."tags")
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"science", "science", 50},
+	},
+	{
+		name: "list_array_implicit_all_equals",
+		keelSchema: `
+		model Post {
+			fields {
+				tags Text[]
+			}
+			actions {
+				list listPosts(tags)
+			}
+		}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"tags": map[string]any{"all": map[string]any{"equals": "science"}}}},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE (? = ALL("post"."tags") AND "post"."tags" IS DISTINCT FROM '{}')) AS totalCount 	
+			FROM "post" 
+			WHERE (? = ALL("post"."tags") AND "post"."tags" IS DISTINCT FROM '{}')
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"science", "science", 50},
+	},
+	{
+		name: "list_array_implicit_all_less_than",
+		keelSchema: `
+		model Post {
+			fields {
+				votes Number[]
+			}
+			actions {
+				list listPosts(votes)
+			}
+		}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"votes": map[string]any{"all": map[string]any{"lessThan": 5}}}},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ? > ALL("post"."votes")) AS totalCount 	
+			FROM "post" 
+			WHERE ? > ALL("post"."votes")
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{5, 5, 50},
+	},
+	{
+		name: "list_array_implicit_any_less_than",
+		keelSchema: `
+		model Post {
+			fields {
+				votes Number[]
+			}
+			actions {
+				list listPosts(votes)
+			}
+		}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"votes": map[string]any{"any": map[string]any{"lessThan": 5}}}},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ? > ANY("post"."votes")) AS totalCount 	
+			FROM "post" 
+			WHERE ? > ANY("post"."votes")
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{5, 5, 50},
+	},
+	{
+		name: "list_array_implicit_all_after",
+		keelSchema: `
+		model Post {
+			fields {
+				editedAt Timestamp[]
+			}
+			actions {
+				list listPosts(editedAt)
+			}
+		}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"editedAt": map[string]any{"all": map[string]any{"after": "2024-01-01T00:12:00Z"}}}},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ? < ALL("post"."edited_at")) AS totalCount 	
+			FROM "post" 
+			WHERE ? < ALL("post"."edited_at")
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"2024-01-01T00:12:00Z", "2024-01-01T00:12:00Z", 50},
+	},
+	{
 		name: "list_array_expression_in",
 		keelSchema: `
 			model Post {
