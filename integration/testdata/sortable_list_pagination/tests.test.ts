@@ -201,7 +201,7 @@ test("pagination - backwards", async () => {
     orderBy: [{ value: "asc" }],
     first: 100,
   });
-  
+
   expect(allItems.results[25].letter).toEqual("z");
 
   // get last page of 10
