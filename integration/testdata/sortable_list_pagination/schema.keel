@@ -1,0 +1,14 @@
+model Item {
+    fields {
+        name Text
+        letter Text
+        value Number
+    }
+
+    actions {
+        list listItems() {
+            @sortable(letter, value)
+            @permission(expression: true)
+        }
+    }
+}
