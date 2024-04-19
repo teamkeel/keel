@@ -12,7 +12,10 @@ beforeEach(() => {
 beforeEach(resetDatabase);
 
 test("client - create action", async () => {
-  const post = await client.api.mutations.createPost({ title: "My Post", field1: "test" });
+  const post = await client.api.mutations.createPost({
+    title: "My Post",
+    field1: "test",
+  });
 
   expect(post.data).not.toBeNull();
   expect(post.data?.title).toEqual("My Post");
@@ -38,7 +41,10 @@ test("client - get action", async () => {
 });
 
 test("client - update action", async () => {
-  const post = await client.api.mutations.createPost({ title: "My Post", field1: "test" });
+  const post = await client.api.mutations.createPost({
+    title: "My Post",
+    field1: "test",
+  });
 
   const updated = await client.api.mutations.updatePost({
     where: { id: post.data!.id },
