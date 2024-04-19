@@ -708,38 +708,3 @@ test("arrays - set attribute with null", async () => {
   expect(created.timestamps).toBeNull();
   expect(created.enums).toBeNull();
 });
-
-test("array fields - model api - create", async () => {
-  const created = await models.thing.create({
-    texts: ["Keel", "Weave"],
-    numbers: [1, 2, 3],
-    booleans: [true, true, false],
-    dates: [
-      new Date(2023, 1, 2, 0, 0, 0, 0),
-      new Date(2024, 31, 12, 12, 45, 0, 0),
-      new Date(2025, 13, 3, 0, 0, 0, 0),
-    ],
-    timestamps: [
-      new Date("2023-01-02 23:00:30"),
-      new Date("2023-11-13 06:17:30.123"),
-      new Date("2024-02-01 23:00:30"),
-    ],
-    enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
-  });
-
-  const thing = await models.thing.findOne({ id: created.id });
-  expect(thing?.texts).toEqual(["Keel", "Weave"]);
-  expect(thing?.numbers).toEqual([1, 2, 3]);
-  expect(thing?.booleans).toEqual([true, true, false]);
-  expect(thing?.dates).toEqual([
-    new Date(2023, 1, 2, 0, 0, 0, 0),
-    new Date(2024, 31, 12, 0, 0, 0, 0),
-    new Date(2025, 13, 3, 0, 0, 0, 0),
-  ]);
-  expect(thing?.timestamps).toEqual([
-    new Date("2023-01-02 23:00:30"),
-    new Date("2023-11-13 06:17:30.123"),
-    new Date("2024-02-01 23:00:30"),
-  ]);
-  expect(thing?.enums).toEqual([MyEnum.One, MyEnum.Two, MyEnum.Three]);
-});

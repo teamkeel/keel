@@ -142,7 +142,7 @@ export interface PersonWhereConditions {
 	dateOfBirth?: Date | runtime.DateWhereCondition;
 	gender?: Gender | GenderWhereCondition;
 	hasChildren?: boolean | runtime.BooleanWhereCondition;
-	tags?: string[] | runtime.ArrayWhereCondition<string>;
+	tags?: string[] | runtime.StringArrayWhereCondition;
 	bio?: string | runtime.StringWhereCondition;
 	id?: string | runtime.IDWhereCondition;
 	createdAt?: Date | runtime.DateWhereCondition;

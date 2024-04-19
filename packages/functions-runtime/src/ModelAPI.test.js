@@ -26,6 +26,7 @@ beforeEach(async () => {
   CREATE TABLE post(
     id               text PRIMARY KEY,
     title            text,
+    tags             text[],
     author_id        text references person(id)
   );
   CREATE TABLE author(
@@ -101,7 +102,6 @@ test("ModelAPI.create - throws if database constraint fails", async () => {
     favouriteNumber: 10,
   });
   const promise = personAPI.create({
-    id: KSUID.randomSync().string,
     id: row.id,
     name: "Jim",
     married: false,
@@ -110,6 +110,23 @@ test("ModelAPI.create - throws if database constraint fails", async () => {
   await expect(promise).rejects.toThrow(
     `duplicate key value violates unique constraint "person_pkey"`
   );
+});
+
+test("ModelAPI.create - arrays", async () => {
+  const person = await personAPI.create({
+    id: KSUID.randomSync().string,
+    name: "Jim",
+    married: false,
+    favouriteNumber: 10,
+  });
+
+  const row = await postAPI.create({
+    id: "id",
+    title: "My Post",
+    tags: ["tag 1", "tag 2"],
+    authorId: person.id,
+  });
+  expect(row.tags).toEqual(["tag 1", "tag 2"]);
 });
 
 test("ModelAPI.findOne", async () => {
@@ -1006,7 +1023,7 @@ describe("QueryBuilder", () => {
     expect(deletedId).toEqual(p.id);
   });
 
-  test("Model API chained delete - non existent id", async () => {
+  test("ModelAPI chained delete - non existent id", async () => {
     const fakeId = "xxx";
 
     // the error message returned from the runtime will actually be 'record not found'
@@ -1017,7 +1034,7 @@ describe("QueryBuilder", () => {
     );
   });
 
-  test("Model API chained findOne", async () => {
+  test("ModelAPI chained findOne", async () => {
     const p = await personAPI.create({
       id: KSUID.randomSync().string,
       name: "Jake",
@@ -1058,7 +1075,7 @@ describe("QueryBuilder", () => {
   //   expect(results[0].id).toEqual(p2);
   // });
 
-  test("Model API chained update", async () => {
+  test("ModelAPI chained update", async () => {
     const p1 = await postAPI.create({
       id: KSUID.randomSync().string,
       title: "adam",
@@ -1098,5 +1115,337 @@ describe("QueryBuilder", () => {
         })
         .update({ title: "bob" })
     ).resolves.toEqual(null);
+  });
+
+  test("ModelAPI.findMany - array equals", async () => {
+    const person = await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Jake",
+      favouriteNumber: 8,
+      date: new Date("2021-12-31"),
+    });
+    const p1 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 1",
+      tags: ["Tag 1", "Tag 2"],
+      authorId: person.id,
+    });
+    const p2 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: ["Tag 2", "Tag 3"],
+      authorId: person.id,
+    });
+    const p3 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: [],
+      authorId: person.id,
+    });
+    const p4 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: null,
+      authorId: person.id,
+    });
+
+    const rows = await postAPI.findMany({
+      where: {
+        tags: {
+          equals: ["Tag 1", "Tag 2"],
+        },
+      },
+    });
+
+    expect(rows.length).toEqual(1);
+    expect(rows.map((x) => x.id).sort()).toEqual([p1.id].sort());
+  });
+
+  test("ModelAPI.findMany - array equals implicit", async () => {
+    const person = await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Jake",
+      favouriteNumber: 8,
+      date: new Date("2021-12-31"),
+    });
+    const p1 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 1",
+      tags: ["Tag 1", "Tag 2"],
+      authorId: person.id,
+    });
+    const p2 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: ["Tag 2", "Tag 3"],
+      authorId: person.id,
+    });
+    const p3 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: [],
+      authorId: person.id,
+    });
+
+    const rows = await postAPI.findMany({
+      where: {
+        tags: ["Tag 1", "Tag 2"],
+      },
+    });
+
+    expect(rows.length).toEqual(1);
+    expect(rows.map((x) => x.id).sort()).toEqual([p1.id].sort());
+  });
+
+  test("ModelAPI.findMany - array not equals", async () => {
+    const person = await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Jake",
+      favouriteNumber: 8,
+      date: new Date("2021-12-31"),
+    });
+    const p1 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 1",
+      tags: ["Tag 1", "Tag 2"],
+      authorId: person.id,
+    });
+    const p2 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: ["Tag 2", "Tag 3"],
+      authorId: person.id,
+    });
+    const p3 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: [],
+      authorId: person.id,
+    });
+    const p4 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: null,
+      authorId: person.id,
+    });
+
+    const rows = await postAPI.findMany({
+      where: {
+        tags: {
+          notEquals: ["Tag 1", "Tag 2"],
+        },
+      },
+    });
+
+    expect(rows.length).toEqual(3);
+    expect(rows.map((x) => x.id).sort()).toEqual([p4.id, p3.id, p2.id].sort());
+  });
+
+  test("ModelAPI.findMany - array any equals", async () => {
+    const person = await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Jake",
+      favouriteNumber: 8,
+      date: new Date("2021-12-31"),
+    });
+    const p1 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 1",
+      tags: ["Tag 1", "Tag 2"],
+      authorId: person.id,
+    });
+    const p2 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: ["Tag 2", "Tag 3"],
+      authorId: person.id,
+    });
+    const p3 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: [],
+      authorId: person.id,
+    });
+    const p4 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: null,
+      authorId: person.id,
+    });
+    const p5 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: ["Tag 3"],
+      authorId: person.id,
+    });
+
+    const rows = await postAPI.findMany({
+      where: {
+        tags: {
+          any: {
+            equals: "Tag 2",
+          },
+        },
+      },
+    });
+
+    expect(rows.length).toEqual(2);
+    expect(rows.map((x) => x.id).sort()).toEqual([p1.id, p2.id].sort());
+  });
+
+  test("ModelAPI.findMany - array any not equals", async () => {
+    const person = await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Jake",
+      favouriteNumber: 8,
+      date: new Date("2021-12-31"),
+    });
+    const p1 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 1",
+      tags: ["Tag 1", "Tag 2"],
+      authorId: person.id,
+    });
+    const p2 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: ["Tag 2", "Tag 3"],
+      authorId: person.id,
+    });
+    const p3 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: [],
+      authorId: person.id,
+    });
+    const p4 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: null,
+      authorId: person.id,
+    });
+    const p5 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: ["Tag 3"],
+      authorId: person.id,
+    });
+
+    const rows = await postAPI.findMany({
+      where: {
+        tags: {
+          any: {
+            notEquals: "Tag 3",
+          },
+        },
+      },
+    });
+
+    expect(rows.length).toEqual(2);
+    expect(rows.map((x) => x.id).sort()).toEqual([p1.id, p3.id].sort());
+  });
+
+  test("ModelAPI.findMany - array all equals", async () => {
+    const person = await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Jake",
+      favouriteNumber: 8,
+      date: new Date("2021-12-31"),
+    });
+    const p1 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 1",
+      tags: ["Tag 1", "Tag 2"],
+      authorId: person.id,
+    });
+    const p2 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: ["Tag 2", "Tag 3"],
+      authorId: person.id,
+    });
+    const p3 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: [],
+      authorId: person.id,
+    });
+    const p4 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: null,
+      authorId: person.id,
+    });
+    const p5 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: ["Tag 2", "Tag 2"],
+      authorId: person.id,
+    });
+
+    const rows = await postAPI.findMany({
+      where: {
+        tags: {
+          all: {
+            equals: "Tag 2",
+          },
+        },
+      },
+    });
+
+    expect(rows.length).toEqual(2);
+    expect(rows.map((x) => x.id).sort()).toEqual([p3.id, p5.id].sort());
+  });
+
+  test("ModelAPI.findMany - array all not equals", async () => {
+    const person = await personAPI.create({
+      id: KSUID.randomSync().string,
+      name: "Jake",
+      favouriteNumber: 8,
+      date: new Date("2021-12-31"),
+    });
+    const p1 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 1",
+      tags: ["Tag 1", "Tag 2"],
+      authorId: person.id,
+    });
+    const p2 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: ["Tag 2", "Tag 3"],
+      authorId: person.id,
+    });
+    const p3 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: [],
+      authorId: person.id,
+    });
+    const p4 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: null,
+      authorId: person.id,
+    });
+    const p5 = await postAPI.create({
+      id: KSUID.randomSync().string,
+      title: "Post 2",
+      tags: ["Tag 2", "Tag 2"],
+      authorId: person.id,
+    });
+
+    const rows = await postAPI.findMany({
+      where: {
+        tags: {
+          all: {
+            notEquals: "Tag 2",
+          },
+        },
+      },
+    });
+
+    expect(rows.length).toEqual(2);
+    expect(rows.map((x) => x.id).sort()).toEqual([p1.id, p2.id].sort());
   });
 });
