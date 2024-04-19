@@ -51,8 +51,8 @@ export type TimestampQueryInput = {
 export type StringArrayWhereCondition = {
   equals?: string[] | null;
   notEquals?: string[] | null;
-  any?:  StringArrayQueryWhereCondition | null;
-  all?:  StringArrayQueryWhereCondition | null;
+  any?: StringArrayQueryWhereCondition | null;
+  all?: StringArrayQueryWhereCondition | null;
 };
 
 export type StringArrayQueryWhereCondition = {
@@ -63,8 +63,8 @@ export type StringArrayQueryWhereCondition = {
 export type NumberArrayWhereCondition = {
   equals?: number[] | null;
   notEquals?: number[] | null;
-  any?:  NumberArrayQueryWhereCondition | null;
-  all?:  NumberArrayQueryWhereCondition | null;
+  any?: NumberArrayQueryWhereCondition | null;
+  all?: NumberArrayQueryWhereCondition | null;
 };
 
 export type NumberArrayQueryWhereCondition = {
@@ -79,8 +79,8 @@ export type NumberArrayQueryWhereCondition = {
 export type BooleanArrayWhereCondition = {
   equals?: bool[] | null;
   notEquals?: bool[] | null;
-  any?:  BooleanArrayQueryWhereCondition | null;
-  all?:  BooleanArrayQueryWhereCondition | null;
+  any?: BooleanArrayQueryWhereCondition | null;
+  all?: BooleanArrayQueryWhereCondition | null;
 };
 
 export type BooleanArrayQueryWhereCondition = {
@@ -91,8 +91,8 @@ export type BooleanArrayQueryWhereCondition = {
 export type DateArrayWhereCondition = {
   equals?: Date[] | null;
   notEquals?: Date[] | null;
-  any?:  DateArrayQueryWhereCondition | null;
-  all?:  DateArrayQueryWhereCondition | null;
+  any?: DateArrayQueryWhereCondition | null;
+  all?: DateArrayQueryWhereCondition | null;
 };
 
 export type DateArrayQueryWhereCondition = {

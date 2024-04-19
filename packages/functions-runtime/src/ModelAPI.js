@@ -198,7 +198,7 @@ class ModelAPI {
 
     builder = applyJoins(context, builder, where);
     builder = applyWhereConditions(context, builder, where);
-    
+
     return new QueryBuilder(this._tableName, context, builder);
   }
 }

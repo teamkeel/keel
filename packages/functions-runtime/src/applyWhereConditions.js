@@ -16,7 +16,7 @@ const opMapping = {
   onOrAfter: { op: ">=" },
   equals: { op: sql`is not distinct from` },
   notEquals: { op: sql`is distinct from` },
-  any: { 
+  any: {
     isArrayQuery: true,
     greaterThan: { op: ">" },
     greaterThanOrEquals: { op: ">=" },
@@ -28,8 +28,8 @@ const opMapping = {
     onOrAfter: { op: ">=" },
     equals: { op: "=" },
     notEquals: { op: "=", value: (v) => sql`NOT ${v}` },
-   },
-   all: { 
+  },
+  all: {
     isArrayQuery: true,
     greaterThan: { op: ">" },
     greaterThanOrEquals: { op: ">=" },
@@ -41,7 +41,7 @@ const opMapping = {
     onOrAfter: { op: ">=" },
     equals: { op: "=" },
     notEquals: { op: "=", value: (v) => sql`NOT ${v}` },
-   },
+  },
 };
 
 /**
@@ -62,7 +62,7 @@ function applyWhereConditions(context, qb, where = {}) {
     if (conf && conf[key]) {
       const rel = conf[key];
       context.withJoin(rel.referencesTable, () => {
-        qb = applyWhereConditions(context, qb, v);  
+        qb = applyWhereConditions(context, qb, v);
       });
       continue;
     }
@@ -70,10 +70,7 @@ function applyWhereConditions(context, qb, where = {}) {
     const fieldName = `${context.tableAlias()}.${snakeCase(key)}`;
 
     if (Object.prototype.toString.call(v) !== "[object Object]") {
-      qb = qb.where(
-        fieldName, 
-        sql`is not distinct from`, 
-        sql`${v}`);
+      qb = qb.where(fieldName, sql`is not distinct from`, sql`${v}`);
       continue;
     }
 
@@ -82,17 +79,19 @@ function applyWhereConditions(context, qb, where = {}) {
       if (!mapping) {
         throw new Error(`invalid where condition: ${op}`);
       }
-      
+
       if (mapping.isArrayQuery) {
         for (const arrayOp of Object.keys(v[op])) {
-          qb = qb.where(   
-             mapping[arrayOp].value ? mapping[arrayOp].value(v[op][arrayOp]) : sql`${v[op][arrayOp]}`,
-             mapping[arrayOp].op, 
-             sql`${sql(op)}(${sql.ref(fieldName)})`,
-           );
+          qb = qb.where(
+            mapping[arrayOp].value
+              ? mapping[arrayOp].value(v[op][arrayOp])
+              : sql`${v[op][arrayOp]}`,
+            mapping[arrayOp].op,
+            sql`${sql(op)}(${sql.ref(fieldName)})`
+          );
         }
       } else {
-        qb = qb.where(  
+        qb = qb.where(
           fieldName,
           mapping.op,
           mapping.value ? mapping.value(v[op]) : sql`${v[op]}`

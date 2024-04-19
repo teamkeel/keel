@@ -1,4 +1,4 @@
-import {  models, resetDatabase } from "@teamkeel/testing";
+import { models, resetDatabase } from "@teamkeel/testing";
 import { MyEnum } from "@teamkeel/sdk";
 import { test, expect, beforeEach } from "vitest";
 
@@ -106,7 +106,7 @@ test("array fields - update action", async () => {
 
   const thing = await models.thing.update(
     { id: created.id },
-     {
+    {
       texts: ["Keel", "Weave"],
       numbers: [1, 2, 3],
       booleans: [true, true, false],
@@ -121,7 +121,7 @@ test("array fields - update action", async () => {
         new Date("2024-02-01 23:00:30"),
       ],
       enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
-    },
+    }
   );
 
   expect(thing.texts).toHaveLength(2);
@@ -248,9 +248,8 @@ test("array fields - modelapi - text query", async () => {
   expect(things5).toHaveLength(1);
   expect(things5[0].id).toEqual(t5.id);
 
-
   const ads = await models.thing.findMany({
-    where: { texts: { any: {equals: "Weave" }}}
+    where: { texts: { any: { equals: "Weave" } } },
   });
 
   const things6 = await models.thing.findMany({
@@ -343,7 +342,6 @@ test("array fields - modelapi - text query", async () => {
   expect(things11[2].id).toEqual(t3.id);
   expect(things11[3].id).toEqual(t6.id);
 });
-
 
 test("array fields - list action implicit querying - number", async () => {
   const t1 = await models.thing.create({
