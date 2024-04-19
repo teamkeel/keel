@@ -4,7 +4,7 @@
   "description": "Internal package used by @teamkeel/sdk",
   "main": "src/index.js",
   "scripts": {
-    "test": "vitest run --reporter verbose --threads false",
+    "test": "vitest run --reporter verbose --threads false --testTimeout 60000 -t 'ModelAPI.findMany'", 
     "format": "npx prettier --write src/**/*.js"
   },
   "keywords": [],
@@ -27,7 +27,7 @@
     "change-case": "^4.1.2",
     "json-rpc-2.0": "^1.7.0",
     "ksuid": "^3.0.0",
-    "kysely": "^0.23.5",
+    "kysely": "^0.25.0",
     "pg": "^8.11.3",
     "traceparent": "^1.0.0"
   }

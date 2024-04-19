@@ -685,6 +685,36 @@ func writeEnumWhereCondition(w *codegen.Writer, enum *proto.Enum) {
 	w.Writeln(" | null;")
 	w.Dedent()
 	w.Writeln("}")
+
+	w.Writef("export interface %sArrayWhereCondition {\n", enum.Name)
+	w.Indent()
+	w.Write("equals?: ")
+	w.Write(enum.Name)
+	w.Writeln("[] | null;")
+	w.Write("notEquals?: ")
+	w.Write(enum.Name)
+	w.Writeln("[] | null;")
+	w.Write("any?: ")
+	w.Write(enum.Name)
+	w.Write("ArrayQueryWhereCondition")
+	w.Writeln(" | null;")
+	w.Write("all?: ")
+	w.Write(enum.Name)
+	w.Write("ArrayQueryWhereCondition")
+	w.Writeln(" | null;")
+	w.Dedent()
+	w.Writeln("}")
+
+	w.Writef("export interface %sArrayQueryWhereCondition {\n", enum.Name)
+	w.Indent()
+	w.Write("equals?: ")
+	w.Write(enum.Name)
+	w.Writeln(" | null;")
+	w.Write("notEquals?: ")
+	w.Write(enum.Name)
+	w.Writeln(" | null;")
+	w.Dedent()
+	w.Writeln("}")
 }
 
 func writeDatabaseInterface(w *codegen.Writer, schema *proto.Schema) {
@@ -1556,7 +1586,18 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 
 func toWhereConditionType(f *proto.Field) string {
 	if f.Type.Repeated {
-		return fmt.Sprintf("runtime.ArrayWhereCondition<%s>", toTypeScriptType(f.Type, false))
+		switch f.Type.Type {
+		case proto.Type_TYPE_ID, proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
+			return "runtime.StringArrayWhereCondition"
+		case proto.Type_TYPE_BOOL:
+			return "runtime.BooleanArrayWhereCondition"
+		case proto.Type_TYPE_INT:
+			return "runtime.NumberArrayWhereCondition"
+		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+			return "runtime.DateArrayWhereCondition"
+		case proto.Type_TYPE_ENUM:
+			return fmt.Sprintf("%sArrayWhereCondition", f.Type.EnumName.Value)
+		}
 	}
 
 	switch f.Type.Type {

@@ -90,13 +90,13 @@ function getDatabaseClient() {
       new CamelCasePlugin(),
     ],
     log(event) {
-      if ("DEBUG" in process.env) {
+    //  if ("DEBUG" in process.env) {
         if (event.level === "query") {
           console.log(event.query.sql);
           console.log(event.query.parameters);
         }
       }
-    },
+    //},
   });
 
   return db;

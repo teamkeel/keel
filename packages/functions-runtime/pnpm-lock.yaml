@@ -30,8 +30,8 @@ dependencies:
     specifier: ^3.0.0
     version: 3.0.0
   kysely:
-    specifier: ^0.23.5
-    version: 0.23.5
+    specifier: ^0.25.0
+    version: 0.25.0
   pg:
     specifier: ^8.11.3
     version: 8.11.3
@@ -830,8 +830,8 @@ packages:
       base-convert-int-array: 1.0.1
     dev: false
 
-  /kysely@0.23.5:
-    resolution: {integrity: sha512-TH+b56pVXQq0tsyooYLeNfV11j6ih7D50dyN8tkM0e7ndiUH28Nziojiog3qRFlmEj9XePYdZUrNJ2079Qjdow==}
+  /kysely@0.25.0:
+    resolution: {integrity: sha512-srn0efIMu5IoEBk0tBmtGnoUss4uwvxtbFQWG/U2MosfqIace1l43IFP1PmEpHRDp+Z79xIcKEqmHH3dAvQdQA==}
     engines: {node: '>=14.0.0'}
     dev: false
 
