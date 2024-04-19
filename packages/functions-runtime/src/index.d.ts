@@ -27,7 +27,6 @@ export type NumberWhereCondition = {
   notEquals?: number | null;
 };
 
-// Date database API
 export type DateWhereCondition = {
   equals?: Date | string | null;
   before?: Date | string | null;
@@ -36,7 +35,6 @@ export type DateWhereCondition = {
   onOrAfter?: Date | string | null;
 };
 
-// Date query input
 export type DateQueryInput = {
   equals?: string | null;
   before?: string | null;
@@ -45,16 +43,65 @@ export type DateQueryInput = {
   onOrAfter?: string | null;
 };
 
-// Timestamp query input
 export type TimestampQueryInput = {
   before: string | null;
   after: string | null;
 };
 
-// Array query input
-export type ArrayWhereCondition<T> = {
-  equals?: T[] | null;
-  notEquals?: T[] | null;
+export type StringArrayWhereCondition = {
+  equals?: string[] | null;
+  notEquals?: string[] | null;
+  any?: StringArrayQueryWhereCondition | null;
+  all?: StringArrayQueryWhereCondition | null;
+};
+
+export type StringArrayQueryWhereCondition = {
+  equals?: string | null;
+  notEquals?: string | null;
+};
+
+export type NumberArrayWhereCondition = {
+  equals?: number[] | null;
+  notEquals?: number[] | null;
+  any?: NumberArrayQueryWhereCondition | null;
+  all?: NumberArrayQueryWhereCondition | null;
+};
+
+export type NumberArrayQueryWhereCondition = {
+  greaterThan?: number | null;
+  greaterThanOrEquals?: number | null;
+  lessThan?: number | null;
+  lessThanOrEquals?: number | null;
+  equals?: number | null;
+  notEquals?: number | null;
+};
+
+export type BooleanArrayWhereCondition = {
+  equals?: bool[] | null;
+  notEquals?: bool[] | null;
+  any?: BooleanArrayQueryWhereCondition | null;
+  all?: BooleanArrayQueryWhereCondition | null;
+};
+
+export type BooleanArrayQueryWhereCondition = {
+  equals?: bool | null;
+  notEquals?: bool | null;
+};
+
+export type DateArrayWhereCondition = {
+  equals?: Date[] | null;
+  notEquals?: Date[] | null;
+  any?: DateArrayQueryWhereCondition | null;
+  all?: DateArrayQueryWhereCondition | null;
+};
+
+export type DateArrayQueryWhereCondition = {
+  greaterThan?: Date | null;
+  greaterThanOrEquals?: Date | null;
+  lessThan?: Date | null;
+  lessThanOrEquals?: number | null;
+  equals?: Date | null;
+  notEquals?: Date | null;
 };
 
 export type ContextAPI = {
