@@ -117,7 +117,23 @@
             "-test.run",
             "TestRuntime/${input:testCase}"
         ]
-    }
+    },
+    {
+        "name": "Debug functions runtime tests",
+        "type": "node",
+        "request": "launch",
+        "runtimeExecutable": "pnpm",
+        "runtimeArgs": [
+          "run",
+          "test",
+        ],
+        "cwd": "${workspaceRoot}/packages/functions-runtime/",
+        "console": "integratedTerminal",
+        "skipFiles": [
+          "${workspaceFolder}/node_modules/**/*.js",
+          "<node_internals>/**/*.js"
+        ]
+      },
     ],
     "inputs": [
         {
