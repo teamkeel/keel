@@ -3,12 +3,13 @@ model Post {
         title Text
         views Number @default(0)
         category Category?
+        field1 Text?
     }
 
     actions {
-        create createPost() with (title, category?, views?)
+        create createPost() with (title, category?, views?, field1?)
         get getPost(id)
-        update updatePost(id) with (title, category?, views?)
+        update updatePost(id) with (title, category?, views?, field1?)
         delete deletePost(id)
         list listPosts(title, category?, views?) 
     }

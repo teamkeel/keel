@@ -12,12 +12,16 @@ beforeEach(() => {
 beforeEach(resetDatabase);
 
 test("client - create action", async () => {
-  const post = await client.api.mutations.createPost({ title: "My Post" });
+  const post = await client.api.mutations.createPost({
+    title: "My Post",
+    field1: "test",
+  });
 
   expect(post.data).not.toBeNull();
   expect(post.data?.title).toEqual("My Post");
   expect(post.data?.views).toEqual(0);
   expect(post.data?.category).toBeNull();
+  expect(post.data?.field1).toEqual("test");
 
   const retrieved = await models.post.findOne({ id: post.data!.id });
   expect(retrieved).not.toBeNull();
@@ -37,7 +41,10 @@ test("client - get action", async () => {
 });
 
 test("client - update action", async () => {
-  const post = await client.api.mutations.createPost({ title: "My Post" });
+  const post = await client.api.mutations.createPost({
+    title: "My Post",
+    field1: "test",
+  });
 
   const updated = await client.api.mutations.updatePost({
     where: { id: post.data!.id },
@@ -45,11 +52,13 @@ test("client - update action", async () => {
       title: "Updated Post",
       views: 10,
       category: Category.Lifestyle,
+      field1: "test again",
     },
   });
 
   expect(updated.data).not.toBeNull();
   expect(updated.data?.title).toEqual("Updated Post");
+  expect(updated.data?.field1).toEqual("test again");
   expect(updated.data?.views).toEqual(10);
   expect(updated.data?.category).toEqual(Category.Lifestyle);
 
