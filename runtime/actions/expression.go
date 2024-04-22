@@ -114,7 +114,7 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 	}
 
 	if condition.Type() == parser.ValueCondition {
-		lhsOperandType, err := lhsResolver.GetOperandType()
+		lhsOperandType, _, err := lhsResolver.GetOperandType()
 		if err != nil {
 			return err
 		}
@@ -135,10 +135,27 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 			return err
 		}
 
+		_, isArray, err := rhsResolver.GetOperandType()
+		if err != nil {
+			return err
+		}
+
 		// Generate the rhs QueryOperand
 		right, err = generateQueryOperand(rhsResolver, args)
 		if err != nil {
 			return err
+		}
+
+		// If the operand is not an array field nor an inline query,
+		// then we know it's a nested relationship lookup and
+		// then rather use Equals and NotEquals because we are joining.
+		if !isArray && !right.IsInlineQuery() {
+			if operator == OneOf {
+				operator = Equals
+			}
+			if operator == NotOneOf {
+				operator = NotEquals
+			}
 		}
 
 		if rhsResolver.IsModelDbColumn() {

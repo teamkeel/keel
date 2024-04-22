@@ -109,287 +109,606 @@ func defaultAPI(scm *proto.Schema) *proto.Api {
 	}
 }
 
-func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error) {
+func makeIDQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_ID,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "oneOf",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type:     proto.Type_TYPE_ID,
+				Repeated: true,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_ID,
+			},
+		},
+	}}
+}
+
+func makeStringQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "startsWith",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "endsWith",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "contains",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "oneOf",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type:     proto.Type_TYPE_STRING,
+				Repeated: true,
+			},
+		},
+	}}
+}
+
+func makeStringArrayQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+	}}
+}
+
+func makeIntQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "oneOf",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type:     proto.Type_TYPE_INT,
+				Repeated: true,
+			},
+		},
+	}}
+}
+
+func makeIntArrayQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		},
+	}}
+}
+
+func makeBooleanQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_BOOL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_BOOL,
+			},
+		},
+	}}
+}
+
+func makeBooleanArrayQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_BOOL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_BOOL,
+			},
+		},
+	}}
+}
+
+func makeDateQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "before",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "onOrBefore",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "after",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "onOrAfter",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+	}}
+}
+
+func makeDateArrayQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "before",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "onOrBefore",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "after",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "onOrAfter",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DATE,
+			},
+		},
+	}}
+}
+
+func makeTimestampQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "before",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_TIMESTAMP,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "after",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_TIMESTAMP,
+			},
+		},
+	}}
+}
+
+func makeTimestampArrayQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "before",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_TIMESTAMP,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "after",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_TIMESTAMP,
+			},
+		},
+	}}
+}
+
+func makeEnumQueryInputMessage(name string, enumName string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Nullable:    true,
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type:     proto.Type_TYPE_ENUM,
+				EnumName: wrapperspb.String(enumName),
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type:     proto.Type_TYPE_ENUM,
+				EnumName: wrapperspb.String(enumName),
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "oneOf",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type:     proto.Type_TYPE_ENUM,
+				EnumName: wrapperspb.String(enumName),
+				Repeated: true,
+			},
+		},
+	}}
+}
+
+func makeEnumArrayQueryInputMessage(name string, enumName string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type:     proto.Type_TYPE_ENUM,
+				EnumName: wrapperspb.String(enumName),
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type:     proto.Type_TYPE_ENUM,
+				EnumName: wrapperspb.String(enumName),
+			},
+		},
+	}}
+}
+
+func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error) {
+	var prefix string
 	switch typeInfo.Type {
 	case proto.Type_TYPE_ID:
-		msgName := makeInputMessageName("IDQuery")
-		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
-			{
-				MessageName: msgName,
-				Name:        "equals",
-				Optional:    true,
-				Nullable:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "oneOf",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type:     typeInfo.Type,
-					Repeated: true,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "notEquals",
-				Optional:    true,
-				Nullable:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-		}}, nil
+		prefix = "ID"
 	case proto.Type_TYPE_STRING:
-		msgName := makeInputMessageName("StringQuery")
-		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
-			{
-				MessageName: msgName,
-				Name:        "equals",
-				Optional:    true,
-				Nullable:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "notEquals",
-				Optional:    true,
-				Nullable:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "startsWith",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "endsWith",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "contains",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "oneOf",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type:     typeInfo.Type,
-					Repeated: true,
-				},
-			},
-		}}, nil
+		prefix = "String"
 	case proto.Type_TYPE_INT:
-		msgName := makeInputMessageName("IntQuery")
-		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
-			{
-				MessageName: msgName,
-				Name:        "equals",
-				Optional:    true,
-				Nullable:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "notEquals",
-				Optional:    true,
-				Nullable:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "lessThan",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "lessThanOrEquals",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "greaterThan",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "greaterThanOrEquals",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "oneOf",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type:     typeInfo.Type,
-					Repeated: true,
-				},
-			},
-		}}, nil
+		prefix = "Int"
 	case proto.Type_TYPE_BOOL:
-		msgName := makeInputMessageName("BooleanQuery")
-		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
-			{
-				MessageName: msgName,
-				Name:        "equals",
-				Optional:    true,
-				Nullable:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "notEquals",
-				Optional:    true,
-				Nullable:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-		}}, nil
+		prefix = "Boolean"
 	case proto.Type_TYPE_DATE:
-		msgName := makeInputMessageName("DateQuery")
-		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
-			{
-				MessageName: msgName,
-				Name:        "equals",
-				Optional:    true,
-				Nullable:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "notEquals",
-				Optional:    true,
-				Nullable:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "before",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "onOrBefore",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "after",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "onOrAfter",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-		}}, nil
+		prefix = "Date"
 	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		msgName := makeInputMessageName("TimestampQuery")
-		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
-			{
-				MessageName: msgName,
-				Name:        "before",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "after",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type: typeInfo.Type,
-				},
-			},
-		}}, nil
+		prefix = "Timestamp"
 	case proto.Type_TYPE_ENUM:
-		msgName := makeInputMessageName(fmt.Sprintf("%sQuery", typeInfo.EnumName.Value))
+		prefix = typeInfo.EnumName.Value
+	}
+
+	if typeInfo.Repeated {
+		msgName := makeInputMessageName(fmt.Sprintf("%sArrayQuery", prefix))
+
+		var enumName *wrapperspb.StringValue
+		if typeInfo.Type == proto.Type_TYPE_ENUM {
+			enumName = typeInfo.EnumName
+		}
+
+		var allQueryMsg *proto.Message
+		var anyQueryMsg *proto.Message
+
+		allQueryMsgName := makeInputMessageName(fmt.Sprintf("%sArrayAllQuery", prefix))
+		anyQueryMsgName := makeInputMessageName(fmt.Sprintf("%sArrayAnyQuery", prefix))
+
+		switch typeInfo.Type {
+		case proto.Type_TYPE_ID:
+
+		case proto.Type_TYPE_STRING:
+			allQueryMsg = makeStringArrayQueryInputMessage(allQueryMsgName)
+			anyQueryMsg = makeStringArrayQueryInputMessage(anyQueryMsgName)
+		case proto.Type_TYPE_INT:
+			allQueryMsg = makeIntArrayQueryInputMessage(allQueryMsgName)
+			anyQueryMsg = makeIntArrayQueryInputMessage(anyQueryMsgName)
+		case proto.Type_TYPE_BOOL:
+			allQueryMsg = makeBooleanArrayQueryInputMessage(allQueryMsgName)
+			anyQueryMsg = makeBooleanArrayQueryInputMessage(anyQueryMsgName)
+		case proto.Type_TYPE_DATE:
+			allQueryMsg = makeDateArrayQueryInputMessage(allQueryMsgName)
+			anyQueryMsg = makeDateArrayQueryInputMessage(anyQueryMsgName)
+		case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+			allQueryMsg = makeTimestampArrayQueryInputMessage(allQueryMsgName)
+			anyQueryMsg = makeTimestampArrayQueryInputMessage(anyQueryMsgName)
+		case proto.Type_TYPE_ENUM:
+			allQueryMsg = makeEnumArrayQueryInputMessage(allQueryMsgName, typeInfo.EnumName.Value)
+			anyQueryMsg = makeEnumArrayQueryInputMessage(anyQueryMsgName, typeInfo.EnumName.Value)
+		default:
+			return nil, fmt.Errorf("unsupported array query type %s", typeInfo.Type.String())
+		}
+
+		scm.proto.Messages = append(scm.proto.Messages, allQueryMsg)
+		scm.proto.Messages = append(scm.proto.Messages, anyQueryMsg)
+
 		return &proto.Message{Name: msgName, Fields: []*proto.MessageField{
 			{
 				MessageName: msgName,
 				Name:        "equals",
-				Nullable:    true,
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type:     typeInfo.Type,
-					EnumName: typeInfo.EnumName,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "notEquals",
 				Optional:    true,
 				Nullable:    true,
 				Type: &proto.TypeInfo{
 					Type:     typeInfo.Type,
-					EnumName: typeInfo.EnumName,
-				},
-			},
-			{
-				MessageName: msgName,
-				Name:        "oneOf",
-				Optional:    true,
-				Type: &proto.TypeInfo{
-					Type:     typeInfo.Type,
-					EnumName: typeInfo.EnumName,
+					EnumName: enumName,
 					Repeated: true,
 				},
 			},
+			{
+				MessageName: msgName,
+				Name:        "notEquals",
+				Optional:    true,
+				Nullable:    true,
+				Type: &proto.TypeInfo{
+					Type:     typeInfo.Type,
+					EnumName: enumName,
+					Repeated: true,
+				},
+			},
+			{
+				MessageName: msgName,
+				Name:        "any",
+				Optional:    true,
+				Type: &proto.TypeInfo{
+					Type:        proto.Type_TYPE_MESSAGE,
+					MessageName: wrapperspb.String(anyQueryMsgName),
+				},
+			},
+			{
+				MessageName: msgName,
+				Name:        "all",
+				Optional:    true,
+				Type: &proto.TypeInfo{
+					Type:        proto.Type_TYPE_MESSAGE,
+					MessageName: wrapperspb.String(allQueryMsgName),
+				},
+			},
 		}}, nil
+	}
+
+	msgName := makeInputMessageName(fmt.Sprintf("%sQuery", prefix))
+
+	switch typeInfo.Type {
+	case proto.Type_TYPE_ID:
+		return makeIDQueryInputMessage(msgName), nil
+	case proto.Type_TYPE_STRING:
+		return makeStringQueryInputMessage(msgName), nil
+	case proto.Type_TYPE_INT:
+		return makeIntQueryInputMessage(msgName), nil
+	case proto.Type_TYPE_BOOL:
+		return makeBooleanQueryInputMessage(msgName), nil
+	case proto.Type_TYPE_DATE:
+		return makeDateQueryInputMessage(msgName), nil
+	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+		return makeTimestampQueryInputMessage(msgName), nil
+	case proto.Type_TYPE_ENUM:
+		return makeEnumQueryInputMessage(msgName, typeInfo.EnumName.Value), nil
 	default:
 		return nil, fmt.Errorf("unsupported query type %s", typeInfo.Type.String())
 	}
@@ -509,7 +828,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, input)
 
 			if action.Type.Value == parser.ActionTypeList {
-				queryMessage, err := makeListQueryInputMessage(typeInfo)
+				queryMessage, err := scm.makeListQueryInputMessage(typeInfo)
 				if err != nil {
 					panic(err.Error())
 				}
@@ -1114,6 +1433,7 @@ func (scm *Builder) inferParserInputType(
 	var modelName *wrapperspb.StringValue
 	var fieldName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
+	repeated := false
 
 	if protoType == proto.Type_TYPE_ENUM {
 		enumName = &wrapperspb.StringValue{
@@ -1155,6 +1475,8 @@ func (scm *Builder) inferParserInputType(
 			Value: field.Name.Value,
 		}
 
+		repeated = field.Repeated
+
 		if protoType == proto.Type_TYPE_ENUM {
 			enumName = &wrapperspb.StringValue{
 				Value: field.Type.Value,
@@ -1164,7 +1486,7 @@ func (scm *Builder) inferParserInputType(
 
 	return &proto.TypeInfo{
 		Type:      protoType,
-		Repeated:  false,
+		Repeated:  repeated,
 		ModelName: modelName,
 		FieldName: fieldName,
 		EnumName:  enumName,

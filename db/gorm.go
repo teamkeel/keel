@@ -22,13 +22,14 @@ type GormDB struct {
 
 var _ Database = &GormDB{}
 
-func (db *GormDB) ExecuteQuery(ctx context.Context, sqlQuery string, values ...any) (*ExecuteQueryResult, error) {
+func (db *GormDB) ExecuteQuery(ctx context.Context, sqlQuery string, args ...any) (*ExecuteQueryResult, error) {
 	ctx, span := tracer.Start(ctx, "Execute Query")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("sql", sqlQuery))
 
 	rows := []map[string]any{}
+
 	conn := db.db.WithContext(ctx)
 
 	// Check for a transaction
@@ -36,18 +37,17 @@ func (db *GormDB) ExecuteQuery(ctx context.Context, sqlQuery string, values ...a
 		conn = v
 	}
 
-	err := conn.Raw(sqlQuery, values...).Scan(&rows).Error
+	err := conn.Raw(sqlQuery, args...).Scan(&rows).Error
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
 		return nil, toDbError(err)
 	}
 
-	span.SetAttributes(attribute.Int("rows.count", len(rows)))
 	return &ExecuteQueryResult{Rows: rows}, nil
 }
 
-func (db *GormDB) ExecuteStatement(ctx context.Context, sqlQuery string, values ...any) (*ExecuteStatementResult, error) {
+func (db *GormDB) ExecuteStatement(ctx context.Context, sqlQuery string, args ...any) (*ExecuteStatementResult, error) {
 	ctx, span := tracer.Start(ctx, "Execute Statement")
 	defer span.End()
 
@@ -60,7 +60,7 @@ func (db *GormDB) ExecuteStatement(ctx context.Context, sqlQuery string, values 
 		conn = v
 	}
 
-	result := conn.Exec(sqlQuery, values...)
+	result := conn.Exec(sqlQuery, args...)
 
 	err := result.Error
 	if err != nil {

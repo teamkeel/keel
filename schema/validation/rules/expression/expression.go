@@ -91,6 +91,55 @@ func ValueTypechecksRule(asts []*parser.AST, expression *parser.Expression, cont
 	expectedType := context.Field.Type.Value
 	resolvedType := expressionScopeEntity.GetType()
 
+	if context.Field.Repeated {
+		expectedType = context.Field.Type.Value + "[]"
+
+		if resolvedType != parser.TypeArray {
+			errors = append(errors,
+				errorhandling.NewValidationError(
+					errorhandling.ErrorExpressionFieldTypeMismatch,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"Exp":       operand.ToString(),
+							"Type":      resolvedType,
+							"FieldName": context.Field.Name.Value,
+							"FieldType": expectedType,
+						},
+					},
+					expression,
+				),
+			)
+			return errors
+		}
+	}
+
+	if resolvedType == parser.TypeArray {
+		isEmptyArray := len(expressionScopeEntity.Array) == 0
+		if isEmptyArray {
+			return errors
+		}
+
+		resolvedType = expressionScopeEntity.Array[0].GetType() + "[]"
+
+		if !context.Field.Repeated {
+			errors = append(errors,
+				errorhandling.NewValidationError(
+					errorhandling.ErrorExpressionFieldTypeMismatch,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"Exp":       operand.ToString(),
+							"Type":      resolvedType,
+							"FieldName": context.Field.Name.Value,
+							"FieldType": expectedType,
+						},
+					},
+					expression,
+				),
+			)
+			return errors
+		}
+	}
+
 	if expectedType != resolvedType {
 		errors = append(errors,
 			errorhandling.NewValidationError(
@@ -202,16 +251,8 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *parser.Condit
 	allowedOperatorsLHS := resolvedLHS.AllowedOperators(asts)
 	allowedOperatorsRHS := resolvedRHS.AllowedOperators(asts)
 
-	if resolvedLHS.IsRepeated() && resolvedRHS.IsRepeated() {
-		return append(errors, errorhandling.NewValidationError(
-			errorhandling.ErrorExpressionForbiddenArrayLHS,
-			errorhandling.TemplateLiterals{
-				Literals: map[string]string{
-					"LHS": condition.LHS.ToString(),
-				},
-			},
-			condition.Operator,
-		))
+	if len(allowedOperatorsLHS) == 0 || len(allowedOperatorsRHS) == 0 {
+		return nil
 	}
 
 	if slices.Equal(allowedOperatorsLHS, allowedOperatorsRHS) {
@@ -231,23 +272,91 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *parser.Condit
 				condition.Operator,
 			))
 		}
-	} else {
-		if resolvedRHS.IsRepeated() {
-			if !lo.Contains(allowedOperatorsRHS, condition.Operator.Symbol) {
 
-				errors = append(errors, errorhandling.NewValidationError(
-					errorhandling.ErrorExpressionArrayMismatchingOperator,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"RHS":      condition.RHS.ToString(),
-							"RHSType":  resolvedRHS.GetType(),
-							"Operator": condition.Operator.Symbol,
-						},
+		if condition.Operator.Symbol == parser.OperatorNotIn || condition.Operator.Symbol == parser.OperatorIn {
+			if resolvedLHS.IsRepeated() {
+				errors = append(errors, errorhandling.NewValidationErrorWithDetails(
+					errorhandling.ErrorForbiddenOperator,
+					errorhandling.ErrorDetails{
+						Message: "left hand side operand cannot be an array for 'in' and 'not in'",
 					},
-					condition.Operator,
-				))
+					condition.LHS,
+				),
+				)
 			}
 		}
+
+		if condition.Operator.Symbol == parser.OperatorAssignment {
+			if resolvedRHS.IsRepeated() && resolvedRHS.Field != nil && !resolvedRHS.Field.Repeated {
+				errors = append(errors,
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.ErrorExpressionTypeMismatch,
+						errorhandling.ErrorDetails{
+							Message: "cannot assign from a to-many relationship lookup",
+						},
+						condition.RHS,
+					),
+				)
+				return errors
+			}
+		}
+	} else if resolvedLHS.IsRepeated() || resolvedRHS.IsRepeated() {
+		if !resolvedLHS.IsRepeated() && resolvedRHS.IsRepeated() && !(condition.Operator.Symbol == parser.OperatorNotIn || condition.Operator.Symbol == parser.OperatorIn) {
+			errors = append(errors, errorhandling.NewValidationError(
+				errorhandling.ErrorExpressionArrayMismatchingOperator,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"RHS":      condition.RHS.ToString(),
+						"Operator": condition.Operator.Symbol,
+					},
+				},
+				condition.Operator,
+			))
+		} else if resolvedLHS.IsRepeated() && !resolvedRHS.IsRepeated() {
+			//	Only enforce this rule if the actual field is an array and not during nested to-many sets
+			if resolvedLHS.Field != nil && resolvedLHS.Field.Repeated && !resolvedRHS.IsNull() {
+				errors = append(errors,
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.ErrorExpressionTypeMismatch,
+						errorhandling.ErrorDetails{
+							Message: fmt.Sprintf("%s is %s[] but %s is %s", condition.LHS.ToString(), resolvedLHS.GetType(), condition.RHS.ToString(), resolvedRHS.GetType()),
+						},
+						condition,
+					),
+				)
+				return errors
+			}
+		} else if resolvedLHS.IsRepeated() && resolvedRHS.IsRepeated() && (condition.Operator.Symbol == parser.OperatorNotIn || condition.Operator.Symbol == parser.OperatorIn) {
+			collection := lo.Intersect(permittedOperators, allowedOperatorsLHS)
+			corrections := errorhandling.NewCorrectionHint(collection, condition.Operator.Symbol)
+
+			errors = append(errors, errorhandling.NewValidationError(
+				errorhandling.ErrorForbiddenOperator,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Type":       resolvedLHS.GetType(),
+						"Operator":   condition.Operator.Symbol,
+						"Suggestion": corrections.ToString(),
+					},
+				},
+				condition.Operator,
+			))
+		}
+	} else if !lo.Contains(allowedOperatorsLHS, condition.Operator.Symbol) && !lo.Contains(allowedOperatorsRHS, condition.Operator.Symbol) {
+		collection := lo.Intersect(permittedOperators, allowedOperatorsLHS)
+		corrections := errorhandling.NewCorrectionHint(collection, condition.Operator.Symbol)
+
+		errors = append(errors, errorhandling.NewValidationError(
+			errorhandling.ErrorForbiddenOperator,
+			errorhandling.TemplateLiterals{
+				Literals: map[string]string{
+					"Type":       resolvedLHS.GetType(),
+					"Operator":   condition.Operator.Symbol,
+					"Suggestion": corrections.ToString(),
+				},
+			},
+			condition.Operator,
+		))
 	}
 
 	return errors
@@ -329,6 +438,45 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 		// Now we know the RHS is an array of type T we can check if
 		// the LHS is also of type T
 		if arrayType == resolvedLHS.GetType() {
+			return nil
+		}
+	}
+
+	// Case: RHS is of type T and LHS is an array of type T
+	if resolvedLHS.IsRepeated() {
+		// First check array contains only one type
+		arrayType := resolvedLHS.GetType()
+		valid := true
+		for i, item := range resolvedLHS.Array {
+			if i == 0 {
+				arrayType = item.GetType()
+				continue
+			}
+
+			if arrayType != item.GetType() {
+				valid = false
+				errors = append(errors,
+					errorhandling.NewValidationError(
+						errorhandling.ErrorExpressionMixedTypesInArrayLiteral,
+						errorhandling.TemplateLiterals{
+							Literals: map[string]string{
+								"Item": item.Literal.ToString(),
+								"Type": arrayType,
+							},
+						},
+						item.Literal,
+					),
+				)
+			}
+		}
+
+		if !valid {
+			return errors
+		}
+
+		// Now we know the LHS is an array of type T we can check if
+		// the RHS is also of type T
+		if arrayType == resolvedRHS.GetType() {
 			return nil
 		}
 	}

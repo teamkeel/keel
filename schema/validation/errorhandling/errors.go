@@ -38,7 +38,6 @@ const (
 	ErrorForbiddenOperator                   = "E027"
 	ErrorNonBooleanValueCondition            = "E028"
 	ErrorExpressionArrayMismatchingOperator  = "E030"
-	ErrorExpressionForbiddenArrayLHS         = "E031"
 	ErrorExpressionMixedTypesInArrayLiteral  = "E032"
 	ErrorCreateActionNoInputs                = "E033"
 	ErrorCreateActionMissingInput            = "E034"

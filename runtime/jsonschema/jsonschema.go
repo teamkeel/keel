@@ -451,8 +451,9 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 	}
 
 	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL && t.Type != proto.Type_TYPE_UNION) {
-		prop.Items = &JSONSchema{Type: prop.Type, Enum: prop.Enum}
+		prop.Items = &JSONSchema{Type: prop.Type, Enum: prop.Enum, Format: prop.Format}
 		prop.Enum = nil
+		prop.Format = ""
 		prop.Type = "array"
 	}
 

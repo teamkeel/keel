@@ -6,8 +6,6 @@ model Foo {
         nopeArray Nope[]
         //expect-error:9:21:E009:field nopeOptional has an unsupported type Nope
         nopeOptional Nope?
-        //expect-error:15:19:TypeError:Repeated fields of type 'Text' are not supported
-        array Text[]
         //expect-error:9:16:E009:field message has an unsupported type MyMessage
         message MyMessage
         //expect-error:9:12:E009:field job has an unsupported type MyJob

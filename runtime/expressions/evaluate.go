@@ -60,7 +60,7 @@ func resolveConditionEarly(ctx context.Context, schema *proto.Schema, model *pro
 	}
 
 	lhsResolver := NewOperandResolver(ctx, schema, model, action, condition.LHS)
-	operandType, _ := lhsResolver.GetOperandType()
+	operandType, _, _ := lhsResolver.GetOperandType()
 	lhsValue, _ := lhsResolver.ResolveValue(args)
 
 	if condition.Type() == parser.ValueCondition {

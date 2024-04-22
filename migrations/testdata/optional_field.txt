@@ -1,6 +1,7 @@
 model Person {
     fields {
         name Text
+       
     }
 }
 
@@ -10,15 +11,18 @@ model Person {
     fields {
         name Text
         age Number?
+        otherNames Text[]?
     }
 }
 
 ===
 
 ALTER TABLE "person" ADD COLUMN "age" INTEGER;
+ALTER TABLE "person" ADD COLUMN "other_names" TEXT[];
 
 === 
 
 [
-  { "Model": "Person", "Field": "age", "Type": "ADDED" }
+  { "Model": "Person", "Field": "age", "Type": "ADDED" },
+  { "Model": "Person", "Field": "otherNames", "Type": "ADDED" }
 ]

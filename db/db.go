@@ -46,9 +46,9 @@ func (err *DbError) Unwrap() error {
 
 type Database interface {
 	// Executes SQL query statement and returns rows.
-	ExecuteQuery(ctx context.Context, sql string, values ...any) (*ExecuteQueryResult, error)
+	ExecuteQuery(ctx context.Context, sql string, args ...any) (*ExecuteQueryResult, error)
 	// Executes SQL statement and returns number of rows affected.
-	ExecuteStatement(ctx context.Context, sql string, values ...any) (*ExecuteStatementResult, error)
+	ExecuteStatement(ctx context.Context, sql string, args ...any) (*ExecuteStatementResult, error)
 	// Runs fn inside a transaction which is commited if fn returns a nil error
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 	Close() error

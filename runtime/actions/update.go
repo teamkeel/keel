@@ -85,7 +85,7 @@ func GenerateUpdateStatement(query *QueryBuilder, scope *Scope, input map[string
 		return nil, err
 	}
 
-	err = query.applyExplicitFilters(scope, where)
+	err = query.applyExpressionFilters(scope, where)
 	if err != nil {
 		return nil, err
 	}
