@@ -1331,7 +1331,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			template = fmt.Sprintf("%s NOT IN %s", lhsSqlOperand, rhsSqlOperand)
 		} else {
 			if rhs.IsField() {
-				template = fmt.Sprintf("(NOT %s = ANY(%s) OR %s IS NOT DISTINCT FROM NULL)", lhsSqlOperand, rhsSqlOperand, rhsSqlOperand)
+				template = fmt.Sprintf("NOT %s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
 			} else {
 				template = fmt.Sprintf("NOT %s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
 			}
@@ -1349,7 +1349,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case AnyEquals:
 		template = fmt.Sprintf("%s = ANY(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AnyNotEquals:
-		template = fmt.Sprintf("(NOT %s = ANY(%s) OR %s IS NOT DISTINCT FROM NULL)", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
+		template = fmt.Sprintf("NOT %s = ANY(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AnyLessThan, AnyBefore:
 		template = fmt.Sprintf("%s > ANY(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AnyLessThanEquals, AnyOnOrBefore:
@@ -1361,9 +1361,9 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 
 	/* All query operators */
 	case AllEquals:
-		template = fmt.Sprintf("(%s = ALL(%s) AND %s IS DISTINCT FROM '{}')", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
+		template = fmt.Sprintf("%s = ALL(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AllNotEquals:
-		template = fmt.Sprintf("(NOT %s = ALL(%s) OR %s IS NOT DISTINCT FROM '{}' OR %s IS NOT DISTINCT FROM NULL)", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
+		template = fmt.Sprintf("NOT %s = ALL(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AllLessThan, AllBefore:
 		template = fmt.Sprintf("%s > ALL(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AllLessThanEquals, AllOnOrBefore:

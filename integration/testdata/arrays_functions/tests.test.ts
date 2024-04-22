@@ -248,10 +248,6 @@ test("array fields - modelapi - text query", async () => {
   expect(things5).toHaveLength(1);
   expect(things5[0].id).toEqual(t5.id);
 
-  const ads = await models.thing.findMany({
-    where: { texts: { any: { equals: "Weave" } } },
-  });
-
   const things6 = await models.thing.findMany({
     where: {
       texts: {

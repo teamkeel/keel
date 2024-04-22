@@ -3020,9 +3020,9 @@ var testCases = []testCase{
 			SELECT
 				DISTINCT ON("post"."id") "post".*, 
 				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE (? = ALL("post"."tags") AND "post"."tags" IS DISTINCT FROM '{}')) AS totalCount 	
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ? = ALL("post"."tags")) AS totalCount 	
 			FROM "post" 
-			WHERE (? = ALL("post"."tags") AND "post"."tags" IS DISTINCT FROM '{}')
+			WHERE ? = ALL("post"."tags")
 			ORDER BY "post"."id" ASC 
 			LIMIT ?`,
 		expectedArgs: []any{"science", "science", 50},
@@ -3144,9 +3144,9 @@ var testCases = []testCase{
 			SELECT
 				DISTINCT ON("post"."id") "post".*, 
 				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
-				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE (NOT ? = ANY("post"."tags") OR "post"."tags" IS NOT DISTINCT FROM NULL)) AS totalCount 	
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE NOT ? = ANY("post"."tags")) AS totalCount 	
 			FROM "post" 
-			WHERE (NOT ? = ANY("post"."tags") OR "post"."tags" IS NOT DISTINCT FROM NULL)
+			WHERE NOT ? = ANY("post"."tags")
 			ORDER BY "post"."id" ASC 
 			LIMIT ?`,
 		expectedArgs: []any{"science", "science", 50},
