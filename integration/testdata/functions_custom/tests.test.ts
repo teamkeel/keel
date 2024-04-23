@@ -139,6 +139,7 @@ test("Message with field of type Model", async () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     name: "Adam",
+    height: null,
   };
 
   const person_2: Person = {
@@ -146,6 +147,7 @@ test("Message with field of type Model", async () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     name: "Bob",
+    height: null,
   };
 
   const peopleToUpload = [person_1, person_2];
@@ -155,4 +157,14 @@ test("Message with field of type Model", async () => {
   expect(result.people.map((p) => p.id)).toEqual(
     peopleToUpload.map((p) => p.id)
   );
+});
+
+test("Create with decimal", async () => {
+  const result = await actions.createPerson({
+    name: "Keelio",
+    height: 175.3,
+  });
+
+  expect(result.height).toEqual(175.3);
+  expect(result.name).toEqual("Keelio");
 });

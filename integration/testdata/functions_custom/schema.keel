@@ -32,12 +32,20 @@ message BulkPersonUpload {
     people Person[]
 }
 
+message PersonResponse {
+    id ID
+    name Text
+    height Decimal?
+}
+
 model Person {
     fields {
         name Text
+        height Decimal?
     }
 
     actions {
+        write createPerson(name, height) returns (PersonResponse)
         read countName(name) returns (CountResponse) 
         read countNameAdvanced(AdvancedSearchInput) returns (CountResponse)
         write createAndCount(name) returns (CountResponse) 

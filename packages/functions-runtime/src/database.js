@@ -142,6 +142,12 @@ function getDialect() {
   const dbConnType = process.env["KEEL_DB_CONN_TYPE"];
   switch (dbConnType) {
     case "pg":
+      // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
+      // 1700 = type for NUMERIC
+      pg.types.setTypeParser(1700, function (val) {
+        return parseFloat(val);
+      });
+
       return new PostgresDialect({
         pool: new InstrumentedPool({
           Client: InstrumentedClient,
