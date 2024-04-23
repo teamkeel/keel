@@ -226,7 +226,7 @@ func createContainer(dockerClient *client.Client) (
 		},
 	}
 
-	port, err := util.GetFreePort("5432")
+	port, err := util.GetFreePort("5432", "54321")
 	if err != nil {
 		return "", nil, err
 	}
