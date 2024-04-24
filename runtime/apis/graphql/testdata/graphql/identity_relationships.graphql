@@ -12,9 +12,20 @@ type Identity {
   email: String
   emailVerified: Boolean!
   externalId: String
+  familyName: String
+  gender: String
+  givenName: String
   id: ID!
   issuer: String
+  locale: String
+  middleName: String
+  name: String
+  nickName: String
+  picture: String
+  profile: String
   updatedAt: Timestamp!
+  website: String
+  zoneInfo: String
 }
 
 type Person {
