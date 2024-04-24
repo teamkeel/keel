@@ -220,10 +220,10 @@ func TestDuplicateProviderName(t *testing.T) {
 func TestInvalidProviderTypes(t *testing.T) {
 	_, err := Load("fixtures/test_auth_invalid_types.yaml")
 
-	assert.Contains(t, err.Error(), "auth provider 'google_1' has invalid type 'google_1' which must be one of: google, facebook, gitlab, oidc\n")
-	assert.Contains(t, err.Error(), "auth provider 'google_2' has invalid type 'Google' which must be one of: google, facebook, gitlab, oidc\n")
-	assert.Contains(t, err.Error(), "auth provider 'Github' has invalid type 'oauth' which must be one of: google, facebook, gitlab, oidc\n")
-	assert.Contains(t, err.Error(), "auth provider 'Baidu' has invalid type 'whoops' which must be one of: google, facebook, gitlab, oidc\n")
+	assert.Contains(t, err.Error(), "auth provider 'google_1' has invalid type 'google_1' which must be one of: google, facebook, gitlab, slack, oidc\n")
+	assert.Contains(t, err.Error(), "auth provider 'google_2' has invalid type 'Google' which must be one of: google, facebook, gitlab, slack, oidc\n")
+	assert.Contains(t, err.Error(), "auth provider 'Github' has invalid type 'oauth' which must be one of: google, facebook, gitlab, slack, oidc\n")
+	assert.Contains(t, err.Error(), "auth provider 'Baidu' has invalid type 'whoops' which must be one of: google, facebook, gitlab, slack, oidc\n")
 }
 
 func TestMissingClientId(t *testing.T) {
