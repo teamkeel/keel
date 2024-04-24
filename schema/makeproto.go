@@ -335,6 +335,123 @@ func makeIntArrayQueryInputMessage(name string) *proto.Message {
 	}}
 }
 
+func makeDecimalQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "oneOf",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type:     proto.Type_TYPE_DECIMAL,
+				Repeated: true,
+			},
+		},
+	}}
+}
+
+func makeDecimalArrayQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DECIMAL,
+			},
+		},
+	}}
+}
+
 func makeBooleanQueryInputMessage(name string) *proto.Message {
 	return &proto.Message{Name: name, Fields: []*proto.MessageField{
 		{
@@ -596,6 +713,8 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 		prefix = "String"
 	case proto.Type_TYPE_INT:
 		prefix = "Int"
+	case proto.Type_TYPE_DECIMAL:
+		prefix = "Decimal"
 	case proto.Type_TYPE_BOOL:
 		prefix = "Boolean"
 	case proto.Type_TYPE_DATE:
@@ -629,6 +748,9 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 		case proto.Type_TYPE_INT:
 			allQueryMsg = makeIntArrayQueryInputMessage(allQueryMsgName)
 			anyQueryMsg = makeIntArrayQueryInputMessage(anyQueryMsgName)
+		case proto.Type_TYPE_DECIMAL:
+			allQueryMsg = makeDecimalArrayQueryInputMessage(allQueryMsgName)
+			anyQueryMsg = makeDecimalArrayQueryInputMessage(anyQueryMsgName)
 		case proto.Type_TYPE_BOOL:
 			allQueryMsg = makeBooleanArrayQueryInputMessage(allQueryMsgName)
 			anyQueryMsg = makeBooleanArrayQueryInputMessage(anyQueryMsgName)
@@ -701,6 +823,8 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 		return makeStringQueryInputMessage(msgName), nil
 	case proto.Type_TYPE_INT:
 		return makeIntQueryInputMessage(msgName), nil
+	case proto.Type_TYPE_DECIMAL:
+		return makeDecimalQueryInputMessage(msgName), nil
 	case proto.Type_TYPE_BOOL:
 		return makeBooleanQueryInputMessage(msgName), nil
 	case proto.Type_TYPE_DATE:
@@ -1522,6 +1646,8 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_ANY
 	case parserType == parser.FieldTypeMarkdown:
 		return proto.Type_TYPE_MARKDOWN
+	case parserType == parser.FieldTypeDecimal:
+		return proto.Type_TYPE_DECIMAL
 	default:
 		return proto.Type_TYPE_UNKNOWN
 	}

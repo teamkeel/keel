@@ -73,6 +73,40 @@ test("number set attribute from implicit input - set to 5 - is 5", async () => {
 });
 
 /* 
+  Decimal Type 
+*/
+
+test("decimal set attribute on optional field - set to 1.5 - is 1.5", async () => {
+  const thing = await actions.createDecimalOnOptional({});
+  expect(thing.optionalDecimal).toEqual(1.5);
+});
+
+test("decimal set attribute on optional field - set to 1.5 - is null", async () => {
+  const thing = await actions.createNullDecimalOnOptional({});
+  expect(thing.optionalDecimal).toEqual(null);
+});
+
+test("decimal set attribute on required field - set to 1.5 - is 1.5", async () => {
+  const thing = await actions.createDecimalOnRequired({});
+  expect(thing.requiredDecimal).toEqual(1.5);
+});
+
+test("decimal set attribute from explicit input - set to 2.5 - is 2.5", async () => {
+  const thing = await actions.createDecimalFromExplicitInput({
+    explDecimal: 2.5,
+  });
+  expect(thing.requiredDecimal).toEqual(2.5);
+});
+
+test("decimal set attribute from implicit input - set to 2.5 - is 2.5", async () => {
+  const thing = await actions.createDecimalFromImplicitInput({
+    requiredDecimal: 2.5,
+  });
+  expect(thing.optionalDecimal).toEqual(2.5);
+  expect(thing.requiredDecimal).toEqual(2.5);
+});
+
+/* 
   Boolean Type 
 */
 

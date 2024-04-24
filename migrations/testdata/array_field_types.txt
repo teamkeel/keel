@@ -12,6 +12,7 @@ model Person {
         enum MyEnum[]
         date Date[]
         timestamp Timestamp[]
+        decimal Decimal[]
     }
 }
 
@@ -47,6 +48,7 @@ CREATE TABLE "person" (
 "enum" TEXT[] NOT NULL,
 "date" DATE[] NOT NULL,
 "timestamp" TIMESTAMPTZ[] NOT NULL,
+"decimal" NUMERIC[] NOT NULL,
 "id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()

@@ -27,6 +27,7 @@ beforeEach(async () => {
     id               text PRIMARY KEY,
     title            text,
     tags             text[],
+    rating           numeric,
     author_id        text references person(id)
   );
   CREATE TABLE author(
@@ -124,9 +125,11 @@ test("ModelAPI.create - arrays", async () => {
     id: "id",
     title: "My Post",
     tags: ["tag 1", "tag 2"],
+    rating: 1.23,
     authorId: person.id,
   });
   expect(row.tags).toEqual(["tag 1", "tag 2"]);
+  expect(row.rating).toEqual(1.23);
 });
 
 test("ModelAPI.findOne", async () => {

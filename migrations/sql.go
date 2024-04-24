@@ -19,6 +19,7 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 	proto.Type_TYPE_ID:        "TEXT",
 	proto.Type_TYPE_STRING:    "TEXT",
 	proto.Type_TYPE_INT:       "INTEGER",
+	proto.Type_TYPE_DECIMAL:   "NUMERIC",
 	proto.Type_TYPE_BOOL:      "BOOL",
 	proto.Type_TYPE_TIMESTAMP: "TIMESTAMPTZ",
 	proto.Type_TYPE_DATETIME:  "TIMESTAMPTZ",
@@ -270,7 +271,7 @@ func getDefaultValue(field *proto.Field) (string, error) {
 		switch field.Type.Type {
 		case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
 			return db.QuoteLiteral(""), nil
-		case proto.Type_TYPE_INT:
+		case proto.Type_TYPE_INT, proto.Type_TYPE_DECIMAL:
 			return "0", nil
 		case proto.Type_TYPE_BOOL:
 			return "false", nil
@@ -310,6 +311,8 @@ func getDefaultValue(field *proto.Field) (string, error) {
 		switch field.Type.Type {
 		case proto.Type_TYPE_INT:
 			cast = "::INTEGER[]"
+		case proto.Type_TYPE_DECIMAL:
+			cast = "::NUMERIC[]"
 		case proto.Type_TYPE_BOOL:
 			cast = "::BOOL[]"
 		default:
@@ -330,6 +333,8 @@ func toSqlLiteral(operand *parser.Operand, field *proto.Field) (string, error) {
 		s = strings.TrimPrefix(s, `"`)
 		s = strings.TrimSuffix(s, `"`)
 		return db.QuoteLiteral(s), nil
+	case operand.Decimal != nil:
+		return fmt.Sprintf("%f", *operand.Decimal), nil
 	case operand.Number != nil:
 		return fmt.Sprintf("%d", *operand.Number), nil
 	case operand.True:

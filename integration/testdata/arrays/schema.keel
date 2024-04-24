@@ -6,6 +6,7 @@ model Thing {
         booleans Boolean[]?
         timestamps Timestamp[]?
         enums MyEnum[]?
+        decimals Decimal[]?
     }
 
     actions {
@@ -13,15 +14,15 @@ model Thing {
             @permission(expression: true)
         }
 
-        create createThing() with (texts?, numbers?, dates?, booleans?, timestamps?, enums?) {
+        create createThing() with (texts?, numbers?, dates?, booleans?, timestamps?, enums?, decimals?) {
             @permission(expression: true)
         }
 
-        update updateThing(id) with (texts?, numbers?, dates?, booleans?, timestamps?, enums?) {
+        update updateThing(id) with (texts?, numbers?, dates?, booleans?, timestamps?, enums?, decimals?) {
             @permission(expression: true)
         }
 
-        list listThings(texts?, numbers?, dates?, booleans?, timestamps?, enums?) {
+        list listThings(texts?, numbers?, dates?, booleans?, timestamps?, enums?, decimals?) {
             @orderBy(createdAt: asc)
             @permission(expression: true)
         }
@@ -31,6 +32,7 @@ model Thing {
             @set(thing.numbers = [1,2,3])
             @set(thing.booleans = [true, true, false])
             @set(thing.enums = [MyEnum.One, MyEnum.Two,MyEnum.Three])
+            @set(thing.decimals = [1.1, 1.2, 1.3])
             @permission(expression: true)
         }
 
@@ -41,6 +43,7 @@ model Thing {
             @set(thing.enums = [])
             @set(thing.timestamps = [])
             @set(thing.dates = [])
+            @set(thing.decimals = [])
             @permission(expression: true)
         }
 
@@ -51,6 +54,7 @@ model Thing {
             @set(thing.enums = null)
             @set(thing.timestamps = null)
             @set(thing.dates = null)
+            @set(thing.decimals = null)
             @permission(expression: true)
         }
     }

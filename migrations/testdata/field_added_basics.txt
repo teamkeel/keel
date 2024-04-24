@@ -10,6 +10,7 @@ model Person {
     fields {
         name Text
         magicNumber Number @unique
+        magicDecimal Decimal
         optionalFlag Boolean?
     }
 }
@@ -18,11 +19,13 @@ model Person {
 
 ALTER TABLE "person" ADD COLUMN "magic_number" INTEGER NOT NULL;
 ALTER TABLE "person" ADD CONSTRAINT person_magic_number_udx UNIQUE ("magic_number");
+ALTER TABLE "person" ADD COLUMN "magic_decimal" NUMERIC NOT NULL;
 ALTER TABLE "person" ADD COLUMN "optional_flag" BOOL;
 
 === 
 
 [
   { "Model": "Person", "Field": "magicNumber", "Type": "ADDED" },
+  { "Model": "Person", "Field": "magicDecimal", "Type": "ADDED" },
   { "Model": "Person", "Field": "optionalFlag", "Type": "ADDED" }
 ]

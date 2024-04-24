@@ -444,9 +444,10 @@ var rpcTestCases = []rpcTestCase{
 		model Thing {
 			fields {
 				text Text
+				decimal Decimal
 			}
 			actions {
-				create createThing() with (text)
+				create createThing() with (text, decimal)
 			}
 			@permission(
 				expression: true,
@@ -460,7 +461,7 @@ var rpcTestCases = []rpcTestCase{
 		}
 	`,
 		Path:   "createThing",
-		Body:   `{"text": "foo"}`,
+		Body:   `{"text": "foo", "decimal": 1.3}`,
 		Method: http.MethodPost,
 		assertDatabase: func(t *testing.T, db *gorm.DB, data interface{}) {
 			res := data.(map[string]any)
@@ -471,6 +472,7 @@ var rpcTestCases = []rpcTestCase{
 			require.NoError(t, err)
 
 			require.Equal(t, "foo", row["text"])
+			require.Equal(t, 1.3, row["decimal"])
 		},
 	},
 	{

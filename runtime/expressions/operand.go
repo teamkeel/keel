@@ -238,6 +238,8 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, bool, error) {
 				return proto.Type_TYPE_STRING, false, nil
 			case operand.Number != nil:
 				return proto.Type_TYPE_INT, false, nil
+			case operand.Decimal != nil:
+				return proto.Type_TYPE_DECIMAL, false, nil
 			case operand.True || operand.False:
 				return proto.Type_TYPE_BOOL, false, nil
 			case operand.Array != nil:
@@ -434,6 +436,8 @@ func toNative(v *parser.Operand, fieldType proto.Type) (any, error) {
 		return true, nil
 	case v.Number != nil:
 		return *v.Number, nil
+	case v.Decimal != nil:
+		return *v.Decimal, nil
 	case v.String != nil:
 		v := *v.String
 		v = strings.TrimPrefix(v, `"`)

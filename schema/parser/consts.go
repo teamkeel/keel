@@ -24,6 +24,7 @@ const (
 	TypeNumber  = "Number"
 	TypeText    = "Text"
 	TypeBoolean = "Boolean"
+	TypeDecimal = "Decimal"
 
 	// These are unique to expressions
 	TypeNull  = "Null"
@@ -43,6 +44,7 @@ const (
 	FieldTypeID       = "ID"        // a uuid or similar
 	FieldTypeText     = "Text"      // a string
 	FieldTypeNumber   = "Number"    // an integer
+	FieldTypeDecimal  = "Decimal"   // a decimal
 	FieldTypeDate     = "Date"      // a date with no time element
 	FieldTypeDatetime = "Timestamp" // a UTC unix timestamp
 	FieldTypeBoolean  = "Boolean"   // a boolean
@@ -60,6 +62,7 @@ var BuiltInTypes = map[string]bool{
 	FieldTypeID:       true,
 	FieldTypeText:     true,
 	FieldTypeNumber:   true,
+	FieldTypeDecimal:  true,
 	FieldTypeDate:     true,
 	FieldTypeDatetime: true,
 	FieldTypeBoolean:  true,

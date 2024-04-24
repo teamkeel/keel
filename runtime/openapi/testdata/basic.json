@@ -17,10 +17,17 @@
                   },
                   "dateOfBirth": { "type": "string", "format": "date" },
                   "details": { "type": "string", "format": "markdown" },
+                  "weight": { "type": "number", "format": "float" },
                   "name": { "type": "string" }
                 },
                 "additionalProperties": false,
-                "required": ["name", "dateOfBirth", "address", "details"]
+                "required": [
+                  "name",
+                  "dateOfBirth",
+                  "address",
+                  "details",
+                  "weight"
+                ]
               }
             }
           }
@@ -267,6 +274,7 @@
           "createdAt": { "type": "string", "format": "date-time" },
           "dateOfBirth": { "type": "string", "format": "date" },
           "details": { "type": "string", "format": "markdown" },
+          "weight": { "type": "number", "format": "float" },
           "id": { "type": "string" },
           "name": { "type": "string" },
           "updatedAt": { "type": "string", "format": "date-time" }
@@ -275,6 +283,7 @@
           "name",
           "dateOfBirth",
           "details",
+          "weight",
           "id",
           "createdAt",
           "updatedAt",
@@ -342,7 +351,8 @@
         "properties": {
           "dateOfBirth": { "type": "string", "format": "date" },
           "details": { "type": "string", "format": "markdown" },
-          "name": { "type": "string" }
+          "name": { "type": "string" },
+          "weight": { "type": "number", "format": "float" }
         },
         "additionalProperties": false
       },

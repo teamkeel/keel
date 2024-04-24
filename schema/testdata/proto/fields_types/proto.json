@@ -57,6 +57,13 @@
         },
         {
           "modelName": "Foo",
+          "name": "h",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          }
+        },
+        {
+          "modelName": "Foo",
           "name": "id",
           "type": {
             "type": "TYPE_ID"

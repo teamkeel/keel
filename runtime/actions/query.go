@@ -138,6 +138,8 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 			switch values[0].(type) {
 			case int, int64, int32:
 				cast = "::INTEGER[]"
+			case float32, float64:
+				cast = "::NUMERIC[]"
 			case types.Date:
 				cast = "::DATE[]"
 			case types.Timestamp:
@@ -1178,6 +1180,10 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 					case proto.Type_TYPE_INT:
 						row[col], err = ParsePostgresArray[int](arr, func(s string) (int, error) {
 							return strconv.Atoi(s)
+						})
+					case proto.Type_TYPE_DECIMAL:
+						row[col], err = ParsePostgresArray[float64](arr, func(s string) (float64, error) {
+							return strconv.ParseFloat(s, 64)
 						})
 					case proto.Type_TYPE_BOOL:
 						row[col], err = ParsePostgresArray[bool](arr, func(s string) (bool, error) {

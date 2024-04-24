@@ -404,6 +404,9 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		prop.Type = "boolean"
 	case proto.Type_TYPE_INT:
 		prop.Type = "number"
+	case proto.Type_TYPE_DECIMAL:
+		prop.Type = "number"
+		prop.Format = "float"
 	case proto.Type_TYPE_MODEL:
 		model := proto.FindModel(schema.Models, t.ModelName.Value)
 

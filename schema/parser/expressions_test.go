@@ -28,6 +28,7 @@ func TestRoundTrip(t *testing.T) {
 		"parenthesis":            "(a == b or a < c) and a > d",
 		"dot notation":           "a.b.c == d.e.f",
 		"negative integer":       "a = -1",
+		"decimal number":         "a = 1.580000", // %f uses a default precision of 6 digits after the decimal point
 	}
 
 	for name, fixture := range fixtures {
@@ -69,6 +70,7 @@ func TestIsValue(t *testing.T) {
 		"null":    true,
 		"42":      true,
 		"[1,2,3]": true,
+		"1.12":    true,
 
 		"a == b":          false,
 		"true or a == b":  false,
@@ -91,11 +93,14 @@ func TestIsAssignment(t *testing.T) {
 	fixtures := map[string]bool{
 		"a":       false,
 		"1":       false,
+		"-1":      false,
 		"true":    false,
 		"false":   false,
 		"null":    false,
 		"42":      false,
 		"[1,2,3]": false,
+		"1.23":    false,
+		"-1.23":   false,
 
 		"a == b":          false,
 		"true or a == b":  false,
@@ -105,6 +110,8 @@ func TestIsAssignment(t *testing.T) {
 		"a = -1":          true,
 		"a += 1":          false,
 		"a -= 1":          false,
+		"a = 1.23":        true,
+		"a = -1.23":       true,
 	}
 
 	for input, expected := range fixtures {

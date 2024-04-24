@@ -11,6 +11,7 @@ model Customer {
         dateOfBirth Date
         address Address
         details Markdown
+        weight Decimal
     }
 
     actions {
@@ -21,8 +22,9 @@ model Customer {
             address.addressLine1,
             address.town,
             details,
+            weight,
         )
-        update updateCustomer(id) with (name?, dateOfBirth?, details?)
+        update updateCustomer(id) with (name?, dateOfBirth?, details?, weight?)
         list customers(name?)
     }
 }
