@@ -118,6 +118,17 @@ const (
 	ImplicitIdentityFieldNamePassword      = "password"
 	ImplicitIdentityFieldNameExternalId    = "externalId"
 	ImplicitIdentityFieldNameIssuer        = "issuer"
+	ImplicitIdentityFieldNameName          = "name"
+	ImplicitIdentityFieldNameGivenName     = "givenName"
+	ImplicitIdentityFieldNameFamilyName    = "familyName"
+	ImplicitIdentityFieldNameMiddleName    = "middleName"
+	ImplicitIdentityFieldNameNickName      = "nickName"
+	ImplicitIdentityFieldNameProfile       = "profile"
+	ImplicitIdentityFieldNamePicture       = "picture"
+	ImplicitIdentityFieldNameWebsite       = "website"
+	ImplicitIdentityFieldNameGender        = "gender"
+	ImplicitIdentityFieldNameZoneInfo      = "zoneInfo"
+	ImplicitIdentityFieldNameLocale        = "locale"
 )
 
 const (

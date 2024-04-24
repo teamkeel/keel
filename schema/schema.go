@@ -350,31 +350,44 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		},
 	}
 
-	emailField := &parser.FieldNode{
-		BuiltIn: true,
-		Name: parser.NameNode{
-			Value: parser.ImplicitIdentityFieldNameEmail,
+	identityFields := []*parser.FieldNode{
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameEmail,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
 		},
-		Type: parser.NameNode{
-			Value: parser.FieldTypeText,
-		},
-		Optional: true,
-	}
-
-	emailVerifiedDefaultAttribute := &parser.AttributeNode{
-		Name: parser.AttributeNameToken{
-			Value: parser.AttributeDefault,
-		},
-		Arguments: []*parser.AttributeArgumentNode{
-			{
-				Expression: &parser.Expression{
-					Or: []*parser.OrExpression{
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameEmailVerified,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeBoolean,
+			},
+			Optional: false,
+			Attributes: []*parser.AttributeNode{
+				{
+					Name: parser.AttributeNameToken{
+						Value: parser.AttributeDefault,
+					},
+					Arguments: []*parser.AttributeArgumentNode{
 						{
-							And: []*parser.ConditionWrap{
-								{
-									Condition: &parser.Condition{
-										LHS: &parser.Operand{
-											False: true,
+							Expression: &parser.Expression{
+								Or: []*parser.OrExpression{
+									{
+										And: []*parser.ConditionWrap{
+											{
+												Condition: &parser.Condition{
+													LHS: &parser.Operand{
+														False: true,
+													},
+												},
+											},
 										},
 									},
 								},
@@ -384,51 +397,146 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 				},
 			},
 		},
-	}
-
-	emailVerifiedField := &parser.FieldNode{
-		BuiltIn: true,
-		Name: parser.NameNode{
-			Value: parser.ImplicitIdentityFieldNameEmailVerified,
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNamePassword,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypePassword,
+			},
+			Optional: true,
 		},
-		Type: parser.NameNode{
-			Value: parser.FieldTypeBoolean,
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameExternalId,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
 		},
-		Optional:   false,
-		Attributes: []*parser.AttributeNode{emailVerifiedDefaultAttribute},
-	}
-
-	passwordField := &parser.FieldNode{
-		BuiltIn: true,
-		Name: parser.NameNode{
-			Value: parser.ImplicitIdentityFieldNamePassword,
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameIssuer,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
 		},
-		Type: parser.NameNode{
-			Value: parser.FieldTypePassword,
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameName,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
 		},
-		Optional: true,
-	}
-
-	externalIdField := &parser.FieldNode{
-		BuiltIn: true,
-		Name: parser.NameNode{
-			Value: parser.ImplicitIdentityFieldNameExternalId,
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameGivenName,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
 		},
-		Type: parser.NameNode{
-			Value: parser.FieldTypeText,
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameFamilyName,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
 		},
-		Optional: true,
-	}
-
-	issuerField := &parser.FieldNode{
-		BuiltIn: true,
-		Name: parser.NameNode{
-			Value: parser.ImplicitIdentityFieldNameIssuer,
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameMiddleName,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
 		},
-		Type: parser.NameNode{
-			Value: parser.FieldTypeText,
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameNickName,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
 		},
-		Optional: true,
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameProfile,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
+		},
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNamePicture,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
+		},
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameWebsite,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
+		},
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameGender,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
+		},
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameZoneInfo,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
+		},
+		{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityFieldNameLocale,
+			},
+			Type: parser.NameNode{
+				Value: parser.FieldTypeText,
+			},
+			Optional: true,
+		},
 	}
 
 	requestPasswordReset := &parser.ActionNode{
@@ -464,7 +572,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 	}
 
 	fieldsSection := &parser.ModelSectionNode{
-		Fields: []*parser.FieldNode{emailField, emailVerifiedField, passwordField, externalIdField, issuerField},
+		Fields: identityFields,
 	}
 
 	actionsSection := &parser.ModelSectionNode{

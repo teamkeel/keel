@@ -91,7 +91,7 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 				AuthURL:  authUrl,
 				TokenURL: tokenUrl,
 			},
-			Scopes:      []string{"openid", "email"},
+			Scopes:      []string{"openid", "email", "profile"},
 			RedirectURL: callbackUrl.String(),
 		}
 
