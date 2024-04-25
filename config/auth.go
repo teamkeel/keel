@@ -27,6 +27,7 @@ const (
 	GoogleProvider        = "google"
 	FacebookProvider      = "facebook"
 	GitLabProvider        = "gitlab"
+	SlackProvider         = "slack"
 	OpenIdConnectProvider = "oidc"
 	OAuthProvider         = "oauth"
 )
@@ -36,6 +37,7 @@ var (
 		GoogleProvider,
 		FacebookProvider,
 		GitLabProvider,
+		SlackProvider,
 		OpenIdConnectProvider,
 	}
 )
@@ -203,6 +205,8 @@ func (p *Provider) GetIssuerUrl() (string, bool) {
 		return "https://www.facebook.com", true
 	case GitLabProvider:
 		return "https://gitlab.com", true
+	case SlackProvider:
+		return "https://slack.com", true
 	case OpenIdConnectProvider:
 		return p.IssuerUrl, true
 	default:
@@ -218,6 +222,8 @@ func (p *Provider) GetTokenUrl() (string, bool) {
 		return "https://graph.facebook.com/v11.0/oauth/access_token", true
 	case GitLabProvider:
 		return "https://gitlab.com/oauth/token", true
+	case SlackProvider:
+		return "https://slack.com/api/openid.connect.token", true
 	case OpenIdConnectProvider:
 		return p.TokenUrl, true
 	case OAuthProvider:
@@ -235,6 +241,8 @@ func (p *Provider) GetAuthorizationUrl() (string, bool) {
 		return "https://www.facebook.com/v11.0/dialog/oauth", true
 	case GitLabProvider:
 		return "https://gitlab.com/oauth/authorize", true
+	case SlackProvider:
+		return "https://slack.com/openid/connect/authorize", true
 	case OpenIdConnectProvider:
 		return p.AuthorizationUrl, true
 	case OAuthProvider:
