@@ -156,7 +156,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -193,7 +195,97 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "givenName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "familyName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "middleName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "nickName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "profile",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "picture",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "website",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "gender",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "zoneInfo",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "locale",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
         },
         {
           "modelName": "Identity",
@@ -339,7 +431,9 @@
             "modelName": "ChildModel",
             "fieldName": "isActive"
           },
-          "target": ["isActive"]
+          "target": [
+            "isActive"
+          ]
         },
         {
           "messageName": "CreateChild1Input",
@@ -362,7 +456,10 @@
             "modelName": "ParentModel",
             "fieldName": "id"
           },
-          "target": ["parent", "id"]
+          "target": [
+            "parent",
+            "id"
+          ]
         }
       ]
     },
@@ -377,7 +474,9 @@
             "modelName": "ChildModel",
             "fieldName": "isActive"
           },
-          "target": ["isActive"]
+          "target": [
+            "isActive"
+          ]
         },
         {
           "messageName": "CreateChild2Input",
@@ -409,7 +508,10 @@
             "modelName": "ParentModel",
             "fieldName": "id"
           },
-          "target": ["parent", "id"]
+          "target": [
+            "parent",
+            "id"
+          ]
         }
       ]
     },
@@ -424,7 +526,10 @@
             "modelName": "ParentModel",
             "fieldName": "id"
           },
-          "target": ["parentOptional", "id"]
+          "target": [
+            "parentOptional",
+            "id"
+          ]
         }
       ]
     }

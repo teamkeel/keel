@@ -169,7 +169,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -206,7 +208,97 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "givenName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "familyName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "middleName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "nickName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "profile",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "picture",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "website",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "gender",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "zoneInfo",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "locale",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
         },
         {
           "modelName": "Identity",
@@ -358,7 +450,9 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
@@ -373,7 +467,9 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         },
         {
           "messageName": "UpdatePersonValues",
@@ -383,7 +479,9 @@
             "modelName": "Person",
             "fieldName": "name"
           },
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         }
       ]
     },
@@ -419,7 +517,9 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
@@ -467,7 +567,9 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
@@ -495,7 +597,10 @@
             "modelName": "Company",
             "fieldName": "id"
           },
-          "target": ["employer", "id"]
+          "target": [
+            "employer",
+            "id"
+          ]
         }
       ]
     },
@@ -531,7 +636,9 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
