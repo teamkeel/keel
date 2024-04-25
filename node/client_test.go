@@ -480,6 +480,17 @@ export interface Identity {
 	password: any | null
 	externalId: string | null
 	issuer: string | null
+	name: string | null
+	givenName: string | null
+	familyName: string | null
+	middleName: string | null
+	nickName: string | null
+	profile: string | null
+	picture: string | null
+	website: string | null
+	gender: string | null
+	zoneInfo: string | null
+	locale: string | null
 	id: string
 	createdAt: Date
 	updatedAt: Date
