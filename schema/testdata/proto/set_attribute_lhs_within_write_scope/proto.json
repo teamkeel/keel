@@ -560,7 +560,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -597,7 +599,97 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "givenName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "familyName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "middleName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "nickName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "profile",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "picture",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "website",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "gender",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "zoneInfo",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "locale",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
         },
         {
           "modelName": "Identity",
@@ -832,7 +924,11 @@
             "modelName": "Country",
             "fieldName": "id"
           },
-          "target": ["publisher", "country", "id"]
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
         }
       ]
     },
@@ -847,7 +943,11 @@
             "modelName": "Department",
             "fieldName": "name"
           },
-          "target": ["publisher", "departments", "name"]
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
         },
         {
           "messageName": "NestedData1PublisherDepartmentsInput",
@@ -857,7 +957,11 @@
             "modelName": "Department",
             "fieldName": "number"
           },
-          "target": ["publisher", "departments", "number"]
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
         }
       ]
     },
@@ -873,7 +977,9 @@
             "fieldName": "name"
           },
           "nullable": true,
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         }
       ]
     },
@@ -924,7 +1030,11 @@
             "modelName": "Country",
             "fieldName": "id"
           },
-          "target": ["publisher", "country", "id"]
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
         }
       ]
     },
@@ -939,7 +1049,11 @@
             "modelName": "Department",
             "fieldName": "name"
           },
-          "target": ["publisher", "departments", "name"]
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
         },
         {
           "messageName": "NestedData3PublisherDepartmentsInput",
@@ -949,7 +1063,11 @@
             "modelName": "Department",
             "fieldName": "number"
           },
-          "target": ["publisher", "departments", "number"]
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
         }
       ]
     },
@@ -1000,7 +1118,11 @@
             "modelName": "Country",
             "fieldName": "id"
           },
-          "target": ["publisher", "country", "id"]
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
         }
       ]
     },
@@ -1015,7 +1137,11 @@
             "modelName": "Department",
             "fieldName": "name"
           },
-          "target": ["publisher", "departments", "name"]
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
         },
         {
           "messageName": "NestedData4PublisherDepartmentsInput",
@@ -1025,7 +1151,11 @@
             "modelName": "Department",
             "fieldName": "number"
           },
-          "target": ["publisher", "departments", "number"]
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
         }
       ]
     },
@@ -1041,7 +1171,9 @@
             "fieldName": "name"
           },
           "nullable": true,
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         }
       ]
     },
@@ -1083,7 +1215,11 @@
             "modelName": "Country",
             "fieldName": "id"
           },
-          "target": ["publisher", "country", "id"]
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
         }
       ]
     },
@@ -1135,7 +1271,11 @@
             "fieldName": "name"
           },
           "nullable": true,
-          "target": ["publisher", "country", "name"]
+          "target": [
+            "publisher",
+            "country",
+            "name"
+          ]
         }
       ]
     },
@@ -1150,7 +1290,11 @@
             "modelName": "Department",
             "fieldName": "name"
           },
-          "target": ["publisher", "departments", "name"]
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
         },
         {
           "messageName": "NestedData7PublisherDepartmentsInput",
@@ -1160,7 +1304,11 @@
             "modelName": "Department",
             "fieldName": "number"
           },
-          "target": ["publisher", "departments", "number"]
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
         }
       ]
     },
@@ -1211,7 +1359,11 @@
             "modelName": "Country",
             "fieldName": "id"
           },
-          "target": ["publisher", "country", "id"]
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
         }
       ]
     },
@@ -1226,7 +1378,11 @@
             "modelName": "Department",
             "fieldName": "name"
           },
-          "target": ["publisher", "departments", "name"]
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
         },
         {
           "messageName": "NestedData8PublisherDepartmentsInput",
@@ -1236,7 +1392,11 @@
             "modelName": "Department",
             "fieldName": "number"
           },
-          "target": ["publisher", "departments", "number"]
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
         }
       ]
     },

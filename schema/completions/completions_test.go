@@ -782,7 +782,7 @@ func TestWhereAttributeCompletions(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "password", "updatedAt", "user"},
+			expected: []string{"createdAt", "email", "emailVerified", "externalId", "familyName", "gender", "givenName", "id", "issuer", "locale", "middleName", "name", "nickName", "password", "picture", "profile", "updatedAt", "user", "website", "zoneInfo"},
 		},
 
 		{
@@ -1043,7 +1043,7 @@ func TestSetAttributeCompletions(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "password", "updatedAt", "user"},
+			expected: []string{"createdAt", "email", "emailVerified", "externalId", "familyName", "gender", "givenName", "id", "issuer", "locale", "middleName", "name", "nickName", "password", "picture", "profile", "updatedAt", "user", "website", "zoneInfo"},
 		},
 		{
 			name: "set-attribute-ctx-identity-user",
@@ -1085,7 +1085,7 @@ func TestSetAttributeCompletions(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []string{"createdAt", "email", "emailVerified", "externalId", "id", "issuer", "password", "updatedAt", "user"},
+			expected: []string{"createdAt", "email", "emailVerified", "externalId", "familyName", "gender", "givenName", "id", "issuer", "locale", "middleName", "name", "nickName", "password", "picture", "profile", "updatedAt", "user", "website", "zoneInfo"},
 		},
 	}
 

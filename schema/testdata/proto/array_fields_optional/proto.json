@@ -101,7 +101,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -138,7 +140,97 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "givenName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "familyName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "middleName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "nickName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "profile",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "picture",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "website",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "gender",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "zoneInfo",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "locale",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
         },
         {
           "modelName": "Identity",
@@ -281,7 +373,9 @@
           },
           "optional": true,
           "nullable": true,
-          "target": ["texts"]
+          "target": [
+            "texts"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -294,7 +388,9 @@
           },
           "optional": true,
           "nullable": true,
-          "target": ["numbers"]
+          "target": [
+            "numbers"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -307,7 +403,9 @@
           },
           "optional": true,
           "nullable": true,
-          "target": ["booleans"]
+          "target": [
+            "booleans"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -320,7 +418,9 @@
           },
           "optional": true,
           "nullable": true,
-          "target": ["dates"]
+          "target": [
+            "dates"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -333,7 +433,9 @@
           },
           "optional": true,
           "nullable": true,
-          "target": ["timestamps"]
+          "target": [
+            "timestamps"
+          ]
         }
       ]
     }

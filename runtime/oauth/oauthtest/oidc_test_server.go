@@ -61,9 +61,7 @@ func (o *OidcServer) FetchIdToken(sub string, aud []string) (string, error) {
 			ExpiresAt: jwt.NewNumericDate(now.Add(o.IdTokenLifespan)),
 			IssuedAt:  jwt.NewNumericDate(now),
 		},
-		UserClaims: oauth.UserClaims{
-			Email: user.Email,
-		},
+		UserClaims: *user,
 	}
 
 	if len(aud) > 0 {

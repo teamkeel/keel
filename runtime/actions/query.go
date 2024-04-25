@@ -77,6 +77,13 @@ func Null() *QueryOperand {
 	return &QueryOperand{}
 }
 
+func ValueOrNullIfEmpty(value any) *QueryOperand {
+	if reflect.ValueOf(value).IsZero() {
+		return Null()
+	}
+	return Value(value)
+}
+
 type QueryOperand struct {
 	query  *QueryBuilder
 	raw    string

@@ -119,10 +119,26 @@ func CreateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, 
 	query := NewQuery(identityModel)
 
 	query.AddWriteValues(map[string]*QueryOperand{
-		"externalId":    Value(externalId),
-		"issuer":        Value(issuer),
-		"email":         Value(claims.Email),
-		"emailVerified": Value(claims.EmailVerified),
+		// default 'email' scope claims
+		parser.ImplicitIdentityFieldNameExternalId: Value(externalId),
+		parser.ImplicitIdentityFieldNameIssuer:     Value(issuer),
+
+		// default 'email' scope claims
+		parser.ImplicitIdentityFieldNameEmail:         Value(claims.Email),
+		parser.ImplicitIdentityFieldNameEmailVerified: Value(claims.EmailVerified),
+
+		// default 'profile' scope claims
+		parser.ImplicitIdentityFieldNameName:       ValueOrNullIfEmpty(claims.Name),
+		parser.ImplicitIdentityFieldNameGivenName:  ValueOrNullIfEmpty(claims.GivenName),
+		parser.ImplicitIdentityFieldNameFamilyName: ValueOrNullIfEmpty(claims.FamilyName),
+		parser.ImplicitIdentityFieldNameMiddleName: ValueOrNullIfEmpty(claims.MiddleName),
+		parser.ImplicitIdentityFieldNameNickName:   ValueOrNullIfEmpty(claims.NickName),
+		parser.ImplicitIdentityFieldNameProfile:    ValueOrNullIfEmpty(claims.Profile),
+		parser.ImplicitIdentityFieldNamePicture:    ValueOrNullIfEmpty(claims.Picture),
+		parser.ImplicitIdentityFieldNameWebsite:    ValueOrNullIfEmpty(claims.Website),
+		parser.ImplicitIdentityFieldNameGender:     ValueOrNullIfEmpty(claims.Gender),
+		parser.ImplicitIdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(claims.ZoneInfo),
+		parser.ImplicitIdentityFieldNameLocale:     ValueOrNullIfEmpty(claims.Locale),
 	})
 
 	query.AppendSelect(AllFields())
@@ -160,8 +176,22 @@ func UpdateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, 
 	}
 
 	query.AddWriteValues(map[string]*QueryOperand{
-		"email":         Value(claims.Email),
-		"emailVerified": Value(claims.EmailVerified),
+		// default 'email' scope claims
+		parser.ImplicitIdentityFieldNameEmail:         Value(claims.Email),
+		parser.ImplicitIdentityFieldNameEmailVerified: Value(claims.EmailVerified),
+
+		// default 'profile' scope claims
+		parser.ImplicitIdentityFieldNameName:       ValueOrNullIfEmpty(claims.Name),
+		parser.ImplicitIdentityFieldNameGivenName:  ValueOrNullIfEmpty(claims.GivenName),
+		parser.ImplicitIdentityFieldNameFamilyName: ValueOrNullIfEmpty(claims.FamilyName),
+		parser.ImplicitIdentityFieldNameMiddleName: ValueOrNullIfEmpty(claims.MiddleName),
+		parser.ImplicitIdentityFieldNameNickName:   ValueOrNullIfEmpty(claims.NickName),
+		parser.ImplicitIdentityFieldNameProfile:    ValueOrNullIfEmpty(claims.Profile),
+		parser.ImplicitIdentityFieldNamePicture:    ValueOrNullIfEmpty(claims.Picture),
+		parser.ImplicitIdentityFieldNameWebsite:    ValueOrNullIfEmpty(claims.Website),
+		parser.ImplicitIdentityFieldNameGender:     ValueOrNullIfEmpty(claims.Gender),
+		parser.ImplicitIdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(claims.ZoneInfo),
+		parser.ImplicitIdentityFieldNameLocale:     ValueOrNullIfEmpty(claims.Locale),
 	})
 
 	query.AppendSelect(AllFields())
