@@ -107,7 +107,7 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 	return mapToIdentity(result)
 }
 
-func CreateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, claims oauth.IdTokenClaims) (*auth.Identity, error) {
+func CreateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, standardClaims *oauth.IdTokenClaims, customClaims map[string]any) (*auth.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Create Identity")
 	defer span.End()
 
@@ -123,23 +123,27 @@ func CreateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, 
 		parser.ImplicitIdentityFieldNameExternalId: Value(externalId),
 		parser.ImplicitIdentityFieldNameIssuer:     Value(issuer),
 
-		// default 'email' scope claims
-		parser.ImplicitIdentityFieldNameEmail:         Value(claims.Email),
-		parser.ImplicitIdentityFieldNameEmailVerified: Value(claims.EmailVerified),
+		// default 'profile' scope claims
+		parser.ImplicitIdentityFieldNameEmail:         Value(standardClaims.Email),
+		parser.ImplicitIdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
 
 		// default 'profile' scope claims
-		parser.ImplicitIdentityFieldNameName:       ValueOrNullIfEmpty(claims.Name),
-		parser.ImplicitIdentityFieldNameGivenName:  ValueOrNullIfEmpty(claims.GivenName),
-		parser.ImplicitIdentityFieldNameFamilyName: ValueOrNullIfEmpty(claims.FamilyName),
-		parser.ImplicitIdentityFieldNameMiddleName: ValueOrNullIfEmpty(claims.MiddleName),
-		parser.ImplicitIdentityFieldNameNickName:   ValueOrNullIfEmpty(claims.NickName),
-		parser.ImplicitIdentityFieldNameProfile:    ValueOrNullIfEmpty(claims.Profile),
-		parser.ImplicitIdentityFieldNamePicture:    ValueOrNullIfEmpty(claims.Picture),
-		parser.ImplicitIdentityFieldNameWebsite:    ValueOrNullIfEmpty(claims.Website),
-		parser.ImplicitIdentityFieldNameGender:     ValueOrNullIfEmpty(claims.Gender),
-		parser.ImplicitIdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(claims.ZoneInfo),
-		parser.ImplicitIdentityFieldNameLocale:     ValueOrNullIfEmpty(claims.Locale),
+		parser.ImplicitIdentityFieldNameName:       ValueOrNullIfEmpty(standardClaims.Name),
+		parser.ImplicitIdentityFieldNameGivenName:  ValueOrNullIfEmpty(standardClaims.GivenName),
+		parser.ImplicitIdentityFieldNameFamilyName: ValueOrNullIfEmpty(standardClaims.FamilyName),
+		parser.ImplicitIdentityFieldNameMiddleName: ValueOrNullIfEmpty(standardClaims.MiddleName),
+		parser.ImplicitIdentityFieldNameNickName:   ValueOrNullIfEmpty(standardClaims.NickName),
+		parser.ImplicitIdentityFieldNameProfile:    ValueOrNullIfEmpty(standardClaims.Profile),
+		parser.ImplicitIdentityFieldNamePicture:    ValueOrNullIfEmpty(standardClaims.Picture),
+		parser.ImplicitIdentityFieldNameWebsite:    ValueOrNullIfEmpty(standardClaims.Website),
+		parser.ImplicitIdentityFieldNameGender:     ValueOrNullIfEmpty(standardClaims.Gender),
+		parser.ImplicitIdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(standardClaims.ZoneInfo),
+		parser.ImplicitIdentityFieldNameLocale:     ValueOrNullIfEmpty(standardClaims.Locale),
 	})
+
+	for k, v := range customClaims {
+		query.AddWriteValue(Field(k), ValueOrNullIfEmpty(v))
+	}
 
 	query.AppendSelect(AllFields())
 	query.AppendReturning(IdField())
@@ -154,45 +158,49 @@ func CreateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, 
 	return mapToIdentity(result)
 }
 
-func UpdateIdentityWithIdTokenClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, claims oauth.IdTokenClaims) (*auth.Identity, error) {
+func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, standardClaims *oauth.IdTokenClaims, customClaims map[string]any) (*auth.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Update Identity")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("externalId", claims.Subject))
-	span.SetAttributes(attribute.String("issuer", claims.Issuer))
+	span.SetAttributes(attribute.String("externalId", standardClaims.Subject))
+	span.SetAttributes(attribute.String("issuer", standardClaims.Issuer))
 
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
 	query := NewQuery(identityModel)
 
-	err := query.Where(Field("externalId"), Equals, Value(claims.Subject))
+	err := query.Where(Field("externalId"), Equals, Value(standardClaims.Subject))
 	if err != nil {
 		return nil, err
 	}
 	query.And()
-	err = query.Where(Field("issuer"), Equals, Value(claims.Issuer))
+	err = query.Where(Field("issuer"), Equals, Value(standardClaims.Issuer))
 	if err != nil {
 		return nil, err
 	}
 
 	query.AddWriteValues(map[string]*QueryOperand{
 		// default 'email' scope claims
-		parser.ImplicitIdentityFieldNameEmail:         Value(claims.Email),
-		parser.ImplicitIdentityFieldNameEmailVerified: Value(claims.EmailVerified),
+		parser.ImplicitIdentityFieldNameEmail:         Value(standardClaims.Email),
+		parser.ImplicitIdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
 
 		// default 'profile' scope claims
-		parser.ImplicitIdentityFieldNameName:       ValueOrNullIfEmpty(claims.Name),
-		parser.ImplicitIdentityFieldNameGivenName:  ValueOrNullIfEmpty(claims.GivenName),
-		parser.ImplicitIdentityFieldNameFamilyName: ValueOrNullIfEmpty(claims.FamilyName),
-		parser.ImplicitIdentityFieldNameMiddleName: ValueOrNullIfEmpty(claims.MiddleName),
-		parser.ImplicitIdentityFieldNameNickName:   ValueOrNullIfEmpty(claims.NickName),
-		parser.ImplicitIdentityFieldNameProfile:    ValueOrNullIfEmpty(claims.Profile),
-		parser.ImplicitIdentityFieldNamePicture:    ValueOrNullIfEmpty(claims.Picture),
-		parser.ImplicitIdentityFieldNameWebsite:    ValueOrNullIfEmpty(claims.Website),
-		parser.ImplicitIdentityFieldNameGender:     ValueOrNullIfEmpty(claims.Gender),
-		parser.ImplicitIdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(claims.ZoneInfo),
-		parser.ImplicitIdentityFieldNameLocale:     ValueOrNullIfEmpty(claims.Locale),
+		parser.ImplicitIdentityFieldNameName:       ValueOrNullIfEmpty(standardClaims.Name),
+		parser.ImplicitIdentityFieldNameGivenName:  ValueOrNullIfEmpty(standardClaims.GivenName),
+		parser.ImplicitIdentityFieldNameFamilyName: ValueOrNullIfEmpty(standardClaims.FamilyName),
+		parser.ImplicitIdentityFieldNameMiddleName: ValueOrNullIfEmpty(standardClaims.MiddleName),
+		parser.ImplicitIdentityFieldNameNickName:   ValueOrNullIfEmpty(standardClaims.NickName),
+		parser.ImplicitIdentityFieldNameProfile:    ValueOrNullIfEmpty(standardClaims.Profile),
+		parser.ImplicitIdentityFieldNamePicture:    ValueOrNullIfEmpty(standardClaims.Picture),
+		parser.ImplicitIdentityFieldNameWebsite:    ValueOrNullIfEmpty(standardClaims.Website),
+		parser.ImplicitIdentityFieldNameGender:     ValueOrNullIfEmpty(standardClaims.Gender),
+		parser.ImplicitIdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(standardClaims.ZoneInfo),
+		parser.ImplicitIdentityFieldNameLocale:     ValueOrNullIfEmpty(standardClaims.Locale),
 	})
+
+	for k, v := range customClaims {
+		query.AddWriteValue(Field(k), ValueOrNullIfEmpty(v))
+	}
 
 	query.AppendSelect(AllFields())
 	query.AppendReturning(AllFields())

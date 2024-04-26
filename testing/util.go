@@ -11,10 +11,11 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/testhelpers"
 )
 
-func MakeContext(t *testing.T, keelSchema string, resetDatabase bool) (context.Context, db.Database, *proto.Schema) {
+func MakeContext(t *testing.T, ctx context.Context, keelSchema string, resetDatabase bool) (context.Context, db.Database, *proto.Schema) {
 	dbConnInfo := &db.ConnectionInfo{
 		Host:     "localhost",
 		Port:     "8001",
@@ -23,11 +24,24 @@ func MakeContext(t *testing.T, keelSchema string, resetDatabase bool) (context.C
 		Database: "keel",
 	}
 
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromString(keelSchema, config.Empty)
-	require.NoError(t, err)
+	authConfig, _ := runtimectx.GetOAuthConfig(ctx)
+	cfg := config.ProjectConfig{
+		Auth: *authConfig,
+	}
 
-	ctx := context.Background()
+	schemaFiles :=
+		&reader.Inputs{
+			SchemaFiles: []*reader.SchemaFile{
+				{
+					Contents: keelSchema,
+					FileName: "schema.keel",
+				},
+			},
+		}
+
+	builder := &schema.Builder{Config: &cfg}
+	schema, err := builder.MakeFromInputs(schemaFiles)
+	require.NoError(t, err)
 
 	// Add private key to context
 	pk, err := testhelpers.GetEmbeddedPrivateKey()

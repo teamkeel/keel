@@ -355,3 +355,19 @@ func TestGetCallbackUrl_NoKeelApiUrl(t *testing.T) {
 	assert.ErrorContains(t, err, "empty url")
 	assert.Nil(t, url)
 }
+
+func TestAuthClaims(t *testing.T) {
+	config, err := Load("fixtures/test_auth_identity_claims.yaml")
+	assert.NoError(t, err)
+
+	assert.Equal(t, "https://slack.com/#team_ID", config.Auth.Claims[0].Key)
+	assert.Equal(t, "teamId", config.Auth.Claims[0].Field)
+	assert.Equal(t, "something-else", config.Auth.Claims[1].Key)
+	assert.Equal(t, "somethingElse", config.Auth.Claims[1].Field)
+}
+
+// TODO: field already exists on identity
+
+// TODO: field not correct format/casing
+
+// TODO: field or key already defined in config

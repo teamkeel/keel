@@ -43,6 +43,16 @@ type OidcServer struct {
 	AuthorizeUrl    string
 }
 
+type IdToken struct {
+	oauth.IdTokenClaims
+	CustomClaims
+}
+
+type CustomClaims struct {
+	CustomClaim string `json:"custom_claim,omitempty"`
+	TeamID      string `json:"https://slack.com/#teamID,omitempty"`
+}
+
 func (o *OidcServer) SetUser(sub string, claims *oauth.UserClaims) {
 	o.Users[sub] = claims
 }
@@ -54,14 +64,20 @@ func (o *OidcServer) FetchIdToken(sub string, aud []string) (string, error) {
 	}
 
 	now := time.Now().UTC()
-	claims := oauth.IdTokenClaims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    o.Issuer,
-			Subject:   sub,
-			ExpiresAt: jwt.NewNumericDate(now.Add(o.IdTokenLifespan)),
-			IssuedAt:  jwt.NewNumericDate(now),
+	claims := IdToken{
+		IdTokenClaims: oauth.IdTokenClaims{
+			RegisteredClaims: jwt.RegisteredClaims{
+				Issuer:    o.Issuer,
+				Subject:   sub,
+				ExpiresAt: jwt.NewNumericDate(now.Add(o.IdTokenLifespan)),
+				IssuedAt:  jwt.NewNumericDate(now),
+			},
+			UserClaims: *user,
 		},
-		UserClaims: *user,
+		CustomClaims: CustomClaims{
+			CustomClaim: "custom value",
+			TeamID:      "342352392354",
+		},
 	}
 
 	if len(aud) > 0 {

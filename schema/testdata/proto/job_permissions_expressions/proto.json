@@ -10,9 +10,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -49,9 +47,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -301,9 +297,7 @@
           }
         },
         {
-          "roleNames": [
-            "Admin"
-          ]
+          "roleNames": ["Admin"]
         }
       ]
     },
@@ -311,9 +305,7 @@
       "name": "MyJob4",
       "permissions": [
         {
-          "roleNames": [
-            "Admin"
-          ],
+          "roleNames": ["Admin"],
           "expression": {
             "source": "ctx.env.FOO == \"bar\""
           }

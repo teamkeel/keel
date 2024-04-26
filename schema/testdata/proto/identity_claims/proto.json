@@ -1,10 +1,10 @@
 {
   "models": [
     {
-      "name": "Foo",
+      "name": "Author",
       "fields": [
         {
-          "modelName": "Foo",
+          "modelName": "Author",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -16,7 +16,7 @@
           }
         },
         {
-          "modelName": "Foo",
+          "modelName": "Author",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -26,7 +26,7 @@
           }
         },
         {
-          "modelName": "Foo",
+          "modelName": "Author",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -34,15 +34,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        }
-      ],
-      "actions": [
-        {
-          "modelName": "Foo",
-          "name": "operationA",
-          "type": "ACTION_TYPE_LIST",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "OperationAInput"
         }
       ]
     },
@@ -185,6 +176,22 @@
         },
         {
           "modelName": "Identity",
+          "name": "myCustomClaim",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "teamId1",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -238,15 +245,18 @@
   ],
   "apis": [
     {
+      "name": "Admin",
+      "apiModels": [
+        {
+          "modelName": "Author"
+        }
+      ]
+    },
+    {
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Foo",
-          "modelActions": [
-            {
-              "actionName": "operationA"
-            }
-          ]
+          "modelName": "Author"
         },
         {
           "modelName": "Identity",
@@ -309,55 +319,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "OperationAWhere"
-    },
-    {
-      "name": "OperationAInput",
-      "fields": [
-        {
-          "messageName": "OperationAInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "OperationAWhere"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "OperationAInput",
-          "name": "first",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "OperationAInput",
-          "name": "after",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "OperationAInput",
-          "name": "last",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "OperationAInput",
-          "name": "before",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        }
-      ]
     }
   ]
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func TestNewAuthCode_NotEmpty(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	code, err := oauth.NewAuthCode(ctx, "identity_id")
@@ -26,7 +26,7 @@ func TestNewAuthCode_ErrorOnEmptyIdentityId(t *testing.T) {
 }
 
 func TestConsumeAuthCode_Success(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	code, err := oauth.NewAuthCode(ctx, "identity_id")
@@ -39,7 +39,7 @@ func TestConsumeAuthCode_Success(t *testing.T) {
 }
 
 func TestConsumeAuthCode_DoesNotExist(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	isValid, identityId, err := oauth.ConsumeAuthCode(ctx, "notexists")
@@ -49,7 +49,7 @@ func TestConsumeAuthCode_DoesNotExist(t *testing.T) {
 }
 
 func TestConsumeAuthCode_AlreadyConsumed(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	code, err := oauth.NewAuthCode(ctx, "identity_id")

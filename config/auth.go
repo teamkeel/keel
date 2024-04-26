@@ -43,9 +43,10 @@ var (
 )
 
 type AuthConfig struct {
-	Tokens      TokensConfig `yaml:"tokens"`
-	RedirectUrl *string      `yaml:"redirectUrl,omitempty"`
-	Providers   []Provider   `yaml:"providers"`
+	Tokens      TokensConfig    `yaml:"tokens"`
+	RedirectUrl *string         `yaml:"redirectUrl,omitempty"`
+	Providers   []Provider      `yaml:"providers"`
+	Claims      []IdentityClaim `yaml:"claims"`
 }
 
 type TokensConfig struct {
@@ -61,6 +62,11 @@ type Provider struct {
 	IssuerUrl        string `yaml:"issuerUrl"`
 	TokenUrl         string `yaml:"tokenUrl"`
 	AuthorizationUrl string `yaml:"authorizationUrl"`
+}
+
+type IdentityClaim struct {
+	Key   string `yaml:"key"`
+	Field string `yaml:"field"`
 }
 
 // AccessTokenExpiry retrieves the configured or default access token expiry

@@ -1,0 +1,6 @@
+auth:
+  claims: 
+    - key: myClaim
+      field: myCustomClaim
+    - key: https://slack.com/claims/#teamId
+      field: teamId1

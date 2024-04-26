@@ -1,0 +1,11 @@
+auth:
+  providers:
+    - type: google
+      name: google
+      clientId: 1234
+
+  claims:
+    - key: https://slack.com/#team_ID
+      field: teamId
+    - key: something-else
+      field: somethingElse
