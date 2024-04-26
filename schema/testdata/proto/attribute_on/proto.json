@@ -112,9 +112,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -151,9 +149,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -372,9 +368,7 @@
       "name": "SendWelcomeMailEvent",
       "type": {
         "type": "TYPE_UNION",
-        "unionNames": [
-          "SendWelcomeMailMemberCreatedEvent"
-        ]
+        "unionNames": ["SendWelcomeMailMemberCreatedEvent"]
       }
     },
     {
@@ -724,9 +718,7 @@
       "name": "SendGoodbyeMailEvent",
       "type": {
         "type": "TYPE_UNION",
-        "unionNames": [
-          "SendGoodbyeMailMemberDeletedEvent"
-        ]
+        "unionNames": ["SendGoodbyeMailMemberDeletedEvent"]
       }
     },
     {
@@ -805,9 +797,7 @@
     {
       "name": "sendWelcomeMail",
       "inputMessageName": "SendWelcomeMailEvent",
-      "eventNames": [
-        "member.created"
-      ]
+      "eventNames": ["member.created"]
     },
     {
       "name": "verifyEmail",
@@ -822,9 +812,7 @@
     {
       "name": "sendGoodbyeMail",
       "inputMessageName": "SendGoodbyeMailEvent",
-      "eventNames": [
-        "member.deleted"
-      ]
+      "eventNames": ["member.deleted"]
     }
   ],
   "events": [

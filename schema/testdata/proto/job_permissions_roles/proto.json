@@ -10,9 +10,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -49,9 +47,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -197,9 +193,7 @@
   "roles": [
     {
       "name": "Admin",
-      "domains": [
-        "keel.so"
-      ]
+      "domains": ["keel.so"]
     },
     {
       "name": "Developer"
@@ -289,10 +283,7 @@
       "name": "MyManualJob",
       "permissions": [
         {
-          "roleNames": [
-            "Admin",
-            "Developer"
-          ]
+          "roleNames": ["Admin", "Developer"]
         }
       ]
     },
@@ -301,9 +292,7 @@
       "inputMessageName": "MyManualJobWithInputsMessage",
       "permissions": [
         {
-          "roleNames": [
-            "Admin"
-          ]
+          "roleNames": ["Admin"]
         }
       ]
     }

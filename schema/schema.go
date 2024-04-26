@@ -539,6 +539,21 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		},
 	}
 
+	if scm.Config != nil {
+		for _, c := range scm.Config.Auth.Claims {
+			identityFields = append(identityFields, &parser.FieldNode{
+				BuiltIn: true,
+				Name: parser.NameNode{
+					Value: c.Field,
+				},
+				Type: parser.NameNode{
+					Value: parser.FieldTypeText,
+				},
+				Optional: true,
+			})
+		}
+	}
+
 	requestPasswordReset := &parser.ActionNode{
 		BuiltIn: true,
 		Type:    parser.NameNode{Value: parser.ActionTypeWrite},

@@ -75,9 +75,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -114,9 +112,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -344,9 +340,7 @@
             "modelName": "Foo",
             "fieldName": "f2"
           },
-          "target": [
-            "f2"
-          ]
+          "target": ["f2"]
         }
       ]
     }

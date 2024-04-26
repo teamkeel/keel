@@ -15,9 +15,6 @@ import (
 
 const Empty = ""
 
-// Config is the configuration for the Keel runtime
-type Config struct{}
-
 // ProjectConfig is the configuration for a keel project
 type ProjectConfig struct {
 	Environment   EnvironmentConfig `yaml:"environment"`

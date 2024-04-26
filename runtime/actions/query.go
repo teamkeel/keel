@@ -78,7 +78,7 @@ func Null() *QueryOperand {
 }
 
 func ValueOrNullIfEmpty(value any) *QueryOperand {
-	if reflect.ValueOf(value).IsZero() {
+	if value == nil || reflect.ValueOf(value).IsZero() {
 		return Null()
 	}
 	return Value(value)
@@ -346,7 +346,7 @@ func (query *QueryBuilder) Copy() *QueryBuilder {
 
 // Includes a value to be written during an INSERT or UPDATE.
 func (query *QueryBuilder) AddWriteValue(operand *QueryOperand, value *QueryOperand) {
-
+	query.writeValues.model = query.Model
 	query.writeValues.values[operand.column] = value
 }
 
