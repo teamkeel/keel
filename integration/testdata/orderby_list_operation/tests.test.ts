@@ -137,6 +137,7 @@ test("orderby - before cursor - better than John", async () => {
   const cursor = winners.results[3].id;
   const betterThanJohn = await actions.listRankings({
     before: cursor,
+    last: 3,
   });
 
   expect(betterThanJohn.pageInfo.count).toEqual(3);

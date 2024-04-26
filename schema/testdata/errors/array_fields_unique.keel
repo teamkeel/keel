@@ -1,0 +1,13 @@
+model Thing {
+    fields {
+        //expect-error:22:29:TypeError:@unique is not permitted on has many relationships or arrays
+        texts Text[] @unique
+        //expect-error:24:31:TypeError:@unique is not permitted on has many relationships or arrays
+        enums MyEnum[] @unique
+    }
+}
+
+enum MyEnum {
+    One
+    Two
+}

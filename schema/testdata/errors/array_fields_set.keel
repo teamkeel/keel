@@ -1,0 +1,73 @@
+model Thing {
+    fields {
+        texts Text[]
+        enums MyEnum[]
+        numbers Number[]
+        text Text
+        enum MyEnum
+        number Number
+    }
+
+    actions {
+        create createThing() {
+            //expect-error:18:41:E026:thing.texts is Text[] but "science" is Text
+            @set(thing.texts = "science")
+            //expect-error:18:42:E026:thing.enums is MyEnum[] but MyEnum.One is MyEnum
+            @set(thing.enums = MyEnum.One)
+            //expect-error:18:37:E026:thing.numbers is Number[] but 123 is Number
+            @set(thing.numbers = 123)
+            //expect-error:29:30:E030:["science"] is an array. Only 'in' or 'not in' can be used
+            @set(thing.text = ["science"])
+            //expect-error:29:30:E030:[MyEnum.One, MyEnum.Two] is an array. Only 'in' or 'not in' can be used
+            @set(thing.enum = [MyEnum.One, MyEnum.Two])
+            //expect-error:31:32:E030:[123, 456] is an array. Only 'in' or 'not in' can be used
+            @set(thing.number = [123,456])
+        }
+
+        update updateThing(id) {
+            //expect-error:18:41:E026:thing.texts is Text[] but "science" is Text
+            @set(thing.texts = "science")
+            //expect-error:18:42:E026:thing.enums is MyEnum[] but MyEnum.One is MyEnum
+            @set(thing.enums = MyEnum.One)
+            //expect-error:18:37:E026:thing.numbers is Number[] but 123 is Number
+            @set(thing.numbers = 123)
+            //expect-error:29:30:E030:["science"] is an array. Only 'in' or 'not in' can be used
+            @set(thing.text = ["science"])
+            //expect-error:29:30:E030:[MyEnum.One, MyEnum.Two] is an array. Only 'in' or 'not in' can be used
+            @set(thing.enum = [MyEnum.One, MyEnum.Two])
+            //expect-error:31:32:E030:[123, 456] is an array. Only 'in' or 'not in' can be used
+            @set(thing.number = [123,456])
+        }
+
+        create createNulls() {
+            //expect-error:18:36:E060:texts cannot be null
+            @set(thing.texts = null)
+            //expect-error:18:36:E060:enums cannot be null
+            @set(thing.enums = null)
+            //expect-error:18:38:E060:numbers cannot be null
+            @set(thing.numbers = null)
+
+            @set(thing.text = "")
+            @set(thing.enum = MyEnum.One)
+            @set(thing.number = 0)
+        }
+
+         update updateNulls(id) {
+            //expect-error:18:36:E060:texts cannot be null
+            @set(thing.texts = null)
+            //expect-error:18:36:E060:enums cannot be null
+            @set(thing.enums = null)
+            //expect-error:18:38:E060:numbers cannot be null
+            @set(thing.numbers = null)
+
+            @set(thing.text = "")
+            @set(thing.enum = MyEnum.One)
+            @set(thing.number = 0)
+        }
+    }
+}
+
+enum MyEnum {
+    One
+    Two
+}

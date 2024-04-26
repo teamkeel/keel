@@ -17,7 +17,7 @@ model Project {
     }
 
     @permission(
-        //expect-error:34:36:E030:project.users.user.identity is an array of Identity. Only 'in' or 'not in' can be used
+        //expect-error:34:36:E030:project.users.user.identity is an array. Only 'in' or 'not in' can be used
         expression: ctx.identity == project.users.user.identity,
         actions: [create]
     )

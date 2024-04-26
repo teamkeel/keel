@@ -50,7 +50,7 @@ func withIdentity(t *testing.T, ctx context.Context, schema *proto.Schema) (cont
 }
 
 func TestAuditCreateAction(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -94,7 +94,7 @@ func TestAuditCreateAction(t *testing.T) {
 }
 
 func TestAuditNestedCreateAction(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -201,7 +201,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 }
 
 func TestAuditUpdateAction(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -259,7 +259,7 @@ func TestAuditUpdateAction(t *testing.T) {
 }
 
 func TestAuditDeleteAction(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -315,7 +315,7 @@ func TestAuditDeleteAction(t *testing.T) {
 }
 
 func TestAuditTablesWithOnlyIdentity(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -346,7 +346,7 @@ func TestAuditTablesWithOnlyIdentity(t *testing.T) {
 }
 
 func TestAuditTablesWithOnlyTracing(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -372,7 +372,7 @@ func TestAuditTablesWithOnlyTracing(t *testing.T) {
 }
 
 func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
@@ -413,7 +413,7 @@ func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
 }
 
 func TestAuditFieldsAreDroppedOnCreate(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), auditSchema, true)
 	defer database.Close()
 
 	ctx, _ = withIdentity(t, ctx, schema)
@@ -442,7 +442,7 @@ func TestAuditDatabaseMigration(t *testing.T) {
 			@permission(expression: true, actions: [create, update, delete])
 		}`
 
-	ctx, database, pSchema := keeltesting.MakeContext(t, keelSchema, true)
+	ctx, database, pSchema := keeltesting.MakeContext(t, context.TODO(), keelSchema, true)
 
 	create := proto.FindAction(pSchema, "createPerson")
 	_, _, err := actions.Execute(
@@ -464,7 +464,7 @@ func TestAuditDatabaseMigration(t *testing.T) {
 		}`
 
 	database.Close()
-	ctx, database, pSchema = keeltesting.MakeContext(t, updatedSchema, false)
+	ctx, database, pSchema = keeltesting.MakeContext(t, context.TODO(), updatedSchema, false)
 	db := database.GetDB()
 	defer database.Close()
 

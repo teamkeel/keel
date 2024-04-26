@@ -8,7 +8,7 @@ model Record {
 
     actions {
         create createRecordWithChildren() with (name, children.name) {
-            //expect-error:40:41:E031:Both sides of the expression cannot be an array
+            //expect-error:42:73:E026:cannot assign from a to-many relationship lookup
             @set(record.children.owner = ctx.identity.user.records.owner)
         }
     }

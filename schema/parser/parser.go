@@ -65,8 +65,8 @@ type FieldNode struct {
 
 	Name       NameNode         `@@`
 	Type       NameNode         `@@`
-	Repeated   bool             `( @( "[" "]" )`
-	Optional   bool             `| @( "?" ))?`
+	Repeated   bool             `@( "[" "]" )?`
+	Optional   bool             `@( "?" )?`
 	Attributes []*AttributeNode `( "{" @@+ "}" | @@+ )?`
 
 	// Some fields are added implicitly after parsing the schema
@@ -77,7 +77,7 @@ type FieldNode struct {
 
 func (f *FieldNode) IsScalar() bool {
 	switch f.Type.Value {
-	case FieldTypeBoolean, FieldTypeNumber, FieldTypeText, FieldTypeDatetime, FieldTypeDate, FieldTypeSecret, FieldTypeID, FieldTypePassword, FieldTypeMarkdown:
+	case FieldTypeBoolean, FieldTypeNumber, FieldTypeDecimal, FieldTypeText, FieldTypeDatetime, FieldTypeDate, FieldTypeSecret, FieldTypeID, FieldTypePassword, FieldTypeMarkdown:
 		return true
 	default:
 		return false

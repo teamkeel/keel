@@ -404,6 +404,9 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		prop.Type = "boolean"
 	case proto.Type_TYPE_INT:
 		prop.Type = "number"
+	case proto.Type_TYPE_DECIMAL:
+		prop.Type = "number"
+		prop.Format = "float"
 	case proto.Type_TYPE_MODEL:
 		model := proto.FindModel(schema.Models, t.ModelName.Value)
 
@@ -451,8 +454,9 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 	}
 
 	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL && t.Type != proto.Type_TYPE_UNION) {
-		prop.Items = &JSONSchema{Type: prop.Type, Enum: prop.Enum}
+		prop.Items = &JSONSchema{Type: prop.Type, Enum: prop.Enum, Format: prop.Format}
 		prop.Enum = nil
+		prop.Format = ""
 		prop.Type = "array"
 	}
 

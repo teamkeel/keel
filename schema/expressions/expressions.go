@@ -131,6 +131,31 @@ func (o *OperandResolver) Resolve() (entity *ExpressionScopeEntity, err *Resolut
 		}
 	}
 
+	// For an array of enums, we need to rather iterate through and resolve each value
+	if o.operand.Array != nil {
+		array := []*ExpressionScopeEntity{}
+
+		for _, operand := range o.operand.Array.Values {
+			r := NewOperandResolver(
+				operand,
+				o.asts,
+				o.context,
+				o.position,
+			)
+
+			e, err := r.Resolve()
+			if err != nil {
+				return nil, err
+			}
+
+			array = append(array, e)
+		}
+
+		return &ExpressionScopeEntity{
+			Array: array,
+		}, nil
+	}
+
 	// We want to loop over every fragment in the Ident, each time checking if the Ident matches anything
 	// stored in the expression scope.
 	// e.g if the first ident fragment is "ctx", and the ExpressionScope has a matching key
@@ -152,7 +177,6 @@ fragments:
 		}
 
 		for _, e := range o.scope.Entities {
-
 			if e.Name != fragment.Fragment {
 				continue
 			}

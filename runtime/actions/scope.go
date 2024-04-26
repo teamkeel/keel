@@ -82,7 +82,7 @@ func NewJobScope(
 	}
 }
 
-func Execute(scope *Scope, inputs any) (result any, meta *common.ResponseMetadata, err error) {
+func Execute(scope *Scope, input any) (result any, meta *common.ResponseMetadata, err error) {
 	ctx, span := tracer.Start(scope.Context, scope.Action.Name)
 	defer span.End()
 
@@ -95,26 +95,33 @@ func Execute(scope *Scope, inputs any) (result any, meta *common.ResponseMetadat
 
 	// inputs can be anything - with arbitrary functions 'Any' type, they can be
 	// an array / number / string etc, which doesn't fit in with the traditional map[string]any definition of an inputs object
-	inputsAsMap, inputWasAMap := inputs.(map[string]any)
+	inputsAsMap, isMap := input.(map[string]any)
+
+	if isMap {
+		inputsAsMap, err = TransformInputTypes(scope.Schema, scope.Action, inputsAsMap)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
 
 	switch scope.Action.Implementation {
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM:
-		result, meta, err = executeCustomFunction(scope, inputs)
+		result, meta, err = executeCustomFunction(scope, input)
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME:
-		if !inputWasAMap {
-			if inputs == nil {
+		if !isMap {
+			if input == nil {
 				inputsAsMap = make(map[string]any)
 			} else {
-				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
+				return nil, nil, fmt.Errorf("input %v is not in correct format", input)
 			}
 		}
 		result, err = executeRuntimeAction(scope, inputsAsMap)
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_AUTO:
-		if !inputWasAMap {
-			if inputs == nil {
+		if !isMap {
+			if input == nil {
 				inputsAsMap = make(map[string]any)
 			} else {
-				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
+				return nil, nil, fmt.Errorf("input %v is not in correct format", input)
 			}
 		}
 		result, err = executeAutoAction(scope, inputsAsMap)

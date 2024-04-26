@@ -1,11 +1,11 @@
-const { sql } = require("kysely");
+const { sql, Kysely } = require("kysely");
 const { snakeCase } = require("./casing");
 
 const opMapping = {
   startsWith: { op: "like", value: (v) => `${v}%` },
   endsWith: { op: "like", value: (v) => `%${v}` },
   contains: { op: "like", value: (v) => `%${v}%` },
-  oneOf: { op: "in" },
+  oneOf: { op: "=", value: (v) => sql`ANY(${v})` },
   greaterThan: { op: ">" },
   greaterThanOrEquals: { op: ">=" },
   lessThan: { op: "<" },
@@ -16,6 +16,32 @@ const opMapping = {
   onOrAfter: { op: ">=" },
   equals: { op: sql`is not distinct from` },
   notEquals: { op: sql`is distinct from` },
+  any: {
+    isArrayQuery: true,
+    greaterThan: { op: ">" },
+    greaterThanOrEquals: { op: ">=" },
+    lessThan: { op: "<" },
+    lessThanOrEquals: { op: "<=" },
+    before: { op: "<" },
+    onOrBefore: { op: "<=" },
+    after: { op: ">" },
+    onOrAfter: { op: ">=" },
+    equals: { op: "=" },
+    notEquals: { op: "=", value: (v) => sql`NOT ${v}` },
+  },
+  all: {
+    isArrayQuery: true,
+    greaterThan: { op: ">" },
+    greaterThanOrEquals: { op: ">=" },
+    lessThan: { op: "<" },
+    lessThanOrEquals: { op: "<=" },
+    before: { op: "<" },
+    onOrBefore: { op: "<=" },
+    after: { op: ">" },
+    onOrAfter: { op: ">=" },
+    equals: { op: "=" },
+    notEquals: { op: "=", value: (v) => sql`NOT ${v}` },
+  },
 };
 
 /**
@@ -44,7 +70,7 @@ function applyWhereConditions(context, qb, where = {}) {
     const fieldName = `${context.tableAlias()}.${snakeCase(key)}`;
 
     if (Object.prototype.toString.call(v) !== "[object Object]") {
-      qb = qb.where(fieldName, "=", v);
+      qb = qb.where(fieldName, sql`is not distinct from`, sql`${v}`);
       continue;
     }
 
@@ -54,11 +80,23 @@ function applyWhereConditions(context, qb, where = {}) {
         throw new Error(`invalid where condition: ${op}`);
       }
 
-      qb = qb.where(
-        fieldName,
-        mapping.op,
-        mapping.value ? mapping.value(v[op]) : v[op]
-      );
+      if (mapping.isArrayQuery) {
+        for (const arrayOp of Object.keys(v[op])) {
+          qb = qb.where(
+            mapping[arrayOp].value
+              ? mapping[arrayOp].value(v[op][arrayOp])
+              : sql`${v[op][arrayOp]}`,
+            mapping[arrayOp].op,
+            sql`${sql(op)}(${sql.ref(fieldName)})`
+          );
+        }
+      } else {
+        qb = qb.where(
+          fieldName,
+          mapping.op,
+          mapping.value ? mapping.value(v[op]) : sql`${v[op]}`
+        );
+      }
     }
   }
 

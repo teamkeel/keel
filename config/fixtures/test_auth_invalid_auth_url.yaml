@@ -20,3 +20,9 @@ auth:
       name: missing-endpoint
       clientId: hfjuw983h1hfsdf
       tokenUrl: https://github.com/token
+
+  identityClaims:
+    - field: userId
+      claim: https://slack.com/user-id"
+    - field: teamId
+      claim: https://slack.com/team-id"

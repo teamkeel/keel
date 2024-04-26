@@ -91,7 +91,7 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 				AuthURL:  authUrl,
 				TokenURL: tokenUrl,
 			},
-			Scopes:      []string{"openid", "email"},
+			Scopes:      []string{"openid", "email", "profile"},
 			RedirectURL: callbackUrl.String(),
 		}
 
@@ -220,10 +220,20 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, "falied to verify ID token with OIDC provider", err)
 		}
 
-		// Extract claims
-		var claims oauth.IdTokenClaims
-		if err := idToken.Claims(&claims); err != nil {
+		// Extract standardClaims
+		var standardClaims oauth.IdTokenClaims
+		if err := idToken.Claims(&standardClaims); err != nil {
 			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrServerError, "insufficient claims on id_token", err)
+		}
+
+		var claims map[string]any
+		if err := idToken.Claims(&claims); err != nil {
+			return common.InternalServerErrorResponse(ctx, err)
+		}
+
+		customClaims := map[string]any{}
+		for _, c := range config.Claims {
+			customClaims[c.Field] = claims[c.Key]
 		}
 
 		var identity *auth.Identity
@@ -233,12 +243,12 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 		}
 
 		if identity == nil {
-			identity, err = actions.CreateIdentityWithIdTokenClaims(ctx, schema, idToken.Subject, idToken.Issuer, claims)
+			identity, err = actions.CreateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 		} else {
-			identity, err = actions.UpdateIdentityWithIdTokenClaims(ctx, schema, idToken.Subject, idToken.Issuer, claims)
+			identity, err = actions.UpdateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}

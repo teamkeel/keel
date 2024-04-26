@@ -702,12 +702,12 @@ var testCases = []testCase{
 		expectedTemplate: `
             SELECT
                 DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-								(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" IN (?, ?, ?, ?)) AS totalCount
-            FROM
-                "thing"
+								(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" = ANY(ARRAY[?, ?, ?, ?]::TEXT[])) AS totalCount
+            FROM 
+                "thing" 
             WHERE
-                "thing"."name" IN (?, ?, ?, ?)
-            ORDER BY
+                "thing"."name" = ANY(ARRAY[?, ?, ?, ?]::TEXT[])
+            ORDER BY 
                 "thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"bob", "dave", "adam", "pete", "bob", "dave", "adam", "pete", 50},
 	},
@@ -736,12 +736,12 @@ var testCases = []testCase{
 		expectedTemplate: `
             SELECT
                 DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-								(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."category" IN (?, ?)) AS totalCount
-            FROM
-                "thing"
+								(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."category" = ANY(ARRAY[?, ?]::TEXT[])) AS totalCount
+            FROM 
+                "thing" 
             WHERE
-                "thing"."category" IN (?, ?)
-            ORDER BY
+				"thing"."category" = ANY(ARRAY[?, ?]::TEXT[])
+            ORDER BY 
                 "thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"Technical", "Food", "Technical", "Food", 50},
 	},
@@ -868,12 +868,12 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."title" IN (?, ?)) AS totalCount
-			FROM
-				"thing"
-			WHERE
-				"thing"."title" IN (?, ?)
-			ORDER BY
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."title" = ANY(ARRAY[?, ?]::TEXT[])) AS totalCount
+			FROM 
+				"thing" 
+			WHERE 
+				"thing"."title" = ANY(ARRAY[?, ?]::TEXT[])
+			ORDER BY 
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"title1", "title2", "title1", "title2", 50},
 	},
@@ -901,21 +901,63 @@ var testCases = []testCase{
 		actionName: "listRepeatedThings",
 		input:      map[string]any{},
 		expectedTemplate: `
-			SELECT
-				DISTINCT ON("thing"."id") "thing".*,
-				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id")
-					FROM
-						"thing"
-					LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON
-						"thing$repeated_things"."thing_id" = "thing"."id"
-					WHERE
-						"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name") AS totalCount FROM "thing"
-			LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON
-				"thing$repeated_things"."thing_id" = "thing"."id"
-			WHERE
-				"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name"
-			ORDER BY
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "thing"."id") 
+					FROM 
+						"thing" 
+					LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
+						"thing$repeated_things"."thing_id" = "thing"."id" 
+					WHERE 
+						"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name") AS totalCount FROM "thing" 
+			LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
+				"thing$repeated_things"."thing_id" = "thing"."id" 
+			WHERE 
+				"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name" 
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
+		name: "list_op_expression_text_not_in_field",
+		keelSchema: `
+			model RepeatedThing {
+				fields {
+					name Text
+					thing Thing
+				}
+			}
+			model Thing {
+				fields {
+                    title Text
+					repeatedThings RepeatedThing[]
+                }
+				actions {
+					list listRepeatedThings() {
+						@where(thing.title not in thing.repeatedThings.name)
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		actionName: "listRepeatedThings",
+		input:      map[string]any{},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "thing"."id") 
+					FROM 
+						"thing" 
+					LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
+						"thing$repeated_things"."thing_id" = "thing"."id" 
+					WHERE 
+						"thing"."title" IS DISTINCT FROM "thing$repeated_things"."name") AS totalCount FROM "thing" 
+			LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
+				"thing$repeated_things"."thing_id" = "thing"."id" 
+			WHERE 
+				"thing"."title" IS DISTINCT FROM "thing$repeated_things"."name" 
+			ORDER BY 
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{50},
 	},
@@ -938,12 +980,12 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."title" NOT IN (?, ?)) AS totalCount
-			FROM
-				"thing"
-			WHERE
-				"thing"."title" NOT IN (?, ?)
-			ORDER BY
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE NOT "thing"."title" = ANY(ARRAY[?, ?]::TEXT[])) AS totalCount
+			FROM 
+				"thing" 
+			WHERE 
+				NOT "thing"."title" = ANY(ARRAY[?, ?]::TEXT[])
+			ORDER BY 
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"title1", "title2", "title1", "title2", 50},
 	},
@@ -966,12 +1008,12 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."age" IN (?, ?)) AS totalCount
-			FROM
-				"thing"
-			WHERE
-				"thing"."age" IN (?, ?)
-			ORDER BY
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."age" = ANY(ARRAY[?, ?]::INTEGER[])) AS totalCount
+			FROM 
+				"thing" 
+			WHERE 
+				"thing"."age" = ANY(ARRAY[?, ?]::INTEGER[])
+			ORDER BY 
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{int64(10), int64(20), int64(10), int64(20), 50},
 	},
@@ -994,12 +1036,12 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."age" NOT IN (?, ?)) AS totalCount
-			FROM
-				"thing"
-			WHERE
-				"thing"."age" NOT IN (?, ?)
-			ORDER BY
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE NOT "thing"."age" = ANY(ARRAY[?, ?]::INTEGER[])) AS totalCount
+			FROM 
+				"thing" 
+			WHERE 
+				NOT "thing"."age" = ANY(ARRAY[?, ?]::INTEGER[])
+			ORDER BY 
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{int64(10), int64(20), int64(10), int64(20), 50},
 	},
@@ -1792,7 +1834,7 @@ var testCases = []testCase{
 			WHERE
 				"thing"."id" < (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? )
 			ORDER BY
-				"thing"."id" ASC LIMIT ?`,
+				"thing"."id" DESC LIMIT ?`,
 		expectedArgs: []any{"123", 2},
 	},
 	{
@@ -2773,6 +2815,394 @@ var testCases = []testCase{
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		expectedArgs: []any{identity.Id, "xyz", identity.Id},
 	},
+	{
+		name: "create_array",
+		keelSchema: `
+			model Post {
+				fields {
+					title Text
+					tags Text[]
+				}
+				actions {
+					create createPost() with (title, tags)
+				}
+			}`,
+		actionName: "createPost",
+		input:      map[string]any{"title": "Hello world", "tags": []string{"science", "politics"}},
+		expectedTemplate: `
+			WITH new_1_post AS (
+				INSERT INTO "post" (tags, title) 
+				VALUES (ARRAY[?, ?]::TEXT[], ?)
+				RETURNING *) 
+			SELECT * FROM new_1_post`,
+		expectedArgs: []any{"science", "politics", "Hello world"},
+	},
+	{
+		name: "create_array_set_attribute_empty",
+		keelSchema: `
+			model Post {
+				fields {
+					title Text
+					tags Text[]
+				}
+				actions {
+					create createPost() with (title) {
+						@set(post.tags = [])
+					}
+				}
+			}`,
+		actionName: "createPost",
+		input:      map[string]any{"title": "Hello world"},
+		expectedTemplate: `
+			WITH new_1_post AS (
+				INSERT INTO "post" (tags, title) 
+				VALUES ('{}', ?)
+				RETURNING *) 
+			SELECT * FROM new_1_post`,
+		expectedArgs: []any{"Hello world"},
+	},
+	{
+		name: "create_array_set_attribute",
+		keelSchema: `
+			model Post {
+				fields {
+					title Text
+					tags Text[]
+				}
+				actions {
+					create createPost() with (title) {
+						@set(post.tags = ["science", "technology"])
+					}
+				}
+			}`,
+		actionName: "createPost",
+		input:      map[string]any{"title": "Hello world"},
+		expectedTemplate: `
+			WITH new_1_post AS (
+				INSERT INTO "post" (tags, title) 
+				VALUES (ARRAY[?, ?]::TEXT[], ?)
+				RETURNING *) 
+			SELECT * FROM new_1_post`,
+		expectedArgs: []any{"science", "technology", "Hello world"},
+	},
+	{
+		name: "list_array_literal_expression",
+		keelSchema: `
+			model Post {
+				fields {
+					title Text
+					tags Text[]
+				}
+				actions {
+					list listPosts() {
+						@where(post.title in ["1", "2"])
+					}
+				}
+			}`,
+		actionName: "listPosts",
+		expectedTemplate: `
+			SELECT 
+			DISTINCT ON("post"."id") "post".*, CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, (SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE "post"."title" = ANY(ARRAY[?, ?]::TEXT[])) AS totalCount 
+			FROM "post" 
+			WHERE "post"."title" = ANY(ARRAY[?, ?]::TEXT[]) 
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"1", "2", "1", "2", 50},
+	},
+	{
+		name: "list_array_implicit_equals",
+		keelSchema: `
+			model Post {
+				fields {
+					tags Text[]
+				}
+				actions {
+					list listPosts(tags)
+				}
+			}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"tags": map[string]any{"equals": []any{"science"}}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE "post"."tags" IS NOT DISTINCT FROM ARRAY[?]::TEXT[]) AS totalCount 	
+			FROM "post" 
+			WHERE "post"."tags" IS NOT DISTINCT FROM ARRAY[?]::TEXT[] 
+			ORDER BY "post"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"science", "science", 50},
+	},
+	{
+		name: "list_array_implicit_equals_empty_array",
+		keelSchema: `
+			model Post {
+				fields {
+					tags Text[]
+				}
+				actions {
+					list listPosts(tags)
+				}
+			}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"tags": map[string]any{"equals": []any{}}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE "post"."tags" IS NOT DISTINCT FROM '{}') AS totalCount 	
+			FROM "post" 
+			WHERE "post"."tags" IS NOT DISTINCT FROM '{}'
+			ORDER BY "post"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
+		name: "list_array_implicit_not_equals",
+		keelSchema: `
+			model Post {
+				fields {
+					tags Text[]
+				}
+				actions {
+					list listPosts(tags)
+				}
+			}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"tags": map[string]any{"notEquals": []any{"science"}}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE "post"."tags" IS DISTINCT FROM ARRAY[?]::TEXT[]) AS totalCount 	
+			FROM "post" 
+			WHERE "post"."tags" IS DISTINCT FROM ARRAY[?]::TEXT[] 
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"science", "science", 50},
+	},
+	{
+		name: "list_array_implicit_any_equals",
+		keelSchema: `
+		model Post {
+			fields {
+				tags Text[]
+			}
+			actions {
+				list listPosts(tags)
+			}
+		}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"tags": map[string]any{"any": map[string]any{"equals": "science"}}}},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ? = ANY("post"."tags")) AS totalCount 	
+			FROM "post" 
+			WHERE ? = ANY("post"."tags")
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"science", "science", 50},
+	},
+	{
+		name: "list_array_implicit_all_equals",
+		keelSchema: `
+		model Post {
+			fields {
+				tags Text[]
+			}
+			actions {
+				list listPosts(tags)
+			}
+		}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"tags": map[string]any{"all": map[string]any{"equals": "science"}}}},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE (? = ALL("post"."tags") AND "post"."tags" IS DISTINCT FROM '{}')) AS totalCount 	
+			FROM "post" 
+			WHERE (? = ALL("post"."tags") AND "post"."tags" IS DISTINCT FROM '{}')
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"science", "science", 50},
+	},
+	{
+		name: "list_array_implicit_all_less_than",
+		keelSchema: `
+		model Post {
+			fields {
+				votes Number[]
+			}
+			actions {
+				list listPosts(votes)
+			}
+		}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"votes": map[string]any{"all": map[string]any{"lessThan": 5}}}},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ? > ALL("post"."votes")) AS totalCount 	
+			FROM "post" 
+			WHERE ? > ALL("post"."votes")
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{5, 5, 50},
+	},
+	{
+		name: "list_array_implicit_any_less_than",
+		keelSchema: `
+		model Post {
+			fields {
+				votes Number[]
+			}
+			actions {
+				list listPosts(votes)
+			}
+		}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"votes": map[string]any{"any": map[string]any{"lessThan": 5}}}},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ? > ANY("post"."votes")) AS totalCount 	
+			FROM "post" 
+			WHERE ? > ANY("post"."votes")
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{5, 5, 50},
+	},
+	{
+		name: "list_array_implicit_all_after",
+		keelSchema: `
+		model Post {
+			fields {
+				editedAt Timestamp[]
+			}
+			actions {
+				list listPosts(editedAt)
+			}
+		}`,
+		actionName: "listPosts",
+		input:      map[string]any{"where": map[string]any{"editedAt": map[string]any{"all": map[string]any{"after": "2024-01-01T00:12:00Z"}}}},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ? < ALL("post"."edited_at")) AS totalCount 	
+			FROM "post" 
+			WHERE ? < ALL("post"."edited_at")
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"2024-01-01T00:12:00Z", "2024-01-01T00:12:00Z", 50},
+	},
+	{
+		name: "list_array_expression_in",
+		keelSchema: `
+			model Post {
+				fields {
+					tags Text[]
+				}
+				actions {
+					list listSciencePosts() {
+						@where("science" in post.tags)
+					}
+				}
+			}`,
+		actionName: "listSciencePosts",
+		input:      map[string]any{},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ? = ANY("post"."tags")) AS totalCount 	
+			FROM "post" 
+			WHERE ? = ANY("post"."tags")
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"science", "science", 50},
+	},
+	{
+		name: "list_array_expression_not_in",
+		keelSchema: `
+			model Post {
+				fields {
+					tags Text[]
+				}
+				actions {
+					list listSciencePosts() {
+						@where("science" not in post.tags)
+					}
+				}
+			}`,
+		actionName: "listSciencePosts",
+		input:      map[string]any{},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE (NOT ? = ANY("post"."tags") OR "post"."tags" IS NOT DISTINCT FROM NULL)) AS totalCount 	
+			FROM "post" 
+			WHERE (NOT ? = ANY("post"."tags") OR "post"."tags" IS NOT DISTINCT FROM NULL)
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"science", "science", 50},
+	},
+	{
+		name: "list_array_expression_equals",
+		keelSchema: `
+			model Post {
+				fields {
+					tags Text[]
+				}
+				actions {
+					list listSciencePosts() {
+						@where(["science", "tech"] == post.tags)
+					}
+				}
+			}`,
+		actionName: "listSciencePosts",
+		input:      map[string]any{},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ARRAY[?, ?]::TEXT[] IS NOT DISTINCT FROM "post"."tags") AS totalCount 	
+			FROM "post" 
+			WHERE ARRAY[?, ?]::TEXT[] IS NOT DISTINCT FROM "post"."tags"
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"science", "tech", "science", "tech", 50},
+	},
+	{
+		name: "list_array_expression_not_equals",
+		keelSchema: `
+			model Post {
+				fields {
+					tags Text[]
+				}
+				actions {
+					list listSciencePosts() {
+						@where(["science", "tech"] != post.tags)
+					}
+				}
+			}`,
+		actionName: "listSciencePosts",
+		input:      map[string]any{},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("post"."id") "post".*, 
+				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ARRAY[?, ?]::TEXT[] IS DISTINCT FROM "post"."tags") AS totalCount 	
+			FROM "post" 
+			WHERE ARRAY[?, ?]::TEXT[] IS DISTINCT FROM "post"."tags"
+			ORDER BY "post"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{"science", "tech", "science", "tech", 50},
+	},
 }
 
 func TestQueryBuilder(t *testing.T) {
@@ -3053,4 +3483,30 @@ func withTracing(t *testing.T, ctx context.Context) context.Context {
 	})
 	require.True(t, spanContext.IsValid())
 	return trace.ContextWithSpanContext(ctx, spanContext)
+}
+
+func TestParseArray(t *testing.T) {
+	scanTests := []struct {
+		in  string
+		out []string
+	}{
+		{"{one,two}", []string{"one", "two"}},
+		{`{"one, sdf",two}`, []string{"one, sdf", "two"}},
+		{`{"\"one\"",two}`, []string{`"one"`, "two"}},
+		{`{"\\one\\",two}`, []string{`\one\`, "two"}},
+		{`{"{one}",two}`, []string{`{one}`, "two"}},
+		{`{"one two"}`, []string{`one two`}},
+		{`{"one,two"}`, []string{`one,two`}},
+		{`{abcdef:83bf98cc-fec9-4e77-b4cf-99f9fb6655fa-0NH:zxcvzxc:wers:vxdfw-asdf-asdf}`, []string{"abcdef:83bf98cc-fec9-4e77-b4cf-99f9fb6655fa-0NH:zxcvzxc:wers:vxdfw-asdf-asdf"}},
+		{`{"",two}`, []string{"", "two"}},
+		{`{" ","NULL"}`, []string{" ", "NULL"}},
+		{`{"something",NULL}`, []string{"something", "NULL"}},
+		{`{}`, []string{}},
+	}
+
+	for _, testCase := range scanTests {
+		res, err := actions.ParsePostgresArray(testCase.in, func(s string) (string, error) { return s, nil })
+		assert.NoError(t, err)
+		assert.Equal(t, testCase.out, res)
+	}
 }

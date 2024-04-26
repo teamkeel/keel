@@ -4,6 +4,7 @@ model Person {
         someNumber Number
         someText Text
         someMarkdown Markdown
+        someDecimal Decimal
     }
 
     actions {

@@ -146,6 +146,15 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				return
 			}
 
+			if currentField.Optional && currentField.Repeated {
+				errs.AppendError(makeRelationshipError(
+					"Cannot define a repeated model field as optional",
+					learnMore,
+					currentField.Name,
+				))
+				return
+			}
+
 			var relation string
 			if relationAttr != nil {
 				var ok bool

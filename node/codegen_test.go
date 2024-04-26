@@ -38,6 +38,8 @@ model Person {
 		dateOfBirth Date
 		gender Gender
 		hasChildren Boolean
+		tags Text[]
+		height Decimal
 		bio Markdown
 	}
 }`
@@ -51,6 +53,8 @@ export interface PersonTable {
 	dateOfBirth: Date
 	gender: Gender
 	hasChildren: boolean
+	tags: string[]
+	height: number
 	bio: string
 	id: Generated<string>
 	createdAt: Generated<Date>
@@ -72,6 +76,8 @@ export interface Person {
 	dateOfBirth: Date
 	gender: Gender
 	hasChildren: boolean
+	tags: string[]
+	height: number
 	bio: string
 	id: string
 	createdAt: Date
@@ -93,12 +99,13 @@ export type PersonCreateValues = {
 	dateOfBirth: Date
 	gender: Gender
 	hasChildren: boolean
+	tags: string[]
+	height: number
 	bio: string
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
-}
-`
+}`
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
 		writeCreateValuesType(w, s, m)
@@ -123,8 +130,7 @@ export type PostCreateValues = {
 	// Either author or authorId can be provided but not both
 	| {author: AuthorCreateValues | {id: string}, authorId?: undefined}
 	| {authorId: string, author?: undefined}
-)
-`
+)`
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Post")
 		writeCreateValuesType(w, s, m)
@@ -140,6 +146,8 @@ export interface PersonWhereConditions {
 	dateOfBirth?: Date | runtime.DateWhereCondition;
 	gender?: Gender | GenderWhereCondition;
 	hasChildren?: boolean | runtime.BooleanWhereCondition;
+	tags?: string[] | runtime.StringArrayWhereCondition;
+	height?: number | runtime.NumberWhereCondition;
 	bio?: string | runtime.StringWhereCondition;
 	id?: string | runtime.IDWhereCondition;
 	createdAt?: Date | runtime.DateWhereCondition;
@@ -207,6 +215,8 @@ export type PersonAPI = {
 		dateOfBirth: new Date(),
 		gender: undefined,
 		hasChildren: false,
+		tags: [''],
+		height: 0,
 		bio: ''
 	});
 	%[1]s
@@ -982,21 +992,21 @@ func TestWriteActionInputTypesListRelationshipOptionalFields(t *testing.T) {
 			name Text?
 			authors Author[]
 		}
-	
+
 	}
-	
+
 	model Author {
 		fields {
 			publisher Publisher?
 			books Book[]
 		}
 	}
-	
+
 	model Book {
 		fields {
 			author Author?
 		}
-	
+
 		actions {
 			list listBooks(author.publisher.name) @function
 		}
@@ -1040,21 +1050,21 @@ func TestWriteActionInputTypesListRelationshipOptionalInput(t *testing.T) {
 			name Text
 			authors Author[]
 		}
-	
+
 	}
-	
+
 	model Author {
 		fields {
 			publisher Publisher
 			books Book[]
 		}
 	}
-	
+
 	model Book {
 		fields {
 			author Author
 		}
-	
+
 		actions {
 			list listBooks(author.publisher.name?) @function
 		}
@@ -1080,6 +1090,76 @@ export interface ListBooksWhere {
 }
 export interface ListBooksInput {
 	where?: ListBooksWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
+func TestWriteActionArrayInputTypesListAction(t *testing.T) {
+	schema := `
+enum Sport {
+	Football
+	Tennis
+}
+model Person {
+	fields {
+		favouriteNumbers Number[]
+		favouriteSports Sport[]
+	}
+	actions {
+		list listPeople(favouriteNumbers, favouriteSports)
+	}
+}
+	`
+	expected :=
+		`export interface IntArrayAllQueryInput {
+	equals?: number;
+	notEquals?: number;
+	lessThan?: number;
+	lessThanOrEquals?: number;
+	greaterThan?: number;
+	greaterThanOrEquals?: number;
+}
+export interface IntArrayAnyQueryInput {
+	equals?: number;
+	notEquals?: number;
+	lessThan?: number;
+	lessThanOrEquals?: number;
+	greaterThan?: number;
+	greaterThanOrEquals?: number;
+}
+export interface IntArrayQueryInput {
+	equals?: number[] | null;
+	notEquals?: number[] | null;
+	any?: IntArrayAnyQueryInput;
+	all?: IntArrayAllQueryInput;
+}
+export interface SportArrayAllQueryInput {
+	equals?: Sport;
+	notEquals?: Sport;
+}
+export interface SportArrayAnyQueryInput {
+	equals?: Sport;
+	notEquals?: Sport;
+}
+export interface SportArrayQueryInput {
+	equals?: Sport[] | null;
+	notEquals?: Sport[] | null;
+	any?: SportArrayAnyQueryInput;
+	all?: SportArrayAllQueryInput;
+}
+export interface ListPeopleWhere {
+	favouriteNumbers: IntArrayQueryInput;
+	favouriteSports: SportArrayQueryInput;
+}
+export interface ListPeopleInput {
+	where: ListPeopleWhere;
 	first?: number;
 	after?: string;
 	last?: number;
@@ -2089,7 +2169,7 @@ func TestSDKTypings(t *testing.T) {
 			name: "findOne",
 			code: `
 				import { models, GetPerson } from "@teamkeel/sdk";
-		
+
 				export default GetPerson({
 					beforeQuery: async (ctx, inputs, query) => {
 						const p = await models.person.findOne({
@@ -2106,7 +2186,7 @@ func TestSDKTypings(t *testing.T) {
 			name: "findOne - can return null",
 			code: `
 				import { models, GetPerson } from "@teamkeel/sdk";
-		
+
 				export default GetPerson({
 					beforeQuery: async (ctx, inputs, query) => {
 						const r = await models.person.findOne({
@@ -2124,7 +2204,7 @@ func TestSDKTypings(t *testing.T) {
 			name: "testing actions executor - input types",
 			code: `
 				import { actions } from "@teamkeel/testing";
-		
+
 				async function foo() {
 					await actions.getPerson({
 						id: "1234",
@@ -2137,7 +2217,7 @@ func TestSDKTypings(t *testing.T) {
 			name: "testing actions executor - return types",
 			code: `
 				import { actions } from "@teamkeel/testing";
-		
+
 				async function foo() {
 					const p = await actions.getPerson({
 						id: 1234,
@@ -2151,7 +2231,7 @@ func TestSDKTypings(t *testing.T) {
 			name: "testing actions executor - withIdentity",
 			code: `
 				import { actions } from "@teamkeel/testing";
-		
+
 				async function foo() {
 					await actions.withIdentity(null).getPerson({
 						id: 1234,

@@ -15,11 +15,13 @@ test("create action - null values", async () => {
     preferredName: null,
     employmentStatus: null,
     employer: null,
+    height: null,
   });
 
   // Test the response from createPerson
   expect(createdPerson.name).toEqual("Arnold");
   expect(createdPerson.preferredName).toBeNull();
+  expect(createdPerson.height).toBeNull();
   expect(createdPerson.employmentStatus).toBeNull();
   expect(createdPerson.employerId).toBeNull();
 
@@ -28,6 +30,7 @@ test("create action - null values", async () => {
   // Test the response from getPerson
   expect(getPerson!.name).toEqual("Arnold");
   expect(getPerson!.preferredName).toBeNull();
+  expect(getPerson!.height).toBeNull();
   expect(getPerson!.employmentStatus).toBeNull();
   expect(getPerson!.employerId).toBeNull();
 });
@@ -104,28 +107,40 @@ test("list action - null values", async () => {
     preferredName: "Arnie",
     employmentStatus: Status.Employed,
     employerId: company.id,
+    height: 175.5,
   });
   await models.person.create({
     name: "Arnold Without Name",
     preferredName: null,
+    height: 175.5,
     employmentStatus: Status.Employed,
     employerId: company.id,
   });
   await models.person.create({
     name: "Arnold Without Status",
     preferredName: "Arnie",
+    height: 175.5,
     employmentStatus: null,
     employerId: company.id,
   });
   await models.person.create({
     name: "Arnold Without Employer",
     preferredName: "Arnie",
+    height: 175.5,
     employmentStatus: Status.Employed,
     employerId: companyWithNull.id,
   });
   await models.person.create({
+    name: "Arnold Without Height",
+    preferredName: "Arnie",
+    height: null,
+    employmentStatus: Status.Employed,
+    employerId: company.id,
+  });
+  await models.person.create({
     name: "Arnold No Data",
     preferredName: null,
+    height: null,
     employmentStatus: null,
     employerId: companyWithNull.id,
   });
@@ -133,6 +148,7 @@ test("list action - null values", async () => {
   let { results: resultsAllData } = await actions.listPersons({
     where: {
       preferredName: { notEquals: null },
+      height: { notEquals: null },
       employmentStatus: { notEquals: null },
       employer: { tradingAs: { notEquals: null } },
     },
@@ -144,6 +160,7 @@ test("list action - null values", async () => {
     where: {
       preferredName: { equals: null },
       employmentStatus: { equals: null },
+      height: { equals: null },
       employer: { tradingAs: { equals: null } },
     },
   });
@@ -153,6 +170,7 @@ test("list action - null values", async () => {
   let { results: resultsNullPreferredName } = await actions.listPersons({
     where: {
       preferredName: { equals: null },
+      height: { notEquals: null },
       employmentStatus: { notEquals: null },
       employer: { tradingAs: { notEquals: null } },
     },
@@ -163,6 +181,7 @@ test("list action - null values", async () => {
   let { results: resultsNullStatus } = await actions.listPersons({
     where: {
       preferredName: { notEquals: null },
+      height: { notEquals: null },
       employmentStatus: { equals: null },
       employer: { tradingAs: { notEquals: null } },
     },
@@ -173,6 +192,7 @@ test("list action - null values", async () => {
   let { results: resultsNullEmployerTradingAs } = await actions.listPersons({
     where: {
       preferredName: { notEquals: null },
+      height: { notEquals: null },
       employmentStatus: { notEquals: null },
       employer: { tradingAs: { equals: null } },
     },
@@ -181,4 +201,15 @@ test("list action - null values", async () => {
   expect(resultsNullEmployerTradingAs[0].name).toEqual(
     "Arnold Without Employer"
   );
+
+  let { results: resultsNullHeight } = await actions.listPersons({
+    where: {
+      preferredName: { notEquals: null },
+      height: { equals: null },
+      employmentStatus: { notEquals: null },
+      employer: { tradingAs: { notEquals: null } },
+    },
+  });
+  expect(resultsNullHeight).length(1);
+  expect(resultsNullHeight[0].name).toEqual("Arnold Without Height");
 });

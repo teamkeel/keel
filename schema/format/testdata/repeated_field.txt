@@ -1,6 +1,7 @@
 model Person {
     fields {
         faveColours Text[]
+    optionalColours Text[]?
     }
 }
 
@@ -9,5 +10,6 @@ model Person {
 model Person {
     fields {
         faveColours Text[]
+        optionalColours Text[]?
     }
 }

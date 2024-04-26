@@ -73,15 +73,9 @@ en:
   E028:
     message: "Cannot use '{{ .Value }}' as a single value in {{ .Attribute }}"
     hint: "Only boolean literals are allowed e.g true or false"
-  E029:
-    message: "{{ .LHS }} is a {{ .LHSType }} and {{ .RHS }} is an array of {{ .RHSType }}s"
-    hint: "Left hand side {{ .LHS }} can only be compared to an array of {{ .LHSType }}s"
   E030:
-    message: "{{ .RHS }} is an array of {{ .RHSType }}. Only 'in' or 'not in' can be used"
+    message: "{{ .RHS }} is an array. Only 'in' or 'not in' can be used"
     hint: "Change '{{ .Operator }}' to either 'in' or 'not in'."
-  E031:
-    message: "Both sides of the expression cannot be an array"
-    hint: "Left hand side of expression ('{{ .LHS }}') produced more than one result because one of the relationships was a collection."
   E032:
     message: "Cannot have mixed types in an array literal"
     hint: "Expected {{ .Item }} to be of type {{ .Type }}"
@@ -135,6 +129,12 @@ en:
   E051:
     message: "default expression doesn't support operators"
     hint: "Try removing '{{ .Op }}'"
+  E052:
+    message: "Cannot use '{{ .Name }}' as a field name as it is too long."
+    hint: "Rename this field to a shorter name"
+  E053:
+    message: "Cannot use '{{ .Name }}' as a model name as it is too long."
+    hint: "Rename this model to a shorter name"
   E059:
     message: "You cannot set values for both {{.IdPath}} and {{.ConflictingPath}} in this create action - because the first one indicates that you want to refer to an existing {{.ModelName}}"
     hint: "Either 1) use the .id form, and none of the {{.ModelName}} fields, or 2) omit the .id form and specify all of the fields of {{.ModelName}} that are needed to create one."

@@ -29,7 +29,7 @@ import (
 var authTestSchema = `model Post{}`
 
 func TestTokenExchange_ValidNewIdentity(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -50,7 +50,19 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	})
 
 	server.SetUser("id|285620", &oauth.UserClaims{
-		Email: "keelson@keel.so",
+		Email:         "keelson@keel.so",
+		EmailVerified: true,
+		Name:          "name claim",
+		GivenName:     "given name claim",
+		FamilyName:    "family name claim",
+		MiddleName:    "middle name claim",
+		NickName:      "nick name claim",
+		Profile:       "profile claim",
+		Picture:       "picture claim",
+		Website:       "website claim",
+		Gender:        "gender claim",
+		ZoneInfo:      "zoneInfo claim",
+		Locale:        "locale claim",
 	})
 
 	// Get ID token from server
@@ -94,10 +106,236 @@ func TestTokenExchange_ValidNewIdentity(t *testing.T) {
 	issuer, ok := identities[0]["issuer"].(string)
 	require.True(t, ok)
 	require.Equal(t, issuer, server.Issuer)
+
+	emailVerified, ok := identities[0]["email_verified"].(bool)
+	require.True(t, ok)
+	require.Equal(t, true, emailVerified)
+
+	name, ok := identities[0]["name"].(string)
+	require.True(t, ok)
+	require.Equal(t, "name claim", name)
+
+	givenName, ok := identities[0]["given_name"].(string)
+	require.True(t, ok)
+	require.Equal(t, "given name claim", givenName)
+
+	familyName, ok := identities[0]["family_name"].(string)
+	require.True(t, ok)
+	require.Equal(t, "family name claim", familyName)
+
+	middleName, ok := identities[0]["middle_name"].(string)
+	require.True(t, ok)
+	require.Equal(t, "middle name claim", middleName)
+
+	nickName, ok := identities[0]["nick_name"].(string)
+	require.True(t, ok)
+	require.Equal(t, "nick name claim", nickName)
+
+	profile, ok := identities[0]["profile"].(string)
+	require.True(t, ok)
+	require.Equal(t, "profile claim", profile)
+
+	picture, ok := identities[0]["picture"].(string)
+	require.True(t, ok)
+	require.Equal(t, "picture claim", picture)
+
+	website, ok := identities[0]["website"].(string)
+	require.True(t, ok)
+	require.Equal(t, "website claim", website)
+
+	gender, ok := identities[0]["gender"].(string)
+	require.True(t, ok)
+	require.Equal(t, "gender claim", gender)
+
+	zoneInfo, ok := identities[0]["zone_info"].(string)
+	require.True(t, ok)
+	require.Equal(t, "zoneInfo claim", zoneInfo)
+
+	locale, ok := identities[0]["locale"].(string)
+	require.True(t, ok)
+	require.Equal(t, "locale claim", locale)
+}
+
+func TestTokenExchange_CustomClaims(t *testing.T) {
+	// OIDC test server
+	server, err := oauthtest.NewServer()
+	require.NoError(t, err)
+	defer server.Close()
+
+	// Set up auth config
+	ctx := runtimectx.WithOAuthConfig(context.TODO(), &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+		Claims: []config.IdentityClaim{
+			{Key: "https://slack.com/#teamID", Field: "teamId"},
+			{Key: "custom_claim", Field: "customClaim"},
+			{Key: "not_exists", Field: "notExists"},
+		},
+	})
+
+	ctx, database, schema := keeltesting.MakeContext(t, ctx, authTestSchema, true)
+	defer database.Close()
+
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email: "keelson@keel.so",
+	})
+
+	// Get ID token from server
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
+	require.NoError(t, err)
+
+	// Make a token exchange grant request
+	request := makeTokenExchangeFormRequest(ctx, idToken, nil)
+
+	// Handle runtime request, expecting TokenResponse
+	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.NotEmpty(t, validResponse.AccessToken)
+	require.Equal(t, "bearer", validResponse.TokenType)
+	require.NotEmpty(t, validResponse.ExpiresIn)
+	require.NotEmpty(t, validResponse.RefreshToken)
+	require.True(t, validResponse.Created)
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
+
+	sub, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
+	require.NoError(t, err)
+
+	var identities []map[string]any
+	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
+	require.Len(t, identities, 1)
+
+	id, ok := identities[0]["id"].(string)
+	require.True(t, ok)
+	require.Equal(t, id, sub)
+
+	teamId, ok := identities[0]["team_id"].(string)
+	require.True(t, ok)
+	require.Equal(t, "342352392354", teamId)
+
+	customClaim, ok := identities[0]["custom_claim"].(string)
+	require.True(t, ok)
+	require.Equal(t, "custom value", customClaim)
+
+	notExists := identities[0]["not_exists"]
+	require.Nil(t, notExists)
+}
+
+func TestTokenExchange_ValidNewIdentityNoProfileClaims(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	defer database.Close()
+
+	// OIDC test server
+	server, err := oauthtest.NewServer()
+	require.NoError(t, err)
+	defer server.Close()
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{
+		Email:         "keelson@keel.so",
+		EmailVerified: true,
+	})
+
+	// Get ID token from server
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
+	require.NoError(t, err)
+
+	// Make a token exchange grant request
+	request := makeTokenExchangeFormRequest(ctx, idToken, nil)
+
+	// Handle runtime request, expecting TokenResponse
+	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.NotEmpty(t, validResponse.AccessToken)
+	require.Equal(t, "bearer", validResponse.TokenType)
+	require.NotEmpty(t, validResponse.ExpiresIn)
+	require.NotEmpty(t, validResponse.RefreshToken)
+	require.True(t, validResponse.Created)
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
+
+	sub, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
+	require.NoError(t, err)
+
+	var identities []map[string]any
+	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
+	require.Len(t, identities, 1)
+
+	id, ok := identities[0]["id"].(string)
+	require.True(t, ok)
+	require.Equal(t, id, sub)
+
+	email, ok := identities[0]["email"].(string)
+	require.True(t, ok)
+	require.Equal(t, email, "keelson@keel.so")
+
+	externalId, ok := identities[0]["external_id"].(string)
+	require.True(t, ok)
+	require.Equal(t, "id|285620", externalId)
+
+	issuer, ok := identities[0]["issuer"].(string)
+	require.True(t, ok)
+	require.Equal(t, issuer, server.Issuer)
+
+	emailVerified, ok := identities[0]["email_verified"].(bool)
+	require.True(t, ok)
+	require.Equal(t, true, emailVerified)
+
+	_, ok = identities[0]["name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["given_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["family_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["middle_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["nick_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["profile"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["picture"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["website"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["gender"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["zone_info"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["locale"].(string)
+	require.False(t, ok)
 }
 
 func TestTokenExchangeWithJson_ValidNewIdentity(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -165,7 +403,7 @@ func TestTokenExchangeWithJson_ValidNewIdentity(t *testing.T) {
 }
 
 func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -242,12 +480,10 @@ func TestTokenExchange_ValidNewIdentityAllUserInfo(t *testing.T) {
 	issuer, ok := identities[0]["issuer"].(string)
 	require.True(t, ok)
 	require.Equal(t, issuer, server.Issuer)
-
-	// TODO: test all the user info
 }
 
 func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -272,7 +508,19 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	require.Len(t, inserted, 1)
 
 	server.SetUser("id|285620", &oauth.UserClaims{
-		Email: "keelson@keel.so",
+		Email:         "keelson@keel.so",
+		EmailVerified: true,
+		Name:          "name claim",
+		GivenName:     "given name claim",
+		FamilyName:    "family name claim",
+		MiddleName:    "middle name claim",
+		NickName:      "nick name claim",
+		Profile:       "profile claim",
+		Picture:       "picture claim",
+		Website:       "website claim",
+		Gender:        "gender claim",
+		ZoneInfo:      "zoneInfo claim",
+		Locale:        "locale claim",
 	})
 
 	// Get ID token from server
@@ -315,10 +563,58 @@ func TestTokenExchange_ValidUpdatedIdentity(t *testing.T) {
 	issuer, ok := identities[0]["issuer"].(string)
 	require.True(t, ok)
 	require.Equal(t, issuer, server.Issuer)
+
+	emailVerified, ok := identities[0]["email_verified"].(bool)
+	require.True(t, ok)
+	require.Equal(t, true, emailVerified)
+
+	name, ok := identities[0]["name"].(string)
+	require.True(t, ok)
+	require.Equal(t, "name claim", name)
+
+	givenName, ok := identities[0]["given_name"].(string)
+	require.True(t, ok)
+	require.Equal(t, "given name claim", givenName)
+
+	familyName, ok := identities[0]["family_name"].(string)
+	require.True(t, ok)
+	require.Equal(t, "family name claim", familyName)
+
+	middleName, ok := identities[0]["middle_name"].(string)
+	require.True(t, ok)
+	require.Equal(t, "middle name claim", middleName)
+
+	nickName, ok := identities[0]["nick_name"].(string)
+	require.True(t, ok)
+	require.Equal(t, "nick name claim", nickName)
+
+	profile, ok := identities[0]["profile"].(string)
+	require.True(t, ok)
+	require.Equal(t, "profile claim", profile)
+
+	picture, ok := identities[0]["picture"].(string)
+	require.True(t, ok)
+	require.Equal(t, "picture claim", picture)
+
+	website, ok := identities[0]["website"].(string)
+	require.True(t, ok)
+	require.Equal(t, "website claim", website)
+
+	gender, ok := identities[0]["gender"].(string)
+	require.True(t, ok)
+	require.Equal(t, "gender claim", gender)
+
+	zoneInfo, ok := identities[0]["zone_info"].(string)
+	require.True(t, ok)
+	require.Equal(t, "zoneInfo claim", zoneInfo)
+
+	locale, ok := identities[0]["locale"].(string)
+	require.True(t, ok)
+	require.Equal(t, "locale claim", locale)
 }
 
 func TestTokenExchangeCreateIfNotExistsFalse_IdentityNotExists(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -361,7 +657,7 @@ func TestTokenExchangeCreateIfNotExistsFalse_IdentityNotExists(t *testing.T) {
 }
 
 func TestTokenExchangeCreateIfNotExistsTrue_IdentityAuthorisedAndNotCreated(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -409,7 +705,7 @@ func TestTokenExchangeCreateIfNotExistsTrue_IdentityAuthorisedAndNotCreated(t *t
 }
 
 func TestTokenExchangeCreateIfNotExistsTrue_IdentityCreated(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -453,7 +749,7 @@ func TestTokenExchangeCreateIfNotExistsTrue_IdentityCreated(t *testing.T) {
 }
 
 func TestTokenEndpoint_HttpGet(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a token exchange grant request
@@ -472,7 +768,7 @@ func TestTokenEndpoint_HttpGet(t *testing.T) {
 }
 
 func TestTokenEndpoint_ApplicationTextRequest(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a token exchange grant request
@@ -491,7 +787,7 @@ func TestTokenEndpoint_ApplicationTextRequest(t *testing.T) {
 }
 
 func TestTokenEndpointJson_MissingGrantType(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	values := map[string]string{
@@ -518,7 +814,7 @@ func TestTokenEndpointJson_MissingGrantType(t *testing.T) {
 }
 
 func TestTokenEndpoint_MissingGrantType(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a token exchange grant request
@@ -538,7 +834,7 @@ func TestTokenEndpoint_MissingGrantType(t *testing.T) {
 }
 
 func TestTokenEndpoint_WrongGrantType(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a token exchange grant request
@@ -559,7 +855,7 @@ func TestTokenEndpoint_WrongGrantType(t *testing.T) {
 }
 
 func TestTokenExchangeGrant_NoSubjectToken(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a token exchange grant request
@@ -579,7 +875,7 @@ func TestTokenExchangeGrant_NoSubjectToken(t *testing.T) {
 }
 
 func TestTokenEndpointJson_NoSubjectToken(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	values := map[string]string{
@@ -604,7 +900,7 @@ func TestTokenEndpointJson_NoSubjectToken(t *testing.T) {
 }
 
 func TestTokenExchangeGrant_EmptySubjectToken(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a token exchange grant request
@@ -625,7 +921,7 @@ func TestTokenExchangeGrant_EmptySubjectToken(t *testing.T) {
 }
 
 func TestTokenExchangeGrant_WrongSubjectTokenType(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a token exchange grant request
@@ -648,7 +944,7 @@ func TestTokenExchangeGrant_WrongSubjectTokenType(t *testing.T) {
 }
 
 func TestTokenExchangeGrant_WrongRequestedTokenType(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a token exchange grant request
@@ -671,7 +967,7 @@ func TestTokenExchangeGrant_WrongRequestedTokenType(t *testing.T) {
 }
 
 func TestTokenExchangeGrant_InvalidCreateIfNotExists(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a token exchange grant request
@@ -694,7 +990,7 @@ func TestTokenExchangeGrant_InvalidCreateIfNotExists(t *testing.T) {
 }
 
 func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -729,7 +1025,7 @@ func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
 }
 
 func TestRefreshTokenGrantJson_Valid(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -814,7 +1110,7 @@ func TestRefreshTokenGrantJson_Valid(t *testing.T) {
 }
 
 func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -899,7 +1195,7 @@ func TestRefreshTokenGrantRotationEnabled_Valid(t *testing.T) {
 }
 
 func TestRefreshTokenGrantRotationDisabled_Valid(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -983,7 +1279,7 @@ func TestRefreshTokenGrantRotationDisabled_Valid(t *testing.T) {
 }
 
 func TestRefreshTokenGrant_NoRefreshToken(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a refresh token grant request
@@ -1003,7 +1299,7 @@ func TestRefreshTokenGrant_NoRefreshToken(t *testing.T) {
 }
 
 func TestRefreshTokenGrant_EmptyRefreshToken(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a refresh token grant request
@@ -1020,7 +1316,7 @@ func TestRefreshTokenGrant_EmptyRefreshToken(t *testing.T) {
 }
 
 func TestAuthorizationCodeGrant_Valid(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	code, err := oauth.NewAuthCode(ctx, "identity_id")
@@ -1050,7 +1346,7 @@ func TestAuthorizationCodeGrant_Valid(t *testing.T) {
 }
 
 func TestAuthorizationCodeGrantJson_Valid(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	code, err := oauth.NewAuthCode(ctx, "identity_id")
@@ -1080,7 +1376,7 @@ func TestAuthorizationCodeGrantJson_Valid(t *testing.T) {
 }
 
 func TestAuthorizationCodeGrant_InvalidCode(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a auth code grant request
@@ -1097,7 +1393,7 @@ func TestAuthorizationCodeGrant_InvalidCode(t *testing.T) {
 }
 
 func TestAuthorizationCodeGrantForm_NoCode(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a auth code grant request
@@ -1117,7 +1413,7 @@ func TestAuthorizationCodeGrantForm_NoCode(t *testing.T) {
 }
 
 func TestAuthorizationCodeGrantJson_NoCode(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a auth code grant request
@@ -1137,7 +1433,7 @@ func TestAuthorizationCodeGrantJson_NoCode(t *testing.T) {
 }
 
 func TestPasswordGrantForm_IdentityCreated(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a password grant request
@@ -1169,7 +1465,7 @@ func TestPasswordGrantForm_IdentityCreated(t *testing.T) {
 }
 
 func TestPasswordGrantCreateIfNotExistsTrue_IdentityCreated(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a password grant request
@@ -1202,7 +1498,7 @@ func TestPasswordGrantCreateIfNotExistsTrue_IdentityCreated(t *testing.T) {
 }
 
 func TestPasswordGrantCreateIfNotExistsFalse_IdentityNotCreated(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a password grant request
@@ -1220,7 +1516,7 @@ func TestPasswordGrantCreateIfNotExistsFalse_IdentityNotCreated(t *testing.T) {
 }
 
 func TestPasswordGrantCreateIfNotExistsFalse_Authorised(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	request := makePasswordFormRequest(ctx, "user@example.com", "myP@ssword1234!", nil)
@@ -1260,7 +1556,7 @@ func TestPasswordGrantCreateIfNotExistsFalse_Authorised(t *testing.T) {
 }
 
 func TestPasswordGrantJson_Valid(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a password grant request
@@ -1292,7 +1588,7 @@ func TestPasswordGrantJson_Valid(t *testing.T) {
 }
 
 func TestPasswordGrant_IncorrectCredentials(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a password grant request
@@ -1317,7 +1613,7 @@ func TestPasswordGrant_IncorrectCredentials(t *testing.T) {
 }
 
 func TestPasswordGrant_CorrectCredentials(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a password grant request
@@ -1338,7 +1634,7 @@ func TestPasswordGrant_CorrectCredentials(t *testing.T) {
 }
 
 func TestPasswordGrant_InvalidEmail(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a password grant request
@@ -1355,7 +1651,7 @@ func TestPasswordGrant_InvalidEmail(t *testing.T) {
 }
 
 func TestPasswordGrant_MissingEmail(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a password grant request
@@ -1376,7 +1672,7 @@ func TestPasswordGrant_MissingEmail(t *testing.T) {
 }
 
 func TestPasswordGrant_MissingPassword(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a password grant request
@@ -1397,7 +1693,7 @@ func TestPasswordGrant_MissingPassword(t *testing.T) {
 }
 
 func TestPasswordGrant_InvalidCreateIfNotExists(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a password grant request

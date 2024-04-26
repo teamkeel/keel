@@ -4,7 +4,7 @@ model Post {
     }
 
     @permission(
-        //expect-error:39:41:E031:Both sides of the expression cannot be an array
+        //expect-error:21:38:E027:left hand side operand cannot be an array for 'in' and 'not in'
         expression: post.authors.name in post.authors.name,
         actions: [get]
     )

@@ -34,7 +34,7 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 			return nil, err
 		}
 
-		err = authQuery.applyExplicitFilters(scope, input)
+		err = authQuery.applyExpressionFilters(scope, input)
 		if err != nil {
 			return nil, err
 		}
@@ -84,12 +84,12 @@ func GenerateDeleteStatement(query *QueryBuilder, scope *Scope, input map[string
 		return nil, err
 	}
 
-	err = query.applyExplicitFilters(scope, input)
+	err = query.applyExpressionFilters(scope, input)
 	if err != nil {
 		return nil, err
 	}
 
-	query.AppendReturning(Field("id"))
+	query.AppendReturning(IdField())
 
 	return query.DeleteStatement(scope.Context), nil
 }

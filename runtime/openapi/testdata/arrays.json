@@ -1,0 +1,266 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Admin", "version": "1" },
+  "paths": {
+    "/admin/json/things": {
+      "post": {
+        "operationId": "things",
+        "requestBody": {
+          "description": "things Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "after": { "type": "string" },
+                  "before": { "type": "string" },
+                  "first": { "type": "number" },
+                  "last": { "type": "number" },
+                  "where": { "$ref": "#/components/schemas/ThingsWhere" }
+                },
+                "additionalProperties": false,
+                "required": ["where"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "things Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "pageInfo": {
+                      "properties": {
+                        "count": { "type": "number" },
+                        "endCursor": { "type": "string" },
+                        "hasNextPage": { "type": "boolean" },
+                        "startCursor": { "type": "string" },
+                        "totalCount": { "type": "number" }
+                      }
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Thing" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "things Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DateArrayAllQueryInput": {
+        "type": "object",
+        "properties": {
+          "after": { "type": "string", "format": "date" },
+          "before": { "type": "string", "format": "date" },
+          "equals": { "type": "string", "format": "date" },
+          "notEquals": { "type": "string", "format": "date" },
+          "onOrAfter": { "type": "string", "format": "date" },
+          "onOrBefore": { "type": "string", "format": "date" }
+        },
+        "additionalProperties": false
+      },
+      "DateArrayAnyQueryInput": {
+        "type": "object",
+        "properties": {
+          "after": { "type": "string", "format": "date" },
+          "before": { "type": "string", "format": "date" },
+          "equals": { "type": "string", "format": "date" },
+          "notEquals": { "type": "string", "format": "date" },
+          "onOrAfter": { "type": "string", "format": "date" },
+          "onOrBefore": { "type": "string", "format": "date" }
+        },
+        "additionalProperties": false
+      },
+      "DateArrayQueryInput": {
+        "type": "object",
+        "properties": {
+          "all": { "$ref": "#/components/schemas/DateArrayAllQueryInput" },
+          "any": { "$ref": "#/components/schemas/DateArrayAnyQueryInput" },
+          "equals": {
+            "type": ["array", "null"],
+            "items": { "type": "string", "format": "date" }
+          },
+          "notEquals": {
+            "type": ["array", "null"],
+            "items": { "type": "string", "format": "date" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "IntArrayAllQueryInput": {
+        "type": "object",
+        "properties": {
+          "equals": { "type": "number" },
+          "greaterThan": { "type": "number" },
+          "greaterThanOrEquals": { "type": "number" },
+          "lessThan": { "type": "number" },
+          "lessThanOrEquals": { "type": "number" },
+          "notEquals": { "type": "number" }
+        },
+        "additionalProperties": false
+      },
+      "IntArrayAnyQueryInput": {
+        "type": "object",
+        "properties": {
+          "equals": { "type": "number" },
+          "greaterThan": { "type": "number" },
+          "greaterThanOrEquals": { "type": "number" },
+          "lessThan": { "type": "number" },
+          "lessThanOrEquals": { "type": "number" },
+          "notEquals": { "type": "number" }
+        },
+        "additionalProperties": false
+      },
+      "IntArrayQueryInput": {
+        "type": "object",
+        "properties": {
+          "all": { "$ref": "#/components/schemas/IntArrayAllQueryInput" },
+          "any": { "$ref": "#/components/schemas/IntArrayAnyQueryInput" },
+          "equals": {
+            "type": ["array", "null"],
+            "items": { "type": "number" }
+          },
+          "notEquals": {
+            "type": ["array", "null"],
+            "items": { "type": "number" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "MyEnumArrayAllQueryInput": {
+        "type": "object",
+        "properties": {
+          "equals": { "enum": ["One", "Two", "Three"] },
+          "notEquals": { "enum": ["One", "Two", "Three"] }
+        },
+        "additionalProperties": false
+      },
+      "MyEnumArrayAnyQueryInput": {
+        "type": "object",
+        "properties": {
+          "equals": { "enum": ["One", "Two", "Three"] },
+          "notEquals": { "enum": ["One", "Two", "Three"] }
+        },
+        "additionalProperties": false
+      },
+      "MyEnumArrayQueryInput": {
+        "type": "object",
+        "properties": {
+          "all": { "$ref": "#/components/schemas/MyEnumArrayAllQueryInput" },
+          "any": { "$ref": "#/components/schemas/MyEnumArrayAnyQueryInput" },
+          "equals": {
+            "type": ["array", "null"],
+            "items": { "enum": ["One", "Two", "Three", null] }
+          },
+          "notEquals": {
+            "type": ["array", "null"],
+            "items": { "enum": ["One", "Two", "Three", null] }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StringArrayAllQueryInput": {
+        "type": "object",
+        "properties": {
+          "equals": { "type": "string" },
+          "notEquals": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "StringArrayAnyQueryInput": {
+        "type": "object",
+        "properties": {
+          "equals": { "type": "string" },
+          "notEquals": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "StringArrayQueryInput": {
+        "type": "object",
+        "properties": {
+          "all": { "$ref": "#/components/schemas/StringArrayAllQueryInput" },
+          "any": { "$ref": "#/components/schemas/StringArrayAnyQueryInput" },
+          "equals": {
+            "type": ["array", "null"],
+            "items": { "type": "string" }
+          },
+          "notEquals": {
+            "type": ["array", "null"],
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "Thing": {
+        "properties": {
+          "createdAt": { "type": "string", "format": "date-time" },
+          "dates": {
+            "type": "array",
+            "items": { "type": "string", "format": "date" }
+          },
+          "enums": {
+            "type": "array",
+            "items": { "enum": ["One", "Two", "Three"] }
+          },
+          "id": { "type": "string" },
+          "numbers": { "type": "array", "items": { "type": "number" } },
+          "texts": { "type": "array", "items": { "type": "string" } },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "texts",
+          "numbers",
+          "enums",
+          "dates",
+          "id",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ThingsWhere": {
+        "type": "object",
+        "properties": {
+          "dates": { "$ref": "#/components/schemas/DateArrayQueryInput" },
+          "enums": { "$ref": "#/components/schemas/MyEnumArrayQueryInput" },
+          "numbers": { "$ref": "#/components/schemas/IntArrayQueryInput" },
+          "texts": { "$ref": "#/components/schemas/StringArrayQueryInput" }
+        },
+        "additionalProperties": false,
+        "required": ["texts", "numbers", "enums", "dates"]
+      }
+    }
+  }
+}

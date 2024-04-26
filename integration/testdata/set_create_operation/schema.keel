@@ -4,6 +4,8 @@ model Thing {
         requiredText Text @default("hello")
         optionalNumber Number?
         requiredNumber Number @default(1)
+        optionalDecimal Decimal?
+        requiredDecimal Decimal @default(1.0)
         optionalBoolean Boolean?
         requiredBoolean Boolean @default(false)
         optionalEnum ThingType?
@@ -41,6 +43,21 @@ model Thing {
         }
         create createNumberFromImplicitInput() with (requiredNumber) {
             @set(thing.optionalNumber = requiredNumber)
+        }
+        create createDecimalOnOptional() {
+            @set(thing.optionalDecimal = 1.5)
+        }
+        create createNullDecimalOnOptional() {
+            @set(thing.optionalDecimal = null)
+        }
+        create createDecimalOnRequired() {
+            @set(thing.requiredDecimal = 1.5)
+        }
+        create createDecimalFromExplicitInput() with (explDecimal: Decimal) {
+            @set(thing.requiredDecimal = explDecimal)
+        }
+        create createDecimalFromImplicitInput() with (requiredDecimal) {
+            @set(thing.optionalDecimal = requiredDecimal)
         }
         create createBooleanOnOptional() {
             @set(thing.optionalBoolean = true)

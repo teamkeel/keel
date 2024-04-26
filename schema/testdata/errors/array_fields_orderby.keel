@@ -1,0 +1,23 @@
+model Thing {
+    fields {
+        texts Text[]
+        enums MyEnum[]
+    }
+
+    actions {
+        list listThings1() {
+            //expect-error:22:27:AttributeArgumentError:@orderBy does not support ordering of array fields
+            @orderBy(texts: asc)
+        }
+
+        list listThings2() {
+            //expect-error:22:27:AttributeArgumentError:@orderBy does not support ordering of array fields
+            @orderBy(enums: asc)
+        }
+    }
+}
+
+enum MyEnum {
+    One
+    Two
+}

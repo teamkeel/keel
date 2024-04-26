@@ -29,6 +29,7 @@ func TestModelWithFields(t *testing.T) {
 			name Text
 			books Book[]
 			rating Number
+			netWorth Decimal
 		  }
 		}`})
 	assert.Equal(t, "Author", schema.Declarations[0].Model.Name.Value)
@@ -44,6 +45,9 @@ func TestModelWithFields(t *testing.T) {
 	assert.Equal(t, "Number", schema.Declarations[0].Model.Sections[0].Fields[2].Type.Value)
 	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[2].Repeated)
 
+	assert.Equal(t, "netWorth", schema.Declarations[0].Model.Sections[0].Fields[3].Name.Value)
+	assert.Equal(t, "Decimal", schema.Declarations[0].Model.Sections[0].Fields[3].Type.Value)
+	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[3].Repeated)
 }
 
 func TestModelWithFunctions(t *testing.T) {
@@ -406,7 +410,7 @@ func TestAttributeArgsParsing(t *testing.T) {
 	model Person {
 		@permission
 		@permission()
-		@permission(expression: true, actions: [get])	
+		@permission(expression: true, actions: [get])
 	}`})
 
 	model := schema.Declarations[0].Model

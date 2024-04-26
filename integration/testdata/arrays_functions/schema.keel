@@ -1,0 +1,16 @@
+model Thing {
+    fields {
+        texts Text[]?
+        numbers Number[]?
+        dates Date[]?
+        booleans Boolean[]?
+        timestamps Timestamp[]?
+        enums MyEnum[]?
+    }
+}
+
+enum MyEnum {
+    One 
+    Two
+    Three 
+}

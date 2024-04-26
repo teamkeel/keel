@@ -514,7 +514,7 @@ func IsHasOneModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 	switch {
 	case !IsModel(asts, field.Type.Value):
 		return false
-	case field.Repeated:
+	case field.Repeated && !field.IsScalar():
 		return false
 	default:
 		return true

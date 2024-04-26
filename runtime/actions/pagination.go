@@ -87,3 +87,19 @@ func ParsePage(args map[string]any) (Page, error) {
 
 	return page, nil
 }
+
+// IsBackwards tells us if the page is backwards paginated (e.g. we're requesting elements before a cursor)
+func (p *Page) IsBackwards() bool {
+	return p.Before != "" && p.Last > 0
+}
+
+// Cursor returns the cursor used in the pagination based on the direction of pagination:
+// - if backwards, it's `before`
+// - if forward pagination, it's `after`
+func (p *Page) Cursor() string {
+	if p.IsBackwards() {
+		return p.Before
+	}
+
+	return p.After
+}

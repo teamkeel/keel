@@ -1,0 +1,106 @@
+model ThingText {
+    fields {
+        array1 Text[]?
+        array2 Text[]?
+        value Text?
+    }
+
+    actions {
+        create createThing() with (array1, array2, value?) {
+            @permission(expression: true)
+        }
+
+        list listEqualToLiteral() {
+            @where(thingText.array1 == ["Keel", "Weave"])
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+
+        list listEqualToField() {
+            @where(thingText.array1 == thingText.array2)
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+
+         list listEqualToNull() {
+            @where(thingText.array1 == null)
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+
+         list listLiteralInArrayField() {
+            @where("Weave" in thingText.array1)
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+
+        list listLiteralNotInArrayField() {
+            @where("Weave" not in thingText.array1)
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+
+        list listFieldInArrayField() {
+            @where(thingText.value in thingText.array1)
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+    }
+}
+
+model ThingEnum {
+    fields {
+        array1 MyEnum[]?
+        array2 MyEnum[]?
+        value MyEnum?
+    }
+
+    actions {
+        create createEnumThing() with (array1, array2, value?) {
+            @permission(expression: true)
+        }
+
+        list listEnumEqualToLiteral() {
+            @where(thingEnum.array1 == [MyEnum.One, MyEnum.Two])
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+
+        list listEnumEqualToField() {
+            @where(thingEnum.array1 == thingEnum.array2)
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+
+         list listEnumEqualToNull() {
+            @where(thingEnum.array1 == null)
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+
+         list listEnumLiteralInArrayField() {
+            @where(MyEnum.Two in thingEnum.array1)
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+
+        list listEnumLiteralNotInArrayField() {
+            @where(MyEnum.Two not in thingEnum.array1)
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+
+        list listEnumFieldInArrayField() {
+            @where(thingEnum.value in thingEnum.array1)
+            @orderBy(createdAt: asc)
+            @permission(expression: true)
+        }
+    }
+}
+
+enum MyEnum {
+    One 
+    Two
+    Three
+    Four
+}

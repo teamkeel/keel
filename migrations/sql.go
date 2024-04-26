@@ -19,6 +19,7 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 	proto.Type_TYPE_ID:        "TEXT",
 	proto.Type_TYPE_STRING:    "TEXT",
 	proto.Type_TYPE_INT:       "INTEGER",
+	proto.Type_TYPE_DECIMAL:   "NUMERIC",
 	proto.Type_TYPE_BOOL:      "BOOL",
 	proto.Type_TYPE_TIMESTAMP: "TIMESTAMPTZ",
 	proto.Type_TYPE_DATETIME:  "TIMESTAMPTZ",
@@ -239,6 +240,10 @@ func fieldDefinition(field *proto.Field) (string, error) {
 		"jsonb",
 		PostgresFieldTypes[field.Type.Type])
 
+	if field.Type.Repeated {
+		fieldType = fmt.Sprintf("%s[]", fieldType)
+	}
+
 	output := fmt.Sprintf("%s %s", columnName, fieldType)
 
 	if !field.Optional {
@@ -259,10 +264,14 @@ func fieldDefinition(field *proto.Field) (string, error) {
 
 func getDefaultValue(field *proto.Field) (string, error) {
 	if field.DefaultValue.UseZeroValue {
+		if field.Type.Repeated {
+			return "{}", nil
+		}
+
 		switch field.Type.Type {
 		case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
 			return db.QuoteLiteral(""), nil
-		case proto.Type_TYPE_INT:
+		case proto.Type_TYPE_INT, proto.Type_TYPE_DECIMAL:
 			return "0", nil
 		case proto.Type_TYPE_BOOL:
 			return "false", nil
@@ -284,26 +293,61 @@ func getDefaultValue(field *proto.Field) (string, error) {
 	}
 
 	switch {
-	case value.String != nil:
-		s := *value.String
+	case value.Array != nil:
+		if len(value.Array.Values) == 0 {
+			return "'{}'", nil
+		}
+
+		values := []string{}
+		for _, el := range value.Array.Values {
+			v, err := toSqlLiteral(el, field)
+			if err != nil {
+				return "", err
+			}
+			values = append(values, v)
+		}
+
+		var cast string
+		switch field.Type.Type {
+		case proto.Type_TYPE_INT:
+			cast = "::INTEGER[]"
+		case proto.Type_TYPE_DECIMAL:
+			cast = "::NUMERIC[]"
+		case proto.Type_TYPE_BOOL:
+			cast = "::BOOL[]"
+		default:
+			cast = "::TEXT[]"
+		}
+
+		return fmt.Sprintf("ARRAY[%s]%s", strings.Join(values, ","), cast), nil
+	default:
+		return toSqlLiteral(value, field)
+	}
+}
+
+func toSqlLiteral(operand *parser.Operand, field *proto.Field) (string, error) {
+	switch {
+	case operand.String != nil:
+		s := *operand.String
 		// Remove wrapping quotes
 		s = strings.TrimPrefix(s, `"`)
 		s = strings.TrimSuffix(s, `"`)
 		return db.QuoteLiteral(s), nil
-	case value.Number != nil:
-		return fmt.Sprintf("%d", *value.Number), nil
-	case value.True:
+	case operand.Decimal != nil:
+		return fmt.Sprintf("%f", *operand.Decimal), nil
+	case operand.Number != nil:
+		return fmt.Sprintf("%d", *operand.Number), nil
+	case operand.True:
 		return "true", nil
-	case value.False:
+	case operand.False:
 		return "false", nil
-	case field.Type.Type == proto.Type_TYPE_ENUM && value.Ident != nil:
-		if len(value.Ident.Fragments) != 2 {
-			return "", fmt.Errorf("invalid default value %s for enum field %s", value.Ident.ToString(), field.Name)
+	case field.Type.Type == proto.Type_TYPE_ENUM && operand.Ident != nil:
+		if len(operand.Ident.Fragments) != 2 {
+			return "", fmt.Errorf("invalid default value %s for enum field %s", operand.Ident.ToString(), field.Name)
 		}
-
-		return db.QuoteLiteral(value.Ident.Fragments[1].Fragment), nil
+		return db.QuoteLiteral(operand.Ident.Fragments[1].Fragment), nil
 	default:
-		return "", fmt.Errorf("field %s has unexpected default value %s", field.Name, value.ToString())
+		return "", fmt.Errorf("field %s has unexpected default value %s", field.Name, operand.ToString())
 	}
 }
 

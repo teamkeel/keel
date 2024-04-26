@@ -36,6 +36,17 @@ var operatorsForType = map[string][]string{
 		parser.OperatorIncrement,
 		parser.OperatorDecrement,
 	},
+	parser.FieldTypeDecimal: {
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
+		parser.OperatorGreaterThan,
+		parser.OperatorGreaterThanOrEqualTo,
+		parser.OperatorLessThan,
+		parser.OperatorLessThanOrEqualTo,
+		parser.OperatorAssignment,
+		parser.OperatorIncrement,
+		parser.OperatorDecrement,
+	},
 	parser.FieldTypeBoolean: {
 		parser.OperatorAssignment,
 		parser.OperatorEquals,
@@ -67,6 +78,9 @@ var operatorsForType = map[string][]string{
 	parser.TypeArray: {
 		parser.OperatorIn,
 		parser.OperatorNotIn,
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
+		parser.OperatorAssignment,
 	},
 	parser.TypeNull: {
 		parser.OperatorEquals,

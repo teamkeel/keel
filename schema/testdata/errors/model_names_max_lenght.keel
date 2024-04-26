@@ -1,0 +1,12 @@
+//expect-error:7:51:E053:Cannot use 'ALongLongLongLongLongModelNameThatIsVeryLong' as a model name as it is too long.
+model ALongLongLongLongLongModelNameThatIsVeryLong {
+    fields {
+        foo Text
+    }
+}
+
+model ALongLongLongLongModelNameThatNotVeryLong {
+    fields {
+        foo Text
+    }
+}

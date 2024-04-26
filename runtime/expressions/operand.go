@@ -47,7 +47,7 @@ func NewOperandResolver(ctx context.Context, schema *proto.Schema, model *proto.
 func (resolver *OperandResolver) NormalisedFragments() ([]string, error) {
 	fragments := lo.Map(resolver.operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
-	operandType, err := resolver.GetOperandType()
+	operandType, _, err := resolver.GetOperandType()
 	if err != nil {
 		return nil, err
 	}
@@ -95,9 +95,38 @@ func (resolver *OperandResolver) NormalisedFragments() ([]string, error) {
 // For example, a number or string literal written straight into the Keel schema,
 // such as the right-hand side operand in @where(person.age > 21).
 func (resolver *OperandResolver) IsLiteral() bool {
+	// Check if literal or array of literals, such as a "keel" or ["keel", "weave"]
 	isLiteral, _ := resolver.operand.IsLiteralType()
+	if isLiteral {
+		return true
+	}
+
+	// Check if an enum, such as Sport.Cricket
 	isEnumLiteral := resolver.operand.Ident != nil && proto.EnumExists(resolver.Schema.Enums, resolver.operand.Ident.Fragments[0].Fragment)
-	return isLiteral || isEnumLiteral
+	if isEnumLiteral {
+		return true
+	}
+
+	if resolver.operand.Ident == nil && resolver.operand.Array != nil {
+		// Check if an empty array, such as []
+		isEmptyArray := resolver.operand.Ident == nil && resolver.operand.Array != nil && len(resolver.operand.Array.Values) == 0
+		if isEmptyArray {
+			return true
+		}
+
+		// Check if an array of enums, such as [Sport.Cricket, Sport.Rugby]
+		isEnumLiteralArray := true
+		for _, item := range resolver.operand.Array.Values {
+			if !proto.EnumExists(resolver.Schema.Enums, item.Ident.Fragments[0].Fragment) {
+				isEnumLiteralArray = false
+			}
+		}
+		if isEnumLiteralArray {
+			return true
+		}
+	}
+
+	return false
 }
 
 // IsImplicitInput returns true if the expression operand refers to an implicit input on an action.
@@ -195,8 +224,8 @@ func (resolver *OperandResolver) IsContext() bool {
 	return resolver.operand.Ident.IsContext()
 }
 
-// GetOperandType returns the equivalent protobuf type for the expression operand.
-func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
+// GetOperandType returns the equivalent protobuf type for the expression operand and whether it is an array or not
+func (resolver *OperandResolver) GetOperandType() (proto.Type, bool, error) {
 	operand := resolver.operand
 	action := resolver.Action
 	schema := resolver.Schema
@@ -206,22 +235,24 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 		if operand.Ident == nil {
 			switch {
 			case operand.String != nil:
-				return proto.Type_TYPE_STRING, nil
+				return proto.Type_TYPE_STRING, false, nil
 			case operand.Number != nil:
-				return proto.Type_TYPE_INT, nil
+				return proto.Type_TYPE_INT, false, nil
+			case operand.Decimal != nil:
+				return proto.Type_TYPE_DECIMAL, false, nil
 			case operand.True || operand.False:
-				return proto.Type_TYPE_BOOL, nil
+				return proto.Type_TYPE_BOOL, false, nil
 			case operand.Array != nil:
-				return proto.Type_TYPE_UNKNOWN, nil
+				return proto.Type_TYPE_UNKNOWN, true, nil
 			case operand.Null:
-				return proto.Type_TYPE_UNKNOWN, nil
+				return proto.Type_TYPE_UNKNOWN, false, nil
 			default:
-				return proto.Type_TYPE_UNKNOWN, fmt.Errorf("cannot handle operand type")
+				return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("cannot handle operand type")
 			}
 		} else if resolver.operand.Ident != nil && proto.EnumExists(resolver.Schema.Enums, resolver.operand.Ident.Fragments[0].Fragment) {
-			return proto.Type_TYPE_ENUM, nil
+			return proto.Type_TYPE_ENUM, false, nil
 		} else {
-			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("unknown literal type")
+			return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("unknown literal type")
 		}
 
 	case resolver.IsModelDbColumn(), resolver.IsContextDbColumn():
@@ -235,7 +266,7 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 		// The first fragment will always be the root model name, e.g. "author" in author.posts.title
 		modelTarget := proto.FindModel(schema.Models, casing.ToCamel(fragments[0].Fragment))
 		if modelTarget == nil {
-			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[0].Fragment))
+			return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[0].Fragment))
 		}
 
 		var fieldTarget *proto.Field
@@ -244,7 +275,7 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 			if fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
 				modelTarget = proto.FindModel(schema.Models, fieldTarget.Type.ModelName.Value)
 				if modelTarget == nil {
-					return proto.Type_TYPE_UNKNOWN, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.Type.ModelName.Value)
+					return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.Type.ModelName.Value)
 				}
 			}
 		}
@@ -252,15 +283,15 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 		// If no field is provided, for example: @where(account in ...)
 		// Or if the target field is a MODEL, for example:
 		if fieldTarget == nil || fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
-			return proto.Type_TYPE_MODEL, nil
+			return proto.Type_TYPE_MODEL, false, nil
 		}
 
-		return fieldTarget.Type.Type, nil
+		return fieldTarget.Type.Type, fieldTarget.Type.Repeated, nil
 	case resolver.IsImplicitInput():
 		modelTarget := casing.ToCamel(action.ModelName)
 		inputName := operand.Ident.Fragments[0].Fragment
-		operandType := proto.FindField(schema.Models, modelTarget, inputName).Type.Type
-		return operandType, nil
+		field := proto.FindField(schema.Models, modelTarget, inputName)
+		return field.Type.Type, field.Type.Repeated, nil
 	case resolver.IsExplicitInput():
 		inputName := operand.Ident.Fragments[0].Fragment
 		var field *proto.MessageField
@@ -279,28 +310,28 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 				field = proto.FindMessageField(message, inputName)
 			}
 		default:
-			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("unhandled action type %s for explicit input", action.Type)
+			return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("unhandled action type %s for explicit input", action.Type)
 		}
 		if field == nil {
-			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("could not find explicit input %s on action %s", inputName, action.Name)
+			return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("could not find explicit input %s on action %s", inputName, action.Name)
 		}
-		return field.Type.Type, nil
+		return field.Type.Type, field.Type.Repeated, nil
 	case operand.Ident.IsContext():
 		fragmentCount := len(operand.Ident.Fragments)
 		if fragmentCount > 2 && operand.Ident.IsContextEnvField() {
-			return proto.Type_TYPE_STRING, nil
+			return proto.Type_TYPE_STRING, false, nil
 		}
 
 		fieldName := operand.Ident.Fragments[1].Fragment
-		return runtimectx.ContextFieldTypes[fieldName], nil
+		return runtimectx.ContextFieldTypes[fieldName], false, nil
 	default:
-		return proto.Type_TYPE_UNKNOWN, fmt.Errorf("cannot handle operand target %s", operand.Ident.Fragments[0].Fragment)
+		return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("cannot handle operand target %s", operand.Ident.Fragments[0].Fragment)
 	}
 }
 
 // ResolveValue returns the actual value of the operand, provided a database read is not required.
 func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) {
-	operandType, err := resolver.GetOperandType()
+	operandType, _, err := resolver.GetOperandType()
 	if err != nil {
 		return nil, err
 	}
@@ -312,9 +343,27 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 			return toNative(resolver.operand, operandType)
 		} else if resolver.operand.Ident != nil && proto.EnumExists(resolver.Schema.Enums, resolver.operand.Ident.Fragments[0].Fragment) {
 			return resolver.operand.Ident.Fragments[1].Fragment, nil
-		} else {
-			return nil, errors.New("unknown literal type")
+		} else if resolver.operand.Ident == nil && resolver.operand.Array != nil {
+			values := []string{}
+			enum := ""
+			for _, v := range resolver.operand.Array.Values {
+				if !proto.EnumExists(resolver.Schema.Enums, v.Ident.Fragments[0].Fragment) {
+					return nil, fmt.Errorf("unknown enum type '%s'", v.Ident.Fragments[0].Fragment)
+				}
+
+				if enum == "" {
+					enum = v.Ident.Fragments[0].Fragment
+				} else if enum != v.Ident.Fragments[0].Fragment {
+					return nil, fmt.Errorf("enum '%s' array cannot have value from enum type '%s'", enum, v.Ident.Fragments[0].Fragment)
+				}
+
+				values = append(values, v.Ident.Fragments[1].Fragment)
+			}
+			return values, nil
 		}
+
+		return nil, errors.New("unknown literal type")
+
 	case resolver.IsImplicitInput(), resolver.IsExplicitInput():
 		inputName := resolver.operand.Ident.Fragments[0].Fragment
 		value, ok := args[inputName]
@@ -387,6 +436,8 @@ func toNative(v *parser.Operand, fieldType proto.Type) (any, error) {
 		return true, nil
 	case v.Number != nil:
 		return *v.Number, nil
+	case v.Decimal != nil:
+		return *v.Decimal, nil
 	case v.String != nil:
 		v := *v.String
 		v = strings.TrimPrefix(v, `"`)
@@ -400,8 +451,6 @@ func toNative(v *parser.Operand, fieldType proto.Type) (any, error) {
 		return v, nil
 	case v.Null:
 		return nil, nil
-	case fieldType == proto.Type_TYPE_ENUM:
-		return v.Ident.Fragments[1].Fragment, nil
 	default:
 		return nil, fmt.Errorf("toNative() does yet support this expression operand: %+v", v)
 	}

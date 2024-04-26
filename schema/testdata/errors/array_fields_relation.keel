@@ -1,0 +1,17 @@
+model Thing {
+    fields {
+        //expect-error:22:31:RelationshipError:The @relation attribute cannot be used on non-model fields
+        texts Text[] @relation(otherThing.thing)
+    }
+}
+
+model OtherThing {
+    fields {
+        thing Thing
+    }
+}
+
+enum MyEnum {
+    One
+    Two
+}

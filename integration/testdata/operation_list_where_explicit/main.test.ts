@@ -100,3 +100,43 @@ test("List Where filters - using before operator on timestamp - filters correctl
 
   expect(results.length).toEqual(1);
 });
+
+test("List Where filters - using less than operator on decimal - filters correctly", async () => {
+  await actions.createPost({ aDecimal: 1.5 });
+  await actions.createPost({ aDecimal: 2.6 });
+  await actions.createPost({ aDecimal: 3.7 });
+
+  const { results } = await actions.listPostsLessThanDecimal({
+    where: {
+      whereArg: 3.5,
+    },
+  });
+
+  expect(results.length).toEqual(2);
+});
+
+test("List Where filters - using greater than operator on decimal - filters correctly", async () => {
+  await actions.createPost({ aDecimal: 1.5 });
+  await actions.createPost({ aDecimal: 2.6 });
+  await actions.createPost({ aDecimal: 3.7 });
+
+  const { results } = await actions.listPostsGreaterThanDecimal({
+    where: {
+      whereArg: 1.5,
+    },
+  });
+
+  expect(results.length).toEqual(2);
+});
+
+test("List Where filters - using equal operator on decimal - filters correctly", async () => {
+  await actions.createPost({ aDecimal: 1.5 });
+
+  const { results } = await actions.listPostsEqualDecimal({
+    where: {
+      whereArg: 1.5,
+    },
+  });
+
+  expect(results.length).toEqual(1);
+});

@@ -243,10 +243,20 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the identity does not exist or the id token is invalid, has expired, or has insufficient claims", err)
 			}
 
-			// Extract claims
-			var claims oauth.IdTokenClaims
-			if err := idToken.Claims(&claims); err != nil {
+			// Extract standardClaims
+			var standardClaims oauth.IdTokenClaims
+			if err := idToken.Claims(&standardClaims); err != nil {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "insufficient claims on id_token", err)
+			}
+
+			var claims map[string]any
+			if err := idToken.Claims(&claims); err != nil {
+				return common.InternalServerErrorResponse(ctx, err)
+			}
+
+			customClaims := map[string]any{}
+			for _, c := range config.Claims {
+				customClaims[c.Field] = claims[c.Key]
 			}
 
 			identity, err := actions.FindIdentityByExternalId(ctx, schema, idToken.Subject, idToken.Issuer)
@@ -259,14 +269,14 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the identity does not exist or the id token is invalid, has expired, or has insufficient claims", err)
 				}
 
-				identity, err = actions.CreateIdentityWithIdTokenClaims(ctx, schema, idToken.Subject, idToken.Issuer, claims)
+				identity, err = actions.CreateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
 				if err != nil {
 					return common.InternalServerErrorResponse(ctx, err)
 				}
 
 				identityCreated = true
 			} else {
-				identity, err = actions.UpdateIdentityWithIdTokenClaims(ctx, schema, idToken.Subject, idToken.Issuer, claims)
+				identity, err = actions.UpdateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
 				if err != nil {
 					return common.InternalServerErrorResponse(ctx, err)
 				}

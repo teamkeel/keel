@@ -7,6 +7,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/rules/api"
 	"github.com/teamkeel/keel/schema/validation/rules/attribute"
 	"github.com/teamkeel/keel/schema/validation/rules/field"
+	"github.com/teamkeel/keel/schema/validation/rules/model"
 	"github.com/teamkeel/keel/schema/validation/rules/role"
 )
 
@@ -40,6 +41,9 @@ var validatorFuncs = []validationFunc{
 
 	field.ValidFieldTypesRule,
 	field.UniqueFieldNamesRule,
+	field.FieldNamesMaxLengthRule,
+
+	model.ModelNamesMaxLengthRule,
 
 	attribute.AttributeLocationsRule,
 	attribute.SetWhereAttributeRule,
@@ -68,7 +72,6 @@ var visitorFuncs = []VisitorFunc{
 	ConflictingInputsRule,
 	UniqueLookup,
 	InvalidWithUsage,
-	RepeatedScalarFieldRule,
 	UniqueAttributeRule,
 	OrderByAttributeRule,
 	SortableAttributeRule,

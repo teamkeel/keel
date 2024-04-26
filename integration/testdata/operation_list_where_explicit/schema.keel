@@ -4,10 +4,11 @@ model Post {
         length Number?
         aDate Date?
         aTimestamp Timestamp?
+        aDecimal Decimal?
     }
 
     actions {
-        create createPost() with (title?, length?, aDate?, aTimestamp?)
+        create createPost() with (title?, length?, aDate?, aTimestamp?, aDecimal?)
         list listPostsEqualString(whereArg: Text) {
             @where(post.title == whereArg)
         }
@@ -28,6 +29,15 @@ model Post {
         }
         list beforePostsBeforeTimestamp(whereArg: Timestamp) {
             @where(post.aTimestamp < whereArg)
+        }
+        list listPostsEqualDecimal(whereArg: Decimal) {
+            @where(post.aDecimal == whereArg)
+        }
+        list listPostsLessThanDecimal(whereArg: Decimal) {
+            @where(post.aDecimal < whereArg)
+        }
+        list listPostsGreaterThanDecimal(whereArg: Decimal) {
+            @where(post.aDecimal > whereArg)
         }
     }
 

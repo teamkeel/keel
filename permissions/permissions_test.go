@@ -639,7 +639,7 @@ func TestToSQL(t *testing.T) {
 		{
 			name: "identity_backlink_compare_model",
 			schema: `
-				model Profile {
+				model UserProfile {
 					fields {
 						identity Identity @unique
 					}
@@ -647,7 +647,7 @@ func TestToSQL(t *testing.T) {
 
 				model Post {
 					fields {
-						profile Profile
+						profile UserProfile
 					}
 
 					actions {
@@ -666,7 +666,7 @@ func TestToSQL(t *testing.T) {
 					}
 
 					@permission(
-						expression: ctx.identity.profile == comment.post.profile,
+						expression: ctx.identity.userProfile == comment.post.profile,
 						actions: [create]
 					)
 				}
@@ -675,11 +675,15 @@ func TestToSQL(t *testing.T) {
 			sql: `
 				SELECT DISTINCT "comment"."id" 
 				FROM "comment" 
-				LEFT JOIN "post" AS "comment$post" ON "comment"."post_id" = "comment$post"."id" 
-				WHERE ((SELECT "identity$profile"."id" 
+				LEFT JOIN "post" AS "comment$post" 
+				ON "comment"."post_id" = "comment$post"."id" 
+				WHERE 
+					((SELECT "identity$user_profile"."id" 
 					FROM "identity" 
-					LEFT JOIN "profile" AS "identity$profile" ON "identity"."id" = "identity$profile"."identity_id" 
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?) IS NOT DISTINCT FROM "comment$post"."profile_id") 
+					LEFT JOIN "user_profile" AS "identity$user_profile" 
+					ON "identity"."id" = "identity$user_profile"."identity_id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?) 
+					IS NOT DISTINCT FROM "comment$post"."profile_id") 
 				AND "comment"."id" IN (?)
 			`,
 			values: []permissions.Value{
@@ -694,7 +698,7 @@ func TestToSQL(t *testing.T) {
 		{
 			name: "identity_backlink_compare_field",
 			schema: `
-				model Profile {
+				model UserProfile {
 					fields {
 						identity Identity @unique
 					}
@@ -702,7 +706,7 @@ func TestToSQL(t *testing.T) {
 
 				model Post {
 					fields {
-						profile Profile
+						profile UserProfile
 					}
 
 					actions {
@@ -721,7 +725,7 @@ func TestToSQL(t *testing.T) {
 					}
 
 					@permission(
-						expression: ctx.identity.profile.id == comment.post.profile.id,
+						expression: ctx.identity.userProfile.id == comment.post.profile.id,
 						actions: [create]
 					)
 				}
@@ -730,11 +734,14 @@ func TestToSQL(t *testing.T) {
 			sql: `
 				SELECT DISTINCT "comment"."id" 
 				FROM "comment" 
-				LEFT JOIN "post" AS "comment$post" ON "comment"."post_id" = "comment$post"."id" 
-				LEFT JOIN "profile" AS "comment$post$profile" ON "comment$post"."profile_id" = "comment$post$profile"."id"
-				WHERE ((SELECT "identity$profile"."id" 
+				LEFT JOIN "post" AS "comment$post" 
+				ON "comment"."post_id" = "comment$post"."id" 
+				LEFT JOIN "user_profile" AS "comment$post$profile" ON "comment$post"."profile_id" = "comment$post$profile"."id" 
+				WHERE 
+					((SELECT "identity$user_profile"."id" 
 					FROM "identity" 
-					LEFT JOIN "profile" AS "identity$profile" ON "identity"."id" = "identity$profile"."identity_id" 
+					LEFT JOIN "user_profile" AS "identity$user_profile" 
+					ON "identity"."id" = "identity$user_profile"."identity_id" 
 					WHERE "identity"."id" IS NOT DISTINCT FROM ?) IS NOT DISTINCT FROM "comment$post$profile"."id") 
 				AND "comment"."id" IN (?)
 			`,

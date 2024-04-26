@@ -27,10 +27,11 @@ model BlogPost {
         title Text
         content Text
         user User
+        rating Decimal
     }
 
     actions {
-        create createBlogPost() with (title, content) {
+        create createBlogPost() with (title, content, rating) {
             @set(blogPost.user = ctx.identity.user)
             @permission(expression: ctx.isAuthenticated)
         }

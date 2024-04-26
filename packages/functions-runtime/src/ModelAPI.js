@@ -54,7 +54,12 @@ class ModelAPI {
 
     return tracing.withSpan(name, () => {
       const db = useDatabase();
-      return create(db, this._tableName, this._tableConfigMap, values);
+      return create(
+        db,
+        this._tableName,
+        this._tableConfigMap,
+        snakeCaseObject(values)
+      );
     });
   }
 
