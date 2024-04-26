@@ -365,9 +365,3 @@ func TestAuthClaims(t *testing.T) {
 	assert.Equal(t, "something-else", config.Auth.Claims[1].Key)
 	assert.Equal(t, "somethingElse", config.Auth.Claims[1].Field)
 }
-
-// TODO: field already exists on identity
-
-// TODO: field not correct format/casing
-
-// TODO: field or key already defined in config
