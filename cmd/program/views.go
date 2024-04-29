@@ -136,7 +136,11 @@ func renderRun(m *Model) string {
 			for _, values := range endpoints {
 				b.WriteString("\n")
 				b.WriteString(" - ")
-				b.WriteString(colors.Blue(fmt.Sprintf("http://localhost:%s/%s/%s", m.Port, strings.ToLower(api.Name), values[0])).Highlight().String())
+				if m.CustomHostname == "" {
+					b.WriteString(colors.Blue(fmt.Sprintf("http://localhost:%s/%s/%s", m.Port, strings.ToLower(api.Name), values[0])).Highlight().String())
+				} else {
+					b.WriteString(colors.Blue(fmt.Sprintf("%s/%s/%s", m.CustomHostname, strings.ToLower(api.Name), values[0])).Highlight().String())
+				}
 				b.WriteString(colors.White(fmt.Sprintf(" (%s)", values[1])).String())
 			}
 			b.WriteString("\n")
