@@ -160,6 +160,9 @@ type Model struct {
 	// This will then show all system events in the local console.
 	VerboseTracing bool
 
+	// A custom configured hostname, which may be necessary to change for SSO callback.
+	CustomHostname string
+
 	// Model state - used in View()
 	Status            int
 	Err               error
@@ -300,7 +303,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Status = StatusLoadSchema
 
 		cmds := []tea.Cmd{
-			StartRuntimeServer(m.Port, m.runtimeRequestsCh),
+			StartRuntimeServer(m.Port, m.CustomHostname, m.runtimeRequestsCh),
 			StartRpcServer(m.RpcPort, m.rpcRequestsCh),
 			NextMsgCommand(m.runtimeRequestsCh),
 			NextMsgCommand(m.rpcRequestsCh),

@@ -449,9 +449,13 @@ type RuntimeRequestMsg struct {
 	done chan bool
 }
 
-func StartRuntimeServer(port string, ch chan tea.Msg) tea.Cmd {
+func StartRuntimeServer(port string, customHostname string, ch chan tea.Msg) tea.Cmd {
 	return func() tea.Msg {
-		os.Setenv("KEEL_API_URL", fmt.Sprintf("http://localhost:%s", port))
+		if customHostname != "" {
+			os.Setenv("KEEL_API_URL", customHostname)
+		} else {
+			os.Setenv("KEEL_API_URL", fmt.Sprintf("http://localhost:%s", port))
+		}
 
 		runtimeServer := http.Server{
 			Addr: fmt.Sprintf(":%s", port),
