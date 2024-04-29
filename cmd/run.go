@@ -24,6 +24,7 @@ var runCmd = &cobra.Command{
 			ProjectDir:       flagProjectDir,
 			ResetDatabase:    flagReset,
 			Port:             flagPort,
+			CustomHostname:   flagHostname,
 			CustomTracing:    flagTracing,
 			NodePackagesPath: flagNodePackagesPath,
 			PackageManager:   packageManager,
@@ -36,7 +37,8 @@ func init() {
 	rootCmd.AddCommand(runCmd)
 
 	runCmd.Flags().BoolVar(&flagReset, "reset", false, "if set the database will be reset")
-	runCmd.Flags().StringVar(&flagPort, "port", "8000", "the port to run the Keel application on")
+	runCmd.Flags().StringVar(&flagHostname, "hostname", "", "custom hostname to handle HTTP requests")
+	runCmd.Flags().StringVar(&flagPort, "port", "8000", "the local port to handle Keel HTTP requests")
 	runCmd.Flags().StringVar(&flagPrivateKeyPath, "private-key-path", "", "path to the private key .pem file")
 
 	if enabledDebugFlags == "true" {
