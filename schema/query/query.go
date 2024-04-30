@@ -97,7 +97,7 @@ func IsForeignKey(asts []*parser.AST, model *parser.ModelNode, field *parser.Fie
 }
 
 func IsIdentityModel(asts []*parser.AST, name string) bool {
-	return name == parser.ImplicitIdentityModelName
+	return name == parser.IdentityModelName
 }
 
 func ModelAttributes(model *parser.ModelNode) (res []*parser.AttributeNode) {
@@ -501,7 +501,7 @@ func PrimaryKey(modelName string, asts []*parser.AST) *parser.FieldNode {
 	}
 
 	for _, field := range potentialFields {
-		if field.Name.Value == parser.ImplicitFieldNameId {
+		if field.Name.Value == parser.FieldNameId {
 			return field
 		}
 	}

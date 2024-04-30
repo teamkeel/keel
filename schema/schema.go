@@ -190,7 +190,7 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 			{
 				BuiltIn: true,
 				Name: parser.NameNode{
-					Value: parser.ImplicitFieldNameId,
+					Value: parser.FieldNameId,
 				},
 				Type: parser.NameNode{
 					Value: parser.FieldTypeID,
@@ -207,7 +207,7 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 			{
 				BuiltIn: true,
 				Name: parser.NameNode{
-					Value: parser.ImplicitFieldNameCreatedAt,
+					Value: parser.FieldNameCreatedAt,
 				},
 				Type: parser.NameNode{
 					Value: parser.FieldTypeDatetime,
@@ -223,7 +223,7 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 			{
 				BuiltIn: true,
 				Name: parser.NameNode{
-					Value: parser.ImplicitFieldNameUpdatedAt,
+					Value: parser.FieldNameUpdatedAt,
 				},
 				Type: parser.NameNode{
 					Value: parser.FieldTypeDatetime,
@@ -340,7 +340,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		Model: &parser.ModelNode{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityModelName,
+				Value: parser.IdentityModelName,
 				Node: node.Node{
 					Pos: lexer.Position{
 						Filename: schemaFile.FileName,
@@ -354,7 +354,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameEmail,
+				Value: parser.IdentityFieldNameEmail,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -364,7 +364,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameEmailVerified,
+				Value: parser.IdentityFieldNameEmailVerified,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeBoolean,
@@ -400,7 +400,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNamePassword,
+				Value: parser.IdentityFieldNamePassword,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypePassword,
@@ -410,7 +410,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameExternalId,
+				Value: parser.IdentityFieldNameExternalId,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -420,7 +420,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameIssuer,
+				Value: parser.IdentityFieldNameIssuer,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -430,7 +430,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameName,
+				Value: parser.IdentityFieldNameName,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -440,7 +440,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameGivenName,
+				Value: parser.IdentityFieldNameGivenName,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -450,7 +450,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameFamilyName,
+				Value: parser.IdentityFieldNameFamilyName,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -460,7 +460,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameMiddleName,
+				Value: parser.IdentityFieldNameMiddleName,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -470,7 +470,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameNickName,
+				Value: parser.IdentityFieldNameNickName,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -480,7 +480,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameProfile,
+				Value: parser.IdentityFieldNameProfile,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -490,7 +490,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNamePicture,
+				Value: parser.IdentityFieldNamePicture,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -500,7 +500,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameWebsite,
+				Value: parser.IdentityFieldNameWebsite,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -510,7 +510,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameGender,
+				Value: parser.IdentityFieldNameGender,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -520,7 +520,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameZoneInfo,
+				Value: parser.IdentityFieldNameZoneInfo,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,
@@ -530,7 +530,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		{
 			BuiltIn: true,
 			Name: parser.NameNode{
-				Value: parser.ImplicitIdentityFieldNameLocale,
+				Value: parser.IdentityFieldNameLocale,
 			},
 			Type: parser.NameNode{
 				Value: parser.FieldTypeText,

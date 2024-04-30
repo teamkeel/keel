@@ -102,33 +102,33 @@ var ActionTypes = []string{
 // All models get a field named "id" implicitly. This set of constants provides
 // the set of this, and other similar implicit fields.
 const (
-	ImplicitFieldNameId        = "id"
-	ImplicitFieldNameCreatedAt = "createdAt"
-	ImplicitFieldNameUpdatedAt = "updatedAt"
+	FieldNameId        = "id"
+	FieldNameCreatedAt = "createdAt"
+	FieldNameUpdatedAt = "updatedAt"
 )
 
 var (
-	ImplicitFieldNames = []string{ImplicitFieldNameId, ImplicitFieldNameCreatedAt, ImplicitFieldNameUpdatedAt}
+	FieldNames = []string{FieldNameId, FieldNameCreatedAt, FieldNameUpdatedAt}
 )
 
 const (
-	ImplicitIdentityModelName              = "Identity"
-	ImplicitIdentityFieldNameEmail         = "email"
-	ImplicitIdentityFieldNameEmailVerified = "emailVerified"
-	ImplicitIdentityFieldNamePassword      = "password"
-	ImplicitIdentityFieldNameExternalId    = "externalId"
-	ImplicitIdentityFieldNameIssuer        = "issuer"
-	ImplicitIdentityFieldNameName          = "name"
-	ImplicitIdentityFieldNameGivenName     = "givenName"
-	ImplicitIdentityFieldNameFamilyName    = "familyName"
-	ImplicitIdentityFieldNameMiddleName    = "middleName"
-	ImplicitIdentityFieldNameNickName      = "nickName"
-	ImplicitIdentityFieldNameProfile       = "profile"
-	ImplicitIdentityFieldNamePicture       = "picture"
-	ImplicitIdentityFieldNameWebsite       = "website"
-	ImplicitIdentityFieldNameGender        = "gender"
-	ImplicitIdentityFieldNameZoneInfo      = "zoneInfo"
-	ImplicitIdentityFieldNameLocale        = "locale"
+	IdentityModelName              = "Identity"
+	IdentityFieldNameEmail         = "email"
+	IdentityFieldNameEmailVerified = "emailVerified"
+	IdentityFieldNamePassword      = "password"
+	IdentityFieldNameExternalId    = "externalId"
+	IdentityFieldNameIssuer        = "issuer"
+	IdentityFieldNameName          = "name"
+	IdentityFieldNameGivenName     = "givenName"
+	IdentityFieldNameFamilyName    = "familyName"
+	IdentityFieldNameMiddleName    = "middleName"
+	IdentityFieldNameNickName      = "nickName"
+	IdentityFieldNameProfile       = "profile"
+	IdentityFieldNamePicture       = "picture"
+	IdentityFieldNameWebsite       = "website"
+	IdentityFieldNameGender        = "gender"
+	IdentityFieldNameZoneInfo      = "zoneInfo"
+	IdentityFieldNameLocale        = "locale"
 )
 
 const (

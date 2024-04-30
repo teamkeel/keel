@@ -2,8 +2,6 @@ package actions
 
 import (
 	"context"
-	"errors"
-	"time"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
@@ -14,8 +12,8 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*auth.Identity, error) {
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (auth.Identity, error) {
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(IdField(), Equals, Value(id))
 	if err != nil {
@@ -32,11 +30,11 @@ func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*au
 		return nil, nil
 	}
 
-	return mapToIdentity(result)
+	return result, nil
 }
 
-func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string, issuer string) (*auth.Identity, error) {
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string, issuer string) (auth.Identity, error) {
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(Field("email"), Equals, Value(email))
 	if err != nil {
@@ -58,11 +56,11 @@ func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string
 		return nil, nil
 	}
 
-	return mapToIdentity(result)
+	return result, nil
 }
 
-func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (*auth.Identity, error) {
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (auth.Identity, error) {
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(Field("externalId"), Equals, Value(externalId))
 	if err != nil {
@@ -84,11 +82,11 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 		return nil, nil
 	}
 
-	return mapToIdentity(result)
+	return result, nil
 }
 
-func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string, issuer string) (*auth.Identity, error) {
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string, issuer string) (auth.Identity, error) {
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 
 	query := NewQuery(identityModel)
 	query.AddWriteValues(map[string]*QueryOperand{
@@ -104,41 +102,41 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 		return nil, err
 	}
 
-	return mapToIdentity(result)
+	return result, nil
 }
 
-func CreateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, standardClaims *oauth.IdTokenClaims, customClaims map[string]any) (*auth.Identity, error) {
+func CreateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, standardClaims *oauth.IdTokenClaims, customClaims map[string]any) (auth.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Create Identity")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("externalId", externalId))
 	span.SetAttributes(attribute.String("issuer", issuer))
 
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 
 	query := NewQuery(identityModel)
 
 	query.AddWriteValues(map[string]*QueryOperand{
 		// default 'email' scope claims
-		parser.ImplicitIdentityFieldNameExternalId: Value(externalId),
-		parser.ImplicitIdentityFieldNameIssuer:     Value(issuer),
+		parser.IdentityFieldNameExternalId: Value(externalId),
+		parser.IdentityFieldNameIssuer:     Value(issuer),
 
 		// default 'profile' scope claims
-		parser.ImplicitIdentityFieldNameEmail:         Value(standardClaims.Email),
-		parser.ImplicitIdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
+		parser.IdentityFieldNameEmail:         Value(standardClaims.Email),
+		parser.IdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
 
 		// default 'profile' scope claims
-		parser.ImplicitIdentityFieldNameName:       ValueOrNullIfEmpty(standardClaims.Name),
-		parser.ImplicitIdentityFieldNameGivenName:  ValueOrNullIfEmpty(standardClaims.GivenName),
-		parser.ImplicitIdentityFieldNameFamilyName: ValueOrNullIfEmpty(standardClaims.FamilyName),
-		parser.ImplicitIdentityFieldNameMiddleName: ValueOrNullIfEmpty(standardClaims.MiddleName),
-		parser.ImplicitIdentityFieldNameNickName:   ValueOrNullIfEmpty(standardClaims.NickName),
-		parser.ImplicitIdentityFieldNameProfile:    ValueOrNullIfEmpty(standardClaims.Profile),
-		parser.ImplicitIdentityFieldNamePicture:    ValueOrNullIfEmpty(standardClaims.Picture),
-		parser.ImplicitIdentityFieldNameWebsite:    ValueOrNullIfEmpty(standardClaims.Website),
-		parser.ImplicitIdentityFieldNameGender:     ValueOrNullIfEmpty(standardClaims.Gender),
-		parser.ImplicitIdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(standardClaims.ZoneInfo),
-		parser.ImplicitIdentityFieldNameLocale:     ValueOrNullIfEmpty(standardClaims.Locale),
+		parser.IdentityFieldNameName:       ValueOrNullIfEmpty(standardClaims.Name),
+		parser.IdentityFieldNameGivenName:  ValueOrNullIfEmpty(standardClaims.GivenName),
+		parser.IdentityFieldNameFamilyName: ValueOrNullIfEmpty(standardClaims.FamilyName),
+		parser.IdentityFieldNameMiddleName: ValueOrNullIfEmpty(standardClaims.MiddleName),
+		parser.IdentityFieldNameNickName:   ValueOrNullIfEmpty(standardClaims.NickName),
+		parser.IdentityFieldNameProfile:    ValueOrNullIfEmpty(standardClaims.Profile),
+		parser.IdentityFieldNamePicture:    ValueOrNullIfEmpty(standardClaims.Picture),
+		parser.IdentityFieldNameWebsite:    ValueOrNullIfEmpty(standardClaims.Website),
+		parser.IdentityFieldNameGender:     ValueOrNullIfEmpty(standardClaims.Gender),
+		parser.IdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(standardClaims.ZoneInfo),
+		parser.IdentityFieldNameLocale:     ValueOrNullIfEmpty(standardClaims.Locale),
 	})
 
 	for k, v := range customClaims {
@@ -155,17 +153,17 @@ func CreateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 		return nil, err
 	}
 
-	return mapToIdentity(result)
+	return result, nil
 }
 
-func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, standardClaims *oauth.IdTokenClaims, customClaims map[string]any) (*auth.Identity, error) {
+func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, standardClaims *oauth.IdTokenClaims, customClaims map[string]any) (auth.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Update Identity")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("externalId", standardClaims.Subject))
 	span.SetAttributes(attribute.String("issuer", standardClaims.Issuer))
 
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 
 	query := NewQuery(identityModel)
 
@@ -181,21 +179,21 @@ func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 
 	query.AddWriteValues(map[string]*QueryOperand{
 		// default 'email' scope claims
-		parser.ImplicitIdentityFieldNameEmail:         Value(standardClaims.Email),
-		parser.ImplicitIdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
+		parser.IdentityFieldNameEmail:         Value(standardClaims.Email),
+		parser.IdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
 
 		// default 'profile' scope claims
-		parser.ImplicitIdentityFieldNameName:       ValueOrNullIfEmpty(standardClaims.Name),
-		parser.ImplicitIdentityFieldNameGivenName:  ValueOrNullIfEmpty(standardClaims.GivenName),
-		parser.ImplicitIdentityFieldNameFamilyName: ValueOrNullIfEmpty(standardClaims.FamilyName),
-		parser.ImplicitIdentityFieldNameMiddleName: ValueOrNullIfEmpty(standardClaims.MiddleName),
-		parser.ImplicitIdentityFieldNameNickName:   ValueOrNullIfEmpty(standardClaims.NickName),
-		parser.ImplicitIdentityFieldNameProfile:    ValueOrNullIfEmpty(standardClaims.Profile),
-		parser.ImplicitIdentityFieldNamePicture:    ValueOrNullIfEmpty(standardClaims.Picture),
-		parser.ImplicitIdentityFieldNameWebsite:    ValueOrNullIfEmpty(standardClaims.Website),
-		parser.ImplicitIdentityFieldNameGender:     ValueOrNullIfEmpty(standardClaims.Gender),
-		parser.ImplicitIdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(standardClaims.ZoneInfo),
-		parser.ImplicitIdentityFieldNameLocale:     ValueOrNullIfEmpty(standardClaims.Locale),
+		parser.IdentityFieldNameName:       ValueOrNullIfEmpty(standardClaims.Name),
+		parser.IdentityFieldNameGivenName:  ValueOrNullIfEmpty(standardClaims.GivenName),
+		parser.IdentityFieldNameFamilyName: ValueOrNullIfEmpty(standardClaims.FamilyName),
+		parser.IdentityFieldNameMiddleName: ValueOrNullIfEmpty(standardClaims.MiddleName),
+		parser.IdentityFieldNameNickName:   ValueOrNullIfEmpty(standardClaims.NickName),
+		parser.IdentityFieldNameProfile:    ValueOrNullIfEmpty(standardClaims.Profile),
+		parser.IdentityFieldNamePicture:    ValueOrNullIfEmpty(standardClaims.Picture),
+		parser.IdentityFieldNameWebsite:    ValueOrNullIfEmpty(standardClaims.Website),
+		parser.IdentityFieldNameGender:     ValueOrNullIfEmpty(standardClaims.Gender),
+		parser.IdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(standardClaims.ZoneInfo),
+		parser.IdentityFieldNameLocale:     ValueOrNullIfEmpty(standardClaims.Locale),
 	})
 
 	for k, v := range customClaims {
@@ -212,63 +210,5 @@ func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 		return nil, err
 	}
 
-	return mapToIdentity(result)
-}
-
-type ExternalUserDetails struct {
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"email-verified"`
-}
-
-func mapToIdentity(values map[string]any) (*auth.Identity, error) {
-	id, ok := values["id"].(string)
-	if !ok {
-		return nil, errors.New("id for identity is required")
-	}
-
-	externalId, ok := values["externalId"].(string)
-	if !ok {
-		externalId = ""
-	}
-
-	email, ok := values["email"].(string)
-	if !ok {
-		email = ""
-	}
-
-	password, ok := values["password"].(string)
-	if !ok {
-		password = ""
-	}
-
-	issuer, ok := values["issuer"].(string)
-	if !ok {
-		issuer = ""
-	}
-
-	createdAt, ok := values["createdAt"].(time.Time)
-	if !ok {
-		return nil, errors.New("createdAt for identity is required")
-	}
-
-	updatedAt, ok := values["updatedAt"].(time.Time)
-	if !ok {
-		return nil, errors.New("updatedAt for identity is required")
-	}
-
-	verified, ok := values["emailVerified"].(bool)
-	if !ok {
-		verified = false
-	}
-
-	return &auth.Identity{
-		Id:            id,
-		ExternalId:    externalId,
-		Email:         email,
-		Password:      password,
-		Issuer:        issuer,
-		CreatedAt:     createdAt,
-		UpdatedAt:     updatedAt,
-		EmailVerified: verified,
-	}, nil
+	return result, nil
 }

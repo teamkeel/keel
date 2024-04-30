@@ -15,6 +15,7 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -28,16 +29,16 @@ type testCase struct {
 	// Input map for action
 	input map[string]any
 	// OPTIONAL: Authenticated identity for the query
-	identity *auth.Identity
+	identity auth.Identity
 	// Expected SQL template generated (with ? placeholders for values)
 	expectedTemplate string
 	// OPTIONAL: Expected ordered argument slice
 	expectedArgs []any
 }
 
-var identity = &auth.Identity{
-	Id:    "identityId",
-	Email: "keelson@keel.xyz",
+var identity = auth.Identity{
+	"id":    "identityId",
+	"email": "keelson@keel.xyz",
 }
 
 var testCases = []testCase{
@@ -171,7 +172,7 @@ var testCases = []testCase{
 					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
-		expectedArgs: []any{"identityId", identity.Id},
+		expectedArgs: []any{"identityId", identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "create_op_set_attribute_context_identity",
@@ -199,7 +200,7 @@ var testCases = []testCase{
 					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
-		expectedArgs: []any{"identityId", identity.Id},
+		expectedArgs: []any{"identityId", identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "create_op_set_attribute_input",
@@ -228,7 +229,7 @@ var testCases = []testCase{
 					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
 		identity:     identity,
-		expectedArgs: []any{"Dave", "Dave", identity.Id},
+		expectedArgs: []any{"Dave", "Dave", identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "create_op_set_attribute_identity_user_backlink",
@@ -267,7 +268,7 @@ var testCases = []testCase{
 					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_record`,
 		identity:     identity,
-		expectedArgs: []any{identity.Id, "Dave", identity.Id},
+		expectedArgs: []any{identity[parser.FieldNameId].(string), "Dave", identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "create_op_set_attribute_identity_user_backlink_field",
@@ -310,7 +311,7 @@ var testCases = []testCase{
 					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_record`,
 		identity:     identity,
-		expectedArgs: []any{identity.Id, "Dave", identity.Id},
+		expectedArgs: []any{identity[parser.FieldNameId].(string), "Dave", identity[parser.FieldNameId].(string)},
 	},
 
 	{
@@ -339,7 +340,7 @@ var testCases = []testCase{
 			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
-		expectedArgs: []any{identity.Id, "xyz", identity.Id},
+		expectedArgs: []any{identity[parser.FieldNameId].(string), "xyz", identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "update_op_set_attribute_context_identity",
@@ -367,7 +368,7 @@ var testCases = []testCase{
 			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
-		expectedArgs: []any{identity.Id, "xyz", identity.Id},
+		expectedArgs: []any{identity[parser.FieldNameId].(string), "xyz", identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "update_op_set_attribute_input",
@@ -446,7 +447,7 @@ var testCases = []testCase{
 				"record"."id" IS NOT DISTINCT FROM ?
 			RETURNING "record".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
-		expectedArgs: []any{identity.Id, "xyz", identity.Id},
+		expectedArgs: []any{identity[parser.FieldNameId].(string), "xyz", identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "create_op_optional_inputs",
@@ -2772,7 +2773,7 @@ var testCases = []testCase{
 						(SELECT column_4 FROM select_identity))
 					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
-		expectedArgs: []any{identity.Id, identity.Id},
+		expectedArgs: []any{identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "update_set_ctx_identity_fields",
@@ -2813,7 +2814,7 @@ var testCases = []testCase{
 				issuer = (SELECT column_4 FROM select_identity)
 			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
-		expectedArgs: []any{identity.Id, "xyz", identity.Id},
+		expectedArgs: []any{identity[parser.FieldNameId].(string), "xyz", identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "create_array",
@@ -3461,7 +3462,7 @@ func TestDeleteStatementNoReturnWithAuditing(t *testing.T) {
 }
 
 func withIdentity(ctx context.Context) context.Context {
-	identity := &auth.Identity{Id: identityId}
+	identity := auth.Identity{"id": identityId}
 	return auth.WithIdentity(ctx, identity)
 }
 

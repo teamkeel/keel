@@ -77,7 +77,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 								alreadyErrored[candidate.Field] = true
 							}
 						case query.ValidUniqueOneToHasOne(field, candidate.Field):
-							if candidate.Model.Name.Value == parser.ImplicitIdentityModelName {
+							if candidate.Model.Name.Value == parser.IdentityModelName {
 								// We cannot show errors on the built-in Identity AST nodes, so we rather skip
 								// and let the errors get picked up by the other direction.
 								continue

@@ -11,6 +11,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/crypto/bcrypt"
@@ -180,19 +181,19 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 				identityCreated = true
 			} else {
-				correct := bcrypt.CompareHashAndPassword([]byte(identity.Password), []byte(password)) == nil
+				correct := bcrypt.CompareHashAndPassword([]byte(identity[parser.IdentityFieldNamePassword].(string)), []byte(password)) == nil
 				if !correct {
 					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist or the credentials are incorrect", nil)
 				}
 			}
 
 			// Generate a refresh token.
-			refreshToken, err = oauth.NewRefreshToken(ctx, identity.Id)
+			refreshToken, err = oauth.NewRefreshToken(ctx, identity[parser.FieldNameId].(string))
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 
-			identityId = identity.Id
+			identityId = identity[parser.FieldNameId].(string)
 
 		case GrantTypeAuthCode:
 			authCode, hasAuthCode := inputs[ArgCode].(string)
@@ -283,12 +284,12 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 			// Generate a refresh token.
-			refreshToken, err = oauth.NewRefreshToken(ctx, identity.Id)
+			refreshToken, err = oauth.NewRefreshToken(ctx, identity[parser.FieldNameId].(string))
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 
-			identityId = identity.Id
+			identityId = identity[parser.FieldNameId].(string)
 
 		default:
 			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrUnsupportedGrantType, "the only supported grants are 'refresh_token', 'token_exchange', 'authorization_code' or 'password'", nil)

@@ -43,7 +43,7 @@ func NotMutableInputs(_ []*parser.AST, errs *errorhandling.ValidationErrors) Vis
 			field := fragments[len(fragments)-1].Fragment
 
 			if lo.Contains(fieldsNotMutable, field) {
-				if len(fragments) > 1 && field == parser.ImplicitFieldNameId {
+				if len(fragments) > 1 && field == parser.FieldNameId {
 					return
 				}
 

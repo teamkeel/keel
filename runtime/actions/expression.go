@@ -277,7 +277,7 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 			if err != nil {
 				return nil, err
 			}
-			identityId = identity.Id
+			identityId = identity[parser.FieldNameId].(string)
 		}
 
 		err = query.addJoinFromFragments(ctxScope, fragments)

@@ -25,7 +25,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 		if err != nil {
 			return err
 		}
-		identityId = identity.Id
+		identityId = identity[parser.FieldNameId].(string)
 	}
 
 	err := identityQuery.Where(IdField(), Equals, Value(identityId))

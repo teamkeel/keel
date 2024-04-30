@@ -15,8 +15,8 @@ import (
 
 var (
 	fieldsNotMutable = []string{
-		parser.ImplicitFieldNameCreatedAt,
-		parser.ImplicitFieldNameUpdatedAt,
+		parser.FieldNameCreatedAt,
+		parser.FieldNameUpdatedAt,
 	}
 )
 
