@@ -13,22 +13,6 @@ const (
 
 type Identity map[string]any
 
-// func (i Identity) Id() string {
-// 	return i["id"].(string)
-// }
-
-// func (i Identity) Email() string {
-// 	return i["email"].(string)
-// }
-
-// func (i Identity) EmailVerified() bool {
-// 	return i["emailVerified"].(bool)
-// }
-
-// func (i Identity) Password() string {
-// 	return i["password"].(string)
-// }
-
 func WithIdentity(ctx context.Context, identity Identity) context.Context {
 	if identity != nil {
 		ctx = context.WithValue(ctx, identityContextKey, identity)

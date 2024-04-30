@@ -13,7 +13,7 @@ import (
 )
 
 func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (auth.Identity, error) {
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(IdField(), Equals, Value(id))
 	if err != nil {
@@ -34,7 +34,7 @@ func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (aut
 }
 
 func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string, issuer string) (auth.Identity, error) {
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(Field("email"), Equals, Value(email))
 	if err != nil {
@@ -60,7 +60,7 @@ func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string
 }
 
 func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (auth.Identity, error) {
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(Field("externalId"), Equals, Value(externalId))
 	if err != nil {
@@ -86,7 +86,7 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 }
 
 func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string, issuer string) (auth.Identity, error) {
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 
 	query := NewQuery(identityModel)
 	query.AddWriteValues(map[string]*QueryOperand{
@@ -112,31 +112,31 @@ func CreateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 	span.SetAttributes(attribute.String("externalId", externalId))
 	span.SetAttributes(attribute.String("issuer", issuer))
 
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 
 	query := NewQuery(identityModel)
 
 	query.AddWriteValues(map[string]*QueryOperand{
 		// default 'email' scope claims
-		parser.ImplicitIdentityFieldNameExternalId: Value(externalId),
-		parser.ImplicitIdentityFieldNameIssuer:     Value(issuer),
+		parser.IdentityFieldNameExternalId: Value(externalId),
+		parser.IdentityFieldNameIssuer:     Value(issuer),
 
 		// default 'profile' scope claims
-		parser.ImplicitIdentityFieldNameEmail:         Value(standardClaims.Email),
-		parser.ImplicitIdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
+		parser.IdentityFieldNameEmail:         Value(standardClaims.Email),
+		parser.IdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
 
 		// default 'profile' scope claims
-		parser.ImplicitIdentityFieldNameName:       ValueOrNullIfEmpty(standardClaims.Name),
-		parser.ImplicitIdentityFieldNameGivenName:  ValueOrNullIfEmpty(standardClaims.GivenName),
-		parser.ImplicitIdentityFieldNameFamilyName: ValueOrNullIfEmpty(standardClaims.FamilyName),
-		parser.ImplicitIdentityFieldNameMiddleName: ValueOrNullIfEmpty(standardClaims.MiddleName),
-		parser.ImplicitIdentityFieldNameNickName:   ValueOrNullIfEmpty(standardClaims.NickName),
-		parser.ImplicitIdentityFieldNameProfile:    ValueOrNullIfEmpty(standardClaims.Profile),
-		parser.ImplicitIdentityFieldNamePicture:    ValueOrNullIfEmpty(standardClaims.Picture),
-		parser.ImplicitIdentityFieldNameWebsite:    ValueOrNullIfEmpty(standardClaims.Website),
-		parser.ImplicitIdentityFieldNameGender:     ValueOrNullIfEmpty(standardClaims.Gender),
-		parser.ImplicitIdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(standardClaims.ZoneInfo),
-		parser.ImplicitIdentityFieldNameLocale:     ValueOrNullIfEmpty(standardClaims.Locale),
+		parser.IdentityFieldNameName:       ValueOrNullIfEmpty(standardClaims.Name),
+		parser.IdentityFieldNameGivenName:  ValueOrNullIfEmpty(standardClaims.GivenName),
+		parser.IdentityFieldNameFamilyName: ValueOrNullIfEmpty(standardClaims.FamilyName),
+		parser.IdentityFieldNameMiddleName: ValueOrNullIfEmpty(standardClaims.MiddleName),
+		parser.IdentityFieldNameNickName:   ValueOrNullIfEmpty(standardClaims.NickName),
+		parser.IdentityFieldNameProfile:    ValueOrNullIfEmpty(standardClaims.Profile),
+		parser.IdentityFieldNamePicture:    ValueOrNullIfEmpty(standardClaims.Picture),
+		parser.IdentityFieldNameWebsite:    ValueOrNullIfEmpty(standardClaims.Website),
+		parser.IdentityFieldNameGender:     ValueOrNullIfEmpty(standardClaims.Gender),
+		parser.IdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(standardClaims.ZoneInfo),
+		parser.IdentityFieldNameLocale:     ValueOrNullIfEmpty(standardClaims.Locale),
 	})
 
 	for k, v := range customClaims {
@@ -163,7 +163,7 @@ func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 	span.SetAttributes(attribute.String("externalId", standardClaims.Subject))
 	span.SetAttributes(attribute.String("issuer", standardClaims.Issuer))
 
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 
 	query := NewQuery(identityModel)
 
@@ -179,21 +179,21 @@ func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 
 	query.AddWriteValues(map[string]*QueryOperand{
 		// default 'email' scope claims
-		parser.ImplicitIdentityFieldNameEmail:         Value(standardClaims.Email),
-		parser.ImplicitIdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
+		parser.IdentityFieldNameEmail:         Value(standardClaims.Email),
+		parser.IdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
 
 		// default 'profile' scope claims
-		parser.ImplicitIdentityFieldNameName:       ValueOrNullIfEmpty(standardClaims.Name),
-		parser.ImplicitIdentityFieldNameGivenName:  ValueOrNullIfEmpty(standardClaims.GivenName),
-		parser.ImplicitIdentityFieldNameFamilyName: ValueOrNullIfEmpty(standardClaims.FamilyName),
-		parser.ImplicitIdentityFieldNameMiddleName: ValueOrNullIfEmpty(standardClaims.MiddleName),
-		parser.ImplicitIdentityFieldNameNickName:   ValueOrNullIfEmpty(standardClaims.NickName),
-		parser.ImplicitIdentityFieldNameProfile:    ValueOrNullIfEmpty(standardClaims.Profile),
-		parser.ImplicitIdentityFieldNamePicture:    ValueOrNullIfEmpty(standardClaims.Picture),
-		parser.ImplicitIdentityFieldNameWebsite:    ValueOrNullIfEmpty(standardClaims.Website),
-		parser.ImplicitIdentityFieldNameGender:     ValueOrNullIfEmpty(standardClaims.Gender),
-		parser.ImplicitIdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(standardClaims.ZoneInfo),
-		parser.ImplicitIdentityFieldNameLocale:     ValueOrNullIfEmpty(standardClaims.Locale),
+		parser.IdentityFieldNameName:       ValueOrNullIfEmpty(standardClaims.Name),
+		parser.IdentityFieldNameGivenName:  ValueOrNullIfEmpty(standardClaims.GivenName),
+		parser.IdentityFieldNameFamilyName: ValueOrNullIfEmpty(standardClaims.FamilyName),
+		parser.IdentityFieldNameMiddleName: ValueOrNullIfEmpty(standardClaims.MiddleName),
+		parser.IdentityFieldNameNickName:   ValueOrNullIfEmpty(standardClaims.NickName),
+		parser.IdentityFieldNameProfile:    ValueOrNullIfEmpty(standardClaims.Profile),
+		parser.IdentityFieldNamePicture:    ValueOrNullIfEmpty(standardClaims.Picture),
+		parser.IdentityFieldNameWebsite:    ValueOrNullIfEmpty(standardClaims.Website),
+		parser.IdentityFieldNameGender:     ValueOrNullIfEmpty(standardClaims.Gender),
+		parser.IdentityFieldNameZoneInfo:   ValueOrNullIfEmpty(standardClaims.ZoneInfo),
+		parser.IdentityFieldNameLocale:     ValueOrNullIfEmpty(standardClaims.Locale),
 	})
 
 	for k, v := range customClaims {

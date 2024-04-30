@@ -242,12 +242,12 @@ func getEmailAndDomain(ctx context.Context) (email string, domain string, verifi
 		return "", "", false, ErrIdentityNotFound
 	}
 
-	e := identity[parser.ImplicitIdentityFieldNameEmail].(string)
+	e := identity[parser.IdentityFieldNameEmail].(string)
 	if e == "" {
 		return "", "", false, nil
 	}
 
 	segments := strings.Split(e, "@")
 	domain = segments[1]
-	return e, domain, identity[parser.ImplicitIdentityFieldNameEmailVerified].(bool), nil
+	return e, domain, identity[parser.IdentityFieldNameEmailVerified].(bool), nil
 }

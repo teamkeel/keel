@@ -181,7 +181,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 				identityCreated = true
 			} else {
-				correct := bcrypt.CompareHashAndPassword([]byte(identity[parser.ImplicitIdentityFieldNamePassword].(string)), []byte(password)) == nil
+				correct := bcrypt.CompareHashAndPassword([]byte(identity[parser.IdentityFieldNamePassword].(string)), []byte(password)) == nil
 				if !correct {
 					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist or the credentials are incorrect", nil)
 				}

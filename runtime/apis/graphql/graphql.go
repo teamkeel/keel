@@ -671,7 +671,7 @@ func (mk *graphqlSchemaBuilder) addModelInput(model *proto.Model) (graphql.Input
 	})
 
 	for _, field := range model.Fields {
-		if lo.Contains(parser.ImplicitFieldNames, field.Name) {
+		if lo.Contains(parser.FieldNames, field.Name) {
 			continue
 		}
 
