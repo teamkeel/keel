@@ -1,0 +1,6 @@
+model Thing {
+    fields {
+        vector Vector
+        optionalVector Vector?
+    }
+}
