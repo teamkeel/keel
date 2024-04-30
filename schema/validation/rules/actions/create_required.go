@@ -118,7 +118,7 @@ func checkHasOneRelationField(
 
 	nestedModel := query.Model(asts, field.Type.Value)
 	pathToReferencedModel := extendDotDelimPath(dotDelimPath, field.Name.Value)
-	pathToReferencedModelDotID := extendDotDelimPath(pathToReferencedModel, parser.ImplicitFieldNameId)
+	pathToReferencedModelDotID := extendDotDelimPath(pathToReferencedModel, parser.FieldNameId)
 
 	// The field itself can be set in a @set expression. An example of this is identity e.g.
 	//   @set(myModel.identityField = ctx.identity)

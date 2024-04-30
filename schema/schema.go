@@ -190,7 +190,7 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 			{
 				BuiltIn: true,
 				Name: parser.NameNode{
-					Value: parser.ImplicitFieldNameId,
+					Value: parser.FieldNameId,
 				},
 				Type: parser.NameNode{
 					Value: parser.FieldTypeID,

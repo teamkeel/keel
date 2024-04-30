@@ -501,7 +501,7 @@ func PrimaryKey(modelName string, asts []*parser.AST) *parser.FieldNode {
 	}
 
 	for _, field := range potentialFields {
-		if field.Name.Value == parser.ImplicitFieldNameId {
+		if field.Name.Value == parser.FieldNameId {
 			return field
 		}
 	}

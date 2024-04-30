@@ -2,8 +2,6 @@ package actions
 
 import (
 	"context"
-	"errors"
-	"time"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
@@ -14,7 +12,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*auth.Identity, error) {
+func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(IdField(), Equals, Value(id))
@@ -32,10 +30,10 @@ func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*au
 		return nil, nil
 	}
 
-	return mapToIdentity(result)
+	return result, nil
 }
 
-func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string, issuer string) (*auth.Identity, error) {
+func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string, issuer string) (auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(Field("email"), Equals, Value(email))
@@ -58,10 +56,10 @@ func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string
 		return nil, nil
 	}
 
-	return mapToIdentity(result)
+	return result, nil
 }
 
-func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (*auth.Identity, error) {
+func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(Field("externalId"), Equals, Value(externalId))
@@ -84,10 +82,10 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 		return nil, nil
 	}
 
-	return mapToIdentity(result)
+	return result, nil
 }
 
-func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string, issuer string) (*auth.Identity, error) {
+func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string, issuer string) (auth.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
 	query := NewQuery(identityModel)
@@ -104,10 +102,10 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 		return nil, err
 	}
 
-	return mapToIdentity(result)
+	return result, nil
 }
 
-func CreateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, standardClaims *oauth.IdTokenClaims, customClaims map[string]any) (*auth.Identity, error) {
+func CreateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, standardClaims *oauth.IdTokenClaims, customClaims map[string]any) (auth.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Create Identity")
 	defer span.End()
 
@@ -155,10 +153,10 @@ func CreateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 		return nil, err
 	}
 
-	return mapToIdentity(result)
+	return result, nil
 }
 
-func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, standardClaims *oauth.IdTokenClaims, customClaims map[string]any) (*auth.Identity, error) {
+func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externalId string, issuer string, standardClaims *oauth.IdTokenClaims, customClaims map[string]any) (auth.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Update Identity")
 	defer span.End()
 
@@ -212,63 +210,5 @@ func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 		return nil, err
 	}
 
-	return mapToIdentity(result)
-}
-
-type ExternalUserDetails struct {
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"email-verified"`
-}
-
-func mapToIdentity(values map[string]any) (*auth.Identity, error) {
-	id, ok := values["id"].(string)
-	if !ok {
-		return nil, errors.New("id for identity is required")
-	}
-
-	externalId, ok := values["externalId"].(string)
-	if !ok {
-		externalId = ""
-	}
-
-	email, ok := values["email"].(string)
-	if !ok {
-		email = ""
-	}
-
-	password, ok := values["password"].(string)
-	if !ok {
-		password = ""
-	}
-
-	issuer, ok := values["issuer"].(string)
-	if !ok {
-		issuer = ""
-	}
-
-	createdAt, ok := values["createdAt"].(time.Time)
-	if !ok {
-		return nil, errors.New("createdAt for identity is required")
-	}
-
-	updatedAt, ok := values["updatedAt"].(time.Time)
-	if !ok {
-		return nil, errors.New("updatedAt for identity is required")
-	}
-
-	verified, ok := values["emailVerified"].(bool)
-	if !ok {
-		verified = false
-	}
-
-	return &auth.Identity{
-		Id:            id,
-		ExternalId:    externalId,
-		Email:         email,
-		Password:      password,
-		Issuer:        issuer,
-		CreatedAt:     createdAt,
-		UpdatedAt:     updatedAt,
-		EmailVerified: verified,
-	}, nil
+	return result, nil
 }

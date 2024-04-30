@@ -22,10 +22,6 @@ func NewHttpTransport(url string) Transport {
 			return nil, err
 		}
 
-		if err != nil {
-			return nil, err
-		}
-
 		resp, err := http.Post(url, "application/json", bytes.NewReader(b))
 		if err != nil {
 			return nil, err

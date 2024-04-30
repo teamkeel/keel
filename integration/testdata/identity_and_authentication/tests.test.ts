@@ -787,3 +787,129 @@ test("identity with custom non-ksuid id", async () => {
   const fetchedIdentity = await models.identity.findOne({ id: "not-a-ksuid" });
   expect(fetchedIdentity).toEqual(johnDoe);
 });
+
+test("identity filter by custom claim implicit input", async () => {
+  const identity1 = await models.identity.create({
+    email: "identity1@example.com",
+    issuer: "https://keel.so",
+    teamId: "team1",
+  });
+
+  const post1 = await models.post.create({
+    title: "example post 1",
+    identityId: identity1.id,
+  });
+
+  const post2 = await models.post.create({
+    title: "example post 2",
+    identityId: identity1.id,
+  });
+
+  const identity2 = await models.identity.create({
+    email: "identity2@example.com",
+    issuer: "https://keel.so",
+    teamId: "team2",
+  });
+
+  const post3 = await models.post.create({
+    title: "example post 3",
+    identityId: identity2.id,
+  });
+
+  const post4 = await models.post.create({
+    title: "example post 4",
+    identityId: identity2.id,
+  });
+
+  const posts = await actions.listPostsByTeam({
+    where: {
+      identity: {
+        teamId: { equals: "team1" },
+      },
+    },
+  });
+
+  expect(posts.results).toHaveLength(2);
+  expect(posts.results[0].id).toEqual(post1.id);
+  expect(posts.results[1].id).toEqual(post2.id);
+});
+
+test("identity filter by custom claim in expression", async () => {
+  const identity1 = await models.identity.create({
+    email: "identity1@example.com",
+    issuer: "https://keel.so",
+    teamId: "team1",
+  });
+
+  const post1 = await models.post.create({
+    title: "example post 1",
+    identityId: identity1.id,
+  });
+
+  const post2 = await models.post.create({
+    title: "example post 2",
+    identityId: identity1.id,
+  });
+
+  const identity2 = await models.identity.create({
+    email: "identity2@example.com",
+    issuer: "https://keel.so",
+    teamId: "team2",
+  });
+
+  const post3 = await models.post.create({
+    title: "example post 3",
+    identityId: identity2.id,
+  });
+
+  const post4 = await models.post.create({
+    title: "example post 4",
+    identityId: identity2.id,
+  });
+
+  const posts = await actions.listPostsByTeam2();
+
+  expect(posts.results).toHaveLength(2);
+  expect(posts.results[0].id).toEqual(post3.id);
+  expect(posts.results[1].id).toEqual(post4.id);
+});
+
+test("identity filter by custom claim in function", async () => {
+  const identity1 = await models.identity.create({
+    email: "identity1@example.com",
+    issuer: "https://keel.so",
+    teamId: "team1",
+  });
+
+  const post1 = await models.post.create({
+    title: "example post 1",
+    identityId: identity1.id,
+  });
+
+  const post2 = await models.post.create({
+    title: "example post 2",
+    identityId: identity1.id,
+  });
+
+  const identity2 = await models.identity.create({
+    email: "identity2@example.com",
+    issuer: "https://keel.so",
+    teamId: "team2",
+  });
+
+  const post3 = await models.post.create({
+    title: "example post 3",
+    identityId: identity2.id,
+  });
+
+  const post4 = await models.post.create({
+    title: "example post 4",
+    identityId: identity2.id,
+  });
+
+  const posts1 = await actions.readPostsByTeam({ team: "team1" });
+  expect(posts1).toHaveLength(2);
+
+  const posts2 = await actions.readPostsByTeam({ team: "none" });
+  expect(posts2).toHaveLength(0);
+});

@@ -17,6 +17,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema/parser"
 	"golang.org/x/oauth2"
 )
 
@@ -236,7 +237,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			customClaims[c.Field] = claims[c.Key]
 		}
 
-		var identity *auth.Identity
+		var identity auth.Identity
 		identity, err = actions.FindIdentityByExternalId(ctx, schema, idToken.Subject, idToken.Issuer)
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
@@ -254,7 +255,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 		}
 
-		authCode, err := oauth.NewAuthCode(ctx, identity.Id)
+		authCode, err := oauth.NewAuthCode(ctx, identity[parser.FieldNameId].(string))
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
 		}

@@ -45,7 +45,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 		return common.RuntimeError{Code: common.ErrInvalidInput, Message: "invalid redirect URL"}
 	}
 
-	var identity *auth.Identity
+	var identity auth.Identity
 	identity, err = FindIdentityByEmail(scope.Context, scope.Schema, emailString, oauth.KeelIssuer)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 		return nil
 	}
 
-	token, err := oauth.GenerateResetToken(scope.Context, identity.Id)
+	token, err := oauth.GenerateResetToken(scope.Context, identity[parser.FieldNameId].(string))
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 	}
 
 	err = client.Send(scope.Context, &mail.SendEmailRequest{
-		To:        identity.Email,
+		To:        identity["email"].(string),
 		From:      "hi@keel.xyz",
 		Subject:   "[Keel] Reset password request",
 		PlainText: fmt.Sprintf("Please follow this link to reset your password: %s", redirectUrl),
@@ -119,7 +119,7 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 	return nil
 }
 
-func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, headers http.Header) (*auth.Identity, error) {
+func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, headers http.Header) (auth.Identity, error) {
 	header := headers.Get("Authorization")
 	if header == "" {
 		return nil, nil
@@ -143,7 +143,7 @@ func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, header
 	return nil, nil
 }
 
-func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) (*auth.Identity, error) {
+func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) (auth.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Authorization")
 	defer span.End()
 
@@ -162,7 +162,7 @@ func HandleBearerToken(ctx context.Context, schema *proto.Schema, token string) 
 		return nil, ErrIdentityNotFound
 	}
 
-	span.SetAttributes(attribute.String("identity.id", identity.Id))
+	span.SetAttributes(attribute.String("identity.id", identity[parser.FieldNameId].(string)))
 
 	return identity, nil
 }

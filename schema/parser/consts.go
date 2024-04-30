@@ -102,13 +102,13 @@ var ActionTypes = []string{
 // All models get a field named "id" implicitly. This set of constants provides
 // the set of this, and other similar implicit fields.
 const (
-	ImplicitFieldNameId        = "id"
+	FieldNameId                = "id"
 	ImplicitFieldNameCreatedAt = "createdAt"
 	ImplicitFieldNameUpdatedAt = "updatedAt"
 )
 
 var (
-	ImplicitFieldNames = []string{ImplicitFieldNameId, ImplicitFieldNameCreatedAt, ImplicitFieldNameUpdatedAt}
+	ImplicitFieldNames = []string{FieldNameId, ImplicitFieldNameCreatedAt, ImplicitFieldNameUpdatedAt}
 )
 
 const (

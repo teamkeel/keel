@@ -16,6 +16,7 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/oauth"
+	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/testhelpers"
 	keeltesting "github.com/teamkeel/keel/testing"
 	"go.opentelemetry.io/otel/trace"
@@ -43,7 +44,7 @@ model WeddingInvitee {
 	}
 }`
 
-func withIdentity(t *testing.T, ctx context.Context, schema *proto.Schema) (context.Context, *auth.Identity) {
+func withIdentity(t *testing.T, ctx context.Context, schema *proto.Schema) (context.Context, auth.Identity) {
 	identity, err := actions.CreateIdentity(ctx, schema, "dave.new@keel.xyz", "1234", oauth.KeelIssuer)
 	require.NoError(t, err)
 	return auth.WithIdentity(ctx, identity), identity
@@ -82,7 +83,7 @@ func TestAuditCreateAction(t *testing.T) {
 	require.Equal(t, "insert", audit["op"])
 	require.NotNil(t, audit["id"])
 	require.NotNil(t, audit["created_at"])
-	require.Equal(t, identity.Id, audit["identity_id"])
+	require.Equal(t, identity[parser.FieldNameId].(string), audit["identity_id"])
 	require.Equal(t, testhelpers.TraceId, audit["trace_id"])
 	require.Nil(t, audit["event_processed_at"])
 
@@ -132,7 +133,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 	require.Equal(t, "insert", weddingAudit["op"])
 	require.NotNil(t, weddingAudit["id"])
 	require.NotNil(t, weddingAudit["created_at"])
-	require.Equal(t, identity.Id, weddingAudit["identity_id"])
+	require.Equal(t, identity[parser.FieldNameId].(string), weddingAudit["identity_id"])
 	require.Equal(t, testhelpers.TraceId, weddingAudit["trace_id"])
 	require.Nil(t, weddingAudit["event_processed_at"])
 
@@ -170,7 +171,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 	require.Equal(t, "insert", peteAudit["op"])
 	require.NotNil(t, peteAudit["id"])
 	require.NotNil(t, peteAudit["created_at"])
-	require.Equal(t, identity.Id, peteAudit["identity_id"])
+	require.Equal(t, identity[parser.FieldNameId].(string), peteAudit["identity_id"])
 	require.Equal(t, testhelpers.TraceId, peteAudit["trace_id"])
 	require.Nil(t, peteAudit["event_processed_at"])
 
@@ -191,7 +192,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 	require.Equal(t, "insert", adamAudit["op"])
 	require.NotNil(t, adamAudit["id"])
 	require.NotNil(t, peteAudit["created_at"])
-	require.Equal(t, identity.Id, adamAudit["identity_id"])
+	require.Equal(t, identity[parser.FieldNameId].(string), adamAudit["identity_id"])
 	require.Equal(t, testhelpers.TraceId, adamAudit["trace_id"])
 
 	diff, explanation = jsondiff.Compare(expectedAdamData, []byte(adamAudit["data"].(string)), &opts)
@@ -247,7 +248,7 @@ func TestAuditUpdateAction(t *testing.T) {
 	require.Equal(t, "update", audit["op"])
 	require.NotNil(t, audit["id"])
 	require.NotNil(t, audit["created_at"])
-	require.Equal(t, identity.Id, audit["identity_id"])
+	require.Equal(t, identity[parser.FieldNameId].(string), audit["identity_id"])
 	require.Equal(t, testhelpers.TraceId, audit["trace_id"])
 	require.Nil(t, audit["event_processed_at"])
 
@@ -303,7 +304,7 @@ func TestAuditDeleteAction(t *testing.T) {
 	require.Equal(t, "delete", audit["op"])
 	require.NotNil(t, audit["id"])
 	require.NotNil(t, audit["created_at"])
-	require.Equal(t, identity.Id, audit["identity_id"])
+	require.Equal(t, identity[parser.FieldNameId].(string), audit["identity_id"])
 	require.Equal(t, testhelpers.TraceId, audit["trace_id"])
 	require.Nil(t, audit["event_processed_at"])
 
@@ -340,7 +341,7 @@ func TestAuditTablesWithOnlyIdentity(t *testing.T) {
 	require.Equal(t, "insert", audit["op"])
 	require.NotNil(t, audit["id"])
 	require.NotNil(t, audit["created_at"])
-	require.Equal(t, identity.Id, audit["identity_id"])
+	require.Equal(t, identity[parser.FieldNameId].(string), audit["identity_id"])
 	require.Nil(t, audit["trace_id"])
 	require.Nil(t, audit["event_processed_at"])
 }
@@ -403,7 +404,7 @@ func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
 	require.Equal(t, "update", audit["op"])
 	require.NotNil(t, audit["id"])
 	require.NotNil(t, audit["created_at"])
-	require.Equal(t, identity.Id, audit["identity_id"])
+	require.Equal(t, identity[parser.FieldNameId].(string), audit["identity_id"])
 	require.Equal(t, testhelpers.TraceId, audit["trace_id"])
 	require.Nil(t, audit["event_processed_at"])
 

@@ -11,6 +11,7 @@ import (
 	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/schema/parser"
 	keeltesting "github.com/teamkeel/keel/testing"
 )
 
@@ -105,7 +106,7 @@ func TestCreateEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	require.Equal(t, "wedding.created", events[0].EventName)
-	require.Equal(t, identity.Id, events[0].IdentityId)
+	require.Equal(t, identity[parser.FieldNameId].(string), events[0].IdentityId)
 	require.NotEmpty(t, events[0].OccurredAt)
 	require.NotNil(t, events[0].Target)
 	require.Equal(t, wedding["id"], events[0].Target.Id)
@@ -163,7 +164,7 @@ func TestUpdateEvent(t *testing.T) {
 
 	require.NotEmpty(t, events[0])
 	require.Equal(t, "wedding.updated", events[0].EventName)
-	require.Equal(t, identity.Id, events[0].IdentityId)
+	require.Equal(t, identity[parser.FieldNameId].(string), events[0].IdentityId)
 	require.NotEmpty(t, events[0].OccurredAt)
 	require.NotNil(t, events[0].Target)
 	require.Equal(t, wedding["id"], events[0].Target.Id)
@@ -227,7 +228,7 @@ func TestDeleteEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	require.Equal(t, "wedding.deleted", events[0].EventName)
-	require.Equal(t, identity.Id, events[0].IdentityId)
+	require.Equal(t, identity[parser.FieldNameId].(string), events[0].IdentityId)
 	require.NotEmpty(t, events[0].OccurredAt)
 	require.NotNil(t, events[0].Target)
 	require.Equal(t, wedding["id"], events[0].Target.Id)

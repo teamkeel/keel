@@ -109,7 +109,7 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 		joinedHeaders[k] = strings.Join(v, ", ")
 	}
 
-	var identity *auth.Identity
+	var identity auth.Identity
 	if auth.IsAuthenticated(ctx) {
 		identity, err = auth.GetIdentity(ctx)
 		if err != nil {
@@ -169,7 +169,7 @@ func CallJob(ctx context.Context, job *proto.Job, inputs map[string]any, permiss
 	}
 
 	var err error
-	var identity *auth.Identity
+	var identity auth.Identity
 	if auth.IsAuthenticated(ctx) {
 		identity, err = auth.GetIdentity(ctx)
 		if err != nil {
