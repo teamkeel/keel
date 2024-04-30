@@ -56,7 +56,7 @@ func (resolver *OperandResolver) NormalisedFragments() ([]string, error) {
 		// One fragment is only possible if the expression is only referencing the model.
 		// For example, @where(account in ...)
 		// Add a new fragment 'id'
-		fragments = append(fragments, parser.ImplicitFieldNameId)
+		fragments = append(fragments, parser.FieldNameId)
 	} else if operandType == proto.Type_TYPE_MODEL {
 		i := 0
 		if fragments[0] == "ctx" {
@@ -81,7 +81,7 @@ func (resolver *OperandResolver) NormalisedFragments() ([]string, error) {
 
 		if proto.IsHasOne(fieldTarget) || proto.IsHasMany(fieldTarget) {
 			// Add a new fragment 'id'
-			fragments = append(fragments, parser.ImplicitFieldNameId)
+			fragments = append(fragments, parser.FieldNameId)
 		} else {
 			// Replace the last fragment with the foreign key field
 			fragments[len(fragments)-1] = fmt.Sprintf("%sId", fragments[len(fragments)-1])
@@ -384,7 +384,7 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 		if err != nil {
 			return nil, err
 		}
-		return identity.Id, nil
+		return identity[parser.FieldNameId].(string), nil
 	case resolver.operand.Ident.IsContextIsAuthenticatedField():
 		isAuthenticated := auth.IsAuthenticated(resolver.Context)
 		return isAuthenticated, nil

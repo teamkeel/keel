@@ -18,7 +18,7 @@ import (
 func (scm *Builder) insertAllBackLinkFields(
 	asts []*parser.AST) *errorhandling.ErrorDetails {
 
-	identityModel := query.Model(asts, parser.ImplicitIdentityModelName)
+	identityModel := query.Model(asts, parser.IdentityModelName)
 
 	// Traverse all fields of all models to find "forward" relationships to Identity models.
 	// And for each found, delegate to insertOneBackLinkField() the creation of
@@ -30,7 +30,7 @@ func (scm *Builder) insertAllBackLinkFields(
 
 		backlinkFields := []*parser.FieldNode{}
 		for _, f := range query.ModelFields(model) {
-			if f.Type.Value != parser.ImplicitIdentityModelName {
+			if f.Type.Value != parser.IdentityModelName {
 				continue
 			}
 			if f.Repeated {

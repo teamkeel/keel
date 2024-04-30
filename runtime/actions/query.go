@@ -33,7 +33,7 @@ func Field(field string) *QueryOperand {
 // The identifier field on the query builder's model.
 func IdField() *QueryOperand {
 	return &QueryOperand{
-		column: casing.ToSnake(parser.ImplicitFieldNameId),
+		column: casing.ToSnake(parser.FieldNameId),
 	}
 }
 
@@ -703,7 +703,7 @@ func (query *QueryBuilder) InsertStatement(ctx context.Context) *Statement {
 	if auth.IsAuthenticated(ctx) {
 		identity, _ := auth.GetIdentity(ctx)
 		selection = append(selection, setIdentityIdClause())
-		args = append(args, identity.Id)
+		args = append(args, identity[parser.FieldNameId].(string))
 	}
 
 	spanContext := trace.SpanContextFromContext(ctx)
@@ -980,7 +980,7 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 	if auth.IsAuthenticated(ctx) {
 		identity, _ := auth.GetIdentity(ctx)
 		query.returning = append(query.returning, setIdentityIdClause())
-		args = append(args, identity.Id)
+		args = append(args, identity[parser.FieldNameId].(string))
 	}
 
 	spanContext := trace.SpanContextFromContext(ctx)
@@ -1041,7 +1041,7 @@ func (query *QueryBuilder) DeleteStatement(ctx context.Context) *Statement {
 	if auth.IsAuthenticated(ctx) {
 		identity, _ := auth.GetIdentity(ctx)
 		query.returning = append(query.returning, setIdentityIdClause())
-		query.args = append(query.args, identity.Id)
+		query.args = append(query.args, identity[parser.FieldNameId].(string))
 	}
 
 	spanContext := trace.SpanContextFromContext(ctx)

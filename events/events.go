@@ -11,6 +11,7 @@ import (
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
@@ -113,7 +114,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 			return err
 		}
 
-		identityId = identity.Id
+		identityId = identity[parser.FieldNameId].(string)
 	}
 
 	auditLogs, err := auditing.ProcessEventsFromAuditTrail(ctx, schema, traceId)

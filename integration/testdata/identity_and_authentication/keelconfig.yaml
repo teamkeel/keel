@@ -1,0 +1,4 @@
+auth:
+  claims:
+    - key: team
+      field: teamId

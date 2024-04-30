@@ -1388,7 +1388,7 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 		modelField := query.Field(model, strings.TrimSuffix(parserField.Name.Value, "Id"))
 		protoField.ForeignKeyInfo = &proto.ForeignKeyInfo{
 			RelatedModelName:  modelField.Type.Value,
-			RelatedModelField: parser.ImplicitFieldNameId,
+			RelatedModelField: parser.FieldNameId,
 		}
 	}
 

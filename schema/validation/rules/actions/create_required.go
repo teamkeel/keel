@@ -118,7 +118,7 @@ func checkHasOneRelationField(
 
 	nestedModel := query.Model(asts, field.Type.Value)
 	pathToReferencedModel := extendDotDelimPath(dotDelimPath, field.Name.Value)
-	pathToReferencedModelDotID := extendDotDelimPath(pathToReferencedModel, parser.ImplicitFieldNameId)
+	pathToReferencedModelDotID := extendDotDelimPath(pathToReferencedModel, parser.FieldNameId)
 
 	// The field itself can be set in a @set expression. An example of this is identity e.g.
 	//   @set(myModel.identityField = ctx.identity)
@@ -136,7 +136,7 @@ func checkHasOneRelationField(
 	}
 
 	// Special case to improve error message for Identity fields
-	if nestedModel.Name.Value == parser.ImplicitIdentityModelName {
+	if nestedModel.Name.Value == parser.IdentityModelName {
 		message := fmt.Sprintf("the %s field of %s is not set as part of this create action", field.Name.Value, model.Name.Value)
 		errs.AppendError(
 			errorhandling.NewValidationErrorWithDetails(
