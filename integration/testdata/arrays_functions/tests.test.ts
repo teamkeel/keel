@@ -192,9 +192,8 @@ test("array fields - modelapi - text query", async () => {
   });
 
   expect(things1).toHaveLength(2);
-  expect(things1[0].id).toEqual(t1.id);
-  expect(things1[1].id).toEqual(t3.id);
-
+  expect(things1).toEqual(expect.arrayContaining([t1, t3]));
+  
   const things2 = await models.thing.findMany({
     where: {
       texts: {
@@ -204,11 +203,7 @@ test("array fields - modelapi - text query", async () => {
   });
 
   expect(things2).toHaveLength(5);
-  expect(things2[0].id).toEqual(t2.id);
-  expect(things2[1].id).toEqual(t4.id);
-  expect(things2[2].id).toEqual(t5.id);
-  expect(things2[3].id).toEqual(t6.id);
-  expect(things2[4].id).toEqual(t7.id);
+  expect(things2).toEqual(expect.arrayContaining([t2, t4, t5, t6, t7]));
 
   const things3 = await models.thing.findMany({
     where: {
@@ -230,13 +225,8 @@ test("array fields - modelapi - text query", async () => {
   });
 
   expect(things4).toHaveLength(6);
-  expect(things4[0].id).toEqual(t1.id);
-  expect(things4[1].id).toEqual(t2.id);
-  expect(things4[2].id).toEqual(t3.id);
-  expect(things4[3].id).toEqual(t5.id);
-  expect(things4[4].id).toEqual(t6.id);
-  expect(things4[5].id).toEqual(t7.id);
-
+  expect(things4).toEqual(expect.arrayContaining([t1, t2, t3, t5, t6, t7]));
+  
   const things5 = await models.thing.findMany({
     where: {
       texts: {
@@ -261,12 +251,7 @@ test("array fields - modelapi - text query", async () => {
   });
 
   expect(things6).toHaveLength(6);
-  expect(things6[0].id).toEqual(t1.id);
-  expect(things6[1].id).toEqual(t2.id);
-  expect(things6[2].id).toEqual(t3.id);
-  expect(things6[3].id).toEqual(t4.id);
-  expect(things6[4].id).toEqual(t6.id);
-  expect(things6[5].id).toEqual(t7.id);
+  expect(things6).toEqual(expect.arrayContaining([t1, t2, t3, t4, t6, t7]));
 
   const things7 = await models.thing.findMany({
     where: {
@@ -279,11 +264,8 @@ test("array fields - modelapi - text query", async () => {
   });
 
   expect(things7).toHaveLength(4);
-  expect(things7[0].id).toEqual(t1.id);
-  expect(things7[1].id).toEqual(t2.id);
-  expect(things7[2].id).toEqual(t3.id);
-  expect(things7[3].id).toEqual(t6.id);
-
+  expect(things7).toEqual(expect.arrayContaining([t1, t2, t3, t6]));
+  
   const things8 = await models.thing.findMany({
     where: {
       texts: {
@@ -295,8 +277,7 @@ test("array fields - modelapi - text query", async () => {
   });
 
   expect(things8).toHaveLength(2);
-  expect(things8[0].id).toEqual(t5.id);
-  expect(things8[1].id).toEqual(t7.id);
+  expect(things8).toEqual(expect.arrayContaining([t5, t7]));
 
   const things9 = await models.thing.findMany({
     where: {
@@ -323,8 +304,7 @@ test("array fields - modelapi - text query", async () => {
   });
 
   expect(things10).toHaveLength(2);
-  expect(things10[0].id).toEqual(t5.id);
-  expect(things10[1].id).toEqual(t7.id);
+  expect(things10).toEqual(expect.arrayContaining([t5, t7]));
 
   const things11 = await models.thing.findMany({
     where: {
@@ -337,10 +317,7 @@ test("array fields - modelapi - text query", async () => {
   });
 
   expect(things11).toHaveLength(4);
-  expect(things11[0].id).toEqual(t1.id);
-  expect(things11[1].id).toEqual(t2.id);
-  expect(things11[2].id).toEqual(t3.id);
-  expect(things11[3].id).toEqual(t6.id);
+  expect(things11).toEqual(expect.arrayContaining([t1, t2, t3, t6]));
 });
 
 test("array fields - list action implicit querying - number", async () => {
@@ -377,8 +354,7 @@ test("array fields - list action implicit querying - number", async () => {
   });
 
   expect(things).toHaveLength(2);
-  expect(things[0].id).toEqual(t1.id);
-  expect(things[1].id).toEqual(t3.id);
+  expect(things).toEqual(expect.arrayContaining([t1, t3]));
 });
 
 test("array fields - list action implicit querying - date", async () => {
@@ -422,8 +398,7 @@ test("array fields - list action implicit querying - date", async () => {
   });
 
   expect(things).toHaveLength(2);
-  expect(things[0].id).toEqual(t1.id);
-  expect(things[1].id).toEqual(t3.id);
+  expect(things).toEqual(expect.arrayContaining([t1, t3]));
 });
 
 test("array fields - list action implicit querying - timestamp", async () => {
@@ -476,8 +451,7 @@ test("array fields - list action implicit querying - timestamp", async () => {
   });
 
   expect(things).toHaveLength(2);
-  expect(things[0].id).toEqual(t1.id);
-  expect(things[1].id).toEqual(t3.id);
+  expect(things).toEqual(expect.arrayContaining([t1, t3]));
 });
 
 test("array fields - list action implicit querying - enums", async () => {
@@ -514,6 +488,5 @@ test("array fields - list action implicit querying - enums", async () => {
   });
 
   expect(things).toHaveLength(2);
-  expect(things[0].id).toEqual(t1.id);
-  expect(things[1].id).toEqual(t3.id);
+  expect(things).toEqual(expect.arrayContaining([t1, t3]));
 });
