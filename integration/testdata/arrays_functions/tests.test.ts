@@ -193,7 +193,7 @@ test("array fields - modelapi - text query", async () => {
 
   expect(things1).toHaveLength(2);
   expect(things1).toEqual(expect.arrayContaining([t1, t3]));
-  
+
   const things2 = await models.thing.findMany({
     where: {
       texts: {
@@ -226,7 +226,7 @@ test("array fields - modelapi - text query", async () => {
 
   expect(things4).toHaveLength(6);
   expect(things4).toEqual(expect.arrayContaining([t1, t2, t3, t5, t6, t7]));
-  
+
   const things5 = await models.thing.findMany({
     where: {
       texts: {
@@ -265,7 +265,7 @@ test("array fields - modelapi - text query", async () => {
 
   expect(things7).toHaveLength(4);
   expect(things7).toEqual(expect.arrayContaining([t1, t2, t3, t6]));
-  
+
   const things8 = await models.thing.findMany({
     where: {
       texts: {
