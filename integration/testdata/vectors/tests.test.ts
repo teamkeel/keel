@@ -20,9 +20,9 @@ test("vectors - get action", async () => {
 
 test("vectors - insert with raw sql", async () => {
   const createdResponse =
-    await sql<Thing>`INSERT INTO thing (vector) VALUES ('[${sql.raw(vec.toString())}]') RETURNING *`.execute(
-      useDatabase()
-    );
+    await sql<Thing>`INSERT INTO thing (vector) VALUES ('[${sql.raw(
+      vec.toString()
+    )}]') RETURNING *`.execute(useDatabase());
 
   const getResult = await actions.getThing({ id: createdResponse.rows[0].id });
 
