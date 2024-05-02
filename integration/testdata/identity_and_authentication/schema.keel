@@ -27,10 +27,10 @@ model Post {
             @set(post.isAuthenticated = ctx.isAuthenticated)
             @permission(expression: true)
         }
-list listPostsByTeam(identity.teamId) {
-    @permission(expression: true)
-    @orderBy(title: asc)
-}
+        list listPostsByTeam(identity.teamId) {
+            @permission(expression: true)
+            @orderBy(title: asc)
+        }
         list listPostsByTeam2() {
             @where(post.identity.teamId == "team2")
             @permission(expression: true)
