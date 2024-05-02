@@ -1549,6 +1549,8 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 		ret = "boolean"
 	case proto.Type_TYPE_INT, proto.Type_TYPE_DECIMAL:
 		ret = "number"
+	case proto.Type_TYPE_VECTOR:
+		ret = "number[]"
 	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		ret = "Date"
 	case proto.Type_TYPE_ENUM:

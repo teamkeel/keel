@@ -64,6 +64,8 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 				input[f.Name], err = parseItem(v, f.Type.Repeated, toDate)
 			case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATETIME:
 				input[f.Name], err = parseItem(v, f.Type.Repeated, toTimestamp)
+			case proto.Type_TYPE_VECTOR:
+				input[f.Name], err = parseItem(v, true, toFloat)
 			case proto.Type_TYPE_UNION, proto.Type_TYPE_ANY, proto.Type_TYPE_MODEL, proto.Type_TYPE_OBJECT:
 				return input, nil
 			default:

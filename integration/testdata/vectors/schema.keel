@@ -3,4 +3,13 @@ model Thing {
         vector Vector
         optionalVector Vector?
     }
+    actions {
+        create createThing() with (vector) {
+            @permission(expression: true)
+        }
+
+        get getThing(id) {
+            @permission(expression: true)
+        }
+    }
 }

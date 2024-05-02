@@ -1174,7 +1174,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 	// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
 	// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
 	for _, f := range statement.model.Fields {
-		if f.Type.Type != proto.Type_TYPE_MODEL && f.Type.Repeated {
+		if f.Type.Type != proto.Type_TYPE_MODEL && (f.Type.Repeated || f.Type.Type == proto.Type_TYPE_VECTOR) {
 			for _, row := range rows {
 				col := strcase.ToSnake(f.Name)
 				if val, ok := row[col]; ok && val != nil {
@@ -1188,7 +1188,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 						row[col], err = ParsePostgresArray[int](arr, func(s string) (int, error) {
 							return strconv.Atoi(s)
 						})
-					case proto.Type_TYPE_DECIMAL:
+					case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_VECTOR:
 						row[col], err = ParsePostgresArray[float64](arr, func(s string) (float64, error) {
 							return strconv.ParseFloat(s, 64)
 						})
@@ -1207,7 +1207,6 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 					default:
 						return nil, nil, fmt.Errorf("missing parsing implementation for type %s", f.Type.Type)
 					}
-
 					if err != nil {
 						return nil, nil, err
 					}
@@ -1233,6 +1232,7 @@ func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any
 	}
 
 	return results[0], nil
+
 }
 
 func ParsePostgresArray[T any](array string, parse func(string) (T, error)) ([]T, error) {
@@ -1242,8 +1242,8 @@ func ParsePostgresArray[T any](array string, parse func(string) (T, error)) ([]T
 	for _, r := range array {
 		switch {
 		case !arrayOpened:
-			if r != '{' {
-				return nil, errors.New("not a postgres array as doesn't start with an opening curly brace")
+			if r != '{' && r != '[' {
+				return nil, errors.New("not a postgres array or vector as doesn't start with an opening curly brace or square brace")
 			}
 			arrayOpened = true
 		case escapeOpened:
@@ -1270,7 +1270,7 @@ func ParsePostgresArray[T any](array string, parse func(string) (T, error)) ([]T
 
 			out = append(out, val)
 			item.Reset()
-		case r == '}':
+		case r == '}', r == ']':
 			// done
 			if item.Len() == 0 {
 				return out, nil
