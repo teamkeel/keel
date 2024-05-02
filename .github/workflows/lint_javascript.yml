@@ -7,7 +7,7 @@ jobs:
     name: Packages
     steps:
       - uses: actions/checkout@v2
-      - uses: actionsx/prettier@v3
+      - uses: actionsx/prettier@v2
         with:
           args: --check packages
 
@@ -16,6 +16,6 @@ jobs:
     name: Integration Tests
     steps:
       - uses: actions/checkout@v2
-      - uses: actionsx/prettier@v3
+      - uses: actionsx/prettier@v2
         with:
           args: --check integration/testdata
