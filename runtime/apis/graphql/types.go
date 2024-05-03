@@ -298,6 +298,7 @@ var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_SECRET:   graphql.String,
 	proto.Type_TYPE_MARKDOWN: graphql.String,
 	proto.Type_TYPE_ANY:      anyType,
+	proto.Type_TYPE_VECTOR:   graphql.NewList(graphql.Float),
 }
 
 var timestampInputType = iso8601Type
@@ -318,6 +319,7 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_ANY:            anyType,
 	proto.Type_TYPE_SORT_DIRECTION: sortDirectionType,
 	proto.Type_TYPE_MARKDOWN:       graphql.String,
+	proto.Type_TYPE_VECTOR:         graphql.NewList(graphql.Float),
 }
 
 // for fields where the underlying source is a date/datetime

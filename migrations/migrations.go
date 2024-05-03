@@ -95,6 +95,7 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 
 	// Enable extensions
 	sql.WriteString("CREATE EXTENSION IF NOT EXISTS pg_stat_statements;\n")
+	sql.WriteString("CREATE EXTENSION IF NOT EXISTS vector;\n")
 
 	// Functions
 	sql.WriteString(ksuidFunction)

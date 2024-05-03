@@ -77,7 +77,18 @@ type FieldNode struct {
 
 func (f *FieldNode) IsScalar() bool {
 	switch f.Type.Value {
-	case FieldTypeBoolean, FieldTypeNumber, FieldTypeDecimal, FieldTypeText, FieldTypeDatetime, FieldTypeDate, FieldTypeSecret, FieldTypeID, FieldTypePassword, FieldTypeMarkdown:
+	case
+		FieldTypeBoolean,
+		FieldTypeNumber,
+		FieldTypeDecimal,
+		FieldTypeText,
+		FieldTypeDatetime,
+		FieldTypeDate,
+		FieldTypeSecret,
+		FieldTypeID,
+		FieldTypePassword,
+		FieldTypeMarkdown,
+		FieldTypeVector:
 		return true
 	default:
 		return false
