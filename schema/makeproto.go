@@ -1648,6 +1648,8 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_MARKDOWN
 	case parserType == parser.FieldTypeDecimal:
 		return proto.Type_TYPE_DECIMAL
+	case parserType == parser.FieldTypeVector:
+		return proto.Type_TYPE_VECTOR
 	default:
 		return proto.Type_TYPE_UNKNOWN
 	}

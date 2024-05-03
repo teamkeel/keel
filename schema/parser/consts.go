@@ -51,6 +51,7 @@ const (
 	FieldTypeSecret   = "Secret"    // an encrypted secret
 	FieldTypePassword = "Password"  // a hashed password
 	FieldTypeMarkdown = "Markdown"  // a markdown rich text
+	FieldTypeVector   = "Vector"    // a vector
 )
 
 // Types for Message fields
@@ -69,6 +70,7 @@ var BuiltInTypes = map[string]bool{
 	FieldTypeSecret:   true,
 	FieldTypePassword: true,
 	FieldTypeMarkdown: true,
+	FieldTypeVector:   true,
 }
 
 func IsBuiltInFieldType(s string) bool {

@@ -97,4 +97,5 @@ var operatorsForType = map[string][]string{
 		parser.OperatorNotEquals,
 		parser.OperatorAssignment,
 	},
+	parser.FieldTypeVector: {},
 }

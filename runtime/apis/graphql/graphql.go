@@ -257,6 +257,11 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 			continue
 		}
 
+		// Vectors are omitted from GraphQL responses
+		if field.Type.Type == proto.Type_TYPE_VECTOR {
+			continue
+		}
+
 		outputType, err := mk.outputTypeForModelField(field)
 		if err != nil {
 			return nil, err

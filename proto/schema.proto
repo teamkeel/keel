@@ -366,8 +366,10 @@ enum Type {
     TYPE_STRING_LITERAL = 20;
     // Markdown rich text field.
     TYPE_MARKDOWN = 21;
-    // Decimal number type; fixed precision
+    // Decimal number type; fixed precision.
     TYPE_DECIMAL = 22;
+    // A vector type.
+    TYPE_VECTOR = 23;
 }
 
 enum OrderDirection {

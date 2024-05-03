@@ -74,6 +74,7 @@ func NewHandler(schema *proto.Schema, api *proto.Api) common.HandlerFunc {
 		}
 
 		scope := actions.NewScope(ctx, action, schema)
+
 		response, meta, err := actions.Execute(scope, inputs)
 		if err != nil {
 			return NewErrorResponse(ctx, &req.ID, err)
