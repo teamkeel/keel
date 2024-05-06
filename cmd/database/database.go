@@ -484,5 +484,5 @@ func findVolume(dockerClient *client.Client) (volume *dockerVolume.Volume, err e
 const postgresImageName string = "pgvector/pgvector"
 const postgresTag string = "pg16"
 const keelPostgresContainerName string = "keel-run-postgres"
-const keelPGVolumeName string = "keel-pg-volume"
+const keelPGVolumeName string = "keel-pg-volume-v16"
 const keelVolumeMountPath = `/var/lib/postgresql/data`
