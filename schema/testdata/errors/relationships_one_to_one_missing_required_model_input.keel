@@ -1,0 +1,20 @@
+
+
+model User {
+    fields {
+        email Text @unique
+        details UserDetails @unique
+    }
+    actions {
+        //expect-error:16:26:E034:required field 'details.name' must be set by a non-optional input, a @set expression or with @default
+        create createUser() with (email)
+    }
+}
+
+model UserDetails {
+    fields {
+        user User
+        name Text
+    }
+ 
+}

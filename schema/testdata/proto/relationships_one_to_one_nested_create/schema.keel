@@ -1,0 +1,23 @@
+
+
+model User {
+    fields {
+        email Text @unique
+        details UserDetails @unique
+    }
+    actions {
+        create createUser() with (details.name) {
+            @set(user.email = ctx.identity.email)
+        }
+    }
+}
+
+model UserDetails {
+    fields {
+        user User
+        name Text
+    }
+    actions {
+        create createUserDetails() with (name)
+    }
+}

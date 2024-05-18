@@ -47,7 +47,7 @@ func checkField(
 	op *parser.ActionNode,
 	errs *errorhandling.ValidationErrors,
 ) {
-	if isNotNeeded(field) {
+	if isNotNeeded(asts, model, field) {
 		return
 	}
 	switch {
@@ -64,9 +64,13 @@ func checkField(
 // - relationship repeated fields
 // - fields which have a default
 // - built-in fields like CreatedAt, Id etc.
-func isNotNeeded(f *parser.FieldNode) bool {
+func isNotNeeded(asts []*parser.AST, model *parser.ModelNode, f *parser.FieldNode) bool {
 	switch {
-	case f.Optional, (f.Repeated && !f.IsScalar()), query.FieldHasAttribute(f, parser.AttributeDefault), f.BuiltIn:
+	case f.Optional,
+		(f.Repeated && !f.IsScalar()),
+		query.FieldHasAttribute(f, parser.AttributeDefault),
+		query.IsBelongsToModelField(asts, model, f),
+		f.BuiltIn:
 		return true
 	default:
 		return false
