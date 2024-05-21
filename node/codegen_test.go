@@ -76,19 +76,11 @@ model Account {
 }`
 
 	expected := `
-export interface Person {
-	firstName: string
-	lastName: string | null
-	age: number
-	dateOfBirth: Date
-	gender: Gender
-	hasChildren: boolean
-	tags: string[]
-	height: number
-	bio: string
+export interface Account {
 	id: string
 	createdAt: Date
 	updatedAt: Date
+	identityId: string
 }
 `
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
