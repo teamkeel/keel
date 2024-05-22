@@ -39,7 +39,7 @@ func StudioFeatures(asts []*parser.AST, errs *errorhandling.ValidationErrors) Vi
 					errorhandling.NewValidationErrorWithDetails(
 						errorhandling.UnsupportedFeatureError,
 						errorhandling.ErrorDetails{
-							Message: fmt.Sprintf("Event subscribers are not supported in Keel Studio"),
+							Message: "Event subscribers are not supported in Keel Studio",
 						},
 						n.Name,
 					),
