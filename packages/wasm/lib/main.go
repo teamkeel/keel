@@ -228,28 +228,35 @@ func validate(this js.Value, args []js.Value) any {
 				builder.Config = config
 			}
 		}
+		includeWarnings := args[0].Get("includeWarnings").Truthy()
 
 		err := builder.ValidateFromInputs(&reader.Inputs{
 			SchemaFiles: schemaFiles,
-		}, args[0].Get("includeWarnings").Truthy())
+		}, includeWarnings)
 
-		if err != nil {
-			errs, ok := err.(*errorhandling.ValidationErrors)
-			if !ok {
-				return nil, err
-			}
-
-			validationErrors, err := toMap(errs)
-			if err != nil {
-				return nil, err
-			}
-
-			return validationErrors, nil
+		resp := map[string]any{
+			"errors": []any{},
+		}
+		if includeWarnings {
+			resp["warnings"] = []any{}
 		}
 
-		return map[string]any{
-			"errors": []any{},
-		}, nil
+		errs, ok := err.(*errorhandling.ValidationErrors)
+		if !ok || errs == nil {
+			return resp, nil
+		}
+
+		validationErrors, mapErr := toMap(errs)
+		if mapErr != nil {
+			return nil, mapErr
+		}
+
+		for k := range resp {
+			if val := validationErrors[k]; val != nil {
+				resp[k] = validationErrors[k]
+			}
+		}
+		return resp, nil
 	})
 }
 
