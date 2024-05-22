@@ -92,7 +92,8 @@ func (e ValidationError) Error() string {
 func (e *ValidationError) Unwrap() error { return e }
 
 type ValidationErrors struct {
-	Errors []*ValidationError `json:"errors"`
+	Errors   []*ValidationError `json:"errors"`
+	Warnings []*ValidationError `json:"warnings"`
 }
 
 func (v *ValidationErrors) Append(code string, data map[string]string, node node.ParserNode) {
@@ -102,6 +103,12 @@ func (v *ValidationErrors) Append(code string, data map[string]string, node node
 		},
 		node,
 	))
+}
+
+func (v *ValidationErrors) AppendWarning(e *ValidationError) {
+	if e != nil {
+		v.Warnings = append(v.Warnings, e)
+	}
 }
 
 func (v *ValidationErrors) AppendError(e *ValidationError) {
@@ -116,12 +123,28 @@ func (v *ValidationErrors) Concat(verrs ValidationErrors) {
 
 func (v ValidationErrors) Error() string {
 	str := ""
-
 	for _, err := range v.Errors {
 		str += fmt.Sprintf("%s: %s\n", err.Code, err.Message)
 	}
 
 	return str
+}
+
+func (v ValidationErrors) Warning() string {
+	str := ""
+	for _, err := range v.Warnings {
+		str += fmt.Sprintf("%s: %s\n", err.Code, err.Message)
+	}
+
+	return str
+}
+
+func (v ValidationErrors) HasErrors() bool {
+	return len(v.Errors) > 0
+}
+
+func (v ValidationErrors) HasWarnings() bool {
+	return len(v.Warnings) > 0
 }
 
 type ErrorType string
@@ -136,6 +159,7 @@ const (
 	AttributeNotAllowedError ErrorType = "AttributeNotAllowedError"
 	RelationshipError        ErrorType = "RelationshipError"
 	JobDefinitionError       ErrorType = "JobDefinitionError"
+	UnsupportedFeatureError  ErrorType = "UnsupportedFeatureError"
 )
 
 func NewValidationErrorWithDetails(t ErrorType, details ErrorDetails, position node.ParserNode) *ValidationError {

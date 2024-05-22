@@ -199,7 +199,8 @@ func formatSchema(this js.Value, args []js.Value) any {
 //				contents: "",
 //			},
 //		],
-//		config: "<YAML config file>"
+//		config: "<YAML config file>",
+//		includeWarnings: true
 //	}
 //
 // The config file source is optional.
@@ -228,9 +229,9 @@ func validate(this js.Value, args []js.Value) any {
 			}
 		}
 
-		_, err := builder.MakeFromInputs(&reader.Inputs{
+		err := builder.ValidateFromInputs(&reader.Inputs{
 			SchemaFiles: schemaFiles,
-		})
+		}, args[0].Get("includeWarnings").Truthy())
 
 		if err != nil {
 			errs, ok := err.(*errorhandling.ValidationErrors)
