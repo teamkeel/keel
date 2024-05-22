@@ -68,6 +68,28 @@ export interface PersonTable {
 }
 
 func TestWriteModelInterface(t *testing.T) {
+	schema := `
+model Account {
+	fields {
+		identity Identity @unique
+	}
+}`
+
+	expected := `
+export interface Account {
+	id: string
+	createdAt: Date
+	updatedAt: Date
+	identityId: string
+}
+`
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		m := proto.FindModel(s.Models, "Account")
+		writeModelInterface(w, m)
+	})
+}
+
+func TestWriteModelInterfaceIdentityBacklinks(t *testing.T) {
 	expected := `
 export interface Person {
 	firstName: string
@@ -1115,10 +1137,10 @@ model Person {
 	actions {
 		list listPeople(favouriteNumbers, favouriteSports)
 	}
-}
-	`
-	expected :=
-		`export interface IntArrayAllQueryInput {
+}`
+
+	expected := `
+export interface IntArrayAllQueryInput {
 	equals?: number;
 	notEquals?: number;
 	lessThan?: number;
