@@ -167,7 +167,7 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	}
 
 	v := validation.NewValidator(asts)
-	validationErrors := v.RunAllValidators()
+	validationErrors := v.RunAllValidators(false)
 	if validationErrors != nil {
 		return nil, validationErrors
 	}

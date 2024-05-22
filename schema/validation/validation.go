@@ -85,9 +85,12 @@ var visitorFuncs = []VisitorFunc{
 	OnAttributeRule,
 	RelationshipsRules,
 	ApiModelActions,
+	StudioFeatures,
 }
 
-func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
+// RunAllValidators will run all the validators available. If withWarnings is true, it will return the errors even if
+// they contain just warnings
+func (v *Validator) RunAllValidators(withWarnings bool) (errs *errorhandling.ValidationErrors) {
 	errs = &errorhandling.ValidationErrors{}
 
 	for _, vf := range validatorFuncs {
@@ -100,6 +103,11 @@ func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
 	}
 
 	runVisitors(v.asts, visitors)
+
+	// if we've got any warnings and they should be included, just return, no need to check for actual errors
+	if withWarnings && len(errs.Warnings) > 0 {
+		return errs
+	}
 
 	if len(errs.Errors) == 0 {
 		return nil
