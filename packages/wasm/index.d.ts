@@ -33,6 +33,7 @@ export interface GetDefinitionRequest {
 export interface ValidateRequest {
   schemaFiles: SchemaFile[];
   config?: string;
+  includeWarnings?: bool;
 }
 
 export interface SchemaFile {
@@ -67,4 +68,5 @@ export interface ValidationError {
 
 export interface ValidationResult {
   errors: ValidationError[];
+  warnings?: ValidationError[];
 }

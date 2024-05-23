@@ -167,7 +167,7 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	}
 
 	v := validation.NewValidator(asts)
-	validationErrors := v.RunAllValidators()
+	validationErrors := v.RunAllValidators(false)
 	if validationErrors != nil {
 		return nil, validationErrors
 	}
@@ -176,6 +176,34 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 
 	protoModels := scm.makeProtoModels()
 	return protoModels, nil
+}
+
+// ValidateFromInputs will tyake the given inputs and build the ASTs and run all validators, including/excluding warnings
+// based on the given param. Similar with MakeFromInputs, this function avoide building the protoModels for increased
+// performance when only validation is required
+func (scm *Builder) ValidateFromInputs(inputs *reader.Inputs, includeWarnings bool) error {
+	scm.schemaFiles = inputs.SchemaFiles
+
+	asts, parseErrors, err := scm.PrepareAst(inputs)
+	if err != nil {
+		return err
+	}
+
+	// insert the foreign key fields (for relationships)
+	errDetails := scm.insertForeignKeyFields(asts)
+	if errDetails != nil {
+		parseErrors.Errors = append(parseErrors.Errors, &errorhandling.ValidationError{
+			ErrorDetails: errDetails,
+		})
+	}
+
+	// if we have errors in parsing then no point running validation rules
+	if len(parseErrors.Errors) > 0 {
+		return &parseErrors
+	}
+
+	v := validation.NewValidator(asts)
+	return v.RunAllValidators(includeWarnings)
 }
 
 // insertBuiltInFields injects new fields into the parser schema, to represent

@@ -148,6 +148,44 @@ test("validate - multi file", async () => {
   expect(errors.length).toEqual(0);
 });
 
+test("validate - warnings", async () => {
+  const schema = `model Person {
+    fields { 
+        name Text
+    }
+
+    @on([create], createPersonSubscriber
+    )
+}`;
+  const { errors, warnings } = await validate({
+    schemaFiles: [{ filename: "schema.keel", contents: schema }],
+    config: configFile,
+    includeWarnings: true,
+  });
+
+  expect(errors.length).toEqual(0);
+  expect(warnings?.length).toEqual(1);
+});
+
+test("validate - ignore warnings", async () => {
+  const schema = `model Person {
+    fields { 
+        name Text
+    }
+
+    @on([create], createPersonSubscriber
+    )
+}`;
+  const { errors, warnings } = await validate({
+    schemaFiles: [{ filename: "schema.keel", contents: schema }],
+    config: configFile,
+    includeWarnings: false,
+  });
+
+  expect(errors.length).toEqual(0);
+  expect(warnings).toBeUndefined();
+});
+
 test("validate - invalid schema", async () => {
   const schema = `model Person {
     fields {`;

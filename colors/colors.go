@@ -9,6 +9,8 @@ var (
 	StatusYellowBright     = lipgloss.AdaptiveColor{Light: "#B3B300", Dark: "#FFFF00"}
 	StatusRed              = lipgloss.AdaptiveColor{Light: "#990000", Dark: "#CC0000"}
 	StatusRedBright        = lipgloss.AdaptiveColor{Light: "#FF0000", Dark: "#FF0000"}
+	StatusOrange           = lipgloss.AdaptiveColor{Light: "#CC7700", Dark: "#FFAA00"}
+	StatusOrangeBright     = lipgloss.AdaptiveColor{Light: "#FFAA00", Dark: "#FFAA00"}
 	StatusBlue             = lipgloss.AdaptiveColor{Light: "#000099", Dark: "#000099"}
 	StatusBlueBright       = lipgloss.AdaptiveColor{Light: "#0000FF", Dark: "#6699ff"}
 	HighlightBlack         = lipgloss.AdaptiveColor{Light: "#000000", Dark: "#FFFFFF"}
@@ -90,6 +92,14 @@ func Yellow(text string) *Colors {
 		BaseColor:      StatusYellow,
 		HighlightColor: StatusYellowBright,
 		text:           setText(text, StatusYellow),
+	}
+}
+
+func Orange(text string) *Colors {
+	return &Colors{
+		BaseColor:      StatusOrange,
+		HighlightColor: StatusOrangeBright,
+		text:           setText(text, StatusOrange),
 	}
 }
 
