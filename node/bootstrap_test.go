@@ -64,7 +64,7 @@ func TestBootstrapVersionInterpolation(t *testing.T) {
 	// we need to set the runtime.Version to a version that actually
 	// exists on NPM in order for this test to succeed
 	// It doesn't matter what the specific version is for the purposes of the test
-	testVersion := "0.322.0"
+	testVersion := "0.386.1"
 
 	runtime.Version = testVersion
 
