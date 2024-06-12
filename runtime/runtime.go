@@ -286,7 +286,7 @@ func withRequestResponseLogging(handler common.HandlerFunc) common.HandlerFunc {
 }
 
 func logLevel() log.Level {
-	switch os.Getenv("LOG_LEVEL") {
+	switch os.Getenv("KEEL_LOG_LEVEL") {
 	case "trace":
 		return log.TraceLevel
 	case "debug":
