@@ -267,18 +267,19 @@ func withRequestResponseLogging(handler common.HandlerFunc) common.HandlerFunc {
 			"headers": request.Header,
 			"method":  request.Method,
 			"host":    request.Host,
-		})
+		}).Info("Runtime request")
 
 		response := handler(request)
 
 		entry := log.WithFields(log.Fields{
 			"headers": response.Headers,
 			"status":  response.Status,
+			"url":     request.URL,
 		})
 		if response.Status >= 300 {
 			entry.WithField("body", string(response.Body))
 		}
-		entry.Info("response")
+		entry.Info("Runtime response")
 
 		return response
 	}
