@@ -486,7 +486,7 @@ func validateFormat(config *ProjectConfig, formatType string) (bool, map[string]
 				continue
 			}
 
-			ssName := casing.ToScreamingSnake(secret.Name)
+			ssName := strings.ToUpper(secret.Name)
 
 			if secret.Name != ssName {
 				incorrectNamesMap[secret.Name] = true

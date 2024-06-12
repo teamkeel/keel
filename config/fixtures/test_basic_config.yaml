@@ -17,3 +17,7 @@ secrets:
   - name: API_KEY
     required:
       - "production"
+  - name: S3_BUCKET
+    required:
+      - "production"
+
