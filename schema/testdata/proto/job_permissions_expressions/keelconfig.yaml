@@ -1,4 +1,3 @@
 environment:
-  default:
-    - name: FOO
-      value: 'bar'
+  - name: FOO
+    value: 'bar'

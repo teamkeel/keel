@@ -406,9 +406,7 @@ type FunctionsOutputMsg struct {
 
 func StartFunctions(m *Model) tea.Cmd {
 	return func() tea.Msg {
-		envType := "development"
-
-		envVars := m.Config.GetEnvVars(envType)
+		envVars := m.Config.GetEnvVars()
 		envVars["KEEL_DB_CONN_TYPE"] = "pg"
 		envVars["KEEL_DB_CONN"] = m.DatabaseConnInfo.String()
 		envVars["KEEL_TRACING_ENABLED"] = "true"

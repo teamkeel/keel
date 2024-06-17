@@ -167,11 +167,6 @@ func Init(dir string) tea.Cmd {
 			Contents: `# Visit https://docs.keel.so/envvars for more
 # information about environment variables and secrets
 environment:
-  default:
-  development:
-  test:
-  staging:
-  production:
 
 secrets:
 `,

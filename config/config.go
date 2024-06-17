@@ -17,37 +17,17 @@ const Empty = ""
 
 // ProjectConfig is the configuration for a keel project
 type ProjectConfig struct {
-	Environment   EnvironmentConfig `yaml:"environment"`
-	UseDefaultApi *bool             `yaml:"useDefaultApi,omitempty"`
-	Secrets       []Input           `yaml:"secrets"`
-	Auth          AuthConfig        `yaml:"auth"`
-	DisableAuth   bool              `yaml:"disableKeelAuth"`
+	Environment   []Input    `yaml:"environment"`
+	UseDefaultApi *bool      `yaml:"useDefaultApi,omitempty"`
+	Secrets       []Input    `yaml:"secrets"`
+	Auth          AuthConfig `yaml:"auth"`
+	DisableAuth   bool       `yaml:"disableKeelAuth"`
 }
 
-func (p *ProjectConfig) GetEnvVars(env string) map[string]string {
+func (p *ProjectConfig) GetEnvVars() map[string]string {
 	nameToValueMap := map[string]string{}
 
-	var environmentInput []Input
-	switch env {
-	case "test":
-		environmentInput = p.Environment.Test
-	case "development":
-		environmentInput = p.Environment.Development
-	case "staging":
-		environmentInput = p.Environment.Staging
-	case "production":
-		environmentInput = p.Environment.Production
-	default:
-		environmentInput = p.Environment.Default
-	}
-
-	// make a copy of the default env vars
-	merged := append([]Input{}, p.Environment.Default...)
-	// merge with specific environment env vars
-	merged = append(merged, environmentInput...)
-
-	for _, input := range merged {
-		// override default env var with specific environment one, if it exists
+	for _, input := range p.Environment {
 		nameToValueMap[input.Name] = input.Value
 	}
 
@@ -59,32 +39,11 @@ func (p *ProjectConfig) GetEnvVars(env string) map[string]string {
 func (c *ProjectConfig) AllEnvironmentVariables() []string {
 	var environmentVariables []string
 
-	for _, envVar := range c.Environment.Default {
+	for _, envVar := range c.Environment {
 		environmentVariables = append(environmentVariables, envVar.Name)
 	}
 
-	for _, envVar := range c.Environment.Staging {
-		environmentVariables = append(environmentVariables, envVar.Name)
-	}
-
-	for _, envVar := range c.Environment.Development {
-		environmentVariables = append(environmentVariables, envVar.Name)
-	}
-
-	for _, envVar := range c.Environment.Production {
-		environmentVariables = append(environmentVariables, envVar.Name)
-	}
-
-	duplicateKeys := make(map[string]bool)
-	allEnvironmentVariables := []string{}
-	for _, item := range environmentVariables {
-		if _, value := duplicateKeys[item]; !value {
-			duplicateKeys[item] = true
-			allEnvironmentVariables = append(allEnvironmentVariables, item)
-		}
-	}
-
-	return allEnvironmentVariables
+	return environmentVariables
 }
 
 func (c *ProjectConfig) AllSecrets() []string {
@@ -118,9 +77,8 @@ type EnvironmentConfig struct {
 
 // Input is the configuration for a keel environment variable or secret
 type Input struct {
-	Name     string   `yaml:"name"`
-	Value    string   `yaml:"value,omitempty"`
-	Required []string `yaml:"required,omitempty"`
+	Name  string `yaml:"name"`
+	Value string `yaml:"value,omitempty"`
 }
 
 type ConfigError struct {
@@ -129,8 +87,7 @@ type ConfigError struct {
 }
 
 const (
-	ConfigDuplicateErrorString                       = "environment variable %s has a duplicate set in environment: %s"
-	ConfigRequiredErrorString                        = "environment variable %s is required but not defined in the following environments: %s"
+	ConfigDuplicateErrorString                       = "environment variable %s has a duplicate set"
 	ConfigIncorrectNamingErrorString                 = "%s must be written in upper snakecase"
 	ConfigReservedNameErrorString                    = "environment variable %s cannot start with %s as it is reserved"
 	ConfigAuthTokenExpiryMustBePositive              = "%s token lifespan cannot be negative or zero for field: %s"
@@ -213,20 +170,10 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 
 	duplicates, results := checkForDuplicates(config)
 	if duplicates {
-		for duplicatedEnvVarName, environmentNames := range results {
+		for duplicatedEnvVarName := range results {
 			errors = append(errors, &ConfigError{
 				Type:    "duplicate",
-				Message: fmt.Sprintf(ConfigDuplicateErrorString, duplicatedEnvVarName, environmentNames),
-			})
-		}
-	}
-
-	missingKeys, keys := requiredValuesKeys(config)
-	if missingKeys {
-		for requiredValueName, environmentNames := range keys {
-			errors = append(errors, &ConfigError{
-				Type:    "missing",
-				Message: fmt.Sprintf(ConfigRequiredErrorString, requiredValueName, environmentNames),
+				Message: fmt.Sprintf(ConfigDuplicateErrorString, duplicatedEnvVarName),
 			})
 		}
 	}
@@ -379,24 +326,13 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 }
 
 // checkForDuplicates checks for duplicate environment variables in a keel project
-// We assume that any environment variable that is defined in staging/production will override the default
 func checkForDuplicates(config *ProjectConfig) (bool, map[string][]string) {
 	results := make(map[string][]string, 2)
-	stagingDuplicates, staging := findDuplicates(config.Environment.Staging)
+	envDuplicates, staging := findDuplicates(config.Environment)
 
 	if len(staging) > 0 {
 		for _, key := range staging {
 			results[key] = append(results[key], "staging")
-		}
-	}
-	if len(config.Environment.Production) == 0 {
-		return stagingDuplicates, results
-	}
-
-	productionDuplicates, production := findDuplicates(config.Environment.Production)
-	if len(production) > 0 {
-		for _, key := range production {
-			results[key] = append(results[key], "production")
 		}
 	}
 
@@ -407,7 +343,7 @@ func checkForDuplicates(config *ProjectConfig) (bool, map[string][]string) {
 		}
 	}
 
-	if stagingDuplicates || productionDuplicates || secretDuplicates {
+	if envDuplicates || secretDuplicates {
 		return true, results
 	}
 
@@ -430,33 +366,6 @@ func findDuplicates(environment []Input) (bool, []string) {
 	return len(duplicates) > 0, duplicates
 }
 
-// requiredValuesKeys checks for required environment variables in a keel project defined in the default block
-// A required environment variable must be defined in either staging or production
-func requiredValuesKeys(config *ProjectConfig) (bool, map[string][]string) {
-	results := make(map[string][]string, 2)
-
-	for _, v := range config.Environment.Default {
-		if v.Required == nil {
-			continue
-		}
-
-		for _, required := range v.Required {
-			if required == "staging" {
-				if !contains(config.Environment.Staging, v.Name) {
-					results[v.Name] = append(results[v.Name], "staging")
-				}
-			}
-			if required == "production" {
-				if !contains(config.Environment.Production, v.Name) {
-					results[v.Name] = append(results[v.Name], "production")
-				}
-			}
-		}
-	}
-
-	return len(results) > 0, results
-}
-
 func contains(s []Input, e string) bool {
 	for _, input := range s {
 		if input.Name == e {
@@ -467,16 +376,11 @@ func contains(s []Input, e string) bool {
 	return false
 }
 
-// validateFormat checks if any secret name or environment variables in default, staging and production environments
-// are written in the wrong format. Must be screaming snakecase or, if an environment variable, a non-reserved name.
+// validateFormat checks if any secret name or environment variables are written in the wrong format.
+// must be screaming snakecase or, if an environment variable, a non-reserved name.
 func validateFormat(config *ProjectConfig, formatType string) (bool, map[string]bool) {
-	defaultEnv := config.Environment.Default
-	stagingEnv := config.Environment.Staging
-	productionEnv := config.Environment.Production
-	testEnv := config.Environment.Test
+	envs := config.Environment
 	secrets := config.Secrets
-
-	envsToCheck := [][]Input{defaultEnv, stagingEnv, productionEnv, testEnv}
 
 	incorrectNamesMap := make(map[string]bool)
 
@@ -495,30 +399,28 @@ func validateFormat(config *ProjectConfig, formatType string) (bool, map[string]
 		}
 	}
 
-	for _, environment := range envsToCheck {
-		for _, envVar := range environment {
-			if ok := incorrectNamesMap[envVar.Name]; ok {
-				continue
+	for _, envVar := range envs {
+		if ok := incorrectNamesMap[envVar.Name]; ok {
+			continue
+		}
+
+		switch formatType {
+		case "snakecase":
+			ssName := casing.ToScreamingSnake(envVar.Name)
+
+			if envVar.Name != ssName {
+				incorrectNamesMap[envVar.Name] = true
 			}
+			continue
+		case "reserved":
+			found := reservedEnvVarRegex.FindString(envVar.Name)
 
-			switch formatType {
-			case "snakecase":
-				ssName := casing.ToScreamingSnake(envVar.Name)
-
-				if envVar.Name != ssName {
-					incorrectNamesMap[envVar.Name] = true
-				}
-				continue
-			case "reserved":
-				found := reservedEnvVarRegex.FindString(envVar.Name)
-
-				if found != "" {
-					incorrectNamesMap[envVar.Name] = true
-				}
-				continue
-			default:
-				break
+			if found != "" {
+				incorrectNamesMap[envVar.Name] = true
 			}
+			continue
+		default:
+			break
 		}
 	}
 

@@ -1,17 +1,7 @@
 environment:
-  default:
-    - name: "TEST"
-      value: "test"
-      required:
-        - "staging"
-  staging:
-    - name: "TEST"
-      value: "value test"
-    - name: "TEST_2"
-      value: "test2"
-  production:
-    - name: "TEST"
-      value: "value test"
+  - name: "TEST"
+    value: "test"
+
 
 secrets:
   - name: API_KEY

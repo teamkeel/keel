@@ -3,18 +3,13 @@ import { test, expect } from "vitest";
 
 const configFile = `
 environment:
-  default:
-    - name: "TEST"
-      value: "test"
-
-  staging:
-    - name: "TEST_2"
-      value: "test2"
+  - name: "TEST"
+    value: "test"
+  - name: "TEST_2"
+    value: "test2"
 
 secrets:
   - name: API_KEY
-    required:
-      - "production"
 `;
 
 test("format", async () => {
