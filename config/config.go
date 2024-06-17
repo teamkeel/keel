@@ -366,16 +366,6 @@ func findDuplicates(environment []Input) (bool, []string) {
 	return len(duplicates) > 0, duplicates
 }
 
-func contains(s []Input, e string) bool {
-	for _, input := range s {
-		if input.Name == e {
-			return true
-		}
-	}
-
-	return false
-}
-
 // validateFormat checks if any secret name or environment variables are written in the wrong format.
 // must be screaming snakecase or, if an environment variable, a non-reserved name.
 func validateFormat(config *ProjectConfig, formatType string) (bool, map[string]bool) {
