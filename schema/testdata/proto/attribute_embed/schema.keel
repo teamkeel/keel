@@ -1,0 +1,26 @@
+model Author {
+    fields {
+        firstName Text
+        surname Text
+    }
+
+    actions {
+        list listAuthors() {
+            @sortable(firstName, surname)
+        }
+    }
+}
+model Book {
+    fields {
+        title Text
+        author Author
+    }
+
+    actions {
+        get getBook(id) {
+            @embed(author.firstName)
+            @embed(author.surname)
+            @embed(author.id)
+        }
+    }
+}

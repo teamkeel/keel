@@ -304,6 +304,61 @@ model Author {
 	assert.Equal(t, "surname", v2.Ident.Fragments[0].Fragment)
 }
 
+func TestOperationWithEmbedAttribute(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+model Author {
+    fields {
+        firstName Text
+        surname Text
+    }
+}
+model Book { 
+	fields {
+		title Text
+		author Author
+	}
+
+	actions {
+		get getBook(id) {
+			@embed(author.firstName, author.surname)
+			@embed(author.id)
+		}
+	}
+}
+`})
+
+	attribute := schema.Declarations[1].Model.Sections[1].Actions[0].Attributes[0]
+	attribute2 := schema.Declarations[1].Model.Sections[1].Actions[0].Attributes[1]
+
+	assert.Equal(t, "embed", attribute.Name.Value)
+	assert.Equal(t, "embed", attribute2.Name.Value)
+
+	arg1 := attribute.Arguments[0]
+	assert.Equal(t, true, arg1.Expression.IsValue())
+	assert.Nil(t, arg1.Label)
+
+	arg2 := attribute.Arguments[1]
+	assert.Equal(t, true, arg2.Expression.IsValue())
+	assert.Nil(t, arg2.Label)
+
+	v1, err := arg1.Expression.ToString()
+	assert.NoError(t, err)
+	assert.Equal(t, "author.firstName", v1)
+
+	v2, err := arg2.Expression.ToString()
+	assert.NoError(t, err)
+	assert.Equal(t, "author.surname", v2)
+
+	arg := attribute2.Arguments[0]
+	assert.Equal(t, true, arg.Expression.IsValue())
+	assert.Nil(t, arg.Label)
+
+	v, err := arg.Expression.ToString()
+	assert.NoError(t, err)
+	assert.Equal(t, "author.id", v)
+
+}
+
 func TestAPI(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 	api Web {

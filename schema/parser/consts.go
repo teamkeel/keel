@@ -152,6 +152,7 @@ const (
 	AttributeSchedule   = "schedule"
 	AttributeFunction   = "function"
 	AttributeOn         = "on"
+	AttributeEmbed      = "embed"
 )
 
 const (
