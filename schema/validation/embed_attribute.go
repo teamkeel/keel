@@ -4,14 +4,14 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var currentModel *parser.ModelNode
-	var currentOperation *parser.ActionNode
+	var currentAction *parser.ActionNode
 	var currentAttribute *parser.AttributeNode
 	var arguments []string
 
@@ -23,10 +23,10 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			currentModel = nil
 		},
 		EnterAction: func(action *parser.ActionNode) {
-			currentOperation = action
+			currentAction = action
 		},
 		LeaveAction: func(_ *parser.ActionNode) {
-			currentOperation = nil
+			currentAction = nil
 			arguments = []string{}
 		},
 		EnterAttribute: func(attribute *parser.AttributeNode) {
@@ -36,11 +36,11 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				return
 			}
 
-			if currentOperation == nil {
+			if currentAction == nil {
 				return
 			}
 
-			if currentOperation.Type.Value != parser.ActionTypeList && currentOperation.Type.Value != parser.ActionTypeGet {
+			if currentAction.Type.Value != parser.ActionTypeList && currentAction.Type.Value != parser.ActionTypeGet {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeNotAllowedError,
 					errorhandling.ErrorDetails{
@@ -68,7 +68,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				return
 			}
 
-			if currentOperation == nil {
+			if currentAction == nil {
 				return
 			}
 
@@ -139,7 +139,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
 						Message: "Ab @embed argument must reference a field",
-						Hint:    "For example, use @embed(firstName)",
+						Hint:    "For example, use @embed(author.firstName)",
 					},
 					arg,
 				))
@@ -151,33 +151,25 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
 						Message: "The @embed attribute can only be used with valid model fields",
-						Hint:    "For example, use @embed(firstName)",
+						Hint:    "For example, use @embed(author.firstName)",
 					},
 					arg,
 				))
 				return
 			}
-			var field *parser.FieldNode
-			var model = currentModel
 
-			// Iterate through each fragment in the LHS operand, and ensure:
-			// - it is a field which is part of a model being created or updated (including nested creates)
-			for _, fragment := range operand.Ident.Fragments {
-				// get the next field in the relationship fragments
-				field = query.ModelField(model, fragment.Fragment)
-				if field == nil {
-					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-						errorhandling.AttributeArgumentError,
-						errorhandling.ErrorDetails{
-							Message: fmt.Sprintf("The @embed attribute (%s) does not exist in model %s", fragment.Fragment, model.Name.Value),
-							Hint:    "For example, use @embed(firstName)",
-						},
-						arg,
-					))
-					return
-				}
-				// will be null if this is not a model field
-				model = query.Model(asts, field.Type.Value)
+			expressionContext := expressions.ExpressionContext{
+				Model:     currentModel,
+				Attribute: currentAttribute,
+				Action:    currentAction,
+			}
+
+			// We resolve whether the actual fragments are valid idents in other validations,
+			// but we need to exit early here if they dont resolve.
+			resolver := expressions.NewOperandResolver(operand, asts, &expressionContext, expressions.OperandPositionLhs)
+			_, rerr := resolver.Resolve()
+			if rerr != nil {
+				errs.AppendError(rerr.ToValidationError())
 			}
 
 			if lo.SomeBy(arguments, func(a string) bool { return a == operand.Ident.ToString() }) {
