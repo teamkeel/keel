@@ -1,6 +1,9 @@
 package actions
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
@@ -42,6 +45,24 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	if !isAuthorised {
 		return nil, common.NewPermissionError()
+	}
+
+	// if we have embedded data, let's resolve it
+	if len(scope.Action.ResponseEmbeds) > 0 {
+		for _, embed := range scope.Action.ResponseEmbeds {
+			// a response embed will be something like: `book.author.country` where book is the model for the current action
+			fragments := strings.Split(embed, ".")
+
+			id, ok := res["id"].(string)
+			if !ok {
+				return nil, errors.New("missing identifier")
+			}
+			data, err := resolveEmbeddedData(scope.Context, scope.Schema, scope.Model, id, fragments)
+			if err != nil {
+				return nil, err
+			}
+			res[fragments[0]] = data
+		}
 	}
 
 	return res, err

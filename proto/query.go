@@ -234,7 +234,7 @@ func FindField(models []*Model, modelName string, fieldName string) *Field {
 	return nil
 }
 
-// ModelHasField returns true IFF the schema contains a model of the given name AND
+// ModelHasField returns true IF the schema contains a model of the given name AND
 // that model has a field of the given name.
 func ModelHasField(schema *Schema, model string, field string) bool {
 	for _, m := range schema.Models {
