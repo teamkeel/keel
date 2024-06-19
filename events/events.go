@@ -140,7 +140,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		}
 
 		var previous map[string]any
-		if log.Op != Created {
+		if log.Op != auditing.Insert {
 			p, err := auditing.Previous(ctx, log)
 			if err != nil {
 				return err

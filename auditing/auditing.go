@@ -124,18 +124,12 @@ func fromRow(row map[string]any) (*AuditLog, error) {
 		return nil, fmt.Errorf("audit '%s' column cannot be parsed or is empty", ColumnCreatedAt)
 	}
 
-	eventProcessedAt, ok := audit.TimeIf(ColumnEventProcessedAt)
-	if !ok {
-		return nil, fmt.Errorf("audit '%s' column cannot be parsed or is empty", ColumnEventProcessedAt)
-	}
-
 	return &AuditLog{
-		Id:               id,
-		TableName:        tableName,
-		Op:               op,
-		Data:             data,
-		CreatedAt:        createdAt,
-		EventProcessedAt: eventProcessedAt,
+		Id:        id,
+		TableName: tableName,
+		Op:        op,
+		Data:      data,
+		CreatedAt: createdAt,
 	}, nil
 }
 
