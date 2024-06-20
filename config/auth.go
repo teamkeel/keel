@@ -65,8 +65,9 @@ type Provider struct {
 }
 
 type IdentityClaim struct {
-	Key   string `yaml:"key"`
-	Field string `yaml:"field"`
+	Key    string `yaml:"key"`
+	Field  string `yaml:"field"`
+	Unique bool   `yaml:"unique"`
 }
 
 // AccessTokenExpiry retrieves the configured or default access token expiry

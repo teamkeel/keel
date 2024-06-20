@@ -362,6 +362,9 @@ func TestAuthClaims(t *testing.T) {
 
 	assert.Equal(t, "https://slack.com/#team_ID", config.Auth.Claims[0].Key)
 	assert.Equal(t, "teamId", config.Auth.Claims[0].Field)
+	assert.Equal(t, true, config.Auth.Claims[0].Unique)
+
 	assert.Equal(t, "something-else", config.Auth.Claims[1].Key)
 	assert.Equal(t, "somethingElse", config.Auth.Claims[1].Field)
+	assert.Equal(t, false, config.Auth.Claims[1].Unique)
 }
