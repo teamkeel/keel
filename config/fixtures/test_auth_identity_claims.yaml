@@ -7,5 +7,6 @@ auth:
   claims:
     - key: https://slack.com/#team_ID
       field: teamId
+      unique: true
     - key: something-else
       field: somethingElse

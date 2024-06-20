@@ -625,7 +625,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 	identityModelDeclaration.Model.Sections = append(identityModelDeclaration.Model.Sections, fieldsSection, actionsSection)
 
 	uniqueModelSection := &parser.ModelSectionNode{
-		Attribute: emailUniqueAttributeNode(),
+		Attribute: scm.emailUniqueAttributeNode(),
 	}
 
 	identityModelDeclaration.Model.Sections = append(identityModelDeclaration.Model.Sections, uniqueModelSection)
@@ -729,9 +729,46 @@ func (scm *Builder) addSecrets(declarations *parser.AST) {
 	declarations.Secrets = append(declarations.Secrets, scm.Config.AllSecrets()...)
 }
 
-func emailUniqueAttributeNode() *parser.AttributeNode {
-	// we need to add a composite unique attribute on email + issuer
-	// unfortunately this is the only way to do it prior to proto generation
+func (scm *Builder) emailUniqueAttributeNode() *parser.AttributeNode {
+	operands := []*parser.Operand{
+		{
+			Ident: &parser.Ident{
+				Fragments: []*parser.IdentFragment{
+					{
+						Fragment: "email",
+					},
+				},
+			},
+		},
+		{
+			Ident: &parser.Ident{
+				Fragments: []*parser.IdentFragment{
+					{
+						Fragment: "issuer",
+					},
+				},
+			},
+		},
+	}
+
+	if scm.Config != nil {
+		for _, c := range scm.Config.Auth.Claims {
+			if !c.Unique {
+				continue
+			}
+
+			operands = append(operands, &parser.Operand{
+				Ident: &parser.Ident{
+					Fragments: []*parser.IdentFragment{
+						{
+							Fragment: c.Field,
+						},
+					},
+				},
+			})
+		}
+	}
+
 	return &parser.AttributeNode{
 		Name: parser.AttributeNameToken{
 			Value: parser.AttributeUnique,
@@ -746,26 +783,7 @@ func emailUniqueAttributeNode() *parser.AttributeNode {
 									Condition: &parser.Condition{
 										LHS: &parser.Operand{
 											Array: &parser.Array{
-												Values: []*parser.Operand{
-													{
-														Ident: &parser.Ident{
-															Fragments: []*parser.IdentFragment{
-																{
-																	Fragment: "email",
-																},
-															},
-														},
-													},
-													{
-														Ident: &parser.Ident{
-															Fragments: []*parser.IdentFragment{
-																{
-																	Fragment: "issuer",
-																},
-															},
-														},
-													},
-												},
+												Values: operands,
 											},
 										},
 									},

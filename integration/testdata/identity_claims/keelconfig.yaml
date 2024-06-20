@@ -1,0 +1,10 @@
+auth:
+  claims:
+    - key: teamId
+      field: teamId
+      unique: true
+    - key: my_key_1
+      field: myField1
+      unique: false
+    - key: my_key_2
+      field: myField2
