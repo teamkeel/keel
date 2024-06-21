@@ -1,7 +1,3 @@
 environment:
-  default:
-    - name: MY_VAR
-      value: 20
-  test:
-    - name: MY_VAR
-      value: 20
+  - name: MY_VAR
+    value: 20

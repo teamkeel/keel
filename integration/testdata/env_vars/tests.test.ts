@@ -6,5 +6,5 @@ beforeEach(resetDatabase);
 test("create person with env var name", async () => {
   const person = await actions.createPerson({});
 
-  expect(person.name).toEqual("Peggy");
+  expect(person.name).toEqual("Pedro");
 });

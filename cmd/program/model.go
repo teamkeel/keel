@@ -487,7 +487,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 		}
 
-		envVars := m.Config.GetEnvVars("development")
+		envVars := m.Config.GetEnvVars()
 		for k, v := range envVars {
 			os.Setenv(k, v)
 		}

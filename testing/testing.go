@@ -64,7 +64,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		return err
 	}
 
-	envVars := builder.Config.GetEnvVars("test")
+	envVars := builder.Config.GetEnvVars()
 
 	testApi := &proto.Api{
 		// TODO: make random so doesn't clash

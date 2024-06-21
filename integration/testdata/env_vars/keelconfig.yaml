@@ -1,16 +1,3 @@
 environment:
-  default:
-    - name: PERSON_NAME
-      value: "Pedro"
-  development:
-    - name: PERSON_NAME
-      value: "Not Pedro"
-  test:
-    - name: PERSON_NAME
-      value: "Peggy"
-  staging:
-    - name: PERSON_NAME
-      value: "Pablo"
-  production:
-    - name: PERSON_NAME
-      value: "Pedro"
+  - name: PERSON_NAME
+    value: "Pedro"
