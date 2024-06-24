@@ -163,7 +163,8 @@ function getDialect() {
           // Although I doubt we will run into these freeze/thaw issues if idleTimeoutMillis is always shorter than the
           // time is takes for a lambda to freeze (which is not a constant, but could be as short as several minutes,
           // https://www.pluralsight.com/resources/blog/cloud/how-long-does-aws-lambda-keep-your-idle-functions-around-before-a-cold-start)
-          idleTimeoutMillis: 120000,
+          idleTimeoutMillis: 0,
+          connectionTimeoutMillis: 0,
           connectionString: mustEnv("KEEL_DB_CONN"),
         }),
       });
