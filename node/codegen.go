@@ -205,6 +205,59 @@ func writeModelInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
+func writeEmbeddedModelInterface(w *codegen.Writer, schema *proto.Schema, model *proto.Model, name string, embeddings []string) {
+	w.Writef("export interface %s ", name)
+	writeEmbeddedModelFields(w, schema, model, embeddings)
+	w.Writeln("")
+}
+
+func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *proto.Model, embeddings []string) {
+	w.Write("{\n")
+	w.Indent()
+	for _, field := range model.Fields {
+		fieldEmbeddings := []string{}
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			found := false
+
+			for _, embed := range embeddings {
+				frags := strings.Split(embed, ".")
+				if frags[0] == field.Name {
+					found = true
+					// if we have to embed a child model for this field, we need to pass them through the field schema
+					// with the first segment removed
+					if len(frags) > 1 {
+						fieldEmbeddings = append(fieldEmbeddings, strings.Join(frags[1:], "."))
+					}
+				}
+			}
+			if !found {
+				continue
+			}
+		}
+
+		w.Write(field.Name)
+		w.Write(": ")
+
+		if len(fieldEmbeddings) == 0 {
+			w.Write(toTypeScriptType(field.Type, false))
+		} else {
+			fieldModel := proto.FindModel(schema.Models, field.Type.ModelName.Value)
+			writeEmbeddedModelFields(w, schema, fieldModel, fieldEmbeddings)
+		}
+
+		if field.Type.Repeated {
+			w.Write("[]")
+		}
+		if field.Optional {
+			w.Write(" | null")
+		}
+
+		w.Writeln("")
+	}
+	w.Dedent()
+	w.Write("}")
+}
+
 func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto.Model) {
 	w.Writef("export type %sCreateValues = {\n", model.Name)
 	w.Indent()
