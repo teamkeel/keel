@@ -15,4 +15,20 @@ model Person {
 
     //expect-error:25:32:E016:Invalid value, expected any of the following identifiers - firstName, or lastName
     @unique([firstName, surname])
+
+    //expect-error:5:12:E024:2 argument(s) provided to @unique but expected 1
+    @unique(
+        unknown1,
+        unknown2
+    )
+
+    //expect-error:5:12:E024:2 argument(s) provided to @unique but expected 1
+    @unique(
+        "first_name",
+        "last_name"
+    )
+
+    //expect-error:14:26:E016:Invalid value, expected any of the following identifiers - firstName, or lastName
+    //expect-error:28:39:E016:Invalid value, expected any of the following identifiers - firstName, or lastName
+    @unique(["first_name", "last_name"])
 }
