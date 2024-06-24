@@ -59,6 +59,13 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 					value, _ := attr.Arguments[0].Expression.ToValue()
 
 					if value.Array != nil {
+						invalidFieldNames := lo.SomeBy(value.Array.Values, func(o *parser.Operand) bool {
+							return o.Ident == nil
+						})
+						if invalidFieldNames {
+							return
+						}
+
 						fieldNames := lo.Map(value.Array.Values, func(o *parser.Operand, _ int) string {
 							return o.Ident.ToString()
 						})
