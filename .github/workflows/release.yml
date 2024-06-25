@@ -1,10 +1,6 @@
 name: Release Keel
 
 on: 
-  push:
-    branches: 
-      - next
-      - prerelease
   workflow_dispatch:
     inputs:
       branch:
