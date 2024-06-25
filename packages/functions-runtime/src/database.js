@@ -141,43 +141,26 @@ class InstrumentedClient extends pg.Client {
 }
 
 function getDialect() {
+  // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
+  // 1700 = type for NUMERIC
+  pg.types.setTypeParser(1700, function (val) {
+    return parseFloat(val);
+  });
+
   const dbConnType = process.env["KEEL_DB_CONN_TYPE"];
   switch (dbConnType) {
     case "pg":
-      // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
-      // 1700 = type for NUMERIC
-      pg.types.setTypeParser(1700, function (val) {
-        return parseFloat(val);
+      return new PostgresDialect({
+        pool: new InstrumentedPool({
+          Client: InstrumentedClient,
+          connectionString: mustEnv("KEEL_DB_CONN"),
+        }),
       });
-
+    case "neon":
       return new NeonDialect({
-        connectionString: "postgresql://neondb_owner:MKdyUwxQIj48@ep-aged-silence-a2c04fyv.eu-central-1.aws.neon.tech/neondb?sslmode=require",//mustEnv("KEEL_DB_CONN"),
+        connectionString: "postgres://keel_runtime:vr3PuGQGb06I1Q0Daj6S9gFFq00zWso8@ep-dry-fog-a21c7eft-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require",//        mustEnv("KEEL_DB_CONN"),
         webSocketConstructor: ws,
       });
-
-      // return new PostgresDialect({
-      //   connectisonString: mustEnv("KEEL_DB_CONN"),
-      //   client: new InstrumentedClient,
-      //   // pool: new InstrumentedPool({
-      //   //   Client: InstrumentedClient,
-      //   //   // Increased idle time before closing a connection in the local pool (from 10s default).
-      //   //   // Establising a new connection on (almost) every functions query can be expensive, so this
-      //   //   // will reduce having to open connections as regularly. https://node-postgres.com/apis/pool
-      //   //   //
-      //   //   // NOTE: We should consider setting this to 0 (i.e. never pool locally) and open and close
-      //   //   // connections with each invocation. This is because the freeze/thaw nature of lambdas can cause problems
-      //   //   // with long-lived connections - see https://github.com/brianc/node-postgres/issues/2718
-      //   //   // Once we're "fully regional" this should not be a performance problem anymore.
-      //   //   //
-      //   //   // Although I doubt we will run into these freeze/thaw issues if idleTimeoutMillis is always shorter than the
-      //   //   // time is takes for a lambda to freeze (which is not a constant, but could be as short as several minutes,
-      //   //   // https://www.pluralsight.com/resources/blog/cloud/how-long-does-aws-lambda-keep-your-idle-functions-around-before-a-cold-start)
-      //   //   idleTimeoutMillis: 0,
-      //   //   connectionTimeoutMillis: 0,
-      //   //   connectionString: mustEnv("KEEL_DB_CONN"),
-      //   // }),
-      // });
-
     default:
       throw Error("unexpected KEEL_DB_CONN_TYPE: " + dbConnType);
   }
