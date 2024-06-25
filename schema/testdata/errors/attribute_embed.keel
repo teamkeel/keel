@@ -21,11 +21,15 @@ model Review {
 
 model Book {
     fields {
-        title Text
+        //expect-error:20:26:E011:field 'title' has an unrecognised attribute @embed
+        title Text @embed()
         author Author
         reviews Review[]
         code Code?
     }
+
+    //expect-error:5:11:E011:model 'Book' has an unrecognised attribute @embed
+    @embed(code)
 
     actions {
         list listBooks() {
@@ -36,6 +40,8 @@ model Book {
             @embed(code = 1)
             //expect-error:29:30:AttributeArgumentError:The @embed attribute can only be used with valid model fields
             @embed(reviews, 2)
+            //expect-error:20:26:AttributeArgumentError:The @embed attribute can only be used with valid model fields
+            @embed("code")
         }
         get getBook(id) {
             //expect-error:20:25:AttributeArgumentError:title is not a model field

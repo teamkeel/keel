@@ -310,28 +310,40 @@ model Author {
     fields {
         firstName Text
         surname Text
+		category Category
     }
 }
 model Book { 
 	fields {
 		title Text
 		author Author
+		category Category
 	}
 
 	actions {
 		get getBook(id) {
-			@embed(author.firstName, author.surname)
-			@embed(author.id)
+			@embed(genre, category)
+			@embed(author.category)
 		}
 	}
 }
+model Category {
+	fields {
+		title Text
+	}
+}
+model Genre {
+	fields {
+		title Text
+	}
+}
+
 `})
 
 	attribute := schema.Declarations[1].Model.Sections[1].Actions[0].Attributes[0]
 	attribute2 := schema.Declarations[1].Model.Sections[1].Actions[0].Attributes[1]
 
 	assert.Equal(t, "embed", attribute.Name.Value)
-	assert.Equal(t, "embed", attribute2.Name.Value)
 
 	arg1 := attribute.Arguments[0]
 	assert.Equal(t, true, arg1.Expression.IsValue())
@@ -343,11 +355,11 @@ model Book {
 
 	v1, err := arg1.Expression.ToString()
 	assert.NoError(t, err)
-	assert.Equal(t, "author.firstName", v1)
+	assert.Equal(t, "genre", v1)
 
 	v2, err := arg2.Expression.ToString()
 	assert.NoError(t, err)
-	assert.Equal(t, "author.surname", v2)
+	assert.Equal(t, "category", v2)
 
 	arg := attribute2.Arguments[0]
 	assert.Equal(t, true, arg.Expression.IsValue())
@@ -355,7 +367,7 @@ model Book {
 
 	v, err := arg.Expression.ToString()
 	assert.NoError(t, err)
-	assert.Equal(t, "author.id", v)
+	assert.Equal(t, "author.category", v)
 
 }
 
