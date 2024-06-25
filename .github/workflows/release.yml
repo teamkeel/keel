@@ -1,10 +1,6 @@
 name: Release Keel
 
 on: 
-  push:
-    branches: 
-      - next
-      - prerelease
   workflow_dispatch:
     inputs:
       branch:
@@ -84,13 +80,14 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.KEEL_CI_SEMANTIC_RELEASE }}
     - name: Version tag created
+      if: ${{ steps.semantic.outputs.is_published == 'true' }}
       run: |
         echo v${{ steps.semantic.outputs.new_release_version }}
 
   go-releaser:
     needs: 
     - semantic-release
-    if: ${{ needs.semantic-release.outputs.is_published }}
+    if: ${{ needs.semantic-release.outputs.is_published == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: With version
@@ -127,7 +124,7 @@ jobs:
     - instantiate
     - semantic-release
     - go-releaser
-    if: ${{ needs.semantic-release.outputs.is_published }}
+    if: ${{ needs.semantic-release.outputs.is_published == 'true' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:

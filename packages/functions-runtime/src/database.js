@@ -4,6 +4,8 @@ const { AuditContextPlugin } = require("./auditing");
 const pg = require("pg");
 const { PROTO_ACTION_TYPES } = require("./consts");
 const { withSpan } = require("./tracing");
+const { NeonDialect } = require("kysely-neon");
+const ws = require("ws");
 
 // withDatabase is responsible for setting the correct database client in our AsyncLocalStorage
 // so that the the code in a custom function uses the correct client.
@@ -139,15 +141,15 @@ class InstrumentedClient extends pg.Client {
 }
 
 function getDialect() {
+  // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
+  // 1700 = type for NUMERIC
+  pg.types.setTypeParser(1700, function (val) {
+    return parseFloat(val);
+  });
+
   const dbConnType = process.env["KEEL_DB_CONN_TYPE"];
   switch (dbConnType) {
     case "pg":
-      // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
-      // 1700 = type for NUMERIC
-      pg.types.setTypeParser(1700, function (val) {
-        return parseFloat(val);
-      });
-
       return new PostgresDialect({
         pool: new InstrumentedPool({
           Client: InstrumentedClient,
@@ -167,7 +169,11 @@ function getDialect() {
           connectionString: mustEnv("KEEL_DB_CONN"),
         }),
       });
-
+    case "neon":
+      return new NeonDialect({
+        connectionString: mustEnv("KEEL_DB_CONN"),
+        webSocketConstructor: ws,
+      });
     default:
       throw Error("unexpected KEEL_DB_CONN_TYPE: " + dbConnType);
   }
