@@ -1,0 +1,31 @@
+model Post {
+    fields {
+        title Text
+        content Markdown?
+        category Category?
+        order Number?
+    }
+
+    actions {
+        create createPost() with (title, content?, category.title, order?)
+        get getPost(id) {
+            @embed(category)
+        }
+        list listPosts() {
+            @embed(category)
+            @sortable(order)
+        }
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
+}
+
+model Category {
+    fields {
+        title Text @unique
+    }
+}
+
