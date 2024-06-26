@@ -17,7 +17,6 @@ test("get action with embedded data", async () => {
   expect(fetchedPost!.category!.title).toEqual("Test");
 });
 
-
 test("list action with embedded data", async () => {
   const post = await actions.createPost({
     title: "foo",
@@ -49,7 +48,7 @@ test("list action - equals", async () => {
     },
     order: 2,
   });
-  
+
   const posts = await actions.listPosts({
     orderBy: [{ order: "asc" }],
   });
