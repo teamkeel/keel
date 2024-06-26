@@ -94,7 +94,13 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		writeModelQueryBuilderDeclaration(sdkTypes, model)
 
 		for _, action := range model.Actions {
-			// We only care about custom functions for the SDK
+			// if we have an auto action with embedded data, we need to write the custom response type
+			if action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_AUTO && len(action.GetResponseEmbeds()) > 0 {
+				writeEmbeddedModelInterface(sdkTypes, schema, model, toResponseType(action.Name), action.GetResponseEmbeds())
+				continue
+			}
+
+			// We now only care about custom functions for the SDK
 			if action.Implementation != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
 				continue
 			}
@@ -1233,9 +1239,17 @@ func toActionReturnType(model *proto.Model, op *proto.Action) string {
 	case proto.ActionType_ACTION_TYPE_UPDATE:
 		returnType += sdkPrefix + model.Name
 	case proto.ActionType_ACTION_TYPE_GET:
-		returnType += sdkPrefix + model.Name + " | null"
+		className := model.Name
+		if len(op.GetResponseEmbeds()) > 0 {
+			className = toResponseType(op.Name)
+		}
+		returnType += sdkPrefix + className + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
-		returnType += "{results: " + sdkPrefix + model.Name + "[], pageInfo: runtime.PageInfo}"
+		className := model.Name
+		if len(op.GetResponseEmbeds()) > 0 {
+			className = toResponseType(op.Name)
+		}
+		returnType += "{results: " + sdkPrefix + className + "[], pageInfo: runtime.PageInfo}"
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		// todo: create ID type
 		returnType += "string"
@@ -1677,4 +1691,10 @@ func tsDocComment(w *codegen.Writer, f func(w *codegen.Writer)) {
 	w.Writeln("/**")
 	f(w)
 	w.Writeln("*/")
+}
+
+// toResponseType generates a response type name for the given action name. This is to be used for actions that contain
+// embedded data
+func toResponseType(actionName string) string {
+	return casing.ToCamel(actionName) + "Response"
 }

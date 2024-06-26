@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
@@ -250,7 +249,7 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 			continue
 		}
 		model := proto.FindModel(schema.Models, action.ModelName)
-		writeEmbeddedModelInterface(w, schema, model, casing.ToCamel(action.Name)+"Response", embeds)
+		writeEmbeddedModelInterface(w, schema, model, toResponseType(action.Name), embeds)
 	}
 
 	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC";`)
@@ -276,13 +275,13 @@ func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
 		return model.Name
 	case proto.ActionType_ACTION_TYPE_GET:
 		if len(op.GetResponseEmbeds()) > 0 {
-			return casing.ToCamel(op.Name) + "Response" + " | null"
+			return toResponseType(op.Name) + " | null"
 		}
 		return model.Name + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
 		respName := model.Name
 		if len(op.GetResponseEmbeds()) > 0 {
-			respName = casing.ToCamel(op.Name) + "Response"
+			respName = toResponseType(op.Name)
 		}
 		return "{results: " + respName + "[], pageInfo: PageInfo}"
 	case proto.ActionType_ACTION_TYPE_DELETE:
