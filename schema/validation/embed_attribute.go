@@ -54,7 +54,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "@embed requires at least once argument",
+						Message: "@embed requires at least one argument",
 					},
 					attribute,
 				))

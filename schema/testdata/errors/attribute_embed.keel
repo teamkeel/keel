@@ -46,6 +46,8 @@ model Book {
         get getBook(id) {
             //expect-error:20:25:AttributeArgumentError:title is not a model field
             @embed(title)
+            //expect-error:13:21:AttributeArgumentError:@embed requires at least one argument
+            @embed()
             //expect-error:20:32:AttributeArgumentError:title is not a field in the Author model
             @embed(author.title)
             //expect-error:20:36:AttributeArgumentError:firstName is not a model field
