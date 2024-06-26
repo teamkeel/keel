@@ -100,10 +100,15 @@ func printJob(writer *Writer, job *parser.JobNode) {
 						writer.block(func() {
 							for _, input := range section.Inputs {
 								writer.comments(input, func() {
+									// CamelCase input types except for ID
+									inputType := input.Type.Value
+									if inputType != parser.FieldTypeID {
+										inputType = camel(inputType)
+									}
 									writer.write(
 										"%s %s",
 										lowerCamel(input.Name.Value),
-										camel(input.Type.Value),
+										inputType,
 									)
 									if input.Optional {
 										writer.write("?")

@@ -2,6 +2,7 @@ job MyJob {
     inputs {
         name      Text
  Age Number
+ ThingID ID
     }
 
     @permission( "admin")
@@ -13,6 +14,7 @@ job MyJob {
     inputs {
         name Text
         age Number
+        thingId ID
     }
 
     @permission("admin")
