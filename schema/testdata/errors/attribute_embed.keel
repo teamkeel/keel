@@ -48,6 +48,8 @@ model Book {
             @embed(title)
             //expect-error:20:32:AttributeArgumentError:title is not a field in the Author model
             @embed(author.title)
+            //expect-error:20:36:AttributeArgumentError:firstName is not a model field
+            @embed(author.firstName)
             @embed(author)
             //expect-error:20:26:AttributeArgumentError:@embed argument 'author' already defined within this action
             @embed(author)
