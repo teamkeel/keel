@@ -172,8 +172,13 @@ function getDialect() {
     case "neon":
       return new NeonDialect({
         connectionString: mustEnv("KEEL_DB_CONN"),
+        pool: new InstrumentedPool({
+          Client: InstrumentedClient,
+          connectionString: mustEnv("KEEL_DB_CONN"),
+        }),
         webSocketConstructor: ws,
       });
+      
     default:
       throw Error("unexpected KEEL_DB_CONN_TYPE: " + dbConnType);
   }
