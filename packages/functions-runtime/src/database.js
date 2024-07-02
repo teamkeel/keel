@@ -2,10 +2,15 @@ const { Kysely, PostgresDialect, CamelCasePlugin } = require("kysely");
 const { AsyncLocalStorage } = require("async_hooks");
 const { AuditContextPlugin } = require("./auditing");
 const pg = require("pg");
+const neo = require("@neondatabase/serverless");
+
 const { PROTO_ACTION_TYPES } = require("./consts");
 const { withSpan } = require("./tracing");
 const { NeonDialect } = require("kysely-neon");
 const ws = require("ws");
+
+neo.neonConfig.webSocketConstructor = ws;  // <-- this is the key bit
+
 
 // withDatabase is responsible for setting the correct database client in our AsyncLocalStorage
 // so that the the code in a custom function uses the correct client.
@@ -166,19 +171,36 @@ function getDialect() {
           // time is takes for a lambda to freeze (which is not a constant, but could be as short as several minutes,
           // https://www.pluralsight.com/resources/blog/cloud/how-long-does-aws-lambda-keep-your-idle-functions-around-before-a-cold-start)
           idleTimeoutMillis: 120000,
-          connectionString: mustEnv("KEEL_DB_CONN"),
+          connectionString: "123"//mustEnv("KEEL_DB_CONN"),
         }),
       });
     case "neon":
       return new NeonDialect({
-        connectionString: mustEnv("KEEL_DB_CONN"),
-        pool: new InstrumentedPool({
-          Client: InstrumentedClient,
-          connectionString: mustEnv("KEEL_DB_CONN"),
-        }),
+        connectionString: "postgresql://neondb_owner:FHyN5kE4ZaRh@ep-red-shape-a5zfqs8y.us-east-2.aws.neon.tech/neondb?sslmode=require",//mustEnv("KEEL_DB_CONN"),
+        Client: InstrumentedClient,
+        Pool: InstrumentedPool,
         webSocketConstructor: ws,
       });
-      
+      // return new PostgresDialect({
+      //   pool: new InstrumentedPool({
+      //     Client: InstrumentedClient,
+      //     // Increased idle time before closing a connection in the local pool (from 10s default).
+      //     // Establising a new connection on (almost) every functions query can be expensive, so this
+      //     // will reduce having to open connections as regularly. https://node-postgres.com/apis/pool
+      //     //
+      //     // NOTE: We should consider setting this to 0 (i.e. never pool locally) and open and close
+      //     // connections with each invocation. This is because the freeze/thaw nature of lambdas can cause problems
+      //     // with long-lived connections - see https://github.com/brianc/node-postgres/issues/2718
+      //     // Once we're "fully regional" this should not be a performance problem anymore.
+      //     //
+      //     // Although I doubt we will run into these freeze/thaw issues if idleTimeoutMillis is always shorter than the
+      //     // time is takes for a lambda to freeze (which is not a constant, but could be as short as several minutes,
+      //     // https://www.pluralsight.com/resources/blog/cloud/how-long-does-aws-lambda-keep-your-idle-functions-around-before-a-cold-start)
+      //    // idleTimeoutMillis: 120000,
+      //     connectionString: "postgresql://neondb_owner:FHyN5kE4ZaRh@ep-red-shape-a5zfqs8y.us-east-2.aws.neon.tech/neondb?sslmode=require",//mustEnv("KEEL_DB_CONN"),
+      //    // webSocketConstructor: ws,
+      //   }),
+      // });
     default:
       throw Error("unexpected KEEL_DB_CONN_TYPE: " + dbConnType);
   }

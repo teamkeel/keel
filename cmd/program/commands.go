@@ -407,8 +407,8 @@ type FunctionsOutputMsg struct {
 func StartFunctions(m *Model) tea.Cmd {
 	return func() tea.Msg {
 		envVars := m.Config.GetEnvVars()
-		envVars["KEEL_DB_CONN_TYPE"] = "pg"
-		envVars["KEEL_DB_CONN"] = m.DatabaseConnInfo.String()
+		envVars["KEEL_DB_CONN_TYPE"] = "neon"
+		envVars["KEEL_DB_CONN"] = "postgresql://neondb_owner:FHyN5kE4ZaRh@ep-red-shape-a5zfqs8y.us-east-2.aws.neon.tech/neondb?sslmode=require" //m.DatabaseConnInfo.String()
 		envVars["KEEL_TRACING_ENABLED"] = "true"
 		envVars["OTEL_RESOURCE_ATTRIBUTES"] = "service.name=functions"
 

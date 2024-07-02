@@ -271,7 +271,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		database, err := db.New(context.Background(), m.DatabaseConnInfo.String())
+		database, err := db.New(context.Background(), "postgresql://neondb_owner:FHyN5kE4ZaRh@ep-red-shape-a5zfqs8y.us-east-2.aws.neon.tech/neondb?sslmode=require")
 		if err != nil {
 			m.Err = err
 			return m, tea.Quit
