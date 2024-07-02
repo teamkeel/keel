@@ -138,6 +138,9 @@ message Action {
     // The name of the response message type for this action when not a built-in action. This is because
     // built-in action responses are determined by the action type (get, list, create, update, delete).
     string response_message_name = 12;
+
+    // Embedded data can be attached to the response message of built in actions (get, list).
+    repeated string response_embeds = 13;
 }
 
 message Role {

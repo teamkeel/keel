@@ -1,0 +1,1089 @@
+{
+  "models": [
+    {
+      "name": "Author",
+      "fields": [
+        {
+          "modelName": "Author",
+          "name": "firstName",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Author",
+          "name": "surname",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "unique": true
+        },
+        {
+          "modelName": "Author",
+          "name": "books",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Book",
+            "repeated": true
+          },
+          "inverseFieldName": "author"
+        },
+        {
+          "modelName": "Author",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Author",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Author",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Author",
+          "name": "createAuthor",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "CreateAuthorInput"
+        },
+        {
+          "modelName": "Author",
+          "name": "listAuthors",
+          "type": "ACTION_TYPE_LIST",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "ListAuthorsInput"
+        }
+      ],
+      "permissions": [
+        {
+          "modelName": "Author",
+          "expression": {
+            "source": "true"
+          },
+          "actionTypes": [
+            "ACTION_TYPE_CREATE",
+            "ACTION_TYPE_GET",
+            "ACTION_TYPE_LIST",
+            "ACTION_TYPE_UPDATE",
+            "ACTION_TYPE_DELETE"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Review",
+      "fields": [
+        {
+          "modelName": "Review",
+          "name": "content",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Review",
+          "name": "book",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Book"
+          },
+          "foreignKeyFieldName": "bookId",
+          "inverseFieldName": "reviews"
+        },
+        {
+          "modelName": "Review",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Review",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Review",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Review",
+          "name": "bookId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Book",
+            "relatedModelField": "id"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Review",
+          "name": "createReview",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "CreateReviewInput"
+        },
+        {
+          "modelName": "Review",
+          "name": "listReviews",
+          "type": "ACTION_TYPE_LIST",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "ListReviewsInput"
+        },
+        {
+          "modelName": "Review",
+          "name": "getReview",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetReviewInput",
+          "responseEmbeds": ["book"]
+        }
+      ],
+      "permissions": [
+        {
+          "modelName": "Review",
+          "expression": {
+            "source": "true"
+          },
+          "actionTypes": [
+            "ACTION_TYPE_CREATE",
+            "ACTION_TYPE_GET",
+            "ACTION_TYPE_LIST",
+            "ACTION_TYPE_UPDATE",
+            "ACTION_TYPE_DELETE"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Book",
+      "fields": [
+        {
+          "modelName": "Book",
+          "name": "title",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Book",
+          "name": "author",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Author"
+          },
+          "foreignKeyFieldName": "authorId",
+          "inverseFieldName": "books"
+        },
+        {
+          "modelName": "Book",
+          "name": "reviews",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Review",
+            "repeated": true
+          },
+          "inverseFieldName": "book"
+        },
+        {
+          "modelName": "Book",
+          "name": "code",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Code"
+          },
+          "optional": true,
+          "inverseFieldName": "book"
+        },
+        {
+          "modelName": "Book",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Book",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Book",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Book",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Author",
+            "relatedModelField": "id"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Book",
+          "name": "listBooks",
+          "type": "ACTION_TYPE_LIST",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "ListBooksInput",
+          "responseEmbeds": ["author"]
+        },
+        {
+          "modelName": "Book",
+          "name": "createBook",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "CreateBookInput"
+        },
+        {
+          "modelName": "Book",
+          "name": "getBook",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetBookInput",
+          "responseEmbeds": ["code", "author"]
+        },
+        {
+          "modelName": "Book",
+          "name": "getLiteBook",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetLiteBookInput"
+        }
+      ],
+      "permissions": [
+        {
+          "modelName": "Book",
+          "expression": {
+            "source": "true"
+          },
+          "actionTypes": [
+            "ACTION_TYPE_CREATE",
+            "ACTION_TYPE_GET",
+            "ACTION_TYPE_LIST",
+            "ACTION_TYPE_UPDATE",
+            "ACTION_TYPE_DELETE"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Code",
+      "fields": [
+        {
+          "modelName": "Code",
+          "name": "code",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Code",
+          "name": "book",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Book"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "bookId",
+          "inverseFieldName": "code"
+        },
+        {
+          "modelName": "Code",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Code",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Code",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Code",
+          "name": "bookId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Book",
+            "relatedModelField": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": ["issuer"]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": ["email"]
+        },
+        {
+          "modelName": "Identity",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "givenName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "familyName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "middleName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "nickName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "profile",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "picture",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "website",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "gender",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "zoneInfo",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "locale",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Author",
+          "modelActions": [
+            {
+              "actionName": "createAuthor"
+            },
+            {
+              "actionName": "listAuthors"
+            }
+          ]
+        },
+        {
+          "modelName": "Review",
+          "modelActions": [
+            {
+              "actionName": "createReview"
+            },
+            {
+              "actionName": "listReviews"
+            },
+            {
+              "actionName": "getReview"
+            }
+          ]
+        },
+        {
+          "modelName": "Book",
+          "modelActions": [
+            {
+              "actionName": "listBooks"
+            },
+            {
+              "actionName": "createBook"
+            },
+            {
+              "actionName": "getBook"
+            },
+            {
+              "actionName": "getLiteBook"
+            }
+          ]
+        },
+        {
+          "modelName": "Code"
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreateAuthorInput",
+      "fields": [
+        {
+          "messageName": "CreateAuthorInput",
+          "name": "firstName",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Author",
+            "fieldName": "firstName"
+          },
+          "target": ["firstName"]
+        },
+        {
+          "messageName": "CreateAuthorInput",
+          "name": "surname",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Author",
+            "fieldName": "surname"
+          },
+          "target": ["surname"]
+        }
+      ]
+    },
+    {
+      "name": "ListAuthorsWhere"
+    },
+    {
+      "name": "ListAuthorsOrderByFirstName",
+      "fields": [
+        {
+          "messageName": "ListAuthorsOrderByFirstName",
+          "name": "firstName",
+          "type": {
+            "type": "TYPE_SORT_DIRECTION"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ListAuthorsOrderBySurname",
+      "fields": [
+        {
+          "messageName": "ListAuthorsOrderBySurname",
+          "name": "surname",
+          "type": {
+            "type": "TYPE_SORT_DIRECTION"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ListAuthorsInput",
+      "fields": [
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListAuthorsWhere"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "orderBy",
+          "type": {
+            "type": "TYPE_UNION",
+            "repeated": true,
+            "unionNames": [
+              "ListAuthorsOrderByFirstName",
+              "ListAuthorsOrderBySurname"
+            ]
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "CreateReviewInput",
+      "fields": [
+        {
+          "messageName": "CreateReviewInput",
+          "name": "content",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Review",
+            "fieldName": "content"
+          },
+          "target": ["content"]
+        },
+        {
+          "messageName": "CreateReviewInput",
+          "name": "book",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateReviewBookInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreateReviewBookInput",
+      "fields": [
+        {
+          "messageName": "CreateReviewBookInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Book",
+            "fieldName": "id"
+          },
+          "target": ["book", "id"]
+        }
+      ]
+    },
+    {
+      "name": "ListReviewsBookInput",
+      "fields": [
+        {
+          "messageName": "ListReviewsBookInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "IdQueryInput"
+          },
+          "optional": true,
+          "target": ["book", "id"]
+        }
+      ]
+    },
+    {
+      "name": "IdQueryInput",
+      "fields": [
+        {
+          "messageName": "IdQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "IdQueryInput",
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_ID",
+            "repeated": true
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IdQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "ListReviewsWhere",
+      "fields": [
+        {
+          "messageName": "ListReviewsWhere",
+          "name": "book",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListReviewsBookInput"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "ListReviewsInput",
+      "fields": [
+        {
+          "messageName": "ListReviewsInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListReviewsWhere"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListReviewsInput",
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListReviewsInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListReviewsInput",
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListReviewsInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "GetReviewInput",
+      "fields": [
+        {
+          "messageName": "GetReviewInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Review",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
+    },
+    {
+      "name": "ListBooksWhere"
+    },
+    {
+      "name": "ListBooksInput",
+      "fields": [
+        {
+          "messageName": "ListBooksInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListBooksWhere"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListBooksInput",
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListBooksInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListBooksInput",
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListBooksInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "CreateBookInput",
+      "fields": [
+        {
+          "messageName": "CreateBookInput",
+          "name": "title",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Book",
+            "fieldName": "title"
+          },
+          "target": ["title"]
+        },
+        {
+          "messageName": "CreateBookInput",
+          "name": "author",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateBookAuthorInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreateBookAuthorInput",
+      "fields": [
+        {
+          "messageName": "CreateBookAuthorInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": ["author", "id"]
+        }
+      ]
+    },
+    {
+      "name": "GetBookInput",
+      "fields": [
+        {
+          "messageName": "GetBookInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Book",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
+    },
+    {
+      "name": "GetLiteBookInput",
+      "fields": [
+        {
+          "messageName": "GetLiteBookInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Book",
+            "fieldName": "id"
+          },
+          "target": ["id"]
+        }
+      ]
+    }
+  ]
+}

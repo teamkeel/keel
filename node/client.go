@@ -241,6 +241,17 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 		writeModelInterface(w, model)
 	}
 
+	// writing embedded response types
+	for _, a := range proto.GetActionNamesForApi(schema, api) {
+		action := proto.FindAction(schema, a)
+		embeds := action.GetResponseEmbeds()
+		if len(embeds) == 0 {
+			continue
+		}
+		model := proto.FindModel(schema.Models, action.ModelName)
+		writeEmbeddedModelInterface(w, schema, model, toResponseType(action.Name), embeds)
+	}
+
 	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC";`)
 
 	w.Writeln("")
@@ -263,9 +274,16 @@ func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
 	case proto.ActionType_ACTION_TYPE_UPDATE:
 		return model.Name
 	case proto.ActionType_ACTION_TYPE_GET:
+		if len(op.GetResponseEmbeds()) > 0 {
+			return toResponseType(op.Name) + " | null"
+		}
 		return model.Name + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
-		return "{results: " + model.Name + "[], pageInfo: PageInfo}"
+		respName := model.Name
+		if len(op.GetResponseEmbeds()) > 0 {
+			respName = toResponseType(op.Name)
+		}
+		return "{results: " + respName + "[], pageInfo: PageInfo}"
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		return "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
