@@ -12,6 +12,7 @@ model Customer {
         address Address
         details Markdown
         weight Decimal
+        picture InlineFile
     }
 
     actions {
@@ -23,8 +24,9 @@ model Customer {
             address.town,
             details,
             weight,
+            picture
         )
-        update updateCustomer(id) with (name?, dateOfBirth?, details?, weight?)
+        update updateCustomer(id) with (name?, dateOfBirth?, details?, weight?, picture?)
         list customers(name?)
     }
 }

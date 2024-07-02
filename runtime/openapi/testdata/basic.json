@@ -17,8 +17,9 @@
                   },
                   "dateOfBirth": { "type": "string", "format": "date" },
                   "details": { "type": "string", "format": "markdown" },
-                  "weight": { "type": "number", "format": "float" },
-                  "name": { "type": "string" }
+                  "name": { "type": "string" },
+                  "picture": { "type": "string", "format": "data-url" },
+                  "weight": { "type": "number", "format": "float" }
                 },
                 "additionalProperties": false,
                 "required": [
@@ -26,7 +27,8 @@
                   "dateOfBirth",
                   "address",
                   "details",
-                  "weight"
+                  "weight",
+                  "picture"
                 ]
               }
             }
@@ -274,16 +276,28 @@
           "createdAt": { "type": "string", "format": "date-time" },
           "dateOfBirth": { "type": "string", "format": "date" },
           "details": { "type": "string", "format": "markdown" },
-          "weight": { "type": "number", "format": "float" },
           "id": { "type": "string" },
           "name": { "type": "string" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "picture": {
+            "type": "object",
+            "properties": {
+              "contentType": { "type": "string" },
+              "filename": { "type": "string" },
+              "key": { "type": "string" },
+              "public": { "type": "boolean" },
+              "size": { "type": "number" }
+            },
+            "required": ["filename", "contentType", "size", "key", "public"]
+          },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "weight": { "type": "number", "format": "float" }
         },
         "required": [
           "name",
           "dateOfBirth",
           "details",
           "weight",
+          "picture",
           "id",
           "createdAt",
           "updatedAt",
@@ -352,6 +366,7 @@
           "dateOfBirth": { "type": "string", "format": "date" },
           "details": { "type": "string", "format": "markdown" },
           "name": { "type": "string" },
+          "picture": { "type": "string", "format": "data-url" },
           "weight": { "type": "number", "format": "float" }
         },
         "additionalProperties": false
