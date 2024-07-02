@@ -94,6 +94,15 @@ func IsBelongsTo(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName != nil && !field.Type.Repeated
 }
 
+// IsFile tells us if the field is a file
+func (f *Field) IsFile() bool {
+	if f.Type == nil {
+		return false
+	}
+
+	return f.Type.Type == Type_TYPE_INLINE_FILE
+}
+
 // GetForignKeyFieldName returns the foreign key field name for the given field if it
 // represents a relationship to another model. It returns an empty string if field's type is
 // not a model.
@@ -163,11 +172,11 @@ func FindEnum(enums []*Enum, name string) *Enum {
 	return enum
 }
 
-// HasFiles checks if the given schema has any models with fields that are of InlineFile type
-func HasFiles(p *Schema) bool {
+// HasFiles checks if the given schema has any models with fields that are files
+func (p *Schema) HasFiles() bool {
 	fields := AllFields(p)
 	for _, f := range fields {
-		if f.Type != nil && f.Type.Type == Type_TYPE_INLINE_FILE {
+		if f.IsFile() {
 			return true
 		}
 	}

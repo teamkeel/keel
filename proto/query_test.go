@@ -44,11 +44,11 @@ func TestModelExists(t *testing.T) {
 
 func TestHasFiles(t *testing.T) {
 	t.Parallel()
-	require.False(t, HasFiles(referenceSchema))
+	require.False(t, referenceSchema.HasFiles())
 
 	schemaWithFiles := referenceSchema
 	schemaWithFiles.Models[0].Fields = append(schemaWithFiles.Models[0].Fields, &Field{Name: "Image", Type: &TypeInfo{Type: Type_TYPE_INLINE_FILE}})
-	require.True(t, HasFiles(schemaWithFiles))
+	require.True(t, schemaWithFiles.HasFiles())
 }
 
 var referenceSchema *Schema = &Schema{
