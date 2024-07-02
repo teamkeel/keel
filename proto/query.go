@@ -163,6 +163,18 @@ func FindEnum(enums []*Enum, name string) *Enum {
 	return enum
 }
 
+// HasFiles checks if the given schema has any models with fields that are of InlineFile type
+func HasFiles(p *Schema) bool {
+	fields := AllFields(p)
+	for _, f := range fields {
+		if f.Type != nil && f.Type.Type == Type_TYPE_INLINE_FILE {
+			return true
+		}
+	}
+
+	return false
+}
+
 func FilterActions(p *Schema, filter func(op *Action) bool) (ops []*Action) {
 	for _, model := range p.Models {
 		actions := model.Actions
