@@ -415,6 +415,16 @@ func FindMessageField(message *Message, fieldName string) *MessageField {
 	return nil
 }
 
+// HasFiles checks if the message has any Inline file fields
+func (m *Message) HasFiles() bool {
+	for _, field := range m.Fields {
+		if field.Type != nil && field.Type.Type == Type_TYPE_INLINE_FILE {
+			return true
+		}
+	}
+	return false
+}
+
 // For built-in action types, returns the "values" input message, which may be nested inside the
 // root message for some action types, or returns nil if not found.
 func FindValuesInputMessage(schema *Schema, actionName string) *Message {

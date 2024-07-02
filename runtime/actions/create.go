@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
@@ -22,9 +23,15 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		return nil, err
 	}
 
+	// handle file uploads
+	in, err := handleFileUploads(scope, input)
+	if err != nil {
+		return nil, fmt.Errorf("handling file uploads: %w", err)
+	}
+
 	// Generate the SQL statement
 	query := NewQuery(scope.Model)
-	statement, err := GenerateCreateStatement(query, scope, input)
+	statement, err := GenerateCreateStatement(query, scope, in)
 	if err != nil {
 		return nil, err
 	}
