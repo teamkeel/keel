@@ -297,7 +297,7 @@ func TestFieldCompletions(t *testing.T) {
                 name Te<Cursor>
 			  }
             }`,
-			expected: []string{"Foo", "Identity", "ID", "Text", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
+			expected: []string{"Foo", "Identity", "ID", "Text", "InlineFile", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
 		},
 		{
 			name: "field-type-whitespace",
@@ -307,7 +307,7 @@ func TestFieldCompletions(t *testing.T) {
                 name <Cursor>
 			  }
             }`,
-			expected: []string{"Foo", "Identity", "ID", "Text", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
+			expected: []string{"Foo", "Identity", "ID", "Text", "InlineFile", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
 		},
 		{
 			name: "field-type-previous-optional",
@@ -318,7 +318,7 @@ func TestFieldCompletions(t *testing.T) {
 				myField <Cursor>
 			  }
             }`,
-			expected: []string{"Foo", "Identity", "ID", "Text", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
+			expected: []string{"Foo", "Identity", "ID", "Text", "InlineFile", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
 		},
 		{
 			name: "field-type-previous-list",
@@ -329,7 +329,7 @@ func TestFieldCompletions(t *testing.T) {
 				myField <Cursor>
 			  }
             }`,
-			expected: []string{"Foo", "Identity", "ID", "Text", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
+			expected: []string{"Foo", "Identity", "ID", "Text", "InlineFile", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
 		},
 		{
 			name: "field-type-complex",
@@ -345,7 +345,7 @@ func TestFieldCompletions(t *testing.T) {
 				myField <Cursor>
 			  }
             }`,
-			expected: []string{"Foo", "Identity", "ID", "Text", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
+			expected: []string{"Foo", "Identity", "ID", "Text", "InlineFile", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
 		},
 		{
 			name: "field-type-model",
@@ -357,7 +357,7 @@ func TestFieldCompletions(t *testing.T) {
 					author Au<Cursor>
 				}
 			}`,
-			expected: []string{"Author", "Book", "Identity", "ID", "Text", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
+			expected: []string{"Author", "Book", "Identity", "ID", "Text", "InlineFile", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
 		},
 		{
 			name: "field-type-model-multi-file",
@@ -370,7 +370,7 @@ func TestFieldCompletions(t *testing.T) {
 			otherSchema: `
 			model Author {}
 			`,
-			expected: []string{"Author", "Book", "Identity", "ID", "Text", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
+			expected: []string{"Author", "Book", "Identity", "ID", "Text", "InlineFile", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
 		},
 		{
 			name: "field-type-enum",
@@ -385,7 +385,7 @@ func TestFieldCompletions(t *testing.T) {
 				Romance
 				Horror
 			}`,
-			expected: []string{"Book", "Category", "Identity", "ID", "Text", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
+			expected: []string{"Book", "Category", "Identity", "ID", "Text", "InlineFile", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
 		},
 		{
 			name: "field-type-enum-multi-file",
@@ -402,7 +402,7 @@ func TestFieldCompletions(t *testing.T) {
 				Horror
 			}
 			`,
-			expected: []string{"Book", "Category", "Identity", "ID", "Text", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
+			expected: []string{"Book", "Category", "Identity", "ID", "Text", "InlineFile", "Markdown", "Number", "Decimal", "Boolean", "Date", "Timestamp", "Vector", "Secret", "Password"},
 		},
 		// attributes tests
 		{
@@ -1779,7 +1779,7 @@ func TestMessageCompletions(t *testing.T) {
 				foo <Cursor>
 			}
 			`,
-			expected: []string{"AnotherMessage", "Boolean", "Date", "Decimal", "ID", "Identity", "MyMessage", "Markdown", "Number", "Password", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse", "Secret", "Text", "Timestamp", "Vector"},
+			expected: []string{"AnotherMessage", "Boolean", "Date", "Decimal", "ID", "Identity", "MyMessage", "InlineFile", "Markdown", "Number", "Password", "RequestPasswordResetInput", "RequestPasswordResetResponse", "ResetPasswordInput", "ResetPasswordResponse", "Secret", "Text", "Timestamp", "Vector"},
 		},
 	}
 
@@ -1814,7 +1814,7 @@ func TestJobCompletions(t *testing.T) {
 			  }
 			}
 			`,
-			expected: []string{"Boolean", "Date", "Decimal", "ID", "Identity", "Markdown", "Number", "Password", "Secret", "Text", "Timestamp", "Vector"},
+			expected: []string{"Boolean", "Date", "Decimal", "ID", "Identity", "InlineFile", "Markdown", "Number", "Password", "Secret", "Text", "Timestamp", "Vector"},
 		},
 	}
 
