@@ -12,6 +12,7 @@ import (
 )
 
 func TestParsing(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Post {
 	fields {
@@ -50,6 +51,7 @@ model Post {
 }
 
 func TestParsingArrays(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Post {
 	fields {
@@ -88,6 +90,7 @@ model Post {
 }
 
 func TestParsingUpdate(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Post {
 	fields {
@@ -138,6 +141,7 @@ model Post {
 }
 
 func TestParsingNestedMany(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Author {
 	fields {
@@ -207,6 +211,7 @@ model Post {
 }
 
 func TestParsingNestedOne(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Author {
 	fields {
