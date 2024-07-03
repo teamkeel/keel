@@ -311,7 +311,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				query := actions.NewQuery(relatedModel)
 				query.AppendSelect(actions.AllFields())
 
-				foreignKeyField := proto.GetForignKeyFieldName(mk.proto.Models, field)
+				foreignKeyField := proto.GetForeignKeyFieldName(mk.proto.Models, field)
 
 				// Get the value of the model
 				parent, ok := p.Source.(map[string]interface{})

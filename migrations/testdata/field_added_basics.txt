@@ -29,6 +29,6 @@ ALTER TABLE "person" ADD COLUMN "magic_image" JSONB NOT NULL;
 [
   { "Model": "Person", "Field": "magicNumber", "Type": "ADDED" },
   { "Model": "Person", "Field": "magicDecimal", "Type": "ADDED" },
-  { "Model": "Person", "Field": "optionalFlag", "Type": "ADDED" }
+  { "Model": "Person", "Field": "optionalFlag", "Type": "ADDED" },
   { "Model": "Person", "Field": "magicImage", "Type": "ADDED" }
 ]

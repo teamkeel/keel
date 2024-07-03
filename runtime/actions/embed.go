@@ -28,7 +28,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 
 	relatedModelName := field.Type.ModelName.Value
 	relatedModel := proto.FindModel(schema.Models, relatedModelName)
-	foreignKeyField := proto.GetForignKeyFieldName(schema.Models, field)
+	foreignKeyField := proto.GetForeignKeyFieldName(schema.Models, field)
 
 	dbQuery := NewQuery(relatedModel)
 	// we apply the where clause which will filter based on the joins set up depending on the relationship type

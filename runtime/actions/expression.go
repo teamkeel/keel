@@ -197,7 +197,7 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 		// We know that the current fragment is a related model because it's not the last fragment
 		relatedModelField := proto.FindField(scope.Schema.Models, model, currentFragment)
 		relatedModel := relatedModelField.Type.ModelName.Value
-		foreignKeyField := proto.GetForignKeyFieldName(scope.Schema.Models, relatedModelField)
+		foreignKeyField := proto.GetForeignKeyFieldName(scope.Schema.Models, relatedModelField)
 		primaryKey := "id"
 
 		var leftOperand *QueryOperand

@@ -990,7 +990,7 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 
 			relationshipConfig := map[string]string{
 				"referencesTable": casing.ToSnake(field.Type.ModelName.Value),
-				"foreignKey":      casing.ToSnake(proto.GetForignKeyFieldName(models, field)),
+				"foreignKey":      casing.ToSnake(proto.GetForeignKeyFieldName(models, field)),
 			}
 
 			switch {

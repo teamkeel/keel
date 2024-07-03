@@ -42,15 +42,6 @@ func TestModelExists(t *testing.T) {
 	require.False(t, ModelExists(referenceSchema.Models, "ModelZ"))
 }
 
-func TestHasFiles(t *testing.T) {
-	t.Parallel()
-	require.False(t, referenceSchema.HasFiles())
-
-	schemaWithFiles := referenceSchema
-	schemaWithFiles.Models[0].Fields = append(schemaWithFiles.Models[0].Fields, &Field{Name: "Image", Type: &TypeInfo{Type: Type_TYPE_INLINE_FILE}})
-	require.True(t, schemaWithFiles.HasFiles())
-}
-
 var referenceSchema *Schema = &Schema{
 	Models: []*Model{
 		{
@@ -75,4 +66,53 @@ var referenceSchema *Schema = &Schema{
 			},
 		},
 	},
+}
+
+func TestSchema_HasFiles(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name   string
+		schema *Schema
+		want   bool
+	}{
+		{
+			name: "schema with files",
+			schema: &Schema{
+				Models: []*Model{
+					{
+						Name: "Model",
+						Fields: []*Field{
+							{Name: "field_1"},
+							{Name: "image", Type: &TypeInfo{Type: Type_TYPE_INLINE_FILE}},
+						},
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "schema without files",
+			schema: &Schema{
+				Models: []*Model{
+					{
+						Name: "Model",
+						Fields: []*Field{
+							{Name: "field_1"},
+							{Name: "image", Type: &TypeInfo{Type: Type_TYPE_STRING}},
+						},
+					},
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := tt.schema.HasFiles(); got != tt.want {
+				t.Errorf("Schema.HasFiles() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

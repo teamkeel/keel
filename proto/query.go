@@ -115,14 +115,14 @@ func (f *Field) IsFile() bool {
 	return f.Type.Type == Type_TYPE_INLINE_FILE
 }
 
-// GetForignKeyFieldName returns the foreign key field name for the given field if it
+// GetForeignKeyFieldName returns the foreign key field name for the given field if it
 // represents a relationship to another model. It returns an empty string if field's type is
 // not a model.
 // The foreign key returned might exists on field's parent model, or on the model field
 // it is related to, so this function would normally be used in conjunction with
 // IsBelongsTo or it's counterparts to determine on which side the foreign
 // key lives
-func GetForignKeyFieldName(models []*Model, field *Field) string {
+func GetForeignKeyFieldName(models []*Model, field *Field) string {
 	// The query is not meaningful if the field is not of type Model.
 	if field.Type.Type != Type_TYPE_MODEL {
 		return ""

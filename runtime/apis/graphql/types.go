@@ -201,7 +201,7 @@ var inlineFileType = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"url": &graphql.Field{
 			Type:        graphql.String,
-			Description: "Size of the file in bytes.",
+			Description: "URL where this file can be retrieved from.",
 		},
 	},
 })
