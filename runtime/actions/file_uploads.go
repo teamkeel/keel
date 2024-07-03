@@ -68,12 +68,24 @@ func transformFileResponses(scope *Scope, results map[string]any) (map[string]an
 			if !ok {
 				return results, fmt.Errorf("invalid response for field: %s", field.Name)
 			}
+
 			fi := storage.FileInfo{}
 			if err := json.Unmarshal([]byte(data), &fi); err != nil {
 				return results, fmt.Errorf("failed to unmarshal file data: %w", err)
 			}
 
-			results[field.Name] = fi
+			// now we're hydrating the db file info with data from our storage service if we have one
+			// e.g. injecting signed URLs for direct file downloads
+			if store, err := runtimectx.GetStorage(scope.Context); err == nil {
+				hydrated, err := store.HydrateFileInfo(&fi)
+				if err != nil {
+					return results, fmt.Errorf("failed retrieve hydrated file data: %w", err)
+				}
+				results[field.Name] = hydrated
+			} else {
+				// or, we don't have a storage service so we can just return the data saved in the db
+				results[field.Name] = fi
+			}
 		}
 	}
 	return results, nil

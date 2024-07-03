@@ -44,10 +44,10 @@ func (s *DbStore) setupDB(ctx context.Context) error {
 	return nil
 }
 
-func (s *DbStore) Store(url string) (*FileInfo, error) {
+func (s *DbStore) Store(url string) (FileInfo, error) {
 	fd, err := DecodeDataURL(url)
 	if err != nil {
-		return nil, fmt.Errorf("decoding data URL: %w", err)
+		return FileInfo{}, fmt.Errorf("decoding data URL: %w", err)
 	}
 
 	sql := `INSERT INTO ` + dbTable + ` (filename, content_type, data) VALUES (?, ?, ?)  
@@ -60,13 +60,13 @@ func (s *DbStore) Store(url string) (*FileInfo, error) {
 	var fi FileInfo
 	db := s.db.GetDB().Raw(sql, fd.Filename, fd.ContentType, fd.Data).Scan(&fi)
 	if db.Error != nil {
-		return nil, fmt.Errorf("saving file in db: %w", db.Error)
+		return FileInfo{}, fmt.Errorf("saving file in db: %w", db.Error)
 	}
 
-	return &fi, nil
+	return fi, nil
 }
 
-func (s *DbStore) GetFileInfo(key string) (*FileInfo, error) {
+func (s *DbStore) GetFileInfo(key string) (FileInfo, error) {
 	sql := `SELECT
 			id AS KEY,
 			filename,
@@ -78,8 +78,17 @@ func (s *DbStore) GetFileInfo(key string) (*FileInfo, error) {
 
 	db := s.db.GetDB().Raw(sql, key).Scan(&fi)
 	if db.Error != nil {
-		return nil, fmt.Errorf("retrieving file info: %w", db.Error)
+		return FileInfo{}, fmt.Errorf("retrieving file info: %w", db.Error)
 	}
 
-	return &fi, nil
+	return fi, nil
+}
+
+func (s *DbStore) HydrateFileInfo(fi *FileInfo) (FileInfo, error) {
+	hydrated, err := s.GetFileInfo(fi.Key)
+	if err != nil {
+		return FileInfo{}, fmt.Errorf("hydrating file info: %w", err)
+	}
+
+	return hydrated, nil
 }
