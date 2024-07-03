@@ -45,7 +45,7 @@ func FieldNames(m *Model) []string {
 // FileFields will return a slice of fields for the model that are of type file
 func (m *Model) FileFields() []*Field {
 	return lo.Filter(m.Fields, func(f *Field, _ int) bool {
-		return f.Type != nil && f.Type.Type == Type_TYPE_INLINE_FILE
+		return f.IsFile()
 	})
 }
 
@@ -186,9 +186,8 @@ func FindEnum(enums []*Enum, name string) *Enum {
 
 // HasFiles checks if the given schema has any models with fields that are files
 func (p *Schema) HasFiles() bool {
-	fields := AllFields(p)
-	for _, f := range fields {
-		if f.IsFile() {
+	for _, model := range p.Models {
+		if model.HasFiles() {
 			return true
 		}
 	}
