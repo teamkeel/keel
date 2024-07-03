@@ -44,20 +44,26 @@ func (s *DbStore) setupDB(ctx context.Context) error {
 	return nil
 }
 
-func (s *DbStore) Store(url string) (*FileData, error) {
+func (s *DbStore) Store(url string) (*FileInfo, error) {
 	fd, err := DecodeDataURL(url)
 	if err != nil {
 		return nil, fmt.Errorf("decoding data URL: %w", err)
 	}
 
-	sql := `INSERT INTO ` + dbTable + ` (filename, content_type, data) VALUES (?, ?, ?)`
+	sql := `INSERT INTO ` + dbTable + ` (filename, content_type, data) VALUES (?, ?, ?)  
+	 	RETURNING 
+			id AS key, 
+			filename,
+			content_type,
+			octet_length(data) as size`
 
-	db := s.db.GetDB().Exec(sql, fd.Filename, fd.ContentType, fd.Data)
+	var fi FileInfo
+	db := s.db.GetDB().Raw(sql, fd.Filename, fd.ContentType, fd.Data).Scan(&fi)
 	if db.Error != nil {
 		return nil, fmt.Errorf("saving file in db: %w", db.Error)
 	}
 
-	return &fd, nil
+	return &fi, nil
 }
 
 func (s *DbStore) GetFile() error {

@@ -176,6 +176,36 @@ var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
+var inlineFileType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "InlineFile",
+	Fields: graphql.Fields{
+		"contentType": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "MIME type for the file.",
+		},
+		"filename": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "The name of the file when it was uploaded.",
+		},
+		"key": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "Unique reference for this file.",
+		},
+		"public": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.Boolean),
+			Description: "If the file is public or private.",
+		},
+		"size": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.Int),
+			Description: "Size of the file in bytes.",
+		},
+		"url": &graphql.Field{
+			Type:        graphql.String,
+			Description: "Size of the file in bytes.",
+		},
+	},
+})
+
 var formattedDateType = &graphql.Field{
 	Name:        "formatted",
 	Description: "Formatted timestamp. Uses standard datetime formats",
@@ -288,17 +318,18 @@ var dateType = graphql.NewObject(graphql.ObjectConfig{
 })
 
 var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
-	proto.Type_TYPE_ID:       graphql.ID,
-	proto.Type_TYPE_STRING:   graphql.String,
-	proto.Type_TYPE_INT:      graphql.Int,
-	proto.Type_TYPE_DECIMAL:  graphql.Float,
-	proto.Type_TYPE_BOOL:     graphql.Boolean,
-	proto.Type_TYPE_DATETIME: timestampType,
-	proto.Type_TYPE_DATE:     dateType,
-	proto.Type_TYPE_SECRET:   graphql.String,
-	proto.Type_TYPE_MARKDOWN: graphql.String,
-	proto.Type_TYPE_ANY:      anyType,
-	proto.Type_TYPE_VECTOR:   graphql.NewList(graphql.Float),
+	proto.Type_TYPE_ID:          graphql.ID,
+	proto.Type_TYPE_STRING:      graphql.String,
+	proto.Type_TYPE_INT:         graphql.Int,
+	proto.Type_TYPE_DECIMAL:     graphql.Float,
+	proto.Type_TYPE_BOOL:        graphql.Boolean,
+	proto.Type_TYPE_DATETIME:    timestampType,
+	proto.Type_TYPE_DATE:        dateType,
+	proto.Type_TYPE_SECRET:      graphql.String,
+	proto.Type_TYPE_MARKDOWN:    graphql.String,
+	proto.Type_TYPE_INLINE_FILE: inlineFileType,
+	proto.Type_TYPE_ANY:         anyType,
+	proto.Type_TYPE_VECTOR:      graphql.NewList(graphql.Float),
 }
 
 var timestampInputType = iso8601Type
@@ -320,6 +351,7 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_SORT_DIRECTION: sortDirectionType,
 	proto.Type_TYPE_MARKDOWN:       graphql.String,
 	proto.Type_TYPE_VECTOR:         graphql.NewList(graphql.Float),
+	proto.Type_TYPE_INLINE_FILE:    graphql.String,
 }
 
 // for fields where the underlying source is a date/datetime

@@ -65,6 +65,9 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 		}
 	}
 
+	// if we have any files in our results we need to transform them to the object structure required
+	res, err = transformFileResponses(scope, res)
+
 	return res, err
 }
 

@@ -1,10 +1,12 @@
 package actions
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/storage"
 )
 
 // handleFileUploads will check the inputs for any file uploads for the scope's action and upload them
@@ -34,21 +36,45 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 				if !ok {
 					return inputs, fmt.Errorf("invalid input for field: %s", field.Name)
 				}
-				// .. we store the file
-				file, err := storer.Store(data)
+				// .. we store the fi
+				fi, err := storer.Store(data)
 				if err != nil {
 					return inputs, fmt.Errorf("storing file: %w", err)
 				}
 
 				// ... and then change the input with the file data that should be saved in the db
-				fileData, err := file.ToJSON()
+				fileInfo, err := fi.ToJSON()
 				if err != nil {
 					return inputs, err
 				}
-				inputs[field.Name] = fileData
+				inputs[field.Name] = fileInfo
 			}
 		}
 	}
 
 	return inputs, nil
+}
+
+// transformFileResponses will take the results for the given scope's action execution and parse and transform the file responses
+func transformFileResponses(scope *Scope, results map[string]any) (map[string]any, error) {
+	model := proto.FindModel(scope.Schema.Models, scope.Action.ModelName)
+	if model == nil {
+		return results, nil
+	}
+
+	for _, field := range model.FileFields() {
+		if fileJSON, found := results[field.Name]; found {
+			data, ok := fileJSON.(string)
+			if !ok {
+				return results, fmt.Errorf("invalid response for field: %s", field.Name)
+			}
+			fi := storage.FileInfo{}
+			if err := json.Unmarshal([]byte(data), &fi); err != nil {
+				return results, fmt.Errorf("failed to unmarshal file data: %w", err)
+			}
+
+			results[field.Name] = fi
+		}
+	}
+	return results, nil
 }

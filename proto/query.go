@@ -42,6 +42,13 @@ func FieldNames(m *Model) []string {
 	return names
 }
 
+// FileFileds will return a slice of fields for the model that are of type file
+func (m *Model) FileFields() []*Field {
+	return lo.Filter(m.Fields, func(f *Field, _ int) bool {
+		return f.Type != nil && f.Type.Type == Type_TYPE_INLINE_FILE
+	})
+}
+
 // IsTypeModel returns true of the field's type is Model.
 func IsTypeModel(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL

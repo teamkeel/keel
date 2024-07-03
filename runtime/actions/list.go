@@ -193,6 +193,13 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 			}
 		}
 	}
+	// if we have any files in our results we need to transform them to the object structure required
+	for i := range results {
+		results[i], err = transformFileResponses(scope, results[i])
+		if err != nil {
+			return nil, fmt.Errorf("transforming file data: %w", err)
+		}
+	}
 
 	return map[string]any{
 		"results":  results,
