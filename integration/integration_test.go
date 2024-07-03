@@ -63,9 +63,7 @@ func TestIntegration(t *gotest.T) {
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 
 	for _, e := range entries {
-		e := e
 		t.Run(e.Name(), func(t *gotest.T) {
-			t.Parallel()
 			testDir := filepath.Join("./testdata", e.Name())
 
 			defer provider.ForceFlush(ctx)
