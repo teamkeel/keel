@@ -285,7 +285,8 @@
               "filename": { "type": "string" },
               "key": { "type": "string" },
               "public": { "type": "boolean" },
-              "size": { "type": "number" }
+              "size": { "type": "number" },
+              "url": { "type": "string" }
             },
             "required": ["filename", "contentType", "size", "key", "public"]
           },

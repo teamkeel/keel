@@ -24,7 +24,7 @@ type Storer interface {
 
 	// HydrateFileInfo will take the given file info and hydrate it with the most up to date information.
 	//
-	// The use of this function is to generate any signed URLs for file downlaods
+	// The use of this function is to generate any signed URLs for file downloads.
 	HydrateFileInfo(fi *FileInfo) (FileInfo, error)
 }
 
