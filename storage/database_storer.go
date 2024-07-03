@@ -66,6 +66,20 @@ func (s *DbStore) Store(url string) (*FileInfo, error) {
 	return &fi, nil
 }
 
-func (s *DbStore) GetFile() error {
-	return nil
+func (s *DbStore) GetFileInfo(key string) (*FileInfo, error) {
+	sql := `SELECT
+			id AS KEY,
+			filename,
+			content_type,
+			octet_length(data) AS size
+		FROM ` + dbTable + ` WHERE id = ?`
+
+	var fi FileInfo
+
+	db := s.db.GetDB().Raw(sql, key).Scan(&fi)
+	if db.Error != nil {
+		return nil, fmt.Errorf("retrieving file info: %w", db.Error)
+	}
+
+	return &fi, nil
 }

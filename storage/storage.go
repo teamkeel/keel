@@ -15,7 +15,12 @@ type Storer interface {
 	// The name of the file can also be passed as a parameter of the mediaType segment; e.g.
 	// data:application/pdf;name=MyUploadedFile.pdf;base64,xxxxxx[...]
 	Store(dataURL string) (*FileInfo, error)
-	GetFile() error
+
+	// GetFileInfo will return the file information for the given unique file key.
+	//
+	// The File info returned can contain a URL where the file can be downloaded from, if applicable; i.e. for database
+	// storage, at the moment files cannot be retrieved via URLs.
+	GetFileInfo(key string) (*FileInfo, error)
 }
 
 type FileInfo struct {
