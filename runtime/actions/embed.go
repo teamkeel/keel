@@ -70,6 +70,14 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 			}
 		}
 
+		// if we have any files in our results we need to transform them to the object structure required
+		if relatedModel.HasFiles() {
+			result, err = transformFileResponses(ctx, relatedModel, result)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		return result, nil
 	case proto.IsHasMany(field):
 		dbQuery.Join(
@@ -86,6 +94,16 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 		result, _, err := stmt.ExecuteToMany(ctx, nil)
 		if err != nil {
 			return nil, fmt.Errorf("executing query to many: %w", err)
+		}
+
+		// if we have any files in our results we need to go through each result and transform them to the object structure required
+		if relatedModel.HasFiles() {
+			for i := range result {
+				result[i], err = transformFileResponses(ctx, relatedModel, result[i])
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
 
 		// recurse and resolve child embeds for each of our results
@@ -121,6 +139,14 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 		result, err := stmt.ExecuteToSingle(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("executing query to single: %w", err)
+		}
+
+		if relatedModel.HasFiles() {
+			// if we have any files in our results we need to transform them to the object structure required
+			result, err = transformFileResponses(ctx, relatedModel, result)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		// recurse and resolve child embeds

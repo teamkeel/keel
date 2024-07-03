@@ -47,6 +47,14 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, common.NewPermissionError()
 	}
 
+	// if we have any files in our results we need to transform them to the object structure required
+	if scope.Model.HasFiles() {
+		res, err = transformFileResponses(scope.Context, scope.Model, res)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// if we have embedded data, let's resolve it
 	if len(scope.Action.ResponseEmbeds) > 0 {
 		for _, embed := range scope.Action.ResponseEmbeds {
@@ -64,9 +72,6 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 			res[fragments[0]] = data
 		}
 	}
-
-	// if we have any files in our results we need to transform them to the object structure required
-	res, err = transformFileResponses(scope, res)
 
 	return res, err
 }

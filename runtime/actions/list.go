@@ -175,6 +175,16 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, common.NewPermissionError()
 	}
 
+	// if we have any files in our results we need to transform them to the object structure required
+	if scope.Model.HasFiles() {
+		for i := range results {
+			results[i], err = transformFileResponses(scope.Context, scope.Model, results[i])
+			if err != nil {
+				return nil, fmt.Errorf("transforming file data: %w", err)
+			}
+		}
+	}
+
 	// if we have embedded data, let's resolve it
 	if len(scope.Action.ResponseEmbeds) > 0 {
 		for _, embed := range scope.Action.ResponseEmbeds {
@@ -191,13 +201,6 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 				}
 				res[fragments[0]] = data
 			}
-		}
-	}
-	// if we have any files in our results we need to transform them to the object structure required
-	for i := range results {
-		results[i], err = transformFileResponses(scope, results[i])
-		if err != nil {
-			return nil, fmt.Errorf("transforming file data: %w", err)
 		}
 	}
 

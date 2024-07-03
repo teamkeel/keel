@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -56,8 +57,7 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 }
 
 // transformFileResponses will take the results for the given scope's action execution and parse and transform the file responses
-func transformFileResponses(scope *Scope, results map[string]any) (map[string]any, error) {
-	model := proto.FindModel(scope.Schema.Models, scope.Action.ModelName)
+func transformFileResponses(ctx context.Context, model *proto.Model, results map[string]any) (map[string]any, error) {
 	if model == nil {
 		return results, nil
 	}
@@ -76,7 +76,7 @@ func transformFileResponses(scope *Scope, results map[string]any) (map[string]an
 
 			// now we're hydrating the db file info with data from our storage service if we have one
 			// e.g. injecting signed URLs for direct file downloads
-			if store, err := runtimectx.GetStorage(scope.Context); err == nil {
+			if store, err := runtimectx.GetStorage(ctx); err == nil {
 				hydrated, err := store.HydrateFileInfo(&fi)
 				if err != nil {
 					return results, fmt.Errorf("failed retrieve hydrated file data: %w", err)
