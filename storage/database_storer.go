@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"github.com/teamkeel/keel/db"
 	"github.com/vincent-petithory/dataurl"
@@ -58,15 +59,20 @@ func decodeDataURL(dataURL string) (fileData, error) {
 		return fileData{}, fmt.Errorf("decoding data url: %w", err)
 	}
 
+	fname, err := url.QueryUnescape(durl.Params["name"])
+	if err != nil {
+		return fileData{}, fmt.Errorf("decoding filename: %w", err)
+	}
+
 	return fileData{
 		ContentType: durl.ContentType(),
-		Filename:    durl.Params["name"],
+		Filename:    fname,
 		Data:        durl.Data,
 	}, nil
 }
 
 func encodeDataURL(data fileData) string {
-	durl := dataurl.New(data.Data, data.ContentType, "name", data.Filename)
+	durl := dataurl.New(data.Data, data.ContentType, "name", url.QueryEscape(data.Filename))
 	return durl.String()
 }
 
