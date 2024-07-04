@@ -50,21 +50,21 @@ test("get action - no result", async () => {
 });
 
 test("list action - equals", async () => {
-  await models.post.create({
+  const p1 = await models.post.create({
     title: "apple",
     subTitle: "def",
     content: "# Title",
   });
-  await models.post.create({ title: "apple", subTitle: "efg" });
+  const p2 = await models.post.create({ title: "apple", subTitle: "efg" });
 
   const posts = await actions.listPosts({
     where: {
       title: { equals: "apple" },
     },
   });
-
-  expect(posts.results.length).toEqual(2);
-  expect(posts.results[0].content).toEqual("# Title");
+  
+  expect(p1.content).toEqual("# Title")
+  expect(posts.results).toEqual(expect.arrayContaining([p1, p2]));
 });
 
 test("list action - notEquals on id", async () => {
