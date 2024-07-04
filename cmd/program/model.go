@@ -280,14 +280,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.Database = database
-		// we now set the file Storage using a dbstore
-		storer, err := storage.NewDbStore(context.Background(), database)
-		if err != nil {
-			m.Err = err
-			return m, tea.Quit
-		}
-		m.Storage = storer
-
 		m.Status = StatusParsePrivateKey
 		return m, ParsePrivateKey(m.PrivateKeyPath)
 	case ParsePrivateKeyMsg:
@@ -376,6 +368,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Status = StatusRunning
 			return m, nil
 		}
+
+		// we now set the file Storage using a dbstore
+		storer, err := storage.NewDbStore(context.Background(), m.Database)
+		if err != nil {
+			m.Err = err
+			return m, tea.Quit
+		}
+		m.Storage = storer
 
 		m.Status = StatusUpdateFunctions
 		return m, UpdateFunctions(m.Schema, m.ProjectDir)
