@@ -9,6 +9,7 @@ import (
 )
 
 func TestSetAndUpdateConfig(t *testing.T) {
+	t.Parallel()
 	fileName := "set_config.yaml"
 	wd, err := os.Getwd()
 	assert.NoError(t, err)
@@ -47,6 +48,7 @@ func TestSetAndUpdateConfig(t *testing.T) {
 }
 
 func TestGetConfig(t *testing.T) {
+	t.Parallel()
 	fileName := "get_config.yaml"
 	wd, err := os.Getwd()
 	assert.NoError(t, err)

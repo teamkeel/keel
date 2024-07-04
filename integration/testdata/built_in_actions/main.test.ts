@@ -62,8 +62,9 @@ test("list action - equals", async () => {
       title: { equals: "apple" },
     },
   });
-  
-  expect(p1.content).toEqual("# Title")
+
+  expect(p1.content).toEqual("# Title");
+  expect(posts.results.length).toEqual(2);
   expect(posts.results).toEqual(expect.arrayContaining([p1, p2]));
 });
 
