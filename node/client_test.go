@@ -12,6 +12,7 @@ import (
 )
 
 func TestClientActionsByApi(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	actions {
@@ -37,6 +38,7 @@ getPerson: (i: GetPersonInput) => {
 }
 
 func TestClientActionsByApiExcludedAction(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	actions {
@@ -76,6 +78,7 @@ getCompany: (i: GetCompanyInput) => {
 }
 
 func TestClientActionsByDifferentApi(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	actions {
@@ -101,6 +104,7 @@ getPerson: (i: GetPersonInput) => {
 }
 
 func TestClientActionGet(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -123,6 +127,7 @@ getPerson: (i: GetPersonInput) => {
 }
 
 func TestClientActionCreate(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -145,6 +150,7 @@ createPerson: (i: CreatePersonInput) => {
 }
 
 func TestClientActionUpdate(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -167,6 +173,7 @@ updatePerson: (i: UpdatePersonInput) => {
 }
 
 func TestClientActionDelete(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -189,6 +196,7 @@ deletePerson: (i: DeletePersonInput) => {
 }
 
 func TestClientActionList(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -214,6 +222,7 @@ listPeople: (i: ListPeopleInput) => {
 //
 //	createPerson: () => ...
 func TestClientActionNoInputs(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	actions {
@@ -237,6 +246,7 @@ listPeople: (i?: ListPeopleInput) => {
 }
 
 func TestClientActionAllOptionalInputs(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -260,6 +270,7 @@ listPeople: (i?: ListPeopleInput) => {
 }
 
 func TestClientActionNotAllOptionalInputs(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -283,6 +294,7 @@ listPeople: (i: ListPeopleInput) => {
 }
 
 func TestClientActionRead(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -310,6 +322,7 @@ readPeople: (i: ReadPeopleInput) => {
 }
 
 func TestClientActionWrite(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -337,6 +350,7 @@ writePeople: (i: WritePeopleInput) => {
 }
 
 func TestClientActionMessageInput(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	actions {
@@ -364,6 +378,7 @@ readPeople: (i: SearchParams) => {
 }
 
 func TestClientActionAny(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	actions {
@@ -383,6 +398,7 @@ readPeople: (i?: any) => {
 }
 
 func TestClientApiDefinition(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -419,6 +435,7 @@ mutations: {
 }
 
 func TestClientApiTypes(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -512,6 +529,7 @@ type PageInfo = {
 }
 
 func TestClientCoreClass(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -558,6 +576,7 @@ export class APIClient extends Core {
 }
 
 func TestGenerateClientFiles(t *testing.T) {
+	t.Parallel()
 	schemaString := `
 model Person {
 	actions {
@@ -577,6 +596,7 @@ model Person {
 }
 
 func TestGenerateClientPackagesFiles(t *testing.T) {
+	t.Parallel()
 	schemaString := `
 model Person {
 	actions {

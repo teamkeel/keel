@@ -45,6 +45,7 @@ model Person {
 }`
 
 func TestWriteTableInterface(t *testing.T) {
+	t.Parallel()
 	expected := `
 export interface PersonTable {
 	firstName: string
@@ -68,6 +69,7 @@ export interface PersonTable {
 }
 
 func TestWriteModelInterface(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Account {
 	fields {
@@ -90,6 +92,7 @@ export interface Account {
 }
 
 func TestWriteModelInterfaceIdentityBacklinks(t *testing.T) {
+	t.Parallel()
 	expected := `
 export interface Person {
 	firstName: string
@@ -113,6 +116,7 @@ export interface Person {
 }
 
 func TestWriteCreateValuesInterface(t *testing.T) {
+	t.Parallel()
 	expected := `
 export type PersonCreateValues = {
 	firstName: string
@@ -135,6 +139,7 @@ export type PersonCreateValues = {
 }
 
 func TestWriteCreateValuesInterfaceWithRelationships(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Author {}
 model Post {
@@ -160,6 +165,7 @@ export type PostCreateValues = {
 }
 
 func TestWriteWhereConditionsInterface(t *testing.T) {
+	t.Parallel()
 	expected := `
 export interface PersonWhereConditions {
 	firstName?: string | runtime.StringWhereCondition;
@@ -182,6 +188,7 @@ export interface PersonWhereConditions {
 }
 
 func TestWriteUniqueConditionsInterface(t *testing.T) {
+	t.Parallel()
 	schema := `
 	model Author {
 		fields {
@@ -225,6 +232,7 @@ export type AuthorUniqueConditions =
 }
 
 func TestWriteModelAPIDeclaration(t *testing.T) {
+	t.Parallel()
 	expected := fmt.Sprintf(`
 export type PersonAPI = {
 	/**
@@ -293,6 +301,7 @@ export type PersonAPI = {
 }
 
 func TestModelAPIFindManyDeclaration(t *testing.T) {
+	t.Parallel()
 	expected := `
 export type PersonOrderBy = {
 	firstName?: SortDirection,
@@ -320,6 +329,7 @@ export interface PersonFindManyParams {
 }
 
 func TestWriteEnum(t *testing.T) {
+	t.Parallel()
 	expected := `
 export enum Gender {
 	Male = "Male",
@@ -332,6 +342,7 @@ export enum Gender {
 }
 
 func TestWriteEnumWhereCondition(t *testing.T) {
+	t.Parallel()
 	expected := `
 export interface GenderWhereCondition {
 	equals?: Gender | null;
@@ -344,6 +355,7 @@ export interface GenderWhereCondition {
 }
 
 func TestWriteDatabaseInterface(t *testing.T) {
+	t.Parallel()
 	expected := `
 interface database {
 	person: PersonTable;
@@ -357,6 +369,7 @@ export declare function useDatabase(): Kysely<database>;`
 }
 
 func TestWriteDevelopmentServer(t *testing.T) {
+	t.Parallel()
 	expected := `
 import function_createPost from "../functions/createPost.ts";
 import function_updatePost from "../functions/updatePost.ts";
@@ -406,6 +419,7 @@ job BatchPosts {
 }
 
 func TestWriteAPIFactory(t *testing.T) {
+	t.Parallel()
 	expected := `
 function createContextAPI({ responseHeaders, meta }) {
 	const headers = new Headers(meta.headers);
@@ -472,6 +486,7 @@ module.exports.createSubscriberContextAPI = createSubscriberContextAPI;`
 }
 
 func TestWriteAPIDeclarations(t *testing.T) {
+	t.Parallel()
 	expected := `
 export type ModelsAPI = {
 	person: PersonAPI;
@@ -512,6 +527,7 @@ export interface JobContextAPI {
 }
 
 func TestWriteActionInputTypesGet(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	actions {
@@ -530,6 +546,7 @@ export interface GetPersonInput {
 }
 
 func TestWriteActionInputTypesCreate(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -551,6 +568,7 @@ export interface CreatePersonInput {
 }
 
 func TestWriteActionInputTypesCreateWithNull(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -572,6 +590,7 @@ export interface CreatePersonInput {
 }
 
 func TestWriteActionInputTypesCreateWithOptionalInput(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -593,6 +612,7 @@ export interface CreatePersonInput {
 }
 
 func TestWriteActionInputTypesCreateRelationshipToOne(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Company {
 	fields {
@@ -624,6 +644,7 @@ export interface CreatePersonEmployerInput {
 }
 
 func TestWriteActionInputTypesCreateRelationshipToMany(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Contract {
 	fields {
@@ -656,6 +677,7 @@ export interface CreatePersonContractsInput {
 }
 
 func TestWriteActionInputTypesCreateRelationshipOneToOne(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Company {
 	fields {
@@ -706,6 +728,7 @@ export interface CreateCompanyCompanyProfileTaxProfileInput {
 }
 
 func TestCreateActionEmptyInputs(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Account {
     fields {
@@ -735,6 +758,7 @@ export interface CreateAccountInput {
 }
 
 func TestCreateActionEmptyInputsTestingType(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Account {
     fields {
@@ -764,6 +788,7 @@ createAccount(i?: CreateAccountInput): Promise<sdk.Account>;`
 }
 
 func TestWriteActionInputTypesUpdate(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -792,6 +817,7 @@ export interface UpdatePersonInput {
 }
 
 func TestWriteActionInputTypesUpdateWithOptionalField(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -820,6 +846,7 @@ export interface UpdatePersonInput {
 }
 
 func TestWriteActionInputTypesUpdateWithOptionalFieldAndOptionalInput(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -848,6 +875,7 @@ export interface UpdatePersonInput {
 }
 
 func TestWriteActionInputTypesList(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	fields {
@@ -885,6 +913,7 @@ export interface ListPeopleInput {
 }
 
 func TestWriteActionInputTypesListAction(t *testing.T) {
+	t.Parallel()
 	schema := `
 enum Sport {
 	Football
@@ -932,6 +961,7 @@ export interface ListPeopleInput {
 }
 
 func TestWriteActionInputTypesListRelationshipToOne(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Company {
 	fields {
@@ -970,6 +1000,7 @@ export interface ListPersonsInput {
 }
 
 func TestWriteActionInputTypesListRelationshipToMany(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Contract {
 	fields {
@@ -1008,6 +1039,7 @@ export interface ListPersonsInput {
 }
 
 func TestWriteActionInputTypesListRelationshipOptionalFields(t *testing.T) {
+	t.Parallel()
 	schema := `
 	model Publisher {
 		fields {
@@ -1066,6 +1098,7 @@ export interface ListBooksInput {
 }
 
 func TestWriteActionInputTypesListRelationshipOptionalInput(t *testing.T) {
+	t.Parallel()
 	schema := `
 	model Publisher {
 		fields {
@@ -1124,6 +1157,7 @@ export interface ListBooksInput {
 }
 
 func TestWriteActionArrayInputTypesListAction(t *testing.T) {
+	t.Parallel()
 	schema := `
 enum Sport {
 	Football
@@ -1194,6 +1228,7 @@ export interface ListPeopleInput {
 }
 
 func TestWriteActionInputTypesListSortable(t *testing.T) {
+	t.Parallel()
 	schema := `
 enum Sport {
 	Football
@@ -1250,6 +1285,7 @@ export interface ListPeopleInput {
 }
 
 func TestWriteActionInputTypesDelete(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	actions {
@@ -1268,6 +1304,7 @@ export interface DeletePersonInput {
 }
 
 func TestWriteActionInputTypesInlineInputRead(t *testing.T) {
+	t.Parallel()
 	schema := `
 message PersonNameResponse {
 	name Text
@@ -1289,6 +1326,7 @@ export interface GetPersonNameInput {
 }
 
 func TestWriteActionInputTypesMessageInputRead(t *testing.T) {
+	t.Parallel()
 	schema := `
 message PersonNameResponse {
 	name Text
@@ -1315,6 +1353,7 @@ export interface GetInput {
 }
 
 func TestWriteActionResponseTypesRead(t *testing.T) {
+	t.Parallel()
 	schema := `
 message PersonNameResponse {
 	name Text
@@ -1341,6 +1380,7 @@ export interface PersonNameResponse {
 }
 
 func TestWriteActionInputTypesInlineInputWrite(t *testing.T) {
+	t.Parallel()
 	schema := `
 message DeleteResponse {
 	isDeleted Boolean
@@ -1362,6 +1402,7 @@ export interface DeletePersonInput {
 }
 
 func TestWriteActionInputTypesMessageInputWrite(t *testing.T) {
+	t.Parallel()
 	schema := `
 message DeleteResponse {
 	isDeleted Boolean
@@ -1388,6 +1429,7 @@ export interface DeleteInput {
 }
 
 func TestWriteActionResponseTypesWrite(t *testing.T) {
+	t.Parallel()
 	schema := `
 message DeleteResponse {
 	isDeleted Boolean
@@ -1414,6 +1456,7 @@ export interface DeleteResponse {
 }
 
 func TestWriteActionInputTypesArrayField(t *testing.T) {
+	t.Parallel()
 	schema := `
 message PeopleInput {
 	ids ID[]
@@ -1439,6 +1482,7 @@ export interface PeopleInput {
 }
 
 func TestMessageFieldAnyType(t *testing.T) {
+	t.Parallel()
 	schema := `
 	message Foo {
 		bar Any
@@ -1462,6 +1506,7 @@ export interface Foo {
 }
 
 func TestWriteActionTypesEnumField(t *testing.T) {
+	t.Parallel()
 	schema := `
 message Input {
 	sports Sport[]
@@ -1503,6 +1548,7 @@ export interface Response {
 }
 
 func TestWriteActionResponseTypesArrayField(t *testing.T) {
+	t.Parallel()
 	schema := `
 message People {
 	names Text[]
@@ -1524,6 +1570,7 @@ export interface People {
 }
 
 func TestWriteActionResponseTypesArrayNestedMessage(t *testing.T) {
+	t.Parallel()
 	schema := `
 message People {
 	names Details[]
@@ -1553,6 +1600,7 @@ export interface Details {
 }
 
 func TestWriteActionResponseTypesNestedModels(t *testing.T) {
+	t.Parallel()
 	schema := `
 message PersonResponse {
 	sales Sale[]
@@ -1583,6 +1631,7 @@ export interface PersonResponse {
 }
 
 func TestWriteActionInputTypesNoInputs(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	actions {
@@ -1599,6 +1648,7 @@ export interface GetPersonNameInput {
 }
 
 func TestWriteActionInputTypesEmptyInputs(t *testing.T) {
+	t.Parallel()
 	schema := `
 message In {}
 model Person {
@@ -1616,6 +1666,7 @@ export interface In {
 }
 
 func TestWriteSubscriberMessages(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Member {
 	fields {
@@ -1669,6 +1720,7 @@ export interface SendWelcomeEmailMemberCreatedEventTarget {
 }
 
 func TestWriteSubscriberFunctionWrapperType(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Member {
 	fields {
@@ -1691,6 +1743,7 @@ export declare function SendWelcomeEmail(fn: (ctx: SubscriberContextAPI, event: 
 }
 
 func TestWriteJobWrapperType(t *testing.T) {
+	t.Parallel()
 	schema := `
 job JobWithoutInputs {
 	@schedule("1 * * * *")
@@ -1720,6 +1773,7 @@ export declare function AdHocJobWithoutInputs(fn: (ctx: JobContextAPI) => Promis
 }
 
 func TestWriteJobInputs(t *testing.T) {
+	t.Parallel()
 	schema := `
 job JobWithoutInputs {
 	@schedule("1 * * * *")
@@ -1748,6 +1802,7 @@ export interface AdHocJobWithInputsMessage {
 }
 
 func TestWriteTestingTypes(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Person {
 	actions {
@@ -1827,6 +1882,7 @@ export declare function resetDatabase(): Promise<void>;`
 }
 
 func TestWriteTestingTypesJobs(t *testing.T) {
+	t.Parallel()
 	schema := `
 job JobWithoutInputs {
 	@schedule("1 * * * *")
@@ -1889,6 +1945,7 @@ export declare function resetDatabase(): Promise<void>;`
 }
 
 func TestWriteTestingTypesSubscribers(t *testing.T) {
+	t.Parallel()
 	schema := `
 model ClubHouse {
 	@on([create, update], verifyEmail)
@@ -1939,6 +1996,7 @@ export declare function resetDatabase(): Promise<void>;`
 }
 
 func TestWriteTableConfig(t *testing.T) {
+	t.Parallel()
 	schema := `
 model Publisher {
 	fields {
@@ -1992,6 +2050,7 @@ const tableConfigMap = {
 }
 
 func TestWriteTestingTypesEnums(t *testing.T) {
+	t.Parallel()
 	schema := `
 enum Hobby {
 	Tennis
@@ -2055,6 +2114,7 @@ export declare function resetDatabase(): Promise<void>;`
 }
 
 func TestTestingActionExecutor(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 
 	wd, err := os.Getwd()
@@ -2152,6 +2212,7 @@ func TestTestingActionExecutor(t *testing.T) {
 }
 
 func TestSDKTypings(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 
 	wd, err := os.Getwd()

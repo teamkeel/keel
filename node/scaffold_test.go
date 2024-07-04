@@ -15,6 +15,7 @@ import (
 )
 
 func TestScaffold(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 
 	schemaString := `
@@ -209,6 +210,7 @@ export default DoSomethingElse(async (ctx, event) => {
 }
 
 func TestExistingFunction(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 
 	schemaString := `
@@ -249,6 +251,7 @@ func TestExistingFunction(t *testing.T) {
 }
 
 func TestExistingJob(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 
 	schemaString := `
