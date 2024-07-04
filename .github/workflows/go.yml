@@ -55,7 +55,7 @@ jobs:
       - name: Install Go deps
         run: go mod download
       - name: Run tests
-        run: go test ./... -v
+        run: go test ./...
 
   proto:
     runs-on: ubuntu-latest
