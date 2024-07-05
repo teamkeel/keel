@@ -10,7 +10,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -47,7 +49,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -309,7 +313,8 @@
           "messageName": "MyJobMessage",
           "name": "array",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_STRING",
+            "repeated": true
           }
         },
         {
@@ -329,7 +334,9 @@
       "inputMessageName": "MyJobMessage",
       "permissions": [
         {
-          "roleNames": ["Admin"]
+          "roleNames": [
+            "Admin"
+          ]
         }
       ]
     }

@@ -1728,6 +1728,7 @@ job AdHocJobWithInputs {
 	inputs {
 		nameField Text
 		someBool Boolean?
+		array Text[]
 	}
 	@permission(roles: [Admin])
 }
@@ -1740,6 +1741,7 @@ role Admin {}`
 export interface AdHocJobWithInputsMessage {
 	nameField: string;
 	someBool?: boolean;
+	array: string[];
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {

@@ -92,5 +92,6 @@ test("jobs - all types as input values", async () => {
     timestamp: new Date(2022, 12, 25, 1, 3, 4),
     id: "123",
     enum: Status.GoldPost,
+    array: ["one", "two"],
   });
 });
