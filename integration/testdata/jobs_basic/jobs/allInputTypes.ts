@@ -23,6 +23,6 @@ export default AllInputTypes(async (ctx, inputs) => {
     throw new Error("enum not set correctly");
   }
   if (JSON.stringify(inputs.array) != JSON.stringify(["one", "two"])) {
-    throw new Error("enum not set correctly");
+    throw new Error("array not set correctly");
   }
 });
