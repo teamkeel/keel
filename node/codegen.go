@@ -64,10 +64,9 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
 	sdkTypes.Writeln("")
-	sdkTypes.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
+	writeBuiltInTypes(sdkTypes)
 
 	writePermissions(sdk, schema)
-
 	writeMessages(sdkTypes, schema, false)
 
 	for _, enum := range schema.Enums {
@@ -150,6 +149,22 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 			Contents: `{"name": "@teamkeel/sdk"}`,
 		},
 	}
+}
+
+// writeBuiltInTypes will write the types for Built In types such as InlineFile, SortDirection, etc..
+func writeBuiltInTypes(w *codegen.Writer) {
+	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
+	w.Writeln(`export interface InlineFile {`)
+	w.Indent()
+	w.Writeln(`ReadString(): string;`)
+	w.Writeln(`filename: string;`)
+	w.Writeln(`contentType: string;`)
+	w.Writeln(`size: number;`)
+	w.Writeln(`key: string;`)
+	w.Writeln(`public: boolean;`)
+	w.Writeln(`url: string | null;`)
+	w.Dedent()
+	w.Writeln(`}`)
 }
 
 func writeTableInterface(w *codegen.Writer, model *proto.Model) {
@@ -984,22 +999,29 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 
 	for _, model := range models {
 		for _, field := range model.Fields {
-			if field.Type.Type != proto.Type_TYPE_MODEL {
+			var fieldConfig map[string]string
+
+			switch field.Type.Type {
+			case proto.Type_TYPE_MODEL:
+				fieldConfig = map[string]string{
+					"referencesTable": casing.ToSnake(field.Type.ModelName.Value),
+					"foreignKey":      casing.ToSnake(proto.GetForeignKeyFieldName(models, field)),
+				}
+
+				switch {
+				case proto.IsHasOne(field):
+					fieldConfig["relationshipType"] = "hasOne"
+				case proto.IsHasMany(field):
+					fieldConfig["relationshipType"] = "hasMany"
+				case proto.IsBelongsTo(field):
+					fieldConfig["relationshipType"] = "belongsTo"
+				}
+			case proto.Type_TYPE_INLINE_FILE:
+				fieldConfig = map[string]string{
+					"type": "inlineFile",
+				}
+			default:
 				continue
-			}
-
-			relationshipConfig := map[string]string{
-				"referencesTable": casing.ToSnake(field.Type.ModelName.Value),
-				"foreignKey":      casing.ToSnake(proto.GetForeignKeyFieldName(models, field)),
-			}
-
-			switch {
-			case proto.IsHasOne(field):
-				relationshipConfig["relationshipType"] = "hasOne"
-			case proto.IsHasMany(field):
-				relationshipConfig["relationshipType"] = "hasMany"
-			case proto.IsBelongsTo(field):
-				relationshipConfig["relationshipType"] = "belongsTo"
 			}
 
 			tableConfig, ok := tableConfigMap[casing.ToSnake(model.Name)]
@@ -1008,7 +1030,7 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 				tableConfigMap[casing.ToSnake(model.Name)] = tableConfig
 			}
 
-			tableConfig[field.Name] = relationshipConfig
+			tableConfig[field.Name] = fieldConfig
 		}
 	}
 
@@ -1646,6 +1668,8 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	case proto.Type_TYPE_STRING_LITERAL:
 		// Use string literal type for discriminating.
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
+	case proto.Type_TYPE_INLINE_FILE:
+		ret = "InlineFile"
 	default:
 		ret = "any"
 	}
