@@ -65,7 +65,7 @@ jobs:
         script: |
           core.setFailed('branch or channel not set')
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         persist-credentials: false
         ref: ${{ needs.instantiate.outputs.branch }}
@@ -101,7 +101,7 @@ jobs:
         script: |
           core.setFailed('new_version not set')
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:  
         persist-credentials: false
         ref: v${{ needs.semantic-release.outputs.new_version }}
@@ -160,7 +160,7 @@ jobs:
       with:
         version: 8.10.0
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: v${{ needs.semantic-release.outputs.new_version }}
         fetch-depth: 0
