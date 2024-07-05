@@ -8,6 +8,7 @@ import (
 )
 
 func TestConfigLoad(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_basic_config.yaml")
 	assert.NoError(t, err)
 
@@ -17,6 +18,7 @@ func TestConfigLoad(t *testing.T) {
 }
 
 func TestFailConfigValue(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_failing_config.yaml")
 	assert.Error(t, err)
 
@@ -24,6 +26,7 @@ func TestFailConfigValue(t *testing.T) {
 }
 
 func TestDuplicates(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_duplicates.yaml")
 	assert.Error(t, err)
 
@@ -32,6 +35,7 @@ func TestDuplicates(t *testing.T) {
 }
 
 func TestSnakecaseValidateFormat(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_snakecase_config.yaml")
 	assert.Error(t, err)
 
@@ -46,6 +50,7 @@ func TestSnakecaseValidateFormat(t *testing.T) {
 }
 
 func TestReservedNameValidateFormat(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_reserved_name_config.yaml")
 	assert.Error(t, err)
 
@@ -59,18 +64,21 @@ func TestReservedNameValidateFormat(t *testing.T) {
 }
 
 func TestDefaultApiOmitted(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_empty_config.yaml")
 	assert.NoError(t, err)
 
 	assert.True(t, config.DefaultApi())
 }
 func TestDefaultApiTrue(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_default_api_true.yaml")
 	assert.NoError(t, err)
 
 	assert.True(t, config.DefaultApi())
 }
 func TestDefaultApiFalse(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_default_api_false.yaml")
 	assert.NoError(t, err)
 
@@ -78,6 +86,7 @@ func TestDefaultApiFalse(t *testing.T) {
 }
 
 func TestAuthTokens(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_auth.yaml")
 	assert.NoError(t, err)
 
@@ -91,12 +100,14 @@ func TestAuthTokens(t *testing.T) {
 }
 
 func TestAuthInvalidRedirectUrl(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_auth_invalid_redirect_url.yaml")
 
 	assert.Contains(t, err.Error(), "auth redirectUrl 'not a url' is not a valid url\n")
 }
 
 func TestAuthDefaults(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_empty_config.yaml")
 	assert.NoError(t, err)
 
@@ -110,6 +121,7 @@ func TestAuthDefaults(t *testing.T) {
 }
 
 func TestAuthNegativeTokenLifespan(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_auth_negative_token_lifespan.yaml")
 
 	assert.Contains(t, err.Error(), "access token lifespan cannot be negative or zero for field: accessTokenExpiry\n")
@@ -117,6 +129,7 @@ func TestAuthNegativeTokenLifespan(t *testing.T) {
 }
 
 func TestAuthProviders(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_auth.yaml")
 	assert.NoError(t, err)
 
@@ -135,6 +148,7 @@ func TestAuthProviders(t *testing.T) {
 }
 
 func TestInvalidProviderName(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_auth_invalid_names.yaml")
 
 	assert.Contains(t, err.Error(), "auth provider name '12 34' must only include alphanumeric characters and underscores, and cannot start with a number\n")
@@ -146,6 +160,7 @@ func TestInvalidProviderName(t *testing.T) {
 }
 
 func TestMissingProviderName(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_auth_missing_names.yaml")
 
 	assert.Contains(t, err.Error(), "auth provider at index 0 is missing field: name\n")
@@ -154,12 +169,14 @@ func TestMissingProviderName(t *testing.T) {
 }
 
 func TestDuplicateProviderName(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_auth_duplicate_names.yaml")
 
 	assert.Equal(t, "auth provider name 'my_google' has been defined more than once, but must be unique\n", err.Error())
 }
 
 func TestInvalidProviderTypes(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_auth_invalid_types.yaml")
 
 	assert.Contains(t, err.Error(), "auth provider 'google_1' has invalid type 'google_1' which must be one of: google, facebook, gitlab, slack, oidc\n")
@@ -169,6 +186,7 @@ func TestInvalidProviderTypes(t *testing.T) {
 }
 
 func TestMissingClientId(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_auth_missing_client_ids.yaml")
 
 	assert.Contains(t, err.Error(), "auth provider 'google_1' is missing field: clientId\n")
@@ -177,6 +195,7 @@ func TestMissingClientId(t *testing.T) {
 }
 
 func TestMissingOrInvalidIssuerUrl(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_auth_invalid_issuer.yaml")
 
 	assert.Contains(t, err.Error(), "auth provider 'not-https' has missing or invalid https url for field: issuerUrl\n")
@@ -186,6 +205,7 @@ func TestMissingOrInvalidIssuerUrl(t *testing.T) {
 }
 
 func TestMissingOrInvalidTokenEndpoint(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_auth_invalid_token_url.yaml")
 
 	assert.Contains(t, err.Error(), "auth provider 'not-https' has missing or invalid https url for field: tokenUrl\n")
@@ -194,6 +214,7 @@ func TestMissingOrInvalidTokenEndpoint(t *testing.T) {
 }
 
 func TestGetOidcIssuer(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_auth.yaml")
 	assert.NoError(t, err)
 
@@ -211,6 +232,7 @@ func TestGetOidcIssuer(t *testing.T) {
 }
 
 func TestGetOidcSameIssuers(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_auth_same_issuers.yaml")
 	assert.NoError(t, err)
 
@@ -220,6 +242,7 @@ func TestGetOidcSameIssuers(t *testing.T) {
 }
 
 func TestAddOidcProvider(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_auth.yaml")
 	assert.NoError(t, err)
 
@@ -236,18 +259,21 @@ func TestAddOidcProvider(t *testing.T) {
 }
 
 func TestAddOidcProviderReservedPrefix(t *testing.T) {
+	t.Parallel()
 	_, err := Load("fixtures/test_auth_reserved_prefix.yaml")
 	assert.ErrorContains(t, err, "cannot use reserved 'keel_' prefix in auth provider name: keel_client")
 	assert.ErrorContains(t, err, "cannot use reserved 'keel_' prefix in auth provider name: KEEL_CLIENT")
 }
 
 func TestAddOidcProviderInvalidName(t *testing.T) {
+	t.Parallel()
 	auth := &AuthConfig{}
 	err := auth.AddOidcProvider("my client", "https://mycustomoidc.com", "1234")
 	assert.ErrorContains(t, err, "auth provider name 'my client' must only include alphanumeric characters and underscores, and cannot start with a number")
 }
 
 func TestAddOidcProviderAlreadyExists(t *testing.T) {
+	t.Parallel()
 	auth := &AuthConfig{}
 	err := auth.AddOidcProvider("my_client", "https://mycustomoidc.com", "1234")
 	assert.NoError(t, err)
@@ -289,6 +315,7 @@ func TestGetCallbackUrl_WithUnderscoredAndCapitals(t *testing.T) {
 }
 
 func TestGetCallbackUrl_NoKeelApiUrl(t *testing.T) {
+	t.Parallel()
 	provider := &Provider{
 		Name: "google",
 	}
@@ -299,6 +326,7 @@ func TestGetCallbackUrl_NoKeelApiUrl(t *testing.T) {
 }
 
 func TestAuthClaims(t *testing.T) {
+	t.Parallel()
 	config, err := Load("fixtures/test_auth_identity_claims.yaml")
 	assert.NoError(t, err)
 

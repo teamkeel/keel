@@ -373,6 +373,8 @@ enum Type {
     TYPE_DECIMAL = 22;
     // A vector type.
     TYPE_VECTOR = 23;
+    // A file, supplied inline, as a data-url 
+    TYPE_INLINE_FILE = 24;
 }
 
 enum OrderDirection {

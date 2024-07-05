@@ -11,6 +11,7 @@ import (
 )
 
 func TestGenerateDatabaseNameWithHomeDirectory(t *testing.T) {
+	t.Parallel()
 	userDir, err := os.UserHomeDir()
 	if err != nil {
 		require.NoError(t, err)
@@ -34,6 +35,7 @@ func TestGenerateDatabaseNameWithHomeDirectory(t *testing.T) {
 }
 
 func TestGenerateDatabaseNameCaseInsensitive(t *testing.T) {
+	t.Parallel()
 	user, err := user.Current()
 	if err != nil {
 		require.NoError(t, err)
@@ -57,6 +59,7 @@ func TestGenerateDatabaseNameCaseInsensitive(t *testing.T) {
 }
 
 func TestGenerateDatabaseNameSlashes(t *testing.T) {
+	t.Parallel()
 	user, err := user.Current()
 	if err != nil {
 		require.NoError(t, err)
@@ -80,6 +83,7 @@ func TestGenerateDatabaseNameSlashes(t *testing.T) {
 }
 
 func TestGenerateDatabaseNameIncludesLowerCaseKeel(t *testing.T) {
+	t.Parallel()
 	user, err := user.Current()
 	if err != nil {
 		require.NoError(t, err)

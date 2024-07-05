@@ -64,6 +64,13 @@
         },
         {
           "modelName": "Foo",
+          "name": "i",
+          "type": {
+            "type": "TYPE_INLINE_FILE"
+          }
+        },
+        {
+          "modelName": "Foo",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -117,7 +124,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -154,7 +163,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",

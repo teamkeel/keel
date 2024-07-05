@@ -12,6 +12,7 @@ type testCase struct {
 }
 
 func TestLowerCamel(t *testing.T) {
+	t.Parallel()
 	testCases := []testCase{
 		{
 			input:  "slackID",
@@ -47,6 +48,7 @@ func TestLowerCamel(t *testing.T) {
 }
 
 func TestCamel(t *testing.T) {
+	t.Parallel()
 	testCases := []testCase{
 		{
 			input:  "slackID",

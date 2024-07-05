@@ -42,6 +42,18 @@ func FieldNames(m *Model) []string {
 	return names
 }
 
+// FileFields will return a slice of fields for the model that are of type file
+func (m *Model) FileFields() []*Field {
+	return lo.Filter(m.Fields, func(f *Field, _ int) bool {
+		return f.IsFile()
+	})
+}
+
+// HasFiles checks if the model has any fields that are files
+func (m *Model) HasFiles() bool {
+	return len(m.FileFields()) > 0
+}
+
 // IsTypeModel returns true of the field's type is Model.
 func IsTypeModel(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL
@@ -94,14 +106,23 @@ func IsBelongsTo(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName != nil && !field.Type.Repeated
 }
 
-// GetForignKeyFieldName returns the foreign key field name for the given field if it
+// IsFile tells us if the field is a file
+func (f *Field) IsFile() bool {
+	if f.Type == nil {
+		return false
+	}
+
+	return f.Type.Type == Type_TYPE_INLINE_FILE
+}
+
+// GetForeignKeyFieldName returns the foreign key field name for the given field if it
 // represents a relationship to another model. It returns an empty string if field's type is
 // not a model.
 // The foreign key returned might exists on field's parent model, or on the model field
 // it is related to, so this function would normally be used in conjunction with
 // IsBelongsTo or it's counterparts to determine on which side the foreign
 // key lives
-func GetForignKeyFieldName(models []*Model, field *Field) string {
+func GetForeignKeyFieldName(models []*Model, field *Field) string {
 	// The query is not meaningful if the field is not of type Model.
 	if field.Type.Type != Type_TYPE_MODEL {
 		return ""
@@ -161,6 +182,17 @@ func FindEnum(enums []*Enum, name string) *Enum {
 		return m.Name == name
 	})
 	return enum
+}
+
+// HasFiles checks if the given schema has any models with fields that are files
+func (p *Schema) HasFiles() bool {
+	for _, model := range p.Models {
+		if model.HasFiles() {
+			return true
+		}
+	}
+
+	return false
 }
 
 func FilterActions(p *Schema, filter func(op *Action) bool) (ops []*Action) {
@@ -392,6 +424,16 @@ func FindMessageField(message *Message, fieldName string) *MessageField {
 	}
 
 	return nil
+}
+
+// HasFiles checks if the message has any Inline file fields
+func (m *Message) HasFiles() bool {
+	for _, field := range m.Fields {
+		if field.Type != nil && field.Type.Type == Type_TYPE_INLINE_FILE {
+			return true
+		}
+	}
+	return false
 }
 
 // For built-in action types, returns the "values" input message, which may be nested inside the

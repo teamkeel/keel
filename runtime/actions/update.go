@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"fmt"
+
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
@@ -11,6 +13,15 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
 	if err != nil {
 		return nil, err
+	}
+
+	// handle file uploads and change input values to file data if applicable
+	if values, ok := input["values"].(map[string]any); ok {
+		in, err := handleFileUploads(scope, values)
+		if err != nil {
+			return nil, fmt.Errorf("handling file uploads: %w", err)
+		}
+		input["values"] = in
 	}
 
 	// Generate SQL statement
@@ -54,6 +65,11 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 
 	if res == nil {
 		return nil, common.NewNotFoundError()
+	}
+
+	// if we have any files in our results we need to transform them to the object structure required
+	if scope.Model.HasFiles() {
+		res, err = transformFileResponses(scope.Context, scope.Model, res)
 	}
 
 	return res, err

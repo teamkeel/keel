@@ -2,12 +2,13 @@ model Foo {
     fields {
         f1 Text
         f2 Number
+        f3 InlineFile
     }
 
     actions {
         get opA(id)
         list opB(f1, f2)
         update opC(id) with (f1)
-        create opD() with (f1, f2)
+        create opD() with (f1, f2, f3)
     }
 }

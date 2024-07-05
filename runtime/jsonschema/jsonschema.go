@@ -533,6 +533,24 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		asc := "asc"
 		desc := "desc"
 		prop.Enum = []*string{&asc, &desc}
+	case proto.Type_TYPE_INLINE_FILE:
+		// if we have an action, then this field is used as an input, so the type will be a data-url
+		if action != nil {
+			prop.Type = "string"
+			prop.Format = "data-url"
+		} else {
+			// if the field is as part of a response, then the action is nil and we want to return an object
+			prop.Type = "object"
+			prop.Properties = map[string]JSONSchema{
+				"filename":    {Type: "string"},
+				"contentType": {Type: "string"},
+				"size":        {Type: "number"},
+				"key":         {Type: "string"},
+				"public":      {Type: "boolean"},
+				"url":         {Type: "string"},
+			}
+			prop.Required = []string{"filename", "contentType", "size", "key", "public"}
+		}
 	}
 
 	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL && t.Type != proto.Type_TYPE_UNION) {
