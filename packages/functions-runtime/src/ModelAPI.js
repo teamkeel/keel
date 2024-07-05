@@ -28,10 +28,16 @@ const { DatabaseError } = require("./errors");
  *  referencesTable: string,
  * }} RelationshipConfig
  *
+ * ColumnConfig is a simple representation of a model field that is a more
+ * complex type of field; for example InlineFiles
+ * @typedef{{
+ *  type: "inlineFile"
+ * }} ColumnConfig
+ *
  * TableConfig is an object where the keys are relationship field names
  * (which don't exist in the database) and the values are RelationshipConfig
  * objects describing that relationship.
- * @typedef {Object.<string, RelationshipConfig} TableConfig
+ * @typedef {Object.<string, RelationshipConfig | ColumnConfig} TableConfig
  *
  * TableConfigMap is mapping of database table names to TableConfig objects
  * @typedef {Object.<string, TableConfig>} TableConfigMap
