@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -10,6 +11,11 @@ import (
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
+
+type JsonResponse struct {
+	ValidationErrors errorhandling.ValidationErrors `json:"validationErrors"`
+	ConfigErrors     config.ConfigErrors            `json:"configErrors"`
+}
 
 var validateCmd = &cobra.Command{
 	Use:   "validate",
@@ -25,6 +31,31 @@ var validateCmd = &cobra.Command{
 
 		validationErrors := &errorhandling.ValidationErrors{}
 		configErrors := &config.ConfigErrors{}
+
+		if flagJsonOutput {
+			var resp JsonResponse
+			switch {
+			case errors.As(err, &validationErrors):
+				resp = JsonResponse{
+					ValidationErrors: *validationErrors,
+				}
+			case errors.As(err, &configErrors):
+				resp = JsonResponse{
+					ConfigErrors: *configErrors,
+				}
+			default:
+				return err
+			}
+
+			json, err := json.Marshal(resp)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(string(json))
+
+			return nil
+		}
 
 		switch {
 		case errors.As(err, &validationErrors):
@@ -49,4 +80,5 @@ var validateCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(validateCmd)
+	validateCmd.Flags().BoolVar(&flagJsonOutput, "json", false, "output validation and config errors as json")
 }
