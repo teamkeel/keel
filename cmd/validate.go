@@ -24,27 +24,35 @@ var validateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		b := schema.Builder{}
 		_, err := b.MakeFromDirectory(flagProjectDir)
-		if err == nil {
+		if err == nil && !flagJsonOutput {
 			fmt.Println("✨ Everything's looking good!")
 			return nil
 		}
 
-		validationErrors := &errorhandling.ValidationErrors{}
-		configErrors := &config.ConfigErrors{}
+		validationErrors := &errorhandling.ValidationErrors{
+			Errors:   []*errorhandling.ValidationError{},
+			Warnings: []*errorhandling.ValidationError{},
+		}
+
+		configErrors := &config.ConfigErrors{
+			Errors: []*config.ConfigError{},
+		}
 
 		if flagJsonOutput {
-			var resp JsonResponse
+			resp := JsonResponse{
+				ValidationErrors: *validationErrors,
+				ConfigErrors:     *configErrors,
+			}
+
 			switch {
 			case errors.As(err, &validationErrors):
-				resp = JsonResponse{
-					ValidationErrors: *validationErrors,
-				}
+				resp.ValidationErrors = *validationErrors
 			case errors.As(err, &configErrors):
-				resp = JsonResponse{
-					ConfigErrors: *configErrors,
-				}
+				resp.ConfigErrors = *configErrors
 			default:
-				return err
+				if err != nil {
+					return err
+				}
 			}
 
 			json, err := json.Marshal(resp)
