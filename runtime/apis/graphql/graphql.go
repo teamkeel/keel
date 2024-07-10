@@ -867,7 +867,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(field *proto.MessageField) (graphql
 	} else {
 		var ok bool
 		if in, ok = protoTypeToGraphQLInput[field.Type.Type]; !ok {
-			return nil, fmt.Errorf("message %s has unsupported message field type: %s", field.MessageName, field.Type.Type.String())
+			return nil, fmt.Errorf("message %s has unsupported message field (%s) type: %s", field.MessageName, field.Name, field.Type.Type.String())
 		}
 	}
 	return in, nil

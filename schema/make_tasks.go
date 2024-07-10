@@ -431,6 +431,7 @@ func makeCreateTaskInputMessage() *proto.Message {
 				MessageName: createTaskInputMessageName,
 				Name:        "topic",
 				Type: &proto.TypeInfo{
+					Type:     proto.Type_TYPE_ENUM,
 					EnumName: wrapperspb.String(parser.TaskTypeEnumName),
 				},
 			},
@@ -438,6 +439,7 @@ func makeCreateTaskInputMessage() *proto.Message {
 				MessageName: createTaskInputMessageName,
 				Name:        "values",
 				Type: &proto.TypeInfo{
+					Type:       proto.Type_TYPE_UNION,
 					UnionNames: []*wrapperspb.StringValue{},
 				},
 			},
@@ -463,6 +465,7 @@ func makeUpdateTaskInputMessage() *proto.Message {
 				MessageName: updateTaskInputMessageName,
 				Name:        "values",
 				Type: &proto.TypeInfo{
+					Type:       proto.Type_TYPE_UNION,
 					UnionNames: []*wrapperspb.StringValue{},
 				},
 			},
