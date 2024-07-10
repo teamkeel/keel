@@ -606,7 +606,7 @@ func GetRelationshipCandidates(asts []*parser.AST, model *parser.ModelNode, fiel
 	candidates := []*Relationship{}
 
 	otherModel := Model(asts, field.Type.Value)
-	if otherModel == nil {
+	if otherModel == nil || model == nil {
 		return candidates
 	}
 
@@ -679,7 +679,7 @@ func GetRelationship(asts []*parser.AST, currentModel *parser.ModelNode, current
 	candidates := GetRelationshipCandidates(asts, currentModel, currentField)
 
 	otherModel := Model(asts, currentField.Type.Value)
-	if otherModel == nil {
+	if otherModel == nil || currentModel == nil {
 		return nil, nil
 	}
 
