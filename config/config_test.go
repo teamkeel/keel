@@ -22,7 +22,7 @@ func TestFailConfigValue(t *testing.T) {
 	_, err := Load("fixtures/test_failing_config.yaml")
 	assert.Error(t, err)
 
-	assert.Equal(t, "could not unmarshal config file: yaml: unmarshal errors:\n  line 4: cannot unmarshal !!seq into string", err.Error())
+	assert.Equal(t, "could not unmarshal config file: yaml: unmarshal errors:\n  line 4: cannot unmarshal !!seq into string\n", err.Error())
 }
 
 func TestDuplicates(t *testing.T) {
