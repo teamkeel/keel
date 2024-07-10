@@ -8,6 +8,15 @@ topic CallUser {
     }
 }
 
+topic RateUser {
+    fields {
+        name Text
+    }
+    inputs {
+        nice Boolean
+    }
+}
+
 model User {
     fields {
         name Text

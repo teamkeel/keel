@@ -129,9 +129,9 @@
         {
           "modelName": "Task",
           "name": "createTask",
-          "type": "ACTION_TYPE_WRITE",
+          "type": "ACTION_TYPE_CREATE",
           "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "Any",
+          "inputMessageName": "CreateTaskInput",
           "responseMessageName": "Any"
         },
         {
@@ -147,7 +147,7 @@
           "name": "updateTask",
           "type": "ACTION_TYPE_WRITE",
           "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "Any",
+          "inputMessageName": "UpdateTaskInput",
           "responseMessageName": "Any"
         },
         {
@@ -155,7 +155,7 @@
           "name": "completeTask",
           "type": "ACTION_TYPE_WRITE",
           "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "Any",
+          "inputMessageName": "UpdateTaskInput",
           "responseMessageName": "Any"
         },
         {
@@ -342,6 +342,132 @@
       ]
     },
     {
+      "name": "RateUserFields",
+      "fields": [
+        {
+          "modelName": "RateUserFields",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true
+        },
+        {
+          "modelName": "RateUserFields",
+          "name": "task",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Task"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "taskId"
+        },
+        {
+          "modelName": "RateUserFields",
+          "name": "taskId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Task",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "RateUserFields",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "RateUserFields",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "RateUserFields",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RateUserInputs",
+      "fields": [
+        {
+          "modelName": "RateUserInputs",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true
+        },
+        {
+          "modelName": "RateUserInputs",
+          "name": "task",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Task"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "taskId"
+        },
+        {
+          "modelName": "RateUserInputs",
+          "name": "taskId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Task",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "RateUserInputs",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "RateUserInputs",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "RateUserInputs",
+          "name": "nice",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        }
+      ]
+    },
+    {
       "name": "User",
       "fields": [
         {
@@ -395,7 +521,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -432,7 +560,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -621,6 +751,12 @@
           "modelName": "CallUserInputs"
         },
         {
+          "modelName": "RateUserFields"
+        },
+        {
+          "modelName": "RateUserInputs"
+        },
+        {
           "modelName": "User"
         },
         {
@@ -663,6 +799,9 @@
       "values": [
         {
           "name": "CallUser"
+        },
+        {
+          "name": "RateUser"
         }
       ]
     }
@@ -716,6 +855,52 @@
       "name": "ResetPasswordResponse"
     },
     {
+      "name": "CreateTaskInput",
+      "fields": [
+        {
+          "messageName": "CreateTaskInput",
+          "name": "topic",
+          "type": {
+            "enumName": "TaskType"
+          }
+        },
+        {
+          "messageName": "CreateTaskInput",
+          "name": "values",
+          "type": {
+            "unionNames": [
+              "CallUserCreateInput",
+              "RateUserCreateInput"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateTaskInput",
+      "fields": [
+        {
+          "messageName": "UpdateTaskInput",
+          "name": "task_id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Task",
+            "fieldName": "id"
+          }
+        },
+        {
+          "messageName": "UpdateTaskInput",
+          "name": "values",
+          "type": {
+            "unionNames": [
+              "CallUserUpdateInput",
+              "RateUserUpdateInput"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "CallUserCreateInput",
       "fields": [
         {
@@ -740,6 +925,30 @@
         {
           "messageName": "CallUserUpdateInput",
           "name": "answered",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RateUserCreateInput",
+      "fields": [
+        {
+          "messageName": "RateUserCreateInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RateUserUpdateInput",
+      "fields": [
+        {
+          "messageName": "RateUserUpdateInput",
+          "name": "nice",
           "type": {
             "type": "TYPE_BOOL"
           }

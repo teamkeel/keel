@@ -8,6 +8,11 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
+const (
+	createTaskInputMessageName = "CreateTaskInput"
+	updateTaskInputMessageName = "UpdateTaskInput"
+)
+
 // makeBuiltInTasks will make all the items required for Keel Tasks: Task Model, TaskStatus & TaskType Enum
 func (scm *Builder) makeBuiltInTasks() {
 	statusEnum := &proto.Enum{
@@ -24,8 +29,12 @@ func (scm *Builder) makeBuiltInTasks() {
 		Name:   parser.TaskTypeEnumName,
 		Values: []*proto.EnumValue{},
 	}
-
 	scm.proto.Enums = append(scm.proto.Enums, statusEnum, typeEnum)
+
+	// add the create task input message
+	scm.proto.Messages = append(scm.proto.Messages, makeCreateTaskInputMessage())
+	// add the update task input message
+	scm.proto.Messages = append(scm.proto.Messages, makeUpdateTaskInputMessage())
 
 	protoModel := &proto.Model{
 		Name: parser.TaskModelName,
@@ -151,8 +160,8 @@ func (scm *Builder) makeBuiltInTasks() {
 				ModelName:           parser.TaskModelName,
 				Name:                parser.TaskActionNameCreateTask,
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
-				Type:                proto.ActionType_ACTION_TYPE_WRITE,
-				InputMessageName:    parser.MessageFieldTypeAny, // TODO: make this something else
+				Type:                proto.ActionType_ACTION_TYPE_CREATE,
+				InputMessageName:    createTaskInputMessageName, // TODO: make this something else
 				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
 			},
 			{
@@ -168,7 +177,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Name:                parser.TaskActionNameUpdateTask,
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_WRITE,
-				InputMessageName:    parser.MessageFieldTypeAny, // TODO: make this something else
+				InputMessageName:    updateTaskInputMessageName, // TODO: make this something else
 				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
 			},
 			{
@@ -176,7 +185,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Name:                parser.TaskActionNameCompleteTask,
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_WRITE,
-				InputMessageName:    parser.MessageFieldTypeAny, // TODO: make this something else
+				InputMessageName:    updateTaskInputMessageName, // TODO: make this something else
 				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
 			},
 			{
@@ -399,7 +408,66 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 	scm.proto.Models = append(scm.proto.Models, fieldsModel)
 	scm.proto.Models = append(scm.proto.Models, inputsModel)
 
+	// add the create (fieldsMessage) and update (inputsMessage) input messages
 	scm.proto.Messages = append(scm.proto.Messages, fieldsMessage, inputsMessage)
+
+	// and add the message to the union type of the createTaskInput
+	cm := proto.FindMessage(scm.proto.Messages, createTaskInputMessageName)
+	cmf := proto.FindMessageField(cm, "values")
+	cmf.Type.UnionNames = append(cmf.Type.UnionNames, wrapperspb.String(fieldsMessage.Name))
+
+	// and add the message to the union type of the updateTaskInput
+	um := proto.FindMessage(scm.proto.Messages, updateTaskInputMessageName)
+	umf := proto.FindMessageField(um, "values")
+	umf.Type.UnionNames = append(umf.Type.UnionNames, wrapperspb.String(inputsMessage.Name))
+}
+
+// makeCreateTaskInputMessage creates a input message to be used as part of the createTask action
+func makeCreateTaskInputMessage() *proto.Message {
+	return &proto.Message{
+		Name: createTaskInputMessageName,
+		Fields: []*proto.MessageField{
+			{
+				MessageName: createTaskInputMessageName,
+				Name:        "topic",
+				Type: &proto.TypeInfo{
+					EnumName: wrapperspb.String(parser.TaskTypeEnumName),
+				},
+			},
+			{
+				MessageName: createTaskInputMessageName,
+				Name:        "values",
+				Type: &proto.TypeInfo{
+					UnionNames: []*wrapperspb.StringValue{},
+				},
+			},
+		},
+	}
+}
+
+// makeUpdateTaskInputMessage creates a input message to be used as part of the updateTask/completeTask action
+func makeUpdateTaskInputMessage() *proto.Message {
+	return &proto.Message{
+		Name: updateTaskInputMessageName,
+		Fields: []*proto.MessageField{
+			{
+				MessageName: updateTaskInputMessageName,
+				Name:        "task_id",
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(parser.TaskModelName),
+					FieldName: wrapperspb.String(parser.FieldNameId),
+				},
+			},
+			{
+				MessageName: updateTaskInputMessageName,
+				Name:        "values",
+				Type: &proto.TypeInfo{
+					UnionNames: []*wrapperspb.StringValue{},
+				},
+			},
+		},
+	}
 }
 
 // makeTopicFieldsModelName returns a model name for fields model for the given topic
