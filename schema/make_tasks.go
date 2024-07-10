@@ -352,19 +352,54 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 		},
 	}
 
+	// make the message used to create a task for this topic. This message will be used to populate the Fields model
+	fieldsMessage := &proto.Message{
+		Name: makeTopicCreateMessageName(topicNode.Name.Value),
+	}
+	// make the message used to update a task for this topic. This message will be used to populate the Inputs model
+	inputsMessage := &proto.Message{
+		Name: makeTopicUpdateMessageName(topicNode.Name.Value),
+	}
+
 	for _, section := range topicNode.Sections {
 		switch {
 		case section.Fields != nil:
+			// make the model fields
 			fields := scm.makeFields(section.Fields, fieldsModel.Name)
 			fieldsModel.Fields = append(fieldsModel.Fields, fields...)
+
+			// add the fields to the input message
+			for _, field := range section.Fields {
+				fieldsMessage.Fields = append(fieldsMessage.Fields, &proto.MessageField{
+					Name:        field.Name.Value,
+					Type:        scm.parserFieldToProtoTypeInfo(field),
+					Optional:    field.Optional,
+					Nullable:    false, // TODO: can explicit inputs use the null value?
+					MessageName: fieldsMessage.Name,
+				})
+			}
 		case section.Inputs != nil:
+			// make the model fields
 			fields := scm.makeFields(section.Inputs, inputsModel.Name)
 			inputsModel.Fields = append(inputsModel.Fields, fields...)
+
+			// add the fields to the input message
+			for _, field := range section.Inputs {
+				inputsMessage.Fields = append(inputsMessage.Fields, &proto.MessageField{
+					Name:        field.Name.Value,
+					Type:        scm.parserFieldToProtoTypeInfo(field),
+					Optional:    field.Optional,
+					Nullable:    false, // TODO: can explicit inputs use the null value?
+					MessageName: inputsMessage.Name,
+				})
+			}
 		}
 	}
 
 	scm.proto.Models = append(scm.proto.Models, fieldsModel)
 	scm.proto.Models = append(scm.proto.Models, inputsModel)
+
+	scm.proto.Messages = append(scm.proto.Messages, fieldsMessage, inputsMessage)
 }
 
 // makeTopicFieldsModelName returns a model name for fields model for the given topic
@@ -375,4 +410,14 @@ func makeTopicFieldsModelName(topicName string) string {
 // makeTopicInputsModelName returns a model name for inputs model for the given topic
 func makeTopicInputsModelName(topicName string) string {
 	return fmt.Sprintf("%sInputs", topicName)
+}
+
+// makeTopicCreateMessageName returns a name for the message used to create a new task for the given topic
+func makeTopicCreateMessageName(topicName string) string {
+	return fmt.Sprintf("%sCreateInput", topicName)
+}
+
+// makeTopicUpdateMessageName returns a name for the message used to update a task for the given topic
+func makeTopicUpdateMessageName(topicName string) string {
+	return fmt.Sprintf("%sUpdateInput", topicName)
 }

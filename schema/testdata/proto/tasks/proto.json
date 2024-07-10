@@ -395,9 +395,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -434,9 +432,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -718,6 +714,37 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CallUserCreateInput",
+      "fields": [
+        {
+          "messageName": "CallUserCreateInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "CallUserCreateInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CallUserUpdateInput",
+      "fields": [
+        {
+          "messageName": "CallUserUpdateInput",
+          "name": "answered",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        }
+      ]
     }
   ]
 }
