@@ -136,6 +136,39 @@ const (
 )
 
 const (
+	TaskModelName              = "Task"
+	TaskFieldNameType          = "type"
+	TaskFieldNameStatus        = "status"
+	TaskFieldNameAssignedTo    = "assignedTo"
+	TaskFieldNameAssignedAt    = "assignedAt"
+	TaskFieldNameResolvedBy    = "resolvedBy"
+	TaskFieldNameResolvedAt    = "resolvedAt"
+	TaskFieldNameDeferredUntil = "deferredUntil"
+	TaskFieldNameVisibleFrom   = "visibleFrom"
+	TaskFieldNameTask          = "task"
+
+	TaskStatusEnumName = "TaskStatus"
+	TaskTypeEnumName   = "TaskType"
+
+	TaskStatusOpen      = "OPEN"
+	TaskStatusAssigned  = "ASSIGNED"
+	TaskStatusDeferred  = "DEFERRED"
+	TaskStatusCompleted = "COMPLETED"
+	TaskStatusCancelled = "CANCELLED"
+
+	TaskActionNameCreateTask   = "createTask"
+	TaskActionNameGetTask      = "getTask"
+	TaskActionNameUpdateTask   = "updateTask"
+	TaskActionNameCompleteTask = "completeTask"
+	TaskActionNameAssignTask   = "assignTask"
+	TaskActionNameDeferTask    = "deferTask"
+	TaskActionNameCancelTask   = "cancelTask"
+	TaskActionNameGetNextTask  = "getNextTask"
+	TaskActionNameListTopics   = "listTopics"
+	TaskActionNameListTasks    = "listTasks"
+)
+
+const (
 	RequestPasswordResetActionName = "requestPasswordReset"
 	PasswordResetActionName        = "resetPassword"
 )

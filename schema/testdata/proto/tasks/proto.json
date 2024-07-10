@@ -1,0 +1,595 @@
+{
+  "models": [
+    {
+      "name": "Task",
+      "fields": [
+        {
+          "modelName": "Task",
+          "name": "type",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "TaskType"
+          }
+        },
+        {
+          "modelName": "Task",
+          "name": "status",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "TaskStatus"
+          }
+        },
+        {
+          "modelName": "Task",
+          "name": "assignedTo",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Task",
+          "name": "assignedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Task",
+          "name": "resolvedBy",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Task",
+          "name": "resolvedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Task",
+          "name": "deferredUntil",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Task",
+          "name": "visibleFrom",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "optional": true
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Task",
+          "name": "createTask",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
+        },
+        {
+          "modelName": "Task",
+          "name": "getTask",
+          "type": "ACTION_TYPE_READ",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
+        },
+        {
+          "modelName": "Task",
+          "name": "updateTask",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
+        },
+        {
+          "modelName": "Task",
+          "name": "completeTask",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
+        },
+        {
+          "modelName": "Task",
+          "name": "assignTask",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
+        },
+        {
+          "modelName": "Task",
+          "name": "deferTask",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
+        },
+        {
+          "modelName": "Task",
+          "name": "cancelTask",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
+        },
+        {
+          "modelName": "Task",
+          "name": "getNextTask",
+          "type": "ACTION_TYPE_READ",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
+        },
+        {
+          "modelName": "Task",
+          "name": "listTopics",
+          "type": "ACTION_TYPE_READ",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
+        },
+        {
+          "modelName": "Task",
+          "name": "listTasks",
+          "type": "ACTION_TYPE_READ",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "Any",
+          "responseMessageName": "Any"
+        }
+      ]
+    },
+    {
+      "name": "CallUserFields",
+      "fields": [
+        {
+          "modelName": "CallUserFields",
+          "name": "task",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Task"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "TaskId",
+          "foreignKeyInfo": {
+            "relatedModelName": "Task",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "CallUserFields",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "CallUserFields",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CallUserInputs",
+      "fields": [
+        {
+          "modelName": "CallUserInputs",
+          "name": "task",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Task"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "TaskId",
+          "foreignKeyInfo": {
+            "relatedModelName": "Task",
+            "relatedModelField": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "fields": [
+        {
+          "modelName": "User",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "issuer"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "givenName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "familyName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "middleName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "nickName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "profile",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "picture",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "website",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "gender",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "zoneInfo",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "locale",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Task",
+          "modelActions": [
+            {
+              "actionName": "createTask"
+            },
+            {
+              "actionName": "getTask"
+            },
+            {
+              "actionName": "updateTask"
+            },
+            {
+              "actionName": "completeTask"
+            },
+            {
+              "actionName": "assignTask"
+            },
+            {
+              "actionName": "deferTask"
+            },
+            {
+              "actionName": "cancelTask"
+            },
+            {
+              "actionName": "getNextTask"
+            },
+            {
+              "actionName": "listTopics"
+            },
+            {
+              "actionName": "listTasks"
+            }
+          ]
+        },
+        {
+          "modelName": "CallUserFields"
+        },
+        {
+          "modelName": "CallUserInputs"
+        },
+        {
+          "modelName": "User"
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "name": "TaskStatus",
+      "values": [
+        {
+          "name": "OPEN"
+        },
+        {
+          "name": "ASSIGNED"
+        },
+        {
+          "name": "DEFERRED"
+        },
+        {
+          "name": "COMPLETED"
+        },
+        {
+          "name": "CANCELLED"
+        }
+      ]
+    },
+    {
+      "name": "TaskType",
+      "values": [
+        {
+          "name": "CallUser"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    }
+  ]
+}

@@ -360,17 +360,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Err = msg.Err
 		m.MigrationChanges = msg.Changes
 
-		// we now set the file Storage using a dbstore
-		storer, err := storage.NewDbStore(context.Background(), m.Database)
-		if err != nil {
-			m.Err = err
-			return m, tea.Quit
-		}
-		m.Storage = storer
-
 		if m.Err != nil {
 			return m, nil
 		}
+
+		// we now set the file Storage using a dbstore
+		storer, err := storage.NewDbStore(context.Background(), m.Database)
+		if err != nil {
+			m.Err = fmt.Errorf("starting storage: %w", err)
+			return m, tea.Quit
+		}
+		m.Storage = storer
 
 		if m.Mode == ModeRun && !node.HasFunctions(m.Schema) {
 			m.Status = StatusRunning

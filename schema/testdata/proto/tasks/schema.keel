@@ -1,0 +1,15 @@
+topic CallUser {
+    fields {
+        name Text
+        email Text
+    }
+    inputs {
+        answered Bool
+    }
+}
+
+model User {
+    fields {
+        name Text
+    }
+}

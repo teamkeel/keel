@@ -9,6 +9,7 @@ import (
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -17,8 +18,8 @@ import (
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/actions")
 
 const (
-	requestPasswordResetActionName = "requestPasswordReset"
-	passwordResetActionName        = "resetPassword"
+	requestPasswordResetActionName = parser.RequestPasswordResetActionName
+	passwordResetActionName        = parser.PasswordResetActionName
 )
 
 type Scope struct {

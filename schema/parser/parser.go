@@ -29,7 +29,32 @@ type DeclarationNode struct {
 	API     *APINode     `| "api" @@`
 	Enum    *EnumNode    `| "enum" @@`
 	Message *MessageNode `| "message" @@`
+	Topic   *TopicNode   `| "topic" @@`
 	Job     *JobNode     `| "job" @@)`
+}
+
+type TopicNode struct {
+	node.Node
+
+	Name     NameNode            `@@`
+	Sections []*TopicSectionNode `"{" @@* "}"`
+}
+
+type TopicSectionNode struct {
+	node.Node
+
+	Fields    []*FieldNode      `( "fields" "{" @@* "}"`
+	Inputs    []*TopicInputNode `| "inputs" "{" @@* "}"`
+	Attribute *AttributeNode    `| @@)`
+}
+
+type TopicInputNode struct {
+	node.Node
+
+	Name     NameNode `@@`
+	Type     NameNode `@@`
+	Repeated bool     `( @( "[" "]" )`
+	Optional bool     `| @( "?" ))?`
 }
 
 type ModelNode struct {

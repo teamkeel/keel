@@ -29,6 +29,10 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 		}
 	}
 
+	if query.HasTopics(scm.asts) {
+		scm.makeBuiltInTasks()
+	}
+
 	for _, parserSchema := range scm.asts {
 		for _, decl := range parserSchema.Declarations {
 			switch {
@@ -42,6 +46,8 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 				scm.makeEnum(decl)
 			case decl.Job != nil:
 				scm.makeJob(decl)
+			case decl.Topic != nil:
+				scm.makeTopic(decl)
 			case decl.Message != nil:
 				// noop
 			default:
@@ -1362,23 +1368,25 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 	// Handle @unique attribute at model level which expresses
 	// unique constrains across multiple fields
 	model := query.Model(scm.asts, modelName)
-	for _, attr := range query.ModelAttributes(model) {
-		if attr.Name.Value != parser.AttributeUnique {
-			continue
+	if model != nil {
+		for _, attr := range query.ModelAttributes(model) {
+			if attr.Name.Value != parser.AttributeUnique {
+				continue
+			}
+
+			value, _ := attr.Arguments[0].Expression.ToValue()
+			fieldNames := lo.Map(value.Array.Values, func(v *parser.Operand, i int) string {
+				return v.Ident.ToString()
+			})
+
+			if !lo.Contains(fieldNames, parserField.Name.Value) {
+				continue
+			}
+
+			protoField.UniqueWith = lo.Filter(fieldNames, func(v string, i int) bool {
+				return v != parserField.Name.Value
+			})
 		}
-
-		value, _ := attr.Arguments[0].Expression.ToValue()
-		fieldNames := lo.Map(value.Array.Values, func(v *parser.Operand, i int) string {
-			return v.Ident.ToString()
-		})
-
-		if !lo.Contains(fieldNames, parserField.Name.Value) {
-			continue
-		}
-
-		protoField.UniqueWith = lo.Filter(fieldNames, func(v string, i int) bool {
-			return v != parserField.Name.Value
-		})
 	}
 
 	scm.applyFieldAttributes(parserField, protoField)

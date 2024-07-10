@@ -25,6 +25,19 @@ func ExcludeBuiltInModels(m *parser.ModelNode) bool {
 	return !m.BuiltIn
 }
 
+// HasTopics checks if we have any task topics defined
+func HasTopics(asts []*parser.AST) bool {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Topic != nil {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func Models(asts []*parser.AST, filters ...ModelFilter) (res []*parser.ModelNode) {
 	for _, ast := range asts {
 	models:
