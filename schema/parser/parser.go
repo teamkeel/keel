@@ -43,18 +43,9 @@ type TopicNode struct {
 type TopicSectionNode struct {
 	node.Node
 
-	Fields    []*FieldNode      `( "fields" "{" @@* "}"`
-	Inputs    []*TopicInputNode `| "inputs" "{" @@* "}"`
-	Attribute *AttributeNode    `| @@)`
-}
-
-type TopicInputNode struct {
-	node.Node
-
-	Name     NameNode `@@`
-	Type     NameNode `@@`
-	Repeated bool     `( @( "[" "]" )`
-	Optional bool     `| @( "?" ))?`
+	Fields    []*FieldNode   `( "fields" "{" @@* "}"`
+	Inputs    []*FieldNode   `| "inputs" "{" @@* "}"`
+	Attribute *AttributeNode `| @@)`
 }
 
 type ModelNode struct {

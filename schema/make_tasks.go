@@ -31,6 +31,15 @@ func (scm *Builder) makeBuiltInTasks() {
 		Name: parser.TaskModelName,
 		Fields: []*proto.Field{
 			{
+				ModelName:  parser.TaskModelName,
+				Name:       parser.FieldNameId,
+				PrimaryKey: true,
+				Unique:     true,
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_ID,
+				},
+			},
+			{
 				ModelName: parser.TaskModelName,
 				Name:      parser.TaskFieldNameType,
 				Optional:  false,
@@ -123,6 +132,18 @@ func (scm *Builder) makeBuiltInTasks() {
 				Type: &proto.TypeInfo{
 					Type: proto.Type_TYPE_DATETIME,
 				},
+			},
+			{
+				ModelName:    parser.TaskModelName,
+				Name:         parser.FieldNameCreatedAt,
+				Type:         &proto.TypeInfo{Type: proto.Type_TYPE_DATETIME},
+				DefaultValue: &proto.DefaultValue{UseZeroValue: true},
+			},
+			{
+				ModelName:    parser.TaskModelName,
+				Name:         parser.FieldNameUpdatedAt,
+				Type:         &proto.TypeInfo{Type: proto.Type_TYPE_DATETIME},
+				DefaultValue: &proto.DefaultValue{UseZeroValue: true},
 			},
 		},
 		Actions: []*proto.Action{
@@ -231,6 +252,15 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 		Name: fieldsModelName,
 		Fields: []*proto.Field{
 			{
+				ModelName:  fieldsModelName,
+				Name:       parser.FieldNameId,
+				PrimaryKey: true,
+				Unique:     true,
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_ID,
+				},
+			},
+			{
 				ModelName: fieldsModelName,
 				Name:      parser.TaskFieldNameTask,
 				Type: &proto.TypeInfo{
@@ -253,6 +283,18 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 					RelatedModelName:  parser.TaskModelName,
 					RelatedModelField: parser.FieldNameId,
 				},
+			},
+			{
+				ModelName:    fieldsModelName,
+				Name:         parser.FieldNameCreatedAt,
+				Type:         &proto.TypeInfo{Type: proto.Type_TYPE_DATETIME},
+				DefaultValue: &proto.DefaultValue{UseZeroValue: true},
+			},
+			{
+				ModelName:    fieldsModelName,
+				Name:         parser.FieldNameUpdatedAt,
+				Type:         &proto.TypeInfo{Type: proto.Type_TYPE_DATETIME},
+				DefaultValue: &proto.DefaultValue{UseZeroValue: true},
 			},
 		},
 	}
@@ -263,6 +305,15 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 		Name: inputsModelName,
 		Fields: []*proto.Field{
 			{
+				ModelName:  inputsModelName,
+				Name:       parser.FieldNameId,
+				PrimaryKey: true,
+				Unique:     true,
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_ID,
+				},
+			},
+			{
 				ModelName: inputsModelName,
 				Name:      parser.TaskFieldNameTask,
 				Type: &proto.TypeInfo{
@@ -286,6 +337,18 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 					RelatedModelField: parser.FieldNameId,
 				},
 			},
+			{
+				ModelName:    inputsModelName,
+				Name:         parser.FieldNameCreatedAt,
+				Type:         &proto.TypeInfo{Type: proto.Type_TYPE_DATETIME},
+				DefaultValue: &proto.DefaultValue{UseZeroValue: true},
+			},
+			{
+				ModelName:    inputsModelName,
+				Name:         parser.FieldNameUpdatedAt,
+				Type:         &proto.TypeInfo{Type: proto.Type_TYPE_DATETIME},
+				DefaultValue: &proto.DefaultValue{UseZeroValue: true},
+			},
 		},
 	}
 
@@ -295,7 +358,7 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 			fields := scm.makeFields(section.Fields, fieldsModel.Name)
 			fieldsModel.Fields = append(fieldsModel.Fields, fields...)
 		case section.Inputs != nil:
-			fields := scm.makeFields(section.Fields, inputsModel.Name)
+			fields := scm.makeFields(section.Inputs, inputsModel.Name)
 			inputsModel.Fields = append(inputsModel.Fields, fields...)
 		}
 	}

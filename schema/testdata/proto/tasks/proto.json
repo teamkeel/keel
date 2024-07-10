@@ -5,6 +5,15 @@
       "fields": [
         {
           "modelName": "Task",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true
+        },
+        {
+          "modelName": "Task",
           "name": "type",
           "type": {
             "type": "TYPE_ENUM",
@@ -27,6 +36,15 @@
             "modelName": "Identity"
           },
           "optional": true,
+          "foreignKeyFieldName": "assignedToId"
+        },
+        {
+          "modelName": "Task",
+          "name": "assignedToId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
           "foreignKeyInfo": {
             "relatedModelName": "Identity",
             "relatedModelField": "id"
@@ -46,6 +64,15 @@
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Identity"
+          },
+          "optional": true,
+          "foreignKeyFieldName": "resolvedById"
+        },
+        {
+          "modelName": "Task",
+          "name": "resolvedById",
+          "type": {
+            "type": "TYPE_ID"
           },
           "optional": true,
           "foreignKeyInfo": {
@@ -76,6 +103,26 @@
             "type": "TYPE_DATETIME"
           },
           "optional": true
+        },
+        {
+          "modelName": "Task",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Task",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         }
       ],
       "actions": [
@@ -166,16 +213,53 @@
       "fields": [
         {
           "modelName": "CallUserFields",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true
+        },
+        {
+          "modelName": "CallUserFields",
           "name": "task",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Task"
           },
           "unique": true,
-          "foreignKeyFieldName": "TaskId",
+          "foreignKeyFieldName": "taskId"
+        },
+        {
+          "modelName": "CallUserFields",
+          "name": "taskId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
           "foreignKeyInfo": {
             "relatedModelName": "Task",
             "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "CallUserFields",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "CallUserFields",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
@@ -199,17 +283,59 @@
       "fields": [
         {
           "modelName": "CallUserInputs",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true
+        },
+        {
+          "modelName": "CallUserInputs",
           "name": "task",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Task"
           },
           "unique": true,
-          "foreignKeyFieldName": "TaskId",
+          "foreignKeyFieldName": "taskId"
+        },
+        {
+          "modelName": "CallUserInputs",
+          "name": "taskId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
           "foreignKeyInfo": {
             "relatedModelName": "Task",
             "relatedModelField": "id"
           }
+        },
+        {
+          "modelName": "CallUserInputs",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "CallUserInputs",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "CallUserInputs",
+          "name": "answered",
+          "type": {}
         }
       ]
     },
