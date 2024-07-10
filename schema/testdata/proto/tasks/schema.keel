@@ -4,7 +4,7 @@ topic CallUser {
         email Text
     }
     inputs {
-        answered Bool
+        answered Boolean
     }
 }
 

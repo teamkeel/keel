@@ -335,7 +335,9 @@
         {
           "modelName": "CallUserInputs",
           "name": "answered",
-          "type": {}
+          "type": {
+            "type": "TYPE_BOOL"
+          }
         }
       ]
     },
