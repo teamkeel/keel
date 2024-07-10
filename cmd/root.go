@@ -27,6 +27,8 @@ var (
 	flagEnvironment      string
 	flagHostname         string
 	flagJsonOutput       bool
+	flagSchema           string
+	flagConfig           string
 )
 
 var rootCmd = &cobra.Command{

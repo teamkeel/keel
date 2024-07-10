@@ -23,7 +23,14 @@ var validateCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		b := schema.Builder{}
-		_, err := b.MakeFromDirectory(flagProjectDir)
+
+		var err error
+		if flagSchema != "" || flagConfig != "" {
+			_, err = b.MakeFromString(flagSchema, flagConfig)
+		} else {
+			_, err = b.MakeFromDirectory(flagProjectDir)
+		}
+
 		if err == nil && !flagJsonOutput {
 			fmt.Println("✨ Everything's looking good!")
 			return nil
@@ -89,4 +96,6 @@ var validateCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(validateCmd)
 	validateCmd.Flags().BoolVar(&flagJsonOutput, "json", false, "output validation and config errors as json")
+	validateCmd.Flags().StringVar(&flagSchema, "schema", "", "the Keel schema passed as an argument")
+	validateCmd.Flags().StringVar(&flagConfig, "config", "", "the Keel config passed as an argument")
 }
