@@ -212,6 +212,8 @@ func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, error) {
 		return GetTask(scope, inputs)
 	case parser.TaskActionNameCreateTask:
 		return CreateTask(scope, inputs)
+	case parser.TaskActionNameGetNextTask:
+		return GetNextTask(scope, inputs)
 	case parser.TaskActionNameCancelTask:
 		return CancelTask(scope, inputs)
 	case parser.TaskActionNameDeferTask:

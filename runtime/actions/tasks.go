@@ -54,9 +54,6 @@ func CreateTask(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	topicType := typedInput.String("type")
 	taskModel := proto.FindModel(scope.Schema.Models, parser.TaskModelName)
-	if taskModel == nil {
-		return nil, errors.New("topic does not exist")
-	}
 
 	query := NewQuery(taskModel)
 	query.AddWriteValue(Field("type"), Value(topicType))
@@ -91,9 +88,22 @@ func CreateTask(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	newTask["inputs"] = newInputs
+	newTask["fields"] = newInputs
 
 	return newTask, nil
+}
+
+func GetNextTask(scope *Scope, input map[string]any) (map[string]any, error) {
+	_, span := tracer.Start(scope.Context, "Get Next Task")
+	defer span.End()
+
+	//query := NewQuery(parser.TaskModelName)
+
+	// Open or assigned to me
+	// ordered by createdAt
+	// where deferredy is null or < now()
+
+	return nil, nil
 }
 
 func CancelTask(scope *Scope, input map[string]any) (map[string]any, error) {
