@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	getTaskInputMessageName    = "GetTaskInput"
 	createTaskInputMessageName = "CreateTaskInput"
 	updateTaskInputMessageName = "UpdateTaskInput"
 	cancelTaskInputMessageName = "CancelTaskInput"
@@ -172,8 +173,8 @@ func (scm *Builder) makeBuiltInTasks() {
 				Name:                parser.TaskActionNameGetTask,
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_READ,
-				InputMessageName:    parser.MessageFieldTypeAny, // TODO: make this something else
-				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
+				InputMessageName:    getTaskInputMessageName,
+				ResponseMessageName: taskResponseMessageName,
 			},
 			{
 				ModelName:           parser.TaskModelName,
@@ -446,6 +447,22 @@ func (scm *Builder) makeTasksMessages() {
 	scm.proto.Messages = append(scm.proto.Messages, buildCreateTaskInputMessage())
 	// add the update task input message
 	scm.proto.Messages = append(scm.proto.Messages, buildUpdateTaskInputMessage())
+
+	// add the get task input message
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: getTaskInputMessageName,
+		Fields: []*proto.MessageField{
+			{
+				MessageName: getTaskInputMessageName,
+				Name:        parser.FieldNameId,
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(parser.TaskModelName),
+					FieldName: wrapperspb.String(parser.FieldNameId),
+				},
+			},
+		},
+	})
 
 	// add the cancel task input message
 	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{

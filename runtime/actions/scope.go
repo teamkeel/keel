@@ -208,6 +208,8 @@ func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, error) {
 	case passwordResetActionName:
 		err := ResetPassword(scope, inputs)
 		return map[string]any{}, err
+	case parser.TaskActionNameGetTask:
+		return GetTask(scope, inputs)
 	case parser.TaskActionNameCreateTask:
 		return CreateTask(scope, inputs)
 	case parser.TaskActionNameCancelTask:
