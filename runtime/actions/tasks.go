@@ -179,6 +179,7 @@ func GetNextTask(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	queryAssign.AddWriteValue(Field(parser.TaskFieldNameStatus), Value(parser.TaskStatusAssigned))
 	queryAssign.AddWriteValue(Field(parser.TaskFieldNameAssignedToId), Value(identity["id"]))
+	queryAssign.AddWriteValue(Field(parser.TaskFieldNameAssignedAt), Value(time.Now()))
 	queryAssign.AppendReturning(AllFields())
 	statement = queryAssign.UpdateStatement(scope.Context)
 
