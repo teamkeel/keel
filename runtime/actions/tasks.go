@@ -46,23 +46,20 @@ func GetTask(scope *Scope, input map[string]any) (map[string]any, error) {
 }
 
 func CreateTask(scope *Scope, input map[string]any) (map[string]any, error) {
+	_, span := tracer.Start(scope.Context, "Create Task")
+	defer span.End()
+
 	var err error
 	typedInput := typed.New(input)
 
-	topic := typedInput.String("topic")
+	topicType := typedInput.String("type")
 	taskModel := proto.FindModel(scope.Schema.Models, parser.TaskModelName)
 	if taskModel == nil {
 		return nil, errors.New("topic does not exist")
 	}
 
 	query := NewQuery(taskModel)
-	err = query.captureWriteValues(scope, map[string]any{
-		"typeType": "Type",
-		"status":   "New",
-	})
-	if err != nil {
-		return nil, err
-	}
+	query.AddWriteValue(Field("type"), Value(topicType))
 	query.AppendReturning(AllFields())
 	statement := query.InsertStatement(scope.Context)
 
@@ -71,15 +68,21 @@ func CreateTask(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	inputsModel := proto.FindModel(scope.Schema.Models, topic+"Inputs")
+	inputsModel := proto.FindModel(scope.Schema.Models, topicType+"Fields")
 	inputsQuery := NewQuery(inputsModel)
-	err = inputsQuery.captureWriteValues(scope, map[string]any{
-		"name":  "Dave",
-		"email": "dave.new@keel.xyz",
-	})
-	if err != nil {
-		return nil, err
+	taskIdField := fmt.Sprintf("%sId", parser.TaskFieldNameTask)
+
+	for _, v := range inputsModel.Fields {
+		value, has := input[v.Name]
+		if has {
+			inputsQuery.AddWriteValue(Field(v.Name), Value(value))
+			continue
+		}
+		if v.Name == taskIdField {
+			inputsQuery.AddWriteValue(Field(taskIdField), Value(newTask["id"]))
+		}
 	}
+
 	query.AppendReturning(AllFields())
 	statement = inputsQuery.InsertStatement(scope.Context)
 

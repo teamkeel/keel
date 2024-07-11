@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        status Status @default(Status.Two)
+    }
+}
+
+enum Status {
+    One
+    Two
+    Three
+}

@@ -29,6 +29,11 @@
           "type": {
             "type": "TYPE_ENUM",
             "enumName": "TaskStatus"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "TaskStatusOpen"
+            }
           }
         },
         {
@@ -175,7 +180,7 @@
           "type": "ACTION_TYPE_WRITE",
           "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "DeferTaskInput",
-          "responseMessageName": "TaskResponse"
+          "responseMessageName": "Any"
         },
         {
           "modelName": "Task",
@@ -183,7 +188,7 @@
           "type": "ACTION_TYPE_WRITE",
           "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "CancelTaskInput",
-          "responseMessageName": "TaskResponse"
+          "responseMessageName": "Any"
         },
         {
           "modelName": "Task",
@@ -221,6 +226,10 @@
             "type": "TYPE_ID"
           },
           "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
           "primaryKey": true,
           "defaultValue": {
             "useZeroValue": true
@@ -298,6 +307,10 @@
           "defaultValue": {
             "useZeroValue": true
           }
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
           "modelName": "CallUserInputs",
@@ -364,6 +377,10 @@
           "defaultValue": {
             "useZeroValue": true
           }
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
           "modelName": "RateUserFields",
@@ -426,6 +443,10 @@
             "type": "TYPE_ID"
           },
           "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
           "primaryKey": true,
           "defaultValue": {
             "useZeroValue": true
@@ -794,17 +815,22 @@
       "values": [
         {
           "name": "Open"
+          "name": "Open"
         },
         {
+          "name": "Assigned"
           "name": "Assigned"
         },
         {
           "name": "Deferred"
+          "name": "Deferred"
         },
         {
           "name": "Completed"
+          "name": "Completed"
         },
         {
+          "name": "Cancelled"
           "name": "Cancelled"
         }
       ]
@@ -981,6 +1007,7 @@
         {
           "messageName": "UpdateTaskInput",
           "name": "id",
+          "name": "id",
           "type": {
             "type": "TYPE_ID",
             "modelName": "Task",
@@ -1001,24 +1028,10 @@
       ]
     },
     {
-      "name": "GetTaskInput",
-      "fields": [
-        {
-          "messageName": "GetTaskInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Task",
-            "fieldName": "id"
-          }
-        }
-      ]
-    },
-    {
       "name": "CancelTaskInput",
       "fields": [
         {
-          "messageName": "CancelTaskInput",
+          "messageName": "UpdateTaskInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -1032,7 +1045,7 @@
       "name": "DeferTaskInput",
       "fields": [
         {
-          "messageName": "DeferTaskInput",
+          "messageName": "UpdateTaskInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -1041,33 +1054,10 @@
           }
         },
         {
-          "messageName": "DeferTaskInput",
+          "messageName": "UpdateTaskInput",
           "name": "deferredUntil",
           "type": {
             "type": "TYPE_DATETIME"
-          }
-        }
-      ]
-    },
-    {
-      "name": "AssignTaskInput",
-      "fields": [
-        {
-          "messageName": "AssignTaskInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Task",
-            "fieldName": "id"
-          }
-        },
-        {
-          "messageName": "AssignTaskInput",
-          "name": "assignedToId",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Identity",
-            "fieldName": "id"
           }
         }
       ]

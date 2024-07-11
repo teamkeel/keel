@@ -62,9 +62,10 @@ func (scm *Builder) makeBuiltInTasks() {
 				},
 			},
 			{
-				ModelName: parser.TaskModelName,
-				Name:      parser.TaskFieldNameStatus,
-				Optional:  false,
+				ModelName:    parser.TaskModelName,
+				Name:         parser.TaskFieldNameStatus,
+				Optional:     false,
+				DefaultValue: &proto.DefaultValue{Expression: &proto.Expression{Source: fmt.Sprintf("%s.%s", parser.TaskStatusEnumName, parser.TaskStatusOpen)}},
 				Type: &proto.TypeInfo{
 					Type:     proto.Type_TYPE_ENUM,
 					EnumName: wrapperspb.String(parser.TaskStatusEnumName),
