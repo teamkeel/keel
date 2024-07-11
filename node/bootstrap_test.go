@@ -16,6 +16,7 @@ import (
 )
 
 func TestBootstrap(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 
 	err := os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
@@ -49,6 +50,7 @@ func TestBootstrap(t *testing.T) {
 }
 
 func TestBootstrapVersionInterpolation(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 
 	err := os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
@@ -86,6 +88,7 @@ func TestBootstrapVersionInterpolation(t *testing.T) {
 }
 
 func TestBootstrapPackageJSONExists(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 
 	err := os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`

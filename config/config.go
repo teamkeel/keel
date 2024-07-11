@@ -133,31 +133,30 @@ func Load(dir string) (*ProjectConfig, error) {
 		return nil, fmt.Errorf("could not read config file: %w", err)
 	}
 
-	var config ProjectConfig
-	err = yaml.Unmarshal(loadConfig, &config)
-	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal config file: %w", err)
-	}
-
-	validationErrors := Validate(&config)
-	if validationErrors != nil {
-		return &config, validationErrors
-	}
-
-	return &config, nil
+	return parseAndValidate(loadConfig)
 }
 
 func LoadFromBytes(data []byte) (*ProjectConfig, error) {
-	var config ProjectConfig
+	return parseAndValidate(data)
+}
 
+func parseAndValidate(data []byte) (*ProjectConfig, error) {
+	var config ProjectConfig
 	err := yaml.Unmarshal(data, &config)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal config file: %w", err)
+		return nil, &ConfigErrors{
+			Errors: []*ConfigError{
+				{
+					Type:    "parsing",
+					Message: fmt.Sprintf("could not unmarshal config file: %s", err.Error()),
+				},
+			},
+		}
 	}
 
-	validationErrors := Validate(&config)
-	if validationErrors != nil {
-		return &config, validationErrors
+	configErrors := Validate(&config)
+	if configErrors != nil {
+		return &config, configErrors
 	}
 
 	return &config, nil

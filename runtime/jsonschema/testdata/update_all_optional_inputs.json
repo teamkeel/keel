@@ -24,6 +24,10 @@
           },
           "name": {
             "type": "string"
+          },
+          "picture": {
+            "type": "string",
+            "format": "data-url"
           }
         },
         "additionalProperties": false

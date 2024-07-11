@@ -21,11 +21,13 @@ import (
 )
 
 func TestProto(t *testing.T) {
+	t.Parallel()
 	testdataDir := "./testdata/proto"
 	testCases, err := os.ReadDir(testdataDir)
 	require.NoError(t, err)
 
-	for _, testCase := range testCases {
+	for _, tc := range testCases {
+		testCase := tc
 		if !testCase.IsDir() {
 			t.Errorf("proto test data directory should only contain directories - file found: %s", testCase.Name())
 			continue
@@ -34,6 +36,7 @@ func TestProto(t *testing.T) {
 		testCaseDir := filepath.Join(testdataDir, testCase.Name())
 
 		t.Run(testCase.Name(), func(t *testing.T) {
+			t.Parallel()
 			expected, err := os.ReadFile(filepath.Join(testCaseDir, "proto.json"))
 			require.NoError(t, err)
 
@@ -61,11 +64,13 @@ func TestProto(t *testing.T) {
 var expectErrorCommentRegex = regexp.MustCompile(`^\s*\/\/\s{0,1}expect-error:`)
 
 func TestValidation(t *testing.T) {
+	t.Parallel()
 	dir := "./testdata/errors"
 	testCases, err := os.ReadDir(dir)
 	require.NoError(t, err)
 
-	for _, testCase := range testCases {
+	for _, tc := range testCases {
+		testCase := tc
 		if testCase.IsDir() {
 			t.Errorf("errors test data directory should only contain keel schema files - directory found: %s", testCase.Name())
 			continue
@@ -74,6 +79,7 @@ func TestValidation(t *testing.T) {
 		testCaseDir := filepath.Join(dir, testCase.Name())
 
 		t.Run(testCase.Name(), func(t *testing.T) {
+			t.Parallel()
 			b, err := os.ReadFile(testCaseDir)
 			require.NoError(t, err)
 

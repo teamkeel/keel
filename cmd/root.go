@@ -26,6 +26,9 @@ var (
 	flagVerboseTracing   bool
 	flagEnvironment      string
 	flagHostname         string
+	flagJsonOutput       bool
+	flagSchema           string
+	flagConfig           string
 )
 
 var rootCmd = &cobra.Command{
@@ -54,7 +57,7 @@ func init() {
 	}
 
 	rootCmd.PersistentFlags().StringVarP(&flagProjectDir, "dir", "d", workingDir, "directory containing a Keel project")
-	rootCmd.PersistentFlags().BoolVarP(&flagVersion, "version", "v", false, "Print the Keel CLI version")
+	rootCmd.PersistentFlags().BoolVarP(&flagVersion, "version", "v", false, "print the Keel CLI version")
 }
 
 func resolvePackageManager(dir string, isInit bool) (string, error) {

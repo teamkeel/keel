@@ -19,6 +19,13 @@
         },
         {
           "modelName": "Foo",
+          "name": "f3",
+          "type": {
+            "type": "TYPE_INLINE_FILE"
+          }
+        },
+        {
+          "modelName": "Foo",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -91,7 +98,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -128,7 +137,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -365,7 +376,9 @@
             "modelName": "Foo",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
@@ -499,7 +512,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "target": ["f1"]
+          "target": [
+            "f1"
+          ]
         },
         {
           "messageName": "OpBWhere",
@@ -508,7 +523,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "IntQueryInput"
           },
-          "target": ["f2"]
+          "target": [
+            "f2"
+          ]
         }
       ]
     },
@@ -568,7 +585,9 @@
             "modelName": "Foo",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
@@ -583,7 +602,9 @@
             "modelName": "Foo",
             "fieldName": "f1"
           },
-          "target": ["f1"]
+          "target": [
+            "f1"
+          ]
         }
       ]
     },
@@ -619,7 +640,9 @@
             "modelName": "Foo",
             "fieldName": "f1"
           },
-          "target": ["f1"]
+          "target": [
+            "f1"
+          ]
         },
         {
           "messageName": "OpDInput",
@@ -629,7 +652,21 @@
             "modelName": "Foo",
             "fieldName": "f2"
           },
-          "target": ["f2"]
+          "target": [
+            "f2"
+          ]
+        },
+        {
+          "messageName": "OpDInput",
+          "name": "f3",
+          "type": {
+            "type": "TYPE_INLINE_FILE",
+            "modelName": "Foo",
+            "fieldName": "f3"
+          },
+          "target": [
+            "f3"
+          ]
         }
       ]
     }

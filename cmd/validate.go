@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -11,20 +12,65 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
+type JsonResponse struct {
+	ValidationErrors errorhandling.ValidationErrors `json:"validationErrors"`
+	ConfigErrors     config.ConfigErrors            `json:"configErrors"`
+}
+
 var validateCmd = &cobra.Command{
 	Use:   "validate",
 	Short: "Validate your project",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		b := schema.Builder{}
-		_, err := b.MakeFromDirectory(flagProjectDir)
-		if err == nil {
+
+		var err error
+		if flagSchema != "" || flagConfig != "" {
+			_, err = b.MakeFromString(flagSchema, flagConfig)
+		} else {
+			_, err = b.MakeFromDirectory(flagProjectDir)
+		}
+
+		if err == nil && !flagJsonOutput {
 			fmt.Println("✨ Everything's looking good!")
 			return nil
 		}
 
-		validationErrors := &errorhandling.ValidationErrors{}
-		configErrors := &config.ConfigErrors{}
+		validationErrors := &errorhandling.ValidationErrors{
+			Errors:   []*errorhandling.ValidationError{},
+			Warnings: []*errorhandling.ValidationError{},
+		}
+
+		configErrors := &config.ConfigErrors{
+			Errors: []*config.ConfigError{},
+		}
+
+		if flagJsonOutput {
+			resp := JsonResponse{
+				ValidationErrors: *validationErrors,
+				ConfigErrors:     *configErrors,
+			}
+
+			switch {
+			case errors.As(err, &validationErrors):
+				resp.ValidationErrors = *validationErrors
+			case errors.As(err, &configErrors):
+				resp.ConfigErrors = *configErrors
+			default:
+				if err != nil {
+					return err
+				}
+			}
+
+			json, err := json.Marshal(resp)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(string(json))
+
+			return nil
+		}
 
 		switch {
 		case errors.As(err, &validationErrors):
@@ -49,4 +95,7 @@ var validateCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(validateCmd)
+	validateCmd.Flags().BoolVar(&flagJsonOutput, "json", false, "output validation and config errors as json")
+	validateCmd.Flags().StringVar(&flagSchema, "schema", "", "the Keel schema passed as an argument")
+	validateCmd.Flags().StringVar(&flagConfig, "config", "", "the Keel config passed as an argument")
 }

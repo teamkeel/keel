@@ -24,10 +24,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.12.1
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
           version: 8.5.1
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install deps
         working-directory: ./packages/functions-runtime
         run: pnpm install --frozen-lockfile
@@ -41,10 +41,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.12.1
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
           version: 8.5.1
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install deps
         working-directory: ./packages/testing-runtime
         run: pnpm install --frozen-lockfile
@@ -58,14 +58,14 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.14.2 # vscode (electron) uses this so we want to make the tests use a comparable environment
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
           version: 8.10.0
       - name: Setup golang
         uses: actions/setup-go@v3
         with:
           go-version: "1.20"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Go deps
         run: go mod download
       - name: Generate wasm binary

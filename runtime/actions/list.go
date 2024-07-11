@@ -1,7 +1,9 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
@@ -171,6 +173,35 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	if !isAuthorised {
 		return nil, common.NewPermissionError()
+	}
+
+	// if we have any files in our results we need to transform them to the object structure required
+	if scope.Model.HasFiles() {
+		for i := range results {
+			results[i], err = transformFileResponses(scope.Context, scope.Model, results[i])
+			if err != nil {
+				return nil, fmt.Errorf("transforming file data: %w", err)
+			}
+		}
+	}
+
+	// if we have embedded data, let's resolve it
+	if len(scope.Action.ResponseEmbeds) > 0 {
+		for _, embed := range scope.Action.ResponseEmbeds {
+			fragments := strings.Split(embed, ".")
+
+			for _, res := range results {
+				id, ok := res["id"].(string)
+				if !ok {
+					return nil, errors.New("missing identifier")
+				}
+				data, err := resolveEmbeddedData(scope.Context, scope.Schema, scope.Model, id, fragments)
+				if err != nil {
+					return nil, err
+				}
+				res[fragments[0]] = data
+			}
+		}
 	}
 
 	return map[string]any{

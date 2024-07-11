@@ -41,17 +41,18 @@ const (
 // Built in Keel types. Worth noting a field type can also reference
 // another user-defined model
 const (
-	FieldTypeID       = "ID"        // a uuid or similar
-	FieldTypeText     = "Text"      // a string
-	FieldTypeNumber   = "Number"    // an integer
-	FieldTypeDecimal  = "Decimal"   // a decimal
-	FieldTypeDate     = "Date"      // a date with no time element
-	FieldTypeDatetime = "Timestamp" // a UTC unix timestamp
-	FieldTypeBoolean  = "Boolean"   // a boolean
-	FieldTypeSecret   = "Secret"    // an encrypted secret
-	FieldTypePassword = "Password"  // a hashed password
-	FieldTypeMarkdown = "Markdown"  // a markdown rich text
-	FieldTypeVector   = "Vector"    // a vector
+	FieldTypeID         = "ID"         // a uuid or similar
+	FieldTypeText       = "Text"       // a string
+	FieldTypeNumber     = "Number"     // an integer
+	FieldTypeDecimal    = "Decimal"    // a decimal
+	FieldTypeDate       = "Date"       // a date with no time element
+	FieldTypeDatetime   = "Timestamp"  // a UTC unix timestamp
+	FieldTypeBoolean    = "Boolean"    // a boolean
+	FieldTypeSecret     = "Secret"     // an encrypted secret
+	FieldTypePassword   = "Password"   // a hashed password
+	FieldTypeMarkdown   = "Markdown"   // a markdown rich text
+	FieldTypeVector     = "Vector"     // a vector
+	FieldTypeInlineFile = "InlineFile" // a inline file supplied as a data-url
 )
 
 // Types for Message fields
@@ -60,17 +61,18 @@ const (
 )
 
 var BuiltInTypes = map[string]bool{
-	FieldTypeID:       true,
-	FieldTypeText:     true,
-	FieldTypeNumber:   true,
-	FieldTypeDecimal:  true,
-	FieldTypeDate:     true,
-	FieldTypeDatetime: true,
-	FieldTypeBoolean:  true,
-	FieldTypeSecret:   true,
-	FieldTypePassword: true,
-	FieldTypeMarkdown: true,
-	FieldTypeVector:   true,
+	FieldTypeID:         true,
+	FieldTypeText:       true,
+	FieldTypeNumber:     true,
+	FieldTypeDecimal:    true,
+	FieldTypeDate:       true,
+	FieldTypeDatetime:   true,
+	FieldTypeBoolean:    true,
+	FieldTypeSecret:     true,
+	FieldTypePassword:   true,
+	FieldTypeMarkdown:   true,
+	FieldTypeVector:     true,
+	FieldTypeInlineFile: true,
 }
 
 func IsBuiltInFieldType(s string) bool {
@@ -152,6 +154,7 @@ const (
 	AttributeSchedule   = "schedule"
 	AttributeFunction   = "function"
 	AttributeOn         = "on"
+	AttributeEmbed      = "embed"
 )
 
 const (

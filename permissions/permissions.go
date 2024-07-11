@@ -297,13 +297,13 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.Ident, stmt 
 					return fmt.Errorf("model %s not found in schema", model.Name)
 				}
 
-				leftFieldName := proto.GetForignKeyFieldName(s.Models, field)
+				leftFieldName := proto.GetForeignKeyFieldName(s.Models, field)
 				rightFieldName := proto.PrimaryKeyFieldName(joinModel)
 
 				// If not belongs to then swap foreign/primary key
 				if !proto.IsBelongsTo(field) {
 					leftFieldName = proto.PrimaryKeyFieldName(model)
-					rightFieldName = proto.GetForignKeyFieldName(s.Models, field)
+					rightFieldName = proto.GetForeignKeyFieldName(s.Models, field)
 				}
 
 				stmt.joins = append(stmt.joins, fmt.Sprintf(

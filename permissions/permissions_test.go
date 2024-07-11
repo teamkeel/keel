@@ -15,7 +15,7 @@ import (
 )
 
 func TestToSQL(t *testing.T) {
-
+	t.Parallel()
 	type Fixture struct {
 		name   string
 		schema string
@@ -811,7 +811,9 @@ func TestToSQL(t *testing.T) {
 	}
 
 	for _, fixture := range fixtures {
+		fixture := fixture
 		t.Run(fixture.name, func(t *testing.T) {
+			t.Parallel()
 			builder := &schema.Builder{}
 
 			config := `

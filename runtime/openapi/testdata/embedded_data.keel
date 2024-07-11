@@ -1,0 +1,72 @@
+model Author {
+    fields {
+        firstName Text
+        surname Text @unique
+        books Book[]
+    }
+
+    actions {
+        create createAuthor() with (firstName, surname)
+        list listAuthors() {
+            @sortable(
+                firstName,
+                surname
+            )
+        }
+    }
+
+    @permission(
+        actions: [create, get, list, update, delete],
+        expression: true
+    )
+}
+
+model Review {
+    fields {
+        content Text
+        book Book
+    }
+
+    actions {
+        create createReview() with (content, book.id)
+        list listReviews(book.id?)
+        get getReview(id)
+    }
+
+    @permission(
+        actions: [create, get, list, update, delete],
+        expression: true
+    )
+}
+
+model Book {
+    fields {
+        title Text
+        author Author
+        reviews Review[]
+        code Code?
+    }
+
+    actions {
+        list listBooks()
+        create createBook() with (title, author.id)
+        get getBook(id) {
+            @embed(author.books)
+            @embed(reviews)
+            @embed(code)
+        }
+        get getLiteBook(id)
+    }
+
+    @permission(
+        actions: [create, get, list, update, delete],
+        expression: true
+    )
+}
+
+model Code {
+    fields {
+        code Text
+        book Book @unique
+    }
+}

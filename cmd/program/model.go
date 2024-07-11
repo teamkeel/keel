@@ -32,6 +32,7 @@ import (
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
+	"github.com/teamkeel/keel/storage"
 	"github.com/twitchtv/twirp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -180,6 +181,7 @@ type Model struct {
 	RpcHandler        http.Handler
 	RuntimeRequests   []*RuntimeRequest
 	FunctionsLog      []*FunctionLog
+	Storage           storage.Storer
 	TestOutput        string
 	Secrets           map[string]string
 	Environment       string
@@ -358,6 +360,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Err = msg.Err
 		m.MigrationChanges = msg.Changes
 
+		// we now set the file Storage using a dbstore
+		storer, err := storage.NewDbStore(context.Background(), m.Database)
+		if err != nil {
+			m.Err = err
+			return m, tea.Quit
+		}
+		m.Storage = storer
+
 		if m.Err != nil {
 			return m, nil
 		}
@@ -472,6 +482,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ctx = db.WithDatabase(ctx, m.Database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
 		ctx = runtimectx.WithOAuthConfig(ctx, &m.Config.Auth)
+		if m.Storage != nil {
+			ctx = runtimectx.WithStorage(ctx, m.Storage)
+		}
 
 		mailClient := mail.NewSMTPClientFromEnv()
 		if mailClient != nil {

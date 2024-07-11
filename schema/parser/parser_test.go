@@ -30,6 +30,7 @@ func TestModelWithFields(t *testing.T) {
 			books Book[]
 			rating Number
 			netWorth Decimal
+			avatar InlineFile
 		  }
 		}`})
 	assert.Equal(t, "Author", schema.Declarations[0].Model.Name.Value)
@@ -48,6 +49,10 @@ func TestModelWithFields(t *testing.T) {
 	assert.Equal(t, "netWorth", schema.Declarations[0].Model.Sections[0].Fields[3].Name.Value)
 	assert.Equal(t, "Decimal", schema.Declarations[0].Model.Sections[0].Fields[3].Type.Value)
 	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[3].Repeated)
+
+	assert.Equal(t, "avatar", schema.Declarations[0].Model.Sections[0].Fields[4].Name.Value)
+	assert.Equal(t, "InlineFile", schema.Declarations[0].Model.Sections[0].Fields[4].Type.Value)
+	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[4].Repeated)
 }
 
 func TestModelWithFunctions(t *testing.T) {
@@ -302,6 +307,73 @@ model Author {
 	v2, err := arg2.Expression.ToValue()
 	assert.NoError(t, err)
 	assert.Equal(t, "surname", v2.Ident.Fragments[0].Fragment)
+}
+
+func TestOperationWithEmbedAttribute(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+model Author {
+    fields {
+        firstName Text
+        surname Text
+		category Category
+    }
+}
+model Book { 
+	fields {
+		title Text
+		author Author
+		category Category
+	}
+
+	actions {
+		get getBook(id) {
+			@embed(genre, category)
+			@embed(author.category)
+		}
+	}
+}
+model Category {
+	fields {
+		title Text
+	}
+}
+model Genre {
+	fields {
+		title Text
+	}
+}
+
+`})
+
+	attribute := schema.Declarations[1].Model.Sections[1].Actions[0].Attributes[0]
+	attribute2 := schema.Declarations[1].Model.Sections[1].Actions[0].Attributes[1]
+
+	assert.Equal(t, "embed", attribute.Name.Value)
+
+	arg1 := attribute.Arguments[0]
+	assert.Equal(t, true, arg1.Expression.IsValue())
+	assert.Nil(t, arg1.Label)
+
+	arg2 := attribute.Arguments[1]
+	assert.Equal(t, true, arg2.Expression.IsValue())
+	assert.Nil(t, arg2.Label)
+
+	v1, err := arg1.Expression.ToString()
+	assert.NoError(t, err)
+	assert.Equal(t, "genre", v1)
+
+	v2, err := arg2.Expression.ToString()
+	assert.NoError(t, err)
+	assert.Equal(t, "category", v2)
+
+	arg := attribute2.Arguments[0]
+	assert.Equal(t, true, arg.Expression.IsValue())
+	assert.Nil(t, arg.Label)
+
+	v, err := arg.Expression.ToString()
+	assert.NoError(t, err)
+	assert.Equal(t, "author.category", v)
+
 }
 
 func TestAPI(t *testing.T) {
