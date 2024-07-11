@@ -89,7 +89,7 @@ var validateCmd = &cobra.Command{
 		case errors.As(err, &validationErrors):
 			fmt.Println("❌ The following errors were found in your schema files:")
 			fmt.Println("")
-			s := validationErrors.ToAnnotatedSchema(b.SchemaFiles())
+			s := validationErrors.ErrorsToAnnotatedSchema(b.SchemaFiles())
 			fmt.Println(s)
 			return nil
 		case errors.As(err, &configErrors):

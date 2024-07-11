@@ -194,7 +194,7 @@ func renderError(m *Model) string {
 		switch {
 		case errors.As(m.Err, &validationErrors):
 			b.WriteString("❌ The following errors were found in your schema files:\n\n")
-			s := validationErrors.ToAnnotatedSchema(m.SchemaFiles)
+			s := validationErrors.ErrorsToAnnotatedSchema(m.SchemaFiles)
 			b.WriteString(s)
 		case errors.As(m.Err, &configErrors):
 			b.WriteString("❌ The following errors were found in your ")
