@@ -96,13 +96,103 @@ func GetNextTask(scope *Scope, input map[string]any) (map[string]any, error) {
 	_, span := tracer.Start(scope.Context, "Get Next Task")
 	defer span.End()
 
-	//query := NewQuery(parser.TaskModelName)
+	identity, err := auth.GetIdentity(scope.Context)
+	if err != nil {
+		return nil, common.NewPermissionError()
+	}
 
-	// Open or assigned to me
-	// ordered by createdAt
-	// where deferredy is null or < now()
+	taskModel := proto.FindModel(scope.Schema.Models, parser.TaskModelName)
 
-	return nil, nil
+	queryAssigned := NewQuery(taskModel)
+	err = queryAssigned.Where(Field(parser.TaskFieldNameAssignedToId), Equals, Value(identity["id"]))
+	if err != nil {
+		return nil, err
+	}
+
+	queryAssigned.And()
+	err = queryAssigned.Where(Field(parser.TaskFieldNameStatus), NotEquals, Value(parser.TaskStatusCompleted))
+	if err != nil {
+		return nil, err
+	}
+
+	statement := queryAssigned.SelectStatement()
+	res, err := statement.ExecuteToSingle(scope.Context)
+	if err != nil {
+		return nil, err
+	}
+
+	if res != nil {
+		return res, nil
+	}
+
+	queryNext := NewQuery(taskModel)
+	err = queryNext.Where(Field(parser.TaskFieldNameStatus), Equals, Value(parser.TaskStatusOpen))
+	if err != nil {
+		return nil, err
+	}
+
+	queryNext.And()
+	err = queryNext.Where(Field(parser.TaskFieldNameDeferredUntil), Equals, Null())
+	if err != nil {
+		return nil, err
+	}
+
+	queryNext.Or()
+	err = queryNext.Where(Field(parser.TaskFieldNameDeferredUntil), LessThanEquals, Value(time.Now()))
+	if err != nil {
+		return nil, err
+	}
+
+	queryNext.AppendOrderBy(Field(parser.FieldNameCreatedAt), "DESC")
+	queryNext.Limit(1)
+
+	statement = queryNext.SelectStatement()
+	res, err = statement.ExecuteToSingle(scope.Context)
+	if err != nil {
+		return nil, err
+	}
+
+	if res == nil {
+		return nil, nil
+	}
+
+	queryAssign := NewQuery(taskModel)
+	err = queryAssign.Where(IdField(), Equals, Value(res["id"]))
+	if err != nil {
+		return nil, err
+	}
+
+	queryAssign.AddWriteValue(Field(parser.TaskFieldNameStatus), Value(parser.TaskStatusAssigned))
+	queryAssign.AddWriteValue(Field(parser.TaskFieldNameAssignedToId), Value(identity["id"]))
+	queryAssign.AppendReturning(AllFields())
+	statement = queryAssign.UpdateStatement(scope.Context)
+
+	res, err = statement.ExecuteToSingle(scope.Context)
+	if err != nil {
+		return nil, err
+	}
+
+	if res == nil {
+		return nil, nil
+	}
+
+	inputsModel := proto.FindModel(scope.Schema.Models, res["type"].(string)+"Fields")
+	inputsQuery := NewQuery(inputsModel)
+	taskIdField := fmt.Sprintf("%sId", parser.TaskFieldNameTask)
+	err = inputsQuery.Where(Field(taskIdField), Equals, Value(res["id"]))
+	if err != nil {
+		return nil, err
+	}
+
+	statement = inputsQuery.SelectStatement()
+	fields, err := statement.ExecuteToSingle(scope.Context)
+	if err != nil {
+		return nil, err
+	}
+
+	res["fields"] = fields
+
+	return res, nil
 }
 
 func CancelTask(scope *Scope, input map[string]any) (map[string]any, error) {
@@ -232,6 +322,50 @@ func AssignTask(scope *Scope, input map[string]any) (map[string]any, error) {
 	if result == nil {
 		return nil, common.NewNotFoundError()
 	}
+
+	return result, nil
+}
+
+func CompleteTask(scope *Scope, input map[string]any) (map[string]any, error) {
+	ctx, span := tracer.Start(scope.Context, "Complete Task")
+	defer span.End()
+
+	identity, err := auth.GetIdentity(scope.Context)
+	if err != nil {
+		return nil, common.NewPermissionError()
+	}
+
+	typedInput := typed.New(input)
+	taskModel := proto.FindModel(scope.Schema.Models, parser.TaskModelName)
+	if taskModel == nil {
+		return nil, errors.New("tasks are not enabled for this project")
+	}
+
+	query := NewQuery(taskModel)
+	err = query.Where(IdField(), Equals, Value(typedInput.String("id")))
+	if err != nil {
+		return nil, fmt.Errorf("applying sql where: %w", err)
+	}
+	query.AddWriteValues(map[string]*QueryOperand{
+		parser.TaskFieldNameResolvedAt:   Value(time.Now()),
+		parser.TaskFieldNameResolvedById: Value(identity["id"]),
+		parser.TaskFieldNameStatus:       Value(parser.TaskStatusCompleted),
+	})
+	query.AppendSelect(AllFields())
+	query.AppendReturning(AllFields())
+
+	result, err := query.UpdateStatement(ctx).ExecuteToSingle(ctx)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	if result == nil {
+		return nil, common.NewNotFoundError()
+	}
+
+	// TODO: set input values
 
 	return result, nil
 }
