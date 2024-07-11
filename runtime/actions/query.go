@@ -232,6 +232,8 @@ type QueryBuilder struct {
 	joins []joinClause
 	// The filter fragments used to construct WHERE.
 	filters []string
+	// The columns and clauses in GROUP BY.
+	groupBy []string
 	// The columns and clauses in ORDER BY.
 	orderBy []*orderClause
 	// The columns and clauses in RETURNING.
@@ -380,6 +382,15 @@ func (query *QueryBuilder) AppendDistinctOn(operand *QueryOperand) {
 
 	if !lo.Contains(query.distinctOn, c) {
 		query.distinctOn = append(query.distinctOn, c)
+	}
+}
+
+// Include a column in this table in GROUP BY.
+func (query *QueryBuilder) AppendGroupBy(operand *QueryOperand) {
+	c := operand.toSqlOperandString(query)
+
+	if !lo.Contains(query.groupBy, c) {
+		query.groupBy = append(query.groupBy, c)
 	}
 }
 
@@ -639,6 +650,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	selection := ""
 	joins := ""
 	filters := ""
+	groupBy := ""
 	orderBy := ""
 	limit := ""
 
@@ -672,17 +684,22 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		orderBy = fmt.Sprintf("ORDER BY %s", strings.Join(orderByClausesAsSql, ", "))
 	}
 
+	if len(query.groupBy) > 0 {
+		groupBy = fmt.Sprintf("GROUP BY(%s)", strings.Join(query.groupBy, ", "))
+	}
+
 	if query.limit != nil {
 		limit = "LIMIT ?"
 		query.args = append(query.args, *query.limit)
 	}
 
-	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s",
+	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s %s",
 		distinctOn,
 		selection,
 		sqlQuote(query.table),
 		joins,
 		filters,
+		groupBy,
 		orderBy,
 		limit)
 
@@ -1455,7 +1472,7 @@ func toRuntimeError(err error) error {
 		default:
 			return common.RuntimeError{
 				Code:    common.ErrInternal,
-				Message: "action failed to complete",
+				Message: "action failed to complete" + err.Error(),
 			}
 		}
 	}

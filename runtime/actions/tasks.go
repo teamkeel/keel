@@ -211,3 +211,29 @@ func AssignTask(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	return result, nil
 }
+
+func ListTopics(scope *Scope, _ map[string]any) (map[string]any, error) {
+	ctx, span := tracer.Start(scope.Context, "ListTopics")
+	defer span.End()
+
+	taskModel := proto.FindModel(scope.Schema.Models, parser.TaskModelName)
+	if taskModel == nil {
+		return nil, errors.New("tasks are not enabled for this project")
+	}
+
+	query := NewQuery(taskModel)
+	query.AppendSelect(Field(parser.TaskFieldNameType))
+	query.AppendSelect(Raw("count(*)"))
+	query.AppendGroupBy(Field(parser.TaskFieldNameType))
+
+	result, _, err := query.SelectStatement().ExecuteToMany(ctx, nil)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	return map[string]any{
+		"topics": result,
+	}, nil
+}

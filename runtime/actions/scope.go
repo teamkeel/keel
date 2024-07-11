@@ -218,6 +218,8 @@ func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, error) {
 		return DeferTask(scope, inputs)
 	case parser.TaskActionNameAssignTask:
 		return AssignTask(scope, inputs)
+	case parser.TaskActionNameListTopics:
+		return ListTopics(scope, inputs)
 	default:
 		return nil, fmt.Errorf("unhandled runtime action: %s", scope.Action.Name)
 	}

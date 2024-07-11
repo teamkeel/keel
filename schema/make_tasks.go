@@ -16,7 +16,9 @@ const (
 	deferTaskInputMessageName  = "DeferTaskInput"
 	assignTaskInputMessageName = "AssignTaskInput"
 
-	taskResponseMessageName = "TaskResponse"
+	taskResponseMessageName       = "TaskResponse"
+	listTopicsResponseMessageName = "ListTopicsResponse"
+	topicResponseMessageName      = "TopicResponse"
 )
 
 // makeBuiltInTasks will make all the items required for Keel Tasks: Task Model, TaskStatus & TaskType Enum
@@ -230,8 +232,8 @@ func (scm *Builder) makeBuiltInTasks() {
 				Name:                parser.TaskActionNameListTopics,
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_READ,
-				InputMessageName:    parser.MessageFieldTypeAny, // TODO: make this something else
-				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
+				InputMessageName:    parser.MessageFieldTypeAny,
+				ResponseMessageName: listTopicsResponseMessageName,
 			},
 			{
 				ModelName:           parser.TaskModelName,
@@ -443,7 +445,6 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 func (scm *Builder) makeTasksMessages() {
 	// add the task response message
 	scm.proto.Messages = append(scm.proto.Messages, buildTaskResponseMessage())
-
 	// add the create task input message
 	scm.proto.Messages = append(scm.proto.Messages, buildCreateTaskInputMessage())
 	// add the update task input message
@@ -524,6 +525,41 @@ func (scm *Builder) makeTasksMessages() {
 					Type:      proto.Type_TYPE_ID,
 					ModelName: wrapperspb.String(parser.IdentityModelName),
 					FieldName: wrapperspb.String(parser.FieldNameId),
+				},
+			},
+		},
+	})
+
+	// add the list topics response message
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: topicResponseMessageName,
+		Fields: []*proto.MessageField{
+			{
+				MessageName: topicResponseMessageName,
+				Name:        parser.TaskFieldNameType,
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_STRING,
+				},
+			},
+			{
+				MessageName: topicResponseMessageName,
+				Name:        "count",
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_INT,
+				},
+			},
+		},
+	})
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: listTopicsResponseMessageName,
+		Fields: []*proto.MessageField{
+			{
+				MessageName: listTopicsResponseMessageName,
+				Name:        "topics",
+				Type: &proto.TypeInfo{
+					Type:        proto.Type_TYPE_MESSAGE,
+					MessageName: wrapperspb.String(topicResponseMessageName),
+					Repeated:    true,
 				},
 			},
 		},
