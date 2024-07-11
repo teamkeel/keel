@@ -125,3 +125,40 @@ func DeferTask(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	return result, nil
 }
+
+func AssignTask(scope *Scope, input map[string]any) (map[string]any, error) {
+	ctx, span := tracer.Start(scope.Context, "Assign Task")
+	defer span.End()
+
+	typedInput := typed.New(input)
+	taskModel := proto.FindModel(scope.Schema.Models, parser.TaskModelName)
+	if taskModel == nil {
+		return nil, errors.New("tasks are not enabled for this project")
+	}
+
+	query := NewQuery(taskModel)
+	err := query.Where(IdField(), Equals, Value(typedInput.String("id")))
+	if err != nil {
+		return nil, fmt.Errorf("applying sql where: %w", err)
+	}
+	query.AddWriteValues(map[string]*QueryOperand{
+		parser.TaskFieldNameAssignedToId: Value(typedInput.String(parser.TaskFieldNameAssignedToId)),
+		parser.TaskFieldNameAssignedAt:   Value(time.Now()),
+		parser.TaskFieldNameStatus:       Value(parser.TaskStatusAssigned),
+	})
+	query.AppendSelect(AllFields())
+	query.AppendReturning(AllFields())
+
+	result, err := query.UpdateStatement(ctx).ExecuteToSingle(ctx)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	if result == nil {
+		return nil, common.NewNotFoundError()
+	}
+
+	return result, nil
+}

@@ -13,6 +13,7 @@ const (
 	updateTaskInputMessageName = "UpdateTaskInput"
 	cancelTaskInputMessageName = "CancelTaskInput"
 	deferTaskInputMessageName  = "DeferTaskInput"
+	assignTaskInputMessageName = "AssignTaskInput"
 )
 
 // makeBuiltInTasks will make all the items required for Keel Tasks: Task Model, TaskStatus & TaskType Enum
@@ -193,7 +194,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Name:                parser.TaskActionNameAssignTask,
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_WRITE,
-				InputMessageName:    parser.MessageFieldTypeAny, // TODO: make this something else
+				InputMessageName:    assignTaskInputMessageName,
 				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
 			},
 			{
@@ -446,7 +447,7 @@ func (scm *Builder) makeTasksMessages() {
 		Name: cancelTaskInputMessageName,
 		Fields: []*proto.MessageField{
 			{
-				MessageName: updateTaskInputMessageName,
+				MessageName: cancelTaskInputMessageName,
 				Name:        parser.FieldNameId,
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_ID,
@@ -462,7 +463,7 @@ func (scm *Builder) makeTasksMessages() {
 		Name: deferTaskInputMessageName,
 		Fields: []*proto.MessageField{
 			{
-				MessageName: updateTaskInputMessageName,
+				MessageName: deferTaskInputMessageName,
 				Name:        parser.FieldNameId,
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_ID,
@@ -471,10 +472,35 @@ func (scm *Builder) makeTasksMessages() {
 				},
 			},
 			{
-				MessageName: updateTaskInputMessageName,
+				MessageName: deferTaskInputMessageName,
 				Name:        parser.TaskFieldNameDeferredUntil,
 				Type: &proto.TypeInfo{
 					Type: proto.Type_TYPE_DATETIME,
+				},
+			},
+		},
+	})
+
+	// add the assign task input message
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: assignTaskInputMessageName,
+		Fields: []*proto.MessageField{
+			{
+				MessageName: assignTaskInputMessageName,
+				Name:        parser.FieldNameId,
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(parser.TaskModelName),
+					FieldName: wrapperspb.String(parser.FieldNameId),
+				},
+			},
+			{
+				MessageName: assignTaskInputMessageName,
+				Name:        parser.TaskFieldNameAssignedToId,
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(parser.IdentityModelName),
+					FieldName: wrapperspb.String(parser.FieldNameId),
 				},
 			},
 		},
