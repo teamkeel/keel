@@ -446,8 +446,11 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 			component := JSONSchemaForMessage(ctx, schema, action, message)
 
 			// Components of oneOf properties should only have one field per property and we should set a title.
-			oneOfFieldName := message.Fields[0].Name
-			component.Title = oneOfFieldName
+			if message.Fields[0].Type != nil && message.Fields[0].Type.Type == proto.Type_TYPE_STRING_LITERAL {
+				component.Title = message.Fields[0].Type.StringLiteralValue.Value
+			} else {
+				component.Title = message.Fields[0].Name
+			}
 
 			// If that nested message component has ref fields itself, then its components must be bundled.
 			if component.Components != nil {
