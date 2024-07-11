@@ -19,6 +19,9 @@ const (
 	taskResponseMessageName       = "TaskResponse"
 	listTopicsResponseMessageName = "ListTopicsResponse"
 	topicResponseMessageName      = "TopicResponse"
+
+	taskInputsFieldName = "inputs"
+	taskFieldsFieldName = "fields"
 )
 
 // makeBuiltInTasks will make all the items required for Keel Tasks: Task Model, TaskStatus & TaskType Enum
@@ -169,7 +172,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_CREATE,
 				InputMessageName:    createTaskInputMessageName,
-				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
+				ResponseMessageName: taskResponseMessageName,
 			},
 			{
 				ModelName:           parser.TaskModelName,
@@ -373,10 +376,10 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 
 	// make the message used to create a task for this topic. This message will be used to populate the Fields model
 	fieldsMessage := &proto.Message{
-		Name: buildTopicCreateMessageName(topicName),
+		Name: buildTopicFieldsMessageName(topicName),
 		Fields: []*proto.MessageField{
 			{
-				MessageName: buildTopicCreateMessageName(topicName),
+				MessageName: buildTopicFieldsMessageName(topicName),
 				Name:        parser.TaskFieldNameType,
 				Type: &proto.TypeInfo{
 					Type:               proto.Type_TYPE_STRING_LITERAL,
@@ -387,7 +390,7 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 	}
 	// make the message used to update a task for this topic. This message will be used to populate the Inputs model
 	inputsMessage := &proto.Message{
-		Name: buildTopicUpdateMessageName(topicNode.Name.Value),
+		Name: buildTopicInputsMessageName(topicNode.Name.Value),
 	}
 
 	for _, section := range topicNode.Sections {
@@ -431,14 +434,21 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 	// add the create (fieldsMessage) and update (inputsMessage) input messages
 	scm.proto.Messages = append(scm.proto.Messages, fieldsMessage, inputsMessage)
 
-	// and add the message to the union type of the createTaskInput
+	// add the message to the union type of the createTaskInput
 	cm := proto.FindMessage(scm.proto.Messages, createTaskInputMessageName)
 	cm.Type.UnionNames = append(cm.Type.UnionNames, wrapperspb.String(fieldsMessage.Name))
 
-	// and add the message to the union type of the updateTaskInput
+	// add the message to the union type of the updateTaskInput
 	um := proto.FindMessage(scm.proto.Messages, updateTaskInputMessageName)
 	umf := proto.FindMessageField(um, "values")
 	umf.Type.UnionNames = append(umf.Type.UnionNames, wrapperspb.String(inputsMessage.Name))
+
+	// add the message to the union type of the taskResponse message
+	tr := proto.FindMessage(scm.proto.Messages, taskResponseMessageName)
+	inputsField := proto.FindMessageField(tr, taskInputsFieldName)
+	inputsField.Type.UnionNames = append(inputsField.Type.UnionNames, wrapperspb.String(inputsMessage.Name))
+	fieldsField := proto.FindMessageField(tr, taskFieldsFieldName)
+	fieldsField.Type.UnionNames = append(fieldsField.Type.UnionNames, wrapperspb.String(fieldsMessage.Name))
 }
 
 // makeTasksMessages will create and append to the proto schema all the messages required for the tasks actions.
@@ -662,6 +672,22 @@ func buildTaskResponseMessage() *proto.Message {
 				},
 				Nullable: true,
 			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        taskFieldsFieldName,
+				Type: &proto.TypeInfo{
+					Type:       proto.Type_TYPE_UNION,
+					UnionNames: []*wrapperspb.StringValue{},
+				},
+			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        taskInputsFieldName,
+				Type: &proto.TypeInfo{
+					Type:       proto.Type_TYPE_UNION,
+					UnionNames: []*wrapperspb.StringValue{},
+				},
+			},
 		},
 	}
 }
@@ -714,12 +740,12 @@ func buildTopicInputsModelName(topicName string) string {
 	return fmt.Sprintf("%sInputs", topicName)
 }
 
-// buildTopicCreateMessageName returns a name for the message used to create a new task for the given topic
-func buildTopicCreateMessageName(topicName string) string {
-	return fmt.Sprintf("%sCreateInput", topicName)
+// buildTopicFieldsMessageName returns a name for the message used to create a new task for the given topic
+func buildTopicFieldsMessageName(topicName string) string {
+	return fmt.Sprintf("%sFields", topicName)
 }
 
-// buildTopicUpdateMessageName returns a name for the message used to update a task for the given topic
-func buildTopicUpdateMessageName(topicName string) string {
-	return fmt.Sprintf("%sUpdateInput", topicName)
+// buildTopicInputsMessageName returns a name for the message used to update a task for the given topic
+func buildTopicInputsMessageName(topicName string) string {
+	return fmt.Sprintf("%sInputs", topicName)
 }

@@ -474,9 +474,9 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 
 		if t.Repeated {
 			prop.Type = "array"
-			prop.Items = &JSONSchema{OneOf: oneOf}
+			prop.Items = &JSONSchema{OneOf: oneOf, UnevaluatedProperties: boolPtr(false)}
 		} else {
-			prop = JSONSchema{OneOf: oneOf}
+			prop = JSONSchema{OneOf: oneOf, UnevaluatedProperties: boolPtr(false)}
 		}
 
 	case proto.Type_TYPE_ID, proto.Type_TYPE_STRING:

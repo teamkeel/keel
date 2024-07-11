@@ -32,7 +32,7 @@
           },
           "defaultValue": {
             "expression": {
-              "source": "TaskStatusOpen"
+              "source": "TaskStatus.Open"
             }
           }
         },
@@ -140,7 +140,7 @@
           "type": "ACTION_TYPE_CREATE",
           "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "CreateTaskInput",
-          "responseMessageName": "Any"
+          "responseMessageName": "TaskResponse"
         },
         {
           "modelName": "Task",
@@ -180,7 +180,7 @@
           "type": "ACTION_TYPE_WRITE",
           "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "DeferTaskInput",
-          "responseMessageName": "Any"
+          "responseMessageName": "TaskResponse"
         },
         {
           "modelName": "Task",
@@ -188,7 +188,7 @@
           "type": "ACTION_TYPE_WRITE",
           "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "CancelTaskInput",
-          "responseMessageName": "Any"
+          "responseMessageName": "TaskResponse"
         },
         {
           "modelName": "Task",
@@ -204,7 +204,7 @@
           "type": "ACTION_TYPE_READ",
           "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "Any",
-          "responseMessageName": "Any"
+          "responseMessageName": "ListTopicsResponse"
         },
         {
           "modelName": "Task",
@@ -226,10 +226,6 @@
             "type": "TYPE_ID"
           },
           "unique": true,
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
           "primaryKey": true,
           "defaultValue": {
             "useZeroValue": true
@@ -307,10 +303,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
         },
         {
           "modelName": "CallUserInputs",
@@ -377,10 +369,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
         },
         {
           "modelName": "RateUserFields",
@@ -443,10 +431,6 @@
             "type": "TYPE_ID"
           },
           "unique": true,
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
           "primaryKey": true,
           "defaultValue": {
             "useZeroValue": true
@@ -557,9 +541,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -596,9 +578,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -815,22 +795,17 @@
       "values": [
         {
           "name": "Open"
-          "name": "Open"
         },
         {
-          "name": "Assigned"
           "name": "Assigned"
         },
         {
           "name": "Deferred"
-          "name": "Deferred"
         },
         {
           "name": "Completed"
-          "name": "Completed"
         },
         {
-          "name": "Cancelled"
           "name": "Cancelled"
         }
       ]
@@ -988,6 +963,22 @@
             "type": "TYPE_DATETIME"
           },
           "nullable": true
+        },
+        {
+          "messageName": "TaskResponse",
+          "name": "fields",
+          "type": {
+            "type": "TYPE_UNION",
+            "unionNames": ["CallUserCreateInput", "RateUserCreateInput"]
+          }
+        },
+        {
+          "messageName": "TaskResponse",
+          "name": "inputs",
+          "type": {
+            "type": "TYPE_UNION",
+            "unionNames": ["CallUserUpdateInput", "RateUserUpdateInput"]
+          }
         }
       ]
     },
@@ -995,10 +986,7 @@
       "name": "CreateTaskInput",
       "type": {
         "type": "TYPE_UNION",
-        "unionNames": [
-          "CallUserCreateInput",
-          "RateUserCreateInput"
-        ]
+        "unionNames": ["CallUserCreateInput", "RateUserCreateInput"]
       }
     },
     {
@@ -1006,7 +994,6 @@
       "fields": [
         {
           "messageName": "UpdateTaskInput",
-          "name": "id",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -1019,10 +1006,21 @@
           "name": "values",
           "type": {
             "type": "TYPE_UNION",
-            "unionNames": [
-              "CallUserUpdateInput",
-              "RateUserUpdateInput"
-            ]
+            "unionNames": ["CallUserUpdateInput", "RateUserUpdateInput"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GetTaskInput",
+      "fields": [
+        {
+          "messageName": "GetTaskInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Task",
+            "fieldName": "id"
           }
         }
       ]
@@ -1031,7 +1029,7 @@
       "name": "CancelTaskInput",
       "fields": [
         {
-          "messageName": "UpdateTaskInput",
+          "messageName": "CancelTaskInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -1045,7 +1043,7 @@
       "name": "DeferTaskInput",
       "fields": [
         {
-          "messageName": "UpdateTaskInput",
+          "messageName": "DeferTaskInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -1054,10 +1052,66 @@
           }
         },
         {
-          "messageName": "UpdateTaskInput",
+          "messageName": "DeferTaskInput",
           "name": "deferredUntil",
           "type": {
             "type": "TYPE_DATETIME"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AssignTaskInput",
+      "fields": [
+        {
+          "messageName": "AssignTaskInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Task",
+            "fieldName": "id"
+          }
+        },
+        {
+          "messageName": "AssignTaskInput",
+          "name": "assignedToId",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Identity",
+            "fieldName": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "TopicResponse",
+      "fields": [
+        {
+          "messageName": "TopicResponse",
+          "name": "type",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "TopicResponse",
+          "name": "count",
+          "type": {
+            "type": "TYPE_INT"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ListTopicsResponse",
+      "fields": [
+        {
+          "messageName": "ListTopicsResponse",
+          "name": "topics",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "TopicResponse",
+            "repeated": true
           }
         }
       ]
