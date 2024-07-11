@@ -67,7 +67,6 @@ func CreateTask(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	fieldsModel := proto.FindModel(scope.Schema.Models, fieldsModelName(topicType))
 	fieldsQuery := NewQuery(fieldsModel)
-	taskIdField := fmt.Sprintf("%sId", parser.TaskFieldNameTask)
 
 	for _, v := range fieldsModel.Fields {
 		value, has := input[v.Name]
@@ -75,8 +74,8 @@ func CreateTask(scope *Scope, input map[string]any) (map[string]any, error) {
 			fieldsQuery.AddWriteValue(Field(v.Name), Value(value))
 			continue
 		}
-		if v.Name == taskIdField {
-			fieldsQuery.AddWriteValue(Field(taskIdField), Value(newTask["id"]))
+		if v.Name == parser.TaskFieldNameTaskId {
+			fieldsQuery.AddWriteValue(Field(parser.TaskFieldNameTaskId), Value(newTask["id"]))
 		}
 	}
 
