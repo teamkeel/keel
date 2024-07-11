@@ -37,9 +37,24 @@ func GetTask(scope *Scope, input map[string]any) (map[string]any, error) {
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
-
 	if result == nil {
 		return nil, common.NewNotFoundError()
+	}
+
+	inputs, err := getInputsForTask(scope, result["id"].(string), result["type"].(string))
+	if err != nil {
+		return nil, err
+	}
+	if inputs != nil {
+		result["inputs"] = inputs
+	}
+
+	fields, err := getFieldsForTask(scope, result["id"].(string), result["type"].(string))
+	if err != nil {
+		return nil, err
+	}
+	if fields != nil {
+		result["fields"] = fields
 	}
 
 	return result, nil
@@ -286,6 +301,22 @@ func DeferTask(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, common.NewNotFoundError()
 	}
 
+	inputs, err := getInputsForTask(scope, result["id"].(string), result["type"].(string))
+	if err != nil {
+		return nil, err
+	}
+	if inputs != nil {
+		result["inputs"] = inputs
+	}
+
+	fields, err := getFieldsForTask(scope, result["id"].(string), result["type"].(string))
+	if err != nil {
+		return nil, err
+	}
+	if fields != nil {
+		result["fields"] = fields
+	}
+
 	return result, nil
 }
 
@@ -321,6 +352,22 @@ func AssignTask(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	if result == nil {
 		return nil, common.NewNotFoundError()
+	}
+
+	inputs, err := getInputsForTask(scope, result["id"].(string), result["type"].(string))
+	if err != nil {
+		return nil, err
+	}
+	if inputs != nil {
+		result["inputs"] = inputs
+	}
+
+	fields, err := getFieldsForTask(scope, result["id"].(string), result["type"].(string))
+	if err != nil {
+		return nil, err
+	}
+	if fields != nil {
+		result["fields"] = fields
 	}
 
 	return result, nil
