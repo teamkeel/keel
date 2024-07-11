@@ -148,6 +148,7 @@ const (
 	TaskFieldNameDeferredUntil = "deferredUntil"
 	TaskFieldNameVisibleFrom   = "visibleFrom"
 	TaskFieldNameTask          = "task"
+	TaskFieldNameTaskId        = "taskId"
 
 	TaskStatusEnumName = "TaskStatus"
 	TaskTypeEnumName   = "TaskType"

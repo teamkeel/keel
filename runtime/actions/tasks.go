@@ -65,30 +65,30 @@ func CreateTask(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	inputsModel := proto.FindModel(scope.Schema.Models, topicType+"Fields")
-	inputsQuery := NewQuery(inputsModel)
+	fieldsModel := proto.FindModel(scope.Schema.Models, fieldsModelName(topicType))
+	fieldsQuery := NewQuery(fieldsModel)
 	taskIdField := fmt.Sprintf("%sId", parser.TaskFieldNameTask)
 
-	for _, v := range inputsModel.Fields {
+	for _, v := range fieldsModel.Fields {
 		value, has := input[v.Name]
 		if has {
-			inputsQuery.AddWriteValue(Field(v.Name), Value(value))
+			fieldsQuery.AddWriteValue(Field(v.Name), Value(value))
 			continue
 		}
 		if v.Name == taskIdField {
-			inputsQuery.AddWriteValue(Field(taskIdField), Value(newTask["id"]))
+			fieldsQuery.AddWriteValue(Field(taskIdField), Value(newTask["id"]))
 		}
 	}
 
 	query.AppendReturning(AllFields())
-	statement = inputsQuery.InsertStatement(scope.Context)
+	statement = fieldsQuery.InsertStatement(scope.Context)
 
-	newInputs, err := statement.ExecuteToSingle(scope.Context)
+	newFields, err := statement.ExecuteToSingle(scope.Context)
 	if err != nil {
 		return nil, err
 	}
 
-	newTask["fields"] = newInputs
+	newTask["fields"] = newFields
 
 	return newTask, nil
 }
@@ -141,9 +141,24 @@ func CancelTask(scope *Scope, input map[string]any) (map[string]any, error) {
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
-
 	if result == nil {
 		return nil, common.NewNotFoundError()
+	}
+
+	inputs, err := getInputsForTask(scope, result["id"].(string), result["type"].(string))
+	if err != nil {
+		return nil, err
+	}
+	if inputs != nil {
+		result["inputs"] = inputs
+	}
+
+	fields, err := getFieldsForTask(scope, result["id"].(string), result["type"].(string))
+	if err != nil {
+		return nil, err
+	}
+	if fields != nil {
+		result["fields"] = fields
 	}
 
 	return result, nil
@@ -246,4 +261,36 @@ func ListTopics(scope *Scope, _ map[string]any) (map[string]any, error) {
 	return map[string]any{
 		"topics": result,
 	}, nil
+}
+
+// fieldsModelName returns the model name for the task of the given type/topic
+func fieldsModelName(topic string) string {
+	return fmt.Sprintf("%sFields", topic)
+}
+
+// inputsModelName returns the model name for the task of the given type/topic
+func inputsModelName(topic string) string {
+	return fmt.Sprintf("%sInputs", topic)
+}
+
+// getInputsForTask will return the inputs model for the given task
+func getInputsForTask(scope *Scope, taskId string, taskType string) (map[string]any, error) {
+	inputsModel := proto.FindModel(scope.Schema.Models, inputsModelName(taskType))
+	inputsQuery := NewQuery(inputsModel)
+	err := inputsQuery.Where(Field(parser.TaskFieldNameTaskId), Equals, Value(taskId))
+	if err != nil {
+		return nil, err
+	}
+	return inputsQuery.SelectStatement().ExecuteToSingle(scope.Context)
+}
+
+// getFieldsForTask will return the fields model for the given task
+func getFieldsForTask(scope *Scope, taskId string, taskType string) (map[string]any, error) {
+	fieldsModel := proto.FindModel(scope.Schema.Models, fieldsModelName(taskType))
+	fieldsQuery := NewQuery(fieldsModel)
+	err := fieldsQuery.Where(Field(parser.TaskFieldNameTaskId), Equals, Value(taskId))
+	if err != nil {
+		return nil, err
+	}
+	return fieldsQuery.SelectStatement().ExecuteToSingle(scope.Context)
 }
