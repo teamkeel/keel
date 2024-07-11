@@ -33,7 +33,7 @@ export interface GetDefinitionRequest {
 export interface ValidateRequest {
   schemaFiles: SchemaFile[];
   config?: string;
-  includeWarnings?: bool;
+  includeWarnings?: boolean;
 }
 
 export interface SchemaFile {
