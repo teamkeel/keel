@@ -54,7 +54,7 @@ func CancelTask(scope *Scope, input map[string]any) (map[string]any, error) {
 	typedInput := typed.New(input)
 	taskModel := proto.FindModel(scope.Schema.Models, parser.TaskModelName)
 	if taskModel == nil {
-		return nil, errors.New("tasks do not exist")
+		return nil, errors.New("tasks are not enabled for this project")
 	}
 
 	identity, err := auth.GetIdentity(ctx)
@@ -63,14 +63,12 @@ func CancelTask(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	query := NewQuery(taskModel)
-
 	err = query.Where(IdField(), Equals, Value(typedInput.String("id")))
 	if err != nil {
 		return nil, fmt.Errorf("applying sql where: %w", err)
 	}
 
 	query.AddWriteValues(map[string]*QueryOperand{
-		// default 'email' scope claims
 		parser.TaskFieldNameStatus:       Value(parser.TaskStatusCancelled),
 		parser.TaskFieldNameResolvedById: Value(identity["id"]),
 		parser.TaskFieldNameResolvedAt:   Value(time.Now()),
@@ -85,7 +83,43 @@ func CancelTask(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	if len(result) == 0 {
+	if result == nil {
+		return nil, common.NewNotFoundError()
+	}
+
+	return result, nil
+}
+
+func DeferTask(scope *Scope, input map[string]any) (map[string]any, error) {
+	ctx, span := tracer.Start(scope.Context, "Defer Task")
+	defer span.End()
+
+	typedInput := typed.New(input)
+	taskModel := proto.FindModel(scope.Schema.Models, parser.TaskModelName)
+	if taskModel == nil {
+		return nil, errors.New("tasks are not enabled for this project")
+	}
+
+	query := NewQuery(taskModel)
+	err := query.Where(IdField(), Equals, Value(typedInput.String("id")))
+	if err != nil {
+		return nil, fmt.Errorf("applying sql where: %w", err)
+	}
+	query.AddWriteValues(map[string]*QueryOperand{
+		parser.TaskFieldNameDeferredUntil: Value(input[parser.TaskFieldNameDeferredUntil]),
+		parser.TaskFieldNameStatus:        Value(parser.TaskStatusDeferred),
+	})
+	query.AppendSelect(AllFields())
+	query.AppendReturning(AllFields())
+
+	result, err := query.UpdateStatement(ctx).ExecuteToSingle(ctx)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	if result == nil {
 		return nil, common.NewNotFoundError()
 	}
 

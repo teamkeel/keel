@@ -12,6 +12,7 @@ const (
 	createTaskInputMessageName = "CreateTaskInput"
 	updateTaskInputMessageName = "UpdateTaskInput"
 	cancelTaskInputMessageName = "CancelTaskInput"
+	deferTaskInputMessageName  = "DeferTaskInput"
 )
 
 // makeBuiltInTasks will make all the items required for Keel Tasks: Task Model, TaskStatus & TaskType Enum
@@ -200,7 +201,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Name:                parser.TaskActionNameDeferTask,
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_WRITE,
-				InputMessageName:    parser.MessageFieldTypeAny, // TODO: make this something else
+				InputMessageName:    deferTaskInputMessageName,
 				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
 			},
 			{
@@ -256,7 +257,7 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 	}
 
 	// create new fields model with a relationship field to the task model
-	fieldsModelName := makeTopicFieldsModelName(topicName)
+	fieldsModelName := buildTopicFieldsModelName(topicName)
 	fieldsModel := &proto.Model{
 		Name: fieldsModelName,
 		Fields: []*proto.Field{
@@ -310,7 +311,7 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 	}
 
 	// create new inputs model with a relationship field to the task model
-	inputsModelName := makeTopicInputsModelName(topicName)
+	inputsModelName := buildTopicInputsModelName(topicName)
 	inputsModel := &proto.Model{
 		Name: inputsModelName,
 		Fields: []*proto.Field{
@@ -365,10 +366,10 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 
 	// make the message used to create a task for this topic. This message will be used to populate the Fields model
 	fieldsMessage := &proto.Message{
-		Name: makeTopicCreateMessageName(topicName),
+		Name: buildTopicCreateMessageName(topicName),
 		Fields: []*proto.MessageField{
 			{
-				MessageName: makeTopicCreateMessageName(topicName),
+				MessageName: buildTopicCreateMessageName(topicName),
 				Name:        parser.TaskFieldNameType,
 				Type: &proto.TypeInfo{
 					Type:               proto.Type_TYPE_STRING_LITERAL,
@@ -379,7 +380,7 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 	}
 	// make the message used to update a task for this topic. This message will be used to populate the Inputs model
 	inputsMessage := &proto.Message{
-		Name: makeTopicUpdateMessageName(topicNode.Name.Value),
+		Name: buildTopicUpdateMessageName(topicNode.Name.Value),
 	}
 
 	for _, section := range topicNode.Sections {
@@ -436,9 +437,9 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 // makeTasksMessages will create and append to the proto schema all the messages required for the tasks actions.
 func (scm *Builder) makeTasksMessages() {
 	// add the create task input message
-	scm.proto.Messages = append(scm.proto.Messages, makeCreateTaskInputMessage())
+	scm.proto.Messages = append(scm.proto.Messages, buildCreateTaskInputMessage())
 	// add the update task input message
-	scm.proto.Messages = append(scm.proto.Messages, makeUpdateTaskInputMessage())
+	scm.proto.Messages = append(scm.proto.Messages, buildUpdateTaskInputMessage())
 
 	// add the cancel task input message
 	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
@@ -455,10 +456,33 @@ func (scm *Builder) makeTasksMessages() {
 			},
 		},
 	})
+
+	// add the defer task input message
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: deferTaskInputMessageName,
+		Fields: []*proto.MessageField{
+			{
+				MessageName: updateTaskInputMessageName,
+				Name:        parser.FieldNameId,
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(parser.TaskModelName),
+					FieldName: wrapperspb.String(parser.FieldNameId),
+				},
+			},
+			{
+				MessageName: updateTaskInputMessageName,
+				Name:        parser.TaskFieldNameDeferredUntil,
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_DATETIME,
+				},
+			},
+		},
+	})
 }
 
-// makeCreateTaskInputMessage creates a input message to be used as part of the createTask action
-func makeCreateTaskInputMessage() *proto.Message {
+// buildCreateTaskInputMessage creates a input message to be used as part of the createTask action
+func buildCreateTaskInputMessage() *proto.Message {
 	return &proto.Message{
 		Name:   createTaskInputMessageName,
 		Fields: []*proto.MessageField{},
@@ -469,8 +493,8 @@ func makeCreateTaskInputMessage() *proto.Message {
 	}
 }
 
-// makeUpdateTaskInputMessage creates a input message to be used as part of the updateTask/completeTask action
-func makeUpdateTaskInputMessage() *proto.Message {
+// buildUpdateTaskInputMessage creates a input message to be used as part of the updateTask/completeTask action
+func buildUpdateTaskInputMessage() *proto.Message {
 	return &proto.Message{
 		Name: updateTaskInputMessageName,
 		Fields: []*proto.MessageField{
@@ -495,22 +519,22 @@ func makeUpdateTaskInputMessage() *proto.Message {
 	}
 }
 
-// makeTopicFieldsModelName returns a model name for fields model for the given topic
-func makeTopicFieldsModelName(topicName string) string {
+// buildTopicFieldsModelName returns a model name for fields model for the given topic
+func buildTopicFieldsModelName(topicName string) string {
 	return fmt.Sprintf("%sFields", topicName)
 }
 
-// makeTopicInputsModelName returns a model name for inputs model for the given topic
-func makeTopicInputsModelName(topicName string) string {
+// buildTopicInputsModelName returns a model name for inputs model for the given topic
+func buildTopicInputsModelName(topicName string) string {
 	return fmt.Sprintf("%sInputs", topicName)
 }
 
-// makeTopicCreateMessageName returns a name for the message used to create a new task for the given topic
-func makeTopicCreateMessageName(topicName string) string {
+// buildTopicCreateMessageName returns a name for the message used to create a new task for the given topic
+func buildTopicCreateMessageName(topicName string) string {
 	return fmt.Sprintf("%sCreateInput", topicName)
 }
 
-// makeTopicUpdateMessageName returns a name for the message used to update a task for the given topic
-func makeTopicUpdateMessageName(topicName string) string {
+// buildTopicUpdateMessageName returns a name for the message used to update a task for the given topic
+func buildTopicUpdateMessageName(topicName string) string {
 	return fmt.Sprintf("%sUpdateInput", topicName)
 }
