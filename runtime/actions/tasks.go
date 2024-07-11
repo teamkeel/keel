@@ -55,13 +55,11 @@ func CreateTask(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, errors.New("topic does not exist")
 	}
 
-	input = map[string]any{
+	query := NewQuery(taskModel)
+	err = query.captureWriteValues(scope, map[string]any{
 		"typeType": "Type",
 		"status":   "New",
-	}
-
-	query := NewQuery(taskModel)
-	err = query.captureWriteValues(scope, input)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +71,24 @@ func CreateTask(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	_ = proto.FindModel(scope.Schema.Models, topic) //
+	inputsModel := proto.FindModel(scope.Schema.Models, topic+"Inputs")
+	inputsQuery := NewQuery(inputsModel)
+	err = inputsQuery.captureWriteValues(scope, map[string]any{
+		"name":  "Dave",
+		"email": "dave.new@keel.xyz",
+	})
+	if err != nil {
+		return nil, err
+	}
+	query.AppendReturning(AllFields())
+	statement = inputsQuery.InsertStatement(scope.Context)
+
+	newInputs, err := statement.ExecuteToSingle(scope.Context)
+	if err != nil {
+		return nil, err
+	}
+
+	newTask["inputs"] = newInputs
 
 	return newTask, nil
 }
