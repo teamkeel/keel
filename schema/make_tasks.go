@@ -251,12 +251,13 @@ func (scm *Builder) makeBuiltInTasks() {
 func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 	// add new value to the TaskType enum
 	topicNode := decl.Topic
+	topicName := topicNode.Name.Value
 	if typeEnum := proto.FindEnum(scm.proto.Enums, parser.TaskTypeEnumName); typeEnum != nil {
-		typeEnum.Values = append(typeEnum.Values, &proto.EnumValue{Name: topicNode.Name.Value})
+		typeEnum.Values = append(typeEnum.Values, &proto.EnumValue{Name: topicName})
 	}
 
 	// create new fields model with a relationship field to the task model
-	fieldsModelName := makeTopicFieldsModelName(topicNode.Name.Value)
+	fieldsModelName := makeTopicFieldsModelName(topicName)
 	fieldsModel := &proto.Model{
 		Name: fieldsModelName,
 		Fields: []*proto.Field{
@@ -309,7 +310,7 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 	}
 
 	// create new inputs model with a relationship field to the task model
-	inputsModelName := makeTopicInputsModelName(topicNode.Name.Value)
+	inputsModelName := makeTopicInputsModelName(topicName)
 	inputsModel := &proto.Model{
 		Name: inputsModelName,
 		Fields: []*proto.Field{
@@ -363,7 +364,17 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 
 	// make the message used to create a task for this topic. This message will be used to populate the Fields model
 	fieldsMessage := &proto.Message{
-		Name: makeTopicCreateMessageName(topicNode.Name.Value),
+		Name: makeTopicCreateMessageName(topicName),
+		Fields: []*proto.MessageField{
+			{
+				MessageName: makeTopicCreateMessageName(topicName),
+				Name:        parser.TaskFieldNameType,
+				Type: &proto.TypeInfo{
+					Type:               proto.Type_TYPE_STRING_LITERAL,
+					StringLiteralValue: wrapperspb.String(topicName),
+				},
+			},
+		},
 	}
 	// make the message used to update a task for this topic. This message will be used to populate the Inputs model
 	inputsMessage := &proto.Message{
@@ -413,8 +424,7 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 
 	// and add the message to the union type of the createTaskInput
 	cm := proto.FindMessage(scm.proto.Messages, createTaskInputMessageName)
-	cmf := proto.FindMessageField(cm, "values")
-	cmf.Type.UnionNames = append(cmf.Type.UnionNames, wrapperspb.String(fieldsMessage.Name))
+	cm.Type.UnionNames = append(cm.Type.UnionNames, wrapperspb.String(fieldsMessage.Name))
 
 	// and add the message to the union type of the updateTaskInput
 	um := proto.FindMessage(scm.proto.Messages, updateTaskInputMessageName)
@@ -425,24 +435,11 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 // makeCreateTaskInputMessage creates a input message to be used as part of the createTask action
 func makeCreateTaskInputMessage() *proto.Message {
 	return &proto.Message{
-		Name: createTaskInputMessageName,
-		Fields: []*proto.MessageField{
-			{
-				MessageName: createTaskInputMessageName,
-				Name:        "topic",
-				Type: &proto.TypeInfo{
-					Type:     proto.Type_TYPE_ENUM,
-					EnumName: wrapperspb.String(parser.TaskTypeEnumName),
-				},
-			},
-			{
-				MessageName: createTaskInputMessageName,
-				Name:        "values",
-				Type: &proto.TypeInfo{
-					Type:       proto.Type_TYPE_UNION,
-					UnionNames: []*wrapperspb.StringValue{},
-				},
-			},
+		Name:   createTaskInputMessageName,
+		Fields: []*proto.MessageField{},
+		Type: &proto.TypeInfo{
+			Type:       proto.Type_TYPE_UNION,
+			UnionNames: []*wrapperspb.StringValue{},
 		},
 	}
 }

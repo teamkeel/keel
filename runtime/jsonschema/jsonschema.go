@@ -200,75 +200,83 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 		root.AnyOf = anyOf
 		root.Type = nil
 		root.AdditionalProperties = nil
+
+		return root
 	}
 
-	if !isAny {
-		// Certain messages should only allow one field to be set per request so we set these as a oneOf property
-		oneOfGroupFields := (len(message.Fields) == 3 && contains(message.Fields, "equals") && contains(message.Fields, "notEquals") && contains(message.Fields, "oneOf"))
-		oneOfConditions := message.Name == "StringQueryInput" || message.Name == "BooleanQueryInput" || oneOfGroupFields
-		// For these query inputs, we should allow multiple fields
-		anyOfConditions := message.Name == "DateQueryInput" || message.Name == "TimestampQueryInput" || message.Name == "IntQueryInput"
+	// if we have a union message type, we return a oneOf schema for each union type
+	if message.Type != nil && message.Type.Type == proto.Type_TYPE_UNION {
+		schema := jsonSchemaForField(ctx, schema, action, message.Type, false, []string{})
+		schema.UnevaluatedProperties = boolPtr(false)
 
-		if oneOfConditions || anyOfConditions {
-			jsonSchema := []JSONSchema{}
+		return schema
+	}
 
-			var additionalProperties *bool
-			if oneOfConditions {
-				additionalProperties = boolPtr(false)
+	// Certain messages should only allow one field to be set per request so we set these as a oneOf property
+	oneOfGroupFields := (len(message.Fields) == 3 && contains(message.Fields, "equals") && contains(message.Fields, "notEquals") && contains(message.Fields, "oneOf"))
+	oneOfConditions := message.Name == "StringQueryInput" || message.Name == "BooleanQueryInput" || oneOfGroupFields
+	// For these query inputs, we should allow multiple fields
+	anyOfConditions := message.Name == "DateQueryInput" || message.Name == "TimestampQueryInput" || message.Name == "IntQueryInput"
+
+	if oneOfConditions || anyOfConditions {
+		jsonSchema := []JSONSchema{}
+
+		var additionalProperties *bool
+		if oneOfConditions {
+			additionalProperties = boolPtr(false)
+		}
+
+		for _, field := range message.Fields {
+			jsonSchemaOption := JSONSchema{
+				Type:                 "object",
+				Properties:           map[string]JSONSchema{},
+				AdditionalProperties: additionalProperties,
 			}
 
-			for _, field := range message.Fields {
-				jsonSchemaOption := JSONSchema{
-					Type:                 "object",
-					Properties:           map[string]JSONSchema{},
-					AdditionalProperties: additionalProperties,
+			prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable, []string{})
+
+			// Merge components from this request schema into OpenAPI components
+			if prop.Components != nil {
+				for name, comp := range prop.Components.Schemas {
+					components.Schemas[name] = comp
 				}
-
-				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable, []string{})
-
-				// Merge components from this request schema into OpenAPI components
-				if prop.Components != nil {
-					for name, comp := range prop.Components.Schemas {
-						components.Schemas[name] = comp
-					}
-					prop.Components = nil
-				}
-
-				jsonSchemaOption.Properties[field.Name] = prop
-				jsonSchemaOption.Title = field.Name
-				jsonSchemaOption.Required = append(jsonSchemaOption.Required, field.Name)
-				// https://json-schema.org/understanding-json-schema/reference/object#unevaluatedproperties
-				root.UnevaluatedProperties = boolPtr(false)
-				root.AdditionalProperties = nil
-
-				jsonSchema = append(jsonSchema, jsonSchemaOption)
+				prop.Components = nil
 			}
 
-			if anyOfConditions {
-				root.AnyOf = jsonSchema
-			} else {
-				root.OneOf = jsonSchema
-			}
+			jsonSchemaOption.Properties[field.Name] = prop
+			jsonSchemaOption.Title = field.Name
+			jsonSchemaOption.Required = append(jsonSchemaOption.Required, field.Name)
+			// https://json-schema.org/understanding-json-schema/reference/object#unevaluatedproperties
+			root.UnevaluatedProperties = boolPtr(false)
+			root.AdditionalProperties = nil
 
-			root.Type = nil
+			jsonSchema = append(jsonSchema, jsonSchemaOption)
+		}
+
+		if anyOfConditions {
+			root.AnyOf = jsonSchema
 		} else {
-			for _, field := range message.Fields {
-				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable, []string{})
+			root.OneOf = jsonSchema
+		}
 
-				// Merge components from this request schema into OpenAPI components
-				if prop.Components != nil {
-					for name, comp := range prop.Components.Schemas {
-						components.Schemas[name] = comp
-					}
-					prop.Components = nil
+		root.Type = nil
+	} else {
+		for _, field := range message.Fields {
+			prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable, []string{})
+
+			// Merge components from this request schema into OpenAPI components
+			if prop.Components != nil {
+				for name, comp := range prop.Components.Schemas {
+					components.Schemas[name] = comp
 				}
+				prop.Components = nil
+			}
 
-				root.Properties[field.Name] = prop
+			root.Properties[field.Name] = prop
 
-				// If the input is not optional then mark it required in the JSON schema
-				if !field.Optional {
-					root.Required = append(root.Required, field.Name)
-				}
+			// If the input is not optional then mark it required in the JSON schema
+			if !field.Optional {
+				root.Required = append(root.Required, field.Name)
 			}
 		}
 	}
@@ -551,6 +559,9 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 			}
 			prop.Required = []string{"filename", "contentType", "size", "key", "public"}
 		}
+	case proto.Type_TYPE_STRING_LITERAL:
+		prop.Const = t.StringLiteralValue.Value
+		prop.Default = t.StringLiteralValue.Value
 	}
 
 	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL && t.Type != proto.Type_TYPE_UNION) {

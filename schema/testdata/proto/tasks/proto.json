@@ -856,25 +856,13 @@
     },
     {
       "name": "CreateTaskInput",
-      "fields": [
-        {
-          "messageName": "CreateTaskInput",
-          "name": "topic",
-          "type": {
-            "enumName": "TaskType"
-          }
-        },
-        {
-          "messageName": "CreateTaskInput",
-          "name": "values",
-          "type": {
-            "unionNames": [
-              "CallUserCreateInput",
-              "RateUserCreateInput"
-            ]
-          }
-        }
-      ]
+      "type": {
+        "type": "TYPE_UNION",
+        "unionNames": [
+          "CallUserCreateInput",
+          "RateUserCreateInput"
+        ]
+      }
     },
     {
       "name": "UpdateTaskInput",
@@ -892,6 +880,7 @@
           "messageName": "UpdateTaskInput",
           "name": "values",
           "type": {
+            "type": "TYPE_UNION",
             "unionNames": [
               "CallUserUpdateInput",
               "RateUserUpdateInput"
@@ -903,6 +892,14 @@
     {
       "name": "CallUserCreateInput",
       "fields": [
+        {
+          "messageName": "CallUserCreateInput",
+          "name": "type",
+          "type": {
+            "type": "TYPE_STRING_LITERAL",
+            "stringLiteralValue": "CallUser"
+          }
+        },
         {
           "messageName": "CallUserCreateInput",
           "name": "name",
@@ -934,6 +931,14 @@
     {
       "name": "RateUserCreateInput",
       "fields": [
+        {
+          "messageName": "RateUserCreateInput",
+          "name": "type",
+          "type": {
+            "type": "TYPE_STRING_LITERAL",
+            "stringLiteralValue": "RateUser"
+          }
+        },
         {
           "messageName": "RateUserCreateInput",
           "name": "name",
