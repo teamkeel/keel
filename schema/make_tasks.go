@@ -11,6 +11,7 @@ import (
 const (
 	createTaskInputMessageName = "CreateTaskInput"
 	updateTaskInputMessageName = "UpdateTaskInput"
+	cancelTaskInputMessageName = "CancelTaskInput"
 )
 
 // makeBuiltInTasks will make all the items required for Keel Tasks: Task Model, TaskStatus & TaskType Enum
@@ -31,10 +32,7 @@ func (scm *Builder) makeBuiltInTasks() {
 	}
 	scm.proto.Enums = append(scm.proto.Enums, statusEnum, typeEnum)
 
-	// add the create task input message
-	scm.proto.Messages = append(scm.proto.Messages, makeCreateTaskInputMessage())
-	// add the update task input message
-	scm.proto.Messages = append(scm.proto.Messages, makeUpdateTaskInputMessage())
+	scm.makeTasksMessages()
 
 	protoModel := &proto.Model{
 		Name: parser.TaskModelName,
@@ -47,6 +45,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Type: &proto.TypeInfo{
 					Type: proto.Type_TYPE_ID,
 				},
+				DefaultValue: &proto.DefaultValue{UseZeroValue: true},
 			},
 			{
 				ModelName: parser.TaskModelName,
@@ -74,11 +73,11 @@ func (scm *Builder) makeBuiltInTasks() {
 					Type:      proto.Type_TYPE_MODEL,
 					ModelName: wrapperspb.String(parser.IdentityModelName),
 				},
-				ForeignKeyFieldName: wrapperspb.String(fmt.Sprintf("%sId", parser.TaskFieldNameAssignedTo)),
+				ForeignKeyFieldName: wrapperspb.String(parser.TaskFieldNameAssignedToId),
 			},
 			{
 				ModelName: parser.TaskModelName,
-				Name:      fmt.Sprintf("%sId", parser.TaskFieldNameAssignedTo),
+				Name:      parser.TaskFieldNameAssignedToId,
 				Optional:  true,
 				Type: &proto.TypeInfo{
 					Type: proto.Type_TYPE_ID,
@@ -104,11 +103,11 @@ func (scm *Builder) makeBuiltInTasks() {
 					Type:      proto.Type_TYPE_MODEL,
 					ModelName: wrapperspb.String(parser.IdentityModelName),
 				},
-				ForeignKeyFieldName: wrapperspb.String(fmt.Sprintf("%sId", parser.TaskFieldNameResolvedBy)),
+				ForeignKeyFieldName: wrapperspb.String(parser.TaskFieldNameResolvedById),
 			},
 			{
 				ModelName: parser.TaskModelName,
-				Name:      fmt.Sprintf("%sId", parser.TaskFieldNameResolvedBy),
+				Name:      parser.TaskFieldNameResolvedById,
 				Optional:  true,
 				Type: &proto.TypeInfo{
 					Type: proto.Type_TYPE_ID,
@@ -161,7 +160,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Name:                parser.TaskActionNameCreateTask,
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_CREATE,
-				InputMessageName:    createTaskInputMessageName, // TODO: make this something else
+				InputMessageName:    createTaskInputMessageName,
 				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
 			},
 			{
@@ -177,7 +176,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Name:                parser.TaskActionNameUpdateTask,
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_WRITE,
-				InputMessageName:    updateTaskInputMessageName, // TODO: make this something else
+				InputMessageName:    updateTaskInputMessageName,
 				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
 			},
 			{
@@ -185,7 +184,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Name:                parser.TaskActionNameCompleteTask,
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_WRITE,
-				InputMessageName:    updateTaskInputMessageName, // TODO: make this something else
+				InputMessageName:    updateTaskInputMessageName,
 				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
 			},
 			{
@@ -209,7 +208,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Name:                parser.TaskActionNameCancelTask,
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_WRITE,
-				InputMessageName:    parser.MessageFieldTypeAny, // TODO: make this something else
+				InputMessageName:    cancelTaskInputMessageName,
 				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
 			},
 			{
@@ -269,6 +268,7 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 				Type: &proto.TypeInfo{
 					Type: proto.Type_TYPE_ID,
 				},
+				DefaultValue: &proto.DefaultValue{UseZeroValue: true},
 			},
 			{
 				ModelName: fieldsModelName,
@@ -322,6 +322,7 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 				Type: &proto.TypeInfo{
 					Type: proto.Type_TYPE_ID,
 				},
+				DefaultValue: &proto.DefaultValue{UseZeroValue: true},
 			},
 			{
 				ModelName: inputsModelName,
@@ -432,6 +433,30 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 	umf.Type.UnionNames = append(umf.Type.UnionNames, wrapperspb.String(inputsMessage.Name))
 }
 
+// makeTasksMessages will create and append to the proto schema all the messages required for the tasks actions.
+func (scm *Builder) makeTasksMessages() {
+	// add the create task input message
+	scm.proto.Messages = append(scm.proto.Messages, makeCreateTaskInputMessage())
+	// add the update task input message
+	scm.proto.Messages = append(scm.proto.Messages, makeUpdateTaskInputMessage())
+
+	// add the cancel task input message
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: cancelTaskInputMessageName,
+		Fields: []*proto.MessageField{
+			{
+				MessageName: updateTaskInputMessageName,
+				Name:        parser.FieldNameId,
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(parser.TaskModelName),
+					FieldName: wrapperspb.String(parser.FieldNameId),
+				},
+			},
+		},
+	})
+}
+
 // makeCreateTaskInputMessage creates a input message to be used as part of the createTask action
 func makeCreateTaskInputMessage() *proto.Message {
 	return &proto.Message{
@@ -451,7 +476,7 @@ func makeUpdateTaskInputMessage() *proto.Message {
 		Fields: []*proto.MessageField{
 			{
 				MessageName: updateTaskInputMessageName,
-				Name:        "task_id",
+				Name:        parser.FieldNameId,
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_ID,
 					ModelName: wrapperspb.String(parser.TaskModelName),
