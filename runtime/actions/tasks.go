@@ -137,6 +137,11 @@ func GetNextTask(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	if res != nil {
+		res["fields"], err = getFieldsForTask(scope, res["id"].(string), res["type"].(string))
+		if err != nil {
+			return nil, err
+		}
+
 		return res, nil
 	}
 
@@ -146,17 +151,17 @@ func GetNextTask(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	queryNext.And()
-	err = queryNext.Where(Field(parser.TaskFieldNameDeferredUntil), Equals, Null())
-	if err != nil {
-		return nil, err
-	}
+	// queryNext.And()
+	// err = queryNext.Where(Field(parser.TaskFieldNameDeferredUntil), Equals, Null())
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	queryNext.Or()
-	err = queryNext.Where(Field(parser.TaskFieldNameDeferredUntil), LessThanEquals, Value(time.Now()))
-	if err != nil {
-		return nil, err
-	}
+	// queryNext.Or()
+	// err = queryNext.Where(Field(parser.TaskFieldNameDeferredUntil), LessThanEquals, Value(time.Now()))
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	queryNext.AppendOrderBy(Field(parser.FieldNameCreatedAt), "DESC")
 	queryNext.Limit(1)
@@ -192,21 +197,10 @@ func GetNextTask(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, nil
 	}
 
-	inputsModel := proto.FindModel(scope.Schema.Models, res["type"].(string)+"Fields")
-	inputsQuery := NewQuery(inputsModel)
-	taskIdField := fmt.Sprintf("%sId", parser.TaskFieldNameTask)
-	err = inputsQuery.Where(Field(taskIdField), Equals, Value(res["id"]))
+	res["fields"], err = getFieldsForTask(scope, res["id"].(string), res["type"].(string))
 	if err != nil {
 		return nil, err
 	}
-
-	statement = inputsQuery.SelectStatement()
-	fields, err := statement.ExecuteToSingle(scope.Context)
-	if err != nil {
-		return nil, err
-	}
-
-	res["fields"] = fields
 
 	return res, nil
 }
