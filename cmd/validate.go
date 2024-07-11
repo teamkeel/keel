@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,7 +27,19 @@ var validateCmd = &cobra.Command{
 
 		var err error
 		if flagSchema != "" || flagConfig != "" {
-			_, err = b.MakeFromString(flagSchema, flagConfig)
+			var schema []byte
+			schema, err = base64.StdEncoding.DecodeString(flagSchema)
+			if err != nil {
+				return err
+			}
+
+			var config []byte
+			config, err = base64.StdEncoding.DecodeString(flagConfig)
+			if err != nil {
+				return err
+			}
+
+			_, err = b.MakeFromString(string(schema), string(config))
 		} else {
 			_, err = b.MakeFromDirectory(flagProjectDir)
 		}
@@ -96,6 +109,6 @@ var validateCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(validateCmd)
 	validateCmd.Flags().BoolVar(&flagJsonOutput, "json", false, "output validation and config errors as json")
-	validateCmd.Flags().StringVar(&flagSchema, "schema", "", "the Keel schema passed as an argument")
-	validateCmd.Flags().StringVar(&flagConfig, "config", "", "the Keel config passed as an argument")
+	validateCmd.Flags().StringVar(&flagSchema, "schema", "", "the Keel schema as base64 passed as an argument")
+	validateCmd.Flags().StringVar(&flagConfig, "config", "", "the Keel config as base64 passed as an argument")
 }
