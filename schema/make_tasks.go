@@ -14,6 +14,8 @@ const (
 	cancelTaskInputMessageName = "CancelTaskInput"
 	deferTaskInputMessageName  = "DeferTaskInput"
 	assignTaskInputMessageName = "AssignTaskInput"
+
+	taskResponseMessageName = "TaskResponse"
 )
 
 // makeBuiltInTasks will make all the items required for Keel Tasks: Task Model, TaskStatus & TaskType Enum
@@ -195,7 +197,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_WRITE,
 				InputMessageName:    assignTaskInputMessageName,
-				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
+				ResponseMessageName: taskResponseMessageName,
 			},
 			{
 				ModelName:           parser.TaskModelName,
@@ -203,7 +205,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_WRITE,
 				InputMessageName:    deferTaskInputMessageName,
-				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
+				ResponseMessageName: taskResponseMessageName,
 			},
 			{
 				ModelName:           parser.TaskModelName,
@@ -211,7 +213,7 @@ func (scm *Builder) makeBuiltInTasks() {
 				Implementation:      proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME,
 				Type:                proto.ActionType_ACTION_TYPE_WRITE,
 				InputMessageName:    cancelTaskInputMessageName,
-				ResponseMessageName: parser.MessageFieldTypeAny, // TODO: make this something else
+				ResponseMessageName: taskResponseMessageName,
 			},
 			{
 				ModelName:           parser.TaskModelName,
@@ -437,6 +439,9 @@ func (scm *Builder) makeTopic(decl *parser.DeclarationNode) {
 
 // makeTasksMessages will create and append to the proto schema all the messages required for the tasks actions.
 func (scm *Builder) makeTasksMessages() {
+	// add the task response message
+	scm.proto.Messages = append(scm.proto.Messages, buildTaskResponseMessage())
+
 	// add the create task input message
 	scm.proto.Messages = append(scm.proto.Messages, buildCreateTaskInputMessage())
 	// add the update task input message
@@ -505,6 +510,106 @@ func (scm *Builder) makeTasksMessages() {
 			},
 		},
 	})
+}
+
+// buildTaskResponseMessage creates a response message to be used as for task action responses
+func buildTaskResponseMessage() *proto.Message {
+	return &proto.Message{
+		Name: taskResponseMessageName,
+		Fields: []*proto.MessageField{
+			{
+				MessageName: taskResponseMessageName,
+				Name:        parser.TaskFieldNameAssignedAt,
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_DATETIME,
+				},
+				Nullable: true,
+			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        parser.TaskFieldNameAssignedToId,
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(parser.IdentityModelName),
+					FieldName: wrapperspb.String(parser.FieldNameId),
+				},
+				Nullable: true,
+			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        parser.FieldNameCreatedAt,
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_DATETIME,
+				},
+			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        parser.TaskFieldNameDeferredUntil,
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_DATETIME,
+				},
+				Nullable: true,
+			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        parser.FieldNameId,
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(parser.TaskModelName),
+					FieldName: wrapperspb.String(parser.FieldNameId),
+				},
+			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        parser.TaskFieldNameResolvedAt,
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_DATETIME,
+				},
+				Nullable: true,
+			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        parser.TaskFieldNameResolvedById,
+				Type: &proto.TypeInfo{
+					Type:      proto.Type_TYPE_ID,
+					ModelName: wrapperspb.String(parser.IdentityModelName),
+					FieldName: wrapperspb.String(parser.FieldNameId),
+				},
+				Nullable: true,
+			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        parser.TaskFieldNameStatus,
+				Type: &proto.TypeInfo{
+					Type:     proto.Type_TYPE_ENUM,
+					EnumName: wrapperspb.String(parser.TaskStatusEnumName),
+				},
+			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        parser.TaskFieldNameType,
+				Type: &proto.TypeInfo{
+					Type:     proto.Type_TYPE_ENUM,
+					EnumName: wrapperspb.String(parser.TaskTypeEnumName),
+				},
+			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        parser.FieldNameUpdatedAt,
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_DATETIME,
+				},
+			},
+			{
+				MessageName: taskResponseMessageName,
+				Name:        parser.TaskFieldNameVisibleFrom,
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_DATETIME,
+				},
+				Nullable: true,
+			},
+		},
+	}
 }
 
 // buildCreateTaskInputMessage creates a input message to be used as part of the createTask action
