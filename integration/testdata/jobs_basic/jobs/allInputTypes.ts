@@ -22,4 +22,10 @@ export default AllInputTypes(async (ctx, inputs) => {
   if (inputs.enum != Status.GoldPost) {
     throw new Error("enum not set correctly");
   }
+  if (inputs.image.filename != "my-avatar.png") {
+    throw new Error("image filename not set correctly");
+  }
+  if (inputs.image.read().size != inputs.image.size) {
+    throw new Error("image not set correctly");
+  }
 });
