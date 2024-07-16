@@ -5,6 +5,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/graphql"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -13,6 +15,8 @@ import (
 
 func ActionFunc(schema *proto.Schema, action *proto.Action) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
+		span := trace.SpanFromContext(p.Context)
+
 		scope := actions.NewScope(p.Context, action, schema)
 		input := p.Args["input"]
 
@@ -25,7 +29,14 @@ func ActionFunc(schema *proto.Schema, action *proto.Action) func(p graphql.Resol
 					Code:    common.ErrInternal,
 					Message: "error executing request",
 				}
+
 			}
+
+			span.SetAttributes(
+				attribute.String("error.code", runtimeErr.Code),
+				attribute.String("error.message", runtimeErr.Message),
+			)
+
 			return nil, err
 		}
 
