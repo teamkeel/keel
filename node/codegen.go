@@ -81,7 +81,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	writeTableConfig(sdk, schema.Models)
 	writeAPIFactory(sdk, schema)
 	sdk.Writeln("module.exports.useDatabase = runtime.useDatabase;")
-	sdk.Writeln("module.exports.DataURLInlineFile = runtime.InlineFile;")
+	sdk.Writeln("module.exports.InlineFile = runtime.InlineFile;")
 
 	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
@@ -155,18 +155,6 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 // writeBuiltInTypes will write the types for Built In types such as InlineFile, SortDirection, etc..
 func writeBuiltInTypes(w *codegen.Writer) {
 	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
-	w.Writeln(`export interface InlineFile {`)
-	w.Indent()
-	w.Writeln(`fromDataURL(url: string): InlineFile;`)
-	w.Writeln(`read(): Blob;`)
-	w.Writeln(`filename: string;`)
-	w.Writeln(`contentType: string;`)
-	w.Writeln(`size: number;`)
-	w.Writeln(`key: string;`)
-	w.Writeln(`public: boolean;`)
-	w.Writeln(`url: string | null;`)
-	w.Dedent()
-	w.Writeln(`}`)
 }
 
 func writeTableInterface(w *codegen.Writer, model *proto.Model) {

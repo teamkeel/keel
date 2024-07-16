@@ -1,6 +1,6 @@
 import { models, jobs, resetDatabase } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
-import { Status, DataURLInlineFile } from "@teamkeel/sdk";
+import { Status, InlineFile } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
@@ -92,6 +92,6 @@ test("jobs - all types as input values", async () => {
     timestamp: new Date(2022, 12, 25, 1, 3, 4),
     id: "123",
     enum: Status.GoldPost,
-    image: new DataURLInlineFile(),
+    image: new InlineFile(),
   });
 });
