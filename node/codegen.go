@@ -155,6 +155,20 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 // writeBuiltInTypes will write the types for Built In types such as InlineFile, SortDirection, etc..
 func writeBuiltInTypes(w *codegen.Writer) {
 	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
+	w.Writeln(`export declare class InlineFile {`)
+	w.Indent()
+	w.Writeln(`constructor(key: any, filename: any, contentType: any, size: any, url: any);`)
+	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
+	w.Writeln(`setData(data: Blob): this;`)
+	w.Writeln(`read(): Blob;`)
+	w.Writeln(`filename: string;`)
+	w.Writeln(`contentType: string;`)
+	w.Writeln(`size: number;`)
+	w.Writeln(`key: string;`)
+	w.Writeln(`public: boolean;`)
+	w.Writeln(`url: string | null;`)
+	w.Dedent()
+	w.Writeln(`}`)
 }
 
 func writeTableInterface(w *codegen.Writer, model *proto.Model) {
