@@ -265,6 +265,21 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	w.Dedent()
 	w.Writeln("};")
 
+	w.Writeln(`export declare class InlineFile {`)
+	w.Indent()
+	w.Writeln(`constructor(key: any, filename: any, contentType: any, size: any, url: any);`)
+	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
+	w.Writeln(`setData(data: Blob): this;`)
+	w.Writeln(`read(): Blob;`)
+	w.Writeln(`filename: string;`)
+	w.Writeln(`contentType: string;`)
+	w.Writeln(`size: number;`)
+	w.Writeln(`key: string;`)
+	w.Writeln(`public: boolean;`)
+	w.Writeln(`url: string | null;`)
+	w.Dedent()
+	w.Writeln(`}`)
+
 }
 
 func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
