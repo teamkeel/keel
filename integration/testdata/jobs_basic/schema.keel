@@ -6,7 +6,10 @@ model Post {
         status Status @default(Status.NormalPost)
     }
 
-    @permission(expression: true, actions:[get])
+    @permission(
+        expression: true,
+        actions: [get]
+    )
 }
 
 enum Status {
@@ -46,6 +49,8 @@ job AllInputTypes {
         timestamp Timestamp
         enum Status
         id ID
+        image InlineFile
     }
+
     @permission(expression: true)
 }

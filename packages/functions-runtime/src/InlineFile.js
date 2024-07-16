@@ -28,13 +28,13 @@ class InlineFile {
   }
 
   read() {
-    if (this._data) {
-      return this._data;
+    if (this._blob) {
+      return this._blob;
     }
 
     // TODO read from store
 
-    return this._data;
+    return this._blob;
   }
 
   store() {
