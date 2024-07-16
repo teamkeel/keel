@@ -73,12 +73,11 @@ test("ModelAPI.create", async () => {
     favouriteNumber: 10,
     avatar: file,
   });
-  console.log(file);
-  console.log(row);
   expect(row.name).toEqual("Jim");
   expect(row.married).toEqual(false);
   expect(row.favouriteNumber).toEqual(10);
-  // expect(row.avatar.read()).toEqual("xxxx");
+  expect(row.avatar.filename).toEqual("my-avatar.png");
+  expect(row.avatar.size).toEqual(2024);
   expect(KSUID.parse(row.id).string).toEqual(row.id);
 });
 
