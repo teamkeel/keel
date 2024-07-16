@@ -1,5 +1,5 @@
 import { AllInputTypes, InlineFile, Status } from "@teamkeel/sdk";
-import { IdentityUniqueConditions } from '../.build/sdk/index';
+import { IdentityUniqueConditions } from "../.build/sdk/index";
 
 export default AllInputTypes(async (ctx, inputs) => {
   if (inputs.text != "text") {
@@ -29,7 +29,7 @@ export default AllInputTypes(async (ctx, inputs) => {
   if (inputs.image.size != 2024) {
     throw new Error("image not set correctly");
   }
-  
+
   // test creating an InlineFile from a string input (data url)
   const img = InlineFile.fromDataURL(inputs.dataUrl);
   if (img.filename != "my-avatar.png") {
