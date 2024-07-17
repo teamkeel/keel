@@ -1003,29 +1003,22 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 
 	for _, model := range models {
 		for _, field := range model.Fields {
-			var fieldConfig map[string]string
-
-			switch field.Type.Type {
-			case proto.Type_TYPE_MODEL:
-				fieldConfig = map[string]string{
-					"referencesTable": casing.ToSnake(field.Type.ModelName.Value),
-					"foreignKey":      casing.ToSnake(proto.GetForeignKeyFieldName(models, field)),
-				}
-
-				switch {
-				case proto.IsHasOne(field):
-					fieldConfig["relationshipType"] = "hasOne"
-				case proto.IsHasMany(field):
-					fieldConfig["relationshipType"] = "hasMany"
-				case proto.IsBelongsTo(field):
-					fieldConfig["relationshipType"] = "belongsTo"
-				}
-			case proto.Type_TYPE_INLINE_FILE:
-				fieldConfig = map[string]string{
-					"type": "inlineFile",
-				}
-			default:
+			if field.Type.Type != proto.Type_TYPE_MODEL {
 				continue
+			}
+
+			relationshipConfig := map[string]string{
+				"referencesTable": casing.ToSnake(field.Type.ModelName.Value),
+				"foreignKey":      casing.ToSnake(proto.GetForeignKeyFieldName(models, field)),
+			}
+
+			switch {
+			case proto.IsHasOne(field):
+				relationshipConfig["relationshipType"] = "hasOne"
+			case proto.IsHasMany(field):
+				relationshipConfig["relationshipType"] = "hasMany"
+			case proto.IsBelongsTo(field):
+				relationshipConfig["relationshipType"] = "belongsTo"
 			}
 
 			tableConfig, ok := tableConfigMap[casing.ToSnake(model.Name)]
@@ -1034,7 +1027,7 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 				tableConfigMap[casing.ToSnake(model.Name)] = tableConfig
 			}
 
-			tableConfig[field.Name] = fieldConfig
+			tableConfig[field.Name] = relationshipConfig
 		}
 	}
 
