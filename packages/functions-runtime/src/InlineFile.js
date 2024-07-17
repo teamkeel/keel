@@ -10,18 +10,19 @@ class InlineFile {
 
   // Create an InlineFile instance from a given json object.
   static fromObject(obj) {
-    var file = new InlineFile(
+    if (obj.dataURL) {
+      var file = InlineFile.fromDataURL(obj.dataURL);
+      file._dataURL = obj.dataURL;
+      return file;
+    }
+
+    return new InlineFile(
       obj.key,
       obj.filename,
       obj.contentType,
       obj.size,
       obj.url
     );
-    if (obj.dataURL) {
-      file._dataURL = obj.dataURL;
-    }
-
-    return file;
   }
 
   // Create an InlineFile instance from a given dataURL

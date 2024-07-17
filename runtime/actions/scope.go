@@ -158,10 +158,31 @@ func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetad
 		}
 	}
 
+	// when calling custom functions, complex input types need to be transformed:
+	// e.g. for InlineFile inputs, whcih are given as a dataURL string, they need to be transformed into an object
+	// including the typename
+	parsedInputs := inputs
+	inputsAsMap, isMap := inputs.(map[string]any)
+	if isMap {
+		msg := proto.FindMessage(scope.Schema.Messages, scope.Action.InputMessageName)
+		if msg.HasFiles() {
+			for _, f := range msg.FileFields() {
+				if inputsAsMap[f.GetName()] != nil {
+					dataURL := inputsAsMap[f.GetName()]
+					inputsAsMap[f.GetName()] = map[string]any{
+						"__typename": "InlineFile",
+						"dataURL":    dataURL,
+					}
+				}
+			}
+		}
+		parsedInputs = inputsAsMap
+	}
+
 	resp, meta, err := functions.CallFunction(
 		scope.Context,
 		scope.Action.Name,
-		inputs,
+		parsedInputs,
 		permissionState,
 	)
 

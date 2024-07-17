@@ -4,8 +4,6 @@ import { CreatePerson, permissions, models } from "@teamkeel/sdk";
 export default CreatePerson(async (_, inputs) => {
   permissions.allow();
 
-  console.log(inputs);
-
   const response = await models.person.create({
     name: inputs.name,
     height: inputs.height,
