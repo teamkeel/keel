@@ -8,6 +8,7 @@ class InlineFile {
     this.url = url;
   }
 
+  // Create an InlineFile instance from a given json object.
   static fromObject(obj) {
     var file = new InlineFile(
       obj.key,
@@ -23,6 +24,7 @@ class InlineFile {
     return file;
   }
 
+  // Create an InlineFile instance from a given dataURL
   static fromDataURL(dataURL) {
     var info = dataURL.split(",")[0].split(":")[1];
     var data = dataURL.split(",")[1];
@@ -37,7 +39,7 @@ class InlineFile {
     return file;
   }
 
-  // read the contents of the file. If URL is set, it will be read from the remote storage, otherwise, if dataURL is set
+  // Read the contents of the file. If URL is set, it will be read from the remote storage, otherwise, if dataURL is set
   // on the instance, it will return a blob with the file contents
   read() {
     if (this.url) {
