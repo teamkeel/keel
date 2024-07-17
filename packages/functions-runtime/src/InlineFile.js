@@ -8,6 +8,21 @@ class InlineFile {
     this.url = url;
   }
 
+  static fromObject(obj) {
+    var file = new InlineFile(
+      obj.key,
+      obj.filename,
+      obj.contentType,
+      obj.size,
+      obj.url
+    );
+    if (obj.dataURL) {
+      file._dataURL = obj.dataURL;
+    }
+
+    return file;
+  }
+
   static fromDataURL(dataURL) {
     var info = dataURL.split(",")[0].split(":")[1];
     var data = dataURL.split(",")[1];
@@ -17,24 +32,23 @@ class InlineFile {
     var byteString = Buffer.from(data, "base64");
     var blob = new Blob([byteString], { type: mime });
 
-    return new InlineFile(null, name).setData(blob);
+    var file = new InlineFile(null, name, mime, blob.size);
+    file._dataURL = dataURL;
+    return file;
   }
 
-  setData(blob) {
-    this._blob = blob;
-    this.type = blob.type;
-    this.size = blob.size;
-    return this;
-  }
-
+  // read the contents of the file. If URL is set, it will be read from the remote storage, otherwise, if dataURL is set
+  // on the instance, it will return a blob with the file contents
   read() {
-    if (this._blob) {
-      return this._blob;
+    if (this.url) {
+      // TODO: read from store
     }
 
-    // TODO read from store
-
-    return this._blob;
+    if (this._dataURL) {
+      var data = this._dataURL.split(",")[1];
+      var byteString = Buffer.from(data, "base64");
+      return new Blob([byteString], { type: this.contentType });
+    }
   }
 
   store() {
@@ -44,10 +58,13 @@ class InlineFile {
 
   toJSON() {
     return {
+      __typename: "InlineFile",
+      dataURL: this._dataURL,
       filename: this.filename,
       contentType: this.contentType,
       size: this.size,
       key: this.key,
+      url: this.url,
       public: false,
     };
   }

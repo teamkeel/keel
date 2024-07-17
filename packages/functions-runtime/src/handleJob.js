@@ -9,6 +9,7 @@ const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
 const { PROTO_ACTION_TYPES } = require("./consts");
 const { tryExecuteJob } = require("./tryExecuteJob");
+const { parseParams } = require("./parsing");
 
 // Generic handler function that is agnostic to runtime environment (local or lambda)
 // to execute a job function based on the contents of a jsonrpc-2.0 payload object.
@@ -57,8 +58,11 @@ async function handleJob(request, config) {
         await tryExecuteJob(
           { request, permitted, db, actionType },
           async () => {
+            // parse request params to convert objects into rich field types (e.g. InlineFile)
+            const inputs = parseParams(request.params);
+
             // Return the job function to the containing tryExecuteJob block
-            return jobFunction(ctx, request.params);
+            return jobFunction(ctx, inputs);
           }
         );
 

@@ -29,10 +29,7 @@ export default AllInputTypes(async (ctx, inputs) => {
   if (inputs.image.size != 2024) {
     throw new Error("image not set correctly");
   }
-
-  // test creating an InlineFile from a string input (data url)
-  const img = InlineFile.fromDataURL(inputs.dataUrl);
-  if (img.filename != "my-avatar.png") {
+  if (inputs.image.read().size != 2024) {
     throw new Error("image not set correctly");
   }
 });

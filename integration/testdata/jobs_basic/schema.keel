@@ -50,7 +50,6 @@ job AllInputTypes {
         enum Status
         id ID
         image InlineFile
-        dataUrl Text
     }
 
     @permission(expression: true)
