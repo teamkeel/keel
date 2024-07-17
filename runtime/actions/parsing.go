@@ -8,6 +8,7 @@ import (
 	"github.com/relvacode/iso8601"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/types"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 // TransformInputTypes will traverse through the input data structure and will ensure that values are correctly typed.
@@ -175,4 +176,36 @@ var toDate = func(value any) (types.Date, error) {
 	default:
 		return types.Date{}, fmt.Errorf("incompatible type %T parsing to Date", t)
 	}
+}
+
+// TransformCustomFunctionsInputTypes will, similarly to TransformInputTypes traverse through the input data structure
+// and will decorate complex input fields with typenames to be used by the JS environment
+//
+// e.g. for InlineFile inputs, whcih are given as a dataURL string, they need to be transformed into an object
+// including the typename
+func TransformCustomFunctionsInputTypes(schema *proto.Schema, action *proto.Action, input any) (any, error) {
+	inputsAsMap, isMap := input.(map[string]any)
+	if !isMap {
+		return input, nil
+	}
+
+	msg := proto.FindMessage(schema.Messages, action.InputMessageName)
+	if msg == nil {
+		return input, nil
+	}
+
+	// for now the only complex input field is InlineFile
+	if msg.HasFiles() {
+		for _, f := range msg.FileFields() {
+			if inputsAsMap[f.GetName()] != nil {
+				dataURL := inputsAsMap[f.GetName()]
+				inputsAsMap[f.GetName()] = map[string]any{
+					"__typename": parser.FieldTypeInlineFile,
+					"dataURL":    dataURL,
+				}
+			}
+		}
+	}
+
+	return inputsAsMap, nil
 }
