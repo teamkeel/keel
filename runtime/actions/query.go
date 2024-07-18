@@ -1171,9 +1171,22 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		EndCursor:   endCursor,
 	}
 
-	// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
-	// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
 	for _, f := range statement.model.Fields {
+
+		if f.Type.Type == proto.Type_TYPE_DATE {
+			for _, row := range rows {
+				col := strcase.ToSnake(f.Name)
+				if val, ok := row[col]; ok && val != nil {
+					row[col], err = toDate(val)
+					if err != nil {
+						return nil, nil, err
+					}
+				}
+			}
+		}
+
+		// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
+		// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
 		if f.Type.Type != proto.Type_TYPE_MODEL && (f.Type.Repeated || f.Type.Type == proto.Type_TYPE_VECTOR) {
 			for _, row := range rows {
 				col := strcase.ToSnake(f.Name)

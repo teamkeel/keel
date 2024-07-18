@@ -1,0 +1,29 @@
+model Post {
+    fields {
+        text Text
+        date Date
+        dateTime Timestamp
+    }
+
+    actions {
+        create createPost() with (text, date, dateTime)
+        get getPost(id)
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
+}
+
+enum Category {
+    Technical
+    Food
+    Lifestyle
+}
+
+api Web {
+    models {
+        Post
+    }
+}
