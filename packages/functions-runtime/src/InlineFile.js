@@ -27,7 +27,7 @@ class InlineFile {
     var byteString = Buffer.from(data, "base64");
     var blob = new Blob([byteString], { type: mime });
 
-    var file = new InlineFile(null, name, mime, blob.size);
+    var file = new InlineFile(name, mime, blob.size);
     file._dataURL = dataURL;
     return file;
   }
