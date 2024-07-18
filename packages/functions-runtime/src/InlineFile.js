@@ -1,10 +1,8 @@
 class InlineFile {
-  constructor(key, filename, contentType, size, url) {
+  constructor(filename, contentType, size, url) {
     this.filename = filename;
     this.contentType = contentType;
     this.size = size;
-    this.key = key;
-    this.public = false;
     this.url = url;
   }
 
@@ -16,13 +14,7 @@ class InlineFile {
       return file;
     }
 
-    return new InlineFile(
-      obj.key,
-      obj.filename,
-      obj.contentType,
-      obj.size,
-      obj.url
-    );
+    return new InlineFile(obj.filename, obj.contentType, obj.size, obj.url);
   }
 
   // Create an InlineFile instance from a given dataURL
@@ -66,9 +58,7 @@ class InlineFile {
       filename: this.filename,
       contentType: this.contentType,
       size: this.size,
-      key: this.key,
       url: this.url,
-      public: false,
     };
   }
 }

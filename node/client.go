@@ -274,8 +274,6 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	w.Writeln(`filename: string;`)
 	w.Writeln(`contentType: string;`)
 	w.Writeln(`size: number;`)
-	w.Writeln(`key: string;`)
-	w.Writeln(`public: boolean;`)
 	w.Writeln(`url: string | null;`)
 	w.Dedent()
 	w.Writeln(`}`)
