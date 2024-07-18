@@ -12,6 +12,7 @@ export default ListBooksBeforeQueryReturnValues({
         title: "Dreamcatcher",
         authorId: null,
         published: true,
+        cover: null,
       },
     ];
   },
