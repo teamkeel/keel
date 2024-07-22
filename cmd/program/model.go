@@ -378,7 +378,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.Status = StatusUpdateFunctions
-		return m, UpdateFunctions(m.Schema, m.ProjectDir)
+		return m, UpdateFunctions(m.Schema, m.Config, m.ProjectDir)
 
 	case UpdateFunctionsMsg:
 		m.Err = msg.Err

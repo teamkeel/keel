@@ -54,26 +54,34 @@ func TestScaffold(t *testing.T) {
 	}
 `
 
+	cfg := `
+auth:
+  hooks: [afterAuthenticated]
+`
+
 	builder := schema.Builder{}
 
-	schema, err := builder.MakeFromString(schemaString, config.Empty)
+	schema, err := builder.MakeFromString(schemaString, cfg)
 
 	require.NoError(t, err)
 
 	err = os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(schemaString), 0777)
 	require.NoError(t, err)
 
-	actualFiles, err := Scaffold(tmpDir, schema)
-
-	// If you enable this litter.Dump during development, it produces output that can be
-	// pasted without change into the expectedFiles literal below. Obviously to do that, you have
-	// to be confident by other means that the generated content is now correct.
-
-	// litter.Dump(actualFiles)
+	actualFiles, err := Scaffold(tmpDir, schema, builder.Config)
 
 	require.NoError(t, err)
 
 	expectedFiles := codegen.GeneratedFiles{
+		&codegen.GeneratedFile{
+			Contents: `
+import { AfterAuthenticated } from '@teamkeel/sdk';
+
+export default AfterAuthenticated(async (ctx) => {
+
+});`,
+			Path: "functions/afterAuthenticated.ts",
+		},
 		&codegen.GeneratedFile{
 			Contents: `
 import { CreatePost, CreatePostHooks } from '@teamkeel/sdk';
@@ -243,7 +251,7 @@ func TestExistingFunction(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	actualFiles, err := Scaffold(tmpDir, schema)
+	actualFiles, err := Scaffold(tmpDir, schema, &config.ProjectConfig{})
 
 	assert.NoError(t, err)
 
@@ -282,7 +290,7 @@ func TestExistingJob(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	actualFiles, err := Scaffold(tmpDir, schema)
+	actualFiles, err := Scaffold(tmpDir, schema, &config.ProjectConfig{})
 
 	assert.NoError(t, err)
 

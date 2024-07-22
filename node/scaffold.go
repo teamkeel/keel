@@ -9,6 +9,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/codegen"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -18,15 +19,13 @@ const (
 	SUBSCRIBERS_DIR = "subscribers"
 )
 
-func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) {
-	files, err := Generate(context.TODO(), schema)
-
+func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (codegen.GeneratedFiles, error) {
+	files, err := Generate(context.TODO(), schema, cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	err = files.Write(dir)
-
 	if err != nil {
 		return nil, err
 	}
@@ -35,10 +34,12 @@ func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) 
 	if err := ensureDir(functionsDir); err != nil {
 		return nil, err
 	}
+
 	jobsDir := filepath.Join(dir, JOBS_DIR)
 	if err := ensureDir(jobsDir); err != nil {
 		return nil, err
 	}
+
 	subscribersDir := filepath.Join(dir, SUBSCRIBERS_DIR)
 	if err := ensureDir(subscribersDir); err != nil {
 		return nil, err
@@ -50,18 +51,47 @@ func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) 
 		return op.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 	})
 
+	if cfg.UsesAuthHook(config.AfterAuthenticated) {
+		path := filepath.Join(FUNCTIONS_DIR, "afterAuthenticated.ts")
+		_, err = os.Stat(filepath.Join(dir, path))
+		if os.IsNotExist(err) {
+			contents := fmt.Sprintf(`import { AfterAuthenticated } from '@teamkeel/sdk';
+
+export default AfterAuthenticated(async (ctx) => {
+
+});`)
+			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
+				Path:     path,
+				Contents: contents,
+			})
+		}
+	}
+
+	if cfg.UsesAuthHook(config.AfterIdentityCreated) {
+		path := filepath.Join(FUNCTIONS_DIR, "afterIdentityCreated.ts")
+		_, err = os.Stat(filepath.Join(dir, path))
+		if os.IsNotExist(err) {
+			contents := fmt.Sprintf(`import { AfterIdentityCreated } from '@teamkeel/sdk';
+
+export default AfterIdentityCreated(async (ctx) => {
+
+});`)
+			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
+				Path:     path,
+				Contents: contents,
+			})
+		}
+	}
+
 	for _, fn := range functions {
 		path := filepath.Join(FUNCTIONS_DIR, fmt.Sprintf("%s.ts", fn.Name))
-
 		_, err = os.Stat(filepath.Join(dir, path))
-
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
 				Contents: writeFunctionWrapper(fn),
 			})
 		}
-
 	}
 
 	for _, job := range schema.Jobs {

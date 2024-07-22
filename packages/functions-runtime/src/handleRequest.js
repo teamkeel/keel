@@ -64,6 +64,11 @@ async function handleRequest(request, config) {
         const result = await tryExecuteFunction(
           { request, ctx, permitted, db, permissionFns, actionType },
           async () => {
+
+            //for any InlineFile input arg, make it a InlineFile type
+
+            //string -> InlineFile
+
             // Return the custom function to the containing tryExecuteFunction block
             // Once the custom function is called, tryExecuteFunction will check the schema's permission rules to see if it can continue committing
             // the transaction to the db. If a permission rule is violated, any changes made inside the transaction are rolled back.
@@ -71,16 +76,16 @@ async function handleRequest(request, config) {
           }
         );
 
-        // Sometimes a custom function may be coded in such a way that nothing is returned from it.
-        // We see this as an error so handle accordingly.
-        if (result === undefined) {
-          // no result returned from custom function
-          return createJSONRPCErrorResponse(
-            request.id,
-            RuntimeErrors.NoResultError,
-            `no result returned from function '${request.method}'`
-          );
-        }
+        // // Sometimes a custom function may be coded in such a way that nothing is returned from it.
+        // // We see this as an error so handle accordingly.
+        // if (result === undefined) {
+        //   // no result returned from custom function
+        //   return createJSONRPCErrorResponse(
+        //     request.id,
+        //     RuntimeErrors.NoResultError,
+        //     `no result returned from function '${request.method}'`
+        //   );
+        // }
 
         const response = createJSONRPCSuccessResponse(request.id, result);
 

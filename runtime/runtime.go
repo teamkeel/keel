@@ -99,6 +99,14 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 	handleOpenApiRequest := authapi.OAuthOpenApiSchema()
 
 	return func(w http.ResponseWriter, r *http.Request) common.Response {
+		// Collect request headers and add to runtime context
+		// These are exposed in custom functions and in expressions
+		headers := map[string][]string{}
+		for k := range r.Header {
+			headers[k] = r.Header.Values(k)
+		}
+		r = r.WithContext(runtimectx.WithRequestHeaders(r.Context(), headers))
+
 		switch {
 		case r.URL.Path == "/auth/providers":
 			return handleProviders(r)

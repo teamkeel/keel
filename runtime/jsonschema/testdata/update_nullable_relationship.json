@@ -1,0 +1,52 @@
+{
+    "type": "object",
+    "properties": {
+        "values": {
+            "$ref": "#/components/schemas/TestActionValues"
+        },
+        "where": {
+            "$ref": "#/components/schemas/TestActionWhere"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "where"
+    ],
+    "components": {
+        "schemas": {
+            "TestActionEmployeeInput": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "TestActionValues": {
+                "type": "object",
+                "properties": {
+                    "employee": {
+                        "$ref": "#/components/schemas/TestActionEmployeeInput"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "TestActionWhere": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id"
+                ]
+            }
+        }
+    }
+}

@@ -15,6 +15,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/codegen"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -36,7 +37,7 @@ func WithDevelopmentServer(b bool) func(o *generateOptions) {
 // to a project. Calling .Write() on the result will cause those files be written to disk.
 // This function should not interact with the file system so it can be used in a backend
 // context.
-func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generateOptions)) (codegen.GeneratedFiles, error) {
+func Generate(ctx context.Context, schema *proto.Schema, cfg *config.ProjectConfig, opts ...func(o *generateOptions)) (codegen.GeneratedFiles, error) {
 	options := &generateOptions{}
 	for _, o := range opts {
 		o(options)
@@ -47,7 +48,7 @@ func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generat
 	files = append(files, generateTestingSetup()...)
 
 	if options.developmentServer {
-		files = append(files, generateDevelopmentServer(schema)...)
+		files = append(files, generateDevelopmentServer(schema, cfg)...)
 	}
 
 	return files, nil
@@ -121,6 +122,9 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		}
 	}
 
+	sdkTypes.Writeln("export declare function AfterAuthenticated(fn: (ctx: ContextAPI) => Promise<void>): Promise<void>;")
+	sdkTypes.Writeln("export declare function AfterIdentityCreated(fn: (ctx: ContextAPI) => Promise<void>): Promise<void>;")
+
 	for _, job := range schema.Jobs {
 		writeJobFunctionWrapperType(sdkTypes, job)
 		sdk.Writef("module.exports.%s = (fn) => fn;", job.Name)
@@ -132,6 +136,10 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(subscriber.Name))
 		sdk.Writeln("")
 	}
+	sdk.Writeln("")
+
+	sdk.Writeln("module.exports.AfterAuthenticated = (fn) => fn;")
+	sdk.Writeln("module.exports.AfterIdentityCreated = (fn) => fn;")
 
 	writeDatabaseInterface(sdkTypes, schema)
 	writeAPIDeclarations(sdkTypes, schema)
@@ -1261,7 +1269,7 @@ func toActionReturnType(model *proto.Model, op *proto.Action) string {
 	return returnType
 }
 
-func generateDevelopmentServer(schema *proto.Schema) codegen.GeneratedFiles {
+func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) codegen.GeneratedFiles {
 	w := &codegen.Writer{}
 	w.Writeln(`import { handleRequest, handleJob, handleSubscriber, tracing } from '@teamkeel/functions-runtime';`)
 	w.Writeln(`import { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } from '@teamkeel/sdk';`)
@@ -1294,12 +1302,27 @@ func generateDevelopmentServer(schema *proto.Schema) codegen.GeneratedFiles {
 		w.Writeln(";")
 	}
 
+	if cfg.UsesAuthHook(config.AfterAuthenticated) {
+		w.Writeln(`import function_afterAuthenticated from "../functions/afterAuthenticated.ts";`)
+	}
+	if cfg.UsesAuthHook(config.AfterIdentityCreated) {
+		w.Writeln(`import function_afterIdentityCreated from "../functions/afterIdentityCreated.ts";`)
+	}
+
 	w.Writeln("const functions = {")
 	w.Indent()
 	for _, fn := range functions {
 		w.Writef("%s: function_%s,", fn.Name, fn.Name)
 		w.Writeln("")
 	}
+
+	if cfg.UsesAuthHook(config.AfterAuthenticated) {
+		w.Writef("afterAuthenticated: function_afterAuthenticated,")
+	}
+	if cfg.UsesAuthHook(config.AfterIdentityCreated) {
+		w.Writef("afterIdentityCreated: function_afterIdentityCreated,")
+	}
+
 	w.Dedent()
 	w.Writeln("}")
 

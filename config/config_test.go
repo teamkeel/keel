@@ -338,3 +338,11 @@ func TestAuthClaims(t *testing.T) {
 	assert.Equal(t, "somethingElse", config.Auth.Claims[1].Field)
 	assert.Equal(t, false, config.Auth.Claims[1].Unique)
 }
+
+func TestAuthHooksInvalid(t *testing.T) {
+	t.Parallel()
+	_, err := Load("fixtures/test_auth_invalid_hooks.yaml")
+
+	assert.ErrorContains(t, err, "afterIdentity is not a recognised hook")
+
+}

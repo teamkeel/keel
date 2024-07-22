@@ -42,11 +42,26 @@ var (
 	}
 )
 
+type HookFunction string
+
+const (
+	AfterAuthenticated   HookFunction = "afterAuthenticated"
+	AfterIdentityCreated HookFunction = "afterIdentityCreated"
+)
+
+var (
+	SupportedAuthHooks = []HookFunction{
+		AfterAuthenticated,
+		AfterIdentityCreated,
+	}
+)
+
 type AuthConfig struct {
 	Tokens      TokensConfig    `yaml:"tokens"`
 	RedirectUrl *string         `yaml:"redirectUrl,omitempty"`
 	Providers   []Provider      `yaml:"providers"`
 	Claims      []IdentityClaim `yaml:"claims"`
+	Hooks       []HookFunction  `yaml:"hooks"`
 }
 
 type TokensConfig struct {

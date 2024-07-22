@@ -103,6 +103,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 	files, err := node.Generate(
 		ctx,
 		schema,
+		builder.Config,
 		node.WithDevelopmentServer(true),
 	)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -194,6 +195,8 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 			identityId = identity[parser.FieldNameId].(string)
+
+			ctx = auth.WithIdentity(ctx, identity)
 
 		case GrantTypeAuthCode:
 			authCode, hasAuthCode := inputs[ArgCode].(string)
