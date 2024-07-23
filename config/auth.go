@@ -42,17 +42,17 @@ var (
 	}
 )
 
-type HookFunction string
+type FunctionHook string
 
 const (
-	AfterAuthenticated   HookFunction = "afterAuthenticated"
-	AfterIdentityCreated HookFunction = "afterIdentityCreated"
+	HookAfterAuthentication  FunctionHook = "afterAuthentication"
+	HookAfterIdentityCreated FunctionHook = "afterIdentityCreated"
 )
 
 var (
-	SupportedAuthHooks = []HookFunction{
-		AfterAuthenticated,
-		AfterIdentityCreated,
+	supportedAuthHooks = []FunctionHook{
+		HookAfterAuthentication,
+		HookAfterIdentityCreated,
 	}
 )
 
@@ -61,7 +61,7 @@ type AuthConfig struct {
 	RedirectUrl *string         `yaml:"redirectUrl,omitempty"`
 	Providers   []Provider      `yaml:"providers"`
 	Claims      []IdentityClaim `yaml:"claims"`
-	Hooks       []HookFunction  `yaml:"hooks"`
+	Hooks       []FunctionHook  `yaml:"hooks"`
 }
 
 type TokensConfig struct {
@@ -92,6 +92,10 @@ func (c *AuthConfig) AccessTokenExpiry() time.Duration {
 	} else {
 		return DefaultAccessTokenExpiry
 	}
+}
+
+func (c *AuthConfig) EnabledHooks() []FunctionHook {
+	return c.Hooks
 }
 
 // RefreshTokenExpiry retrieves the configured or default refresh token expiry

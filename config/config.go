@@ -67,7 +67,7 @@ func (c *ProjectConfig) DefaultApi() bool {
 	}
 }
 
-func (c *ProjectConfig) UsesAuthHook(hook HookFunction) bool {
+func (c *ProjectConfig) UsesAuthHook(hook FunctionHook) bool {
 	return slices.Contains(c.Auth.Hooks, hook)
 }
 
@@ -323,7 +323,7 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 
 	if config.Auth.Hooks != nil {
 		for _, v := range config.Auth.Hooks {
-			if !slices.Contains(SupportedAuthHooks, v) {
+			if !slices.Contains(supportedAuthHooks, v) {
 				errors = append(errors, &ConfigError{
 					Type:    "invalid",
 					Message: fmt.Sprintf(ConfigAuthInvalidHook, v),

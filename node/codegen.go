@@ -43,7 +43,7 @@ func Generate(ctx context.Context, schema *proto.Schema, cfg *config.ProjectConf
 		o(options)
 	}
 
-	files := generateSdkPackage(schema)
+	files := generateSdkPackage(schema, cfg)
 	files = append(files, generateTestingPackage(schema)...)
 	files = append(files, generateTestingSetup()...)
 
@@ -54,7 +54,7 @@ func Generate(ctx context.Context, schema *proto.Schema, cfg *config.ProjectConf
 	return files, nil
 }
 
-func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
+func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen.GeneratedFiles {
 	sdk := &codegen.Writer{}
 	sdk.Writeln(`const { sql, NoResultError } = require("kysely")`)
 	sdk.Writeln(`const runtime = require("@teamkeel/functions-runtime")`)
@@ -122,7 +122,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		}
 	}
 
-	sdkTypes.Writeln("export declare function AfterAuthenticated(fn: (ctx: ContextAPI) => Promise<void>): Promise<void>;")
+	sdkTypes.Writeln("export declare function AfterAuthentication(fn: (ctx: ContextAPI) => Promise<void>): Promise<void>;")
 	sdkTypes.Writeln("export declare function AfterIdentityCreated(fn: (ctx: ContextAPI) => Promise<void>): Promise<void>;")
 
 	for _, job := range schema.Jobs {
@@ -138,8 +138,11 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	}
 	sdk.Writeln("")
 
-	sdk.Writeln("module.exports.AfterAuthenticated = (fn) => fn;")
-	sdk.Writeln("module.exports.AfterIdentityCreated = (fn) => fn;")
+	for _, h := range cfg.Auth.EnabledHooks() {
+		sdk.Writef("module.exports.%s = (fn) => fn;", strcase.ToCamel(string(h)))
+		sdk.Writeln("")
+
+	}
 
 	writeDatabaseInterface(sdkTypes, schema)
 	writeAPIDeclarations(sdkTypes, schema)
@@ -1302,25 +1305,22 @@ func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) 
 		w.Writeln(";")
 	}
 
-	if cfg.UsesAuthHook(config.AfterAuthenticated) {
-		w.Writeln(`import function_afterAuthenticated from "../functions/afterAuthenticated.ts";`)
-	}
-	if cfg.UsesAuthHook(config.AfterIdentityCreated) {
-		w.Writeln(`import function_afterIdentityCreated from "../functions/afterIdentityCreated.ts";`)
+	for _, v := range cfg.Auth.EnabledHooks() {
+		w.Writef(`import function_%s from "../functions/auth/%s.ts"`, v, v)
+		w.Writeln(";")
 	}
 
 	w.Writeln("const functions = {")
 	w.Indent()
+
 	for _, fn := range functions {
 		w.Writef("%s: function_%s,", fn.Name, fn.Name)
 		w.Writeln("")
 	}
 
-	if cfg.UsesAuthHook(config.AfterAuthenticated) {
-		w.Writef("afterAuthenticated: function_afterAuthenticated,")
-	}
-	if cfg.UsesAuthHook(config.AfterIdentityCreated) {
-		w.Writef("afterIdentityCreated: function_afterIdentityCreated,")
+	for _, v := range cfg.Auth.EnabledHooks() {
+		w.Writef("%s: function_%s", v, v)
+		w.Writeln(",")
 	}
 
 	w.Dedent()

@@ -15,6 +15,7 @@ import (
 
 const (
 	FUNCTIONS_DIR   = "functions"
+	AUTH_HOOKS_DIR  = "functions/auth"
 	JOBS_DIR        = "jobs"
 	SUBSCRIBERS_DIR = "subscribers"
 )
@@ -35,6 +36,11 @@ func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (code
 		return nil, err
 	}
 
+	authHooksDir := filepath.Join(dir, AUTH_HOOKS_DIR)
+	if err := ensureDir(authHooksDir); err != nil {
+		return nil, err
+	}
+
 	jobsDir := filepath.Join(dir, JOBS_DIR)
 	if err := ensureDir(jobsDir); err != nil {
 		return nil, err
@@ -51,31 +57,29 @@ func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (code
 		return op.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 	})
 
-	if cfg.UsesAuthHook(config.AfterAuthenticated) {
-		path := filepath.Join(FUNCTIONS_DIR, "afterAuthenticated.ts")
-		_, err = os.Stat(filepath.Join(dir, path))
-		if os.IsNotExist(err) {
-			contents := fmt.Sprintf(`import { AfterAuthenticated } from '@teamkeel/sdk';
+	for _, hook := range cfg.Auth.EnabledHooks() {
 
-export default AfterAuthenticated(async (ctx) => {
+		var contents string
+		switch hook {
+		case config.HookAfterAuthentication:
+			contents = fmt.Sprintf(`import { AfterAuthentication } from '@teamkeel/sdk';
+
+// This synchronous hook will execute after authentication has complete
+export default AfterAuthentication(async (ctx) => {
 
 });`)
-			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
-				Path:     path,
-				Contents: contents,
-			})
-		}
-	}
+		case config.HookAfterIdentityCreated:
+			contents = fmt.Sprintf(`import { AfterIdentityCreated } from '@teamkeel/sdk';
 
-	if cfg.UsesAuthHook(config.AfterIdentityCreated) {
-		path := filepath.Join(FUNCTIONS_DIR, "afterIdentityCreated.ts")
-		_, err = os.Stat(filepath.Join(dir, path))
-		if os.IsNotExist(err) {
-			contents := fmt.Sprintf(`import { AfterIdentityCreated } from '@teamkeel/sdk';
-
+// This synchronous hook will execute after successful authentication and a new identity record created
 export default AfterIdentityCreated(async (ctx) => {
 
 });`)
+		}
+
+		path := filepath.Join(AUTH_HOOKS_DIR, fmt.Sprintf("%s.ts", string(hook)))
+		_, err = os.Stat(filepath.Join(dir, path))
+		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
 				Contents: contents,

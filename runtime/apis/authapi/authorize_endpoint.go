@@ -266,7 +266,6 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 
 		return common.NewRedirectResponse(redirectUrl)
 	}
-
 }
 
 func GetClientSecret(ctx context.Context, provider *config.Provider) (string, bool) {

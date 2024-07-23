@@ -7,17 +7,18 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 )
 
 // IsEnabled returns true if the provided dir contains any tests or if the provided
 // schema contains any functions.
-func IsEnabled(dir string, s *proto.Schema) bool {
-	return HasFunctions(s) || HasTests(dir)
+func IsEnabled(dir string, s *proto.Schema, cfg *config.ProjectConfig) bool {
+	return HasFunctions(s, cfg) || HasTests(dir)
 }
 
 // HasFunctions returns true if the schema contains any custom functions or jobs.
-func HasFunctions(sch *proto.Schema) bool {
+func HasFunctions(sch *proto.Schema, cfg *config.ProjectConfig) bool {
 	var actions []*proto.Action
 
 	for _, model := range sch.Models {
@@ -28,11 +29,13 @@ func HasFunctions(sch *proto.Schema) bool {
 		return o.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 	})
 
+	hasHooks := len(cfg.Auth.EnabledHooks()) > 0
+
 	hasJobs := sch.Jobs != nil && len(sch.Jobs) > 0
 
 	hasSubscribers := sch.Subscribers != nil && len(sch.Subscribers) > 0
 
-	return hasCustomFunctions || hasJobs || hasSubscribers
+	return hasCustomFunctions || hasHooks || hasJobs || hasSubscribers
 }
 
 // HasTests returns true if there any TypeScript test files in dir or any of it's

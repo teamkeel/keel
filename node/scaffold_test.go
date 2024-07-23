@@ -56,7 +56,7 @@ func TestScaffold(t *testing.T) {
 
 	cfg := `
 auth:
-  hooks: [afterAuthenticated]
+  hooks: [afterAuthentication]
 `
 
 	builder := schema.Builder{}

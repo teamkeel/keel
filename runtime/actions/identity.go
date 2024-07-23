@@ -2,12 +2,9 @@ package actions
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/attribute"
@@ -89,21 +86,6 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 }
 
 func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string, issuer string) (auth.Identity, error) {
-	permissionState := common.NewPermissionState()
-	permissionState.Grant()
-	resp, meta, err := functions.CallFunction(
-		ctx,
-		"afterAuthenticated",
-		nil,
-		permissionState,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Println(resp)
-	fmt.Println(meta)
-
 	identityModel := proto.FindModel(schema.Models, parser.IdentityModelName)
 
 	query := NewQuery(identityModel)

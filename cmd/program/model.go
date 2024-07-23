@@ -372,7 +372,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		if m.Mode == ModeRun && !node.HasFunctions(m.Schema) {
+		if m.Mode == ModeRun && !node.HasFunctions(m.Schema, m.Config) {
 			m.Status = StatusRunning
 			return m, nil
 		}
@@ -394,7 +394,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Start functions if needed
-		if node.HasFunctions(m.Schema) {
+		if node.HasFunctions(m.Schema, m.Config) {
 			m.Status = StatusStartingFunctions
 			return m, tea.Batch(
 				StartFunctions(m),
