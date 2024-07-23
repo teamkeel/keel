@@ -11,6 +11,7 @@ import (
 	"github.com/coreos/go-oidc"
 	"github.com/dchest/uniuri"
 	"github.com/teamkeel/keel/config"
+	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
@@ -116,6 +117,15 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "Callback Endpoint")
 		defer span.End()
+
+		var identityCreated bool
+		var err error
+
+		defer func() {
+			if identityCreated {
+				err = functions.CallPredefinedHook(ctx, config.HookAfterIdentityCreated)
+			}
+		}()
 
 		provider, err := providerFromPath(ctx, r.URL)
 		if err != nil {
@@ -248,6 +258,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
+			identityCreated = true
 		} else {
 			identity, err = actions.UpdateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
 			if err != nil {

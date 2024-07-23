@@ -166,7 +166,7 @@ func StartDevelopmentServer(ctx context.Context, dir string, options *ServerOpts
 
 	// Wait for process to have started successfully
 	n := time.Now()
-	maxWait := time.Second * 15
+	maxWait := time.Second * 10
 	for {
 		if cmd.ProcessState != nil {
 			return d, d.exitError

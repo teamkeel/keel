@@ -51,13 +51,11 @@ func TestScaffold(t *testing.T) {
 		domains {
 			"keel.dev"
 		}
-	}
-`
+	}`
 
 	cfg := `
 auth:
-  hooks: [afterAuthentication]
-`
+  hooks: [afterAuthentication]`
 
 	builder := schema.Builder{}
 
@@ -75,12 +73,13 @@ auth:
 	expectedFiles := codegen.GeneratedFiles{
 		&codegen.GeneratedFile{
 			Contents: `
-import { AfterAuthenticated } from '@teamkeel/sdk';
+import { AfterAuthentication } from '@teamkeel/sdk';
 
-export default AfterAuthenticated(async (ctx) => {
+// This synchronous hook will execute after authentication has been concluded
+export default AfterAuthentication(async (ctx) => {
 
 });`,
-			Path: "functions/afterAuthenticated.ts",
+			Path: "functions/auth/afterAuthentication.ts",
 		},
 		&codegen.GeneratedFile{
 			Contents: `

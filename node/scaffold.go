@@ -62,19 +62,19 @@ func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (code
 		var contents string
 		switch hook {
 		case config.HookAfterAuthentication:
-			contents = fmt.Sprintf(`import { AfterAuthentication } from '@teamkeel/sdk';
+			contents = `import { AfterAuthentication } from '@teamkeel/sdk';
 
-// This synchronous hook will execute after authentication has complete
+// This synchronous hook will execute after authentication has been concluded
 export default AfterAuthentication(async (ctx) => {
 
-});`)
+});`
 		case config.HookAfterIdentityCreated:
-			contents = fmt.Sprintf(`import { AfterIdentityCreated } from '@teamkeel/sdk';
+			contents = `import { AfterIdentityCreated } from '@teamkeel/sdk';
 
-// This synchronous hook will execute after successful authentication and a new identity record created
+// This synchronous hook will execute after a new identity record is created during an authentication flow
 export default AfterIdentityCreated(async (ctx) => {
 
-});`)
+});`
 		}
 
 		path := filepath.Join(AUTH_HOOKS_DIR, fmt.Sprintf("%s.ts", string(hook)))
