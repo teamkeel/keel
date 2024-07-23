@@ -7,8 +7,9 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strings"
+
+	"golang.org/x/exp/slices"
 
 	"github.com/teamkeel/keel/casing"
 	"gopkg.in/yaml.v3"
