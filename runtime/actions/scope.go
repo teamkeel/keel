@@ -106,7 +106,11 @@ func Execute(scope *Scope, input any) (result any, meta *common.ResponseMetadata
 
 	switch scope.Action.Implementation {
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM:
-		result, meta, err = executeCustomFunction(scope, input)
+		parsedInputs, parseErr := TransformCustomFunctionsInputTypes(scope.Schema, scope.Action, input)
+		if parseErr != nil {
+			return nil, nil, parseErr
+		}
+		result, meta, err = executeCustomFunction(scope, parsedInputs)
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME:
 		if !isMap {
 			if input == nil {

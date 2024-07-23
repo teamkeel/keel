@@ -64,10 +64,9 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
 	sdkTypes.Writeln("")
-	sdkTypes.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
+	writeBuiltInTypes(sdkTypes)
 
 	writePermissions(sdk, schema)
-
 	writeMessages(sdkTypes, schema, false)
 
 	for _, enum := range schema.Enums {
@@ -82,6 +81,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	writeTableConfig(sdk, schema.Models)
 	writeAPIFactory(sdk, schema)
 	sdk.Writeln("module.exports.useDatabase = runtime.useDatabase;")
+	sdk.Writeln("module.exports.InlineFile = runtime.InlineFile;")
 
 	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
@@ -150,6 +150,23 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 			Contents: `{"name": "@teamkeel/sdk"}`,
 		},
 	}
+}
+
+// writeBuiltInTypes will write the types for Built In types such as InlineFile, SortDirection, etc..
+func writeBuiltInTypes(w *codegen.Writer) {
+	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
+	w.Writeln(`export declare class InlineFile {`)
+	w.Indent()
+	w.Writeln(`constructor(key: any, filename: any, contentType: any, size: any, url: any);`)
+	w.Writeln(`static fromObject(obj: any): InlineFile;`)
+	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
+	w.Writeln(`read(): Blob;`)
+	w.Writeln(`filename: string;`)
+	w.Writeln(`contentType: string;`)
+	w.Writeln(`size: number;`)
+	w.Writeln(`url: string | null;`)
+	w.Dedent()
+	w.Writeln(`}`)
 }
 
 func writeTableInterface(w *codegen.Writer, model *proto.Model) {
@@ -1646,6 +1663,8 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	case proto.Type_TYPE_STRING_LITERAL:
 		// Use string literal type for discriminating.
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
+	case proto.Type_TYPE_INLINE_FILE:
+		ret = "InlineFile"
 	default:
 		ret = "any"
 	}
