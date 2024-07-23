@@ -38,6 +38,16 @@ message PersonResponse {
     height Decimal?
 }
 
+message FileInput {
+    file InlineFile
+}
+
+message FileResponse {
+    filename Text
+    size Number
+    contentType Text
+}
+
 model Person {
     fields {
         name Text
@@ -46,15 +56,18 @@ model Person {
 
     actions {
         write createPerson(name, height) returns (PersonResponse)
-        read countName(name) returns (CountResponse) 
+        read countName(name) returns (CountResponse)
         read countNameAdvanced(AdvancedSearchInput) returns (CountResponse)
-        write createAndCount(name) returns (CountResponse) 
-        write createManyAndCount(CreateManyInput) returns (CountResponse) 
-        read people(PeopleInput) returns (PeopleResponse) 
-        read customPersonSearch(CustomPersonSearchInput) returns (CustomPersonSearchResponse) 
-        read customSearch(Any) returns (Any) 
-        write bulkPersonUpload(BulkPersonUpload) returns (BulkPersonUpload) 
+        write createAndCount(name) returns (CountResponse)
+        write createManyAndCount(CreateManyInput) returns (CountResponse)
+        read people(PeopleInput) returns (PeopleResponse)
+        read customPersonSearch(CustomPersonSearchInput) returns (
+            CustomPersonSearchResponse
+        )
+        read customSearch(Any) returns (Any)
+        write bulkPersonUpload(BulkPersonUpload) returns (BulkPersonUpload)
         read noInputs() returns (Any)
+        read fileInputHandling(FileInput) returns (FileResponse)
     }
 }
 

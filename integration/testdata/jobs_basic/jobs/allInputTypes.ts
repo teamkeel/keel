@@ -1,4 +1,5 @@
-import { AllInputTypes, Status } from "@teamkeel/sdk";
+import { AllInputTypes, InlineFile, Status } from "@teamkeel/sdk";
+import { IdentityUniqueConditions } from "../.build/sdk/index";
 
 export default AllInputTypes(async (ctx, inputs) => {
   if (inputs.text != "text") {
@@ -21,5 +22,14 @@ export default AllInputTypes(async (ctx, inputs) => {
   }
   if (inputs.enum != Status.GoldPost) {
     throw new Error("enum not set correctly");
+  }
+  if (inputs.image.filename != "my-avatar.png") {
+    throw new Error("image filename not set correctly");
+  }
+  if (inputs.image.size != 2024) {
+    throw new Error("image not set correctly");
+  }
+  if (inputs.image.read().size != 2024) {
+    throw new Error("image not set correctly");
   }
 });

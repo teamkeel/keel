@@ -3,6 +3,7 @@ model Book {
         author Author?
         title Text
         published Boolean @default(false)
+        cover InlineFile?
     }
 
     actions {
@@ -12,6 +13,7 @@ model Book {
         create createBookAfterWriteErrorRollback() with (title) @function
         create createBookWithAuthor() with (author.id, title) @function
         create createBookAndAuthor() with (author.name, title) @function
+        create createBookBeforeWriteWithCover() with (title, cover) @function
         get getBookBeforeQueryFirstOrNull(title: Text) @function
         get getBookBeforeQueryQueryBuilder(id, allowUnpublished: Boolean?) @function
         get getBookAfterQuery(id) @function
