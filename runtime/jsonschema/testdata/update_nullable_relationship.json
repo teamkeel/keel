@@ -9,29 +9,31 @@
     }
   },
   "additionalProperties": false,
-  "required": ["where"],
+  "required": ["where", "values"],
   "components": {
     "schemas": {
-      "TestActionEmployeeInput": {
-        "type": "object",
+      "NullableTestActionEmployeeInput": {
+        "type": ["object", "null"],
         "properties": {
           "id": {
             "type": "string"
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "required": ["id"]
       },
       "TestActionValues": {
         "type": "object",
         "properties": {
           "employee": {
-            "$ref": "#/components/schemas/TestActionEmployeeInput"
+            "$ref": "#/components/schemas/NullableTestActionEmployeeInput"
           },
           "name": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "required": ["name", "employee"]
       },
       "TestActionWhere": {
         "type": "object",
