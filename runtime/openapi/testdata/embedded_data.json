@@ -224,7 +224,6 @@
                       ]
                     },
                     "code": { "$ref": "#/components/schemas/Code" },
-                    "authorId": { "type": "string" },
                     "createdAt": { "type": "string", "format": "date-time" },
                     "id": { "type": "string" },
                     "reviews": {
@@ -240,8 +239,7 @@
                     "reviews",
                     "id",
                     "createdAt",
-                    "updatedAt",
-                    "authorId"
+                    "updatedAt"
                   ]
                 }
               }

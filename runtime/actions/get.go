@@ -6,6 +6,7 @@ import (
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 func Get(scope *Scope, input map[string]any) (map[string]any, error) {
@@ -61,7 +62,7 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 			// a response embed will be something like: `book.author.country` where book is the model for the current action
 			fragments := strings.Split(embed, ".")
 
-			id, ok := res["id"].(string)
+			id, ok := res[parser.FieldNameId].(string)
 			if !ok {
 				return nil, errors.New("missing identifier")
 			}
@@ -70,6 +71,9 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 				return nil, err
 			}
 			res[fragments[0]] = data
+
+			// we now need to remove the foreign key field from the result (e.g. if we're embedding author, we want to remove authorId)
+			delete(res, fragments[0]+"Id")
 		}
 	}
 

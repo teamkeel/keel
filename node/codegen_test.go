@@ -1379,6 +1379,53 @@ export interface PersonNameResponse {
 	})
 }
 
+func TestWriteActionResponseTypesEmbeddings(t *testing.T) {
+	t.Parallel()
+	schema := `
+model Country {
+	fields {
+		code Text
+	}
+}
+
+model City {
+	fields {
+		name Text
+		country Country
+	}
+}
+model Person {
+	fields {
+		age Number
+		city City
+	}
+	actions {
+		get getPerson(id) {
+			@embed(city.country)
+		}
+	}
+}
+	`
+	expected := `
+ export interface GetPersonResponse {
+	age: number
+	city: {
+		name: string
+		country: Country
+		id: string
+		createdAt: Date
+		updatedAt: Date
+	}
+	id: string
+	createdAt: Date
+	updatedAt: Date
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeEmbeddedModelInterface(w, s, proto.FindModel(s.Models, "Person"), "GetPersonResponse", []string{"city.country"})
+	})
+}
+
 func TestWriteActionInputTypesInlineInputWrite(t *testing.T) {
 	t.Parallel()
 	schema := `
