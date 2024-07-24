@@ -3,6 +3,7 @@ package functions
 import (
 	"context"
 	"errors"
+	"slices"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -92,15 +93,22 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 }
 
 func CallPredefinedHook(ctx context.Context, hook config.FunctionHook) error {
-	permissionState := common.NewPermissionState()
-	permissionState.Grant()
+	cfg, err := runtimectx.GetOAuthConfig(ctx)
+	if err != nil {
+		return err
+	}
 
-	_, _, err := CallFunction(
-		ctx,
-		string(hook),
-		nil,
-		permissionState,
-	)
+	if slices.Contains(cfg.EnabledHooks(), hook) {
+		permissionState := common.NewPermissionState()
+		permissionState.Grant()
+
+		_, _, err = CallFunction(
+			ctx,
+			string(hook),
+			nil,
+			permissionState,
+		)
+	}
 
 	return err
 }
