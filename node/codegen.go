@@ -138,10 +138,11 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	}
 	sdk.Writeln("")
 
-	for _, h := range cfg.Auth.EnabledHooks() {
-		sdk.Writef("module.exports.%s = (fn) => fn;", strcase.ToCamel(string(h)))
-		sdk.Writeln("")
-
+	if cfg != nil {
+		for _, h := range cfg.Auth.EnabledHooks() {
+			sdk.Writef("module.exports.%s = (fn) => fn;", strcase.ToCamel(string(h)))
+			sdk.Writeln("")
+		}
 	}
 
 	writeDatabaseInterface(sdkTypes, schema)
