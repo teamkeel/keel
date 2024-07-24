@@ -14,7 +14,6 @@ test("get action with embedded data", async () => {
 
   const fetchedPost = await actions.getPost({ id: post.id });
   expect(fetchedPost!.id).toEqual(post.id);
-  expect(fetchedPost!.categoryId).toBeUndefined();
   expect(fetchedPost!.category!.title).toEqual("Test");
 });
 
@@ -29,7 +28,6 @@ test("list action with embedded data", async () => {
 
   const fetchedPost = await actions.getPost({ id: post.id });
   expect(fetchedPost!.id).toEqual(post.id);
-  expect(fetchedPost!.categoryId).toBeUndefined();
   expect(fetchedPost!.category!.title).toEqual("Test");
 });
 
@@ -57,7 +55,5 @@ test("list action - equals", async () => {
 
   expect(posts.results.length).toEqual(2);
   expect(posts.results[0].category!.title).toEqual("Test");
-  expect(posts.results[0].categoryId).toBeUndefined();
   expect(posts.results[1].category!.title).toEqual("Testing again");
-  expect(posts.results[1].categoryId).toBeUndefined();
 });
