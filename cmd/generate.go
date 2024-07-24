@@ -46,7 +46,7 @@ var generateCmd = &cobra.Command{
 			return err
 		}
 
-		files, err := node.Generate(context.Background(), schema, node.WithDevelopmentServer(true))
+		files, err := node.Generate(context.Background(), schema, b.Config, node.WithDevelopmentServer(true))
 		if err != nil {
 			return err
 		}
@@ -59,7 +59,7 @@ var generateCmd = &cobra.Command{
 		fmt.Println(logPrefix, "Generated @teamkeel/sdk")
 		fmt.Println(logPrefix, "Generated @teamkeel/testing")
 
-		files, err = node.Scaffold(flagProjectDir, schema)
+		files, err = node.Scaffold(flagProjectDir, schema, b.Config)
 		if err != nil {
 			return err
 		}

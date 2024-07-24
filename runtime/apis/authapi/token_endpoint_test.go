@@ -18,6 +18,7 @@ import (
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/apis/authapi"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
@@ -1319,7 +1320,10 @@ func TestAuthorizationCodeGrant_Valid(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
-	code, err := oauth.NewAuthCode(ctx, "identity_id")
+	identity, err := actions.CreateIdentity(ctx, schema, "test@keel.xyz", "1234", oauth.KeelIssuer)
+	require.NoError(t, err)
+
+	code, err := oauth.NewAuthCode(ctx, identity["id"].(string))
 	require.NoError(t, err)
 
 	// Make a auth code grant request
@@ -1342,14 +1346,17 @@ func TestAuthorizationCodeGrant_Valid(t *testing.T) {
 
 	accessTokenSub, err := oauth.ExtractClaimFromJwt(response.AccessToken, "sub")
 	require.NoError(t, err)
-	require.Equal(t, accessTokenSub, "identity_id")
+	require.Equal(t, accessTokenSub, identity["id"].(string))
 }
 
 func TestAuthorizationCodeGrantJson_Valid(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()
 
-	code, err := oauth.NewAuthCode(ctx, "identity_id")
+	identity, err := actions.CreateIdentity(ctx, schema, "test@keel.xyz", "1234", oauth.KeelIssuer)
+	require.NoError(t, err)
+
+	code, err := oauth.NewAuthCode(ctx, identity["id"].(string))
 	require.NoError(t, err)
 
 	// Make a auth code grant request
@@ -1372,7 +1379,7 @@ func TestAuthorizationCodeGrantJson_Valid(t *testing.T) {
 
 	accessTokenSub, err := oauth.ExtractClaimFromJwt(response.AccessToken, "sub")
 	require.NoError(t, err)
-	require.Equal(t, accessTokenSub, "identity_id")
+	require.Equal(t, accessTokenSub, identity["id"].(string))
 }
 
 func TestAuthorizationCodeGrant_InvalidCode(t *testing.T) {

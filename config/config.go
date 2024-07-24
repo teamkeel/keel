@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 
+	"golang.org/x/exp/slices"
+
 	"github.com/teamkeel/keel/casing"
 	"gopkg.in/yaml.v3"
 )
@@ -66,6 +68,10 @@ func (c *ProjectConfig) DefaultApi() bool {
 	}
 }
 
+func (c *ProjectConfig) UsesAuthHook(hook FunctionHook) bool {
+	return slices.Contains(c.Auth.Hooks, hook)
+}
+
 // EnvironmentConfig is the configuration for a keel environment default, staging, production
 type EnvironmentConfig struct {
 	Default     []Input `yaml:"default"`
@@ -99,6 +105,7 @@ const (
 	ConfigAuthProviderDuplicateErrorString           = "auth provider name '%s' has been defined more than once, but must be unique"
 	ConfigAuthProviderInvalidHttpUrlErrorString      = "auth provider '%s' has missing or invalid https url for field: %s"
 	ConfigAuthInvalidRedirectUrlErrorString          = "auth redirectUrl '%s' is not a valid url"
+	ConfigAuthInvalidHook                            = "%s is not a recognised hook"
 )
 
 type ConfigErrors struct {
@@ -312,6 +319,17 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 				Type:    "invalid",
 				Message: fmt.Sprintf(ConfigAuthInvalidRedirectUrlErrorString, *config.Auth.RedirectUrl),
 			})
+		}
+	}
+
+	if config.Auth.Hooks != nil {
+		for _, v := range config.Auth.Hooks {
+			if !slices.Contains(supportedAuthHooks, v) {
+				errors = append(errors, &ConfigError{
+					Type:    "invalid",
+					Message: fmt.Sprintf(ConfigAuthInvalidHook, v),
+				})
+			}
 		}
 	}
 

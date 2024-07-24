@@ -75,17 +75,6 @@ async function handleRequest(request, config) {
           }
         );
 
-        // Sometimes a custom function may be coded in such a way that nothing is returned from it.
-        // We see this as an error so handle accordingly.
-        if (result === undefined) {
-          // no result returned from custom function
-          return createJSONRPCErrorResponse(
-            request.id,
-            RuntimeErrors.NoResultError,
-            `no result returned from function '${request.method}'`
-          );
-        }
-
         const response = createJSONRPCSuccessResponse(request.id, result);
 
         const responseHeaders = {};

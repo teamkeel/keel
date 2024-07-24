@@ -7,6 +7,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/segmentio/ksuid"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
@@ -88,6 +89,20 @@ var contextKey transportContextKey = "transport"
 
 func WithFunctionsTransport(ctx context.Context, transport Transport) context.Context {
 	return context.WithValue(ctx, contextKey, transport)
+}
+
+func CallPredefinedHook(ctx context.Context, hook config.FunctionHook) error {
+	permissionState := common.NewPermissionState()
+	permissionState.Grant()
+
+	_, _, err := CallFunction(
+		ctx,
+		string(hook),
+		nil,
+		permissionState,
+	)
+
+	return err
 }
 
 // CallFunction will invoke the custom function on the runtime node server.

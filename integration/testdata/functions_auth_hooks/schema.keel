@@ -1,0 +1,7 @@
+model Account {
+    fields {
+        name Text
+        identity Identity @unique
+        loginCount Number @default(1)
+    }
+}

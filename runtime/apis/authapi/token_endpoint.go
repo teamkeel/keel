@@ -6,8 +6,11 @@ import (
 
 	email "net/mail"
 
+	"github.com/teamkeel/keel/config"
+	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/oauth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -71,12 +74,13 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 		ctx, span := tracer.Start(r.Context(), "Token Endpoint")
 		defer span.End()
 
-		var identityId string
+		var err error
+		var identity auth.Identity
 		var refreshToken string
 		createIfNotExists := true
 		identityCreated := false
 
-		config, err := runtimectx.GetOAuthConfig(ctx)
+		cfg, err := runtimectx.GetOAuthConfig(ctx)
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
@@ -115,6 +119,16 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 		}
 
+		defer func(grant string) {
+			if grant != GrantTypeRefreshToken {
+				err = functions.CallPredefinedHook(ctx, config.HookAfterAuthentication)
+
+				if identityCreated {
+					err = functions.CallPredefinedHook(ctx, config.HookAfterIdentityCreated)
+				}
+			}
+		}(grantType)
+
 		switch grantType {
 		case GrantTypeRefreshToken:
 			refreshTokenRaw, hasRefreshTokenRaw := inputs[ArgRefreshToken].(string)
@@ -122,8 +136,9 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the refresh token in the 'refresh_token' field is required", nil)
 			}
 
+			var identityId string
 			var isValid bool
-			if config.RefreshTokenRotationEnabled() {
+			if cfg.RefreshTokenRotationEnabled() {
 				// Rotate and revoke this refresh token, and mint a new one.
 				isValid, refreshToken, identityId, err = oauth.RotateRefreshToken(ctx, refreshTokenRaw)
 				if err != nil {
@@ -144,6 +159,11 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the refresh token has been revoked or has expired", nil)
 			}
 
+			identity, err = actions.FindIdentityById(ctx, schema, identityId)
+			if err != nil {
+				return common.InternalServerErrorResponse(ctx, err)
+			}
+
 		case GrantTypePassword:
 			username, hasUsername := inputs[ArgUsername].(string)
 			if !hasUsername || username == "" {
@@ -159,12 +179,12 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the identity's password in the 'password' field is required", nil)
 			}
 
-			identity, err := actions.FindIdentityByEmail(ctx, schema, username, oauth.KeelIssuer)
+			ident, err := actions.FindIdentityByEmail(ctx, schema, username, oauth.KeelIssuer)
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 
-			if identity == nil {
+			if ident == nil {
 				if !createIfNotExists {
 					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist or the credentials are incorrect", nil)
 				}
@@ -174,26 +194,26 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 					return common.InternalServerErrorResponse(ctx, err)
 				}
 
-				identity, err = actions.CreateIdentity(ctx, schema, username, string(hashedBytes), oauth.KeelIssuer)
+				ident, err = actions.CreateIdentity(ctx, schema, username, string(hashedBytes), oauth.KeelIssuer)
 				if err != nil {
 					return common.InternalServerErrorResponse(ctx, err)
 				}
 
 				identityCreated = true
 			} else {
-				correct := bcrypt.CompareHashAndPassword([]byte(identity[parser.IdentityFieldNamePassword].(string)), []byte(password)) == nil
+				correct := bcrypt.CompareHashAndPassword([]byte(ident[parser.IdentityFieldNamePassword].(string)), []byte(password)) == nil
 				if !correct {
 					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist or the credentials are incorrect", nil)
 				}
 			}
 
 			// Generate a refresh token.
-			refreshToken, err = oauth.NewRefreshToken(ctx, identity[parser.FieldNameId].(string))
+			refreshToken, err = oauth.NewRefreshToken(ctx, ident[parser.FieldNameId].(string))
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 
-			identityId = identity[parser.FieldNameId].(string)
+			identity = ident
 
 		case GrantTypeAuthCode:
 			authCode, hasAuthCode := inputs[ArgCode].(string)
@@ -203,7 +223,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 			// Consume the auth code
 			var isValid bool
-			isValid, identityId, err = oauth.ConsumeAuthCode(ctx, authCode)
+			isValid, identityId, err := oauth.ConsumeAuthCode(ctx, authCode)
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
@@ -214,6 +234,11 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 			// Generate a refresh token.
 			refreshToken, err = oauth.NewRefreshToken(ctx, identityId)
+			if err != nil {
+				return common.InternalServerErrorResponse(ctx, err)
+			}
+
+			identity, err = actions.FindIdentityById(ctx, schema, identityId)
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
@@ -256,47 +281,49 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 			}
 
 			customClaims := map[string]any{}
-			for _, c := range config.Claims {
+			for _, c := range cfg.Claims {
 				customClaims[c.Field] = claims[c.Key]
 			}
 
-			identity, err := actions.FindIdentityByExternalId(ctx, schema, idToken.Subject, idToken.Issuer)
+			ident, err := actions.FindIdentityByExternalId(ctx, schema, idToken.Subject, idToken.Issuer)
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 
-			if identity == nil {
+			if ident == nil {
 				if !createIfNotExists {
 					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the identity does not exist or the id token is invalid, has expired, or has insufficient claims", err)
 				}
 
-				identity, err = actions.CreateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
+				ident, err = actions.CreateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
 				if err != nil {
 					return common.InternalServerErrorResponse(ctx, err)
 				}
 
 				identityCreated = true
 			} else {
-				identity, err = actions.UpdateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
+				ident, err = actions.UpdateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
 				if err != nil {
 					return common.InternalServerErrorResponse(ctx, err)
 				}
 			}
 
 			// Generate a refresh token.
-			refreshToken, err = oauth.NewRefreshToken(ctx, identity[parser.FieldNameId].(string))
+			refreshToken, err = oauth.NewRefreshToken(ctx, ident[parser.FieldNameId].(string))
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 
-			identityId = identity[parser.FieldNameId].(string)
+			identity = ident
 
 		default:
 			return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrUnsupportedGrantType, "the only supported grants are 'refresh_token', 'token_exchange', 'authorization_code' or 'password'", nil)
 		}
 
+		ctx = auth.WithIdentity(ctx, identity)
+
 		// Generate a new access token for this identity.
-		accessTokenRaw, expiresIn, err := oauth.GenerateAccessToken(ctx, identityId)
+		accessTokenRaw, expiresIn, err := oauth.GenerateAccessToken(ctx, identity["id"].(string))
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
