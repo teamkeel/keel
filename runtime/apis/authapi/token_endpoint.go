@@ -70,7 +70,7 @@ const (
 // OAuth2.0 specification: https://datatracker.ietf.org/doc/html/rfc6749#section-3.2
 // OpenID Connect specification for Token Endpoint: https://openid.net/specs/openid-connect-standard-1_0-21_orig.html#token_ep
 func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
-	return func(r *http.Request) common.Response {
+	return func(r *http.Request) (resp common.Response) {
 		ctx, span := tracer.Start(r.Context(), "Token Endpoint")
 		defer span.End()
 
@@ -122,9 +122,8 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 		defer func(grant string) {
 			if grant != GrantTypeRefreshToken {
 				err = functions.CallPredefinedHook(ctx, config.HookAfterAuthentication)
-
-				if identityCreated {
-					err = functions.CallPredefinedHook(ctx, config.HookAfterIdentityCreated)
+				if err != nil {
+					resp = common.InternalServerErrorResponse(ctx, err)
 				}
 			}
 		}(grantType)
@@ -321,6 +320,13 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 		}
 
 		ctx = auth.WithIdentity(ctx, identity)
+
+		if identityCreated {
+			err = functions.CallPredefinedHook(ctx, config.HookAfterIdentityCreated)
+			if err != nil {
+				return common.InternalServerErrorResponse(ctx, err)
+			}
+		}
 
 		// Generate a new access token for this identity.
 		accessTokenRaw, expiresIn, err := oauth.GenerateAccessToken(ctx, identity["id"].(string))

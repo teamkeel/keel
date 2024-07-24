@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strings"
 
+	"golang.org/x/exp/slices"
+
 	"github.com/iancoleman/strcase"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/config"
@@ -92,15 +94,22 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 }
 
 func CallPredefinedHook(ctx context.Context, hook config.FunctionHook) error {
-	permissionState := common.NewPermissionState()
-	permissionState.Grant()
+	cfg, err := runtimectx.GetOAuthConfig(ctx)
+	if err != nil {
+		return err
+	}
 
-	_, _, err := CallFunction(
-		ctx,
-		string(hook),
-		nil,
-		permissionState,
-	)
+	if slices.Contains(cfg.EnabledHooks(), hook) {
+		permissionState := common.NewPermissionState()
+		permissionState.Grant()
+
+		_, _, err = CallFunction(
+			ctx,
+			string(hook),
+			nil,
+			permissionState,
+		)
+	}
 
 	return err
 }

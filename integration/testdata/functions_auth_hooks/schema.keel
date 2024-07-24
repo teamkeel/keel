@@ -2,6 +2,6 @@ model Account {
     fields {
         name Text
         identity Identity @unique
-        loginCount Number @default(1)
+        loginCount Number @default(0)
     }
 }

@@ -118,15 +118,6 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 		ctx, span := tracer.Start(r.Context(), "Callback Endpoint")
 		defer span.End()
 
-		var identityCreated bool
-		var err error
-
-		defer func() {
-			if identityCreated {
-				err = functions.CallPredefinedHook(ctx, config.HookAfterIdentityCreated)
-			}
-		}()
-
 		provider, err := providerFromPath(ctx, r.URL)
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
@@ -137,16 +128,16 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		config, err := runtimectx.GetOAuthConfig(ctx)
+		cfg, err := runtimectx.GetOAuthConfig(ctx)
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		if config.RedirectUrl == nil {
+		if cfg.RedirectUrl == nil {
 			return common.InternalServerErrorResponse(ctx, fmt.Errorf("redirectUrl not set"))
 		}
 
-		redirectUrl, err := url.Parse(*config.RedirectUrl)
+		redirectUrl, err := url.Parse(*cfg.RedirectUrl)
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
@@ -243,7 +234,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 		}
 
 		customClaims := map[string]any{}
-		for _, c := range config.Claims {
+		for _, c := range cfg.Claims {
 			customClaims[c.Field] = claims[c.Key]
 		}
 
@@ -258,7 +249,13 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
-			identityCreated = true
+
+			ctx = auth.WithIdentity(ctx, identity)
+			err = functions.CallPredefinedHook(ctx, config.HookAfterIdentityCreated)
+			if err != nil {
+				return common.InternalServerErrorResponse(ctx, err)
+			}
+
 		} else {
 			identity, err = actions.UpdateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
 			if err != nil {
