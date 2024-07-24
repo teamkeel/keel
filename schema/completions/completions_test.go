@@ -1481,6 +1481,33 @@ func TestSortableCompletions(t *testing.T) {
 	runTestsCases(t, cases)
 }
 
+func TestEmbedCompletions(t *testing.T) {
+	cases := []testCase{
+		{
+			name: "embed-attribute-values",
+			schema: `
+			model Country {}
+			model Company {}
+			model Person {
+				fields {
+					name Text
+					age Number
+					nationality Country
+					employer Company
+				}
+				actions {
+					list people() {
+						@embed(<Cursor>
+					}
+				}
+		    }`,
+			expected: []string{"nationality", "employer"},
+		},
+	}
+
+	runTestsCases(t, cases)
+}
+
 func TestOnCompletions(t *testing.T) {
 	cases := []testCase{
 		{
