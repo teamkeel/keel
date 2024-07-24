@@ -238,6 +238,22 @@ func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *pr
 	w.Write("{\n")
 	w.Indent()
 	for _, field := range model.Fields {
+		// if the field is of ID type, and the related model is embedded, we do not want to include it in the schema
+		if field.Type.Type == proto.Type_TYPE_ID && field.ForeignKeyInfo != nil {
+			relatedModel := casing.ToLowerCamel(field.ForeignKeyInfo.RelatedModelName)
+			skip := false
+			for _, embed := range embeddings {
+				frags := strings.Split(embed, ".")
+				if frags[0] == relatedModel {
+					skip = true
+					break
+				}
+			}
+			if skip {
+				continue
+			}
+		}
+
 		fieldEmbeddings := []string{}
 		if field.Type.Type == proto.Type_TYPE_MODEL {
 			found := false
