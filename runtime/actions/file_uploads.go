@@ -63,7 +63,7 @@ func transformFileResponses(ctx context.Context, model *proto.Model, results map
 	}
 
 	for _, field := range model.FileFields() {
-		if fileJSON, found := results[field.Name]; found {
+		if fileJSON, found := results[field.Name]; found && fileJSON != nil {
 			data, ok := fileJSON.(string)
 			if !ok {
 				return results, fmt.Errorf("invalid response for field: %s", field.Name)
