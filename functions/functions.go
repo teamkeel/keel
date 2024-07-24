@@ -3,8 +3,9 @@ package functions
 import (
 	"context"
 	"errors"
-	"slices"
 	"strings"
+
+	"golang.org/x/exp/slices"
 
 	"github.com/iancoleman/strcase"
 	"github.com/segmentio/ksuid"
