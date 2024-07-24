@@ -1,0 +1,9 @@
+auth:
+  hooks: [afterAuthentication, afterIdentityCreated]
+
+environment:
+  - name: "TEST"
+    value: "test"
+
+secrets:
+  - name: API_KEY

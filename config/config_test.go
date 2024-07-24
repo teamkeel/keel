@@ -338,3 +338,30 @@ func TestAuthClaims(t *testing.T) {
 	assert.Equal(t, "somethingElse", config.Auth.Claims[1].Field)
 	assert.Equal(t, false, config.Auth.Claims[1].Unique)
 }
+
+func TestAuthHooksInvalid(t *testing.T) {
+	t.Parallel()
+	_, err := Load("fixtures/test_auth_invalid_hooks.yaml")
+
+	assert.ErrorContains(t, err, "afterIdentity is not a recognised hook")
+}
+
+func TestAuthHooksAsList(t *testing.T) {
+	t.Parallel()
+	config, err := Load("fixtures/test_auth_valid_hooks_as_list.yaml")
+	assert.NoError(t, err)
+
+	assert.Len(t, config.Auth.Hooks, 2)
+	assert.Equal(t, HookAfterAuthentication, config.Auth.Hooks[0])
+	assert.Equal(t, HookAfterIdentityCreated, config.Auth.Hooks[1])
+}
+
+func TestAuthHooksAsArray(t *testing.T) {
+	t.Parallel()
+	config, err := Load("fixtures/test_auth_valid_hooks_as_array.yaml")
+	assert.NoError(t, err)
+
+	assert.Len(t, config.Auth.Hooks, 2)
+	assert.Equal(t, HookAfterAuthentication, config.Auth.Hooks[0])
+	assert.Equal(t, HookAfterIdentityCreated, config.Auth.Hooks[1])
+}

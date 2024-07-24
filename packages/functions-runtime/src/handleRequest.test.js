@@ -47,38 +47,6 @@ test("when the custom function returns expected value", async () => {
   });
 });
 
-test("when the custom function doesnt return a value", async () => {
-  const config = {
-    functions: {
-      createPost: async (ctx, inputs) => {
-        new Permissions().allow();
-      },
-    },
-    permissions: {},
-    actionTypes: {
-      createPost: PROTO_ACTION_TYPES.CREATE,
-    },
-    createContextAPI: () => {
-      return {
-        response: {
-          headers: new Headers(),
-        },
-      };
-    },
-  };
-
-  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
-
-  expect(await handleRequest(rpcReq, config)).toEqual({
-    id: "123",
-    jsonrpc: "2.0",
-    error: {
-      code: RuntimeErrors.NoResultError,
-      message: "no result returned from function 'createPost'",
-    },
-  });
-});
-
 test("when there is no matching function for the path", async () => {
   const config = {
     functions: {

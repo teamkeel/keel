@@ -410,7 +410,7 @@ job BatchPosts {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		files := generateDevelopmentServer(s)
+		files := generateDevelopmentServer(s, &config.ProjectConfig{})
 
 		serverJs := files[0]
 
@@ -2210,7 +2210,7 @@ func TestTestingActionExecutor(t *testing.T) {
 	schema, err := builder.MakeFromDirectory(tmpDir)
 	require.NoError(t, err)
 
-	files, err := Generate(context.Background(), schema)
+	files, err := Generate(context.Background(), schema, &config.ProjectConfig{})
 	require.NoError(t, err)
 
 	err = files.Write(tmpDir)
@@ -2386,7 +2386,7 @@ func TestSDKTypings(t *testing.T) {
 			schema, err := builder.MakeFromDirectory(tmpDir)
 			require.NoError(t, err)
 
-			files, err := Generate(context.Background(), schema)
+			files, err := Generate(context.Background(), schema, &config.ProjectConfig{})
 			require.NoError(t, err)
 
 			err = files.Write(tmpDir)
