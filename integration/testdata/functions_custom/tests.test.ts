@@ -179,4 +179,5 @@ test("File input handling", async () => {
   expect(result.filename).toEqual("my-file.png");
   expect(result.size).toEqual(2024);
   expect(result.contentType).toEqual("image/png");
+  expect(result.key.length()).toEqual(27); // A KSUID
 });
