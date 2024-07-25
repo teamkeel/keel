@@ -1,3 +1,6 @@
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { fromEnv } = require("@aws-sdk/credential-providers");
+
 class InlineFile {
   constructor(filename, contentType, size, url) {
     this.filename = filename;
@@ -41,14 +44,35 @@ class InlineFile {
 
     if (this._dataURL) {
       var data = this._dataURL.split(",")[1];
-      var byteString = Buffer.from(data, "base64");
-      return new Blob([byteString], { type: this.contentType });
+      return Buffer.from(data, "base64");
     }
   }
 
-  store() {
-    //TODO: actually store and generate a key
+  async store() {
+    // Initialize the S3 client
+    const s3Client = new S3Client({
+      credentials: fromEnv(),
+    });
+
+    const content = this.read();
     this.key = uuidv4();
+
+    const params = {
+      Bucket: process.env.KEEL_FILES_BUCKET_NAME,
+      Key: key,
+      Body: content,
+      ContentType: this.contentType,
+    };
+
+    const command = new PutObjectCommand(params);
+    try {
+      const result = await s3Client.send(command);
+      console.log(`File uploaded successfully. ETag: ${result.ETag}`);
+      return result;
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      throw error;
+    }
   }
 
   toJSON() {
