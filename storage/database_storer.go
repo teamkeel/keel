@@ -72,8 +72,11 @@ func decodeDataURL(dataURL string) (fileData, error) {
 }
 
 func encodeDataURL(data fileData) string {
-	durl := dataurl.New(data.Data, data.ContentType, "name", data.Filename)
-	return durl.String()
+	if durl := dataurl.New(data.Data, data.ContentType, "name", data.Filename); durl != nil {
+		return durl.String()
+	}
+
+	return ""
 }
 
 func (s *DbStore) Store(url string) (FileInfo, error) {
