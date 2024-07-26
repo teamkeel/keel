@@ -2023,7 +2023,8 @@ func (scm *Builder) applyJobInputs(protoMessage *proto.Message, inputs []*parser
 			Name:        input.Name.Value,
 			MessageName: protoMessage.Name,
 			Type: &proto.TypeInfo{
-				Type: scm.parserTypeToProtoType(input.Type.Value),
+				Type:     scm.parserTypeToProtoType(input.Type.Value),
+				Repeated: input.Repeated,
 			},
 			Optional: input.Optional,
 		}

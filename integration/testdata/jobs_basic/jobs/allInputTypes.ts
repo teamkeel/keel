@@ -23,6 +23,9 @@ export default AllInputTypes(async (ctx, inputs) => {
   if (inputs.enum != Status.GoldPost) {
     throw new Error("enum not set correctly");
   }
+  if (JSON.stringify(inputs.array) != JSON.stringify(["one", "two"])) {
+    throw new Error("array not set correctly");
+  }
   if (inputs.image.filename != "my-avatar.png") {
     throw new Error("image filename not set correctly");
   }

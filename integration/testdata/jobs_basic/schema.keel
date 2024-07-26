@@ -49,6 +49,7 @@ job AllInputTypes {
         timestamp Timestamp
         enum Status
         id ID
+        array Text[]
         image InlineFile
     }
 

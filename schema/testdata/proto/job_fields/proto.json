@@ -309,7 +309,8 @@
           "messageName": "MyJobMessage",
           "name": "array",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_STRING",
+            "repeated": true
           }
         },
         {
