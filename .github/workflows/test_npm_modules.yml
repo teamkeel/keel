@@ -26,7 +26,7 @@ jobs:
           node-version: 18.12.1
       - uses: pnpm/action-setup@v4
         with:
-          version: 8.5.1
+          version: 9.6.0
       - uses: actions/checkout@v4
       - name: Install deps
         working-directory: ./packages/functions-runtime
@@ -43,7 +43,7 @@ jobs:
           node-version: 18.12.1
       - uses: pnpm/action-setup@v4
         with:
-          version: 8.5.1
+          version: 9.6.0
       - uses: actions/checkout@v4
       - name: Install deps
         working-directory: ./packages/testing-runtime
@@ -60,7 +60,7 @@ jobs:
           node-version: 16.14.2 # vscode (electron) uses this so we want to make the tests use a comparable environment
       - uses: pnpm/action-setup@v4
         with:
-          version: 8.10.0
+          version: 9.6.0
       - name: Setup golang
         uses: actions/setup-go@v3
         with:
