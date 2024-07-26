@@ -32,7 +32,7 @@ export default AllInputTypes(async (ctx, inputs) => {
   if (inputs.image.size != 2024) {
     throw new Error("image not set correctly");
   }
-  if (inputs.image.read().size != 2024) {
+  if (inputs.image.read().byteLength != 2024) {
     throw new Error("image not set correctly");
   }
 });
