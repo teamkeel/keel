@@ -19,6 +19,13 @@
         },
         {
           "modelName": "Foo",
+          "name": "f3",
+          "type": {
+            "type": "TYPE_INLINE_FILE"
+          }
+        },
+        {
+          "modelName": "Foo",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -630,6 +637,16 @@
             "fieldName": "f2"
           },
           "target": ["f2"]
+        },
+        {
+          "messageName": "OpDInput",
+          "name": "f3",
+          "type": {
+            "type": "TYPE_INLINE_FILE",
+            "modelName": "Foo",
+            "fieldName": "f3"
+          },
+          "target": ["f3"]
         }
       ]
     }

@@ -14,6 +14,7 @@ type Fixture struct {
 }
 
 func TestParseCron(t *testing.T) {
+	t.Parallel()
 	fixtures := []Fixture{
 		{
 			"every 10 minutes",
@@ -102,7 +103,9 @@ func TestParseCron(t *testing.T) {
 	}
 
 	for _, fixture := range fixtures {
+		fixture := fixture
 		t.Run(fixture.input, func(t *testing.T) {
+			t.Parallel()
 			s, err := cron.Parse(fixture.input)
 			require.NoError(t, err)
 			assert.Equal(t, fixture.expected, s.String())
@@ -111,6 +114,7 @@ func TestParseCron(t *testing.T) {
 }
 
 func TestParseCronError(t *testing.T) {
+	t.Parallel()
 	fixtures := []Fixture{
 		{
 			"9am on mondays",
@@ -235,7 +239,9 @@ func TestParseCronError(t *testing.T) {
 	}
 
 	for _, fixture := range fixtures {
+		fixture := fixture
 		t.Run(fixture.input, func(t *testing.T) {
+			t.Parallel()
 			s, err := cron.Parse(fixture.input)
 			assert.Nil(t, s)
 			require.NotNil(t, err)

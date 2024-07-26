@@ -1,8 +1,12 @@
 package actions
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 func Get(scope *Scope, input map[string]any) (map[string]any, error) {
@@ -42,6 +46,35 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	if !isAuthorised {
 		return nil, common.NewPermissionError()
+	}
+
+	// if we have any files in our results we need to transform them to the object structure required
+	if scope.Model.HasFiles() {
+		res, err = transformFileResponses(scope.Context, scope.Model, res)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// if we have embedded data, let's resolve it
+	if len(scope.Action.ResponseEmbeds) > 0 {
+		for _, embed := range scope.Action.ResponseEmbeds {
+			// a response embed will be something like: `book.author.country` where book is the model for the current action
+			fragments := strings.Split(embed, ".")
+
+			id, ok := res[parser.FieldNameId].(string)
+			if !ok {
+				return nil, errors.New("missing identifier")
+			}
+			data, err := resolveEmbeddedData(scope.Context, scope.Schema, scope.Model, id, fragments)
+			if err != nil {
+				return nil, err
+			}
+			res[fragments[0]] = data
+
+			// we now need to remove the foreign key field from the result (e.g. if we're embedding author, we want to remove authorId)
+			delete(res, fragments[0]+"Id")
+		}
 	}
 
 	return res, err

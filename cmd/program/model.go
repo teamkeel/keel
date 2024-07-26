@@ -32,6 +32,7 @@ import (
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
+	"github.com/teamkeel/keel/storage"
 	"github.com/twitchtv/twirp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -180,6 +181,7 @@ type Model struct {
 	RpcHandler        http.Handler
 	RuntimeRequests   []*RuntimeRequest
 	FunctionsLog      []*FunctionLog
+	Storage           storage.Storer
 	TestOutput        string
 	Secrets           map[string]string
 	Environment       string
@@ -358,17 +360,25 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Err = msg.Err
 		m.MigrationChanges = msg.Changes
 
+		// we now set the file Storage using a dbstore
+		storer, err := storage.NewDbStore(context.Background(), m.Database)
+		if err != nil {
+			m.Err = err
+			return m, tea.Quit
+		}
+		m.Storage = storer
+
 		if m.Err != nil {
 			return m, nil
 		}
 
-		if m.Mode == ModeRun && !node.HasFunctions(m.Schema) {
+		if m.Mode == ModeRun && !node.HasFunctions(m.Schema, m.Config) {
 			m.Status = StatusRunning
 			return m, nil
 		}
 
 		m.Status = StatusUpdateFunctions
-		return m, UpdateFunctions(m.Schema, m.ProjectDir)
+		return m, UpdateFunctions(m.Schema, m.Config, m.ProjectDir)
 
 	case UpdateFunctionsMsg:
 		m.Err = msg.Err
@@ -384,7 +394,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Start functions if needed
-		if node.HasFunctions(m.Schema) {
+		if node.HasFunctions(m.Schema, m.Config) {
 			m.Status = StatusStartingFunctions
 			return m, tea.Batch(
 				StartFunctions(m),
@@ -472,6 +482,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ctx = db.WithDatabase(ctx, m.Database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
 		ctx = runtimectx.WithOAuthConfig(ctx, &m.Config.Auth)
+		if m.Storage != nil {
+			ctx = runtimectx.WithStorage(ctx, m.Storage)
+		}
 
 		mailClient := mail.NewSMTPClientFromEnv()
 		if mailClient != nil {

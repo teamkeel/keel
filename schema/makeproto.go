@@ -1650,6 +1650,8 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_DECIMAL
 	case parserType == parser.FieldTypeVector:
 		return proto.Type_TYPE_VECTOR
+	case parserType == parser.FieldTypeInlineFile:
+		return proto.Type_TYPE_INLINE_FILE
 	default:
 		return proto.Type_TYPE_UNKNOWN
 	}
@@ -1869,6 +1871,11 @@ func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoAction
 			expr, _ := attribute.Arguments[0].Expression.ToString()
 			set := &proto.Expression{Source: expr}
 			protoAction.ValidationExpressions = append(protoAction.ValidationExpressions, set)
+		case parser.AttributeEmbed:
+			for _, arg := range attribute.Arguments {
+				expr, _ := arg.Expression.ToString()
+				protoAction.ResponseEmbeds = append(protoAction.ResponseEmbeds, expr)
+			}
 		case parser.AttributeOrderBy:
 			for _, arg := range attribute.Arguments {
 				field := arg.Label.Value

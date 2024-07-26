@@ -19,6 +19,7 @@ import (
 )
 
 func TestDevelopmentServerAction(t *testing.T) {
+	t.Parallel()
 	files := codegen.GeneratedFiles{
 		{
 			Path: "schema.keel",
@@ -68,6 +69,7 @@ func TestDevelopmentServerAction(t *testing.T) {
 }
 
 func TestDevelopmentServerJob(t *testing.T) {
+	t.Parallel()
 	files := codegen.GeneratedFiles{
 		{
 			Path: "schema.keel",
@@ -110,6 +112,7 @@ func TestDevelopmentServerJob(t *testing.T) {
 }
 
 func TestDevelopmentServerStartError(t *testing.T) {
+	t.Parallel()
 	files := codegen.GeneratedFiles{
 		{
 			Path: "schema.keel",
@@ -165,7 +168,7 @@ func runDevelopmentServerTest(t *testing.T, files codegen.GeneratedFiles, fn fun
 	schema, err := b.MakeFromDirectory(tmpDir)
 	require.NoError(t, err)
 
-	files, err = node.Generate(context.Background(), schema, node.WithDevelopmentServer(true))
+	files, err = node.Generate(context.Background(), schema, b.Config, node.WithDevelopmentServer(true))
 	require.NoError(t, err)
 
 	err = files.Write(tmpDir)

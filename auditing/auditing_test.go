@@ -11,24 +11,28 @@ import (
 )
 
 func TestAuditOpFromCreatedEvent(t *testing.T) {
+	t.Parallel()
 	op, err := opFromActionType(proto.ActionType_ACTION_TYPE_CREATE)
 	require.Equal(t, Insert, op)
 	require.NoError(t, err)
 }
 
 func TestAuditOpFromUpdatedEvent(t *testing.T) {
+	t.Parallel()
 	op, err := opFromActionType(proto.ActionType_ACTION_TYPE_UPDATE)
 	require.Equal(t, Update, op)
 	require.NoError(t, err)
 }
 
 func TestAuditOpFromDeletedEvent(t *testing.T) {
+	t.Parallel()
 	op, err := opFromActionType(proto.ActionType_ACTION_TYPE_DELETE)
 	require.Equal(t, Delete, op)
 	require.NoError(t, err)
 }
 
 func TestProcessEventSqlSingleEvent(t *testing.T) {
+	t.Parallel()
 	var keelSchema = `
 		model Person {
 			fields {
@@ -61,6 +65,7 @@ func TestProcessEventSqlSingleEvent(t *testing.T) {
 }
 
 func TestProcessEventSqlComplexTableName(t *testing.T) {
+	t.Parallel()
 	var keelSchema = `
 		model EmployeeOfCompany1 {
 			fields {
@@ -93,6 +98,7 @@ func TestProcessEventSqlComplexTableName(t *testing.T) {
 }
 
 func TestProcessEventSqlMultipleEventsOneAttribute(t *testing.T) {
+	t.Parallel()
 	var keelSchema = `
 		model Person {
 			fields {
@@ -131,6 +137,7 @@ func TestProcessEventSqlMultipleEventsOneAttribute(t *testing.T) {
 }
 
 func TestProcessEventSqlMultipleEventsManyAttribute(t *testing.T) {
+	t.Parallel()
 	var keelSchema = `
 		model Person {
 			fields {
@@ -171,6 +178,7 @@ func TestProcessEventSqlMultipleEventsManyAttribute(t *testing.T) {
 }
 
 func TestProcessEventSqlNoEvents(t *testing.T) {
+	t.Parallel()
 	var keelSchema = `
 		model Person {
 			fields {
@@ -188,6 +196,7 @@ func TestProcessEventSqlNoEvents(t *testing.T) {
 }
 
 func TestProcessEventSqlEmptyTraceId(t *testing.T) {
+	t.Parallel()
 	var keelSchema = `
 		model Person {
 			fields {
@@ -206,6 +215,7 @@ func TestProcessEventSqlEmptyTraceId(t *testing.T) {
 }
 
 func TestProcessEventSqlWithMultipleModels(t *testing.T) {
+	t.Parallel()
 	var keelSchema = `
 		model Wedding {
 			fields {

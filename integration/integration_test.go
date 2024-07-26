@@ -26,7 +26,7 @@ import (
 var pattern = flag.String("pattern", "", "Pattern to match individual test case names")
 
 func TestIntegration(t *gotest.T) {
-
+	t.Parallel()
 	entries, err := os.ReadDir("./testdata")
 	require.NoError(t, err)
 

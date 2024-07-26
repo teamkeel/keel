@@ -15,6 +15,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/codegen"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -36,24 +37,24 @@ func WithDevelopmentServer(b bool) func(o *generateOptions) {
 // to a project. Calling .Write() on the result will cause those files be written to disk.
 // This function should not interact with the file system so it can be used in a backend
 // context.
-func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generateOptions)) (codegen.GeneratedFiles, error) {
+func Generate(ctx context.Context, schema *proto.Schema, cfg *config.ProjectConfig, opts ...func(o *generateOptions)) (codegen.GeneratedFiles, error) {
 	options := &generateOptions{}
 	for _, o := range opts {
 		o(options)
 	}
 
-	files := generateSdkPackage(schema)
+	files := generateSdkPackage(schema, cfg)
 	files = append(files, generateTestingPackage(schema)...)
 	files = append(files, generateTestingSetup()...)
 
 	if options.developmentServer {
-		files = append(files, generateDevelopmentServer(schema)...)
+		files = append(files, generateDevelopmentServer(schema, cfg)...)
 	}
 
 	return files, nil
 }
 
-func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
+func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen.GeneratedFiles {
 	sdk := &codegen.Writer{}
 	sdk.Writeln(`const { sql, NoResultError } = require("kysely")`)
 	sdk.Writeln(`const runtime = require("@teamkeel/functions-runtime")`)
@@ -64,10 +65,9 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
 	sdkTypes.Writeln("")
-	sdkTypes.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
+	writeBuiltInTypes(sdkTypes)
 
 	writePermissions(sdk, schema)
-
 	writeMessages(sdkTypes, schema, false)
 
 	for _, enum := range schema.Enums {
@@ -82,6 +82,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	writeTableConfig(sdk, schema.Models)
 	writeAPIFactory(sdk, schema)
 	sdk.Writeln("module.exports.useDatabase = runtime.useDatabase;")
+	sdk.Writeln("module.exports.InlineFile = runtime.InlineFile;")
 
 	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
@@ -94,7 +95,13 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		writeModelQueryBuilderDeclaration(sdkTypes, model)
 
 		for _, action := range model.Actions {
-			// We only care about custom functions for the SDK
+			// if we have an auto action with embedded data, we need to write the custom response type
+			if action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_AUTO && len(action.GetResponseEmbeds()) > 0 {
+				writeEmbeddedModelInterface(sdkTypes, schema, model, toResponseType(action.Name), action.GetResponseEmbeds())
+				continue
+			}
+
+			// We now only care about custom functions for the SDK
 			if action.Implementation != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
 				continue
 			}
@@ -115,6 +122,9 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		}
 	}
 
+	sdkTypes.Writeln("export declare function AfterAuthentication(fn: (ctx: ContextAPI) => Promise<void>): Promise<void>;")
+	sdkTypes.Writeln("export declare function AfterIdentityCreated(fn: (ctx: ContextAPI) => Promise<void>): Promise<void>;")
+
 	for _, job := range schema.Jobs {
 		writeJobFunctionWrapperType(sdkTypes, job)
 		sdk.Writef("module.exports.%s = (fn) => fn;", job.Name)
@@ -125,6 +135,14 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		writeSubscriberFunctionWrapperType(sdkTypes, subscriber)
 		sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(subscriber.Name))
 		sdk.Writeln("")
+	}
+	sdk.Writeln("")
+
+	if cfg != nil {
+		for _, h := range cfg.Auth.EnabledHooks() {
+			sdk.Writef("module.exports.%s = (fn) => fn;", strcase.ToCamel(string(h)))
+			sdk.Writeln("")
+		}
 	}
 
 	writeDatabaseInterface(sdkTypes, schema)
@@ -144,6 +162,23 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 			Contents: `{"name": "@teamkeel/sdk"}`,
 		},
 	}
+}
+
+// writeBuiltInTypes will write the types for Built In types such as InlineFile, SortDirection, etc..
+func writeBuiltInTypes(w *codegen.Writer) {
+	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
+	w.Writeln(`export declare class InlineFile {`)
+	w.Indent()
+	w.Writeln(`constructor(key: any, filename: any, contentType: any, size: any, url: any);`)
+	w.Writeln(`static fromObject(obj: any): InlineFile;`)
+	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
+	w.Writeln(`read(): Blob;`)
+	w.Writeln(`filename: string;`)
+	w.Writeln(`contentType: string;`)
+	w.Writeln(`size: number;`)
+	w.Writeln(`url: string | null;`)
+	w.Dedent()
+	w.Writeln(`}`)
 }
 
 func writeTableInterface(w *codegen.Writer, model *proto.Model) {
@@ -203,6 +238,75 @@ func writeModelInterface(w *codegen.Writer, model *proto.Model) {
 	}
 	w.Dedent()
 	w.Writeln("}")
+}
+
+func writeEmbeddedModelInterface(w *codegen.Writer, schema *proto.Schema, model *proto.Model, name string, embeddings []string) {
+	w.Writef("export interface %s ", name)
+	writeEmbeddedModelFields(w, schema, model, embeddings)
+	w.Writeln("")
+}
+
+func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *proto.Model, embeddings []string) {
+	w.Write("{\n")
+	w.Indent()
+	for _, field := range model.Fields {
+		// if the field is of ID type, and the related model is embedded, we do not want to include it in the schema
+		if field.Type.Type == proto.Type_TYPE_ID && field.ForeignKeyInfo != nil {
+			relatedModel := casing.ToLowerCamel(field.ForeignKeyInfo.RelatedModelName)
+			skip := false
+			for _, embed := range embeddings {
+				frags := strings.Split(embed, ".")
+				if frags[0] == relatedModel {
+					skip = true
+					break
+				}
+			}
+			if skip {
+				continue
+			}
+		}
+
+		fieldEmbeddings := []string{}
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			found := false
+
+			for _, embed := range embeddings {
+				frags := strings.Split(embed, ".")
+				if frags[0] == field.Name {
+					found = true
+					// if we have to embed a child model for this field, we need to pass them through the field schema
+					// with the first segment removed
+					if len(frags) > 1 {
+						fieldEmbeddings = append(fieldEmbeddings, strings.Join(frags[1:], "."))
+					}
+				}
+			}
+			if !found {
+				continue
+			}
+		}
+
+		w.Write(field.Name)
+		w.Write(": ")
+
+		if len(fieldEmbeddings) == 0 {
+			w.Write(toTypeScriptType(field.Type, false))
+		} else {
+			fieldModel := proto.FindModel(schema.Models, field.Type.ModelName.Value)
+			writeEmbeddedModelFields(w, schema, fieldModel, fieldEmbeddings)
+		}
+
+		if field.Type.Repeated {
+			w.Write("[]")
+		}
+		if field.Optional {
+			w.Write(" | null")
+		}
+
+		w.Writeln("")
+	}
+	w.Dedent()
+	w.Write("}")
 }
 
 func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto.Model) {
@@ -931,7 +1035,7 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 
 			relationshipConfig := map[string]string{
 				"referencesTable": casing.ToSnake(field.Type.ModelName.Value),
-				"foreignKey":      casing.ToSnake(proto.GetForignKeyFieldName(models, field)),
+				"foreignKey":      casing.ToSnake(proto.GetForeignKeyFieldName(models, field)),
 			}
 
 			switch {
@@ -1180,9 +1284,17 @@ func toActionReturnType(model *proto.Model, op *proto.Action) string {
 	case proto.ActionType_ACTION_TYPE_UPDATE:
 		returnType += sdkPrefix + model.Name
 	case proto.ActionType_ACTION_TYPE_GET:
-		returnType += sdkPrefix + model.Name + " | null"
+		className := model.Name
+		if len(op.GetResponseEmbeds()) > 0 {
+			className = toResponseType(op.Name)
+		}
+		returnType += sdkPrefix + className + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
-		returnType += "{results: " + sdkPrefix + model.Name + "[], pageInfo: runtime.PageInfo}"
+		className := model.Name
+		if len(op.GetResponseEmbeds()) > 0 {
+			className = toResponseType(op.Name)
+		}
+		returnType += "{results: " + sdkPrefix + className + "[], pageInfo: runtime.PageInfo}"
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		// todo: create ID type
 		returnType += "string"
@@ -1194,7 +1306,7 @@ func toActionReturnType(model *proto.Model, op *proto.Action) string {
 	return returnType
 }
 
-func generateDevelopmentServer(schema *proto.Schema) codegen.GeneratedFiles {
+func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) codegen.GeneratedFiles {
 	w := &codegen.Writer{}
 	w.Writeln(`import { handleRequest, handleJob, handleSubscriber, tracing } from '@teamkeel/functions-runtime';`)
 	w.Writeln(`import { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } from '@teamkeel/sdk';`)
@@ -1227,12 +1339,24 @@ func generateDevelopmentServer(schema *proto.Schema) codegen.GeneratedFiles {
 		w.Writeln(";")
 	}
 
+	for _, v := range cfg.Auth.EnabledHooks() {
+		w.Writef(`import function_%s from "../functions/auth/%s.ts"`, v, v)
+		w.Writeln(";")
+	}
+
 	w.Writeln("const functions = {")
 	w.Indent()
+
 	for _, fn := range functions {
 		w.Writef("%s: function_%s,", fn.Name, fn.Name)
 		w.Writeln("")
 	}
+
+	for _, v := range cfg.Auth.EnabledHooks() {
+		w.Writef("%s: function_%s", v, v)
+		w.Writeln(",")
+	}
+
 	w.Dedent()
 	w.Writeln("}")
 
@@ -1579,6 +1703,8 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	case proto.Type_TYPE_STRING_LITERAL:
 		// Use string literal type for discriminating.
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
+	case proto.Type_TYPE_INLINE_FILE:
+		ret = "InlineFile"
 	default:
 		ret = "any"
 	}
@@ -1624,4 +1750,10 @@ func tsDocComment(w *codegen.Writer, f func(w *codegen.Writer)) {
 	w.Writeln("/**")
 	f(w)
 	w.Writeln("*/")
+}
+
+// toResponseType generates a response type name for the given action name. This is to be used for actions that contain
+// embedded data
+func toResponseType(actionName string) string {
+	return casing.ToCamel(actionName) + "Response"
 }

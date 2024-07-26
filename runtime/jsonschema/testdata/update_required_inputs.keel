@@ -8,9 +8,10 @@ model Person {
         name Text
         birthday Date
         hobby Hobby
+        picture InlineFile
     }
 
     actions {
-        update testAction(id) with (name, birthday, hobby)
+        update testAction(id) with (name, birthday, hobby, picture)
     }
 }

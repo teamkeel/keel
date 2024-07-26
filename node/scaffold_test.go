@@ -15,6 +15,7 @@ import (
 )
 
 func TestScaffold(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 
 	schemaString := `
@@ -50,29 +51,36 @@ func TestScaffold(t *testing.T) {
 		domains {
 			"keel.dev"
 		}
-	}
-`
+	}`
+
+	cfg := `
+auth:
+  hooks: [afterAuthentication]`
 
 	builder := schema.Builder{}
 
-	schema, err := builder.MakeFromString(schemaString, config.Empty)
+	schema, err := builder.MakeFromString(schemaString, cfg)
 
 	require.NoError(t, err)
 
 	err = os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(schemaString), 0777)
 	require.NoError(t, err)
 
-	actualFiles, err := Scaffold(tmpDir, schema)
-
-	// If you enable this litter.Dump during development, it produces output that can be
-	// pasted without change into the expectedFiles literal below. Obviously to do that, you have
-	// to be confident by other means that the generated content is now correct.
-
-	// litter.Dump(actualFiles)
+	actualFiles, err := Scaffold(tmpDir, schema, builder.Config)
 
 	require.NoError(t, err)
 
 	expectedFiles := codegen.GeneratedFiles{
+		&codegen.GeneratedFile{
+			Contents: `
+import { AfterAuthentication } from '@teamkeel/sdk';
+
+// This synchronous hook will execute after authentication has been concluded
+export default AfterAuthentication(async (ctx) => {
+
+});`,
+			Path: "functions/auth/afterAuthentication.ts",
+		},
 		&codegen.GeneratedFile{
 			Contents: `
 import { CreatePost, CreatePostHooks } from '@teamkeel/sdk';
@@ -209,6 +217,7 @@ export default DoSomethingElse(async (ctx, event) => {
 }
 
 func TestExistingFunction(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 
 	schemaString := `
@@ -241,7 +250,7 @@ func TestExistingFunction(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	actualFiles, err := Scaffold(tmpDir, schema)
+	actualFiles, err := Scaffold(tmpDir, schema, &config.ProjectConfig{})
 
 	assert.NoError(t, err)
 
@@ -249,6 +258,7 @@ func TestExistingFunction(t *testing.T) {
 }
 
 func TestExistingJob(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 
 	schemaString := `
@@ -279,7 +289,7 @@ func TestExistingJob(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	actualFiles, err := Scaffold(tmpDir, schema)
+	actualFiles, err := Scaffold(tmpDir, schema, &config.ProjectConfig{})
 
 	assert.NoError(t, err)
 

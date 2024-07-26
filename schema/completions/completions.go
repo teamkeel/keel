@@ -652,6 +652,8 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 		return getPermissionArgCompletions(asts, t, cfg)
 	case parser.AttributeSortable:
 		return getSortableArgCompletions(asts, t)
+	case parser.AttributeEmbed:
+		return getEmbedArgCompletions(asts, t)
 	case parser.AttributeOrderBy:
 		return getOrderByArgCompletions(asts, t)
 	case parser.AttributeSchedule:
@@ -739,6 +741,28 @@ func getSortableArgCompletions(asts []*parser.AST, t *TokensAtPosition) []*Compl
 			Description: field.Type.Value,
 			Kind:        KindField,
 		})
+	}
+
+	return completions
+}
+
+func getEmbedArgCompletions(asts []*parser.AST, t *TokensAtPosition) []*CompletionItem {
+	modelName := getParentModelName(t)
+	model := query.Model(asts, modelName)
+	fields := query.ModelFields(model)
+
+	completions := []*CompletionItem{}
+
+	for _, field := range fields {
+		fieldName := field.Name.Value
+
+		if query.IsModel(asts, field.Type.Value) {
+			completions = append(completions, &CompletionItem{
+				Label:       fieldName,
+				Description: field.Type.Value,
+				Kind:        KindField,
+			})
+		}
 	}
 
 	return completions

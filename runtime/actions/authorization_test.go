@@ -1416,8 +1416,11 @@ var authorisationTestCases = []authorisationTestCase{
 }
 
 func TestPermissionQueryBuilder(t *testing.T) {
-	for _, testCase := range authorisationTestCases {
+	t.Parallel()
+	for _, tc := range authorisationTestCases {
+		testCase := tc
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			ctx := context.Background()
 
 			if testCase.identity != nil {

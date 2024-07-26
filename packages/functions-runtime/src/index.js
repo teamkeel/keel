@@ -11,6 +11,7 @@ const {
   checkBuiltInPermissions,
 } = require("./permissions");
 const tracing = require("./tracing");
+const { InlineFile } = require("./InlineFile");
 
 module.exports = {
   ModelAPI,
@@ -19,6 +20,7 @@ module.exports = {
   handleJob,
   handleSubscriber,
   useDatabase,
+  InlineFile,
   Permissions,
   PERMISSION_STATE,
   checkBuiltInPermissions,

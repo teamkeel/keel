@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 
+	"golang.org/x/exp/slices"
+
 	"github.com/teamkeel/keel/casing"
 	"gopkg.in/yaml.v3"
 )
@@ -66,6 +68,10 @@ func (c *ProjectConfig) DefaultApi() bool {
 	}
 }
 
+func (c *ProjectConfig) UsesAuthHook(hook FunctionHook) bool {
+	return slices.Contains(c.Auth.Hooks, hook)
+}
+
 // EnvironmentConfig is the configuration for a keel environment default, staging, production
 type EnvironmentConfig struct {
 	Default     []Input `yaml:"default"`
@@ -99,6 +105,7 @@ const (
 	ConfigAuthProviderDuplicateErrorString           = "auth provider name '%s' has been defined more than once, but must be unique"
 	ConfigAuthProviderInvalidHttpUrlErrorString      = "auth provider '%s' has missing or invalid https url for field: %s"
 	ConfigAuthInvalidRedirectUrlErrorString          = "auth redirectUrl '%s' is not a valid url"
+	ConfigAuthInvalidHook                            = "%s is not a recognised hook"
 )
 
 type ConfigErrors struct {
@@ -133,31 +140,30 @@ func Load(dir string) (*ProjectConfig, error) {
 		return nil, fmt.Errorf("could not read config file: %w", err)
 	}
 
-	var config ProjectConfig
-	err = yaml.Unmarshal(loadConfig, &config)
-	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal config file: %w", err)
-	}
-
-	validationErrors := Validate(&config)
-	if validationErrors != nil {
-		return &config, validationErrors
-	}
-
-	return &config, nil
+	return parseAndValidate(loadConfig)
 }
 
 func LoadFromBytes(data []byte) (*ProjectConfig, error) {
-	var config ProjectConfig
+	return parseAndValidate(data)
+}
 
+func parseAndValidate(data []byte) (*ProjectConfig, error) {
+	var config ProjectConfig
 	err := yaml.Unmarshal(data, &config)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal config file: %w", err)
+		return nil, &ConfigErrors{
+			Errors: []*ConfigError{
+				{
+					Type:    "parsing",
+					Message: fmt.Sprintf("could not unmarshal config file: %s", err.Error()),
+				},
+			},
+		}
 	}
 
-	validationErrors := Validate(&config)
-	if validationErrors != nil {
-		return &config, validationErrors
+	configErrors := Validate(&config)
+	if configErrors != nil {
+		return &config, configErrors
 	}
 
 	return &config, nil
@@ -313,6 +319,17 @@ func Validate(config *ProjectConfig) *ConfigErrors {
 				Type:    "invalid",
 				Message: fmt.Sprintf(ConfigAuthInvalidRedirectUrlErrorString, *config.Auth.RedirectUrl),
 			})
+		}
+	}
+
+	if config.Auth.Hooks != nil {
+		for _, v := range config.Auth.Hooks {
+			if !slices.Contains(supportedAuthHooks, v) {
+				errors = append(errors, &ConfigError{
+					Type:    "invalid",
+					Message: fmt.Sprintf(ConfigAuthInvalidHook, v),
+				})
+			}
 		}
 	}
 

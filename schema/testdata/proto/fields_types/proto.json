@@ -64,6 +64,13 @@
         },
         {
           "modelName": "Foo",
+          "name": "i",
+          "type": {
+            "type": "TYPE_INLINE_FILE"
+          }
+        },
+        {
+          "modelName": "Foo",
           "name": "id",
           "type": {
             "type": "TYPE_ID"

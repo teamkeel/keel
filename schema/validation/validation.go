@@ -83,6 +83,7 @@ var visitorFuncs = []VisitorFunc{
 	PermissionsAttributeArguments,
 	FunctionDisallowedBehavioursRule,
 	OnAttributeRule,
+	EmbedAttributeRule,
 	RelationshipsRules,
 	ApiModelActions,
 	StudioFeatures,

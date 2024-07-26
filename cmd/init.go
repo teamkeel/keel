@@ -353,7 +353,7 @@ func initStepCreateProject(state *InitState) {
 		panic(err)
 	}
 
-	files, err := node.Generate(context.Background(), schema, node.WithDevelopmentServer(true))
+	files, err := node.Generate(context.Background(), schema, b.Config, node.WithDevelopmentServer(true))
 	if err != nil {
 		panic(err)
 	}

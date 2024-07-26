@@ -13,9 +13,13 @@
           },
           "name": {
             "type": "string"
+          },
+          "picture": {
+            "type": "string",
+            "format": "data-url"
           }
         },
-        "required": ["name", "birthday", "hobby"],
+        "required": ["name", "birthday", "hobby", "picture"],
         "type": "object"
       },
       "TestActionWhere": {

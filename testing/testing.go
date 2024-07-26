@@ -103,6 +103,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 	files, err := node.Generate(
 		ctx,
 		schema,
+		builder.Config,
 		node.WithDevelopmentServer(true),
 	)
 	if err != nil {
@@ -131,7 +132,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 	var functionsServer *node.DevelopmentServer
 	var functionsTransport functions.Transport
 
-	if node.HasFunctions(schema) {
+	if node.HasFunctions(schema, builder.Config) {
 		functionEnvVars := map[string]string{
 			"KEEL_DB_CONN_TYPE":        "pg",
 			"KEEL_DB_CONN":             dbConnString,

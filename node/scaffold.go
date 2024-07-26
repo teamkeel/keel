@@ -9,24 +9,24 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/codegen"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 )
 
 const (
 	FUNCTIONS_DIR   = "functions"
+	AUTH_HOOKS_DIR  = "functions/auth"
 	JOBS_DIR        = "jobs"
 	SUBSCRIBERS_DIR = "subscribers"
 )
 
-func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) {
-	files, err := Generate(context.TODO(), schema)
-
+func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (codegen.GeneratedFiles, error) {
+	files, err := Generate(context.TODO(), schema, cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	err = files.Write(dir)
-
 	if err != nil {
 		return nil, err
 	}
@@ -35,10 +35,17 @@ func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) 
 	if err := ensureDir(functionsDir); err != nil {
 		return nil, err
 	}
+
+	authHooksDir := filepath.Join(dir, AUTH_HOOKS_DIR)
+	if err := ensureDir(authHooksDir); err != nil {
+		return nil, err
+	}
+
 	jobsDir := filepath.Join(dir, JOBS_DIR)
 	if err := ensureDir(jobsDir); err != nil {
 		return nil, err
 	}
+
 	subscribersDir := filepath.Join(dir, SUBSCRIBERS_DIR)
 	if err := ensureDir(subscribersDir); err != nil {
 		return nil, err
@@ -50,18 +57,45 @@ func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) 
 		return op.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 	})
 
+	for _, hook := range cfg.Auth.EnabledHooks() {
+
+		var contents string
+		switch hook {
+		case config.HookAfterAuthentication:
+			contents = `import { AfterAuthentication } from '@teamkeel/sdk';
+
+// This synchronous hook will execute after authentication has been concluded
+export default AfterAuthentication(async (ctx) => {
+
+});`
+		case config.HookAfterIdentityCreated:
+			contents = `import { AfterIdentityCreated } from '@teamkeel/sdk';
+
+// This synchronous hook will execute after a new identity record is created during an authentication flow
+export default AfterIdentityCreated(async (ctx) => {
+
+});`
+		}
+
+		path := filepath.Join(AUTH_HOOKS_DIR, fmt.Sprintf("%s.ts", string(hook)))
+		_, err = os.Stat(filepath.Join(dir, path))
+		if os.IsNotExist(err) {
+			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
+				Path:     path,
+				Contents: contents,
+			})
+		}
+	}
+
 	for _, fn := range functions {
 		path := filepath.Join(FUNCTIONS_DIR, fmt.Sprintf("%s.ts", fn.Name))
-
 		_, err = os.Stat(filepath.Join(dir, path))
-
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
 				Contents: writeFunctionWrapper(fn),
 			})
 		}
-
 	}
 
 	for _, job := range schema.Jobs {
