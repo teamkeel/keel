@@ -103,14 +103,14 @@ func ValidateResponse(ctx context.Context, schema *proto.Schema, action *proto.A
 
 func JSONSchemaForActionInput(ctx context.Context, schema *proto.Schema, action *proto.Action) JSONSchema {
 	inputMessage := proto.FindMessage(schema.Messages, action.InputMessageName)
-	return JSONSchemaForMessage(ctx, schema, action, inputMessage)
+	return JSONSchemaForMessage(ctx, schema, action, inputMessage, true)
 }
 
 func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, action *proto.Action) JSONSchema {
 	if action.ResponseMessageName != "" {
 		responseMsg := proto.FindMessage(schema.Messages, action.ResponseMessageName)
 
-		return JSONSchemaForMessage(ctx, schema, action, responseMsg)
+		return JSONSchemaForMessage(ctx, schema, action, responseMsg, false)
 	}
 
 	// If we've reached this point then we know that we are dealing with built-in actions
@@ -177,7 +177,7 @@ func contains(s []*proto.MessageField, e string) bool {
 
 // Generates JSONSchema for an operation by generating properties for the root input message.
 // Any subsequent nested messages are referenced.
-func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *proto.Action, message *proto.Message) JSONSchema {
+func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *proto.Action, message *proto.Message, isInput bool) JSONSchema {
 	components := Components{
 		Schemas: map[string]JSONSchema{},
 	}
@@ -224,7 +224,7 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 					AdditionalProperties: additionalProperties,
 				}
 
-				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable, []string{})
+				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable, []string{}, isInput)
 
 				// Merge components from this request schema into OpenAPI components
 				if prop.Components != nil {
@@ -253,7 +253,7 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 			root.Type = nil
 		} else {
 			for _, field := range message.Fields {
-				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable, []string{})
+				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable, []string{}, isInput)
 
 				// Merge components from this request schema into OpenAPI components
 				if prop.Components != nil {
@@ -304,7 +304,7 @@ func jsonSchemaForModel(ctx context.Context, schema *proto.Schema, model *proto.
 			continue
 		}
 
-		fieldSchema := jsonSchemaForField(ctx, schema, nil, field.Type, field.Optional, []string{})
+		fieldSchema := jsonSchemaForField(ctx, schema, nil, field.Type, field.Optional, []string{}, false)
 
 		definitionSchema.Properties[field.Name] = fieldSchema
 
@@ -375,7 +375,7 @@ func objectSchemaForModel(ctx context.Context, schema *proto.Schema, model *prot
 			}
 		}
 
-		fieldSchema := jsonSchemaForField(ctx, schema, nil, field.Type, field.Optional, fieldEmbeddings)
+		fieldSchema := jsonSchemaForField(ctx, schema, nil, field.Type, field.Optional, fieldEmbeddings, false)
 		// If that nested field component has ref fields itself, then its components must be bundled.
 		if fieldSchema.Components != nil {
 			for cName, comp := range fieldSchema.Components.Schemas {
@@ -404,7 +404,7 @@ func objectSchemaForModel(ctx context.Context, schema *proto.Schema, model *prot
 	return s
 }
 
-func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto.Action, t *proto.TypeInfo, isNullableField bool, embeddings []string) JSONSchema {
+func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto.Action, t *proto.TypeInfo, isNullableField bool, embeddings []string, isInput bool) JSONSchema {
 	components := &Components{
 		Schemas: map[string]JSONSchema{},
 	}
@@ -420,7 +420,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 	case proto.Type_TYPE_MESSAGE:
 		// Add the nested message to schema components.
 		message := proto.FindMessage(schema.Messages, t.MessageName.Value)
-		component := JSONSchemaForMessage(ctx, schema, action, message)
+		component := JSONSchemaForMessage(ctx, schema, action, message, isInput)
 
 		// If that nested message component has ref fields itself, then its components must be bundled.
 		if component.Components != nil {
@@ -451,7 +451,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		for _, m := range t.UnionNames {
 			// Add the nested message to schema components.
 			message := proto.FindMessage(schema.Messages, m.Value)
-			component := JSONSchemaForMessage(ctx, schema, action, message)
+			component := JSONSchemaForMessage(ctx, schema, action, message, isInput)
 
 			// Components of oneOf properties should only have one field per property and we should set a title.
 			oneOfFieldName := message.Fields[0].Name
@@ -550,8 +550,8 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		desc := "desc"
 		prop.Enum = []*string{&asc, &desc}
 	case proto.Type_TYPE_INLINE_FILE:
-		// if we have an action, then this field is used as an input, so the type will be a data-url
-		if action != nil {
+		// if the field is used as an input, so the type will be a data-url
+		if isInput {
 			prop.Type = "string"
 			prop.Format = "data-url"
 		} else {

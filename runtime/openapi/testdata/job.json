@@ -20,10 +20,14 @@
                   },
                   "input2": {
                     "type": "boolean"
+                  },
+                  "input3": {
+                    "type": "string",
+                    "format": "data-url"
                   }
                 },
                 "additionalProperties": false,
-                "required": ["input1", "input2"]
+                "required": ["input1", "input2", "input3"]
               }
             }
           }

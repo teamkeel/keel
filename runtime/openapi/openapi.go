@@ -180,7 +180,7 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 			if msg == nil {
 				continue
 			}
-			inputSchema := jsonschema.JSONSchemaForMessage(ctx, schema, nil, msg)
+			inputSchema := jsonschema.JSONSchemaForMessage(ctx, schema, nil, msg, true)
 			endpoint := "/"
 
 			// Merge components from this request schema into OpenAPI components
