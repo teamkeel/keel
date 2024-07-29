@@ -1,4 +1,4 @@
-model Author {
+model User {
     fields {
         firstName Text
         surname Text @unique
@@ -42,7 +42,7 @@ model Review {
 model Book {
     fields {
         title Text
-        author Author
+        author User
         reviews Review[]
         code Code?
     }

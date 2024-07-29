@@ -67,6 +67,9 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 					return nil, fmt.Errorf("retrieving child embed: %w", err)
 				}
 				result[fragments[1]] = childEmbed
+
+				// we now need to remove the foreign key field from the result (e.g. if we're embedding author, we want to remove authorId)
+				delete(result, fragments[1]+"Id")
 			}
 		}
 
@@ -119,6 +122,9 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 					return nil, fmt.Errorf("retrieving child embed: %w", err)
 				}
 				result[i][fragments[1]] = childEmbed
+
+				// we now need to remove the foreign key field from the result (e.g. if we're embedding author, we want to remove authorId)
+				delete(result[i], fragments[1]+"Id")
 			}
 		}
 
@@ -157,6 +163,9 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 					return nil, fmt.Errorf("retrieving child embed: %w", err)
 				}
 				result[fragments[1]] = childEmbed
+
+				// we now need to remove the foreign key field from the result (e.g. if we're embedding author, we want to remove authorId)
+				delete(result, fragments[1]+"Id")
 			}
 		}
 

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/xeipuuv/gojsonschema"
@@ -340,7 +339,7 @@ func objectSchemaForModel(ctx context.Context, schema *proto.Schema, model *prot
 
 		// if the field is of ID type, and the related model is embedded, we do not want to include it in the schema
 		if field.Type.Type == proto.Type_TYPE_ID && field.ForeignKeyInfo != nil {
-			relatedModel := casing.ToLowerCamel(field.ForeignKeyInfo.RelatedModelName)
+			relatedModel := strings.TrimSuffix(field.Name, "Id")
 			skip := false
 			for _, embed := range embeddings {
 				frags := strings.Split(embed, ".")

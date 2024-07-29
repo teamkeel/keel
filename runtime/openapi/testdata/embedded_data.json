@@ -26,7 +26,7 @@
             "description": "createAuthor Response",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Author" }
+                "schema": { "$ref": "#/components/schemas/User" }
               }
             }
           },
@@ -431,7 +431,7 @@
                     },
                     "results": {
                       "type": "array",
-                      "items": { "$ref": "#/components/schemas/Author" }
+                      "items": { "$ref": "#/components/schemas/User" }
                     }
                   }
                 }
@@ -729,7 +729,7 @@
   },
   "components": {
     "schemas": {
-      "Author": {
+      "User": {
         "properties": {
           "createdAt": { "type": "string", "format": "date-time" },
           "firstName": { "type": "string" },
