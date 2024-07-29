@@ -5,7 +5,7 @@ const { InlineFile } = require("./InlineFile");
 // inputs that are objects and contain a "__typename" field are resolved to instances of the complex type
 // they represent. At the moment, the only supported type is `InlineFile`
 function parseParams(inputs) {
-  if (inputs != null) {
+  if (inputs != null && typeof inputs === "object") {
     Object.keys(inputs).forEach((i) => {
       if (inputs[i] !== null && typeof inputs[i] === "object") {
         if ("__typename" in inputs[i]) {
@@ -17,6 +17,8 @@ function parseParams(inputs) {
             default:
               break;
           }
+        } else {
+          inputs[i] = parseParams(inputs[i]);
         }
       }
     });
