@@ -72,7 +72,12 @@ class InlineFile {
       try {
         const result = await s3Client.send(command);
         console.log(`File uploaded successfully. ETag: ${result.ETag}`);
-        return result;
+        return {
+          key: this.key,
+          size: this.size,
+          filename: this.filename,
+          contentType: this.contentType,
+        };
       } catch (error) {
         console.error("Error uploading file:", error);
         throw error;
