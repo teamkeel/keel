@@ -96,12 +96,12 @@ test("fetch - 200", async () => {
 });
 
 test("fetch - 404", async () => {
-  await fetch("http://example.com/movies.json");
+  await fetch("https://keel.so/not-found");
 
   expect(spanEvents.map((e) => e.event)).toEqual(["onStart", "onEnd"]);
   expect(spanEvents.pop().span.attributes).toEqual({
-    "http.url": "http://example.com/movies.json",
-    "http.scheme": "http",
+    "http.url": "https://keel.so/not-found",
+    "http.scheme": "https",
     "http.method": "GET",
     "http.status": 404,
     "http.status_text": "Not Found",
