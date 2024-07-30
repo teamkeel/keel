@@ -72,7 +72,7 @@ func decodeDataURL(dataURL string) (fileData, error) {
 }
 
 func encodeDataURL(data fileData) string {
-	durl := dataurl.New(data.Data, data.ContentType, "name", url.QueryEscape(data.Filename))
+	durl := dataurl.New(data.Data, data.ContentType, "name", data.Filename)
 	return durl.String()
 }
 

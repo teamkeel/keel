@@ -33,6 +33,11 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 		// foreach message field that is of inline file type...
 		if field.Type != nil && field.Type.Type == proto.Type_TYPE_INLINE_FILE {
 			if in, ok := inputs[field.Name]; ok {
+				// null files don't need uploading
+				if in == nil {
+					continue
+				}
+
 				data, ok := in.(string)
 				if !ok {
 					return inputs, fmt.Errorf("invalid input for field: %s", field.Name)
