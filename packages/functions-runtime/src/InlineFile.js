@@ -59,6 +59,7 @@ class InlineFile {
       // Initialize the S3 client
       const s3Client = new S3Client({
         credentials: fromEnv(),
+        region: process.env.KEEL_REGION,
       });
 
       const params = {
