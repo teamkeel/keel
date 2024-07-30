@@ -1398,10 +1398,13 @@ model Person {
 	fields {
 		age Number
 		city City
+		birthplace City
+		country Country
 	}
 	actions {
 		get getPerson(id) {
 			@embed(city.country)
+			@embed(birthplace)
 		}
 	}
 }
@@ -1416,13 +1419,15 @@ model Person {
 		createdAt: Date
 		updatedAt: Date
 	}
+	birthplace: City
 	id: string
 	createdAt: Date
 	updatedAt: Date
+	countryId: string
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeEmbeddedModelInterface(w, s, proto.FindModel(s.Models, "Person"), "GetPersonResponse", []string{"city.country"})
+		writeEmbeddedModelInterface(w, s, proto.FindModel(s.Models, "Person"), "GetPersonResponse", []string{"city.country", "birthplace"})
 	})
 }
 
