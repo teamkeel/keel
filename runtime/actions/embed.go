@@ -26,32 +26,34 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 
 	}
 
+	// we will select from the relatedModel's table, joining the source model with an alias ("source"), where source.id = sourceModel.id
 	relatedModelName := field.Type.ModelName.Value
 	relatedModel := proto.FindModel(schema.Models, relatedModelName)
 	foreignKeyField := proto.GetForeignKeyFieldName(schema.Models, field)
+	sourceTableAlias := "_source"
 
 	dbQuery := NewQuery(relatedModel)
 	// we apply the where clause which will filter based on the joins set up depending on the relationship type
 	err := dbQuery.Where(&QueryOperand{
-		table:  casing.ToSnake(sourceModel.GetName()),
+		table:  sourceTableAlias,
 		column: casing.ToSnake(parser.FieldNameId),
 	}, Equals, Value(sourceID))
+	if err != nil {
+		return nil, fmt.Errorf("applying sql where: %w", err)
+	}
 
 	switch {
 	case proto.IsBelongsTo(field):
 		dbQuery.Join(
 			sourceModel.Name,
 			&QueryOperand{
-				table:  casing.ToSnake(sourceModel.Name),
+				table:  sourceTableAlias,
 				column: casing.ToSnake(foreignKeyField),
 			},
 			&QueryOperand{
 				table:  casing.ToSnake(relatedModelName),
 				column: casing.ToSnake(parser.FieldNameId),
 			})
-		if err != nil {
-			return nil, fmt.Errorf("applying sql where: %w", err)
-		}
 
 		stmt := dbQuery.SelectStatement()
 		result, err := stmt.ExecuteToSingle(ctx)
@@ -86,7 +88,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 		dbQuery.Join(
 			sourceModel.Name,
 			&QueryOperand{
-				table:  casing.ToSnake(sourceModel.GetName()),
+				table:  sourceTableAlias,
 				column: casing.ToSnake(parser.FieldNameId),
 			},
 			&QueryOperand{
@@ -133,7 +135,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 		dbQuery.Join(
 			sourceModel.Name,
 			&QueryOperand{
-				table:  casing.ToSnake(sourceModel.GetName()),
+				table:  sourceTableAlias,
 				column: casing.ToSnake(parser.FieldNameId),
 			},
 			&QueryOperand{
