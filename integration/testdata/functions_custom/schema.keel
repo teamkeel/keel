@@ -43,6 +43,7 @@ message FileInput {
 }
 
 message FileResponse {
+    key Text
     filename Text
     size Number
     contentType Text
