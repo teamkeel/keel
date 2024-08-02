@@ -63,7 +63,7 @@ class InlineFile {
 
       const params = {
         Bucket: process.env.KEEL_FILES_BUCKET_NAME,
-        Key: key,
+        Key: this.key,
         Body: content,
         ContentType: this.contentType,
       };
