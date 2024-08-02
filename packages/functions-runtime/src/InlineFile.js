@@ -66,6 +66,9 @@ class InlineFile {
         Key: this.key,
         Body: content,
         ContentType: this.contentType,
+        Metadata: {
+          filename: this.filename,
+        },
       };
 
       const command = new PutObjectCommand(params);
