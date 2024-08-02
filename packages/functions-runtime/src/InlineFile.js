@@ -56,7 +56,6 @@ class InlineFile {
     this.key = KSUID.randomSync().string;
 
     if (isS3Storage()) {
-      // Initialize the S3 client
       const s3Client = new S3Client({
         credentials: fromEnv(),
         region: process.env.KEEL_REGION,
@@ -96,7 +95,7 @@ class InlineFile {
         data: content,
       });
 
-      const created = await query.returningAll().executeTakeFirstOrThrow();
+      await query.returningAll().executeTakeFirstOrThrow();
       return {
         key: this.key,
         size: this.size,
