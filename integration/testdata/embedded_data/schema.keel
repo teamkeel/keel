@@ -4,12 +4,16 @@ model Post {
         content Markdown?
         category Category?
         order Number?
+        comments Comment[]
+        parent Post?
     }
 
     actions {
-        create createPost() with (title, content?, category.title, order?)
+        create createPost() with (title, content?, category.title, order?, comments.title, parent.id?)
         get getPost(id) {
             @embed(category)
+            @embed(comments)
+            @embed(parent)
         }
         list listPosts() {
             @embed(category)
@@ -29,3 +33,9 @@ model Category {
     }
 }
 
+model Comment {
+    fields {
+        title Text @unique
+        post Post
+    }
+}
