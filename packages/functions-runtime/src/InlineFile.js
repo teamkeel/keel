@@ -63,7 +63,7 @@ class InlineFile {
 
       const params = {
         Bucket: process.env.KEEL_FILES_BUCKET_NAME,
-        Key: this.key,
+        Key: "files/" + this.key,
         Body: content,
         ContentType: this.contentType,
         Metadata: {
@@ -71,8 +71,8 @@ class InlineFile {
         },
       };
 
-      if (expires)  {
-        params.Expires = expires
+      if (expires) {
+        params.Expires = expires;
       }
 
       const command = new PutObjectCommand(params);
