@@ -9,6 +9,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -1426,6 +1427,8 @@ func TestPermissionQueryBuilder(t *testing.T) {
 			if testCase.identity != nil {
 				ctx = auth.WithIdentity(ctx, testCase.identity)
 			}
+
+			ctx = runtimectx.WithSecrets(ctx, map[string]string{"MY_SECRET": "1234"})
 
 			scope, _, _, err := generateQueryScope(ctx, testCase.keelSchema, testCase.actionName)
 			if err != nil {
