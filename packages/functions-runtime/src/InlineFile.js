@@ -51,7 +51,7 @@ class InlineFile {
     }
   }
 
-  async store() {
+  async store(expires = null) {
     const content = this.read();
     this.key = KSUID.randomSync().string;
 
@@ -70,6 +70,10 @@ class InlineFile {
           filename: this.filename,
         },
       };
+
+      if (expires)  {
+        params.Expires = expires
+      }
 
       const command = new PutObjectCommand(params);
       try {
