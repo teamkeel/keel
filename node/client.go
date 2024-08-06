@@ -270,7 +270,7 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	w.Writeln(`constructor(key: any, filename: any, contentType: any, size: any, url: any);`)
 	w.Writeln(`static fromObject(obj: any): InlineFile;`)
 	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
-	w.Writeln(`read(): Buffer;`)
+	w.Writeln(`read(): Promise<any>;`)
 	w.Writeln(`store(expires?: Date): Promise<any>;`)
 	w.Writeln(`filename: string;`)
 	w.Writeln(`contentType: string;`)
