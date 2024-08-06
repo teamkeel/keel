@@ -5,17 +5,17 @@ model Person {
 
     actions {
         create createPerson() {
-            @set(person.name = ctx.env.PERSON_NAME)
+            @set(person.name = ctx.headers.PERSON_NAME)
             @permission(expression: true)
         }
         get getBob(id) {
-            @permission(expression: ctx.env.PERSON_NAME == "Bob")
+            @permission(expression: ctx.headers.PERSON_NAME == "Bob")
         }
         get getPedro(id) {
-            @permission(expression: ctx.env.PERSON_NAME == "Pedro")
+            @permission(expression: ctx.headers.PERSON_NAME == "Pedro")
         }
         list listPedros() {
-            @where(person.name == ctx.env.PERSON_NAME)
+            @where(person.name == ctx.headers.PERSON_NAME)
             @permission(expression: true)
         }
     }

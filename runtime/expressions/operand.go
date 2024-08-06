@@ -316,12 +316,15 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, bool, error) {
 			return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("could not find explicit input %s on action %s", inputName, action.Name)
 		}
 		return field.Type.Type, field.Type.Repeated, nil
+	case resolver.operand.Ident.IsContextNowField():
+		return proto.Type_TYPE_TIMESTAMP, false, nil
+	case resolver.operand.Ident.IsContextEnvField():
+		return proto.Type_TYPE_STRING, false, nil
+	case resolver.operand.Ident.IsContextSecretField():
+		return proto.Type_TYPE_STRING, false, nil
+	case resolver.operand.Ident.IsContextHeadersField():
+		return proto.Type_TYPE_STRING, false, nil
 	case operand.Ident.IsContext():
-		fragmentCount := len(operand.Ident.Fragments)
-		if fragmentCount > 2 && operand.Ident.IsContextEnvField() {
-			return proto.Type_TYPE_STRING, false, nil
-		}
-
 		fieldName := operand.Ident.Fragments[1].Fragment
 		return runtimectx.ContextFieldTypes[fieldName], false, nil
 	default:
