@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
@@ -401,9 +402,14 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 		return runtimectx.GetSecret(resolver.Context, secret)
 	case resolver.operand.Ident.IsContextHeadersField():
 		headerName := resolver.operand.Ident.Fragments[2].Fragment
-		// Get canonical name, as this is what header keys are transformed into
+
+		// First we parse the header name to kebab. MyCustomHeader will become my-custom-header.
+		kebab := strcase.ToKebab(headerName)
+
+		// Then get canonical name. my-custom-header will become My-Custom-Header.
 		// https://pkg.go.dev/net/http#Header.Get
-		canonicalName := textproto.CanonicalMIMEHeaderKey(headerName)
+		canonicalName := textproto.CanonicalMIMEHeaderKey(kebab)
+
 		headers, err := runtimectx.GetRequestHeaders(resolver.Context)
 		if err != nil {
 			return nil, err

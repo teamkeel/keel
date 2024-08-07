@@ -5,17 +5,28 @@ model Person {
 
     actions {
         create createPerson() {
-            @set(person.name = ctx.headers.PERSON_NAME)
+            @set(person.name = ctx.headers.PersonName)
+            @permission(expression: true)
+        }
+        create createPersonCamelCase() {
+            @set(person.name = ctx.headers.personName)
+            @permission(expression: true)
+        }
+        create createPersonUsingHook() {
+            @function
+            @permission(expression: true)
+        }
+        write writePersonUsingCustomFunc(Any) returns (Any) {
             @permission(expression: true)
         }
         get getBob(id) {
-            @permission(expression: ctx.headers.PERSON_NAME == "Bob")
+            @permission(expression: ctx.headers.PersonName == "Bob")
         }
         get getPedro(id) {
-            @permission(expression: ctx.headers.PERSON_NAME == "Pedro")
+            @permission(expression: ctx.headers.PersonName == "Pedro")
         }
         list listPedros() {
-            @where(person.name == ctx.headers.PERSON_NAME)
+            @where(person.name == ctx.headers.PersonName)
             @permission(expression: true)
         }
     }
