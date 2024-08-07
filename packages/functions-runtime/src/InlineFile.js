@@ -9,11 +9,12 @@ const { DatabaseError } = require("./errors");
 const KSUID = require("ksuid");
 
 class InlineFile {
-  constructor(filename, contentType, size, url) {
+  constructor(filename, contentType, size, url, key) {
     this.filename = filename;
     this.contentType = contentType;
     this.size = size;
     this.url = url;
+    this.key = key;
   }
 
   // Create an InlineFile instance from a given json object.
@@ -24,7 +25,13 @@ class InlineFile {
       return file;
     }
 
-    return new InlineFile(obj.filename, obj.contentType, obj.size, obj.url);
+    return new InlineFile(
+      obj.filename,
+      obj.contentType,
+      obj.size,
+      obj.url,
+      obj.key
+    );
   }
 
   // Create an InlineFile instance from a given dataURL
@@ -50,6 +57,11 @@ class InlineFile {
       return Buffer.from(data, "base64");
     }
 
+    // if we don't have a key nor a dataURL, this inline file has no data
+    if (!this.key) {
+      throw new Error("invalid file data");
+    }
+
     if (isS3Storage()) {
       const s3Client = new S3Client({
         credentials: fromEnv(),
@@ -61,13 +73,27 @@ class InlineFile {
         Key: "files/" + this.key,
       };
       const command = new GetObjectCommand(params);
-      const response = await client.send(command);
+      const response = await s3Client.send(command);
       return response.Body.transformToString();
+    }
+
+    // default to db storage
+    const db = useDatabase();
+
+    try {
+      let query = db.selectFrom("keel_storage").select("data").where({
+        id: this.key,
+      });
+
+      const row = await query.executeTakeFirstOrThrow();
+      return row.data;
+    } catch (e) {
+      throw new DatabaseError(e);
     }
   }
 
   async store(expires = null) {
-    const content = this.read();
+    const content = await this.read();
     this.key = KSUID.randomSync().string;
 
     if (isS3Storage()) {
