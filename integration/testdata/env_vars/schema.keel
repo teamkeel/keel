@@ -8,5 +8,15 @@ model Person {
             @set(person.name = ctx.env.PERSON_NAME)
             @permission(expression: true)
         }
+        get getBob(id) {
+            @permission(expression: ctx.env.PERSON_NAME == "Bob")
+        }
+        get getPedro(id) {
+            @permission(expression: ctx.env.PERSON_NAME == "Pedro")
+        }
+        list listPedros() {
+            @where(person.name == ctx.env.PERSON_NAME)
+            @permission(expression: true)
+        }
     }
 }

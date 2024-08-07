@@ -1,0 +1,33 @@
+model Person {
+    fields {
+        name Text
+    }
+
+    actions {
+        create createPerson() {
+            @set(person.name = ctx.headers.PersonName)
+            @permission(expression: true)
+        }
+        create createPersonCamelCase() {
+            @set(person.name = ctx.headers.personName)
+            @permission(expression: true)
+        }
+        create createPersonUsingHook() {
+            @function
+            @permission(expression: true)
+        }
+        write writePersonUsingCustomFunc(Any) returns (Any) {
+            @permission(expression: true)
+        }
+        get getBob(id) {
+            @permission(expression: ctx.headers.PersonName == "Bob")
+        }
+        get getPedro(id) {
+            @permission(expression: ctx.headers.PersonName == "Pedro")
+        }
+        list listPedros() {
+            @where(person.name == ctx.headers.PersonName)
+            @permission(expression: true)
+        }
+    }
+}
