@@ -404,11 +404,11 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 		headerName := resolver.operand.Ident.Fragments[2].Fragment
 
 		// First we parse the header name to kebab. MyCustomHeader will become my-custom-header.
-		asSnake := strcase.ToKebab(headerName)
+		kebab := strcase.ToKebab(headerName)
 
 		// Then get canonical name. my-custom-header will become My-Custom-Header.
 		// https://pkg.go.dev/net/http#Header.Get
-		canonicalName := textproto.CanonicalMIMEHeaderKey(asSnake)
+		canonicalName := textproto.CanonicalMIMEHeaderKey(kebab)
 
 		headers, err := runtimectx.GetRequestHeaders(resolver.Context)
 		if err != nil {
