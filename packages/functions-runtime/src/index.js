@@ -12,6 +12,7 @@ const {
 } = require("./permissions");
 const tracing = require("./tracing");
 const { InlineFile } = require("./InlineFile");
+const { ErrorPresets } = require("./errors");
 
 module.exports = {
   ModelAPI,
@@ -25,6 +26,7 @@ module.exports = {
   PERMISSION_STATE,
   checkBuiltInPermissions,
   tracing,
+  ErrorPresets,
   ksuid() {
     return KSUID.randomSync().string;
   },

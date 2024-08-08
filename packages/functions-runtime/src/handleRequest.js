@@ -20,6 +20,10 @@ async function handleRequest(request, config) {
     request.meta?.tracing
   );
 
+  if (process.env.KEEL_LOG_LEVEL == "debug") {
+    console.log(request);
+  }
+
   // Run the whole request with the extracted context
   return opentelemetry.context.with(activeContext, () => {
     // Wrapping span for the whole request

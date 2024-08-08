@@ -7,6 +7,7 @@ import { useDatabase } from "./database";
 const { Permissions } = require("./permissions");
 import { PROTO_ACTION_TYPES } from "./consts";
 import KSUID from "ksuid";
+import { ErrorPresets } from "./errors";
 
 test("when the custom function returns expected value", async () => {
   const config = {
@@ -178,6 +179,68 @@ test("when there is an unexpected object thrown in the custom function", async (
   });
 });
 
+test("when a NotFound error preset is thrown in the custom function", async () => {
+  const config = {
+    functions: {
+      createPost: async (ctx, inputs) => {
+        throw new ErrorPresets.NotFound("not here");
+      },
+    },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
+    },
+    createContextAPI: () => {
+      return {
+        response: {
+          headers: new Headers(),
+        },
+      };
+    },
+  };
+
+  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+
+  expect(await handleRequest(rpcReq, config)).toEqual({
+    id: "123",
+    jsonrpc: "2.0",
+    error: {
+      code: RuntimeErrors.RecordNotFoundError,
+      message: "not here",
+    },
+  });
+});
+
+test("when a BadRequest error preset is thrown in the custom function", async () => {
+  const config = {
+    functions: {
+      createPost: async (ctx, inputs) => {
+        throw new ErrorPresets.BadRequest("invalid inputs");
+      },
+    },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
+    },
+    createContextAPI: () => {
+      return {
+        response: {
+          headers: new Headers(),
+        },
+      };
+    },
+  };
+
+  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+
+  expect(await handleRequest(rpcReq, config)).toEqual({
+    id: "123",
+    jsonrpc: "2.0",
+    error: {
+      code: RuntimeErrors.BadRequestError,
+      message: "invalid inputs",
+    },
+  });
+});
+
 // The following tests assert on the various
 // jsonrpc responses that *should* happen when a user
 // writes a custom function that inadvertently causes a pg constraint error to occur inside of our ModelAPI class instance.
@@ -266,7 +329,7 @@ describe("ModelAPI error handling", () => {
       jsonrpc: "2.0",
       error: {
         code: RuntimeErrors.RecordNotFoundError,
-        message: "no result",
+        message: "",
       },
     });
   });

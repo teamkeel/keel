@@ -36,6 +36,7 @@ const (
 	NotNullConstraintError    FunctionErrorCode = -32006
 	UniqueConstraintError     FunctionErrorCode = -32007
 	PermissionError           FunctionErrorCode = -32008
+	BadRequestError           FunctionErrorCode = -32009
 )
 
 type FunctionType string
@@ -312,12 +313,26 @@ func toRuntimeError(errorResponse *FunctionsRuntimeError) error {
 	case UniqueConstraintError:
 		return common.NewUniquenessError(strings.Split(data["column"].(string), ", "))
 	case RecordNotFoundError:
+		if errorResponse.Message != "" {
+			return common.RuntimeError{
+				Code:    common.ErrRecordNotFound,
+				Message: errorResponse.Message,
+			}
+		}
 		return common.NewNotFoundError()
-	default:
-		// includes generic errors thrown by custom functions during execution, plus other types of DatabaseError's that aren't fk/uniqueness/null constraint errors:
+	case BadRequestError:
+		return common.NewValidationError(errorResponse.Message)
+	case DatabaseError:
+		// other types of DatabaseError's that aren't fk/uniqueness/null constraint errors:
 		// https://www.postgresql.org/docs/current/errcodes-appendix.html
 		return common.RuntimeError{
 			Code:    common.ErrInternal,
+			Message: errorResponse.Message,
+		}
+	default:
+		// All other errors that originate from user code
+		return common.RuntimeError{
+			Code:    common.ErrUnknown,
 			Message: errorResponse.Message,
 		}
 	}

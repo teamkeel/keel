@@ -83,6 +83,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	writeAPIFactory(sdk, schema)
 	sdk.Writeln("module.exports.useDatabase = runtime.useDatabase;")
 	sdk.Writeln("module.exports.InlineFile = runtime.InlineFile;")
+	sdk.Writeln("module.exports.errors = runtime.ErrorPresets;")
 
 	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
@@ -846,6 +847,7 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("}")
 	w.Writeln("export declare const models: ModelsAPI;")
 	w.Writeln("export declare const permissions: runtime.Permissions;")
+	w.Writeln("export declare const errors: runtime.Errors;")
 
 	w.Writeln("type Environment = {")
 
@@ -1661,6 +1663,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export declare const actions: ActionExecutor;")
 	w.Writeln("export declare const models: sdk.ModelsAPI;")
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
+
 }
 
 func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {

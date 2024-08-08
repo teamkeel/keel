@@ -1,0 +1,16 @@
+model Foo {
+    fields {
+        bar Text
+    }
+
+    actions {
+        get hookNotFound(id) @function
+        get hookNotFoundCustomMessage(id) @function
+        read badRequest(id) returns (Any)
+    }
+
+    @permission(
+        actions: [get],
+        expression: true
+    )
+}
