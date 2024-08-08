@@ -1,10 +1,10 @@
 const { Kysely, PostgresDialect, CamelCasePlugin } = require("kysely");
+const neonserverless = require("@neondatabase/serverless");
 const { AsyncLocalStorage } = require("async_hooks");
 const { AuditContextPlugin } = require("./auditing");
 const pg = require("pg");
 const { PROTO_ACTION_TYPES } = require("./consts");
 const { withSpan } = require("./tracing");
-const { NeonDialect } = require("kysely-neon");
 const ws = require("ws");
 
 // withDatabase is responsible for setting the correct database client in our AsyncLocalStorage
@@ -107,7 +107,20 @@ function getDatabaseClient() {
 class InstrumentedPool extends pg.Pool {
   async connect(...args) {
     const _super = super.connect.bind(this);
-    return withSpan("Database Connect", function () {
+    return withSpan("Database Connect", function (span) {
+      span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
+      span.setAttribute("timeout", connectionTimeout());
+      return _super(...args);
+    });
+  }
+}
+
+class InstrumentedNeonServerlessPool extends neonserverless.Pool {
+  async connect(...args) {
+    const _super = super.connect.bind(this);
+    return withSpan("Database Connect", function (span) {
+      span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
+      span.setAttribute("timeout", connectionTimeout());
       return _super(...args);
     });
   }
@@ -134,6 +147,7 @@ class InstrumentedClient extends pg.Client {
     return withSpan(spanName, function (span) {
       if (sqlAttribute) {
         span.setAttribute("sql", args[0]);
+        span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
       }
       return _super(...args);
     });
@@ -165,14 +179,42 @@ function getDialect() {
           // Although I doubt we will run into these freeze/thaw issues if idleTimeoutMillis is always shorter than the
           // time is takes for a lambda to freeze (which is not a constant, but could be as short as several minutes,
           // https://www.pluralsight.com/resources/blog/cloud/how-long-does-aws-lambda-keep-your-idle-functions-around-before-a-cold-start)
-          idleTimeoutMillis: 120000,
+          idleTimeoutMillis: connectionTimeout(),
           connectionString: mustEnv("KEEL_DB_CONN"),
         }),
       });
     case "neon":
-      return new NeonDialect({
+      neonserverless.neonConfig.webSocketConstructor = ws;
+
+      const pool = new InstrumentedNeonServerlessPool({
+        idleTimeoutMillis: connectionTimeout(),
         connectionString: mustEnv("KEEL_DB_CONN"),
-        webSocketConstructor: ws,
+      });
+
+      pool.on("connect", (client) => {
+        const originalQuery = client.query;
+        client.query = function (...args) {
+          const sql = args[0];
+
+          let sqlAttribute = false;
+          let spanName = txStatements[sql.toLowerCase()];
+          if (!spanName) {
+            spanName = "Database Query";
+            sqlAttribute = true;
+          }
+
+          return withSpan(spanName, function (span) {
+            if (sqlAttribute) {
+              span.setAttribute("sql", args[0]);
+              span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
+            }
+            return originalQuery.apply(client, args);
+          });
+        };
+      });
+
+      return new PostgresDialect({
+        pool: pool,
       });
     default:
       throw Error("unexpected KEEL_DB_CONN_TYPE: " + dbConnType);
@@ -183,6 +225,15 @@ function mustEnv(key) {
   const v = process.env[key];
   if (!v) {
     throw new Error(`expected environment variable ${key} to be set`);
+  }
+  return v;
+}
+
+
+function connectionTimeout() {
+  const v = Number(process.env["KEEL_DB_CONN_TIMEOUT"]);
+  if (!v || isNaN(v)) {
+    return 45000; // 60s is our current neon suspend default
   }
   return v;
 }
