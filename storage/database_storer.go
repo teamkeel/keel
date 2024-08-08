@@ -122,7 +122,7 @@ func (s *DbStore) GetFileInfo(key string) (FileInfo, error) {
 func (s *DbStore) HydrateFileInfo(fi *FileInfo) (FileInfo, error) {
 	sql := `SELECT
 			filename,
-			content_type,
+			contentType,
 			data
 		FROM ` + dbTable + ` WHERE id = ?`
 
