@@ -8,6 +8,10 @@ model Person {
             @set(person.name = ctx.headers.PersonName)
             @permission(expression: true)
         }
+        create createPersonX() {
+            @set(person.name = ctx.headers.XPersonName)
+            @permission(expression: true)
+        }
         create createPersonCamelCase() {
             @set(person.name = ctx.headers.personName)
             @permission(expression: true)
