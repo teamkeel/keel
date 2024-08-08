@@ -21,6 +21,24 @@ test("set with http header", async () => {
   expect(data?.name).toEqual("Pedro");
 });
 
+test("set with http header with X prefix", async () => {
+  const response = await fetch(
+    process.env.KEEL_TESTING_ACTIONS_API_URL + "/createPersonX",
+    {
+      body: "{}",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Person-Name": "Pedro",
+      },
+    }
+  );
+
+  expect(response.status).toEqual(200);
+  const data = await response.json();
+  expect(data?.name).toEqual("Pedro");
+});
+
 test("set with http header camel case in schema", async () => {
   const response = await fetch(
     process.env.KEEL_TESTING_ACTIONS_API_URL + "/createPerson",
