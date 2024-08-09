@@ -157,8 +157,7 @@ class InlineFile {
 
   toJSON() {
     return {
-      __typename: "InlineFile",
-      dataURL: this._dataURL,
+      key: this.key,
       filename: this.filename,
       contentType: this.contentType,
       size: this.size,
