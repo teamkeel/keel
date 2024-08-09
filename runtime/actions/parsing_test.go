@@ -289,15 +289,12 @@ message FileResponse {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	parsed, err := actions.TransformCustomFunctionsInputTypes(scope.Schema, action, data)
+	parsed, err := actions.TransformCustomFunctionsInputTypes(scope.Schema, action.InputMessageName, data)
 	assert.NoError(t, err)
 
-	assert.IsType(t, map[string]any{}, parsed)
-	asMap, _ := parsed.(map[string]any)
+	assert.IsType(t, map[string]any{}, parsed["file"])
 
-	assert.IsType(t, map[string]any{}, asMap["file"])
-
-	file := asMap["file"].(map[string]any)
+	file := parsed["file"].(map[string]any)
 	assert.Equal(t, "InlineFile", file["__typename"])
 	assert.Equal(t, dataUrl, file["dataURL"])
 }

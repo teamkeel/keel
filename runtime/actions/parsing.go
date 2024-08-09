@@ -183,23 +183,15 @@ var toDate = func(value any) (types.Date, error) {
 //
 // e.g. for InlineFile inputs, whcih are given as a dataURL string, they need to be transformed into an object
 // including the typename
-func TransformCustomFunctionsInputTypes(schema *proto.Schema, action *proto.Action, input any) (any, error) {
-	inputsAsMap, isMap := input.(map[string]any)
-	if !isMap {
-		return input, nil
-	}
-
-	msg := proto.FindMessage(schema.Messages, action.InputMessageName)
-	if msg == nil {
-		return input, nil
-	}
+func TransformCustomFunctionsInputTypes(schema *proto.Schema, messageName string, input map[string]any) (map[string]any, error) {
+	message := proto.FindMessage(schema.Messages, messageName)
 
 	// for now the only complex input field is InlineFile
-	if msg.HasFiles() {
-		for _, f := range msg.FileFields() {
-			if inputsAsMap[f.GetName()] != nil {
-				dataURL := inputsAsMap[f.GetName()]
-				inputsAsMap[f.GetName()] = map[string]any{
+	if message.HasFiles() {
+		for _, f := range message.FileFields() {
+			if input[f.GetName()] != nil {
+				dataURL := input[f.GetName()]
+				input[f.GetName()] = map[string]any{
 					"__typename": parser.FieldTypeInlineFile,
 					"dataURL":    dataURL,
 				}
@@ -207,5 +199,5 @@ func TransformCustomFunctionsInputTypes(schema *proto.Schema, action *proto.Acti
 		}
 	}
 
-	return inputsAsMap, nil
+	return input, nil
 }
