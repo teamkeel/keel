@@ -4,6 +4,7 @@ const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
+const { InlineFile } = require("./InlineFile");
 
 const {
   applyLimit,
@@ -226,7 +227,14 @@ async function create(conn, tableName, tableConfigs, values) {
         const columnConfig = tableConfig[key];
 
         if (!columnConfig) {
-          row[key] = value;
+          // handle files that need uploading
+          if (value instanceof InlineFile) {
+            const dbValue = await value.store();
+            row[key] = dbValue;
+          } else {
+            row[key] = value;
+          }
+
           continue;
         }
 
