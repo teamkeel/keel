@@ -185,15 +185,24 @@ var toDate = func(value any) (types.Date, error) {
 // including the typename
 func TransformCustomFunctionsInputTypes(schema *proto.Schema, messageName string, input map[string]any) (map[string]any, error) {
 	message := proto.FindMessage(schema.Messages, messageName)
+	if message == nil {
+		return input, nil
+	}
 
 	// for now the only complex input field is InlineFile
 	if message.HasFiles() {
 		for _, f := range message.FileFields() {
 			if input[f.GetName()] != nil {
-				dataURL := input[f.GetName()]
+				inlineFile := input[f.GetName()]
+
+				// check if the input is already decorated
+				if data, decorated := inlineFile.(map[string]any); decorated && data["__typename"] == parser.FieldTypeInlineFile {
+					continue
+				}
+				// decorate the input
 				input[f.GetName()] = map[string]any{
 					"__typename": parser.FieldTypeInlineFile,
-					"dataURL":    dataURL,
+					"dataURL":    inlineFile,
 				}
 			}
 		}
