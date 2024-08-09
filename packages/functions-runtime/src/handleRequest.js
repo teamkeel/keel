@@ -79,6 +79,15 @@ async function handleRequest(request, config) {
           }
         );
 
+        if (result instanceof Error) {
+          span.recordException(result);
+          span.setStatus({
+            code: opentelemetry.SpanStatusCode.ERROR,
+            message: result.message,
+          });
+          return errorToJSONRPCResponse(request, result);
+        }
+
         const response = createJSONRPCSuccessResponse(request.id, result);
 
         const responseHeaders = {};

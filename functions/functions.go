@@ -313,13 +313,7 @@ func toRuntimeError(errorResponse *FunctionsRuntimeError) error {
 	case UniqueConstraintError:
 		return common.NewUniquenessError(strings.Split(data["column"].(string), ", "))
 	case RecordNotFoundError:
-		if errorResponse.Message != "" {
-			return common.RuntimeError{
-				Code:    common.ErrRecordNotFound,
-				Message: errorResponse.Message,
-			}
-		}
-		return common.NewNotFoundError()
+		return common.NewNotFoundError(errorResponse.Message)
 	case BadRequestError:
 		return common.NewValidationError(errorResponse.Message)
 	case DatabaseError:

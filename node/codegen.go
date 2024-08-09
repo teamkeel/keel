@@ -1252,7 +1252,7 @@ func toCustomFunctionReturnType(model *proto.Model, op *proto.Action, isTestingP
 			returnType += op.ResponseMessageName
 		}
 	}
-	returnType += ">"
+	returnType += "| Error>"
 	return returnType
 }
 

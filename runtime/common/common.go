@@ -147,10 +147,13 @@ func NewValidationError(message string) RuntimeError {
 	}
 }
 
-func NewNotFoundError() RuntimeError {
+func NewNotFoundError(message string) RuntimeError {
+	if message == "" {
+		message = "record not found"
+	}
 	return RuntimeError{
 		Code:    ErrRecordNotFound,
-		Message: "record not found",
+		Message: message,
 	}
 }
 

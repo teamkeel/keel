@@ -210,6 +210,38 @@ test("when a NotFound error preset is thrown in the custom function", async () =
   });
 });
 
+test("when a NotFound error preset is returned in the custom function", async () => {
+  const config = {
+    functions: {
+      createPost: async (ctx, inputs) => {
+        new Permissions().allow();
+        return new ErrorPresets.NotFound("not here");
+      },
+    },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
+    },
+    createContextAPI: () => {
+      return {
+        response: {
+          headers: new Headers(),
+        },
+      };
+    },
+  };
+
+  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+
+  expect(await handleRequest(rpcReq, config)).toEqual({
+    id: "123",
+    jsonrpc: "2.0",
+    error: {
+      code: RuntimeErrors.RecordNotFoundError,
+      message: "not here",
+    },
+  });
+});
+
 test("when a BadRequest error preset is thrown in the custom function", async () => {
   const config = {
     functions: {
