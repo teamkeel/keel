@@ -77,15 +77,15 @@ export type NumberArrayQueryWhereCondition = {
 };
 
 export type BooleanArrayWhereCondition = {
-  equals?: bool[] | null;
-  notEquals?: bool[] | null;
+  equals?: boolean[] | null;
+  notEquals?: boolean[] | null;
   any?: BooleanArrayQueryWhereCondition | null;
   all?: BooleanArrayQueryWhereCondition | null;
 };
 
 export type BooleanArrayQueryWhereCondition = {
-  equals?: bool | null;
-  notEquals?: bool | null;
+  equals?: boolean | null;
+  notEquals?: boolean | null;
 };
 
 export type DateArrayWhereCondition = {
@@ -136,3 +136,25 @@ export declare class Permissions {
   // deny() can be used to explicitly deny access to an action
   deny(): never;
 }
+
+declare class NotFoundError extends Error {}
+declare class BadRequestError extends Error {}
+declare class UnknownError extends Error {}
+
+export type Errors = {
+  /**
+   * Returns a 404 HTTP status with an optional message.
+   * This error indicates that the requested resource could not be found.
+   */
+  NotFound: typeof NotFoundError;
+  /**
+   * Returns a 400 HTTP status with an optional message.
+   * This error indicates that the request made by the client is invalid or malformed.
+   */
+  BadRequest: typeof BadRequestError;
+  /**
+   * Returns a 500 HTTP status with an optional message.
+   * This error indicates that an unexpected condition was encountered, preventing the server from fulfilling the request.
+   */
+  Unknown: typeof UnknownError;
+};

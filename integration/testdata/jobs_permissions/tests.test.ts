@@ -236,7 +236,7 @@ test("job - exception - internal error without rollback transaction", async () =
   await expect(
     jobs.withIdentity(identity).manualJobWithException({ id })
   ).toHaveError({
-    code: "ERR_INTERNAL",
+    code: "ERR_UNKNOWN",
     message: "something bad has happened!",
   });
 

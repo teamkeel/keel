@@ -9,8 +9,12 @@ type GetFunctionHooks<M, QB, I> = {
     ctx: ContextAPI,
     inputs: I,
     query: QB
-  ) => Promise<QB | M | null> | QB | M | null;
-  afterQuery?: (ctx: ContextAPI, inputs: I, record: M) => Promise<M> | M;
+  ) => Promise<QB | M | null | Error> | QB | M | null | Error;
+  afterQuery?: (
+    ctx: ContextAPI,
+    inputs: I,
+    record: M
+  ) => Promise<M | Error> | M | Error;
 };
 
 /**
@@ -24,12 +28,12 @@ type ListFunctionHooks<M, QB, I> = {
     ctx: ContextAPI,
     inputs: I,
     query: QB
-  ) => Promise<QB | Array<M>> | QB | Array<M>;
+  ) => Promise<QB | Array<M> | Error> | QB | Array<M> | Error;
   afterQuery?: (
     ctx: ContextAPI,
     inputs: I,
     records: Array<M>
-  ) => Promise<Array<M>> | Array<M>;
+  ) => Promise<Array<M> | Error> | Array<M> | Error;
 };
 
 /**
@@ -41,12 +45,16 @@ type ListFunctionHooks<M, QB, I> = {
  * @typeParam C - The values that will be used to create an M record
  */
 type CreateFunctionHooks<M, QB, I, V, C> = {
-  beforeWrite?: (ctx: ContextAPI, inputs: I, values: V) => Promise<C> | C;
+  beforeWrite?: (
+    ctx: ContextAPI,
+    inputs: I,
+    values: V
+  ) => Promise<C | Error> | C | Error;
   afterWrite?: (
     ctx: ContextAPI,
     inputs: I,
     data: M
-  ) => Promise<M | void> | M | void;
+  ) => Promise<M | void | Error> | M | void | Error;
 };
 
 /**
@@ -61,18 +69,18 @@ type UpdateFunctionHooks<M, QB, I, V> = {
     ctx: ContextAPI,
     inputs: I,
     query: QB
-  ) => Promise<M | QB> | M | QB;
+  ) => Promise<M | QB | Error> | M | QB | Error;
   beforeWrite?: (
     ctx: ContextAPI,
     inputs: I,
     values: V,
     record: M
-  ) => Promise<Partial<M>> | Partial<M>;
+  ) => Promise<Partial<M> | Error> | Partial<M> | Error;
   afterWrite?: (
     ctx: ContextAPI,
     inputs: I,
     data: M
-  ) => Promise<M | void> | M | void;
+  ) => Promise<M | void | Error> | M | void | Error;
 };
 
 /**
@@ -86,7 +94,15 @@ type DeleteFunctionHooks<M, QB, I> = {
     ctx: ContextAPI,
     inputs: I,
     query: QB
-  ) => Promise<M | QB> | M | QB;
-  beforeWrite?: (ctx: ContextAPI, inputs: I, record: M) => Promise<void> | void;
-  afterWrite?: (ctx: ContextAPI, inputs: I, data: M) => Promise<void> | void;
+  ) => Promise<M | QB | Error> | M | QB | Error;
+  beforeWrite?: (
+    ctx: ContextAPI,
+    inputs: I,
+    record: M
+  ) => Promise<void | Error> | void | Error;
+  afterWrite?: (
+    ctx: ContextAPI,
+    inputs: I,
+    data: M
+  ) => Promise<void | Error> | void | Error;
 };

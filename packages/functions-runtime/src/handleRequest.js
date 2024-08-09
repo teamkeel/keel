@@ -20,6 +20,10 @@ async function handleRequest(request, config) {
     request.meta?.tracing
   );
 
+  if (process.env.KEEL_LOG_LEVEL == "debug") {
+    console.log(request);
+  }
+
   // Run the whole request with the extracted context
   return opentelemetry.context.with(activeContext, () => {
     // Wrapping span for the whole request
@@ -74,6 +78,15 @@ async function handleRequest(request, config) {
             return customFunction(ctx, inputs);
           }
         );
+
+        if (result instanceof Error) {
+          span.recordException(result);
+          span.setStatus({
+            code: opentelemetry.SpanStatusCode.ERROR,
+            message: result.message,
+          });
+          return errorToJSONRPCResponse(request, result);
+        }
 
         const response = createJSONRPCSuccessResponse(request.id, result);
 

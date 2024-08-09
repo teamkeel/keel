@@ -64,7 +64,7 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	}
 
 	if res == nil {
-		return nil, common.NewNotFoundError()
+		return nil, common.NewNotFoundError("")
 	}
 
 	// if we have any files in our results we need to transform them to the object structure required

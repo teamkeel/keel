@@ -67,7 +67,7 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 	}
 
 	if row == nil {
-		return nil, common.NewNotFoundError()
+		return nil, common.NewNotFoundError("")
 	}
 
 	id, ok := row["id"].(string)

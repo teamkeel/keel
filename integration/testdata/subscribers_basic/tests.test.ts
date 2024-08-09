@@ -52,7 +52,7 @@ test("subscriber - exception - internal error without rollback transaction", asy
   };
 
   await expect(subscribers.subscriberWithException(event)).toHaveError({
-    code: "ERR_INTERNAL",
+    code: "ERR_UNKNOWN",
     message: "something bad has happened!",
   });
 

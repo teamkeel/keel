@@ -1,14 +1,5 @@
 const { createJSONRPCErrorResponse } = require("json-rpc-2.0");
 
-class PermissionError extends Error {}
-
-class DatabaseError extends Error {
-  constructor(error) {
-    super(error.message);
-    this.error = error;
-  }
-}
-
 const RuntimeErrors = {
   // Catchall error type for unhandled execution errors during custom function
   UnknownError: -32001,
@@ -22,6 +13,44 @@ const RuntimeErrors = {
   NotNullConstraintError: -32006,
   UniqueConstraintError: -32007,
   PermissionError: -32008,
+  BadRequestError: -32009,
+};
+
+// Error presets
+class PermissionError extends Error {}
+
+class DatabaseError extends Error {
+  constructor(error) {
+    super(error.message);
+    this.error = error;
+  }
+}
+
+class NotFoundError extends Error {
+  errorCode = RuntimeErrors.RecordNotFoundError;
+  constructor(message) {
+    super(message); // Default message is handled by the runtime for consistency with built in actions
+  }
+}
+
+class BadRequestError extends Error {
+  errorCode = RuntimeErrors.BadRequestError;
+  constructor(message = "bad request") {
+    super(message);
+  }
+}
+
+class UnknownError extends Error {
+  errorCode = RuntimeErrors.UnknownError;
+  constructor(message = "unknown error") {
+    super(message);
+  }
+}
+
+const ErrorPresets = {
+  NotFound: NotFoundError,
+  BadRequest: BadRequestError,
+  Unknown: UnknownError,
 };
 
 // errorToJSONRPCResponse transforms a JavaScript Error instance (or derivative) into a valid JSONRPC response object to pass back to the Keel runtime.
@@ -41,7 +70,7 @@ function errorToJSONRPCResponse(request, e) {
 
         // to be matched to https://github.com/teamkeel/keel/blob/e3115ffe381bfc371d4f45bbf96a15072a994ce5/runtime/actions/update.go#L54-L54
         RuntimeErrors.RecordNotFoundError,
-        e.message
+        "" // Don't pass on the message as we want to normalise these at the runtime layer but still support custom messages in other NotFound errors
       );
     case "DatabaseError":
       let err = e;
@@ -57,7 +86,7 @@ function errorToJSONRPCResponse(request, e) {
 
           // to be matched to https://github.com/teamkeel/keel/blob/e3115ffe381bfc371d4f45bbf96a15072a994ce5/runtime/actions/update.go#L54-L54
           RuntimeErrors.RecordNotFoundError,
-          err.message
+          "" // Don't pass on the message as we want to normalise these at the runtime layer but still support custom messages in other NotFound errors
         );
       }
 
@@ -104,9 +133,10 @@ function errorToJSONRPCResponse(request, e) {
         e.message
       );
     default:
+      // Use the errorCode in the error if we have some from a preset
       return createJSONRPCErrorResponse(
         request.id,
-        RuntimeErrors.UnknownError,
+        e.errorCode ?? RuntimeErrors.UnknownError,
         e.message
       );
   }
@@ -126,4 +156,5 @@ module.exports = {
   RuntimeErrors,
   DatabaseError,
   PermissionError,
+  ErrorPresets,
 };

@@ -163,7 +163,7 @@ describe("ModelAPI error handling", () => {
       jsonrpc: "2.0",
       error: {
         code: RuntimeErrors.RecordNotFoundError,
-        message: "no result",
+        message: "",
       },
     });
   });

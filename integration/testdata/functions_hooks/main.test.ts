@@ -69,7 +69,7 @@ test("create afterWrite - error and rollback", async () => {
       title: "Lady Chatterley's Lover",
     })
   ).rejects.toEqual({
-    code: "ERR_INTERNAL",
+    code: "ERR_UNKNOWN",
     message: "this book is banned",
   });
 

@@ -58,7 +58,7 @@ test("events from failed hook function with rollback", async () => {
   await expect(
     actions.createPersonFn({ name: "", email: "keelson@keel.so" })
   ).toHaveError({
-    code: "ERR_INTERNAL",
+    code: "ERR_UNKNOWN",
   });
 
   const persons = await models.person.findMany();
@@ -67,7 +67,7 @@ test("events from failed hook function with rollback", async () => {
 
 test("events from failed job", async () => {
   await expect(jobs.createRandomPersons({ raiseException: true })).toHaveError({
-    code: "ERR_INTERNAL",
+    code: "ERR_UNKNOWN",
   });
 
   const persons = await models.person.findMany();
@@ -83,7 +83,7 @@ test("events from failed custom function with rollback", async () => {
   await expect(
     actions.writeRandomPersons({ raiseException: true })
   ).toHaveError({
-    code: "ERR_INTERNAL",
+    code: "ERR_UNKNOWN",
   });
 
   const persons = await models.person.findMany();
