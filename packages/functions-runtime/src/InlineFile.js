@@ -52,11 +52,11 @@ class InlineFile {
   }
 
   // Read the contents of the file. If URL is set, it will be read from the remote storage, otherwise, if dataURL is set
-  // on the instance, it will return a blob with the file contents
+  // on the instance, it will return a string with the file contents
   async read() {
     if (this._dataURL) {
       var data = this._dataURL.split(",")[1];
-      return Buffer.from(data, "base64");
+      return atob(data);
     }
 
     // if we don't have a key nor a dataURL, this inline file has no data
