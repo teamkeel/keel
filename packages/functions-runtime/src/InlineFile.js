@@ -9,13 +9,13 @@ const { DatabaseError } = require("./errors");
 const KSUID = require("ksuid");
 
 class InlineFile {
-  constructor(filename, contentType, size, url, key, public) {
+  constructor(filename, contentType, size, url, key, pub) {
     this.filename = filename;
     this.contentType = contentType;
     this.size = size;
     this.url = url;
     this.key = key;
-    this.public = public || false;
+    this.public = pub || false;
   }
 
   // Create an InlineFile instance from a given json object.
