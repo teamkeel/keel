@@ -75,6 +75,7 @@ model Person {
         read noInputs() returns (Any)
         read fileInputHandling(FileInput) returns (FileResponse)
         write createFromFile(FileInput) returns (SinglePersonResponse)
+        write updateWithFile(FileInput) returns (SinglePersonResponse)
     }
 }
 
