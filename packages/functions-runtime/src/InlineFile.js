@@ -84,10 +84,8 @@ class InlineFile {
     const db = useDatabase();
 
     try {
-      let query = db.selectFrom("keel_storage").select("data").where({
-        id: this.key,
-      });
-
+      let query = db.selectFrom("keel_storage").select("data").where("id", "=", this.key);
+      
       const row = await query.executeTakeFirstOrThrow();
       return row.data;
     } catch (e) {
