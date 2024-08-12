@@ -169,7 +169,7 @@ func writeBuiltInTypes(w *codegen.Writer) {
 	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
 	w.Writeln(`export declare class InlineFile {`)
 	w.Indent()
-	w.Writeln(`constructor(filename: string, contentType: string, size: number, url: string, key: string, public: boolean);`)
+	w.Writeln(`constructor(filename: string, contentType: string, size: number, url: string, key: string, pub: boolean);`)
 	w.Writeln(`static fromObject(obj: any): InlineFile;`)
 	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
 	w.Writeln(`read(): Promise<any>;`)
