@@ -152,7 +152,21 @@ class ModelAPI {
     return tracing.withSpan(name, async (span) => {
       let builder = db.updateTable(this._tableName).returningAll();
 
-      builder = builder.set(snakeCaseObject(values));
+      // process input values
+      const keys = values ? Object.keys(values) : [];
+      const row = {};
+
+      for (const key of keys) {
+        const value = values[key];
+        // handle files that need uploading
+        if (value instanceof InlineFile) {
+          const dbValue = await value.store();
+          row[key] = dbValue;
+        } else {
+          row[key] = value;
+        }
+      }
+      builder = builder.set(snakeCaseObject(row));
 
       const context = new QueryContext([this._tableName], this._tableConfigMap);
 
