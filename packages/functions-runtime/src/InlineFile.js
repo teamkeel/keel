@@ -77,15 +77,18 @@ class InlineFile {
       const command = new GetObjectCommand(params);
       const response = await s3Client.send(command);
       const blob = response.Body.transformToByteArray();
-      return Buffer.from(blob)
+      return Buffer.from(blob);
     }
 
     // default to db storage
     const db = useDatabase();
 
     try {
-      let query = db.selectFrom("keel_storage").select("data").where("id", "=", this.key);
-      
+      let query = db
+        .selectFrom("keel_storage")
+        .select("data")
+        .where("id", "=", this.key);
+
       const row = await query.executeTakeFirstOrThrow();
       return row.data;
     } catch (e) {
