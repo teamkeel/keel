@@ -97,6 +97,8 @@ const (
 	ErrMethodNotFound = "ERR_ACTION_NOT_FOUND"
 	// The HTTP method is not allowed for this request.
 	ErrHttpMethodNotAllowed = "ERR_HTTP_METHOD_NOT_ALLOWED"
+	// An unexpected error happened from user code
+	ErrUnknown = "ERR_UNKNOWN"
 )
 
 type PermissionStatus string
@@ -145,10 +147,13 @@ func NewValidationError(message string) RuntimeError {
 	}
 }
 
-func NewNotFoundError() RuntimeError {
+func NewNotFoundError(message string) RuntimeError {
+	if message == "" {
+		message = "record not found"
+	}
 	return RuntimeError{
 		Code:    ErrRecordNotFound,
-		Message: "record not found",
+		Message: message,
 	}
 }
 

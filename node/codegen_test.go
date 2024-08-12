@@ -494,6 +494,7 @@ export type ModelsAPI = {
 }
 export declare const models: ModelsAPI;
 export declare const permissions: runtime.Permissions;
+export declare const errors: runtime.Errors;
 type Environment = {
 	TEST: string;
 }
@@ -2420,6 +2421,7 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 	diff := diffmatchpatch.New()
 	diffs := diff.DiffMain(normalise(expected), normalise(w.String()), true)
 	if !strings.Contains(normalise(w.String()), normalise(expected)) {
+
 		t.Errorf("generated code does not match expected:\n%s", diffPrettyText(diffs))
 		t.Errorf("\nExpected:\n---------\n%s", normalise(expected))
 		t.Errorf("\nActual:\n---------\n%s", normalise(w.String()))
