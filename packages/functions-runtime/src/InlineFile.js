@@ -32,7 +32,7 @@ class InlineFile {
       obj.size,
       obj.url,
       obj.key,
-      obj.public,
+      obj.public
     );
   }
 
