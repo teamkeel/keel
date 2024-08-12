@@ -172,7 +172,7 @@ func writeBuiltInTypes(w *codegen.Writer) {
 	w.Writeln(`constructor(filename: string, contentType: string, size: number, url: string, key: string, pub: boolean);`)
 	w.Writeln(`static fromObject(obj: any): InlineFile;`)
 	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
-	w.Writeln(`read(): Promise<string>;`)
+	w.Writeln(`read(): Promise<Buffer>;`)
 	w.Writeln(`store(expires?: Date): Promise<any>;`)
 	w.Writeln(`filename: string;`)
 	w.Writeln(`contentType: string;`)
