@@ -9,12 +9,13 @@ const { DatabaseError } = require("./errors");
 const KSUID = require("ksuid");
 
 class InlineFile {
-  constructor(filename, contentType, size, url, key) {
+  constructor(filename, contentType, size, url, key, pub) {
     this.filename = filename;
     this.contentType = contentType;
     this.size = size;
     this.url = url;
     this.key = key;
+    this.public = pub || false;
   }
 
   // Create an InlineFile instance from a given json object.
@@ -30,7 +31,8 @@ class InlineFile {
       obj.contentType,
       obj.size,
       obj.url,
-      obj.key
+      obj.key,
+      obj.public
     );
   }
 
@@ -110,6 +112,7 @@ class InlineFile {
         Metadata: {
           filename: this.filename,
         },
+        ACL: this.public ? "public-read" : "private",
       };
 
       if (expires) {
@@ -125,6 +128,7 @@ class InlineFile {
           size: this.size,
           filename: this.filename,
           contentType: this.contentType,
+          public: this.public,
         };
       } catch (error) {
         console.error("Error uploading file:", error);
@@ -163,6 +167,7 @@ class InlineFile {
       contentType: this.contentType,
       size: this.size,
       url: this.url,
+      public: this.public,
     };
   }
 }
