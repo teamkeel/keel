@@ -212,7 +212,6 @@ test("updateWithFile", async () => {
   expect(result.person.photo?.contentType).toEqual("image/png");
 });
 
-
 test("updatePhoto", async () => {
   const keelio = await actions.createPerson({
     name: "Keelio",
