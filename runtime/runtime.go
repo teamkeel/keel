@@ -181,7 +181,7 @@ func NewJobHandler(currSchema *proto.Schema) JobHandler {
 }
 
 // RunJob will run the job function in the runtime.
-func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map[string]any, trigger functions.TriggerType) error {
+func (handler JobHandler) RunJob(ctx context.Context, jobName string, input map[string]any, trigger functions.TriggerType) error {
 	ctx, span := tracer.Start(ctx, "Run job")
 	defer span.End()
 
@@ -209,10 +209,15 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 		}
 	}
 
-	err := functions.CallJob(
+	input, err := actions.TransformCustomFunctionsInputTypes(handler.schema, job.InputMessageName, input)
+	if err != nil {
+		return err
+	}
+
+	err = functions.CallJob(
 		ctx,
 		job,
-		inputs,
+		input,
 		permissionState,
 		trigger,
 	)

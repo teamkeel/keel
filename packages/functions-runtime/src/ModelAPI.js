@@ -4,6 +4,7 @@ const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
+const { InlineFile } = require("./InlineFile");
 
 const {
   applyLimit,
@@ -84,7 +85,7 @@ class ModelAPI {
         return null;
       }
 
-      return camelCaseObject(row);
+      return transformRichDataTypes(camelCaseObject(row));
     });
   }
 
@@ -140,7 +141,7 @@ class ModelAPI {
 
       span.setAttribute("sql", query.compile().sql);
       const rows = await builder.execute();
-      return rows.map((x) => camelCaseObject(x));
+      return rows.map((x) => transformRichDataTypes(camelCaseObject(x)));
     });
   }
 
@@ -151,7 +152,21 @@ class ModelAPI {
     return tracing.withSpan(name, async (span) => {
       let builder = db.updateTable(this._tableName).returningAll();
 
-      builder = builder.set(snakeCaseObject(values));
+      // process input values
+      const keys = values ? Object.keys(values) : [];
+      const row = {};
+
+      for (const key of keys) {
+        const value = values[key];
+        // handle files that need uploading
+        if (value instanceof InlineFile) {
+          const dbValue = await value.store();
+          row[key] = dbValue;
+        } else {
+          row[key] = value;
+        }
+      }
+      builder = builder.set(snakeCaseObject(row));
 
       const context = new QueryContext([this._tableName], this._tableConfigMap);
 
@@ -226,7 +241,14 @@ async function create(conn, tableName, tableConfigs, values) {
         const columnConfig = tableConfig[key];
 
         if (!columnConfig) {
-          row[key] = value;
+          // handle files that need uploading
+          if (value instanceof InlineFile) {
+            const dbValue = await value.store();
+            row[key] = dbValue;
+          } else {
+            row[key] = value;
+          }
+
           continue;
         }
 
@@ -303,6 +325,29 @@ async function create(conn, tableName, tableConfigs, values) {
   } catch (e) {
     throw new DatabaseError(e);
   }
+}
+
+// Iterate through the given object's keys and if any of the values are a rich data type, instantiate their respective class
+function transformRichDataTypes(data) {
+  const keys = data ? Object.keys(data) : [];
+  const row = {};
+
+  for (const key of keys) {
+    const value = data[key];
+    if (isPlainObject(value)) {
+      // if we've got an InlineFile...
+      if (value.key && value.size && value.filename && value.contentType) {
+        row[key] = InlineFile.fromObject(value);
+      } else {
+        row[key] = value;
+      }
+      continue;
+    }
+
+    row[key] = value;
+  }
+
+  return row;
 }
 
 function isPlainObject(obj) {

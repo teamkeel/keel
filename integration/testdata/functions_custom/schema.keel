@@ -43,15 +43,21 @@ message FileInput {
 }
 
 message FileResponse {
+    key Text
     filename Text
     size Number
     contentType Text
+}
+
+message SinglePersonResponse {
+    person Person
 }
 
 model Person {
     fields {
         name Text
         height Decimal?
+        photo InlineFile?
     }
 
     actions {
@@ -68,6 +74,10 @@ model Person {
         write bulkPersonUpload(BulkPersonUpload) returns (BulkPersonUpload)
         read noInputs() returns (Any)
         read fileInputHandling(FileInput) returns (FileResponse)
+        write createFromFile(FileInput) returns (SinglePersonResponse)
+        write updateWithFile(FileInput) returns (SinglePersonResponse)
+        write updatePhoto(id, photo) returns (SinglePersonResponse)
+        read readFile(id) returns (Any)
     }
 }
 

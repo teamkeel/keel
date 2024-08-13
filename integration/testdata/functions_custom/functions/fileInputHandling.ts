@@ -4,9 +4,12 @@ import { FileInputHandling, permissions } from "@teamkeel/sdk";
 export default FileInputHandling(async (ctx, inputs) => {
   permissions.allow();
 
+  const fileData = await inputs.file.store();
+
   return {
-    filename: inputs.file.filename,
-    size: inputs.file.size,
-    contentType: inputs.file.contentType,
+    filename: fileData.filename,
+    size: fileData.size,
+    contentType: fileData.contentType,
+    key: fileData.key,
   };
 });
