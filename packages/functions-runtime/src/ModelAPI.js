@@ -85,7 +85,7 @@ class ModelAPI {
         return null;
       }
 
-      return camelCaseObject(row);
+      return transformRichDataTypes(camelCaseObject(row));
     });
   }
 
@@ -141,7 +141,7 @@ class ModelAPI {
 
       span.setAttribute("sql", query.compile().sql);
       const rows = await builder.execute();
-      return rows.map((x) => camelCaseObject(x));
+      return rows.map((x) => transformRichDataTypes(camelCaseObject(x)));
     });
   }
 
@@ -325,6 +325,29 @@ async function create(conn, tableName, tableConfigs, values) {
   } catch (e) {
     throw new DatabaseError(e);
   }
+}
+
+// Iterate through the given object's keys and if any of the values are a rich data type, instantiate their respective class
+function transformRichDataTypes(data) {
+  const keys = data ? Object.keys(data) : [];
+  const row = {};
+
+  for (const key of keys) {
+    const value = data[key];
+    if (isPlainObject(value)) {
+      // if we've got an InlineFile...
+      if (value.key && value.size && value.filename && value.contentType) {
+        row[key] = InlineFile.fromObject(value);
+      } else {
+        row[key] = value;
+      }
+      continue;
+    }
+
+    row[key] = value;
+  }
+
+  return row;
 }
 
 function isPlainObject(obj) {
