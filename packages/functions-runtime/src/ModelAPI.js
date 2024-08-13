@@ -336,7 +336,7 @@ function transformRichDataTypes(data) {
     const value = data[key];
     if (isPlainObject(value)) {
       // if we've got an InlineFile...
-      if (value.key || value.size || value.filename || value.contentType) {
+      if (value.key && value.size && value.filename && value.contentType) {
         row[key] = InlineFile.fromObject(value);
       } else {
         row[key] = value;
