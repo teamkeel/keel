@@ -389,7 +389,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 					}
 
 					// Select all columns from this table and distinct on id
-					query.AppendDistinctOn(actions.IdField())
+					query.DistinctOn(actions.IdField())
 					query.Select(actions.AllFields())
 					err = query.ApplyPaging(page)
 					if err != nil {

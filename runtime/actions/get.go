@@ -93,7 +93,7 @@ func GenerateGetStatement(query *QueryBuilder, scope *Scope, input map[string]an
 
 	// Select all columns and distinct on id
 	query.Select(AllFields())
-	query.AppendDistinctOn(IdField())
+	query.DistinctOn(IdField())
 
 	return query.SelectStatement(), nil
 }

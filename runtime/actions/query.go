@@ -377,14 +377,14 @@ func (query *QueryBuilder) SelectUnnested(operand *QueryOperand) {
 }
 
 // Include a clause in SELECT.
-func (query *QueryBuilder) AppendSelectClause(clause string) {
+func (query *QueryBuilder) SelectClause(clause string) {
 	if !lo.Contains(query.selection, clause) {
 		query.selection = append(query.selection, clause)
 	}
 }
 
 // Include a column in this table in DISTINCT ON.
-func (query *QueryBuilder) AppendDistinctOn(operand *QueryOperand) {
+func (query *QueryBuilder) DistinctOn(operand *QueryOperand) {
 	c := operand.toSqlOperandString(query)
 
 	if !lo.Contains(query.distinctOn, c) {
@@ -464,7 +464,7 @@ func (query *QueryBuilder) AppendOrderBy(operand *QueryOperand, direction string
 		existing.direction = strings.ToUpper(direction)
 	} else {
 		query.orderBy = append(query.orderBy, order)
-		query.AppendDistinctOn(operand)
+		query.DistinctOn(operand)
 	}
 }
 
@@ -505,13 +505,13 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 		orderByClausesAsSql = append(orderByClausesAsSql, fmt.Sprintf("%s %s", o.field.toSqlOperandString(query), o.direction))
 	}
 	hasNext := fmt.Sprintf("CASE WHEN LEAD(%s) OVER (ORDER BY %s) IS NOT NULL THEN true ELSE false END AS hasNext", IdField().toSqlOperandString(query), strings.Join(orderByClausesAsSql, ", "))
-	query.AppendSelectClause(hasNext)
+	query.SelectClause(hasNext)
 
 	// We add a subquery to the select list that fetches the total count of records
 	// matching the constraints specified by the main query without the offset/limit applied
 	// This is actually more performant than COUNT(*) OVER() [window function]
 	totalResults := fmt.Sprintf("(%s) AS totalCount", query.countQuery())
-	query.AppendSelectClause(totalResults)
+	query.SelectClause(totalResults)
 	// Because we are essentially performing the same query again within the subquery, we need to duplicate the query parameters again as they will be used twice in the course of the whole query
 	query.args = append(query.args, query.args...)
 

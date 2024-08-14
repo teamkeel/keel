@@ -36,7 +36,7 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		return nil, common.NewPermissionError()
 	case !canResolveEarly:
 		query.Select(IdField())
-		query.AppendDistinctOn(IdField())
+		query.DistinctOn(IdField())
 		rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.Context)
 		if err != nil {
 			return nil, err

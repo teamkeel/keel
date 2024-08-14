@@ -247,7 +247,7 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 	}
 
 	// Select all columns from this table and distinct on id
-	query.AppendDistinctOn(IdField())
+	query.DistinctOn(IdField())
 	query.Select(AllFields())
 
 	err = query.ApplyPaging(page)
