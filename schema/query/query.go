@@ -228,7 +228,7 @@ type ModelActionFilter func(a *parser.ActionNode) bool
 
 func ModelActions(model *parser.ModelNode, filters ...ModelActionFilter) (res []*parser.ActionNode) {
 	for _, section := range model.Sections {
-		if section.Actions != nil && len(section.Actions) > 0 {
+		if len(section.Actions) > 0 {
 		actions:
 			for _, action := range section.Actions {
 				for _, filter := range filters {

@@ -1231,7 +1231,7 @@ func (scm *Builder) makeAPI(decl *parser.DeclarationNode) {
 				ModelActions: []*proto.ApiModelAction{},
 			}
 
-			if parserApiModel.Sections == nil || len(parserApiModel.Sections) == 0 {
+			if len(parserApiModel.Sections) == 0 {
 				model := query.Model(scm.asts, parserApiModel.Name.Value)
 				actions := query.ModelActions(model)
 

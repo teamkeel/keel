@@ -229,7 +229,7 @@ func renderError(m *Model) string {
 				b.WriteString("\n")
 			}
 
-			if dbErr.Columns != nil && len(dbErr.Columns) > 0 {
+			if len(dbErr.Columns) > 0 {
 				b.WriteString(colors.Red("Column(s): ").String())
 				b.WriteString(colors.Red(strings.Join(dbErr.Columns, ", ")).String())
 				b.WriteString("\n")

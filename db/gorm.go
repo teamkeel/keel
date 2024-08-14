@@ -73,7 +73,9 @@ func (db *GormDB) ExecuteStatement(ctx context.Context, sqlQuery string, args ..
 	return &ExecuteStatementResult{RowsAffected: result.RowsAffected}, nil
 }
 
-var transactionCtxKey struct{}
+type transactionContextKey string
+
+var transactionCtxKey transactionContextKey
 
 func (db *GormDB) Transaction(ctx context.Context, fn func(context.Context) error) error {
 	ctx, span := tracer.Start(ctx, "Database Transaction")

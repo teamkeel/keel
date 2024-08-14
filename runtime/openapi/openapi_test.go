@@ -58,7 +58,7 @@ func TestGeneration(t *testing.T) {
 				diff, explanation := jsondiff.Compare([]byte(c.jsonSchema), actual, &opts)
 
 				if diff != jsondiff.FullMatch {
-					t.Errorf(string(actual))
+					t.Error(string(actual))
 					t.Errorf("actual JSON schema does not match expected: %s", explanation)
 				}
 			}
@@ -72,7 +72,7 @@ func TestGeneration(t *testing.T) {
 				diff, explanation := jsondiff.Compare([]byte(c.jsonSchema), actual, &opts)
 
 				if diff != jsondiff.FullMatch {
-					t.Errorf(string(actual))
+					t.Error(string(actual))
 					t.Errorf("actual JSON schema does not match expected: %s", explanation)
 				}
 			}

@@ -31,9 +31,9 @@ func HasFunctions(sch *proto.Schema, cfg *config.ProjectConfig) bool {
 
 	hasHooks := len(cfg.Auth.EnabledHooks()) > 0
 
-	hasJobs := sch.Jobs != nil && len(sch.Jobs) > 0
+	hasJobs := len(sch.Jobs) > 0
 
-	hasSubscribers := sch.Subscribers != nil && len(sch.Subscribers) > 0
+	hasSubscribers := len(sch.Subscribers) > 0
 
 	return hasCustomFunctions || hasHooks || hasJobs || hasSubscribers
 }
