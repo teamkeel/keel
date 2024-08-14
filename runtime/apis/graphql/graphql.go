@@ -309,7 +309,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 
 				// Create a new query for the related model
 				query := actions.NewQuery(relatedModel)
-				query.AppendSelect(actions.AllFields())
+				query.Select(actions.AllFields())
 
 				foreignKeyField := proto.GetForeignKeyFieldName(mk.proto.Models, field)
 
@@ -390,7 +390,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 
 					// Select all columns from this table and distinct on id
 					query.AppendDistinctOn(actions.IdField())
-					query.AppendSelect(actions.AllFields())
+					query.Select(actions.AllFields())
 					err = query.ApplyPaging(page)
 					if err != nil {
 						span.RecordError(err, trace.WithStackTrace(true))

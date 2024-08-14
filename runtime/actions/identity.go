@@ -20,7 +20,7 @@ func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (aut
 		return nil, err
 	}
 
-	query.AppendSelect(AllFields())
+	query.Select(AllFields())
 	result, err := query.SelectStatement().ExecuteToSingle(ctx)
 
 	if err != nil {
@@ -46,7 +46,7 @@ func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string
 		return nil, err
 	}
 
-	query.AppendSelect(AllFields())
+	query.Select(AllFields())
 	result, err := query.SelectStatement().ExecuteToSingle(ctx)
 
 	if err != nil {
@@ -72,7 +72,7 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 		return nil, err
 	}
 
-	query.AppendSelect(AllFields())
+	query.Select(AllFields())
 	result, err := query.SelectStatement().ExecuteToSingle(ctx)
 
 	if err != nil {
@@ -94,7 +94,7 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 		"password": Value(password),
 		"issuer":   Value(issuer),
 	})
-	query.AppendSelect(AllFields())
+	query.Select(AllFields())
 	query.AppendReturning(IdField())
 
 	result, err := query.InsertStatement(ctx).ExecuteToSingle(ctx)
@@ -143,7 +143,7 @@ func CreateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 		query.AddWriteValue(Field(k), ValueOrNullIfEmpty(v))
 	}
 
-	query.AppendSelect(AllFields())
+	query.Select(AllFields())
 	query.AppendReturning(IdField())
 
 	result, err := query.InsertStatement(ctx).ExecuteToSingle(ctx)
@@ -200,7 +200,7 @@ func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 		query.AddWriteValue(Field(k), ValueOrNullIfEmpty(v))
 	}
 
-	query.AppendSelect(AllFields())
+	query.Select(AllFields())
 	query.AppendReturning(AllFields())
 
 	result, err := query.UpdateStatement(ctx).ExecuteToSingle(ctx)

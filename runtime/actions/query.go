@@ -359,8 +359,17 @@ func (query *QueryBuilder) AddWriteValues(values map[string]*QueryOperand) {
 }
 
 // Includes a column in SELECT.
-func (query *QueryBuilder) AppendSelect(operand *QueryOperand) {
+func (query *QueryBuilder) Select(operand *QueryOperand) {
 	c := operand.toSqlOperandString(query)
+
+	if !lo.Contains(query.selection, c) {
+		query.selection = append(query.selection, c)
+	}
+}
+
+// Includes a column in SELECT and unnests it.
+func (query *QueryBuilder) SelectUnnested(operand *QueryOperand) {
+	c := fmt.Sprintf("unnest(%s)", operand.toSqlOperandString(query))
 
 	if !lo.Contains(query.selection, c) {
 		query.selection = append(query.selection, c)
@@ -546,7 +555,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 			orderClause := query.orderBy[j]
 
 			inline := NewQuery(query.Model)
-			inline.AppendSelect(orderClause.field)
+			inline.Select(orderClause.field)
 			err = inline.Where(IdField(), Equals, Value(cursor))
 			if err != nil {
 				return err
@@ -562,7 +571,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 		orderClause := query.orderBy[i]
 
 		inline := NewQuery(query.Model)
-		inline.AppendSelect(orderClause.field)
+		inline.Select(orderClause.field)
 		err = inline.Where(IdField(), Equals, Value(cursor))
 		if err != nil {
 			return err
@@ -647,7 +656,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	}
 
 	if len(query.selection) == 0 {
-		query.AppendSelect(AllFields())
+		query.Select(AllFields())
 	}
 
 	selection = strings.Join(query.selection, ", ")

@@ -5,12 +5,12 @@ model Collection {
     }
 
     actions {
-        create createCollection() with (name, books.title, books.genres) {
+        create createCollection() with (name, books.title, books.genres, books.author?) {
             @permission(expression: true)
         }
 
         create createCollectionSetGenres() with (name, books.title) {
-            @set(collection.books.genres = ["all", "new"])
+            @set(collection.books.genres = [Genre.All, Genre.New])
             @permission(expression: true)
         }
 
@@ -19,30 +19,71 @@ model Collection {
             @permission(expression: true)
         }
 
-         list listEqualsCollection() {
-            @where(collection.books.genres == ["fantasy", "science fiction"])
+        list listEqualsCollection() {
+            @where(collection.books.genres == [Genre.Fantasy, Genre.ScienceFiction])
             @orderBy(name: asc)
             @permission(expression: true)
         }
 
-         list listInCollection() {
-            @where("fantasy" in collection.books.genres)
+        list listInCollection(genre: Genre) {
+            @where(genre in collection.books.genres)
             @orderBy(name: asc)
             @permission(expression: true)
         }
 
-         list listNotInCollection() {
-            @where("thriller" not in collection.books.genres)
+        list listNotInCollection(genre: Genre) {
+            @where(genre not in collection.books.genres)
+            @orderBy(name: asc)
+            @permission(expression: true)
+        }
+
+        list suggestedCollections() {
+            @where(ctx.identity.person.favouriteGenre in collection.books.genres)
             @orderBy(name: asc)
             @permission(expression: true)
         }
     }
 }
 
+enum Genre {
+    Fantasy
+    ScienceFiction
+    All
+    New
+    Thriller
+    Science
+    School
+    Math
+    EasyReads
+}
+
 model Book {
     fields {
         col Collection
         title Text
-        genres Text[]
+        genres Genre[]
+        author Text?
+    }
+
+    actions {
+        list suggestedBooksByGenre() {
+            @where(ctx.identity.person.favouriteGenre in book.genres)
+            @orderBy(title: asc)
+            @permission(expression: true)
+        }
+
+        list suggestedBooksByAuthor() {
+            @where(book.author in ctx.identity.person.favouriteAuthors)
+            @orderBy(title: asc)
+            @permission(expression: true)
+        }
+    }
+}
+
+model Person {
+    fields {
+        favouriteGenre Genre
+        favouriteAuthors Text[]
+        identity Identity @unique
     }
 }

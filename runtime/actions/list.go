@@ -171,7 +171,6 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if !isAuthorised {
 		return nil, common.NewPermissionError()
 	}
@@ -249,7 +248,7 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 
 	// Select all columns from this table and distinct on id
 	query.AppendDistinctOn(IdField())
-	query.AppendSelect(AllFields())
+	query.Select(AllFields())
 
 	err = query.ApplyPaging(page)
 	if err != nil {
