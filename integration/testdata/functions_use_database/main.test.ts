@@ -11,7 +11,7 @@ test("testing raw kysely", async () => {
   const goodResult = await actions.getPostButOnlyIfItsAfter2020({
     id: postCreatedAfter2020.id,
   });
-  
+
   expect(goodResult?.id).toEqual(postCreatedAfter2020.id);
 
   const postCreatedBefore2020 = await models.post.create({

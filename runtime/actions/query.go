@@ -367,7 +367,7 @@ func (query *QueryBuilder) Select(operand *QueryOperand) {
 	}
 }
 
-// Includes a column in SELECT and unnests it.
+// Includes an array column in SELECT and unnests it.
 func (query *QueryBuilder) SelectUnnested(operand *QueryOperand) {
 	c := fmt.Sprintf("unnest(%s)", operand.toSqlOperandString(query))
 

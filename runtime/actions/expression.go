@@ -252,7 +252,7 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 // Generates a database QueryOperand, either representing a field, inline query, a value or null.
 func generateQueryOperand(resolver *expressions.OperandResolver, args map[string]any) (*QueryOperand, error) {
 	var queryOperand *QueryOperand
-	resolver.IsContextDbColumn()
+
 	switch {
 	case resolver.IsContextDbColumn():
 		// If this is a value from ctx that requires a database read (such as with identity backlinks),
@@ -290,28 +290,6 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 			return nil, err
 		}
 
-		currModel := identityModel
-
-		for i := 1; i < len(fragments)-1; i++ {
-			name := proto.FindField(resolver.Schema.Models, currModel.Name, fragments[i]).Type.ModelName.Value
-			currModel = proto.FindModel(resolver.Schema.Models, name)
-		}
-		currField := proto.FindField(resolver.Schema.Models, currModel.Name, fragments[len(fragments)-1])
-
-		// var currModel *proto.Model
-		// 	var currField *proto.Field
-		// 	for i := 1; i < len(fragments); i++ {
-		// 		fieldTarget = proto.FindField(resolver.Schema.Models, modelTarget.Name, fragments[i])
-		// 		if fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
-		// 			modelTarget = proto.FindModel(resolver.Schema.Models, fieldTarget.Type.ModelName.Value)
-		// 			if modelTarget == nil {
-		// 				return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.Type.ModelName.Value)
-		// 			}
-		// 		}
-		// 	}
-
-		//field := proto.FindField(resolver.Schema.Models, fragments[len(fragments)-2], fragments[len(fragments)-1])
-
 		selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1])
 
 		// If there are no matches in the subquery then null will be returned, but null
@@ -322,6 +300,13 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 		if err != nil {
 			return nil, err
 		}
+
+		currModel := identityModel
+		for i := 1; i < len(fragments)-1; i++ {
+			name := proto.FindField(resolver.Schema.Models, currModel.Name, fragments[i]).Type.ModelName.Value
+			currModel = proto.FindModel(resolver.Schema.Models, name)
+		}
+		currField := proto.FindField(resolver.Schema.Models, currModel.Name, fragments[len(fragments)-1])
 
 		if currField.Type.Repeated {
 			query.SelectUnnested(selectField)
