@@ -267,9 +267,9 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 		// Remove the ctx fragment
 		fragments = fragments[1:]
 
-		model := proto.FindModel(resolver.Schema.Models, strcase.ToCamel(fragments[0]))
-		ctxScope := NewModelScope(resolver.Context, model, resolver.Schema)
-		query := NewQuery(model)
+		identityModel := proto.FindModel(resolver.Schema.Models, strcase.ToCamel(fragments[0]))
+		ctxScope := NewModelScope(resolver.Context, identityModel, resolver.Schema)
+		query := NewQuery(identityModel)
 
 		identityId := ""
 		if auth.IsAuthenticated(resolver.Context) {
@@ -301,7 +301,18 @@ func generateQueryOperand(resolver *expressions.OperandResolver, args map[string
 			return nil, err
 		}
 
-		query.AppendSelect(selectField)
+		currModel := identityModel
+		for i := 1; i < len(fragments)-1; i++ {
+			name := proto.FindField(resolver.Schema.Models, currModel.Name, fragments[i]).Type.ModelName.Value
+			currModel = proto.FindModel(resolver.Schema.Models, name)
+		}
+		currField := proto.FindField(resolver.Schema.Models, currModel.Name, fragments[len(fragments)-1])
+
+		if currField.Type.Repeated {
+			query.SelectUnnested(selectField)
+		} else {
+			query.Select(selectField)
+		}
 
 		queryOperand = InlineQuery(query, selectField)
 

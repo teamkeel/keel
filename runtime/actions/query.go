@@ -359,7 +359,7 @@ func (query *QueryBuilder) AddWriteValues(values map[string]*QueryOperand) {
 }
 
 // Includes a column in SELECT.
-func (query *QueryBuilder) AppendSelect(operand *QueryOperand) {
+func (query *QueryBuilder) Select(operand *QueryOperand) {
 	c := operand.toSqlOperandString(query)
 
 	if !lo.Contains(query.selection, c) {
@@ -367,15 +367,24 @@ func (query *QueryBuilder) AppendSelect(operand *QueryOperand) {
 	}
 }
 
+// Includes an array column in SELECT and unnests it.
+func (query *QueryBuilder) SelectUnnested(operand *QueryOperand) {
+	c := fmt.Sprintf("unnest(%s)", operand.toSqlOperandString(query))
+
+	if !lo.Contains(query.selection, c) {
+		query.selection = append(query.selection, c)
+	}
+}
+
 // Include a clause in SELECT.
-func (query *QueryBuilder) AppendSelectClause(clause string) {
+func (query *QueryBuilder) SelectClause(clause string) {
 	if !lo.Contains(query.selection, clause) {
 		query.selection = append(query.selection, clause)
 	}
 }
 
 // Include a column in this table in DISTINCT ON.
-func (query *QueryBuilder) AppendDistinctOn(operand *QueryOperand) {
+func (query *QueryBuilder) DistinctOn(operand *QueryOperand) {
 	c := operand.toSqlOperandString(query)
 
 	if !lo.Contains(query.distinctOn, c) {
@@ -455,7 +464,7 @@ func (query *QueryBuilder) AppendOrderBy(operand *QueryOperand, direction string
 		existing.direction = strings.ToUpper(direction)
 	} else {
 		query.orderBy = append(query.orderBy, order)
-		query.AppendDistinctOn(operand)
+		query.DistinctOn(operand)
 	}
 }
 
@@ -496,13 +505,13 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 		orderByClausesAsSql = append(orderByClausesAsSql, fmt.Sprintf("%s %s", o.field.toSqlOperandString(query), o.direction))
 	}
 	hasNext := fmt.Sprintf("CASE WHEN LEAD(%s) OVER (ORDER BY %s) IS NOT NULL THEN true ELSE false END AS hasNext", IdField().toSqlOperandString(query), strings.Join(orderByClausesAsSql, ", "))
-	query.AppendSelectClause(hasNext)
+	query.SelectClause(hasNext)
 
 	// We add a subquery to the select list that fetches the total count of records
 	// matching the constraints specified by the main query without the offset/limit applied
 	// This is actually more performant than COUNT(*) OVER() [window function]
 	totalResults := fmt.Sprintf("(%s) AS totalCount", query.countQuery())
-	query.AppendSelectClause(totalResults)
+	query.SelectClause(totalResults)
 	// Because we are essentially performing the same query again within the subquery, we need to duplicate the query parameters again as they will be used twice in the course of the whole query
 	query.args = append(query.args, query.args...)
 
@@ -546,7 +555,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 			orderClause := query.orderBy[j]
 
 			inline := NewQuery(query.Model)
-			inline.AppendSelect(orderClause.field)
+			inline.Select(orderClause.field)
 			err = inline.Where(IdField(), Equals, Value(cursor))
 			if err != nil {
 				return err
@@ -562,7 +571,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 		orderClause := query.orderBy[i]
 
 		inline := NewQuery(query.Model)
-		inline.AppendSelect(orderClause.field)
+		inline.Select(orderClause.field)
 		err = inline.Where(IdField(), Equals, Value(cursor))
 		if err != nil {
 			return err
@@ -647,7 +656,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	}
 
 	if len(query.selection) == 0 {
-		query.AppendSelect(AllFields())
+		query.Select(AllFields())
 	}
 
 	selection = strings.Join(query.selection, ", ")

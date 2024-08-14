@@ -126,7 +126,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 				selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1])
 
-				identityQuery.AppendSelect(selectField)
+				identityQuery.Select(selectField)
 
 				row.values[field] = InlineQuery(identityQuery, selectField)
 

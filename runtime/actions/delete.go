@@ -38,8 +38,8 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 		if err != nil {
 			return nil, err
 		}
-		authQuery.AppendSelect(IdField())
-		authQuery.AppendDistinctOn(IdField())
+		authQuery.Select(IdField())
+		authQuery.DistinctOn(IdField())
 		rows, err := authQuery.SelectStatement().ExecuteToSingle(scope.Context)
 		if err != nil {
 			return nil, err

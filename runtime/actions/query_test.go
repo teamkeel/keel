@@ -3204,12 +3204,184 @@ var testCases = []testCase{
 			LIMIT ?`,
 		expectedArgs: []any{"science", "tech", "science", "tech", 50},
 	},
+	{
+		name: "list_nested_array_expression_in",
+		keelSchema: `
+			model Collection {
+				fields {
+					name Text
+					books Book[]
+				}
+				actions {
+					list listInCollection(genre: Text) {
+						@where(genre in collection.books.genres)
+						@orderBy(name: asc)
+					}
+				}
+			}
+			model Book {
+				fields {
+					col Collection
+					genres Text[]
+				}
+			}`,
+		actionName: "listInCollection",
+		input:      map[string]any{"where": map[string]any{"genre": "fantasy"}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("collection"."name", "collection"."id") "collection".*, 
+				CASE WHEN LEAD("collection"."id") OVER (ORDER BY "collection"."name" ASC, "collection"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("collection"."name", "collection"."id")) 
+					FROM "collection" 
+					LEFT JOIN "book" AS "collection$books" ON "collection$books"."col_id" = "collection"."id" 
+					WHERE ? = ANY("collection$books"."genres")) AS totalCount 
+			FROM "collection" 
+			LEFT JOIN "book" AS "collection$books" ON "collection$books"."col_id" = "collection"."id" 
+			WHERE ? = ANY("collection$books"."genres") 
+			ORDER BY "collection"."name" ASC, "collection"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"fantasy", "fantasy", 50},
+	},
+	{
+		name: "list_nested_array_expression_not_in",
+		keelSchema: `
+			model Collection {
+				fields {
+					name Text
+					books Book[]
+				}
+				actions {
+					list listInCollection(genre: Text) {
+						@where(genre not in collection.books.genres)
+						@orderBy(name: asc)
+					}
+				}
+			}
+			model Book {
+				fields {
+					col Collection
+					genres Text[]
+				}
+			}`,
+		actionName: "listInCollection",
+		input:      map[string]any{"where": map[string]any{"genre": "fantasy"}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("collection"."name", "collection"."id") "collection".*, 
+				CASE WHEN LEAD("collection"."id") OVER (ORDER BY "collection"."name" ASC, "collection"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("collection"."name", "collection"."id")) 
+					FROM "collection" 
+					LEFT JOIN "book" AS "collection$books" ON "collection$books"."col_id" = "collection"."id" 
+					WHERE (NOT ? = ANY("collection$books"."genres") OR "collection$books"."genres" IS NOT DISTINCT FROM NULL)) AS totalCount 
+			FROM "collection" 
+			LEFT JOIN "book" AS "collection$books" ON "collection$books"."col_id" = "collection"."id" 
+			WHERE (NOT ? = ANY("collection$books"."genres") OR "collection$books"."genres" IS NOT DISTINCT FROM NULL) 
+			ORDER BY "collection"."name" ASC, "collection"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"fantasy", "fantasy", 50},
+	},
+	{
+		name: "list_nested_array_expression_not_in",
+		keelSchema: `
+			model Collection {
+				fields {
+					name Text
+					books Book[]
+				}
+				actions {
+					list suggestedCollections() {
+						@where(ctx.identity.person.favouriteGenre in collection.books.genres)
+						@orderBy(name: asc)
+						@permission(expression: true)
+					}
+				}
+			}
+			model Book {
+				fields {
+					col Collection
+					genres Text[]
+				}
+			}
+			model Person {
+				fields {
+					favouriteGenre Text
+					identity Identity @unique
+				}
+			}`,
+		actionName: "suggestedCollections",
+		input:      map[string]any{},
+		identity:   identity,
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("collection"."name", "collection"."id") "collection".*, 
+				CASE WHEN LEAD("collection"."id") OVER (ORDER BY "collection"."name" ASC, "collection"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, (
+					SELECT COUNT(DISTINCT ("collection"."name", "collection"."id")) 
+					FROM "collection" LEFT JOIN "book" AS "collection$books" ON "collection$books"."col_id" = "collection"."id" 
+					WHERE (SELECT "identity$person"."favourite_genre" FROM "identity" LEFT JOIN "person" AS "identity$person" ON "identity$person"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$person"."favourite_genre" IS DISTINCT FROM NULL) = ANY("collection$books"."genres")) AS totalCount 
+				FROM "collection" 
+				LEFT JOIN "book" AS "collection$books" ON "collection$books"."col_id" = "collection"."id" 
+				WHERE (SELECT "identity$person"."favourite_genre" 
+						FROM "identity" 
+						LEFT JOIN "person" AS "identity$person" ON "identity$person"."identity_id" = "identity"."id" 
+						WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$person"."favourite_genre" IS DISTINCT FROM NULL) = ANY("collection$books"."genres") 
+				ORDER BY "collection"."name" ASC, "collection"."id" ASC LIMIT ?`,
+		expectedArgs: []any{identity["id"].(string), identity["id"].(string), 50},
+	},
+	{
+		name: "list_nested_array_expression_not_in1",
+		keelSchema: `
+			model Collection {
+				fields {
+					name Text
+					books Book[]
+				}
+			}
+			model Book {
+				fields {
+					col Collection
+					genre Text
+				}
+				actions {
+					list suggestedBooks() {
+						@where(book.genre in ctx.identity.person.favouriteGenres)
+						@permission(expression: true)
+					}
+				}
+			}
+			model Person {
+				fields {
+					favouriteGenres Text[]
+					identity Identity @unique
+				}
+			}`,
+		actionName: "suggestedBooks",
+		input:      map[string]any{},
+		identity:   identity,
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("book"."id") "book".*, 
+				CASE WHEN LEAD("book"."id") OVER (ORDER BY "book"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, (
+					SELECT COUNT(DISTINCT "book"."id") 
+					FROM "book" 
+					WHERE "book"."genre" IN (
+						SELECT unnest("identity$person"."favourite_genres") 
+						FROM "identity" 
+						LEFT JOIN "person" AS "identity$person" ON "identity$person"."identity_id" = "identity"."id" 
+						WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$person"."favourite_genres" IS DISTINCT FROM NULL)) AS totalCount 
+				FROM "book" 
+				WHERE "book"."genre" IN (
+					SELECT unnest("identity$person"."favourite_genres") 
+					FROM "identity" 
+					LEFT JOIN "person" AS "identity$person" ON "identity$person"."identity_id" = "identity"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$person"."favourite_genres" IS DISTINCT FROM NULL) 
+				ORDER BY "book"."id" ASC LIMIT ?`,
+		expectedArgs: []any{identity["id"].(string), identity["id"].(string), 50},
+	},
 }
 
 func TestQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range testCases {
 		testCase := testCase
+
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()
@@ -3296,7 +3468,7 @@ func TestInsertStatement(t *testing.T) {
 	model := &proto.Model{Name: "Person"}
 	query := actions.NewQuery(model)
 	query.AddWriteValues(map[string]*actions.QueryOperand{"name": actions.Value("Fred")})
-	query.AppendSelect(actions.AllFields())
+	query.Select(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
 	stmt := query.InsertStatement(context.Background())
 
@@ -3313,7 +3485,7 @@ func TestUpdateStatement(t *testing.T) {
 	query.AddWriteValue(actions.Field("name"), actions.Value("Fred"))
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
-	query.AppendSelect(actions.AllFields())
+	query.Select(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
 	stmt := query.UpdateStatement(context.Background())
 
@@ -3328,7 +3500,7 @@ func TestDeleteStatement(t *testing.T) {
 	query := actions.NewQuery(model)
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
-	query.AppendSelect(actions.AllFields())
+	query.Select(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
 	stmt := query.DeleteStatement(context.Background())
 
@@ -3346,7 +3518,7 @@ func TestInsertStatementWithAuditing(t *testing.T) {
 	model := &proto.Model{Name: "Person"}
 	query := actions.NewQuery(model)
 	query.AddWriteValues(map[string]*actions.QueryOperand{"name": actions.Value("Fred")})
-	query.AppendSelect(actions.AllFields())
+	query.Select(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
 	stmt := query.InsertStatement(ctx)
 
@@ -3374,7 +3546,7 @@ func TestUpdateStatementWithAuditing(t *testing.T) {
 	query.AddWriteValue(actions.Field("name"), actions.Value("Fred"))
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
-	query.AppendSelect(actions.AllFields())
+	query.Select(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
 	stmt := query.UpdateStatement(ctx)
 
@@ -3401,7 +3573,7 @@ func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
 	query.AddWriteValue(actions.Field("name"), actions.Value("Fred"))
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
-	query.AppendSelect(actions.AllFields())
+	query.Select(actions.AllFields())
 	stmt := query.UpdateStatement(ctx)
 
 	expected := `
@@ -3425,7 +3597,7 @@ func TestDeleteStatementWithAuditing(t *testing.T) {
 	query := actions.NewQuery(model)
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
-	query.AppendSelect(actions.AllFields())
+	query.Select(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
 	stmt := query.DeleteStatement(ctx)
 
@@ -3450,7 +3622,7 @@ func TestDeleteStatementNoReturnWithAuditing(t *testing.T) {
 	query := actions.NewQuery(model)
 	err := query.Where(actions.IdField(), actions.Equals, actions.Value("1234"))
 	require.NoError(t, err)
-	query.AppendSelect(actions.AllFields())
+	query.Select(actions.AllFields())
 	stmt := query.DeleteStatement(ctx)
 
 	expected := `

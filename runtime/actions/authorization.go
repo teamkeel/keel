@@ -224,7 +224,7 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 	}
 
 	// Check that the number of authorised rows matches
-	query.AppendSelectClause(fmt.Sprintf("COUNT(DISTINCT %s) = %v AS authorised", IdField().toSqlOperandString(query), len(idsToAuthorise)))
+	query.SelectClause(fmt.Sprintf("COUNT(DISTINCT %s) = %v AS authorised", IdField().toSqlOperandString(query), len(idsToAuthorise)))
 
 	return query.SelectStatement(), nil
 }
