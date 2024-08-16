@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "arraySize": { "type": "number" },
+    "iterations": { "type": "number" },
+    "rollback": { "type": "boolean" }
+  },
+  "additionalProperties": false,
+  "required": ["iterations", "arraySize", "rollback"]
+}
