@@ -10,7 +10,8 @@ import (
 )
 
 type ExecuteQueryResult struct {
-	Rows []map[string]any
+	Columns []string         `json:"columns"`
+	Rows    []map[string]any `json:"rows"`
 }
 
 type ExecuteStatementResult struct {

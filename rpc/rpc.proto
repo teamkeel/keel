@@ -19,6 +19,7 @@ message SQLQueryInput {
 	string projectID = 1;
 	string environmentID = 2;
 	string query = 3;
+	optional bool writeMode = 4;
 }
 
 message SQLQueryResponse {

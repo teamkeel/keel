@@ -27,9 +27,6 @@ func (db *GormDB) ExecuteQuery(ctx context.Context, sqlQuery string, args ...any
 	defer span.End()
 
 	span.SetAttributes(attribute.String("sql", sqlQuery))
-
-	rows := []map[string]any{}
-
 	conn := db.db.WithContext(ctx)
 
 	// Check for a transaction
@@ -37,14 +34,31 @@ func (db *GormDB) ExecuteQuery(ctx context.Context, sqlQuery string, args ...any
 		conn = v
 	}
 
-	err := conn.Raw(sqlQuery, args...).Scan(&rows).Error
+	rows, err := conn.Raw(sqlQuery, args...).Rows()
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return nil, toDbError(err)
+	}
+	defer rows.Close()
+
+	columns, err := rows.Columns()
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
 		return nil, toDbError(err)
 	}
 
-	return &ExecuteQueryResult{Rows: rows}, nil
+	results := []map[string]any{}
+	if rows.Next() {
+		if err := conn.ScanRows(rows, &results); err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+			return nil, toDbError(err)
+		}
+	}
+
+	return &ExecuteQueryResult{Rows: results, Columns: columns}, nil
 }
 
 func (db *GormDB) ExecuteStatement(ctx context.Context, sqlQuery string, args ...any) (*ExecuteStatementResult, error) {
