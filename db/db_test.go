@@ -137,6 +137,7 @@ func TestDbTransactionRollback(t *testing.T) {
 		result, err := db.ExecuteQuery(context.Background(), "SELECT * FROM test_local_transaction_rollback_table")
 		assert.NoError(t, err)
 		assert.Equal(t, []map[string]any{}, result.Rows)
+		assert.Equal(t, []string{"id", "foo"}, result.Columns)
 
 		// Return an error and rollback
 		return errors.New("my error message")
@@ -181,6 +182,7 @@ func TestDbStatements(t *testing.T) {
 
 	result, err := db.ExecuteQuery(ctx, "SELECT * FROM person ORDER BY id ASC")
 	assert.NoError(t, err)
+	assert.Equal(t, []string{"id", "name", "married", "favourite_number", "date"}, result.Columns)
 	expectedData := []map[string]interface{}{
 		{"date": time.Date(2013, time.March, 1, 9, 10, 59, 897000, time.Local), "favourite_number": int32(10), "id": "id1", "married": true, "name": "Keel Keelson"},
 		{"date": time.Date(2022, time.April, 3, 12, 1, 33, 567000, time.Local), "favourite_number": int32(1), "id": "id2", "married": false, "name": "Agent Smith"},
