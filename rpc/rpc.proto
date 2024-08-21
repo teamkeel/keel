@@ -86,99 +86,109 @@ service API {
 
 message ListToolsRequest {}
 message ListToolsResponse {
-	repeated ToolConfig tools = 1;
+	repeated ActionConfig tools = 1;
 }
 
 message ModelConfig {
 	string name = 1; // the model's name
 	optional string display_name = 2;
-	ModelCapabilities capabilities = 3;
 
-	repeated ToolConfig lists = 4;
-	ToolConfig get = 5;
+	repeated ActionConfig lists = 4;
+	ActionConfig get = 5;
 }
 
-message ModelCapabilities {
+message Capabilities {
   	bool comments = 1;
   	bool audit = 2;
+	// Export data
+	// TBC more options
 }
 
-message ToolConfig {
-	string name = 1;
-	optional string icon = 2;
+message ActionConfig {
+	string id = 1;
+	string name = 2; // Sentence case the action name e.g Get order
+	optional string icon = 3; // Skip for auto generated
 
-	string action_name = 3;
-	proto.ActionType action_type = 4;
-	proto.ActionImplementation implementation = 5;
+	string action_name = 4; // The action in the schema e.g getOrder
+	proto.ActionType action_type = 5;
+	proto.ActionImplementation implementation = 6;
 
+	repeated RequestFieldConfig inputs = 7;
+	repeated ResponseFieldConfig response = 8;
 
-	repeated FieldConfig inputs = 6;
-	repeated FieldConfig response = 7;
+	optional StringTemplate title = 9; // e.g. "{firstName} {lastName}" template syntax TBC. Default is if the first field is a text field use that otherwise empty.
+	optional StringTemplate help_text = 10; // Template language support markdown
+	string entity_single = 11; // Infer from model name
+	string entity_plural = 12; // Infer from model name
 
-	optional StringTemplate title = 8;
-	optional StringTemplate secondary_field = 9;
-	optional StringTemplate help_text = 10;
-	optional string entity_single = 11;
-	optional string entity_plural = 12;
+	Capabilities capabilities = 13;
 
 	// List specific
-	optional CursorPaginationConfig pagination = 13;
+	repeated ActionLink related_actions = 14; // aka views
+	optional CursorPaginationConfig pagination = 15; // Support offset and cursor
+	// Views
 
 	// Get specific
-	repeated ExternalLink links = 14;
-	repeated ActionLink related_tools = 15;
-	repeated EmbeddedActionLink embedded_tools = 16;
+	repeated ExternalLink links = 16; // Nothing for auto generated
+	repeated ActionLink entry_activity_actions = 17; // Things you can do to this entry
+	// ^^ For get and list
+	// All update, deletes, creates, read and write on the same model
+	// Empty for mutations
+
+	repeated ActionLink embedded_actions = 18;
+
+	// Mutation specific
+	optional ActionLink get_entry_action = 19; // the action to use to get an entry on this model. Default to a get action on the same model
+	// ^ Used for fetching the record for prefilling a mutation, the link for clicking a row in a get and the action to call after a mutation
 }
 
-message FieldConfig {
-	message RequestFieldConfig {
-		ActionLink lookup_action = 1;
-		OverrideValue override_value = 2;
-	}
-
-	message ResponseFieldConfig {
-		bool sortable = 1;
-		PreviewLink preview = 2; // for relation fields only
-		LinkConfig link = 3;
-		bool image_preview = 4; // for file fields only, display images inline
-	}
-
+message RequestFieldConfig {
+	// common fields
 	JsonPath field_location = 1;
 	proto.Type field_type = 2;
-
 	string display_name = 3;
 	int32 display_order = 4;
-	bool hidden = 5;
+	bool visible = 5;
 	optional StringTemplate help_text = 6;
 
-	oneof config {
-		RequestFieldConfig request = 7;
-		ResponseFieldConfig response = 8;
-	}
+	optional ActionLink lookup_action = 7; // For relation field - A list action with the fewest required inputs on the target model
+	optional ActionLink get_entry_action = 8; // For loading a preview
+
+	bool locked = 9;
+	optional DefaultValue default_value = 10;
+	optional StringTemplate palceholder = 11;
 }
 
-message OverrideValue {
-	bool editable = 1;
+message ResponseFieldConfig {
+	// common fields
+	JsonPath field_location = 1;
+	proto.Type field_type = 2;
+	string display_name = 3; // default to sentence case 
+	int32 display_order = 4;
+	bool visible = 5;
+	optional StringTemplate help_text = 6;
+
+	bool sortable = 7; // Based on @sortable()
+	optional ActionLink link = 8; // Set if this field is a FK and link to a get/list action on the target model
+	bool image_preview = 9; // for file fields only, display images inline
+}
+
+message DefaultValue {
 	oneof value {
-		string string = 2;
-		int32 integer = 3;
-		float float = 4;
-		bool bool = 5;
+		string string = 1;
+		int32 integer = 2;
+		float float = 3;
+		bool bool = 4;
 	}
 }
 
 message StringTemplate {
 	string template = 1;
+	bool markdown = 2;
 }
 
 message JsonPath {
 	string path = 1;
-}
-
-message EmbeddedActionLink {
-	string title = 1;
-	repeated ToolConfig views = 2;
-	DataMapping data = 3;
 }
 
 message ExternalLink {
@@ -187,24 +197,20 @@ message ExternalLink {
 	optional string icon = 3;
 }
 
-message PreviewLink {
-	StringTemplate preview = 1;
-	ActionLink link = 2;
-}
-
 message ActionLink {
-	string operation_id = 1;
-	proto.ActionType action_type = 2;
-	DataMapping data = 3;
-}
-
-message LinkConfig {
-	string action = 1;
-	string target = 2;
-	DataMapping data = 3;
+	string tool_id = 1;
+	DataMapping data = 2; // The shape of this data is the input for the target action (i.e. 'where' and not 'values') but with JSON paths for field values. Is a full object tree
+	// e.g. 
+	// {
+	// 	"where": {
+	// 		"id": "$.id" // JSON path on the current action repsonse. Can be recursive
+	// 	}
+	// }
+	optional StringTemplate title = 3; // Empty by default
 }
 
 message CursorPaginationConfig {
+	// TBD
 	message FieldConfig {
 		string request_input = 1;
 		JsonPath response_field = 2;
