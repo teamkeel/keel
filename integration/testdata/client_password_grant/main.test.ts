@@ -9,16 +9,23 @@ beforeEach(resetDatabase);
 test("authenticateWithPassword - with default token stores", async () => {
   const client = new APIClient({ baseUrl });
 
-  await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
-  expect(await client.auth.expiresAt()).not.toBeNull();
-  expect((await client.auth.expiresAt()!) > new Date()).toBeTruthy();
+  const res = await client.auth.authenticateWithPassword("user@example.com", "1234");
+  expect(res.data?.identityCreated).toBeTruthy();
+  expect(res.error).toBeUndefined();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
+  expect((await client.auth.expiresAt()).data).not.toBeNull();
+  expect((await client.auth.expiresAt()).data! > new Date()).toBeTruthy();
   expect(client.auth.accessToken.get()).not.toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
 
-  await client.auth.authenticateWithPassword("user@example.com", "oops");
-  expect(await client.auth.isAuthenticated()).not.toBeTruthy();
-  expect(await client.auth.expiresAt()).toBeNull();
+  const res2 =  await client.auth.authenticateWithPassword("user@example.com", "oops");
+  expect(res2.data).toBeUndefined();
+  expect(res2.error?.type).toEqual("unauthorized");
+  expect(res2.error?.message).toEqual("invalid_client");
+  expect((await client.auth.isAuthenticated()).data).toBeFalsy();
+  expect((await client.auth.isAuthenticated()).error).toBeUndefined();
+  expect((await client.auth.expiresAt()).data).toBeNull();
+  expect((await client.auth.expiresAt()).error).toBeUndefined();
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).toBeNull();
 
@@ -26,15 +33,17 @@ test("authenticateWithPassword - with default token stores", async () => {
   const response1 = await client.api.queries.allPosts();
   expect(response1.error!.type).toEqual("forbidden");
 
-  await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
-  expect(await client.auth.expiresAt()).not.toBeNull();
-  expect((await client.auth.expiresAt()!) > new Date()).toBeTruthy();
+  const res3 =  await client.auth.authenticateWithPassword("user@example.com", "1234");
+  expect(res3.data?.identityCreated).toBeFalsy();
+  expect(res3.error).toBeUndefined();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
+  expect((await client.auth.expiresAt()).data).not.toBeNull();
+  expect((await client.auth.expiresAt()).data! > new Date()).toBeTruthy();
   expect(client.auth.accessToken.get()).not.toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
 
-  const response2 = await client.api.queries.allPosts();
-  expect(response2.data?.results).toHaveLength(1);
+  const posts = await client.api.queries.allPosts();
+  expect(posts.data?.results).toHaveLength(1);
 });
 
 test("authenticateWithPassword - with custom token stores", async () => {
@@ -47,10 +56,12 @@ test("authenticateWithPassword - with custom token stores", async () => {
     refreshTokenStore: refreshTokenStore,
   });
 
-  await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
-  expect(await client.auth.expiresAt()).not.toBeNull();
-  expect((await client.auth.expiresAt()!) > new Date()).toBeTruthy();
+  const res = await client.auth.authenticateWithPassword("user@example.com", "1234");
+  expect(res.data?.identityCreated).toBeTruthy();
+  expect(res.error).toBeUndefined();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
+  expect((await client.auth.expiresAt()).data).not.toBeNull();
+  expect((await client.auth.expiresAt()).data! > new Date()).toBeTruthy();
   expect(accessTokenStore.get()).not.toBeNull();
   expect(refreshTokenStore.get()).not.toBeNull();
   expect(client.auth.accessToken.get()).not.toBeNull();
@@ -58,9 +69,12 @@ test("authenticateWithPassword - with custom token stores", async () => {
   expect(accessTokenStore.get()).toEqual(client.auth.accessToken.get());
   expect(refreshTokenStore.get()).toEqual(client.auth.refreshToken.get());
 
-  await client.auth.authenticateWithPassword("user@example.com", "oops");
-  expect(await client.auth.isAuthenticated()).not.toBeTruthy();
-  expect(await client.auth.expiresAt()).toBeNull();
+  const res2 = await client.auth.authenticateWithPassword("user@example.com", "oops");
+  expect(res2.data).toBeUndefined();
+  expect(res2.error?.type).toEqual("unauthorized");
+  expect(res2.error?.message).toEqual("invalid_client");
+  expect((await client.auth.isAuthenticated()).data).toBeFalsy();
+  expect((await client.auth.expiresAt()).data).toBeNull();
   expect(accessTokenStore.get()).toBeNull();
   expect(refreshTokenStore.get()).toBeNull();
   expect(client.auth.accessToken.get()).toBeNull();
@@ -72,10 +86,12 @@ test("authenticateWithPassword - with custom token stores", async () => {
   const response1 = await client.api.queries.allPosts();
   expect(response1.error!.type).toEqual("forbidden");
 
-  await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
-  expect(await client.auth.expiresAt()).not.toBeNull();
-  expect((await client.auth.expiresAt()!) > new Date()).toBeTruthy();
+  const res3 = await client.auth.authenticateWithPassword("user@example.com", "1234");
+  expect(res3.data?.identityCreated).toBeFalsy();
+  expect(res3.error).toBeUndefined();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
+  expect((await client.auth.expiresAt()).data).not.toBeNull();
+  expect((await client.auth.expiresAt()).data! > new Date()).toBeTruthy();
   expect(accessTokenStore.get()).not.toBeNull();
   expect(refreshTokenStore.get()).not.toBeNull();
   expect(client.auth.accessToken.get()).not.toBeNull();
@@ -95,8 +111,10 @@ test("valid access token", async () => {
     accessTokenStore: accessTokenStore,
   });
 
-  await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
+  const res = await client.auth.authenticateWithPassword("user@example.com", "1234");
+  expect(res.data?.identityCreated).toBeTruthy();
+  expect(res.error).toBeUndefined();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
 
   expect(accessTokenStore.get()).not.toBeNull();
   expect(accessTokenStore.get()).not.toEqual("");
@@ -117,8 +135,10 @@ test("valid refresh token", async () => {
     refreshTokenStore: refreshTokenStore,
   });
 
-  await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
+  const res = await client.auth.authenticateWithPassword("user@example.com", "1234");
+  expect(res.data?.identityCreated).toBeTruthy();
+  expect(res.error).toBeUndefined();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
 
   expect(refreshTokenStore.get()).not.toBeNull();
   expect(refreshTokenStore.get()).not.toEqual("");
@@ -144,7 +164,7 @@ test("refreshing successfully", async () => {
   expect(refreshToken).not.toBeNull();
 
   const expiry1 = client.auth.expiresAt();
-  expect(expiry1).not.toBeNull();
+  expect(expiry1.data).not.toBeNull();
 
   await delay(1000); // 1000ms is the smallest increment we can
   const refreshed = await client.auth.refresh();
@@ -156,26 +176,28 @@ test("refreshing successfully", async () => {
   expect(client.auth.refreshToken.get()).not.toEqual(refreshToken);
 
   const expiry2 = client.auth.expiresAt();
-  expect(expiry1?.getTime()).lessThan(expiry2!.getTime());
+  expect(expiry2.data).not.toBeNull();
+  expect(expiry1.data!.getTime()).lessThan(expiry2.data!.getTime());
 });
 
 test("logout successfully", async () => {
   const client = new APIClient({ baseUrl });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
 
   await client.auth.logout();
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).toBeNull();
 
-  expect(await client.auth.expiresAt()).toBeNull();
+  expect((await client.auth.expiresAt()).data).toBeNull();
+  expect((await client.auth.expiresAt()).error).toBeUndefined();
 
-  expect(await client.auth.isAuthenticated()).not.toBeTruthy();
+  expect((await client.auth.isAuthenticated()).data).toBeFalsy();
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).toBeNull();
 
-  expect(await client.auth.refresh()).not.toBeTruthy();
+  expect((await client.auth.refresh()).data).toBeFalsy();
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).toBeNull();
 });
@@ -184,7 +206,7 @@ test("logout revokes refresh token on server successfully", async () => {
   const client = new APIClient({ baseUrl });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
 
   await client.auth.logout();
 
@@ -194,15 +216,16 @@ test("logout revokes refresh token on server successfully", async () => {
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).toBeNull();
 
-  expect(await client.auth.expiresAt()).toBeNull();
-  expect(await client.auth.isAuthenticated()).not.toBeTruthy();
+  expect((await client.auth.expiresAt()).data).toBeNull();
+  expect((await client.auth.isAuthenticated()).data).toBeFalsy();
 
   client.auth.accessToken.set(accessToken);
   client.auth.refreshToken.set(refreshToken);
 
   const refresh = await client.auth.refresh();
-  expect(refresh).not.toBeTruthy();
-  expect(await client.auth.isAuthenticated()).not.toBeTruthy();
+  expect(refresh.data).toBeFalsy();
+  expect(refresh.error).toBeUndefined();
+  expect((await client.auth.isAuthenticated()).data).toBeFalsy();
 
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).toBeNull();
@@ -212,35 +235,35 @@ test("authentication flow with default token store", async () => {
   const client = new APIClient({ baseUrl });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
-  expect(await client.auth.expiresAt()).not.toBeNull();
-  expect((await client.auth.expiresAt()!) > new Date()).toBeTruthy();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
+  expect((await client.auth.expiresAt()).data).not.toBeNull();
+  expect((await client.auth.expiresAt()).data! > new Date()).toBeTruthy();
 
   await client.auth.authenticateWithPassword("user@example.com", "oops");
-  expect(await client.auth.isAuthenticated()).not.toBeTruthy();
-  expect(await client.auth.expiresAt()).toBeNull();
+  expect((await client.auth.isAuthenticated()).data).toBeFalsy();
+  expect((await client.auth.expiresAt()).data).toBeNull();
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
-  expect(await client.auth.expiresAt()).not.toBeNull();
-  expect((await client.auth.expiresAt()!) > new Date()).toBeTruthy();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
+  expect((await client.auth.expiresAt()).data).not.toBeNull();
+  expect((await client.auth.expiresAt()).data! > new Date()).toBeTruthy();
 
   const expiry1 = client.auth.expiresAt();
 
   await delay(1000);
   const refreshed = await client.auth.refresh();
-  expect(refreshed).toBeTruthy();
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
+  expect(refreshed.data).toBeTruthy();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
 
   const expiry2 = client.auth.expiresAt();
-  expect(expiry1?.getTime()).lessThan(expiry2!.getTime());
+  expect(expiry1.data?.getTime()).lessThan(expiry2.data!.getTime());
 
   await client.auth.logout();
-  expect(await client.auth.isAuthenticated()).not.toBeTruthy();
+  expect((await client.auth.isAuthenticated()).data).toBeFalsy();
 
   const refreshed2 = await client.auth.refresh();
-  expect(refreshed2).not.toBeTruthy();
-  expect(await client.auth.isAuthenticated()).not.toBeTruthy();
+  expect(refreshed2.data).toBeFalsy();
+  expect((await client.auth.isAuthenticated()).data).toBeFalsy();
 });
 
 test("volatile access token - refreshes correctly on isAuthenticated()", async () => {
@@ -252,7 +275,7 @@ test("volatile access token - refreshes correctly on isAuthenticated()", async (
   });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
   expect(client.auth.accessToken.get()).not.toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
 
@@ -263,12 +286,12 @@ test("volatile access token - refreshes correctly on isAuthenticated()", async (
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
 
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
   expect(client.auth.accessToken.get()).not.toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
 });
 
-test("volatile access token - refreshes correctly refresh()", async () => {
+test("volatile access token - refreshes correctly on refresh()", async () => {
   const refreshTokenStore = new TestTokenStore();
 
   let client = new APIClient({
@@ -277,7 +300,7 @@ test("volatile access token - refreshes correctly refresh()", async () => {
   });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
   expect(client.auth.accessToken.get()).not.toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
 
@@ -288,32 +311,7 @@ test("volatile access token - refreshes correctly refresh()", async () => {
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
 
-  expect(await client.auth.refresh()).toBeTruthy();
-  expect(client.auth.accessToken.get()).not.toBeNull();
-  expect(client.auth.refreshToken.get()).not.toBeNull();
-});
-
-test("volatile access token - refreshes correctly refresh()", async () => {
-  const refreshTokenStore = new TestTokenStore();
-
-  let client = new APIClient({
-    baseUrl,
-    refreshTokenStore: refreshTokenStore,
-  });
-
-  await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
-  expect(client.auth.accessToken.get()).not.toBeNull();
-  expect(client.auth.refreshToken.get()).not.toBeNull();
-
-  client = new APIClient({
-    baseUrl,
-    refreshTokenStore: refreshTokenStore,
-  });
-  expect(client.auth.accessToken.get()).toBeNull();
-  expect(client.auth.refreshToken.get()).not.toBeNull();
-
-  expect(await client.auth.refresh()).toBeTruthy();
+  expect((await client.auth.refresh()).data).toBeTruthy();
   expect(client.auth.accessToken.get()).not.toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
 });
@@ -324,7 +322,7 @@ test("access token expiring and refreshing until refresh token expires", async (
   });
 
   await client.auth.authenticateWithPassword("user@example.com", "1234");
-  expect(await client.auth.isAuthenticated()).toBeTruthy();
+  expect((await client.auth.isAuthenticated()).data).toBeTruthy();
   expect(client.auth.accessToken.get()).not.toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
 
@@ -371,9 +369,17 @@ test("access token expiring and refreshing until refresh token expires", async (
   await delay(2000);
 
   response = await client.api.queries.allPosts();
-  expect(response.error!.type).toEqual("forbidden");
+  expect(response.error!.type).toEqual("unauthorized");
   expect(client.auth.accessToken.get()).toBeNull();
   expect(client.auth.refreshToken.get()).toBeNull();
+
+  await client.auth.authenticateWithPassword("user@example.com", "wrong");
+  expect((await client.auth.isAuthenticated()).data).toBeFalsy();
+  expect(client.auth.accessToken.get()).toBeNull();
+  expect(client.auth.refreshToken.get()).toBeNull();
+
+  response = await client.api.queries.allPosts();
+  expect(response.error!.type).toEqual("forbidden");
 });
 
 class TestTokenStore implements TokenStore {
