@@ -20,12 +20,15 @@ export class Core {
       return this;
     },
     rawRequest: async <T>(action: string, body: any): Promise<APIResult<T>> => {
-      // If necessary, refresh the expired session before calling the action
-      await this.auth.isAuthenticated();
-
-      const token = this.auth.accessToken.get();
-
       try {
+        // If necessary, refresh the expired session before calling the action
+        const isAuth = await this.auth.isAuthenticated();
+        if (isAuth.error) {
+          return isAuth;
+        }
+
+        const token = this.auth.accessToken.get();
+
         const result = await globalThis.fetch(
           stripTrailingSlash(this.config.baseUrl) + "/json/" + action,
           {
@@ -139,9 +142,10 @@ export class Core {
     refreshToken: this.config.refreshTokenStore || new InMemoryStore(),
 
     /**
-     * Returns the list of supported authentication providers and their SSO login URLs.
+     * Returns data field set to the list of supported authentication providers and their SSO login URLs.
+     * Returns error field if an unexpected error occurred.
      */
-    providers: async (): Promise<Provider[]> => {
+    providers: async (): Promise<APIResult<Provider[]>> => {
       const url = new URL(this.config.baseUrl);
       const result = await globalThis.fetch(url.origin + "/auth/providers", {
         method: "GET",
@@ -154,21 +158,26 @@ export class Core {
       if (result.ok) {
         return await result.json();
       } else {
-        throw new Error(
-          "unexpected status code response from /auth/providers: " +
-            result.status
-        );
+        return {
+          error: {
+            message:
+              "unexpected status code response from /auth/providers: " +
+              result.status,
+            type: "unknown",
+          },
+        };
       }
     },
 
     /**
-     * Returns the time at which the session will expire.
+     * Returns data field set to the time at which the session will expire.
+     * Returns error field if an unexpected error occurred.
      */
-    expiresAt: (): Date | null => {
+    expiresAt: (): APIResult<Date | null> => {
       const token = this.auth.accessToken.get();
 
       if (!token) {
-        return null;
+        return { data: null };
       }
 
       let payload;
@@ -176,9 +185,12 @@ export class Core {
         const base64Payload = token.split(".")[1];
         payload = atob(base64Payload);
       } catch (e) {
-        throw new Error(
-          "jwt token could not be parsed: " + (e as Error).message
-        );
+        return {
+          error: {
+            message: "jwt token could not be parsed",
+            type: "unknown",
+          },
+        };
       }
 
       var obj = JSON.parse(payload);
@@ -187,92 +199,130 @@ export class Core {
           exp: number;
         };
 
-        return new Date(exp * 1000);
+        return { data: new Date(exp * 1000) };
       }
 
-      throw new Error("jwt token could not be parsed from json");
+      return {
+        error: {
+          message: "jwt token could not be parsed from json",
+          type: "unknown",
+        },
+      };
     },
 
     /**
-     * Returns true if the session has not expired. If expired, it will attempt to refresh the session from the authentication server.
+     * Returns data field set to true if the session has not expired. If expired, it will attempt to refresh the session from the authentication server.
+     * Returns error field if an unexpected error occurred.
      */
-    isAuthenticated: async () => {
+    isAuthenticated: async (): Promise<APIResult<boolean>> => {
       // If there is no access token, then attempt to refresh it.
+
       if (!this.auth.accessToken.get()) {
-        return await this.auth.refresh();
+        const res = await this.auth.refresh();
+        if (res.error) {
+          return {
+            error: res.error,
+          };
+        }
+
+        return res;
       }
 
       // Consider a token expired EXPIRY_BUFFER_IN_MS earlier than its real expiry time
       const expiresAt = this.auth.expiresAt();
+      if (expiresAt.error) {
+        return {
+          error: expiresAt.error,
+        };
+      }
+
       const isExpired =
-        expiresAt != null
-          ? Date.now() > expiresAt.getTime() - EXPIRY_BUFFER_IN_MS
+        expiresAt.data != null
+          ? Date.now() > expiresAt.data.getTime() - EXPIRY_BUFFER_IN_MS
           : false;
 
       if (isExpired) {
         return await this.auth.refresh();
       }
 
-      return true;
+      return {
+        data: true,
+      };
     },
 
     /**
-     * Authenticate with email and password.
-     * Return true if successfully authenticated.
+     * Authenticates with email and password flow and, if successful, returns data field with result of the authentication.
+     * Returns error field if an error occurred.
      */
-    authenticateWithPassword: async (email: string, password: string) => {
+    authenticateWithPassword: async (
+      input: PasswordFlowInput
+    ): Promise<APIResult<AuthenticationResponse>> => {
       const req: PasswordGrant = {
         grant_type: "password",
-        username: email,
-        password: password,
+        username: input.email,
+        password: input.password,
+        create_if_not_exists: input.createIfNotExists,
       };
 
-      await this.auth.requestToken(req);
+      return await this.auth.requestToken(req);
     },
 
     /**
-     * Authenticate with an ID token.
-     * Return true if successfully authenticated.
+     * Authenticates with the ID Token flow and, if successful, returns data field with result of the authentication.
+     * Returns error field if an error occurred.
      */
-    authenticateWithIdToken: async (idToken: string) => {
+    authenticateWithIdToken: async (
+      input: IDTokenFlowInput
+    ): Promise<APIResult<AuthenticationResponse>> => {
       const req: TokenExchangeGrant = {
         grant_type: "token_exchange",
-        subject_token: idToken,
+        subject_token: input.idToken,
+        create_if_not_exists: input.createIfNotExists,
       };
 
-      await this.auth.requestToken(req);
+      return await this.auth.requestToken(req);
     },
 
     /**
-     * Authenticate with Single Sign On using the auth code received from a successful SSO flow.
-     * Return true if successfully authenticated.
+     * Authenticates with the Single Sign-On flow and, if successful, returns data field with result of the authentication.
+     * Returns error field if an error occurred.
      */
-    authenticateWithSingleSignOn: async (code: string) => {
+    authenticateWithSingleSignOn: async (
+      input: SingleSignOnFlowInput
+    ): Promise<APIResult<AuthenticationResponse>> => {
       const req: AuthorizationCodeGrant = {
         grant_type: "authorization_code",
-        code: code,
+        code: input.code,
       };
 
-      await this.auth.requestToken(req);
+      return await this.auth.requestToken(req);
     },
 
     /**
-     * Forcefully refreshes the session with the authentication server.
+     * Forcefully refreshes the session with the authentication server, and returns data field set to true if the identity is still authenticated.
      * Return true if successfully authenticated.
      */
-    refresh: async () => {
+    refresh: async (): Promise<APIResult<boolean>> => {
       const refreshToken = this.auth.refreshToken.get();
 
       if (!refreshToken) {
-        return false;
+        return {
+          data: false,
+        };
       }
 
-      const authorised = await this.auth.requestToken({
+      const authResponse = await this.auth.requestToken({
         grant_type: "refresh_token",
         refresh_token: refreshToken,
       });
 
-      return authorised;
+      if (authResponse.error) {
+        return authResponse;
+      }
+
+      return {
+        data: true,
+      };
     },
 
     /**
@@ -303,41 +353,104 @@ export class Core {
     /**
      * Creates or refreshes a session with a token request at the authentication server.
      */
-    requestToken: async (req: TokenRequest) => {
-      const url = new URL(this.config.baseUrl);
-      const result = await globalThis.fetch(url.origin + "/auth/token", {
-        method: "POST",
-        cache: "no-cache",
-        headers: {
-          accept: "application/json",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(req),
-      });
+    requestToken: async (
+      req: TokenRequest
+    ): Promise<APIResult<AuthenticationResponse>> => {
+      try {
+        const url = new URL(this.config.baseUrl);
+        const result = await globalThis.fetch(url.origin + "/auth/token", {
+          method: "POST",
+          cache: "no-cache",
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(req),
+        });
 
-      if (result.ok) {
-        const data = await result.json();
+        if (result.ok) {
+          const data = await result.json();
 
-        this.auth.accessToken.set(data.access_token);
-        this.auth.refreshToken.set(data.refresh_token);
+          this.auth.accessToken.set(data.access_token);
+          this.auth.refreshToken.set(data.refresh_token);
 
-        return true;
-      } else {
-        this.auth.accessToken.set(null);
-        this.auth.refreshToken.set(null);
-
-        if (result.status == 401) {
-          return false;
-        } else if (result.status == 400) {
-          const resp = await result.json();
-          throw new TokenError(resp.error, resp.error_description);
+          return {
+            data: {
+              identityCreated: data.identity_created,
+            },
+          };
         } else {
-          throw new Error(
-            "unexpected status code " +
-              result.status +
-              " when requesting a token"
-          );
+          this.auth.accessToken.set(null);
+          this.auth.refreshToken.set(null);
+
+          const requestId = result.headers.get("X-Amzn-Requestid") || undefined;
+
+          let errorMessage = "unknown error";
+
+          try {
+            const resp = await result.json();
+            errorMessage = resp.error_description;
+          } catch (error) {}
+
+          const errorCommon = {
+            message: errorMessage,
+            requestId,
+          };
+
+          switch (result.status) {
+            case 400:
+              return {
+                error: {
+                  ...errorCommon,
+                  type: "bad_request",
+                },
+              };
+            case 401:
+              return {
+                error: {
+                  ...errorCommon,
+                  type: "unauthorized",
+                },
+              };
+            case 403:
+              return {
+                error: {
+                  ...errorCommon,
+                  type: "forbidden",
+                },
+              };
+            case 404:
+              return {
+                error: {
+                  ...errorCommon,
+                  type: "not_found",
+                },
+              };
+            case 500:
+              return {
+                error: {
+                  ...errorCommon,
+                  type: "internal_server_error",
+                },
+              };
+
+            default:
+              return {
+                error: {
+                  ...errorCommon,
+                  type: "unknown",
+                },
+              };
+          }
         }
+      } catch (error) {
+        return {
+          error: {
+            type: "unknown",
+            message: "unknown error",
+            error,
+          },
+        };
       }
     },
   };
