@@ -10,6 +10,7 @@ import (
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/rpc/rpc"
+	"github.com/teamkeel/keel/tools"
 	"github.com/twitchtv/twirp"
 	v1 "go.opentelemetry.io/proto/otlp/trace/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -164,5 +165,21 @@ func (s *Server) GetTrace(ctx context.Context, input *rpc.GetTraceRequest) (*rpc
 
 	return &rpc.GetTraceResponse{
 		Trace: &traceData,
+	}, nil
+}
+
+func (s *Server) ListTools(ctx context.Context, input *rpc.ListToolsRequest) (*rpc.ListToolsResponse, error) {
+	schema, err := GetSchema(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	tools, err := tools.GenerateTools(ctx, schema)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	return &rpc.ListToolsResponse{
+		Tools: tools,
 	}, nil
 }

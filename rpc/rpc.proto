@@ -79,4 +79,149 @@ service API {
 	rpc RunSQLQuery(SQLQueryInput) returns (SQLQueryResponse);
 	rpc GetTrace(GetTraceRequest) returns (GetTraceResponse);
 	rpc ListTraces(ListTracesRequest) returns (ListTracesResponse);
+
+	// Return a list of default generated tools config for interacting with the API
+	rpc ListTools(ListToolsRequest) returns (ListToolsResponse);
+}
+
+message ListToolsRequest {}
+message ListToolsResponse {
+	repeated ToolConfig tools = 1;
+}
+
+message ModelConfig {
+	string name = 1; // the model's name
+	optional string display_name = 2;
+	ModelCapabilities capabilities = 3;
+
+	repeated ToolConfig lists = 4;
+	ToolConfig get = 5;
+}
+
+message ModelCapabilities {
+  	bool comments = 1;
+  	bool audit = 2;
+}
+
+message ToolConfig {
+	string name = 1;
+	optional string icon = 2;
+
+	string action_name = 3;
+	proto.ActionType action_type = 4;
+	proto.ActionImplementation implementation = 5;
+
+
+	repeated FieldConfig inputs = 6;
+	repeated FieldConfig response = 7;
+
+	optional StringTemplate title = 8;
+	optional StringTemplate secondary_field = 9;
+	optional StringTemplate help_text = 10;
+	optional string entity_single = 11;
+	optional string entity_plural = 12;
+
+	// List specific
+	optional CursorPaginationConfig pagination = 13;
+
+	// Get specific
+	repeated ExternalLink links = 14;
+	repeated ActionLink related_tools = 15;
+	repeated EmbeddedActionLink embedded_tools = 16;
+}
+
+message FieldConfig {
+	message RequestFieldConfig {
+		ActionLink lookup_action = 1;
+		OverrideValue override_value = 2;
+	}
+
+	message ResponseFieldConfig {
+		bool sortable = 1;
+		PreviewLink preview = 2; // for relation fields only
+		LinkConfig link = 3;
+		bool image_preview = 4; // for file fields only, display images inline
+	}
+
+	JsonPath field_location = 1;
+	proto.Type field_type = 2;
+
+	string display_name = 3;
+	int32 display_order = 4;
+	bool hidden = 5;
+	optional StringTemplate help_text = 6;
+
+	oneof config {
+		RequestFieldConfig request = 7;
+		ResponseFieldConfig response = 8;
+	}
+}
+
+message OverrideValue {
+	bool editable = 1;
+	oneof value {
+		string string = 2;
+		int32 integer = 3;
+		float float = 4;
+		bool bool = 5;
+	}
+}
+
+message StringTemplate {
+	string template = 1;
+}
+
+message JsonPath {
+	string path = 1;
+}
+
+message EmbeddedActionLink {
+	string title = 1;
+	repeated ToolConfig views = 2;
+	DataMapping data = 3;
+}
+
+message ExternalLink {
+	StringTemplate label = 1;
+	StringTemplate href = 2;
+	optional string icon = 3;
+}
+
+message PreviewLink {
+	StringTemplate preview = 1;
+	ActionLink link = 2;
+}
+
+message ActionLink {
+	string operation_id = 1;
+	proto.ActionType action_type = 2;
+	DataMapping data = 3;
+}
+
+message LinkConfig {
+	string action = 1;
+	string target = 2;
+	DataMapping data = 3;
+}
+
+message CursorPaginationConfig {
+	message FieldConfig {
+		string request_input = 1;
+		JsonPath response_field = 2;
+	}
+	message PageSizeConfig {
+		string request_input = 1;
+		string response_field = 2;
+		int32 default_value = 3;
+	}
+
+	FieldConfig start = 1;
+	FieldConfig end = 2;
+	PageSizeConfig page_size = 3;
+	JsonPath next_page = 4;
+	JsonPath total_count = 5;
+}
+
+message DataMapping {
+	map <string, string> data = 1; // not really sure what this is supposed to be?
 }
