@@ -11,10 +11,10 @@ beforeEach(() => {
 beforeEach(resetDatabase);
 
 test("authentication - forbidden", async () => {
-  const res = await client.auth.authenticateWithPassword(
-    "user1@example.com",
-    "1234"
-  );
+  const res = await client.auth.authenticateWithPassword({
+    email: "user1@example.com",
+    password: "1234",
+  });
   expect(res.data?.identityCreated).toEqual(true);
   expect(res.error).toBeUndefined();
 
@@ -40,10 +40,10 @@ test("authentication - forbidden", async () => {
   });
   expect(response3.error?.type).toEqual("forbidden");
 
-  const res2 = await client.auth.authenticateWithPassword(
-    "user2@example.com",
-    "1234"
-  );
+  const res2 = await client.auth.authenticateWithPassword({
+    email: "user2@example.com",
+    password: "1234",
+  });
   expect(res2.data?.identityCreated).toEqual(true);
   expect(res2.error).toBeUndefined();
 
@@ -56,10 +56,10 @@ test("authentication - forbidden", async () => {
   });
   expect(response4.error?.type).toEqual("forbidden");
 
-  const res3 = await client.auth.authenticateWithPassword(
-    "user2@example.com",
-    "1234"
-  );
+  const res3 = await client.auth.authenticateWithPassword({
+    email: "user2@example.com",
+    password: "1234",
+  });
   expect(res3.data?.identityCreated).toEqual(false);
   expect(res3.error).toBeUndefined();
 

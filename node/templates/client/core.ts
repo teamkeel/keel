@@ -255,13 +255,13 @@ export class Core {
      * Returns error field if an error occurred.
      */
     authenticateWithPassword: async (
-      email: string,
-      password: string
+      input: PasswordFlowInput
     ): Promise<APIResult<AuthenticationResponse>> => {
       const req: PasswordGrant = {
         grant_type: "password",
-        username: email,
-        password: password,
+        username: input.email,
+        password: input.password,
+        create_if_not_exists: input.createIfNotExists,
       };
 
       return await this.auth.requestToken(req);
@@ -272,11 +272,12 @@ export class Core {
      * Returns error field if an error occurred.
      */
     authenticateWithIdToken: async (
-      idToken: string
+      input: IDTokenFlowInput
     ): Promise<APIResult<AuthenticationResponse>> => {
       const req: TokenExchangeGrant = {
         grant_type: "token_exchange",
-        subject_token: idToken,
+        subject_token: input.idToken,
+        create_if_not_exists: input.createIfNotExists,
       };
 
       return await this.auth.requestToken(req);
@@ -287,11 +288,11 @@ export class Core {
      * Returns error field if an error occurred.
      */
     authenticateWithSingleSignOn: async (
-      code: string
+      input: SingleSignOnFlowInput
     ): Promise<APIResult<AuthenticationResponse>> => {
       const req: AuthorizationCodeGrant = {
         grant_type: "authorization_code",
-        code: code,
+        code: input.code,
       };
 
       return await this.auth.requestToken(req);
@@ -316,7 +317,7 @@ export class Core {
       });
 
       if (authResponse.error) {
-        return authResponse.error;
+        return authResponse;
       }
 
       return {
@@ -388,7 +389,7 @@ export class Core {
 
           try {
             const resp = await result.json();
-            errorMessage = resp.error;
+            errorMessage = resp.error_description;
           } catch (error) {}
 
           const errorCommon = {

@@ -96,23 +96,40 @@ export type Provider = {
   authorizeUrl: string;
 };
 
-export type PasswordGrant = {
+export interface PasswordFlowInput {
+  email: string;
+  password: string;
+  createIfNotExists?: boolean;
+}
+
+export interface IDTokenFlowInput {
+  idToken: string;
+  createIfNotExists?: boolean;
+}
+
+export interface SingleSignOnFlowInput {
+  code: string;
+}
+
+type PasswordGrant = {
   grant_type: "password";
   username: string;
   password: string;
+  create_if_not_exists?: boolean;
 };
 
-export type TokenExchangeGrant = {
+type TokenExchangeGrant = {
   grant_type: "token_exchange";
   subject_token: string;
+  create_if_not_exists?: boolean;
 };
 
-export type AuthorizationCodeGrant = {
+type AuthorizationCodeGrant = {
   grant_type: "authorization_code";
   code: string;
 };
 
-export type RefreshGrant = {
+type RefreshGrant = {
   grant_type: "refresh_token";
   refresh_token: string;
 };
@@ -122,12 +139,3 @@ export type TokenRequest =
   | TokenExchangeGrant
   | AuthorizationCodeGrant
   | RefreshGrant;
-
-export class TokenError extends Error {
-  errorDescription: string;
-  constructor(error: string, errorDescription: string) {
-    super();
-    this.message = error;
-    this.errorDescription = errorDescription;
-  }
-}

@@ -111,11 +111,14 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 		span.SetAttributes(
 			attribute.String(ArgGrantType, grantType),
 		)
-
-		argCreateIfNotExists, hasCreateIfNotExists := inputs[ArgCreateIfNotExists].(string)
+		argCreateIfNotExists, hasCreateIfNotExists := inputs[ArgCreateIfNotExists]
 		if hasCreateIfNotExists {
-			if createIfNotExists, err = strconv.ParseBool(argCreateIfNotExists); err != nil {
-				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the create_if_not_exists field is invalid and must be either 'true' or 'false'", nil)
+			if b, ok := argCreateIfNotExists.(bool); ok {
+				createIfNotExists = b
+			} else {
+				if createIfNotExists, err = strconv.ParseBool(argCreateIfNotExists.(string)); err != nil {
+					return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the create_if_not_exists field is invalid and must be either 'true' or 'false'", nil)
+				}
 			}
 		}
 

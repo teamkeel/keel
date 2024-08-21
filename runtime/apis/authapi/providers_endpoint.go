@@ -22,7 +22,7 @@ func ProvidersHandler(schema *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "Providers")
 		defer span.End()
-		fmt.Println("PROVIDERS")
+
 		config, err := runtimectx.GetOAuthConfig(ctx)
 		if err != nil {
 			fmt.Println(err)
@@ -39,13 +39,11 @@ func ProvidersHandler(schema *proto.Schema) common.HandlerFunc {
 
 			authUrl, err := p.GetAuthorizeUrl()
 			if err != nil {
-				fmt.Println(err)
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 
 			callbackUrl, err := p.GetCallbackUrl()
 			if err != nil {
-				fmt.Println(err)
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 
