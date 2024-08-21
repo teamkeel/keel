@@ -6,10 +6,21 @@ const baseUrl = process.env.KEEL_TESTING_CLIENT_API_URL!;
 
 beforeEach(resetDatabase);
 
+test("providers", async () => {
+  const client = new APIClient({ baseUrl });
+
+  const providers = await client.auth.providers();
+  expect(providers.data!).toHaveLength(0);
+  expect(providers.error).toBeUndefined();
+});
+
 test("authenticateWithPassword - with default token stores", async () => {
   const client = new APIClient({ baseUrl });
 
-  const res = await client.auth.authenticateWithPassword("user@example.com", "1234");
+  const res = await client.auth.authenticateWithPassword(
+    "user@example.com",
+    "1234"
+  );
   expect(res.data?.identityCreated).toBeTruthy();
   expect(res.error).toBeUndefined();
   expect((await client.auth.isAuthenticated()).data).toBeTruthy();
@@ -18,7 +29,10 @@ test("authenticateWithPassword - with default token stores", async () => {
   expect(client.auth.accessToken.get()).not.toBeNull();
   expect(client.auth.refreshToken.get()).not.toBeNull();
 
-  const res2 =  await client.auth.authenticateWithPassword("user@example.com", "oops");
+  const res2 = await client.auth.authenticateWithPassword(
+    "user@example.com",
+    "oops"
+  );
   expect(res2.data).toBeUndefined();
   expect(res2.error?.type).toEqual("unauthorized");
   expect(res2.error?.message).toEqual("invalid_client");
@@ -33,7 +47,10 @@ test("authenticateWithPassword - with default token stores", async () => {
   const response1 = await client.api.queries.allPosts();
   expect(response1.error!.type).toEqual("forbidden");
 
-  const res3 =  await client.auth.authenticateWithPassword("user@example.com", "1234");
+  const res3 = await client.auth.authenticateWithPassword(
+    "user@example.com",
+    "1234"
+  );
   expect(res3.data?.identityCreated).toBeFalsy();
   expect(res3.error).toBeUndefined();
   expect((await client.auth.isAuthenticated()).data).toBeTruthy();
@@ -56,7 +73,10 @@ test("authenticateWithPassword - with custom token stores", async () => {
     refreshTokenStore: refreshTokenStore,
   });
 
-  const res = await client.auth.authenticateWithPassword("user@example.com", "1234");
+  const res = await client.auth.authenticateWithPassword(
+    "user@example.com",
+    "1234"
+  );
   expect(res.data?.identityCreated).toBeTruthy();
   expect(res.error).toBeUndefined();
   expect((await client.auth.isAuthenticated()).data).toBeTruthy();
@@ -69,7 +89,10 @@ test("authenticateWithPassword - with custom token stores", async () => {
   expect(accessTokenStore.get()).toEqual(client.auth.accessToken.get());
   expect(refreshTokenStore.get()).toEqual(client.auth.refreshToken.get());
 
-  const res2 = await client.auth.authenticateWithPassword("user@example.com", "oops");
+  const res2 = await client.auth.authenticateWithPassword(
+    "user@example.com",
+    "oops"
+  );
   expect(res2.data).toBeUndefined();
   expect(res2.error?.type).toEqual("unauthorized");
   expect(res2.error?.message).toEqual("invalid_client");
@@ -86,7 +109,10 @@ test("authenticateWithPassword - with custom token stores", async () => {
   const response1 = await client.api.queries.allPosts();
   expect(response1.error!.type).toEqual("forbidden");
 
-  const res3 = await client.auth.authenticateWithPassword("user@example.com", "1234");
+  const res3 = await client.auth.authenticateWithPassword(
+    "user@example.com",
+    "1234"
+  );
   expect(res3.data?.identityCreated).toBeFalsy();
   expect(res3.error).toBeUndefined();
   expect((await client.auth.isAuthenticated()).data).toBeTruthy();
@@ -111,7 +137,10 @@ test("valid access token", async () => {
     accessTokenStore: accessTokenStore,
   });
 
-  const res = await client.auth.authenticateWithPassword("user@example.com", "1234");
+  const res = await client.auth.authenticateWithPassword(
+    "user@example.com",
+    "1234"
+  );
   expect(res.data?.identityCreated).toBeTruthy();
   expect(res.error).toBeUndefined();
   expect((await client.auth.isAuthenticated()).data).toBeTruthy();
@@ -135,7 +164,10 @@ test("valid refresh token", async () => {
     refreshTokenStore: refreshTokenStore,
   });
 
-  const res = await client.auth.authenticateWithPassword("user@example.com", "1234");
+  const res = await client.auth.authenticateWithPassword(
+    "user@example.com",
+    "1234"
+  );
   expect(res.data?.identityCreated).toBeTruthy();
   expect(res.error).toBeUndefined();
   expect((await client.auth.isAuthenticated()).data).toBeTruthy();

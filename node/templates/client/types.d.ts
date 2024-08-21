@@ -83,7 +83,7 @@ export type APIError =
 
 export type AuthenticationResponse = {
   identityCreated: boolean;
-}
+};
 
 export interface TokenStore {
   set(token: string | null): void;

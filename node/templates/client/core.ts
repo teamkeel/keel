@@ -142,8 +142,9 @@ export class Core {
     refreshToken: this.config.refreshTokenStore || new InMemoryStore(),
 
     /**
-     * Returns the list of supported authentication providers and their SSO login URLs.
-     */ 
+     * Returns data field set to the list of supported authentication providers and their SSO login URLs.
+     * Returns error field if an unexpected error occurred.
+     */
     providers: async (): Promise<APIResult<Provider[]>> => {
       const url = new URL(this.config.baseUrl);
       const result = await globalThis.fetch(url.origin + "/auth/providers", {
@@ -157,17 +158,20 @@ export class Core {
       if (result.ok) {
         return await result.json();
       } else {
-        return { 
+        return {
           error: {
-            message: "unexpected status code response from /auth/providers: " + result.status,
-            type: "unknown"
-          }  
-        }
+            message:
+              "unexpected status code response from /auth/providers: " +
+              result.status,
+            type: "unknown",
+          },
+        };
       }
     },
 
     /**
-     * Returns the time at which the session will expire.
+     * Returns data field set to the time at which the session will expire.
+     * Returns error field if an unexpected error occurred.
      */
     expiresAt: (): APIResult<Date | null> => {
       const token = this.auth.accessToken.get();
@@ -181,12 +185,12 @@ export class Core {
         const base64Payload = token.split(".")[1];
         payload = atob(base64Payload);
       } catch (e) {
-        return { 
+        return {
           error: {
             message: "jwt token could not be parsed",
-            type: "unknown"
-          }  
-        }
+            type: "unknown",
+          },
+        };
       }
 
       var obj = JSON.parse(payload);
@@ -198,16 +202,17 @@ export class Core {
         return { data: new Date(exp * 1000) };
       }
 
-      return { 
+      return {
         error: {
           message: "jwt token could not be parsed from json",
-          type: "unknown"
-        }  
-      }
+          type: "unknown",
+        },
+      };
     },
 
     /**
-     * Returns true if the session has not expired. If expired, it will attempt to refresh the session from the authentication server.
+     * Returns data field set to true if the session has not expired. If expired, it will attempt to refresh the session from the authentication server.
+     * Returns error field if an unexpected error occurred.
      */
     isAuthenticated: async (): Promise<APIResult<boolean>> => {
       // If there is no access token, then attempt to refresh it.
@@ -216,24 +221,18 @@ export class Core {
         const res = await this.auth.refresh();
         if (res.error) {
           return {
-            error: res.error
+            error: res.error,
           };
-        } 
+        }
 
         return res;
       }
-
-      // if (!this.auth.accessToken.get()) {
-      //   return { 
-      //     data: false, 
-      //   };
-      // }
 
       // Consider a token expired EXPIRY_BUFFER_IN_MS earlier than its real expiry time
       const expiresAt = this.auth.expiresAt();
       if (expiresAt.error) {
         return {
-          error: expiresAt.error
+          error: expiresAt.error,
         };
       }
 
@@ -246,16 +245,19 @@ export class Core {
         return await this.auth.refresh();
       }
 
-      return { 
-        data: true 
+      return {
+        data: true,
       };
     },
 
     /**
-     * Authenticate with email and password.
-     * Return true if successfully authenticated.
+     * Authenticates with email and password flow and, if successful, returns data field with result of the authentication.
+     * Returns error field if an error occurred.
      */
-    authenticateWithPassword: async (email: string, password: string): Promise<APIResult<AuthenticationResponse>> => {
+    authenticateWithPassword: async (
+      email: string,
+      password: string
+    ): Promise<APIResult<AuthenticationResponse>> => {
       const req: PasswordGrant = {
         grant_type: "password",
         username: email,
@@ -266,10 +268,12 @@ export class Core {
     },
 
     /**
-     * Authenticate with an ID token.
-     * Return true if successfully authenticated.
+     * Authenticates with the ID Token flow and, if successful, returns data field with result of the authentication.
+     * Returns error field if an error occurred.
      */
-    authenticateWithIdToken: async (idToken: string): Promise<APIResult<AuthenticationResponse>> => {
+    authenticateWithIdToken: async (
+      idToken: string
+    ): Promise<APIResult<AuthenticationResponse>> => {
       const req: TokenExchangeGrant = {
         grant_type: "token_exchange",
         subject_token: idToken,
@@ -279,10 +283,12 @@ export class Core {
     },
 
     /**
-     * Authenticate with Single Sign On using the auth code received from a successful SSO flow.
-     * Return true if successfully authenticated.
+     * Authenticates with the Single Sign-On flow and, if successful, returns data field with result of the authentication.
+     * Returns error field if an error occurred.
      */
-    authenticateWithSingleSignOn: async (code: string): Promise<APIResult<AuthenticationResponse>> => {
+    authenticateWithSingleSignOn: async (
+      code: string
+    ): Promise<APIResult<AuthenticationResponse>> => {
       const req: AuthorizationCodeGrant = {
         grant_type: "authorization_code",
         code: code,
@@ -292,15 +298,15 @@ export class Core {
     },
 
     /**
-     * Forcefully refreshes the session with the authentication server.
+     * Forcefully refreshes the session with the authentication server, and returns data field set to true if the identity is still authenticated.
      * Return true if successfully authenticated.
      */
     refresh: async (): Promise<APIResult<boolean>> => {
       const refreshToken = this.auth.refreshToken.get();
 
       if (!refreshToken) {
-        return { 
-          data: false 
+        return {
+          data: false,
         };
       }
 
@@ -309,11 +315,13 @@ export class Core {
         refresh_token: refreshToken,
       });
 
-     if (authResponse.error) {
-      return { error:  authResponse.error };
-     }
+      if (authResponse.error) {
+        return authResponse.error;
+      }
 
-     return { data: true };
+      return {
+        data: true,
+      };
     },
 
     /**
@@ -344,7 +352,9 @@ export class Core {
     /**
      * Creates or refreshes a session with a token request at the authentication server.
      */
-    requestToken: async (req: TokenRequest): Promise<APIResult<AuthenticationResponse>> => {
+    requestToken: async (
+      req: TokenRequest
+    ): Promise<APIResult<AuthenticationResponse>> => {
       try {
         const url = new URL(this.config.baseUrl);
         const result = await globalThis.fetch(url.origin + "/auth/token", {
@@ -363,11 +373,11 @@ export class Core {
           this.auth.accessToken.set(data.access_token);
           this.auth.refreshToken.set(data.refresh_token);
 
-          return { 
-            data: { 
-              identityCreated: data.identity_created 
-            } 
-          }; 
+          return {
+            data: {
+              identityCreated: data.identity_created,
+            },
+          };
         } else {
           this.auth.accessToken.set(null);
           this.auth.refreshToken.set(null);
@@ -376,7 +386,7 @@ export class Core {
 
           let errorMessage = "unknown error";
 
-           try {
+          try {
             const resp = await result.json();
             errorMessage = resp.error;
           } catch (error) {}
@@ -385,7 +395,7 @@ export class Core {
             message: errorMessage,
             requestId,
           };
-  
+
           switch (result.status) {
             case 400:
               return {
