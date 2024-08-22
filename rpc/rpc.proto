@@ -97,6 +97,7 @@ message Capabilities {
 }
 
 message ActionConfig {
+	// Unique identifier. For generated tools, the ID will be the same as the action's name.
 	string id = 1;
 	
 	// Sentence case the action name e.g "Get order"
@@ -114,20 +115,26 @@ message ActionConfig {
 	repeated RequestFieldConfig inputs = 7;
 	repeated ResponseFieldConfig response = 8;
 
-	// Title of the tool
-	// Default is if the first field is a text field use that, otherwise empty.
+	// Title of the tool.
+	// Default value: a template with the first field of the model if it's a text field use that,
+	// otherwise empty.
 	optional StringTemplate title = 9; 
 
 	// Template language support: markdown
 	optional StringTemplate help_text = 10; 
 
-	string entity_single = 11; // Inferred from model name
-	string entity_plural = 12; // Inferred from model name
+	// The name of the entity associated with this tool, in a singular form (e.g. order, user).
+	// The word is lowercased; for generated tools it is the name of the model
+	string entity_single = 11; 
+
+	// The name of the entity associated with this tool, in a plural form (e.g. orders, users).
+	// The word is lowercased; for generated tools it is derived from name of the model
+	string entity_plural = 12; 
 
 	// What features are enabled for this tool
 	Capabilities capabilities = 13;
 
-	// Only for List actions; aka views
+	// Only for List actions; aka views.
 	// E.g. For a listOrders action; these would be tabs that show filtered orders by status 
 	// (Processed, Pending, Completed)
 	repeated ActionLink related_actions = 14; 

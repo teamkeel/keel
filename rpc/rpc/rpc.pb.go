@@ -860,6 +860,7 @@ type ActionConfig struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Unique identifier. For generated tools, the ID will be the same as the action's name.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Sentence case the action name e.g "Get order"
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
@@ -871,16 +872,20 @@ type ActionConfig struct {
 	Implementation proto.ActionImplementation `protobuf:"varint,6,opt,name=implementation,proto3,enum=proto.ActionImplementation" json:"implementation,omitempty"`
 	Inputs         []*RequestFieldConfig      `protobuf:"bytes,7,rep,name=inputs,proto3" json:"inputs,omitempty"`
 	Response       []*ResponseFieldConfig     `protobuf:"bytes,8,rep,name=response,proto3" json:"response,omitempty"`
-	// Title of the tool
-	// Default is if the first field is a text field use that, otherwise empty.
+	// Title of the tool.
+	// Default value: the first field of the model if it's a text field use that, otherwise empty.
 	Title *StringTemplate `protobuf:"bytes,9,opt,name=title,proto3,oneof" json:"title,omitempty"`
 	// Template language support: markdown
-	HelpText     *StringTemplate `protobuf:"bytes,10,opt,name=help_text,json=helpText,proto3,oneof" json:"help_text,omitempty"`
-	EntitySingle string          `protobuf:"bytes,11,opt,name=entity_single,json=entitySingle,proto3" json:"entity_single,omitempty"` // Inferred from model name
-	EntityPlural string          `protobuf:"bytes,12,opt,name=entity_plural,json=entityPlural,proto3" json:"entity_plural,omitempty"` // Inferred from model name
+	HelpText *StringTemplate `protobuf:"bytes,10,opt,name=help_text,json=helpText,proto3,oneof" json:"help_text,omitempty"`
+	// The name of the entity associated with this tool, in a singular form (e.g. order, user).
+	// The word is lowercased; for generated tools it is the name of the model
+	EntitySingle string `protobuf:"bytes,11,opt,name=entity_single,json=entitySingle,proto3" json:"entity_single,omitempty"`
+	// The name of the entity associated with this tool, in a plural form (e.g. orders, users).
+	// The word is lowercased; for generated tools it is derived from name of the model
+	EntityPlural string `protobuf:"bytes,12,opt,name=entity_plural,json=entityPlural,proto3" json:"entity_plural,omitempty"`
 	// What features are enabled for this tool
 	Capabilities *Capabilities `protobuf:"bytes,13,opt,name=capabilities,proto3" json:"capabilities,omitempty"`
-	// Only for List actions; aka views
+	// Only for List actions; aka views.
 	// E.g. For a listOrders action; these would be tabs that show filtered orders by status
 	// (Processed, Pending, Completed)
 	RelatedActions []*ActionLink `protobuf:"bytes,14,rep,name=related_actions,json=relatedActions,proto3" json:"related_actions,omitempty"`
