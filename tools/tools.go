@@ -9,7 +9,7 @@ import (
 )
 
 // GenerateTools will return a list of tool configurations generated for the given schema
-func GenerateTools(ctx context.Context, schema *proto.Schema) ([]*rpc.ToolConfig, error) {
+func GenerateTools(ctx context.Context, schema *proto.Schema) ([]*rpc.ActionConfig, error) {
 	if schema == nil {
 		return nil, nil
 	}

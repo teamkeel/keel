@@ -10,7 +10,7 @@ import (
 
 type Generator struct {
 	Schema *proto.Schema
-	Tools  []*rpc.ToolConfig
+	Tools  []*rpc.ActionConfig
 }
 
 var ErrInvalidSchema = errors.New("invalid schema")
@@ -29,7 +29,7 @@ func (g *Generator) Generate(ctx context.Context) error {
 	}
 
 	// reset any previous tools
-	g.Tools = []*rpc.ToolConfig{}
+	g.Tools = []*rpc.ActionConfig{}
 
 	// generate model tools
 	if err := g.generateModelsTools(ctx); err != nil {
@@ -54,8 +54,8 @@ func (g *Generator) generateModelsTools(ctx context.Context) error {
 	return nil
 }
 
-func (g *Generator) actionTool(ctx context.Context, model *proto.Model, action *proto.Action) (*rpc.ToolConfig, error) {
-	t := rpc.ToolConfig{
+func (g *Generator) actionTool(ctx context.Context, model *proto.Model, action *proto.Action) (*rpc.ActionConfig, error) {
+	t := rpc.ActionConfig{
 		Name:           "Tool",
 		ActionName:     action.Name,
 		ActionType:     action.GetType(),
