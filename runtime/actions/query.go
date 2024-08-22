@@ -645,7 +645,6 @@ func (query *QueryBuilder) countQuery() string {
 // Generates an executable SELECT statement with the list of arguments.
 func (query *QueryBuilder) SelectStatement() *Statement {
 	distinctOn := ""
-	selection := ""
 	joins := ""
 	filters := ""
 	orderBy := ""
@@ -659,7 +658,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		query.Select(AllFields())
 	}
 
-	selection = strings.Join(query.selection, ", ")
+	selection := strings.Join(query.selection, ", ")
 
 	if len(query.joins) > 0 {
 		for _, j := range query.joins {

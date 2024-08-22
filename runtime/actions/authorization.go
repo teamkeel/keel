@@ -56,7 +56,7 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 		return false, nil
 	}
 
-	canResolve, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
+	canResolve, authorised, _ := TryResolveAuthorisationEarly(scope, permissions)
 	if canResolve {
 		return authorised, nil
 	}

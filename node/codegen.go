@@ -1202,7 +1202,7 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 			return fmt.Sprintf("'%s'", f.Name), isModelInput(schema, f)
 		})
 
-		beforeWriteValues := ""
+		var beforeWriteValues string
 		switch len(pickKeys) {
 		case len(msg.Fields):
 			// All inputs target model fields, this means the beforeWriteValues are exactly the same as the inputs
