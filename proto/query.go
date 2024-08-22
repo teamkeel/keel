@@ -24,6 +24,8 @@ func ApiModels(s *Schema, api *Api) []*Model {
 
 // ModelNames provides a (sorted) list of all the Model names used in the
 // given schema.
+//
+// Deprecated: Use Schema.ModelNames() instead
 func ModelNames(p *Schema) []string {
 	names := lo.Map(p.Models, func(x *Model, _ int) string {
 		return x.Name
@@ -34,6 +36,8 @@ func ModelNames(p *Schema) []string {
 
 // FieldNames provides a (sorted) list of the fields in the model of
 // the given name.
+//
+// Deprecated: Please use Model.FieldNames() instead
 func FieldNames(m *Model) []string {
 	names := lo.Map(m.Fields, func(x *Field, _ int) string {
 		return x.Name
@@ -42,31 +46,25 @@ func FieldNames(m *Model) []string {
 	return names
 }
 
-// FileFields will return a slice of fields for the model that are of type file
-func (m *Model) FileFields() []*Field {
-	return lo.Filter(m.Fields, func(f *Field, _ int) bool {
-		return f.IsFile()
-	})
-}
-
-// HasFiles checks if the model has any fields that are files
-func (m *Model) HasFiles() bool {
-	return len(m.FileFields()) > 0
-}
-
 // IsTypeModel returns true of the field's type is Model.
+//
+// Deprecated: Please use Field.IsTypeModel() instead
 func IsTypeModel(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL
 }
 
 // IsTypeRepeated returns true if the field is specified as
 // being "repeated".
+//
+// Deprecated: Please use Field.IsRepeated() instead
 func IsRepeated(field *Field) bool {
 	return field.Type.Repeated
 }
 
 // PrimaryKeyFieldName returns the name of the field in the given model,
 // that is marked as being the model's primary key. (Or empty string).
+//
+// Deprecated: please use Model.PrimaryKeyFieldName() instead
 func PrimaryKeyFieldName(model *Model) string {
 	field, _ := lo.Find(model.Fields, func(f *Field) bool {
 		return f.PrimaryKey
@@ -78,6 +76,8 @@ func PrimaryKeyFieldName(model *Model) string {
 }
 
 // AllFields provides a list of all the model fields specified in the schema.
+//
+// Deprecated: please use Schema.AllFields() instead
 func AllFields(p *Schema) []*Field {
 	fields := []*Field{}
 	for _, model := range p.Models {
@@ -88,31 +88,27 @@ func AllFields(p *Schema) []*Field {
 
 // ForeignKeyFields returns all the fields in the given model which have their ForeignKeyInfo
 // populated.
+//
+// Deprecated: please use Model.ForeignKeyFields() instead
 func ForeignKeyFields(model *Model) []*Field {
 	return lo.Filter(model.Fields, func(f *Field, _ int) bool {
 		return f.ForeignKeyInfo != nil
 	})
 }
 
+// Deprecated: please use Field.IsHasMany() instead
 func IsHasMany(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName == nil && field.Type.Repeated
 }
 
+// Deprecated: please use Field.IsHasOne() instead
 func IsHasOne(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName == nil && !field.Type.Repeated
 }
 
+// Deprecated: please use Field.IsBelongsTo() instead
 func IsBelongsTo(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName != nil && !field.Type.Repeated
-}
-
-// IsFile tells us if the field is a file
-func (f *Field) IsFile() bool {
-	if f.Type == nil {
-		return false
-	}
-
-	return f.Type.Type == Type_TYPE_INLINE_FILE
 }
 
 // GetForeignKeyFieldName returns the foreign key field name for the given field if it
@@ -184,17 +180,7 @@ func FindEnum(enums []*Enum, name string) *Enum {
 	return enum
 }
 
-// HasFiles checks if the given schema has any models with fields that are files
-func (p *Schema) HasFiles() bool {
-	for _, model := range p.Models {
-		if model.HasFiles() {
-			return true
-		}
-	}
-
-	return false
-}
-
+// Deprecated: Use Schema.FilterActions() instead
 func FilterActions(p *Schema, filter func(op *Action) bool) (ops []*Action) {
 	for _, model := range p.Models {
 		actions := model.Actions
@@ -209,6 +195,7 @@ func FilterActions(p *Schema, filter func(op *Action) bool) (ops []*Action) {
 	return ops
 }
 
+// Deprecated: Use Schema.FindAction() instead
 func FindAction(schema *Schema, actionName string) *Action {
 	actions := FilterActions(schema, func(op *Action) bool {
 		return op.Name == actionName
@@ -219,14 +206,17 @@ func FindAction(schema *Schema, actionName string) *Action {
 	return actions[0]
 }
 
+// Deprecated: Use Action.IsFunction() instead
 func ActionIsFunction(action *Action) bool {
 	return action.Implementation == ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 }
 
+// Deprecated: Use Action.IsArbitraryFunction() instead
 func ActionIsArbitraryFunction(action *Action) bool {
 	return ActionIsFunction(action) && (action.Type == ActionType_ACTION_TYPE_READ || action.Type == ActionType_ACTION_TYPE_WRITE)
 }
 
+// Deprecated: Use Action.IsWriteAction() instead
 func IsWriteAction(action *Action) bool {
 	switch action.Type {
 	case ActionType_ACTION_TYPE_CREATE, ActionType_ACTION_TYPE_DELETE, ActionType_ACTION_TYPE_WRITE, ActionType_ACTION_TYPE_UPDATE:
@@ -236,6 +226,7 @@ func IsWriteAction(action *Action) bool {
 	}
 }
 
+// Deprecated: Use Action.IsReadAction() instead
 func IsReadAction(action *Action) bool {
 	switch action.Type {
 	case ActionType_ACTION_TYPE_GET, ActionType_ACTION_TYPE_LIST, ActionType_ACTION_TYPE_READ:
@@ -397,23 +388,6 @@ func PermissionsWithExpression(permissions []*PermissionRule) []*PermissionRule 
 	return withPermissions
 }
 
-// IsModelField returns true if the input targets a model field
-// and is handled automatically by the runtime.
-// This will only be true for inputs that are built-in actions,
-// as functions never have this behaviour.
-func (f *MessageField) IsModelField() bool {
-	return len(f.Target) > 0
-}
-
-// IsFile tells us if the field is a file
-func (f *MessageField) IsFile() bool {
-	if f.Type == nil {
-		return false
-	}
-
-	return f.Type.Type == Type_TYPE_INLINE_FILE
-}
-
 // FindMessage will find a message type defined in a Keel schema based on the name of the message
 // e.g
 // FindMessage("MyMessage") will return this node:
@@ -425,6 +399,7 @@ func FindMessage(messages []*Message, messageName string) *Message {
 	return message
 }
 
+// Deprecated: Use Message.FindField() instead
 func FindMessageField(message *Message, fieldName string) *MessageField {
 	for _, field := range message.Fields {
 		if field.Name == fieldName {
@@ -433,18 +408,6 @@ func FindMessageField(message *Message, fieldName string) *MessageField {
 	}
 
 	return nil
-}
-
-// HasFiles checks if the message has any Inline file fields
-func (m *Message) HasFiles() bool {
-	return len(m.FileFields()) > 0
-}
-
-// FileFields will return a slice of fields for the model that are of type file
-func (m *Message) FileFields() []*MessageField {
-	return lo.Filter(m.Fields, func(f *MessageField, _ int) bool {
-		return f.IsFile()
-	})
 }
 
 // For built-in action types, returns the "values" input message, which may be nested inside the
@@ -515,7 +478,9 @@ func FindEvent(subscribers []*Event, name string) *Event {
 	return event
 }
 
-// FindSubscriber locates the subscriber of the given name.
+// FindEventSubscriptions locates the subscriber of the given name.
+//
+// Deprecated: use Schema.FindEventSubscribers instead
 func FindEventSubscriptions(schema *Schema, event *Event) []*Subscriber {
 	subscribers := lo.Filter(schema.Subscribers, func(m *Subscriber, _ int) bool {
 		return lo.Contains(m.EventNames, event.Name)
