@@ -1,0 +1,11 @@
+model Person {
+    actions {
+        read testAction(iterations: Number, arraySize: Number, rollback: Boolean) returns (Any)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}

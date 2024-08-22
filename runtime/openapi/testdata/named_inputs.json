@@ -1,0 +1,73 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Test", "version": "1" },
+  "paths": {
+    "/test/json/testAction": {
+      "post": {
+        "operationId": "testAction",
+        "requestBody": {
+          "description": "testAction Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "arraySize": { "type": "number" },
+                  "iterations": { "type": "number" },
+                  "rollback": { "type": "boolean" }
+                },
+                "additionalProperties": false,
+                "required": ["iterations", "arraySize", "rollback"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "testAction Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    { "type": "string", "title": "string" },
+                    { "type": "object", "title": "object" },
+                    { "type": "array", "title": "array" },
+                    { "type": "integer", "title": "integer" },
+                    { "type": "number", "title": "number" },
+                    { "type": "boolean", "title": "boolean" },
+                    { "type": "null", "title": "null" }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "testAction Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
