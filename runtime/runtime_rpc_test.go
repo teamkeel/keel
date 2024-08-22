@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/db"
-	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/jsonschema"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -96,7 +95,7 @@ func TestRuntimeRPC(t *testing.T) {
 				tCase.assertResponse(t, res)
 			}
 
-			action := proto.FindAction(schema, tCase.Path)
+			action := schema.FindAction(tCase.Path)
 
 			if response.Status == 200 {
 				_, result, err := jsonschema.ValidateResponse(ctx, schema, action, res)

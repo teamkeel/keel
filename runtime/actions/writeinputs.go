@@ -193,9 +193,9 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 				var foreignKeys map[string]any
 				var err error
 
-				if proto.IsHasMany(field) || proto.IsHasOne(field) {
-					// if proto.IsHasMany(field) then we have a 1:M relationship and the FK is on this model.
-					// if proto.IsHasOne(field) then we have a 1:1 relationship with the FK on this model.
+				if field.IsHasMany() || field.IsHasOne() {
+					// if field.IsHasMany() then we have a 1:M relationship and the FK is on this model.
+					// if field.IsHasOne() then we have a 1:1 relationship with the FK on this model.
 
 					arg, hasArg := args[input.Name]
 					if !hasArg && !input.Optional {
@@ -205,7 +205,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 					}
 
 					var argsArraySectioned []any
-					if proto.IsHasOne(field) {
+					if field.IsHasOne() {
 						argsArraySectioned = []any{arg}
 					} else {
 						var ok bool

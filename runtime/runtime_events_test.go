@@ -9,7 +9,6 @@ import (
 	"github.com/karlseguin/typed"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/events"
-	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/schema/parser"
 	keeltesting "github.com/teamkeel/keel/testing"
@@ -92,7 +91,7 @@ func TestCreateEvent(t *testing.T) {
 	require.NoError(t, err)
 
 	result, _, err := actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
+		actions.NewScope(ctx, schema.FindAction("createWedding"), schema),
 		map[string]any{"name": "Dave"})
 	require.NoError(t, err)
 
@@ -131,7 +130,7 @@ func TestUpdateEvent(t *testing.T) {
 	defer database.Close()
 
 	result, _, err := actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
+		actions.NewScope(ctx, schema.FindAction("createWedding"), schema),
 		map[string]any{"name": "Dave"})
 	require.NoError(t, err)
 
@@ -145,7 +144,7 @@ func TestUpdateEvent(t *testing.T) {
 	require.NoError(t, err)
 
 	updated, _, err := actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "updateWedding"), schema),
+		actions.NewScope(ctx, schema.FindAction("updateWedding"), schema),
 		map[string]any{
 			"where":  map[string]any{"id": wedding["id"]},
 			"values": map[string]any{"name": "Adam"},
@@ -203,7 +202,7 @@ func TestDeleteEvent(t *testing.T) {
 	defer database.Close()
 
 	result, _, err := actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
+		actions.NewScope(ctx, schema.FindAction("createWedding"), schema),
 		map[string]any{"name": "Dave"})
 	require.NoError(t, err)
 
@@ -217,7 +216,7 @@ func TestDeleteEvent(t *testing.T) {
 	require.NoError(t, err)
 
 	_, _, err = actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "deleteWedding"), schema),
+		actions.NewScope(ctx, schema.FindAction("deleteWedding"), schema),
 		map[string]any{"id": wedding["id"]})
 	require.NoError(t, err)
 
@@ -268,7 +267,7 @@ func TestNoIdentityEvent(t *testing.T) {
 	require.NoError(t, err)
 
 	_, _, err = actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
+		actions.NewScope(ctx, schema.FindAction("createWedding"), schema),
 		map[string]any{"name": "Dave"})
 	require.NoError(t, err)
 
@@ -291,7 +290,7 @@ func TestNestedCreateEvent(t *testing.T) {
 	require.NoError(t, err)
 
 	result, _, err := actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "createWeddingWithGuests"), schema),
+		actions.NewScope(ctx, schema.FindAction("createWeddingWithGuests"), schema),
 		map[string]any{
 			"name": "Dave",
 			"guests": []any{
@@ -333,14 +332,14 @@ func TestMultipleEvents(t *testing.T) {
 	require.NoError(t, err)
 
 	result, _, err := actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "createInvitee"), schema),
+		actions.NewScope(ctx, schema.FindAction("createInvitee"), schema),
 		map[string]any{"firstName": "Dave"})
 	require.NoError(t, err)
 	wedding, ok := result.(map[string]any)
 	require.True(t, ok)
 
 	updated, _, err := actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "updateInvitee"), schema),
+		actions.NewScope(ctx, schema.FindAction("updateInvitee"), schema),
 		map[string]any{
 			"where":  map[string]any{"id": wedding["id"]},
 			"values": map[string]any{"firstName": "Adam"},
@@ -380,14 +379,14 @@ func TestAuditTableEventCreatedAtUpdated(t *testing.T) {
 	require.NoError(t, err)
 
 	result, _, err := actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
+		actions.NewScope(ctx, schema.FindAction("createWedding"), schema),
 		map[string]any{"name": "Dave"})
 	require.NoError(t, err)
 	_, ok := result.(map[string]any)
 	require.True(t, ok)
 
 	result2, _, err := actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "createPerson"), schema),
+		actions.NewScope(ctx, schema.FindAction("createPerson"), schema),
 		map[string]any{})
 	require.NoError(t, err)
 	_, ok2 := result2.(map[string]any)
@@ -420,7 +419,7 @@ func TestFailedEventHandling(t *testing.T) {
 	require.NoError(t, err)
 
 	result, _, err := actions.Execute(
-		actions.NewScope(ctx, proto.FindAction(schema, "createWeddingWithGuests"), schema),
+		actions.NewScope(ctx, schema.FindAction("createWeddingWithGuests"), schema),
 		map[string]any{
 			"name": "Dave",
 			"guests": []any{

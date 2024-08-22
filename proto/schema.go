@@ -51,7 +51,7 @@ func (s *Schema) FilterActions(filter func(op *Action) bool) (ops []*Action) {
 }
 
 func (s *Schema) FindAction(actionName string) *Action {
-	actions := FilterActions(s, func(op *Action) bool {
+	actions := s.FilterActions(func(op *Action) bool {
 		return op.Name == actionName
 	})
 	if len(actions) != 1 {

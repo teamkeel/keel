@@ -134,7 +134,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 			return fmt.Errorf("event '%s' does not exist", eventName)
 		}
 
-		subscribers := proto.FindEventSubscriptions(schema, protoEvent)
+		subscribers := schema.FindEventSubscribers(protoEvent)
 		if len(subscribers) == 0 {
 			return fmt.Errorf("event '%s' must have at least one subscriber", eventName)
 		}

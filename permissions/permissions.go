@@ -41,7 +41,7 @@ type Value struct {
 // what values should be provided to the query at runtime.
 func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, values []*Value, err error) {
 	tableName := identifier(m.Name)
-	pkField := identifier(proto.PrimaryKeyFieldName(m))
+	pkField := identifier(m.PrimaryKeyFieldName())
 
 	stmt := &statement{}
 	permissions := proto.PermissionsForAction(s, action)
@@ -298,11 +298,11 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.Ident, stmt 
 				}
 
 				leftFieldName := proto.GetForeignKeyFieldName(s.Models, field)
-				rightFieldName := proto.PrimaryKeyFieldName(joinModel)
+				rightFieldName := joinModel.PrimaryKeyFieldName()
 
 				// If not belongs to then swap foreign/primary key
-				if !proto.IsBelongsTo(field) {
-					leftFieldName = proto.PrimaryKeyFieldName(model)
+				if !field.IsBelongsTo() {
+					leftFieldName = model.PrimaryKeyFieldName()
 					rightFieldName = proto.GetForeignKeyFieldName(s.Models, field)
 				}
 

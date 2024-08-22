@@ -153,7 +153,7 @@ func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 
 func writeClientActions(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	for _, a := range proto.GetActionNamesForApi(schema, api) {
-		action := proto.FindAction(schema, a)
+		action := schema.FindAction(a)
 		msg := proto.FindMessage(schema.Messages, action.InputMessageName)
 
 		w.Writef("%s: (i", action.Name)
@@ -195,7 +195,7 @@ func writeClientApiDefinition(w *codegen.Writer, schema *proto.Schema, api *prot
 	mutations := []string{}
 
 	for _, a := range proto.GetActionNamesForApi(schema, api) {
-		action := proto.FindAction(schema, a)
+		action := schema.FindAction(a)
 		if action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_READ {
 			queries = append(queries, action.Name)
 		} else {
@@ -241,7 +241,7 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 
 	// writing embedded response types
 	for _, a := range proto.GetActionNamesForApi(schema, api) {
-		action := proto.FindAction(schema, a)
+		action := schema.FindAction(a)
 		embeds := action.GetResponseEmbeds()
 		if len(embeds) == 0 {
 			continue

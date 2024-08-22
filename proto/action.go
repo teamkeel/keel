@@ -5,7 +5,7 @@ func (a *Action) IsFunction() bool {
 }
 
 func (a *Action) IsArbitraryFunction() bool {
-	return ActionIsFunction(a) && (a.Type == ActionType_ACTION_TYPE_READ || a.Type == ActionType_ACTION_TYPE_WRITE)
+	return a.IsFunction() && (a.Type == ActionType_ACTION_TYPE_READ || a.Type == ActionType_ACTION_TYPE_WRITE)
 }
 
 func (a *Action) IsWriteAction() bool {

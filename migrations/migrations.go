@@ -198,7 +198,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	pushAuditModel(schema)
 	defer popAuditModel(schema)
 
-	modelNames := proto.ModelNames(schema)
+	modelNames := schema.ModelNames()
 
 	// Add any new models
 	for _, modelName := range modelNames {
@@ -467,7 +467,7 @@ func GetCurrentSchema(ctx context.Context, database db.Database) (*proto.Schema,
 // fkConstraintsForModel generates foreign key constraint statements for each of fields marked as
 // being foreign keys in the given model.
 func fkConstraintsForModel(model *proto.Model) (fkStatements []string) {
-	fkFields := proto.ForeignKeyFields(model)
+	fkFields := model.ForeignKeyFields()
 	for _, field := range fkFields {
 		stmt := fkConstraint(field, model)
 		fkStatements = append(fkStatements, stmt)

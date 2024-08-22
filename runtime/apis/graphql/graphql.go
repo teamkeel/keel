@@ -190,7 +190,7 @@ type graphqlSchemaBuilder struct {
 // build returns a graphql.Schema that implements the given API.
 func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*graphql.Schema, error) {
 	for _, actionName := range proto.GetActionNamesForApi(schema, api) {
-		action := proto.FindAction(schema, actionName)
+		action := schema.FindAction(actionName)
 		err := mk.addAction(action, schema)
 		if err != nil {
 			return nil, err
@@ -276,7 +276,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 		}
 
 		fieldArgs := graphql.FieldConfigArgument{}
-		if proto.IsHasMany(field) {
+		if field.IsHasMany() {
 			fieldArgs = graphql.FieldConfigArgument{
 				"first": &graphql.ArgumentConfig{
 					Type:        graphql.Int,
@@ -322,7 +322,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				// Depending on the relationship type we either need the primary key of this
 				// model or a foreign key
 				parentLookupField := "id"
-				if proto.IsBelongsTo(field) {
+				if field.IsBelongsTo() {
 					parentLookupField = foreignKeyField
 				}
 
@@ -339,7 +339,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				}
 
 				var leftOperand *actions.QueryOperand
-				if proto.IsBelongsTo(field) {
+				if field.IsBelongsTo() {
 					leftOperand = actions.IdField()
 				} else {
 					leftOperand = actions.Field(foreignKeyField)
@@ -353,7 +353,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				scope := actions.NewModelScope(ctx, relatedModel, mk.proto)
 
 				switch {
-				case proto.IsBelongsTo(field), proto.IsHasOne(field):
+				case field.IsBelongsTo(), field.IsHasOne():
 					result, err := query.
 						SelectStatement().
 						ExecuteToSingle(ctx)
@@ -380,7 +380,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 					}
 
 					return result, nil
-				case proto.IsHasMany(field):
+				case field.IsHasMany():
 					page, err := actions.ParsePage(p.Args)
 					if err != nil {
 						span.RecordError(err, trace.WithStackTrace(true))

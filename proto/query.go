@@ -197,7 +197,7 @@ func FilterActions(p *Schema, filter func(op *Action) bool) (ops []*Action) {
 
 // Deprecated: Use Schema.FindAction() instead
 func FindAction(schema *Schema, actionName string) *Action {
-	actions := FilterActions(schema, func(op *Action) bool {
+	actions := schema.FilterActions(func(op *Action) bool {
 		return op.Name == actionName
 	})
 	if len(actions) != 1 {
@@ -213,7 +213,7 @@ func ActionIsFunction(action *Action) bool {
 
 // Deprecated: Use Action.IsArbitraryFunction() instead
 func ActionIsArbitraryFunction(action *Action) bool {
-	return ActionIsFunction(action) && (action.Type == ActionType_ACTION_TYPE_READ || action.Type == ActionType_ACTION_TYPE_WRITE)
+	return action.IsFunction() && (action.Type == ActionType_ACTION_TYPE_READ || action.Type == ActionType_ACTION_TYPE_WRITE)
 }
 
 // Deprecated: Use Action.IsWriteAction() instead
@@ -413,7 +413,7 @@ func FindMessageField(message *Message, fieldName string) *MessageField {
 // For built-in action types, returns the "values" input message, which may be nested inside the
 // root message for some action types, or returns nil if not found.
 func FindValuesInputMessage(schema *Schema, actionName string) *Message {
-	action := FindAction(schema, actionName)
+	action := schema.FindAction(actionName)
 	message := FindMessage(schema.Messages, action.InputMessageName)
 
 	switch action.Type {
@@ -432,7 +432,7 @@ func FindValuesInputMessage(schema *Schema, actionName string) *Message {
 // For built-in action types, returns the "where" input message, which may be nested inside the
 // root message for some action types, or returns nil if not found.
 func FindWhereInputMessage(schema *Schema, actionName string) *Message {
-	action := FindAction(schema, actionName)
+	action := schema.FindAction(actionName)
 	message := FindMessage(schema.Messages, action.InputMessageName)
 
 	switch action.Type {

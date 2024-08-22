@@ -53,7 +53,7 @@ func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (code
 
 	generatedFiles := codegen.GeneratedFiles{}
 
-	functions := proto.FilterActions(schema, func(op *proto.Action) bool {
+	functions := schema.FilterActions(func(op *proto.Action) bool {
 		return op.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 	})
 
@@ -135,7 +135,7 @@ func ensureDir(dirName string) error {
 func writeFunctionWrapper(function *proto.Action) string {
 	functionName := casing.ToCamel(function.Name)
 
-	if proto.ActionIsArbitraryFunction(function) {
+	if function.IsArbitraryFunction() {
 		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
 
 // To learn more about what you can do with custom functions, visit https://docs.keel.so/functions

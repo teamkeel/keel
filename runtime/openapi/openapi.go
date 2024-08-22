@@ -99,7 +99,7 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 	}
 
 	for _, actionName := range proto.GetActionNamesForApi(schema, api) {
-		action := proto.FindAction(schema, actionName)
+		action := schema.FindAction(actionName)
 
 		inputSchema := jsonschema.JSONSchemaForActionInput(ctx, schema, action)
 		endpoint := fmt.Sprintf("/%s/json/%s", strings.ToLower(api.Name), action.Name)

@@ -62,7 +62,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 			return NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP POST or GET accepted"), nil)
 		}
 
-		action := proto.FindAction(p, actionName)
+		action := p.FindAction(actionName)
 		if action == nil {
 			return NewErrorResponse(ctx, common.NewMethodNotFoundError(), nil)
 		}

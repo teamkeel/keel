@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/config"
-	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/jsonschema"
 	"github.com/teamkeel/keel/schema"
 )
@@ -59,7 +58,7 @@ func TestJSONSchemaGeneration(t *testing.T) {
 			schema, err := builder.MakeFromString(c.keelSchema, config.Empty)
 			require.NoError(t, err)
 
-			action := proto.FindAction(schema, "testAction")
+			action := schema.FindAction("testAction")
 			require.NotNil(t, action, "action with name testAction could not be found")
 
 			jsonSchema := jsonschema.JSONSchemaForActionInput(context.Background(), schema, action)
@@ -899,7 +898,7 @@ func TestValidateRequest(t *testing.T) {
 				err = json.Unmarshal([]byte(f.request), &req)
 				require.NoError(t, err)
 
-				action := proto.FindAction(schema, f.opName)
+				action := schema.FindAction(f.opName)
 
 				result, err := jsonschema.ValidateRequest(context.Background(), schema, action, req)
 				require.NoError(t, err)

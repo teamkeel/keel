@@ -80,7 +80,7 @@ func (resolver *OperandResolver) NormalisedFragments() ([]string, error) {
 			}
 		}
 
-		if proto.IsHasOne(fieldTarget) || proto.IsHasMany(fieldTarget) {
+		if fieldTarget.IsHasOne() || fieldTarget.IsHasMany() {
 			// Add a new fragment 'id'
 			fragments = append(fragments, parser.FieldNameId)
 		} else {
@@ -299,16 +299,16 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, bool, error) {
 		switch action.Type {
 		case proto.ActionType_ACTION_TYPE_CREATE:
 			message := proto.FindValuesInputMessage(schema, action.Name)
-			field = proto.FindMessageField(message, inputName)
+			field = message.FindField(inputName)
 		case proto.ActionType_ACTION_TYPE_GET, proto.ActionType_ACTION_TYPE_LIST, proto.ActionType_ACTION_TYPE_DELETE:
 			message := proto.FindWhereInputMessage(schema, action.Name)
-			field = proto.FindMessageField(message, inputName)
+			field = message.FindField(inputName)
 		case proto.ActionType_ACTION_TYPE_UPDATE:
 			message := proto.FindValuesInputMessage(schema, action.Name)
-			field = proto.FindMessageField(message, inputName)
+			field = message.FindField(inputName)
 			if field == nil {
 				message := proto.FindWhereInputMessage(schema, action.Name)
-				field = proto.FindMessageField(message, inputName)
+				field = message.FindField(inputName)
 			}
 		default:
 			return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("unhandled action type %s for explicit input", action.Type)
