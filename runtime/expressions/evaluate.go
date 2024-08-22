@@ -125,7 +125,7 @@ func evaluate(
 	case proto.Type_TYPE_ID, proto.Type_TYPE_MODEL:
 		return compareIdentity(lhs.(ksuid.KSUID), rhs.(ksuid.KSUID), operator)
 	default:
-		return false, fmt.Errorf("cannot yet handle comparision of type: %s", operandType)
+		return false, fmt.Errorf("cannot yet handle comparison of type: %s", operandType)
 	}
 }
 

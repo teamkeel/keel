@@ -29,7 +29,6 @@ func ActionFunc(schema *proto.Schema, action *proto.Action) func(p graphql.Resol
 					Code:    common.ErrInternal,
 					Message: "error executing request",
 				}
-
 			}
 
 			span.SetAttributes(

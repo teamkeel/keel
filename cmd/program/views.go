@@ -247,7 +247,6 @@ func renderError(m *Model) string {
 				b.WriteString("❌ We found the following errors in your function code:\n\n")
 				b.WriteString(tscError.Output)
 			}
-
 		} else {
 			b.WriteString("❌ There was an error running your functions:\n\n")
 			b.WriteString(m.Err.Error())

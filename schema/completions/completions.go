@@ -95,7 +95,6 @@ func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *conf
 					Label: a.Name.Value,
 					Kind:  KindAction,
 				})
-
 			}
 			return completions
 		} else {
@@ -213,7 +212,6 @@ func getMessageFieldCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition
 			curr = curr.Next().EndOfBlock()
 			continue
 		}
-
 	}
 
 	// if we're expecting a name then we can't offer completions
@@ -637,7 +635,6 @@ func getActionInputCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition)
 	}
 
 	return completions
-
 }
 
 func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
@@ -769,7 +766,6 @@ func getEmbedArgCompletions(asts []*parser.AST, t *TokensAtPosition) []*Completi
 }
 
 func getOrderByArgCompletions(asts []*parser.AST, t *TokensAtPosition) []*CompletionItem {
-
 	argStart := t.StartOfParen()
 	for {
 		if argStart == nil {
@@ -1267,7 +1263,6 @@ func getAttributeCompletions(token *TokensAtPosition, names []string) []*Complet
 		insertText := v
 
 		if token.Value() == "" || token.Value() == "@" || strings.HasPrefix(insertText, token.Value()) {
-
 			// The exception is if the current token is whitespace, then we
 			// can insert both the "@" and the attribute name
 			if token.Value() == "" {
@@ -1292,7 +1287,6 @@ func getEnvironmentVariableCompletions(cfg *config.ProjectConfig) []*CompletionI
 			Description: "Environment Variable",
 			Kind:        KindField,
 		})
-
 	}
 	return builtInFieldCompletions
 }
@@ -1305,7 +1299,6 @@ func getSecretsCompletions(cfg *config.ProjectConfig) []*CompletionItem {
 			Description: "Secret",
 			Kind:        KindField,
 		})
-
 	}
 	return builtInFieldCompletions
 }

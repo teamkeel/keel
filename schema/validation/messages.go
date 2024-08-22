@@ -50,7 +50,6 @@ func MessagesRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 					f.Type,
 				))
 			}
-
 		},
 		EnterAttribute: func(a *parser.AttributeNode) {
 			if message == nil {

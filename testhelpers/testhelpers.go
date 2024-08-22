@@ -121,7 +121,6 @@ func DbNameForTestName(testName string) string {
 var defaultPem []byte
 
 func GetEmbeddedPrivateKey() (*rsa.PrivateKey, error) {
-
 	privateKeyBlock, err := pem.Decode(defaultPem)
 	if privateKeyBlock == nil {
 		return nil, fmt.Errorf("private key PEM either invalid or empty: %s", err)

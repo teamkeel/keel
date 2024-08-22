@@ -123,7 +123,6 @@ func renderError(sources []*reader.SchemaFile, err *ValidationError, warning boo
 
 		// Enumerate over the characters in the line
 		for charIdx, char := range chars {
-
 			// Check if the character index is less than or greater than the corresponding start and end column
 			// If so, then render the char without any colorization
 			if (charIdx+1) < err.Pos.Column || (charIdx+1) > err.EndPos.Column-1 {
@@ -135,7 +134,6 @@ func renderError(sources []*reader.SchemaFile, err *ValidationError, warning boo
 				result += colors.Orange(fmt.Sprint(char)).String()
 			} else {
 				result += colors.Red(fmt.Sprint(char)).String()
-
 			}
 		}
 

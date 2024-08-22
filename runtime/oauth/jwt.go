@@ -17,7 +17,6 @@ func ExtractClaimFromJwt(token string, claim string) (string, error) {
 	claims, ok := t.Claims.(jwt.MapClaims)
 	if !ok {
 		return "", fmt.Errorf("claims not found")
-
 	}
 
 	value, ok := claims[claim].(string)

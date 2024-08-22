@@ -45,7 +45,6 @@ func UniqueFieldNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErro
 func ValidFieldTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
-
 			if parser.IsBuiltInFieldType(field.Type.Value) {
 				continue
 			}

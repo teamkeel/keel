@@ -75,7 +75,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			nextRows := []*Row{}
 
 			if len(currRows) == 0 {
-				// We cannot set order.customer.name if the input is order.customer.id (implying an assocation).
+				// We cannot set order.customer.name if the input is order.customer.id (implying an association).
 				return fmt.Errorf("set expression operand out of range of inputs: %s. we currently only support setting fields within the input data and cannot set associated model fields", setExpression.Source)
 			}
 
@@ -99,7 +99,6 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 		// Set the field on all rows.
 		for _, row := range currRows {
 			if rhsResolver.IsModelDbColumn() {
-
 				rhsFragments, err := rhsResolver.NormalisedFragments()
 				if err != nil {
 					return err
@@ -129,7 +128,6 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 				identityQuery.Select(selectField)
 
 				row.values[field] = InlineQuery(identityQuery, selectField)
-
 			} else if rhsResolver.IsContextField() || rhsResolver.IsLiteral() || rhsResolver.IsExplicitInput() || rhsResolver.IsImplicitInput() {
 				value, err := rhsResolver.ResolveValue(args)
 				if err != nil {
@@ -188,7 +186,6 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 		//  - Explicit input, which is handled elsewhere.
 		if !input.IsModelField() {
 			if input.Type.Type == proto.Type_TYPE_MESSAGE {
-
 				target := append(newRow.target, casing.ToLowerCamel(input.Name))
 				messageModel := proto.FindModel(scope.Schema.Models, field.Type.ModelName.Value)
 				nestedMessage := proto.FindMessage(scope.Schema.Messages, input.Type.MessageName.Value)
@@ -391,7 +388,6 @@ func targetAssociating(scope *Scope, target []string) bool {
 					message = proto.FindMessage(scope.Schema.Messages, f.Type.MessageName.Value)
 					field := proto.FindField(scope.Schema.Models, model.Name, t)
 					model = proto.FindModel(scope.Schema.Models, field.Type.ModelName.Value)
-
 				}
 				found = true
 				break

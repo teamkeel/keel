@@ -147,7 +147,7 @@ func GetForeignKeyFieldName(models []*Model, field *Field) string {
 	}
 
 	// If we get this far, we must search for fields in the related thisModel to infer the answer.
-	// NB. Schema validation guarentees that there will never be more than one
+	// NB. Schema validation guarantees that there will never be more than one
 	// candidate in the latter case.
 	thisModel := FindModel(models, field.ModelName)
 	relatedModel := FindModel(models, field.Type.ModelName.Value)

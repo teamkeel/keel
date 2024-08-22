@@ -98,9 +98,7 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 							},
 							element.Ident.Fragments[0],
 						))
-
 					}
-
 				}
 			}
 
@@ -135,7 +133,6 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 					))
 					return
 				}
-
 			}
 
 			if len(arguments) > 2 {
@@ -148,7 +145,6 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 					arg,
 				))
 			}
-
 		},
 	}
 }

@@ -938,7 +938,6 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 			ctes = append(ctes, cte)
 			args = append(args, operand.query.SelectStatement().SqlArgs()...)
 		}
-
 	}
 
 	for _, v := range orderedKeys {
@@ -977,7 +976,6 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 			} else {
 				joins += fmt.Sprintf("%s JOIN %s AS %s ON %s ", query.joinType, j.table, j.alias, j.condition)
 			}
-
 		}
 	}
 
@@ -1241,7 +1239,6 @@ func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any
 	}
 
 	return results[0], nil
-
 }
 
 func ParsePostgresArray[T any](array string, parse func(string) (T, error)) ([]T, error) {

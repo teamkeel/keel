@@ -213,7 +213,6 @@ func OperatorLogicalRule(asts []*parser.AST, expression *parser.Expression, cont
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
-
 		// If there is no operator, then it means there is no rhs
 		if condition.Type() != parser.LogicalCondition && condition.Operator != nil {
 			correction := errorhandling.NewCorrectionHint([]string{"=="}, condition.Operator.Symbol)
@@ -485,7 +484,6 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 	// Case: LHS or RHS is an optional field and the other side is an explicit null
 	if (!resolvedLHS.IsOptional() && resolvedRHS.IsNull()) ||
 		(!resolvedRHS.IsOptional() && resolvedLHS.IsNull()) {
-
 		operandName := resolvedLHS.Name
 		if resolvedLHS.IsNull() {
 			operandName = resolvedRHS.Name

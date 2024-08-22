@@ -255,7 +255,6 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
-
 		} else {
 			identity, err = actions.UpdateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
 			if err != nil {

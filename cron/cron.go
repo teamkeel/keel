@@ -265,7 +265,6 @@ var (
 )
 
 func parseUnixCron(tokens *Tokens) (*CronExpression, error) {
-
 	// group tokens into cron fields, which are separated by whitespace
 	groups := [][]*Token{}
 	var prev *Token

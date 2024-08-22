@@ -63,7 +63,6 @@ func printMessage(writer *Writer, message *parser.MessageNode) {
 	writer.comments(message, func() {
 		writer.write("message %s", camel(message.Name.Value))
 		writer.block(func() {
-
 			for _, field := range message.Fields {
 				writer.comments(field, func() {
 					writer.write(
@@ -84,7 +83,6 @@ func printMessage(writer *Writer, message *parser.MessageNode) {
 				})
 			}
 		})
-
 	})
 }
 
@@ -134,7 +132,6 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 	writer.comments(model, func() {
 		writer.write("model %s", camel(model.Name.Value))
 		writer.block(func() {
-
 			fieldSections := []*parser.ModelSectionNode{}
 			actionSections := []*parser.ModelSectionNode{}
 			attributeSections := []*parser.ModelSectionNode{}
@@ -241,7 +238,6 @@ func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 
 		writer.block(func() {
 			for _, op := range actions {
-
 				writer.comments(op, func() {
 					writer.write(
 						"%s %s",
@@ -313,7 +309,6 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 				// explicit input
 				writer.write("%s: %s", arg.Label.Value, arg.Type.Fragments[0].Fragment)
 			} else {
-
 				// Note: not using arg.Type.ToString() here as we want to try
 				// and fix any casing issues
 				for i, fragment := range arg.Type.Fragments {
@@ -354,7 +349,6 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 
 func printRole(writer *Writer, role *parser.RoleNode) {
 	writer.comments(role, func() {
-
 		writer.write("role %s", camel(role.Name.Value))
 		writer.block(func() {
 			sections := 0

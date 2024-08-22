@@ -274,7 +274,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "createPersonWithDob",
 				},
 				{
-					name:    "valid - ommitting optional input",
+					name:    "valid - omitting optional input",
 					request: `{"name": "Jon"}`,
 					opName:  "createPersonWithOptionalDob",
 				},
@@ -891,7 +891,6 @@ func TestValidateRequest(t *testing.T) {
 			group := group
 			f := f
 			t.Run(group.name+"/"+f.name, func(t *testing.T) {
-
 				builder := schema.Builder{}
 				schema, err := builder.MakeFromString(group.schema, config.Empty)
 				require.NoError(t, err)
@@ -934,7 +933,6 @@ func TestValidateRequest(t *testing.T) {
 			})
 		}
 	}
-
 }
 
 func deleteMatch(slice []string, match string) []string {

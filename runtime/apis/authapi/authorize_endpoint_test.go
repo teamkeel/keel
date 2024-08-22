@@ -648,7 +648,6 @@ func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
 	require.Equal(t, "invalid_request", errorResponse.Error)
 	require.Equal(t, "redirectUrl must be specified in keelconfig.yaml", errorResponse.ErrorDescription)
-
 }
 
 func TestGetClientSecret(t *testing.T) {

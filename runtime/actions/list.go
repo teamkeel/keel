@@ -20,7 +20,6 @@ func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args map[st
 }
 
 func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message *proto.Message, model *proto.Model, args map[string]any) error {
-
 	for _, input := range message.Fields {
 		field := proto.FindField(scope.Schema.Models, model.Name, input.Name)
 
@@ -111,7 +110,6 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 				// Implicit input conditions are ANDed together
 				query.And()
 			}
-
 		}
 	}
 

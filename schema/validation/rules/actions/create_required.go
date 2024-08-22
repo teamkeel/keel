@@ -88,7 +88,6 @@ func checkPlainField(
 	op *parser.ActionNode,
 	errs *errorhandling.ValidationErrors,
 ) {
-
 	requiredPath := extendDotDelimPath(dotDelimPath, field.Name.Value)
 
 	if !satisfied(rootModelName, requiredPath, op) {
@@ -119,7 +118,6 @@ func checkHasOneRelationField(
 	action *parser.ActionNode,
 	errs *errorhandling.ValidationErrors,
 ) {
-
 	nestedModel := query.Model(asts, field.Type.Value)
 	pathToReferencedModel := extendDotDelimPath(dotDelimPath, field.Name.Value)
 	pathToReferencedModelDotID := extendDotDelimPath(pathToReferencedModel, parser.FieldNameId)
@@ -225,7 +223,6 @@ func satisfiedBySetExpr(rootModelName string, dotDelimPath string, action *parse
 	setExpressions := setExpressions(action)
 
 	for _, expr := range setExpressions {
-
 		assignment, err := expr.ToAssignmentCondition()
 		if err != nil {
 			continue

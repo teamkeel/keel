@@ -93,5 +93,4 @@ func ScheduleAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 			}
 		},
 	}
-
 }

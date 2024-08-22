@@ -89,7 +89,7 @@ type Components struct {
 func ValidateRequest(ctx context.Context, schema *proto.Schema, action *proto.Action, input any) (*gojsonschema.Result, error) {
 	requestSchema := JSONSchemaForActionInput(ctx, schema, action)
 
-	// We want to allow ISO8601 format WITH a compulsary date component to be permitted for the date format
+	// We want to allow ISO8601 format WITH a compulsory date component to be permitted for the date format
 	gojsonschema.FormatCheckers.Add("date", RelaxedDateFormatChecker{})
 
 	return gojsonschema.Validate(gojsonschema.NewGoLoader(requestSchema), gojsonschema.NewGoLoader(input))

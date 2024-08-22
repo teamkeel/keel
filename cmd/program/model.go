@@ -571,7 +571,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			NextMsgCommand(m.watcherCh),
 			LoadSchema(m.ProjectDir, m.Environment),
 		)
-
 	}
 
 	return m, nil

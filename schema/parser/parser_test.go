@@ -373,7 +373,6 @@ model Genre {
 	v, err := arg.Expression.ToString()
 	assert.NoError(t, err)
 	assert.Equal(t, "author.category", v)
-
 }
 
 func TestAPI(t *testing.T) {
@@ -456,7 +455,7 @@ func TestParserPos(t *testing.T) {
     }
 }`})
 
-	// The field defintion starts on line 3 character 9
+	// The field definition starts on line 3 character 9
 	assert.Equal(t, 3, schema.Declarations[0].Model.Sections[0].Fields[0].Pos.Line)
 	assert.Equal(t, 9, schema.Declarations[0].Model.Sections[0].Fields[0].Pos.Column)
 }

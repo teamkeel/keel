@@ -46,7 +46,6 @@ func TestMigrations(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(strings.TrimSuffix(testCase.Name(), ".txt"), func(t *testing.T) {
-
 			// Make a database name for this test
 			re := regexp.MustCompile(`[^\w]`)
 			dbName := strings.ToLower(re.ReplaceAllString(t.Name(), ""))

@@ -205,11 +205,11 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 
 		switch {
 		case proto.IsBelongsTo(relatedModelField):
-			// In a "belongs to" the foriegn key is on _this_ model
+			// In a "belongs to" the foreign key is on _this_ model
 			leftOperand = ExpressionField(fragments[:i+1], primaryKey)
 			rightOperand = ExpressionField(fragments[:i], foreignKeyField)
 		default:
-			// In all others the foriegn key is on the _other_ model
+			// In all others the foreign key is on the _other_ model
 			leftOperand = ExpressionField(fragments[:i+1], foreignKeyField)
 			rightOperand = ExpressionField(fragments[:i], primaryKey)
 		}

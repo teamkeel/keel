@@ -220,7 +220,6 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 				update := fmt.Sprintf("UPDATE %s SET %s = %s WHERE %s IS NULL;", Identifier(modelName), Identifier(column.ColumnName), value, Identifier(column.ColumnName))
 				stmts = append(stmts, update)
 			}
-
 		}
 		stmts = append(stmts, fmt.Sprintf("%s %s;", alterColumnStmtPrefix, change))
 	}

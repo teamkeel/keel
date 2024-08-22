@@ -161,7 +161,7 @@ func BoundaryTokensInRange(position Position, start lexer.Token, end lexer.Token
 }
 
 func (n Node) HasEndPosition() bool {
-	// Nodes in parents and after where a syntax error have occured will have these values below
+	// Nodes in parents and after where a syntax error have occurred will have these values below
 	return n.EndPos.Filename != "" && n.EndPos.Column > 0 && n.EndPos.Line > 0
 }
 

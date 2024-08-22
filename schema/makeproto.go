@@ -48,7 +48,6 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 				panic("Case not recognized")
 			}
 		}
-
 	}
 
 	if scm.Config != nil {
@@ -1575,7 +1574,6 @@ func (scm *Builder) inferParserInputType(
 		currModel := model
 
 		for _, ident := range idents {
-
 			target = append(target, ident.Fragment)
 
 			field = query.ModelField(currModel, ident.Fragment)
@@ -1684,7 +1682,6 @@ func (scm *Builder) explicitInputToTypeInfo(input *parser.ActionInputNode) *prot
 }
 
 func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.TypeInfo {
-
 	protoType := scm.parserTypeToProtoType(field.Type.Value)
 	var modelName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue

@@ -162,7 +162,6 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 			}
 
 			arguments = append(arguments, argumentValue)
-
 		},
 	}
 }

@@ -244,7 +244,6 @@ model Book {
 
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-
 			var pos definitions.Position
 			var expected *definitions.Definition
 

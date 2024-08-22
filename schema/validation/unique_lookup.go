@@ -29,7 +29,6 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 	return Visitor{
 		EnterModel: func(m *parser.ModelNode) {
 			model = m
-
 		},
 		LeaveModel: func(_ *parser.ModelNode) {
 			model = nil
@@ -115,7 +114,6 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 			for k, v := range fieldsInComposite {
 				fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
 			}
-
 		},
 		EnterAttribute: func(attr *parser.AttributeNode) {
 			// Action does not require unique lookups
@@ -211,7 +209,6 @@ func expressionHasUniqueLookup(asts []*parser.AST, expression *parser.Expression
 			if hasUniqueLookup {
 				break
 			}
-
 		}
 
 		// There is no point checking further conditions in this expression
@@ -219,7 +216,6 @@ func expressionHasUniqueLookup(asts []*parser.AST, expression *parser.Expression
 		if !hasUniqueLookup {
 			return false
 		}
-
 	}
 
 	return hasUniqueLookup
@@ -244,7 +240,6 @@ func fragmentsUnique(asts []*parser.AST, model *parser.ModelNode, fragments []*p
 		if !query.FieldIsUnique(field) &&
 			!query.IsBelongsToModelField(asts, model, field) &&
 			!query.IsHasManyModelField(asts, field) {
-
 			if !isComposite {
 				return false, nil
 			}

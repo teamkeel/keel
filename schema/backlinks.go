@@ -17,7 +17,6 @@ import (
 // back-link relationship fields to the Identity model.
 func (scm *Builder) insertAllBackLinkFields(
 	asts []*parser.AST) *errorhandling.ErrorDetails {
-
 	identityModel := query.Model(asts, parser.IdentityModelName)
 
 	// Traverse all fields of all models to find "forward" relationships to Identity models.
@@ -56,7 +55,6 @@ func (scm *Builder) insertBackLinkField(
 	identityModel *parser.ModelNode,
 	parentModel *parser.ModelNode,
 	forwardRelnField *parser.FieldNode) *errorhandling.ErrorDetails {
-
 	// The backlink field is named after the name of the model it is back
 	// linking to unless @relation is defined.  If @relation(myFieldName) exists,
 	// then the backlink field will be named using the value provided (i.e. myFieldName).

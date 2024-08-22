@@ -74,7 +74,6 @@ func validateInputType(
 	numberOfInputs int,
 	model *parser.ModelNode,
 	action *parser.ActionNode) *errorhandling.ValidationError {
-
 	// It's makes things simpler and clearer if we treat the validation
 	// for Message input types separately from the other types.
 	inputIsMsg := query.Message(asts, input.Type.ToString()) != nil
@@ -97,7 +96,6 @@ func validateInputMessage(
 	input *parser.ActionInputNode,
 	numberOfInputs int,
 	action *parser.ActionNode) *errorhandling.ValidationError {
-
 	messageName := input.Type.ToString()
 
 	if !action.IsArbitraryFunction() {
@@ -114,7 +112,6 @@ func validateInputMessage(
 func messageNotAllowedForNonArbitraryFunctionErr(
 	input *parser.ActionInputNode,
 	messageName string) *errorhandling.ValidationError {
-
 	return errorhandling.NewValidationErrorWithDetails(
 		errorhandling.ActionInputError,
 		errorhandling.ErrorDetails{
@@ -142,7 +139,6 @@ func unresolvedTypeError(
 	asts []*parser.AST,
 	input *parser.ActionInputNode,
 	model *parser.ModelNode) *errorhandling.ValidationError {
-
 	types := []string{}
 	for _, field := range query.ModelFields(model) {
 		types = append(types, field.Name.Value)

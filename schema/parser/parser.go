@@ -341,7 +341,6 @@ func Parse(s *reader.SchemaFile) (*AST, error) {
 
 	schema, err := parser.ParseString(s.FileName, s.Contents)
 	if err != nil {
-
 		// If the error is a participle.Error (which it should be)
 		// then return an error that also implements the node.Node
 		// interface so that we can later on turn it into a validation

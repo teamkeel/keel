@@ -231,7 +231,7 @@ var formattedDateType = &graphql.Field{
 		// Go prefers to use layout as the basis for date formats
 		// However most users of the api will likely be used to date
 		// formats such as YYYY-mm-dd so therefore the library below
-		// provides a conversion inbetween standard date formats and go's
+		// provides a conversion between standard date formats and go's
 		// layout format system
 		// Format spec: https://github.com/bykof/gostradamus/blob/master/formatting.go#L11-L42
 		dateTime := gostradamus.DateTimeFromTime(*t)

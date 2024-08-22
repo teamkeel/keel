@@ -4,6 +4,8 @@ linters:
     - unconvert
     - unused 
     - unparam
+    - misspell
+    - whitespace
   disable:
     - govet
 linters-settings:

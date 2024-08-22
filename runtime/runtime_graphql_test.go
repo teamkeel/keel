@@ -113,7 +113,6 @@ func TestRuntimeGraphQL(t *testing.T) {
 			if tCase.assertDatabase != nil {
 				tCase.assertDatabase(t, database.GetDB(), bodyFields.Data)
 			}
-
 		})
 	}
 }

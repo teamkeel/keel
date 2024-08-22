@@ -97,7 +97,6 @@ func (c *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.Resourc
 }
 
 func (c *client) updateTraceSummary(traceID string, span *tracepb.Span) {
-
 	start := time.Unix(0, int64(span.StartTimeUnixNano))
 	end := time.Unix(0, int64(span.EndTimeUnixNano))
 
@@ -112,7 +111,6 @@ func (c *client) updateTraceSummary(traceID string, span *tracepb.Span) {
 	} else {
 		if start.Before(summary.StartTime) {
 			summary.StartTime = start
-
 		}
 		if end.After(summary.EndTime) {
 			summary.EndTime = end

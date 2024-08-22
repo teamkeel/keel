@@ -188,7 +188,6 @@ func writeClientActions(w *codegen.Writer, schema *proto.Schema, api *proto.Api)
 		w.Dedent()
 		w.Writeln("},")
 	}
-
 }
 
 func writeClientApiDefinition(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
@@ -202,7 +201,6 @@ func writeClientApiDefinition(w *codegen.Writer, schema *proto.Schema, api *prot
 		} else {
 			mutations = append(mutations, action.Name)
 		}
-
 	}
 
 	w.Writeln("queries: {")
@@ -278,7 +276,6 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	w.Writeln(`url: string | null;`)
 	w.Dedent()
 	w.Writeln(`}`)
-
 }
 
 func toClientActionReturnType(model *proto.Model, op *proto.Action) string {

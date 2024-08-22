@@ -9,7 +9,7 @@ import (
 
 // ModelNamesMaxLengthRule will validate that model names are smaller than the maximum allowed by postgres (63 bytes).
 //
-// The maximum field length is given by: 63 - 11 (to accomodate for the longest trigger name suffix: _updated_at) hard limit.
+// The maximum field length is given by: 63 - 11 (to accommodate for the longest trigger name suffix: _updated_at) hard limit.
 // This maximum length is applied to the snake cased version of the field name.
 func ModelNamesMaxLengthRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	const (
