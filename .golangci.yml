@@ -1,10 +1,11 @@
 linters:
   enable:
     - errcheck
-    - unconvert
-    - unused 
-    - unparam
     - misspell
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
     - whitespace
   disable:
     - govet
