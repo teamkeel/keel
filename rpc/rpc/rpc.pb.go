@@ -873,7 +873,8 @@ type ActionConfig struct {
 	Inputs         []*RequestFieldConfig      `protobuf:"bytes,7,rep,name=inputs,proto3" json:"inputs,omitempty"`
 	Response       []*ResponseFieldConfig     `protobuf:"bytes,8,rep,name=response,proto3" json:"response,omitempty"`
 	// Title of the tool.
-	// Default value: the first field of the model if it's a text field use that, otherwise empty.
+	// Default value: a template with the first field of the model if it's a text field use that,
+	// otherwise empty.
 	Title *StringTemplate `protobuf:"bytes,9,opt,name=title,proto3,oneof" json:"title,omitempty"`
 	// Template language support: markdown
 	HelpText *StringTemplate `protobuf:"bytes,10,opt,name=help_text,json=helpText,proto3,oneof" json:"help_text,omitempty"`
@@ -891,18 +892,21 @@ type ActionConfig struct {
 	RelatedActions []*ActionLink `protobuf:"bytes,14,rep,name=related_actions,json=relatedActions,proto3" json:"related_actions,omitempty"`
 	// Only for List actions; Support offset and cursor
 	Pagination *CursorPaginationConfig `protobuf:"bytes,15,opt,name=pagination,proto3,oneof" json:"pagination,omitempty"`
-	Links      []*ExternalLink         `protobuf:"bytes,16,rep,name=links,proto3" json:"links,omitempty"` // Only for Get actions; Nothing for auto generated
+	// List of extenal links that will be displayed with this tool; used only for Get actions.
+	// Nothing for auto generated
+	Links []*ExternalLink `protobuf:"bytes,16,rep,name=links,proto3" json:"links,omitempty"`
 	// Things you can do to this entry
 	// All update, deletes, creates, read and write on the same model.
 	// Only for List & Get; empty for mutations
 	EntryActivityActions []*ActionLink `protobuf:"bytes,17,rep,name=entry_activity_actions,json=entryActivityActions,proto3" json:"entry_activity_actions,omitempty"`
-	EmbeddedActions      []*ActionLink `protobuf:"bytes,18,rep,name=embedded_actions,json=embeddedActions,proto3" json:"embedded_actions,omitempty"`
+	// Tools that will be displayed inline (embedded) withing the one that we're defining.
+	EmbeddedActions []*ActionLink `protobuf:"bytes,18,rep,name=embedded_actions,json=embeddedActions,proto3" json:"embedded_actions,omitempty"`
 	// The action to use to get an entry on this model. Default to a get action on the same model
 	// Used for:
 	// - fetching the record for prefilling a mutation
 	// - the link for clicking a row in a List
 	// - the action to call after a mutation
-	GetEntryAction *ActionLink `protobuf:"bytes,19,opt,name=get_entry_action,json=getEntryAction,proto3,oneof" json:"get_entry_action,omitempty"` //
+	GetEntryAction *ActionLink `protobuf:"bytes,19,opt,name=get_entry_action,json=getEntryAction,proto3,oneof" json:"get_entry_action,omitempty"`
 }
 
 func (x *ActionConfig) Reset() {

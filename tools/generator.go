@@ -12,7 +12,7 @@ import (
 
 type Generator struct {
 	Schema *proto.Schema
-	Tools  []*rpc.ActionConfig
+	Tools  map[string]*rpc.ActionConfig
 }
 
 var ErrInvalidSchema = errors.New("invalid schema")
@@ -31,7 +31,7 @@ func (g *Generator) Generate(ctx context.Context) error {
 	}
 
 	// reset any previous tools
-	g.Tools = []*rpc.ActionConfig{}
+	g.Tools = map[string]*rpc.ActionConfig{}
 
 	// first pass at generating tools;
 	if err := g.scaffoldTools(); err != nil {
@@ -58,10 +58,35 @@ func (g *Generator) scaffoldTools() error {
 				Implementation: action.GetImplementation(),
 				EntitySingle:   strings.ToLower(model.GetName()),
 				EntityPlural:   casing.ToPlural(strings.ToLower(model.GetName())),
+				Capabilities:   g.capabilities(model, action),
 			}
-			g.Tools = append(g.Tools, &t)
+
+			g.Tools[t.Id] = &t
 		}
 	}
 
 	return nil
+}
+
+// capabilities generates the capabilities/features available for a tool generated for the given action.
+// Audit trail is enabled just for GET actions on models that have an UPDATE action.
+//
+// TODO: Decide on further capabilities
+func (g *Generator) capabilities(model *proto.Model, action *proto.Action) *rpc.Capabilities {
+	c := &rpc.Capabilities{
+		Comments: false,
+		Audit:    false,
+	}
+
+	// Audit is enabled for get actions for models that also have an update action
+	if action.GetType() == proto.ActionType_ACTION_TYPE_GET {
+		for _, act := range model.GetActions() {
+			if act.GetType() == proto.ActionType_ACTION_TYPE_UPDATE {
+				c.Audit = true
+				break
+			}
+		}
+	}
+
+	return c
 }

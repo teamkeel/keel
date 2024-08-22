@@ -8,8 +8,8 @@ import (
 	"github.com/teamkeel/keel/rpc/rpc"
 )
 
-// GenerateTools will return a list of tool configurations generated for the given schema
-func GenerateTools(ctx context.Context, schema *proto.Schema) ([]*rpc.ActionConfig, error) {
+// GenerateTools will return a map of tool configurations generated for the given schema, keyed by their ids
+func GenerateTools(ctx context.Context, schema *proto.Schema) (map[string]*rpc.ActionConfig, error) {
 	if schema == nil {
 		return nil, nil
 	}

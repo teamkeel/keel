@@ -179,7 +179,12 @@ func (s *Server) ListTools(ctx context.Context, input *rpc.ListToolsRequest) (*r
 		return nil, twirp.NewError(twirp.Internal, err.Error())
 	}
 
-	return &rpc.ListToolsResponse{
-		Tools: tools,
-	}, nil
+	response := &rpc.ListToolsResponse{
+		Tools: []*rpc.ActionConfig{},
+	}
+	for _, tool := range tools {
+		response.Tools = append(response.Tools, tool)
+	}
+
+	return response, nil
 }
