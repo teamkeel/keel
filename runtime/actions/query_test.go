@@ -3420,7 +3420,6 @@ func TestQueryBuilder(t *testing.T) {
 			if testCase.expectedArgs != nil {
 				if len(testCase.expectedArgs) != len(statement.SqlArgs()) {
 					assert.Failf(t, "Argument count not matching", "Expected: %v, Actual: %v", len(testCase.expectedArgs), len(statement.SqlArgs()))
-
 				} else {
 					for i := 0; i < len(testCase.expectedArgs); i++ {
 						if testCase.expectedArgs[i] != statement.SqlArgs()[i] {

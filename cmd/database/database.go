@@ -53,7 +53,6 @@ import (
 //
 // The connection info it returns refers to the project-specific database.
 func Start(reset bool, projectDirectory string) (*db.ConnectionInfo, error) {
-
 	// We need a dockerClient (proxy) to "drive" Docker using the SDK.
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -151,7 +150,7 @@ func Stop() error {
 }
 
 // fetchPostgresImageIfNecessary goes off to fetch the official Postgres Docker image,
-// if it is not already stored in Docker's local Image Respository.
+// if it is not already stored in Docker's local Image Repository.
 func fetchPostgresImageIfNecessary(dockerClient *client.Client) error {
 	postgresImage, err := findImage(dockerClient)
 	if err != nil {
@@ -207,7 +206,6 @@ func removeContainer(dockerClient *client.Client) error {
 func createContainer(dockerClient *client.Client) (
 	containerID string,
 	connInfo *db.ConnectionInfo, err error) {
-
 	if err := fetchPostgresImageIfNecessary(dockerClient); err != nil {
 		return "", nil, err
 	}
@@ -321,7 +319,6 @@ func awaitReadCompletion(r io.Reader) {
 		if err != nil {
 			if err != io.EOF {
 				panic(fmt.Sprintf("error from read operation: %v", err))
-
 			}
 			fmt.Printf("\n")
 			return

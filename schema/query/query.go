@@ -45,7 +45,6 @@ func Models(asts []*parser.AST, filters ...ModelFilter) (res []*parser.ModelNode
 
 func ModelNames(asts []*parser.AST, filters ...ModelFilter) (res []string) {
 	for _, ast := range asts {
-
 	models:
 		for _, decl := range ast.Declarations {
 			if decl.Model != nil {
@@ -348,7 +347,6 @@ func FieldIsInCompositeUnique(model *parser.ModelNode, field *parser.FieldNode) 
 					return true
 				}
 			}
-
 		}
 	}
 	return false
@@ -425,7 +423,7 @@ func AllHasManyRelationFields(asts []*parser.AST) []*parser.FieldNode {
 	return captured
 }
 
-// ResolveInputType returns a string represention of the type of the given input.
+// ResolveInputType returns a string representation of the type of the given input.
 //
 // If the input is explicitly typed using a built in type that type is returned
 //
@@ -555,7 +553,6 @@ func IsBelongsToModelField(asts []*parser.AST, model *parser.ModelNode, field *p
 // SubscriberNames gets a unique slice of subscriber names which have been defined in the schema.
 func SubscriberNames(asts []*parser.AST) (res []string) {
 	for _, ast := range asts {
-
 		for _, decl := range ast.Declarations {
 			if decl.Model != nil {
 				for _, section := range decl.Model.Sections {
@@ -572,7 +569,6 @@ func SubscriberNames(asts []*parser.AST) (res []string) {
 								}
 							}
 						}
-
 					}
 				}
 			}
@@ -611,7 +607,6 @@ func GetRelationshipCandidates(asts []*parser.AST, model *parser.ModelNode, fiel
 			ValidOneToHasMany(otherField, field) ||
 			ValidUniqueOneToHasOne(field, otherField) ||
 			ValidUniqueOneToHasOne(otherField, field) {
-
 			// Make sure this candidate is not already being referenced by a @relation attribute on another field
 			alreadyReferencedByRelation := false
 			for _, f := range theseFields {

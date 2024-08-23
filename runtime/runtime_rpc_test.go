@@ -111,7 +111,6 @@ func TestRuntimeRPC(t *testing.T) {
 					assert.Fail(t, msg)
 				}
 			}
-
 		})
 	}
 }

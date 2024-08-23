@@ -194,7 +194,6 @@ func (m *GenerateClientModel) renderGenerate() string {
 	}
 
 	if m.Status >= StatusGenerated {
-
 		b.WriteString(fmt.Sprintf("%s\n\n", colors.Green("✅ All done!").String()))
 
 		if len(m.GeneratedFiles) > 0 {

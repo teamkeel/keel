@@ -369,7 +369,6 @@ func TestAuditTablesWithOnlyTracing(t *testing.T) {
 	require.Nil(t, audit["identity_id"])
 	require.Equal(t, testhelpers.TraceId, audit["trace_id"])
 	require.Nil(t, audit["event_processed_at"])
-
 }
 
 func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {

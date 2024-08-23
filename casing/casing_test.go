@@ -13,6 +13,7 @@ type testCase struct {
 
 func TestLowerCamel(t *testing.T) {
 	t.Parallel()
+
 	testCases := []testCase{
 		{
 			input:  "slackID",

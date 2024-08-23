@@ -645,7 +645,6 @@ func (query *QueryBuilder) countQuery() string {
 // Generates an executable SELECT statement with the list of arguments.
 func (query *QueryBuilder) SelectStatement() *Statement {
 	distinctOn := ""
-	selection := ""
 	joins := ""
 	filters := ""
 	orderBy := ""
@@ -659,7 +658,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		query.Select(AllFields())
 	}
 
-	selection = strings.Join(query.selection, ", ")
+	selection := strings.Join(query.selection, ", ")
 
 	if len(query.joins) > 0 {
 		for _, j := range query.joins {
@@ -938,7 +937,6 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 			ctes = append(ctes, cte)
 			args = append(args, operand.query.SelectStatement().SqlArgs()...)
 		}
-
 	}
 
 	for _, v := range orderedKeys {
@@ -977,7 +975,6 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 			} else {
 				joins += fmt.Sprintf("%s JOIN %s AS %s ON %s ", query.joinType, j.table, j.alias, j.condition)
 			}
-
 		}
 	}
 
@@ -1241,7 +1238,6 @@ func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any
 	}
 
 	return results[0], nil
-
 }
 
 func ParsePostgresArray[T any](array string, parse func(string) (T, error)) ([]T, error) {

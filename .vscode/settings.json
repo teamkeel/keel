@@ -4,5 +4,5 @@
         "--config=${workspaceFolder}/.golangci.yml",
         "--fast",
     ],
-    "go.lintOnSave": "package"
+    "go.lintOnSave": "workspace"
 }

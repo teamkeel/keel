@@ -1202,7 +1202,7 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 			return fmt.Sprintf("'%s'", f.Name), isModelInput(schema, f)
 		})
 
-		beforeWriteValues := ""
+		var beforeWriteValues string
 		switch len(pickKeys) {
 		case len(msg.Fields):
 			// All inputs target model fields, this means the beforeWriteValues are exactly the same as the inputs
@@ -1632,7 +1632,6 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 				w.Writef("%s(o?: JobOptions): Promise<void>", strcase.ToLowerCamel(job.Name))
 				w.Writeln(";")
 			}
-
 		}
 		w.Dedent()
 		w.Writeln("}")
@@ -1664,7 +1663,6 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export declare const actions: ActionExecutor;")
 	w.Writeln("export declare const models: sdk.ModelsAPI;")
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
-
 }
 
 func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {

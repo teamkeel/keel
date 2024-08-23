@@ -95,7 +95,6 @@ func (m *InitModel) renderInit() string {
 		b.WriteString(fmt.Sprintf("%s\n\n", colors.Green("Ready to build with Keel!").String()))
 
 		if len(m.GeneratedFiles) > 0 {
-
 			b.WriteString("Generated:\n")
 			b.WriteString("===================================\n")
 
@@ -107,7 +106,6 @@ func (m *InitModel) renderInit() string {
 		}
 
 		if len(m.SkippedFiles) > 0 {
-
 			b.WriteString("Skipped as there are existing files:\n")
 			b.WriteString("===================================\n")
 

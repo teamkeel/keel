@@ -1,9 +1,13 @@
 linters:
   enable:
     - errcheck
+    - misspell
     - unconvert
-    - unused 
     - unparam
+    - unused
+    - usestdlibvars
+    - wastedassign
+    - whitespace
   disable:
     - govet
 linters-settings:

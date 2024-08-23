@@ -30,7 +30,6 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 
 	for _, f := range message.Fields {
 		if v, has := input[f.Name]; has {
-
 			switch f.Type.Type {
 			case proto.Type_TYPE_MESSAGE:
 				nested := proto.FindMessage(schema.Messages, f.Type.MessageName.Value)
@@ -76,7 +75,6 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 			if err != nil {
 				return nil, err
 			}
-
 		}
 	}
 
@@ -181,7 +179,7 @@ var toDate = func(value any) (types.Date, error) {
 // TransformCustomFunctionsInputTypes will, similarly to TransformInputTypes traverse through the input data structure
 // and will decorate complex input fields with typenames to be used by the JS environment
 //
-// e.g. for InlineFile inputs, whcih are given as a dataURL string, they need to be transformed into an object
+// e.g. for InlineFile inputs, which are given as a dataURL string, they need to be transformed into an object
 // including the typename
 func TransformCustomFunctionsInputTypes(schema *proto.Schema, messageName string, input map[string]any) (map[string]any, error) {
 	message := proto.FindMessage(schema.Messages, messageName)

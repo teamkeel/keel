@@ -42,7 +42,6 @@ func NewScope(
 	ctx context.Context,
 	action *proto.Action,
 	schema *proto.Schema) *Scope {
-
 	model := proto.FindModel(schema.Models, action.ModelName)
 
 	return &Scope{
@@ -58,7 +57,6 @@ func NewModelScope(
 	ctx context.Context,
 	model *proto.Model,
 	schema *proto.Schema) *Scope {
-
 	return &Scope{
 		Context: ctx,
 		Action:  nil,
@@ -72,7 +70,6 @@ func NewJobScope(
 	ctx context.Context,
 	job *proto.Job,
 	schema *proto.Schema) *Scope {
-
 	return &Scope{
 		Context: ctx,
 		Action:  nil,

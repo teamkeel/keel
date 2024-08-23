@@ -58,7 +58,6 @@ func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (code
 	})
 
 	for _, hook := range cfg.Auth.EnabledHooks() {
-
 		var contents string
 		switch hook {
 		case config.HookAfterAuthentication:
@@ -185,5 +184,4 @@ func writeSubscriberWrapper(subscriber *proto.Subscriber) string {
 export default %s(async (ctx, event) => {
 
 });`, strcase.ToCamel(subscriber.Name), strcase.ToCamel(subscriber.Name))
-
 }

@@ -110,7 +110,7 @@ func TestDbTransactionCommit(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	// Transaction was commited, row should be returned
+	// Transaction was committed, row should be returned
 	result, err := db.ExecuteQuery(ctx, "SELECT * FROM test_local_transaction_commit_table")
 	assert.NoError(t, err)
 	assert.Len(t, result.Rows, 1)

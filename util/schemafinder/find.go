@@ -48,7 +48,6 @@ func panicOnErr(err error) {
 
 // You can change this function to suit your purpose.
 func applyTests(filePath string, lines []string, schemaAsString string) {
-
 	// Example 1) capture the location of all schema files that have at least one references to permissions?
 	if strings.Contains(schemaAsString, "@permission") {
 		fmt.Printf("XXXX This file uses permission attribute: %s\n", filePath)

@@ -228,5 +228,4 @@ func makeRevokeTokenJsonRequest(ctx context.Context, token string) *http.Request
 	request = request.WithContext(ctx)
 
 	return request
-
 }

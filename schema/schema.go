@@ -288,7 +288,6 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 // built and combined from all input files. It analyses the foreign key fields that should be auto
 // generated and injected into each model.
 func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) *errorhandling.ErrorDetails {
-
 	for _, mdl := range query.Models(asts) {
 		fkFieldsToAdd := []*parser.FieldNode{}
 

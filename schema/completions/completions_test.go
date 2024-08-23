@@ -22,7 +22,6 @@ type testCase struct {
 }
 
 func TestRootCompletions(t *testing.T) {
-
 	cases := []testCase{
 		{
 			name:     "top-level-keyword",
@@ -61,7 +60,6 @@ func TestRootCompletions(t *testing.T) {
 }
 
 func TestModelCompletions(t *testing.T) {
-
 	cases := []testCase{
 		// name tests
 		{
@@ -230,7 +228,6 @@ func TestCompositeUniqueCompletions(t *testing.T) {
 }
 
 func TestFieldCompletions(t *testing.T) {
-
 	cases := []testCase{
 		// name tests
 		{
@@ -1759,7 +1756,6 @@ func TestAPICompletions(t *testing.T) {
 }
 
 func TestEnumCompletions(t *testing.T) {
-
 	cases := []testCase{
 		{
 			name: "enum-name-completion",
@@ -1796,7 +1792,6 @@ func TestEnumCompletions(t *testing.T) {
 }
 
 func TestMessageCompletions(t *testing.T) {
-
 	cases := []testCase{
 		{
 			name: "message-field-completions",

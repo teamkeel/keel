@@ -458,7 +458,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if m.RuntimeHandler == nil {
-			w.WriteHeader(500)
+			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("Cannot serve requests while there are schema errors. Please see the CLI output for more info."))
 			msg.done <- true
 			return m, NextMsgCommand(m.runtimeRequestsCh)
@@ -536,7 +536,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if m.RpcHandler == nil {
-			w.WriteHeader(500)
+			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("Cannot serve requests while there are schema errors. Please see the CLI output for more info."))
 			msg.done <- true
 			return m, NextMsgCommand(m.runtimeRequestsCh)
@@ -571,7 +571,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			NextMsgCommand(m.watcherCh),
 			LoadSchema(m.ProjectDir, m.Environment),
 		)
-
 	}
 
 	return m, nil

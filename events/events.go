@@ -180,7 +180,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 
 // eventNameFromAudit generates an event name from audit table columns.
 func eventNameFromAudit(tableName string, op string) (string, error) {
-	action := ""
+	var action string
 
 	switch op {
 	case auditing.Insert:

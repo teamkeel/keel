@@ -281,7 +281,7 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.Ident, stmt 
 				// Left alias is the source table
 				leftAlias := fieldName
 
-				// Append fragment to identifer
+				// Append fragment to identifier
 				fieldName += "$" + casing.ToSnake(f.Fragment)
 
 				// Right alias is the join table

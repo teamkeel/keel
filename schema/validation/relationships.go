@@ -30,7 +30,6 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 		},
 
 		LeaveModel: func(_ *parser.ModelNode) {
-
 			// Make iterating through the map with deterministic ordering
 			orderedKeys := make([]*parser.FieldNode, 0, len(candidates))
 			for k := range candidates {

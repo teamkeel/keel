@@ -16,7 +16,6 @@ func DuplicateMessageNames(asts []*parser.AST, errs *errorhandling.ValidationErr
 			}
 
 			for _, model := range query.Models(asts) {
-
 				if model.Name.Value == n.Name.Value {
 					var message string
 					if model.BuiltIn {
@@ -40,7 +39,6 @@ func DuplicateMessageNames(asts []*parser.AST, errs *errorhandling.ValidationErr
 			}
 
 			for _, enum := range query.Enums(asts) {
-
 				if enum.Name.Value == n.Name.Value {
 					errs.AppendError(
 						errorhandling.NewValidationErrorWithDetails(

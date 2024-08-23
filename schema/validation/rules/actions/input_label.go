@@ -30,7 +30,6 @@ func ValidActionInputLabelRule(asts []*parser.AST) (errs errorhandling.Validatio
 func validateInputLabel(
 	asts []*parser.AST,
 	input *parser.ActionInputNode) *errorhandling.ValidationError {
-
 	if input.Label == nil {
 		return nil
 	}

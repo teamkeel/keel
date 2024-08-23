@@ -443,7 +443,6 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 func (mk *graphqlSchemaBuilder) addAction(
 	action *proto.Action,
 	schema *proto.Schema) error {
-
 	model := proto.FindModel(schema.Models, action.ModelName)
 	modelType, err := mk.addModel(model)
 	if err != nil {

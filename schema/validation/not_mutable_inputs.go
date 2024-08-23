@@ -54,7 +54,6 @@ func NotMutableInputs(_ []*parser.AST, errs *errorhandling.ValidationErrors) Vis
 				))
 				return
 			}
-
 		},
 	}
 }

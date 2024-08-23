@@ -308,7 +308,6 @@ func validateIdentArray(expr *parser.Expression, allowedIdents []string) (errs e
 }
 
 func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-
 	for _, model := range query.Models(asts) {
 		// we dont want to validate built in models
 		if model.BuiltIn {

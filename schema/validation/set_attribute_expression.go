@@ -223,7 +223,6 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 					}
 				}
 			}
-
 		},
 	}
 }

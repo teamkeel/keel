@@ -153,7 +153,6 @@ type GenerateClientMsg struct {
 
 func GenerateClient(dir string, schema *proto.Schema, apiName string, outputDir string, makePackage bool, output chan tea.Msg) tea.Cmd {
 	return func() tea.Msg {
-
 		if schema == nil || len(schema.Apis) == 0 {
 			return GenerateMsg{
 				Status: StatusNotGenerated,
@@ -217,7 +216,6 @@ type ParsePrivateKeyMsg struct {
 
 func ParsePrivateKey(path string) tea.Cmd {
 	return func() tea.Msg {
-
 		// Uses the embedded default private key if a custom key isn't provided
 		// This allows for a smooth DX in a local env where the signing of the token isn't important
 		// but avoids a code path where we skip token validation
@@ -361,7 +359,6 @@ func (e *ApplyMigrationsError) Unwrap() error {
 
 func RunMigrations(schema *proto.Schema, database db.Database) tea.Cmd {
 	return func() tea.Msg {
-
 		m, err := migrations.New(context.Background(), schema, database)
 		if err != nil {
 			return RunMigrationsMsg{

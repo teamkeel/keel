@@ -38,7 +38,7 @@ func NewCorrectionHint(referenceCollection []string, query string) *CorrectionHi
 }
 
 func (hint *CorrectionHint) ToString() string {
-	message := ""
+	var message string
 
 	if len(hint.Results) == 1 {
 		message = fmt.Sprintf("Did you mean %s?", hint.Results[0])

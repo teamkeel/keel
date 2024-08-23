@@ -116,7 +116,7 @@ func initStepDir(state *InitState) {
 		panic(err)
 	}
 
-	defaultDir := ""
+	var defaultDir string
 
 	switch {
 	case len(entries) == 0:

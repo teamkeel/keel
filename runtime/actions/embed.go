@@ -23,7 +23,6 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 
 	if !proto.IsTypeModel(field) {
 		return nil, fmt.Errorf("field (%s) is not a embeddable model field", embedTargetField)
-
 	}
 
 	// we will select from the relatedModel's table, joining the source model with an alias ("source"), where source.id = sourceModel.id

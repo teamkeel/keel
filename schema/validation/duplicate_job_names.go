@@ -12,7 +12,6 @@ func DuplicateJobNames(asts []*parser.AST, errs *errorhandling.ValidationErrors)
 	return Visitor{
 		EnterJob: func(n *parser.JobNode) {
 			for _, job := range query.Jobs(asts) {
-
 				if n == job {
 					continue
 				}

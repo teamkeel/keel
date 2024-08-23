@@ -9,7 +9,6 @@ import (
 // return type and is expected by the GraphQL schema for the List action.
 // See https://relay.dev/graphql/connections.htm
 func connectionResponse(data map[string]any) (resp any, err error) {
-
 	results := []map[string]any{}
 
 	// From custom functions.

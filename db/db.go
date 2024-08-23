@@ -50,7 +50,7 @@ type Database interface {
 	ExecuteQuery(ctx context.Context, sql string, args ...any) (*ExecuteQueryResult, error)
 	// Executes SQL statement and returns number of rows affected.
 	ExecuteStatement(ctx context.Context, sql string, args ...any) (*ExecuteStatementResult, error)
-	// Runs fn inside a transaction which is commited if fn returns a nil error
+	// Runs fn inside a transaction which is committed if fn returns a nil error
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 	Close() error
 	GetDB() *gorm.DB

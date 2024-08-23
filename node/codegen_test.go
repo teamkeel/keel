@@ -785,7 +785,6 @@ createAccount(i?: CreateAccountInput): Promise<sdk.Account>;`
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeTestingTypes(w, s)
 	})
-
 }
 
 func TestWriteActionInputTypesUpdate(t *testing.T) {
@@ -1788,7 +1787,6 @@ export declare function VerifyEmail(fn: (ctx: SubscriberContextAPI, event: Verif
 export declare function SendWelcomeEmail(fn: (ctx: SubscriberContextAPI, event: SendWelcomeEmailEvent) => Promise<void>): Promise<void>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-
 		for _, s := range s.Subscribers {
 			writeSubscriberFunctionWrapperType(w, s)
 		}
@@ -2225,7 +2223,6 @@ func TestTestingActionExecutor(t *testing.T) {
 	require.NoError(t, err)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		assert.True(t, strings.HasSuffix(r.URL.Path, "/getPerson"))
 
 		b, err := io.ReadAll(r.Body)
@@ -2421,7 +2418,6 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 	diff := diffmatchpatch.New()
 	diffs := diff.DiffMain(normalise(expected), normalise(w.String()), true)
 	if !strings.Contains(normalise(w.String()), normalise(expected)) {
-
 		t.Errorf("generated code does not match expected:\n%s", diffPrettyText(diffs))
 		t.Errorf("\nExpected:\n---------\n%s", normalise(expected))
 		t.Errorf("\nActual:\n---------\n%s", normalise(w.String()))
