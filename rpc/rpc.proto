@@ -243,7 +243,7 @@ message ActionLink {
 	// 		"id": "$.id" // JSON path on the current action repsonse. Can be recursive
 	// 	}
 	// }
-	DataMapping data = 2;
+	repeated DataMapping data = 2;
 	
 	optional StringTemplate title = 3; // Empty by default
 }
@@ -268,5 +268,9 @@ message CursorPaginationConfig {
 }
 
 message DataMapping {
-	map <string, string> data = 1; // not really sure what this is supposed to be?
+	string key = 1;
+	oneof value {
+		JsonPath path = 2;
+		DataMapping object = 3;
+	}
 }
