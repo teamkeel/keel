@@ -2,6 +2,7 @@ linters:
   enable:
     - errcheck
     - misspell
+    - staticcheck
     - unconvert
     - unparam
     - unused
@@ -10,8 +11,3 @@ linters:
     - whitespace
   disable:
     - govet
-linters-settings:
- staticcheck:
-    checks:
-      - all
-      - '-SA1019' # allow the use of deprecated functions (since we have some)

@@ -15,6 +15,7 @@ import (
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
 // Event names
@@ -56,7 +57,7 @@ var contextKey handlerContextKey = "eventHandler"
 func WithEventHandler(ctx context.Context, handler EventHandler) (context.Context, error) {
 	// If no tracing provider is set up, then events will not work.
 	// It is better to error than to let events silently malfunction.
-	if otel.GetTracerProvider() == trace.NewNoopTracerProvider() {
+	if otel.GetTracerProvider() == noop.NewTracerProvider() {
 		return nil, errors.New("cannot use events when there is no trace provider configured")
 	}
 
