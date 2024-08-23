@@ -188,7 +188,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 			if input.Type.Type == proto.Type_TYPE_MESSAGE {
 				target := append(newRow.target, casing.ToLowerCamel(input.Name))
 				messageModel := proto.FindModel(scope.Schema.Models, field.Type.ModelName.Value)
-				nestedMessage := proto.FindMessage(scope.Schema.Messages, input.Type.MessageName.Value)
+				nestedMessage := scope.Schema.FindMessage(input.Type.MessageName.Value)
 
 				var foreignKeys map[string]any
 				var err error
@@ -378,14 +378,14 @@ func targetAssociating(scope *Scope, target []string) bool {
 		return false
 	}
 
-	message := proto.FindMessage(scope.Schema.Messages, scope.Action.InputMessageName)
+	message := scope.Schema.FindMessage(scope.Action.InputMessageName)
 	model := proto.FindModel(scope.Schema.Models, strcase.ToCamel(target[0]))
 	for _, t := range target[1 : len(target)-1] {
 		found := false
 		for _, f := range message.Fields {
 			if f.Name == t {
 				if f.Type.Type == proto.Type_TYPE_MESSAGE {
-					message = proto.FindMessage(scope.Schema.Messages, f.Type.MessageName.Value)
+					message = scope.Schema.FindMessage(f.Type.MessageName.Value)
 					field := proto.FindField(scope.Schema.Models, model.Name, t)
 					model = proto.FindModel(scope.Schema.Models, field.Type.ModelName.Value)
 				}

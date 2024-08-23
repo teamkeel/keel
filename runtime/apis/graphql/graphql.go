@@ -501,7 +501,7 @@ func (mk *graphqlSchemaBuilder) addAction(
 		field.Type = mk.makeConnectionType(modelType)
 		mk.query.AddFieldConfig(action.Name, field)
 	case proto.ActionType_ACTION_TYPE_READ:
-		responseMessage := proto.FindMessage(schema.Messages, action.ResponseMessageName)
+		responseMessage := schema.FindMessage(action.ResponseMessageName)
 		if responseMessage == nil {
 			return fmt.Errorf("response message does not exist: %s", action.ResponseMessageName)
 		}
@@ -517,7 +517,7 @@ func (mk *graphqlSchemaBuilder) addAction(
 
 		mk.query.AddFieldConfig(action.Name, field)
 	case proto.ActionType_ACTION_TYPE_WRITE:
-		responseMessage := proto.FindMessage(schema.Messages, action.ResponseMessageName)
+		responseMessage := schema.FindMessage(action.ResponseMessageName)
 		if responseMessage == nil {
 			return fmt.Errorf("response message does not exist: %s", action.ResponseMessageName)
 		}
@@ -612,7 +612,7 @@ func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Outp
 
 		switch field.Type.Type {
 		case proto.Type_TYPE_MESSAGE:
-			fieldMessage := proto.FindMessage(mk.proto.Messages, field.Type.MessageName.Value)
+			fieldMessage := mk.proto.FindMessage(field.Type.MessageName.Value)
 
 			var err error
 			fieldType, err = mk.addMessage(fieldMessage)
@@ -769,7 +769,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 	switch {
 	case field.Type.Type == proto.Type_TYPE_MESSAGE:
 		messageName := field.Type.MessageName.Value
-		message := proto.FindMessage(mk.proto.Messages, messageName)
+		message := mk.proto.FindMessage(messageName)
 		if message == nil {
 			return nil, fmt.Errorf("message does not exist: %s", messageName)
 		}
@@ -812,7 +812,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		})
 
 		for _, typeName := range field.Type.UnionNames {
-			fieldMessage := proto.FindMessage(mk.proto.Messages, typeName.Value)
+			fieldMessage := mk.proto.FindMessage(typeName.Value)
 			for _, typeField := range fieldMessage.Fields {
 				typeField.Optional = true
 				typeField.Nullable = true
@@ -875,7 +875,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(field *proto.MessageField) (graphql
 // makeActionInputType generates an input type to reflect the inputs of the given
 // proto.Action - which can be used as the Args field in a graphql.Field.
 func (mk *graphqlSchemaBuilder) makeActionInputType(action *proto.Action) (*graphql.InputObject, bool, error) {
-	message := proto.FindMessage(mk.proto.Messages, action.InputMessageName)
+	message := mk.proto.FindMessage(action.InputMessageName)
 	allOptionalInputs := true
 
 	inputType := graphql.NewInputObject(graphql.InputObjectConfig{

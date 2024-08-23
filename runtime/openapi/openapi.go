@@ -176,7 +176,7 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 
 	for _, job := range schema.Jobs {
 		if job.Name == jobName {
-			msg := proto.FindMessage(schema.Messages, job.InputMessageName)
+			msg := schema.FindMessage(job.InputMessageName)
 			if msg == nil {
 				continue
 			}

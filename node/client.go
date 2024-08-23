@@ -154,7 +154,7 @@ func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 func writeClientActions(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	for _, a := range proto.GetActionNamesForApi(schema, api) {
 		action := schema.FindAction(a)
-		msg := proto.FindMessage(schema.Messages, action.InputMessageName)
+		msg := schema.FindMessage(action.InputMessageName)
 
 		w.Writef("%s: (i", action.Name)
 

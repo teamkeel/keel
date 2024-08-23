@@ -17,8 +17,29 @@ func (p *Schema) HasFiles() bool {
 	return false
 }
 
-// ModelNames provides a (sorted) list of all the Model names used in the
-// given schema.
+// FindModel finds within the schema the model that has the given name. Returns nil if model not found.
+func (s *Schema) FindModel(modelName string) *Model {
+	for _, m := range s.GetModels() {
+		if m.GetName() == modelName {
+			return m
+		}
+	}
+
+	return nil
+}
+
+// FindMessage finds within the schema the message that has the given name. Returns nil if message not found.
+func (s *Schema) FindMessage(messageName string) *Message {
+	for _, m := range s.GetMessages() {
+		if m.GetName() == messageName {
+			return m
+		}
+	}
+
+	return nil
+}
+
+// ModelNames provides a (sorted) list of all the Model names used in the given schema.
 func (s *Schema) ModelNames() []string {
 	names := lo.Map(s.Models, func(x *Model, _ int) string {
 		return x.Name
@@ -50,6 +71,7 @@ func (s *Schema) FilterActions(filter func(op *Action) bool) (ops []*Action) {
 	return ops
 }
 
+// FindAction finds the action with the given name. Returns nil if action is not found.
 func (s *Schema) FindAction(actionName string) *Action {
 	actions := s.FilterActions(func(op *Action) bool {
 		return op.Name == actionName

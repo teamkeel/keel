@@ -1107,7 +1107,7 @@ func writeFunctionHookTypes(w *codegen.Writer) {
 }
 
 func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action *proto.Action) {
-	msg := proto.FindMessage(schema.Messages, action.InputMessageName)
+	msg := schema.FindMessage(action.InputMessageName)
 
 	var whereMsg *proto.Message
 	var valuesMsg *proto.Message
@@ -1119,10 +1119,10 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 	case proto.ActionType_ACTION_TYPE_UPDATE, proto.ActionType_ACTION_TYPE_LIST:
 		for _, f := range msg.Fields {
 			if f.Name == "where" {
-				whereMsg = proto.FindMessage(schema.Messages, f.Type.MessageName.Value)
+				whereMsg = schema.FindMessage(f.Type.MessageName.Value)
 			}
 			if f.Name == "values" {
-				valuesMsg = proto.FindMessage(schema.Messages, f.Type.MessageName.Value)
+				valuesMsg = schema.FindMessage(f.Type.MessageName.Value)
 			}
 		}
 	case proto.ActionType_ACTION_TYPE_CREATE:
@@ -1171,7 +1171,7 @@ func isModelInput(schema *proto.Schema, field *proto.MessageField) bool {
 	if field.Type.MessageName == nil {
 		return false
 	}
-	msg := proto.FindMessage(schema.Messages, field.Type.MessageName.Value)
+	msg := schema.FindMessage(field.Type.MessageName.Value)
 	for _, f := range msg.Fields {
 		if isModelInput(schema, f) {
 			return true
@@ -1217,7 +1217,7 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 	case proto.ActionType_ACTION_TYPE_LIST:
 		w.Writef("ListFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputs)
 	case proto.ActionType_ACTION_TYPE_CREATE:
-		msg := proto.FindMessage(schema.Messages, action.InputMessageName)
+		msg := schema.FindMessage(action.InputMessageName)
 		pickKeys := lo.FilterMap(msg.Fields, func(f *proto.MessageField, _ int) (string, bool) {
 			return fmt.Sprintf("'%s'", f.Name), isModelInput(schema, f)
 		})
@@ -1604,7 +1604,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("withAuthToken(token: string): ActionExecutor;")
 	for _, model := range schema.Models {
 		for _, action := range model.Actions {
-			msg := proto.FindMessage(schema.Messages, action.InputMessageName)
+			msg := schema.FindMessage(action.InputMessageName)
 
 			w.Writef("%s(i", action.Name)
 
@@ -1634,7 +1634,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		w.Writeln("withIdentity(identity: sdk.Identity): JobExecutor;")
 		w.Writeln("withAuthToken(token: string): JobExecutor;")
 		for _, job := range schema.Jobs {
-			msg := proto.FindMessage(schema.Messages, job.InputMessageName)
+			msg := schema.FindMessage(job.InputMessageName)
 
 			// Jobs can be without inputs
 			if msg != nil {
@@ -1662,7 +1662,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		w.Writeln("declare class SubscriberExecutor {")
 		w.Indent()
 		for _, subscriber := range schema.Subscribers {
-			msg := proto.FindMessage(schema.Messages, subscriber.InputMessageName)
+			msg := schema.FindMessage(subscriber.InputMessageName)
 
 			w.Writef("%s(e", subscriber.Name)
 
