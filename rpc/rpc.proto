@@ -119,7 +119,7 @@ message ActionConfig {
 	repeated ResponseFieldConfig response = 9;
 
 	// Title of the tool.
-	// Default value: a template with the first field of the model if it's a text field use that,
+	// Default value: a template with the first field of the model if it's a text field,
 	// otherwise empty.
 	optional StringTemplate title = 10; 
 
