@@ -120,11 +120,11 @@ func addUniqueConstraintStmt(schema *proto.Schema, modelName string, fieldNames 
 	for _, name := range fieldNames {
 		field := proto.FindField(schema.Models, modelName, name)
 
-		if proto.IsBelongsTo(field) {
+		if field.IsBelongsTo() {
 			name = fmt.Sprintf("%sId", name)
 		}
 
-		if proto.IsHasMany(field) || proto.IsHasOne(field) {
+		if field.IsHasMany() || field.IsHasOne() {
 			return "", fmt.Errorf("cannot create unique constraint on has-many or has-one model field '%s'", name)
 		}
 

@@ -58,7 +58,7 @@ func TestAuditCreateAction(t *testing.T) {
 	ctx, identity := withIdentity(t, ctx, schema)
 
 	_, err := actions.Create(
-		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
+		actions.NewScope(ctx, schema.FindAction("createWedding"), schema),
 		map[string]any{"name": "Dave"})
 	require.NoError(t, err)
 
@@ -102,7 +102,7 @@ func TestAuditNestedCreateAction(t *testing.T) {
 	ctx, identity := withIdentity(t, ctx, schema)
 
 	_, err := actions.Create(
-		actions.NewScope(ctx, proto.FindAction(schema, "createWeddingWithGuests"), schema),
+		actions.NewScope(ctx, schema.FindAction("createWeddingWithGuests"), schema),
 		map[string]any{
 			"name": "Dave",
 			"guests": []any{
@@ -208,13 +208,13 @@ func TestAuditUpdateAction(t *testing.T) {
 
 	ctx, identity := withIdentity(t, ctx, schema)
 
-	create := proto.FindAction(schema, "createWedding")
+	create := schema.FindAction("createWedding")
 	createResult, _, err := actions.Execute(
 		actions.NewScope(ctx, create, schema),
 		map[string]any{"name": "Dave"})
 	require.NoError(t, err)
 
-	update := proto.FindAction(schema, "updateWedding")
+	update := schema.FindAction("updateWedding")
 	_, _, err = actions.Execute(
 		actions.NewScope(ctx, update, schema),
 		map[string]any{
@@ -266,7 +266,7 @@ func TestAuditDeleteAction(t *testing.T) {
 
 	ctx, identity := withIdentity(t, ctx, schema)
 
-	create := proto.FindAction(schema, "createWedding")
+	create := schema.FindAction("createWedding")
 	createResult, _, err := actions.Execute(
 		actions.NewScope(ctx, create, schema),
 		map[string]any{"name": "Dave"})
@@ -281,7 +281,7 @@ func TestAuditDeleteAction(t *testing.T) {
 	wedding["created_at"] = wedding["created_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
 	wedding["updated_at"] = wedding["updated_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
 
-	delete := proto.FindAction(schema, "deleteWedding")
+	delete := schema.FindAction("deleteWedding")
 	_, _, err = actions.Execute(
 		actions.NewScope(ctx, delete, schema),
 		map[string]any{"id": createResult.(map[string]any)["id"]},
@@ -326,7 +326,7 @@ func TestAuditTablesWithOnlyIdentity(t *testing.T) {
 	spanContext := trace.NewSpanContext(trace.SpanContextConfig{})
 	ctx = trace.ContextWithSpanContext(ctx, spanContext)
 
-	action := proto.FindAction(schema, "createWedding")
+	action := schema.FindAction("createWedding")
 	input := map[string]any{"name": "Dave"}
 	scope := actions.NewScope(ctx, action, schema)
 	_, err := actions.Create(scope, input)
@@ -351,7 +351,7 @@ func TestAuditTablesWithOnlyTracing(t *testing.T) {
 	defer database.Close()
 	db := database.GetDB()
 
-	action := proto.FindAction(schema, "createWedding")
+	action := schema.FindAction("createWedding")
 	input := map[string]any{"name": "Dave"}
 	scope := actions.NewScope(ctx, action, schema)
 	_, err := actions.Create(scope, input)
@@ -379,11 +379,11 @@ func TestAuditOnStatementExecuteWithoutResult(t *testing.T) {
 	ctx, identity := withIdentity(t, ctx, schema)
 
 	result, err := actions.Create(
-		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
+		actions.NewScope(ctx, schema.FindAction("createWedding"), schema),
 		map[string]any{"name": "Dave"})
 	require.NoError(t, err)
 
-	action := proto.FindAction(schema, "createWedding")
+	action := schema.FindAction("createWedding")
 
 	scope := actions.NewScope(ctx, action, schema)
 	query := actions.NewQuery(scope.Model)
@@ -419,7 +419,7 @@ func TestAuditFieldsAreDroppedOnCreate(t *testing.T) {
 	ctx, _ = withIdentity(t, ctx, schema)
 
 	result, err := actions.Create(
-		actions.NewScope(ctx, proto.FindAction(schema, "createWedding"), schema),
+		actions.NewScope(ctx, schema.FindAction("createWedding"), schema),
 		map[string]any{"name": "Dave"})
 	require.NoError(t, err)
 
@@ -444,7 +444,7 @@ func TestAuditDatabaseMigration(t *testing.T) {
 
 	ctx, database, pSchema := keeltesting.MakeContext(t, context.TODO(), keelSchema, true)
 
-	create := proto.FindAction(pSchema, "createPerson")
+	create := pSchema.FindAction("createPerson")
 	_, _, err := actions.Execute(
 		actions.NewScope(ctx, create, pSchema),
 		map[string]any{"name": "Dave"})

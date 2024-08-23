@@ -113,7 +113,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 
 			// if the action type is read or write, then the signature of the exported method just takes the function
 			// defined by the user
-			if proto.ActionIsArbitraryFunction(action) {
+			if action.IsArbitraryFunction() {
 				sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(action.Name))
 			} else {
 				// writes the default implementation of a function. the user can specify hooks which can
@@ -330,14 +330,14 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 		}
 
 		w.Write(field.Name)
-		if field.Optional || field.DefaultValue != nil || proto.IsHasMany(field) {
+		if field.Optional || field.DefaultValue != nil || field.IsHasMany() {
 			w.Write("?")
 		}
 
 		w.Write(": ")
 
 		if field.Type.Type == proto.Type_TYPE_MODEL {
-			if proto.IsHasMany(field) {
+			if field.IsHasMany() {
 				w.Write("Array<")
 			}
 
@@ -348,7 +348,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 			// field is "books" then we don't want the create values type for each book
 			// to expect you to provide "author" or "authorId" - as that field will be filled
 			// in when the author record is created
-			if proto.IsHasMany(field) {
+			if field.IsHasMany() {
 				inverseField := proto.FindField(schema.Models, relation.Name, field.InverseFieldName.Value)
 				w.Writef("Omit<%sCreateValues, '%s' | '%s'>", relation.Name, inverseField.Name, inverseField.ForeignKeyFieldName.Value)
 			} else {
@@ -357,9 +357,9 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 
 			// ...or just an id. This API might not be ideal because by allowing just
 			// "id" we make the types less strict.
-			w.Writef(" | {%s: string}", proto.PrimaryKeyFieldName(relation))
+			w.Writef(" | {%s: string}", relation.PrimaryKeyFieldName())
 
-			if proto.IsHasMany(field) {
+			if field.IsHasMany() {
 				w.Write(">")
 			}
 		} else {
@@ -394,7 +394,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 		fkName := field.ForeignKeyFieldName.Value
 
 		relation := proto.FindModel(schema.Models, field.Type.ModelName.Value)
-		relationPk := proto.PrimaryKeyFieldName(relation)
+		relationPk := relation.PrimaryKeyFieldName()
 
 		w.Writef("// Either %s or %s can be provided but not both\n", field.Name, fkName)
 		w.Writef("| {%s: %sCreateValues | {%s: string}, %s?: undefined}\n", field.Name, field.Type.ModelName.Value, relationPk, fkName)
@@ -585,7 +585,7 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 					})
 				}
 			}
-		case proto.IsHasMany(f):
+		case f.IsHasMany():
 			// If a field is has-many then the other side is has-one, meaning
 			// you can use that fields unique conditions to look up _this_ model.
 			// Example: an author has many books, but a book has one author, which
@@ -1042,11 +1042,11 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 			}
 
 			switch {
-			case proto.IsHasOne(field):
+			case field.IsHasOne():
 				relationshipConfig["relationshipType"] = "hasOne"
-			case proto.IsHasMany(field):
+			case field.IsHasMany():
 				relationshipConfig["relationshipType"] = "hasMany"
-			case proto.IsBelongsTo(field):
+			case field.IsBelongsTo():
 				relationshipConfig["relationshipType"] = "belongsTo"
 			}
 
@@ -1166,7 +1166,7 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 	// decorating existing js code with types.
 	w.Writef("export declare function %s", casing.ToCamel(action.Name))
 
-	if proto.ActionIsArbitraryFunction(action) {
+	if action.IsArbitraryFunction() {
 		inputType := action.InputMessageName
 		if inputType == parser.MessageFieldTypeAny {
 			inputType = "any"

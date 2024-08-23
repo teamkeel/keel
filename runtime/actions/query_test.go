@@ -3441,7 +3441,7 @@ func generateQueryScope(ctx context.Context, schemaString string, actionName str
 		return nil, nil, nil, err
 	}
 
-	action := proto.FindAction(schema, actionName)
+	action := schema.FindAction(actionName)
 	if action == nil {
 		return nil, nil, nil, fmt.Errorf("action not found in schema: %s", actionName)
 	}

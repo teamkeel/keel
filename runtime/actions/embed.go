@@ -21,7 +21,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 		return nil, fmt.Errorf("embed target field (%s) does not exist in model %s", embedTargetField, sourceModel.GetName())
 	}
 
-	if !proto.IsTypeModel(field) {
+	if !field.IsTypeModel() {
 		return nil, fmt.Errorf("field (%s) is not a embeddable model field", embedTargetField)
 	}
 
@@ -42,7 +42,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 	}
 
 	switch {
-	case proto.IsBelongsTo(field):
+	case field.IsBelongsTo():
 		dbQuery.Join(
 			sourceModel.Name,
 			&QueryOperand{
@@ -83,7 +83,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 		}
 
 		return result, nil
-	case proto.IsHasMany(field):
+	case field.IsHasMany():
 		dbQuery.Join(
 			sourceModel.Name,
 			&QueryOperand{
@@ -130,7 +130,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 		}
 
 		return result, nil
-	case proto.IsHasOne(field):
+	case field.IsHasOne():
 		dbQuery.Join(
 			sourceModel.Name,
 			&QueryOperand{

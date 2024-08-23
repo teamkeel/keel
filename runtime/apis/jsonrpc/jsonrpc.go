@@ -67,7 +67,7 @@ func NewHandler(schema *proto.Schema, api *proto.Api) common.HandlerFunc {
 			attribute.String("api.protocol", "RPC"),
 		)
 
-		action := proto.FindAction(schema, req.Method)
+		action := schema.FindAction(req.Method)
 		if action == nil {
 			err = common.NewMethodNotFoundError()
 			return NewErrorResponse(ctx, &req.ID, err)
