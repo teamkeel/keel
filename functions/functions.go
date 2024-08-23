@@ -37,6 +37,7 @@ const (
 	UniqueConstraintError     FunctionErrorCode = -32007
 	PermissionError           FunctionErrorCode = -32008
 	BadRequestError           FunctionErrorCode = -32009
+	InternalError             FunctionErrorCode = -32010
 )
 
 type FunctionType string
@@ -299,6 +300,11 @@ func toRuntimeError(errorResponse *FunctionsRuntimeError) error {
 	data := errorResponse.Data
 
 	switch errorResponse.Code {
+	case InternalError:
+		return common.RuntimeError{
+			Code:    common.ErrInternal,
+			Message: "error executing request",
+		}
 	case PermissionError:
 		return common.NewPermissionError()
 	case ForeignKeyConstraintError:
