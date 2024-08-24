@@ -167,20 +167,86 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 
 // writeBuiltInTypes will write the types for Built In types such as InlineFile, SortDirection, etc..
 func writeBuiltInTypes(w *codegen.Writer) {
-	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
-	w.Writeln(`export declare class InlineFile {`)
+	var commonMimeTypes = []string{
+		"application/json",
+		"application/gzip",
+		"application/pdf",
+		"application/rtf",
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+		"application/vnd.ms-excel",
+		"application/vnd.ms-powerpoint",
+		"application/msword",
+		"application/zip",
+		"application/xml",
+		"application/x-7z-compressed",
+		"application/x-tar",
+		"image/gif",
+		"image/jpeg",
+		"image/svg+xml",
+		"image/png",
+		"text/html",
+		"text/csv",
+		"text/javascript",
+		"text/plain",
+		"text/calendar",
+	}
+
+	quoted := lo.Map(commonMimeTypes, func(s string, _ int) string { return fmt.Sprintf(`"%s"`, s) })
+
+	w.Writef(`type MimeType = %s | (string & {})`, strings.Join(quoted, " | "))
+	w.Writeln("")
+
+	w.Writeln(`type InlineFileConstructor = {`)
 	w.Indent()
-	w.Writeln(`constructor(filename: string, contentType: string, size: number, url: string, key: string, pub: boolean);`)
-	w.Writeln(`static fromObject(obj: any): InlineFile;`)
-	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
-	w.Writeln(`read(): Promise<Buffer>;`)
-	w.Writeln(`store(expires?: Date): Promise<any>;`)
 	w.Writeln(`filename: string;`)
-	w.Writeln(`contentType: string;`)
-	w.Writeln(`size: number;`)
-	w.Writeln(`url: string | null;`)
+	w.Writeln(`contentType: MimeType;`)
 	w.Dedent()
 	w.Writeln(`}`)
+	w.Writeln("")
+
+	w.Writeln(`export declare class InlineFile {`)
+	w.Indent()
+	w.Writeln(`constructor(input: InlineFileConstructor);`)
+	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
+	w.Writeln(`// Reads the contents of the file as a buffer`)
+	w.Writeln(`read(): Promise<Buffer>;`)
+	w.Writeln(`// Write the files contents from a buffer`)
+	w.Writeln(`write(data: Buffer): void`)
+	w.Writeln(`// Persists the file`)
+	w.Writeln(`store(expires?: Date, isPublic?: boolean): Promise<StoredFile>;`)
+	w.Writeln(`// Gets the name of the file`)
+	w.Writeln(`get filename(): string;`)
+	w.Writeln(`// Gets the media type of the file contents`)
+	w.Writeln(`get contentType(): string;`)
+	w.Writeln(`// Gets size of the file's contents in bytes`)
+	w.Writeln(`get size(): number;`)
+	w.Dedent()
+	w.Writeln(`}`)
+	w.Writeln("")
+
+	w.Writeln(`type StoredFileConstructor  = InlineFileConstructor & {`)
+	w.Indent()
+	w.Writeln(`key: string;`)
+	w.Writeln(`isPublic: boolean;`)
+	w.Dedent()
+	w.Writeln(`}`)
+	w.Writeln("")
+
+	w.Writeln(`export declare class StoredFile extends InlineFile {`)
+	w.Indent()
+	w.Writeln(`constructor(input: StoredFileConstructor);`)
+	w.Writeln(`// Gets the stored key`)
+	w.Writeln(`get key(): string;`)
+	w.Writeln(`// Gets size of the file's contents in bytes`)
+	w.Writeln(`get isPublic(): boolean;`)
+	w.Dedent()
+	w.Writeln(`}`)
+	w.Writeln("")
+
+	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
+	w.Writeln("")
 }
 
 func writeTableInterface(w *codegen.Writer, model *proto.Model) {
@@ -1706,7 +1772,7 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 		// Use string literal type for discriminating.
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
 	case proto.Type_TYPE_INLINE_FILE:
-		ret = "InlineFile"
+		ret = "InlineFile | StoredFile"
 	default:
 		ret = "any"
 	}
