@@ -24,7 +24,7 @@ export class Core {
         // If necessary, refresh the expired session before calling the action
         const isAuth = await this.auth.isAuthenticated();
         if (isAuth.error) {
-          return isAuth;
+          return { error: isAuth.error };
         }
 
         const token = this.auth.accessToken.get();
@@ -317,7 +317,7 @@ export class Core {
       });
 
       if (authResponse.error) {
-        return authResponse;
+        return { error: authResponse.error };
       }
 
       return {
