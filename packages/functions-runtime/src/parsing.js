@@ -11,7 +11,9 @@ function parseParams(inputs) {
         if ("__typename" in inputs[i]) {
           switch (inputs[i].__typename) {
             case "InlineFile":
-              inputs[i] = InlineFile.fromObject(inputs[i]);
+              console.log(inputs[i]);
+              console.log(typeof inputs[i]);
+              inputs[i] = InlineFile.fromDataURL(inputs[i].dataURL);
               break;
 
             default:

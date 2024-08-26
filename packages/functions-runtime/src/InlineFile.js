@@ -10,29 +10,11 @@ const KSUID = require("ksuid");
 
 
 class InlineFile {
-  constructor(input) {
-   this._filename = input.filename;
-    this._contentType = input.contentType;
+  constructor({ filename, contentType}) {
+   this._filename = filename;
+    this._contentType = contentType;
     this._contents = null;
   }
-
-  // // Create an InlineFile instance from a given json object.
-  // static fromObject(obj) {
-  //   if (obj.dataURL) {
-  //     var file = InlineFile.fromDataURL(obj.dataURL);
-  //     file._dataURL = obj.dataURL;
-  //     return file;
-  //   }
-
-  //   return new InlineFile(
-  //     obj.filename,
-  //     obj.contentType,
-  //     obj.size,
-  //     obj.url,
-  //     obj.key,
-  //     obj.public
-  //   );
-  // }
 
 
   // Create an InlineFile instance from a given dataURL
@@ -52,15 +34,11 @@ class InlineFile {
 
    get size() {
     if (this._contents) {
-      return 1;
+      return this._contents.size;
     } else {
       return 0;
     }
   }
-
-  // contentType() {
-  //   return this._contentType;
-  // }
 
   get contentType() {
     return this._contentType;
@@ -72,7 +50,6 @@ class InlineFile {
 
   write(buffer) {
     this._contents = new Blob([buffer]);
-    
   }
 
   // Read the contents of the file. If URL is set, it will be read from the remote storage, otherwise, if dataURL is set
@@ -84,152 +61,43 @@ class InlineFile {
 
     return buffer;
 
-    // if (this._dataURL) {
-    //   var data = this._dataURL.split(",")[1];
-    //   return Buffer.from(data, "base64");
-    // }
-
-    // // if we don't have a key nor a dataURL, this inline file has no data
-    // if (!this.key) {
-    //   throw new Error("invalid file data");
-    // }
-
-    // if (isS3Storage()) {
-    //   const s3Client = new S3Client({
-    //     credentials: fromEnv(),
-    //     region: process.env.KEEL_REGION,
-    //   });
-
-    //   const params = {
-    //     Bucket: process.env.KEEL_FILES_BUCKET_NAME,
-    //     Key: "files/" + this.key,
-    //   };
-    //   const command = new GetObjectCommand(params);
-    //   const response = await s3Client.send(command);
-    //   const blob = response.Body.transformToByteArray();
-    //   return Buffer.from(blob);
-    // }
-
-    // // default to db storage
-    // const db = useDatabase();
-
-    // try {
-    //   let query = db
-    //     .selectFrom("keel_storage")
-    //     .select("data")
-    //     .where("id", "=", this.key);
-
-    //   const row = await query.executeTakeFirstOrThrow();
-    //   return row.data;
-    // } catch (e) {
-    //   throw new DatabaseError(e);
-    // }
   }
 
   async store(expires = null, isPublic = false) {
     const content = await this.read();
     const key = KSUID.randomSync().string;
 
-    if (isS3Storage()) {
-      const s3Client = new S3Client({
-        credentials: fromEnv(),
-        region: process.env.KEEL_REGION,
-      });
+    await storeFile(content, key, this._filename, this._contentType, this.size,expires, isPublic);
 
-      const params = {
-        Bucket: process.env.KEEL_FILES_BUCKET_NAME,
-        Key: "files/" + key,
-        Body: content,
-        ContentType: this._contentType,
-        Metadata: {
-          filename: this._filename,
-        },
-        ACL: isPublic ? "public-read" : "private",
-      };
-
-      if (expires) {
-        params.Expires = expires;
-      }
-
-      const command = new PutObjectCommand(params);
-      try {
-        await s3Client.send(command);
-
-        return new StoredFile({
-          key: key,
-          size: this.size,
-          filename: this._filename,
-          contentType: this._contentType,
-          isPublic: isPublic,
-        })
-
-        // return {
-        //   key: this.key,
-        //   size: this.size,
-        //   filename: this.filename,
-        //   contentType: this.contentType,
-        //   public: public,
-        // };
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        throw error;
-      }
-    }
-
-    // default to db storage
-    const db = useDatabase();
-
-    try {
-      let query = db.insertInto("keel_storage").values({
-        id: key,
-        filename: this._filename,
-        content_type: this._contentType,
-        data: content,
-      });
-
-      await query.returningAll().executeTakeFirstOrThrow();
-      // return {
-      //   //key: this.key,
-      //   size: this.size,
-      //   filename: this._filename,
-      //   contentType: this._contentType,
-      // };
-
-      return new StoredFile({
-        key: key,
-        filename: this._filename,
-        contentType: this._contentType,
-        isPublic: isPublic,
-      })
-
-    } catch (e) {
-      throw new DatabaseError(e);
-    }
-  }
-
-  toJSON() {
-    return {
-      __typename: "InlineFile",
-      dataURL: this._dataURL,
+    return new StoredFile({
+      key: key,
+      size: this.size,
       filename: this.filename,
       contentType: this.contentType,
-      size: this.size,
-      url: this.url,
-      public: this.public,
-    };
+      isPublic: isPublic,
+    });
   }
 }
 
 
 class StoredFile extends InlineFile {
-  _key;
-  _isPublic;
-
   constructor(input) {
     super({ filename: input.filename, contentType: input.contentType });
      this._key  = input.key
+     this._size =  input.size;
      this._isPublic = input.isPublic;
+     this._isHydrated = false;
    }
+
+   static fromDatabase({ key, filename, size, contentType }) {
+    return new StoredFile({ key: key, filename: filename, size: size, contentType: contentType });
+  }
+
+
+  get size() {
+    return this._size;
+  }
+
 
    get key() {
     return this._key;
@@ -239,13 +107,125 @@ class StoredFile extends InlineFile {
     return this._isPublic;
    }
 
-  toColumn() {
-    return {
-      key: this._key,
-      filename: this._filename,
-      contentType: this._contentType,
-      size: this.size
+
+
+   async read() {
+    if (isS3Storage()) {
+      const s3Client = new S3Client({
+        credentials: fromEnv(),
+        region: process.env.KEEL_REGION,
+      });
+
+      const params = {
+        Bucket: process.env.KEEL_FILES_BUCKET_NAME,
+        Key: "files/" + this.key,
+      };
+      const command = new GetObjectCommand(params);
+      const response = await s3Client.send(command);
+      const blob = response.Body.transformToByteArray();
+      return Buffer.from(blob);
     }
+
+    // default to db storage
+    const db = useDatabase();
+
+    try {
+      let query = db
+        .selectFrom("keel_storage")
+        .select("data")
+        .where("id", "=", this.key);
+
+      const row = await query.executeTakeFirstOrThrow();
+      return row.data;
+    } catch (e) {
+      throw new DatabaseError(e);
+    }
+   }
+
+   async store(expires = null, isPublic = false) {
+    // Only necessary to store the file if the contents have been changed
+    if (this._contents) {
+      await storeFile(this._contents, this.key, this.filename, this.contentType, this.size, expires, isPublic);
+
+    } 
+    // else {
+
+    //   const contents = await this.read();
+    //   await storeFile(contents, this.key, this.filename, this.contentType, this.size, expires, isPublic);
+
+    // }
+
+
+
+    return this;
+  }
+
+  toDbRecord() {
+    return {
+      key: this.key,
+      filename: this.filename,
+      contentType: this.contentType,
+      size: this._size
+    }
+  }
+}
+
+async function storeFile(contents, key, filename, contentType, size, expires, isPublic) {
+  if (isS3Storage()) {
+    const s3Client = new S3Client({
+      credentials: fromEnv(),
+      region: process.env.KEEL_REGION,
+    });
+
+    const params = {
+      Bucket: process.env.KEEL_FILES_BUCKET_NAME,
+      Key: "files/" + key,
+      Body: contents,
+      ContentType: contentType,
+      Metadata: {
+        filename: filename,
+      },
+      ACL: isPublic ? "public-read" : "private",
+    };
+
+    if (expires) {
+      params.Expires = expires;
+    }
+
+    const command = new PutObjectCommand(params);
+    try {
+      await s3Client.send(command);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      throw error;
+    }
+  }
+
+  // default to db storage
+  const db = useDatabase();
+
+  const b64 = contents.toString('base64');
+
+  try {
+    let query = db.insertInto("keel_storage").values({
+      id: key,
+      filename: filename,
+      content_type: contentType,
+      data: b64,
+})
+.onConflict((oc) => 
+  oc.column('id')
+  .doUpdateSet((eb) => ({
+    filename:filename,
+    content_type: contentType,
+    data: b64,
+  }))
+  .where("keel_storage.id", "=", key)
+);
+
+    await query.executeTakeFirstOrThrow();
+  } catch (e) {
+    throw new DatabaseError(e);
   }
 }
 

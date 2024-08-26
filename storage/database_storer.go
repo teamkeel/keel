@@ -39,7 +39,7 @@ func NewDbStore(ctx context.Context, db db.Database) (*DbStore, error) {
 func (s *DbStore) setupDB(ctx context.Context) error {
 	if _, err := s.db.ExecuteStatement(ctx, `
 	CREATE TABLE IF NOT EXISTS `+dbTable+` (
-		"id" text NOT NULL DEFAULT ksuid(),
+		"id" text NOT NULL,
 		"filename" text NOT NULL,
 		"content_type" text NOT NULL,
 		"data" bytea NOT NULL,
@@ -122,7 +122,7 @@ func (s *DbStore) GetFileInfo(key string) (FileInfo, error) {
 func (s *DbStore) HydrateFileInfo(fi *FileInfo) (FileInfo, error) {
 	sql := `SELECT
 			filename,
-			contentType,
+			content_type,
 			data
 		FROM ` + dbTable + ` WHERE id = ?`
 

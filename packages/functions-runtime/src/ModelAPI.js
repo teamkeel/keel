@@ -244,9 +244,9 @@ async function create(conn, tableName, tableConfigs, values) {
           // handle files that need uploading
           if (value instanceof InlineFile) {
             const storedFile = await value.store();
-            row[key] = storedFile.toColumn();
+            row[key] = storedFile.toDbRecord();
           } else if (value instanceof StoredFile) {
-            row[key] = value.toColumn();
+            row[key] = value.toDbRecord();
           } else {
             row[key] = value;
           }
@@ -323,7 +323,7 @@ async function create(conn, tableName, tableConfigs, values) {
       })
     );
 
-    return created;
+    return transformRichDataTypes(created);
   } catch (e) {
     throw new DatabaseError(e);
   }
@@ -337,10 +337,12 @@ function transformRichDataTypes(data) {
   for (const key of keys) {
     const value = data[key];
     if (isPlainObject(value)) {
-      // if we've got an InlineFile...
+      // if we've got an StoredFile...
       if (value.key && value.size && value.filename && value.contentType) {
-        row[key] = InlineFile.fromObject(value);
+        console.log("IS STORED FILE")
+        row[key] = StoredFile.fromDatabase(value);
       } else {
+        console.log("NOT STORED FILE")
         row[key] = value;
       }
       continue;
