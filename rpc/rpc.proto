@@ -256,7 +256,7 @@ message CursorPaginationConfig {
 	}
 	message PageSizeConfig {
 		string request_input = 1;
-		string response_field = 2;
+		JsonPath response_field = 2;
 		int32 default_value = 3;
 	}
 

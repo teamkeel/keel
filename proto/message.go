@@ -45,3 +45,14 @@ func (m *Message) FindField(fieldName string) *MessageField {
 
 	return nil
 }
+
+// GetOrderByField returns the orderBy message field, if it has any; otherwise returns nil;
+func (m *Message) GetOrderByField() *MessageField {
+	for _, field := range m.Fields {
+		if field.Name == "orderBy" && field.Type.Type == Type_TYPE_UNION {
+			return field
+		}
+	}
+
+	return nil
+}

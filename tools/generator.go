@@ -12,9 +12,10 @@ import (
 )
 
 type Tool struct {
-	Config *rpc.ActionConfig
-	Model  *proto.Model
-	Action *proto.Action
+	Config         *rpc.ActionConfig
+	Model          *proto.Model
+	Action         *proto.Action
+	SortableFields []string
 }
 
 type Generator struct {
@@ -81,16 +82,14 @@ func (g *Generator) scaffoldTools() {
 					EntityPlural:   casing.ToPlural(strings.ToLower(model.GetName())),
 					Capabilities:   g.makeCapabilities(action),
 					Title:          g.makeTitle(action, model),
-					// ApiName: nil,
-					// Inputs:               nil,
-					// Response:             nil,
+					// ApiName: nil, // TODO:
+					// Inputs:               nil, // TODO: sort out action links
+					// Response:             nil, // TODO: sort out action links
 
-					// Pagination:           nil,
-
-					// RelatedActions:       nil,
-					// EntryActivityActions: nil,
-					// EmbeddedActions:      nil,
-					// GetEntryAction:       nil,
+					// RelatedActions:       nil, // TODO:
+					// EntryActivityActions: nil, // TODO:
+					// EmbeddedActions:      nil, // TODO:
+					// GetEntryAction:       nil, // TODO:
 				},
 				Model:  model,
 				Action: action,
@@ -108,6 +107,30 @@ func (g *Generator) decorateTools() error {
 
 	if err := g.generateResponses(); err != nil {
 		return fmt.Errorf("generating responses: %w", err)
+	}
+
+	// decorate further...
+	for _, tool := range g.Tools {
+		// with pagination for LIST actions
+		if tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
+			tool.Config.Pagination = &rpc.CursorPaginationConfig{
+				Start: &rpc.CursorPaginationConfig_FieldConfig{
+					RequestInput:  "after",
+					ResponseField: &rpc.JsonPath{Path: "$.pageInfo.startCursor"},
+				},
+				End: &rpc.CursorPaginationConfig_FieldConfig{
+					RequestInput:  "before",
+					ResponseField: &rpc.JsonPath{Path: "$.pageInfo.endCursor"},
+				},
+				PageSize: &rpc.CursorPaginationConfig_PageSizeConfig{
+					RequestInput:  "first",
+					ResponseField: &rpc.JsonPath{Path: "$.pageInfo.count"},
+					DefaultValue:  50,
+				},
+				NextPage:   &rpc.JsonPath{Path: "$.pageInfo.hasNextPage"},
+				TotalCount: &rpc.JsonPath{Path: "$.pageInfo.totalCount"},
+			}
+		}
 	}
 
 	return nil
@@ -132,6 +155,25 @@ func (g *Generator) generateInputs() error {
 			return err
 		}
 		tool.Config.Inputs = fields
+
+		// If there are any OrderBy fields, then we find the sortable field names and store them against the tool, to be
+		// used later on when generating the response
+		if orderBy := msg.GetOrderByField(); orderBy != nil {
+			sortableFields := []string{}
+			for _, unionMsgName := range orderBy.Type.GetUnionNames() {
+				unionMsg := g.Schema.FindMessage(unionMsgName.GetValue())
+				if unionMsg == nil {
+					return ErrInvalidSchema
+				}
+				for _, f := range unionMsg.Fields {
+					if f.Type.Type == proto.Type_TYPE_SORT_DIRECTION {
+						sortableFields = append(sortableFields, f.Name)
+					}
+				}
+			}
+
+			tool.SortableFields = sortableFields
+		}
 	}
 
 	return nil
@@ -148,7 +190,7 @@ func (g *Generator) generateResponses() error {
 				return ErrInvalidSchema
 			}
 
-			fields, err := g.makeResponsesForMessage(msg, "")
+			fields, err := g.makeResponsesForMessage(msg, "", tool.SortableFields)
 			if err != nil {
 				return err
 			}
@@ -157,16 +199,18 @@ func (g *Generator) generateResponses() error {
 			continue
 		}
 
-		// we don't have a response message, therefore the response will be the model
+		// we don't have a response message, therefore the response will be the model...
 		pathPrefix := ""
+		// if the action is a list action, we also need to include the pageInfo responses and prefix the results
 		if tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
 			pathPrefix = ".results[*]"
+			tool.Config.Response = append(tool.Config.Response, getPageInfoResponses()...)
 		}
-		fields, err := g.makeResponsesForModel(tool.Model, pathPrefix, tool.Action.GetResponseEmbeds())
+		fields, err := g.makeResponsesForModel(tool.Model, pathPrefix, tool.Action.GetResponseEmbeds(), tool.SortableFields)
 		if err != nil {
 			return err
 		}
-		tool.Config.Response = fields
+		tool.Config.Response = append(tool.Config.Response, fields...)
 	}
 
 	return nil
@@ -180,8 +224,8 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 			submsg := g.Schema.FindMessage(f.Type.MessageName.Value)
 			if submsg == nil {
 				return nil, ErrInvalidSchema
-
 			}
+
 			subFields, err := g.makeInputsForMessage(submsg, "."+f.Name)
 			if err != nil {
 				return nil, err
@@ -217,7 +261,7 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 	return fields, nil
 }
 
-func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix string) ([]*rpc.ResponseFieldConfig, error) {
+func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix string, sortableFields []string) ([]*rpc.ResponseFieldConfig, error) {
 	fields := []*rpc.ResponseFieldConfig{}
 
 	for _, f := range msg.GetFields() {
@@ -226,7 +270,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			if submsg == nil {
 				return nil, ErrInvalidSchema
 			}
-			subFields, err := g.makeResponsesForMessage(submsg, "."+f.Name)
+			subFields, err := g.makeResponsesForMessage(submsg, "."+f.Name, []string{})
 			if err != nil {
 				return nil, err
 			}
@@ -239,6 +283,14 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			FieldLocation: &rpc.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			DisplayName:   casing.ToSentenceCase(f.Name),
+			Sortable: func() bool {
+				for _, fn := range sortableFields {
+					if fn == f.Name {
+						return true
+					}
+				}
+				return false
+			}(),
 		}
 
 		if f.IsFile() {
@@ -252,7 +304,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 }
 
 // makeResponsesForModel will return an array of response fields for the given model
-func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string, embeddings []string) ([]*rpc.ResponseFieldConfig, error) {
+func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string, embeddings []string, sortableFields []string) ([]*rpc.ResponseFieldConfig, error) {
 	fields := []*rpc.ResponseFieldConfig{}
 
 	for _, f := range model.GetFields() {
@@ -276,7 +328,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 				if f.IsHasMany() {
 					prefix = prefix + "[*]"
 				}
-				embeddedFields, err := g.makeResponsesForModel(g.Schema.FindModel(f.ModelName), prefix, fieldEmbeddings)
+				embeddedFields, err := g.makeResponsesForModel(g.Schema.FindModel(f.ModelName), prefix, fieldEmbeddings, []string{})
 				if err != nil {
 					return nil, err
 				}
@@ -290,6 +342,14 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 			FieldLocation: &rpc.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			DisplayName:   casing.ToSentenceCase(f.Name),
+			Sortable: func() bool {
+				for _, fn := range sortableFields {
+					if fn == f.Name {
+						return true
+					}
+				}
+				return false
+			}(),
 		}
 
 		if f.IsFile() {
@@ -357,4 +417,35 @@ func (g *Generator) makeTitle(action *proto.Action, model *proto.Model) *rpc.Str
 	}
 
 	return nil
+}
+
+// getPageInfoResponses will return the responses for pageInfo (by default available on all autogenerated LIST actions)
+func getPageInfoResponses() []*rpc.ResponseFieldConfig {
+	return []*rpc.ResponseFieldConfig{
+		{
+			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.count"},
+			FieldType:     proto.Type_TYPE_INT,
+			DisplayName:   "Count",
+		},
+		{
+			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.totalCount"},
+			FieldType:     proto.Type_TYPE_INT,
+			DisplayName:   "Total count",
+		},
+		{
+			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.hasNextPage"},
+			FieldType:     proto.Type_TYPE_BOOL,
+			DisplayName:   "Has next page",
+		},
+		{
+			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.startCursor"},
+			FieldType:     proto.Type_TYPE_STRING,
+			DisplayName:   "Start cursor",
+		},
+		{
+			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.endCursor"},
+			FieldType:     proto.Type_TYPE_STRING,
+			DisplayName:   "End cursor",
+		},
+	}
 }
