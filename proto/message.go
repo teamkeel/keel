@@ -31,6 +31,11 @@ func (f *MessageField) IsFile() bool {
 	return f.Type.Type == Type_TYPE_FILE
 }
 
+// IsMessage checks if the field is a message itself
+func (f *MessageField) IsMessage() bool {
+	return f.Type.Type == Type_TYPE_MESSAGE
+}
+
 func (m *Message) FindField(fieldName string) *MessageField {
 	for _, field := range m.Fields {
 		if field.Name == fieldName {

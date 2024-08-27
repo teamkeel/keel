@@ -174,17 +174,12 @@ func (s *Server) ListTools(ctx context.Context, input *rpc.ListToolsRequest) (*r
 		return nil, twirp.NewError(twirp.Internal, err.Error())
 	}
 
-	tools, err := tools.GenerateTools(ctx, schema)
+	cfgs, err := tools.GenerateTools(ctx, schema)
 	if err != nil {
 		return nil, twirp.NewError(twirp.Internal, err.Error())
 	}
 
-	response := &rpc.ListToolsResponse{
-		Tools: []*rpc.ActionConfig{},
-	}
-	for _, tool := range tools {
-		response.Tools = append(response.Tools, tool)
-	}
-
-	return response, nil
+	return &rpc.ListToolsResponse{
+		Tools: cfgs,
+	}, nil
 }

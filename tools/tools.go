@@ -9,7 +9,7 @@ import (
 )
 
 // GenerateTools will return a map of tool configurations generated for the given schema, keyed by their ids
-func GenerateTools(ctx context.Context, schema *proto.Schema) (map[string]*rpc.ActionConfig, error) {
+func GenerateTools(ctx context.Context, schema *proto.Schema) ([]*rpc.ActionConfig, error) {
 	if schema == nil {
 		return nil, nil
 	}
@@ -23,5 +23,5 @@ func GenerateTools(ctx context.Context, schema *proto.Schema) (map[string]*rpc.A
 		return nil, fmt.Errorf("generating tools: %w", err)
 	}
 
-	return gen.Tools, nil
+	return gen.GetConfigs(), nil
 }
