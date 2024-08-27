@@ -84,8 +84,10 @@ func (g *Generator) scaffoldTools() {
 					// ApiName: nil,
 					// Inputs:               nil,
 					// Response:             nil,
-					// RelatedActions:       nil,
+
 					// Pagination:           nil,
+
+					// RelatedActions:       nil,
 					// EntryActivityActions: nil,
 					// EmbeddedActions:      nil,
 					// GetEntryAction:       nil,
@@ -154,6 +156,17 @@ func (g *Generator) generateResponses() error {
 
 			continue
 		}
+
+		// we don't have a response message, therefore the response will be the model
+		pathPrefix := ""
+		if tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
+			pathPrefix = ".results[*]"
+		}
+		fields, err := g.makeResponsesForModel(tool.Model, pathPrefix, tool.Action.GetResponseEmbeds())
+		if err != nil {
+			return err
+		}
+		tool.Config.Response = fields
 	}
 
 	return nil
@@ -238,6 +251,57 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 	return fields, nil
 }
 
+// makeResponsesForModel will return an array of response fields for the given model
+func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string, embeddings []string) ([]*rpc.ResponseFieldConfig, error) {
+	fields := []*rpc.ResponseFieldConfig{}
+
+	for _, f := range model.GetFields() {
+		if f.IsTypeModel() {
+			// models are only included if they are embedded
+			found := false
+			fieldEmbeddings := []string{}
+
+			for _, embed := range embeddings {
+				frags := strings.Split(embed, ".")
+				if frags[0] == f.Name {
+					found = true
+					// if we have to embed a child model for this field, we need to pass them through with the first segment removed
+					if len(frags) > 1 {
+						fieldEmbeddings = append(fieldEmbeddings, strings.Join(frags[1:], "."))
+					}
+				}
+			}
+			if found {
+				prefix := pathPrefix + "." + f.Name
+				if f.IsHasMany() {
+					prefix = prefix + "[*]"
+				}
+				embeddedFields, err := g.makeResponsesForModel(g.Schema.FindModel(f.ModelName), prefix, fieldEmbeddings)
+				if err != nil {
+					return nil, err
+				}
+				fields = append(fields, embeddedFields...)
+			}
+
+			continue
+		}
+
+		config := &rpc.ResponseFieldConfig{
+			FieldLocation: &rpc.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
+			FieldType:     f.Type.Type,
+			DisplayName:   casing.ToSentenceCase(f.Name),
+		}
+
+		if f.IsFile() {
+			config.ImagePreview = true
+		}
+
+		fields = append(fields, config)
+	}
+
+	return fields, nil
+}
+
 // findListTool will search for a list tool for the given model
 func (g *Generator) findListTool(modelName string) string {
 	for id, tool := range g.Tools {
@@ -249,7 +313,7 @@ func (g *Generator) findListTool(modelName string) string {
 	return ""
 }
 
-// findListTool will search for a list tool for the given model
+// findListTool will search for a get tool for the given model that takes in an ID
 func (g *Generator) findGetTool(modelName string) string {
 	for id, tool := range g.Tools {
 		if tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_GET {
