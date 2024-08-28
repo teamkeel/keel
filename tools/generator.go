@@ -76,6 +76,7 @@ func (g *Generator) scaffoldTools() {
 			t := Tool{
 				Config: &rpc.ActionConfig{
 					Id:             action.Name,
+					ApiName:        g.Schema.FindApiName(model.Name, action.Name),
 					Name:           casing.ToSentenceCase(action.Name),
 					ActionName:     action.Name,
 					ActionType:     action.GetType(),
@@ -84,7 +85,6 @@ func (g *Generator) scaffoldTools() {
 					EntityPlural:   casing.ToPlural(strings.ToLower(model.GetName())),
 					Capabilities:   g.makeCapabilities(action),
 					Title:          g.makeTitle(action, model),
-					// ApiName: nil, // TODO:
 				},
 				Model:  model,
 				Action: action,

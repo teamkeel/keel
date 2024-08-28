@@ -89,3 +89,20 @@ func (s *Schema) FindEventSubscribers(event *Event) []*Subscriber {
 	})
 	return subscribers
 }
+
+// FindApiName finds the api name for the given model and action name.
+func (s *Schema) FindApiName(modelName, actionName string) string {
+	for _, api := range s.Apis {
+		for _, apiModel := range api.ApiModels {
+			if apiModel.ModelName == modelName {
+				for _, action := range apiModel.ModelActions {
+					if action.ActionName == actionName {
+						return api.Name
+					}
+				}
+			}
+		}
+	}
+
+	return ""
+}
