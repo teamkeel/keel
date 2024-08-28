@@ -133,8 +133,10 @@ func (g *Generator) decorateTools() error {
 			}
 		}
 
-		// entry activity actions for GET and LIST that have an id response
+		// get the path of the id response field for this tool
 		idResponseFieldPath := tool.getIDResponseFieldPath()
+
+		// entry activity actions for GET and LIST that have an id response
 		if idResponseFieldPath != "" && (tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST || tool.Action.Type == proto.ActionType_ACTION_TYPE_GET) {
 			for linkedTool, fieldPath := range g.findAllByIDTools(tool.Model.Name, nil) {
 				if linkedTool == id {
@@ -151,6 +153,29 @@ func (g *Generator) decorateTools() error {
 						},
 					},
 				})
+			}
+		}
+
+		// get entry action for tools that operate on a model instance/s (create/update/list). This is used to link
+		if idResponseFieldPath != "" {
+			if tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST || tool.Action.Type == proto.ActionType_ACTION_TYPE_UPDATE || tool.Action.Type == proto.ActionType_ACTION_TYPE_CREATE {
+				actType := proto.ActionType_ACTION_TYPE_GET
+				if relatedTools := g.findAllByIDTools(tool.Model.Name, &actType); len(relatedTools) > 0 {
+					for linkedTool, fieldPath := range relatedTools {
+						tool.Config.GetEntryAction = &rpc.ActionLink{
+							ToolId: linkedTool,
+							Data: []*rpc.DataMapping{
+								{
+									Key:   fieldPath,
+									Value: &rpc.DataMapping_Path{Path: &rpc.JsonPath{Path: idResponseFieldPath}},
+								},
+							},
+						}
+
+						// we only need one link
+						break
+					}
+				}
 			}
 		}
 	}
@@ -411,8 +436,11 @@ func (g *Generator) findGetTool(modelName string) string {
 	return ""
 }
 
-// findByIDTools searches for the tools that operate on the given model and take in only one input, an ID; optionally
-// filtered by an action type. Returns a map of tool IDs and the name of the input field
+// findByIDTools searches for the tools that operate on the given model and take in an ID as an input; optionally
+// filtered by an action type. Returns a map of tool IDs and the path of the input field; e.g. getPost: $.id
+//
+// GET READ DELETE WRITE etc tools are included if they take in only on input (the ID)
+// UPDATE tools are included if they take in a where.id input alongside other inputs
 func (g *Generator) findAllByIDTools(modelName string, actionType *proto.ActionType) map[string]string {
 	toolIds := map[string]string{}
 	for id, tool := range g.Tools {
@@ -423,8 +451,24 @@ func (g *Generator) findAllByIDTools(modelName string, actionType *proto.ActionT
 			continue
 		}
 
+		// if we only have one input, an ID, add and continue
 		if tool.hasOnlyIDInput() {
 			toolIds[id] = tool.getIDInputFieldPath()
+			continue
+		}
+
+		// if we have a UPDATE that includes a where.ID
+		if tool.Action.IsUpdate() {
+			idInputPath := ""
+			for _, input := range tool.Config.Inputs {
+				if input.FieldType == proto.Type_TYPE_ID && input.FieldLocation.Path == "$.where.id" {
+					idInputPath = input.FieldLocation.Path
+				}
+			}
+			if idInputPath != "" {
+				toolIds[id] = idInputPath
+				continue
+			}
 		}
 	}
 	return toolIds

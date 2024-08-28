@@ -25,3 +25,7 @@ func (a *Action) IsReadAction() bool {
 		return false
 	}
 }
+
+func (a *Action) IsUpdate() bool {
+	return a.Type == ActionType_ACTION_TYPE_UPDATE
+}
