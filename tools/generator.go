@@ -23,6 +23,8 @@ type Generator struct {
 	Tools  map[string]*Tool
 }
 
+const fieldNameID = "id"
+
 var ErrInvalidSchema = errors.New("invalid schema")
 
 // NewGenerator creates a new tooll config generator for the given schema
@@ -87,7 +89,6 @@ func (g *Generator) scaffoldTools() {
 					// Response:             nil, // TODO: sort out action links
 
 					// RelatedActions:       nil, // TODO:
-					// EntryActivityActions: nil, // TODO:
 					// EmbeddedActions:      nil, // TODO:
 					// GetEntryAction:       nil, // TODO:
 				},
@@ -110,7 +111,7 @@ func (g *Generator) decorateTools() error {
 	}
 
 	// decorate further...
-	for _, tool := range g.Tools {
+	for id, tool := range g.Tools {
 		// with pagination for LIST actions
 		if tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
 			tool.Config.Pagination = &rpc.CursorPaginationConfig{
@@ -129,6 +130,27 @@ func (g *Generator) decorateTools() error {
 				},
 				NextPage:   &rpc.JsonPath{Path: "$.pageInfo.hasNextPage"},
 				TotalCount: &rpc.JsonPath{Path: "$.pageInfo.totalCount"},
+			}
+		}
+
+		// entry activity actions for GET and LIST that have an id response
+		idResponseFieldPath := tool.getIDResponseFieldPath()
+		if idResponseFieldPath != "" && (tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST || tool.Action.Type == proto.ActionType_ACTION_TYPE_GET) {
+			for linkedTool, fieldPath := range g.findAllByIDTools(tool.Model.Name, nil) {
+				if linkedTool == id {
+					// skip linking to the same tool
+					continue
+				}
+
+				tool.Config.EntryActivityActions = append(tool.Config.EntryActivityActions, &rpc.ActionLink{
+					ToolId: linkedTool,
+					Data: []*rpc.DataMapping{
+						{
+							Key:   fieldPath,
+							Value: &rpc.DataMapping_Path{Path: &rpc.JsonPath{Path: idResponseFieldPath}},
+						},
+					},
+				})
 			}
 		}
 	}
@@ -239,6 +261,9 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 			FieldLocation: &rpc.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			DisplayName:   casing.ToSentenceCase(f.Name),
+			Visible: func() bool {
+				return f.IsModelField()
+			}(),
 		}
 		if f.Type.Type == proto.Type_TYPE_ID && f.Type.ModelName != nil {
 			// generate action link placeholders
@@ -283,6 +308,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			FieldLocation: &rpc.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			DisplayName:   casing.ToSentenceCase(f.Name),
+			Visible:       true,
 			Sortable: func() bool {
 				for _, fn := range sortableFields {
 					if fn == f.Name {
@@ -342,6 +368,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 			FieldLocation: &rpc.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			DisplayName:   casing.ToSentenceCase(f.Name),
+			Visible:       true,
 			Sortable: func() bool {
 				for _, fn := range sortableFields {
 					if fn == f.Name {
@@ -382,6 +409,25 @@ func (g *Generator) findGetTool(modelName string) string {
 	}
 
 	return ""
+}
+
+// findByIDTools searches for the tools that operate on the given model and take in only one input, an ID; optionally
+// filtered by an action type. Returns a map of tool IDs and the name of the input field
+func (g *Generator) findAllByIDTools(modelName string, actionType *proto.ActionType) map[string]string {
+	toolIds := map[string]string{}
+	for id, tool := range g.Tools {
+		if actionType != nil && tool.Action.Type != *actionType {
+			continue
+		}
+		if tool.Model.Name != modelName {
+			continue
+		}
+
+		if tool.hasOnlyIDInput() {
+			toolIds[id] = tool.getIDInputFieldPath()
+		}
+	}
+	return toolIds
 }
 
 // makeCapabilities generates the makeCapabilities/features available for a tool generated for the given action.
@@ -426,26 +472,72 @@ func getPageInfoResponses() []*rpc.ResponseFieldConfig {
 			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.count"},
 			FieldType:     proto.Type_TYPE_INT,
 			DisplayName:   "Count",
+			Visible:       false,
 		},
 		{
 			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.totalCount"},
 			FieldType:     proto.Type_TYPE_INT,
 			DisplayName:   "Total count",
+			Visible:       false,
 		},
 		{
 			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.hasNextPage"},
 			FieldType:     proto.Type_TYPE_BOOL,
 			DisplayName:   "Has next page",
+			Visible:       false,
 		},
 		{
 			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.startCursor"},
 			FieldType:     proto.Type_TYPE_STRING,
 			DisplayName:   "Start cursor",
+			Visible:       false,
 		},
 		{
 			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.endCursor"},
 			FieldType:     proto.Type_TYPE_STRING,
 			DisplayName:   "End cursor",
+			Visible:       false,
 		},
 	}
+}
+
+// hasOnlyIDInput checks if the tool takes only one input, an ID
+func (t *Tool) hasOnlyIDInput() bool {
+	if len(t.Config.Inputs) != 1 {
+		return false
+	}
+	for _, input := range t.Config.Inputs {
+		if input.FieldType != proto.Type_TYPE_ID {
+			return false
+		}
+	}
+
+	return true
+}
+
+// getIDInputFieldPath returns the path of the first input field that's an ID
+func (t *Tool) getIDInputFieldPath() string {
+	for _, input := range t.Config.Inputs {
+		if input.FieldType == proto.Type_TYPE_ID && input.DisplayName == casing.ToSentenceCase(fieldNameID) {
+			return input.FieldLocation.Path
+		}
+	}
+
+	return ""
+}
+
+// getIDResponseFieldPath returns the path of the first response field that's an ID at top level (i.e. results[*].id
+// rather than results[*].embedded.id for list actions). Returns empty string if ID is not part of the response
+func (t *Tool) getIDResponseFieldPath() string {
+	expectedPath := "$.id"
+	if t.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
+		expectedPath = "$.results[*].id"
+	}
+	for _, response := range t.Config.Response {
+		if response.FieldType == proto.Type_TYPE_ID && response.FieldLocation.Path == expectedPath {
+			return response.FieldLocation.Path
+		}
+	}
+
+	return ""
 }
