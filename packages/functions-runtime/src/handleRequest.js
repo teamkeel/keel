@@ -28,6 +28,8 @@ async function handleRequest(request, config) {
   return opentelemetry.context.with(activeContext, () => {
     // Wrapping span for the whole request
     return withSpan(request.method, async (span) => {
+      let db = null;
+
       try {
         const { createContextAPI, functions, permissionFns, actionTypes } =
           config;
@@ -62,7 +64,7 @@ async function handleRequest(request, config) {
             ? true
             : null;
 
-        const db = getDatabaseClient();
+        db = getDatabaseClient();
         const customFunction = functions[request.method];
         const actionType = actionTypes[request.method];
 
@@ -122,6 +124,8 @@ async function handleRequest(request, config) {
           RuntimeErrors.UnknownError,
           message
         );
+      } finally {
+        await db.destroy();
       }
     });
   });

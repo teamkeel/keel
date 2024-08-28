@@ -43,7 +43,7 @@ async function withDatabase(db, actionType, cb) {
   });
 }
 
-let db = null;
+//let db = null;
 
 const dbInstance = new AsyncLocalStorage();
 
@@ -73,13 +73,7 @@ function useDatabase() {
 // represents an individual connection to the database.
 // not to be exported externally from our sdk - consumers should use useDatabase
 function getDatabaseClient() {
-  // 'db' represents the singleton connection to the database which is stored
-  // as a module scope variable.
-  if (db) {
-    return db;
-  }
-
-  db = new Kysely({
+  const db = new Kysely({
     dialect: getDialect(),
     plugins: [
       // ensures that the audit context data is written to Postgres configuration parameters
@@ -120,7 +114,6 @@ class InstrumentedNeonServerlessPool extends neonserverless.Pool {
     const _super = super.connect.bind(this);
     return withSpan("Database Connect", function (span) {
       span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
-      span.setAttribute("timeout", connectionTimeout());
       return _super(...args);
     });
   }
@@ -187,7 +180,6 @@ function getDialect() {
       neonserverless.neonConfig.webSocketConstructor = ws;
 
       const pool = new InstrumentedNeonServerlessPool({
-        idleTimeoutMillis: connectionTimeout(),
         connectionString: mustEnv("KEEL_DB_CONN"),
       });
 

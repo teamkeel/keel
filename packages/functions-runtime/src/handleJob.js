@@ -25,6 +25,8 @@ async function handleJob(request, config) {
   return opentelemetry.context.with(activeContext, () => {
     // Wrapping span for the whole request
     return withSpan(request.method, async (span) => {
+      let db = null;
+
       try {
         const { createJobContextAPI, jobs } = config;
 
@@ -51,7 +53,7 @@ async function handleJob(request, config) {
             ? true
             : null;
 
-        const db = getDatabaseClient();
+        db = getDatabaseClient();
         const jobFunction = jobs[request.method];
         const actionType = PROTO_ACTION_TYPES.JOB;
 
@@ -89,6 +91,8 @@ async function handleJob(request, config) {
           RuntimeErrors.UnknownError,
           message
         );
+      } finally {
+        await db.destroy();
       }
     });
   });
