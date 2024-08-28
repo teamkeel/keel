@@ -90,6 +90,27 @@ func (g *Generator) scaffoldTools() {
 				Action: action,
 			}
 
+			// List actions have pagination
+			if action.IsList() {
+				t.Config.Pagination = &rpc.CursorPaginationConfig{
+					Start: &rpc.CursorPaginationConfig_FieldConfig{
+						RequestInput:  "after",
+						ResponseField: &rpc.JsonPath{Path: "$.pageInfo.startCursor"},
+					},
+					End: &rpc.CursorPaginationConfig_FieldConfig{
+						RequestInput:  "before",
+						ResponseField: &rpc.JsonPath{Path: "$.pageInfo.endCursor"},
+					},
+					PageSize: &rpc.CursorPaginationConfig_PageSizeConfig{
+						RequestInput:  "first",
+						ResponseField: &rpc.JsonPath{Path: "$.pageInfo.count"},
+						DefaultValue:  50,
+					},
+					NextPage:   &rpc.JsonPath{Path: "$.pageInfo.hasNextPage"},
+					TotalCount: &rpc.JsonPath{Path: "$.pageInfo.totalCount"},
+				}
+			}
+
 			g.Tools[t.Config.Id] = &t
 		}
 	}
@@ -104,82 +125,12 @@ func (g *Generator) decorateTools() error {
 		return fmt.Errorf("generating responses: %w", err)
 	}
 
+	g.generateRelatedActionsLinks()
+	g.generateEntryActivityActionsLinks()
+	g.generateGetEntryActionLinks()
+
 	// decorate further...
-	for id, tool := range g.Tools {
-		// List actions...
-		if tool.Action.IsList() {
-			// ... have pagination
-			tool.Config.Pagination = &rpc.CursorPaginationConfig{
-				Start: &rpc.CursorPaginationConfig_FieldConfig{
-					RequestInput:  "after",
-					ResponseField: &rpc.JsonPath{Path: "$.pageInfo.startCursor"},
-				},
-				End: &rpc.CursorPaginationConfig_FieldConfig{
-					RequestInput:  "before",
-					ResponseField: &rpc.JsonPath{Path: "$.pageInfo.endCursor"},
-				},
-				PageSize: &rpc.CursorPaginationConfig_PageSizeConfig{
-					RequestInput:  "first",
-					ResponseField: &rpc.JsonPath{Path: "$.pageInfo.count"},
-					DefaultValue:  50,
-				},
-				NextPage:   &rpc.JsonPath{Path: "$.pageInfo.hasNextPage"},
-				TotalCount: &rpc.JsonPath{Path: "$.pageInfo.totalCount"},
-			}
-
-			//... and other related actions if applicable (i.e. other list actions defined on the same model)
-			// we search for more than one list tool as the results will include the one we're on
-			if relatedTools := g.findListTools(tool.Model.Name); len(relatedTools) > 1 {
-				for _, relatedID := range relatedTools {
-					if id != relatedID {
-						tool.Config.RelatedActions = append(tool.Config.RelatedActions, &rpc.ActionLink{
-							ToolId: relatedID,
-						})
-					}
-				}
-			}
-		}
-
-		// get the path of the id response field for this tool
-		idResponseFieldPath := tool.getIDResponseFieldPath()
-
-		// entry activity actions for GET and LIST that have an id response
-		if idResponseFieldPath != "" && (tool.Action.IsList() || tool.Action.IsGet()) {
-			for linkedTool, fieldPath := range g.findAllByIDTools(tool.Model.Name, nil) {
-				if linkedTool == id {
-					// skip linking to the same tool
-					continue
-				}
-
-				tool.Config.EntryActivityActions = append(tool.Config.EntryActivityActions, &rpc.ActionLink{
-					ToolId: linkedTool,
-					Data: []*rpc.DataMapping{
-						{
-							Key:   fieldPath,
-							Value: &rpc.DataMapping_Path{Path: &rpc.JsonPath{Path: idResponseFieldPath}},
-						},
-					},
-				})
-			}
-		}
-
-		// get entry action for tools that operate on a model instance/s (create/update/list). This is used to link
-		if idResponseFieldPath != "" {
-			if tool.Action.IsList() || tool.Action.IsUpdate() || tool.Action.Type == proto.ActionType_ACTION_TYPE_CREATE {
-				if getToolID := g.findGetByIDTool(tool.Model.Name); getToolID != "" {
-					tool.Config.GetEntryAction = &rpc.ActionLink{
-						ToolId: getToolID,
-						Data: []*rpc.DataMapping{
-							{
-								Key:   g.Tools[getToolID].getIDInputFieldPath(),
-								Value: &rpc.DataMapping_Path{Path: &rpc.JsonPath{Path: idResponseFieldPath}},
-							},
-						},
-					}
-				}
-			}
-		}
-
+	for _, tool := range g.Tools {
 		// for all inputs that are IDs that have a get_entry_action link (e.g. used to lookup a related model field),
 		// decorate the data mapping now that we have all inputs and responses generated
 		for _, input := range tool.Config.Inputs {
@@ -197,6 +148,79 @@ func (g *Generator) decorateTools() error {
 	}
 
 	return nil
+}
+
+// generateRelatedActionsLinks will traverse the tools and generate the RelatedActions links:
+//   - For LIST actions = other list actions for the same model
+func (g *Generator) generateRelatedActionsLinks() {
+	for id, tool := range g.Tools {
+		if !tool.Action.IsList() {
+			continue
+		}
+
+		// we search for more than one list tool as the results will include the one we're on
+		if relatedTools := g.findListTools(tool.Model.Name); len(relatedTools) > 1 {
+			for _, relatedID := range relatedTools {
+				if id != relatedID {
+					tool.Config.RelatedActions = append(tool.Config.RelatedActions, &rpc.ActionLink{
+						ToolId: relatedID,
+					})
+				}
+			}
+		}
+	}
+}
+
+// generateEntryActivityActionsLinks will traverse the tools and generate the EntryActivityActions links:
+//   - For LIST/GET actions that have a model ID response = other actions on the same model that take an id as an input
+func (g *Generator) generateEntryActivityActionsLinks() {
+	for id, tool := range g.Tools {
+		// get the path of the id response field for this tool
+		idResponseFieldPath := tool.getIDResponseFieldPath()
+		// skip if we don't have an id response field or the tool is not List or Get
+		if idResponseFieldPath == "" || (!tool.Action.IsList() && !tool.Action.IsGet()) {
+			continue
+		}
+
+		// entry activity actions for GET and LIST that have an id response
+		for linkedTool, fieldPath := range g.findAllByIDTools(tool.Model.Name, id) {
+			tool.Config.EntryActivityActions = append(tool.Config.EntryActivityActions, &rpc.ActionLink{
+				ToolId: linkedTool,
+				Data: []*rpc.DataMapping{
+					{
+						Key:   fieldPath,
+						Value: &rpc.DataMapping_Path{Path: &rpc.JsonPath{Path: idResponseFieldPath}},
+					},
+				},
+			})
+		}
+	}
+}
+
+// generateGetEntryActionLinks will traverse the tools and generate the GetEntryAction links:
+//   - For LIST/UPDATE/CREATE = a GET action used to retrieve the model by id
+func (g *Generator) generateGetEntryActionLinks() {
+	for _, tool := range g.Tools {
+		// get the path of the id response field for this tool
+		idResponseFieldPath := tool.getIDResponseFieldPath()
+		if idResponseFieldPath == "" {
+			continue
+		}
+		// get entry action for tools that operate on a model instance/s (create/update/list).
+		if tool.Action.IsList() || tool.Action.IsUpdate() || tool.Action.Type == proto.ActionType_ACTION_TYPE_CREATE {
+			if getToolID := g.findGetByIDTool(tool.Model.Name); getToolID != "" {
+				tool.Config.GetEntryAction = &rpc.ActionLink{
+					ToolId: getToolID,
+					Data: []*rpc.DataMapping{
+						{
+							Key:   g.Tools[getToolID].getIDInputFieldPath(),
+							Value: &rpc.DataMapping_Path{Path: &rpc.JsonPath{Path: idResponseFieldPath}},
+						},
+					},
+				}
+			}
+		}
+	}
 }
 
 // generateInputs will make the inputs for all tools
@@ -485,15 +509,15 @@ func (g *Generator) findGetByIDTool(modelName string) string {
 	return ""
 }
 
-// findByIDTools searches for the tools that operate on the given model and take in an ID as an input; optionally
-// filtered by an action type. Returns a map of tool IDs and the path of the input field; e.g. getPost: $.id
+// findByIDTools searches for the tools that operate on the given model and take in an ID as an input; Returns a map of
+// tool IDs and the path of the input field; e.g. getPost: $.id. Results will omit the given tool id (ignoreID).
 //
 // GET READ DELETE WRITE etc tools are included if they take in only on input (the ID)
 // UPDATE tools are included if they take in a where.id input alongside other inputs
-func (g *Generator) findAllByIDTools(modelName string, actionType *proto.ActionType) map[string]string {
+func (g *Generator) findAllByIDTools(modelName string, ignoreID string) map[string]string {
 	toolIds := map[string]string{}
 	for id, tool := range g.Tools {
-		if actionType != nil && tool.Action.Type != *actionType {
+		if id == ignoreID {
 			continue
 		}
 		if tool.Model.Name != modelName {
