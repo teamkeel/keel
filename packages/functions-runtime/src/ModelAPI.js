@@ -5,6 +5,7 @@ const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
 const { InlineFile, StoredFile } = require("./InlineFile");
+const { transformRichDataTypes, isPlainObject, isReferencingExistingRecord } = require("./parsing")
 
 const {
   applyLimit,
@@ -146,6 +147,8 @@ class ModelAPI {
   }
 
   async update(where, values) {
+    console.log("UPDATE")
+
     const name = tracing.spanNameForModelAPI(this._modelName, "update");
     const db = useDatabase();
 
@@ -160,8 +163,10 @@ class ModelAPI {
         const value = values[key];
         // handle files that need uploading
         if (value instanceof InlineFile) {
-          const dbValue = await value.store();
-          row[key] = dbValue;
+          const storedFile = await value.store();
+          row[key] = storedFile.toDbRecord();
+        } else if (value instanceof StoredFile) {
+          row[key] = value.toDbRecord();
         } else {
           row[key] = value;
         }
@@ -177,7 +182,7 @@ class ModelAPI {
 
       try {
         const row = await builder.executeTakeFirstOrThrow();
-        return camelCaseObject(row);
+        return transformRichDataTypes(camelCaseObject(row));
       } catch (e) {
         throw new DatabaseError(e);
       }
@@ -329,38 +334,8 @@ async function create(conn, tableName, tableConfigs, values) {
   }
 }
 
-// Iterate through the given object's keys and if any of the values are a rich data type, instantiate their respective class
-function transformRichDataTypes(data) {
-  const keys = data ? Object.keys(data) : [];
-  const row = {};
 
-  for (const key of keys) {
-    const value = data[key];
-    if (isPlainObject(value)) {
-      // if we've got an StoredFile...
-      if (value.key && value.size && value.filename && value.contentType) {
-        console.log("IS STORED FILE")
-        row[key] = StoredFile.fromDatabase(value);
-      } else {
-        console.log("NOT STORED FILE")
-        row[key] = value;
-      }
-      continue;
-    }
 
-    row[key] = value;
-  }
-
-  return row;
-}
-
-function isPlainObject(obj) {
-  return Object.prototype.toString.call(obj) === "[object Object]";
-}
-
-function isReferencingExistingRecord(value) {
-  return Object.keys(value).length === 1 && value.id;
-}
 
 module.exports = {
   ModelAPI,

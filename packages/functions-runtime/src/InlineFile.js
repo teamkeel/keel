@@ -8,16 +8,13 @@ const { useDatabase } = require("./database");
 const { DatabaseError } = require("./errors");
 const KSUID = require("ksuid");
 
-
 class InlineFile {
-  constructor({ filename, contentType}) {
-   this._filename = filename;
+  constructor({ filename, contentType }) {
+    this._filename = filename;
     this._contentType = contentType;
     this._contents = null;
   }
 
-
-  // Create an InlineFile instance from a given dataURL
   static fromDataURL(dataURL) {
     var info = dataURL.split(",")[0].split(":")[1];
     var data = dataURL.split(",")[1];
@@ -32,7 +29,7 @@ class InlineFile {
     return file;
   }
 
-   get size() {
+  get size() {
     if (this._contents) {
       return this._contents.size;
     } else {
@@ -55,19 +52,25 @@ class InlineFile {
   // Read the contents of the file. If URL is set, it will be read from the remote storage, otherwise, if dataURL is set
   // on the instance, it will return a blob with the file contents
   async read() {
-
     const arrayBuffer = await this._contents.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     return buffer;
-
   }
 
   async store(expires = null, isPublic = false) {
     const content = await this.read();
     const key = KSUID.randomSync().string;
 
-    await storeFile(content, key, this._filename, this._contentType, this.size,expires, isPublic);
+    await storeFile(
+      content,
+      key,
+      this._filename,
+      this._contentType,
+      this.size,
+      expires,
+      isPublic
+    );
 
     return new StoredFile({
       key: key,
@@ -79,37 +82,44 @@ class InlineFile {
   }
 }
 
-
 class StoredFile extends InlineFile {
   constructor(input) {
     super({ filename: input.filename, contentType: input.contentType });
-     this._key  = input.key
-     this._size =  input.size;
-     this._isPublic = input.isPublic;
-     this._isHydrated = false;
-   }
-
-   static fromDatabase({ key, filename, size, contentType }) {
-    return new StoredFile({ key: key, filename: filename, size: size, contentType: contentType });
+    this._key = input.key;
+    this._size = input.size;
+    this._isPublic = input.isPublic;
+    this._isHydrated = false;
   }
 
+  static fromDatabase({ key, filename, size, contentType }) {
+    return new StoredFile({
+      key: key,
+      filename: filename,
+      size: size,
+      contentType: contentType,
+    });
+  }
 
   get size() {
     return this._size;
   }
 
-
-   get key() {
+  get key() {
     return this._key;
-   }
+  }
 
-   get isPublic() {
+  get isPublic() {
     return this._isPublic;
-   }
+  }
 
+  async read() {
+    if (this._contents) {
+      const arrayBuffer = await this._contents.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
+      return buffer;
+    }
 
-   async read() {
     if (isS3Storage()) {
       const s3Client = new S3Client({
         credentials: fromEnv(),
@@ -140,23 +150,21 @@ class StoredFile extends InlineFile {
     } catch (e) {
       throw new DatabaseError(e);
     }
-   }
+  }
 
-   async store(expires = null, isPublic = false) {
+  async store(expires = null, isPublic = false) {
     // Only necessary to store the file if the contents have been changed
     if (this._contents) {
-      await storeFile(this._contents, this.key, this.filename, this.contentType, this.size, expires, isPublic);
-
-    } 
-    // else {
-
-    //   const contents = await this.read();
-    //   await storeFile(contents, this.key, this.filename, this.contentType, this.size, expires, isPublic);
-
-    // }
-
-
-
+      const contents = await this.read();
+      await storeFile(
+        contents,
+        this.key,
+        this.filename,
+        this.contentType,
+        expires,
+        isPublic
+      );
+    }
     return this;
   }
 
@@ -165,12 +173,19 @@ class StoredFile extends InlineFile {
       key: this.key,
       filename: this.filename,
       contentType: this.contentType,
-      size: this._size
-    }
+      size: this._size,
+    };
   }
 }
 
-async function storeFile(contents, key, filename, contentType, size, expires, isPublic) {
+async function storeFile(
+  contents,
+  key,
+  filename,
+  contentType,
+  expires,
+  isPublic
+) {
   if (isS3Storage()) {
     const s3Client = new S3Client({
       credentials: fromEnv(),
@@ -204,24 +219,24 @@ async function storeFile(contents, key, filename, contentType, size, expires, is
   // default to db storage
   const db = useDatabase();
 
-  const b64 = contents.toString('base64');
-
   try {
-    let query = db.insertInto("keel_storage").values({
-      id: key,
-      filename: filename,
-      content_type: contentType,
-      data: b64,
-})
-.onConflict((oc) => 
-  oc.column('id')
-  .doUpdateSet((eb) => ({
-    filename:filename,
-    content_type: contentType,
-    data: b64,
-  }))
-  .where("keel_storage.id", "=", key)
-);
+    let query = db
+      .insertInto("keel_storage")
+      .values({
+        id: key,
+        filename: filename,
+        content_type: contentType,
+        data: contents,
+      })
+      .onConflict((oc) =>
+        oc.column("id")
+          .doUpdateSet(() => ({
+            filename: filename,
+            content_type: contentType,
+            data: contents,
+          }))
+          .where("keel_storage.id", "=", key)
+      );
 
     await query.executeTakeFirstOrThrow();
   } catch (e) {

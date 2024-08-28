@@ -263,7 +263,7 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 
 		w.Write(casing.ToLowerCamel(field.Name))
 		w.Write(": ")
-		t := toTypeScriptType(field.Type, false)
+		t := toStoredType(field.Type, false)
 
 		if field.Type.Repeated {
 			t = fmt.Sprintf("%s[]", t)
@@ -294,7 +294,7 @@ func writeModelInterface(w *codegen.Writer, model *proto.Model) {
 
 		w.Write(field.Name)
 		w.Write(": ")
-		t := toTypeScriptType(field.Type, false)
+		t := toStoredType(field.Type, false)
 
 		if field.Type.Repeated {
 			t = fmt.Sprintf("%s[]", t)
@@ -362,7 +362,7 @@ func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *pr
 		w.Write(": ")
 
 		if len(fieldEmbeddings) == 0 {
-			w.Write(toTypeScriptType(field.Type, false))
+			w.Write(toStoredType(field.Type, false))
 		} else {
 			fieldModel := proto.FindModel(schema.Models, field.Type.ModelName.Value)
 			writeEmbeddedModelFields(w, schema, fieldModel, fieldEmbeddings)
@@ -433,7 +433,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 				w.Write(">")
 			}
 		} else {
-			t := toTypeScriptType(field.Type, false)
+			t := toCompatibleType(field.Type, false)
 
 			if field.Type.Repeated {
 				t = fmt.Sprintf("%s[]", t)
@@ -531,7 +531,7 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 			// Embed related models where conditions
 			w.Writef("%sWhereConditions", field.Type.ModelName.Value)
 		} else {
-			w.Write(toTypeScriptType(field.Type, false))
+			w.Write(toStoredType(field.Type, false))
 
 			if field.Type.Repeated {
 				w.Write("[]")
@@ -564,7 +564,7 @@ func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage boo
 func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool) {
 	if message.Type != nil {
 		w.Writef("export type %s = ", message.Name)
-		w.Write(toTypeScriptType(message.Type, isTestingPackage))
+		w.Write(toMessageType(message.Type, isTestingPackage))
 		w.Writeln(";")
 		return
 	}
@@ -581,7 +581,7 @@ func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bo
 
 		w.Write(": ")
 
-		w.Write(toTypeScriptType(field.Type, isTestingPackage))
+		w.Write(toMessageType(field.Type, isTestingPackage))
 
 		if field.Type.Repeated {
 			w.Write("[]")
@@ -1563,7 +1563,7 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	js.Indent()
 	js.Writeln("const db = useDatabase();")
 	js.Write("await sql`TRUNCATE TABLE ")
-	tableNames := []string{"keel_audit"}
+	tableNames := []string{"keel_audit", "keel_storage"}
 	for _, model := range schema.Models {
 		tableNames = append(tableNames, fmt.Sprintf("\"%s\"", casing.ToSnake(model.Name)))
 	}
@@ -1735,6 +1735,33 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
 }
 
+func toMessageType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
+	switch t.Type {
+	case proto.Type_TYPE_INLINE_FILE:
+		return "InlineFile"
+	default:
+		return toTypeScriptType(t, isTestingPackage)
+	}
+}
+
+func toStoredType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
+	switch t.Type {
+	case proto.Type_TYPE_INLINE_FILE:
+		return "StoredFile"
+	default:
+		return toTypeScriptType(t, isTestingPackage)
+	}
+}
+
+func toCompatibleType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
+	switch t.Type {
+	case proto.Type_TYPE_INLINE_FILE:
+		return "InlineFile | StoredFile"
+	default:
+		return toTypeScriptType(t, isTestingPackage)
+	}
+}
+
 func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_ID:
@@ -1776,7 +1803,7 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 		// Use string literal type for discriminating.
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
 	case proto.Type_TYPE_INLINE_FILE:
-		ret = "InlineFile | StoredFile"
+		panic("oops")
 	default:
 		ret = "any"
 	}

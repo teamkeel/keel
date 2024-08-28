@@ -1,0 +1,29 @@
+model MyFile {
+    fields {
+        file InlineFile?
+    }
+    actions {
+        create createFile() with (file)
+        update updateFile(id) with (file)
+
+        create createFileInHook() @function 
+        create createFileAndStoreInHook() @function 
+        get getFileNumerateContents(id) @function
+
+        write storeAndWriteMany(file: InlineFile) returns (Any) {
+            @permission(expression: true)
+        }
+        write writeMany(FileMessage) returns (Any){
+            @permission(expression: true)
+        }
+        write modelApiTests(Any) returns (Any){
+            @permission(expression: true)
+        }
+    }
+
+    @permission(expression: true, actions: [get, create, update])
+}
+
+message FileMessage {
+    file InlineFile
+}

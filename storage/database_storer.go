@@ -39,7 +39,7 @@ func NewDbStore(ctx context.Context, db db.Database) (*DbStore, error) {
 func (s *DbStore) setupDB(ctx context.Context) error {
 	if _, err := s.db.ExecuteStatement(ctx, `
 	CREATE TABLE IF NOT EXISTS `+dbTable+` (
-		"id" text NOT NULL,
+		"id" text NOT NULL DEFAULT ksuid(),
 		"filename" text NOT NULL,
 		"content_type" text NOT NULL,
 		"data" bytea NOT NULL,
