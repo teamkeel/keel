@@ -46,7 +46,7 @@ async function withDatabase(db, actionType, cb) {
 const dbInstance = new AsyncLocalStorage();
 
 // used to establish a singleton for our vitest environment
-let vitestDb =  null;
+let vitestDb = null;
 
 // useDatabase will retrieve the database client set by withDatabase from the local storage
 function useDatabase() {
