@@ -73,7 +73,7 @@ function useDatabase() {
   throw new Error("useDatabase must be called within a function");
 }
 
-// getDatabaseClient will return a brand new instance of Kysely. Every instance of Kysely
+// createDatabaseClient will return a brand new instance of Kysely. Every instance of Kysely
 // represents an individual connection to the database.
 // not to be exported externally from our sdk - consumers should use useDatabase
 function createDatabaseClient() {
@@ -224,6 +224,6 @@ function mustEnv(key) {
   return v;
 }
 
-module.exports.getDatabaseClient = createDatabaseClient;
+module.exports.createDatabaseClient = createDatabaseClient;
 module.exports.useDatabase = useDatabase;
 module.exports.withDatabase = withDatabase;

@@ -3,7 +3,7 @@ const {
   createJSONRPCSuccessResponse,
   JSONRPCErrorCode,
 } = require("json-rpc-2.0");
-const { getDatabaseClient } = require("./database");
+const { createDatabaseClient } = require("./database");
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
@@ -53,7 +53,7 @@ async function handleJob(request, config) {
             ? true
             : null;
 
-        db = getDatabaseClient();
+        db = createDatabaseClient();
         const jobFunction = jobs[request.method];
         const actionType = PROTO_ACTION_TYPES.JOB;
 

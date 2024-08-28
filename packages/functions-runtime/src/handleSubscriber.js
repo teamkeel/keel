@@ -3,7 +3,7 @@ const {
   createJSONRPCSuccessResponse,
   JSONRPCErrorCode,
 } = require("json-rpc-2.0");
-const { getDatabaseClient } = require("./database");
+const { createDatabaseClient } = require("./database");
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
@@ -47,7 +47,7 @@ async function handleSubscriber(request, config) {
           meta: request.meta,
         });
 
-        db = getDatabaseClient();
+        db = createDatabaseClient();
         const subscriberFunction = subscribers[request.method];
         const actionType = PROTO_ACTION_TYPES.SUBSCRIBER;
 
