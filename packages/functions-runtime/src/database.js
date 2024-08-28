@@ -43,8 +43,6 @@ async function withDatabase(db, actionType, cb) {
   });
 }
 
-//let db = null;
-
 const dbInstance = new AsyncLocalStorage();
 
 // useDatabase will retrieve the database client set by withDatabase from the local storage
