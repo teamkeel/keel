@@ -140,6 +140,8 @@ message ActionConfig {
 	// Only for List actions; aka views.
 	// E.g. For a listOrders action; these would be tabs that show filtered orders by status 
 	// (Processed, Pending, Completed)
+	// For auto-generated configs, this is only populated for list actions, with links to other list 
+	// actions for the same model.
 	repeated ActionLink related_actions = 15; 
 
 	// Only for List actions; Support offset and cursor

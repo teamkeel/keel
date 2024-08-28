@@ -891,6 +891,8 @@ type ActionConfig struct {
 	// Only for List actions; aka views.
 	// E.g. For a listOrders action; these would be tabs that show filtered orders by status
 	// (Processed, Pending, Completed)
+	// For auto-generated configs, this is only populated for list actions, with links to other list
+	// actions for the same model.
 	RelatedActions []*ActionLink `protobuf:"bytes,15,rep,name=related_actions,json=relatedActions,proto3" json:"related_actions,omitempty"`
 	// Only for List actions; Support offset and cursor
 	Pagination *CursorPaginationConfig `protobuf:"bytes,16,opt,name=pagination,proto3,oneof" json:"pagination,omitempty"`

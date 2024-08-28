@@ -85,8 +85,6 @@ func (g *Generator) scaffoldTools() {
 					Capabilities:   g.makeCapabilities(action),
 					Title:          g.makeTitle(action, model),
 					// ApiName: nil, // TODO:
-					// RelatedActions:       nil, // TODO:
-					// EmbeddedActions:      nil, // TODO:
 				},
 				Model:  model,
 				Action: action,
@@ -108,8 +106,9 @@ func (g *Generator) decorateTools() error {
 
 	// decorate further...
 	for id, tool := range g.Tools {
-		// with pagination for LIST actions
+		// List actions...
 		if tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
+			// ... have pagination
 			tool.Config.Pagination = &rpc.CursorPaginationConfig{
 				Start: &rpc.CursorPaginationConfig_FieldConfig{
 					RequestInput:  "after",
@@ -126,6 +125,18 @@ func (g *Generator) decorateTools() error {
 				},
 				NextPage:   &rpc.JsonPath{Path: "$.pageInfo.hasNextPage"},
 				TotalCount: &rpc.JsonPath{Path: "$.pageInfo.totalCount"},
+			}
+
+			//... and other related actions if applicable (i.e. other list actions defined on the same model)
+			// we search for more than one list tool as the results will include the one we're on
+			if relatedTools := g.findListTools(tool.Model.Name); len(relatedTools) > 1 {
+				for _, relatedID := range relatedTools {
+					if id != relatedID {
+						tool.Config.RelatedActions = append(tool.Config.RelatedActions, &rpc.ActionLink{
+							ToolId: relatedID,
+						})
+					}
+				}
 			}
 		}
 
@@ -297,9 +308,9 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 		}
 		if f.Type.Type == proto.Type_TYPE_ID && f.Type.ModelName != nil {
 			// generate action link placeholders
-			if lookupToolID := g.findListTool(f.Type.ModelName.Value); lookupToolID != "" {
+			if lookupToolsIDs := g.findListTools(f.Type.ModelName.Value); len(lookupToolsIDs) > 0 {
 				config.LookupAction = &rpc.ActionLink{
-					ToolId: lookupToolID,
+					ToolId: lookupToolsIDs[0],
 				}
 			}
 
@@ -440,15 +451,16 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 	return fields, nil
 }
 
-// findListTool will search for a list tool for the given model
-func (g *Generator) findListTool(modelName string) string {
+// findListTools will search for list tools for the given model
+func (g *Generator) findListTools(modelName string) []string {
+	ids := []string{}
 	for id, tool := range g.Tools {
 		if tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
-			return id
+			ids = append(ids, id)
 		}
 	}
 
-	return ""
+	return ids
 }
 
 // findGetTool will search for a get tool for the given model
