@@ -443,7 +443,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 func (mk *graphqlSchemaBuilder) addAction(
 	action *proto.Action,
 	schema *proto.Schema) error {
-	model := proto.FindModel(schema.Models, action.ModelName)
+	model := schema.FindModel(action.ModelName)
 	modelType, err := mk.addModel(model)
 	if err != nil {
 		return err
@@ -620,7 +620,7 @@ func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Outp
 				return nil, err
 			}
 		case proto.Type_TYPE_MODEL:
-			modelMessage := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
+			modelMessage := mk.proto.FindModel(field.Type.ModelName.Value)
 
 			var err error
 			fieldType, err = mk.addModel(modelMessage)
@@ -699,7 +699,7 @@ func (mk *graphqlSchemaBuilder) inputTypeForModelField(field *proto.Field) (in g
 		enumMessage := proto.FindEnum(mk.proto.Enums, field.Type.EnumName.Value)
 		in = mk.addEnum(enumMessage)
 	case proto.Type_TYPE_MODEL:
-		model := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
+		model := mk.proto.FindModel(field.Type.ModelName.Value)
 		var err error
 		in, err = mk.addModelInput(model)
 		if err != nil {
@@ -734,7 +734,7 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 		enumMessage := proto.FindEnum(mk.proto.Enums, field.Type.EnumName.Value)
 		out = mk.addEnum(enumMessage)
 	case proto.Type_TYPE_MODEL:
-		modelMessage := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
+		modelMessage := mk.proto.FindModel(field.Type.ModelName.Value)
 		var err error
 		out, err = mk.addModel(modelMessage)
 		if err != nil {
@@ -830,7 +830,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		mk.inputs[messageName] = inputObject
 		in = inputObject
 	case field.Type.Type == proto.Type_TYPE_MODEL:
-		model := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
+		model := mk.proto.FindModel(field.Type.ModelName.Value)
 		in, err = mk.addModelInput(model)
 		if err != nil {
 			return nil, err

@@ -15,7 +15,7 @@ import (
 
 // Updates the query with all set attributes defined on the action.
 func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
-	model := proto.FindModel(scope.Schema.Models, strcase.ToCamel("identity"))
+	model := scope.Schema.FindModel(strcase.ToCamel("identity"))
 	ctxScope := NewModelScope(scope.Context, model, scope.Schema)
 	identityQuery := NewQuery(model)
 
@@ -187,7 +187,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 		if !input.IsModelField() {
 			if input.Type.Type == proto.Type_TYPE_MESSAGE {
 				target := append(newRow.target, casing.ToLowerCamel(input.Name))
-				messageModel := proto.FindModel(scope.Schema.Models, field.Type.ModelName.Value)
+				messageModel := scope.Schema.FindModel(field.Type.ModelName.Value)
 				nestedMessage := scope.Schema.FindMessage(input.Type.MessageName.Value)
 
 				var foreignKeys map[string]any
@@ -379,7 +379,7 @@ func targetAssociating(scope *Scope, target []string) bool {
 	}
 
 	message := scope.Schema.FindMessage(scope.Action.InputMessageName)
-	model := proto.FindModel(scope.Schema.Models, strcase.ToCamel(target[0]))
+	model := scope.Schema.FindModel(strcase.ToCamel(target[0]))
 	for _, t := range target[1 : len(target)-1] {
 		found := false
 		for _, f := range message.Fields {
@@ -387,7 +387,7 @@ func targetAssociating(scope *Scope, target []string) bool {
 				if f.Type.Type == proto.Type_TYPE_MESSAGE {
 					message = scope.Schema.FindMessage(f.Type.MessageName.Value)
 					field := proto.FindField(scope.Schema.Models, model.Name, t)
-					model = proto.FindModel(scope.Schema.Models, field.Type.ModelName.Value)
+					model = scope.Schema.FindModel(field.Type.ModelName.Value)
 				}
 				found = true
 				break

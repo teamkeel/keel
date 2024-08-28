@@ -292,7 +292,7 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.Ident, stmt 
 					return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
 				}
 
-				joinModel := proto.FindModel(s.Models, field.Type.ModelName.Value)
+				joinModel := s.FindModel(field.Type.ModelName.Value)
 				if joinModel == nil {
 					return fmt.Errorf("model %s not found in schema", model.Name)
 				}

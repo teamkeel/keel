@@ -42,7 +42,7 @@ func NewScope(
 	ctx context.Context,
 	action *proto.Action,
 	schema *proto.Schema) *Scope {
-	model := proto.FindModel(schema.Models, action.ModelName)
+	model := schema.FindModel(action.ModelName)
 
 	return &Scope{
 		Context: ctx,

@@ -128,7 +128,7 @@ func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, acti
 	case proto.ActionType_ACTION_TYPE_LIST:
 		// array of models
 
-		model := proto.FindModel(schema.Models, action.ModelName)
+		model := schema.FindModel(action.ModelName)
 
 		modelSchema := JSONSchema{}
 		if len(action.GetResponseEmbeds()) > 0 {
@@ -497,7 +497,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		prop.Type = "number"
 		prop.Format = "float"
 	case proto.Type_TYPE_MODEL:
-		model := proto.FindModel(schema.Models, t.ModelName.Value)
+		model := schema.FindModel(t.ModelName.Value)
 
 		modelSchema := JSONSchema{}
 		if len(embeddings) > 0 {

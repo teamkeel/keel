@@ -305,7 +305,7 @@ func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *pr
 		if len(fieldEmbeddings) == 0 {
 			w.Write(toTypeScriptType(field.Type, false, false, false))
 		} else {
-			fieldModel := proto.FindModel(schema.Models, field.Type.ModelName.Value)
+			fieldModel := schema.FindModel(field.Type.ModelName.Value)
 			writeEmbeddedModelFields(w, schema, fieldModel, fieldEmbeddings)
 		}
 
@@ -352,7 +352,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 				w.Write("Array<")
 			}
 
-			relation := proto.FindModel(schema.Models, field.Type.ModelName.Value)
+			relation := schema.FindModel(field.Type.ModelName.Value)
 
 			// For a has-many we need to omit the fields that relate to _this_ model.
 			// For example if we're making the create values type for author, and this
@@ -404,7 +404,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 
 		fkName := field.ForeignKeyFieldName.Value
 
-		relation := proto.FindModel(schema.Models, field.Type.ModelName.Value)
+		relation := schema.FindModel(field.Type.ModelName.Value)
 		relationPk := relation.PrimaryKeyFieldName()
 
 		w.Writef("// Either %s or %s can be provided but not both\n", field.Name, fkName)

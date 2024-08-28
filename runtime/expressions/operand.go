@@ -73,7 +73,7 @@ func (resolver *OperandResolver) NormalisedFragments() ([]string, error) {
 		for i := i + 1; i < len(fragments); i++ {
 			fieldTarget = proto.FindField(resolver.Schema.Models, modelTarget.Name, fragments[i])
 			if fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
-				modelTarget = proto.FindModel(resolver.Schema.Models, fieldTarget.Type.ModelName.Value)
+				modelTarget = resolver.Schema.FindModel(fieldTarget.Type.ModelName.Value)
 				if modelTarget == nil {
 					return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.Type.ModelName.Value)
 				}
@@ -265,7 +265,7 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, bool, error) {
 		}
 
 		// The first fragment will always be the root model name, e.g. "author" in author.posts.title
-		modelTarget := proto.FindModel(schema.Models, casing.ToCamel(fragments[0].Fragment))
+		modelTarget := schema.FindModel(casing.ToCamel(fragments[0].Fragment))
 		if modelTarget == nil {
 			return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[0].Fragment))
 		}
@@ -274,7 +274,7 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, bool, error) {
 		for i := 1; i < len(fragments); i++ {
 			fieldTarget = proto.FindField(schema.Models, modelTarget.Name, fragments[i].Fragment)
 			if fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
-				modelTarget = proto.FindModel(schema.Models, fieldTarget.Type.ModelName.Value)
+				modelTarget = schema.FindModel(fieldTarget.Type.ModelName.Value)
 				if modelTarget == nil {
 					return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.Type.ModelName.Value)
 				}

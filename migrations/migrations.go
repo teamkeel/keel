@@ -237,7 +237,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 		modelName := casing.ToCamel(column.TableName)
 
-		m := proto.FindModel(schema.Models, modelName)
+		m := schema.FindModel(modelName)
 		if m == nil {
 			tablesDeleted[column.TableName] = true
 			statements = append(statements, dropTableStmt(modelName))
