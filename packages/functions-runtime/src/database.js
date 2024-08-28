@@ -43,9 +43,10 @@ async function withDatabase(db, actionType, cb) {
   });
 }
 
-let db = null;
-
 const dbInstance = new AsyncLocalStorage();
+
+// used to establish a singleton for our vitest environment
+let vitestDb = null;
 
 // useDatabase will retrieve the database client set by withDatabase from the local storage
 function useDatabase() {
@@ -61,7 +62,10 @@ function useDatabase() {
   // which covers any test files ending in *.test.ts. Custom function code runs in a different node process which will not have this environment variable. Tests written using our testing
   // framework call actions (and in turn custom function code) over http using the ActionExecutor class
   if ("NODE_ENV" in process.env && process.env.NODE_ENV == "test") {
-    return getDatabaseClient();
+    if (!vitestDb) {
+      vitestDb = createDatabaseClient();
+    }
+    return vitestDb;
   }
 
   // If we've gotten to this point, then we know that we are in a custom function runtime server
@@ -69,17 +73,11 @@ function useDatabase() {
   throw new Error("useDatabase must be called within a function");
 }
 
-// getDatabaseClient will return a brand new instance of Kysely. Every instance of Kysely
+// createDatabaseClient will return a brand new instance of Kysely. Every instance of Kysely
 // represents an individual connection to the database.
 // not to be exported externally from our sdk - consumers should use useDatabase
-function getDatabaseClient() {
-  // 'db' represents the singleton connection to the database which is stored
-  // as a module scope variable.
-  if (db) {
-    return db;
-  }
-
-  db = new Kysely({
+function createDatabaseClient() {
+  const db = new Kysely({
     dialect: getDialect(),
     plugins: [
       // ensures that the audit context data is written to Postgres configuration parameters
@@ -109,7 +107,6 @@ class InstrumentedPool extends pg.Pool {
     const _super = super.connect.bind(this);
     return withSpan("Database Connect", function (span) {
       span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
-      span.setAttribute("timeout", connectionTimeout());
       return _super(...args);
     });
   }
@@ -120,7 +117,6 @@ class InstrumentedNeonServerlessPool extends neonserverless.Pool {
     const _super = super.connect.bind(this);
     return withSpan("Database Connect", function (span) {
       span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
-      span.setAttribute("timeout", connectionTimeout());
       return _super(...args);
     });
   }
@@ -179,7 +175,7 @@ function getDialect() {
           // Although I doubt we will run into these freeze/thaw issues if idleTimeoutMillis is always shorter than the
           // time is takes for a lambda to freeze (which is not a constant, but could be as short as several minutes,
           // https://www.pluralsight.com/resources/blog/cloud/how-long-does-aws-lambda-keep-your-idle-functions-around-before-a-cold-start)
-          idleTimeoutMillis: connectionTimeout(),
+          idleTimeoutMillis: 50000,
           connectionString: mustEnv("KEEL_DB_CONN"),
         }),
       });
@@ -187,7 +183,6 @@ function getDialect() {
       neonserverless.neonConfig.webSocketConstructor = ws;
 
       const pool = new InstrumentedNeonServerlessPool({
-        idleTimeoutMillis: connectionTimeout(),
         connectionString: mustEnv("KEEL_DB_CONN"),
       });
 
@@ -229,17 +224,6 @@ function mustEnv(key) {
   return v;
 }
 
-function connectionTimeout() {
-  const v = Number(process.env["KEEL_DB_CONN_TIMEOUT"]);
-  if (!v || isNaN(v)) {
-    return 45000; // 60s is our current neon suspend default
-  }
-  return v;
-}
-
-// initialise the database client at module scope level so the db variable is set
-getDatabaseClient();
-
-module.exports.getDatabaseClient = getDatabaseClient;
+module.exports.createDatabaseClient = createDatabaseClient;
 module.exports.useDatabase = useDatabase;
 module.exports.withDatabase = withDatabase;

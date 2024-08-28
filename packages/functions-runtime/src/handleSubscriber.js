@@ -3,7 +3,7 @@ const {
   createJSONRPCSuccessResponse,
   JSONRPCErrorCode,
 } = require("json-rpc-2.0");
-const { getDatabaseClient } = require("./database");
+const { createDatabaseClient } = require("./database");
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
@@ -24,6 +24,8 @@ async function handleSubscriber(request, config) {
   return opentelemetry.context.with(activeContext, () => {
     // Wrapping span for the whole request
     return withSpan(request.method, async (span) => {
+      let db = null;
+
       try {
         const { createSubscriberContextAPI, subscribers } = config;
 
@@ -45,7 +47,7 @@ async function handleSubscriber(request, config) {
           meta: request.meta,
         });
 
-        const db = getDatabaseClient();
+        db = createDatabaseClient();
         const subscriberFunction = subscribers[request.method];
         const actionType = PROTO_ACTION_TYPES.SUBSCRIBER;
 
@@ -77,6 +79,10 @@ async function handleSubscriber(request, config) {
           RuntimeErrors.UnknownError,
           message
         );
+      } finally {
+        if (db) {
+          await db.destroy();
+        }
       }
     });
   });

@@ -3,7 +3,7 @@ const {
   createJSONRPCSuccessResponse,
   JSONRPCErrorCode,
 } = require("json-rpc-2.0");
-const { getDatabaseClient } = require("./database");
+const { createDatabaseClient } = require("./database");
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
@@ -25,6 +25,8 @@ async function handleJob(request, config) {
   return opentelemetry.context.with(activeContext, () => {
     // Wrapping span for the whole request
     return withSpan(request.method, async (span) => {
+      let db = null;
+
       try {
         const { createJobContextAPI, jobs } = config;
 
@@ -51,7 +53,7 @@ async function handleJob(request, config) {
             ? true
             : null;
 
-        const db = getDatabaseClient();
+        db = createDatabaseClient();
         const jobFunction = jobs[request.method];
         const actionType = PROTO_ACTION_TYPES.JOB;
 
@@ -89,6 +91,10 @@ async function handleJob(request, config) {
           RuntimeErrors.UnknownError,
           message
         );
+      } finally {
+        if (db) {
+          await db.destroy();
+        }
       }
     });
   });
