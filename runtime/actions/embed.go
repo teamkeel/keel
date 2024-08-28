@@ -27,7 +27,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 
 	// we will select from the relatedModel's table, joining the source model with an alias ("source"), where source.id = sourceModel.id
 	relatedModelName := field.Type.ModelName.Value
-	relatedModel := proto.FindModel(schema.Models, relatedModelName)
+	relatedModel := schema.FindModel(relatedModelName)
 	foreignKeyField := proto.GetForeignKeyFieldName(schema.Models, field)
 	sourceTableAlias := "_source"
 

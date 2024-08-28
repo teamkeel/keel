@@ -118,7 +118,7 @@ func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, acti
 	case proto.ActionType_ACTION_TYPE_CREATE, proto.ActionType_ACTION_TYPE_GET, proto.ActionType_ACTION_TYPE_UPDATE:
 		// these action types return the serialized model
 
-		model := proto.FindModel(schema.Models, action.ModelName)
+		model := schema.FindModel(action.ModelName)
 
 		if len(action.GetResponseEmbeds()) > 0 {
 			return objectSchemaForModel(ctx, schema, model, false, action.GetResponseEmbeds())

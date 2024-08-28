@@ -64,7 +64,7 @@ func (resolver *OperandResolver) NormalisedFragments() ([]string, error) {
 			i++
 		}
 
-		modelTarget := proto.FindModel(resolver.Schema.Models, casing.ToCamel(fragments[i]))
+		modelTarget := resolver.Schema.FindModel(casing.ToCamel(fragments[i]))
 		if modelTarget == nil {
 			return nil, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[i]))
 		}

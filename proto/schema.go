@@ -82,6 +82,14 @@ func (s *Schema) FindAction(actionName string) *Action {
 	return actions[0]
 }
 
+// FindJob locates the job of the given name.
+func (s *Schema) FindJob(name string) *Job {
+	job, _ := lo.Find(s.Jobs, func(m *Job) bool {
+		return m.Name == name
+	})
+	return job
+}
+
 // FindEventSubscribers locates the subscribers for the given event.
 func (s *Schema) FindEventSubscribers(event *Event) []*Subscriber {
 	subscribers := lo.Filter(s.Subscribers, func(m *Subscriber, _ int) bool {

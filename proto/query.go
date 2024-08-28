@@ -165,6 +165,8 @@ func ModelExists(models []*Model, name string) bool {
 }
 
 // FindModel locates the model of the given name.
+//
+// Deprecated: use Schema.FindModel() instead
 func FindModel(models []*Model, name string) *Model {
 	model, _ := lo.Find(models, func(m *Model) bool {
 		return m.Name == name
@@ -295,6 +297,8 @@ func FindRole(roleName string, schema *Schema) *Role {
 }
 
 // FindJob locates the job of the given name.
+//
+// Deprecated: please use Schema.FindJob() instead
 func FindJob(jobs []*Job, name string) *Job {
 	job, _ := lo.Find(jobs, func(m *Job) bool {
 		return m.Name == name

@@ -305,7 +305,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				ctx, span := tracer.Start(p.Context, fmt.Sprintf("Resolve %s.%s", model.Name, field.Name))
 				defer span.End()
 
-				relatedModel := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
+				relatedModel := mk.proto.FindModel(field.Type.ModelName.Value)
 
 				// Create a new query for the related model
 				query := actions.NewQuery(relatedModel)

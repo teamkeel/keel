@@ -185,7 +185,7 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, input map[
 	ctx, span := tracer.Start(ctx, "Run job")
 	defer span.End()
 
-	job := proto.FindJob(handler.schema.Jobs, strcase.ToCamel(jobName))
+	job := handler.schema.FindJob(strcase.ToCamel(jobName))
 	if job == nil {
 		return fmt.Errorf("no job with the name '%s' exists", jobName)
 	}

@@ -216,7 +216,7 @@ func handleContext(s *proto.Schema, o *parser.Operand, stmt *statement) error {
 			inner := &statement{}
 			err := handleModel(
 				s,
-				proto.FindModel(s.Models, "Identity"),
+				s.FindModel("Identity"),
 				&parser.Ident{
 					// We can drop the first fragments, which is "ctx"
 					Fragments: o.Ident.Fragments[1:],
