@@ -229,7 +229,6 @@ function mustEnv(key) {
   return v;
 }
 
-
 function connectionTimeout() {
   const v = Number(process.env["KEEL_DB_CONN_TIMEOUT"]);
   if (!v || isNaN(v)) {
