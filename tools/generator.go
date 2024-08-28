@@ -107,7 +107,7 @@ func (g *Generator) decorateTools() error {
 	// decorate further...
 	for id, tool := range g.Tools {
 		// List actions...
-		if tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
+		if tool.Action.IsList() {
 			// ... have pagination
 			tool.Config.Pagination = &rpc.CursorPaginationConfig{
 				Start: &rpc.CursorPaginationConfig_FieldConfig{
@@ -144,7 +144,7 @@ func (g *Generator) decorateTools() error {
 		idResponseFieldPath := tool.getIDResponseFieldPath()
 
 		// entry activity actions for GET and LIST that have an id response
-		if idResponseFieldPath != "" && (tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST || tool.Action.Type == proto.ActionType_ACTION_TYPE_GET) {
+		if idResponseFieldPath != "" && (tool.Action.IsList() || tool.Action.IsGet()) {
 			for linkedTool, fieldPath := range g.findAllByIDTools(tool.Model.Name, nil) {
 				if linkedTool == id {
 					// skip linking to the same tool
@@ -165,7 +165,7 @@ func (g *Generator) decorateTools() error {
 
 		// get entry action for tools that operate on a model instance/s (create/update/list). This is used to link
 		if idResponseFieldPath != "" {
-			if tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST || tool.Action.Type == proto.ActionType_ACTION_TYPE_UPDATE || tool.Action.Type == proto.ActionType_ACTION_TYPE_CREATE {
+			if tool.Action.IsList() || tool.Action.IsUpdate() || tool.Action.Type == proto.ActionType_ACTION_TYPE_CREATE {
 				if getToolID := g.findGetByIDTool(tool.Model.Name); getToolID != "" {
 					tool.Config.GetEntryAction = &rpc.ActionLink{
 						ToolId: getToolID,
@@ -265,7 +265,7 @@ func (g *Generator) generateResponses() error {
 		// we don't have a response message, therefore the response will be the model...
 		pathPrefix := ""
 		// if the action is a list action, we also need to include the pageInfo responses and prefix the results
-		if tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
+		if tool.Action.IsList() {
 			pathPrefix = ".results[*]"
 			tool.Config.Response = append(tool.Config.Response, getPageInfoResponses()...)
 		}
@@ -455,7 +455,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 func (g *Generator) findListTools(modelName string) []string {
 	ids := []string{}
 	for id, tool := range g.Tools {
-		if tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
+		if tool.Model.Name == modelName && tool.Action.IsList() {
 			ids = append(ids, id)
 		}
 	}
@@ -466,7 +466,7 @@ func (g *Generator) findListTools(modelName string) []string {
 // findGetTool will search for a get tool for the given model
 func (g *Generator) findGetTool(modelName string) string {
 	for id, tool := range g.Tools {
-		if tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_GET {
+		if tool.Model.Name == modelName && tool.Action.IsGet() {
 			return id
 		}
 	}
@@ -477,7 +477,7 @@ func (g *Generator) findGetTool(modelName string) string {
 // findGetByIDTool will search for a get tool for the given model that takes in an ID
 func (g *Generator) findGetByIDTool(modelName string) string {
 	for id, tool := range g.Tools {
-		if tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_GET && tool.hasOnlyIDInput() {
+		if tool.Model.Name == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() {
 			return id
 		}
 	}
@@ -533,7 +533,7 @@ func (g *Generator) makeCapabilities(action *proto.Action) *rpc.Capabilities {
 	}
 
 	// Audit is enabled for get actions for models that also have an update action
-	if action.GetType() == proto.ActionType_ACTION_TYPE_GET {
+	if action.IsGet() {
 		c.Audit = true
 		c.Comments = true
 	}
@@ -546,7 +546,7 @@ func (g *Generator) makeCapabilities(action *proto.Action) *rpc.Capabilities {
 // For GET/READ actions:
 //   - The title will be a template including the value of the first field of the model, only if that field is a text field
 func (g *Generator) makeTitle(action *proto.Action, model *proto.Model) *rpc.StringTemplate {
-	if action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_READ {
+	if action.IsGet() || action.Type == proto.ActionType_ACTION_TYPE_READ {
 		fields := model.GetFields()
 		if len(fields) > 0 && fields[0].Type.Type == proto.Type_TYPE_STRING {
 			return &rpc.StringTemplate{
@@ -623,7 +623,7 @@ func (t *Tool) getIDInputFieldPath() string {
 // rather than results[*].embedded.id for list actions). Returns empty string if ID is not part of the response
 func (t *Tool) getIDResponseFieldPath() string {
 	expectedPath := "$.id"
-	if t.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
+	if t.Action.IsList() {
 		expectedPath = "$.results[*].id"
 	}
 	for _, response := range t.Config.Response {
