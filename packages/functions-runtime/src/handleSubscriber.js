@@ -24,7 +24,7 @@ async function handleSubscriber(request, config) {
   return opentelemetry.context.with(activeContext, () => {
     // Wrapping span for the whole request
     return withSpan(request.method, async (span) => {
-      const db = null;
+      let db = null;
 
       try {
         const { createSubscriberContextAPI, subscribers } = config;
@@ -80,7 +80,7 @@ async function handleSubscriber(request, config) {
           message
         );
       } finally {
-        if (db != null) {
+        if (db) {
           await db.destroy();
         }
       }

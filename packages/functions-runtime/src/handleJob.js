@@ -92,7 +92,7 @@ async function handleJob(request, config) {
           message
         );
       } finally {
-        if (db != null) {
+        if (db) {
           await db.destroy();
         }
       }
