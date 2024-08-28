@@ -45,6 +45,7 @@ async function withDatabase(db, actionType, cb) {
 
 const dbInstance = new AsyncLocalStorage();
 
+// used to establish a singleton for our vitest environment
 let vitestDb =  null;
 
 // useDatabase will retrieve the database client set by withDatabase from the local storage
@@ -106,7 +107,6 @@ class InstrumentedPool extends pg.Pool {
     const _super = super.connect.bind(this);
     return withSpan("Database Connect", function (span) {
       span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
-      span.setAttribute("timeout", connectionTimeout());
       return _super(...args);
     });
   }
@@ -175,7 +175,7 @@ function getDialect() {
           // Although I doubt we will run into these freeze/thaw issues if idleTimeoutMillis is always shorter than the
           // time is takes for a lambda to freeze (which is not a constant, but could be as short as several minutes,
           // https://www.pluralsight.com/resources/blog/cloud/how-long-does-aws-lambda-keep-your-idle-functions-around-before-a-cold-start)
-          idleTimeoutMillis: connectionTimeout(),
+          idleTimeoutMillis: 50000,
           connectionString: mustEnv("KEEL_DB_CONN"),
         }),
       });
@@ -223,17 +223,6 @@ function mustEnv(key) {
   }
   return v;
 }
-
-function connectionTimeout() {
-  const v = Number(process.env["KEEL_DB_CONN_TIMEOUT"]);
-  if (!v || isNaN(v)) {
-    return 45000; // 60s is our current neon suspend default
-  }
-  return v;
-}
-
-// initialise the database client at module scope level so the db variable is set
-createDatabaseClient();
 
 module.exports.getDatabaseClient = createDatabaseClient;
 module.exports.useDatabase = useDatabase;
