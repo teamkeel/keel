@@ -27,35 +27,6 @@ function parseParams(inputs) {
   return inputs;
 }
 
-// // parseOutputs takes a set of outputs and creates objects for the ones that are of a complex type.
-// function parseOutputs(inputs) {
-//   if (inputs != null && typeof inputs === "object") {
-//     Object.keys(inputs).forEach((i) => {
-//       if (inputs[i] !== null && typeof inputs[i] === "object") {
-//         if ("__typename" in inputs[i]) {
-//           switch (inputs[i].__typename) {
-//             case "InlineFile":
-//               const storedFile = InlineFile.store();
-//               inputs[i] = {
-//                 contentType: storedFile.contentType
-
-//               }
-//               break;
-//             case "StoredFile":
-
-//             default:
-//               break;
-//           }
-//         } else {
-//           inputs[i] = parseOutputs(inputs[i]);
-//         }
-//       }
-//     });
-//   }
-
-//   return inputs;
-// }
-
 // Iterate through the given object's keys and if any of the values are a rich data type, instantiate their respective class
 function transformRichDataTypes(data) {
   const keys = data ? Object.keys(data) : [];
@@ -86,7 +57,6 @@ function isPlainObject(obj) {
 function isReferencingExistingRecord(value) {
   return Object.keys(value).length === 1 && value.id;
 }
-
 
 module.exports = {
   parseParams, 

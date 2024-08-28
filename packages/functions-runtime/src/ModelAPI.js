@@ -147,8 +147,6 @@ class ModelAPI {
   }
 
   async update(where, values) {
-    console.log("UPDATE")
-
     const name = tracing.spanNameForModelAPI(this._modelName, "update");
     const db = useDatabase();
 

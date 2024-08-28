@@ -181,7 +181,6 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			ctx, span := tracer.Start(r.Context(), strings.Trim(r.URL.Path, "/"))
 			defer span.End()
 
-			// we now set the file Storage using a dbstore
 			storer, err := storage.NewDbStore(context.Background(), database)
 			if err != nil {
 				panic(err)

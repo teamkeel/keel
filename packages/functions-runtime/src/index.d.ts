@@ -124,6 +124,13 @@ export type PageInfo = {
   count: number;
 };
 
+export type FileRecord = {
+  key: string;
+  filename: string;
+  contentType: string;
+  
+}
+
 // Request headers cannot be mutated, so remove any methods that mutate
 export type RequestHeaders = Omit<Headers, "append" | "delete" | "set">;
 

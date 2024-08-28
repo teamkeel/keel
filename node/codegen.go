@@ -89,6 +89,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 		writeTableInterface(sdkTypes, model)
 		writeModelInterface(sdkTypes, model)
 		writeCreateValuesType(sdkTypes, schema, model)
+		//	writeUpdateValuesType(sdkTypes, schema, model)
 		writeWhereConditionsInterface(sdkTypes, model)
 		writeFindManyParamsInterface(sdkTypes, model)
 		writeUniqueConditionsInterface(sdkTypes, model)
