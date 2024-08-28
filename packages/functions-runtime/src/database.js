@@ -45,6 +45,8 @@ async function withDatabase(db, actionType, cb) {
 
 const dbInstance = new AsyncLocalStorage();
 
+let vitestDb =  null;
+
 // useDatabase will retrieve the database client set by withDatabase from the local storage
 function useDatabase() {
   // retrieve the instance of the database client from the store which is aware of
@@ -59,7 +61,10 @@ function useDatabase() {
   // which covers any test files ending in *.test.ts. Custom function code runs in a different node process which will not have this environment variable. Tests written using our testing
   // framework call actions (and in turn custom function code) over http using the ActionExecutor class
   if ("NODE_ENV" in process.env && process.env.NODE_ENV == "test") {
-    return getDatabaseClient();
+    if (!vitestDb) {
+      vitestDb = createDatabaseClient();
+    }
+    return vitestDb;
   }
 
   // If we've gotten to this point, then we know that we are in a custom function runtime server
@@ -70,7 +75,7 @@ function useDatabase() {
 // getDatabaseClient will return a brand new instance of Kysely. Every instance of Kysely
 // represents an individual connection to the database.
 // not to be exported externally from our sdk - consumers should use useDatabase
-function getDatabaseClient() {
+function createDatabaseClient() {
   const db = new Kysely({
     dialect: getDialect(),
     plugins: [
@@ -228,8 +233,8 @@ function connectionTimeout() {
 }
 
 // initialise the database client at module scope level so the db variable is set
-getDatabaseClient();
+createDatabaseClient();
 
-module.exports.getDatabaseClient = getDatabaseClient;
+module.exports.getDatabaseClient = createDatabaseClient;
 module.exports.useDatabase = useDatabase;
 module.exports.withDatabase = withDatabase;

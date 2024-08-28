@@ -125,7 +125,9 @@ async function handleRequest(request, config) {
           message
         );
       } finally {
-        await db.destroy();
+        if (db != null) {
+          await db.destroy();
+        }
       }
     });
   });
