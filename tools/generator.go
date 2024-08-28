@@ -85,12 +85,8 @@ func (g *Generator) scaffoldTools() {
 					Capabilities:   g.makeCapabilities(action),
 					Title:          g.makeTitle(action, model),
 					// ApiName: nil, // TODO:
-					// Inputs:               nil, // TODO: sort out action links
-					// Response:             nil, // TODO: sort out action links
-
 					// RelatedActions:       nil, // TODO:
 					// EmbeddedActions:      nil, // TODO:
-					// GetEntryAction:       nil, // TODO:
 				},
 				Model:  model,
 				Action: action,
@@ -159,22 +155,31 @@ func (g *Generator) decorateTools() error {
 		// get entry action for tools that operate on a model instance/s (create/update/list). This is used to link
 		if idResponseFieldPath != "" {
 			if tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST || tool.Action.Type == proto.ActionType_ACTION_TYPE_UPDATE || tool.Action.Type == proto.ActionType_ACTION_TYPE_CREATE {
-				actType := proto.ActionType_ACTION_TYPE_GET
-				if relatedTools := g.findAllByIDTools(tool.Model.Name, &actType); len(relatedTools) > 0 {
-					for linkedTool, fieldPath := range relatedTools {
-						tool.Config.GetEntryAction = &rpc.ActionLink{
-							ToolId: linkedTool,
-							Data: []*rpc.DataMapping{
-								{
-									Key:   fieldPath,
-									Value: &rpc.DataMapping_Path{Path: &rpc.JsonPath{Path: idResponseFieldPath}},
-								},
+				if getToolID := g.findGetByIDTool(tool.Model.Name); getToolID != "" {
+					tool.Config.GetEntryAction = &rpc.ActionLink{
+						ToolId: getToolID,
+						Data: []*rpc.DataMapping{
+							{
+								Key:   g.Tools[getToolID].getIDInputFieldPath(),
+								Value: &rpc.DataMapping_Path{Path: &rpc.JsonPath{Path: idResponseFieldPath}},
 							},
-						}
-
-						// we only need one link
-						break
+						},
 					}
+				}
+			}
+		}
+
+		// for all inputs that are IDs that have a get_entry_action link (e.g. used to lookup a related model field),
+		// decorate the data mapping now that we have all inputs and responses generated
+		for _, input := range tool.Config.Inputs {
+			if input.GetEntryAction != nil && input.GetEntryAction.ToolId != "" {
+				input.GetEntryAction.Data = []*rpc.DataMapping{
+					{
+						Key: g.Tools[input.GetEntryAction.ToolId].getIDInputFieldPath(),
+						Value: &rpc.DataMapping_Path{
+							Path: input.FieldLocation,
+						},
+					},
 				}
 			}
 		}
@@ -298,6 +303,9 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 				}
 			}
 
+			// create the GetEntry tool link to retrieve the entry for this related model. At this point, not all tools'
+			// inputs and repsonses have been generated ; this is a placeholder that will have it's data populated later
+			// in the generation process
 			if entryToolID := g.findGetTool(f.Type.ModelName.Value); entryToolID != "" {
 				config.GetEntryAction = &rpc.ActionLink{
 					ToolId: entryToolID,
@@ -408,6 +416,24 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 			config.ImagePreview = true
 		}
 
+		// if this field is a model, we add a link to the action used to retrieve the related model. Note that inputs are
+		// generated first, so we're safe to create a tool/action link now
+		if f.IsForeignKey() && f.ForeignKeyInfo.RelatedModelField == fieldNameID {
+			if getToolID := g.findGetByIDTool(f.ForeignKeyInfo.RelatedModelName); getToolID != "" {
+				config.Link = &rpc.ActionLink{
+					ToolId: getToolID,
+					Data: []*rpc.DataMapping{
+						{
+							Key: g.Tools[getToolID].getIDInputFieldPath(),
+							Value: &rpc.DataMapping_Path{
+								Path: config.FieldLocation,
+							},
+						},
+					},
+				}
+			}
+		}
+
 		fields = append(fields, config)
 	}
 
@@ -425,10 +451,21 @@ func (g *Generator) findListTool(modelName string) string {
 	return ""
 }
 
-// findListTool will search for a get tool for the given model that takes in an ID
+// findGetTool will search for a get tool for the given model
 func (g *Generator) findGetTool(modelName string) string {
 	for id, tool := range g.Tools {
 		if tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_GET {
+			return id
+		}
+	}
+
+	return ""
+}
+
+// findGetByIDTool will search for a get tool for the given model that takes in an ID
+func (g *Generator) findGetByIDTool(modelName string) string {
+	for id, tool := range g.Tools {
+		if tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_GET && tool.hasOnlyIDInput() {
 			return id
 		}
 	}
