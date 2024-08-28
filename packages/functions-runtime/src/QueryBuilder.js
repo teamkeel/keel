@@ -14,7 +14,11 @@ const { useDatabase } = require("./database");
 const { QueryContext } = require("./QueryContext");
 const tracing = require("./tracing");
 const { DatabaseError } = require("./errors");
-const { transformRichDataTypes, isPlainObject, isReferencingExistingRecord } = require("./parsing")
+const {
+  transformRichDataTypes,
+  isPlainObject,
+  isReferencingExistingRecord,
+} = require("./parsing");
 
 class QueryBuilder {
   /**

@@ -37,7 +37,7 @@ function transformRichDataTypes(data) {
     if (isPlainObject(value)) {
       // if we've got a StoredFile...
       if (value.key && value.size && value.filename && value.contentType) {
-        row[key] = StoredFile.fromDatabase(value);
+        row[key] = StoredFile.fromDbRecord(value);
       } else {
         row[key] = value;
       }
@@ -59,8 +59,8 @@ function isReferencingExistingRecord(value) {
 }
 
 module.exports = {
-  parseParams, 
-  transformRichDataTypes, 
+  parseParams,
+  transformRichDataTypes,
   isPlainObject,
   isReferencingExistingRecord,
 };

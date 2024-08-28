@@ -91,7 +91,7 @@ class StoredFile extends InlineFile {
     this._isHydrated = false;
   }
 
-  static fromDatabase({ key, filename, size, contentType }) {
+  static fromDbRecord({ key, filename, size, contentType }) {
     return new StoredFile({
       key: key,
       filename: filename,
@@ -229,7 +229,8 @@ async function storeFile(
         data: contents,
       })
       .onConflict((oc) =>
-        oc.column("id")
+        oc
+          .column("id")
           .doUpdateSet(() => ({
             filename: filename,
             content_type: contentType,

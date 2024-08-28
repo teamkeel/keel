@@ -5,7 +5,11 @@ const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
 const { InlineFile, StoredFile } = require("./InlineFile");
-const { transformRichDataTypes, isPlainObject, isReferencingExistingRecord } = require("./parsing")
+const {
+  transformRichDataTypes,
+  isPlainObject,
+  isReferencingExistingRecord,
+} = require("./parsing");
 
 const {
   applyLimit,
@@ -331,9 +335,6 @@ async function create(conn, tableName, tableConfigs, values) {
     throw new DatabaseError(e);
   }
 }
-
-
-
 
 module.exports = {
   ModelAPI,
