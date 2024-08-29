@@ -27,7 +27,7 @@ const fieldNameID = "id"
 
 var ErrInvalidSchema = errors.New("invalid schema")
 
-// NewGenerator creates a new tooll config generator for the given schema
+// NewGenerator creates a new tool config generator for the given schema
 func NewGenerator(schema *proto.Schema) (*Generator, error) {
 	return &Generator{
 		Schema: schema,
