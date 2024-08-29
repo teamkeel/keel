@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/teamkeel/keel/casing"
@@ -34,11 +35,17 @@ func NewGenerator(schema *proto.Schema) (*Generator, error) {
 	}, nil
 }
 
-// GetConfigs will return the action configs that have been generated
+// GetConfigs will return the action configs that have been generated, in alphabetical order
 func (g *Generator) GetConfigs() []*rpc.ActionConfig {
 	cfgs := []*rpc.ActionConfig{}
-	for _, t := range g.Tools {
-		cfgs = append(cfgs, t.Config)
+	ids := []string{}
+	for id := range g.Tools {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+
+	for _, id := range ids {
+		cfgs = append(cfgs, g.Tools[id].Config)
 	}
 
 	return cfgs
@@ -183,12 +190,20 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 		}
 
 		// entry activity actions for GET and LIST that have an id response
-		for linkedTool, fieldPath := range g.findAllByIDTools(tool.Model.Name, id) {
+
+		// TODO: once go is upgraded to 1.21+, refactor to sort via maps package
+		inputPaths := g.findAllByIDTools(tool.Model.Name, id)
+		toolIds := []string{}
+		for id := range inputPaths {
+			toolIds = append(toolIds, id)
+		}
+		sort.Strings(toolIds)
+		for _, toolID := range toolIds {
 			tool.Config.EntryActivityActions = append(tool.Config.EntryActivityActions, &rpc.ActionLink{
-				ToolId: linkedTool,
+				ToolId: toolID,
 				Data: []*rpc.DataMapping{
 					{
-						Key:   fieldPath,
+						Key:   inputPaths[toolID],
 						Value: &rpc.DataMapping_Path{Path: &rpc.JsonPath{Path: idResponseFieldPath}},
 					},
 				},
@@ -483,6 +498,8 @@ func (g *Generator) findListTools(modelName string) []string {
 			ids = append(ids, id)
 		}
 	}
+
+	sort.Strings(ids)
 
 	return ids
 }
