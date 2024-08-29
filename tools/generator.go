@@ -509,7 +509,7 @@ func (g *Generator) findGetByIDTool(modelName string) string {
 	return ""
 }
 
-// findByIDTools searches for the tools that operate on the given model and take in an ID as an input; Returns a map of
+// findAllByIDTools searches for the tools that operate on the given model and take in an ID as an input; Returns a map of
 // tool IDs and the path of the input field; e.g. getPost: $.id. Results will omit the given tool id (ignoreID).
 //
 // GET READ DELETE WRITE etc tools are included if they take in only on input (the ID)
