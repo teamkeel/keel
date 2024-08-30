@@ -2,7 +2,7 @@ model Foo {
     fields {
         f1 Text
         f2 Number
-        f3 InlineFile
+        f3 File
     }
 
     actions {

@@ -8,7 +8,7 @@ model Foo {
         f Markdown
         g Beatles
         h Decimal
-        i InlineFile
+        i File
     }
 }
 

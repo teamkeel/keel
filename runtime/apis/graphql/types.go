@@ -176,8 +176,8 @@ var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
-var inlineFileType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "InlineFile",
+var fileType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "File",
 	Fields: graphql.Fields{
 		"contentType": &graphql.Field{
 			Type:        graphql.NewNonNull(graphql.String),
@@ -327,7 +327,7 @@ var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_DATE:     dateType,
 	proto.Type_TYPE_SECRET:   graphql.String,
 	proto.Type_TYPE_MARKDOWN: graphql.String,
-	proto.Type_TYPE_FILE:     inlineFileType,
+	proto.Type_TYPE_FILE:     fileType,
 	proto.Type_TYPE_ANY:      anyType,
 	proto.Type_TYPE_VECTOR:   graphql.NewList(graphql.Float),
 }

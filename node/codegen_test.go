@@ -41,7 +41,7 @@ model Person {
 		tags Text[]
 		height Decimal
 		bio Markdown
-		file InlineFile
+		file File
 	}
 }`
 

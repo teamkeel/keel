@@ -74,7 +74,7 @@ func transformFileResponses(ctx context.Context, model *proto.Model, results map
 				return results, fmt.Errorf("invalid response for field: %s", field.Name)
 			}
 
-			fi := storage.FileInfo{}
+			fi := storage.FileResponse{}
 			if err := json.Unmarshal([]byte(data), &fi); err != nil {
 				return results, fmt.Errorf("failed to unmarshal file data: %w", err)
 			}

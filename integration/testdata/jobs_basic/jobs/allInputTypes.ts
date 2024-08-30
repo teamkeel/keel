@@ -26,14 +26,14 @@ export default AllInputTypes(async (ctx, inputs) => {
   if (JSON.stringify(inputs.array) != JSON.stringify(["one", "two"])) {
     throw new Error("array not set correctly");
   }
-  // if (inputs.image.filename != "my-avatar.png") {
-  //   throw new Error("image filename not set correctly");
-  // }
-  // if (inputs.image.size != 2024) {
-  //   throw new Error("image not set correctly");
-  // }
-  // const imgData = await inputs.image.read();
-  // if (imgData.byteLength != 2024) {
-  //   throw new Error("image not set correctly");
-  // }
+  if (inputs.image.filename != "my-avatar.png") {
+    throw new Error("image filename not set correctly");
+  }
+  if (inputs.image.size != 2024) {
+    throw new Error("image not set correctly");
+  }
+  const imgData = await inputs.image.read();
+  if (imgData.byteLength != 2024) {
+    throw new Error("image not set correctly");
+  }
 });

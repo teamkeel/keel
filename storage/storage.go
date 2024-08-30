@@ -12,21 +12,21 @@ type Storer interface {
 	// The input should be a well formed dataURL https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
 	// The name of the file can also be passed as a parameter of the mediaType segment; e.g.
 	// data:application/pdf;name=MyUploadedFile.pdf;base64,xxxxxx[...]
-	Store(dataURL string) (FileInfo, error)
+	Store(dataURL string) (FileResponse, error)
 
 	// GetFileInfo will return the file information for the given unique file key.
 	//
 	// The File info returned can contain a URL where the file can be downloaded from, if applicable; i.e. for database
 	// storage, at the moment files cannot be retrieved via URLs.
-	GetFileInfo(key string) (FileInfo, error)
+	GetFileInfo(key string) (FileResponse, error)
 
 	// HydrateFileInfo will take the given file info and hydrate it with the most up to date information.
 	//
 	// The use of this function is to generate any signed URLs for file downloads.
-	HydrateFileInfo(fi *FileInfo) (FileInfo, error)
+	HydrateFileInfo(fi *FileResponse) (FileResponse, error)
 }
 
-type FileInfo struct {
+type FileResponse struct {
 	Key         string  `json:"key"`
 	Filename    string  `json:"filename"`
 	ContentType string  `json:"contentType"`
@@ -34,7 +34,7 @@ type FileInfo struct {
 	URL         *string `json:"url,omitempty"`
 }
 
-func (fi *FileInfo) ToJSON() (string, error) {
+func (fi *FileResponse) ToJSON() (string, error) {
 	json, err := json.Marshal(fi)
 	if err != nil {
 		return "", fmt.Errorf("marshalling to json: %w", err)

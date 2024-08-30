@@ -8,7 +8,7 @@ model Person {
         name Text
         birthday Date
         hobby Hobby
-        picture InlineFile
+        picture File
     }
 
     actions {

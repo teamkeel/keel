@@ -1,6 +1,6 @@
 model MyFile {
     fields {
-        file InlineFile?
+        file File?
     }
     actions {
         create createFile() with (file)
@@ -12,7 +12,7 @@ model MyFile {
         create createFileInHook() @function 
         create createFileAndStoreInHook() @function 
         get getFileNumerateContents(id) @function
-        write storeAndWriteMany(file: InlineFile) returns (Any) {
+        write storeAndWriteMany(file: File) returns (Any) {
             @permission(expression: true)
         }
         write writeMany(FileMessage) returns (Any){
@@ -30,5 +30,5 @@ model MyFile {
 }
 
 message FileMessage {
-    file InlineFile
+    file File
 }

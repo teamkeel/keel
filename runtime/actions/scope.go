@@ -177,28 +177,6 @@ func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetad
 		Status:  meta.Status,
 	}
 
-	// For now a custom list function just returns a list of records, but the API's
-	// all return an objects containing results and pagination info. So we need
-	// to "wrap" the results here.
-	// TODO: come up with a better implementation for list functions that can support
-	// pagination
-	if scope.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
-		results, _ := resp.([]any)
-		return map[string]any{
-			"results": results,
-			"pageInfo": map[string]any{
-				// todo: need to get these values from custom function return value
-				// once we have changed the return type in the codegen and made changes
-				// to the model api to support paging in some guise.
-				"hasNextPage": false,
-				"totalCount":  0,
-				"count":       0,
-				"startCursor": "",
-				"endCursor":   "",
-			},
-		}, m, nil
-	}
-
 	return resp, m, err
 }
 

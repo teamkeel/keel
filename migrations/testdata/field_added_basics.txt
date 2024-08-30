@@ -12,7 +12,7 @@ model Person {
         magicNumber Number @unique
         magicDecimal Decimal
         optionalFlag Boolean?
-        magicImage InlineFile
+        magicImage File
     }
 }
 

@@ -3,7 +3,7 @@ model Book {
         author Author?
         title Text
         published Boolean @default(false)
-        cover InlineFile?
+        cover File?
     }
 
     actions {
