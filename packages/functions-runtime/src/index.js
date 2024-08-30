@@ -11,7 +11,7 @@ const {
   checkBuiltInPermissions,
 } = require("./permissions");
 const tracing = require("./tracing");
-const { InlineFile, File } = require("./InlineFile");
+const { InlineFile, File } = require("./File");
 const { ErrorPresets } = require("./errors");
 
 module.exports = {

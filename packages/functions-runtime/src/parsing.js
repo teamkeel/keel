@@ -1,4 +1,4 @@
-const { InlineFile, File } = require("./InlineFile");
+const { InlineFile, File } = require("./File");
 
 // parseParams takes a set of inputs and creates objects for the ones that are of a complex type.
 //

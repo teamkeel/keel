@@ -1,5 +1,5 @@
 import { test, expect, beforeEach, describe } from "vitest";
-const { InlineFile, File } = require("./InlineFile");
+const { InlineFile, File } = require("./File");
 const { ModelAPI } = require("./ModelAPI");
 const { sql } = require("kysely");
 const { useDatabase } = require("./database");

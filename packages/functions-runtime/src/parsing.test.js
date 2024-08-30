@@ -1,5 +1,5 @@
 const { parseParams } = require("./parsing");
-const { InlineFile } = require("./InlineFile");
+const { InlineFile } = require("./File");
 import { test, expect } from "vitest";
 
 test("simple test", async () => {

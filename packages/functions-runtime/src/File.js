@@ -56,7 +56,7 @@ class InlineFile {
     return buffer;
   }
 
-  async store(expires = null, isPublic = false) {
+  async store(expires = null) {
     const content = await this.read();
     const key = KSUID.randomSync().string;
 
@@ -67,7 +67,6 @@ class InlineFile {
       this._contentType,
       this.size,
       expires,
-      isPublic
     );
 
     return new File({
@@ -75,7 +74,6 @@ class InlineFile {
       size: this.size,
       filename: this.filename,
       contentType: this.contentType,
-      isPublic: isPublic,
     });
   }
 }
@@ -85,7 +83,6 @@ class File extends InlineFile {
     super({ filename: input.filename, contentType: input.contentType });
     this._key = input.key;
     this._size = input.size;
-    this._isPublic = input.isPublic;
   }
 
   static fromDbRecord({ key, filename, size, contentType }) {
@@ -103,10 +100,6 @@ class File extends InlineFile {
 
   get key() {
     return this._key;
-  }
-
-  get isPublic() {
-    return this._isPublic;
   }
 
   async read() {
@@ -149,7 +142,7 @@ class File extends InlineFile {
     }
   }
 
-  async store(expires = null, isPublic = false) {
+  async store(expires = null) {
     // Only necessary to store the file if the contents have been changed
     if (this._contents) {
       const contents = await this.read();
@@ -159,7 +152,6 @@ class File extends InlineFile {
         this.filename,
         this.contentType,
         expires,
-        isPublic
       );
     }
     return this;
@@ -180,9 +172,7 @@ async function storeFile(
   key,
   filename,
   contentType,
-  expires,
-  isPublic
-) {
+  expires) {
   if (isS3Storage()) {
     const s3Client = new S3Client({
       credentials: fromEnv(),
@@ -197,7 +187,7 @@ async function storeFile(
       Metadata: {
         filename: filename,
       },
-      ACL: isPublic ? "public-read" : "private",
+      ACL: "private",
     };
 
     if (expires) {
