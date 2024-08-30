@@ -1649,7 +1649,7 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 	case parserType == parser.FieldTypeVector:
 		return proto.Type_TYPE_VECTOR
 	case parserType == parser.FieldTypeInlineFile:
-		return proto.Type_TYPE_INLINE_FILE
+		return proto.Type_TYPE_FILE
 	default:
 		return proto.Type_TYPE_UNKNOWN
 	}

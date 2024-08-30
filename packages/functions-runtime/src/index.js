@@ -11,7 +11,7 @@ const {
   checkBuiltInPermissions,
 } = require("./permissions");
 const tracing = require("./tracing");
-const { InlineFile, StoredFile } = require("./InlineFile");
+const { InlineFile, File } = require("./InlineFile");
 const { ErrorPresets } = require("./errors");
 
 module.exports = {
@@ -22,7 +22,7 @@ module.exports = {
   handleSubscriber,
   useDatabase,
   InlineFile,
-  StoredFile,
+  File,
   Permissions,
   PERMISSION_STATE,
   checkBuiltInPermissions,

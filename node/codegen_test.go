@@ -106,7 +106,7 @@ export interface Person {
 	tags: string[]
 	height: number
 	bio: string
-	file: runtime.StoredFile
+	file: runtime.File
 	id: string
 	createdAt: Date
 	updatedAt: Date
@@ -131,7 +131,7 @@ export type PersonCreateValues = {
 	tags: string[]
 	height: number
 	bio: string
-	file: runtime.InlineFile | runtime.StoredFile
+	file: runtime.InlineFile | runtime.File
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
@@ -473,7 +473,7 @@ function createPermissionApi() {
 };
 const models = createModelAPI();
 module.exports.InlineFile = runtime.InlineFile;
-module.exports.StoredFile = runtime.StoredFile;
+module.exports.File = runtime.File;
 module.exports.models = models;
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;

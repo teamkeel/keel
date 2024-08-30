@@ -66,7 +66,7 @@
           "modelName": "Foo",
           "name": "i",
           "type": {
-            "type": "TYPE_INLINE_FILE"
+            "type": "TYPE_FILE"
           }
         },
         {

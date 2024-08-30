@@ -21,7 +21,7 @@
           "modelName": "Foo",
           "name": "f3",
           "type": {
-            "type": "TYPE_INLINE_FILE"
+            "type": "TYPE_FILE"
           }
         },
         {
@@ -642,7 +642,7 @@
           "messageName": "OpDInput",
           "name": "f3",
           "type": {
-            "type": "TYPE_INLINE_FILE",
+            "type": "TYPE_FILE",
             "modelName": "Foo",
             "fieldName": "f3"
           },

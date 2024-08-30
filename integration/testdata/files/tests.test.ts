@@ -1,9 +1,9 @@
 import { actions, resetDatabase, models } from "@teamkeel/testing";
 import { beforeEach, expect, test } from "vitest";
-import { useDatabase, InlineFile, StoredFile } from "@teamkeel/sdk";
+import { useDatabase, InlineFile } from "@teamkeel/sdk";
 import { sql } from "kysely";
 
-interface File {
+interface DbFile {
   id: string;
   data: any;
   filename: string;
@@ -20,12 +20,12 @@ test("files - create action with file input", async () => {
   ).toString("base64")}`;
 
   const result = await actions.createFile({
-    file: InlineFile.fromDataURL(dataUrl)
+    file: InlineFile.fromDataURL(dataUrl),
   });
 
   expect(result.file?.contentType).toEqual("application/text");
-  expect(result.file?.filename).toEqual("my-file.txt")
-  expect(result.file?.size).toEqual(5)
+  expect(result.file?.filename).toEqual("my-file.txt");
+  expect(result.file?.size).toEqual(5);
 
   const contents1 = await result.file?.read();
   expect(contents1?.toString("utf-8")).toEqual("hello");
@@ -35,7 +35,7 @@ test("files - create action with file input", async () => {
     .selectAll()
     .execute();
 
-  const files = await sql<File>`SELECT * FROM keel_storage`.execute(
+  const files = await sql<DbFile>`SELECT * FROM keel_storage`.execute(
     useDatabase()
   );
 
@@ -48,7 +48,6 @@ test("files - create action with file input", async () => {
   const contents = files.rows[0].data.toString("utf-8");
   expect(contents).toEqual("hello");
 });
-
 
 test("files - update action with file input", async () => {
   const fileContents = "hello";
@@ -75,8 +74,8 @@ test("files - update action with file input", async () => {
   });
 
   expect(updated.file?.contentType).toEqual("application/text");
-  expect(updated.file?.filename).toEqual("my-second-file.txt")
-  expect(updated.file?.size).toEqual(11)
+  expect(updated.file?.filename).toEqual("my-second-file.txt");
+  expect(updated.file?.size).toEqual(11);
 
   const contents1 = await updated.file?.read();
   expect(contents1?.toString("utf-8")).toEqual("hello again");
@@ -87,7 +86,7 @@ test("files - update action with file input", async () => {
     .execute();
 
   const files =
-    await sql<File>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
+    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
       useDatabase()
     );
 
@@ -108,17 +107,16 @@ test("files - get action", async () => {
   ).toString("base64")}`;
 
   const created = await actions.createFile({
-    file: InlineFile.fromDataURL(dataUrl)
+    file: InlineFile.fromDataURL(dataUrl),
   });
 
-
   const result = await actions.getFile({
-    id: created.id
+    id: created.id,
   });
 
   expect(result?.file?.contentType).toEqual("application/text");
-  expect(result?.file?.filename).toEqual("my-file.txt")
-  expect(result?.file?.size).toEqual(5)
+  expect(result?.file?.filename).toEqual("my-file.txt");
+  expect(result?.file?.size).toEqual(5);
 
   const contents1 = await result?.file?.read();
   expect(contents1?.toString("utf-8")).toEqual("hello");
@@ -131,7 +129,7 @@ test("files - list action", async () => {
   ).toString("base64")}`;
 
   const created1 = await actions.createFile({
-    file: InlineFile.fromDataURL(dataUrl)
+    file: InlineFile.fromDataURL(dataUrl),
   });
 
   const fileContents2 = "hello again";
@@ -140,27 +138,25 @@ test("files - list action", async () => {
   ).toString("base64")}`;
 
   const created2 = await actions.createFile({
-    file: InlineFile.fromDataURL(dataUrl2)
+    file: InlineFile.fromDataURL(dataUrl2),
   });
 
   const result = await actions.listFiles({});
 
   expect(result.results[0].file?.contentType).toEqual("application/text");
-  expect(result.results[0].file?.filename).toEqual("my-file.txt")
-  expect(result.results[0].file?.size).toEqual(5)
+  expect(result.results[0].file?.filename).toEqual("my-file.txt");
+  expect(result.results[0].file?.size).toEqual(5);
 
   const contents1 = await result.results[0].file?.read();
   expect(contents1?.toString("utf-8")).toEqual("hello");
 
   expect(result.results[1].file?.contentType).toEqual("application/text");
-  expect(result.results[1].file?.filename).toEqual("my-file.txt")
-  expect(result.results[1].file?.size).toEqual(11)
+  expect(result.results[1].file?.filename).toEqual("my-file.txt");
+  expect(result.results[1].file?.size).toEqual(11);
 
   const contents2 = await result.results[1].file?.read();
   expect(contents2?.toString("utf-8")).toEqual("hello again");
 });
-
-
 
 test("files - create file in hook", async () => {
   await actions.createFileInHook({});
@@ -171,7 +167,7 @@ test("files - create file in hook", async () => {
     .execute();
 
   const files =
-    await sql<File>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
+    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
       useDatabase()
     );
 
@@ -194,7 +190,7 @@ test("files - create and store file in hook", async () => {
     .execute();
 
   const files =
-    await sql<File>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
+    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
       useDatabase()
     );
 
@@ -228,7 +224,7 @@ test("files - read and store in query hook", async () => {
     .execute();
 
   const files =
-    await sql<File>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
+    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
       useDatabase()
     );
 
@@ -258,7 +254,7 @@ test("files - write many, store many", async () => {
     .execute();
 
   const files =
-    await sql<File>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
+    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
       useDatabase()
     );
 
@@ -285,7 +281,7 @@ test("files - store once, write many", async () => {
     .execute();
 
   const files =
-    await sql<File>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
+    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
       useDatabase()
     );
 

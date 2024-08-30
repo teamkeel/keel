@@ -64,7 +64,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
-	sdkTypes.Writeln(`export { InlineFile, StoredFile } from "@teamkeel/functions-runtime"`)
+	sdkTypes.Writeln(`export { InlineFile, File } from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln("")
 
 	writePermissions(sdk, schema)
@@ -465,7 +465,7 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sWhereConditions {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
-		if field.Type.Type == proto.Type_TYPE_INLINE_FILE {
+		if field.Type.Type == proto.Type_TYPE_FILE {
 			continue
 		}
 
@@ -661,7 +661,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 				w.Write("0")
 			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_DATE, proto.Type_TYPE_TIMESTAMP:
 				w.Write("new Date()")
-			case proto.Type_TYPE_INLINE_FILE:
+			case proto.Type_TYPE_FILE:
 				w.Write("inputs.profilePhoto")
 			default:
 				w.Write("undefined")
@@ -1034,7 +1034,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 
 	w.Writeln(`const models = createModelAPI();`)
 	w.Writeln(`module.exports.InlineFile = runtime.InlineFile;`)
-	w.Writeln(`module.exports.StoredFile = runtime.StoredFile;`)
+	w.Writeln(`module.exports.File = runtime.File;`)
 	w.Writeln(`module.exports.models = models;`)
 	w.Writeln(`module.exports.permissions = createPermissionApi();`)
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
@@ -1687,7 +1687,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 
 func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	switch t.Type {
-	case proto.Type_TYPE_INLINE_FILE:
+	case proto.Type_TYPE_FILE:
 		return "FileDbRecord"
 	default:
 		return toTypeScriptType(t, false, isTestingPackage, false)
@@ -1734,14 +1734,14 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 	case proto.Type_TYPE_STRING_LITERAL:
 		// Use string literal type for discriminating.
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
-	case proto.Type_TYPE_INLINE_FILE:
+	case proto.Type_TYPE_FILE:
 		if isClientPackage {
 			ret = "string"
 		} else {
 			if includeCompatibleTypes {
-				ret = "runtime.InlineFile | runtime.StoredFile"
+				ret = "runtime.InlineFile | runtime.File"
 			} else {
-				ret = "runtime.StoredFile"
+				ret = "runtime.File"
 			}
 		}
 

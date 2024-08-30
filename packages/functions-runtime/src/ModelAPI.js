@@ -4,7 +4,7 @@ const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
-const { InlineFile, StoredFile } = require("./InlineFile");
+const { InlineFile, File } = require("./InlineFile");
 const {
   transformRichDataTypes,
   isPlainObject,
@@ -167,7 +167,7 @@ class ModelAPI {
         if (value instanceof InlineFile) {
           const storedFile = await value.store();
           row[key] = storedFile.toDbRecord();
-        } else if (value instanceof StoredFile) {
+        } else if (value instanceof File) {
           row[key] = value.toDbRecord();
         } else {
           row[key] = value;
@@ -252,7 +252,7 @@ async function create(conn, tableName, tableConfigs, values) {
           if (value instanceof InlineFile) {
             const storedFile = await value.store();
             row[key] = storedFile.toDbRecord();
-          } else if (value instanceof StoredFile) {
+          } else if (value instanceof File) {
             row[key] = value.toDbRecord();
           } else {
             row[key] = value;

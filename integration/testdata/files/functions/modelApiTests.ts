@@ -1,4 +1,4 @@
-import { ModelApiTests, InlineFile, StoredFile, models } from "@teamkeel/sdk";
+import { ModelApiTests, InlineFile, models } from "@teamkeel/sdk";
 
 // To learn more about what you can do with custom functions, visit https://docs.keel.so/functions
 export default ModelApiTests(async (ctx, inputs) => {

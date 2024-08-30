@@ -70,7 +70,7 @@ class InlineFile {
       isPublic
     );
 
-    return new StoredFile({
+    return new File({
       key: key,
       size: this.size,
       filename: this.filename,
@@ -80,7 +80,7 @@ class InlineFile {
   }
 }
 
-class StoredFile extends InlineFile {
+class File extends InlineFile {
   constructor(input) {
     super({ filename: input.filename, contentType: input.contentType });
     this._key = input.key;
@@ -89,7 +89,7 @@ class StoredFile extends InlineFile {
   }
 
   static fromDbRecord({ key, filename, size, contentType }) {
-    return new StoredFile({
+    return new File({
       key: key,
       filename: filename,
       size: size,
@@ -249,5 +249,5 @@ function isS3Storage() {
 
 module.exports = {
   InlineFile,
-  StoredFile,
+  File,
 };

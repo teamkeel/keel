@@ -1,4 +1,4 @@
-const { InlineFile, StoredFile } = require("./InlineFile");
+const { InlineFile, File } = require("./InlineFile");
 
 // parseParams takes a set of inputs and creates objects for the ones that are of a complex type.
 //
@@ -10,10 +10,12 @@ function parseParams(inputs) {
       if (inputs[i] !== null && typeof inputs[i] === "object") {
         if ("__typename" in inputs[i]) {
           switch (inputs[i].__typename) {
-            case "InlineFile"://TODO: Stored file???
+            case "InlineFile":
               inputs[i] = InlineFile.fromDataURL(inputs[i].dataURL);
               break;
-
+            case "File":
+              inputs[i] = InlineFile.fromDataURL(inputs[i].dataURL);
+              break;
             default:
               break;
           }
@@ -35,9 +37,8 @@ function transformRichDataTypes(data) {
   for (const key of keys) {
     const value = data[key];
     if (isPlainObject(value)) {
-      // if we've got a StoredFile...
       if (value.key && value.size && value.filename && value.contentType) {
-        row[key] = StoredFile.fromDbRecord(value);
+        row[key] = File.fromDbRecord(value);
       } else {
         row[key] = value;
       }

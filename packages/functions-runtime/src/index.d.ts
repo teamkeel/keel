@@ -162,7 +162,7 @@ export declare class InlineFile {
   // Write the files contents from a buffer
   write(data: Buffer): void;
   // Persists the file
-  store(expires?: Date, isPublic?: boolean): Promise<StoredFile>;
+  store(expires?: Date, isPublic?: boolean): Promise<File>;
   // Gets the name of the file
   get filename(): string;
   // Gets the media type of the file contents
@@ -171,12 +171,12 @@ export declare class InlineFile {
   get size(): number;
 }
 
-export declare class StoredFile extends InlineFile {
+export declare class File extends InlineFile {
   // Gets the stored key
   get key(): string;
   // Gets size of the file's contents in bytes
   get isPublic(): boolean;
-  static fromDbRecord(input: FileDbRecord): StoredFile;
+  static fromDbRecord(input: FileDbRecord): File;
   // Persists the file
   toDbRecord(): FileDbRecord;
 }

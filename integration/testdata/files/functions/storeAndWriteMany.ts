@@ -1,9 +1,4 @@
-import {
-  StoreAndWriteMany,
-  InlineFile,
-  StoredFile,
-  models,
-} from "@teamkeel/sdk";
+import { StoreAndWriteMany, models } from "@teamkeel/sdk";
 
 // To learn more about what you can do with custom functions, visit https://docs.keel.so/functions
 export default StoreAndWriteMany(async (ctx, inputs) => {

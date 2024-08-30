@@ -31,7 +31,7 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 
 	for _, field := range message.Fields {
 		// foreach message field that is of inline file type...
-		if field.Type != nil && field.Type.Type == proto.Type_TYPE_INLINE_FILE {
+		if field.Type != nil && field.Type.Type == proto.Type_TYPE_FILE {
 			if in, ok := inputs[field.Name]; ok {
 				// null files don't need uploading
 				if in == nil {

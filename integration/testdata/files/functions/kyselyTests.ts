@@ -1,7 +1,7 @@
 import {
   KyselyTests,
   InlineFile,
-  StoredFile,
+  File,
   models,
   useDatabase,
 } from "@teamkeel/sdk";

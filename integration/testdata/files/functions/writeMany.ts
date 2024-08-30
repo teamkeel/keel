@@ -1,4 +1,4 @@
-import { WriteMany, InlineFile, StoredFile, models } from "@teamkeel/sdk";
+import { WriteMany, models } from "@teamkeel/sdk";
 
 // To learn more about what you can do with custom functions, visit https://docs.keel.so/functions
 export default WriteMany(async (ctx, inputs) => {

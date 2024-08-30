@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { InlineFile, StoredFile } from "@teamkeel/functions-runtime"
+import { InlineFile, File } from "@teamkeel/functions-runtime";
 
 export class Executor {
   constructor(props) {
@@ -106,21 +106,23 @@ export class Executor {
         if (this._parseJsonResult) {
           return r.text().then((t) => {
             const response = JSON.parse(t, reviver);
-            return  parseOutputs(response);
+            return parseOutputs(response);
           });
         }
       });
-    })
+    });
   }
 }
 
 async function parseInputs(inputs) {
   if (inputs != null && typeof inputs === "object") {
-    for (const i of Object.keys(inputs)) {      
+    for (const i of Object.keys(inputs)) {
       if (inputs[i] !== null && typeof inputs[i] === "object") {
-        if (inputs[i] instanceof InlineFile || inputs[i] instanceof StoredFile) {
+        if (inputs[i] instanceof InlineFile || inputs[i] instanceof File) {
           const contents = await inputs[i].read();
-          inputs[i] = `data:${inputs[i].contentType};name=${inputs[i].filename};base64,${contents.toString("base64")}`
+          inputs[i] = `data:${inputs[i].contentType};name=${
+            inputs[i].filename
+          };base64,${contents.toString("base64")}`;
         } else {
           inputs[i] = await parseInputs(inputs[i]);
         }
@@ -147,12 +149,14 @@ function parseOutputs(data) {
 
     if (isPlainObject(value)) {
       if (value.key && value.size && value.filename && value.contentType) {
-        row[key] = StoredFile.fromDbRecord(value);
+        row[key] = File.fromDbRecord(value);
       } else {
         row[key] = parseOutputs(value);
       }
-    } else if (Array.isArray(value) && value.every(item => typeof item === 'object' && item !== null)) {
-
+    } else if (
+      Array.isArray(value) &&
+      value.every((item) => typeof item === "object" && item !== null)
+    ) {
       const arr = [];
       for (let item of value) {
         arr.push(parseOutputs(item));

@@ -6,7 +6,7 @@ func (f *Field) IsFile() bool {
 		return false
 	}
 
-	return f.Type.Type == Type_TYPE_INLINE_FILE
+	return f.Type.Type == Type_TYPE_FILE
 }
 
 // IsTypeModel returns true of the field's type is Model.
