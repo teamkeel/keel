@@ -27,12 +27,12 @@ type Storer interface {
 }
 
 type FileInfo struct {
-	Key         string  `json:"key"`
+	Key         string  `json:"key"` //TODO remove?
 	Filename    string  `json:"filename"`
 	ContentType string  `json:"contentType"`
 	Size        int     `json:"size"`
 	URL         *string `json:"url,omitempty"`
-	Public      bool    `json:"public"`
+	Public      bool    `json:"public"` //TODO remove?
 }
 
 func (fi *FileInfo) ToJSON() (string, error) {

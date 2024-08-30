@@ -10,7 +10,7 @@ function parseParams(inputs) {
       if (inputs[i] !== null && typeof inputs[i] === "object") {
         if ("__typename" in inputs[i]) {
           switch (inputs[i].__typename) {
-            case "InlineFile":
+            case "InlineFile"://TODO: Stored file???
               inputs[i] = InlineFile.fromDataURL(inputs[i].dataURL);
               break;
 

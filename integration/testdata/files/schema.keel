@@ -5,6 +5,10 @@ model MyFile {
     actions {
         create createFile() with (file)
         update updateFile(id) with (file)
+        get getFile(id)
+        list listFiles() {
+            @orderBy(createdAt: asc)
+        }
         create createFileInHook() @function 
         create createFileAndStoreInHook() @function 
         get getFileNumerateContents(id) @function
@@ -22,7 +26,7 @@ model MyFile {
         }
     }
 
-    @permission(expression: true, actions: [get, create, update])
+    @permission(expression: true, actions: [get, list, create, update])
 }
 
 message FileMessage {

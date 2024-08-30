@@ -68,7 +68,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	sdkTypes.Writeln("")
 
 	writePermissions(sdk, schema)
-	writeMessages(sdkTypes, schema, false)
+	writeMessages(sdkTypes, schema, false, false)
 
 	for _, enum := range schema.Enums {
 		writeEnum(sdkTypes, enum)
@@ -87,7 +87,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 
 	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
-		writeModelInterface(sdkTypes, model)
+		writeModelInterface(sdkTypes, model, false)
 		writeCreateValuesType(sdkTypes, schema, model)
 		writeUpdateValuesType(sdkTypes, model)
 		writeWhereConditionsInterface(sdkTypes, model)
@@ -197,7 +197,7 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeModelInterface(w *codegen.Writer, model *proto.Model) {
+func writeModelInterface(w *codegen.Writer, model *proto.Model, isClientPackage bool) {
 	w.Writef("export interface %s {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
@@ -207,7 +207,7 @@ func writeModelInterface(w *codegen.Writer, model *proto.Model) {
 
 		w.Write(field.Name)
 		w.Write(": ")
-		t := toTypeScriptType(field.Type, false, false)
+		t := toTypeScriptType(field.Type, false, false, isClientPackage)
 
 		if field.Type.Repeated {
 			t = fmt.Sprintf("%s[]", t)
@@ -235,7 +235,7 @@ func writeUpdateValuesType(w *codegen.Writer, model *proto.Model) {
 
 		w.Write(field.Name)
 		w.Write(": ")
-		t := toTypeScriptType(field.Type, true, false)
+		t := toTypeScriptType(field.Type, true, false, false)
 
 		if field.Type.Repeated {
 			t = fmt.Sprintf("%s[]", t)
@@ -303,7 +303,7 @@ func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *pr
 		w.Write(": ")
 
 		if len(fieldEmbeddings) == 0 {
-			w.Write(toTypeScriptType(field.Type, false, false))
+			w.Write(toTypeScriptType(field.Type, false, false, false))
 		} else {
 			fieldModel := proto.FindModel(schema.Models, field.Type.ModelName.Value)
 			writeEmbeddedModelFields(w, schema, fieldModel, fieldEmbeddings)
@@ -374,7 +374,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 				w.Write(">")
 			}
 		} else {
-			t := toTypeScriptType(field.Type, true, false)
+			t := toTypeScriptType(field.Type, true, false, false)
 
 			if field.Type.Repeated {
 				t = fmt.Sprintf("%s[]", t)
@@ -465,6 +465,10 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sWhereConditions {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
+		if field.Type.Type == proto.Type_TYPE_INLINE_FILE {
+			continue
+		}
+
 		w.Write(field.Name)
 		w.Write("?")
 		w.Write(": ")
@@ -472,7 +476,7 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 			// Embed related models where conditions
 			w.Writef("%sWhereConditions", field.Type.ModelName.Value)
 		} else {
-			w.Write(toTypeScriptType(field.Type, false, false))
+			w.Write(toTypeScriptType(field.Type, false, false, false))
 
 			if field.Type.Repeated {
 				w.Write("[]")
@@ -493,19 +497,19 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage bool) {
+func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage bool, isClientPackage bool) {
 	for _, msg := range schema.Messages {
 		if msg.Name == parser.MessageFieldTypeAny {
 			continue
 		}
-		writeMessage(w, msg, isTestingPackage)
+		writeMessage(w, msg, isTestingPackage, isClientPackage)
 	}
 }
 
-func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool) {
+func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool, isClientPackage bool) {
 	if message.Type != nil {
 		w.Writef("export type %s = ", message.Name)
-		w.Write(toTypeScriptType(message.Type, true, isTestingPackage))
+		w.Write(toTypeScriptType(message.Type, true, isTestingPackage, false))
 		w.Writeln(";")
 		return
 	}
@@ -522,7 +526,7 @@ func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bo
 
 		w.Write(": ")
 
-		w.Write(toTypeScriptType(field.Type, true, isTestingPackage))
+		w.Write(toTypeScriptType(field.Type, true, isTestingPackage, isClientPackage))
 
 		if field.Type.Repeated {
 			w.Write("[]")
@@ -592,7 +596,7 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 				} else {
 					entries = append(entries, &F{
 						key:   f.Name,
-						value: toTypeScriptType(f.Type, false, false),
+						value: toTypeScriptType(f.Type, false, false, false),
 					})
 				}
 			}
@@ -1592,7 +1596,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("")
 
 	// For the testing package we need input and response types for all actions
-	writeMessages(w, schema, true)
+	writeMessages(w, schema, true, false)
 
 	w.Writeln("declare class ActionExecutor {")
 	w.Indent()
@@ -1686,11 +1690,11 @@ func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	case proto.Type_TYPE_INLINE_FILE:
 		return "FileDbRecord"
 	default:
-		return toTypeScriptType(t, false, isTestingPackage)
+		return toTypeScriptType(t, false, isTestingPackage, false)
 	}
 }
 
-func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingPackage bool) (ret string) {
+func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_ID:
 		ret = "string"
@@ -1731,11 +1735,16 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 		// Use string literal type for discriminating.
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
 	case proto.Type_TYPE_INLINE_FILE:
-		if includeCompatibleTypes {
-			ret = "InlineFile | StoredFile"
+		if isClientPackage {
+			ret = "string"
 		} else {
-			ret = "StoredFile"
+			if includeCompatibleTypes {
+				ret = "runtime.InlineFile | runtime.StoredFile"
+			} else {
+				ret = "runtime.StoredFile"
+			}
 		}
+
 	default:
 		ret = "any"
 	}

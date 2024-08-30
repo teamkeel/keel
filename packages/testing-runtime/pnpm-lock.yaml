@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@teamkeel/functions-runtime':
+    specifier: link:/Users/davenewza/code/keel/packages/functions-runtime
+    version: link:../functions-runtime
   jsonwebtoken:
     specifier: ^9.0.2
     version: 9.0.2

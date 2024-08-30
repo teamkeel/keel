@@ -226,7 +226,7 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	w.Writeln("// API Types")
 	w.Writeln("")
 
-	writeMessages(w, schema, false)
+	writeMessages(w, schema, false, true)
 
 	for _, enum := range schema.Enums {
 		writeEnum(w, enum)
@@ -236,7 +236,7 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	models := proto.ApiModels(schema, api)
 
 	for _, model := range models {
-		writeModelInterface(w, model)
+		writeModelInterface(w, model, true)
 	}
 
 	// writing embedded response types

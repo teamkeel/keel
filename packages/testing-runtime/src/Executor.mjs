@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { InlineFile, StoredFile } from "@teamkeel/functions-runtime"
 
 export class Executor {
   constructor(props) {
@@ -69,45 +70,103 @@ export class Executor {
       headers["X-Trigger-Type"] = "manual";
     }
 
-    // Use the HTTP JSON API as that returns more friendly errors than
-    // the JSON-RPC API.
-    return fetch(this._apiBaseUrl + "/" + method, {
-      method: "POST",
-      body: JSON.stringify(params),
-      headers,
-    }).then((r) => {
-      if (r.status !== 200) {
-        // For non-200 first read the response as text
-        return r.text().then((t) => {
-          let d;
-          try {
-            d = JSON.parse(t);
-          } catch (e) {
-            if ("DEBUG" in process.env) {
-              console.log(e);
+    return parseInputs(params).then((inputs) => {
+      // Use the HTTP JSON API as that returns more friendly errors than
+      // the JSON-RPC API.
+      return fetch(this._apiBaseUrl + "/" + method, {
+        method: "POST",
+        body: JSON.stringify(inputs),
+        headers,
+      }).then((r) => {
+        if (r.status !== 200) {
+          // For non-200 first read the response as text
+          return r.text().then((t) => {
+            let d;
+            try {
+              d = JSON.parse(t);
+            } catch (e) {
+              if ("DEBUG" in process.env) {
+                console.log(e);
+              }
+              // If JSON parsing fails then throw an error with the
+              // response text as the message
+              throw new Error(t);
             }
-            // If JSON parsing fails then throw an error with the
-            // response text as the message
-            throw new Error(t);
-          }
-          // Otherwise throw the parsed JSON error response
-          // We override toString as otherwise you get expect errors like:
-          //   `expected to resolve but rejected with "[object Object]"`
-          Object.defineProperty(d, "toString", {
-            value: () => t,
-            enumerable: false,
+            // Otherwise throw the parsed JSON error response
+            // We override toString as otherwise you get expect errors like:
+            //   `expected to resolve but rejected with "[object Object]"`
+            Object.defineProperty(d, "toString", {
+              value: () => t,
+              enumerable: false,
+            });
+            throw d;
           });
-          throw d;
-        });
-      }
+        }
 
-      if (this._parseJsonResult) {
-        return r.text().then((t) => {
-          return JSON.parse(t, reviver);
-        });
-      }
-    });
+        if (this._parseJsonResult) {
+          return r.text().then((t) => {
+            const response = JSON.parse(t, reviver);
+            return  parseOutputs(response);
+          });
+        }
+      });
+    })
   }
+}
+
+async function parseInputs(inputs) {
+  if (inputs != null && typeof inputs === "object") {
+    for (const i of Object.keys(inputs)) {      
+      if (inputs[i] !== null && typeof inputs[i] === "object") {
+        if (inputs[i] instanceof InlineFile || inputs[i] instanceof StoredFile) {
+          const contents = await inputs[i].read();
+          inputs[i] = `data:${inputs[i].contentType};name=${inputs[i].filename};base64,${contents.toString("base64")}`
+        } else {
+          inputs[i] = await parseInputs(inputs[i]);
+        }
+      }
+    }
+  }
+  return inputs;
+}
+
+function parseOutputs(data) {
+  if (!data) {
+    return null;
+  }
+
+  if (!isPlainObject(data)) {
+    return data;
+  }
+
+  const keys = data ? Object.keys(data) : [];
+  const row = {};
+
+  for (const key of keys) {
+    const value = data[key];
+
+    if (isPlainObject(value)) {
+      if (value.key && value.size && value.filename && value.contentType) {
+        row[key] = StoredFile.fromDbRecord(value);
+      } else {
+        row[key] = parseOutputs(value);
+      }
+    } else if (Array.isArray(value) && value.every(item => typeof item === 'object' && item !== null)) {
+
+      const arr = [];
+      for (let item of value) {
+        arr.push(parseOutputs(item));
+      }
+      row[key] = arr;
+    } else {
+      row[key] = value;
+    }
+  }
+  return row;
+}
+
+function isPlainObject(obj) {
+  return Object.prototype.toString.call(obj) === "[object Object]";
 }
 
 const dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:(\d{2}(?:\.\d*)?)Z$/;

@@ -17,9 +17,7 @@ class InlineFile {
 
   static fromDataURL(dataURL) {
     var info = dataURL.split(",")[0].split(":")[1];
-
     var data = dataURL.split(",")[1];
-
     var mime = info.split(";")[0];
     var name = info.split(";")[1].split("=")[1];
     var buffer = Buffer.from(data, "base64");
@@ -88,7 +86,6 @@ class StoredFile extends InlineFile {
     this._key = input.key;
     this._size = input.size;
     this._isPublic = input.isPublic;
-    this._isHydrated = false;
   }
 
   static fromDbRecord({ key, filename, size, contentType }) {
