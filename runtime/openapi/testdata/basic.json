@@ -284,11 +284,10 @@
               "contentType": { "type": "string" },
               "filename": { "type": "string" },
               "key": { "type": "string" },
-              "public": { "type": "boolean" },
               "size": { "type": "number" },
               "url": { "type": "string" }
             },
-            "required": ["filename", "contentType", "size", "key", "public"]
+            "required": ["filename", "contentType", "size", "key"]
           },
           "updatedAt": { "type": "string", "format": "date-time" },
           "weight": { "type": "number", "format": "float" }

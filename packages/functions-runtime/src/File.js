@@ -76,6 +76,9 @@ class InlineFile {
       contentType: this.contentType,
     });
   }
+
+  
+
 }
 
 class File extends InlineFile {
@@ -163,6 +166,15 @@ class File extends InlineFile {
       filename: this.filename,
       contentType: this.contentType,
       size: this._size,
+    };
+  }
+
+  toJSON() {
+    return {
+      key: this.key,
+      filename: this.filename,
+      contentType: this.contentType,
+      size: this.size,
     };
   }
 }
