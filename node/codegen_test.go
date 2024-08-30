@@ -41,6 +41,7 @@ model Person {
 		tags Text[]
 		height Decimal
 		bio Markdown
+		file InlineFile
 	}
 }`
 
@@ -57,6 +58,7 @@ export interface PersonTable {
 	tags: string[]
 	height: number
 	bio: string
+	file: FileDbRecord
 	id: Generated<string>
 	createdAt: Generated<Date>
 	updatedAt: Generated<Date>
@@ -104,6 +106,7 @@ export interface Person {
 	tags: string[]
 	height: number
 	bio: string
+	file: StoredFile
 	id: string
 	createdAt: Date
 	updatedAt: Date
@@ -128,6 +131,7 @@ export type PersonCreateValues = {
 	tags: string[]
 	height: number
 	bio: string
+	file: InlineFile | StoredFile
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
@@ -177,6 +181,7 @@ export interface PersonWhereConditions {
 	tags?: string[] | runtime.StringArrayWhereCondition;
 	height?: number | runtime.NumberWhereCondition;
 	bio?: string | runtime.StringWhereCondition;
+	file?: StoredFile | any;
 	id?: string | runtime.IDWhereCondition;
 	createdAt?: Date | runtime.DateWhereCondition;
 	updatedAt?: Date | runtime.DateWhereCondition;
@@ -247,7 +252,8 @@ export type PersonAPI = {
 		hasChildren: false,
 		tags: [''],
 		height: 0,
-		bio: ''
+		bio: '',
+		file: inputs.profilePhoto
 	});
 	%[1]s
 	*/
@@ -259,7 +265,7 @@ export type PersonAPI = {
 	const person = await models.person.update({ id: "abc" }, { firstName: XXX }});
 	%[1]s
 	*/
-	update(where: PersonUniqueConditions, values: Partial<Person>): Promise<Person>;
+	update(where: PersonUniqueConditions, values: Partial<PersonUpdateValues>): Promise<Person>;
 	/**
 	* Deletes a Person record
 	* @example
@@ -467,6 +473,8 @@ function createPermissionApi() {
 	return new runtime.Permissions();
 };
 const models = createModelAPI();
+module.exports.InlineFile = runtime.InlineFile;
+module.exports.StoredFile = runtime.StoredFile;
 module.exports.models = models;
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;

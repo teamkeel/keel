@@ -1,5 +1,5 @@
 import { test, expect, beforeEach, describe } from "vitest";
-import { InlineFile } from "./InlineFile";
+const { InlineFile, StoredFile } = require("./InlineFile");
 const { ModelAPI } = require("./ModelAPI");
 const { sql } = require("kysely");
 const { useDatabase } = require("./database");
@@ -37,8 +37,7 @@ beforeEach(async () => {
   CREATE TABLE author(
     id               text PRIMARY KEY,
     name             text NOT NULL
-  );
-  `.execute(db);
+  );`.execute(db);
 
   const tableConfigMap = {
     person: {

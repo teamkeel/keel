@@ -64,8 +64,8 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
+	sdkTypes.Writeln(`export { InlineFile, StoredFile } from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln("")
-	writeBuiltInTypes(sdkTypes)
 
 	writePermissions(sdk, schema)
 	writeMessages(sdkTypes, schema, false)
@@ -81,8 +81,8 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 
 	writeTableConfig(sdk, schema.Models)
 	writeAPIFactory(sdk, schema)
+
 	sdk.Writeln("module.exports.useDatabase = runtime.useDatabase;")
-	sdk.Writeln("module.exports.InlineFile = runtime.InlineFile;")
 	sdk.Writeln("module.exports.errors = runtime.ErrorPresets;")
 
 	for _, model := range schema.Models {
@@ -164,84 +164,6 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 			Contents: `{"name": "@teamkeel/sdk"}`,
 		},
 	}
-}
-
-// writeBuiltInTypes will write the types for Built In types such as InlineFile, SortDirection, etc..
-func writeBuiltInTypes(w *codegen.Writer) {
-	var commonMimeTypes = []string{
-		"application/json",
-		"application/gzip",
-		"application/pdf",
-		"application/rtf",
-		"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-		"application/vnd.openxmlformats-officedocument.presentationml.presentation",
-		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-		"application/vnd.ms-excel",
-		"application/vnd.ms-powerpoint",
-		"application/msword",
-		"application/zip",
-		"application/xml",
-		"application/x-7z-compressed",
-		"application/x-tar",
-		"image/gif",
-		"image/jpeg",
-		"image/svg+xml",
-		"image/png",
-		"text/html",
-		"text/csv",
-		"text/javascript",
-		"text/plain",
-		"text/calendar",
-	}
-
-	quoted := lo.Map(commonMimeTypes, func(s string, _ int) string { return fmt.Sprintf(`"%s"`, s) })
-
-	w.Writef(`type MimeType = %s | (string & {})`, strings.Join(quoted, " | "))
-	w.Writeln("")
-
-	w.Writeln(`type InlineFileConstructor = {`)
-	w.Indent()
-	w.Writeln(`filename: string;`)
-	w.Writeln(`contentType: MimeType;`)
-	w.Dedent()
-	w.Writeln(`}`)
-	w.Writeln("")
-
-	w.Writeln(`export declare class InlineFile {`)
-	w.Indent()
-	w.Writeln(`constructor(input: InlineFileConstructor);`)
-	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
-	w.Writeln(`// Reads the contents of the file as a buffer`)
-	w.Writeln(`read(): Promise<Buffer>;`)
-	w.Writeln(`// Write the files contents from a buffer`)
-	w.Writeln(`write(data: Buffer): void;`)
-	w.Writeln(`// Persists the file`)
-	w.Writeln(`store(expires?: Date, isPublic?: boolean): Promise<StoredFile>;`)
-	w.Writeln(`// Gets the name of the file`)
-	w.Writeln(`get filename(): string;`)
-	w.Writeln(`// Gets the media type of the file contents`)
-	w.Writeln(`get contentType(): string;`)
-	w.Writeln(`// Gets size of the file's contents in bytes`)
-	w.Writeln(`get size(): number;`)
-	w.Dedent()
-	w.Writeln(`}`)
-	w.Writeln("")
-
-	w.Writeln(`export declare class StoredFile extends InlineFile {`)
-	w.Indent()
-	w.Writeln(`// Gets the stored key`)
-	w.Writeln(`get key(): string;`)
-	w.Writeln(`// Gets size of the file's contents in bytes`)
-	w.Writeln(`get isPublic(): boolean;`)
-	w.Writeln(`static fromDbRecord(input: runtime.FileDbRecord): StoredFile;`)
-	w.Writeln(`// Persists the file`)
-	w.Writeln(`toDbRecord(): runtime.FileDbRecord;`)
-	w.Dedent()
-	w.Writeln(`}`)
-	w.Writeln("")
-
-	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
-	w.Writeln("")
 }
 
 func writeTableInterface(w *codegen.Writer, model *proto.Model) {
@@ -735,6 +657,8 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 				w.Write("0")
 			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_DATE, proto.Type_TYPE_TIMESTAMP:
 				w.Write("new Date()")
+			case proto.Type_TYPE_INLINE_FILE:
+				w.Write("inputs.profilePhoto")
 			default:
 				w.Write("undefined")
 			}
@@ -936,6 +860,7 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("export declare const models: ModelsAPI;")
+
 	w.Writeln("export declare const permissions: runtime.Permissions;")
 	w.Writeln("export declare const errors: runtime.Errors;")
 
@@ -1104,6 +1029,8 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("};")
 
 	w.Writeln(`const models = createModelAPI();`)
+	w.Writeln(`module.exports.InlineFile = runtime.InlineFile;`)
+	w.Writeln(`module.exports.StoredFile = runtime.StoredFile;`)
 	w.Writeln(`module.exports.models = models;`)
 	w.Writeln(`module.exports.permissions = createPermissionApi();`)
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
@@ -1757,7 +1684,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_INLINE_FILE:
-		return "runtime.FileRecord"
+		return "FileDbRecord"
 	default:
 		return toTypeScriptType(t, false, isTestingPackage)
 	}

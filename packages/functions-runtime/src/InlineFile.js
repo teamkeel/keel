@@ -17,12 +17,12 @@ class InlineFile {
 
   static fromDataURL(dataURL) {
     var info = dataURL.split(",")[0].split(":")[1];
+
     var data = dataURL.split(",")[1];
 
     var mime = info.split(";")[0];
     var name = info.split(";")[1].split("=")[1];
     var buffer = Buffer.from(data, "base64");
-
     var file = new InlineFile({ filename: name, contentType: mime });
     file.write(buffer);
 
@@ -237,19 +237,20 @@ async function storeFile(
             data: contents,
           }))
           .where("keel_storage.id", "=", key)
-      );
+      )
+      .returningAll();
 
-    await query.executeTakeFirstOrThrow();
+    await query.execute();
   } catch (e) {
     throw new DatabaseError(e);
   }
+}
+
+function isS3Storage() {
+  return "KEEL_FILES_BUCKET_NAME" in process.env;
 }
 
 module.exports = {
   InlineFile,
   StoredFile,
 };
-
-function isS3Storage() {
-  return "KEEL_FILES_BUCKET_NAME" in process.env;
-}

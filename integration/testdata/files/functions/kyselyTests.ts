@@ -5,7 +5,7 @@ import {
   models,
   useDatabase,
 } from "@teamkeel/sdk";
-import { FileRecord } from "@teamkeel/functions-runtime";
+
 // To learn more about what you can do with custom functions, visit https://docs.keel.so/functions
 export default KyselyTests(async (ctx, inputs) => {
   const file = new InlineFile({

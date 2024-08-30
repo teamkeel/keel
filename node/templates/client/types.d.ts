@@ -139,3 +139,77 @@ export type TokenRequest =
   | TokenExchangeGrant
   | AuthorizationCodeGrant
   | RefreshGrant;
+
+type MimeType =
+  | "application/json"
+  | "application/gzip"
+  | "application/pdf"
+  | "application/rtf"
+  | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  | "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+  | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  | "application/vnd.ms-excel"
+  | "application/vnd.ms-powerpoint"
+  | "application/msword"
+  | "application/zip"
+  | "application/xml"
+  | "application/x-7z-compressed"
+  | "application/x-tar"
+  | "image/gif"
+  | "image/jpeg"
+  | "image/svg+xml"
+  | "image/png"
+  | "text/html"
+  | "text/csv"
+  | "text/javascript"
+  | "text/plain"
+  | "text/calendar"
+  | (string & {});
+
+export type InlineFileConstructor = {
+  filename: string;
+  contentType: MimeType;
+};
+export declare class InlineFile {
+  constructor(input: InlineFileConstructor);
+  static fromDataURL(url: string): InlineFile;
+  // Reads the contents of the file as a buffer
+  read(): Promise<Buffer>;
+  // Write the files contents from a buffer
+  write(data: Buffer): void;
+  // Persists the file
+  store(expires?: Date, isPublic?: boolean): Promise<StoredFile>;
+  // Gets the name of the file
+  get filename(): string;
+  // Gets the media type of the file contents
+  get contentType(): string;
+  // Gets size of the file's contents in bytes
+  get size(): number;
+}
+
+export declare class StoredFile extends InlineFile {
+  // Gets the stored key
+  get key(): string;
+  // Gets size of the file's contents in bytes
+  get isPublic(): boolean;
+  static fromDbRecord(input: FileDbRecord): StoredFile;
+  // Persists the file
+  toDbRecord(): FileDbRecord;
+}
+
+export type FileDbRecord = {
+  key: string;
+  filename: string;
+  contentType: string;
+  size: number;
+};
+
+export type SortDirection = "asc" | "desc" | "ASC" | "DESC";
+
+type PageInfo = {
+  count: number;
+  endCursor: string;
+  hasNextPage: boolean;
+  startCursor: string;
+  totalCount: number;
+};

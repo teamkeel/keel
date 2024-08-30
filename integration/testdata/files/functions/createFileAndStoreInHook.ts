@@ -14,6 +14,7 @@ export default CreateFileAndStoreInHook({
     const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
       fileContents
     ).toString("base64")}`;
+
     const file = InlineFile.fromDataURL(dataUrl);
     const storedFile = await file.store();
 

@@ -257,7 +257,6 @@ async function create(conn, tableName, tableConfigs, values) {
           } else {
             row[key] = value;
           }
-
           continue;
         }
 

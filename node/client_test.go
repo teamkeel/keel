@@ -511,16 +511,7 @@ export interface Identity {
 	id: string
 	createdAt: Date
 	updatedAt: Date
-}
-export type SortDirection = "asc" | "desc" | "ASC" | "DESC";
-
-type PageInfo = {
-	count: number;
-	endCursor: string;
-	hasNextPage: boolean;
-	startCursor: string;
-	totalCount: number;
-};`
+}`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")

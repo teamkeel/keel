@@ -250,32 +250,7 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 		writeEmbeddedModelInterface(w, schema, model, toResponseType(action.Name), embeds)
 	}
 
-	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC";`)
-
 	w.Writeln("")
-	w.Writeln("type PageInfo = {")
-	w.Indent()
-	w.Writeln("count: number;")
-	w.Writeln("endCursor: string;")
-	w.Writeln("hasNextPage: boolean;")
-	w.Writeln("startCursor: string;")
-	w.Writeln("totalCount: number;")
-	w.Dedent()
-	w.Writeln("};")
-
-	w.Writeln(`export declare class InlineFile {`)
-	w.Indent()
-	w.Writeln(`constructor(filename: string, contentType: string, size: number, url: string, key: string, pub: boolean);`)
-	w.Writeln(`static fromObject(obj: any): InlineFile;`)
-	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
-	w.Writeln(`read(): Promise<Buffer>;`)
-	w.Writeln(`store(expires?: Date): Promise<any>;`)
-	w.Writeln(`filename: string;`)
-	w.Writeln(`contentType: string;`)
-	w.Writeln(`size: number;`)
-	w.Writeln(`url: string | null;`)
-	w.Dedent()
-	w.Writeln(`}`)
 }
 
 func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
