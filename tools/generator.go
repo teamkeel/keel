@@ -135,6 +135,7 @@ func (g *Generator) decorateTools() error {
 	g.generateRelatedActionsLinks()
 	g.generateEntryActivityActionsLinks()
 	g.generateGetEntryActionLinks()
+	g.generateEmbeddedActionLinks()
 
 	// decorate further...
 	for _, tool := range g.Tools {
@@ -238,6 +239,46 @@ func (g *Generator) generateGetEntryActionLinks() {
 	}
 }
 
+// generateEmbeddedActionLinks will create links to embedded actions. These are generated for GET actions for models that
+// have HasMany relationships provided that:
+// - the related model has a list action that has the parent field as a filter
+func (g *Generator) generateEmbeddedActionLinks() {
+	for _, tool := range g.Tools {
+		if !tool.Action.IsGet() {
+			continue
+		}
+
+		for _, f := range tool.Model.Fields {
+			// skip if the field is not a HasMany relationship
+			if !f.IsHasMany() {
+				continue
+			}
+
+			// find the list tools for the related model
+			listTools := g.findListTools(f.Type.ModelName.Value)
+			for _, toolId := range listTools {
+				// check if there is an input for the foreign key
+				if input := g.Tools[toolId].getInput("$.where." + f.InverseFieldName.Value + ".id.equals"); input != nil {
+					// embed the tool
+					tool.Config.EmbeddedActions = append(tool.Config.EmbeddedActions, &rpc.ActionLink{
+						ToolId: toolId,
+						Data: []*rpc.DataMapping{
+							{
+								Key: input.FieldLocation.Path,
+								Value: &rpc.DataMapping_Path{
+									Path: &rpc.JsonPath{Path: tool.getIDResponseFieldPath()},
+								},
+							},
+						},
+					})
+
+					break
+				}
+			}
+		}
+	}
+}
+
 // generateInputs will make the inputs for all tools
 func (g *Generator) generateInputs() error {
 	for _, tool := range g.Tools {
@@ -328,7 +369,7 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 				return nil, ErrInvalidSchema
 			}
 
-			subFields, err := g.makeInputsForMessage(submsg, "."+f.Name)
+			subFields, err := g.makeInputsForMessage(submsg, pathPrefix+"."+f.Name)
 			if err != nil {
 				return nil, err
 			}
@@ -658,6 +699,17 @@ func (t *Tool) getIDInputFieldPath() string {
 	}
 
 	return ""
+}
+
+// getInput finds and returns an inpub by it's path; returns nil if not found
+func (t *Tool) getInput(path string) *rpc.RequestFieldConfig {
+	for _, input := range t.Config.Inputs {
+		if input.FieldLocation.Path == path {
+			return input
+		}
+	}
+
+	return nil
 }
 
 // getIDResponseFieldPath returns the path of the first response field that's an ID at top level (i.e. results[*].id

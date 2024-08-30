@@ -668,6 +668,19 @@
                         }
                     ]
                 }
+            ],
+            "embeddedActions": [
+                {
+                    "toolId": "listComments",
+                    "data": [
+                        {
+                            "key": "$.where.parent.id.equals",
+                            "path": {
+                                "path": "$.id"
+                            }
+                        }
+                    ]
+                }
             ]
         },
         {
@@ -840,6 +853,191 @@
                         }
                     }
                 ]
+            }
+        },
+        {
+            "id": "listComments",
+            "name": "List comments",
+            "actionName": "listComments",
+            "apiName": "Api",
+            "actionType": "ACTION_TYPE_LIST",
+            "implementation": "ACTION_IMPLEMENTATION_AUTO",
+            "inputs": [
+                {
+                    "fieldLocation": {
+                        "path": "$.where.parent.id.equals"
+                    },
+                    "fieldType": "TYPE_ID",
+                    "displayName": "Equals"
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.where.parent.id.oneOf"
+                    },
+                    "fieldType": "TYPE_ID",
+                    "displayName": "One of"
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.where.parent.id.notEquals"
+                    },
+                    "fieldType": "TYPE_ID",
+                    "displayName": "Not equals"
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.first"
+                    },
+                    "fieldType": "TYPE_INT",
+                    "displayName": "First"
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.after"
+                    },
+                    "fieldType": "TYPE_STRING",
+                    "displayName": "After"
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.last"
+                    },
+                    "fieldType": "TYPE_INT",
+                    "displayName": "Last"
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.before"
+                    },
+                    "fieldType": "TYPE_STRING",
+                    "displayName": "Before"
+                }
+            ],
+            "response": [
+                {
+                    "fieldLocation": {
+                        "path": "$.pageInfo.count"
+                    },
+                    "fieldType": "TYPE_INT",
+                    "displayName": "Count"
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.pageInfo.totalCount"
+                    },
+                    "fieldType": "TYPE_INT",
+                    "displayName": "Total count"
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.pageInfo.hasNextPage"
+                    },
+                    "fieldType": "TYPE_BOOL",
+                    "displayName": "Has next page"
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.pageInfo.startCursor"
+                    },
+                    "fieldType": "TYPE_STRING",
+                    "displayName": "Start cursor"
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.pageInfo.endCursor"
+                    },
+                    "fieldType": "TYPE_STRING",
+                    "displayName": "End cursor"
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.results[*].content"
+                    },
+                    "fieldType": "TYPE_STRING",
+                    "displayName": "Content",
+                    "visible": true
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.results[*].id"
+                    },
+                    "fieldType": "TYPE_ID",
+                    "displayName": "Id",
+                    "visible": true
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.results[*].createdAt"
+                    },
+                    "fieldType": "TYPE_DATETIME",
+                    "displayName": "Created at",
+                    "visible": true
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.results[*].updatedAt"
+                    },
+                    "fieldType": "TYPE_DATETIME",
+                    "displayName": "Updated at",
+                    "visible": true
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.results[*].authorId"
+                    },
+                    "fieldType": "TYPE_ID",
+                    "displayName": "Author id",
+                    "visible": true
+                },
+                {
+                    "fieldLocation": {
+                        "path": "$.results[*].parentId"
+                    },
+                    "fieldType": "TYPE_ID",
+                    "displayName": "Parent id",
+                    "visible": true,
+                    "link": {
+                        "toolId": "getPost",
+                        "data": [
+                            {
+                                "key": "$.id",
+                                "path": {
+                                    "path": "$.results[*].parentId"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ],
+            "entitySingle": "comment",
+            "entityPlural": "comments",
+            "capabilities": {},
+            "pagination": {
+                "start": {
+                    "requestInput": "after",
+                    "responseField": {
+                        "path": "$.pageInfo.startCursor"
+                    }
+                },
+                "end": {
+                    "requestInput": "before",
+                    "responseField": {
+                        "path": "$.pageInfo.endCursor"
+                    }
+                },
+                "pageSize": {
+                    "requestInput": "first",
+                    "responseField": {
+                        "path": "$.pageInfo.count"
+                    },
+                    "defaultValue": 50
+                },
+                "nextPage": {
+                    "path": "$.pageInfo.hasNextPage"
+                },
+                "totalCount": {
+                    "path": "$.pageInfo.totalCount"
+                }
             }
         },
         {
@@ -1688,7 +1886,7 @@
                 },
                 {
                     "fieldLocation": {
-                        "path": "$.category.id"
+                        "path": "$.values.category.id"
                     },
                     "fieldType": "TYPE_ID",
                     "displayName": "Id",
@@ -1702,7 +1900,7 @@
                             {
                                 "key": "$.id",
                                 "path": {
-                                    "path": "$.category.id"
+                                    "path": "$.values.category.id"
                                 }
                             }
                         ]

@@ -1,4 +1,15 @@
 // Visit https://docs.keel.so/ for documentation on how to get started
+model Comment {
+    fields {
+        author Identity
+        parent Post
+        content Text
+    }
+    actions {
+        list listComments(parent.id?)
+    }
+}
+
 model Category {
     fields {
         name Text
@@ -21,6 +32,7 @@ model Post {
         image InlineFile?
         tags Text[]?
         category Category?
+        comments Comment[]
     }
 
     actions {

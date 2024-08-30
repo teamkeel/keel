@@ -185,7 +185,7 @@ message RequestFieldConfig {
 
 	bool locked = 9;
 	optional DefaultValue default_value = 10;
-	optional StringTemplate palceholder = 11;
+	optional StringTemplate placeholder = 11;
 }
 
 message ResponseFieldConfig {
