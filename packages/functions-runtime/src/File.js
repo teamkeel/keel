@@ -66,7 +66,7 @@ class InlineFile {
       this._filename,
       this._contentType,
       this.size,
-      expires,
+      expires
     );
 
     return new File({
@@ -151,7 +151,7 @@ class File extends InlineFile {
         this.key,
         this.filename,
         this.contentType,
-        expires,
+        expires
       );
     }
     return this;
@@ -167,12 +167,7 @@ class File extends InlineFile {
   }
 }
 
-async function storeFile(
-  contents,
-  key,
-  filename,
-  contentType,
-  expires) {
+async function storeFile(contents, key, filename, contentType, expires) {
   if (isS3Storage()) {
     const s3Client = new S3Client({
       credentials: fromEnv(),
