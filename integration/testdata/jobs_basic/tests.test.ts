@@ -95,6 +95,6 @@ test("jobs - all types as input values", async () => {
     id: "123",
     enum: Status.GoldPost,
     array: ["one", "two"],
-    // image: InlineFile.fromDataURL(dataUrl),
+    image: InlineFile.fromDataURL(dataUrl),
   });
 });

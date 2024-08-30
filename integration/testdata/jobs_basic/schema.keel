@@ -50,7 +50,7 @@ job AllInputTypes {
         enum Status
         id ID
         array Text[]
-        //image InlineFile
+        image InlineFile
     }
 
     @permission(expression: true)
