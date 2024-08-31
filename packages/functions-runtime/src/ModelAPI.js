@@ -233,7 +233,6 @@ class ModelAPI {
 
 async function create(conn, tableName, tableConfigs, values) {
   try {
-    console.log(values);
     let query = conn.insertInto(tableName);
 
     const keys = values ? Object.keys(values) : [];
@@ -250,9 +249,6 @@ async function create(conn, tableName, tableConfigs, values) {
         const columnConfig = tableConfig[key];
 
         if (!columnConfig) {
-          console.log(key);
-          console.log(typeof value);
-          console.log(value instanceof InlineFile);
           if (value instanceof InlineFile) {
             const storedFile = await value.store();
             row[key] = storedFile.toDbRecord();

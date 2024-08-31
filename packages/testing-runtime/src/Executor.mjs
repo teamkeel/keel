@@ -115,7 +115,6 @@ export class Executor {
 }
 
 async function parseInputs(inputs) {
-  // console.log(inputs)
   if (inputs != null && typeof inputs === "object") {
     for (const i of Object.keys(inputs)) {
       if (inputs[i] !== null && typeof inputs[i] === "object") {
