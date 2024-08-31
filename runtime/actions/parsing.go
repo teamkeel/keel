@@ -199,7 +199,7 @@ func TransformCustomFunctionsInputTypes(schema *proto.Schema, messageName string
 				}
 				// decorate the input
 				input[f.GetName()] = map[string]any{
-					"__typename": parser.FieldTypeFile,
+					"__typename": "InlineFile",
 					"dataURL":    inlineFile,
 				}
 			}

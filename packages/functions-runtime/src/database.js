@@ -224,6 +224,8 @@ function mustEnv(key) {
   return v;
 }
 
-module.exports.createDatabaseClient = createDatabaseClient;
-module.exports.useDatabase = useDatabase;
-module.exports.withDatabase = withDatabase;
+module.exports = {
+  createDatabaseClient,
+  useDatabase,
+  withDatabase,
+};

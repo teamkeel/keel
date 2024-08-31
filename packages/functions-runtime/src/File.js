@@ -76,9 +76,6 @@ class InlineFile {
       contentType: this.contentType,
     });
   }
-
-  
-
 }
 
 class File extends InlineFile {

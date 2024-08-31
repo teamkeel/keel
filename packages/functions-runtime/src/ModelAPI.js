@@ -1,15 +1,15 @@
 const { sql } = require("kysely");
 const { useDatabase } = require("./database");
-const { QueryBuilder } = require("./QueryBuilder");
-const { QueryContext } = require("./QueryContext");
-const { applyWhereConditions } = require("./applyWhereConditions");
-const { applyJoins } = require("./applyJoins");
-const { InlineFile, File } = require("./File");
 const {
   transformRichDataTypes,
   isPlainObject,
   isReferencingExistingRecord,
 } = require("./parsing");
+const { QueryBuilder } = require("./QueryBuilder");
+const { QueryContext } = require("./QueryContext");
+const { applyWhereConditions } = require("./applyWhereConditions");
+const { applyJoins } = require("./applyJoins");
+const { InlineFile, File } = require("./File");
 
 const {
   applyLimit,
@@ -173,6 +173,7 @@ class ModelAPI {
           row[key] = value;
         }
       }
+
       builder = builder.set(snakeCaseObject(row));
 
       const context = new QueryContext([this._tableName], this._tableConfigMap);
@@ -232,6 +233,7 @@ class ModelAPI {
 
 async function create(conn, tableName, tableConfigs, values) {
   try {
+    console.log(values);
     let query = conn.insertInto(tableName);
 
     const keys = values ? Object.keys(values) : [];
@@ -248,7 +250,9 @@ async function create(conn, tableName, tableConfigs, values) {
         const columnConfig = tableConfig[key];
 
         if (!columnConfig) {
-          // handle files that need uploading
+          console.log(key);
+          console.log(typeof value);
+          console.log(value instanceof InlineFile);
           if (value instanceof InlineFile) {
             const storedFile = await value.store();
             row[key] = storedFile.toDbRecord();

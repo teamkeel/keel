@@ -8,7 +8,7 @@ const { tryExecuteFunction } = require("./tryExecuteFunction");
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
-const { parseParams } = require("./parsing");
+const { parseInputs, parseOutputs } = require("./parsing");
 
 // Generic handler function that is agnostic to runtime environment (local or lambda)
 // to execute a custom function based on the contents of a jsonrpc-2.0 payload object.
@@ -72,7 +72,7 @@ async function handleRequest(request, config) {
           { request, ctx, permitted, db, permissionFns, actionType },
           async () => {
             // parse request params to convert objects into rich field types (e.g. InlineFile)
-            const inputs = parseParams(request.params);
+            const inputs = parseInputs(request.params);
 
             // Return the custom function to the containing tryExecuteFunction block
             // Once the custom function is called, tryExecuteFunction will check the schema's permission rules to see if it can continue committing
@@ -80,7 +80,6 @@ async function handleRequest(request, config) {
             return customFunction(ctx, inputs);
           }
         );
-
         if (result instanceof Error) {
           span.recordException(result);
           span.setStatus({
@@ -90,7 +89,9 @@ async function handleRequest(request, config) {
           return errorToJSONRPCResponse(request, result);
         }
 
-        const response = createJSONRPCSuccessResponse(request.id, result);
+        const parsed = await parseOutputs(result);
+
+        const response = createJSONRPCSuccessResponse(request.id, parsed);
 
         const responseHeaders = {};
         for (const pair of headers.entries()) {

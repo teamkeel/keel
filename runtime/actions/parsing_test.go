@@ -295,6 +295,6 @@ message FileResponse {
 	assert.IsType(t, map[string]any{}, parsed["file"])
 
 	file := parsed["file"].(map[string]any)
-	assert.Equal(t, "File", file["__typename"])
+	assert.Equal(t, "InlineFile", file["__typename"])
 	assert.Equal(t, dataUrl, file["dataURL"])
 }
