@@ -37,6 +37,14 @@ beforeEach(async () => {
   CREATE TABLE author(
     id               text PRIMARY KEY,
     name             text NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS keel_storage(
+		id text NOT NULL DEFAULT ksuid(),
+		filename text NOT NULL,
+		content_type text NOT NULL,
+		data bytea NOT NULL,
+		created_at timestamptz NOT NULL DEFAULT now(),
+		PRIMARY KEY (id)
   );`.execute(db);
 
   const tableConfigMap = {
