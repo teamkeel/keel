@@ -39,7 +39,7 @@ beforeEach(async () => {
     name             text NOT NULL
   );
   CREATE TABLE IF NOT EXISTS keel_storage(
-		id text NOT NULL DEFAULT ksuid(),
+		id text NOT NULL,
 		filename text NOT NULL,
 		content_type text NOT NULL,
 		data bytea NOT NULL,
