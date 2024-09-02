@@ -262,14 +262,14 @@ func TestParsingCustomFunctionInputs(t *testing.T) {
 	schema := `
 model Person {
 	fields {
-		avatar InlineFile
+		avatar File
 	}
 	actions {
 		write setAvatar(FileInput) returns (FileResponse)
 	}
 }
 message FileInput {
-    file InlineFile
+    file File
 }
 
 message FileResponse {

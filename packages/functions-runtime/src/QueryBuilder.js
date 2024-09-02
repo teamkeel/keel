@@ -11,6 +11,7 @@ const {
   upperCamelCase,
 } = require("./casing");
 const { useDatabase } = require("./database");
+const { transformRichDataTypes } = require("./parsing");
 const { QueryContext } = require("./QueryContext");
 const tracing = require("./tracing");
 const { DatabaseError } = require("./errors");
@@ -85,7 +86,7 @@ class QueryBuilder {
           );
         }
 
-        return camelCaseObject(result[0]);
+        return transformRichDataTypes(camelCaseObject(result[0]));
       } catch (e) {
         throw new DatabaseError(e);
       }
@@ -139,7 +140,7 @@ class QueryBuilder {
         return null;
       }
 
-      return camelCaseObject(row);
+      return transformRichDataTypes(camelCaseObject(row));
     });
   }
 
@@ -214,7 +215,7 @@ class QueryBuilder {
 
       span.setAttribute("sql", query.compile().sql);
       const rows = await builder.execute();
-      return rows.map((x) => camelCaseObject(x));
+      return rows.map((x) => transformRichDataTypes(camelCaseObject(x)));
     });
   }
 }

@@ -12,7 +12,7 @@ model Customer {
         address Address
         details Markdown
         weight Decimal
-        picture InlineFile
+        picture File
     }
 
     actions {

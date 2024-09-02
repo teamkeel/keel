@@ -28,7 +28,7 @@ func (f *MessageField) IsFile() bool {
 		return false
 	}
 
-	return f.Type.Type == Type_TYPE_INLINE_FILE
+	return f.Type.Type == Type_TYPE_FILE
 }
 
 func (m *Message) FindField(fieldName string) *MessageField {

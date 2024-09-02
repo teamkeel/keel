@@ -79,10 +79,10 @@ func encodeDataURL(data fileData) string {
 	return ""
 }
 
-func (s *DbStore) Store(url string) (FileInfo, error) {
+func (s *DbStore) Store(url string) (FileResponse, error) {
 	fd, err := decodeDataURL(url)
 	if err != nil {
-		return FileInfo{}, fmt.Errorf("decoding data URL: %w", err)
+		return FileResponse{}, fmt.Errorf("decoding data URL: %w", err)
 	}
 
 	sql := `INSERT INTO ` + dbTable + ` (filename, content_type, data) VALUES (?, ?, ?)  
@@ -92,16 +92,16 @@ func (s *DbStore) Store(url string) (FileInfo, error) {
 			content_type,
 			octet_length(data) as size`
 
-	var fi FileInfo
+	var fi FileResponse
 	db := s.db.GetDB().Raw(sql, fd.Filename, fd.ContentType, fd.Data).Scan(&fi)
 	if db.Error != nil {
-		return FileInfo{}, fmt.Errorf("saving file in db: %w", db.Error)
+		return FileResponse{}, fmt.Errorf("saving file in db: %w", db.Error)
 	}
 
 	return fi, nil
 }
 
-func (s *DbStore) GetFileInfo(key string) (FileInfo, error) {
+func (s *DbStore) GetFileInfo(key string) (FileResponse, error) {
 	sql := `SELECT
 			id AS KEY,
 			filename,
@@ -109,17 +109,17 @@ func (s *DbStore) GetFileInfo(key string) (FileInfo, error) {
 			octet_length(data) AS size
 		FROM ` + dbTable + ` WHERE id = ?`
 
-	var fi FileInfo
+	var fi FileResponse
 
 	db := s.db.GetDB().Raw(sql, key).Scan(&fi)
 	if db.Error != nil {
-		return FileInfo{}, fmt.Errorf("retrieving file info: %w", db.Error)
+		return FileResponse{}, fmt.Errorf("retrieving file info: %w", db.Error)
 	}
 
 	return fi, nil
 }
 
-func (s *DbStore) HydrateFileInfo(fi *FileInfo) (FileInfo, error) {
+func (s *DbStore) HydrateFileInfo(fi *FileResponse) (FileResponse, error) {
 	sql := `SELECT
 			filename,
 			content_type,
@@ -130,11 +130,11 @@ func (s *DbStore) HydrateFileInfo(fi *FileInfo) (FileInfo, error) {
 
 	db := s.db.GetDB().Raw(sql, fi.Key).Scan(&fd)
 	if db.Error != nil {
-		return FileInfo{}, fmt.Errorf("retrieving file data: %w", db.Error)
+		return FileResponse{}, fmt.Errorf("retrieving file data: %w", db.Error)
 	}
 	dataURL := encodeDataURL(fd)
 
-	return FileInfo{
+	return FileResponse{
 		Key:         fi.Key,
 		Filename:    fi.Filename,
 		ContentType: fi.ContentType,

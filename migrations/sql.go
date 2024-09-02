@@ -16,20 +16,20 @@ import (
 )
 
 var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
-	proto.Type_TYPE_ID:          "TEXT",
-	proto.Type_TYPE_STRING:      "TEXT",
-	proto.Type_TYPE_INT:         "INTEGER",
-	proto.Type_TYPE_DECIMAL:     "NUMERIC",
-	proto.Type_TYPE_BOOL:        "BOOL",
-	proto.Type_TYPE_TIMESTAMP:   "TIMESTAMPTZ",
-	proto.Type_TYPE_DATETIME:    "TIMESTAMPTZ",
-	proto.Type_TYPE_DATE:        "DATE",
-	proto.Type_TYPE_ENUM:        "TEXT",
-	proto.Type_TYPE_SECRET:      "TEXT",
-	proto.Type_TYPE_PASSWORD:    "TEXT",
-	proto.Type_TYPE_MARKDOWN:    "TEXT",
-	proto.Type_TYPE_VECTOR:      "VECTOR",
-	proto.Type_TYPE_INLINE_FILE: "JSONB",
+	proto.Type_TYPE_ID:        "TEXT",
+	proto.Type_TYPE_STRING:    "TEXT",
+	proto.Type_TYPE_INT:       "INTEGER",
+	proto.Type_TYPE_DECIMAL:   "NUMERIC",
+	proto.Type_TYPE_BOOL:      "BOOL",
+	proto.Type_TYPE_TIMESTAMP: "TIMESTAMPTZ",
+	proto.Type_TYPE_DATETIME:  "TIMESTAMPTZ",
+	proto.Type_TYPE_DATE:      "DATE",
+	proto.Type_TYPE_ENUM:      "TEXT",
+	proto.Type_TYPE_SECRET:    "TEXT",
+	proto.Type_TYPE_PASSWORD:  "TEXT",
+	proto.Type_TYPE_MARKDOWN:  "TEXT",
+	proto.Type_TYPE_VECTOR:    "VECTOR",
+	proto.Type_TYPE_FILE:      "JSONB",
 }
 
 // Matches the type cast on a Postgrs value eg. on "'foo'::text" matches "::text"

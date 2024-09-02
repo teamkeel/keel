@@ -25,7 +25,7 @@ func TestSchema_HasFiles(t *testing.T) {
 						Name: "Model",
 						Fields: []*Field{
 							{Name: "field_1"},
-							{Name: "image", Type: &TypeInfo{Type: Type_TYPE_INLINE_FILE}},
+							{Name: "image", Type: &TypeInfo{Type: Type_TYPE_FILE}},
 						},
 					},
 				},

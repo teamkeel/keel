@@ -30,7 +30,7 @@ func TestModelWithFields(t *testing.T) {
 			books Book[]
 			rating Number
 			netWorth Decimal
-			avatar InlineFile
+			avatar File
 		  }
 		}`})
 	assert.Equal(t, "Author", schema.Declarations[0].Model.Name.Value)
@@ -51,7 +51,7 @@ func TestModelWithFields(t *testing.T) {
 	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[3].Repeated)
 
 	assert.Equal(t, "avatar", schema.Declarations[0].Model.Sections[0].Fields[4].Name.Value)
-	assert.Equal(t, "InlineFile", schema.Declarations[0].Model.Sections[0].Fields[4].Type.Value)
+	assert.Equal(t, "File", schema.Declarations[0].Model.Sections[0].Fields[4].Type.Value)
 	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[4].Repeated)
 }
 

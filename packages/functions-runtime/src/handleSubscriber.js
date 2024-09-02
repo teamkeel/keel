@@ -9,6 +9,7 @@ const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
 const { PROTO_ACTION_TYPES } = require("./consts");
 const { tryExecuteSubscriber } = require("./tryExecuteSubscriber");
+const { parseInputs } = require("./parsing");
 
 // Generic handler function that is agnostic to runtime environment (local or lambda)
 // to execute a subscriber function based on the contents of a jsonrpc-2.0 payload object.
@@ -52,8 +53,11 @@ async function handleSubscriber(request, config) {
         const actionType = PROTO_ACTION_TYPES.SUBSCRIBER;
 
         await tryExecuteSubscriber({ request, db, actionType }, async () => {
+          // parse request params to convert objects into rich field types (e.g. InlineFile)
+          const inputs = parseInputs(request.params);
+
           // Return the subscriber function to the containing tryExecuteSubscriber block
-          return subscriberFunction(ctx, request.params);
+          return subscriberFunction(ctx, inputs);
         });
 
         return createJSONRPCSuccessResponse(request.id, null);

@@ -7,9 +7,9 @@ const { createDatabaseClient } = require("./database");
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
-const { PROTO_ACTION_TYPES } = require("./consts");
 const { tryExecuteJob } = require("./tryExecuteJob");
-const { parseParams } = require("./parsing");
+const { parseInputs } = require("./parsing");
+const { PROTO_ACTION_TYPES } = require("./consts");
 
 // Generic handler function that is agnostic to runtime environment (local or lambda)
 // to execute a job function based on the contents of a jsonrpc-2.0 payload object.
@@ -61,7 +61,7 @@ async function handleJob(request, config) {
           { request, permitted, db, actionType },
           async () => {
             // parse request params to convert objects into rich field types (e.g. InlineFile)
-            const inputs = parseParams(request.params);
+            const inputs = parseInputs(request.params);
 
             // Return the job function to the containing tryExecuteJob block
             return jobFunction(ctx, inputs);

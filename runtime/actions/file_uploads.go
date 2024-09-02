@@ -31,7 +31,7 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 
 	for _, field := range message.Fields {
 		// foreach message field that is of inline file type...
-		if field.Type != nil && field.Type.Type == proto.Type_TYPE_INLINE_FILE {
+		if field.Type != nil && field.Type.Type == proto.Type_TYPE_FILE {
 			if in, ok := inputs[field.Name]; ok {
 				// null files don't need uploading
 				if in == nil {
@@ -74,9 +74,46 @@ func transformFileResponses(ctx context.Context, model *proto.Model, results map
 				return results, fmt.Errorf("invalid response for field: %s", field.Name)
 			}
 
-			fi := storage.FileInfo{}
+			fi := storage.FileResponse{}
 			if err := json.Unmarshal([]byte(data), &fi); err != nil {
 				return results, fmt.Errorf("failed to unmarshal file data: %w", err)
+			}
+
+			// now we're hydrating the db file info with data from our storage service if we have one
+			// e.g. injecting signed URLs for direct file downloads
+			if store, err := runtimectx.GetStorage(ctx); err == nil {
+				hydrated, err := store.HydrateFileInfo(&fi)
+				if err != nil {
+					return results, fmt.Errorf("failed retrieve hydrated file data: %w", err)
+				}
+				results[field.Name] = hydrated
+			} else {
+				// or, we don't have a storage service so we can just return the data saved in the db
+				results[field.Name] = fi
+			}
+		}
+	}
+	return results, nil
+}
+
+// transformFileResponsesForFunctions will take the results from the functions runtime and parse and transform the file responses
+func transformFileResponsesForFunctions(ctx context.Context, message *proto.Message, results map[string]any) (map[string]any, error) {
+	if message == nil {
+		return results, nil
+	}
+
+	for _, field := range message.FileFields() {
+		if f, found := results[field.Name]; found && f != nil {
+			data, ok := f.(map[string]any)
+			if !ok {
+				return results, fmt.Errorf("invalid response for field: %s", field.Name)
+			}
+
+			fi := storage.FileResponse{
+				Key:         data["key"].(string),
+				Filename:    data["filename"].(string),
+				ContentType: data["contentType"].(string),
+				Size:        int(data["size"].(float64)),
 			}
 
 			// now we're hydrating the db file info with data from our storage service if we have one

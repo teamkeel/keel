@@ -41,6 +41,7 @@ model Person {
 		tags Text[]
 		height Decimal
 		bio Markdown
+		file File
 	}
 }`
 
@@ -57,6 +58,7 @@ export interface PersonTable {
 	tags: string[]
 	height: number
 	bio: string
+	file: FileDbRecord
 	id: Generated<string>
 	createdAt: Generated<Date>
 	updatedAt: Generated<Date>
@@ -87,7 +89,7 @@ export interface Account {
 `
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Account")
-		writeModelInterface(w, m)
+		writeModelInterface(w, m, false)
 	})
 }
 
@@ -104,6 +106,7 @@ export interface Person {
 	tags: string[]
 	height: number
 	bio: string
+	file: runtime.File
 	id: string
 	createdAt: Date
 	updatedAt: Date
@@ -111,7 +114,7 @@ export interface Person {
 `
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeModelInterface(w, m)
+		writeModelInterface(w, m, false)
 	})
 }
 
@@ -128,6 +131,7 @@ export type PersonCreateValues = {
 	tags: string[]
 	height: number
 	bio: string
+	file: runtime.InlineFile | runtime.File
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
@@ -247,7 +251,8 @@ export type PersonAPI = {
 		hasChildren: false,
 		tags: [''],
 		height: 0,
-		bio: ''
+		bio: '',
+		file: inputs.profilePhoto
 	});
 	%[1]s
 	*/
@@ -259,7 +264,7 @@ export type PersonAPI = {
 	const person = await models.person.update({ id: "abc" }, { firstName: XXX }});
 	%[1]s
 	*/
-	update(where: PersonUniqueConditions, values: Partial<Person>): Promise<Person>;
+	update(where: PersonUniqueConditions, values: Partial<PersonUpdateValues>): Promise<Person>;
 	/**
 	* Deletes a Person record
 	* @example
@@ -467,6 +472,8 @@ function createPermissionApi() {
 	return new runtime.Permissions();
 };
 const models = createModelAPI();
+module.exports.InlineFile = runtime.InlineFile;
+module.exports.File = runtime.File;
 module.exports.models = models;
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;
@@ -542,7 +549,7 @@ export interface GetPersonInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -564,7 +571,7 @@ export interface CreatePersonInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -586,7 +593,7 @@ export interface CreatePersonInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -608,7 +615,7 @@ export interface CreatePersonInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -640,7 +647,7 @@ export interface CreatePersonEmployerInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -673,7 +680,7 @@ export interface CreatePersonContractsInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -724,7 +731,7 @@ export interface CreateCompanyCompanyProfileTaxProfileInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -754,7 +761,7 @@ export interface CreateAccountInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -812,7 +819,7 @@ export interface UpdatePersonInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -841,7 +848,7 @@ export interface UpdatePersonInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -870,7 +877,7 @@ export interface UpdatePersonInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -908,7 +915,7 @@ export interface ListPeopleInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -956,7 +963,7 @@ export interface ListPeopleInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -995,7 +1002,7 @@ export interface ListPersonsInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1034,7 +1041,7 @@ export interface ListPersonsInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1093,7 +1100,7 @@ export interface ListBooksInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1152,7 +1159,7 @@ export interface ListBooksInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1223,7 +1230,7 @@ export interface ListPeopleInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1280,7 +1287,7 @@ export interface ListPeopleInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1299,7 +1306,7 @@ export interface DeletePersonInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1321,7 +1328,7 @@ export interface GetPersonNameInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1348,7 +1355,7 @@ export interface GetInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1375,7 +1382,7 @@ export interface PersonNameResponse {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1449,7 +1456,7 @@ export interface DeletePersonInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1476,7 +1483,7 @@ export interface DeleteInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1503,7 +1510,7 @@ export interface DeleteResponse {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1529,7 +1536,7 @@ export interface PeopleInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1553,7 +1560,7 @@ export interface Foo {
 	`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1591,11 +1598,11 @@ export interface Response {
 }`
 
 	runWriterTest(t, schema, inputExpected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 
 	runWriterTest(t, schema, responseExpected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1617,7 +1624,7 @@ export interface People {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1647,7 +1654,7 @@ export interface Details {
 `
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1678,7 +1685,7 @@ export interface PersonResponse {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1695,7 +1702,7 @@ export interface GetPersonNameInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1713,7 +1720,7 @@ export interface In {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1767,7 +1774,7 @@ export interface SendWelcomeEmailMemberCreatedEventTarget {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 
@@ -1850,7 +1857,7 @@ export interface AdHocJobWithInputsMessage {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeMessages(w, s, false)
+		writeMessages(w, s, false, false)
 	})
 }
 

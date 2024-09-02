@@ -64,11 +64,11 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
+	sdkTypes.Writeln(`export { InlineFile, File } from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln("")
-	writeBuiltInTypes(sdkTypes)
 
 	writePermissions(sdk, schema)
-	writeMessages(sdkTypes, schema, false)
+	writeMessages(sdkTypes, schema, false, false)
 
 	for _, enum := range schema.Enums {
 		writeEnum(sdkTypes, enum)
@@ -81,14 +81,15 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 
 	writeTableConfig(sdk, schema.Models)
 	writeAPIFactory(sdk, schema)
+
 	sdk.Writeln("module.exports.useDatabase = runtime.useDatabase;")
-	sdk.Writeln("module.exports.InlineFile = runtime.InlineFile;")
 	sdk.Writeln("module.exports.errors = runtime.ErrorPresets;")
 
 	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
-		writeModelInterface(sdkTypes, model)
+		writeModelInterface(sdkTypes, model, false)
 		writeCreateValuesType(sdkTypes, schema, model)
+		writeUpdateValuesType(sdkTypes, model)
 		writeWhereConditionsInterface(sdkTypes, model)
 		writeFindManyParamsInterface(sdkTypes, model)
 		writeUniqueConditionsInterface(sdkTypes, model)
@@ -165,24 +166,6 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	}
 }
 
-// writeBuiltInTypes will write the types for Built In types such as InlineFile, SortDirection, etc..
-func writeBuiltInTypes(w *codegen.Writer) {
-	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
-	w.Writeln(`export declare class InlineFile {`)
-	w.Indent()
-	w.Writeln(`constructor(filename: string, contentType: string, size: number, url: string, key: string, pub: boolean);`)
-	w.Writeln(`static fromObject(obj: any): InlineFile;`)
-	w.Writeln(`static fromDataURL(url: string): InlineFile;`)
-	w.Writeln(`read(): Promise<Buffer>;`)
-	w.Writeln(`store(expires?: Date): Promise<any>;`)
-	w.Writeln(`filename: string;`)
-	w.Writeln(`contentType: string;`)
-	w.Writeln(`size: number;`)
-	w.Writeln(`url: string | null;`)
-	w.Dedent()
-	w.Writeln(`}`)
-}
-
 func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sTable {\n", model.Name)
 	w.Indent()
@@ -193,7 +176,7 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 
 		w.Write(casing.ToLowerCamel(field.Name))
 		w.Write(": ")
-		t := toTypeScriptType(field.Type, false)
+		t := toDbTableType(field.Type, false)
 
 		if field.Type.Repeated {
 			t = fmt.Sprintf("%s[]", t)
@@ -214,7 +197,7 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeModelInterface(w *codegen.Writer, model *proto.Model) {
+func writeModelInterface(w *codegen.Writer, model *proto.Model, isClientPackage bool) {
 	w.Writef("export interface %s {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
@@ -224,7 +207,35 @@ func writeModelInterface(w *codegen.Writer, model *proto.Model) {
 
 		w.Write(field.Name)
 		w.Write(": ")
-		t := toTypeScriptType(field.Type, false)
+		t := toTypeScriptType(field.Type, false, false, isClientPackage)
+
+		if field.Type.Repeated {
+			t = fmt.Sprintf("%s[]", t)
+		}
+
+		w.Write(t)
+
+		if field.Optional {
+			w.Write(" | null")
+		}
+
+		w.Writeln("")
+	}
+	w.Dedent()
+	w.Writeln("}")
+}
+
+func writeUpdateValuesType(w *codegen.Writer, model *proto.Model) {
+	w.Writef("export type %sUpdateValues = {\n", model.Name)
+	w.Indent()
+	for _, field := range model.Fields {
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			continue
+		}
+
+		w.Write(field.Name)
+		w.Write(": ")
+		t := toTypeScriptType(field.Type, true, false, false)
 
 		if field.Type.Repeated {
 			t = fmt.Sprintf("%s[]", t)
@@ -292,7 +303,7 @@ func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *pr
 		w.Write(": ")
 
 		if len(fieldEmbeddings) == 0 {
-			w.Write(toTypeScriptType(field.Type, false))
+			w.Write(toTypeScriptType(field.Type, false, false, false))
 		} else {
 			fieldModel := proto.FindModel(schema.Models, field.Type.ModelName.Value)
 			writeEmbeddedModelFields(w, schema, fieldModel, fieldEmbeddings)
@@ -363,7 +374,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 				w.Write(">")
 			}
 		} else {
-			t := toTypeScriptType(field.Type, false)
+			t := toTypeScriptType(field.Type, true, false, false)
 
 			if field.Type.Repeated {
 				t = fmt.Sprintf("%s[]", t)
@@ -454,6 +465,10 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sWhereConditions {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
+		if field.Type.Type == proto.Type_TYPE_FILE {
+			continue
+		}
+
 		w.Write(field.Name)
 		w.Write("?")
 		w.Write(": ")
@@ -461,7 +476,7 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 			// Embed related models where conditions
 			w.Writef("%sWhereConditions", field.Type.ModelName.Value)
 		} else {
-			w.Write(toTypeScriptType(field.Type, false))
+			w.Write(toTypeScriptType(field.Type, false, false, false))
 
 			if field.Type.Repeated {
 				w.Write("[]")
@@ -482,19 +497,19 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage bool) {
+func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage bool, isClientPackage bool) {
 	for _, msg := range schema.Messages {
 		if msg.Name == parser.MessageFieldTypeAny {
 			continue
 		}
-		writeMessage(w, msg, isTestingPackage)
+		writeMessage(w, msg, isTestingPackage, isClientPackage)
 	}
 }
 
-func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool) {
+func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool, isClientPackage bool) {
 	if message.Type != nil {
 		w.Writef("export type %s = ", message.Name)
-		w.Write(toTypeScriptType(message.Type, isTestingPackage))
+		w.Write(toTypeScriptType(message.Type, true, isTestingPackage, false))
 		w.Writeln(";")
 		return
 	}
@@ -511,7 +526,7 @@ func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bo
 
 		w.Write(": ")
 
-		w.Write(toTypeScriptType(field.Type, isTestingPackage))
+		w.Write(toTypeScriptType(field.Type, true, isTestingPackage, isClientPackage))
 
 		if field.Type.Repeated {
 			w.Write("[]")
@@ -581,7 +596,7 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 				} else {
 					entries = append(entries, &F{
 						key:   f.Name,
-						value: toTypeScriptType(f.Type, false),
+						value: toTypeScriptType(f.Type, false, false, false),
 					})
 				}
 			}
@@ -646,6 +661,8 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 				w.Write("0")
 			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_DATE, proto.Type_TYPE_TIMESTAMP:
 				w.Write("new Date()")
+			case proto.Type_TYPE_FILE:
+				w.Write("inputs.profilePhoto")
 			default:
 				w.Write("undefined")
 			}
@@ -680,7 +697,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 		w.Writeln("});")
 		w.Writeln("```")
 	})
-	w.Writef("update(where: %sUniqueConditions, values: Partial<%s>): Promise<%s>;\n", model.Name, model.Name, model.Name)
+	w.Writef("update(where: %sUniqueConditions, values: Partial<%sUpdateValues>): Promise<%s>;\n", model.Name, model.Name, model.Name)
 
 	tsDocComment(w, func(w *codegen.Writer) {
 		w.Writef("* Deletes a %s record\n", model.Name)
@@ -847,6 +864,7 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("export declare const models: ModelsAPI;")
+
 	w.Writeln("export declare const permissions: runtime.Permissions;")
 	w.Writeln("export declare const errors: runtime.Errors;")
 
@@ -1015,6 +1033,8 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("};")
 
 	w.Writeln(`const models = createModelAPI();`)
+	w.Writeln(`module.exports.InlineFile = runtime.InlineFile;`)
+	w.Writeln(`module.exports.File = runtime.File;`)
 	w.Writeln(`module.exports.models = models;`)
 	w.Writeln(`module.exports.permissions = createPermissionApi();`)
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
@@ -1493,7 +1513,7 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	js.Indent()
 	js.Writeln("const db = useDatabase();")
 	js.Write("await sql`TRUNCATE TABLE ")
-	tableNames := []string{"keel_audit"}
+	tableNames := []string{"keel_audit", "keel_storage"}
 	for _, model := range schema.Models {
 		tableNames = append(tableNames, fmt.Sprintf("\"%s\"", casing.ToSnake(model.Name)))
 	}
@@ -1576,7 +1596,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("")
 
 	// For the testing package we need input and response types for all actions
-	writeMessages(w, schema, true)
+	writeMessages(w, schema, true, false)
 
 	w.Writeln("declare class ActionExecutor {")
 	w.Indent()
@@ -1665,7 +1685,16 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
 }
 
-func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
+func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
+	switch t.Type {
+	case proto.Type_TYPE_FILE:
+		return "FileDbRecord"
+	default:
+		return toTypeScriptType(t, false, isTestingPackage, false)
+	}
+}
+
+func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_ID:
 		ret = "string"
@@ -1705,8 +1734,17 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	case proto.Type_TYPE_STRING_LITERAL:
 		// Use string literal type for discriminating.
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
-	case proto.Type_TYPE_INLINE_FILE:
-		ret = "InlineFile"
+	case proto.Type_TYPE_FILE:
+		if isClientPackage {
+			ret = "string"
+		} else {
+			if includeCompatibleTypes {
+				ret = "runtime.InlineFile | runtime.File"
+			} else {
+				ret = "runtime.File"
+			}
+		}
+
 	default:
 		ret = "any"
 	}

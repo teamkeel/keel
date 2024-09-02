@@ -39,7 +39,7 @@ message PersonResponse {
 }
 
 message FileInput {
-    file InlineFile
+    file File
 }
 
 message FileResponse {
@@ -57,7 +57,7 @@ model Person {
     fields {
         name Text
         height Decimal?
-        photo InlineFile?
+        photo File?
     }
 
     actions {

@@ -2,7 +2,7 @@ job TestJob {
     inputs {
         input1 Text
         input2 Boolean
-        input3 InlineFile
+        input3 File
     }
 
     @permission(roles: [Admin])

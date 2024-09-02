@@ -177,6 +177,15 @@ func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetad
 		Status:  meta.Status,
 	}
 
+	message := proto.FindMessage(scope.Schema.Messages, scope.Action.ResponseMessageName)
+
+	if asMap, ok := resp.(map[string]any); ok {
+		resp, err = transformFileResponsesForFunctions(scope.Context, message, asMap)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
 	// For now a custom list function just returns a list of records, but the API's
 	// all return an objects containing results and pagination info. So we need
 	// to "wrap" the results here.

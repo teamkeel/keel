@@ -179,7 +179,7 @@ var toDate = func(value any) (types.Date, error) {
 // TransformCustomFunctionsInputTypes will, similarly to TransformInputTypes traverse through the input data structure
 // and will decorate complex input fields with typenames to be used by the JS environment
 //
-// e.g. for InlineFile inputs, which are given as a dataURL string, they need to be transformed into an object
+// e.g. for File inputs, which are given as a dataURL string, they need to be transformed into an object
 // including the typename
 func TransformCustomFunctionsInputTypes(schema *proto.Schema, messageName string, input map[string]any) (map[string]any, error) {
 	message := proto.FindMessage(schema.Messages, messageName)
@@ -194,12 +194,12 @@ func TransformCustomFunctionsInputTypes(schema *proto.Schema, messageName string
 				inlineFile := input[f.GetName()]
 
 				// check if the input is already decorated
-				if data, decorated := inlineFile.(map[string]any); decorated && data["__typename"] == parser.FieldTypeInlineFile {
+				if data, decorated := inlineFile.(map[string]any); decorated && data["__typename"] == parser.FieldTypeFile {
 					continue
 				}
 				// decorate the input
 				input[f.GetName()] = map[string]any{
-					"__typename": parser.FieldTypeInlineFile,
+					"__typename": "InlineFile",
 					"dataURL":    inlineFile,
 				}
 			}

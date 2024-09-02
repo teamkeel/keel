@@ -231,17 +231,17 @@ test("nested create action - audit table populated", async () => {
     new Date(wedding.updatedAt).toISOString()
   );
 
-  const inviteelLogs = await sql<
+  const inviteeLogs = await sql<
     Audit<WeddingInvitee>
   >`SELECT * FROM keel_audit WHERE table_name = 'wedding_invitee'`.execute(
     useDatabase()
   );
-  expect(inviteelLogs.rows.length).toEqual(2);
+  expect(inviteeLogs.rows.length).toEqual(2);
 
   const keelson = (
     await models.weddingInvitee.findMany({ where: { firstName: "Keelson" } })
   )[0];
-  const keelsonLog = inviteelLogs.rows.at(0)!;
+  const keelsonLog = inviteeLogs.rows.at(0)!;
 
   expect(keelsonLog.id).not.toBeNull();
   expect(keelsonLog.tableName).toEqual("wedding_invitee");
@@ -262,7 +262,7 @@ test("nested create action - audit table populated", async () => {
   const weave = (
     await models.weddingInvitee.findMany({ where: { firstName: "Weave" } })
   )[0];
-  const weaveLog = inviteelLogs.rows.at(1)!;
+  const weaveLog = inviteeLogs.rows.at(1)!;
 
   expect(weaveLog.id).not.toBeNull();
   expect(weaveLog.tableName).toEqual("wedding_invitee");

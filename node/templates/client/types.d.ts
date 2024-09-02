@@ -139,3 +139,13 @@ export type TokenRequest =
   | TokenExchangeGrant
   | AuthorizationCodeGrant
   | RefreshGrant;
+
+export type SortDirection = "asc" | "desc" | "ASC" | "DESC";
+
+type PageInfo = {
+  count: number;
+  endCursor: string;
+  hasNextPage: boolean;
+  startCursor: string;
+  totalCount: number;
+};

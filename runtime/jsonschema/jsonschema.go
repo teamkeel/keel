@@ -549,7 +549,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		asc := "asc"
 		desc := "desc"
 		prop.Enum = []*string{&asc, &desc}
-	case proto.Type_TYPE_INLINE_FILE:
+	case proto.Type_TYPE_FILE:
 		// if the field is used as an input, so the type will be a data-url
 		if isInput {
 			prop.Type = "string"
@@ -562,10 +562,9 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 				"contentType": {Type: "string"},
 				"size":        {Type: "number"},
 				"key":         {Type: "string"},
-				"public":      {Type: "boolean"},
 				"url":         {Type: "string"},
 			}
-			prop.Required = []string{"filename", "contentType", "size", "key", "public"}
+			prop.Required = []string{"filename", "contentType", "size", "key"}
 		}
 	}
 

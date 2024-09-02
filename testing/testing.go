@@ -26,6 +26,7 @@ import (
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/storage"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel"
@@ -180,10 +181,16 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			ctx, span := tracer.Start(r.Context(), strings.Trim(r.URL.Path, "/"))
 			defer span.End()
 
+			storer, err := storage.NewDbStore(context.Background(), database)
+			if err != nil {
+				panic(err)
+			}
+
 			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 			ctx = db.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
 			ctx = runtimectx.WithOAuthConfig(ctx, &builder.Config.Auth)
+			ctx = runtimectx.WithStorage(ctx, storer)
 
 			span.SetAttributes(attribute.String("request.url", r.URL.String()))
 
