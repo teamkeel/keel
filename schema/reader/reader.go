@@ -27,21 +27,30 @@ func FromDir(dirName string) (*Inputs, error) {
 		Directory:   dirName,
 		SchemaFiles: []*SchemaFile{},
 	}
-	globPattern := filepath.Join(dirName, "*.keel")
-	schemaFileNames, err := filepath.Glob(globPattern)
-	if err != nil {
-		return nil, err
+
+	// Search current directory and schemas subfolder if exists
+	patterns := []string{
+		filepath.Join(dirName, "*.keel"),
+		filepath.Join(dirName, "schemas", "*.keel"),
 	}
-	for _, fName := range schemaFileNames {
-		fileBytes, err := os.ReadFile(fName)
+
+	for _, pattern := range patterns {
+		schemaFileNames, err := filepath.Glob(pattern)
 		if err != nil {
 			return nil, err
 		}
-		inputs.SchemaFiles = append(inputs.SchemaFiles, &SchemaFile{
-			FileName: fName,
-			Contents: string(fileBytes),
-		})
+		for _, fName := range schemaFileNames {
+			fileBytes, err := os.ReadFile(fName)
+			if err != nil {
+				return nil, err
+			}
+			inputs.SchemaFiles = append(inputs.SchemaFiles, &SchemaFile{
+				FileName: fName,
+				Contents: string(fileBytes),
+			})
+		}
 	}
+
 	return inputs, nil
 }
 
