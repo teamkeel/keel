@@ -49,7 +49,7 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 				}
 
 				// ... and then change the input with the file data that should be saved in the db
-				fileInfo, err := fi.ToJSON()
+				fileInfo, err := fi.ToDbRecord()
 				if err != nil {
 					return inputs, err
 				}

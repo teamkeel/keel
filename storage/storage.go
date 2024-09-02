@@ -26,6 +26,7 @@ type Storer interface {
 	HydrateFileInfo(fi *FileResponse) (FileResponse, error)
 }
 
+// FileResponse is what is returned from our APIs
 type FileResponse struct {
 	Key         string  `json:"key"`
 	Filename    string  `json:"filename"`
@@ -34,8 +35,31 @@ type FileResponse struct {
 	URL         *string `json:"url,omitempty"`
 }
 
+// FileDbRecord is what is stored in the database
+type FileDbRecord struct {
+	Key         string `json:"key"`
+	Filename    string `json:"filename"`
+	ContentType string `json:"contentType"`
+	Size        int    `json:"size"`
+}
+
 func (fi *FileResponse) ToJSON() (string, error) {
 	json, err := json.Marshal(fi)
+	if err != nil {
+		return "", fmt.Errorf("marshalling to json: %w", err)
+	}
+	return string(json), nil
+}
+
+func (fi *FileResponse) ToDbRecord() (string, error) {
+	dbRec := &FileDbRecord{
+		Key:         fi.Key,
+		Filename:    fi.Filename,
+		ContentType: fi.ContentType,
+		Size:        fi.Size,
+	}
+
+	json, err := json.Marshal(dbRec)
 	if err != nil {
 		return "", fmt.Errorf("marshalling to json: %w", err)
 	}
