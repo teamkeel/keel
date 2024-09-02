@@ -205,35 +205,35 @@ async function storeFile(contents, key, filename, contentType, expires) {
       console.error("Error uploading file:", error);
       throw error;
     }
-  }
+  } else {
+    // default to db storage
+    const db = useDatabase();
 
-  // default to db storage
-  const db = useDatabase();
+    try {
+      let query = db
+        .insertInto("keel_storage")
+        .values({
+          id: key,
+          filename: filename,
+          content_type: contentType,
+          data: contents,
+        })
+        .onConflict((oc) =>
+          oc
+            .column("id")
+            .doUpdateSet(() => ({
+              filename: filename,
+              content_type: contentType,
+              data: contents,
+            }))
+            .where("keel_storage.id", "=", key)
+        )
+        .returningAll();
 
-  try {
-    let query = db
-      .insertInto("keel_storage")
-      .values({
-        id: key,
-        filename: filename,
-        content_type: contentType,
-        data: contents,
-      })
-      .onConflict((oc) =>
-        oc
-          .column("id")
-          .doUpdateSet(() => ({
-            filename: filename,
-            content_type: contentType,
-            data: contents,
-          }))
-          .where("keel_storage.id", "=", key)
-      )
-      .returningAll();
-
-    await query.execute();
-  } catch (e) {
-    throw new DatabaseError(e);
+      await query.execute();
+    } catch (e) {
+      throw new DatabaseError(e);
+    }
   }
 }
 
