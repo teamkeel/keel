@@ -116,20 +116,28 @@ export class Executor {
 
 async function parseInputs(inputs) {
   if (inputs != null && typeof inputs === "object") {
-    for (const i of Object.keys(inputs)) {
-      if (inputs[i] !== null && typeof inputs[i] === "object") {
-        if (inputs[i] instanceof InlineFile || inputs[i] instanceof File) {
-          const contents = await inputs[i].read();
-          inputs[i] = `data:${inputs[i].contentType};name=${
-            inputs[i].filename
+    for (const keys of Object.keys(inputs)) {
+      if (inputs[keys] !== null && typeof inputs[keys] === "object") {
+        if (isInlineFileOrFile(inputs[keys])) {
+          const contents = await inputs[keys].read();
+          inputs[keys] = `data:${inputs[keys].contentType};name=${
+            inputs[keys].filename
           };base64,${contents.toString("base64")}`;
         } else {
-          inputs[i] = await parseInputs(inputs[i]);
+          inputs[keys] = await parseInputs(inputs[keys]);
         }
       }
     }
   }
   return inputs;
+}
+
+function isInlineFileOrFile(obj) {
+  return (
+    obj &&
+    typeof obj === "object" &&
+    (obj.constructor.name === "InlineFile" || obj.constructor.name === "File")
+  );
 }
 
 function parseOutputs(data) {
