@@ -202,7 +202,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 	// Add any new models
 	for _, modelName := range modelNames {
-		model := proto.FindModel(schema.Models, modelName)
+		model := schema.FindModel(modelName)
 		_, exists := lo.Find(columns, func(c *ColumnRow) bool {
 			return c.TableName == casing.ToSnake(model.Name)
 		})
@@ -237,7 +237,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 		modelName := casing.ToCamel(column.TableName)
 
-		m := proto.FindModel(schema.Models, modelName)
+		m := schema.FindModel(modelName)
 		if m == nil {
 			tablesDeleted[column.TableName] = true
 			statements = append(statements, dropTableStmt(modelName))

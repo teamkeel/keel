@@ -6,6 +6,7 @@ import (
 
 	"github.com/fatih/camelcase"
 	"github.com/iancoleman/strcase"
+	"github.com/jinzhu/inflection"
 	"github.com/samber/lo"
 )
 
@@ -23,6 +24,18 @@ func ToSnake(str string) string {
 
 func ToScreamingSnake(str string) string {
 	return strcase.ToScreamingSnake(str)
+}
+
+// ToSentenceCase will return a given string as "Sentence case"; splitting all components into words and capitalising
+// just the first char. e.g. `listOrder` becomes "List order"
+func ToSentenceCase(str string) string {
+	s := strings.ReplaceAll(strcase.ToSnake(str), "_", " ")
+	return capitalizeWord(s)
+}
+
+// To Plural will return the plural word for the given singular word
+func ToPlural(word string) string {
+	return inflection.Plural(word)
 }
 
 func toCamelCase(input string, lowerCamel bool) string {

@@ -31,9 +31,25 @@ func (f *MessageField) IsFile() bool {
 	return f.Type.Type == Type_TYPE_FILE
 }
 
+// IsMessage checks if the field is a message itself
+func (f *MessageField) IsMessage() bool {
+	return f.Type.Type == Type_TYPE_MESSAGE
+}
+
 func (m *Message) FindField(fieldName string) *MessageField {
 	for _, field := range m.Fields {
 		if field.Name == fieldName {
+			return field
+		}
+	}
+
+	return nil
+}
+
+// GetOrderByField returns the orderBy message field, if it has any; otherwise returns nil;
+func (m *Message) GetOrderByField() *MessageField {
+	for _, field := range m.Fields {
+		if field.Name == "orderBy" && field.Type.Type == Type_TYPE_UNION {
 			return field
 		}
 	}

@@ -102,13 +102,13 @@ func ValidateResponse(ctx context.Context, schema *proto.Schema, action *proto.A
 }
 
 func JSONSchemaForActionInput(ctx context.Context, schema *proto.Schema, action *proto.Action) JSONSchema {
-	inputMessage := proto.FindMessage(schema.Messages, action.InputMessageName)
+	inputMessage := schema.FindMessage(action.InputMessageName)
 	return JSONSchemaForMessage(ctx, schema, action, inputMessage, true)
 }
 
 func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, action *proto.Action) JSONSchema {
 	if action.ResponseMessageName != "" {
-		responseMsg := proto.FindMessage(schema.Messages, action.ResponseMessageName)
+		responseMsg := schema.FindMessage(action.ResponseMessageName)
 
 		return JSONSchemaForMessage(ctx, schema, action, responseMsg, false)
 	}
@@ -118,7 +118,7 @@ func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, acti
 	case proto.ActionType_ACTION_TYPE_CREATE, proto.ActionType_ACTION_TYPE_GET, proto.ActionType_ACTION_TYPE_UPDATE:
 		// these action types return the serialized model
 
-		model := proto.FindModel(schema.Models, action.ModelName)
+		model := schema.FindModel(action.ModelName)
 
 		if len(action.GetResponseEmbeds()) > 0 {
 			return objectSchemaForModel(ctx, schema, model, false, action.GetResponseEmbeds())
@@ -128,7 +128,7 @@ func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, acti
 	case proto.ActionType_ACTION_TYPE_LIST:
 		// array of models
 
-		model := proto.FindModel(schema.Models, action.ModelName)
+		model := schema.FindModel(action.ModelName)
 
 		modelSchema := JSONSchema{}
 		if len(action.GetResponseEmbeds()) > 0 {
@@ -419,7 +419,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		prop.AnyOf = anyOf
 	case proto.Type_TYPE_MESSAGE:
 		// Add the nested message to schema components.
-		message := proto.FindMessage(schema.Messages, t.MessageName.Value)
+		message := schema.FindMessage(t.MessageName.Value)
 		component := JSONSchemaForMessage(ctx, schema, action, message, isInput)
 
 		// If that nested message component has ref fields itself, then its components must be bundled.
@@ -450,7 +450,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		oneOf := []JSONSchema{}
 		for _, m := range t.UnionNames {
 			// Add the nested message to schema components.
-			message := proto.FindMessage(schema.Messages, m.Value)
+			message := schema.FindMessage(m.Value)
 			component := JSONSchemaForMessage(ctx, schema, action, message, isInput)
 
 			// Components of oneOf properties should only have one field per property and we should set a title.
@@ -497,7 +497,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		prop.Type = "number"
 		prop.Format = "float"
 	case proto.Type_TYPE_MODEL:
-		model := proto.FindModel(schema.Models, t.ModelName.Value)
+		model := schema.FindModel(t.ModelName.Value)
 
 		modelSchema := JSONSchema{}
 		if len(embeddings) > 0 {
