@@ -177,7 +177,7 @@ func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetad
 		Status:  meta.Status,
 	}
 
-	message := proto.FindMessage(scope.Schema.Messages, scope.Action.ResponseMessageName)
+	message := scope.Schema.FindMessage(scope.Action.ResponseMessageName)
 
 	if asMap, ok := resp.(map[string]any); ok {
 		resp, err = transformFileResponsesForFunctions(scope.Context, message, asMap)
