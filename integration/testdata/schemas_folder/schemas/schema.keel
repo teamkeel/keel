@@ -1,0 +1,38 @@
+model Post {
+    fields {
+        title Text
+        rating Number?
+        category Category?
+        subTitle Text @unique
+        content Markdown?
+    }
+
+    actions {
+        create createPost() with (title, subTitle, content?)
+        get getPost(id)
+        update updatePost(id) with (title, content?)
+        delete deletePost(id)
+        delete deletePostBySubTitle(subTitle)
+        list listPosts(id?, title?, category?, rating?)
+        update updateWithExplicitSet(id) with (coolTitle: Text) {
+            @set(post.title = coolTitle)
+        }
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
+}
+
+enum Category {
+    Technical
+    Food
+    Lifestyle
+}
+
+api Web {
+    models {
+        Post
+    }
+}
