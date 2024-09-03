@@ -65,7 +65,7 @@ export interface PersonTable {
 }
 `
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		m := proto.FindModel(s.Models, "Person")
+		m := s.FindModel("Person")
 		writeTableInterface(w, m)
 	})
 }
@@ -88,7 +88,7 @@ export interface Account {
 }
 `
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		m := proto.FindModel(s.Models, "Account")
+		m := s.FindModel("Account")
 		writeModelInterface(w, m, false)
 	})
 }
@@ -113,7 +113,7 @@ export interface Person {
 }
 `
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		m := proto.FindModel(s.Models, "Person")
+		m := s.FindModel("Person")
 		writeModelInterface(w, m, false)
 	})
 }
@@ -137,7 +137,7 @@ export type PersonCreateValues = {
 	updatedAt?: Date
 }`
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		m := proto.FindModel(s.Models, "Person")
+		m := s.FindModel("Person")
 		writeCreateValuesType(w, s, m)
 	})
 }
@@ -163,7 +163,7 @@ export type PostCreateValues = {
 	| {authorId: string, author?: undefined}
 )`
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		m := proto.FindModel(s.Models, "Post")
+		m := s.FindModel("Post")
 		writeCreateValuesType(w, s, m)
 	})
 }
@@ -186,7 +186,7 @@ export interface PersonWhereConditions {
 	updatedAt?: Date | runtime.DateWhereCondition;
 }`
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		m := proto.FindModel(s.Models, "Person")
+		m := s.FindModel("Person")
 		writeWhereConditionsInterface(w, m)
 	})
 }
@@ -225,12 +225,12 @@ export type AuthorUniqueConditions =
 	`
 
 	runWriterTest(t, schema, expectedBookType, func(s *proto.Schema, w *codegen.Writer) {
-		m := proto.FindModel(s.Models, "Book")
+		m := s.FindModel("Book")
 		writeUniqueConditionsInterface(w, m)
 	})
 
 	runWriterTest(t, schema, expectedAuthorType, func(s *proto.Schema, w *codegen.Writer) {
-		m := proto.FindModel(s.Models, "Author")
+		m := s.FindModel("Author")
 		writeUniqueConditionsInterface(w, m)
 	})
 }
@@ -300,7 +300,7 @@ export type PersonAPI = {
 }`, "```", "`")
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		m := proto.FindModel(s.Models, "Person")
+		m := s.FindModel("Person")
 		writeModelAPIDeclaration(w, m)
 	})
 }
@@ -328,7 +328,7 @@ export interface PersonFindManyParams {
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		m := proto.FindModel(s.Models, "Person")
+		m := s.FindModel("Person")
 		writeFindManyParamsInterface(w, m)
 	})
 }
@@ -1434,7 +1434,7 @@ model Person {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeEmbeddedModelInterface(w, s, proto.FindModel(s.Models, "Person"), "GetPersonResponse", []string{"city.country", "birthplace"})
+		writeEmbeddedModelInterface(w, s, s.FindModel("Person"), "GetPersonResponse", []string{"city.country", "birthplace"})
 	})
 }
 

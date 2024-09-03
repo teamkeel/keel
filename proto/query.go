@@ -165,6 +165,8 @@ func ModelExists(models []*Model, name string) bool {
 }
 
 // FindModel locates the model of the given name.
+//
+// Deprecated: use Schema.FindModel() instead
 func FindModel(models []*Model, name string) *Model {
 	model, _ := lo.Find(models, func(m *Model) bool {
 		return m.Name == name
@@ -295,6 +297,8 @@ func FindRole(roleName string, schema *Schema) *Role {
 }
 
 // FindJob locates the job of the given name.
+//
+// Deprecated: please use Schema.FindJob() instead
 func FindJob(jobs []*Job, name string) *Job {
 	job, _ := lo.Find(jobs, func(m *Job) bool {
 		return m.Name == name
@@ -392,6 +396,8 @@ func PermissionsWithExpression(permissions []*PermissionRule) []*PermissionRule 
 // e.g
 // FindMessage("MyMessage") will return this node:
 // message MyMessage {}
+//
+// Deprecated: Please use Schema.FindMessage instead
 func FindMessage(messages []*Message, messageName string) *Message {
 	message, _ := lo.Find(messages, func(m *Message) bool {
 		return m.Name == messageName
@@ -414,7 +420,7 @@ func FindMessageField(message *Message, fieldName string) *MessageField {
 // root message for some action types, or returns nil if not found.
 func FindValuesInputMessage(schema *Schema, actionName string) *Message {
 	action := schema.FindAction(actionName)
-	message := FindMessage(schema.Messages, action.InputMessageName)
+	message := schema.FindMessage(action.InputMessageName)
 
 	switch action.Type {
 	case ActionType_ACTION_TYPE_CREATE:
@@ -422,7 +428,7 @@ func FindValuesInputMessage(schema *Schema, actionName string) *Message {
 	case ActionType_ACTION_TYPE_UPDATE:
 		for _, v := range message.Fields {
 			if v.Name == "values" && v.Type.Type == Type_TYPE_MESSAGE {
-				return FindMessage(schema.Messages, v.Type.MessageName.Value)
+				return schema.FindMessage(v.Type.MessageName.Value)
 			}
 		}
 	}
@@ -433,7 +439,7 @@ func FindValuesInputMessage(schema *Schema, actionName string) *Message {
 // root message for some action types, or returns nil if not found.
 func FindWhereInputMessage(schema *Schema, actionName string) *Message {
 	action := schema.FindAction(actionName)
-	message := FindMessage(schema.Messages, action.InputMessageName)
+	message := schema.FindMessage(action.InputMessageName)
 
 	switch action.Type {
 	case ActionType_ACTION_TYPE_GET,
@@ -443,7 +449,7 @@ func FindWhereInputMessage(schema *Schema, actionName string) *Message {
 		ActionType_ACTION_TYPE_UPDATE:
 		for _, v := range message.Fields {
 			if v.Name == "where" && v.Type.Type == Type_TYPE_MESSAGE {
-				return FindMessage(schema.Messages, v.Type.MessageName.Value)
+				return schema.FindMessage(v.Type.MessageName.Value)
 			}
 		}
 	}

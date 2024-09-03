@@ -98,7 +98,7 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 		return err
 	}
 
-	identityModel := proto.FindModel(scope.Schema.Models, parser.IdentityModelName)
+	identityModel := scope.Schema.FindModel(parser.IdentityModelName)
 
 	query := NewQuery(identityModel)
 	err = query.Where(IdField(), Equals, Value(identityId))

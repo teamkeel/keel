@@ -17,8 +17,29 @@ func (p *Schema) HasFiles() bool {
 	return false
 }
 
-// ModelNames provides a (sorted) list of all the Model names used in the
-// given schema.
+// FindModel finds within the schema the model that has the given name. Returns nil if model not found.
+func (s *Schema) FindModel(modelName string) *Model {
+	for _, m := range s.GetModels() {
+		if m.GetName() == modelName {
+			return m
+		}
+	}
+
+	return nil
+}
+
+// FindMessage finds within the schema the message that has the given name. Returns nil if message not found.
+func (s *Schema) FindMessage(messageName string) *Message {
+	for _, m := range s.GetMessages() {
+		if m.GetName() == messageName {
+			return m
+		}
+	}
+
+	return nil
+}
+
+// ModelNames provides a (sorted) list of all the Model names used in the given schema.
 func (s *Schema) ModelNames() []string {
 	names := lo.Map(s.Models, func(x *Model, _ int) string {
 		return x.Name
@@ -50,6 +71,7 @@ func (s *Schema) FilterActions(filter func(op *Action) bool) (ops []*Action) {
 	return ops
 }
 
+// FindAction finds the action with the given name. Returns nil if action is not found.
 func (s *Schema) FindAction(actionName string) *Action {
 	actions := s.FilterActions(func(op *Action) bool {
 		return op.Name == actionName
@@ -60,10 +82,35 @@ func (s *Schema) FindAction(actionName string) *Action {
 	return actions[0]
 }
 
+// FindJob locates the job of the given name.
+func (s *Schema) FindJob(name string) *Job {
+	job, _ := lo.Find(s.Jobs, func(m *Job) bool {
+		return m.Name == name
+	})
+	return job
+}
+
 // FindEventSubscribers locates the subscribers for the given event.
 func (s *Schema) FindEventSubscribers(event *Event) []*Subscriber {
 	subscribers := lo.Filter(s.Subscribers, func(m *Subscriber, _ int) bool {
 		return lo.Contains(m.EventNames, event.Name)
 	})
 	return subscribers
+}
+
+// FindApiName finds the api name for the given model and action name.
+func (s *Schema) FindApiName(modelName, actionName string) string {
+	for _, api := range s.Apis {
+		for _, apiModel := range api.ApiModels {
+			if apiModel.ModelName == modelName {
+				for _, action := range apiModel.ModelActions {
+					if action.ActionName == actionName {
+						return api.Name
+					}
+				}
+			}
+		}
+	}
+
+	return ""
 }

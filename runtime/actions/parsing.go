@@ -15,7 +15,7 @@ import (
 // This is necessary because we need the correct types when generating to SQL and because the JSON and RPC APIs
 // don't type correctly when parsing the input JSON (for example, "Number" values become floats).
 func TransformInputTypes(schema *proto.Schema, action *proto.Action, input map[string]any) (map[string]any, error) {
-	message := proto.FindMessage(schema.Messages, action.InputMessageName)
+	message := schema.FindMessage(action.InputMessageName)
 
 	input, err := transform(schema, message, input)
 	if err != nil {
@@ -32,7 +32,7 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 		if v, has := input[f.Name]; has {
 			switch f.Type.Type {
 			case proto.Type_TYPE_MESSAGE:
-				nested := proto.FindMessage(schema.Messages, f.Type.MessageName.Value)
+				nested := schema.FindMessage(f.Type.MessageName.Value)
 
 				if f.Type.Repeated {
 					arr := v.([]any)
@@ -182,7 +182,7 @@ var toDate = func(value any) (types.Date, error) {
 // e.g. for File inputs, which are given as a dataURL string, they need to be transformed into an object
 // including the typename
 func TransformCustomFunctionsInputTypes(schema *proto.Schema, messageName string, input map[string]any) (map[string]any, error) {
-	message := proto.FindMessage(schema.Messages, messageName)
+	message := schema.FindMessage(messageName)
 	if message == nil {
 		return input, nil
 	}

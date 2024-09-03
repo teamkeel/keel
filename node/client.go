@@ -154,7 +154,7 @@ func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 func writeClientActions(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	for _, a := range proto.GetActionNamesForApi(schema, api) {
 		action := schema.FindAction(a)
-		msg := proto.FindMessage(schema.Messages, action.InputMessageName)
+		msg := schema.FindMessage(action.InputMessageName)
 
 		w.Writef("%s: (i", action.Name)
 
@@ -181,7 +181,7 @@ func writeClientActions(w *codegen.Writer, schema *proto.Schema, api *proto.Api)
 
 		w.Indent()
 
-		model := proto.FindModel(schema.Models, action.ModelName)
+		model := schema.FindModel(action.ModelName)
 		w.Writef(`return this.client.rawRequest<%s>("%s", i)`, toClientActionReturnType(model, action), action.Name)
 
 		w.Writeln(";")
@@ -246,7 +246,7 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 		if len(embeds) == 0 {
 			continue
 		}
-		model := proto.FindModel(schema.Models, action.ModelName)
+		model := schema.FindModel(action.ModelName)
 		writeEmbeddedModelInterface(w, schema, model, toResponseType(action.Name), embeds)
 	}
 

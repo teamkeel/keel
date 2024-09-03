@@ -31,3 +31,7 @@ func (f *Field) IsHasOne() bool {
 func (f *Field) IsBelongsTo() bool {
 	return f.Type.Type == Type_TYPE_MODEL && f.ForeignKeyFieldName != nil && !f.Type.Repeated
 }
+
+func (f *Field) IsForeignKey() bool {
+	return f.ForeignKeyInfo != nil
+}
