@@ -195,7 +195,11 @@ async function storeFile(contents, key, filename, contentType, expires) {
     };
 
     if (expires) {
-      params.Expires = expires;
+      if (expires instanceof Date) {
+        params.Expires = expires;
+      } else {
+        console.warn("Invalid expires value. Skipping Expires parameter.");
+      }
     }
 
     const command = new PutObjectCommand(params);
@@ -206,7 +210,6 @@ async function storeFile(contents, key, filename, contentType, expires) {
       throw error;
     }
   } else {
-    // default to db storage
     const db = useDatabase();
 
     try {
