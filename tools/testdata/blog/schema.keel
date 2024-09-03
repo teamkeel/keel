@@ -29,7 +29,7 @@ model Post {
         content Markdown
         published Boolean @default(false)
         author Identity?
-        image InlineFile?
+        image File?
         tags Text[]?
         category Category?
         comments Comment[]

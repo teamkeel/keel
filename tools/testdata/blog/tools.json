@@ -12,7 +12,7 @@
                     "fieldLocation": {
                         "path": "$.image"
                     },
-                    "fieldType": "TYPE_INLINE_FILE",
+                    "fieldType": "TYPE_FILE",
                     "displayName": "Image",
                     "visible": true
                 }
@@ -65,7 +65,7 @@
                     "fieldLocation": {
                         "path": "$.image"
                     },
-                    "fieldType": "TYPE_INLINE_FILE",
+                    "fieldType": "TYPE_FILE",
                     "displayName": "Image",
                     "visible": true
                 },
@@ -129,7 +129,7 @@
                     "fieldLocation": {
                         "path": "$.image"
                     },
-                    "fieldType": "TYPE_INLINE_FILE",
+                    "fieldType": "TYPE_FILE",
                     "displayName": "Image",
                     "visible": true,
                     "imagePreview": true
@@ -346,7 +346,7 @@
                     "fieldLocation": {
                         "path": "$.image"
                     },
-                    "fieldType": "TYPE_INLINE_FILE",
+                    "fieldType": "TYPE_FILE",
                     "displayName": "Image",
                     "visible": true,
                     "imagePreview": true
@@ -571,7 +571,7 @@
                     "fieldLocation": {
                         "path": "$.image"
                     },
-                    "fieldType": "TYPE_INLINE_FILE",
+                    "fieldType": "TYPE_FILE",
                     "displayName": "Image",
                     "visible": true,
                     "imagePreview": true
@@ -1157,7 +1157,7 @@
                     "fieldLocation": {
                         "path": "$.results[*].image"
                     },
-                    "fieldType": "TYPE_INLINE_FILE",
+                    "fieldType": "TYPE_FILE",
                     "displayName": "Image",
                     "visible": true,
                     "imagePreview": true
@@ -1445,7 +1445,7 @@
                     "fieldLocation": {
                         "path": "$.results[*].author.image"
                     },
-                    "fieldType": "TYPE_INLINE_FILE",
+                    "fieldType": "TYPE_FILE",
                     "displayName": "Image",
                     "visible": true,
                     "imagePreview": true
@@ -1513,7 +1513,7 @@
                     "fieldLocation": {
                         "path": "$.results[*].image"
                     },
-                    "fieldType": "TYPE_INLINE_FILE",
+                    "fieldType": "TYPE_FILE",
                     "displayName": "Image",
                     "visible": true,
                     "imagePreview": true
@@ -1562,7 +1562,7 @@
                     "fieldLocation": {
                         "path": "$.results[*].category.image"
                     },
-                    "fieldType": "TYPE_INLINE_FILE",
+                    "fieldType": "TYPE_FILE",
                     "displayName": "Image",
                     "visible": true,
                     "imagePreview": true
@@ -1880,7 +1880,7 @@
                     "fieldLocation": {
                         "path": "$.values.image"
                     },
-                    "fieldType": "TYPE_INLINE_FILE",
+                    "fieldType": "TYPE_FILE",
                     "displayName": "Image",
                     "visible": true
                 },
@@ -1944,7 +1944,7 @@
                     "fieldLocation": {
                         "path": "$.image"
                     },
-                    "fieldType": "TYPE_INLINE_FILE",
+                    "fieldType": "TYPE_FILE",
                     "displayName": "Image",
                     "visible": true,
                     "imagePreview": true
