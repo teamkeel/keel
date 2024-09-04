@@ -165,7 +165,7 @@ class File extends InlineFile {
         region: process.env.KEEL_REGION,
       });
 
-      const command = new PutObjectCommand({
+      const command = new GetObjectCommand({
         Bucket: process.env.KEEL_FILES_BUCKET_NAME,
         Key: "files/" + this.key(),
       });
