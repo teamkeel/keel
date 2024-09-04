@@ -100,7 +100,6 @@ test("files - update action with file input", async () => {
   expect(contents).toEqual("hello again");
 });
 
-
 test("files - update action with file input and empty hooks", async () => {
   const fileContents = "hello";
   const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(

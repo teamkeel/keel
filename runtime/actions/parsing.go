@@ -190,36 +190,3 @@ var toInlineFileForFunctions = func(value any) (map[string]any, error) {
 		return nil, fmt.Errorf("incompatible type %T parsing to inline file for functions", t)
 	}
 }
-
-// TransformCustomFunctionsInputTypes will, similarly to TransformInputTypes traverse through the input data structure
-// and will decorate complex input fields with typenames to be used by the JS environment
-//
-// e.g. for File inputs, which are given as a dataURL string, they need to be transformed into an object
-// including the typename
-// func TransformCustomFunctionsInputTypes(schema *proto.Schema, messageName string, input map[string]any) (map[string]any, error) {
-// 	message := schema.FindMessage(messageName)
-// 	if message == nil {
-// 		return input, nil
-// 	}
-
-// 	// for now the only complex input field is InlineFile
-// 	if message.HasFiles() {
-// 		for _, f := range message.FileFields() {
-// 			if input[f.GetName()] != nil {
-// 				inlineFile := input[f.GetName()]
-
-// 				// check if the input is already decorated
-// 				if data, decorated := inlineFile.(map[string]any); decorated && data["__typename"] == parser.FieldTypeFile {
-// 					continue
-// 				}
-// 				// decorate the input
-// 				input[f.GetName()] = map[string]any{
-// 					"__typename": "InlineFile",
-// 					"dataURL":    inlineFile,
-// 				}
-// 			}
-// 		}
-// 	}
-
-// 	return input, nil
-// }

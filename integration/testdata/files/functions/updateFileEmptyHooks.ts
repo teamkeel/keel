@@ -1,5 +1,3 @@
-import {
-  UpdateFileEmptyHooks,
-} from "@teamkeel/sdk";
+import { UpdateFileEmptyHooks } from "@teamkeel/sdk";
 
 export default UpdateFileEmptyHooks({});

@@ -42,3 +42,15 @@ func (m *Message) GetOrderByField() *MessageField {
 
 	return nil
 }
+
+func messageHasFiles(s *Schema, f *Message) bool {
+	for _, field := range f.Fields {
+		if field.Type.MessageName != nil {
+			message := s.FindMessage(field.Type.MessageName.Value)
+			return messageHasFiles(s, message)
+		} else if field.IsFile() {
+			return true
+		}
+	}
+	return false
+}
