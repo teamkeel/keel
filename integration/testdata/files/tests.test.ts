@@ -424,3 +424,16 @@ test("files - model API file tests", async () => {
 test("files - kysely file tests", async () => {
   await expect(actions.kyselyTests({})).not.toHaveError({});
 });
+
+test("files - presigned url", async () => {
+  const fileContents = "hello";
+  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+    fileContents
+  ).toString("base64")}`;
+
+  const result = await actions.presignedUrl({
+    file: InlineFile.fromDataURL(dataUrl),
+  });
+
+  expect(result).toEqual(dataUrl);
+});

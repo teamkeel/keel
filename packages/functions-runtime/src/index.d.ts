@@ -176,6 +176,9 @@ export declare class File extends InlineFile {
   get key(): string;
   // Gets size of the file's contents in bytes
   get isPublic(): boolean;
+  // Generates a presigned download URL
+  getPresignedUrl(): Promise<URL>;
+  // Creates a new instance from the database record
   static fromDbRecord(input: FileDbRecord): File;
   // Persists the file
   toDbRecord(): FileDbRecord;

@@ -24,6 +24,7 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 	if message == nil {
 		return inputs, nil
 	}
+
 	storer, err := runtimectx.GetStorage(scope.Context)
 	if err != nil {
 		return inputs, fmt.Errorf("invalid file storage: %w", err)

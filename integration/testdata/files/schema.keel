@@ -21,10 +21,13 @@ model MyFile {
         write writeMany(FileMessage) returns (FileMessage) {
             @permission(expression: true)
         }
-        write modelApiTests(Any) returns (Any){
+        write modelApiTests(Any) returns (Any) {
             @permission(expression: true)
         }
-        write kyselyTests(Any) returns (Any){
+        write kyselyTests(Any) returns (Any) {
+            @permission(expression: true)
+        }
+        read presignedUrl(file: File) returns (Any) {
             @permission(expression: true)
         }
     }

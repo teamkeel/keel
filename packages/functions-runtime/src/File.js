@@ -4,6 +4,7 @@ const {
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
 const { fromEnv } = require("@aws-sdk/credential-providers");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { createDatabaseClient } = require("./database");
 const { DatabaseError } = require("./errors");
 const KSUID = require("ksuid");
@@ -155,6 +156,28 @@ class File extends InlineFile {
       );
     }
     return this;
+  }
+
+  async getPresignedUrl() {
+    if (isS3Storage()) {
+      const s3Client = new S3Client({
+        credentials: fromEnv(),
+        region: process.env.KEEL_REGION,
+      });
+
+      const command = new PutObjectCommand({
+        Bucket: process.env.KEEL_FILES_BUCKET_NAME,
+        Key: "files/" + this.key(),
+      });
+
+      return new URL(getSignedUrl(s3Client, command, { expiresIn: 60 * 24 }));
+    } else {
+      const contents = await this.read();
+      const dataurl = `data:${this.contentType};name=${
+        this.filename
+      };base64,${contents.toString("base64")}`;
+      return new URL(dataurl);
+    }
   }
 
   toDbRecord() {
