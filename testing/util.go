@@ -59,7 +59,7 @@ func MakeContext(t *testing.T, ctx context.Context, keelSchema string, resetData
 	require.NoError(t, err)
 	ctx = db.WithDatabase(ctx, database)
 
-	storer, err := storage.NewDbStore(context.Background(), database)
+	storer, err := storage.NewDbStore(ctx, database)
 	require.NoError(t, err)
 
 	ctx = runtimectx.WithStorage(ctx, storer)
