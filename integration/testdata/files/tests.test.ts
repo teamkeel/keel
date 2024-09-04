@@ -100,6 +100,58 @@ test("files - update action with file input", async () => {
   expect(contents).toEqual("hello again");
 });
 
+
+test("files - update action with file input and empty hooks", async () => {
+  const fileContents = "hello";
+  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+    fileContents
+  ).toString("base64")}`;
+
+  const result = await actions.createFile({
+    file: InlineFile.fromDataURL(dataUrl),
+  });
+
+  const fileContents2 = "hello again";
+  const dataUrl2 = `data:application/text;name=my-second-file.txt;base64,${Buffer.from(
+    fileContents2
+  ).toString("base64")}`;
+
+  const updated = await actions.updateFileEmptyHooks({
+    where: {
+      id: result.id,
+    },
+    values: {
+      file: InlineFile.fromDataURL(dataUrl2),
+    },
+  });
+
+  expect(updated.file?.contentType).toEqual("application/text");
+  expect(updated.file?.filename).toEqual("my-second-file.txt");
+  expect(updated.file?.size).toEqual(11);
+
+  const contents1 = await updated.file?.read();
+  expect(contents1?.toString("utf-8")).toEqual("hello again");
+
+  const myfiles = await useDatabase()
+    .selectFrom("my_file")
+    .selectAll()
+    .execute();
+
+  const files =
+    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
+      useDatabase()
+    );
+
+  expect(myfiles.length).toEqual(1);
+  expect(files.rows.length).toEqual(2);
+  expect(files.rows[0].id).toEqual(myfiles[0].file?.key);
+  expect(files.rows[0].filename).toEqual(myfiles[0].file?.filename);
+  expect(files.rows[0].contentType).toEqual(myfiles[0].file?.contentType);
+
+  const contents = files.rows[0].data.toString("utf-8");
+  expect(contents).toEqual("hello again");
+});
+
 test("files - get action", async () => {
   const fileContents = "hello";
   const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(

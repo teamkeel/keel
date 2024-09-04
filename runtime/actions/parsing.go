@@ -8,16 +8,13 @@ import (
 	"github.com/relvacode/iso8601"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/types"
-	"github.com/teamkeel/keel/schema/parser"
 )
 
-// TransformInputTypes will traverse through the input data structure and will ensure that values are correctly typed.
+// TransformInputs will traverse through the input data structure and will ensure that values are correctly typed.
 // This is necessary because we need the correct types when generating to SQL and because the JSON and RPC APIs
 // don't type correctly when parsing the input JSON (for example, "Number" values become floats).
-func TransformInputTypes(schema *proto.Schema, action *proto.Action, input map[string]any) (map[string]any, error) {
-	message := schema.FindMessage(action.InputMessageName)
-
-	input, err := transform(schema, message, input)
+func TransformInputs(schema *proto.Schema, message *proto.Message, input map[string]any, isFunction bool) (map[string]any, error) {
+	input, err := transform(schema, message, input, isFunction)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +22,7 @@ func TransformInputTypes(schema *proto.Schema, action *proto.Action, input map[s
 	return input, nil
 }
 
-func transform(schema *proto.Schema, message *proto.Message, input map[string]any) (map[string]any, error) {
+func transform(schema *proto.Schema, message *proto.Message, input map[string]any, forFunctions bool) (map[string]any, error) {
 	var err error
 
 	for _, f := range message.Fields {
@@ -37,7 +34,7 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 				if f.Type.Repeated {
 					arr := v.([]any)
 					for i, el := range arr {
-						arr[i], err = transform(schema, nested, el.(map[string]any))
+						arr[i], err = transform(schema, nested, el.(map[string]any), forFunctions)
 						if err != nil {
 							return nil, err
 						}
@@ -47,7 +44,7 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 					if v == nil {
 						input[f.Name] = nil
 					} else {
-						input[f.Name], err = transform(schema, nested, v.(map[string]any))
+						input[f.Name], err = transform(schema, nested, v.(map[string]any), forFunctions)
 						if err != nil {
 							return nil, err
 						}
@@ -68,6 +65,12 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 				input[f.Name], err = parseItem(v, true, toFloat)
 			case proto.Type_TYPE_UNION, proto.Type_TYPE_ANY, proto.Type_TYPE_MODEL, proto.Type_TYPE_OBJECT:
 				return input, nil
+			case proto.Type_TYPE_FILE:
+				if forFunctions {
+					input[f.Name], err = parseItem(v, f.Type.Repeated, toInlineFileForFunctions)
+				} else {
+					input[f.Name], err = parseItem(v, f.Type.Repeated, toString)
+				}
 			default:
 				input[f.Name], err = parseItem(v, f.Type.Repeated, toString)
 			}
@@ -176,35 +179,47 @@ var toDate = func(value any) (types.Date, error) {
 	}
 }
 
+var toInlineFileForFunctions = func(value any) (map[string]any, error) {
+	switch t := value.(type) {
+	case string:
+		return map[string]any{
+			"__typename": "InlineFile",
+			"dataURL":    t,
+		}, nil
+	default:
+		return nil, fmt.Errorf("incompatible type %T parsing to inline file for functions", t)
+	}
+}
+
 // TransformCustomFunctionsInputTypes will, similarly to TransformInputTypes traverse through the input data structure
 // and will decorate complex input fields with typenames to be used by the JS environment
 //
 // e.g. for File inputs, which are given as a dataURL string, they need to be transformed into an object
 // including the typename
-func TransformCustomFunctionsInputTypes(schema *proto.Schema, messageName string, input map[string]any) (map[string]any, error) {
-	message := schema.FindMessage(messageName)
-	if message == nil {
-		return input, nil
-	}
+// func TransformCustomFunctionsInputTypes(schema *proto.Schema, messageName string, input map[string]any) (map[string]any, error) {
+// 	message := schema.FindMessage(messageName)
+// 	if message == nil {
+// 		return input, nil
+// 	}
 
-	// for now the only complex input field is InlineFile
-	if message.HasFiles() {
-		for _, f := range message.FileFields() {
-			if input[f.GetName()] != nil {
-				inlineFile := input[f.GetName()]
+// 	// for now the only complex input field is InlineFile
+// 	if message.HasFiles() {
+// 		for _, f := range message.FileFields() {
+// 			if input[f.GetName()] != nil {
+// 				inlineFile := input[f.GetName()]
 
-				// check if the input is already decorated
-				if data, decorated := inlineFile.(map[string]any); decorated && data["__typename"] == parser.FieldTypeFile {
-					continue
-				}
-				// decorate the input
-				input[f.GetName()] = map[string]any{
-					"__typename": "InlineFile",
-					"dataURL":    inlineFile,
-				}
-			}
-		}
-	}
+// 				// check if the input is already decorated
+// 				if data, decorated := inlineFile.(map[string]any); decorated && data["__typename"] == parser.FieldTypeFile {
+// 					continue
+// 				}
+// 				// decorate the input
+// 				input[f.GetName()] = map[string]any{
+// 					"__typename": "InlineFile",
+// 					"dataURL":    inlineFile,
+// 				}
+// 			}
+// 		}
+// 	}
 
-	return input, nil
-}
+// 	return input, nil
+// }

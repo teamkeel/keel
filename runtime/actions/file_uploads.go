@@ -21,7 +21,7 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 	}
 	// check if the values input message for the action has any files
 	message := proto.FindValuesInputMessage(scope.Schema, scope.Action.Name)
-	if message == nil || !message.HasFiles() {
+	if message == nil {
 		return inputs, nil
 	}
 	storer, err := runtimectx.GetStorage(scope.Context)
@@ -61,8 +61,8 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 	return inputs, nil
 }
 
-// transformFileResponses will take the results for the given scope's action execution and parse and transform the file responses
-func transformFileResponses(ctx context.Context, model *proto.Model, results map[string]any) (map[string]any, error) {
+// transformModelFileResponses will take the results for the given scope's action execution and parse and transform the file responses
+func transformModelFileResponses(ctx context.Context, model *proto.Model, results map[string]any) (map[string]any, error) {
 	if model == nil {
 		return results, nil
 	}
@@ -96,37 +96,46 @@ func transformFileResponses(ctx context.Context, model *proto.Model, results map
 	return results, nil
 }
 
-// transformFileResponsesForFunctions will take the results from the functions runtime and parse and transform the file responses
-func transformFileResponsesForFunctions(ctx context.Context, message *proto.Message, results map[string]any) (map[string]any, error) {
+// transformMessageFileResponses will take the results from the functions runtime and parse and transform the file responses
+func transformMessageFileResponses(ctx context.Context, schema *proto.Schema, message *proto.Message, results map[string]any) (map[string]any, error) {
 	if message == nil {
 		return results, nil
 	}
 
-	for _, field := range message.FileFields() {
+	for _, field := range message.Fields {
 		if f, found := results[field.Name]; found && f != nil {
-			data, ok := f.(map[string]any)
-			if !ok {
-				return results, fmt.Errorf("invalid response for field: %s", field.Name)
-			}
-
-			fi := storage.FileResponse{
-				Key:         data["key"].(string),
-				Filename:    data["filename"].(string),
-				ContentType: data["contentType"].(string),
-				Size:        int(data["size"].(float64)),
-			}
-
-			// now we're hydrating the db file info with data from our storage service if we have one
-			// e.g. injecting signed URLs for direct file downloads
-			if store, err := runtimectx.GetStorage(ctx); err == nil {
-				hydrated, err := store.HydrateFileInfo(&fi)
+			switch field.Type.Type {
+			case proto.Type_TYPE_MESSAGE:
+				var err error
+				results[field.Name], err = transformMessageFileResponses(ctx, schema, schema.FindMessage(field.Type.MessageName.Value), results[field.Name].(map[string]any))
 				if err != nil {
-					return results, fmt.Errorf("failed retrieve hydrated file data: %w", err)
+					return nil, err
 				}
-				results[field.Name] = hydrated
-			} else {
-				// or, we don't have a storage service so we can just return the data saved in the db
-				results[field.Name] = fi
+			case proto.Type_TYPE_FILE:
+				data, ok := f.(map[string]any)
+				if !ok {
+					return results, fmt.Errorf("invalid response for field: %s", field.Name)
+				}
+
+				fi := storage.FileResponse{
+					Key:         data["key"].(string),
+					Filename:    data["filename"].(string),
+					ContentType: data["contentType"].(string),
+					Size:        int(data["size"].(float64)),
+				}
+
+				// now we're hydrating the db file info with data from our storage service if we have one
+				// e.g. injecting signed URLs for direct file downloads
+				if store, err := runtimectx.GetStorage(ctx); err == nil {
+					hydrated, err := store.HydrateFileInfo(&fi)
+					if err != nil {
+						return results, fmt.Errorf("failed retrieve hydrated file data: %w", err)
+					}
+					results[field.Name] = hydrated
+				} else {
+					// or, we don't have a storage service so we can just return the data saved in the db
+					results[field.Name] = fi
+				}
 			}
 		}
 	}

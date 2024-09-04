@@ -69,7 +69,7 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 
 	// if we have any files in our results we need to transform them to the object structure required
 	if scope.Model.HasFiles() {
-		res, err = transformFileResponses(scope.Context, scope.Model, res)
+		res, err = transformModelFileResponses(scope.Context, scope.Model, res)
 	}
 
 	return res, err

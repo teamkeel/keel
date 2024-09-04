@@ -11,6 +11,7 @@ model MyFile {
         }
         create createFileInHook() @function 
         create createFileAndStoreInHook() @function 
+        update updateFileEmptyHooks(id) with (file) @function 
         get getFileNumerateContents(id) @function
         write storeAndWriteMany(file: File) returns (Any) {
             @permission(expression: true)

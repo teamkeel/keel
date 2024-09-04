@@ -105,9 +105,7 @@ class File extends InlineFile {
   async read() {
     if (this._contents) {
       const arrayBuffer = await this._contents.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      return buffer;
+      return Buffer.from(arrayBuffer);
     }
 
     if (isS3Storage()) {
@@ -122,7 +120,7 @@ class File extends InlineFile {
       };
       const command = new GetObjectCommand(params);
       const response = await s3Client.send(command);
-      const blob = response.Body.transformToByteArray();
+      const blob = await response.Body.transformToByteArray();
       return Buffer.from(blob);
     }
 
