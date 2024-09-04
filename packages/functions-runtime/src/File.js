@@ -170,7 +170,9 @@ class File extends InlineFile {
         Key: "files/" + this.key(),
       });
 
-      return new URL(getSignedUrl(s3Client, command, { expiresIn: 60 * 24 }));
+      const url = await getSignedUrl(s3Client, command, { expiresIn: 60 * 24 });
+
+      return new URL(url);
     } else {
       const contents = await this.read();
       const dataurl = `data:${this.contentType};name=${
