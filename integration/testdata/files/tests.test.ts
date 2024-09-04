@@ -1,6 +1,6 @@
 import { actions, resetDatabase, models } from "@teamkeel/testing";
 import { beforeEach, expect, test } from "vitest";
-import { useDatabase, InlineFile } from "@teamkeel/sdk";
+import { useDatabase, InlineFile, File } from "@teamkeel/sdk";
 import { sql } from "kysely";
 
 interface DbFile {
@@ -100,6 +100,57 @@ test("files - update action with file input", async () => {
   expect(contents).toEqual("hello again");
 });
 
+test("files - update action with file input and empty hooks", async () => {
+  const fileContents = "hello";
+  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+    fileContents
+  ).toString("base64")}`;
+
+  const result = await actions.createFile({
+    file: InlineFile.fromDataURL(dataUrl),
+  });
+
+  const fileContents2 = "hello again";
+  const dataUrl2 = `data:application/text;name=my-second-file.txt;base64,${Buffer.from(
+    fileContents2
+  ).toString("base64")}`;
+
+  const updated = await actions.updateFileEmptyHooks({
+    where: {
+      id: result.id,
+    },
+    values: {
+      file: InlineFile.fromDataURL(dataUrl2),
+    },
+  });
+
+  expect(updated.file?.contentType).toEqual("application/text");
+  expect(updated.file?.filename).toEqual("my-second-file.txt");
+  expect(updated.file?.size).toEqual(11);
+
+  const contents1 = await updated.file?.read();
+  expect(contents1?.toString("utf-8")).toEqual("hello again");
+
+  const myfiles = await useDatabase()
+    .selectFrom("my_file")
+    .selectAll()
+    .execute();
+
+  const files =
+    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
+      useDatabase()
+    );
+
+  expect(myfiles.length).toEqual(1);
+  expect(files.rows.length).toEqual(2);
+  expect(files.rows[0].id).toEqual(myfiles[0].file?.key);
+  expect(files.rows[0].filename).toEqual(myfiles[0].file?.filename);
+  expect(files.rows[0].contentType).toEqual(myfiles[0].file?.contentType);
+
+  const contents = files.rows[0].data.toString("utf-8");
+  expect(contents).toEqual("hello again");
+});
+
 test("files - get action", async () => {
   const fileContents = "hello";
   const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
@@ -128,7 +179,7 @@ test("files - list action", async () => {
     fileContents
   ).toString("base64")}`;
 
-  const created1 = await actions.createFile({
+  await actions.createFile({
     file: InlineFile.fromDataURL(dataUrl),
   });
 
@@ -137,12 +188,69 @@ test("files - list action", async () => {
     fileContents2
   ).toString("base64")}`;
 
-  const created2 = await actions.createFile({
+  await actions.createFile({
     file: InlineFile.fromDataURL(dataUrl2),
   });
 
   const result = await actions.listFiles({});
 
+  expect(result.results[0].file?.contentType).toEqual("application/text");
+  expect(result.results[0].file?.filename).toEqual("my-file.txt");
+  expect(result.results[0].file?.size).toEqual(5);
+
+  const contents1 = await result.results[0].file?.read();
+  expect(contents1?.toString("utf-8")).toEqual("hello");
+
+  expect(result.results[1].file?.contentType).toEqual("application/text");
+  expect(result.results[1].file?.filename).toEqual("my-file.txt");
+  expect(result.results[1].file?.size).toEqual(11);
+
+  const contents2 = await result.results[1].file?.read();
+  expect(contents2?.toString("utf-8")).toEqual("hello again");
+});
+
+test("files - get action empty hooks", async () => {
+  const fileContents = "hello";
+  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+    fileContents
+  ).toString("base64")}`;
+
+  const created = await actions.createFile({
+    file: InlineFile.fromDataURL(dataUrl),
+  });
+
+  const result = await actions.getFileEmptyHooks({
+    id: created.id,
+  });
+
+  expect(result?.file?.contentType).toEqual("application/text");
+  expect(result?.file?.filename).toEqual("my-file.txt");
+  expect(result?.file?.size).toEqual(5);
+
+  const contents1 = await result?.file?.read();
+  expect(contents1?.toString("utf-8")).toEqual("hello");
+});
+
+test("files - list action empty hooks", async () => {
+  const fileContents = "hello";
+  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+    fileContents
+  ).toString("base64")}`;
+
+  await actions.createFile({
+    file: InlineFile.fromDataURL(dataUrl),
+  });
+
+  const fileContents2 = "hello again";
+  const dataUrl2 = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+    fileContents2
+  ).toString("base64")}`;
+
+  await actions.createFile({
+    file: InlineFile.fromDataURL(dataUrl2),
+  });
+
+  const result = await actions.listFilesEmptyHooks({});
   expect(result.results[0].file?.contentType).toEqual("application/text");
   expect(result.results[0].file?.filename).toEqual("my-file.txt");
   expect(result.results[0].file?.size).toEqual(5);
@@ -245,24 +353,33 @@ test("files - write many, store many", async () => {
   ).toString("base64")}`;
 
   const result = await actions.writeMany({
-    file: InlineFile.fromDataURL(dataUrl),
+    msg: { file: InlineFile.fromDataURL(dataUrl) },
   });
 
-  const myfiles = await useDatabase()
-    .selectFrom("my_file")
-    .selectAll()
-    .execute();
+  expect(result.msg.file.contentType).toEqual("application/text");
+  expect(result.msg.file.size).toEqual(5);
+  expect(result.msg.file.filename).toEqual("my-file.txt");
+
+  const contents = await result.msg.file.read();
+  expect(contents.toString("utf-8")).toEqual("hello");
+
+  const myfiles = await models.myFile.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
+  const keys = myfiles.map((a) => a.file!.key);
+  keys.push((result.msg.file as File).key);
 
   const files =
     await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
       useDatabase()
     );
 
+  const fileIds = files.rows.map((a) => a.id);
+
   expect(myfiles.length).toEqual(3);
-  expect(files.rows.length).toEqual(3);
-  expect(myfiles[0].file?.key).toEqual(files.rows[0].id);
-  expect(myfiles[1].file?.key).toEqual(files.rows[1].id);
-  expect(myfiles[2].file?.key).toEqual(files.rows[2].id);
+  expect(files.rows.length).toEqual(4);
+  expect(keys.sort()).toEqual(fileIds.sort());
 });
 
 test("files - store once, write many", async () => {
@@ -274,6 +391,13 @@ test("files - store once, write many", async () => {
   const result = await actions.storeAndWriteMany({
     file: InlineFile.fromDataURL(dataUrl),
   });
+
+  expect(result.msg.file.contentType).toEqual("application/text");
+  expect(result.msg.file.size).toEqual(5);
+  expect(result.msg.file.filename).toEqual("my-file.txt");
+
+  const contents = await result.msg.file.read();
+  expect(contents.toString("utf-8")).toEqual("hello");
 
   const myfiles = await useDatabase()
     .selectFrom("my_file")
@@ -290,6 +414,7 @@ test("files - store once, write many", async () => {
   expect(myfiles[0].file?.key).toEqual(files.rows[0].id);
   expect(myfiles[1].file?.key).toEqual(files.rows[0].id);
   expect(myfiles[2].file?.key).toEqual(files.rows[0].id);
+  expect((result.msg.file as File).key).toEqual(files.rows[0].id);
 });
 
 test("files - model API file tests", async () => {

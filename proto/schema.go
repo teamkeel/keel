@@ -6,10 +6,16 @@ import (
 	"github.com/samber/lo"
 )
 
-// HasFiles checks if the given schema has any models with fields that are files
-func (p *Schema) HasFiles() bool {
-	for _, model := range p.Models {
+// HasFiles checks if the given schema has any models or messages with fields that are files
+func (s *Schema) HasFiles() bool {
+	for _, model := range s.Models {
 		if model.HasFiles() {
+			return true
+		}
+	}
+
+	for _, message := range s.Messages {
+		if messageHasFiles(s, message) {
 			return true
 		}
 	}

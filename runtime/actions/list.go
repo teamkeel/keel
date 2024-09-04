@@ -176,7 +176,7 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	// if we have any files in our results we need to transform them to the object structure required
 	if scope.Model.HasFiles() {
 		for i := range results {
-			results[i], err = transformFileResponses(scope.Context, scope.Model, results[i])
+			results[i], err = transformModelFileResponses(scope.Context, scope.Model, results[i])
 			if err != nil {
 				return nil, fmt.Errorf("transforming file data: %w", err)
 			}

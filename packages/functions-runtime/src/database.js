@@ -70,6 +70,7 @@ function useDatabase() {
 
   // If we've gotten to this point, then we know that we are in a custom function runtime server
   // context and we haven't been able to retrieve the in-context instance of Kysely, which means we should throw an error.
+  console.trace();
   throw new Error("useDatabase must be called within a function");
 }
 

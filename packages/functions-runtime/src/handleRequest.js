@@ -80,6 +80,7 @@ async function handleRequest(request, config) {
             return customFunction(ctx, inputs);
           }
         );
+
         if (result instanceof Error) {
           span.recordException(result);
           span.setStatus({

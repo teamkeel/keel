@@ -116,6 +116,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 			// defined by the user
 			if action.IsArbitraryFunction() {
 				sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(action.Name))
+				sdk.Writeln("")
 			} else {
 				// writes the default implementation of a function. the user can specify hooks which can
 				// override the behaviour of the default implementation

@@ -50,7 +50,7 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	// if we have any files in our results we need to transform them to the object structure required
 	if scope.Model.HasFiles() {
-		res, err = transformFileResponses(scope.Context, scope.Model, res)
+		res, err = transformModelFileResponses(scope.Context, scope.Model, res)
 		if err != nil {
 			return nil, err
 		}
