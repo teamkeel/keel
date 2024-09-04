@@ -209,11 +209,13 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, input map[
 		}
 	}
 
-	message := scope.Schema.FindMessage(job.InputMessageName)
-
-	input, err := actions.TransformInputs(handler.schema, message, input, true)
-	if err != nil {
-		return err
+	var err error
+	if job.InputMessageName != "" {
+		message := scope.Schema.FindMessage(job.InputMessageName)
+		input, err = actions.TransformInputs(handler.schema, message, input, true)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = functions.CallJob(
