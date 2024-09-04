@@ -5,9 +5,9 @@ const { InlineFile, File } = require("./File");
 // inputs that are objects and contain a "__typename" field are resolved to instances of the complex type
 // they represent. At the moment, the only supported type is `InlineFile`
 function parseInputs(inputs) {
-  if (inputs != null && isPlainObject(inputs)) {
+  if (inputs != null && typeof inputs === "object") {
     for (const k of Object.keys(inputs)) {
-      if (inputs[k] !== null && isPlainObject(inputs[k])) {
+      if (inputs[k] !== null && typeof inputs[k] === "object") {
         if ("__typename" in inputs[k]) {
           switch (inputs[k].__typename) {
             case "InlineFile":
@@ -30,9 +30,9 @@ function parseInputs(inputs) {
 //
 // For example, InlineFiles need to be stored before returning the response.
 async function parseOutputs(inputs) {
-  if (inputs != null && isPlainObject(inputs)) {
+  if (inputs != null && typeof inputs === "object") {
     for (const k of Object.keys(inputs)) {
-      if (inputs[k] !== null && isPlainObject(inputs[k])) {
+      if (inputs[k] !== null && typeof inputs[k] === "object") {
         if (inputs[k] instanceof InlineFile) {
           const stored = await inputs[k].store();
           inputs[k] = stored;
