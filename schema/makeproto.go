@@ -1012,11 +1012,21 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				})
 			}
 		}
-	case parser.ActionTypeGet, parser.ActionTypeDelete, parser.ActionTypeRead, parser.ActionTypeWrite:
+	case parser.ActionTypeGet, parser.ActionTypeDelete, parser.ActionTypeRead:
 		// Create message and add it to the proto schema
 		messageName := makeInputMessageName(action.Name.Value)
 		message := scm.makeMessageFromActionInputNodes(messageName, action.Inputs, model)
 		scm.proto.Messages = append(scm.proto.Messages, message)
+	case parser.ActionTypeWrite:
+		// Create message and add it to the proto schema
+		message := &proto.Message{
+			Name:   makeInputMessageName(action.Name.Value),
+			Fields: []*proto.MessageField{},
+		}
+		scm.proto.Messages = append(scm.proto.Messages, message)
+		for _, input := range action.Inputs {
+			scm.makeMessageHierarchyFromImplicitInput(message, input, model, action)
+		}
 	case parser.ActionTypeUpdate:
 		// Create where message and add it to the proto schema
 		whereMessageName := makeWhereMessageName(action.Name.Value)

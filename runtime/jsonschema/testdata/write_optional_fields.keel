@@ -1,0 +1,20 @@
+model People {
+    fields {
+        name Text
+    }
+}
+
+model Groups {
+    fields {
+        people People?
+        name Text
+    }
+
+    actions {
+        write testAction(id, name?, people.id?) returns (UpdateGroupResponse)
+    }
+}
+
+message UpdateGroupResponse {
+    status Text
+}

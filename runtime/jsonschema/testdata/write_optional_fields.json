@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "people": { "$ref": "#/components/schemas/NullableTestActionPeopleInput" }
+  },
+  "additionalProperties": false,
+  "required": ["id"],
+  "components": {
+    "schemas": {
+      "NullableTestActionPeopleInput": {
+        "type": ["object", "null"],
+        "properties": { "id": { "type": "string" } },
+        "additionalProperties": false
+      }
+    }
+  }
+}
