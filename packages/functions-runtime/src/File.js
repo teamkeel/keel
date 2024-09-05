@@ -167,10 +167,10 @@ class File extends InlineFile {
 
       const command = new GetObjectCommand({
         Bucket: process.env.KEEL_FILES_BUCKET_NAME,
-        Key: "files/" + this.key(),
+        Key: "files/" + this.key,
       });
 
-      const url = await getSignedUrl(s3Client, command, { expiresIn: 60 * 24 });
+      const url = await getSignedUrl(s3Client, command, { expiresIn: 60 * 60 });
 
       return new URL(url);
     } else {
@@ -187,7 +187,7 @@ class File extends InlineFile {
       key: this.key,
       filename: this.filename,
       contentType: this.contentType,
-      size: this._size,
+      size: this.size,
     };
   }
 
