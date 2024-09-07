@@ -168,6 +168,9 @@ class File extends InlineFile {
       const command = new GetObjectCommand({
         Bucket: process.env.KEEL_FILES_BUCKET_NAME,
         Key: "files/" + this.key,
+        ResponseContentDisposition: `attachment; filename="${encodeURIComponent(
+          filename
+        )}"`,
       });
 
       const url = await getSignedUrl(s3Client, command, { expiresIn: 60 * 60 });
@@ -213,7 +216,9 @@ async function storeFile(contents, key, filename, contentType, expires) {
       Key: "files/" + key,
       Body: contents,
       ContentType: contentType,
-      ContentDisposition: `attachment; filename="${encodeURIComponent(filename)}"`,
+      ContentDisposition: `attachment; filename="${encodeURIComponent(
+        filename
+      )}"`,
       Metadata: {
         filename: filename,
       },
