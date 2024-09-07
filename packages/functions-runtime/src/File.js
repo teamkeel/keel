@@ -169,7 +169,7 @@ class File extends InlineFile {
         Bucket: process.env.KEEL_FILES_BUCKET_NAME,
         Key: "files/" + this.key,
         ResponseContentDisposition: `attachment; filename="${encodeURIComponent(
-          filename
+          this.filename
         )}"`,
       });
 
@@ -223,6 +223,9 @@ async function storeFile(contents, key, filename, contentType, expires) {
         filename: filename,
       },
       ACL: "private",
+      ContentDisposition: `attachment; filename="${encodeURIComponent(
+        this.filename
+      )}"`,
     };
 
     if (expires) {
