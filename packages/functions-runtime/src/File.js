@@ -220,6 +220,9 @@ async function storeFile(contents, key, filename, contentType, expires) {
         filename: filename,
       },
       ACL: "private",
+      ContentDisposition: `attachment; filename="${encodeURIComponent(
+        this.filename
+      )}"`,
     };
 
     if (expires) {
