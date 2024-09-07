@@ -213,6 +213,7 @@ async function storeFile(contents, key, filename, contentType, expires) {
       Key: "files/" + key,
       Body: contents,
       ContentType: contentType,
+      ContentDisposition: `attachment; filename="${encodeURIComponent(filename)}"`,
       Metadata: {
         filename: filename,
       },
