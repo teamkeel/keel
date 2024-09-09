@@ -145,10 +145,8 @@ func (g *Generator) decorateTools() error {
 			if input.GetEntryAction != nil && input.GetEntryAction.ToolId != "" {
 				input.GetEntryAction.Data = []*rpc.DataMapping{
 					{
-						Key: g.Tools[input.GetEntryAction.ToolId].getIDInputFieldPath(),
-						Value: &rpc.DataMapping_Path{
-							Path: input.FieldLocation,
-						},
+						Key:  g.Tools[input.GetEntryAction.ToolId].getIDInputFieldPath(),
+						Path: input.FieldLocation,
 					},
 				}
 			}
@@ -204,8 +202,12 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 				ToolId: toolID,
 				Data: []*rpc.DataMapping{
 					{
-						Key:   inputPaths[toolID],
-						Value: &rpc.DataMapping_Path{Path: &rpc.JsonPath{Path: idResponseFieldPath}},
+						Key: inputPaths[toolID],
+						Object: []*rpc.DataMapping{
+							{
+								Path: &rpc.JsonPath{Path: idResponseFieldPath},
+							},
+						},
 					},
 				},
 			})
@@ -229,8 +231,12 @@ func (g *Generator) generateGetEntryActionLinks() {
 					ToolId: getToolID,
 					Data: []*rpc.DataMapping{
 						{
-							Key:   g.Tools[getToolID].getIDInputFieldPath(),
-							Value: &rpc.DataMapping_Path{Path: &rpc.JsonPath{Path: idResponseFieldPath}},
+							Key: g.Tools[getToolID].getIDInputFieldPath(),
+							Object: []*rpc.DataMapping{
+								{
+									Path: &rpc.JsonPath{Path: idResponseFieldPath},
+								},
+							},
 						},
 					},
 				}
@@ -265,8 +271,10 @@ func (g *Generator) generateEmbeddedActionLinks() {
 						Data: []*rpc.DataMapping{
 							{
 								Key: input.FieldLocation.Path,
-								Value: &rpc.DataMapping_Path{
-									Path: &rpc.JsonPath{Path: tool.getIDResponseFieldPath()},
+								Object: []*rpc.DataMapping{
+									{
+										Path: &rpc.JsonPath{Path: tool.getIDResponseFieldPath()},
+									},
 								},
 							},
 						},
@@ -515,10 +523,8 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 					ToolId: getToolID,
 					Data: []*rpc.DataMapping{
 						{
-							Key: g.Tools[getToolID].getIDInputFieldPath(),
-							Value: &rpc.DataMapping_Path{
-								Path: config.FieldLocation,
-							},
+							Key:  g.Tools[getToolID].getIDInputFieldPath(),
+							Path: config.FieldLocation,
 						},
 					},
 				}
