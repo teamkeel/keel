@@ -202,12 +202,8 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 				ToolId: toolID,
 				Data: []*rpc.DataMapping{
 					{
-						Key: inputPaths[toolID],
-						Object: []*rpc.DataMapping{
-							{
-								Path: &rpc.JsonPath{Path: idResponseFieldPath},
-							},
-						},
+						Key:  inputPaths[toolID],
+						Path: &rpc.JsonPath{Path: idResponseFieldPath},
 					},
 				},
 			})
@@ -231,12 +227,8 @@ func (g *Generator) generateGetEntryActionLinks() {
 					ToolId: getToolID,
 					Data: []*rpc.DataMapping{
 						{
-							Key: g.Tools[getToolID].getIDInputFieldPath(),
-							Object: []*rpc.DataMapping{
-								{
-									Path: &rpc.JsonPath{Path: idResponseFieldPath},
-								},
-							},
+							Key:  g.Tools[getToolID].getIDInputFieldPath(),
+							Path: &rpc.JsonPath{Path: idResponseFieldPath},
 						},
 					},
 				}
@@ -270,12 +262,8 @@ func (g *Generator) generateEmbeddedActionLinks() {
 						ToolId: toolId,
 						Data: []*rpc.DataMapping{
 							{
-								Key: input.FieldLocation.Path,
-								Object: []*rpc.DataMapping{
-									{
-										Path: &rpc.JsonPath{Path: tool.getIDResponseFieldPath()},
-									},
-								},
+								Key:  input.FieldLocation.Path,
+								Path: &rpc.JsonPath{Path: tool.getIDResponseFieldPath()},
 							},
 						},
 					})
