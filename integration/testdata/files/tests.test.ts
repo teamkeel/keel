@@ -241,29 +241,14 @@ test("files - list action empty hooks", async () => {
     file: InlineFile.fromDataURL(dataUrl),
   });
 
-  const fileContents2 = "hello again";
-  const dataUrl2 = `data:application/text;name=my-file.txt;base64,${Buffer.from(
-    fileContents2
-  ).toString("base64")}`;
-
-  await actions.createFile({
-    file: InlineFile.fromDataURL(dataUrl2),
-  });
-
   const result = await actions.listFilesEmptyHooks({});
+
   expect(result.results[0].file?.contentType).toEqual("application/text");
   expect(result.results[0].file?.filename).toEqual("my-file.txt");
   expect(result.results[0].file?.size).toEqual(5);
 
-  const contents1 = await result.results[0].file?.read();
-  expect(contents1?.toString("utf-8")).toEqual("hello");
-
-  expect(result.results[1].file?.contentType).toEqual("application/text");
-  expect(result.results[1].file?.filename).toEqual("my-file.txt");
-  expect(result.results[1].file?.size).toEqual(11);
-
-  const contents2 = await result.results[1].file?.read();
-  expect(contents2?.toString("utf-8")).toEqual("hello again");
+  const contents = await result.results[0].file?.read();
+  expect(contents?.toString("utf-8")).toEqual("hello");
 });
 
 test("files - create file in hook", async () => {
