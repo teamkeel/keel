@@ -43,6 +43,7 @@ prettier:
 	npx prettier --write './schema/testdata/proto/**/*.json'
 	npx prettier --write './runtime/jsonschema/testdata/**/*.json'
 	npx prettier --write './runtime/openapi/testdata/**/*.json'
+	npx prettier --write './tools/testdata/**/*.json'
 
 install:
 	go mod download
