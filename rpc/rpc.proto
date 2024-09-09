@@ -271,8 +271,6 @@ message CursorPaginationConfig {
 
 message DataMapping {
 	string key = 1;
-	oneof value {
-		JsonPath path = 2;
-		DataMapping object = 3;
-	}
+	optional JsonPath path = 2;
+	repeated DataMapping object = 3;
 }
