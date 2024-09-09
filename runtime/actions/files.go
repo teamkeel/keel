@@ -104,16 +104,31 @@ func transformMessageFileResponses(ctx context.Context, schema *proto.Schema, me
 	}
 
 	for _, field := range message.Fields {
-		if f, found := results[field.Name]; found && f != nil {
+		if v, found := results[field.Name]; found && v != nil {
 			switch field.Type.Type {
 			case proto.Type_TYPE_MESSAGE:
+
+				nested := schema.FindMessage(field.Type.MessageName.Value)
+
 				var err error
-				results[field.Name], err = transformMessageFileResponses(ctx, schema, schema.FindMessage(field.Type.MessageName.Value), results[field.Name].(map[string]any))
-				if err != nil {
-					return nil, err
+				if field.Type.Repeated {
+					arr := v.([]any)
+					for i, el := range arr {
+						arr[i], err = transformMessageFileResponses(ctx, schema, nested, el.(map[string]any))
+						if err != nil {
+							return nil, err
+						}
+					}
+					results[field.Name] = arr
+				} else {
+					results[field.Name], err = transformMessageFileResponses(ctx, schema, nested, v.(map[string]any))
+					if err != nil {
+						return nil, err
+					}
 				}
+
 			case proto.Type_TYPE_FILE:
-				data, ok := f.(map[string]any)
+				data, ok := v.(map[string]any)
 				if !ok {
 					return results, fmt.Errorf("invalid response for field: %s", field.Name)
 				}
