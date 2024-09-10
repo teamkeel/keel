@@ -2,7 +2,7 @@
 model Comment {
     fields {
         author Identity
-        parent Post
+        parent BlogPost
         content Text
     }
     actions {
@@ -22,7 +22,7 @@ model Category {
 
 }
 
-model Post {
+model BlogPost {
     fields {
         title Text
         description Text
@@ -39,7 +39,7 @@ model Post {
         get getPost(id) 
         update updatePost(id) with (title?, description?, content?,  tags?, image?, category.id?)
         create createPost() with (title, description, content, tags?, image?, category.id?) {
-            @set(post.author = ctx.identity)
+            @set(blogPost.author = ctx.identity)
         }
         list listPosts() {
             @sortable(title)

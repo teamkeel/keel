@@ -17,8 +17,8 @@
           "visible": true
         }
       ],
-      "entitySingle": "post",
-      "entityPlural": "posts",
+      "entitySingle": "blog post",
+      "entityPlural": "blog posts",
       "capabilities": {}
     },
     {
@@ -194,8 +194,8 @@
           }
         }
       ],
-      "entitySingle": "post",
-      "entityPlural": "posts",
+      "entitySingle": "blog post",
+      "entityPlural": "blog posts",
       "capabilities": {},
       "getEntryAction": {
         "toolId": "getPost",
@@ -411,8 +411,8 @@
           }
         }
       ],
-      "entitySingle": "post",
-      "entityPlural": "posts",
+      "entitySingle": "blog post",
+      "entityPlural": "blog posts",
       "capabilities": {}
     },
     {
@@ -636,15 +636,10 @@
           }
         }
       ],
-      "title": {
-        "template": "{{.title}}"
-      },
-      "entitySingle": "post",
-      "entityPlural": "posts",
-      "capabilities": {
-        "comments": true,
-        "audit": true
-      },
+      "title": { "template": "{{.title}}" },
+      "entitySingle": "blog post",
+      "entityPlural": "blog posts",
+      "capabilities": { "comments": true, "audit": true },
       "entryActivityActions": [
         {
           "toolId": "deletePost",
@@ -1222,8 +1217,8 @@
           }
         }
       ],
-      "entitySingle": "post",
-      "entityPlural": "posts",
+      "entitySingle": "blog post",
+      "entityPlural": "blog posts",
       "capabilities": {},
       "relatedActions": [
         {
@@ -1678,8 +1673,8 @@
           }
         }
       ],
-      "entitySingle": "post",
-      "entityPlural": "posts",
+      "entitySingle": "blog post",
+      "entityPlural": "blog posts",
       "capabilities": {},
       "relatedActions": [
         {
@@ -2009,8 +2004,8 @@
           }
         }
       ],
-      "entitySingle": "post",
-      "entityPlural": "posts",
+      "entitySingle": "blog post",
+      "entityPlural": "blog posts",
       "capabilities": {},
       "getEntryAction": {
         "toolId": "getPost",
