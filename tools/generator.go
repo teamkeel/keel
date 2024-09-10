@@ -83,7 +83,7 @@ func (g *Generator) scaffoldTools() {
 			t := Tool{
 				Config: &rpc.ActionConfig{
 					Id:             action.Name,
-					ApiName:        g.Schema.FindApiName(model.Name, action.Name),
+					ApiNames:       g.Schema.FindApiNames(model.Name, action.Name),
 					Name:           casing.ToSentenceCase(action.Name),
 					ActionName:     action.Name,
 					ActionType:     action.GetType(),
