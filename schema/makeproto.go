@@ -108,7 +108,7 @@ func defaultAPI(scm *proto.Schema) *proto.Api {
 	}
 }
 
-func makeIDQueryInputMessage(name string) *proto.Message {
+func makeIDQueryInputMessage(name string, modelName *wrapperspb.StringValue) *proto.Message {
 	return &proto.Message{Name: name, Fields: []*proto.MessageField{
 		{
 			MessageName: name,
@@ -116,7 +116,8 @@ func makeIDQueryInputMessage(name string) *proto.Message {
 			Optional:    true,
 			Nullable:    true,
 			Type: &proto.TypeInfo{
-				Type: proto.Type_TYPE_ID,
+				Type:      proto.Type_TYPE_ID,
+				ModelName: modelName,
 			},
 		},
 		{
@@ -124,8 +125,9 @@ func makeIDQueryInputMessage(name string) *proto.Message {
 			Name:        "oneOf",
 			Optional:    true,
 			Type: &proto.TypeInfo{
-				Type:     proto.Type_TYPE_ID,
-				Repeated: true,
+				Type:      proto.Type_TYPE_ID,
+				Repeated:  true,
+				ModelName: modelName,
 			},
 		},
 		{
@@ -134,7 +136,8 @@ func makeIDQueryInputMessage(name string) *proto.Message {
 			Optional:    true,
 			Nullable:    true,
 			Type: &proto.TypeInfo{
-				Type: proto.Type_TYPE_ID,
+				Type:      proto.Type_TYPE_ID,
+				ModelName: modelName,
 			},
 		},
 	}}
@@ -817,7 +820,7 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 
 	switch typeInfo.Type {
 	case proto.Type_TYPE_ID:
-		return makeIDQueryInputMessage(msgName), nil
+		return makeIDQueryInputMessage(msgName, typeInfo.GetModelName()), nil
 	case proto.Type_TYPE_STRING:
 		return makeStringQueryInputMessage(msgName), nil
 	case proto.Type_TYPE_INT:
