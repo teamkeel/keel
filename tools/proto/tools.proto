@@ -1,7 +1,7 @@
 syntax = "proto3";
 package tools;
 
-option go_package = "proto";
+option go_package = "github.com/teamkeel/keel/tools/proto";
 import "schema.proto";
 
 message Capabilities {
