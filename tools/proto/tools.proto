@@ -26,60 +26,63 @@ message ActionConfig {
 
 	// The names of the APIs in which this action sits
 	repeated string api_names = 5;
-	
-	proto.ActionType action_type = 6;
-	proto.ActionImplementation implementation = 7;
 
-	repeated RequestFieldConfig inputs = 8;
-	repeated ResponseFieldConfig response = 9;
+    // The name of the model on which this tool operates on.
+    string model_name = 6;
+	
+	proto.ActionType action_type = 7;
+	proto.ActionImplementation implementation = 8;
+
+	repeated RequestFieldConfig inputs = 9;
+	repeated ResponseFieldConfig response = 10;
 
 	// Title of the tool.
 	// Default value: a template with the first field of the model if it's a text field,
 	// otherwise empty.
-	optional StringTemplate title = 10; 
+	optional StringTemplate title = 11; 
 
 	// Template language support: markdown
-	optional StringTemplate help_text = 11; 
+	optional StringTemplate help_text = 12; 
 
 	// The name of the entity associated with this tool, in a singular form (e.g. order, user).
 	// The word is lowercased; for generated tools it is the name of the model
-	string entity_single = 12; 
+	string entity_single = 13; 
 
 	// The name of the entity associated with this tool, in a plural form (e.g. orders, users).
 	// The word is lowercased; for generated tools it is derived from name of the model
-	string entity_plural = 13; 
+	string entity_plural = 14; 
 
 	// What features are enabled for this tool
-	Capabilities capabilities = 14;
+	Capabilities capabilities = 15;
 
 	// Only for List actions; aka views.
 	// E.g. For a listOrders action; these would be tabs that show filtered orders by status 
 	// (Processed, Pending, Completed)
 	// For auto-generated configs, this is only populated for list actions, with links to other list 
 	// actions for the same model.
-	repeated ActionLink related_actions = 15; 
+	repeated ActionLink related_actions = 16; 
 
 	// Only for List actions; Support offset and cursor
-	optional CursorPaginationConfig pagination = 16;
+	optional CursorPaginationConfig pagination = 17;
 
 	// List of extenal links that will be displayed with this tool; used only for Get actions.
 	// Nothing for auto generated
-	repeated ExternalLink links = 17; 
+	repeated ExternalLink links = 18; 
 	
 	// Things you can do to this entry
 	// All update, deletes, creates, read and write on the same model.
 	// Only for List & Get; empty for mutations 
-	repeated ActionLink entry_activity_actions = 18; 
+	repeated ActionLink entry_activity_actions = 19; 
 	
 	// Tools that will be displayed inline (embedded) withing the one that we're defining. 
-	repeated ActionLink embedded_actions = 19;
+	repeated ActionLink embedded_actions = 20;
 
 	// The action to use to get an entry on this model. Default to a get action on the same model
 	// Used for: 
 	// - fetching the record for prefilling a mutation
 	// - the link for clicking a row in a List 
 	// - the action to call after a mutation
-	optional ActionLink get_entry_action = 20;
+	optional ActionLink get_entry_action = 21;
 }
 
 message RequestFieldConfig {
