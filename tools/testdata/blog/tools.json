@@ -5,6 +5,7 @@
       "name": "Create from image",
       "actionName": "createFromImage",
       "apiNames": ["Api"],
+      "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
       "inputs": [
@@ -26,6 +27,7 @@
       "name": "Create post",
       "actionName": "createPost",
       "apiNames": ["Api"],
+      "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_CREATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -214,6 +216,7 @@
       "name": "Delete category",
       "actionName": "deleteCategory",
       "apiNames": ["Api"],
+      "modelName": "Category",
       "actionType": "ACTION_TYPE_DELETE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -283,6 +286,7 @@
       "name": "Delete post",
       "actionName": "deletePost",
       "apiNames": ["Api"],
+      "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_DELETE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -420,6 +424,7 @@
       "name": "Get category",
       "actionName": "getCategory",
       "apiNames": ["Api"],
+      "modelName": "Category",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -508,6 +513,7 @@
       "name": "Get post",
       "actionName": "getPost",
       "apiNames": ["Api"],
+      "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -683,6 +689,7 @@
       "name": "List categories",
       "actionName": "listCategories",
       "apiNames": ["Api"],
+      "modelName": "Category",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -855,6 +862,7 @@
       "name": "List comments",
       "actionName": "listComments",
       "apiNames": ["Api"],
+      "modelName": "Comment",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -1040,6 +1048,7 @@
       "name": "List posts",
       "actionName": "listPosts",
       "apiNames": ["Api"],
+      "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -1304,6 +1313,7 @@
       "name": "List posts embeds",
       "actionName": "listPostsEmbeds",
       "apiNames": ["Api"],
+      "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -1760,6 +1770,7 @@
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
       "apiNames": ["Api"],
+      "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
@@ -1787,6 +1798,7 @@
       "name": "Reset password",
       "actionName": "resetPassword",
       "apiNames": ["Api"],
+      "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
@@ -1814,6 +1826,7 @@
       "name": "Update post",
       "actionName": "updatePost",
       "apiNames": ["Api"],
+      "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_UPDATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
