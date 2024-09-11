@@ -19,6 +19,18 @@ proto:
 		--go_opt=paths=source_relative \
 		proto/schema.proto"
 
+proto-tools:
+	PROTO_SRC_PATH=./ \
+	IMPORT_MAPPING="rpcutil/empty.proto=github.com/example/rpcutil" \
+	protoc \
+		--proto_path=tools/proto/ \
+		--proto_path=proto/ \
+		--go_opt=Mschema.proto=github.com/teamkeel/keel/proto \
+		--go_opt=Mtools.proto=tools/proto \
+		--twirp_out=Mtools.proto=tools/proto:tools/proto \
+		--go_out=./ \
+		tools.proto
+
 test:
 	TZ=UTC go test $(PACKAGES) -count=1 $(RUNARG)
 
@@ -72,11 +84,14 @@ rpc-api:
 	protoc \
 		--proto_path=rpc/ \
 		--proto_path=proto/ \
+		--proto_path=tools/proto/ \
 		--go_opt=Mschema.proto=github.com/teamkeel/keel/proto \
 		--go_opt=Mrpc.proto=rpc/rpc \
+		--go_opt=Mtools.proto=github.com/teamkeel/keel/tools/proto \
 		--twirp_out=Mrpc.proto=rpc/rpc:rpc/rpc \
 		--go_out=./ \
 		rpc.proto
+
 
 proto-tests:
 	nix-shell --command "cd ./schema && go run ./testdata/generate_testdata.go ./testdata/proto"
