@@ -134,11 +134,11 @@ message DefaultValue {
 }
 
 message StringTemplate {
-	// e.g. "{firstName} {lastName}" template syntax TBC.
+	// e.g. "{{$.firstName}} {{$.lastName}}" template syntax TBC.
 	string template = 1;
 	
 	// If markdown is supported for this template. e.g. 
-	// Italic text: _{{.Var}}_ 
+	// Italic text: _{{$.Var}}_ 
 	bool markdown = 2;
 }
 
