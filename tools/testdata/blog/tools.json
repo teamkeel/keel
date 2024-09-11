@@ -4,7 +4,7 @@
       "id": "createFromImage",
       "name": "Create from image",
       "actionName": "createFromImage",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
       "inputs": [
@@ -25,7 +25,7 @@
       "id": "createPost",
       "name": "Create post",
       "actionName": "createPost",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_CREATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -213,7 +213,7 @@
       "id": "deleteCategory",
       "name": "Delete category",
       "actionName": "deleteCategory",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_DELETE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -282,7 +282,7 @@
       "id": "deletePost",
       "name": "Delete post",
       "actionName": "deletePost",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_DELETE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -419,7 +419,7 @@
       "id": "getCategory",
       "name": "Get category",
       "actionName": "getCategory",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -507,7 +507,7 @@
       "id": "getPost",
       "name": "Get post",
       "actionName": "getPost",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -682,7 +682,7 @@
       "id": "listCategories",
       "name": "List categories",
       "actionName": "listCategories",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -854,7 +854,7 @@
       "id": "listComments",
       "name": "List comments",
       "actionName": "listComments",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -1039,7 +1039,7 @@
       "id": "listPosts",
       "name": "List posts",
       "actionName": "listPosts",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -1303,7 +1303,7 @@
       "id": "listPostsEmbeds",
       "name": "List posts embeds",
       "actionName": "listPostsEmbeds",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
@@ -1759,7 +1759,7 @@
       "id": "requestPasswordReset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
@@ -1786,7 +1786,7 @@
       "id": "resetPassword",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
@@ -1813,7 +1813,7 @@
       "id": "updatePost",
       "name": "Update post",
       "actionName": "updatePost",
-      "apiName": "Api",
+      "apiNames": ["Api"],
       "actionType": "ACTION_TYPE_UPDATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [

@@ -109,8 +109,8 @@ message ActionConfig {
 	// The action in the schema e.g "getOrder"
 	string action_name = 4; 
 
-	// The name of the API in which this action sits
-	string api_name = 5;
+	// The names of the APIs in which this action sits
+	repeated string api_names = 5;
 	
 	proto.ActionType action_type = 6;
 	proto.ActionImplementation implementation = 7;
