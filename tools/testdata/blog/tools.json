@@ -486,7 +486,7 @@
         }
       ],
       "title": {
-        "template": "{{.name}}"
+        "template": "{{$.name}}"
       },
       "entitySingle": "category",
       "entityPlural": "categories",
@@ -642,7 +642,7 @@
           }
         }
       ],
-      "title": { "template": "{{.title}}" },
+      "title": { "template": "{{$.title}}" },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": { "comments": true, "audit": true },

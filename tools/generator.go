@@ -627,7 +627,7 @@ func (g *Generator) makeTitle(action *proto.Action, model *proto.Model) *toolspr
 		fields := model.GetFields()
 		if len(fields) > 0 && fields[0].Type.Type == proto.Type_TYPE_STRING {
 			return &toolsproto.StringTemplate{
-				Template: "{{." + fields[0].GetName() + "}}",
+				Template: "{{$." + fields[0].GetName() + "}}",
 			}
 		}
 	}

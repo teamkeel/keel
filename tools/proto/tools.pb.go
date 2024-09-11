@@ -674,10 +674,10 @@ type StringTemplate struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// e.g. "{firstName} {lastName}" template syntax TBC.
+	// e.g. "{{$.firstName}} {{$.lastName}}" template syntax TBC.
 	Template string `protobuf:"bytes,1,opt,name=template,proto3" json:"template,omitempty"`
 	// If markdown is supported for this template. e.g.
-	// Italic text: _{{.Var}}_
+	// Italic text: _{{$.Var}}_
 	Markdown bool `protobuf:"varint,2,opt,name=markdown,proto3" json:"markdown,omitempty"`
 }
 
