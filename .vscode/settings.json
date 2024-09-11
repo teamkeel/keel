@@ -4,5 +4,11 @@
         "--config=${workspaceFolder}/.golangci.yml",
         "--fast",
     ],
-    "go.lintOnSave": "workspace"
+    "go.lintOnSave": "workspace",
+    "protoc": {
+        "options": [
+            "--proto_path=${workspaceRoot}/tools/proto",
+            "--proto_path=${workspaceRoot}/proto",
+        ]
+    }
 }
