@@ -9,11 +9,11 @@ import (
 
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/rpc/rpc"
+	toolsproto "github.com/teamkeel/keel/tools/proto"
 )
 
 type Tool struct {
-	Config         *rpc.ActionConfig
+	Config         *toolsproto.ActionConfig
 	Model          *proto.Model
 	Action         *proto.Action
 	SortableFields []string
@@ -36,8 +36,8 @@ func NewGenerator(schema *proto.Schema) (*Generator, error) {
 }
 
 // GetConfigs will return the action configs that have been generated, in alphabetical order
-func (g *Generator) GetConfigs() []*rpc.ActionConfig {
-	cfgs := []*rpc.ActionConfig{}
+func (g *Generator) GetConfigs() []*toolsproto.ActionConfig {
+	cfgs := []*toolsproto.ActionConfig{}
 	ids := []string{}
 	for id := range g.Tools {
 		ids = append(ids, id)
@@ -81,7 +81,7 @@ func (g *Generator) scaffoldTools() {
 	for _, model := range g.Schema.GetModels() {
 		for _, action := range model.GetActions() {
 			t := Tool{
-				Config: &rpc.ActionConfig{
+				Config: &toolsproto.ActionConfig{
 					Id:             action.Name,
 					ApiNames:       g.Schema.FindApiNames(model.Name, action.Name),
 					Name:           casing.ToSentenceCase(action.Name),
@@ -99,22 +99,22 @@ func (g *Generator) scaffoldTools() {
 
 			// List actions have pagination
 			if action.IsList() {
-				t.Config.Pagination = &rpc.CursorPaginationConfig{
-					Start: &rpc.CursorPaginationConfig_FieldConfig{
+				t.Config.Pagination = &toolsproto.CursorPaginationConfig{
+					Start: &toolsproto.CursorPaginationConfig_FieldConfig{
 						RequestInput:  "after",
-						ResponseField: &rpc.JsonPath{Path: "$.pageInfo.startCursor"},
+						ResponseField: &toolsproto.JsonPath{Path: "$.pageInfo.startCursor"},
 					},
-					End: &rpc.CursorPaginationConfig_FieldConfig{
+					End: &toolsproto.CursorPaginationConfig_FieldConfig{
 						RequestInput:  "before",
-						ResponseField: &rpc.JsonPath{Path: "$.pageInfo.endCursor"},
+						ResponseField: &toolsproto.JsonPath{Path: "$.pageInfo.endCursor"},
 					},
-					PageSize: &rpc.CursorPaginationConfig_PageSizeConfig{
+					PageSize: &toolsproto.CursorPaginationConfig_PageSizeConfig{
 						RequestInput:  "first",
-						ResponseField: &rpc.JsonPath{Path: "$.pageInfo.count"},
+						ResponseField: &toolsproto.JsonPath{Path: "$.pageInfo.count"},
 						DefaultValue:  50,
 					},
-					NextPage:   &rpc.JsonPath{Path: "$.pageInfo.hasNextPage"},
-					TotalCount: &rpc.JsonPath{Path: "$.pageInfo.totalCount"},
+					NextPage:   &toolsproto.JsonPath{Path: "$.pageInfo.hasNextPage"},
+					TotalCount: &toolsproto.JsonPath{Path: "$.pageInfo.totalCount"},
 				}
 			}
 
@@ -143,7 +143,7 @@ func (g *Generator) decorateTools() error {
 		// decorate the data mapping now that we have all inputs and responses generated
 		for _, input := range tool.Config.Inputs {
 			if input.GetEntryAction != nil && input.GetEntryAction.ToolId != "" {
-				input.GetEntryAction.Data = []*rpc.DataMapping{
+				input.GetEntryAction.Data = []*toolsproto.DataMapping{
 					{
 						Key:  g.Tools[input.GetEntryAction.ToolId].getIDInputFieldPath(),
 						Path: input.FieldLocation,
@@ -168,7 +168,7 @@ func (g *Generator) generateRelatedActionsLinks() {
 		if relatedTools := g.findListTools(tool.Model.Name); len(relatedTools) > 1 {
 			for _, relatedID := range relatedTools {
 				if id != relatedID {
-					tool.Config.RelatedActions = append(tool.Config.RelatedActions, &rpc.ActionLink{
+					tool.Config.RelatedActions = append(tool.Config.RelatedActions, &toolsproto.ActionLink{
 						ToolId: relatedID,
 					})
 				}
@@ -198,12 +198,12 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 		}
 		sort.Strings(toolIds)
 		for _, toolID := range toolIds {
-			tool.Config.EntryActivityActions = append(tool.Config.EntryActivityActions, &rpc.ActionLink{
+			tool.Config.EntryActivityActions = append(tool.Config.EntryActivityActions, &toolsproto.ActionLink{
 				ToolId: toolID,
-				Data: []*rpc.DataMapping{
+				Data: []*toolsproto.DataMapping{
 					{
 						Key:  inputPaths[toolID],
-						Path: &rpc.JsonPath{Path: idResponseFieldPath},
+						Path: &toolsproto.JsonPath{Path: idResponseFieldPath},
 					},
 				},
 			})
@@ -223,12 +223,12 @@ func (g *Generator) generateGetEntryActionLinks() {
 		// get entry action for tools that operate on a model instance/s (create/update/list).
 		if tool.Action.IsList() || tool.Action.IsUpdate() || tool.Action.Type == proto.ActionType_ACTION_TYPE_CREATE {
 			if getToolID := g.findGetByIDTool(tool.Model.Name); getToolID != "" {
-				tool.Config.GetEntryAction = &rpc.ActionLink{
+				tool.Config.GetEntryAction = &toolsproto.ActionLink{
 					ToolId: getToolID,
-					Data: []*rpc.DataMapping{
+					Data: []*toolsproto.DataMapping{
 						{
 							Key:  g.Tools[getToolID].getIDInputFieldPath(),
-							Path: &rpc.JsonPath{Path: idResponseFieldPath},
+							Path: &toolsproto.JsonPath{Path: idResponseFieldPath},
 						},
 					},
 				}
@@ -258,12 +258,12 @@ func (g *Generator) generateEmbeddedActionLinks() {
 				// check if there is an input for the foreign key
 				if input := g.Tools[toolId].getInput("$.where." + f.InverseFieldName.Value + ".id.equals"); input != nil {
 					// embed the tool
-					tool.Config.EmbeddedActions = append(tool.Config.EmbeddedActions, &rpc.ActionLink{
+					tool.Config.EmbeddedActions = append(tool.Config.EmbeddedActions, &toolsproto.ActionLink{
 						ToolId: toolId,
-						Data: []*rpc.DataMapping{
+						Data: []*toolsproto.DataMapping{
 							{
 								Key:  input.FieldLocation.Path,
-								Path: &rpc.JsonPath{Path: tool.getIDResponseFieldPath()},
+								Path: &toolsproto.JsonPath{Path: tool.getIDResponseFieldPath()},
 							},
 						},
 					})
@@ -355,8 +355,8 @@ func (g *Generator) generateResponses() error {
 	return nil
 }
 
-func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) ([]*rpc.RequestFieldConfig, error) {
-	fields := []*rpc.RequestFieldConfig{}
+func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) ([]*toolsproto.RequestFieldConfig, error) {
+	fields := []*toolsproto.RequestFieldConfig{}
 
 	for _, f := range msg.GetFields() {
 		if f.IsMessage() {
@@ -374,8 +374,8 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 			continue
 		}
 
-		config := &rpc.RequestFieldConfig{
-			FieldLocation: &rpc.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
+		config := &toolsproto.RequestFieldConfig{
+			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			DisplayName:   casing.ToSentenceCase(f.Name),
 			Visible: func() bool {
@@ -385,7 +385,7 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 		if f.Type.Type == proto.Type_TYPE_ID && f.Type.ModelName != nil {
 			// generate action link placeholders
 			if lookupToolsIDs := g.findListTools(f.Type.ModelName.Value); len(lookupToolsIDs) > 0 {
-				config.LookupAction = &rpc.ActionLink{
+				config.LookupAction = &toolsproto.ActionLink{
 					ToolId: lookupToolsIDs[0],
 				}
 			}
@@ -394,7 +394,7 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 			// inputs and repsonses have been generated ; this is a placeholder that will have it's data populated later
 			// in the generation process
 			if entryToolID := g.findGetTool(f.Type.ModelName.Value); entryToolID != "" {
-				config.GetEntryAction = &rpc.ActionLink{
+				config.GetEntryAction = &toolsproto.ActionLink{
 					ToolId: entryToolID,
 				}
 			}
@@ -406,8 +406,8 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 	return fields, nil
 }
 
-func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix string, sortableFields []string) ([]*rpc.ResponseFieldConfig, error) {
-	fields := []*rpc.ResponseFieldConfig{}
+func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix string, sortableFields []string) ([]*toolsproto.ResponseFieldConfig, error) {
+	fields := []*toolsproto.ResponseFieldConfig{}
 
 	for _, f := range msg.GetFields() {
 		if f.IsMessage() {
@@ -424,8 +424,8 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			continue
 		}
 
-		config := &rpc.ResponseFieldConfig{
-			FieldLocation: &rpc.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
+		config := &toolsproto.ResponseFieldConfig{
+			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			DisplayName:   casing.ToSentenceCase(f.Name),
 			Visible:       true,
@@ -450,8 +450,8 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 }
 
 // makeResponsesForModel will return an array of response fields for the given model
-func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string, embeddings []string, sortableFields []string) ([]*rpc.ResponseFieldConfig, error) {
-	fields := []*rpc.ResponseFieldConfig{}
+func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string, embeddings []string, sortableFields []string) ([]*toolsproto.ResponseFieldConfig, error) {
+	fields := []*toolsproto.ResponseFieldConfig{}
 
 	for _, f := range model.GetFields() {
 		if f.IsTypeModel() {
@@ -484,8 +484,8 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 			continue
 		}
 
-		config := &rpc.ResponseFieldConfig{
-			FieldLocation: &rpc.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
+		config := &toolsproto.ResponseFieldConfig{
+			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			DisplayName:   casing.ToSentenceCase(f.Name),
 			Visible:       true,
@@ -507,9 +507,9 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 		// generated first, so we're safe to create a tool/action link now
 		if f.IsForeignKey() && f.ForeignKeyInfo.RelatedModelField == fieldNameID {
 			if getToolID := g.findGetByIDTool(f.ForeignKeyInfo.RelatedModelName); getToolID != "" {
-				config.Link = &rpc.ActionLink{
+				config.Link = &toolsproto.ActionLink{
 					ToolId: getToolID,
-					Data: []*rpc.DataMapping{
+					Data: []*toolsproto.DataMapping{
 						{
 							Key:  g.Tools[getToolID].getIDInputFieldPath(),
 							Path: config.FieldLocation,
@@ -602,8 +602,8 @@ func (g *Generator) findAllByIDTools(modelName string, ignoreID string) map[stri
 // makeCapabilities generates the makeCapabilities/features available for a tool generated for the given action.
 // Audit trail is enabled just for GET actions
 // Comments are enabled just for GET actions
-func (g *Generator) makeCapabilities(action *proto.Action) *rpc.Capabilities {
-	c := &rpc.Capabilities{
+func (g *Generator) makeCapabilities(action *proto.Action) *toolsproto.Capabilities {
+	c := &toolsproto.Capabilities{
 		Comments: false,
 		Audit:    false,
 	}
@@ -621,11 +621,11 @@ func (g *Generator) makeCapabilities(action *proto.Action) *rpc.Capabilities {
 //
 // For GET/READ actions:
 //   - The title will be a template including the value of the first field of the model, only if that field is a text field
-func (g *Generator) makeTitle(action *proto.Action, model *proto.Model) *rpc.StringTemplate {
+func (g *Generator) makeTitle(action *proto.Action, model *proto.Model) *toolsproto.StringTemplate {
 	if action.IsGet() || action.Type == proto.ActionType_ACTION_TYPE_READ {
 		fields := model.GetFields()
 		if len(fields) > 0 && fields[0].Type.Type == proto.Type_TYPE_STRING {
-			return &rpc.StringTemplate{
+			return &toolsproto.StringTemplate{
 				Template: "{{." + fields[0].GetName() + "}}",
 			}
 		}
@@ -635,34 +635,34 @@ func (g *Generator) makeTitle(action *proto.Action, model *proto.Model) *rpc.Str
 }
 
 // getPageInfoResponses will return the responses for pageInfo (by default available on all autogenerated LIST actions)
-func getPageInfoResponses() []*rpc.ResponseFieldConfig {
-	return []*rpc.ResponseFieldConfig{
+func getPageInfoResponses() []*toolsproto.ResponseFieldConfig {
+	return []*toolsproto.ResponseFieldConfig{
 		{
-			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.count"},
+			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.count"},
 			FieldType:     proto.Type_TYPE_INT,
 			DisplayName:   "Count",
 			Visible:       false,
 		},
 		{
-			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.totalCount"},
+			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.totalCount"},
 			FieldType:     proto.Type_TYPE_INT,
 			DisplayName:   "Total count",
 			Visible:       false,
 		},
 		{
-			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.hasNextPage"},
+			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.hasNextPage"},
 			FieldType:     proto.Type_TYPE_BOOL,
 			DisplayName:   "Has next page",
 			Visible:       false,
 		},
 		{
-			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.startCursor"},
+			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.startCursor"},
 			FieldType:     proto.Type_TYPE_STRING,
 			DisplayName:   "Start cursor",
 			Visible:       false,
 		},
 		{
-			FieldLocation: &rpc.JsonPath{Path: "$.pageInfo.endCursor"},
+			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.endCursor"},
 			FieldType:     proto.Type_TYPE_STRING,
 			DisplayName:   "End cursor",
 			Visible:       false,
@@ -696,7 +696,7 @@ func (t *Tool) getIDInputFieldPath() string {
 }
 
 // getInput finds and returns an inpub by it's path; returns nil if not found
-func (t *Tool) getInput(path string) *rpc.RequestFieldConfig {
+func (t *Tool) getInput(path string) *toolsproto.RequestFieldConfig {
 	for _, input := range t.Config.Inputs {
 		if input.FieldLocation.Path == path {
 			return input

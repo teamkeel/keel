@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/rpc/rpc"
+	toolsproto "github.com/teamkeel/keel/tools/proto"
 )
 
 // GenerateTools will return a map of tool configurations generated for the given schema, keyed by their ids
-func GenerateTools(ctx context.Context, schema *proto.Schema) ([]*rpc.ActionConfig, error) {
+func GenerateTools(ctx context.Context, schema *proto.Schema) ([]*toolsproto.ActionConfig, error) {
 	if schema == nil {
 		return nil, nil
 	}
