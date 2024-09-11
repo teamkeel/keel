@@ -871,21 +871,63 @@
             "path": "$.where.parent.id.equals"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "Equals"
+          "displayName": "Equals",
+          "lookupAction": {
+            "toolId": "listPosts"
+          },
+          "getEntryAction": {
+            "toolId": "getPost",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.where.parent.id.equals"
+                }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": {
             "path": "$.where.parent.id.oneOf"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "One of"
+          "displayName": "One of",
+          "lookupAction": {
+            "toolId": "listPosts"
+          },
+          "getEntryAction": {
+            "toolId": "getPost",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.where.parent.id.oneOf"
+                }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": {
             "path": "$.where.parent.id.notEquals"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "Not equals"
+          "displayName": "Not equals",
+          "lookupAction": {
+            "toolId": "listPosts"
+          },
+          "getEntryAction": {
+            "toolId": "getPost",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.where.parent.id.notEquals"
+                }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": {

@@ -588,7 +588,8 @@
           "messageName": "IdQueryInput",
           "name": "equals",
           "type": {
-            "type": "TYPE_ID"
+            "type": "TYPE_ID",
+            "modelName": "Company"
           },
           "optional": true,
           "nullable": true
@@ -598,6 +599,7 @@
           "name": "oneOf",
           "type": {
             "type": "TYPE_ID",
+            "modelName": "Company",
             "repeated": true
           },
           "optional": true
@@ -606,7 +608,8 @@
           "messageName": "IdQueryInput",
           "name": "notEquals",
           "type": {
-            "type": "TYPE_ID"
+            "type": "TYPE_ID",
+            "modelName": "Company"
           },
           "optional": true,
           "nullable": true
