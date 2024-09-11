@@ -27,8 +27,8 @@ message ActionConfig {
 	// The names of the APIs in which this action sits
 	repeated string api_names = 5;
 
-    // The name of the model on which this tool operates on.
-    string model_name = 6;
+	// The name of the model on which this tool operates on.
+	string model_name = 6;
 	
 	proto.ActionType action_type = 7;
 	proto.ActionImplementation implementation = 8;
