@@ -86,42 +86,44 @@ message ActionConfig {
 }
 
 message RequestFieldConfig {
+	string id = 1;
 	// common fields
-	JsonPath field_location = 1;
-	proto.Type field_type = 2;
-	string display_name = 3;
-	int32 display_order = 4;
-	bool visible = 5;
-	optional StringTemplate help_text = 6;
+	JsonPath field_location = 2;
+	proto.Type field_type = 3;
+	string display_name = 4;
+	int32 display_order = 5;
+	bool visible = 6;
+	optional StringTemplate help_text = 7;
 
 	// For a relation field - A list action with the fewest required inputs on the target model
 	// Used to display a lookup/dropdown to allow selecting a entry for this field
-	optional ActionLink lookup_action = 7; 
+	optional ActionLink lookup_action = 8; 
 
 	// For a relation field - Used for loading a preview
-	optional ActionLink get_entry_action = 8;
+	optional ActionLink get_entry_action = 9;
 
-	bool locked = 9;
-	optional DefaultValue default_value = 10;
-	optional StringTemplate placeholder = 11;
+	bool locked = 10;
+	optional DefaultValue default_value = 11;
+	optional StringTemplate placeholder = 12;
 }
 
 message ResponseFieldConfig {
-	JsonPath field_location = 1;
-	proto.Type field_type = 2;
+	string id = 1;
+	JsonPath field_location = 2;
+	proto.Type field_type = 3;
 	// default to sentence case 
-	string display_name = 3;
-	int32 display_order = 4;
-	bool visible = 5;
-	optional StringTemplate help_text = 6;
+	string display_name = 4;
+	int32 display_order = 5;
+	bool visible = 6;
+	optional StringTemplate help_text = 7;
 
-	bool sortable = 7; // Based on @sortable()
+	bool sortable = 8; // Based on @sortable()
 
 	// Set if this field is a FK and link to a get/list action on the target model
-	optional ActionLink link = 8; 
+	optional ActionLink link = 9; 
 
 	// for file fields only, display images inline
-	bool image_preview = 9; 
+	bool image_preview = 10; 
 }
 
 message DefaultValue {
@@ -153,7 +155,8 @@ message ExternalLink {
 }
 
 message ActionLink {
-	string tool_id = 1;
+	string id = 1;
+	string tool_id = 2;
 	
 	// The shape of this data is the input for the target action (i.e. 'where' and not 'values') but
 	// with JSON paths for field values. Is a full  object tree
@@ -163,9 +166,9 @@ message ActionLink {
 	// 		"id": "$.id" // JSON path on the current action repsonse. Can be recursive
 	// 	}
 	// }
-	repeated DataMapping data = 2;
+	repeated DataMapping data = 3;
 	
-	optional StringTemplate title = 3; // Empty by default
+	optional StringTemplate title = 4; // Empty by default
 }
 
 message CursorPaginationConfig {
