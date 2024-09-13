@@ -360,7 +360,7 @@ func (g *Generator) generateResponses() error {
 func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) ([]*toolsproto.RequestFieldConfig, error) {
 	fields := []*toolsproto.RequestFieldConfig{}
 
-	for _, f := range msg.GetFields() {
+	for i, f := range msg.GetFields() {
 		if f.IsMessage() {
 			submsg := g.Schema.FindMessage(f.Type.MessageName.Value)
 			if submsg == nil {
@@ -380,6 +380,7 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			DisplayName:   casing.ToSentenceCase(f.Name),
+			DisplayOrder:  int32(i),
 			Visible: func() bool {
 				return f.IsModelField()
 			}(),
@@ -531,10 +532,6 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 }
 
 func computeFieldOrder(currentOrder *int, fieldCount int, fieldName string) int32 {
-	defer func() {
-
-	}()
-
 	switch fieldName {
 	case "id":
 		return int32(fieldCount - 2)

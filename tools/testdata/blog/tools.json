@@ -39,24 +39,28 @@
           "fieldLocation": { "path": "$.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true
         },
         {
@@ -525,22 +529,26 @@
         {
           "fieldLocation": { "path": "$.first" },
           "fieldType": "TYPE_INT",
-          "displayName": "First"
+          "displayName": "First",
+          "displayOrder": 1
         },
         {
           "fieldLocation": { "path": "$.after" },
           "fieldType": "TYPE_STRING",
-          "displayName": "After"
+          "displayName": "After",
+          "displayOrder": 2
         },
         {
           "fieldLocation": { "path": "$.last" },
           "fieldType": "TYPE_INT",
-          "displayName": "Last"
+          "displayName": "Last",
+          "displayOrder": 3
         },
         {
           "fieldLocation": { "path": "$.before" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Before"
+          "displayName": "Before",
+          "displayOrder": 4
         }
       ],
       "response": [
@@ -657,6 +665,7 @@
           "fieldLocation": { "path": "$.where.parent.id.oneOf" },
           "fieldType": "TYPE_ID",
           "displayName": "One of",
+          "displayOrder": 1,
           "lookupAction": { "toolId": "listPosts" },
           "getEntryAction": {
             "toolId": "getPost",
@@ -669,6 +678,7 @@
           "fieldLocation": { "path": "$.where.parent.id.notEquals" },
           "fieldType": "TYPE_ID",
           "displayName": "Not equals",
+          "displayOrder": 2,
           "lookupAction": { "toolId": "listPosts" },
           "getEntryAction": {
             "toolId": "getPost",
@@ -683,22 +693,26 @@
         {
           "fieldLocation": { "path": "$.first" },
           "fieldType": "TYPE_INT",
-          "displayName": "First"
+          "displayName": "First",
+          "displayOrder": 1
         },
         {
           "fieldLocation": { "path": "$.after" },
           "fieldType": "TYPE_STRING",
-          "displayName": "After"
+          "displayName": "After",
+          "displayOrder": 2
         },
         {
           "fieldLocation": { "path": "$.last" },
           "fieldType": "TYPE_INT",
-          "displayName": "Last"
+          "displayName": "Last",
+          "displayOrder": 3
         },
         {
           "fieldLocation": { "path": "$.before" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Before"
+          "displayName": "Before",
+          "displayOrder": 4
         }
       ],
       "response": [
@@ -808,27 +822,32 @@
         {
           "fieldLocation": { "path": "$.first" },
           "fieldType": "TYPE_INT",
-          "displayName": "First"
+          "displayName": "First",
+          "displayOrder": 1
         },
         {
           "fieldLocation": { "path": "$.after" },
           "fieldType": "TYPE_STRING",
-          "displayName": "After"
+          "displayName": "After",
+          "displayOrder": 2
         },
         {
           "fieldLocation": { "path": "$.last" },
           "fieldType": "TYPE_INT",
-          "displayName": "Last"
+          "displayName": "Last",
+          "displayOrder": 3
         },
         {
           "fieldLocation": { "path": "$.before" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Before"
+          "displayName": "Before",
+          "displayOrder": 4
         },
         {
           "fieldLocation": { "path": "$.orderBy" },
           "fieldType": "TYPE_UNION",
-          "displayName": "Order by"
+          "displayName": "Order by",
+          "displayOrder": 5
         }
       ],
       "response": [
@@ -996,22 +1015,26 @@
         {
           "fieldLocation": { "path": "$.first" },
           "fieldType": "TYPE_INT",
-          "displayName": "First"
+          "displayName": "First",
+          "displayOrder": 1
         },
         {
           "fieldLocation": { "path": "$.after" },
           "fieldType": "TYPE_STRING",
-          "displayName": "After"
+          "displayName": "After",
+          "displayOrder": 2
         },
         {
           "fieldLocation": { "path": "$.last" },
           "fieldType": "TYPE_INT",
-          "displayName": "Last"
+          "displayName": "Last",
+          "displayOrder": 3
         },
         {
           "fieldLocation": { "path": "$.before" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Before"
+          "displayName": "Before",
+          "displayOrder": 4
         }
       ],
       "response": [
@@ -1355,7 +1378,8 @@
         {
           "fieldLocation": { "path": "$.redirectUrl" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Redirect url"
+          "displayName": "Redirect url",
+          "displayOrder": 1
         }
       ],
       "entitySingle": "identity",
@@ -1379,7 +1403,8 @@
         {
           "fieldLocation": { "path": "$.password" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Password"
+          "displayName": "Password",
+          "displayOrder": 1
         }
       ],
       "entitySingle": "identity",
@@ -1416,24 +1441,28 @@
           "fieldLocation": { "path": "$.values.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.values.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.values.tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.values.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true
         },
         {
