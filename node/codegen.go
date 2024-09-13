@@ -1721,7 +1721,11 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 			ret = t.ModelName.Value
 		}
 	case proto.Type_TYPE_SORT_DIRECTION:
-		ret = "runtime.SortDirection"
+		if isClientPackage {
+			ret = "SortDirection"
+		} else {
+			ret = "runtime.SortDirection"
+		}
 	case proto.Type_TYPE_UNION:
 		// Retrieve all the types that can satisfy this union field.
 		messageNames := lo.Map(t.UnionNames, func(s *wrapperspb.StringValue, _ int) string {
