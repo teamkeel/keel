@@ -261,6 +261,7 @@ func (g *Generator) generateEmbeddedActionLinks() {
 					// embed the tool
 					tool.Config.EmbeddedActions = append(tool.Config.EmbeddedActions, &toolsproto.ActionLink{
 						ToolId: toolId,
+						Title:  &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
 						Data: []*toolsproto.DataMapping{
 							{
 								Key:  input.FieldLocation.Path,
@@ -409,7 +410,7 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 
 func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix string, sortableFields []string) ([]*toolsproto.ResponseFieldConfig, error) {
 	fields := []*toolsproto.ResponseFieldConfig{}
-
+	order := 0
 	for _, f := range msg.GetFields() {
 		if f.IsMessage() {
 			submsg := g.Schema.FindMessage(f.Type.MessageName.Value)
@@ -430,6 +431,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			FieldType:     f.Type.Type,
 			DisplayName:   casing.ToSentenceCase(f.Name),
 			Visible:       true,
+			DisplayOrder:  computeFieldOrder(&order, len(msg.GetFields()), f.Name),
 			Sortable: func() bool {
 				for _, fn := range sortableFields {
 					if fn == f.Name {
@@ -453,6 +455,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 // makeResponsesForModel will return an array of response fields for the given model
 func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string, embeddings []string, sortableFields []string) ([]*toolsproto.ResponseFieldConfig, error) {
 	fields := []*toolsproto.ResponseFieldConfig{}
+	order := 0
 
 	for _, f := range model.GetFields() {
 		if f.IsTypeModel() {
@@ -490,6 +493,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 			FieldType:     f.Type.Type,
 			DisplayName:   casing.ToSentenceCase(f.Name),
 			Visible:       true,
+			DisplayOrder:  computeFieldOrder(&order, len(model.GetFields()), f.Name),
 			Sortable: func() bool {
 				for _, fn := range sortableFields {
 					if fn == f.Name {
@@ -524,6 +528,24 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 	}
 
 	return fields, nil
+}
+
+func computeFieldOrder(currentOrder *int, fieldCount int, fieldName string) int32 {
+	defer func() {
+
+	}()
+
+	switch fieldName {
+	case "id":
+		return int32(fieldCount - 2)
+	case "createdAt":
+		return int32(fieldCount - 1)
+	case "updatedAt":
+		return int32(fieldCount)
+	}
+	val := *currentOrder
+	*currentOrder++
+	return int32(val)
 }
 
 // findListTools will search for list tools for the given model
