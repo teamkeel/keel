@@ -39,24 +39,28 @@
           "fieldLocation": { "path": "$.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true
         },
         {
@@ -82,24 +86,28 @@
           "fieldLocation": { "path": "$.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true,
           "imagePreview": true
         },
@@ -107,36 +115,42 @@
           "fieldLocation": { "path": "$.tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 12,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 13,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 14,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author id",
+          "displayOrder": 6,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category id",
+          "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "getCategory",
@@ -184,18 +198,21 @@
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 4,
           "visible": true
         }
       ],
@@ -235,24 +252,28 @@
           "fieldLocation": { "path": "$.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true,
           "imagePreview": true
         },
@@ -260,36 +281,42 @@
           "fieldLocation": { "path": "$.tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 12,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 13,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 14,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author id",
+          "displayOrder": 6,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category id",
+          "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "getCategory",
@@ -333,18 +360,21 @@
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 4,
           "visible": true
         }
       ],
@@ -391,24 +421,28 @@
           "fieldLocation": { "path": "$.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true,
           "imagePreview": true
         },
@@ -416,36 +450,42 @@
           "fieldLocation": { "path": "$.tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 12,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 13,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 14,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author id",
+          "displayOrder": 6,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category id",
+          "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "getCategory",
@@ -472,7 +512,8 @@
           "toolId": "listComments",
           "data": [
             { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
-          ]
+          ],
+          "title": { "template": "comments" }
         }
       ]
     },
@@ -488,25 +529,34 @@
         {
           "fieldLocation": { "path": "$.first" },
           "fieldType": "TYPE_INT",
-          "displayName": "First"
+          "displayName": "First",
+          "displayOrder": 1
         },
         {
           "fieldLocation": { "path": "$.after" },
           "fieldType": "TYPE_STRING",
-          "displayName": "After"
+          "displayName": "After",
+          "displayOrder": 2
         },
         {
           "fieldLocation": { "path": "$.last" },
           "fieldType": "TYPE_INT",
-          "displayName": "Last"
+          "displayName": "Last",
+          "displayOrder": 3
         },
         {
           "fieldLocation": { "path": "$.before" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Before"
+          "displayName": "Before",
+          "displayOrder": 4
         }
       ],
       "response": [
+        {
+          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo"
+        },
         {
           "fieldLocation": { "path": "$.pageInfo.count" },
           "fieldType": "TYPE_INT",
@@ -533,6 +583,12 @@
           "displayName": "End cursor"
         },
         {
+          "fieldLocation": { "path": "$.results" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "Results",
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.results[*].name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
@@ -542,18 +598,21 @@
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 4,
           "visible": true
         }
       ],
@@ -617,6 +676,7 @@
           "fieldLocation": { "path": "$.where.parent.id.oneOf" },
           "fieldType": "TYPE_ID",
           "displayName": "One of",
+          "displayOrder": 1,
           "lookupAction": { "toolId": "listPosts" },
           "getEntryAction": {
             "toolId": "getPost",
@@ -629,6 +689,7 @@
           "fieldLocation": { "path": "$.where.parent.id.notEquals" },
           "fieldType": "TYPE_ID",
           "displayName": "Not equals",
+          "displayOrder": 2,
           "lookupAction": { "toolId": "listPosts" },
           "getEntryAction": {
             "toolId": "getPost",
@@ -643,25 +704,34 @@
         {
           "fieldLocation": { "path": "$.first" },
           "fieldType": "TYPE_INT",
-          "displayName": "First"
+          "displayName": "First",
+          "displayOrder": 1
         },
         {
           "fieldLocation": { "path": "$.after" },
           "fieldType": "TYPE_STRING",
-          "displayName": "After"
+          "displayName": "After",
+          "displayOrder": 2
         },
         {
           "fieldLocation": { "path": "$.last" },
           "fieldType": "TYPE_INT",
-          "displayName": "Last"
+          "displayName": "Last",
+          "displayOrder": 3
         },
         {
           "fieldLocation": { "path": "$.before" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Before"
+          "displayName": "Before",
+          "displayOrder": 4
         }
       ],
       "response": [
+        {
+          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo"
+        },
         {
           "fieldLocation": { "path": "$.pageInfo.count" },
           "fieldType": "TYPE_INT",
@@ -688,6 +758,12 @@
           "displayName": "End cursor"
         },
         {
+          "fieldLocation": { "path": "$.results" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "Results",
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.results[*].content" },
           "fieldType": "TYPE_STRING",
           "displayName": "Content",
@@ -697,30 +773,35 @@
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 6,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 7,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 8,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author id",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].parentId" },
           "fieldType": "TYPE_ID",
           "displayName": "Parent id",
+          "displayOrder": 2,
           "visible": true,
           "link": {
             "toolId": "getPost",
@@ -763,30 +844,40 @@
         {
           "fieldLocation": { "path": "$.first" },
           "fieldType": "TYPE_INT",
-          "displayName": "First"
+          "displayName": "First",
+          "displayOrder": 1
         },
         {
           "fieldLocation": { "path": "$.after" },
           "fieldType": "TYPE_STRING",
-          "displayName": "After"
+          "displayName": "After",
+          "displayOrder": 2
         },
         {
           "fieldLocation": { "path": "$.last" },
           "fieldType": "TYPE_INT",
-          "displayName": "Last"
+          "displayName": "Last",
+          "displayOrder": 3
         },
         {
           "fieldLocation": { "path": "$.before" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Before"
+          "displayName": "Before",
+          "displayOrder": 4
         },
         {
           "fieldLocation": { "path": "$.orderBy" },
           "fieldType": "TYPE_UNION",
-          "displayName": "Order by"
+          "displayName": "Order by",
+          "displayOrder": 5
         }
       ],
       "response": [
+        {
+          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo"
+        },
         {
           "fieldLocation": { "path": "$.pageInfo.count" },
           "fieldType": "TYPE_INT",
@@ -813,6 +904,12 @@
           "displayName": "End cursor"
         },
         {
+          "fieldLocation": { "path": "$.results" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "Results",
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.results[*].title" },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
@@ -823,24 +920,28 @@
           "fieldLocation": { "path": "$.results[*].description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true,
           "imagePreview": true
         },
@@ -848,36 +949,42 @@
           "fieldLocation": { "path": "$.results[*].tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 12,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 13,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 14,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author id",
+          "displayOrder": 6,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category id",
+          "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "getCategory",
@@ -941,25 +1048,34 @@
         {
           "fieldLocation": { "path": "$.first" },
           "fieldType": "TYPE_INT",
-          "displayName": "First"
+          "displayName": "First",
+          "displayOrder": 1
         },
         {
           "fieldLocation": { "path": "$.after" },
           "fieldType": "TYPE_STRING",
-          "displayName": "After"
+          "displayName": "After",
+          "displayOrder": 2
         },
         {
           "fieldLocation": { "path": "$.last" },
           "fieldType": "TYPE_INT",
-          "displayName": "Last"
+          "displayName": "Last",
+          "displayOrder": 3
         },
         {
           "fieldLocation": { "path": "$.before" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Before"
+          "displayName": "Before",
+          "displayOrder": 4
         }
       ],
       "response": [
+        {
+          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo"
+        },
         {
           "fieldLocation": { "path": "$.pageInfo.count" },
           "fieldType": "TYPE_INT",
@@ -986,6 +1102,12 @@
           "displayName": "End cursor"
         },
         {
+          "fieldLocation": { "path": "$.results" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "Results",
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.results[*].title" },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
@@ -995,18 +1117,21 @@
           "fieldLocation": { "path": "$.results[*].description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
+          "displayOrder": 3,
           "visible": true
         },
         {
@@ -1019,24 +1144,28 @@
           "fieldLocation": { "path": "$.results[*].author.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true,
           "imagePreview": true
         },
@@ -1044,36 +1173,42 @@
           "fieldLocation": { "path": "$.results[*].author.tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 12,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 13,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 14,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author id",
+          "displayOrder": 6,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category id",
+          "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "getCategory",
@@ -1089,6 +1224,7 @@
           "fieldLocation": { "path": "$.results[*].image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true,
           "imagePreview": true
         },
@@ -1096,6 +1232,7 @@
           "fieldLocation": { "path": "$.results[*].tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 5,
           "visible": true
         },
         {
@@ -1108,24 +1245,28 @@
           "fieldLocation": { "path": "$.results[*].category.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true,
           "imagePreview": true
         },
@@ -1133,36 +1274,42 @@
           "fieldLocation": { "path": "$.results[*].category.tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 12,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 13,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 14,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author id",
+          "displayOrder": 6,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category id",
+          "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "getCategory",
@@ -1178,30 +1325,35 @@
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 12,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 13,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 14,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author id",
+          "displayOrder": 6,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category id",
+          "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "getCategory",
@@ -1270,7 +1422,8 @@
         {
           "fieldLocation": { "path": "$.redirectUrl" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Redirect url"
+          "displayName": "Redirect url",
+          "displayOrder": 1
         }
       ],
       "entitySingle": "identity",
@@ -1294,7 +1447,8 @@
         {
           "fieldLocation": { "path": "$.password" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Password"
+          "displayName": "Password",
+          "displayOrder": 1
         }
       ],
       "entitySingle": "identity",
@@ -1331,24 +1485,28 @@
           "fieldLocation": { "path": "$.values.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.values.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.values.tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.values.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true
         },
         {
@@ -1376,24 +1534,28 @@
           "fieldLocation": { "path": "$.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
+          "displayOrder": 4,
           "visible": true,
           "imagePreview": true
         },
@@ -1401,36 +1563,42 @@
           "fieldLocation": { "path": "$.tags" },
           "fieldType": "TYPE_STRING",
           "displayName": "Tags",
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
+          "displayOrder": 12,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
+          "displayOrder": 13,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
+          "displayOrder": 14,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author id",
+          "displayOrder": 6,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category id",
+          "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "getCategory",
