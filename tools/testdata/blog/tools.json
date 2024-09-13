@@ -553,6 +553,11 @@
       ],
       "response": [
         {
+          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo"
+        },
+        {
           "fieldLocation": { "path": "$.pageInfo.count" },
           "fieldType": "TYPE_INT",
           "displayName": "Count"
@@ -576,6 +581,12 @@
           "fieldLocation": { "path": "$.pageInfo.endCursor" },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor"
+        },
+        {
+          "fieldLocation": { "path": "$.results" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "Results",
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].name" },
@@ -717,6 +728,11 @@
       ],
       "response": [
         {
+          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo"
+        },
+        {
           "fieldLocation": { "path": "$.pageInfo.count" },
           "fieldType": "TYPE_INT",
           "displayName": "Count"
@@ -740,6 +756,12 @@
           "fieldLocation": { "path": "$.pageInfo.endCursor" },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor"
+        },
+        {
+          "fieldLocation": { "path": "$.results" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "Results",
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].content" },
@@ -852,6 +874,11 @@
       ],
       "response": [
         {
+          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo"
+        },
+        {
           "fieldLocation": { "path": "$.pageInfo.count" },
           "fieldType": "TYPE_INT",
           "displayName": "Count"
@@ -875,6 +902,12 @@
           "fieldLocation": { "path": "$.pageInfo.endCursor" },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor"
+        },
+        {
+          "fieldLocation": { "path": "$.results" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "Results",
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].title" },
@@ -1039,6 +1072,11 @@
       ],
       "response": [
         {
+          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo"
+        },
+        {
           "fieldLocation": { "path": "$.pageInfo.count" },
           "fieldType": "TYPE_INT",
           "displayName": "Count"
@@ -1062,6 +1100,12 @@
           "fieldLocation": { "path": "$.pageInfo.endCursor" },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor"
+        },
+        {
+          "fieldLocation": { "path": "$.results" },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "Results",
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].title" },
