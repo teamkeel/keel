@@ -966,7 +966,6 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 
 	args = append(args, query.args...)
 
-	//var from string
 	if len(query.joins) > 0 {
 		for _, j := range query.joins {
 			joins += fmt.Sprintf("%s JOIN %s AS %s ON %s ", query.joinType, j.table, j.alias, j.condition)
