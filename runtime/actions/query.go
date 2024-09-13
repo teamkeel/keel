@@ -966,15 +966,9 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 
 	args = append(args, query.args...)
 
-	var from string
 	if len(query.joins) > 0 {
-		for i, j := range query.joins {
-			if i == 0 {
-				from = fmt.Sprintf("FROM %s AS %s", j.table, j.alias)
-				queryFilters = append([]string{j.condition, "AND"}, queryFilters...)
-			} else {
-				joins += fmt.Sprintf("%s JOIN %s AS %s ON %s ", query.joinType, j.table, j.alias, j.condition)
-			}
+		for _, j := range query.joins {
+			joins += fmt.Sprintf("%s JOIN %s AS %s ON %s ", query.joinType, j.table, j.alias, j.condition)
 		}
 	}
 
@@ -1004,14 +998,25 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 		commonTableExpressions = fmt.Sprintf("WITH %s", strings.Join(ctes, ", "))
 	}
 
-	template := fmt.Sprintf("%s UPDATE %s SET %s %s %s %s %s",
-		commonTableExpressions,
-		sqlQuote(query.table),
-		strings.Join(sets, ", "),
-		from,
-		joins,
-		filters,
-		returning)
+	var template string
+	if len(query.joins) == 0 {
+		template = fmt.Sprintf("%s UPDATE %s SET %s %s %s",
+			commonTableExpressions,
+			sqlQuote(query.table),
+			strings.Join(sets, ", "),
+			filters,
+			returning)
+	} else {
+		template = fmt.Sprintf("%s UPDATE %s SET %s WHERE \"id\" = (SELECT %s.\"id\" FROM %s %s %s) %s",
+			commonTableExpressions,
+			sqlQuote(query.table),
+			strings.Join(sets, ", "),
+			sqlQuote(query.table),
+			sqlQuote(query.table),
+			joins,
+			filters,
+			returning)
+	}
 
 	return &Statement{
 		template: template,
