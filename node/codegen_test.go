@@ -309,15 +309,15 @@ func TestModelAPIFindManyDeclaration(t *testing.T) {
 	t.Parallel()
 	expected := `
 export type PersonOrderBy = {
-	firstName?: SortDirection,
-	lastName?: SortDirection,
-	age?: SortDirection,
-	dateOfBirth?: SortDirection,
-	gender?: SortDirection,
-	hasChildren?: SortDirection,
-	id?: SortDirection,
-	createdAt?: SortDirection,
-	updatedAt?: SortDirection
+	firstName?: runtime.SortDirection,
+	lastName?: runtime.SortDirection,
+	age?: runtime.SortDirection,
+	dateOfBirth?: runtime.SortDirection,
+	gender?: runtime.SortDirection,
+	hasChildren?: runtime.SortDirection,
+	id?: runtime.SortDirection,
+	createdAt?: runtime.SortDirection,
+	updatedAt?: runtime.SortDirection
 }
 
 export interface PersonFindManyParams {
@@ -1272,10 +1272,10 @@ export interface ListPeopleWhere {
 	favouriteSport: SportQueryInput;
 }
 export interface ListPeopleOrderByName {
-	name: SortDirection;
+	name: runtime.SortDirection;
 }
 export interface ListPeopleOrderByFavouriteSport {
-	favouriteSport: SortDirection;
+	favouriteSport: runtime.SortDirection;
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhere;

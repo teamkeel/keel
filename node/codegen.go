@@ -440,7 +440,7 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 	})
 
 	for i, f := range relevantFields {
-		w.Writef("%s?: SortDirection", f.Name)
+		w.Writef("%s?: runtime.SortDirection", f.Name)
 
 		if i < len(relevantFields)-1 {
 			w.Write(",")
@@ -1721,10 +1721,10 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 			ret = t.ModelName.Value
 		}
 	case proto.Type_TYPE_SORT_DIRECTION:
-		if isTestingPackage {
-			ret = "sdk.SortDirection"
-		} else {
+		if isClientPackage {
 			ret = "SortDirection"
+		} else {
+			ret = "runtime.SortDirection"
 		}
 	case proto.Type_TYPE_UNION:
 		// Retrieve all the types that can satisfy this union field.
