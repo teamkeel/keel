@@ -969,12 +969,7 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 	//var from string
 	if len(query.joins) > 0 {
 		for _, j := range query.joins {
-			//if i == 0 {
-			//	from = fmt.Sprintf("FROM %s AS %s", j.table, j.alias)
-			//	queryFilters = append([]string{j.condition, "AND"}, queryFilters...)
-			//} else {
 			joins += fmt.Sprintf("%s JOIN %s AS %s ON %s ", query.joinType, j.table, j.alias, j.condition)
-			//}
 		}
 	}
 
