@@ -2561,11 +2561,11 @@ var testCases = []testCase{
 		expectedTemplate: `
 			UPDATE "product"
 			SET is_active = ?
-			FROM "brand" AS "product$brand"
-			WHERE
-				"product$brand"."id" = "product"."brand_id" AND
-				"product"."product_code" IS NOT DISTINCT FROM ? AND
-				"product$brand"."code" IS NOT DISTINCT FROM ?
+			WHERE "id" = (
+				SELECT "product"."id" 
+				FROM "product" 
+				LEFT JOIN "brand" AS "product$brand" ON "product$brand"."id" = "product"."brand_id" 
+				WHERE "product"."product_code" IS NOT DISTINCT FROM ? AND "product$brand"."code" IS NOT DISTINCT FROM ?) 
 			RETURNING "product".*`,
 		expectedArgs: []any{false, "prodcode", "brand"},
 	},
@@ -2611,14 +2611,16 @@ var testCases = []testCase{
 		expectedTemplate: `
 			UPDATE "product"
 			SET is_active = ?
-			FROM "brand" AS "product$brand"
-			LEFT JOIN "supplier" AS "product$supplier" ON "product$supplier"."id" = "product"."supplier_id"
-			WHERE
-				"product$brand"."id" = "product"."brand_id" AND
-				"product"."product_code" IS NOT DISTINCT FROM ? AND
-				"product$brand"."code" IS NOT DISTINCT FROM ? AND
-				"product"."is_active" IS NOT DISTINCT FROM ? AND
-				"product$supplier"."is_registered" IS NOT DISTINCT FROM ?
+			WHERE "id" = (
+				SELECT "product"."id" 
+				FROM "product" 
+				LEFT JOIN "brand" AS "product$brand" ON "product$brand"."id" = "product"."brand_id" 
+				LEFT JOIN "supplier" AS "product$supplier" ON "product$supplier"."id" = "product"."supplier_id" 
+				WHERE 
+					"product"."product_code" IS NOT DISTINCT FROM ? AND 
+					"product$brand"."code" IS NOT DISTINCT FROM ? AND 
+					"product"."is_active" IS NOT DISTINCT FROM ? AND 
+					"product$supplier"."is_registered" IS NOT DISTINCT FROM ?)
 			RETURNING "product".*`,
 		expectedArgs: []any{false, "prodcode", "brand", true, true},
 	},
