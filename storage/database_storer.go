@@ -79,10 +79,10 @@ func encodeDataURL(data fileData) string {
 	return ""
 }
 
-func (s *DbStore) Store(url string) (FileResponse, error) {
+func (s *DbStore) Store(url string) (FileInfo, error) {
 	fd, err := decodeDataURL(url)
 	if err != nil {
-		return FileResponse{}, fmt.Errorf("decoding data URL: %w", err)
+		return FileInfo{}, fmt.Errorf("decoding data URL: %w", err)
 	}
 
 	sql := `INSERT INTO ` + dbTable + ` (filename, content_type, data) VALUES (?, ?, ?)  
@@ -92,16 +92,16 @@ func (s *DbStore) Store(url string) (FileResponse, error) {
 			content_type,
 			octet_length(data) as size`
 
-	var fi FileResponse
+	var fi FileInfo
 	db := s.db.GetDB().Raw(sql, fd.Filename, fd.ContentType, fd.Data).Scan(&fi)
 	if db.Error != nil {
-		return FileResponse{}, fmt.Errorf("saving file in db: %w", db.Error)
+		return FileInfo{}, fmt.Errorf("saving file in db: %w", db.Error)
 	}
 
 	return fi, nil
 }
 
-func (s *DbStore) GetFileInfo(key string) (FileResponse, error) {
+func (s *DbStore) GetFileInfo(key string) (FileInfo, error) {
 	sql := `SELECT
 			id AS KEY,
 			filename,
@@ -109,17 +109,17 @@ func (s *DbStore) GetFileInfo(key string) (FileResponse, error) {
 			octet_length(data) AS size
 		FROM ` + dbTable + ` WHERE id = ?`
 
-	var fi FileResponse
+	var fi FileInfo
 
 	db := s.db.GetDB().Raw(sql, key).Scan(&fi)
 	if db.Error != nil {
-		return FileResponse{}, fmt.Errorf("retrieving file info: %w", db.Error)
+		return FileInfo{}, fmt.Errorf("retrieving file info: %w", db.Error)
 	}
 
 	return fi, nil
 }
 
-func (s *DbStore) HydrateFileInfo(fi *FileResponse) (FileResponse, error) {
+func (s *DbStore) GenerateFileResponse(fi *FileInfo) (FileResponse, error) {
 	sql := `SELECT
 			filename,
 			content_type,
@@ -135,10 +135,9 @@ func (s *DbStore) HydrateFileInfo(fi *FileResponse) (FileResponse, error) {
 	dataURL := encodeDataURL(fd)
 
 	return FileResponse{
-		Key:         fi.Key,
 		Filename:    fi.Filename,
 		ContentType: fi.ContentType,
 		Size:        fi.Size,
-		URL:         &dataURL,
+		URL:         dataURL,
 	}, nil
 }

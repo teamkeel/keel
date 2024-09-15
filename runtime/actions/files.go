@@ -49,12 +49,7 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 					return inputs, fmt.Errorf("storing file: %w", err)
 				}
 
-				// ... and then change the input with the file data that should be saved in the db
-				fileInfo, err := fi.ToDbRecord()
-				if err != nil {
-					return inputs, err
-				}
-				inputs[field.Name] = fileInfo
+				inputs[field.Name] = fi
 			}
 		}
 	}
@@ -75,7 +70,7 @@ func transformModelFileResponses(ctx context.Context, model *proto.Model, result
 				return results, fmt.Errorf("invalid response for field: %s", field.Name)
 			}
 
-			fi := storage.FileResponse{}
+			fi := storage.FileInfo{}
 			if err := json.Unmarshal([]byte(data), &fi); err != nil {
 				return results, fmt.Errorf("failed to unmarshal file data: %w", err)
 			}
@@ -83,7 +78,7 @@ func transformModelFileResponses(ctx context.Context, model *proto.Model, result
 			// now we're hydrating the db file info with data from our storage service if we have one
 			// e.g. injecting signed URLs for direct file downloads
 			if store, err := runtimectx.GetStorage(ctx); err == nil {
-				hydrated, err := store.HydrateFileInfo(&fi)
+				hydrated, err := store.GenerateFileResponse(&fi)
 				if err != nil {
 					return results, fmt.Errorf("failed retrieve hydrated file data: %w", err)
 				}
@@ -133,7 +128,7 @@ func transformMessageFileResponses(ctx context.Context, schema *proto.Schema, me
 					return results, fmt.Errorf("invalid response for field: %s", field.Name)
 				}
 
-				fi := storage.FileResponse{
+				fi := storage.FileInfo{
 					Key:         data["key"].(string),
 					Filename:    data["filename"].(string),
 					ContentType: data["contentType"].(string),
@@ -143,7 +138,7 @@ func transformMessageFileResponses(ctx context.Context, schema *proto.Schema, me
 				// now we're hydrating the db file info with data from our storage service if we have one
 				// e.g. injecting signed URLs for direct file downloads
 				if store, err := runtimectx.GetStorage(ctx); err == nil {
-					hydrated, err := store.HydrateFileInfo(&fi)
+					hydrated, err := store.GenerateFileResponse(&fi)
 					if err != nil {
 						return results, fmt.Errorf("failed retrieve hydrated file data: %w", err)
 					}

@@ -561,10 +561,9 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 				"filename":    {Type: "string"},
 				"contentType": {Type: "string"},
 				"size":        {Type: "number"},
-				"key":         {Type: "string"},
 				"url":         {Type: "string"},
 			}
-			prop.Required = []string{"filename", "contentType", "size", "key"}
+			prop.Required = []string{"filename", "contentType", "size", "url"}
 		}
 	}
 

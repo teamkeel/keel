@@ -272,11 +272,10 @@
                       "properties": {
                         "contentType": { "type": "string" },
                         "filename": { "type": "string" },
-                        "key": { "type": "string" },
                         "size": { "type": "number" },
                         "url": { "type": "string" }
                       },
-                      "required": ["filename", "contentType", "size", "key"]
+                      "required": ["filename", "contentType", "size", "url"]
                     }
                   },
                   "additionalProperties": false,
@@ -325,11 +324,10 @@
             "properties": {
               "contentType": { "type": "string" },
               "filename": { "type": "string" },
-              "key": { "type": "string" },
               "size": { "type": "number" },
               "url": { "type": "string" }
             },
-            "required": ["filename", "contentType", "size", "key"]
+            "required": ["filename", "contentType", "size", "url"]
           },
           "updatedAt": { "type": "string", "format": "date-time" }
         },

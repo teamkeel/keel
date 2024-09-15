@@ -187,14 +187,6 @@ var fileType = graphql.NewObject(graphql.ObjectConfig{
 			Type:        graphql.NewNonNull(graphql.String),
 			Description: "The name of the file when it was uploaded.",
 		},
-		"key": &graphql.Field{
-			Type:        graphql.NewNonNull(graphql.String),
-			Description: "Unique reference for this file.",
-		},
-		"public": &graphql.Field{
-			Type:        graphql.NewNonNull(graphql.Boolean),
-			Description: "If the file is public or private.",
-		},
 		"size": &graphql.Field{
 			Type:        graphql.NewNonNull(graphql.Int),
 			Description: "Size of the file in bytes.",
