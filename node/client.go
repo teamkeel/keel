@@ -269,7 +269,7 @@ func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
 		if len(op.GetResponseEmbeds()) > 0 {
 			respName = toResponseType(op.Name)
 		}
-		return "{results: " + respName + "[], pageInfo: PageInfo}"
+		return "{ results: " + respName + "[], pageInfo: PageInfo }"
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		return "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:

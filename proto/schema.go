@@ -45,6 +45,59 @@ func (s *Schema) FindMessage(messageName string) *Message {
 	return nil
 }
 
+// IsActionInputMessage returns true if the message is used to define an action's inputs.
+func (s *Schema) IsActionInputMessage(messageName string) bool {
+	for _, m := range s.Models {
+		for _, a := range m.GetActions() {
+			if a.InputMessageName == messageName {
+				return true
+			}
+
+			msg := s.FindMessage(a.InputMessageName)
+			if msg.hasMessage(s, messageName) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (m *Message) hasMessage(s *Schema, messageName string) bool {
+	for _, f := range m.Fields {
+		if f.Type.Type == Type_TYPE_MESSAGE {
+			if f.Type.MessageName.Value == messageName {
+				return true
+			}
+
+			msg := s.FindMessage(f.Type.MessageName.Value)
+			if msg.hasMessage(s, messageName) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// IsActionResponseMessage returns true if the message is used to define an action's response.
+func (s *Schema) IsActionResponseMessage(messageName string) bool {
+	for _, m := range s.Models {
+		for _, a := range m.GetActions() {
+			if a.ResponseMessageName == messageName {
+				return true
+			}
+
+			if a.ResponseMessageName != "" {
+				msg := s.FindMessage(a.ResponseMessageName)
+				if msg.hasMessage(s, messageName) {
+					return true
+				}
+			}
+
+		}
+	}
+	return false
+}
+
 // ModelNames provides a (sorted) list of all the Model names used in the given schema.
 func (s *Schema) ModelNames() []string {
 	names := lo.Map(s.Models, func(x *Model, _ int) string {

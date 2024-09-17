@@ -503,14 +503,19 @@ func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage boo
 		if msg.Name == parser.MessageFieldTypeAny {
 			continue
 		}
-		writeMessage(w, msg, isTestingPackage, isClientPackage)
+
+		if schema.IsActionResponseMessage(msg.Name) {
+			writeResponseMessage(w, msg, isTestingPackage, isClientPackage)
+		} else {
+			writeInputMessage(w, msg, isTestingPackage, isClientPackage)
+		}
 	}
 }
 
-func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool, isClientPackage bool) {
+func writeInputMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool, isClientPackage bool) {
 	if message.Type != nil {
 		w.Writef("export type %s = ", message.Name)
-		w.Write(toTypeScriptType(message.Type, true, isTestingPackage, false))
+		w.Write(toInputTypescriptType(message.Type, isTestingPackage, isClientPackage))
 		w.Writeln(";")
 		return
 	}
@@ -527,7 +532,44 @@ func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bo
 
 		w.Write(": ")
 
-		w.Write(toTypeScriptType(field.Type, true, isTestingPackage, isClientPackage))
+		w.Write(toInputTypescriptType(field.Type, isTestingPackage, isClientPackage))
+
+		if field.Type.Repeated {
+			w.Write("[]")
+		}
+
+		if field.Nullable {
+			w.Write(" | null")
+		}
+
+		w.Writeln(";")
+	}
+
+	w.Dedent()
+	w.Writeln("}")
+}
+
+func writeResponseMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool, isClientPackage bool) {
+	if message.Type != nil {
+		w.Writef("export type %s = ", message.Name)
+		w.Write(toResponseTypescriptType(message.Type, isTestingPackage, isClientPackage))
+		w.Writeln(";")
+		return
+	}
+
+	w.Writef("export interface %s {\n", message.Name)
+	w.Indent()
+
+	for _, field := range message.Fields {
+		w.Write(field.Name)
+
+		if field.Optional {
+			w.Write("?")
+		}
+
+		w.Write(": ")
+
+		w.Write(toResponseTypescriptType(field.Type, isTestingPackage, isClientPackage))
 
 		if field.Type.Repeated {
 			w.Write("[]")
@@ -1695,6 +1737,32 @@ func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	}
 }
 
+func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
+	switch t.Type {
+	case proto.Type_TYPE_FILE:
+		if isClientPackage {
+			return "string"
+		} else {
+			return "runtime.InlineFile"
+		}
+	default:
+		return toTypeScriptType(t, false, isTestingPackage, isClientPackage)
+	}
+}
+
+func toResponseTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
+	switch t.Type {
+	case proto.Type_TYPE_FILE:
+		if isClientPackage {
+			return "FileApiResponse"
+		} else {
+			return "runtime.File | runtime.InlineFile"
+		}
+	default:
+		return toTypeScriptType(t, false, isTestingPackage, isClientPackage)
+	}
+}
+
 func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_ID:
@@ -1737,7 +1805,7 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
-			ret = "string"
+			ret = "FileApiResponse"
 		} else {
 			if includeCompatibleTypes {
 				ret = "runtime.InlineFile | runtime.File"
@@ -1745,7 +1813,6 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 				ret = "runtime.File"
 			}
 		}
-
 	default:
 		ret = "any"
 	}
@@ -1796,5 +1863,5 @@ func tsDocComment(w *codegen.Writer, f func(w *codegen.Writer)) {
 // toResponseType generates a response type name for the given action name. This is to be used for actions that contain
 // embedded data
 func toResponseType(actionName string) string {
-	return casing.ToCamel(actionName) + "Response"
+	return casing.ToCamel(actionName)
 }
