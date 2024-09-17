@@ -31,6 +31,29 @@ test("client - create with file", async () => {
   expect(contents).toEqual(fileContents);
 });
 
+test("client - list with file", async () => {
+  const fileContents = "hello";
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
+    fileContents
+  ).toString("base64")}`;
+
+  await client.api.mutations.createAccount({
+    name: "Keelson",
+    data: dataUrl,
+  });
+
+  const result = await client.api.queries.listAccounts();
+
+  expect(result.data?.results[0].data.contentType).toEqual("text/plain");
+  expect(result.data?.results[0].data.filename).toEqual("my-file.txt");
+  expect(result.data?.results[0].data.size).toEqual(5);
+
+  const response = await fetch(new URL(result.data!.results[0].data.url));
+  const buffer = Buffer.from(await response.arrayBuffer())
+  const contents = buffer.toString('utf-8')
+  expect(contents).toEqual(fileContents);
+});
+
 test("client - write action with file", async () => {
   const fileContents = "hello";
   const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(

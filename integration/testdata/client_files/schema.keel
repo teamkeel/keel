@@ -8,10 +8,10 @@ model Account {
         create createAccount() with (name, data) {
             @permission(expression: true)
         }
-        get getAccount(id){
+        list listAccounts() {
             @permission(expression: true)
         }
-        write writeAccounts(csv: File) returns (FileResponse){
+        write writeAccounts(csv: File) returns (FileResponse) {
             @permission(expression: true)
         }
     }

@@ -1805,7 +1805,7 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
-			ret = "FileApiResponse"
+			ret = "FileResponseObject"
 		} else {
 			if includeCompatibleTypes {
 				ret = "runtime.InlineFile | runtime.File"
@@ -1863,5 +1863,5 @@ func tsDocComment(w *codegen.Writer, f func(w *codegen.Writer)) {
 // toResponseType generates a response type name for the given action name. This is to be used for actions that contain
 // embedded data
 func toResponseType(actionName string) string {
-	return casing.ToCamel(actionName)
+	return casing.ToCamel(actionName) + "Response"
 }
