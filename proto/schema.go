@@ -62,22 +62,6 @@ func (s *Schema) IsActionInputMessage(messageName string) bool {
 	return false
 }
 
-func (m *Message) hasMessage(s *Schema, messageName string) bool {
-	for _, f := range m.Fields {
-		if f.Type.Type == Type_TYPE_MESSAGE {
-			if f.Type.MessageName.Value == messageName {
-				return true
-			}
-
-			msg := s.FindMessage(f.Type.MessageName.Value)
-			if msg.hasMessage(s, messageName) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 // IsActionResponseMessage returns true if the message is used to define an action's response.
 func (s *Schema) IsActionResponseMessage(messageName string) bool {
 	for _, m := range s.Models {
@@ -93,6 +77,23 @@ func (s *Schema) IsActionResponseMessage(messageName string) bool {
 				}
 			}
 
+		}
+	}
+	return false
+}
+
+// hasMessage will check to see if a message has a field of type messageName recusively
+func (m *Message) hasMessage(s *Schema, messageName string) bool {
+	for _, f := range m.Fields {
+		if f.Type.Type == Type_TYPE_MESSAGE {
+			if f.Type.MessageName.Value == messageName {
+				return true
+			}
+
+			msg := s.FindMessage(f.Type.MessageName.Value)
+			if msg.hasMessage(s, messageName) {
+				return true
+			}
 		}
 	}
 	return false

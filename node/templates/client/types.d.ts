@@ -150,7 +150,7 @@ type PageInfo = {
   totalCount: number;
 };
 
-type FileApiResponse = {
+type FileResponseObject = {
   filename: string;
   contentType: string;
   size: number;

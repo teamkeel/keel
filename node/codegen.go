@@ -1754,7 +1754,7 @@ func toResponseTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClient
 	switch t.Type {
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
-			return "FileApiResponse"
+			return "FileResponseObject"
 		} else {
 			return "runtime.File | runtime.InlineFile"
 		}
