@@ -135,6 +135,7 @@ func (s *DbStore) GenerateFileResponse(fi *FileInfo) (FileResponse, error) {
 	dataURL := encodeDataURL(fd)
 
 	return FileResponse{
+		Key:         fi.Key,
 		Filename:    fi.Filename,
 		ContentType: fi.ContentType,
 		Size:        fi.Size,

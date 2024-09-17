@@ -33,6 +33,7 @@ type FileInfo struct {
 
 // FileResponse is what is returned from our APIs
 type FileResponse struct {
+	Key         string `json:"key"`
 	Filename    string `json:"filename"`
 	ContentType string `json:"contentType"`
 	Size        int    `json:"size"`
@@ -44,5 +45,14 @@ func (fi *FileInfo) ToJSON() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("marshalling to json: %w", err)
 	}
+	return string(json), nil
+}
+
+func (fi *FileInfo) ToDbRecord() (string, error) {
+	json, err := json.Marshal(fi)
+	if err != nil {
+		return "", fmt.Errorf("marshalling to json: %w", err)
+	}
+
 	return string(json), nil
 }

@@ -281,12 +281,13 @@
           "picture": {
             "type": "object",
             "properties": {
+              "key": { "type": "string" },
               "contentType": { "type": "string" },
               "filename": { "type": "string" },
               "size": { "type": "number" },
               "url": { "type": "string" }
             },
-            "required": ["filename", "contentType", "size", "url"]
+            "required": ["key", "filename", "contentType", "size", "url"]
           },
           "updatedAt": { "type": "string", "format": "date-time" },
           "weight": { "type": "number", "format": "float" }

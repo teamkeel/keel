@@ -558,12 +558,13 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 			// if the field is as part of a response, then the action is nil and we want to return an object
 			prop.Type = "object"
 			prop.Properties = map[string]JSONSchema{
+				"key":         {Type: "string"},
 				"filename":    {Type: "string"},
 				"contentType": {Type: "string"},
 				"size":        {Type: "number"},
 				"url":         {Type: "string"},
 			}
-			prop.Required = []string{"filename", "contentType", "size", "url"}
+			prop.Required = []string{"key", "filename", "contentType", "size", "url"}
 		}
 	}
 

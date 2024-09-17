@@ -179,6 +179,10 @@ var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
 var fileType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "File",
 	Fields: graphql.Fields{
+		"key": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "Unique reference for this file.",
+		},
 		"contentType": &graphql.Field{
 			Type:        graphql.NewNonNull(graphql.String),
 			Description: "MIME type for the file.",

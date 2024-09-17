@@ -49,7 +49,12 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 					return inputs, fmt.Errorf("storing file: %w", err)
 				}
 
-				inputs[field.Name] = fi
+				// ... and then change the input with the file data that should be saved in the db
+				fileInfo, err := fi.ToDbRecord()
+				if err != nil {
+					return inputs, err
+				}
+				inputs[field.Name] = fileInfo
 			}
 		}
 	}
