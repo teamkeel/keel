@@ -65,6 +65,17 @@
         },
         {
           "modelName": "Post",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Author",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Post",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -93,17 +104,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "authorId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Author",
-            "relatedModelField": "id"
           }
         }
       ],
@@ -139,7 +139,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -176,7 +178,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -410,7 +414,9 @@
             "modelName": "Post",
             "fieldName": "content"
           },
-          "target": ["content"]
+          "target": [
+            "content"
+          ]
         },
         {
           "messageName": "CreatePostBInput",
@@ -433,7 +439,10 @@
             "modelName": "Author",
             "fieldName": "id"
           },
-          "target": ["author", "id"]
+          "target": [
+            "author",
+            "id"
+          ]
         }
       ]
     },
@@ -448,7 +457,9 @@
             "modelName": "Post",
             "fieldName": "content"
           },
-          "target": ["content"]
+          "target": [
+            "content"
+          ]
         },
         {
           "messageName": "CreatePostCInput",

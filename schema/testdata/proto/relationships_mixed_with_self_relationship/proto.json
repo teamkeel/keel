@@ -16,6 +16,18 @@
         },
         {
           "modelName": "Company",
+          "name": "ownerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Person",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Company",
           "name": "employees",
           "type": {
             "type": "TYPE_MODEL",
@@ -35,6 +47,19 @@
           "unique": true,
           "foreignKeyFieldName": "parentCompanyId",
           "inverseFieldName": "childCompany"
+        },
+        {
+          "modelName": "Company",
+          "name": "parentCompanyId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Company",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Company",
@@ -77,31 +102,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Company",
-          "name": "ownerId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Person",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Company",
-          "name": "parentCompanyId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Company",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -117,6 +117,17 @@
           },
           "foreignKeyFieldName": "employedById",
           "inverseFieldName": "employees"
+        },
+        {
+          "modelName": "Person",
+          "name": "employedById",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Company",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Person",
@@ -158,17 +169,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Person",
-          "name": "employedById",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Company",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -182,7 +182,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -219,7 +221,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",

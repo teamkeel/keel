@@ -183,6 +183,17 @@
         },
         {
           "modelName": "User",
+          "name": "assignedProductId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Product",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "User",
           "name": "identity",
           "type": {
             "type": "TYPE_MODEL",
@@ -191,6 +202,18 @@
           "unique": true,
           "foreignKeyFieldName": "identityId",
           "inverseFieldName": "user"
+        },
+        {
+          "modelName": "User",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "User",
@@ -223,29 +246,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "User",
-          "name": "assignedProductId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Product",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "User",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -259,7 +259,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -296,7 +298,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -564,7 +568,9 @@
             "modelName": "Product",
             "fieldName": "sku"
           },
-          "target": ["sku"]
+          "target": [
+            "sku"
+          ]
         }
       ]
     },
@@ -591,7 +597,9 @@
             "modelName": "Product",
             "fieldName": "name"
           },
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         }
       ]
     },
@@ -609,7 +617,9 @@
             "modelName": "Product",
             "fieldName": "sku"
           },
-          "target": ["sku"]
+          "target": [
+            "sku"
+          ]
         }
       ]
     },

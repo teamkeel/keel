@@ -32,6 +32,19 @@
         },
         {
           "modelName": "Product",
+          "name": "stockId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "ProductStock",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Product",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -60,19 +73,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Product",
-          "name": "stockId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "ProductStock",
-            "relatedModelField": "id"
           }
         }
       ],
@@ -233,7 +233,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -270,7 +272,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -524,7 +528,10 @@
             "modelName": "ProductStock",
             "fieldName": "id"
           },
-          "target": ["stock", "id"]
+          "target": [
+            "stock",
+            "id"
+          ]
         }
       ]
     },
@@ -539,7 +546,10 @@
             "modelName": "ProductStock",
             "fieldName": "barcode"
           },
-          "target": ["stock", "barcode"]
+          "target": [
+            "stock",
+            "barcode"
+          ]
         }
       ]
     },
@@ -566,7 +576,10 @@
             "modelName": "ProductStock",
             "fieldName": "barcode"
           },
-          "target": ["stock", "barcode"]
+          "target": [
+            "stock",
+            "barcode"
+          ]
         }
       ]
     },
@@ -605,7 +618,9 @@
             "modelName": "Product",
             "fieldName": "sku"
           },
-          "target": ["sku"]
+          "target": [
+            "sku"
+          ]
         }
       ]
     },
@@ -620,7 +635,10 @@
             "modelName": "Product",
             "fieldName": "sku"
           },
-          "target": ["product", "sku"]
+          "target": [
+            "product",
+            "sku"
+          ]
         }
       ]
     }

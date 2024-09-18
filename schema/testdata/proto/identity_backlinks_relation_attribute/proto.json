@@ -16,6 +16,18 @@
         },
         {
           "modelName": "CompanyEmployee",
+          "name": "abcIdentityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "CompanyEmployee",
           "name": "xyzIdentity",
           "type": {
             "type": "TYPE_MODEL",
@@ -24,6 +36,18 @@
           "unique": true,
           "foreignKeyFieldName": "xyzIdentityId",
           "inverseFieldName": "xyzEmployee"
+        },
+        {
+          "modelName": "CompanyEmployee",
+          "name": "xyzIdentityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "CompanyEmployee",
@@ -56,30 +80,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "CompanyEmployee",
-          "name": "abcIdentityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "CompanyEmployee",
-          "name": "xyzIdentityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -93,7 +93,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -130,7 +132,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",

@@ -7,6 +7,7 @@ import (
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
+	"golang.org/x/exp/slices"
 
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema/node"
@@ -289,9 +290,9 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 // generated and injected into each model.
 func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) *errorhandling.ErrorDetails {
 	for _, mdl := range query.Models(asts) {
-		fkFieldsToAdd := []*parser.FieldNode{}
+		fkFieldsToAdd := map[int]*parser.FieldNode{}
 
-		for _, field := range query.ModelFields(mdl) {
+		for i, field := range query.ModelFields(mdl) {
 			if query.Model(asts, field.Type.Value) == nil {
 				continue
 			}
@@ -322,8 +323,6 @@ func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) *errorhandling.Er
 
 			referredToModelPK := query.PrimaryKey(referredToModelName, asts)
 
-			// This is the single source of truth for how we name foreign key fields.
-			// Later on, we'll let the the user name them in the schema language.
 			generatedForeignKeyName := field.Name.Value + casing.ToCamel(referredToModelPK.Name.Value)
 
 			fkField := &parser.FieldNode{
@@ -346,12 +345,18 @@ func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) *errorhandling.Er
 				fkField.Attributes = append(fkField.Attributes, &attr)
 			}
 
-			fkFieldsToAdd = append(fkFieldsToAdd, fkField)
+			//fkFieldsToAdd = append(fkFieldsToAdd, fkField)
+			fkFieldsToAdd[i] = fkField
 		}
-		// Add the new FK fields to the existing model's fields section.
+
+		// Add the new FK fields to the existing model's fields section at the same location as the model fields.
+		offset := 1
 		for _, section := range mdl.Sections {
 			if section.Fields != nil {
-				section.Fields = append(section.Fields, fkFieldsToAdd...)
+				for k, v := range fkFieldsToAdd {
+					section.Fields = slices.Insert(section.Fields, k+offset, v)
+					offset++
+				}
 			}
 		}
 	}

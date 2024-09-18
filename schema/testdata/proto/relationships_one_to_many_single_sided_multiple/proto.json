@@ -14,12 +14,34 @@
         },
         {
           "modelName": "Author",
+          "name": "topPostId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Post",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Author",
           "name": "worstPost",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Post"
           },
           "foreignKeyFieldName": "worstPostId"
+        },
+        {
+          "modelName": "Author",
+          "name": "worstPostId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Post",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Author",
@@ -51,28 +73,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Author",
-          "name": "topPostId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Post",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Author",
-          "name": "worstPostId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Post",
-            "relatedModelField": "id"
           }
         }
       ]
@@ -91,12 +91,34 @@
         },
         {
           "modelName": "Post",
+          "name": "authoredById",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Author",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Post",
           "name": "coAuthoredBy",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Author"
           },
           "foreignKeyFieldName": "coAuthoredById"
+        },
+        {
+          "modelName": "Post",
+          "name": "coAuthoredById",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Author",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Post",
@@ -129,28 +151,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Post",
-          "name": "authoredById",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Author",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "coAuthoredById",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Author",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -164,7 +164,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -201,7 +203,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",

@@ -16,6 +16,18 @@
         },
         {
           "modelName": "Person",
+          "name": "motherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Person",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Person",
           "name": "children",
           "type": {
             "type": "TYPE_MODEL",
@@ -55,18 +67,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Person",
-          "name": "motherId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Person",
-            "relatedModelField": "id"
-          }
         }
       ],
       "actions": [
@@ -89,7 +89,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -126,7 +128,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",

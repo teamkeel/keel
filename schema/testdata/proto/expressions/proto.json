@@ -36,6 +36,17 @@
         },
         {
           "modelName": "Person",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Person",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -64,17 +75,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Person",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
           }
         }
       ],
@@ -139,7 +139,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -176,7 +178,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -465,7 +469,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         }
       ]
     },
@@ -525,7 +531,9 @@
             "modelName": "Person",
             "fieldName": "name"
           },
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         }
       ]
     },
@@ -540,7 +548,9 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },

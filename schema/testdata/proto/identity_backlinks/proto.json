@@ -16,6 +16,18 @@
         },
         {
           "modelName": "CompanyEmployee",
+          "name": "pIdentityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "CompanyEmployee",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -45,18 +57,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "CompanyEmployee",
-          "name": "pIdentityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -70,7 +70,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -107,7 +109,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",

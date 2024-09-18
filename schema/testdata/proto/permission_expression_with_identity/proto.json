@@ -17,6 +17,19 @@
         },
         {
           "modelName": "Account",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Account",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -46,19 +59,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Account",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
         }
       ],
       "actions": [
@@ -81,7 +81,9 @@
           "expression": {
             "source": "account.identity == ctx.identity"
           },
-          "actionTypes": ["ACTION_TYPE_CREATE"]
+          "actionTypes": [
+            "ACTION_TYPE_CREATE"
+          ]
         }
       ]
     },
@@ -95,7 +97,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -132,7 +136,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",

@@ -70,6 +70,18 @@
         },
         {
           "modelName": "Author",
+          "name": "publisherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Publisher",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Author",
           "name": "books",
           "type": {
             "type": "TYPE_MODEL",
@@ -109,18 +121,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Author",
-          "name": "publisherId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Publisher",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -136,6 +136,17 @@
           },
           "foreignKeyFieldName": "authorId",
           "inverseFieldName": "books"
+        },
+        {
+          "modelName": "Book",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Author",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Book",
@@ -168,17 +179,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Book",
-          "name": "authorId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Author",
-            "relatedModelField": "id"
-          }
         }
       ],
       "actions": [
@@ -201,7 +201,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -238,7 +240,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -484,7 +488,11 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "target": ["author", "publisher", "name"]
+          "target": [
+            "author",
+            "publisher",
+            "name"
+          ]
         }
       ]
     },

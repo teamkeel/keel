@@ -9,7 +9,9 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "uniqueWith": ["publisher"]
+          "uniqueWith": [
+            "publisher"
+          ]
         },
         {
           "modelName": "Product",
@@ -18,8 +20,21 @@
             "type": "TYPE_MODEL",
             "modelName": "Publisher"
           },
-          "uniqueWith": ["name"],
+          "uniqueWith": [
+            "name"
+          ],
           "foreignKeyFieldName": "publisherId"
+        },
+        {
+          "modelName": "Product",
+          "name": "publisherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Publisher",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Product",
@@ -51,17 +66,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Product",
-          "name": "publisherId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Publisher",
-            "relatedModelField": "id"
           }
         }
       ]
@@ -113,7 +117,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -150,7 +156,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",

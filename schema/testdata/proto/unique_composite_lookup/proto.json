@@ -14,6 +14,17 @@
         },
         {
           "modelName": "User",
+          "name": "assignedProductId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Product",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "User",
           "name": "identity",
           "type": {
             "type": "TYPE_MODEL",
@@ -22,6 +33,18 @@
           "unique": true,
           "foreignKeyFieldName": "identityId",
           "inverseFieldName": "user"
+        },
+        {
+          "modelName": "User",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "User",
@@ -53,29 +76,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "User",
-          "name": "assignedProductId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Product",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "User",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
           }
         }
       ]
@@ -111,14 +111,39 @@
         },
         {
           "modelName": "Product",
+          "name": "stockId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Stock",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Product",
           "name": "supplier",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Supplier"
           },
-          "uniqueWith": ["supplierSku"],
+          "uniqueWith": [
+            "supplierSku"
+          ],
           "foreignKeyFieldName": "supplierId",
           "inverseFieldName": "products"
+        },
+        {
+          "modelName": "Product",
+          "name": "supplierId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Supplier",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Product",
@@ -126,7 +151,9 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "uniqueWith": ["supplier"]
+          "uniqueWith": [
+            "supplier"
+          ]
         },
         {
           "modelName": "Product",
@@ -165,29 +192,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Product",
-          "name": "stockId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Stock",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Product",
-          "name": "supplierId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Supplier",
-            "relatedModelField": "id"
           }
         }
       ],
@@ -449,7 +453,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -486,7 +492,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -770,7 +778,9 @@
             "modelName": "Product",
             "fieldName": "supplierSku"
           },
-          "target": ["supplierSku"]
+          "target": [
+            "supplierSku"
+          ]
         },
         {
           "messageName": "GetBySupplierSkuInputAndIdInputInput",
@@ -780,7 +790,10 @@
             "modelName": "Supplier",
             "fieldName": "id"
           },
-          "target": ["supplier", "id"]
+          "target": [
+            "supplier",
+            "id"
+          ]
         }
       ]
     },
@@ -795,7 +808,9 @@
             "modelName": "Product",
             "fieldName": "supplierSku"
           },
-          "target": ["supplierSku"]
+          "target": [
+            "supplierSku"
+          ]
         },
         {
           "messageName": "GetBySupplierSkuInputAndCodeInputInput",
@@ -805,7 +820,10 @@
             "modelName": "Supplier",
             "fieldName": "supplierCode"
           },
-          "target": ["supplier", "supplierCode"]
+          "target": [
+            "supplier",
+            "supplierCode"
+          ]
         }
       ]
     },
@@ -877,7 +895,9 @@
             "modelName": "Product",
             "fieldName": "supplierSku"
           },
-          "target": ["supplierSku"]
+          "target": [
+            "supplierSku"
+          ]
         }
       ]
     },
@@ -895,7 +915,10 @@
             "modelName": "Product",
             "fieldName": "supplierSku"
           },
-          "target": ["product", "supplierSku"]
+          "target": [
+            "product",
+            "supplierSku"
+          ]
         },
         {
           "messageName": "GetBySupplierSkuAndCodeInput",
@@ -905,7 +928,11 @@
             "modelName": "Supplier",
             "fieldName": "supplierCode"
           },
-          "target": ["product", "supplier", "supplierCode"]
+          "target": [
+            "product",
+            "supplier",
+            "supplierCode"
+          ]
         }
       ]
     },
@@ -920,7 +947,10 @@
             "modelName": "Product",
             "fieldName": "sku"
           },
-          "target": ["product", "sku"]
+          "target": [
+            "product",
+            "sku"
+          ]
         }
       ]
     },
@@ -938,7 +968,9 @@
             "modelName": "Supplier",
             "fieldName": "supplierCode"
           },
-          "target": ["supplierCode"]
+          "target": [
+            "supplierCode"
+          ]
         }
       ]
     },
@@ -953,7 +985,10 @@
             "modelName": "Product",
             "fieldName": "sku"
           },
-          "target": ["products", "sku"]
+          "target": [
+            "products",
+            "sku"
+          ]
         }
       ]
     }
