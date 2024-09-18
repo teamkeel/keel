@@ -25,17 +25,6 @@
         },
         {
           "modelName": "Author",
-          "name": "coWrittenId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Post",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Author",
           "name": "writtenId",
           "type": {
             "type": "TYPE_ID"
@@ -54,6 +43,17 @@
           },
           "unique": true,
           "foreignKeyFieldName": "reviewedId"
+        },
+        {
+          "modelName": "Author",
+          "name": "coWrittenId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Post",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Author",

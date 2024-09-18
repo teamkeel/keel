@@ -16,6 +16,17 @@
         },
         {
           "modelName": "User",
+          "name": "student2",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Student"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "student2Id",
+          "inverseFieldName": "user2"
+        },
+        {
+          "modelName": "User",
           "name": "studentId",
           "type": {
             "type": "TYPE_ID"
@@ -25,17 +36,6 @@
             "relatedModelName": "Student",
             "relatedModelField": "id"
           }
-        },
-        {
-          "modelName": "User",
-          "name": "student2",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Student"
-          },
-          "unique": true,
-          "foreignKeyFieldName": "student2Id",
-          "inverseFieldName": "user2"
         },
         {
           "modelName": "User",

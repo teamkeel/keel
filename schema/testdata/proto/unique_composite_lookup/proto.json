@@ -14,17 +14,6 @@
         },
         {
           "modelName": "User",
-          "name": "identity",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
-          },
-          "unique": true,
-          "foreignKeyFieldName": "identityId",
-          "inverseFieldName": "user"
-        },
-        {
-          "modelName": "User",
           "name": "assignedProductId",
           "type": {
             "type": "TYPE_ID"
@@ -33,6 +22,17 @@
             "relatedModelName": "Product",
             "relatedModelField": "id"
           }
+        },
+        {
+          "modelName": "User",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "identityId",
+          "inverseFieldName": "user"
         },
         {
           "modelName": "User",

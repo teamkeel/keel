@@ -21,17 +21,6 @@
         },
         {
           "modelName": "Record",
-          "name": "ownerId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "User",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Record",
           "name": "organisation",
           "type": {
             "type": "TYPE_MODEL",
@@ -41,12 +30,12 @@
         },
         {
           "modelName": "Record",
-          "name": "organisationId",
+          "name": "ownerId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Organisation",
+            "relatedModelName": "User",
             "relatedModelField": "id"
           }
         },
@@ -60,6 +49,17 @@
             "expression": {
               "source": "false"
             }
+          }
+        },
+        {
+          "modelName": "Record",
+          "name": "organisationId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Organisation",
+            "relatedModelField": "id"
           }
         },
         {

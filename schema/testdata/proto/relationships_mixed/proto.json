@@ -25,16 +25,6 @@
         },
         {
           "modelName": "Author",
-          "name": "starPost",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Post"
-          },
-          "unique": true,
-          "foreignKeyFieldName": "starPostId"
-        },
-        {
-          "modelName": "Author",
           "name": "reviewedId",
           "type": {
             "type": "TYPE_ID"
@@ -43,6 +33,16 @@
             "relatedModelName": "Post",
             "relatedModelField": "id"
           }
+        },
+        {
+          "modelName": "Author",
+          "name": "starPost",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Post"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "starPostId"
         },
         {
           "modelName": "Author",

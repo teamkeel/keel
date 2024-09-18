@@ -91,6 +91,15 @@
         },
         {
           "modelName": "Post",
+          "name": "coAuthoredBy",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Author"
+          },
+          "foreignKeyFieldName": "coAuthoredById"
+        },
+        {
+          "modelName": "Post",
           "name": "authoredById",
           "type": {
             "type": "TYPE_ID"
@@ -99,15 +108,6 @@
             "relatedModelName": "Author",
             "relatedModelField": "id"
           }
-        },
-        {
-          "modelName": "Post",
-          "name": "coAuthoredBy",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Author"
-          },
-          "foreignKeyFieldName": "coAuthoredById"
         },
         {
           "modelName": "Post",
@@ -164,7 +164,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -201,7 +203,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",

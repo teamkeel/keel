@@ -31,6 +31,16 @@
         },
         {
           "modelName": "Post",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Publisher"
+          },
+          "optional": true,
+          "foreignKeyFieldName": "publisherId"
+        },
+        {
+          "modelName": "Post",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
@@ -40,16 +50,6 @@
             "relatedModelName": "Identity",
             "relatedModelField": "id"
           }
-        },
-        {
-          "modelName": "Post",
-          "name": "publisher",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Publisher"
-          },
-          "optional": true,
-          "foreignKeyFieldName": "publisherId"
         },
         {
           "modelName": "Post",
@@ -351,16 +351,6 @@
         },
         {
           "modelName": "Department",
-          "name": "head",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Person"
-          },
-          "optional": true,
-          "foreignKeyFieldName": "headId"
-        },
-        {
-          "modelName": "Department",
           "name": "publisherId",
           "type": {
             "type": "TYPE_ID"
@@ -369,6 +359,16 @@
             "relatedModelName": "Publisher",
             "relatedModelField": "id"
           }
+        },
+        {
+          "modelName": "Department",
+          "name": "head",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Person"
+          },
+          "optional": true,
+          "foreignKeyFieldName": "headId"
         },
         {
           "modelName": "Department",

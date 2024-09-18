@@ -14,15 +14,6 @@
         },
         {
           "modelName": "Post",
-          "name": "coAuthor",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Author"
-          },
-          "foreignKeyFieldName": "coAuthorId"
-        },
-        {
-          "modelName": "Post",
           "name": "authorId",
           "type": {
             "type": "TYPE_ID"
@@ -31,6 +22,15 @@
             "relatedModelName": "Author",
             "relatedModelField": "id"
           }
+        },
+        {
+          "modelName": "Post",
+          "name": "coAuthor",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Author"
+          },
+          "foreignKeyFieldName": "coAuthorId"
         },
         {
           "modelName": "Post",
