@@ -4,9 +4,7 @@
       "id": "readInvoices",
       "name": "Read invoices",
       "actionName": "readInvoices",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Invoice",
       "actionType": "ACTION_TYPE_READ",
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
@@ -119,9 +117,7 @@
       "id": "requestPasswordReset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -152,9 +148,7 @@
       "id": "resetPassword",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
