@@ -240,6 +240,17 @@
         },
         {
           "modelName": "Publisher",
+          "name": "ownerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Person",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Publisher",
           "name": "departments",
           "type": {
             "type": "TYPE_MODEL",
@@ -256,17 +267,6 @@
             "modelName": "Country"
           },
           "foreignKeyFieldName": "countryId"
-        },
-        {
-          "modelName": "Publisher",
-          "name": "ownerId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Person",
-            "relatedModelField": "id"
-          }
         },
         {
           "modelName": "Publisher",

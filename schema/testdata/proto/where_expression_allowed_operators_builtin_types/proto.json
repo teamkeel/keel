@@ -35,6 +35,13 @@
         },
         {
           "modelName": "Post",
+          "name": "date",
+          "type": {
+            "type": "TYPE_DATE"
+          }
+        },
+        {
+          "modelName": "Post",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
@@ -42,13 +49,6 @@
           "foreignKeyInfo": {
             "relatedModelName": "Identity",
             "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "date",
-          "type": {
-            "type": "TYPE_DATE"
           }
         },
         {

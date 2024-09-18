@@ -21,6 +21,16 @@
         },
         {
           "modelName": "Person",
+          "name": "previousCompany",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Company"
+          },
+          "optional": true,
+          "foreignKeyFieldName": "previousCompanyId"
+        },
+        {
+          "modelName": "Person",
           "name": "companyId",
           "type": {
             "type": "TYPE_ID"
@@ -29,16 +39,6 @@
             "relatedModelName": "Company",
             "relatedModelField": "id"
           }
-        },
-        {
-          "modelName": "Person",
-          "name": "previousCompany",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Company"
-          },
-          "optional": true,
-          "foreignKeyFieldName": "previousCompanyId"
         },
         {
           "modelName": "Person",

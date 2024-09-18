@@ -21,6 +21,16 @@
         },
         {
           "modelName": "ChildModel",
+          "name": "parentOptional",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "ParentModel"
+          },
+          "optional": true,
+          "foreignKeyFieldName": "parentOptionalId"
+        },
+        {
+          "modelName": "ChildModel",
           "name": "parentId",
           "type": {
             "type": "TYPE_ID"
@@ -29,16 +39,6 @@
             "relatedModelName": "ParentModel",
             "relatedModelField": "id"
           }
-        },
-        {
-          "modelName": "ChildModel",
-          "name": "parentOptional",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "ParentModel"
-          },
-          "optional": true,
-          "foreignKeyFieldName": "parentOptionalId"
         },
         {
           "modelName": "ChildModel",
