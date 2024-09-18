@@ -81,6 +81,15 @@
         },
         {
           "fieldLocation": {
+            "path": "$.customerId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Customer id",
+          "displayOrder": 1,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
             "path": "$.id"
           },
           "fieldType": "TYPE_ID",
@@ -104,15 +113,6 @@
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 7,
-          "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.customerId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Customer id",
-          "displayOrder": 1,
           "visible": true
         }
       ],
