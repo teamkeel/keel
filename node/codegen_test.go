@@ -81,12 +81,11 @@ model Account {
 
 	expected := `
 export interface Account {
+	identityId: string
 	id: string
 	createdAt: Date
 	updatedAt: Date
-	identityId: string
-}
-`
+}`
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := s.FindModel("Account")
 		writeModelInterface(w, m, false)
@@ -1427,10 +1426,10 @@ model Person {
 		updatedAt: Date
 	}
 	birthplace: City
+	countryId: string
 	id: string
 	createdAt: Date
 	updatedAt: Date
-	countryId: string
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
