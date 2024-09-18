@@ -14,6 +14,15 @@
         },
         {
           "modelName": "Post",
+          "name": "coAuthor",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Author"
+          },
+          "foreignKeyFieldName": "coAuthorId"
+        },
+        {
+          "modelName": "Post",
           "name": "authorId",
           "type": {
             "type": "TYPE_ID"
@@ -22,15 +31,6 @@
             "relatedModelName": "Author",
             "relatedModelField": "id"
           }
-        },
-        {
-          "modelName": "Post",
-          "name": "coAuthor",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Author"
-          },
-          "foreignKeyFieldName": "coAuthorId"
         },
         {
           "modelName": "Post",
@@ -124,7 +124,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -161,7 +163,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",

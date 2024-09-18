@@ -30,6 +30,17 @@
         },
         {
           "modelName": "Record",
+          "name": "organisationId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Organisation",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Record",
           "name": "ownerId",
           "type": {
             "type": "TYPE_ID"
@@ -49,17 +60,6 @@
             "expression": {
               "source": "false"
             }
-          }
-        },
-        {
-          "modelName": "Record",
-          "name": "organisationId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Organisation",
-            "relatedModelField": "id"
           }
         },
         {
@@ -329,7 +329,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -366,7 +368,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -613,7 +617,9 @@
             "modelName": "Record",
             "fieldName": "name"
           },
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         }
       ]
     },
@@ -628,7 +634,9 @@
             "modelName": "Record",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },

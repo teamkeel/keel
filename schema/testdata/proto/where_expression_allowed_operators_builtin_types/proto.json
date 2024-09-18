@@ -35,13 +35,6 @@
         },
         {
           "modelName": "Post",
-          "name": "date",
-          "type": {
-            "type": "TYPE_DATE"
-          }
-        },
-        {
-          "modelName": "Post",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
@@ -49,6 +42,13 @@
           "foreignKeyInfo": {
             "relatedModelName": "Identity",
             "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Post",
+          "name": "date",
+          "type": {
+            "type": "TYPE_DATE"
           }
         },
         {
@@ -310,7 +310,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -347,7 +349,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
