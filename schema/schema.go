@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"golang.org/x/exp/slices"
@@ -350,10 +351,12 @@ func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) *errorhandling.Er
 
 		// Add the new FK fields to the existing model's fields section at the same location as the model fields.
 		offset := 1
+		keys := lo.Keys(fkFieldsToAdd)
+		slices.Sort(keys)
 		for _, section := range mdl.Sections {
 			if section.Fields != nil {
-				for k, v := range fkFieldsToAdd {
-					section.Fields = slices.Insert(section.Fields, k+offset, v)
+				for _, v := range keys {
+					section.Fields = slices.Insert(section.Fields, v+offset, fkFieldsToAdd[v])
 					offset++
 				}
 			}

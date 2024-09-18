@@ -15,6 +15,17 @@
         },
         {
           "modelName": "Author",
+          "name": "writtenId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Post",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Author",
           "name": "coWritten",
           "type": {
             "type": "TYPE_MODEL",
@@ -25,7 +36,7 @@
         },
         {
           "modelName": "Author",
-          "name": "writtenId",
+          "name": "coWrittenId",
           "type": {
             "type": "TYPE_ID"
           },
@@ -43,17 +54,6 @@
           },
           "unique": true,
           "foreignKeyFieldName": "reviewedId"
-        },
-        {
-          "modelName": "Author",
-          "name": "coWrittenId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Post",
-            "relatedModelField": "id"
-          }
         },
         {
           "modelName": "Author",
@@ -168,9 +168,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -207,9 +205,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",

@@ -6,25 +6,25 @@
         {
           "modelName": "ChildModel",
           "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL"
-          }
+          "type": { "type": "TYPE_BOOL" }
         },
         {
           "modelName": "ChildModel",
           "name": "parent",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "ParentModel"
-          },
+          "type": { "type": "TYPE_MODEL", "modelName": "ParentModel" },
           "foreignKeyFieldName": "parentId"
         },
         {
           "modelName": "ChildModel",
+          "name": "parentOptional",
+          "type": { "type": "TYPE_MODEL", "modelName": "ParentModel" },
+          "optional": true,
+          "foreignKeyFieldName": "parentOptionalId"
+        },
+        {
+          "modelName": "ChildModel",
           "name": "parentId",
-          "type": {
-            "type": "TYPE_ID"
-          },
+          "type": { "type": "TYPE_ID" },
           "foreignKeyInfo": {
             "relatedModelName": "ParentModel",
             "relatedModelField": "id"
@@ -32,20 +32,8 @@
         },
         {
           "modelName": "ChildModel",
-          "name": "parentOptional",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "ParentModel"
-          },
-          "optional": true,
-          "foreignKeyFieldName": "parentOptionalId"
-        },
-        {
-          "modelName": "ChildModel",
           "name": "parentOptionalId",
-          "type": {
-            "type": "TYPE_ID"
-          },
+          "type": { "type": "TYPE_ID" },
           "optional": true,
           "foreignKeyInfo": {
             "relatedModelName": "ParentModel",
@@ -55,34 +43,22 @@
         {
           "modelName": "ChildModel",
           "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          },
+          "type": { "type": "TYPE_ID" },
           "unique": true,
           "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
+          "defaultValue": { "useZeroValue": true }
         },
         {
           "modelName": "ChildModel",
           "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
+          "type": { "type": "TYPE_DATETIME" },
+          "defaultValue": { "useZeroValue": true }
         },
         {
           "modelName": "ChildModel",
           "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
+          "type": { "type": "TYPE_DATETIME" },
+          "defaultValue": { "useZeroValue": true }
         }
       ],
       "actions": [
@@ -91,6 +67,10 @@
           "name": "updateChild1",
           "type": "ACTION_TYPE_UPDATE",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            { "source": "childModel.parentId = explicitParentId" },
+            { "source": "childModel.parentOptionalId = explicitParentId" }
+          ],
           "inputMessageName": "UpdateChild1Input"
         },
         {
@@ -98,6 +78,10 @@
           "name": "updateChild2",
           "type": "ACTION_TYPE_UPDATE",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            { "source": "childModel.parentId = explicitParentId" },
+            { "source": "childModel.parentOptionalId = childModel.parentId" }
+          ],
           "inputMessageName": "UpdateChild2Input"
         },
         {
@@ -105,14 +89,10 @@
           "name": "updateChild3",
           "type": "ACTION_TYPE_UPDATE",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            { "source": "childModel.parentId = explicitParentId" }
+          ],
           "inputMessageName": "UpdateChild3Input"
-        },
-        {
-          "modelName": "ChildModel",
-          "name": "updateChild4",
-          "type": "ACTION_TYPE_UPDATE",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "UpdateChild4Input"
         }
       ]
     },
@@ -122,41 +102,27 @@
         {
           "modelName": "ParentModel",
           "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL"
-          }
+          "type": { "type": "TYPE_BOOL" }
         },
         {
           "modelName": "ParentModel",
           "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          },
+          "type": { "type": "TYPE_ID" },
           "unique": true,
           "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
+          "defaultValue": { "useZeroValue": true }
         },
         {
           "modelName": "ParentModel",
           "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
+          "type": { "type": "TYPE_DATETIME" },
+          "defaultValue": { "useZeroValue": true }
         },
         {
           "modelName": "ParentModel",
           "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
+          "type": { "type": "TYPE_DATETIME" },
+          "defaultValue": { "useZeroValue": true }
         }
       ]
     },
@@ -166,168 +132,120 @@
         {
           "modelName": "Identity",
           "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true,
           "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
           "name": "emailVerified",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "defaultValue": {
-            "expression": {
-              "source": "false"
-            }
-          }
+          "type": { "type": "TYPE_BOOL" },
+          "defaultValue": { "expression": { "source": "false" } }
         },
         {
           "modelName": "Identity",
           "name": "password",
-          "type": {
-            "type": "TYPE_PASSWORD"
-          },
+          "type": { "type": "TYPE_PASSWORD" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "externalId",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "issuer",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true,
           "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
           "name": "name",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "givenName",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "familyName",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "middleName",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "nickName",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "profile",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "picture",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "website",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "gender",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "zoneInfo",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "locale",
-          "type": {
-            "type": "TYPE_STRING"
-          },
+          "type": { "type": "TYPE_STRING" },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          },
+          "type": { "type": "TYPE_ID" },
           "unique": true,
           "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
+          "defaultValue": { "useZeroValue": true }
         },
         {
           "modelName": "Identity",
           "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
+          "type": { "type": "TYPE_DATETIME" },
+          "defaultValue": { "useZeroValue": true }
         },
         {
           "modelName": "Identity",
           "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
+          "type": { "type": "TYPE_DATETIME" },
+          "defaultValue": { "useZeroValue": true }
         }
       ],
       "actions": [
@@ -357,85 +275,56 @@
         {
           "modelName": "ChildModel",
           "modelActions": [
-            {
-              "actionName": "updateChild1"
-            },
-            {
-              "actionName": "updateChild2"
-            },
-            {
-              "actionName": "updateChild3"
-            },
-            {
-              "actionName": "updateChild4"
-            }
+            { "actionName": "updateChild1" },
+            { "actionName": "updateChild2" },
+            { "actionName": "updateChild3" }
           ]
         },
-        {
-          "modelName": "ParentModel"
-        },
+        { "modelName": "ParentModel" },
         {
           "modelName": "Identity",
           "modelActions": [
-            {
-              "actionName": "requestPasswordReset"
-            },
-            {
-              "actionName": "resetPassword"
-            }
+            { "actionName": "requestPasswordReset" },
+            { "actionName": "resetPassword" }
           ]
         }
       ]
     }
   ],
   "messages": [
-    {
-      "name": "Any"
-    },
+    { "name": "Any" },
     {
       "name": "RequestPasswordResetInput",
       "fields": [
         {
           "messageName": "RequestPasswordResetInput",
           "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
-          }
+          "type": { "type": "TYPE_STRING" }
         },
         {
           "messageName": "RequestPasswordResetInput",
           "name": "redirectUrl",
-          "type": {
-            "type": "TYPE_STRING"
-          }
+          "type": { "type": "TYPE_STRING" }
         }
       ]
     },
-    {
-      "name": "RequestPasswordResetResponse"
-    },
+    { "name": "RequestPasswordResetResponse" },
     {
       "name": "ResetPasswordInput",
       "fields": [
         {
           "messageName": "ResetPasswordInput",
           "name": "token",
-          "type": {
-            "type": "TYPE_STRING"
-          }
+          "type": { "type": "TYPE_STRING" }
         },
         {
           "messageName": "ResetPasswordInput",
           "name": "password",
-          "type": {
-            "type": "TYPE_STRING"
-          }
+          "type": { "type": "TYPE_STRING" }
         }
       ]
     },
-    {
-      "name": "ResetPasswordResponse"
-    },
+    { "name": "ResetPasswordResponse" },
     {
       "name": "UpdateChild1Where",
       "fields": [
@@ -466,26 +355,8 @@
         },
         {
           "messageName": "UpdateChild1Values",
-          "name": "parent",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild1ParentInput"
-          }
-        }
-      ]
-    },
-    {
-      "name": "UpdateChild1ParentInput",
-      "fields": [
-        {
-          "messageName": "UpdateChild1ParentInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
-          },
-          "target": ["parent", "id"]
+          "name": "explicitParentId",
+          "type": { "type": "TYPE_ID" }
         }
       ]
     },
@@ -495,10 +366,7 @@
         {
           "messageName": "UpdateChild1Input",
           "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild1Where"
-          }
+          "type": { "type": "TYPE_MESSAGE", "messageName": "UpdateChild1Where" }
         },
         {
           "messageName": "UpdateChild1Input",
@@ -540,13 +408,8 @@
         },
         {
           "messageName": "UpdateChild2Values",
-          "name": "parentId",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ChildModel",
-            "fieldName": "parentId"
-          },
-          "target": ["parentId"]
+          "name": "explicitParentId",
+          "type": { "type": "TYPE_ID" }
         }
       ]
     },
@@ -556,10 +419,7 @@
         {
           "messageName": "UpdateChild2Input",
           "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild2Where"
-          }
+          "type": { "type": "TYPE_MESSAGE", "messageName": "UpdateChild2Where" }
         },
         {
           "messageName": "UpdateChild2Input",
@@ -601,50 +461,8 @@
         },
         {
           "messageName": "UpdateChild3Values",
-          "name": "parent",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild3ParentInput"
-          }
-        },
-        {
-          "messageName": "UpdateChild3Values",
-          "name": "parentOptional",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild3ParentOptionalInput"
-          },
-          "nullable": true
-        }
-      ]
-    },
-    {
-      "name": "UpdateChild3ParentInput",
-      "fields": [
-        {
-          "messageName": "UpdateChild3ParentInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
-          },
-          "target": ["parent", "id"]
-        }
-      ]
-    },
-    {
-      "name": "UpdateChild3ParentOptionalInput",
-      "fields": [
-        {
-          "messageName": "UpdateChild3ParentOptionalInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
-          },
-          "target": ["parentOptional", "id"]
+          "name": "explicitParentId",
+          "type": { "type": "TYPE_ID" }
         }
       ]
     },
@@ -654,10 +472,7 @@
         {
           "messageName": "UpdateChild3Input",
           "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild3Where"
-          }
+          "type": { "type": "TYPE_MESSAGE", "messageName": "UpdateChild3Where" }
         },
         {
           "messageName": "UpdateChild3Input",
@@ -665,78 +480,6 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "UpdateChild3Values"
-          }
-        }
-      ]
-    },
-    {
-      "name": "UpdateChild4Where",
-      "fields": [
-        {
-          "messageName": "UpdateChild4Where",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ChildModel",
-            "fieldName": "id"
-          },
-          "target": ["id"]
-        }
-      ]
-    },
-    {
-      "name": "UpdateChild4Values",
-      "fields": [
-        {
-          "messageName": "UpdateChild4Values",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL",
-            "modelName": "ChildModel",
-            "fieldName": "isActive"
-          },
-          "target": ["isActive"]
-        },
-        {
-          "messageName": "UpdateChild4Values",
-          "name": "parentId",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ChildModel",
-            "fieldName": "parentId"
-          },
-          "target": ["parentId"]
-        },
-        {
-          "messageName": "UpdateChild4Values",
-          "name": "parentOptionalId",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ChildModel",
-            "fieldName": "parentOptionalId"
-          },
-          "nullable": true,
-          "target": ["parentOptionalId"]
-        }
-      ]
-    },
-    {
-      "name": "UpdateChild4Input",
-      "fields": [
-        {
-          "messageName": "UpdateChild4Input",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild4Where"
-          }
-        },
-        {
-          "messageName": "UpdateChild4Input",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild4Values"
           }
         }
       ]

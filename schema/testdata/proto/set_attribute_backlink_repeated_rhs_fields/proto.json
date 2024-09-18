@@ -21,6 +21,17 @@
         },
         {
           "modelName": "Record",
+          "name": "ownerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "User",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Record",
           "name": "organisation",
           "type": {
             "type": "TYPE_MODEL",
@@ -30,12 +41,12 @@
         },
         {
           "modelName": "Record",
-          "name": "ownerId",
+          "name": "organisationId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "User",
+            "relatedModelName": "Organisation",
             "relatedModelField": "id"
           }
         },
@@ -49,17 +60,6 @@
             "expression": {
               "source": "false"
             }
-          }
-        },
-        {
-          "modelName": "Record",
-          "name": "organisationId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Organisation",
-            "relatedModelField": "id"
           }
         },
         {
@@ -163,10 +163,7 @@
           "expression": {
             "source": "true"
           },
-          "actionTypes": [
-            "ACTION_TYPE_CREATE",
-            "ACTION_TYPE_UPDATE"
-          ]
+          "actionTypes": ["ACTION_TYPE_CREATE", "ACTION_TYPE_UPDATE"]
         }
       ]
     },
@@ -332,9 +329,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -371,9 +366,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -617,9 +610,7 @@
             "modelName": "Record",
             "fieldName": "name"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         },
         {
           "messageName": "CreateRecordWithChildrenInput",
@@ -643,10 +634,7 @@
             "modelName": "Record",
             "fieldName": "name"
           },
-          "target": [
-            "children",
-            "name"
-          ]
+          "target": ["children", "name"]
         }
       ]
     }
