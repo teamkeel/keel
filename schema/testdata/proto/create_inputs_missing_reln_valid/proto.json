@@ -139,9 +139,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -178,9 +176,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -414,9 +410,7 @@
             "modelName": "Post",
             "fieldName": "content"
           },
-          "target": [
-            "content"
-          ]
+          "target": ["content"]
         },
         {
           "messageName": "CreatePostBInput",
@@ -439,10 +433,7 @@
             "modelName": "Author",
             "fieldName": "id"
           },
-          "target": [
-            "author",
-            "id"
-          ]
+          "target": ["author", "id"]
         }
       ]
     },
@@ -457,9 +448,7 @@
             "modelName": "Post",
             "fieldName": "content"
           },
-          "target": [
-            "content"
-          ]
+          "target": ["content"]
         },
         {
           "messageName": "CreatePostCInput",

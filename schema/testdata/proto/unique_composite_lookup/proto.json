@@ -128,9 +128,7 @@
             "type": "TYPE_MODEL",
             "modelName": "Supplier"
           },
-          "uniqueWith": [
-            "supplierSku"
-          ],
+          "uniqueWith": ["supplierSku"],
           "foreignKeyFieldName": "supplierId",
           "inverseFieldName": "products"
         },
@@ -151,9 +149,7 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "uniqueWith": [
-            "supplier"
-          ]
+          "uniqueWith": ["supplier"]
         },
         {
           "modelName": "Product",
@@ -453,9 +449,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -492,9 +486,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -778,9 +770,7 @@
             "modelName": "Product",
             "fieldName": "supplierSku"
           },
-          "target": [
-            "supplierSku"
-          ]
+          "target": ["supplierSku"]
         },
         {
           "messageName": "GetBySupplierSkuInputAndIdInputInput",
@@ -790,10 +780,7 @@
             "modelName": "Supplier",
             "fieldName": "id"
           },
-          "target": [
-            "supplier",
-            "id"
-          ]
+          "target": ["supplier", "id"]
         }
       ]
     },
@@ -808,9 +795,7 @@
             "modelName": "Product",
             "fieldName": "supplierSku"
           },
-          "target": [
-            "supplierSku"
-          ]
+          "target": ["supplierSku"]
         },
         {
           "messageName": "GetBySupplierSkuInputAndCodeInputInput",
@@ -820,10 +805,7 @@
             "modelName": "Supplier",
             "fieldName": "supplierCode"
           },
-          "target": [
-            "supplier",
-            "supplierCode"
-          ]
+          "target": ["supplier", "supplierCode"]
         }
       ]
     },
@@ -895,9 +877,7 @@
             "modelName": "Product",
             "fieldName": "supplierSku"
           },
-          "target": [
-            "supplierSku"
-          ]
+          "target": ["supplierSku"]
         }
       ]
     },
@@ -915,10 +895,7 @@
             "modelName": "Product",
             "fieldName": "supplierSku"
           },
-          "target": [
-            "product",
-            "supplierSku"
-          ]
+          "target": ["product", "supplierSku"]
         },
         {
           "messageName": "GetBySupplierSkuAndCodeInput",
@@ -928,11 +905,7 @@
             "modelName": "Supplier",
             "fieldName": "supplierCode"
           },
-          "target": [
-            "product",
-            "supplier",
-            "supplierCode"
-          ]
+          "target": ["product", "supplier", "supplierCode"]
         }
       ]
     },
@@ -947,10 +920,7 @@
             "modelName": "Product",
             "fieldName": "sku"
           },
-          "target": [
-            "product",
-            "sku"
-          ]
+          "target": ["product", "sku"]
         }
       ]
     },
@@ -968,9 +938,7 @@
             "modelName": "Supplier",
             "fieldName": "supplierCode"
           },
-          "target": [
-            "supplierCode"
-          ]
+          "target": ["supplierCode"]
         }
       ]
     },
@@ -985,10 +953,7 @@
             "modelName": "Product",
             "fieldName": "sku"
           },
-          "target": [
-            "products",
-            "sku"
-          ]
+          "target": ["products", "sku"]
         }
       ]
     }

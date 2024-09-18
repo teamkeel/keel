@@ -345,7 +345,6 @@ func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) *errorhandling.Er
 				fkField.Attributes = append(fkField.Attributes, &attr)
 			}
 
-			//fkFieldsToAdd = append(fkFieldsToAdd, fkField)
 			fkFieldsToAdd[i] = fkField
 		}
 

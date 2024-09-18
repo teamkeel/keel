@@ -169,9 +169,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -208,9 +206,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -450,9 +446,7 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -467,9 +461,7 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         },
         {
           "messageName": "UpdatePersonValues",
@@ -479,9 +471,7 @@
             "modelName": "Person",
             "fieldName": "name"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         }
       ]
     },
@@ -517,9 +507,7 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -567,9 +555,7 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -597,10 +583,7 @@
             "modelName": "Company",
             "fieldName": "id"
           },
-          "target": [
-            "employer",
-            "id"
-          ]
+          "target": ["employer", "id"]
         }
       ]
     },
@@ -636,9 +619,7 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },

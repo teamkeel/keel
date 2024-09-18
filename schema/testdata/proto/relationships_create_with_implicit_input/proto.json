@@ -156,9 +156,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -195,9 +193,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -431,9 +427,7 @@
             "modelName": "ChildModel",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         },
         {
           "messageName": "CreateChild1Input",
@@ -456,10 +450,7 @@
             "modelName": "ParentModel",
             "fieldName": "id"
           },
-          "target": [
-            "parent",
-            "id"
-          ]
+          "target": ["parent", "id"]
         }
       ]
     },
@@ -474,9 +465,7 @@
             "modelName": "ChildModel",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         },
         {
           "messageName": "CreateChild2Input",
@@ -508,10 +497,7 @@
             "modelName": "ParentModel",
             "fieldName": "id"
           },
-          "target": [
-            "parent",
-            "id"
-          ]
+          "target": ["parent", "id"]
         }
       ]
     },
@@ -526,10 +512,7 @@
             "modelName": "ParentModel",
             "fieldName": "id"
           },
-          "target": [
-            "parentOptional",
-            "id"
-          ]
+          "target": ["parentOptional", "id"]
         }
       ]
     }
