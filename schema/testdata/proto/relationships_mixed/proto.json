@@ -25,6 +25,16 @@
         },
         {
           "modelName": "Author",
+          "name": "starPost",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Post"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "starPostId"
+        },
+        {
+          "modelName": "Author",
           "name": "reviewedId",
           "type": {
             "type": "TYPE_ID"
@@ -33,16 +43,6 @@
             "relatedModelName": "Post",
             "relatedModelField": "id"
           }
-        },
-        {
-          "modelName": "Author",
-          "name": "starPost",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Post"
-          },
-          "unique": true,
-          "foreignKeyFieldName": "starPostId"
         },
         {
           "modelName": "Author",
@@ -168,7 +168,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -205,7 +207,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
