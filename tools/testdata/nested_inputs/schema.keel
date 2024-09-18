@@ -1,0 +1,31 @@
+model Invoice {
+    fields {
+        date Date
+        customer Customer
+        items InvoiceItem[]
+    }
+    actions {
+        create createInvoice() with (date, customer.id, items.product.sku, items.quantity)
+    }
+}
+
+model InvoiceItem {
+    fields {
+        invoice Invoice
+        product Product
+        quantity Number
+    }
+}
+
+model Product {
+    fields {
+        name Text
+        sku Text @unique
+    }
+}
+
+model Customer {
+     fields {
+        name Text
+    }
+}

@@ -374,7 +374,21 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 				return nil, ErrInvalidSchema
 			}
 
-			subFields, err := g.makeInputsForMessage(submsg, pathPrefix+"."+f.Name)
+			fields = append(fields, &toolsproto.RequestFieldConfig{
+				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
+				FieldType:     f.Type.Type,
+				Repeated:      f.Type.Repeated,
+				DisplayName:   casing.ToSentenceCase(f.Name),
+				DisplayOrder:  int32(i),
+				Visible:       true,
+			})
+
+			prefix := pathPrefix + "." + f.Name
+			if f.Type.Repeated {
+				prefix = prefix + "[*]"
+			}
+
+			subFields, err := g.makeInputsForMessage(submsg, prefix)
 			if err != nil {
 				return nil, err
 			}
@@ -386,11 +400,10 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 		config := &toolsproto.RequestFieldConfig{
 			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
+			Repeated:      f.Type.Repeated,
 			DisplayName:   casing.ToSentenceCase(f.Name),
 			DisplayOrder:  int32(i),
-			Visible: func() bool {
-				return f.IsModelField()
-			}(),
+			Visible:       true,
 		}
 		if f.Type.Type == proto.Type_TYPE_ID && f.Type.ModelName != nil {
 			// generate action link placeholders
@@ -425,7 +438,49 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			if submsg == nil {
 				return nil, ErrInvalidSchema
 			}
-			subFields, err := g.makeResponsesForMessage(submsg, "."+f.Name, []string{})
+
+			fields = append(fields, &toolsproto.ResponseFieldConfig{
+				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
+				FieldType:     f.Type.Type,
+				Repeated:      f.Type.Repeated,
+				DisplayName:   casing.ToSentenceCase(f.Name),
+				DisplayOrder:  computeFieldOrder(&order, len(msg.GetFields()), f.Name),
+				Visible:       true,
+			})
+
+			prefix := pathPrefix + "." + f.Name
+			if f.Type.Repeated {
+				prefix = prefix + "[*]"
+			}
+
+			subFields, err := g.makeResponsesForMessage(submsg, prefix, []string{})
+			if err != nil {
+				return nil, err
+			}
+			fields = append(fields, subFields...)
+
+			continue
+		} else if f.Type.Type == proto.Type_TYPE_MODEL {
+			model := g.Schema.FindModel(f.Type.ModelName.Value)
+			if model == nil {
+				return nil, ErrInvalidSchema
+			}
+
+			fields = append(fields, &toolsproto.ResponseFieldConfig{
+				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
+				FieldType:     f.Type.Type,
+				Repeated:      f.Type.Repeated,
+				DisplayName:   casing.ToSentenceCase(f.Name),
+				DisplayOrder:  computeFieldOrder(&order, len(msg.GetFields()), f.Name),
+				Visible:       true,
+			})
+
+			prefix := pathPrefix + "." + f.Name
+			if f.Type.Repeated {
+				prefix = prefix + "[*]"
+			}
+
+			subFields, err := g.makeResponsesForModel(model, prefix, []string{}, []string{})
 			if err != nil {
 				return nil, err
 			}
@@ -437,6 +492,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 		config := &toolsproto.ResponseFieldConfig{
 			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
+			Repeated:      f.Type.Repeated,
 			DisplayName:   casing.ToSentenceCase(f.Name),
 			Visible:       true,
 			DisplayOrder:  computeFieldOrder(&order, len(msg.GetFields()), f.Name),
@@ -499,6 +555,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 		config := &toolsproto.ResponseFieldConfig{
 			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
+			Repeated:      f.Type.Repeated,
 			DisplayName:   casing.ToSentenceCase(f.Name),
 			Visible:       true,
 			DisplayOrder:  computeFieldOrder(&order, len(model.GetFields()), f.Name),

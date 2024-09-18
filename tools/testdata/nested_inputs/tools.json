@@ -1,0 +1,186 @@
+{
+  "tools": [
+    {
+      "id": "createInvoice",
+      "name": "Create invoice",
+      "actionName": "createInvoice",
+      "apiNames": ["Api"],
+      "modelName": "Invoice",
+      "actionType": "ACTION_TYPE_CREATE",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.date"
+          },
+          "fieldType": "TYPE_DATE",
+          "displayName": "Date",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.customer"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Customer",
+          "displayOrder": 1,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.customer.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.items"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "repeated": true,
+          "displayName": "Items",
+          "displayOrder": 2,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.items[*].product"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Product",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.items[*].product.sku"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Sku",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.items[*].quantity"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Quantity",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.date"
+          },
+          "fieldType": "TYPE_DATE",
+          "displayName": "Date",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 5,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 6,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 7,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.customerId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Customer id",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "entitySingle": "invoice",
+      "entityPlural": "invoices",
+      "capabilities": {}
+    },
+    {
+      "id": "requestPasswordReset",
+      "name": "Request password reset",
+      "actionName": "requestPasswordReset",
+      "apiNames": ["Api"],
+      "modelName": "Identity",
+      "actionType": "ACTION_TYPE_WRITE",
+      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.email"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Email",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.redirectUrl"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Redirect url",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "entitySingle": "identity",
+      "entityPlural": "identities",
+      "capabilities": {}
+    },
+    {
+      "id": "resetPassword",
+      "name": "Reset password",
+      "actionName": "resetPassword",
+      "apiNames": ["Api"],
+      "modelName": "Identity",
+      "actionType": "ACTION_TYPE_WRITE",
+      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.token"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Token",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.password"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Password",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "entitySingle": "identity",
+      "entityPlural": "identities",
+      "capabilities": {}
+    }
+  ]
+}
