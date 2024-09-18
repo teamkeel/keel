@@ -90,40 +90,42 @@ message RequestFieldConfig {
 	// common fields
 	JsonPath field_location = 2;
 	proto.Type field_type = 3;
-	string display_name = 4;
-	int32 display_order = 5;
-	bool visible = 6;
-	optional StringTemplate help_text = 7;
+	bool repeated = 4;
+	string display_name = 5;
+	int32 display_order = 6;
+	bool visible = 7;
+	optional StringTemplate help_text = 8;
 
 	// For a relation field - A list action with the fewest required inputs on the target model
 	// Used to display a lookup/dropdown to allow selecting a entry for this field
-	optional ActionLink lookup_action = 8; 
+	optional ActionLink lookup_action = 9; 
 
 	// For a relation field - Used for loading a preview
-	optional ActionLink get_entry_action = 9;
+	optional ActionLink get_entry_action = 10;
 
-	bool locked = 10;
-	optional DefaultValue default_value = 11;
-	optional StringTemplate placeholder = 12;
+	bool locked = 11;
+	optional DefaultValue default_value = 12;
+	optional StringTemplate placeholder = 13;
 }
 
 message ResponseFieldConfig {
 	string id = 1;
 	JsonPath field_location = 2;
 	proto.Type field_type = 3;
+	bool repeated = 4;
 	// default to sentence case 
-	string display_name = 4;
-	int32 display_order = 5;
-	bool visible = 6;
-	optional StringTemplate help_text = 7;
+	string display_name = 5;
+	int32 display_order = 6;
+	bool visible = 7;
+	optional StringTemplate help_text = 8;
 
-	bool sortable = 8; // Based on @sortable()
+	bool sortable = 9; // Based on @sortable()
 
 	// Set if this field is a FK and link to a get/list action on the target model
-	optional ActionLink link = 9; 
+	optional ActionLink link = 10; 
 
 	// for file fields only, display images inline
-	bool image_preview = 10; 
+	bool image_preview = 11; 
 }
 
 message DefaultValue {

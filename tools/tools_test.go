@@ -30,6 +30,11 @@ func TestGenerateTools(t *testing.T) {
 
 		testCaseDir := filepath.Join(testdataDir, testCase.Name())
 
+		// if tc.Name() != "nested_inputs" {
+		// 	continue
+
+		// }
+
 		t.Run(testCase.Name(), func(t *testing.T) {
 			t.Parallel()
 			expected, err := os.ReadFile(filepath.Join(testCaseDir, "tools.json"))

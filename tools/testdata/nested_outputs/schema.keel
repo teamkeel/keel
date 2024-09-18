@@ -1,0 +1,26 @@
+model Invoice {
+    fields {
+        date Date
+        customer Customer
+    }
+    actions {
+        read readInvoices(from: Date, to: Date) returns (Response)
+    }
+}
+
+model Customer {
+     fields {
+        name Text
+    }
+}
+
+message Response {
+    invoices InvoiceMessage[]
+    customers Customer[]
+}
+
+message InvoiceMessage {
+    date Date
+    amount Number
+    customerId ID
+}
