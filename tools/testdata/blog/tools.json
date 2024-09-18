@@ -847,6 +847,7 @@
             "path": "$.results"
           },
           "fieldType": "TYPE_OBJECT",
+          "repeated": true,
           "displayName": "Results",
           "visible": true
         },
@@ -1139,6 +1140,7 @@
             "path": "$.results"
           },
           "fieldType": "TYPE_OBJECT",
+          "repeated": true,
           "displayName": "Results",
           "visible": true
         },
@@ -1350,6 +1352,7 @@
             "path": "$.results"
           },
           "fieldType": "TYPE_OBJECT",
+          "repeated": true,
           "displayName": "Results",
           "visible": true
         },
@@ -1650,6 +1653,7 @@
             "path": "$.results"
           },
           "fieldType": "TYPE_OBJECT",
+          "repeated": true,
           "displayName": "Results",
           "visible": true
         },

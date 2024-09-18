@@ -350,6 +350,7 @@ func (g *Generator) generateResponses() error {
 			tool.Config.Response = append(tool.Config.Response, &toolsproto.ResponseFieldConfig{
 				FieldLocation: &toolsproto.JsonPath{Path: "$.results"},
 				FieldType:     proto.Type_TYPE_OBJECT,
+				Repeated:      true,
 				DisplayName:   "Results",
 				Visible:       true,
 			})
