@@ -31,6 +31,18 @@
         },
         {
           "modelName": "Post",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Post",
           "name": "publisher",
           "type": {
             "type": "TYPE_MODEL",
@@ -38,6 +50,18 @@
           },
           "optional": true,
           "foreignKeyFieldName": "publisherId"
+        },
+        {
+          "modelName": "Post",
+          "name": "publisherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Publisher",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Post",
@@ -69,30 +93,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "publisherId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Publisher",
-            "relatedModelField": "id"
           }
         }
       ],
@@ -240,6 +240,17 @@
         },
         {
           "modelName": "Publisher",
+          "name": "ownerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Person",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Publisher",
           "name": "departments",
           "type": {
             "type": "TYPE_MODEL",
@@ -259,6 +270,17 @@
         },
         {
           "modelName": "Publisher",
+          "name": "countryId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Country",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Publisher",
           "name": "admin",
           "type": {
             "type": "TYPE_MODEL",
@@ -267,6 +289,18 @@
           "unique": true,
           "foreignKeyFieldName": "adminId",
           "inverseFieldName": "publisher"
+        },
+        {
+          "modelName": "Publisher",
+          "name": "adminId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Publisher",
@@ -299,40 +333,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Publisher",
-          "name": "ownerId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Person",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Publisher",
-          "name": "countryId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Country",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Publisher",
-          "name": "adminId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -351,6 +351,17 @@
         },
         {
           "modelName": "Department",
+          "name": "publisherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Publisher",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Department",
           "name": "head",
           "type": {
             "type": "TYPE_MODEL",
@@ -358,6 +369,18 @@
           },
           "optional": true,
           "foreignKeyFieldName": "headId"
+        },
+        {
+          "modelName": "Department",
+          "name": "headId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Person",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Department",
@@ -403,29 +426,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Department",
-          "name": "publisherId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Publisher",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Department",
-          "name": "headId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Person",
-            "relatedModelField": "id"
           }
         }
       ]
@@ -506,6 +506,18 @@
         },
         {
           "modelName": "Person",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Person",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -534,18 +546,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Person",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
           }
         }
       ]

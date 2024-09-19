@@ -15,6 +15,17 @@
         },
         {
           "modelName": "Fee",
+          "name": "theFiId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Fi",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Fee",
           "name": "theName",
           "type": {
             "type": "TYPE_STRING"
@@ -51,17 +62,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Fee",
-          "name": "theFiId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Fi",
-            "relatedModelField": "id"
-          }
         }
       ],
       "actions": [
@@ -86,6 +86,17 @@
           },
           "foreignKeyFieldName": "theFoId",
           "inverseFieldName": "theFis"
+        },
+        {
+          "modelName": "Fi",
+          "name": "theFoId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Fo",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Fi",
@@ -128,17 +139,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Fi",
-          "name": "theFoId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Fo",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -154,6 +154,17 @@
           },
           "foreignKeyFieldName": "theFumId",
           "inverseFieldName": "theFos"
+        },
+        {
+          "modelName": "Fo",
+          "name": "theFumId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Fum",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Fo",
@@ -195,17 +206,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Fo",
-          "name": "theFumId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Fum",
-            "relatedModelField": "id"
           }
         }
       ]

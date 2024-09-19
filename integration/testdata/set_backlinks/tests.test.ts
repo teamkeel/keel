@@ -112,7 +112,7 @@ test("create - @set with backlinks and no authenticated identity", async () => {
 
   await expect(actions.createRecord({ name: "Tax Records" })).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message: "field 'isActive' cannot be null",
+    message: "field 'ownerId' cannot be null",
   });
 });
 
@@ -123,7 +123,7 @@ test("create - @set with backlinks and no user backlink", async () => {
     actions.withIdentity(identity).createRecord({ name: "Tax Records" })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message: "field 'isActive' cannot be null",
+    message: "field 'ownerId' cannot be null",
   });
 });
 
@@ -193,7 +193,7 @@ test("update - @set with backlinks and no authenticated identity", async () => {
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message: "field 'isActive' cannot be null",
+    message: "field 'ownerId' cannot be null",
   });
 });
 
@@ -221,7 +221,7 @@ test("update - @set with backlinks and no user backlink", async () => {
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message: "field 'isActive' cannot be null",
+    message: "field 'ownerId' cannot be null",
   });
 });
 

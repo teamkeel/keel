@@ -295,13 +295,13 @@
         "required": [
           "name",
           "dateOfBirth",
+          "addressId",
           "details",
           "weight",
           "picture",
           "id",
           "createdAt",
-          "updatedAt",
-          "addressId"
+          "updatedAt"
         ]
       },
       "CustomersWhere": {

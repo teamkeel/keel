@@ -17,6 +17,19 @@
         },
         {
           "modelName": "Account",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Account",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -45,19 +58,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Account",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
           }
         }
       ],

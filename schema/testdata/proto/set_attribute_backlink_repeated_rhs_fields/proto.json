@@ -21,12 +21,34 @@
         },
         {
           "modelName": "Record",
+          "name": "ownerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "User",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Record",
           "name": "organisation",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Organisation"
           },
           "foreignKeyFieldName": "organisationId"
+        },
+        {
+          "modelName": "Record",
+          "name": "organisationId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Organisation",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Record",
@@ -50,6 +72,18 @@
           "optional": true,
           "foreignKeyFieldName": "parentId",
           "inverseFieldName": "children"
+        },
+        {
+          "modelName": "Record",
+          "name": "parentId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Record",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Record",
@@ -91,40 +125,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Record",
-          "name": "ownerId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "User",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Record",
-          "name": "organisationId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Organisation",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Record",
-          "name": "parentId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Record",
-            "relatedModelField": "id"
           }
         }
       ],
@@ -183,6 +183,18 @@
         },
         {
           "modelName": "User",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "User",
           "name": "organisation",
           "type": {
             "type": "TYPE_MODEL",
@@ -190,6 +202,17 @@
           },
           "foreignKeyFieldName": "organisationId",
           "inverseFieldName": "users"
+        },
+        {
+          "modelName": "User",
+          "name": "organisationId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Organisation",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "User",
@@ -233,29 +256,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "User",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "User",
-          "name": "organisationId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Organisation",
-            "relatedModelField": "id"
           }
         }
       ]

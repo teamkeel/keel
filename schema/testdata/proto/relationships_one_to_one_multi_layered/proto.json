@@ -23,6 +23,18 @@
         },
         {
           "modelName": "Company",
+          "name": "companyProfileId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "CompanyProfile",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Company",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -51,18 +63,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Company",
-          "name": "companyProfileId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "CompanyProfile",
-            "relatedModelField": "id"
           }
         }
       ],
@@ -97,6 +97,19 @@
           "unique": true,
           "foreignKeyFieldName": "taxProfileId",
           "inverseFieldName": "companyProfile"
+        },
+        {
+          "modelName": "CompanyProfile",
+          "name": "taxProfileId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "TaxProfile",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "CompanyProfile",
@@ -137,19 +150,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "CompanyProfile",
-          "name": "taxProfileId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "TaxProfile",
-            "relatedModelField": "id"
           }
         }
       ],

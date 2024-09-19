@@ -146,11 +146,20 @@
         },
         {
           "fieldLocation": {
+            "path": "$.authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author id",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
             "path": "$.image"
           },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true,
           "imagePreview": true
         },
@@ -161,8 +170,28 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.categoryId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Category id",
+          "displayOrder": 7,
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.categoryId"
+                }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": {
@@ -190,35 +219,6 @@
           "displayName": "Updated at",
           "displayOrder": 14,
           "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.authorId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Author id",
-          "displayOrder": 6,
-          "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.categoryId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Category id",
-          "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              {
-                "key": "$.id",
-                "path": {
-                  "path": "$.categoryId"
-                }
-              }
-            ]
-          }
         }
       ],
       "entitySingle": "blog post",
@@ -379,11 +379,20 @@
         },
         {
           "fieldLocation": {
+            "path": "$.authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author id",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
             "path": "$.image"
           },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true,
           "imagePreview": true
         },
@@ -394,8 +403,28 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.categoryId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Category id",
+          "displayOrder": 7,
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.categoryId"
+                }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": {
@@ -423,35 +452,6 @@
           "displayName": "Updated at",
           "displayOrder": 14,
           "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.authorId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Author id",
-          "displayOrder": 6,
-          "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.categoryId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Category id",
-          "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              {
-                "key": "$.id",
-                "path": {
-                  "path": "$.categoryId"
-                }
-              }
-            ]
-          }
         }
       ],
       "entitySingle": "blog post",
@@ -620,11 +620,20 @@
         },
         {
           "fieldLocation": {
+            "path": "$.authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author id",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
             "path": "$.image"
           },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true,
           "imagePreview": true
         },
@@ -635,8 +644,28 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.categoryId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Category id",
+          "displayOrder": 7,
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.categoryId"
+                }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": {
@@ -664,35 +693,6 @@
           "displayName": "Updated at",
           "displayOrder": 14,
           "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.authorId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Author id",
-          "displayOrder": 6,
-          "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.categoryId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Category id",
-          "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              {
-                "key": "$.id",
-                "path": {
-                  "path": "$.categoryId"
-                }
-              }
-            ]
-          }
         }
       ],
       "title": {
@@ -1146,10 +1146,39 @@
         },
         {
           "fieldLocation": {
+            "path": "$.results[*].authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author id",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].parentId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Parent id",
+          "displayOrder": 1,
+          "visible": true,
+          "link": {
+            "toolId": "getPost",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].parentId"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "fieldLocation": {
             "path": "$.results[*].content"
           },
           "fieldType": "TYPE_STRING",
           "displayName": "Content",
+          "displayOrder": 2,
           "visible": true
         },
         {
@@ -1178,35 +1207,6 @@
           "displayName": "Updated at",
           "displayOrder": 8,
           "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results[*].authorId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Author id",
-          "displayOrder": 1,
-          "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results[*].parentId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Parent id",
-          "displayOrder": 2,
-          "visible": true,
-          "link": {
-            "toolId": "getPost",
-            "data": [
-              {
-                "key": "$.id",
-                "path": {
-                  "path": "$.results[*].parentId"
-                }
-              }
-            ]
-          }
         }
       ],
       "entitySingle": "comment",
@@ -1394,11 +1394,20 @@
         },
         {
           "fieldLocation": {
+            "path": "$.results[*].authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author id",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
             "path": "$.results[*].image"
           },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true,
           "imagePreview": true
         },
@@ -1409,8 +1418,28 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].categoryId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Category id",
+          "displayOrder": 7,
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].categoryId"
+                }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": {
@@ -1438,35 +1467,6 @@
           "displayName": "Updated at",
           "displayOrder": 14,
           "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results[*].authorId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Author id",
-          "displayOrder": 6,
-          "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results[*].categoryId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Category id",
-          "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              {
-                "key": "$.id",
-                "path": {
-                  "path": "$.results[*].categoryId"
-                }
-              }
-            ]
-          }
         }
       ],
       "entitySingle": "blog post",
@@ -1729,11 +1729,20 @@
         },
         {
           "fieldLocation": {
+            "path": "$.results[*].author.authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author id",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
             "path": "$.results[*].author.image"
           },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true,
           "imagePreview": true
         },
@@ -1744,8 +1753,28 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].author.categoryId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Category id",
+          "displayOrder": 7,
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].author.categoryId"
+                }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": {
@@ -1776,32 +1805,12 @@
         },
         {
           "fieldLocation": {
-            "path": "$.results[*].author.authorId"
+            "path": "$.results[*].authorId"
           },
           "fieldType": "TYPE_ID",
           "displayName": "Author id",
-          "displayOrder": 6,
+          "displayOrder": 4,
           "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results[*].author.categoryId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Category id",
-          "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              {
-                "key": "$.id",
-                "path": {
-                  "path": "$.results[*].author.categoryId"
-                }
-              }
-            ]
-          }
         },
         {
           "fieldLocation": {
@@ -1809,7 +1818,7 @@
           },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true,
           "imagePreview": true
         },
@@ -1820,7 +1829,7 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true
         },
         {
@@ -1860,11 +1869,20 @@
         },
         {
           "fieldLocation": {
+            "path": "$.results[*].category.authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author id",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
             "path": "$.results[*].category.image"
           },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true,
           "imagePreview": true
         },
@@ -1875,8 +1893,28 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].category.categoryId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Category id",
+          "displayOrder": 7,
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].category.categoryId"
+                }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": {
@@ -1907,16 +1945,7 @@
         },
         {
           "fieldLocation": {
-            "path": "$.results[*].category.authorId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Author id",
-          "displayOrder": 6,
-          "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results[*].category.categoryId"
+            "path": "$.results[*].categoryId"
           },
           "fieldType": "TYPE_ID",
           "displayName": "Category id",
@@ -1928,7 +1957,7 @@
               {
                 "key": "$.id",
                 "path": {
-                  "path": "$.results[*].category.categoryId"
+                  "path": "$.results[*].categoryId"
                 }
               }
             ]
@@ -1960,35 +1989,6 @@
           "displayName": "Updated at",
           "displayOrder": 14,
           "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results[*].authorId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Author id",
-          "displayOrder": 6,
-          "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results[*].categoryId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Category id",
-          "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              {
-                "key": "$.id",
-                "path": {
-                  "path": "$.results[*].categoryId"
-                }
-              }
-            ]
-          }
         }
       ],
       "entitySingle": "blog post",
@@ -2298,11 +2298,20 @@
         },
         {
           "fieldLocation": {
+            "path": "$.authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author id",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
             "path": "$.image"
           },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true,
           "imagePreview": true
         },
@@ -2313,8 +2322,28 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.categoryId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Category id",
+          "displayOrder": 7,
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.categoryId"
+                }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": {
@@ -2342,35 +2371,6 @@
           "displayName": "Updated at",
           "displayOrder": 14,
           "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.authorId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Author id",
-          "displayOrder": 6,
-          "visible": true
-        },
-        {
-          "fieldLocation": {
-            "path": "$.categoryId"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Category id",
-          "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              {
-                "key": "$.id",
-                "path": {
-                  "path": "$.categoryId"
-                }
-              }
-            ]
-          }
         }
       ],
       "entitySingle": "blog post",

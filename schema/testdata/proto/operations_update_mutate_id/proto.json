@@ -22,6 +22,17 @@
         },
         {
           "modelName": "Person",
+          "name": "employerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Company",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Person",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -50,17 +61,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Person",
-          "name": "employerId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Company",
-            "relatedModelField": "id"
           }
         }
       ],

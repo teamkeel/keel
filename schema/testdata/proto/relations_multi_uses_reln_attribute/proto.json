@@ -15,6 +15,17 @@
         },
         {
           "modelName": "Account",
+          "name": "favouriteId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Post",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Account",
           "name": "authoredPosts",
           "type": {
             "type": "TYPE_MODEL",
@@ -64,17 +75,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Account",
-          "name": "favouriteId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Post",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -90,6 +90,17 @@
           },
           "foreignKeyFieldName": "reviewerId",
           "inverseFieldName": "reviewedPosts"
+        },
+        {
+          "modelName": "Post",
+          "name": "reviewerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Account",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Post",
@@ -110,6 +121,17 @@
           },
           "foreignKeyFieldName": "authorId",
           "inverseFieldName": "authoredPosts"
+        },
+        {
+          "modelName": "Post",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Account",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Post",
@@ -141,28 +163,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "reviewerId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Account",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "authorId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Account",
-            "relatedModelField": "id"
           }
         }
       ]

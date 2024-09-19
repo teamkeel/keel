@@ -15,6 +15,17 @@
         },
         {
           "modelName": "Author",
+          "name": "writtenId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Post",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Author",
           "name": "coWritten",
           "type": {
             "type": "TYPE_MODEL",
@@ -22,6 +33,17 @@
           },
           "foreignKeyFieldName": "coWrittenId",
           "inverseFieldName": "coAuthor"
+        },
+        {
+          "modelName": "Author",
+          "name": "coWrittenId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Post",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Author",
@@ -54,28 +76,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Author",
-          "name": "writtenId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Post",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Author",
-          "name": "coWrittenId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Post",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -91,6 +91,18 @@
           },
           "unique": true,
           "foreignKeyFieldName": "reviewedId"
+        },
+        {
+          "modelName": "Post",
+          "name": "reviewedId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Author",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Post",
@@ -142,18 +154,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "reviewedId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Author",
-            "relatedModelField": "id"
           }
         }
       ]

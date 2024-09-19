@@ -26,6 +26,18 @@
         },
         {
           "modelName": "Person",
+          "name": "motherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Person",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Person",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -54,18 +66,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Person",
-          "name": "motherId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Person",
-            "relatedModelField": "id"
           }
         }
       ]
@@ -96,6 +96,18 @@
         },
         {
           "modelName": "Person2",
+          "name": "motherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Person2",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Person2",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -124,18 +136,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Person2",
-          "name": "motherId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Person2",
-            "relatedModelField": "id"
           }
         }
       ]

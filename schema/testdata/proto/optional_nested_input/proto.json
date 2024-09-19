@@ -21,6 +21,17 @@
         },
         {
           "modelName": "Person",
+          "name": "companyId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Company",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Person",
           "name": "previousCompany",
           "type": {
             "type": "TYPE_MODEL",
@@ -28,6 +39,18 @@
           },
           "optional": true,
           "foreignKeyFieldName": "previousCompanyId"
+        },
+        {
+          "modelName": "Person",
+          "name": "previousCompanyId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Company",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Person",
@@ -59,29 +82,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Person",
-          "name": "companyId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Company",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Person",
-          "name": "previousCompanyId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Company",
-            "relatedModelField": "id"
           }
         }
       ],
