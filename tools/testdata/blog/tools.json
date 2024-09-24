@@ -178,7 +178,7 @@
             "path": "$.categoryId"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -411,7 +411,7 @@
             "path": "$.categoryId"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -652,7 +652,7 @@
             "path": "$.categoryId"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -1157,7 +1157,7 @@
             "path": "$.results[*].parentId"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "Parent id",
+          "displayName": "Parent",
           "displayOrder": 1,
           "visible": true,
           "link": {
@@ -1426,7 +1426,7 @@
             "path": "$.results[*].categoryId"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -1761,7 +1761,7 @@
             "path": "$.results[*].author.categoryId"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -1901,7 +1901,7 @@
             "path": "$.results[*].category.categoryId"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -1948,7 +1948,7 @@
             "path": "$.results[*].categoryId"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -2330,7 +2330,7 @@
             "path": "$.categoryId"
           },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
           "visible": true,
           "link": {

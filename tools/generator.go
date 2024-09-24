@@ -587,6 +587,10 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 						},
 					},
 				}
+
+				// now that we have a link to retrieve the related model, the display name of the field should be the
+				// name of the related field without the ID suffix; e.g. "Category" instead of "Category id"
+				config.DisplayName = casing.ToSentenceCase(strings.TrimSuffix(f.Name, "Id"))
 			}
 		}
 
