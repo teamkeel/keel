@@ -2,7 +2,7 @@
   "tools": [
     {
       "id": "readInvoices",
-      "name": "Read invoices",
+      "name": "Invoices",
       "actionName": "readInvoices",
       "apiNames": ["Api"],
       "modelName": "Invoice",

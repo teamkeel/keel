@@ -460,7 +460,7 @@
     },
     {
       "id": "getCategory",
-      "name": "Get category",
+      "name": "Category",
       "actionName": "getCategory",
       "apiNames": ["Api"],
       "modelName": "Category",
@@ -552,7 +552,7 @@
     },
     {
       "id": "getPost",
-      "name": "Get post",
+      "name": "Post",
       "actionName": "getPost",
       "apiNames": ["Api"],
       "modelName": "BlogPost",
@@ -747,7 +747,7 @@
     },
     {
       "id": "listCategories",
-      "name": "List categories",
+      "name": "Categories",
       "actionName": "listCategories",
       "apiNames": ["Api"],
       "modelName": "Category",
@@ -955,7 +955,7 @@
     },
     {
       "id": "listComments",
-      "name": "List comments",
+      "name": "Comments",
       "actionName": "listComments",
       "apiNames": ["Api"],
       "modelName": "Comment",
@@ -1242,7 +1242,7 @@
     },
     {
       "id": "listPosts",
-      "name": "List posts",
+      "name": "Posts",
       "actionName": "listPosts",
       "apiNames": ["Api"],
       "modelName": "BlogPost",
@@ -1553,7 +1553,7 @@
     },
     {
       "id": "listPostsEmbeds",
-      "name": "List posts embeds",
+      "name": "Posts embeds",
       "actionName": "listPostsEmbeds",
       "apiNames": ["Api"],
       "modelName": "BlogPost",
