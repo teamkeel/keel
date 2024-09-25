@@ -11,78 +11,87 @@ message Capabilities {
 	// TBC more options
 }
 
+message Tool {
+	tools.ActionConfig config = 1;
+
+	// A slug for this tool used to reference it regardless of the build/environment; E.g. get-order, or get-order-2
+	string slug = 2; 
+
+	// A unique identifier for this tool that can be used to identify a tool's configuration. The 
+	// same tool (with the same slug) will have different id's depending on the configuration for a 
+	// specific build/environment.
+	string id = 3; 
+}
+
 message ActionConfig {
-	// Unique identifier. For generated tools, the ID will be the same as the action's name.
-	string id = 1;
-	
 	// Sentence case the action name e.g "Get order"
-	string name = 2; 
+	string name = 1; 
 	
 	// Skipped for auto generated tools
-	optional string icon = 3; 
+	optional string icon = 2; 
 
 	// The action in the schema e.g "getOrder"
-	string action_name = 4; 
+	string action_name = 3; 
 
 	// The names of the APIs in which this action sits
-	repeated string api_names = 5;
+	repeated string api_names = 4;
 
 	// The name of the model on which this tool operates on.
-	string model_name = 6;
+	string model_name = 5;
 	
-	proto.ActionType action_type = 7;
-	proto.ActionImplementation implementation = 8;
+	proto.ActionType action_type = 6;
+	proto.ActionImplementation implementation = 7;
 
-	repeated RequestFieldConfig inputs = 9;
-	repeated ResponseFieldConfig response = 10;
+	repeated RequestFieldConfig inputs = 8;
+	repeated ResponseFieldConfig response = 9;
 
 	// Title of the tool.
 	// Default value: a template with the first field of the model if it's a text field,
 	// otherwise empty.
-	optional StringTemplate title = 11; 
+	optional StringTemplate title = 10; 
 
 	// Template language support: markdown
-	optional StringTemplate help_text = 12; 
+	optional StringTemplate help_text = 11; 
 
 	// The name of the entity associated with this tool, in a singular form (e.g. order, user).
 	// The word is lowercased; for generated tools it is the name of the model
-	string entity_single = 13; 
+	string entity_single = 12; 
 
 	// The name of the entity associated with this tool, in a plural form (e.g. orders, users).
 	// The word is lowercased; for generated tools it is derived from name of the model
-	string entity_plural = 14; 
+	string entity_plural = 13; 
 
 	// What features are enabled for this tool
-	Capabilities capabilities = 15;
+	Capabilities capabilities = 14;
 
 	// Only for List actions; aka views.
 	// E.g. For a listOrders action; these would be tabs that show filtered orders by status 
 	// (Processed, Pending, Completed)
 	// For auto-generated configs, this is only populated for list actions, with links to other list 
 	// actions for the same model.
-	repeated ActionLink related_actions = 16; 
+	repeated ActionLink related_actions = 15; 
 
 	// Only for List actions; Support offset and cursor
-	optional CursorPaginationConfig pagination = 17;
+	optional CursorPaginationConfig pagination = 16;
 
 	// List of extenal links that will be displayed with this tool; used only for Get actions.
 	// Nothing for auto generated
-	repeated ExternalLink links = 18; 
+	repeated ExternalLink links = 17; 
 	
 	// Things you can do to this entry
 	// All update, deletes, creates, read and write on the same model.
 	// Only for List & Get; empty for mutations 
-	repeated ActionLink entry_activity_actions = 19; 
+	repeated ActionLink entry_activity_actions = 18; 
 	
 	// Tools that will be displayed inline (embedded) withing the one that we're defining. 
-	repeated ActionLink embedded_actions = 20;
+	repeated ActionLink embedded_actions = 19;
 
 	// The action to use to get an entry on this model. Default to a get action on the same model
 	// Used for: 
 	// - fetching the record for prefilling a mutation
 	// - the link for clicking a row in a List 
 	// - the action to call after a mutation
-	optional ActionLink get_entry_action = 21;
+	optional ActionLink get_entry_action = 20;
 }
 
 message RequestFieldConfig {

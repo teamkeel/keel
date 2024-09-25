@@ -86,6 +86,7 @@ service API {
 }
 
 message ListToolsRequest {}
+
 message ListToolsResponse {
-	repeated tools.ActionConfig tools = 1;
+	repeated tools.Tool tools = 1;
 }

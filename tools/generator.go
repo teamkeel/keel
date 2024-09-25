@@ -82,7 +82,6 @@ func (g *Generator) scaffoldTools() {
 		for _, action := range model.GetActions() {
 			t := Tool{
 				Config: &toolsproto.ActionConfig{
-					Id:             action.Name,
 					ApiNames:       g.Schema.FindApiNames(model.Name, action.Name),
 					Name:           makeActionName(action),
 					ActionName:     action.GetName(),
@@ -119,7 +118,7 @@ func (g *Generator) scaffoldTools() {
 				}
 			}
 
-			g.Tools[t.Config.Id] = &t
+			g.Tools[t.Config.ActionName] = &t
 		}
 	}
 }
