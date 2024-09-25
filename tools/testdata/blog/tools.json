@@ -802,48 +802,6 @@
       "response": [
         {
           "fieldLocation": {
-            "path": "$.pageInfo"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "displayName": "PageInfo"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.count"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Count"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.totalCount"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Total count"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.hasNextPage"
-          },
-          "fieldType": "TYPE_BOOL",
-          "displayName": "Has next page"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.startCursor"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Start cursor"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.endCursor"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "End cursor"
-        },
-        {
-          "fieldLocation": {
             "path": "$.results"
           },
           "fieldType": "TYPE_OBJECT",
@@ -1095,48 +1053,6 @@
       "response": [
         {
           "fieldLocation": {
-            "path": "$.pageInfo"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "displayName": "PageInfo"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.count"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Count"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.totalCount"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Total count"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.hasNextPage"
-          },
-          "fieldType": "TYPE_BOOL",
-          "displayName": "Has next page"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.startCursor"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Start cursor"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.endCursor"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "End cursor"
-        },
-        {
-          "fieldLocation": {
             "path": "$.results"
           },
           "fieldType": "TYPE_OBJECT",
@@ -1305,48 +1221,6 @@
         }
       ],
       "response": [
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "displayName": "PageInfo"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.count"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Count"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.totalCount"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Total count"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.hasNextPage"
-          },
-          "fieldType": "TYPE_BOOL",
-          "displayName": "Has next page"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.startCursor"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Start cursor"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.endCursor"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "End cursor"
-        },
         {
           "fieldLocation": {
             "path": "$.results"
@@ -1606,48 +1480,6 @@
         }
       ],
       "response": [
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "displayName": "PageInfo"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.count"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Count"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.totalCount"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Total count"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.hasNextPage"
-          },
-          "fieldType": "TYPE_BOOL",
-          "displayName": "Has next page"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.startCursor"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Start cursor"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.endCursor"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "End cursor"
-        },
         {
           "fieldLocation": {
             "path": "$.results"
