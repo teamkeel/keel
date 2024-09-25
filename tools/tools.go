@@ -28,7 +28,6 @@ func GenerateTools(ctx context.Context, schema *proto.Schema) ([]*toolsproto.Too
 	for _, cfg := range gen.GetConfigs() {
 		tools = append(tools, &toolsproto.Tool{
 			Config: cfg,
-			Slug:   strcase.ToKebab(cfg.ActionName),
 			Id:     strcase.ToKebab(cfg.ActionName),
 		})
 	}

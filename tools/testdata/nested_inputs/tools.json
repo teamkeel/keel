@@ -96,7 +96,6 @@
         "entityPlural": "invoices",
         "capabilities": {}
       },
-      "slug": "create-invoice",
       "id": "create-invoice"
     },
     {
@@ -126,7 +125,6 @@
         "entityPlural": "identities",
         "capabilities": {}
       },
-      "slug": "request-password-reset",
       "id": "request-password-reset"
     },
     {
@@ -156,7 +154,6 @@
         "entityPlural": "identities",
         "capabilities": {}
       },
-      "slug": "reset-password",
       "id": "reset-password"
     }
   ]

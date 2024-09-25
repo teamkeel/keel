@@ -14,13 +14,9 @@ message Capabilities {
 message Tool {
 	tools.ActionConfig config = 1;
 
-	// A slug for this tool used to reference it regardless of the build/environment; E.g. get-order, or get-order-2
-	string slug = 2; 
-
-	// A unique identifier for this tool that can be used to identify a tool's configuration. The 
-	// same tool (with the same slug) will have different id's depending on the configuration for a 
-	// specific build/environment.
-	string id = 3; 
+	// A slug identifier for this tool used to reference it regardless of the build/environment; 
+	// E.g. get-order, or get-order-2
+	string id = 2; 
 }
 
 message ActionConfig {

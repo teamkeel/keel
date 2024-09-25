@@ -20,7 +20,6 @@
         "entityPlural": "blog posts",
         "capabilities": {}
       },
-      "slug": "create-from-image",
       "id": "create-from-image"
     },
     {
@@ -178,7 +177,6 @@
           "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
         }
       },
-      "slug": "create-post",
       "id": "create-post"
     },
     {
@@ -235,7 +233,6 @@
         "entityPlural": "categories",
         "capabilities": {}
       },
-      "slug": "delete-category",
       "id": "delete-category"
     },
     {
@@ -347,7 +344,6 @@
         "entityPlural": "blog posts",
         "capabilities": {}
       },
-      "slug": "delete-post",
       "id": "delete-post"
     },
     {
@@ -411,7 +407,6 @@
           }
         ]
       },
-      "slug": "get-category",
       "id": "get-category"
     },
     {
@@ -543,7 +538,6 @@
           }
         ]
       },
-      "slug": "get-post",
       "id": "get-post"
     },
     {
@@ -691,7 +685,6 @@
           "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
         }
       },
-      "slug": "list-categories",
       "id": "list-categories"
     },
     {
@@ -905,7 +898,6 @@
           "totalCount": { "path": "$.pageInfo.totalCount" }
         }
       },
-      "slug": "list-comments",
       "id": "list-comments"
     },
     {
@@ -1126,7 +1118,6 @@
           "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
         }
       },
-      "slug": "list-posts",
       "id": "list-posts"
     },
     {
@@ -1512,7 +1503,6 @@
           "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
         }
       },
-      "slug": "list-posts-embeds",
       "id": "list-posts-embeds"
     },
     {
@@ -1542,7 +1532,6 @@
         "entityPlural": "identities",
         "capabilities": {}
       },
-      "slug": "request-password-reset",
       "id": "request-password-reset"
     },
     {
@@ -1572,7 +1561,6 @@
         "entityPlural": "identities",
         "capabilities": {}
       },
-      "slug": "reset-password",
       "id": "reset-password"
     },
     {
@@ -1756,7 +1744,6 @@
           "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
         }
       },
-      "slug": "update-post",
       "id": "update-post"
     }
   ]
