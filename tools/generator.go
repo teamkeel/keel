@@ -556,9 +556,16 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			Repeated:      f.Type.Repeated,
-			DisplayName:   casing.ToSentenceCase(f.Name),
-			Visible:       true,
-			DisplayOrder:  computeFieldOrder(&order, len(model.GetFields()), f.Name),
+			DisplayName: func() string {
+				// if the field is a model (relationship), the display name of the field should be the
+				// name of the related field without the ID suffix; e.g. "Category" instead of "Category id"
+				if f.IsForeignKey() {
+					return casing.ToSentenceCase(strings.TrimSuffix(f.Name, "Id"))
+				}
+				return casing.ToSentenceCase(f.Name)
+			}(),
+			Visible:      true,
+			DisplayOrder: computeFieldOrder(&order, len(model.GetFields()), f.Name),
 			Sortable: func() bool {
 				for _, fn := range sortableFields {
 					if fn == f.Name {
@@ -586,10 +593,6 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 						},
 					},
 				}
-
-				// now that we have a link to retrieve the related model, the display name of the field should be the
-				// name of the related field without the ID suffix; e.g. "Category" instead of "Category id"
-				config.DisplayName = casing.ToSentenceCase(strings.TrimSuffix(f.Name, "Id"))
 			}
 		}
 
