@@ -4,7 +4,9 @@
       "id": "createFromImage",
       "name": "Create from image",
       "actionName": "createFromImage",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
@@ -25,7 +27,9 @@
       "id": "createPost",
       "name": "Create post",
       "actionName": "createPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_CREATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -138,7 +142,7 @@
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category",
+          "displayName": "Category id",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -181,7 +185,9 @@
       "id": "deleteCategory",
       "name": "Delete category",
       "actionName": "deleteCategory",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Category",
       "actionType": "ACTION_TYPE_DELETE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -236,7 +242,9 @@
       "id": "deletePost",
       "name": "Delete post",
       "actionName": "deletePost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_DELETE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -307,7 +315,7 @@
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category",
+          "displayName": "Category id",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -346,7 +354,9 @@
       "id": "getCategory",
       "name": "Get category",
       "actionName": "getCategory",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Category",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -407,7 +417,9 @@
       "id": "getPost",
       "name": "Get post",
       "actionName": "getPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -478,7 +490,7 @@
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category",
+          "displayName": "Category id",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -537,7 +549,9 @@
       "id": "listCategories",
       "name": "List categories",
       "actionName": "listCategories",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Category",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -683,7 +697,9 @@
       "id": "listComments",
       "name": "List comments",
       "actionName": "listComments",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Comment",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -827,7 +843,7 @@
         {
           "fieldLocation": { "path": "$.results[*].parentId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Parent",
+          "displayName": "Parent id",
           "displayOrder": 1,
           "visible": true,
           "link": {
@@ -892,7 +908,9 @@
       "id": "listPosts",
       "name": "List posts",
       "actionName": "listPosts",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -1032,7 +1050,7 @@
         {
           "fieldLocation": { "path": "$.results[*].categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category",
+          "displayName": "Category id",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -1112,7 +1130,9 @@
       "id": "listPostsEmbeds",
       "name": "List posts embeds",
       "actionName": "listPostsEmbeds",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -1270,7 +1290,7 @@
         {
           "fieldLocation": { "path": "$.results[*].author.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category",
+          "displayName": "Category id",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -1380,7 +1400,7 @@
         {
           "fieldLocation": { "path": "$.results[*].category.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category",
+          "displayName": "Category id",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -1417,7 +1437,7 @@
         {
           "fieldLocation": { "path": "$.results[*].categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category",
+          "displayName": "Category id",
           "displayOrder": 7,
           "visible": true,
           "link": {
@@ -1497,7 +1517,9 @@
       "id": "requestPasswordReset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -1525,7 +1547,9 @@
       "id": "resetPassword",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -1553,7 +1577,9 @@
       "id": "updatePost",
       "name": "Update post",
       "actionName": "updatePost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_UPDATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -1692,7 +1718,7 @@
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category",
+          "displayName": "Category id",
           "displayOrder": 7,
           "visible": true,
           "link": {

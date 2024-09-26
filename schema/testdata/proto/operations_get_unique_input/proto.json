@@ -5,6 +5,21 @@
       "fields": [
         {
           "modelName": "MyModel",
+          "name": "somethingUnique",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "unique": true
+        },
+        {
+          "modelName": "MyModel",
+          "name": "notUnique",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "MyModel",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -43,6 +58,20 @@
           "type": "ACTION_TYPE_GET",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "GetMyModelInput"
+        },
+        {
+          "modelName": "MyModel",
+          "name": "getMyModelByUnique",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetMyModelByUniqueInput"
+        },
+        {
+          "modelName": "MyModel",
+          "name": "getMyModelByUnique2",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "GetMyModelByUnique2Input"
         }
       ]
     },
@@ -56,7 +85,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -93,7 +124,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -245,6 +278,12 @@
           "modelActions": [
             {
               "actionName": "getMyModel"
+            },
+            {
+              "actionName": "getMyModelByUnique"
+            },
+            {
+              "actionName": "getMyModelByUnique2"
             }
           ]
         },
@@ -321,7 +360,55 @@
             "modelName": "MyModel",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GetMyModelByUniqueInput",
+      "fields": [
+        {
+          "messageName": "GetMyModelByUniqueInput",
+          "name": "somethingUnique",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "MyModel",
+            "fieldName": "somethingUnique"
+          },
+          "target": [
+            "somethingUnique"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GetMyModelByUnique2Input",
+      "fields": [
+        {
+          "messageName": "GetMyModelByUnique2Input",
+          "name": "somethingUnique",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "MyModel",
+            "fieldName": "somethingUnique"
+          },
+          "target": [
+            "somethingUnique"
+          ]
+        },
+        {
+          "messageName": "GetMyModelByUnique2Input",
+          "name": "notUnique",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "MyModel",
+            "fieldName": "notUnique"
+          },
+          "target": [
+            "notUnique"
+          ]
         }
       ]
     }

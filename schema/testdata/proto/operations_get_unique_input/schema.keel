@@ -1,5 +1,11 @@
 model MyModel {
+    fields {
+        somethingUnique Text @unique
+        notUnique Text
+    }
     actions {
         get getMyModel(id)
+        get getMyModelByUnique(somethingUnique)
+        get getMyModelByUnique2(somethingUnique, notUnique)
     }
 }
