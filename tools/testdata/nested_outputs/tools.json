@@ -2,7 +2,7 @@
   "tools": [
     {
       "config": {
-        "name": "Invoices",
+        "name": "Read invoices",
         "actionName": "readInvoices",
         "apiNames": ["Api"],
         "modelName": "Invoice",
@@ -87,6 +87,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Invoices" },
         "entitySingle": "invoice",
         "entityPlural": "invoices",
         "capabilities": {}
@@ -116,6 +117,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Request password reset" },
         "entitySingle": "identity",
         "entityPlural": "identities",
         "capabilities": {}
@@ -145,6 +147,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Reset password" },
         "entitySingle": "identity",
         "entityPlural": "identities",
         "capabilities": {}

@@ -92,6 +92,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Create invoice" },
         "entitySingle": "invoice",
         "entityPlural": "invoices",
         "capabilities": {}
@@ -121,6 +122,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Request password reset" },
         "entitySingle": "identity",
         "entityPlural": "identities",
         "capabilities": {}
@@ -150,6 +152,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Reset password" },
         "entitySingle": "identity",
         "entityPlural": "identities",
         "capabilities": {}
