@@ -15,7 +15,7 @@ beforeEach(resetDatabase);
 
 test("files - create action with file input", async () => {
   const fileContents = "hello";
-  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents
   ).toString("base64")}`;
 
@@ -23,7 +23,7 @@ test("files - create action with file input", async () => {
     file: InlineFile.fromDataURL(dataUrl),
   });
 
-  expect(result.file?.contentType).toEqual("application/text");
+  expect(result.file?.contentType).toEqual("text/plain");
   expect(result.file?.filename).toEqual("my-file.txt");
   expect(result.file?.size).toEqual(5);
 
@@ -51,7 +51,7 @@ test("files - create action with file input", async () => {
 
 test("files - update action with file input", async () => {
   const fileContents = "hello";
-  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents
   ).toString("base64")}`;
 
@@ -60,7 +60,7 @@ test("files - update action with file input", async () => {
   });
 
   const fileContents2 = "hello again";
-  const dataUrl2 = `data:application/text;name=my-second-file.txt;base64,${Buffer.from(
+  const dataUrl2 = `data:text/plain;name=my-second-file.txt;base64,${Buffer.from(
     fileContents2
   ).toString("base64")}`;
 
@@ -73,7 +73,7 @@ test("files - update action with file input", async () => {
     },
   });
 
-  expect(updated.file?.contentType).toEqual("application/text");
+  expect(updated.file?.contentType).toEqual("text/plain");
   expect(updated.file?.filename).toEqual("my-second-file.txt");
   expect(updated.file?.size).toEqual(11);
 
@@ -102,7 +102,7 @@ test("files - update action with file input", async () => {
 
 test("files - update action with file input and empty hooks", async () => {
   const fileContents = "hello";
-  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents
   ).toString("base64")}`;
 
@@ -111,7 +111,7 @@ test("files - update action with file input and empty hooks", async () => {
   });
 
   const fileContents2 = "hello again";
-  const dataUrl2 = `data:application/text;name=my-second-file.txt;base64,${Buffer.from(
+  const dataUrl2 = `data:text/plain;name=my-second-file.txt;base64,${Buffer.from(
     fileContents2
   ).toString("base64")}`;
 
@@ -124,7 +124,7 @@ test("files - update action with file input and empty hooks", async () => {
     },
   });
 
-  expect(updated.file?.contentType).toEqual("application/text");
+  expect(updated.file?.contentType).toEqual("text/plain");
   expect(updated.file?.filename).toEqual("my-second-file.txt");
   expect(updated.file?.size).toEqual(11);
 
@@ -153,7 +153,7 @@ test("files - update action with file input and empty hooks", async () => {
 
 test("files - get action", async () => {
   const fileContents = "hello";
-  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents
   ).toString("base64")}`;
 
@@ -165,7 +165,7 @@ test("files - get action", async () => {
     id: created.id,
   });
 
-  expect(result?.file?.contentType).toEqual("application/text");
+  expect(result?.file?.contentType).toEqual("text/plain");
   expect(result?.file?.filename).toEqual("my-file.txt");
   expect(result?.file?.size).toEqual(5);
 
@@ -175,7 +175,7 @@ test("files - get action", async () => {
 
 test("files - list action", async () => {
   const fileContents = "hello";
-  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents
   ).toString("base64")}`;
 
@@ -184,7 +184,7 @@ test("files - list action", async () => {
   });
 
   const fileContents2 = "hello again";
-  const dataUrl2 = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl2 = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents2
   ).toString("base64")}`;
 
@@ -194,14 +194,14 @@ test("files - list action", async () => {
 
   const result = await actions.listFiles({});
 
-  expect(result.results[0].file?.contentType).toEqual("application/text");
+  expect(result.results[0].file?.contentType).toEqual("text/plain");
   expect(result.results[0].file?.filename).toEqual("my-file.txt");
   expect(result.results[0].file?.size).toEqual(5);
 
   const contents1 = await result.results[0].file?.read();
   expect(contents1?.toString("utf-8")).toEqual("hello");
 
-  expect(result.results[1].file?.contentType).toEqual("application/text");
+  expect(result.results[1].file?.contentType).toEqual("text/plain");
   expect(result.results[1].file?.filename).toEqual("my-file.txt");
   expect(result.results[1].file?.size).toEqual(11);
 
@@ -211,7 +211,7 @@ test("files - list action", async () => {
 
 test("files - get action empty hooks", async () => {
   const fileContents = "hello";
-  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents
   ).toString("base64")}`;
 
@@ -223,7 +223,7 @@ test("files - get action empty hooks", async () => {
     id: created.id,
   });
 
-  expect(result?.file?.contentType).toEqual("application/text");
+  expect(result?.file?.contentType).toEqual("text/plain");
   expect(result?.file?.filename).toEqual("my-file.txt");
   expect(result?.file?.size).toEqual(5);
 
@@ -233,7 +233,7 @@ test("files - get action empty hooks", async () => {
 
 test("files - list action empty hooks", async () => {
   const fileContents = "hello";
-  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents
   ).toString("base64")}`;
 
@@ -243,7 +243,7 @@ test("files - list action empty hooks", async () => {
 
   const result = await actions.listFilesEmptyHooks({});
 
-  expect(result.results[0].file?.contentType).toEqual("application/text");
+  expect(result.results[0].file?.contentType).toEqual("text/plain");
   expect(result.results[0].file?.filename).toEqual("my-file.txt");
   expect(result.results[0].file?.size).toEqual(5);
 
@@ -299,7 +299,7 @@ test("files - create and store file in hook", async () => {
 
 test("files - read and store in query hook", async () => {
   const fileContents = "1";
-  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents
   ).toString("base64")}`;
 
@@ -333,7 +333,7 @@ test("files - read and store in query hook", async () => {
 
 test("files - write many, store many", async () => {
   const fileContents = "hello";
-  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents
   ).toString("base64")}`;
 
@@ -341,7 +341,7 @@ test("files - write many, store many", async () => {
     msg: { file: InlineFile.fromDataURL(dataUrl) },
   });
 
-  expect(result.msg.file.contentType).toEqual("application/text");
+  expect(result.msg.file.contentType).toEqual("text/plain");
   expect(result.msg.file.size).toEqual(5);
   expect(result.msg.file.filename).toEqual("my-file.txt");
 
@@ -369,7 +369,7 @@ test("files - write many, store many", async () => {
 
 test("files - store once, write many", async () => {
   const fileContents = "hello";
-  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents
   ).toString("base64")}`;
 
@@ -377,7 +377,7 @@ test("files - store once, write many", async () => {
     file: InlineFile.fromDataURL(dataUrl),
   });
 
-  expect(result.msg.file.contentType).toEqual("application/text");
+  expect(result.msg.file.contentType).toEqual("text/plain");
   expect(result.msg.file.size).toEqual(5);
   expect(result.msg.file.filename).toEqual("my-file.txt");
 
@@ -412,7 +412,7 @@ test("files - kysely file tests", async () => {
 
 test("files - presigned url", async () => {
   const fileContents = "hello";
-  const dataUrl = `data:application/text;name=my-file.txt;base64,${Buffer.from(
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
     fileContents
   ).toString("base64")}`;
 

@@ -66,6 +66,9 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 			return nil
 		})
 	}
+	if err != nil {
+		return nil, err
+	}
 
 	// if we have any files in our results we need to transform them to the object structure required
 	if scope.Model.HasFiles() {

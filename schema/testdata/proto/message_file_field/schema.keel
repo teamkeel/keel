@@ -1,0 +1,13 @@
+message Input {
+	data File
+}
+
+message Response {
+	data File
+}
+
+model Person {
+    actions {
+        write writeFile(Input) returns (Response)
+    }
+}

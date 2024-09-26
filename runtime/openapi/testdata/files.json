@@ -276,7 +276,13 @@
                         "size": { "type": "number" },
                         "url": { "type": "string" }
                       },
-                      "required": ["filename", "contentType", "size", "key"]
+                      "required": [
+                        "key",
+                        "filename",
+                        "contentType",
+                        "size",
+                        "url"
+                      ]
                     }
                   },
                   "additionalProperties": false,
@@ -329,7 +335,7 @@
               "size": { "type": "number" },
               "url": { "type": "string" }
             },
-            "required": ["filename", "contentType", "size", "key"]
+            "required": ["key", "filename", "contentType", "size", "url"]
           },
           "updatedAt": { "type": "string", "format": "date-time" }
         },
