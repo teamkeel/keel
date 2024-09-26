@@ -83,7 +83,7 @@ func (g *Generator) scaffoldTools() {
 			t := Tool{
 				Config: &toolsproto.ActionConfig{
 					ApiNames:       g.Schema.FindApiNames(model.Name, action.Name),
-					Name:           makeActionName(action),
+					Name:           casing.ToSentenceCase(action.Name),
 					ActionName:     action.GetName(),
 					ModelName:      model.GetName(),
 					ActionType:     action.GetType(),
@@ -709,6 +709,9 @@ func (g *Generator) makeCapabilities(action *proto.Action) *toolsproto.Capabilit
 //
 // For GET/READ actions:
 //   - The title will be a template including the value of the first field of the model, only if that field is a text field
+//
+// If no text fields found, we revert to the sentence-cased action name (also removing the list/get/read prefixes
+// (e.g. Invoices instead of List invoices)
 func (g *Generator) makeTitle(action *proto.Action, model *proto.Model) *toolsproto.StringTemplate {
 	if action.IsGet() || action.Type == proto.ActionType_ACTION_TYPE_READ {
 		fields := model.GetFields()
@@ -719,26 +722,19 @@ func (g *Generator) makeTitle(action *proto.Action, model *proto.Model) *toolspr
 		}
 	}
 
-	return nil
-}
+	actionName := action.Name
 
-// makeActionName will create a name for the action. Get, Read and List actions will have their prefixes removed;
-// e.g.:
-// getOrder => Order
-// listOrders => Orders
-// createOrder = Create order
-// updateOrder => Update order
-// readOrders => Orders
-func makeActionName(action *proto.Action) string {
 	switch action.Type {
 	case proto.ActionType_ACTION_TYPE_GET:
-		return casing.ToSentenceCase(strings.TrimPrefix(action.Name, "get"))
+		actionName = strings.TrimPrefix(action.Name, "get")
 	case proto.ActionType_ACTION_TYPE_LIST:
-		return casing.ToSentenceCase(strings.TrimPrefix(action.Name, "list"))
+		actionName = strings.TrimPrefix(action.Name, "list")
 	case proto.ActionType_ACTION_TYPE_READ:
-		return casing.ToSentenceCase(strings.TrimPrefix(action.Name, "read"))
-	default:
-		return casing.ToSentenceCase(action.Name)
+		actionName = strings.TrimPrefix(action.Name, "read")
+	}
+
+	return &toolsproto.StringTemplate{
+		Template: casing.ToSentenceCase(actionName),
 	}
 }
 

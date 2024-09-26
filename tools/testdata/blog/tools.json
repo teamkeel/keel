@@ -16,6 +16,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Create from image" },
         "entitySingle": "blog post",
         "entityPlural": "blog posts",
         "capabilities": {}
@@ -169,6 +170,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Create post" },
         "entitySingle": "blog post",
         "entityPlural": "blog posts",
         "capabilities": {},
@@ -229,6 +231,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Delete category" },
         "entitySingle": "category",
         "entityPlural": "categories",
         "capabilities": {}
@@ -340,6 +343,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Delete post" },
         "entitySingle": "blog post",
         "entityPlural": "blog posts",
         "capabilities": {}
@@ -348,7 +352,7 @@
     },
     {
       "config": {
-        "name": "Category",
+        "name": "Get category",
         "actionName": "getCategory",
         "apiNames": ["Api"],
         "modelName": "Category",
@@ -411,7 +415,7 @@
     },
     {
       "config": {
-        "name": "Post",
+        "name": "Get post",
         "actionName": "getPost",
         "apiNames": ["Api"],
         "modelName": "BlogPost",
@@ -542,7 +546,7 @@
     },
     {
       "config": {
-        "name": "Categories",
+        "name": "List categories",
         "actionName": "listCategories",
         "apiNames": ["Api"],
         "modelName": "Category",
@@ -650,6 +654,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Categories" },
         "entitySingle": "category",
         "entityPlural": "categories",
         "capabilities": {},
@@ -689,7 +694,7 @@
     },
     {
       "config": {
-        "name": "Comments",
+        "name": "List comments",
         "actionName": "listComments",
         "apiNames": ["Api"],
         "modelName": "Comment",
@@ -877,6 +882,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Comments" },
         "entitySingle": "comment",
         "entityPlural": "comments",
         "capabilities": {},
@@ -902,7 +908,7 @@
     },
     {
       "config": {
-        "name": "Posts",
+        "name": "List posts",
         "actionName": "listPosts",
         "apiNames": ["Api"],
         "modelName": "BlogPost",
@@ -1076,6 +1082,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Posts" },
         "entitySingle": "blog post",
         "entityPlural": "blog posts",
         "capabilities": {},
@@ -1122,7 +1129,7 @@
     },
     {
       "config": {
-        "name": "Posts embeds",
+        "name": "List posts embeds",
         "actionName": "listPostsEmbeds",
         "apiNames": ["Api"],
         "modelName": "BlogPost",
@@ -1461,6 +1468,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Posts embeds" },
         "entitySingle": "blog post",
         "entityPlural": "blog posts",
         "capabilities": {},
@@ -1528,6 +1536,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Request password reset" },
         "entitySingle": "identity",
         "entityPlural": "identities",
         "capabilities": {}
@@ -1557,6 +1566,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Reset password" },
         "entitySingle": "identity",
         "entityPlural": "identities",
         "capabilities": {}
@@ -1736,6 +1746,7 @@
             "visible": true
           }
         ],
+        "title": { "template": "Update post" },
         "entitySingle": "blog post",
         "entityPlural": "blog posts",
         "capabilities": {},
