@@ -76,7 +76,6 @@ func (s *Schema) IsActionResponseMessage(messageName string) bool {
 					return true
 				}
 			}
-
 		}
 	}
 	return false
