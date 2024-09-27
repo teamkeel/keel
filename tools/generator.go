@@ -136,6 +136,7 @@ func (g *Generator) decorateTools() error {
 	g.generateEntryActivityActionsLinks()
 	g.generateGetEntryActionLinks()
 	g.generateEmbeddedActionLinks()
+	g.generateCreateEntryActionLinks()
 
 	// decorate further...
 	for _, tool := range g.Tools {
@@ -231,6 +232,22 @@ func (g *Generator) generateGetEntryActionLinks() {
 							Path: &toolsproto.JsonPath{Path: idResponseFieldPath},
 						},
 					},
+				}
+			}
+		}
+	}
+}
+
+// generateCreateEntryActionLinks will traverse the tools and generate the CreateEntryAction links:
+//   - Applicable to LIST/GET actions: a CREATE action used to make a model of the same type
+func (g *Generator) generateCreateEntryActionLinks() {
+	for _, tool := range g.Tools {
+		if tool.Action.IsList() || tool.Action.IsGet() {
+			if createToolId := g.findCreateTool(tool.Model.Name); createToolId != "" {
+				//TODO: improvement: add datamapping from list actions to the create action if there are any filtered fields
+				tool.Config.CreateEntryAction = &toolsproto.ActionLink{
+					ToolId: createToolId,
+					Data:   []*toolsproto.DataMapping{},
 				}
 			}
 		}
@@ -631,6 +648,17 @@ func (g *Generator) findListTools(modelName string) []string {
 func (g *Generator) findGetTool(modelName string) string {
 	for id, tool := range g.Tools {
 		if tool.Model.Name == modelName && tool.Action.IsGet() {
+			return id
+		}
+	}
+
+	return ""
+}
+
+// findCreateTool will search for a get tool for the given model
+func (g *Generator) findCreateTool(modelName string) string {
+	for id, tool := range g.Tools {
+		if tool.Model.Name == modelName && tool.Action.IsCreate() {
 			return id
 		}
 	}
