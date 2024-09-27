@@ -1,7 +1,7 @@
 {
   "tools": [
     {
-      "id": "create-from-image",
+      "id": "createFromImage",
       "name": "Create from image",
       "actionName": "createFromImage",
       "apiNames": ["Api"],
@@ -22,7 +22,7 @@
       "capabilities": {}
     },
     {
-      "id": "create-post",
+      "id": "createPost",
       "name": "Create post",
       "actionName": "createPost",
       "apiNames": ["Api"],
@@ -178,7 +178,7 @@
       }
     },
     {
-      "id": "delete-category",
+      "id": "deleteCategory",
       "name": "Delete category",
       "actionName": "deleteCategory",
       "apiNames": ["Api"],
@@ -233,7 +233,7 @@
       "capabilities": {}
     },
     {
-      "id": "delete-post",
+      "id": "deletePost",
       "name": "Delete post",
       "actionName": "deletePost",
       "apiNames": ["Api"],
@@ -343,7 +343,7 @@
       "capabilities": {}
     },
     {
-      "id": "get-category",
+      "id": "getCategory",
       "name": "Get category",
       "actionName": "getCategory",
       "apiNames": ["Api"],
@@ -404,7 +404,7 @@
       ]
     },
     {
-      "id": "get-post",
+      "id": "getPost",
       "name": "Get post",
       "actionName": "getPost",
       "apiNames": ["Api"],
@@ -534,7 +534,7 @@
       "createEntryAction": { "toolId": "createPost" }
     },
     {
-      "id": "list-categories",
+      "id": "listCategories",
       "name": "List categories",
       "actionName": "listCategories",
       "apiNames": ["Api"],
@@ -680,7 +680,7 @@
       }
     },
     {
-      "id": "list-comments",
+      "id": "listComments",
       "name": "List comments",
       "actionName": "listComments",
       "apiNames": ["Api"],
@@ -889,7 +889,7 @@
       }
     },
     {
-      "id": "list-posts",
+      "id": "listPosts",
       "name": "List posts",
       "actionName": "listPosts",
       "apiNames": ["Api"],
@@ -1109,7 +1109,7 @@
       "createEntryAction": { "toolId": "createPost" }
     },
     {
-      "id": "list-posts-embeds",
+      "id": "listPostsEmbeds",
       "name": "List posts embeds",
       "actionName": "listPostsEmbeds",
       "apiNames": ["Api"],
@@ -1494,7 +1494,7 @@
       "createEntryAction": { "toolId": "createPost" }
     },
     {
-      "id": "request-password-reset",
+      "id": "requestPasswordReset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
       "apiNames": ["Api"],
@@ -1522,7 +1522,7 @@
       "capabilities": {}
     },
     {
-      "id": "reset-password",
+      "id": "resetPassword",
       "name": "Reset password",
       "actionName": "resetPassword",
       "apiNames": ["Api"],
@@ -1550,7 +1550,7 @@
       "capabilities": {}
     },
     {
-      "id": "update-post",
+      "id": "updatePost",
       "name": "Update post",
       "actionName": "updatePost",
       "apiNames": ["Api"],
