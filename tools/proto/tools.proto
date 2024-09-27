@@ -72,7 +72,7 @@ message ActionConfig {
 
 	// List of extenal links that will be displayed with this tool; used only for Get actions.
 	// Nothing for auto generated
-	repeated ExternalLink links = 17; 
+	repeated ExternalLink external_links = 17; 
 	
 	// Things you can do to this entry
 	// All update, deletes, creates, read and write on the same model.
@@ -88,6 +88,11 @@ message ActionConfig {
 	// - the link for clicking a row in a List 
 	// - the action to call after a mutation
 	optional ActionLink get_entry_action = 20;
+
+	// The action to use to create a new entry for this model. By default, this action link will be created
+	// for LIST and GET actions in the case where a CREATE action exists for the same model. It should 
+	// be used to add a button on the tool to `Create a new/another record`
+	optional ActionLink create_entry_action = 21;
 }
 
 message RequestFieldConfig {

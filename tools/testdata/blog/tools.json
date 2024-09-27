@@ -540,7 +540,8 @@
             ],
             "title": { "template": "comments" }
           }
-        ]
+        ],
+        "createEntryAction": { "toolId": "createPost" }
       },
       "id": "get-post"
     },
@@ -1123,7 +1124,8 @@
         "getEntryAction": {
           "toolId": "getPost",
           "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
-        }
+        },
+        "createEntryAction": { "toolId": "createPost" }
       },
       "id": "list-posts"
     },
@@ -1509,7 +1511,8 @@
         "getEntryAction": {
           "toolId": "getPost",
           "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
-        }
+        },
+        "createEntryAction": { "toolId": "createPost" }
       },
       "id": "list-posts-embeds"
     },
