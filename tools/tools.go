@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	toolsproto "github.com/teamkeel/keel/tools/proto"
 )
 
 // GenerateTools will return a map of tool configurations generated for the given schema
-func GenerateTools(ctx context.Context, schema *proto.Schema) ([]*toolsproto.Tool, error) {
+func GenerateTools(ctx context.Context, schema *proto.Schema) ([]*toolsproto.ActionConfig, error) {
 	if schema == nil {
 		return nil, nil
 	}
@@ -24,13 +23,5 @@ func GenerateTools(ctx context.Context, schema *proto.Schema) ([]*toolsproto.Too
 		return nil, fmt.Errorf("generating tools: %w", err)
 	}
 
-	tools := []*toolsproto.Tool{}
-	for _, cfg := range gen.GetConfigs() {
-		tools = append(tools, &toolsproto.Tool{
-			Config: cfg,
-			Id:     strcase.ToKebab(cfg.ActionName),
-		})
-	}
-
-	return tools, nil
+	return gen.GetConfigs(), nil
 }

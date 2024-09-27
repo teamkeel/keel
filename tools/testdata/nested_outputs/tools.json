@@ -1,158 +1,152 @@
 {
   "tools": [
     {
-      "config": {
-        "name": "Read invoices",
-        "actionName": "readInvoices",
-        "apiNames": ["Api"],
-        "modelName": "Invoice",
-        "actionType": "ACTION_TYPE_READ",
-        "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
-        "inputs": [
-          {
-            "fieldLocation": { "path": "$.from" },
-            "fieldType": "TYPE_DATE",
-            "displayName": "From",
-            "visible": true
-          },
-          {
-            "fieldLocation": { "path": "$.to" },
-            "fieldType": "TYPE_DATE",
-            "displayName": "To",
-            "displayOrder": 1,
-            "visible": true
-          }
-        ],
-        "response": [
-          {
-            "fieldLocation": { "path": "$.invoices" },
-            "fieldType": "TYPE_MESSAGE",
-            "repeated": true,
-            "displayName": "Invoices",
-            "visible": true
-          },
-          {
-            "fieldLocation": { "path": "$.invoices[*].date" },
-            "fieldType": "TYPE_DATE",
-            "displayName": "Date",
-            "visible": true
-          },
-          {
-            "fieldLocation": { "path": "$.invoices[*].amount" },
-            "fieldType": "TYPE_INT",
-            "displayName": "Amount",
-            "displayOrder": 1,
-            "visible": true
-          },
-          {
-            "fieldLocation": { "path": "$.invoices[*].customerId" },
-            "fieldType": "TYPE_ID",
-            "displayName": "Customer id",
-            "displayOrder": 2,
-            "visible": true
-          },
-          {
-            "fieldLocation": { "path": "$.customers" },
-            "fieldType": "TYPE_MODEL",
-            "repeated": true,
-            "displayName": "Customers",
-            "displayOrder": 1,
-            "visible": true
-          },
-          {
-            "fieldLocation": { "path": "$.customers[*].name" },
-            "fieldType": "TYPE_STRING",
-            "displayName": "Name",
-            "visible": true
-          },
-          {
-            "fieldLocation": { "path": "$.customers[*].id" },
-            "fieldType": "TYPE_ID",
-            "displayName": "Id",
-            "displayOrder": 2,
-            "visible": true
-          },
-          {
-            "fieldLocation": { "path": "$.customers[*].createdAt" },
-            "fieldType": "TYPE_DATETIME",
-            "displayName": "Created at",
-            "displayOrder": 3,
-            "visible": true
-          },
-          {
-            "fieldLocation": { "path": "$.customers[*].updatedAt" },
-            "fieldType": "TYPE_DATETIME",
-            "displayName": "Updated at",
-            "displayOrder": 4,
-            "visible": true
-          }
-        ],
-        "title": { "template": "Invoices" },
-        "entitySingle": "invoice",
-        "entityPlural": "invoices",
-        "capabilities": {}
-      },
-      "id": "read-invoices"
+      "id": "read-invoices",
+      "name": "Read invoices",
+      "actionName": "readInvoices",
+      "apiNames": ["Api"],
+      "modelName": "Invoice",
+      "actionType": "ACTION_TYPE_READ",
+      "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
+      "inputs": [
+        {
+          "fieldLocation": { "path": "$.from" },
+          "fieldType": "TYPE_DATE",
+          "displayName": "From",
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.to" },
+          "fieldType": "TYPE_DATE",
+          "displayName": "To",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": { "path": "$.invoices" },
+          "fieldType": "TYPE_MESSAGE",
+          "repeated": true,
+          "displayName": "Invoices",
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.invoices[*].date" },
+          "fieldType": "TYPE_DATE",
+          "displayName": "Date",
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.invoices[*].amount" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Amount",
+          "displayOrder": 1,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.invoices[*].customerId" },
+          "fieldType": "TYPE_ID",
+          "displayName": "Customer id",
+          "displayOrder": 2,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.customers" },
+          "fieldType": "TYPE_MODEL",
+          "repeated": true,
+          "displayName": "Customers",
+          "displayOrder": 1,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.customers[*].name" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Name",
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.customers[*].id" },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 2,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.customers[*].createdAt" },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 3,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.customers[*].updatedAt" },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 4,
+          "visible": true
+        }
+      ],
+      "title": { "template": "Invoices" },
+      "entitySingle": "invoice",
+      "entityPlural": "invoices",
+      "capabilities": {}
     },
     {
-      "config": {
-        "name": "Request password reset",
-        "actionName": "requestPasswordReset",
-        "apiNames": ["Api"],
-        "modelName": "Identity",
-        "actionType": "ACTION_TYPE_WRITE",
-        "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-        "inputs": [
-          {
-            "fieldLocation": { "path": "$.email" },
-            "fieldType": "TYPE_STRING",
-            "displayName": "Email",
-            "visible": true
-          },
-          {
-            "fieldLocation": { "path": "$.redirectUrl" },
-            "fieldType": "TYPE_STRING",
-            "displayName": "Redirect url",
-            "displayOrder": 1,
-            "visible": true
-          }
-        ],
-        "title": { "template": "Request password reset" },
-        "entitySingle": "identity",
-        "entityPlural": "identities",
-        "capabilities": {}
-      },
-      "id": "request-password-reset"
+      "id": "request-password-reset",
+      "name": "Request password reset",
+      "actionName": "requestPasswordReset",
+      "apiNames": ["Api"],
+      "modelName": "Identity",
+      "actionType": "ACTION_TYPE_WRITE",
+      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+      "inputs": [
+        {
+          "fieldLocation": { "path": "$.email" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Email",
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.redirectUrl" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Redirect url",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "title": { "template": "Request password reset" },
+      "entitySingle": "identity",
+      "entityPlural": "identities",
+      "capabilities": {}
     },
     {
-      "config": {
-        "name": "Reset password",
-        "actionName": "resetPassword",
-        "apiNames": ["Api"],
-        "modelName": "Identity",
-        "actionType": "ACTION_TYPE_WRITE",
-        "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-        "inputs": [
-          {
-            "fieldLocation": { "path": "$.token" },
-            "fieldType": "TYPE_STRING",
-            "displayName": "Token",
-            "visible": true
-          },
-          {
-            "fieldLocation": { "path": "$.password" },
-            "fieldType": "TYPE_STRING",
-            "displayName": "Password",
-            "displayOrder": 1,
-            "visible": true
-          }
-        ],
-        "title": { "template": "Reset password" },
-        "entitySingle": "identity",
-        "entityPlural": "identities",
-        "capabilities": {}
-      },
-      "id": "reset-password"
+      "id": "reset-password",
+      "name": "Reset password",
+      "actionName": "resetPassword",
+      "apiNames": ["Api"],
+      "modelName": "Identity",
+      "actionType": "ACTION_TYPE_WRITE",
+      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+      "inputs": [
+        {
+          "fieldLocation": { "path": "$.token" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Token",
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.password" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Password",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "title": { "template": "Reset password" },
+      "entitySingle": "identity",
+      "entityPlural": "identities",
+      "capabilities": {}
     }
   ]
 }

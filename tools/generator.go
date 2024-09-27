@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	toolsproto "github.com/teamkeel/keel/tools/proto"
@@ -82,6 +83,7 @@ func (g *Generator) scaffoldTools() {
 		for _, action := range model.GetActions() {
 			t := Tool{
 				Config: &toolsproto.ActionConfig{
+					Id:             strcase.ToKebab(action.GetName()),
 					ApiNames:       g.Schema.FindApiNames(model.Name, action.Name),
 					Name:           casing.ToSentenceCase(action.Name),
 					ActionName:     action.GetName(),
