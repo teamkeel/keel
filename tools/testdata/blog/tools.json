@@ -117,7 +117,7 @@
           {
             "fieldLocation": { "path": "$.authorId" },
             "fieldType": "TYPE_ID",
-            "displayName": "Author id",
+            "displayName": "Author",
             "displayOrder": 4,
             "visible": true
           },
@@ -290,7 +290,7 @@
           {
             "fieldLocation": { "path": "$.authorId" },
             "fieldType": "TYPE_ID",
-            "displayName": "Author id",
+            "displayName": "Author",
             "displayOrder": 4,
             "visible": true
           },
@@ -465,7 +465,7 @@
           {
             "fieldLocation": { "path": "$.authorId" },
             "fieldType": "TYPE_ID",
-            "displayName": "Author id",
+            "displayName": "Author",
             "displayOrder": 4,
             "visible": true
           },
@@ -838,7 +838,7 @@
           {
             "fieldLocation": { "path": "$.results[*].authorId" },
             "fieldType": "TYPE_ID",
-            "displayName": "Author id",
+            "displayName": "Author",
             "visible": true
           },
           {
@@ -1028,7 +1028,7 @@
           {
             "fieldLocation": { "path": "$.results[*].authorId" },
             "fieldType": "TYPE_ID",
-            "displayName": "Author id",
+            "displayName": "Author",
             "displayOrder": 4,
             "visible": true
           },
@@ -1268,7 +1268,7 @@
           {
             "fieldLocation": { "path": "$.results[*].author.authorId" },
             "fieldType": "TYPE_ID",
-            "displayName": "Author id",
+            "displayName": "Author",
             "displayOrder": 4,
             "visible": true
           },
@@ -1328,7 +1328,7 @@
           {
             "fieldLocation": { "path": "$.results[*].authorId" },
             "fieldType": "TYPE_ID",
-            "displayName": "Author id",
+            "displayName": "Author",
             "displayOrder": 4,
             "visible": true
           },
@@ -1378,7 +1378,7 @@
           {
             "fieldLocation": { "path": "$.results[*].category.authorId" },
             "fieldType": "TYPE_ID",
-            "displayName": "Author id",
+            "displayName": "Author",
             "displayOrder": 4,
             "visible": true
           },
@@ -1696,7 +1696,7 @@
           {
             "fieldLocation": { "path": "$.authorId" },
             "fieldType": "TYPE_ID",
-            "displayName": "Author id",
+            "displayName": "Author",
             "displayOrder": 4,
             "visible": true
           },
