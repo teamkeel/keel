@@ -1,7 +1,7 @@
 {
   "tools": [
     {
-      "id": "read-invoices",
+      "id": "readInvoices",
       "name": "Read invoices",
       "actionName": "readInvoices",
       "apiNames": ["Api"],
@@ -93,7 +93,7 @@
       "capabilities": {}
     },
     {
-      "id": "request-password-reset",
+      "id": "requestPasswordReset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
       "apiNames": ["Api"],
@@ -121,7 +121,7 @@
       "capabilities": {}
     },
     {
-      "id": "reset-password",
+      "id": "resetPassword",
       "name": "Reset password",
       "actionName": "resetPassword",
       "apiNames": ["Api"],
