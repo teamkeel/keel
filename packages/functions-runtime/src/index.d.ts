@@ -227,3 +227,15 @@ export type Errors = {
    */
   Unknown: typeof UnknownError;
 };
+
+export type FunctionConfig = {
+  /**
+   * All DB calls within the function will be executed within a transaction.
+   * The transaction is rolled back if the function throws an error.
+   */
+  dbTransaction?: boolean;
+};
+
+export type FuncWithConfig<T> = T & {
+  config: FunctionConfig;
+};

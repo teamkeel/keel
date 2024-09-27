@@ -1185,7 +1185,7 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 	// we use the 'declare' keyword to indicate to the typescript compiler that the function
 	// has already been declared in the underlying vanilla javascript and therefore we are just
 	// decorating existing js code with types.
-	w.Writef("export declare function %s", casing.ToCamel(action.Name))
+	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(action.Name))
 
 	if action.IsArbitraryFunction() {
 		inputType := action.InputMessageName
@@ -1197,14 +1197,14 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 		w.Write(toCustomFunctionReturnType(model, action, false))
 		w.Write("): ")
 		w.Write(toCustomFunctionReturnType(model, action, false))
-		w.Writeln(";")
+		w.Writeln("}>;")
 		return
 	}
 
 	hooksType := fmt.Sprintf("%sHooks", casing.ToCamel(action.Name))
 
 	// TODO: void return type here is wrong. It should be the type of the function e.g. (ctx, inputs) => ReturnType
-	w.Writef("(hooks?: %s): void\n", hooksType)
+	w.Writef("(hooks?: %s): void}>\n", hooksType)
 
 	w.Writef("export type %s = ", hooksType)
 
@@ -1279,7 +1279,7 @@ func toCustomFunctionReturnType(model *proto.Model, op *proto.Action, isTestingP
 }
 
 func writeJobFunctionWrapperType(w *codegen.Writer, job *proto.Job) {
-	w.Writef("export declare function %s", casing.ToCamel(job.Name))
+	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(job.Name))
 
 	inputType := job.InputMessageName
 
@@ -1289,13 +1289,13 @@ func writeJobFunctionWrapperType(w *codegen.Writer, job *proto.Job) {
 		w.Writef("(fn: (ctx: JobContextAPI, inputs: %s) => Promise<void>): Promise<void>", inputType)
 	}
 
-	w.Writeln(";")
+	w.Writeln("}>;")
 }
 
 func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Subscriber) {
-	w.Writef("export declare function %s", casing.ToCamel(subscriber.Name))
+	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(subscriber.Name))
 	w.Writef("(fn: (ctx: SubscriberContextAPI, event: %s) => Promise<void>): Promise<void>", subscriber.InputMessageName)
-	w.Writeln(";")
+	w.Writeln("}>;")
 }
 
 func toActionReturnType(model *proto.Model, op *proto.Action) string {
