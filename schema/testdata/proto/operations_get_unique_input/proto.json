@@ -85,9 +85,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -124,9 +122,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -360,9 +356,7 @@
             "modelName": "MyModel",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -377,9 +371,7 @@
             "modelName": "MyModel",
             "fieldName": "somethingUnique"
           },
-          "target": [
-            "somethingUnique"
-          ]
+          "target": ["somethingUnique"]
         }
       ]
     },
@@ -394,9 +386,7 @@
             "modelName": "MyModel",
             "fieldName": "somethingUnique"
           },
-          "target": [
-            "somethingUnique"
-          ]
+          "target": ["somethingUnique"]
         },
         {
           "messageName": "GetMyModelByUnique2Input",
@@ -406,9 +396,7 @@
             "modelName": "MyModel",
             "fieldName": "notUnique"
           },
-          "target": [
-            "notUnique"
-          ]
+          "target": ["notUnique"]
         }
       ]
     }

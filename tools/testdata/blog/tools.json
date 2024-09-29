@@ -4,9 +4,7 @@
       "id": "createFromImage",
       "name": "Create from image",
       "actionName": "createFromImage",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
@@ -27,9 +25,7 @@
       "id": "createPost",
       "name": "Create post",
       "actionName": "createPost",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_CREATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -142,13 +138,9 @@
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.id" },
@@ -175,19 +167,13 @@
       "title": { "template": "Create post" },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
-      "capabilities": {},
-      "getEntryAction": {
-        "toolId": "getPost",
-        "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-      }
+      "capabilities": {}
     },
     {
       "id": "deleteCategory",
       "name": "Delete category",
       "actionName": "deleteCategory",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Category",
       "actionType": "ACTION_TYPE_DELETE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -242,9 +228,7 @@
       "id": "deletePost",
       "name": "Delete post",
       "actionName": "deletePost",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_DELETE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -315,13 +299,9 @@
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.id" },
@@ -354,9 +334,7 @@
       "id": "getCategory",
       "name": "Get category",
       "actionName": "getCategory",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Category",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -366,11 +344,7 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listCategories" },
-          "getEntryAction": {
-            "toolId": "getCategory",
-            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-          }
+          "lookupAction": { "toolId": "listCategories" }
         }
       ],
       "response": [
@@ -405,21 +379,13 @@
       "title": { "template": "{{$.name}}" },
       "entitySingle": "category",
       "entityPlural": "categories",
-      "capabilities": { "comments": true, "audit": true },
-      "entryActivityActions": [
-        {
-          "toolId": "deleteCategory",
-          "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-        }
-      ]
+      "capabilities": { "comments": true, "audit": true }
     },
     {
       "id": "getPost",
       "name": "Get post",
       "actionName": "getPost",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -429,11 +395,7 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listPosts" },
-          "getEntryAction": {
-            "toolId": "getPost",
-            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-          }
+          "lookupAction": { "toolId": "listPosts" }
         }
       ],
       "response": [
@@ -490,13 +452,9 @@
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.id" },
@@ -526,10 +484,6 @@
       "capabilities": { "comments": true, "audit": true },
       "entryActivityActions": [
         {
-          "toolId": "deletePost",
-          "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-        },
-        {
           "toolId": "updatePost",
           "data": [{ "key": "$.where.id", "path": { "path": "$.id" } }]
         }
@@ -549,9 +503,7 @@
       "id": "listCategories",
       "name": "List categories",
       "actionName": "listCategories",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Category",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -677,29 +629,13 @@
         },
         "nextPage": { "path": "$.pageInfo.hasNextPage" },
         "totalCount": { "path": "$.pageInfo.totalCount" }
-      },
-      "entryActivityActions": [
-        {
-          "toolId": "deleteCategory",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
-        },
-        {
-          "toolId": "getCategory",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
-        }
-      ],
-      "getEntryAction": {
-        "toolId": "getCategory",
-        "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
       }
     },
     {
       "id": "listComments",
       "name": "List comments",
       "actionName": "listComments",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Comment",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -726,14 +662,7 @@
           "fieldLocation": { "path": "$.where.parent.id.equals" },
           "fieldType": "TYPE_ID",
           "displayName": "Equals",
-          "visible": true,
-          "lookupAction": { "toolId": "listPosts" },
-          "getEntryAction": {
-            "toolId": "getPost",
-            "data": [
-              { "key": "$.id", "path": { "path": "$.where.parent.id.equals" } }
-            ]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.where.parent.id.oneOf" },
@@ -741,31 +670,14 @@
           "repeated": true,
           "displayName": "One of",
           "displayOrder": 1,
-          "visible": true,
-          "lookupAction": { "toolId": "listPosts" },
-          "getEntryAction": {
-            "toolId": "getPost",
-            "data": [
-              { "key": "$.id", "path": { "path": "$.where.parent.id.oneOf" } }
-            ]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.where.parent.id.notEquals" },
           "fieldType": "TYPE_ID",
           "displayName": "Not equals",
           "displayOrder": 2,
-          "visible": true,
-          "lookupAction": { "toolId": "listPosts" },
-          "getEntryAction": {
-            "toolId": "getPost",
-            "data": [
-              {
-                "key": "$.id",
-                "path": { "path": "$.where.parent.id.notEquals" }
-              }
-            ]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.first" },
@@ -843,15 +755,9 @@
         {
           "fieldLocation": { "path": "$.results[*].parentId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Parent id",
+          "displayName": "Parent",
           "displayOrder": 1,
-          "visible": true,
-          "link": {
-            "toolId": "getPost",
-            "data": [
-              { "key": "$.id", "path": { "path": "$.results[*].parentId" } }
-            ]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].content" },
@@ -908,9 +814,7 @@
       "id": "listPosts",
       "name": "List posts",
       "actionName": "listPosts",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -1050,15 +954,9 @@
         {
           "fieldLocation": { "path": "$.results[*].categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              { "key": "$.id", "path": { "path": "$.results[*].categoryId" } }
-            ]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
@@ -1106,33 +1004,19 @@
       },
       "entryActivityActions": [
         {
-          "toolId": "deletePost",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
-        },
-        {
-          "toolId": "getPost",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
-        },
-        {
           "toolId": "updatePost",
           "data": [
             { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
           ]
         }
       ],
-      "getEntryAction": {
-        "toolId": "getPost",
-        "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
-      },
       "createEntryAction": { "toolId": "createPost" }
     },
     {
       "id": "listPostsEmbeds",
       "name": "List posts embeds",
       "actionName": "listPostsEmbeds",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -1290,18 +1174,9 @@
         {
           "fieldLocation": { "path": "$.results[*].author.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              {
-                "key": "$.id",
-                "path": { "path": "$.results[*].author.categoryId" }
-              }
-            ]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.id" },
@@ -1400,18 +1275,9 @@
         {
           "fieldLocation": { "path": "$.results[*].category.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              {
-                "key": "$.id",
-                "path": { "path": "$.results[*].category.categoryId" }
-              }
-            ]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.id" },
@@ -1437,15 +1303,9 @@
         {
           "fieldLocation": { "path": "$.results[*].categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              { "key": "$.id", "path": { "path": "$.results[*].categoryId" } }
-            ]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
@@ -1493,33 +1353,19 @@
       },
       "entryActivityActions": [
         {
-          "toolId": "deletePost",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
-        },
-        {
-          "toolId": "getPost",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
-        },
-        {
           "toolId": "updatePost",
           "data": [
             { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
           ]
         }
       ],
-      "getEntryAction": {
-        "toolId": "getPost",
-        "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
-      },
       "createEntryAction": { "toolId": "createPost" }
     },
     {
       "id": "requestPasswordReset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -1547,9 +1393,7 @@
       "id": "resetPassword",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -1577,9 +1421,7 @@
       "id": "updatePost",
       "name": "Update post",
       "actionName": "updatePost",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_UPDATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -1595,11 +1437,7 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listPosts" },
-          "getEntryAction": {
-            "toolId": "getPost",
-            "data": [{ "key": "$.id", "path": { "path": "$.where.id" } }]
-          }
+          "lookupAction": { "toolId": "listPosts" }
         },
         {
           "fieldLocation": { "path": "$.values" },
@@ -1718,13 +1556,9 @@
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
-          "displayName": "Category id",
+          "displayName": "Category",
           "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.id" },
@@ -1751,11 +1585,7 @@
       "title": { "template": "Update post" },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
-      "capabilities": {},
-      "getEntryAction": {
-        "toolId": "getPost",
-        "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-      }
+      "capabilities": {}
     }
   ]
 }
