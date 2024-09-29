@@ -828,7 +828,7 @@ func (t *Tool) hasOnlyIDInput() bool {
 		return false
 	}
 	for _, input := range t.Config.Inputs {
-		if !(input.FieldType == proto.Type_TYPE_ID && input.FieldLocation.String() == "$.id") {
+		if input.FieldType != proto.Type_TYPE_ID {
 			return false
 		}
 	}

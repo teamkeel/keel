@@ -31,7 +31,11 @@
           "fieldLocation": { "path": "$.productId" },
           "fieldType": "TYPE_ID",
           "displayName": "Product",
-          "visible": true
+          "visible": true,
+          "link": {
+            "toolId": "getProduct",
+            "data": [{ "key": "$.id", "path": { "path": "$.productId" } }]
+          }
         },
         {
           "fieldLocation": { "path": "$.id" },
@@ -229,7 +233,13 @@
           "fieldLocation": { "path": "$.results[*].productId" },
           "fieldType": "TYPE_ID",
           "displayName": "Product",
-          "visible": true
+          "visible": true,
+          "link": {
+            "toolId": "getProduct",
+            "data": [
+              { "key": "$.id", "path": { "path": "$.results[*].productId" } }
+            ]
+          }
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },

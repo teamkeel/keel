@@ -59,8 +59,16 @@
       "capabilities": { "comments": true, "audit": true },
       "entryActivityActions": [
         {
+          "toolId": "readProductFunc",
+          "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+        },
+        {
           "toolId": "updateProduct",
           "data": [{ "key": "$.where.id", "path": { "path": "$.id" } }]
+        },
+        {
+          "toolId": "writeProductFunc",
+          "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
         }
       ]
     },
@@ -204,12 +212,28 @@
       },
       "entryActivityActions": [
         {
+          "toolId": "getProduct",
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        },
+        {
+          "toolId": "readProductFunc",
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        },
+        {
           "toolId": "updateProduct",
           "data": [
             { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
           ]
+        },
+        {
+          "toolId": "writeProductFunc",
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
         }
-      ]
+      ],
+      "getEntryAction": {
+        "toolId": "getProduct",
+        "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+      }
     },
     {
       "id": "readProductFunc",
@@ -362,7 +386,11 @@
       "title": { "template": "Update product" },
       "entitySingle": "product",
       "entityPlural": "products",
-      "capabilities": {}
+      "capabilities": {},
+      "getEntryAction": {
+        "toolId": "getProduct",
+        "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+      }
     },
     {
       "id": "writeProductFunc",

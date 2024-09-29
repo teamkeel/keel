@@ -140,7 +140,11 @@
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
+          }
         },
         {
           "fieldLocation": { "path": "$.id" },
@@ -167,7 +171,11 @@
       "title": { "template": "Create post" },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
-      "capabilities": {}
+      "capabilities": {},
+      "getEntryAction": {
+        "toolId": "getPost",
+        "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+      }
     },
     {
       "id": "deleteCategory",
@@ -301,7 +309,11 @@
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
+          }
         },
         {
           "fieldLocation": { "path": "$.id" },
@@ -379,7 +391,13 @@
       "title": { "template": "{{$.name}}" },
       "entitySingle": "category",
       "entityPlural": "categories",
-      "capabilities": { "comments": true, "audit": true }
+      "capabilities": { "comments": true, "audit": true },
+      "entryActivityActions": [
+        {
+          "toolId": "deleteCategory",
+          "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+        }
+      ]
     },
     {
       "id": "getPost",
@@ -454,7 +472,11 @@
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
+          }
         },
         {
           "fieldLocation": { "path": "$.id" },
@@ -483,6 +505,10 @@
       "entityPlural": "blog posts",
       "capabilities": { "comments": true, "audit": true },
       "entryActivityActions": [
+        {
+          "toolId": "deletePost",
+          "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+        },
         {
           "toolId": "updatePost",
           "data": [{ "key": "$.where.id", "path": { "path": "$.id" } }]
@@ -629,6 +655,20 @@
         },
         "nextPage": { "path": "$.pageInfo.hasNextPage" },
         "totalCount": { "path": "$.pageInfo.totalCount" }
+      },
+      "entryActivityActions": [
+        {
+          "toolId": "deleteCategory",
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        },
+        {
+          "toolId": "getCategory",
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        }
+      ],
+      "getEntryAction": {
+        "toolId": "getCategory",
+        "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
       }
     },
     {
@@ -757,7 +797,13 @@
           "fieldType": "TYPE_ID",
           "displayName": "Parent",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "link": {
+            "toolId": "getPost",
+            "data": [
+              { "key": "$.id", "path": { "path": "$.results[*].parentId" } }
+            ]
+          }
         },
         {
           "fieldLocation": { "path": "$.results[*].content" },
@@ -956,7 +1002,13 @@
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [
+              { "key": "$.id", "path": { "path": "$.results[*].categoryId" } }
+            ]
+          }
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
@@ -1004,12 +1056,24 @@
       },
       "entryActivityActions": [
         {
+          "toolId": "deletePost",
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        },
+        {
+          "toolId": "getPost",
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        },
+        {
           "toolId": "updatePost",
           "data": [
             { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
           ]
         }
       ],
+      "getEntryAction": {
+        "toolId": "getPost",
+        "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+      },
       "createEntryAction": { "toolId": "createPost" }
     },
     {
@@ -1176,7 +1240,16 @@
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [
+              {
+                "key": "$.id",
+                "path": { "path": "$.results[*].author.categoryId" }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": { "path": "$.results[*].author.id" },
@@ -1277,7 +1350,16 @@
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [
+              {
+                "key": "$.id",
+                "path": { "path": "$.results[*].category.categoryId" }
+              }
+            ]
+          }
         },
         {
           "fieldLocation": { "path": "$.results[*].category.id" },
@@ -1305,7 +1387,13 @@
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [
+              { "key": "$.id", "path": { "path": "$.results[*].categoryId" } }
+            ]
+          }
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
@@ -1353,12 +1441,24 @@
       },
       "entryActivityActions": [
         {
+          "toolId": "deletePost",
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        },
+        {
+          "toolId": "getPost",
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        },
+        {
           "toolId": "updatePost",
           "data": [
             { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
           ]
         }
       ],
+      "getEntryAction": {
+        "toolId": "getPost",
+        "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+      },
       "createEntryAction": { "toolId": "createPost" }
     },
     {
@@ -1558,7 +1658,11 @@
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "link": {
+            "toolId": "getCategory",
+            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
+          }
         },
         {
           "fieldLocation": { "path": "$.id" },
@@ -1585,7 +1689,11 @@
       "title": { "template": "Update post" },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
-      "capabilities": {}
+      "capabilities": {},
+      "getEntryAction": {
+        "toolId": "getPost",
+        "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+      }
     }
   ]
 }
