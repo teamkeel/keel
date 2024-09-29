@@ -186,7 +186,7 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 		// get the path of the id response field for this tool
 		idResponseFieldPath := tool.getIDResponseFieldPath()
 		// skip if we don't have an id response field or the tool is not List or Get
-		if idResponseFieldPath == "" || (!tool.Action.IsList() && !tool.Action.IsGet()) {
+		if idResponseFieldPath == "" || (!tool.Action.IsList() && !tool.Action.IsGet() && !tool.Action.IsReadAction() && !tool.Action.IsWriteAction()) {
 			continue
 		}
 
