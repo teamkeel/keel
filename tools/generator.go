@@ -153,6 +153,16 @@ func (g *Generator) decorateTools() error {
 				}
 			}
 		}
+
+		// for all responses that have a link for to-many fields,
+		// decorate the data mapping now that we have all inputs and responses generated
+		for _, response := range tool.Config.Response {
+			if !tool.Action.IsArbitraryFunction() && response.Link != nil && response.Link.ToolId != "" {
+				response.Link.Data[0].Path = &toolsproto.JsonPath{
+					Path: tool.getIDResponseFieldPath(),
+				}
+			}
+		}
 	}
 
 	return nil
@@ -571,7 +581,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 				fields = append(fields, embeddedFields...)
 			}
 
-			continue
+			//continue
 		}
 
 		config := &toolsproto.ResponseFieldConfig{
@@ -612,6 +622,20 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 						{
 							Key:  g.Tools[getToolID].getIDInputFieldPath(),
 							Path: config.FieldLocation,
+						},
+					},
+				}
+			}
+		}
+
+		if f.IsHasMany() {
+			if getToolID, input := g.findListByForeignID(f.Type.ModelName.Value, f.InverseFieldName.Value); getToolID != "" {
+
+				config.Link = &toolsproto.ActionLink{
+					ToolId: getToolID,
+					Data: []*toolsproto.DataMapping{
+						{
+							Key: input.FieldLocation.Path,
 						},
 					},
 				}
@@ -689,6 +713,17 @@ func (g *Generator) findGetByIDTool(modelName string) string {
 	}
 
 	return ""
+}
+
+// findListByForeignID will search for a list tool for the given model which takes a specific foreign key as an input
+func (g *Generator) findListByForeignID(modelName string, inverseFieldName string) (string, *toolsproto.RequestFieldConfig) {
+	for id, tool := range g.Tools {
+		if input := tool.getInput("$.where." + inverseFieldName + ".id.equals"); tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST && input != nil {
+			return id, input
+		}
+	}
+
+	return "", nil
 }
 
 // findAllByIDTools searches for the tools that operate on the given model and take in an ID as an input; Returns a map of

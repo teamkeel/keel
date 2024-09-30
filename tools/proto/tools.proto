@@ -128,6 +128,7 @@ message ResponseFieldConfig {
 	bool sortable = 9; // Based on @sortable()
 
 	// Set if this field is a FK and link to a get/list action on the target model
+	// Or set to an appropriate list action if this field is a to-many field - for example, linking to listSaleItems(sale.id)
 	optional ActionLink link = 10; 
 
 	// for file fields only, display images inline
