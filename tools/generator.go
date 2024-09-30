@@ -580,6 +580,10 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 				}
 				fields = append(fields, embeddedFields...)
 			}
+
+			if !f.IsHasMany() {
+				continue
+			}
 		}
 
 		config := &toolsproto.ResponseFieldConfig{
