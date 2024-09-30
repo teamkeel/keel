@@ -308,7 +308,7 @@ func (g *Generator) generateInputs() error {
 			return ErrInvalidSchema
 		}
 
-		fields, err := g.makeInputsForMessage(msg, "")
+		fields, err := g.makeInputsForMessage(tool.Action.Type, msg, "")
 		if err != nil {
 			return err
 		}
@@ -382,7 +382,7 @@ func (g *Generator) generateResponses() error {
 	return nil
 }
 
-func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) ([]*toolsproto.RequestFieldConfig, error) {
+func (g *Generator) makeInputsForMessage(actionType proto.ActionType, msg *proto.Message, pathPrefix string) ([]*toolsproto.RequestFieldConfig, error) {
 	fields := []*toolsproto.RequestFieldConfig{}
 
 	for i, f := range msg.GetFields() {
@@ -406,7 +406,7 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 				prefix = prefix + "[*]"
 			}
 
-			subFields, err := g.makeInputsForMessage(submsg, prefix)
+			subFields, err := g.makeInputsForMessage(actionType, submsg, prefix)
 			if err != nil {
 				return nil, err
 			}
@@ -423,7 +423,8 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 			DisplayOrder:  int32(i),
 			Visible:       true,
 		}
-		if f.Type.Type == proto.Type_TYPE_ID && f.Type.ModelName != nil {
+
+		if f.Type.ModelName != nil && f.Type.FieldName != nil && proto.FindField(g.Schema.Models, f.Type.ModelName.Value, f.Type.FieldName.Value).Unique {
 			// generate action link placeholders
 			if lookupToolsIDs := g.findListTools(f.Type.ModelName.Value); len(lookupToolsIDs) > 0 {
 				config.LookupAction = &toolsproto.ActionLink{
@@ -432,11 +433,14 @@ func (g *Generator) makeInputsForMessage(msg *proto.Message, pathPrefix string) 
 			}
 
 			// create the GetEntry tool link to retrieve the entry for this related model. At this point, not all tools'
-			// inputs and repsonses have been generated ; this is a placeholder that will have it's data populated later
+			// inputs and responses have been generated ; this is a placeholder that will have it's data populated later
 			// in the generation process
 			if entryToolID := g.findGetTool(f.Type.ModelName.Value); entryToolID != "" {
-				config.GetEntryAction = &toolsproto.ActionLink{
-					ToolId: entryToolID,
+				// We do not add a GetEntryAction for the 'id' (or any unique lookup) input on a 'get', 'create' or 'update' action of a model, however do we add it for related models
+				if !((actionType == proto.ActionType_ACTION_TYPE_GET || actionType == proto.ActionType_ACTION_TYPE_CREATE || actionType == proto.ActionType_ACTION_TYPE_UPDATE) && len(f.Target) == 1) {
+					config.GetEntryAction = &toolsproto.ActionLink{
+						ToolId: entryToolID,
+					}
 				}
 			}
 		}
@@ -648,8 +652,14 @@ func (g *Generator) findListTools(modelName string) []string {
 	return ids
 }
 
-// findGetTool will search for a get tool for the given model
+// findGetTool will search for a get tool for the given model. It will prioritise a get(id) action.
 func (g *Generator) findGetTool(modelName string) string {
+	for id, tool := range g.Tools {
+		if tool.Model.Name == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() {
+			return id
+		}
+	}
+
 	for id, tool := range g.Tools {
 		if tool.Model.Name == modelName && tool.Action.IsGet() {
 			return id

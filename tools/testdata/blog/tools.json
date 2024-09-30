@@ -356,11 +356,7 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listCategories" },
-          "getEntryAction": {
-            "toolId": "getCategory",
-            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-          }
+          "lookupAction": { "toolId": "listCategories" }
         }
       ],
       "response": [
@@ -417,11 +413,7 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listPosts" },
-          "getEntryAction": {
-            "toolId": "getPost",
-            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-          }
+          "lookupAction": { "toolId": "listPosts" }
         }
       ],
       "response": [
@@ -710,14 +702,7 @@
           "fieldLocation": { "path": "$.where.parent.id.equals" },
           "fieldType": "TYPE_ID",
           "displayName": "Equals",
-          "visible": true,
-          "lookupAction": { "toolId": "listPosts" },
-          "getEntryAction": {
-            "toolId": "getPost",
-            "data": [
-              { "key": "$.id", "path": { "path": "$.where.parent.id.equals" } }
-            ]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.where.parent.id.oneOf" },
@@ -725,31 +710,14 @@
           "repeated": true,
           "displayName": "One of",
           "displayOrder": 1,
-          "visible": true,
-          "lookupAction": { "toolId": "listPosts" },
-          "getEntryAction": {
-            "toolId": "getPost",
-            "data": [
-              { "key": "$.id", "path": { "path": "$.where.parent.id.oneOf" } }
-            ]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.where.parent.id.notEquals" },
           "fieldType": "TYPE_ID",
           "displayName": "Not equals",
           "displayOrder": 2,
-          "visible": true,
-          "lookupAction": { "toolId": "listPosts" },
-          "getEntryAction": {
-            "toolId": "getPost",
-            "data": [
-              {
-                "key": "$.id",
-                "path": { "path": "$.where.parent.id.notEquals" }
-              }
-            ]
-          }
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.first" },
@@ -1569,11 +1537,7 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listPosts" },
-          "getEntryAction": {
-            "toolId": "getPost",
-            "data": [{ "key": "$.id", "path": { "path": "$.where.id" } }]
-          }
+          "lookupAction": { "toolId": "listPosts" }
         },
         {
           "fieldLocation": { "path": "$.values" },

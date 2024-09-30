@@ -1,0 +1,20 @@
+model Product {
+    fields {
+        name Text
+    }
+
+    actions {
+        get getProduct(id)
+    }
+}
+
+model Sale {
+    fields {
+        product Product
+    }
+
+    actions {
+        create createSale() with (product.id)
+        list listSales(product.id)
+    }
+}
