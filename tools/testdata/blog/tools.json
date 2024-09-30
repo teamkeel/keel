@@ -113,17 +113,24 @@
           "visible": true
         },
         {
+          "fieldLocation": { "path": "$.author" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Author",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true,
           "imagePreview": true
         },
@@ -132,18 +139,39 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 6,
+          "displayOrder": 7,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.category" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Category",
+          "displayOrder": 8,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
-          "displayOrder": 7,
+          "displayOrder": 9,
           "visible": true,
           "link": {
             "toolId": "getCategory",
-            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
+            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+          }
+        },
+        {
+          "fieldLocation": { "path": "$.comments" },
+          "fieldType": "TYPE_MODEL",
+          "repeated": true,
+          "displayName": "Comments",
+          "displayOrder": 10,
+          "visible": true,
+          "link": {
+            "toolId": "listComments",
+            "data": [
+              { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
+            ]
           }
         },
         {
@@ -282,17 +310,24 @@
           "visible": true
         },
         {
+          "fieldLocation": { "path": "$.author" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Author",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true,
           "imagePreview": true
         },
@@ -301,18 +336,39 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 6,
+          "displayOrder": 7,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.category" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Category",
+          "displayOrder": 8,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
-          "displayOrder": 7,
+          "displayOrder": 9,
           "visible": true,
           "link": {
             "toolId": "getCategory",
-            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
+            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+          }
+        },
+        {
+          "fieldLocation": { "path": "$.comments" },
+          "fieldType": "TYPE_MODEL",
+          "repeated": true,
+          "displayName": "Comments",
+          "displayOrder": 10,
+          "visible": true,
+          "link": {
+            "toolId": "listComments",
+            "data": [
+              { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
+            ]
           }
         },
         {
@@ -445,17 +501,24 @@
           "visible": true
         },
         {
+          "fieldLocation": { "path": "$.author" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Author",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true,
           "imagePreview": true
         },
@@ -464,18 +527,39 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 6,
+          "displayOrder": 7,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.category" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Category",
+          "displayOrder": 8,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
-          "displayOrder": 7,
+          "displayOrder": 9,
           "visible": true,
           "link": {
             "toolId": "getCategory",
-            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
+            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+          }
+        },
+        {
+          "fieldLocation": { "path": "$.comments" },
+          "fieldType": "TYPE_MODEL",
+          "repeated": true,
+          "displayName": "Comments",
+          "displayOrder": 10,
+          "visible": true,
+          "link": {
+            "toolId": "listComments",
+            "data": [
+              { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
+            ]
           }
         },
         {
@@ -787,29 +871,41 @@
           "visible": true
         },
         {
+          "fieldLocation": { "path": "$.results[*].author" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Author",
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.results[*].authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
+          "displayOrder": 1,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].parent" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Parent",
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].parentId" },
           "fieldType": "TYPE_ID",
           "displayName": "Parent",
-          "displayOrder": 1,
+          "displayOrder": 3,
           "visible": true,
           "link": {
             "toolId": "getPost",
-            "data": [
-              { "key": "$.id", "path": { "path": "$.results[*].parentId" } }
-            ]
+            "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
           }
         },
         {
           "fieldLocation": { "path": "$.results[*].content" },
           "fieldType": "TYPE_STRING",
           "displayName": "Content",
-          "displayOrder": 2,
+          "displayOrder": 4,
           "visible": true
         },
         {
@@ -975,17 +1071,24 @@
           "visible": true
         },
         {
+          "fieldLocation": { "path": "$.results[*].author" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Author",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.results[*].authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true,
           "imagePreview": true
         },
@@ -994,19 +1097,41 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 6,
+          "displayOrder": 7,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].category" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Category",
+          "displayOrder": 8,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
-          "displayOrder": 7,
+          "displayOrder": 9,
           "visible": true,
           "link": {
             "toolId": "getCategory",
+            "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+          }
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].comments" },
+          "fieldType": "TYPE_MODEL",
+          "repeated": true,
+          "displayName": "Comments",
+          "displayOrder": 10,
+          "visible": true,
+          "link": {
+            "toolId": "listComments",
             "data": [
-              { "key": "$.id", "path": { "path": "$.results[*].categoryId" } }
+              {
+                "key": "$.where.parent.id.equals",
+                "path": { "path": "$.results[*].id" }
+              }
             ]
           }
         },
@@ -1213,17 +1338,24 @@
           "visible": true
         },
         {
+          "fieldLocation": { "path": "$.results[*].author.author" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Author",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.results[*].author.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true,
           "imagePreview": true
         },
@@ -1232,21 +1364,40 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 6,
+          "displayOrder": 7,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].author.category" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Category",
+          "displayOrder": 8,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
-          "displayOrder": 7,
+          "displayOrder": 9,
           "visible": true,
           "link": {
             "toolId": "getCategory",
+            "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+          }
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].author.comments" },
+          "fieldType": "TYPE_MODEL",
+          "repeated": true,
+          "displayName": "Comments",
+          "displayOrder": 10,
+          "visible": true,
+          "link": {
+            "toolId": "listComments",
             "data": [
               {
-                "key": "$.id",
-                "path": { "path": "$.results[*].author.categoryId" }
+                "key": "$.where.parent.id.equals",
+                "path": { "path": "$.results[*].id" }
               }
             ]
           }
@@ -1273,17 +1424,24 @@
           "visible": true
         },
         {
+          "fieldLocation": { "path": "$.results[*].author" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Author",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.results[*].authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true,
           "imagePreview": true
         },
@@ -1292,7 +1450,7 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 6,
+          "displayOrder": 7,
           "visible": true
         },
         {
@@ -1323,17 +1481,24 @@
           "visible": true
         },
         {
+          "fieldLocation": { "path": "$.results[*].category.author" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Author",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.results[*].category.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true,
           "imagePreview": true
         },
@@ -1342,21 +1507,40 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 6,
+          "displayOrder": 7,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].category.category" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Category",
+          "displayOrder": 8,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
-          "displayOrder": 7,
+          "displayOrder": 9,
           "visible": true,
           "link": {
             "toolId": "getCategory",
+            "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+          }
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].category.comments" },
+          "fieldType": "TYPE_MODEL",
+          "repeated": true,
+          "displayName": "Comments",
+          "displayOrder": 10,
+          "visible": true,
+          "link": {
+            "toolId": "listComments",
             "data": [
               {
-                "key": "$.id",
-                "path": { "path": "$.results[*].category.categoryId" }
+                "key": "$.where.parent.id.equals",
+                "path": { "path": "$.results[*].id" }
               }
             ]
           }
@@ -1383,15 +1567,37 @@
           "visible": true
         },
         {
+          "fieldLocation": { "path": "$.results[*].category" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Category",
+          "displayOrder": 8,
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.results[*].categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
-          "displayOrder": 7,
+          "displayOrder": 9,
           "visible": true,
           "link": {
             "toolId": "getCategory",
+            "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+          }
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].comments" },
+          "fieldType": "TYPE_MODEL",
+          "repeated": true,
+          "displayName": "Comments",
+          "displayOrder": 10,
+          "visible": true,
+          "link": {
+            "toolId": "listComments",
             "data": [
-              { "key": "$.id", "path": { "path": "$.results[*].categoryId" } }
+              {
+                "key": "$.where.parent.id.equals",
+                "path": { "path": "$.results[*].id" }
+              }
             ]
           }
         },
@@ -1631,17 +1837,24 @@
           "visible": true
         },
         {
+          "fieldLocation": { "path": "$.author" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Author",
+          "displayOrder": 4,
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
-          "displayOrder": 4,
+          "displayOrder": 5,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 5,
+          "displayOrder": 6,
           "visible": true,
           "imagePreview": true
         },
@@ -1650,18 +1863,39 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 6,
+          "displayOrder": 7,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.category" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Category",
+          "displayOrder": 8,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
-          "displayOrder": 7,
+          "displayOrder": 9,
           "visible": true,
           "link": {
             "toolId": "getCategory",
-            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
+            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+          }
+        },
+        {
+          "fieldLocation": { "path": "$.comments" },
+          "fieldType": "TYPE_MODEL",
+          "repeated": true,
+          "displayName": "Comments",
+          "displayOrder": 10,
+          "visible": true,
+          "link": {
+            "toolId": "listComments",
+            "data": [
+              { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
+            ]
           }
         },
         {

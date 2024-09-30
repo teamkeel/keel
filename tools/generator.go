@@ -580,8 +580,6 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 				}
 				fields = append(fields, embeddedFields...)
 			}
-
-			//continue
 		}
 
 		config := &toolsproto.ResponseFieldConfig{
@@ -716,6 +714,7 @@ func (g *Generator) findGetByIDTool(modelName string) string {
 }
 
 // findListByForeignID will search for a list tool for the given model which takes a specific foreign key as an input
+// It will also return the request input field for that tool
 func (g *Generator) findListByForeignID(modelName string, inverseFieldName string) (string, *toolsproto.RequestFieldConfig) {
 	for id, tool := range g.Tools {
 		if input := tool.getInput("$.where." + inverseFieldName + ".id.equals"); tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST && input != nil {

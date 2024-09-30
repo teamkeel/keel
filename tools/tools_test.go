@@ -30,10 +30,6 @@ func TestGenerateTools(t *testing.T) {
 
 		testCaseDir := filepath.Join(testdataDir, testCase.Name())
 
-		if testCase.Name() != "one_to_many_links" {
-			continue
-		}
-
 		t.Run(testCase.Name(), func(t *testing.T) {
 			t.Parallel()
 			expected, err := os.ReadFile(filepath.Join(testCaseDir, "tools.json"))
