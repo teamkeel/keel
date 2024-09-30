@@ -71,6 +71,14 @@
           "visible": true
         },
         {
+          "fieldLocation": { "path": "$.items" },
+          "fieldType": "TYPE_MODEL",
+          "repeated": true,
+          "displayName": "Items",
+          "displayOrder": 2,
+          "visible": true
+        },
+        {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
