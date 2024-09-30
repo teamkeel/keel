@@ -157,7 +157,7 @@ func (g *Generator) decorateTools() error {
 		// for all responses that have a link for to-many fields,
 		// decorate the data mapping now that we have all inputs and responses generated
 		for _, response := range tool.Config.Response {
-			if !tool.Action.IsArbitraryFunction() && response.Link != nil && response.Link.ToolId != "" && response.Link.Data == nil {
+			if !tool.Action.IsArbitraryFunction() && response.Link != nil && response.Link.ToolId != "" && response.Link.Data[0].Path == nil {
 				response.Link.Data[0].Path = &toolsproto.JsonPath{
 					Path: tool.getIDResponseFieldPath(),
 				}

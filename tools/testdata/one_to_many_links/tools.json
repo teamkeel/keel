@@ -26,7 +26,9 @@
           "visible": true,
           "link": {
             "toolId": "listLineItems",
-            "data": [{ "key": "$.where.order.id.equals" }]
+            "data": [
+              { "key": "$.where.order.id.equals", "path": { "path": "$.id" } }
+            ]
           }
         },
         {
@@ -366,7 +368,12 @@
           "visible": true,
           "link": {
             "toolId": "listLineItems",
-            "data": [{ "key": "$.where.order.id.equals" }]
+            "data": [
+              {
+                "key": "$.where.order.id.equals",
+                "path": { "path": "$.results[*].id" }
+              }
+            ]
           }
         },
         {
