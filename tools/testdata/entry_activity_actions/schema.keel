@@ -1,0 +1,12 @@
+model BlogPost {
+    actions {
+        get getBlogPost(id)
+        list listBlogPosts()
+        create createBlogPost()
+        update updateBlogPost(id)
+        update deactivateBlogPost(id)
+        delete deleteBlogPost(id)
+        write cleanComments(id) returns (Any)
+        read readComments(id) returns (Any)
+    }
+}

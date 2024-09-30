@@ -6,10 +6,7 @@ model Comment {
         content Text
     }
     actions {
-        get getComment(id)
         list listComments(parent.id?)
-        write cleanComments(id) returns (Any)
-        read readComments(id) returns (Any)
     }
 }
 
