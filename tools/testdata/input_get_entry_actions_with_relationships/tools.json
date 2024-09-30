@@ -34,7 +34,7 @@
           "visible": true,
           "link": {
             "toolId": "getProduct",
-            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+            "data": [{ "key": "$.id", "path": { "path": "$.productId" } }]
           }
         },
         {
@@ -236,7 +236,9 @@
           "visible": true,
           "link": {
             "toolId": "getProduct",
-            "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+            "data": [
+              { "key": "$.id", "path": { "path": "$.results[*].productId" } }
+            ]
           }
         },
         {

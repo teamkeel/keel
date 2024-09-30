@@ -26,9 +26,7 @@
           "visible": true,
           "link": {
             "toolId": "listLineItems",
-            "data": [
-              { "key": "$.where.order.id.equals", "path": { "path": "$.id" } }
-            ]
+            "data": [{ "key": "$.where.order.id.equals" }]
           }
         },
         {
@@ -189,7 +187,9 @@
           "visible": true,
           "link": {
             "toolId": "getOrder",
-            "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+            "data": [
+              { "key": "$.id", "path": { "path": "$.results[*].orderId" } }
+            ]
           }
         },
         {
@@ -366,12 +366,7 @@
           "visible": true,
           "link": {
             "toolId": "listLineItems",
-            "data": [
-              {
-                "key": "$.where.order.id.equals",
-                "path": { "path": "$.results[*].id" }
-              }
-            ]
+            "data": [{ "key": "$.where.order.id.equals" }]
           }
         },
         {
