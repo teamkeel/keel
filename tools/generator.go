@@ -628,7 +628,6 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 
 		if f.IsHasMany() {
 			if getToolID, input := g.findListByForeignID(f.Type.ModelName.Value, f.InverseFieldName.Value); getToolID != "" {
-
 				config.Link = &toolsproto.ActionLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
