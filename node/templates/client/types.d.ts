@@ -149,3 +149,10 @@ type PageInfo = {
   startCursor: string;
   totalCount: number;
 };
+
+type FileResponseObject = {
+  filename: string;
+  contentType: string;
+  size: number;
+  url: string;
+};
