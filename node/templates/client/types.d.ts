@@ -155,4 +155,4 @@ type FileResponseObject = {
   contentType: string;
   size: number;
   url: string;
-}
+};

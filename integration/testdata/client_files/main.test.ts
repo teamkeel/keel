@@ -26,8 +26,8 @@ test("client - create with file", async () => {
   expect(result.data?.data.size).toEqual(5);
 
   const response = await fetch(new URL(result.data!.data.url));
-  const buffer = Buffer.from(await response.arrayBuffer())
-  const contents = buffer.toString('utf-8')
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const contents = buffer.toString("utf-8");
   expect(contents).toEqual(fileContents);
 });
 
@@ -49,8 +49,8 @@ test("client - list with file", async () => {
   expect(result.data?.results[0].data.size).toEqual(5);
 
   const response = await fetch(new URL(result.data!.results[0].data.url));
-  const buffer = Buffer.from(await response.arrayBuffer())
-  const contents = buffer.toString('utf-8')
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const contents = buffer.toString("utf-8");
   expect(contents).toEqual(fileContents);
 });
 
@@ -69,7 +69,7 @@ test("client - write action with file", async () => {
   expect(result.data?.csv.size).toEqual(5);
 
   const response = await fetch(new URL(result.data!.csv.url));
-  const buffer = Buffer.from(await response.arrayBuffer())
-  const contents = buffer.toString('utf-8')
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const contents = buffer.toString("utf-8");
   expect(contents).toEqual(fileContents);
 });
