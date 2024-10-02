@@ -1245,107 +1245,135 @@
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.title" },
+          "fieldLocation": { "path": "$.results[*].author.email" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Title",
+          "displayName": "Email",
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.description" },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Description",
+          "fieldLocation": { "path": "$.results[*].author.emailVerified" },
+          "fieldType": "TYPE_BOOL",
+          "displayName": "Email verified",
           "displayOrder": 1,
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.content" },
-          "fieldType": "TYPE_MARKDOWN",
-          "displayName": "Content",
+          "fieldLocation": { "path": "$.results[*].author.password" },
+          "fieldType": "TYPE_PASSWORD",
+          "displayName": "Password",
           "displayOrder": 2,
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.published" },
-          "fieldType": "TYPE_BOOL",
-          "displayName": "Published",
+          "fieldLocation": { "path": "$.results[*].author.externalId" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "External id",
           "displayOrder": 3,
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.authorId" },
-          "fieldType": "TYPE_ID",
-          "displayName": "Author",
+          "fieldLocation": { "path": "$.results[*].author.issuer" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Issuer",
           "displayOrder": 4,
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.image" },
-          "fieldType": "TYPE_FILE",
-          "displayName": "Image",
+          "fieldLocation": { "path": "$.results[*].author.name" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Name",
           "displayOrder": 5,
-          "visible": true,
-          "imagePreview": true
+          "visible": true
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.tags" },
+          "fieldLocation": { "path": "$.results[*].author.givenName" },
           "fieldType": "TYPE_STRING",
-          "repeated": true,
-          "displayName": "Tags",
+          "displayName": "Given name",
           "displayOrder": 6,
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.categoryId" },
-          "fieldType": "TYPE_ID",
-          "displayName": "Category",
+          "fieldLocation": { "path": "$.results[*].author.familyName" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Family name",
           "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              {
-                "key": "$.id",
-                "path": { "path": "$.results[*].author.categoryId" }
-              }
-            ]
-          }
+          "visible": true
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.comments" },
-          "fieldType": "TYPE_MODEL",
-          "repeated": true,
-          "displayName": "Comments",
+          "fieldLocation": { "path": "$.results[*].author.middleName" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Middle name",
           "displayOrder": 8,
-          "visible": true,
-          "link": {
-            "toolId": "listComments",
-            "data": [
-              {
-                "key": "$.where.parent.id.equals",
-                "path": { "path": "$.results[*].id" }
-              }
-            ]
-          }
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].author.nickName" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Nick name",
+          "displayOrder": 9,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].author.profile" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Profile",
+          "displayOrder": 10,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].author.picture" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Picture",
+          "displayOrder": 11,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].author.website" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Website",
+          "displayOrder": 12,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].author.gender" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Gender",
+          "displayOrder": 13,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].author.zoneInfo" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Zone info",
+          "displayOrder": 14,
+          "visible": true
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].author.locale" },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Locale",
+          "displayOrder": 15,
+          "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
-          "displayOrder": 12,
+          "displayOrder": 17,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
-          "displayOrder": 13,
+          "displayOrder": 18,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].author.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
-          "displayOrder": 14,
+          "displayOrder": 19,
           "visible": true
         },
         {
@@ -1372,107 +1400,30 @@
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.results[*].category.title" },
+          "fieldLocation": { "path": "$.results[*].category.name" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Title",
+          "displayName": "Name",
           "visible": true
-        },
-        {
-          "fieldLocation": { "path": "$.results[*].category.description" },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Description",
-          "displayOrder": 1,
-          "visible": true
-        },
-        {
-          "fieldLocation": { "path": "$.results[*].category.content" },
-          "fieldType": "TYPE_MARKDOWN",
-          "displayName": "Content",
-          "displayOrder": 2,
-          "visible": true
-        },
-        {
-          "fieldLocation": { "path": "$.results[*].category.published" },
-          "fieldType": "TYPE_BOOL",
-          "displayName": "Published",
-          "displayOrder": 3,
-          "visible": true
-        },
-        {
-          "fieldLocation": { "path": "$.results[*].category.authorId" },
-          "fieldType": "TYPE_ID",
-          "displayName": "Author",
-          "displayOrder": 4,
-          "visible": true
-        },
-        {
-          "fieldLocation": { "path": "$.results[*].category.image" },
-          "fieldType": "TYPE_FILE",
-          "displayName": "Image",
-          "displayOrder": 5,
-          "visible": true,
-          "imagePreview": true
-        },
-        {
-          "fieldLocation": { "path": "$.results[*].category.tags" },
-          "fieldType": "TYPE_STRING",
-          "repeated": true,
-          "displayName": "Tags",
-          "displayOrder": 6,
-          "visible": true
-        },
-        {
-          "fieldLocation": { "path": "$.results[*].category.categoryId" },
-          "fieldType": "TYPE_ID",
-          "displayName": "Category",
-          "displayOrder": 7,
-          "visible": true,
-          "link": {
-            "toolId": "getCategory",
-            "data": [
-              {
-                "key": "$.id",
-                "path": { "path": "$.results[*].category.categoryId" }
-              }
-            ]
-          }
-        },
-        {
-          "fieldLocation": { "path": "$.results[*].category.comments" },
-          "fieldType": "TYPE_MODEL",
-          "repeated": true,
-          "displayName": "Comments",
-          "displayOrder": 8,
-          "visible": true,
-          "link": {
-            "toolId": "listComments",
-            "data": [
-              {
-                "key": "$.where.parent.id.equals",
-                "path": { "path": "$.results[*].id" }
-              }
-            ]
-          }
         },
         {
           "fieldLocation": { "path": "$.results[*].category.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
-          "displayOrder": 12,
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
-          "displayOrder": 13,
+          "displayOrder": 3,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.results[*].category.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
-          "displayOrder": 14,
+          "displayOrder": 4,
           "visible": true
         },
         {

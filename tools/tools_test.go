@@ -57,7 +57,7 @@ func TestGenerateTools(t *testing.T) {
 				return
 			}
 
-			fmt.Println(string(actual))
+			fmt.Println(testCase.Name(), string(actual))
 
 			assert.Fail(t, "actual tools JSON does not match expected", explanation)
 		})
