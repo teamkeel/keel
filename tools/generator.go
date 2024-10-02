@@ -153,6 +153,9 @@ func (g *Generator) decorateTools() error {
 							Path: input.FieldLocation,
 						},
 					}
+				} else {
+					// if not get(id) is found, then remove the GetEntryAction placeholder
+					input.GetEntryAction = nil
 				}
 			}
 		}
