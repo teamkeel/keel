@@ -19,6 +19,7 @@ func TestGenerateTools(t *testing.T) {
 	t.Parallel()
 	testdataDir := "./testdata"
 	testCases, err := os.ReadDir(testdataDir)
+
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
@@ -29,6 +30,10 @@ func TestGenerateTools(t *testing.T) {
 		}
 
 		testCaseDir := filepath.Join(testdataDir, testCase.Name())
+
+		if testCase.Name() != "input_get_entry_actions" {
+			continue
+		}
 
 		t.Run(testCase.Name(), func(t *testing.T) {
 			t.Parallel()

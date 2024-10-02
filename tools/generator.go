@@ -142,14 +142,17 @@ func (g *Generator) decorateTools() error {
 	// decorate further...
 	for _, tool := range g.Tools {
 		// for all inputs that are IDs that have a get_entry_action link (e.g. used to lookup a related model field),
-		// decorate the data mapping now that we have all inputs and responses generated
+		// find the get(id) tool and decorate the data mapping now that we have all inputs and responses generated
 		for _, input := range tool.Config.Inputs {
-			if input.GetEntryAction != nil && input.GetEntryAction.ToolId != "" {
-				input.GetEntryAction.Data = []*toolsproto.DataMapping{
-					{
-						Key:  g.Tools[input.GetEntryAction.ToolId].getIDInputFieldPath(),
-						Path: input.FieldLocation,
-					},
+			if input.GetEntryAction != nil {
+				if entryToolID := g.findGetByIDTool(tool.Model.Name); entryToolID != "" {
+					input.GetEntryAction.ToolId = entryToolID
+					input.GetEntryAction.Data = []*toolsproto.DataMapping{
+						{
+							Key:  g.Tools[entryToolID].getIDInputFieldPath(),
+							Path: input.FieldLocation,
+						},
+					}
 				}
 			}
 		}
@@ -445,13 +448,9 @@ func (g *Generator) makeInputsForMessage(actionType proto.ActionType, msg *proto
 			// create the GetEntry tool link to retrieve the entry for this related model. At this point, not all tools'
 			// inputs and responses have been generated ; this is a placeholder that will have it's data populated later
 			// in the generation process
-			if entryToolID := g.findGetTool(f.Type.ModelName.Value); entryToolID != "" {
-				// We do not add a GetEntryAction for the 'id' (or any unique lookup) input on a 'get', 'create' or 'update' action of a model, however do we add it for related models
-				if !((actionType == proto.ActionType_ACTION_TYPE_GET || actionType == proto.ActionType_ACTION_TYPE_CREATE || actionType == proto.ActionType_ACTION_TYPE_UPDATE) && len(f.Target) == 1) {
-					config.GetEntryAction = &toolsproto.ActionLink{
-						ToolId: entryToolID,
-					}
-				}
+			// We do not add a GetEntryAction for the 'id' (or any unique lookup) input on a 'get', 'create' or 'update' action of a model, however do we add it for related models
+			if !((actionType == proto.ActionType_ACTION_TYPE_GET || actionType == proto.ActionType_ACTION_TYPE_CREATE || actionType == proto.ActionType_ACTION_TYPE_UPDATE) && len(f.Target) == 1) {
+				config.GetEntryAction = &toolsproto.ActionLink{}
 			}
 		}
 
@@ -675,21 +674,6 @@ func (g *Generator) findListTools(modelName string) []string {
 	sort.Strings(ids)
 
 	return ids
-}
-
-// findGetTool will search for a get tool for the given model. It will prioritise a get(id) action
-func (g *Generator) findGetTool(modelName string) string {
-	if id := g.findGetByIDTool(modelName); id != "" {
-		return id
-	}
-
-	for id, tool := range g.Tools {
-		if tool.Model.Name == modelName && tool.Action.IsGet() {
-			return id
-		}
-	}
-
-	return ""
 }
 
 // findCreateTool will search for a get tool for the given model
