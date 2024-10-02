@@ -19,6 +19,7 @@ func TestGenerateTools(t *testing.T) {
 	t.Parallel()
 	testdataDir := "./testdata"
 	testCases, err := os.ReadDir(testdataDir)
+
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
