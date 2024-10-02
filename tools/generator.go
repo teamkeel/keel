@@ -578,7 +578,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 				if f.IsHasMany() {
 					prefix = prefix + "[*]"
 				}
-				embeddedFields, err := g.makeResponsesForModel(g.Schema.FindModel(f.ModelName), prefix, fieldEmbeddings, []string{})
+				embeddedFields, err := g.makeResponsesForModel(g.Schema.FindModel(f.Type.ModelName.Value), prefix, fieldEmbeddings, []string{})
 				if err != nil {
 					return nil, err
 				}

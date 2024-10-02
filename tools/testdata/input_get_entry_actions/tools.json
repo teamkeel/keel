@@ -202,44 +202,24 @@
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.supplier.name" },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Name",
-          "visible": true
-        },
-        {
-          "fieldLocation": { "path": "$.supplier.sku" },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Sku",
-          "displayOrder": 1,
-          "visible": true
-        },
-        {
-          "fieldLocation": { "path": "$.supplier.supplierId" },
-          "fieldType": "TYPE_ID",
-          "displayName": "Supplier",
-          "displayOrder": 2,
-          "visible": true
-        },
-        {
           "fieldLocation": { "path": "$.supplier.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
-          "displayOrder": 5,
+          "displayOrder": 1,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.supplier.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
-          "displayOrder": 6,
+          "displayOrder": 2,
           "visible": true
         },
         {
           "fieldLocation": { "path": "$.supplier.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
-          "displayOrder": 7,
+          "displayOrder": 3,
           "visible": true
         },
         {
