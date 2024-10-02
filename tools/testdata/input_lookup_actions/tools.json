@@ -169,7 +169,8 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listProducts" }
+          "lookupAction": { "toolId": "listProducts" },
+          "getEntryAction": { "toolId": "Product" }
         }
       ],
       "title": { "template": "{{$.name}}" },
@@ -318,7 +319,8 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listProducts" }
+          "lookupAction": { "toolId": "listProducts" },
+          "getEntryAction": { "toolId": "Product" }
         }
       ],
       "title": { "template": "Write product func" },

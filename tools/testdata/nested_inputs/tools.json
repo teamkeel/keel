@@ -26,7 +26,8 @@
           "fieldLocation": { "path": "$.customer.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
-          "visible": true
+          "visible": true,
+          "getEntryAction": { "toolId": "Customer" }
         },
         {
           "fieldLocation": { "path": "$.items" },
@@ -46,7 +47,8 @@
           "fieldLocation": { "path": "$.items[*].product.sku" },
           "fieldType": "TYPE_STRING",
           "displayName": "Sku",
-          "visible": true
+          "visible": true,
+          "getEntryAction": { "toolId": "Product" }
         },
         {
           "fieldLocation": { "path": "$.items[*].quantity" },

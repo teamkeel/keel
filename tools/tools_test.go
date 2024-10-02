@@ -31,10 +31,6 @@ func TestGenerateTools(t *testing.T) {
 
 		testCaseDir := filepath.Join(testdataDir, testCase.Name())
 
-		if testCase.Name() != "input_get_entry_actions" {
-			continue
-		}
-
 		t.Run(testCase.Name(), func(t *testing.T) {
 			t.Parallel()
 			expected, err := os.ReadFile(filepath.Join(testCaseDir, "tools.json"))

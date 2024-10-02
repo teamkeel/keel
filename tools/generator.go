@@ -144,8 +144,8 @@ func (g *Generator) decorateTools() error {
 		// for all inputs that are IDs that have a get_entry_action link (e.g. used to lookup a related model field),
 		// find the get(id) tool and decorate the data mapping now that we have all inputs and responses generated
 		for _, input := range tool.Config.Inputs {
-			if input.GetEntryAction != nil {
-				if entryToolID := g.findGetByIDTool(tool.Model.Name); entryToolID != "" {
+			if input.GetEntryAction != nil && input.GetEntryAction.ToolId != "" {
+				if entryToolID := g.findGetByIDTool(input.GetEntryAction.ToolId); entryToolID != "" {
 					input.GetEntryAction.ToolId = entryToolID
 					input.GetEntryAction.Data = []*toolsproto.DataMapping{
 						{
@@ -450,7 +450,9 @@ func (g *Generator) makeInputsForMessage(actionType proto.ActionType, msg *proto
 			// in the generation process
 			// We do not add a GetEntryAction for the 'id' (or any unique lookup) input on a 'get', 'create' or 'update' action of a model, however do we add it for related models
 			if !((actionType == proto.ActionType_ACTION_TYPE_GET || actionType == proto.ActionType_ACTION_TYPE_CREATE || actionType == proto.ActionType_ACTION_TYPE_UPDATE) && len(f.Target) == 1) {
-				config.GetEntryAction = &toolsproto.ActionLink{}
+				config.GetEntryAction = &toolsproto.ActionLink{
+					ToolId: f.Type.ModelName.Value, // TODO: this is a bit of a hack placeholder because we do not know the underlying model which the field is pointing to during post-processing
+				}
 			}
 		}
 
