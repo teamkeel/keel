@@ -677,12 +677,10 @@ func (g *Generator) findListTools(modelName string) []string {
 	return ids
 }
 
-// findGetTool will search for a get tool for the given model. It will prioritise a get(id) action.
+// findGetTool will search for a get tool for the given model. It will prioritise a get(id) action
 func (g *Generator) findGetTool(modelName string) string {
-	for id, tool := range g.Tools {
-		if tool.Model.Name == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() {
-			return id
-		}
+	if id := g.findGetByIDTool(modelName); id != "" {
+		return id
 	}
 
 	for id, tool := range g.Tools {
@@ -705,10 +703,25 @@ func (g *Generator) findCreateTool(modelName string) string {
 	return ""
 }
 
-// findGetByIDTool will search for a get tool for the given model that takes in an ID
+// findGetByIDTool will search for a get tool for the given model that takes in an ID. It will prioritise a get(id) action without @embeds
 func (g *Generator) findGetByIDTool(modelName string) string {
+	if id := g.findGetByIDWithoutEmbedsTool(modelName); id != "" {
+		return id
+	}
+
 	for id, tool := range g.Tools {
 		if tool.Model.Name == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() {
+			return id
+		}
+	}
+
+	return ""
+}
+
+// findGetByIDTool will search for a get tool for the given model that takes in an ID and has no @embeds defined
+func (g *Generator) findGetByIDWithoutEmbedsTool(modelName string) string {
+	for id, tool := range g.Tools {
+		if tool.Model.Name == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() && len(tool.Action.ResponseEmbeds) == 0 {
 			return id
 		}
 	}
