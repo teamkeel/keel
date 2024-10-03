@@ -18,7 +18,9 @@
           "getEntryAction": {
             "toolId": "getBlogPost",
             "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "id"
         }
       ],
       "title": { "template": "Clean comments" },
@@ -86,7 +88,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listBlogPosts" }
+          "lookupAction": { "toolId": "listBlogPosts" },
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.values" },
@@ -146,7 +150,9 @@
           "getEntryAction": {
             "toolId": "getBlogPost",
             "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "id"
         }
       ],
       "response": [
@@ -191,7 +197,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listBlogPosts" }
+          "lookupAction": { "toolId": "listBlogPosts" },
+          "modelName": "BlogPost",
+          "fieldName": "id"
         }
       ],
       "response": [
@@ -424,7 +432,9 @@
           "getEntryAction": {
             "toolId": "getBlogPost",
             "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "id"
         }
       ],
       "title": { "template": "Comments" },
@@ -508,7 +518,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listBlogPosts" }
+          "lookupAction": { "toolId": "listBlogPosts" },
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.values" },

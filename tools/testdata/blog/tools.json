@@ -13,7 +13,9 @@
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "image"
         }
       ],
       "title": { "template": "Create from image" },
@@ -34,21 +36,27 @@
           "fieldLocation": { "path": "$.title" },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "title"
         },
         {
           "fieldLocation": { "path": "$.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "description"
         },
         {
           "fieldLocation": { "path": "$.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "content"
         },
         {
           "fieldLocation": { "path": "$.tags" },
@@ -56,14 +64,18 @@
           "repeated": true,
           "displayName": "Tags",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "tags"
         },
         {
           "fieldLocation": { "path": "$.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "image"
         },
         {
           "fieldLocation": { "path": "$.category" },
@@ -81,7 +93,9 @@
           "getEntryAction": {
             "toolId": "getCategory",
             "data": [{ "key": "$.id", "path": { "path": "$.category.id" } }]
-          }
+          },
+          "modelName": "Category",
+          "fieldName": "id"
         }
       ],
       "response": [
@@ -209,7 +223,9 @@
           "getEntryAction": {
             "toolId": "getCategory",
             "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-          }
+          },
+          "modelName": "Category",
+          "fieldName": "id"
         }
       ],
       "response": [
@@ -264,7 +280,9 @@
           "getEntryAction": {
             "toolId": "getPost",
             "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "id"
         }
       ],
       "response": [
@@ -384,7 +402,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listCategories" }
+          "lookupAction": { "toolId": "listCategories" },
+          "modelName": "Category",
+          "fieldName": "id"
         }
       ],
       "response": [
@@ -441,7 +461,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listPosts" }
+          "lookupAction": { "toolId": "listPosts" },
+          "modelName": "BlogPost",
+          "fieldName": "id"
         }
       ],
       "response": [
@@ -744,7 +766,8 @@
           "fieldLocation": { "path": "$.where.parent.id.equals" },
           "fieldType": "TYPE_ID",
           "displayName": "Equals",
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost"
         },
         {
           "fieldLocation": { "path": "$.where.parent.id.oneOf" },
@@ -752,14 +775,16 @@
           "repeated": true,
           "displayName": "One of",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost"
         },
         {
           "fieldLocation": { "path": "$.where.parent.id.notEquals" },
           "fieldType": "TYPE_ID",
           "displayName": "Not equals",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost"
         },
         {
           "fieldLocation": { "path": "$.first" },
@@ -1598,7 +1623,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listPosts" }
+          "lookupAction": { "toolId": "listPosts" },
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.values" },
@@ -1611,21 +1638,27 @@
           "fieldLocation": { "path": "$.values.title" },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "title"
         },
         {
           "fieldLocation": { "path": "$.values.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "description"
         },
         {
           "fieldLocation": { "path": "$.values.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "content"
         },
         {
           "fieldLocation": { "path": "$.values.tags" },
@@ -1633,14 +1666,18 @@
           "repeated": true,
           "displayName": "Tags",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "tags"
         },
         {
           "fieldLocation": { "path": "$.values.image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "image"
         },
         {
           "fieldLocation": { "path": "$.values.category" },
@@ -1660,7 +1697,9 @@
             "data": [
               { "key": "$.id", "path": { "path": "$.values.category.id" } }
             ]
-          }
+          },
+          "modelName": "Category",
+          "fieldName": "id"
         }
       ],
       "response": [
