@@ -440,6 +440,16 @@ func (g *Generator) makeInputsForMessage(actionType proto.ActionType, msg *proto
 			Visible:       true,
 		}
 
+		if f.Type.ModelName != nil {
+			config.ModelName = &f.Type.ModelName.Value
+		}
+		if f.Type.FieldName != nil {
+			config.FieldName = &f.Type.FieldName.Value
+		}
+		if f.Type.EnumName != nil {
+			config.EnumName = &f.Type.EnumName.Value
+		}
+
 		if f.Type.ModelName != nil && f.Type.FieldName != nil && proto.FindField(g.Schema.Models, f.Type.ModelName.Value, f.Type.FieldName.Value).Unique {
 			// generate action link placeholders
 			if lookupToolsIDs := g.findListTools(f.Type.ModelName.Value); len(lookupToolsIDs) > 0 {

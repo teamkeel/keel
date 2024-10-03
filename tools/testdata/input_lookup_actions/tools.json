@@ -169,7 +169,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listProducts" }
+          "lookupAction": { "toolId": "listProducts" },
+          "modelName": "Product",
+          "fieldName": "id"
         }
       ],
       "title": { "template": "{{$.name}}" },
@@ -253,7 +255,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listProducts" }
+          "lookupAction": { "toolId": "listProducts" },
+          "modelName": "Product",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.values" },
@@ -318,7 +322,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listProducts" }
+          "lookupAction": { "toolId": "listProducts" },
+          "modelName": "Product",
+          "fieldName": "id"
         }
       ],
       "title": { "template": "Write product func" },

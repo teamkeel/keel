@@ -13,7 +13,9 @@
           "fieldLocation": { "path": "$.date" },
           "fieldType": "TYPE_DATE",
           "displayName": "Date",
-          "visible": true
+          "visible": true,
+          "modelName": "Invoice",
+          "fieldName": "date"
         },
         {
           "fieldLocation": { "path": "$.customer" },
@@ -26,7 +28,9 @@
           "fieldLocation": { "path": "$.customer.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
-          "visible": true
+          "visible": true,
+          "modelName": "Customer",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.items" },
@@ -46,14 +50,18 @@
           "fieldLocation": { "path": "$.items[*].product.sku" },
           "fieldType": "TYPE_STRING",
           "displayName": "Sku",
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "sku"
         },
         {
           "fieldLocation": { "path": "$.items[*].quantity" },
           "fieldType": "TYPE_INT",
           "displayName": "Quantity",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "InvoiceItem",
+          "fieldName": "quantity"
         }
       ],
       "response": [

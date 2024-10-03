@@ -14,7 +14,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listProducts" }
+          "lookupAction": { "toolId": "listProducts" },
+          "modelName": "Product",
+          "fieldName": "id"
         }
       ],
       "response": [
@@ -97,7 +99,9 @@
           "fieldType": "TYPE_STRING",
           "displayName": "Sku",
           "visible": true,
-          "lookupAction": { "toolId": "listProducts" }
+          "lookupAction": { "toolId": "listProducts" },
+          "modelName": "Product",
+          "fieldName": "sku"
         }
       ],
       "response": [
@@ -184,7 +188,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listProducts" }
+          "lookupAction": { "toolId": "listProducts" },
+          "modelName": "Product",
+          "fieldName": "id"
         }
       ],
       "response": [
@@ -466,7 +472,9 @@
           "getEntryAction": {
             "toolId": "getProduct",
             "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-          }
+          },
+          "modelName": "Product",
+          "fieldName": "id"
         }
       ],
       "title": { "template": "{{$.name}}" },
@@ -550,7 +558,9 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "listProducts" }
+          "lookupAction": { "toolId": "listProducts" },
+          "modelName": "Product",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.values" },
@@ -630,7 +640,9 @@
           "getEntryAction": {
             "toolId": "getProduct",
             "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
-          }
+          },
+          "modelName": "Product",
+          "fieldName": "id"
         }
       ],
       "title": { "template": "Write product func" },
