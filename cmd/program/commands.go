@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -19,6 +20,7 @@ import (
 	_ "embed"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/bmatcuk/doublestar/v4"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/radovskyb/watcher"
 	"github.com/teamkeel/keel/cmd/cliconfig"
@@ -572,15 +574,23 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 		w.SetMaxEvents(1)
 		w.FilterOps(watcher.Write, watcher.Remove)
 
-		ignored := []string{
+		defaultIgnored := []string{
 			"node_modules/",
 			".build/",
 			".git/",
 		}
 
+		ignoredPatterns, _ := GetIgnoredPatterns(dir, defaultIgnored)
+
 		w.AddFilterHook(func(info os.FileInfo, fullPath string) error {
-			for _, v := range ignored {
-				if strings.Contains(fullPath, v) {
+			relPath, err := filepath.Rel(dir, fullPath)
+			if err != nil {
+				return nil
+			}
+
+			for _, pattern := range ignoredPatterns {
+				matched, err := doublestar.Match(pattern, relPath)
+				if err == nil && matched {
 					return watcher.ErrSkip
 				}
 			}
@@ -621,6 +631,42 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 		_ = w.Start(time.Millisecond * 100)
 		return nil
 	}
+}
+
+func GetIgnoredPatterns(dir string, defaultIgnored []string) ([]string, error) {
+	tsconfigExcludes, err := ReadTSConfigExcludes(dir)
+	if err == nil {
+		defaultIgnored = append(defaultIgnored, tsconfigExcludes...)
+	}
+
+	var processedPatterns []string
+	for _, pattern := range defaultIgnored {
+		if !strings.Contains(pattern, "*") {
+			pattern = filepath.Join(pattern, "**")
+		}
+		processedPatterns = append(processedPatterns, pattern)
+	}
+
+	return processedPatterns, nil
+}
+
+type TSConfig struct {
+	Exclude []string `json:"exclude"`
+}
+
+func ReadTSConfigExcludes(dir string) ([]string, error) {
+	tsconfigPath := filepath.Join(dir, "tsconfig.json")
+	tsconfigData, err := os.ReadFile(tsconfigPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var tsconfig TSConfig
+	if err := json.Unmarshal(tsconfigData, &tsconfig); err != nil {
+		return nil, err
+	}
+
+	return tsconfig.Exclude, nil
 }
 
 // LoadSecrets lists secrets from the given file and returns a command
