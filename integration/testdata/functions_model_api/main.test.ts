@@ -265,12 +265,14 @@ test("create - nested many-to-many with new records", async () => {
   const dbTags = await useDatabase()
     .selectFrom("tag")
     .selectAll()
-    .whereExists((qb) => {
-      return qb
-        .selectFrom("product_tag")
-        .select("id")
-        .where("productId", "=", dbBuzz!.id);
-    })
+    .where((qb) =>
+      qb.exists(
+        qb
+          .selectFrom("product_tag")
+          .select("id")
+          .where("productId", "=", dbBuzz!.id)
+      )
+    )
     .execute();
 
   expect(dbTags.length).toBe(2);
