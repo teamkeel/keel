@@ -65,7 +65,8 @@
           "data": [
             { "key": "$.where.order.id.equals", "path": { "path": "$.id" } }
           ],
-          "title": { "template": "items" }
+          "title": { "template": "items" },
+          "displayOrder": 1
         }
       ]
     },
@@ -430,7 +431,8 @@
       "entryActivityActions": [
         {
           "toolId": "getOrder",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
+          "displayOrder": 1
         }
       ],
       "getEntryAction": {

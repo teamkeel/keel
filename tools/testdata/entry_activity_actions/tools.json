@@ -232,23 +232,28 @@
       "entryActivityActions": [
         {
           "toolId": "cleanComments",
-          "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+          "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
+          "displayOrder": 1
         },
         {
           "toolId": "deactivateBlogPost",
-          "data": [{ "key": "$.where.id", "path": { "path": "$.id" } }]
+          "data": [{ "key": "$.where.id", "path": { "path": "$.id" } }],
+          "displayOrder": 2
         },
         {
           "toolId": "deleteBlogPost",
-          "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+          "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
+          "displayOrder": 3
         },
         {
           "toolId": "readComments",
-          "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+          "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
+          "displayOrder": 4
         },
         {
           "toolId": "updateBlogPost",
-          "data": [{ "key": "$.where.id", "path": { "path": "$.id" } }]
+          "data": [{ "key": "$.where.id", "path": { "path": "$.id" } }],
+          "displayOrder": 5
         }
       ],
       "createEntryAction": { "toolId": "createBlogPost" }
@@ -381,31 +386,37 @@
       "entryActivityActions": [
         {
           "toolId": "cleanComments",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
+          "displayOrder": 1
         },
         {
           "toolId": "deactivateBlogPost",
           "data": [
             { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
-          ]
+          ],
+          "displayOrder": 2
         },
         {
           "toolId": "deleteBlogPost",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
+          "displayOrder": 3
         },
         {
           "toolId": "getBlogPost",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
+          "displayOrder": 4
         },
         {
           "toolId": "readComments",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
+          "displayOrder": 5
         },
         {
           "toolId": "updateBlogPost",
           "data": [
             { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
-          ]
+          ],
+          "displayOrder": 6
         }
       ],
       "getEntryAction": {

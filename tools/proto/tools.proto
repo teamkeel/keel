@@ -191,7 +191,14 @@ message ActionLink {
 	// }
 	repeated DataMapping data = 3;
 	
+	// Title/label to be displayed as part of the link/button created for this action link.
 	optional StringTemplate title = 4; // Empty by default
+
+	// An optional string template which is to be displayed as a description/tagline for this link.
+	optional StringTemplate description = 5; // Empty by default
+
+	// When the link is used within a list of action links, this field will be used to order items.
+	int32 display_order = 6;
 }
 
 message CursorPaginationConfig {

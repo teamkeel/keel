@@ -141,17 +141,20 @@
       "entryActivityActions": [
         {
           "toolId": "readProductFunc",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
+          "displayOrder": 1
         },
         {
           "toolId": "updateProduct",
           "data": [
             { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
-          ]
+          ],
+          "displayOrder": 2
         },
         {
           "toolId": "writeProductFunc",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
+          "displayOrder": 3
         }
       ]
     },
