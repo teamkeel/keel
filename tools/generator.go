@@ -178,6 +178,7 @@ func (g *Generator) decorateTools() error {
 //   - For LIST actions = other list actions for the same model
 func (g *Generator) generateRelatedActionsLinks() {
 	for id, tool := range g.Tools {
+		displayOrder := 0
 		if !tool.Action.IsList() {
 			continue
 		}
@@ -186,8 +187,10 @@ func (g *Generator) generateRelatedActionsLinks() {
 		if relatedTools := g.findListTools(tool.Model.Name); len(relatedTools) > 1 {
 			for _, relatedID := range relatedTools {
 				if id != relatedID {
+					displayOrder++
 					tool.Config.RelatedActions = append(tool.Config.RelatedActions, &toolsproto.ActionLink{
-						ToolId: relatedID,
+						ToolId:       relatedID,
+						DisplayOrder: int32(displayOrder),
 					})
 				}
 			}
@@ -199,6 +202,7 @@ func (g *Generator) generateRelatedActionsLinks() {
 //   - For LIST/GET actions that have a model ID response = other actions on the same model that take an id as an input
 func (g *Generator) generateEntryActivityActionsLinks() {
 	for id, tool := range g.Tools {
+		displayOrder := 0
 		// get the path of the id response field for this tool
 		idResponseFieldPath := tool.getIDResponseFieldPath()
 		// skip if we don't have an id response field or the tool is not List or Get
@@ -216,6 +220,7 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 		}
 		sort.Strings(toolIds)
 		for _, toolID := range toolIds {
+			displayOrder++
 			tool.Config.EntryActivityActions = append(tool.Config.EntryActivityActions, &toolsproto.ActionLink{
 				ToolId: toolID,
 				Data: []*toolsproto.DataMapping{
@@ -224,6 +229,7 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 						Path: &toolsproto.JsonPath{Path: idResponseFieldPath},
 					},
 				},
+				DisplayOrder: int32(displayOrder),
 			})
 		}
 	}
@@ -279,6 +285,7 @@ func (g *Generator) generateEmbeddedActionLinks() {
 		if !tool.Action.IsGet() {
 			continue
 		}
+		displayOrder := 0
 
 		for _, f := range tool.Model.Fields {
 			// skip if the field is not a HasMany relationship
@@ -291,6 +298,7 @@ func (g *Generator) generateEmbeddedActionLinks() {
 			for _, toolId := range listTools {
 				// check if there is an input for the foreign key
 				if input := g.Tools[toolId].getInput("$.where." + f.InverseFieldName.Value + ".id.equals"); input != nil {
+					displayOrder++
 					// embed the tool
 					tool.Config.EmbeddedActions = append(tool.Config.EmbeddedActions, &toolsproto.ActionLink{
 						ToolId: toolId,
@@ -301,6 +309,7 @@ func (g *Generator) generateEmbeddedActionLinks() {
 								Path: &toolsproto.JsonPath{Path: tool.getIDResponseFieldPath()},
 							},
 						},
+						DisplayOrder: int32(displayOrder),
 					})
 
 					break
