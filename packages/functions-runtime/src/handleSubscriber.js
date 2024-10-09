@@ -52,13 +52,18 @@ async function handleSubscriber(request, config) {
         const subscriberFunction = subscribers[request.method];
         const actionType = PROTO_ACTION_TYPES.SUBSCRIBER;
 
-        await tryExecuteSubscriber({ request, db, actionType }, async () => {
-          // parse request params to convert objects into rich field types (e.g. InlineFile)
-          const inputs = parseInputs(request.params);
+        const functionConfig = subscriberFunction?.config ?? {};
 
-          // Return the subscriber function to the containing tryExecuteSubscriber block
-          return subscriberFunction(ctx, inputs);
-        });
+        await tryExecuteSubscriber(
+          { request, db, actionType, functionConfig },
+          async () => {
+            // parse request params to convert objects into rich field types (e.g. InlineFile)
+            const inputs = parseInputs(request.params);
+
+            // Return the subscriber function to the containing tryExecuteSubscriber block
+            return subscriberFunction(ctx, inputs);
+          }
+        );
 
         return createJSONRPCSuccessResponse(request.id, null);
       } catch (e) {
