@@ -1,0 +1,4 @@
+# deploy: projectName is required
+
+deploy:
+  region: eu-west-2
