@@ -1,0 +1,5 @@
+# deploy.projectName: Does not match pattern '^[a-z][a-z-]+$'
+
+deploy:
+  projectName: My Project
+  region: eu-west-2
