@@ -1,0 +1,85 @@
+const process = require("node:process");
+const {
+  handleRequest,
+  handleJob,
+  handleSubscriber,
+  tracing,
+} = require("@teamkeel/functions-runtime");
+const {
+  createContextAPI,
+  createJobContextAPI,
+  createSubscriberContextAPI,
+  permissionFns,
+} = require("@teamkeel/sdk");
+
+const functions = {
+{{ range $name, $path := .Functions }}
+  {{ $name }}: require("../../functions/{{ $path }}").default,
+{{ end }}
+};
+
+const subscribers = {
+{{ range .Subscribers }}
+  {{ . }}: require("../../subscribers/{{ . }}").default,
+{{ end }}
+};
+
+const jobs = {
+{{ range .Jobs }}
+  {{ . }}: require("../../jobs/{{ . }}").default,
+{{ end }}
+};
+
+const actionTypes = {
+{{ range $name, $type := .ActionTypes }}
+  {{ $name }}: "{{ $type }}",
+{{ end }}
+};
+
+export async function handler(event) {
+  if (event.rawPath === "/_health") {
+    return {
+      id: "ok",
+      result: {},
+    };
+  }
+
+  let rpcResponse = null;
+
+  try {
+    switch (event.type) {
+      case "action":
+        rpcResponse = await handleRequest(event, {
+          functions,
+          createContextAPI,
+          actionTypes,
+          permissionFns,
+        });
+        break;
+      case "job":
+        rpcResponse = await handleJob(event, {
+          jobs,
+          createJobContextAPI,
+        });
+        break;
+      case "subscriber":
+        rpcResponse = await handleSubscriber(event, {
+          subscribers,
+          createSubscriberContextAPI,
+        });
+        break;
+    }
+  } catch (e) {
+    console.error("unexpected handler error", e);
+  } finally {
+    await tracing.forceFlush();
+  }
+
+  return rpcResponse;
+}
+
+tracing.init();
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("unhandled promise rejection", promise, "reason:", reason);
+});

@@ -1,0 +1,3 @@
+deploy:
+  projectName: my-project
+  region: us-east-2

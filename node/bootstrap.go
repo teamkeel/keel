@@ -24,6 +24,15 @@ func GetDependencies(options *bootstrapOptions) (map[string]string, map[string]s
 	functionsRuntimeVersion := runtime.GetVersion()
 	testingRuntimeVersion := runtime.GetVersion()
 
+	// If doing a snapshot build with goreleaser the function will be something like <version>-SNAPSHOT-<git_hash> which
+	// won't work, so we remove the "-SNAPSHOt-<git_hash>" bit
+	if strings.Contains(functionsRuntimeVersion, "-SNAPSHOT-") {
+		functionsRuntimeVersion = strings.Split(functionsRuntimeVersion, "-SNAPSHOT-")[0]
+	}
+	if strings.Contains(testingRuntimeVersion, "-SNAPSHOT-") {
+		testingRuntimeVersion = strings.Split(testingRuntimeVersion, "-SNAPSHOT-")[0]
+	}
+
 	// It is possible to reference a local version of our NPM modules rather than a version
 	// from the NPM registry, by utilizing the --node-packages-path on the CLI. This flag is only applicable to the 'run' cmd at the moment, not 'generate'.
 	if options.packagesPath != "" {
