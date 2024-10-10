@@ -1,0 +1,94 @@
+const process = require("node:process");
+const {
+  handleRequest,
+  handleJob,
+  handleSubscriber,
+  tracing,
+} = require("@teamkeel/functions-runtime");
+const {
+  createContextAPI,
+  createJobContextAPI,
+  createSubscriberContextAPI,
+  permissionFns,
+} = require("@teamkeel/sdk");
+
+const functions = {
+{{ range .Functions }}
+  {{ . }}: require("../functions/{{ . }}").default,
+{{ end }}
+};
+
+const subscribers = {
+{{ range .Subscribers }}
+  {{ . }}: require("../subscribers/{{ . }}").default,
+{{ end }}
+};
+
+const jobs = {
+{{ range .Jobs }}
+  {{ . }}: require("../jobs/{{ . }}").default,
+{{ end }}
+};
+
+const actionTypes = {
+{{ range $k, $v := .ActionTypes }}
+  {{ $k }}: "{{ $v }}",
+{{ end }}
+};
+
+export async function handler(event, context) {
+  if (event.rawPath === "/_health") {
+    return {
+      id: "ok",
+      result: {},
+    };
+  }
+
+  console.log({
+    type: event.type,
+    method: event.method,
+  });
+
+  let rpcResponse = null;
+
+  // TODO: update database.js in functions-runtime to allow the passing of a secret
+  // rather than needing the connection string to be an environment variable
+  process.env.KEEL_DB_CONN = event.meta.secrets.KEEL_DB_CONN;
+
+  try {
+    switch (event.type) {
+      case "action":
+        rpcResponse = await handleRequest(event, {
+          functions,
+          createContextAPI,
+          actionTypes,
+          permissionFns,
+        });
+        break;
+      case "job":
+        rpcResponse = await handleJob(event, {
+          jobs,
+          createJobContextAPI,
+        });
+        break;
+      case "subscriber":
+        rpcResponse = await handleSubscriber(event, {
+          subscribers,
+          createSubscriberContextAPI,
+        });
+        break;
+    }
+  } catch (e) {
+    console.error("Unexpected Handler Error", e);
+  } finally {
+    await tracing.forceFlush();
+  }
+
+  return rpcResponse;
+}
+
+tracing.init();
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Promise Rejection", promise, "Reason:", reason);
+});

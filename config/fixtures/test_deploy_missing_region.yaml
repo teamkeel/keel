@@ -1,0 +1,4 @@
+# deploy: region is required
+
+deploy:
+  projectName: my-project

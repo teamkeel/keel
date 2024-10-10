@@ -1526,6 +1526,7 @@ process.on('unhandledRejection', (reason, promise) => {
 	console.error('Unhandled Promise Rejection', promise, 'Reason:', reason);
 });
 
+console.log("Hello from functions");
 const server = createServer(listener);
 const port = (process.env.PORT && parseInt(process.env.PORT, 10)) || 3001;
 server.listen(port);`)

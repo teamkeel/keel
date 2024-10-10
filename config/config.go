@@ -38,6 +38,13 @@ type ProjectConfig struct {
 	Secrets       []Secret              `yaml:"secrets"`
 	Auth          AuthConfig            `yaml:"auth"`
 	Console       ConsoleConfig         `yaml:"console"`
+	DisableAuth   bool                  `yaml:"disableKeelAuth"`
+	Deploy        *DeployConfig         `yaml:"deploy"`
+}
+
+type DeployConfig struct {
+	ProjectName string `yaml:"projectName"`
+	Region      string `yaml:"region"`
 }
 
 func (p *ProjectConfig) GetEnvVars() map[string]string {

@@ -14,9 +14,23 @@ builds:
       - darwin
     ldflags:
       - -s -w -X 'github.com/teamkeel/keel/runtime.Version={{.Version}}' -X 'github.com/teamkeel/keel/cmd.enabledDebugFlags=false'
+  - main: ./deploy/lambdas/runtime
+    id: "runtime_lambda"
+    binary: runtime-lambda
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
 archives:
-  - builds:
-     - keel
+  - id: keel
+    builds:
+      - keel
+  - id: lambda-binaries
+    builds:
+      - runtime_lambda
+    name_template: "prebuilt_lambda_binaries_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 release:
   github:
     owner: teamkeel
