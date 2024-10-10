@@ -1,0 +1,9 @@
+# deploy.database.rds: can only be provided if deploy.database.provider is 'rds'
+
+deploy:
+  projectName: my-project
+  region: us-east-2
+  database:
+    provider: external
+    rds:
+      instance: db.t4g.medium

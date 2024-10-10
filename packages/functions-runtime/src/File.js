@@ -14,7 +14,11 @@ const s3Client = (() => {
     return null;
   }
 
-  if (!process.env.TEST_AWS_ENDPOINT) {
+  // Set in integration tests to send all AWS API calls to a test server
+  // for mocking
+  const endpoint = process.env.TEST_AWS_ENDPOINT;
+
+  if (!endpoint) {
     // If no test endpoint is provided then use the env's configuration
     return new S3Client({
       region: process.env.KEEL_REGION,
@@ -22,20 +26,14 @@ const s3Client = (() => {
     });
   }
 
-  // Set in integration tests to send all AWS API calls to a test server
-  // for mocking
-  const endpoint = process.env.TEST_AWS_ENDPOINT;
-
   return new S3Client({
     region: process.env.KEEL_REGION,
 
-    // If a test endpoint is provided then use some test credentials rather than fromEnv()
-    credentials: endpoint
-      ? {
-          accessKeyId: "test",
-          secretAccessKey: "test",
-        }
-      : fromEnv(),
+    // If a test endpoint is provided then use some test credentials
+    credentials: {
+      accessKeyId: "test",
+      secretAccessKey: "test",
+    },
 
     // If a custom endpoint is set we need to use a custom resolver. Just setting the base endpoint isn't enough for S3 as it
     // as the default resolver uses the bucket name as a sub-domain, which likely won't work with the custom endpoint.

@@ -7,6 +7,7 @@ import (
 )
 
 // Storer represents the interface for a file storing service that is used by the Keel runtime
+// TODO: all these methods should take context as first arg
 type Storer interface {
 	// Store will save the given file and return a FileInfo struct for it
 	//

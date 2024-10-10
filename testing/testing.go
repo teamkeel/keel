@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"bytes"
 	"context"
 	"crypto/x509"
 	_ "embed"
@@ -13,32 +14,33 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
+	"time"
+
+	lambdaevents "github.com/aws/aws-lambda-go/events"
+	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
+	"github.com/segmentio/ksuid"
+	"go.opentelemetry.io/otel"
 
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/deploy"
+	"github.com/teamkeel/keel/deploy/lambdas/runtime"
 	"github.com/teamkeel/keel/events"
-	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime"
-	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
-	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/runtime/locale"
-	"github.com/teamkeel/keel/runtime/runtimectx"
-	"github.com/teamkeel/keel/schema"
-	"github.com/teamkeel/keel/storage"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 const (
-	AuthPath       = "auth"
-	ActionApiPath  = "testingactionsapi"
-	JobPath        = "testingjobs"
-	SubscriberPath = "testingsubscribers"
+	AuthPath        = "auth"
+	ActionApiPath   = "testingactionsapi"
+	JobPath         = "testingjobs"
+	SubscriberPath  = "testingsubscribers"
+	JobsWebhookPath = "/webhooks/jobs"
 )
 
 type TestOutput struct {
@@ -59,37 +61,43 @@ type RunnerOpts struct {
 var tracer = otel.Tracer("github.com/teamkeel/keel/testing")
 
 func Run(ctx context.Context, opts *RunnerOpts) error {
-	builder := &schema.Builder{}
+	buildRessult, err := deploy.Build(ctx, &deploy.BuildArgs{
+		ProjectRoot: opts.Dir,
+		Env:         "test",
+		OnLoadSchema: func(schema *proto.Schema) *proto.Schema {
+			testApi := &proto.Api{
+				Name: ActionApiPath,
+			}
 
-	schema, err := builder.MakeFromDirectory(opts.Dir)
+			for _, m := range schema.Models {
+				apiModel := &proto.ApiModel{
+					ModelName:    m.Name,
+					ModelActions: []*proto.ApiModelAction{},
+				}
+
+				testApi.ApiModels = append(testApi.ApiModels, apiModel)
+				for _, a := range m.Actions {
+					apiModel.ModelActions = append(apiModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name})
+				}
+			}
+
+			schema.Apis = append(schema.Apis, testApi)
+			return schema
+		},
+	})
 	if err != nil {
 		return err
 	}
 
-	envVars := builder.Config.GetEnvVars()
-
-	testApi := &proto.Api{
-		// TODO: make random so doesn't clash
-		Name: ActionApiPath,
-	}
-	for _, m := range schema.Models {
-		apiModel := &proto.ApiModel{
-			ModelName:    m.Name,
-			ModelActions: []*proto.ApiModelAction{},
-		}
-
-		testApi.ApiModels = append(testApi.ApiModels, apiModel)
-		for _, a := range m.Actions {
-			apiModel.ModelActions = append(apiModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name})
-		}
-	}
-
-	schema.Apis = append(schema.Apis, testApi)
+	schema := buildRessult.Schema
+	config := buildRessult.Config
+	envVars := config.GetEnvVars()
 
 	spanName := opts.TestGroupName
 	if spanName == "" {
 		spanName = "testing.Run"
 	}
+
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
@@ -102,16 +110,6 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 
 	dbConnString := opts.DbConnInfo.WithDatabase(dbName).String()
 
-	files, err := node.Generate(
-		ctx,
-		schema,
-		builder.Config,
-		node.WithDevelopmentServer(true),
-	)
-	if err != nil {
-		return err
-	}
-
 	if opts.GenerateClient {
 		clientFiles, err := node.GenerateClient(
 			ctx,
@@ -123,21 +121,41 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			return err
 		}
 
-		files = append(files, clientFiles...)
+		err = clientFiles.Write(opts.Dir)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = files.Write(opts.Dir)
+	err = os.WriteFile(path.Join(opts.Dir, ".build/server.js"), []byte(functionsServerEntry), os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	var functionsServer *node.DevelopmentServer
-	var functionsTransport functions.Transport
+	runtimePort, err := util.GetFreePort()
+	if err != nil {
+		return err
+	}
 
-	if node.HasFunctions(schema, builder.Config) {
+	serverURL := fmt.Sprintf("http://localhost:%s", runtimePort)
+	bucketName := "testing-bucket-name"
+	functionsARN := "arn:test:lambda:functions:function"
+
+	var functionsServer *node.DevelopmentServer
+
+	if node.HasFunctions(schema, config) {
 		functionEnvVars := map[string]string{
-			"KEEL_DB_CONN_TYPE":        "pg",
-			"KEEL_TRACING_ENABLED":     os.Getenv("TRACING_ENABLED"),
+			"KEEL_DB_CONN_TYPE":      "pg",
+			"KEEL_TRACING_ENABLED":   os.Getenv("TRACING_ENABLED"),
+			"KEEL_FILES_BUCKET_NAME": bucketName,
+
+			// Send all AWS API calls to our test server and set some test credentials
+			"TEST_AWS_ENDPOINT":     fmt.Sprintf("%s/aws", serverURL),
+			"AWS_ACCESS_KEY_ID":     "test",
+			"AWS_SECRET_ACCESS_KEY": "test",
+			"AWS_SESSION_TOKEN":     "test",
+			"AWS_REGION":            "test",
+
 			"OTEL_RESOURCE_ATTRIBUTES": "service.name=functions",
 		}
 
@@ -149,6 +167,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			EnvVars: functionEnvVars,
 			Output:  os.Stdout,
 			Debug:   os.Getenv("DEBUG_FUNCTIONS") == "true",
+			Watch:   false,
 		})
 
 		if err != nil {
@@ -161,103 +180,120 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		defer func() {
 			_ = functionsServer.Kill()
 		}()
-
-		functionsTransport = functions.NewHttpTransport(functionsServer.URL)
-	}
-
-	runtimePort, err := util.GetFreePort()
-	if err != nil {
-		return err
 	}
 
 	for key, value := range envVars {
 		os.Setenv(key, value)
 	}
 
+	// This is needed by the auth endpoints to return the right URL's
 	os.Setenv("KEEL_API_URL", fmt.Sprintf("http://localhost:%s", runtimePort))
 
-	// Server to handle receiving HTTP requests from the ActionExecutor, JobExecutor and SubscriberExecutor.
+	pk, err := testhelpers.GetEmbeddedPrivateKey()
+	if err != nil {
+		return err
+	}
+
+	pkBytes := x509.MarshalPKCS1PrivateKey(pk)
+	pkPem := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "RSA PRIVATE KEY",
+			Bytes: pkBytes,
+		},
+	)
+
+	pkBase64 := base64.StdEncoding.EncodeToString(pkPem)
+
+	var lambdaHandler *runtime.Handler
+
+	ssmParams := map[string]string{
+		"KEEL_PRIVATE_KEY": string(pkPem),
+		"DATABASE_URL":     dbConnString,
+	}
+	for k, v := range opts.Secrets {
+		ssmParams[k] = v
+	}
+
+	awsHandler := &AWSAPIHandler{
+		PathPrefix:    "/aws/",
+		FunctionsARN:  functionsARN,
+		SSMParameters: ssmParams,
+		OnSQSEvent: func(event lambdaevents.SQSEvent) {
+			// TODO: consider doing this in a go routine to make it async
+			// but current tests require it to be sync
+			err := lambdaHandler.EventHandler(ctx, event)
+			if err != nil {
+				fmt.Printf("error from event handler: %s\nevent:%s\n\n", err.Error(), event.Records[0].Body)
+			}
+		},
+	}
+	if functionsServer != nil {
+		awsHandler.FunctionsURL = functionsServer.URL
+	}
+
+	// This server handles requests from the ActionExecutor, JobExecutor and SubscriberExecutor in the Vitest tests
+	// but also AWS API calls which come here because we set a custom endpoint on the clients
 	runtimeServer := http.Server{
 		Addr: fmt.Sprintf(":%s", runtimePort),
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx, span := tracer.Start(r.Context(), strings.Trim(r.URL.Path, "/"))
 			defer span.End()
 
-			storer, err := storage.NewDbStore(context.Background(), database)
-			if err != nil {
-				panic(err)
+			// Handle AWS API call
+			if strings.HasPrefix(r.URL.Path, "/aws") {
+				awsHandler.HandleHTTP(r, w)
+				return
 			}
 
-			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
-			ctx = db.WithDatabase(ctx, database)
-
-			// Pass db conn as secret - we do this here as we change the db name in this function
-			// so can't set it in the secrets passed in as options
-			opts.Secrets["KEEL_DB_CONN"] = dbConnString
-			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
-
-			ctx = runtimectx.WithOAuthConfig(ctx, &builder.Config.Auth)
-			ctx = runtimectx.WithStorage(ctx, storer)
-
-			span.SetAttributes(attribute.String("request.url", r.URL.String()))
-
-			// Use the embedded private key for the tests
-			pk, err := testhelpers.GetEmbeddedPrivateKey()
-			if err != nil {
-				panic(err)
+			if r.URL.Path == JobsWebhookPath {
+				// not doing anything with this for now but can do in the future...
+				writeJSON(w, http.StatusOK, map[string]any{})
+				return
 			}
 
-			if pk == nil {
-				panic("No private key")
-			}
-
-			ctx = runtimectx.WithPrivateKey(ctx, pk)
-
-			if functionsTransport != nil {
-				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)
-			}
-
-			// Synchronous event handling
-			ctx, err = events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
-				return runtime.NewSubscriberHandler(schema).RunSubscriber(ctx, subscriber, event)
-			})
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte(err.Error()))
-			}
-
+			// Handle API calls, jobs and subscriber executors
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 
 			switch pathParts[0] {
-			case AuthPath:
-				r = r.WithContext(ctx)
-				runtime.NewHttpHandler(schema).ServeHTTP(w, r)
-			case ActionApiPath:
-				r = r.WithContext(ctx)
-				runtime.NewHttpHandler(schema).ServeHTTP(w, r)
+			case ActionApiPath, AuthPath:
+				e, err := toLambdaFunctionURLRequest(r)
+				if err != nil {
+					writeJSON(w, http.StatusInternalServerError, err.Error())
+					return
+				}
+				res, err := lambdaHandler.APIHandler(ctx, e)
+				if err != nil {
+					writeJSON(w, http.StatusInternalServerError, err.Error())
+					return
+				}
+				for k, v := range res.Headers {
+					w.Header().Set(k, v)
+				}
+				w.WriteHeader(res.StatusCode)
+				_, _ = w.Write([]byte(res.Body))
 			case JobPath:
-				if len(pathParts) != 3 {
-					w.WriteHeader(http.StatusBadRequest)
-					return
-				}
-				err := HandleJobExecutorRequest(ctx, schema, pathParts[2], r)
+				err := HandleJobExecutorRequest(r, lambdaHandler, awsHandler)
 				if err != nil {
 					response := httpjson.NewErrorResponse(ctx, err, nil)
 					w.WriteHeader(response.Status)
 					_, _ = w.Write(response.Body)
+					return
 				}
+
+				writeJSON(w, http.StatusOK, map[string]any{})
+				return
 			case SubscriberPath:
-				if len(pathParts) != 3 {
-					w.WriteHeader(http.StatusBadRequest)
-					return
-				}
-				err := HandleSubscriberExecutorRequest(ctx, schema, pathParts[2], r)
+				err = HandleSubscriberExecutorRequest(r.WithContext(ctx), lambdaHandler)
 				if err != nil {
 					response := httpjson.NewErrorResponse(ctx, err, nil)
 					w.WriteHeader(response.Status)
 					_, _ = w.Write(response.Body)
+					return
 				}
+
+				writeJSON(w, http.StatusOK, map[string]any{})
 			default:
+				fmt.Println(r.Method, r.URL.Path, "- not found")
 				w.WriteHeader(http.StatusNotFound)
 			}
 		}),
@@ -269,6 +305,40 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 
 	defer func() {
 		_ = runtimeServer.Shutdown(ctx)
+	}()
+
+	// Small sleep to make sure the server has started as runtime.New will start making requests to it
+	time.Sleep(time.Millisecond * 200)
+
+	// We need to set these as even though we are using a custom endpoint and mocking requests the AWS clients
+	// still expect to be able to send auth headers, and to do that they read these values from the env. Running locally
+	// you might just have these set so it's ok, but in CI they are not available and tests fail
+	os.Setenv("AWS_ACCESS_KEY_ID", "test")
+	os.Setenv("AWS_SECRET_ACCESS_KEY", "test")
+	os.Setenv("AWS_SESSION_TOKEN", "test")
+	os.Setenv("AWS_REGION", "test")
+
+	lambdaHandler, err = runtime.New(ctx, &runtime.HandlerArgs{
+		LogLevel:       "warn",
+		SchemaPath:     path.Join(opts.Dir, ".build/runtime/schema.json"),
+		ConfigPath:     path.Join(opts.Dir, ".build/runtime/config.json"),
+		ProjectName:    opts.TestGroupName,
+		Env:            "test",
+		QueueURL:       "https://testing-sqs-queue.com/123456789/events",
+		FunctionsARN:   functionsARN,
+		BucketName:     bucketName,
+		SecretNames:    lo.Keys(ssmParams),
+		JobsWebhookURL: fmt.Sprintf("%s%s", serverURL, JobsWebhookPath),
+
+		// Send all AWS API calls to our test server
+		AWSEndpoint: fmt.Sprintf("%s/aws", serverURL),
+	})
+	if err != nil {
+		fmt.Println("error creating lambda runtime handler:", err)
+		return err
+	}
+	defer func() {
+		_ = lambdaHandler.Stop()
 	}()
 
 	cmd := exec.Command("./node_modules/.bin/tsc", "--noEmit", "--pretty")
@@ -285,101 +355,184 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		opts.Pattern = "(.*)"
 	}
 
-	pk, _ := testhelpers.GetEmbeddedPrivateKey()
-
-	pkBytes := x509.MarshalPKCS1PrivateKey(pk)
-	pkPem := pem.EncodeToMemory(
-		&pem.Block{
-			Type:  "RSA PRIVATE KEY",
-			Bytes: pkBytes,
-		},
-	)
-
-	pkBase64 := base64.StdEncoding.EncodeToString(pkPem)
-
 	cmd = exec.Command("./node_modules/.bin/vitest", "run", "--color", "--reporter", "verbose", "--config", "./.build/vitest.config.mjs", "--testNamePattern", opts.Pattern)
 	cmd.Dir = opts.Dir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Env = append(os.Environ(), []string{
-		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/%s/json", runtimePort, ActionApiPath),
-		fmt.Sprintf("KEEL_TESTING_JOBS_URL=http://localhost:%s/%s/json", runtimePort, JobPath),
-		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=http://localhost:%s/%s/json", runtimePort, SubscriberPath),
-		fmt.Sprintf("KEEL_TESTING_CLIENT_API_URL=http://localhost:%s/%s", runtimePort, ActionApiPath),
-		fmt.Sprintf("KEEL_TESTING_AUTH_API_URL=http://localhost:%s/auth", runtimePort),
+		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=%s/%s/json", serverURL, ActionApiPath),
+		fmt.Sprintf("KEEL_TESTING_JOBS_URL=%s/%s/json", serverURL, JobPath),
+		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=%s/%s/json", serverURL, SubscriberPath),
+		fmt.Sprintf("KEEL_TESTING_CLIENT_API_URL=%s/%s", serverURL, ActionApiPath),
+		fmt.Sprintf("KEEL_TESTING_AUTH_API_URL=%s/auth", serverURL),
 		"KEEL_DB_CONN_TYPE=pg",
 		fmt.Sprintf("KEEL_DB_CONN=%s", dbConnString),
 		// Disables experimental fetch warning that pollutes console experience when running tests
 		"NODE_NO_WARNINGS=1",
 		fmt.Sprintf("KEEL_DEFAULT_PK=%s", pkBase64),
+
+		// Need to set these so the sdk uses the test endpoint in tests
+		fmt.Sprintf("TEST_AWS_ENDPOINT=%s/aws", serverURL),
+		fmt.Sprintf("KEEL_FILES_BUCKET_NAME=%s", bucketName),
 	}...)
 
 	return cmd.Run()
 }
 
+func writeJSON(w http.ResponseWriter, status int, body any) {
+	b, _ := json.Marshal(body)
+	w.WriteHeader(status)
+	w.Header().Set("content-type", "application/json")
+	_, _ = w.Write(b)
+}
+
 // HandleJobExecutorRequest handles requests the job module in the testing package.
-func HandleJobExecutorRequest(ctx context.Context, schema *proto.Schema, jobName string, r *http.Request) error {
-	body, err := io.ReadAll(r.Body)
+func HandleJobExecutorRequest(r *http.Request, h *runtime.Handler, awsHandler *AWSAPIHandler) error {
+	id := ksuid.New().String()
+	key := fmt.Sprintf("jobs/%s", id)
+
+	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
 
-	identity, err := actions.HandleAuthorizationHeader(ctx, schema, r.Header)
-	if err != nil {
-		return err
+	awsHandler.S3Bucket[key] = &S3Object{
+		Headers: map[string][]string{
+			"content-type": {"application/json"},
+		},
+		Data: b,
 	}
 
-	if identity != nil {
-		ctx = auth.WithIdentity(ctx, identity)
-	}
-
-	// handle any Time-Zone headers
-	location, err := locale.HandleTimezoneHeader(ctx, r.Header)
-	if err != nil {
-		return err
-	}
-	ctx = locale.WithTimeLocation(ctx, location)
-
-	var inputs map[string]any
-	// if no json body has been sent, just return an empty map for the inputs
-	if string(body) == "" {
-		inputs = nil
-	} else {
-		err = json.Unmarshal(body, &inputs)
-		if err != nil {
-			return err
+	token := ""
+	header := r.Header.Get("Authorization")
+	if header != "" {
+		authParts := strings.Split(header, "Bearer ")
+		if len(authParts) == 2 {
+			token = authParts[1]
 		}
 	}
 
-	trigger := functions.TriggerType(r.Header.Get("X-Trigger-Type"))
+	name := path.Base(r.URL.Path)
+	name = strcase.ToCamel(name)
 
-	err = runtime.NewJobHandler(schema).RunJob(ctx, jobName, inputs, trigger)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return h.JobHandler(r.Context(), &runtime.RunJobPayload{
+		ID:    id,
+		Name:  name,
+		Token: token,
+	})
 }
 
 // HandleSubscriberExecutorRequest handles requests the subscriber module in the testing package.
-func HandleSubscriberExecutorRequest(ctx context.Context, schema *proto.Schema, subscriberName string, r *http.Request) error {
-	body, err := io.ReadAll(r.Body)
+func HandleSubscriberExecutorRequest(r *http.Request, h *runtime.Handler) error {
+	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
 
 	var event *events.Event
-	err = json.Unmarshal(body, &event)
+	err = json.Unmarshal(b, &event)
 	if err != nil {
 		return err
 	}
 
-	err = runtime.NewSubscriberHandler(schema).RunSubscriber(ctx, subscriberName, event)
-
+	b, err = json.Marshal(runtime.EventPayload{
+		Subscriber:  path.Base(r.URL.Path),
+		Event:       event,
+		Traceparent: "1234",
+	})
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return h.EventHandler(r.Context(), lambdaevents.SQSEvent{
+		Records: []lambdaevents.SQSMessage{
+			{
+				MessageId: "",
+				Body:      string(b),
+			},
+		},
+	})
 }
+
+func toLambdaFunctionURLRequest(r *http.Request) (lambdaevents.LambdaFunctionURLRequest, error) {
+	headers := make(map[string]string)
+	for key, values := range r.Header {
+		if len(values) > 0 {
+			headers[key] = values[0]
+		}
+	}
+
+	queryStringParameters := make(map[string]string)
+	for key, values := range r.URL.Query() {
+		if len(values) > 0 {
+			queryStringParameters[key] = values[0]
+		}
+	}
+
+	var body string
+	if r.Body != nil {
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			return lambdaevents.LambdaFunctionURLRequest{}, fmt.Errorf("failed to read request body: %w", err)
+		}
+		body = string(bodyBytes)
+		// Reset the body for future use
+		r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+	}
+
+	return lambdaevents.LambdaFunctionURLRequest{
+		Version:               "2.0",
+		RawPath:               r.URL.Path,
+		RawQueryString:        r.URL.RawQuery,
+		Headers:               headers,
+		QueryStringParameters: queryStringParameters,
+		RequestContext: lambdaevents.LambdaFunctionURLRequestContext{
+			HTTP: lambdaevents.LambdaFunctionURLRequestContextHTTPDescription{
+				Method:    r.Method,
+				Path:      r.URL.Path,
+				Protocol:  r.Proto,
+				SourceIP:  r.RemoteAddr,
+				UserAgent: r.UserAgent(),
+			},
+		},
+		Body:            body,
+		IsBase64Encoded: false,
+	}, nil
+}
+
+const functionsServerEntry = `
+const { createServer } = require("node:http");
+const { handler } = require("./functions/main.js");
+
+const server = createServer(async (req, res) => {
+	try {
+		const u = new URL(req.url, "http://" + req.headers.host);
+		if (req.method === "GET" && u.pathname === "/_health") {
+			res.statusCode = 200;
+			res.end();
+			return;
+		}
+
+		const buffers = [];
+		for await (const chunk of req) {
+			buffers.push(chunk);
+		}
+		const data = Buffer.concat(buffers).toString();
+		const json = JSON.parse(data);
+
+		const rpcResponse = await handler(json, {});
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'application/json');
+		res.write(JSON.stringify(rpcResponse));
+		res.end();
+	} catch (err) {
+		res.status = 400;
+		res.write(err.message);
+	}
+
+	res.end();
+});
+
+const port = (process.env.PORT && parseInt(process.env.PORT, 10)) || 3001;
+server.listen(port);
+`

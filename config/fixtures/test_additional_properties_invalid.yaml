@@ -1,0 +1,29 @@
+# (root): Additional property unknown is not allowed
+# environment.0: Additional property unknown is not allowed
+# auth: Additional property unknown is not allowed
+# auth.tokens: Additional property unknown is not allowed
+# deploy: Additional property unknown is not allowed
+# deploy.database: Additional property unknown is not allowed
+# deploy.jobs: Additional property unknown is not allowed
+# deploy.telemetry: Additional property unknown is not allowed
+
+unknown: foo
+environment:
+  - name: MY_ENV
+    value: foo
+    unknown: foo
+auth:
+  tokens:
+    unknown: foo
+  unknown: foo
+deploy:
+  unknown: foo
+  projectName: my-app
+  region: eu-west-2
+  database:
+    provider: rds
+    unknown: foo
+  telemetry:
+    unknown: foo
+  jobs:
+    unknown: foo
