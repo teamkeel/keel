@@ -1,0 +1,5 @@
+deploy:
+  projectName: my-project
+  region: eu-west-2
+  jobs:
+    webhookUrl: https://my-domain.com/webhooks/jobs
