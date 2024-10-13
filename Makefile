@@ -59,7 +59,6 @@ prettier:
 
 install:
 	go mod download
-	npm install
 	cd ./packages/functions-runtime && pnpm install
 	cd ./packages/testing-runtime && pnpm install
 	cd ./packages/wasm && pnpm install
