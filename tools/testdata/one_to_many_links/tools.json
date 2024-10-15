@@ -31,28 +31,36 @@
             "data": [
               { "key": "$.where.order.id.equals", "path": { "path": "$.id" } }
             ]
-          }
+          },
+          "modelName": "Order",
+          "fieldName": "items"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Order" },
@@ -198,35 +206,45 @@
             "data": [
               { "key": "$.id", "path": { "path": "$.results[*].orderId" } }
             ]
-          }
+          },
+          "modelName": "LineItem",
+          "fieldName": "orderId"
         },
         {
           "fieldLocation": { "path": "$.results[*].product" },
           "fieldType": "TYPE_STRING",
           "displayName": "Product",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "LineItem",
+          "fieldName": "product"
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "LineItem",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 5,
-          "visible": true
+          "visible": true,
+          "modelName": "LineItem",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "LineItem",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Line items" },
@@ -383,28 +401,36 @@
                 "path": { "path": "$.results[*].id" }
               }
             ]
-          }
+          },
+          "modelName": "Order",
+          "fieldName": "items"
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Orders" },

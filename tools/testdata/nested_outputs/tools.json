@@ -63,28 +63,36 @@
           "fieldLocation": { "path": "$.customers[*].name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
-          "visible": true
+          "visible": true,
+          "modelName": "Customer",
+          "fieldName": "name"
         },
         {
           "fieldLocation": { "path": "$.customers[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Customer",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.customers[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "Customer",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.customers[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "Customer",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Invoices" },

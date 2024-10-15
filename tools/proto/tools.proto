@@ -146,7 +146,20 @@ message ResponseFieldConfig {
 	optional ActionLink link = 10; 
 
 	// for file fields only, display images inline
-	bool image_preview = 11; 
+	bool image_preview = 11; 	
+	
+	// If `type` is set to TYPE_ENUM then this value is the name of the
+	// the enum that the type refers to.
+	optional string enum_name = 12;
+	// If this field is set then this type is referring to another model.
+	// In the case of TYPE_MODEL this type _is_ the model named here.
+	// In the case of other types e.g. TYPE_ID this type is referencing a field
+	// on the model named here, and the specific field being referenced is indicated
+	// by `field_name`.
+	optional string model_name = 13;
+	// This field indicates which field on `model_name` this type is referencing.
+	// This field should only be set if `model_name` is set.
+	optional string field_name = 14;
 }
 
 message DefaultValue {
