@@ -42,21 +42,27 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Create blog post" },
@@ -106,21 +112,27 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Deactivate blog post" },
@@ -185,21 +197,27 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Blog post" },
@@ -322,21 +340,27 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Blog posts" },
@@ -524,21 +548,27 @@
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Update blog post" },

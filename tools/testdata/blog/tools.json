@@ -103,35 +103,45 @@
           "fieldLocation": { "path": "$.title" },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "title"
         },
         {
           "fieldLocation": { "path": "$.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "description"
         },
         {
           "fieldLocation": { "path": "$.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "content"
         },
         {
           "fieldLocation": { "path": "$.published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "published"
         },
         {
           "fieldLocation": { "path": "$.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "authorId"
         },
         {
           "fieldLocation": { "path": "$.image" },
@@ -139,7 +149,9 @@
           "displayName": "Image",
           "displayOrder": 5,
           "visible": true,
-          "imagePreview": true
+          "imagePreview": true,
+          "modelName": "BlogPost",
+          "fieldName": "image"
         },
         {
           "fieldLocation": { "path": "$.tags" },
@@ -147,7 +159,9 @@
           "repeated": true,
           "displayName": "Tags",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "tags"
         },
         {
           "fieldLocation": { "path": "$.categoryId" },
@@ -158,7 +172,9 @@
           "link": {
             "toolId": "getCategory",
             "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "categoryId"
         },
         {
           "fieldLocation": { "path": "$.comments" },
@@ -172,28 +188,46 @@
             "data": [
               { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
             ]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "comments"
+        },
+        {
+          "fieldLocation": { "path": "$.status" },
+          "fieldType": "TYPE_ENUM",
+          "displayName": "Status",
+          "displayOrder": 9,
+          "visible": true,
+          "enumName": "Status",
+          "modelName": "BlogPost",
+          "fieldName": "status"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
-          "displayOrder": 12,
-          "visible": true
+          "displayOrder": 13,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
-          "displayOrder": 13,
-          "visible": true
+          "displayOrder": 14,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
-          "displayOrder": 14,
-          "visible": true
+          "displayOrder": 15,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Create post" },
@@ -285,28 +319,36 @@
           "fieldLocation": { "path": "$.name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "name"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "{{$.name}}" },
@@ -345,35 +387,45 @@
           "fieldLocation": { "path": "$.title" },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "title"
         },
         {
           "fieldLocation": { "path": "$.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "description"
         },
         {
           "fieldLocation": { "path": "$.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "content"
         },
         {
           "fieldLocation": { "path": "$.published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "published"
         },
         {
           "fieldLocation": { "path": "$.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "authorId"
         },
         {
           "fieldLocation": { "path": "$.image" },
@@ -381,7 +433,9 @@
           "displayName": "Image",
           "displayOrder": 5,
           "visible": true,
-          "imagePreview": true
+          "imagePreview": true,
+          "modelName": "BlogPost",
+          "fieldName": "image"
         },
         {
           "fieldLocation": { "path": "$.tags" },
@@ -389,7 +443,9 @@
           "repeated": true,
           "displayName": "Tags",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "tags"
         },
         {
           "fieldLocation": { "path": "$.categoryId" },
@@ -400,7 +456,9 @@
           "link": {
             "toolId": "getCategory",
             "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "categoryId"
         },
         {
           "fieldLocation": { "path": "$.comments" },
@@ -414,28 +472,46 @@
             "data": [
               { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
             ]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "comments"
+        },
+        {
+          "fieldLocation": { "path": "$.status" },
+          "fieldType": "TYPE_ENUM",
+          "displayName": "Status",
+          "displayOrder": 9,
+          "visible": true,
+          "enumName": "Status",
+          "modelName": "BlogPost",
+          "fieldName": "status"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
-          "displayOrder": 12,
-          "visible": true
+          "displayOrder": 13,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
-          "displayOrder": 13,
-          "visible": true
+          "displayOrder": 14,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
-          "displayOrder": 14,
-          "visible": true
+          "displayOrder": 15,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "{{$.title}}" },
@@ -552,28 +628,36 @@
           "fieldLocation": { "path": "$.results[*].name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "name"
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Categories" },
@@ -736,7 +820,9 @@
           "fieldLocation": { "path": "$.results[*].authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
-          "visible": true
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "authorId"
         },
         {
           "fieldLocation": { "path": "$.results[*].parentId" },
@@ -749,35 +835,45 @@
             "data": [
               { "key": "$.id", "path": { "path": "$.results[*].parentId" } }
             ]
-          }
+          },
+          "modelName": "Comment",
+          "fieldName": "parentId"
         },
         {
           "fieldLocation": { "path": "$.results[*].content" },
           "fieldType": "TYPE_STRING",
           "displayName": "Content",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "content"
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 8,
-          "visible": true
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Comments" },
@@ -897,35 +993,45 @@
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
           "visible": true,
-          "sortable": true
+          "sortable": true,
+          "modelName": "BlogPost",
+          "fieldName": "title"
         },
         {
           "fieldLocation": { "path": "$.results[*].description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "description"
         },
         {
           "fieldLocation": { "path": "$.results[*].content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "content"
         },
         {
           "fieldLocation": { "path": "$.results[*].published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "published"
         },
         {
           "fieldLocation": { "path": "$.results[*].authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "authorId"
         },
         {
           "fieldLocation": { "path": "$.results[*].image" },
@@ -933,7 +1039,9 @@
           "displayName": "Image",
           "displayOrder": 5,
           "visible": true,
-          "imagePreview": true
+          "imagePreview": true,
+          "modelName": "BlogPost",
+          "fieldName": "image"
         },
         {
           "fieldLocation": { "path": "$.results[*].tags" },
@@ -941,7 +1049,9 @@
           "repeated": true,
           "displayName": "Tags",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "tags"
         },
         {
           "fieldLocation": { "path": "$.results[*].categoryId" },
@@ -954,7 +1064,9 @@
             "data": [
               { "key": "$.id", "path": { "path": "$.results[*].categoryId" } }
             ]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "categoryId"
         },
         {
           "fieldLocation": { "path": "$.results[*].comments" },
@@ -971,28 +1083,46 @@
                 "path": { "path": "$.results[*].id" }
               }
             ]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "comments"
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].status" },
+          "fieldType": "TYPE_ENUM",
+          "displayName": "Status",
+          "displayOrder": 9,
+          "visible": true,
+          "enumName": "Status",
+          "modelName": "BlogPost",
+          "fieldName": "status"
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
-          "displayOrder": 12,
-          "visible": true
+          "displayOrder": 13,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
-          "displayOrder": 13,
-          "visible": true
+          "displayOrder": 14,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
-          "displayOrder": 14,
-          "visible": true
+          "displayOrder": 15,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Posts" },
@@ -1128,167 +1258,215 @@
           "fieldLocation": { "path": "$.results[*].title" },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "title"
         },
         {
           "fieldLocation": { "path": "$.results[*].description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "description"
         },
         {
           "fieldLocation": { "path": "$.results[*].content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "content"
         },
         {
           "fieldLocation": { "path": "$.results[*].published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "published"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.email" },
           "fieldType": "TYPE_STRING",
           "displayName": "Email",
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "email"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.emailVerified" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Email verified",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "emailVerified"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.password" },
           "fieldType": "TYPE_PASSWORD",
           "displayName": "Password",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "password"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.externalId" },
           "fieldType": "TYPE_STRING",
           "displayName": "External id",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "externalId"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.issuer" },
           "fieldType": "TYPE_STRING",
           "displayName": "Issuer",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "issuer"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
           "displayOrder": 5,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "name"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.givenName" },
           "fieldType": "TYPE_STRING",
           "displayName": "Given name",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "givenName"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.familyName" },
           "fieldType": "TYPE_STRING",
           "displayName": "Family name",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "familyName"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.middleName" },
           "fieldType": "TYPE_STRING",
           "displayName": "Middle name",
           "displayOrder": 8,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "middleName"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.nickName" },
           "fieldType": "TYPE_STRING",
           "displayName": "Nick name",
           "displayOrder": 9,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "nickName"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.profile" },
           "fieldType": "TYPE_STRING",
           "displayName": "Profile",
           "displayOrder": 10,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "profile"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.picture" },
           "fieldType": "TYPE_STRING",
           "displayName": "Picture",
           "displayOrder": 11,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "picture"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.website" },
           "fieldType": "TYPE_STRING",
           "displayName": "Website",
           "displayOrder": 12,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "website"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.gender" },
           "fieldType": "TYPE_STRING",
           "displayName": "Gender",
           "displayOrder": 13,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "gender"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.zoneInfo" },
           "fieldType": "TYPE_STRING",
           "displayName": "Zone info",
           "displayOrder": 14,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "zoneInfo"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.locale" },
           "fieldType": "TYPE_STRING",
           "displayName": "Locale",
           "displayOrder": 15,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "locale"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 17,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 18,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].author.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 19,
-          "visible": true
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "updatedAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "authorId"
         },
         {
           "fieldLocation": { "path": "$.results[*].image" },
@@ -1296,7 +1474,9 @@
           "displayName": "Image",
           "displayOrder": 5,
           "visible": true,
-          "imagePreview": true
+          "imagePreview": true,
+          "modelName": "BlogPost",
+          "fieldName": "image"
         },
         {
           "fieldLocation": { "path": "$.results[*].tags" },
@@ -1304,34 +1484,44 @@
           "repeated": true,
           "displayName": "Tags",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "tags"
         },
         {
           "fieldLocation": { "path": "$.results[*].category.name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "name"
         },
         {
           "fieldLocation": { "path": "$.results[*].category.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.results[*].category.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].category.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "updatedAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].categoryId" },
@@ -1344,7 +1534,9 @@
             "data": [
               { "key": "$.id", "path": { "path": "$.results[*].categoryId" } }
             ]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "categoryId"
         },
         {
           "fieldLocation": { "path": "$.results[*].comments" },
@@ -1361,28 +1553,46 @@
                 "path": { "path": "$.results[*].id" }
               }
             ]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "comments"
+        },
+        {
+          "fieldLocation": { "path": "$.results[*].status" },
+          "fieldType": "TYPE_ENUM",
+          "displayName": "Status",
+          "displayOrder": 9,
+          "visible": true,
+          "enumName": "Status",
+          "modelName": "BlogPost",
+          "fieldName": "status"
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
-          "displayOrder": 12,
-          "visible": true
+          "displayOrder": 13,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
-          "displayOrder": 13,
-          "visible": true
+          "displayOrder": 14,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
-          "displayOrder": 14,
-          "visible": true
+          "displayOrder": 15,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Posts embeds" },
@@ -1592,35 +1802,45 @@
           "fieldLocation": { "path": "$.title" },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "title"
         },
         {
           "fieldLocation": { "path": "$.description" },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "description"
         },
         {
           "fieldLocation": { "path": "$.content" },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "content"
         },
         {
           "fieldLocation": { "path": "$.published" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "published"
         },
         {
           "fieldLocation": { "path": "$.authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "authorId"
         },
         {
           "fieldLocation": { "path": "$.image" },
@@ -1628,7 +1848,9 @@
           "displayName": "Image",
           "displayOrder": 5,
           "visible": true,
-          "imagePreview": true
+          "imagePreview": true,
+          "modelName": "BlogPost",
+          "fieldName": "image"
         },
         {
           "fieldLocation": { "path": "$.tags" },
@@ -1636,7 +1858,9 @@
           "repeated": true,
           "displayName": "Tags",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "tags"
         },
         {
           "fieldLocation": { "path": "$.categoryId" },
@@ -1647,7 +1871,9 @@
           "link": {
             "toolId": "getCategory",
             "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "categoryId"
         },
         {
           "fieldLocation": { "path": "$.comments" },
@@ -1661,28 +1887,46 @@
             "data": [
               { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
             ]
-          }
+          },
+          "modelName": "BlogPost",
+          "fieldName": "comments"
+        },
+        {
+          "fieldLocation": { "path": "$.status" },
+          "fieldType": "TYPE_ENUM",
+          "displayName": "Status",
+          "displayOrder": 9,
+          "visible": true,
+          "enumName": "Status",
+          "modelName": "BlogPost",
+          "fieldName": "status"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
-          "displayOrder": 12,
-          "visible": true
+          "displayOrder": 13,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
-          "displayOrder": 13,
-          "visible": true
+          "displayOrder": 14,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
-          "displayOrder": 14,
-          "visible": true
+          "displayOrder": 15,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Update post" },

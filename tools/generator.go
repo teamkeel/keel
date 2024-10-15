@@ -636,6 +636,14 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 				}
 				return false
 			}(),
+			ModelName: &f.ModelName,
+			FieldName: &f.Name,
+			EnumName: func() *string {
+				if f.Type.EnumName != nil {
+					return &f.Type.EnumName.Value
+				}
+				return nil
+			}(),
 		}
 
 		if f.IsFile() {

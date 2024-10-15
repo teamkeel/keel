@@ -69,14 +69,18 @@
           "fieldLocation": { "path": "$.date" },
           "fieldType": "TYPE_DATE",
           "displayName": "Date",
-          "visible": true
+          "visible": true,
+          "modelName": "Invoice",
+          "fieldName": "date"
         },
         {
           "fieldLocation": { "path": "$.customerId" },
           "fieldType": "TYPE_ID",
           "displayName": "Customer",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "Invoice",
+          "fieldName": "customerId"
         },
         {
           "fieldLocation": { "path": "$.items" },
@@ -84,28 +88,36 @@
           "repeated": true,
           "displayName": "Items",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Invoice",
+          "fieldName": "items"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 5,
-          "visible": true
+          "visible": true,
+          "modelName": "Invoice",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "Invoice",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "modelName": "Invoice",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Create invoice" },

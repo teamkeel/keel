@@ -37,28 +37,36 @@
           "link": {
             "toolId": "getProduct",
             "data": [{ "key": "$.id", "path": { "path": "$.productId" } }]
-          }
+          },
+          "modelName": "Sale",
+          "fieldName": "productId"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "Sale",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "Sale",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 5,
-          "visible": true
+          "visible": true,
+          "modelName": "Sale",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Create sale" },
@@ -89,28 +97,36 @@
           "fieldLocation": { "path": "$.name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "name"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "{{$.name}}" },
@@ -246,28 +262,36 @@
             "data": [
               { "key": "$.id", "path": { "path": "$.results[*].productId" } }
             ]
-          }
+          },
+          "modelName": "Sale",
+          "fieldName": "productId"
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "Sale",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "modelName": "Sale",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 5,
-          "visible": true
+          "visible": true,
+          "modelName": "Sale",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Sales" },

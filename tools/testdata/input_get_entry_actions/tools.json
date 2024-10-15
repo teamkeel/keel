@@ -24,42 +24,54 @@
           "fieldLocation": { "path": "$.name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "name"
         },
         {
           "fieldLocation": { "path": "$.sku" },
           "fieldType": "TYPE_STRING",
           "displayName": "Sku",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "sku"
         },
         {
           "fieldLocation": { "path": "$.supplierId" },
           "fieldType": "TYPE_ID",
           "displayName": "Supplier",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "supplierId"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 5,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "{{$.name}}" },
@@ -113,42 +125,54 @@
           "fieldLocation": { "path": "$.name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "name"
         },
         {
           "fieldLocation": { "path": "$.sku" },
           "fieldType": "TYPE_STRING",
           "displayName": "Sku",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "sku"
         },
         {
           "fieldLocation": { "path": "$.supplierId" },
           "fieldType": "TYPE_ID",
           "displayName": "Supplier",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "supplierId"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 5,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "{{$.name}}" },
@@ -207,63 +231,81 @@
           "fieldLocation": { "path": "$.name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "name"
         },
         {
           "fieldLocation": { "path": "$.sku" },
           "fieldType": "TYPE_STRING",
           "displayName": "Sku",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "sku"
         },
         {
           "fieldLocation": { "path": "$.supplier.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "Supplier",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.supplier.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Supplier",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.supplier.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "modelName": "Supplier",
+          "fieldName": "updatedAt"
         },
         {
           "fieldLocation": { "path": "$.supplierId" },
           "fieldType": "TYPE_ID",
           "displayName": "Supplier",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "supplierId"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 5,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "{{$.name}}" },
@@ -379,42 +421,54 @@
           "fieldLocation": { "path": "$.results[*].name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "name"
         },
         {
           "fieldLocation": { "path": "$.results[*].sku" },
           "fieldType": "TYPE_STRING",
           "displayName": "Sku",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "sku"
         },
         {
           "fieldLocation": { "path": "$.results[*].supplierId" },
           "fieldType": "TYPE_ID",
           "displayName": "Supplier",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "supplierId"
         },
         {
           "fieldLocation": { "path": "$.results[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 5,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.results[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.results[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Products" },
@@ -593,42 +647,54 @@
           "fieldLocation": { "path": "$.name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "name"
         },
         {
           "fieldLocation": { "path": "$.sku" },
           "fieldType": "TYPE_STRING",
           "displayName": "Sku",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "sku"
         },
         {
           "fieldLocation": { "path": "$.supplierId" },
           "fieldType": "TYPE_ID",
           "displayName": "Supplier",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "supplierId"
         },
         {
           "fieldLocation": { "path": "$.id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 5,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "id"
         },
         {
           "fieldLocation": { "path": "$.createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 6,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "createdAt"
         },
         {
           "fieldLocation": { "path": "$.updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 7,
-          "visible": true
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "updatedAt"
         }
       ],
       "title": { "template": "Update product" },
