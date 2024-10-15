@@ -382,6 +382,11 @@ func (g *Generator) generateResponses() error {
 			continue
 		}
 
+		// delete actions do not have a response
+		if tool.Action.IsDelete() {
+			continue
+		}
+
 		// we don't have a response message, therefore the response will be the model...
 		pathPrefix := ""
 		// if the action is a list action, we also need to include the pageInfo responses and prefix the results
