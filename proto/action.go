@@ -41,3 +41,7 @@ func (a *Action) IsList() bool {
 func (a *Action) IsGet() bool {
 	return a.Type == ActionType_ACTION_TYPE_GET
 }
+
+func (a *Action) IsDelete() bool {
+	return a.Type == ActionType_ACTION_TYPE_DELETE
+}

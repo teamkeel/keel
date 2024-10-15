@@ -155,29 +155,6 @@
           "fieldName": "id"
         }
       ],
-      "response": [
-        {
-          "fieldLocation": { "path": "$.id" },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "displayOrder": 1,
-          "visible": true
-        },
-        {
-          "fieldLocation": { "path": "$.createdAt" },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Created at",
-          "displayOrder": 2,
-          "visible": true
-        },
-        {
-          "fieldLocation": { "path": "$.updatedAt" },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Updated at",
-          "displayOrder": 3,
-          "visible": true
-        }
-      ],
       "title": { "template": "Delete blog post" },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
