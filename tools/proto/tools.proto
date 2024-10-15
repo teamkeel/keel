@@ -110,7 +110,7 @@ message RequestFieldConfig {
 	optional ActionLink get_entry_action = 10;
 
 	bool locked = 11;
-	optional DefaultValue default_value = 12;
+	optional ScalarValue default_value = 12;
 	optional StringTemplate placeholder = 13;
 
 	// If `type` is set to TYPE_ENUM then this value is the name of the
@@ -162,7 +162,7 @@ message ResponseFieldConfig {
 	optional string field_name = 14;
 }
 
-message DefaultValue {
+message ScalarValue {
 	oneof value {
 		string string = 1;
 		int32 integer = 2;
@@ -234,8 +234,13 @@ message CursorPaginationConfig {
 	JsonPath total_count = 5;
 }
 
+// DataMapping maps a response value or a scalar value to inputs. For each input's key we can have one of:
+// - a path to a response field
+// - a dataMapping object (for nested fields)
+// - a scalar value
 message DataMapping {
 	string key = 1;
 	optional JsonPath path = 2;
 	repeated DataMapping object = 3;
+	optional ScalarValue value = 4;
 }
