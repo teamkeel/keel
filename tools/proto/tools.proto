@@ -188,6 +188,7 @@ message ExternalLink {
 	StringTemplate label = 1;
 	StringTemplate href = 2;
 	optional string icon = 3;
+	int32 display_order = 4;
 }
 
 message ActionLink {
