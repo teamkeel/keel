@@ -300,16 +300,23 @@ func (g *Generator) generateEmbeddedActionLinks() {
 				if input := g.Tools[toolId].getInput("$.where." + f.InverseFieldName.Value + ".id.equals"); input != nil {
 					displayOrder++
 					// embed the tool
-					tool.Config.EmbeddedActions = append(tool.Config.EmbeddedActions, &toolsproto.ActionLink{
-						ToolId: toolId,
-						Title:  &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
-						Data: []*toolsproto.DataMapping{
+					tool.Config.EmbedGroups = append(tool.Config.EmbedGroups, &toolsproto.EmbedGroup{
+						Title:        &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
+						DisplayOrder: int32(displayOrder),
+						Tools: []*toolsproto.EmbedGroup_EmbeddedActionLink{
 							{
-								Key:  input.FieldLocation.Path,
-								Path: &toolsproto.JsonPath{Path: tool.getIDResponseFieldPath()},
+								ActionLink: &toolsproto.ActionLink{
+									ToolId: toolId,
+									Title:  &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
+									Data: []*toolsproto.DataMapping{
+										{
+											Key:  input.FieldLocation.Path,
+											Path: &toolsproto.JsonPath{Path: tool.getIDResponseFieldPath()},
+										},
+									},
+								},
 							},
 						},
-						DisplayOrder: int32(displayOrder),
 					})
 
 					break

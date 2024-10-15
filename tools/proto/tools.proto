@@ -75,9 +75,10 @@ message ActionConfig {
 	// Only for List & Get; empty for mutations 
 	repeated ActionLink entry_activity_actions = 19; 
 	
-	// Tools that will be displayed inline (embedded) withing the one that we're defining. 
-	repeated ActionLink embedded_actions = 20;
-
+	// Embed groups are tools that will be displayed inline (embedded) withing the one that we're defining. 
+	// These tools will be rendered within this action's configuration, and can have specific config overrides.
+	repeated EmbedGroup embed_groups = 20;
+	
 	// The action to use to get an entry on this model. Default to a get action on the same model
 	// Used for: 
 	// - fetching the record for prefilling a mutation
@@ -213,6 +214,32 @@ message ActionLink {
 
 	// When the link is used within a list of action links, this field will be used to order items.
 	int32 display_order = 6;
+}
+
+message EmbedGroup {
+	// When embedding ActionLinks, we need to provide extra-configuration that will override the 
+	// link's target tool configuration
+	message EmbeddedActionLink {
+		ActionLink action_link = 1;
+		
+		// The config for responses of the target tool for this embedded action can be altered for 
+		// this embed group
+		repeated ResponseOverrides response_overrides = 2;
+	}
+	// Title of the group
+	StringTemplate title = 1;
+	
+	int32 display_order = 2;
+
+	// A list of decorated ActionLinks which will be embedded within this group
+	repeated EmbeddedActionLink tools = 3;
+}
+
+message ResponseOverrides {
+	JsonPath field_location = 1;
+
+	// Controls the visibility of the response field 
+	bool visible = 2;
 }
 
 message CursorPaginationConfig {

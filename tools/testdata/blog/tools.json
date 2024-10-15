@@ -530,14 +530,24 @@
           "displayOrder": 2
         }
       ],
-      "embeddedActions": [
+      "embedGroups": [
         {
-          "toolId": "listComments",
-          "data": [
-            { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
-          ],
           "title": { "template": "comments" },
-          "displayOrder": 1
+          "displayOrder": 1,
+          "tools": [
+            {
+              "actionLink": {
+                "toolId": "listComments",
+                "data": [
+                  {
+                    "key": "$.where.parent.id.equals",
+                    "path": { "path": "$.id" }
+                  }
+                ],
+                "title": { "template": "comments" }
+              }
+            }
+          ]
         }
       ],
       "createEntryAction": { "toolId": "createPost" }
