@@ -67,14 +67,24 @@
       "entitySingle": "order",
       "entityPlural": "orders",
       "capabilities": { "comments": true, "audit": true },
-      "embeddedActions": [
+      "embedGroups": [
         {
-          "toolId": "listLineItems",
-          "data": [
-            { "key": "$.where.order.id.equals", "path": { "path": "$.id" } }
-          ],
           "title": { "template": "items" },
-          "displayOrder": 1
+          "displayOrder": 1,
+          "tools": [
+            {
+              "actionLink": {
+                "toolId": "listLineItems",
+                "data": [
+                  {
+                    "key": "$.where.order.id.equals",
+                    "path": { "path": "$.id" }
+                  }
+                ],
+                "title": { "template": "items" }
+              }
+            }
+          ]
         }
       ]
     },
