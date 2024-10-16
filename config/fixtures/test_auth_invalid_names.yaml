@@ -1,3 +1,11 @@
+# auth.providers.0.name: Does not match pattern '^[a-zA-Z][a-zA-Z0-9_]+$'
+# auth.providers.1.name: Does not match pattern '^[a-zA-Z][a-zA-Z0-9_]+$'
+# auth.providers.2.name: Does not match pattern '^[a-zA-Z][a-zA-Z0-9_]+$'
+# auth.providers.3.name: Does not match pattern '^[a-zA-Z][a-zA-Z0-9_]+$'
+# auth.providers.4.name: Does not match pattern '^[a-zA-Z][a-zA-Z0-9_]+$'
+# auth.providers.5.name: Does not match pattern '^[a-zA-Z][a-zA-Z0-9_]+$'
+# auth.providers.6.name: Cannot start with 'keel_'
+
 auth:
   providers:
     - type: google
@@ -14,8 +22,10 @@ auth:
 
     - type: oidc
       name: google/
-      issuerUrl: 'https://dev-skhlutl45lbqkvhv.us.auth0.com'
-      clientId: 'kasj28fnq09ak'
+      authorizationUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
+      issuerUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
+      tokenUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
+      clientId: "kasj28fnq09ak"
 
     - type: google
       name: 1google
@@ -23,4 +33,8 @@ auth:
 
     - type: google
       name: Google-Client
+      clientId: foo_2
+
+    - type: google
+      name: keel_google
       clientId: foo_2
