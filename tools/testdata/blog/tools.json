@@ -543,6 +543,7 @@
       "createEntryAction": { "toolId": "createPost" },
       "embeddedTools": [
         {
+          "id": "comments",
           "title": { "template": "comments" },
           "displayOrder": 1,
           "tools": [

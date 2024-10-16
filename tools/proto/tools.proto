@@ -230,13 +230,17 @@ message ToolGroup {
 		// this embed group
 		repeated ResponseOverrides response_overrides = 2;
 	}
-	// Title of the group
-	StringTemplate title = 1;
+
+	// A reference that persists for this tool group from build to build
+	string id = 1;
 	
-	int32 display_order = 2;
+	// Title of the group
+	StringTemplate title = 2;
+	
+	int32 display_order = 3;
 
 	// A list of decorated ActionLinks which will be embedded within this group
-	repeated GroupActionLink tools = 3;
+	repeated GroupActionLink tools = 4;
 }
 
 message ResponseOverrides {

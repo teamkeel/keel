@@ -301,6 +301,7 @@ func (g *Generator) generateEmbeddedActionLinks() {
 					displayOrder++
 					// embed the tool as a tool group
 					tool.Config.EmbeddedTools = append(tool.Config.EmbeddedTools, &toolsproto.ToolGroup{
+						Id:           f.Name,
 						Title:        &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
 						DisplayOrder: int32(displayOrder),
 						Tools: []*toolsproto.ToolGroup_GroupActionLink{
