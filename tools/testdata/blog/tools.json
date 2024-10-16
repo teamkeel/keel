@@ -530,7 +530,7 @@
           "displayOrder": 2
         }
       ],
-      "embedGroups": [
+      "embeddedActions": [
         {
           "title": { "template": "comments" },
           "displayOrder": 1,
