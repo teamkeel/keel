@@ -1,13 +1,11 @@
-# auth.providers.0: name is required
-# auth.providers.1: name is required
-
 auth:
+  tokens:
+    accessTokenExpiry: 3600
+    refreshTokenExpiry: 604800
+    
   providers:
     - type: google
-      clientId: abcdef
 
     - type: oidc
-      clientId: abcdef
-      authorizationUrl: https://some.url
-      tokenUrl: https://some.url
-      issuerUrl: https://some.url
+
+    - type: oauth

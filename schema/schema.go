@@ -42,12 +42,12 @@ func (scm *Builder) MakeFromDirectory(directory string) (*proto.Schema, error) {
 		return nil, ErrNoSchemaFiles
 	}
 
-	cfg, err := config.Load(directory)
-	if err != nil && config.ToConfigErrors(err) == nil {
+	config, err := config.Load(directory)
+	if err != nil {
 		return nil, err
 	}
 
-	scm.Config = cfg
+	scm.Config = config
 	scm.schemaFiles = allInputFiles.SchemaFiles
 	return scm.makeFromInputs(allInputFiles)
 }

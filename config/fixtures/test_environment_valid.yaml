@@ -1,5 +1,0 @@
-environment:
-  - name: "TEST"
-    value: "test"
-  - name: SOME_OTHER_KEY
-    value: some-value

@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -24,70 +25,53 @@ var validateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		b := schema.Builder{}
 
-		var validationErrors *errorhandling.ValidationErrors
-		var configFiles []*config.ConfigFile
-
+		var err error
 		if flagSchema != "" || flagConfig != "" {
-			schema, err := base64.StdEncoding.DecodeString(flagSchema)
+			var schema []byte
+			schema, err = base64.StdEncoding.DecodeString(flagSchema)
 			if err != nil {
 				return err
 			}
 
-			configBytes, err := base64.StdEncoding.DecodeString(flagConfig)
+			var config []byte
+			config, err = base64.StdEncoding.DecodeString(flagConfig)
 			if err != nil {
 				return err
 			}
 
-			_, err = b.MakeFromString(string(schema), string(configBytes))
-			if err != nil {
-				if _, ok := err.(*errorhandling.ValidationErrors); !ok {
-					return err
-				}
-
-				validationErrors = err.(*errorhandling.ValidationErrors)
-			}
-
-			c, err := config.LoadFromBytes(configBytes)
-			if err != nil {
-				if config.ToConfigErrors(err) == nil {
-					return err
-				}
-
-				configFiles = []*config.ConfigFile{
-					{
-						// TODO: ideally the VSCode extension would send all config files but for now we'll assume it's just the default one
-						Filename: "keelconfig.yaml",
-						Env:      "",
-						Config:   c,
-						Errors:   config.ToConfigErrors(err),
-					},
-				}
-			}
-
+			_, err = b.MakeFromString(string(schema), string(config))
 		} else {
-			_, err := b.MakeFromDirectory(flagProjectDir)
-			if err != nil && config.ToConfigErrors(err) == nil {
-				if _, ok := err.(*errorhandling.ValidationErrors); !ok {
-					return err
-				}
+			_, err = b.MakeFromDirectory(flagProjectDir)
+		}
 
-				validationErrors = err.(*errorhandling.ValidationErrors)
-			}
+		if err == nil && !flagJsonOutput {
+			fmt.Println("✨ Everything's looking good!")
+			return nil
+		}
 
-			configFiles, err = config.LoadAll(flagProjectDir)
-			if err != nil {
-				return nil
-			}
+		validationErrors := &errorhandling.ValidationErrors{
+			Errors:   []*errorhandling.ValidationError{},
+			Warnings: []*errorhandling.ValidationError{},
+		}
+
+		configErrors := &config.ConfigErrors{
+			Errors: []*config.ConfigError{},
 		}
 
 		if flagJsonOutput {
-			resp := JsonResponse{}
-			if validationErrors != nil {
-				resp.ValidationErrors = *validationErrors
+			resp := JsonResponse{
+				ValidationErrors: *validationErrors,
+				ConfigErrors:     *configErrors,
 			}
-			for _, f := range configFiles {
-				if f.Errors != nil {
-					resp.ConfigErrors.Errors = append(resp.ConfigErrors.Errors, f.Errors.Errors...)
+
+			switch {
+			case errors.As(err, &validationErrors):
+				resp.ValidationErrors = *validationErrors
+			case errors.As(err, &configErrors):
+				resp.ConfigErrors = *configErrors
+			default:
+				if err != nil {
+					return err
 				}
 			}
 
@@ -97,41 +81,25 @@ var validateCmd = &cobra.Command{
 			}
 
 			fmt.Println(string(json))
+
 			return nil
 		}
 
-		hasConfigErrors := false
-		for _, f := range configFiles {
-			if f.Errors != nil && len(f.Errors.Errors) > 0 {
-				hasConfigErrors = true
-			}
-		}
-
-		if validationErrors == nil && !hasConfigErrors {
-			fmt.Println("✨ Everything's looking good!")
-			return nil
-		}
-
-		if validationErrors != nil {
+		switch {
+		case errors.As(err, &validationErrors):
 			fmt.Println("❌ The following errors were found in your schema files:")
 			fmt.Println("")
 			s := validationErrors.ErrorsToAnnotatedSchema(b.SchemaFiles())
 			fmt.Println(s)
-		}
-
-		for i, f := range configFiles {
-			if f.Errors == nil || len(f.Errors.Errors) == 0 {
-				continue
-			}
-
-			if i > 0 {
-				fmt.Println("")
-			}
-			fmt.Printf("❌ The following errors were found in %s:\n", colors.Yellow(f.Filename).String())
+			return nil
+		case errors.As(err, &configErrors):
+			fmt.Println("❌ The following errors were found in your", colors.Yellow("keelconfig.yaml").String(), "file:")
 			fmt.Println("")
-			for _, v := range f.Errors.Errors {
+			for _, v := range configErrors.Errors {
 				fmt.Println(" -", colors.Red(v.Message).String())
 			}
+		default:
+			return err
 		}
 
 		return nil

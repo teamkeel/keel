@@ -1,26 +1,28 @@
-# auth.providers.0.authorizationUrl: Does not match pattern '^https://'
-# auth.providers.1.authorizationUrl: Does not match pattern '^https://'
-# auth.providers.1.authorizationUrl: Does not match format 'uri'
-# auth.providers.2: 'authorizationUrl' is required if 'type' is 'oidc'
-
 auth:
+  tokens:
+    accessTokenExpiry: 3600
+    refreshTokenExpiry: 604800
+    
   providers:
-    - type: oidc
-      name: not_https
+    - type: oauth
+      name: not-https
       clientId: hfjuw983h1hfsdf
       authorizationUrl: http://github.com/auth
-      tokenUrl: https://github.com/token
-      issuerUrl: https://github.com/token
+      tokenUrl: http://github.com/token
 
-    - type: oidc
-      name: missing_schema
+    - type: oauth
+      name: missing-schema
       clientId: hfjuw983h1hfsdf
       authorizationUrl: github.com/auth
       tokenUrl: https://github.com/token
-      issuerUrl: https://github.com/token
 
-    - type: oidc
-      name: missing_endpoint
+    - type: oauth
+      name: missing-endpoint
       clientId: hfjuw983h1hfsdf
       tokenUrl: https://github.com/token
-      issuerUrl: https://github.com/token
+
+  identityClaims:
+    - field: userId
+      claim: https://slack.com/user-id"
+    - field: teamId
+      claim: https://slack.com/team-id"

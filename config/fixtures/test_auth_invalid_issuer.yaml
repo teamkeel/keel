@@ -1,35 +1,30 @@
-# auth.providers.0.issuerUrl: Does not match pattern '^https://'
-# auth.providers.1: 'issuerUrl' is required if 'type' is 'oidc'
-# auth.providers.2.issuerUrl: Does not match pattern '^https://'
-# auth.providers.2.issuerUrl: Does not match format 'uri'
-# auth.providers.3.issuerUrl: Does not match pattern '^https://'
-# auth.providers.3.issuerUrl: Does not match format 'uri'
-
 auth:
+  tokens:
+    accessTokenExpiry: 3600
+    refreshTokenExpiry: 604800
+    
   providers:
     - type: oidc
-      name: not_https
-      authorizationUrl: "https://valid.com"
-      issuerUrl: "http://not-https.com"
-      tokenUrl: "https://not-https.com"
-      clientId: "kasj28fnq09ak"
+      name: not-https
+      issuerUrl: 'http://not-https.com'
+      clientId: 'kasj28fnq09ak'
 
     - type: oidc
-      name: missing_issuer
-      authorizationUrl: "https://valid.com"
-      tokenUrl: "https://valid.com"
-      clientId: "kasj28fnq09ak"
+      name: missing-issuer
+      clientId: 'kasj28fnq09ak'
 
     - type: oidc
-      name: no_schema
-      authorizationUrl: "https://valid.com"
-      tokenUrl: "https://valid.com"
-      issuerUrl: "not-https.com"
-      clientId: "kasj28fnq09ak"
+      name: no-schema
+      issuerUrl: 'not-https.com'
+      clientId: 'kasj28fnq09ak'
 
     - type: oidc
-      name: invalid_url
-      authorizationUrl: "https://valid.com"
-      tokenUrl: "https://valid.com"
-      issuerUrl: "whoops"
-      clientId: "kasj28fnq09ak"
+      name: invalid-url
+      issuerUrl: 'whoops'
+      clientId: 'kasj28fnq09ak'
+
+    - type: oauth
+      name: myOAuthProvider
+      clientId: 'kasj28fnq09ak'
+      issuerUrl: 'not an error'
+

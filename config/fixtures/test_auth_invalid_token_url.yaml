@@ -1,30 +1,22 @@
-# auth.providers.0.tokenUrl: Does not match pattern '^https://'
-# auth.providers.1.tokenUrl: Does not match pattern '^https://'
-# auth.providers.1.tokenUrl: Does not match format 'uri'
-# auth.providers.2: 'tokenUrl' is required if 'type' is 'oidc'
-
 auth:
   tokens:
     accessTokenExpiry: 3600
     refreshTokenExpiry: 604800
-
+    
   providers:
-    - type: oidc
-      name: not_https
+    - type: oauth
+      name: not-https
       clientId: hfjuw983h1hfsdf
       authorizationUrl: https://github.com/auth
-      issuerUrl: https://github.com/auth
       tokenUrl: http://github.com/token
 
-    - type: oidc
-      name: missing_schema
+    - type: oauth
+      name: missing-schema
       clientId: hfjuw983h1hfsdf
       authorizationUrl: https://github.com/auth
-      issuerUrl: https://github.com/auth
       tokenUrl: github.com/token
 
-    - type: oidc
-      name: missing_endpoint
+    - type: oauth
+      name: missing-endpoint
       clientId: hfjuw983h1hfsdf
       authorizationUrl: https://github.com/auth
-      issuerUrl: https://github.com/auth

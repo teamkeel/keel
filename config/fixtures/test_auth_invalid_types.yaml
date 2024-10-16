@@ -1,8 +1,3 @@
-# auth.providers.0.type: auth.providers.0.type must be one of the following: "google", "facebook", "gitlab", "slack", "oidc"
-# auth.providers.1.type: auth.providers.1.type must be one of the following: "google", "facebook", "gitlab", "slack", "oidc"
-# auth.providers.2.type: auth.providers.2.type must be one of the following: "google", "facebook", "gitlab", "slack", "oidc"
-# auth.providers.3.type: auth.providers.3.type must be one of the following: "google", "facebook", "gitlab", "slack", "oidc"
-
 auth:
   providers:
     - type: google_1
@@ -14,12 +9,12 @@ auth:
       clientId: foo_2
 
     - type: oauth
-      name: github
+      name: Github
       clientId: hfjuw983h1hfsdf
       authorizationUrl: https://github.com/auth
       tokenUrl: https://github.com/token
 
     - type: whoops
       name: Baidu
-      issuerUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
-      clientId: "kasj28fnq09ak"
+      issuerUrl: 'https://dev-skhlutl45lbqkvhv.us.auth0.com'
+      clientId: 'kasj28fnq09ak'

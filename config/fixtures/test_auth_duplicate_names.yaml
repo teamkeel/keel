@@ -1,15 +1,16 @@
-# auth.providers.1.name: Duplicate name my_google
-
 auth:
   providers:
     - type: google
       name: my_google
       clientId: foo_1
 
+    - type: oidc
+      name: Baidu
+      issuerUrl: 'https://dev-skhlutl45lbqkvhv.us.auth0.com'
+      clientId: 'kasj28fnq09ak'
+
     # Duplicate name
     - type: oidc
       name: my_google
-      authorizationUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
-      tokenUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
-      issuerUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
-      clientId: "3jdfh92h2"
+      issuerUrl: 'https://dev-232351356.us.auth0.com'
+      clientId: '3jdfh92h2'

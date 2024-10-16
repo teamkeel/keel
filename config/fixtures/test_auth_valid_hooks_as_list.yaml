@@ -6,6 +6,10 @@ auth:
 
   redirectUrl: http://localhost:8000/signedin
 
+  hooks: 
+    - afterAuthentication
+    - afterIdentityCreated
+
   providers:
     # Built-in Google provider
     - type: google
