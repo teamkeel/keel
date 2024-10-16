@@ -67,7 +67,7 @@
       "entitySingle": "order",
       "entityPlural": "orders",
       "capabilities": { "comments": true, "audit": true },
-      "embedGroups": [
+      "embeddedActions": [
         {
           "title": { "template": "items" },
           "displayOrder": 1,
