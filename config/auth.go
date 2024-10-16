@@ -140,7 +140,10 @@ func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId str
 	newProviderIndex := len(c.Providers) - 1
 	for _, err := range ToConfigErrors(err).Errors {
 		if strings.HasPrefix(err.Message, fmt.Sprintf("auth.providers.%d.name", newProviderIndex)) {
-			return fmt.Errorf(err.Message)
+			// This function allows the adding of internal auth providers which can start with 'keel_'
+			if !strings.Contains(err.Message, "Cannot start with 'keel_'") {
+				return fmt.Errorf(err.Message)
+			}
 		}
 		if strings.HasPrefix(err.Message, fmt.Sprintf("auth.providers.%d.issuerUrl", newProviderIndex)) {
 			return fmt.Errorf(err.Message)

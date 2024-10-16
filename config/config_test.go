@@ -123,6 +123,13 @@ func TestAddOidcProviderInvalidName(t *testing.T) {
 	assert.ErrorContains(t, err, "auth.providers.0.name: Does not match pattern '^[a-zA-Z][a-zA-Z0-9_]+$'")
 }
 
+func TestAddOidcProviderKeelAuth(t *testing.T) {
+	t.Parallel()
+	auth := &config.AuthConfig{}
+	err := auth.AddOidcProvider("keel_auth", "https://auth.keel.xyz/", "1234")
+	assert.NoError(t, err)
+}
+
 func TestAddOidcProviderAlreadyExists(t *testing.T) {
 	t.Parallel()
 	auth := &config.AuthConfig{}
