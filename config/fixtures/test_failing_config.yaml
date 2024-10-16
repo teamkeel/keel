@@ -1,0 +1,10 @@
+environment:
+  - name: "TEST"
+    value:
+      - "test"
+      - "test2"
+
+secrets:
+  - name: API_KEY
+    required:
+      - "production"
