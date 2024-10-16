@@ -299,8 +299,8 @@ func (g *Generator) generateEmbeddedActionLinks() {
 				// check if there is an input for the foreign key
 				if input := g.Tools[toolId].getInput("$.where." + f.InverseFieldName.Value + ".id.equals"); input != nil {
 					displayOrder++
-					// embed the tool
-					tool.Config.EmbeddedActions = append(tool.Config.EmbeddedActions, &toolsproto.ToolGroup{
+					// embed the tool as a tool group
+					tool.Config.EmbeddedTools = append(tool.Config.EmbeddedTools, &toolsproto.ToolGroup{
 						Title:        &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
 						DisplayOrder: int32(displayOrder),
 						Tools: []*toolsproto.ToolGroup_GroupActionLink{
@@ -317,6 +317,19 @@ func (g *Generator) generateEmbeddedActionLinks() {
 								},
 							},
 						},
+					})
+
+					// and as an action for backwards compatibility
+					tool.Config.EmbeddedActions = append(tool.Config.EmbeddedActions, &toolsproto.ActionLink{
+						ToolId: toolId,
+						Title:  &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
+						Data: []*toolsproto.DataMapping{
+							{
+								Key:  input.FieldLocation.Path,
+								Path: &toolsproto.JsonPath{Path: tool.getIDResponseFieldPath()},
+							},
+						},
+						DisplayOrder: int32(displayOrder),
 					})
 
 					break

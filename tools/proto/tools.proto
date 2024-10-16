@@ -75,11 +75,9 @@ message ActionConfig {
 	// Only for List & Get; empty for mutations 
 	repeated ActionLink entry_activity_actions = 19; 
 	
-	// Embeded action groups are tools that will be displayed inline (embedded) withing the one that 
-	// we're defining. These tools will be rendered within this action's configuration, and can have
-	// specific config overrides.
-	repeated ToolGroup embedded_actions = 20;
-	
+	// Tools that will be displayed inline (embedded) withing the one that we're defining. 
+	repeated ActionLink embedded_actions = 20;
+
 	// The action to use to get an entry on this model. Default to a get action on the same model
 	// Used for: 
 	// - fetching the record for prefilling a mutation
@@ -91,6 +89,11 @@ message ActionConfig {
 	// for LIST and GET actions in the case where a CREATE action exists for the same model. It should 
 	// be used to add a button on the tool to `Create a new/another record`
 	optional ActionLink create_entry_action = 22;
+
+	// Embeded action groups are tools that will be displayed inline (embedded) withing the one that 
+	// we're defining. These tools will be rendered within this action's configuration, and can have
+	// specific config overrides.
+	repeated ToolGroup embedded_tools = 23;
 }
 
 message RequestFieldConfig {
