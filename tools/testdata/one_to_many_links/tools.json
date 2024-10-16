@@ -69,6 +69,16 @@
       "capabilities": { "comments": true, "audit": true },
       "embeddedActions": [
         {
+          "toolId": "listLineItems",
+          "data": [
+            { "key": "$.where.order.id.equals", "path": { "path": "$.id" } }
+          ],
+          "title": { "template": "items" },
+          "displayOrder": 1
+        }
+      ],
+      "embeddedTools": [
+        {
           "title": { "template": "items" },
           "displayOrder": 1,
           "tools": [
