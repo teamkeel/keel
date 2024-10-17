@@ -1,3 +1,6 @@
+# auth.providers.0: clientId is required
+# auth.providers.1: clientId is required
+
 auth:
   providers:
     - type: google
@@ -5,9 +8,6 @@ auth:
 
     - type: oidc
       name: Baidu
-      issuerUrl: 'https://dev-skhlutl45lbqkvhv.us.auth0.com'
-
-    - type: oauth
-      name: Github
-      authorizationUrl: https://github.com/auth
-      tokenUrl: https://github.com/token
+      issuerUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
+      authorizationUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
+      tokenUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"

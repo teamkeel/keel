@@ -90,7 +90,7 @@ func TestValidation(t *testing.T) {
 
 			verrs := &errorhandling.ValidationErrors{}
 			if !errors.As(err, &verrs) {
-				t.Errorf("no validation errors returned")
+				t.Errorf("no validation errors returned: %v", err)
 			}
 
 			expectedErrors := []*errorhandling.ValidationError{}

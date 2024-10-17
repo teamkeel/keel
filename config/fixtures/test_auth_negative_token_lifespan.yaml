@@ -1,3 +1,6 @@
+# auth.tokens.accessTokenExpiry: Must be greater than or equal to 1
+# auth.tokens.refreshTokenExpiry: Must be greater than or equal to 1
+
 auth:
   tokens:
     accessTokenExpiry: -1

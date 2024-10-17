@@ -1,2 +1,4 @@
+# auth.redirectUrl: Does not match format 'uri'
+
 auth:
   redirectUrl: not a url

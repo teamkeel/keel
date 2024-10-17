@@ -9,7 +9,7 @@ auth:
   providers:
     # Built-in Google provider
     - type: google
-      name: _Google_Client
+      name: google_client
       clientId: foo_1
 
     # Built-in Google provider
@@ -19,6 +19,8 @@ auth:
 
     # Custom OIDC
     - type: oidc
-      name: Baidu
-      issuerUrl: 'https://dev-skhlutl45lbqkvhv.us.auth0.com'
-      clientId: 'kasj28fnq09ak'
+      name: baidu
+      issuerUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
+      authorizationUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
+      tokenUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
+      clientId: "kasj28fnq09ak"
