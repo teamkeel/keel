@@ -47,7 +47,7 @@ var validateCmd = &cobra.Command{
 				validationErrors = err.(*errorhandling.ValidationErrors)
 			}
 
-			c, err := config.LoadFromBytes(configBytes)
+			c, err := config.LoadFromBytes(configBytes, "")
 			if err != nil {
 				if config.ToConfigErrors(err) == nil {
 					return err
@@ -66,7 +66,7 @@ var validateCmd = &cobra.Command{
 
 		} else {
 			_, err := b.MakeFromDirectory(flagProjectDir)
-			if err != nil && config.ToConfigErrors(err) == nil {
+			if err != nil {
 				if _, ok := err.(*errorhandling.ValidationErrors); !ok {
 					return err
 				}
@@ -119,18 +119,21 @@ var validateCmd = &cobra.Command{
 			fmt.Println(s)
 		}
 
-		for i, f := range configFiles {
+		for _, f := range configFiles {
 			if f.Errors == nil || len(f.Errors.Errors) == 0 {
 				continue
 			}
 
-			if i > 0 {
-				fmt.Println("")
-			}
-			fmt.Printf("❌ The following errors were found in %s:\n", colors.Yellow(f.Filename).String())
+			fmt.Printf("❌ The following errors were found in %s:\n", colors.Heading(f.Filename).String())
 			fmt.Println("")
-			for _, v := range f.Errors.Errors {
-				fmt.Println(" -", colors.Red(v.Message).String())
+			for j, v := range f.Errors.Errors {
+				if j > 0 {
+					fmt.Println("")
+				}
+				fmt.Println(" -", colors.Yellow(v.Message).String())
+				if v.AnnotatedSource != "" {
+					fmt.Println(v.AnnotatedSource)
+				}
 			}
 		}
 

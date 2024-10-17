@@ -118,7 +118,7 @@ func provideCompletions(this js.Value, args []js.Value) any {
 		if configSrc.Truthy() {
 			// We don't care about errors here, if we can get a config object
 			// back we'll use it, if not then we'll run validation without it
-			cfg, _ = config.LoadFromBytes([]byte(configSrc.String()))
+			cfg, _ = config.LoadFromBytes([]byte(configSrc.String()), "")
 		}
 
 		completions := completions.Completions(schemaFiles, pos, cfg)
@@ -223,7 +223,7 @@ func validate(this js.Value, args []js.Value) any {
 		if configSrc.Truthy() {
 			// We don't care about errors here, if we can get a config object
 			// back we'll use it, if not then we'll run validation without it
-			config, _ := config.LoadFromBytes([]byte(configSrc.String()))
+			config, _ := config.LoadFromBytes([]byte(configSrc.String()), "")
 			if config != nil {
 				builder.Config = config
 			}
