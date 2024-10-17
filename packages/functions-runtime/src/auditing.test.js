@@ -65,23 +65,19 @@ test("auditing - capturing identity id in transaction", async () => {
 
   const identityId = request.meta.identity.id;
 
-  const row = await withDatabase(
-    db,
-    PROTO_ACTION_TYPES.CREATE, // CREATE will ensure a transaction is opened
-    async ({ transaction }) => {
-      const row = withAuditContext(request, async () => {
-        return await personAPI.create({
-          id: KSUID.randomSync().string,
-          name: "James",
-        });
+  const row = await withDatabase(db, true, async ({ transaction }) => {
+    const row = withAuditContext(request, async () => {
+      return await personAPI.create({
+        id: KSUID.randomSync().string,
+        name: "James",
       });
+    });
 
-      expect(await identityIdFromConfigParam(transaction)).toEqual(identityId);
-      expect(await identityIdFromConfigParam(db)).toBeNull();
+    expect(await identityIdFromConfigParam(transaction)).toEqual(identityId);
+    expect(await identityIdFromConfigParam(db)).toBeNull();
 
-      return row;
-    }
-  );
+    return row;
+  });
 
   expect(row.name).toEqual("James");
   expect(await identityIdFromConfigParam(db)).toBeNull();
@@ -101,23 +97,19 @@ test("auditing - capturing tracing in transaction", async () => {
     request.meta.tracing.traceparent
   ).traceId;
 
-  const row = await withDatabase(
-    db,
-    PROTO_ACTION_TYPES.CREATE, // CREATE will ensure a transaction is opened
-    async ({ transaction }) => {
-      const row = withAuditContext(request, async () => {
-        return await personAPI.create({
-          id: KSUID.randomSync().string,
-          name: "Jim",
-        });
+  const row = await withDatabase(db, true, async ({ transaction }) => {
+    const row = withAuditContext(request, async () => {
+      return await personAPI.create({
+        id: KSUID.randomSync().string,
+        name: "Jim",
       });
+    });
 
-      expect(await traceIdFromConfigParam(transaction)).toEqual(traceId);
-      expect(await traceIdFromConfigParam(db)).toBeNull();
+    expect(await traceIdFromConfigParam(transaction)).toEqual(traceId);
+    expect(await traceIdFromConfigParam(db)).toBeNull();
 
-      return row;
-    }
-  );
+    return row;
+  });
 
   expect(row.name).toEqual("Jim");
   expect(await traceIdFromConfigParam(db)).toBeNull();
@@ -131,23 +123,19 @@ test("auditing - capturing identity id without transaction", async () => {
     },
   };
 
-  const row = await withDatabase(
-    db,
-    PROTO_ACTION_TYPES.GET, // GET will _not_ open a transaction
-    async ({ sDb }) => {
-      const row = withAuditContext(request, async () => {
-        return await personAPI.create({
-          id: KSUID.randomSync().string,
-          name: "James",
-        });
+  const row = await withDatabase(db, false, async ({ sDb }) => {
+    const row = withAuditContext(request, async () => {
+      return await personAPI.create({
+        id: KSUID.randomSync().string,
+        name: "James",
       });
+    });
 
-      expect(await identityIdFromConfigParam(sDb)).toBeNull();
-      expect(await identityIdFromConfigParam(db)).toBeNull();
+    expect(await identityIdFromConfigParam(sDb)).toBeNull();
+    expect(await identityIdFromConfigParam(db)).toBeNull();
 
-      return row;
-    }
-  );
+    return row;
+  });
 
   expect(row.name).toEqual("James");
   expect(await identityIdFromConfigParam(db)).toBeNull();
@@ -163,23 +151,19 @@ test("auditing - capturing tracing without transaction", async () => {
     },
   };
 
-  const row = await withDatabase(
-    db,
-    PROTO_ACTION_TYPES.GET, // GET will _not_ open a transaction
-    async ({ sDb }) => {
-      const row = withAuditContext(request, async () => {
-        return await personAPI.create({
-          id: KSUID.randomSync().string,
-          name: "Jim",
-        });
+  const row = await withDatabase(db, false, async ({ sDb }) => {
+    const row = withAuditContext(request, async () => {
+      return await personAPI.create({
+        id: KSUID.randomSync().string,
+        name: "Jim",
       });
+    });
 
-      expect(await traceIdFromConfigParam(sDb)).toBeNull();
-      expect(await traceIdFromConfigParam(db)).toBeNull();
+    expect(await traceIdFromConfigParam(sDb)).toBeNull();
+    expect(await traceIdFromConfigParam(db)).toBeNull();
 
-      return row;
-    }
-  );
+    return row;
+  });
 
   expect(row.name).toEqual("Jim");
   expect(await traceIdFromConfigParam(db)).toBeNull();
@@ -225,23 +209,19 @@ test("auditing - ModelAPI.create", async () => {
     request.meta.tracing.traceparent
   ).traceId;
 
-  const row = await withDatabase(
-    db,
-    PROTO_ACTION_TYPES.CREATE,
-    async ({ transaction }) => {
-      const row = withAuditContext(request, async () => {
-        return await personAPI.create({
-          id: KSUID.randomSync().string,
-          name: "Jake",
-        });
+  const row = await withDatabase(db, true, async ({ transaction }) => {
+    const row = withAuditContext(request, async () => {
+      return await personAPI.create({
+        id: KSUID.randomSync().string,
+        name: "Jake",
       });
+    });
 
-      expect(await identityIdFromConfigParam(transaction)).toEqual(identityId);
-      expect(await traceIdFromConfigParam(transaction)).toEqual(traceId);
+    expect(await identityIdFromConfigParam(transaction)).toEqual(identityId);
+    expect(await traceIdFromConfigParam(transaction)).toEqual(traceId);
 
-      return row;
-    }
-  );
+    return row;
+  });
 
   expect(row.name).toEqual("Jake");
 });
@@ -266,20 +246,16 @@ test("auditing - ModelAPI.update", async () => {
     name: "Jake",
   });
 
-  const row = await withDatabase(
-    db,
-    PROTO_ACTION_TYPES.CREATE,
-    async ({ transaction }) => {
-      const row = withAuditContext(request, async () => {
-        return await personAPI.update({ id: created.id }, { name: "Jim" });
-      });
+  const row = await withDatabase(db, true, async ({ transaction }) => {
+    const row = withAuditContext(request, async () => {
+      return await personAPI.update({ id: created.id }, { name: "Jim" });
+    });
 
-      expect(await identityIdFromConfigParam(transaction)).toEqual(identityId);
-      expect(await traceIdFromConfigParam(transaction)).toEqual(traceId);
+    expect(await identityIdFromConfigParam(transaction)).toEqual(identityId);
+    expect(await traceIdFromConfigParam(transaction)).toEqual(traceId);
 
-      return row;
-    }
-  );
+    return row;
+  });
 
   expect(row.name).toEqual("Jim");
 });
@@ -304,20 +280,16 @@ test("auditing - ModelAPI.delete", async () => {
     name: "Jake",
   });
 
-  const row = await withDatabase(
-    db,
-    PROTO_ACTION_TYPES.CREATE,
-    async ({ transaction }) => {
-      const row = withAuditContext(request, async () => {
-        return await personAPI.delete({ id: created.id });
-      });
+  const row = await withDatabase(db, true, async ({ transaction }) => {
+    const row = withAuditContext(request, async () => {
+      return await personAPI.delete({ id: created.id });
+    });
 
-      expect(await identityIdFromConfigParam(transaction)).toEqual(identityId);
-      expect(await traceIdFromConfigParam(transaction)).toEqual(traceId);
+    expect(await identityIdFromConfigParam(transaction)).toEqual(identityId);
+    expect(await traceIdFromConfigParam(transaction)).toEqual(traceId);
 
-      return row;
-    }
-  );
+    return row;
+  });
 
   expect(row).toEqual(created.id);
 });
@@ -337,23 +309,19 @@ test("auditing - identity id and trace id fields dropped from result", async () 
     request.meta.tracing.traceparent
   ).traceId;
 
-  const row = await withDatabase(
-    db,
-    PROTO_ACTION_TYPES.CREATE,
-    async ({ transaction }) => {
-      const row = withAuditContext(request, async () => {
-        return await personAPI.create({
-          id: KSUID.randomSync().string,
-          name: "Jake",
-        });
+  const row = await withDatabase(db, true, async ({ transaction }) => {
+    const row = withAuditContext(request, async () => {
+      return await personAPI.create({
+        id: KSUID.randomSync().string,
+        name: "Jake",
       });
+    });
 
-      expect(await identityIdFromConfigParam(transaction)).toEqual(identityId);
-      expect(await traceIdFromConfigParam(transaction)).toEqual(traceId);
+    expect(await identityIdFromConfigParam(transaction)).toEqual(identityId);
+    expect(await traceIdFromConfigParam(transaction)).toEqual(traceId);
 
-      return row;
-    }
-  );
+    return row;
+  });
 
   expect(row.name).toEqual("Jake");
   expect(row.keelIdentityId).toBeUndefined();

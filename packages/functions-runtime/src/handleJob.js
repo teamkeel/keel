@@ -57,8 +57,10 @@ async function handleJob(request, config) {
         const jobFunction = jobs[request.method];
         const actionType = PROTO_ACTION_TYPES.JOB;
 
+        const functionConfig = jobFunction?.config ?? {};
+
         await tryExecuteJob(
-          { request, permitted, db, actionType },
+          { request, permitted, db, actionType, functionConfig },
           async () => {
             // parse request params to convert objects into rich field types (e.g. InlineFile)
             const inputs = parseInputs(request.params);
