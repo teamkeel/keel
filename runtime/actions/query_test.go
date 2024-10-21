@@ -106,11 +106,11 @@ var testCases = []testCase{
 		input:      map[string]any{},
 		expectedTemplate: `
 			WITH
-				new_1_person AS
+				"new_1_person" AS
 					(INSERT INTO "person"
 					DEFAULT VALUES
 					RETURNING *)
-			SELECT * FROM new_1_person`,
+			SELECT * FROM "new_1_person"`,
 		expectedArgs: []any{},
 	},
 	{
@@ -137,13 +137,13 @@ var testCases = []testCase{
 		input:      map[string]any{},
 		expectedTemplate: `
 			WITH
-				new_1_person AS
+				"new_1_person" AS
 					(INSERT INTO "person"
-						(age, bio, is_active, name)
+						("age", "bio", "is_active", "name")
 					VALUES
 						(?, ?, ?, ?)
 					RETURNING *)
-			SELECT * FROM new_1_person`,
+			SELECT * FROM "new_1_person"`,
 		expectedArgs: []any{int64(100), "# Biography", true, "Bob"},
 	},
 	{
@@ -164,13 +164,13 @@ var testCases = []testCase{
 		input:      map[string]any{},
 		expectedTemplate: `
 			WITH
-				new_1_person AS
+				"new_1_person" AS
 					(INSERT INTO "person"
-						(main_identity_id)
+						("main_identity_id")
 					VALUES
 						(?)
 					RETURNING *)
-			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM "new_1_person"`,
 		identity:     identity,
 		expectedArgs: []any{"identityId", identity[parser.FieldNameId].(string)},
 	},
@@ -192,13 +192,13 @@ var testCases = []testCase{
 		input:      map[string]any{},
 		expectedTemplate: `
 			WITH
-				new_1_person AS
+				"new_1_person" AS
 					(INSERT INTO "person"
-						(main_identity_id)
+						("main_identity_id")
 					VALUES
 						(?)
 					RETURNING *)
-			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM "new_1_person"`,
 		identity:     identity,
 		expectedArgs: []any{"identityId", identity[parser.FieldNameId].(string)},
 	},
@@ -221,13 +221,13 @@ var testCases = []testCase{
 		input:      map[string]any{"name": "Dave"},
 		expectedTemplate: `
 			WITH
-				new_1_person AS
+				"new_1_person" AS
 					(INSERT INTO "person"
-						(name, nick_name)
+						("name", "nick_name")
 					VALUES
 						(?, ?)
 					RETURNING *)
-			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM "new_1_person"`,
 		identity:     identity,
 		expectedArgs: []any{"Dave", "Dave", identity[parser.FieldNameId].(string)},
 	},
@@ -255,18 +255,18 @@ var testCases = []testCase{
 		input:      map[string]any{"name": "Dave"},
 		expectedTemplate: `
 			WITH
-				select_identity (column_0) AS (
+				"select_identity" ("column_0") AS (
 					SELECT "identity$user"."id"
 					FROM "identity"
 					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
 					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
-				new_1_record AS (
-					INSERT INTO "record" (name, user_id)
+				"new_1_record" AS (
+					INSERT INTO "record" ("name", "user_id")
 					VALUES (
 						?,
-						(SELECT column_0 FROM select_identity))
+						(SELECT "column_0" FROM "select_identity"))
 					RETURNING *)
-			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_record`,
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM "new_1_record"`,
 		identity:     identity,
 		expectedArgs: []any{identity[parser.FieldNameId].(string), "Dave", identity[parser.FieldNameId].(string)},
 	},
@@ -297,19 +297,19 @@ var testCases = []testCase{
 		input:      map[string]any{"name": "Dave"},
 		expectedTemplate: `
 			WITH
-				select_identity (column_0, column_1) AS (
+				"select_identity" ("column_0", "column_1") AS (
 					SELECT "identity$user"."id", "identity$user"."is_active"
 					FROM "identity"
 					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
 					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
-				new_1_record AS (
-					INSERT INTO "record" (is_active, name, user_id)
+				"new_1_record" AS (
+					INSERT INTO "record" ("is_active", "name", "user_id")
 					VALUES (
-						(SELECT column_1 FROM select_identity),
+						(SELECT "column_1" FROM "select_identity"),
 						?,
-						(SELECT column_0 FROM select_identity))
+						(SELECT "column_0" FROM "select_identity"))
 					RETURNING *)
-			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_record`,
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM "new_1_record"`,
 		identity:     identity,
 		expectedArgs: []any{identity[parser.FieldNameId].(string), "Dave", identity[parser.FieldNameId].(string)},
 	},
@@ -467,11 +467,11 @@ var testCases = []testCase{
 		input:      map[string]any{},
 		expectedTemplate: `
 			WITH
-				new_1_person AS
+				"new_1_person" AS
 					(INSERT INTO "person"
 					DEFAULT VALUES
 					RETURNING *)
-			SELECT * FROM new_1_person`,
+			SELECT * FROM "new_1_person"`,
 		expectedArgs: []any{},
 	},
 	{
@@ -496,13 +496,13 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			WITH
-				new_1_person AS
+				"new_1_person" AS
 					(INSERT INTO "person"
-						(name)
+						("name")
 					VALUES
 						(?)
 					RETURNING *)
-			SELECT * FROM new_1_person`,
+			SELECT * FROM "new_1_person"`,
 		expectedArgs: []any{"Bob"},
 	},
 	{
@@ -1643,13 +1643,13 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			WITH
-				new_1_thing AS
+				"new_1_thing" AS
 					(INSERT INTO "thing"
-						(age, name, parent_id)
+						("age", "name", "parent_id")
 					VALUES
 						(?, ?, ?)
 					RETURNING *)
-			SELECT * FROM new_1_thing`,
+			SELECT * FROM "new_1_thing"`,
 		expectedArgs: []any{21, "bob", "123"},
 	},
 	{
@@ -1682,9 +1682,9 @@ var testCases = []testCase{
 			"name": "fred",
 		},
 		expectedTemplate: `
-			WITH new_1_customer AS (
-				INSERT INTO "customer" (name) VALUES (?) RETURNING *)
-			SELECT * FROM new_1_customer`,
+			WITH "new_1_customer" AS (
+				INSERT INTO "customer" ("name") VALUES (?) RETURNING *)
+			SELECT * FROM "new_1_customer"`,
 		expectedArgs: []any{"fred"},
 	},
 	{
@@ -2157,25 +2157,25 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			WITH
-				new_1_order AS
+				"new_1_order" AS
 					(INSERT INTO "order"
-						(on_promotion)
+						("on_promotion")
 					VALUES
 						(?)
 					RETURNING *),
-				new_1_order_item AS
+				"new_1_order_item" AS
 					(INSERT INTO "order_item"
-						(order_id, product_id, quantity)
+						("order_id", "product_id", "quantity")
 					VALUES
-						((SELECT id FROM new_1_order), ?, ?)
+						((SELECT "id" FROM "new_1_order"), ?, ?)
 					RETURNING *),
-				new_2_order_item AS
+				"new_2_order_item" AS
 					(INSERT INTO "order_item"
-						(order_id, product_id, quantity)
+						("order_id", "product_id", "quantity")
 					VALUES
-						((SELECT id FROM new_1_order), ?, ?)
+						((SELECT "id" FROM "new_1_order"), ?, ?)
 					RETURNING *)
-			SELECT * FROM new_1_order`,
+			SELECT * FROM "new_1_order"`,
 		expectedArgs: []any{
 			true,     // new_1_order
 			"xyz", 2, // new_1_order_item
@@ -2235,31 +2235,31 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			WITH
-				new_1_product AS
+				"new_1_product" AS
 					(INSERT INTO "product"
-						(created_on_order, name)
+						("created_on_order", "name")
 					VALUES
 						(?, ?)
 					RETURNING *),
-				new_1_product_attribute AS
+				"new_1_product_attribute" AS
 					(INSERT INTO "product_attribute"
-						(name, product_id, status)
+						("name", "product_id", "status")
 					VALUES
-						(?, (SELECT id FROM new_1_product), ?)
+						(?, (SELECT "id" FROM "new_1_product"), ?)
 					RETURNING *),
-				new_2_product_attribute AS
+				"new_2_product_attribute" AS
 					(INSERT INTO "product_attribute"
-						(name, product_id, status)
+						("name", "product_id", "status")
 					VALUES
-						(?, (SELECT id FROM new_1_product), ?)
+						(?, (SELECT "id" FROM "new_1_product"), ?)
 					RETURNING *),
-				new_1_order AS
+				"new_1_order" AS
 					(INSERT INTO "order"
-						(product_id)
+						("product_id")
 					VALUES
-						((SELECT id FROM new_1_product))
+						((SELECT "id" FROM "new_1_product"))
 					RETURNING *)
-			SELECT * FROM new_1_order`,
+			SELECT * FROM "new_1_order"`,
 		expectedArgs: []any{
 			true, "Child Bicycle", // new_1_product
 			"FDA approved", "NotApplicable", // new_1_product_attribute
@@ -2312,35 +2312,35 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			WITH
-				new_1_order AS
+				"new_1_order" AS
 					(INSERT INTO "order"
 					DEFAULT VALUES
 					RETURNING *),
-				new_1_product AS
+				"new_1_product" AS
 					(INSERT INTO "product"
-						(name)
+						("name")
 					VALUES
 						(?)
 					RETURNING *),
-				new_1_order_item AS
+				"new_1_order_item" AS
 					(INSERT INTO "order_item"
-						(order_id, product_id, quantity)
+						("order_id", "product_id", "quantity")
 					VALUES
-						((SELECT id FROM new_1_order), (SELECT id FROM new_1_product), ?)
+						((SELECT "id" FROM "new_1_order"), (SELECT "id" FROM "new_1_product"), ?)
 					RETURNING *),
-				new_2_product AS
+				"new_2_product" AS
 					(INSERT INTO "product"
-						(name)
+						("name")
 					VALUES
 						(?)
 					RETURNING *),
-				new_2_order_item AS
+				"new_2_order_item" AS
 					(INSERT INTO "order_item"
-						(order_id, product_id, quantity)
+						("order_id", "product_id", "quantity")
 					VALUES
-						((SELECT id FROM new_1_order), (SELECT id FROM new_2_product), ?)
+						((SELECT "id" FROM "new_1_order"), (SELECT "id" FROM "new_2_product"), ?)
 					RETURNING *)
-			SELECT * FROM new_1_order`,
+			SELECT * FROM "new_1_order"`,
 		expectedArgs: []any{
 			"Hair dryer", // new_1_product
 			2,            //new_1_order_item
@@ -2378,25 +2378,25 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			WITH
-				new_1_product AS
+				"new_1_product" AS
 					(INSERT INTO "product"
-						(name)
+						("name")
 					VALUES
 						(?)
 					RETURNING *),
-				new_2_product AS
+				"new_2_product" AS
 					(INSERT INTO "product"
-						(name)
+						("name")
 					VALUES
 						(?)
 					RETURNING *),
-				new_1_order AS
+				"new_1_order" AS
 					(INSERT INTO "order"
-						(product_1_id, product_2_id)
+						("product_1_id", "product_2_id")
 					VALUES
-						((SELECT id FROM new_1_product), (SELECT id FROM new_2_product))
+						((SELECT "id" FROM "new_1_product"), (SELECT "id" FROM "new_2_product"))
 					RETURNING *)
-			SELECT * FROM new_1_order`,
+			SELECT * FROM "new_1_order"`,
 		expectedArgs: []any{
 			"Child Bicycle", // new_1_product
 			"Adult Bicycle", // new_2_product
@@ -2461,35 +2461,35 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			WITH
-				new_1_order AS
+				"new_1_order" AS
 					(INSERT INTO "order"
 					DEFAULT VALUES
 					RETURNING *),
-				new_1_order_item AS
+				"new_1_order_item" AS
 					(INSERT INTO "order_item"
-						(order_id, product_id, quantity)
+						("order_id", "product_id", "quantity")
 					VALUES
-						((SELECT id FROM new_1_order), ?, ?)
+						((SELECT "id" FROM "new_1_order"), ?, ?)
 					RETURNING *),
-				new_2_order_item AS
+				"new_2_order_item" AS
 					(INSERT INTO "order_item"
-						(order_id, product_id, quantity)
+						("order_id", "product_id", "quantity")
 					VALUES
-						((SELECT id FROM new_1_order), ?, ?)
+						((SELECT "id" FROM "new_1_order"), ?, ?)
 					RETURNING *),
-				new_3_order_item AS
+				"new_3_order_item" AS
 					(INSERT INTO "order_item"
-						(free_on_order_id, product_id, quantity)
+						("free_on_order_id", "product_id", "quantity")
 					VALUES
-						((SELECT id FROM new_1_order), ?, ?)
+						((SELECT "id" FROM "new_1_order"), ?, ?)
 					RETURNING *),
-				new_4_order_item AS
+				"new_4_order_item" AS
 					(INSERT INTO "order_item"
-						(free_on_order_id, product_id, quantity)
+						("free_on_order_id", "product_id", "quantity")
 					VALUES
-						((SELECT id FROM new_1_order), ?, ?)
+						((SELECT "id" FROM "new_1_order"), ?, ?)
 					RETURNING *)
-			SELECT * FROM new_1_order`,
+			SELECT * FROM "new_1_order"`,
 		expectedArgs: []any{
 			"paid1", 2, // new_1_order_item
 			"paid2", 4, // new_2_order_item
@@ -2761,20 +2761,20 @@ var testCases = []testCase{
 		identity:   identity,
 		expectedTemplate: `
 			WITH
-				select_identity (column_0, column_1, column_2, column_3, column_4) AS (
+				"select_identity" ("column_0", "column_1", "column_2", "column_3", "column_4") AS (
 					SELECT "identity"."email", "identity"."created_at", "identity"."email_verified", "identity"."external_id", "identity"."issuer"
 					FROM "identity"
 					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
-				new_1_person AS (
-					INSERT INTO "person" (created, email, email_verified, external_id, issuer)
+				"new_1_person" AS (
+					INSERT INTO "person" ("created", "email", "email_verified", "external_id", "issuer")
 					VALUES (
-						(SELECT column_1 FROM select_identity),
-						(SELECT column_0 FROM select_identity),
-						(SELECT column_2 FROM select_identity),
-						(SELECT column_3 FROM select_identity),
-						(SELECT column_4 FROM select_identity))
+						(SELECT "column_1" FROM "select_identity"),
+						(SELECT "column_0" FROM "select_identity"),
+						(SELECT "column_2" FROM "select_identity"),
+						(SELECT "column_3" FROM "select_identity"),
+						(SELECT "column_4" FROM "select_identity"))
 					RETURNING *)
-			SELECT *, set_identity_id(?) AS __keel_identity_id FROM new_1_person`,
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM "new_1_person"`,
 		expectedArgs: []any{identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string)},
 	},
 	{
@@ -2833,11 +2833,11 @@ var testCases = []testCase{
 		actionName: "createPost",
 		input:      map[string]any{"title": "Hello world", "tags": []string{"science", "politics"}},
 		expectedTemplate: `
-			WITH new_1_post AS (
-				INSERT INTO "post" (tags, title) 
+			WITH "new_1_post" AS (
+				INSERT INTO "post" ("tags", "title") 
 				VALUES (ARRAY[?, ?]::TEXT[], ?)
 				RETURNING *) 
-			SELECT * FROM new_1_post`,
+			SELECT * FROM "new_1_post"`,
 		expectedArgs: []any{"science", "politics", "Hello world"},
 	},
 	{
@@ -2857,11 +2857,11 @@ var testCases = []testCase{
 		actionName: "createPost",
 		input:      map[string]any{"title": "Hello world"},
 		expectedTemplate: `
-			WITH new_1_post AS (
-				INSERT INTO "post" (tags, title) 
+			WITH "new_1_post" AS (
+				INSERT INTO "post" ("tags", "title") 
 				VALUES ('{}', ?)
 				RETURNING *) 
-			SELECT * FROM new_1_post`,
+			SELECT * FROM "new_1_post"`,
 		expectedArgs: []any{"Hello world"},
 	},
 	{
@@ -2881,11 +2881,11 @@ var testCases = []testCase{
 		actionName: "createPost",
 		input:      map[string]any{"title": "Hello world"},
 		expectedTemplate: `
-			WITH new_1_post AS (
-				INSERT INTO "post" (tags, title) 
+			WITH "new_1_post" AS (
+				INSERT INTO "post" ("tags", "title") 
 				VALUES (ARRAY[?, ?]::TEXT[], ?)
 				RETURNING *) 
-			SELECT * FROM new_1_post`,
+			SELECT * FROM "new_1_post"`,
 		expectedArgs: []any{"science", "technology", "Hello world"},
 	},
 	{
