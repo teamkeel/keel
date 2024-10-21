@@ -917,7 +917,7 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 		cteAlias := fmt.Sprintf("select_%s", operand.query.table)
 		cteExists := false
 		for _, c := range ctes {
-			if strings.HasPrefix(c, cteAlias) {
+			if strings.HasPrefix(c, sqlQuote(cteAlias)) {
 				cteExists = true
 				break
 			}
@@ -926,11 +926,11 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 		if !cteExists {
 			cteAliases := []string{}
 			for i := range operand.query.selection {
-				cteAliases = append(cteAliases, fmt.Sprintf("column_%v", i))
+				cteAliases = append(cteAliases, sqlQuote(fmt.Sprintf("column_%v", i)))
 			}
 
 			cte := fmt.Sprintf("%s (%s) AS (%s)",
-				cteAlias,
+				sqlQuote(cteAlias),
 				strings.Join(cteAliases, ", "),
 				operand.query.SelectStatement().SqlTemplate())
 
@@ -953,14 +953,14 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 				}
 			}
 
-			sql := fmt.Sprintf("(SELECT %s FROM %s)", columnAlias, cteAlias)
-			sets = append(sets, fmt.Sprintf("%s = %s", casing.ToSnake(v), sql))
+			sql := fmt.Sprintf("(SELECT %s FROM %s)", sqlQuote(columnAlias), sqlQuote(cteAlias))
+			sets = append(sets, fmt.Sprintf("%s = %s", sqlQuote(casing.ToSnake(v)), sql))
 		} else {
 			sqlOperand := operand.toSqlOperandString(query)
 			sqlArgs := operand.toSqlArgs()
 
 			args = append(args, sqlArgs...)
-			sets = append(sets, fmt.Sprintf("%s = %s", casing.ToSnake(v), sqlOperand))
+			sets = append(sets, fmt.Sprintf("%s = %s", sqlQuote(casing.ToSnake(v)), sqlOperand))
 		}
 	}
 

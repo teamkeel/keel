@@ -336,7 +336,7 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			UPDATE "person"
-			SET main_identity_id = ?
+			SET "main_identity_id" = ?
 			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
@@ -364,7 +364,7 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			UPDATE "person"
-			SET main_identity_id = ?
+			SET "main_identity_id" = ?
 			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
@@ -397,8 +397,8 @@ var testCases = []testCase{
 		expectedTemplate: `
 			UPDATE "person"
 			SET
-				name = ?,
-				nick_name = ?
+				"name" = ?,
+				"nick_name" = ?
 			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*`,
 		expectedArgs: []any{"Dave", "Dave", "xyz"},
@@ -434,15 +434,15 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			WITH
-				select_identity (column_0, column_1) AS (
+				"select_identity" ("column_0", "column_1") AS (
 					SELECT "identity$user"."id", "identity$user"."is_active"
 					FROM "identity"
 					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
 					WHERE "identity"."id" IS NOT DISTINCT FROM ?)
 			UPDATE "record"
 			SET
-				is_active = (SELECT column_1 FROM select_identity),
-				user_id = (SELECT column_0 FROM select_identity)
+				"is_active" = (SELECT "column_1" FROM "select_identity"),
+				"user_id" = (SELECT "column_0" FROM "select_identity")
 			WHERE
 				"record"."id" IS NOT DISTINCT FROM ?
 			RETURNING "record".*, set_identity_id(?) AS __keel_identity_id`,
@@ -535,7 +535,7 @@ var testCases = []testCase{
 			UPDATE
 				"person"
 			SET
-			    age = ?, bio = ?, is_active = ?, name = ?
+			    "age" = ?, "bio" = ?, "is_active" = ?, "name" = ?
 			WHERE
 				"person"."id" IS NOT DISTINCT FROM ?
 			RETURNING
@@ -569,7 +569,7 @@ var testCases = []testCase{
 			UPDATE
 				"person"
 			SET
-			    name = ?
+			    "name" = ?
 			WHERE
 				"person"."id" IS NOT DISTINCT FROM ?
 			RETURNING
@@ -1724,9 +1724,9 @@ var testCases = []testCase{
 			UPDATE
 				"thing"
 			SET
-				age = ?,
-				name = ?,
-				parent_id = ?
+				"age" = ?,
+				"name" = ?,
+				"parent_id" = ?
 			WHERE
 				"thing"."id" IS NOT DISTINCT FROM ?
 			RETURNING
@@ -2070,7 +2070,7 @@ var testCases = []testCase{
 			UPDATE
 				"thing"
 			SET
-				name = ?
+				"name" = ?
 			WHERE
 				"thing"."id" IS NOT DISTINCT FROM ? AND
 				( "thing"."code" IS NOT DISTINCT FROM ? OR "thing"."code" IS NOT DISTINCT FROM ? )
@@ -2521,7 +2521,7 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			UPDATE "product"
-			SET is_active = ?
+			SET "is_active" = ?
 			WHERE
 				"product"."barcode" IS NOT DISTINCT FROM ? AND
 				"product"."is_active" IS NOT DISTINCT FROM ?
@@ -2560,7 +2560,7 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			UPDATE "product"
-			SET is_active = ?
+			SET "is_active" = ?
 			WHERE "id" = (
 				SELECT "product"."id" 
 				FROM "product" 
@@ -2610,7 +2610,7 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			UPDATE "product"
-			SET is_active = ?
+			SET "is_active" = ?
 			WHERE "id" = (
 				SELECT "product"."id" 
 				FROM "product" 
@@ -2804,16 +2804,16 @@ var testCases = []testCase{
 		identity:   identity,
 		expectedTemplate: `
 			WITH
-				select_identity (column_0, column_1, column_2, column_3, column_4) AS (
+				"select_identity" ("column_0", "column_1", "column_2", "column_3", "column_4") AS (
 					SELECT "identity"."email", "identity"."created_at", "identity"."email_verified", "identity"."external_id", "identity"."issuer"
 					FROM "identity"
 					WHERE "identity"."id" IS NOT DISTINCT FROM ?)
 			UPDATE "person" SET
-				created = (SELECT column_1 FROM select_identity),
-				email = (SELECT column_0 FROM select_identity),
-				email_verified = (SELECT column_2 FROM select_identity),
-				external_id = (SELECT column_3 FROM select_identity),
-				issuer = (SELECT column_4 FROM select_identity)
+				"created" = (SELECT "column_1" FROM "select_identity"),
+				"email" = (SELECT "column_0" FROM "select_identity"),
+				"email_verified" = (SELECT "column_2" FROM "select_identity"),
+				"external_id" = (SELECT "column_3" FROM "select_identity"),
+				"issuer" = (SELECT "column_4" FROM "select_identity")
 			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
 		expectedArgs: []any{identity[parser.FieldNameId].(string), "xyz", identity[parser.FieldNameId].(string)},
