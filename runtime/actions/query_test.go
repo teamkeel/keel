@@ -3474,8 +3474,8 @@ func TestInsertStatement(t *testing.T) {
 	stmt := query.InsertStatement(context.Background())
 
 	expected := `
-		WITH new_1_person AS (INSERT INTO "person" (name) VALUES (?) RETURNING *)
-		SELECT * FROM new_1_person`
+		WITH "new_1_person" AS (INSERT INTO "person" ("name") VALUES (?) RETURNING *)
+		SELECT * FROM "new_1_person"`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
 }
@@ -3491,7 +3491,7 @@ func TestUpdateStatement(t *testing.T) {
 	stmt := query.UpdateStatement(context.Background())
 
 	expected := `
-		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING "person".*`
+		UPDATE "person" SET "name" = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING "person".*`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
 }
@@ -3524,12 +3524,12 @@ func TestInsertStatementWithAuditing(t *testing.T) {
 	stmt := query.InsertStatement(ctx)
 
 	expected := `
-		WITH new_1_person AS (INSERT INTO "person" (name) VALUES (?) RETURNING *)
+		WITH "new_1_person" AS (INSERT INTO "person" ("name") VALUES (?) RETURNING *)
 		SELECT
 			*,
 			set_identity_id(?) AS __keel_identity_id,
 			set_trace_id(?) AS __keel_trace_id
-		FROM new_1_person`
+		FROM "new_1_person"`
 
 	require.Equal(t, clean(expected), clean(stmt.SqlTemplate()))
 	require.Equal(t, "Fred", stmt.SqlArgs()[0])
@@ -3552,7 +3552,7 @@ func TestUpdateStatementWithAuditing(t *testing.T) {
 	stmt := query.UpdateStatement(ctx)
 
 	expected := `
-		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING
+		UPDATE "person" SET "name" = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING
 			"person".*,
 			set_identity_id(?) AS __keel_identity_id,
 			set_trace_id(?) AS __keel_trace_id`
@@ -3578,7 +3578,7 @@ func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
 	stmt := query.UpdateStatement(ctx)
 
 	expected := `
-		UPDATE "person" SET name = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING
+		UPDATE "person" SET "name" = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING
 			set_identity_id(?) AS __keel_identity_id,
 			set_trace_id(?) AS __keel_trace_id`
 
