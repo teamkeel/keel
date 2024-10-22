@@ -1,5 +1,27 @@
+# environment.1.name: Duplicate name TEST
+# secrets.2.name: Duplicate name API_KEY
+# auth.providers.1.name: Duplicate name google
+
 environment:
   - name: "TEST"
     value: "test1"
   - name: "TEST"
     value: "test2"
+
+secrets:
+  - name: API_KEY
+  - name: OTHER
+  - name: API_KEY
+
+auth:
+  providers:
+    - type: google
+      name: google
+      clientId: abcdef
+
+    - type: oidc
+      name: google
+      authorizationUrl: https://some-url.com
+      tokenUrl: https://some-url.com
+      issuerUrl: https://some-url.com
+      clientId: abcdef
