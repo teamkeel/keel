@@ -186,8 +186,6 @@ function getDialect() {
       const pool = new InstrumentedNeonServerlessPool({
         connectionString: mustEnv("KEEL_DB_CONN"),
         max: 1, // Limit to 1 connection per Lambda instance
-        retryInterval: 1000, // Retry every second
-        maxRetries: 3, // Maximum number of retries
       });
 
       pool.on("connect", (client) => {
