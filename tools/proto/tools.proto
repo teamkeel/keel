@@ -94,6 +94,12 @@ message ActionConfig {
 	// we're defining. These tools will be rendered within this action's configuration, and can have
 	// specific config overrides.
 	repeated ToolGroup embedded_tools = 23;
+
+	// Configuration for different views that are enabled for this tool. A tool can be configured to be
+	// displayable in multiple types of views, for example, as a table, as an email inbox, or a kanban
+	// board. Each view will require specific configuration, these are supplied as part of the
+	// DisplayLayoutConfig message.
+	DisplayLayoutConfig display_layout = 24;
 }
 
 message RequestFieldConfig {
@@ -278,4 +284,35 @@ message DataMapping {
 	optional JsonPath path = 2;
 	repeated DataMapping object = 3;
 	optional ScalarValue value = 4;
+}
+
+message DisplayLayoutConfig {
+	enum Type {
+		UNKNOWN = 0;
+		INBOX = 1;
+	}
+
+	// The type of the view: e.g. Inbox, List, Calendar, Table, Data Grid
+	Type type = 1;
+
+	optional InboxViewConfig inbox_config = 2;
+}
+
+// An email inbox style display for list views. Each item in a list will be displayed as a row with
+// an exapandable view 
+message InboxViewConfig {
+	// A link to a get action that will be used when the item is expanded
+	ActionLink get_tool = 1; 
+	// The primary content of the row
+	StringTemplate title = 2;
+	// The secondary content of the row
+	optional StringTemplate description = 3; 
+	// Content to be displayed in the right hand side of the row
+	optional StringTemplate context_field = 4;
+	
+	// If an avatar/image is to be displayed with every row
+	bool avatar_enabled = 5;
+	// URL for the image.
+	optional StringTemplate avatar_url = 6;
+	optional StringTemplate avatar_fallback = 7;
 }
