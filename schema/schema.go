@@ -58,12 +58,15 @@ func (scm *Builder) MakeFromString(schemaString string, configString string) (*p
 		FileName: "schema.keel",
 	})
 
-	config, err := config.LoadFromBytes([]byte(configString), "")
+	cfg, err := config.LoadFromBytes([]byte(configString), "")
 	if err != nil {
-		return nil, err
+		if _, ok := err.(*config.ConfigErrors); !ok {
+			// This is a bit messy, but for now we dont return config validation errors from here
+			return nil, err
+		}
 	}
 
-	scm.Config = config
+	scm.Config = cfg
 
 	return scm.makeFromInputs(&reader.Inputs{
 		SchemaFiles: scm.schemaFiles,
