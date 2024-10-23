@@ -1789,8 +1789,8 @@ model Member {
 }`
 
 	expected := `
-export declare function VerifyEmail(fn: (ctx: SubscriberContextAPI, event: VerifyEmailEvent) => Promise<void>): Promise<void>;
-export declare function SendWelcomeEmail(fn: (ctx: SubscriberContextAPI, event: SendWelcomeEmailEvent) => Promise<void>): Promise<void>;`
+export declare const VerifyEmail: runtime.FuncWithConfig<{(fn: (ctx: SubscriberContextAPI, event: VerifyEmailEvent) => Promise<void>): Promise<void>}>;
+export declare const SendWelcomeEmail: runtime.FuncWithConfig<{(fn: (ctx: SubscriberContextAPI, event: SendWelcomeEmailEvent) => Promise<void>): Promise<void>}>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		for _, s := range s.Subscribers {
@@ -1815,12 +1815,12 @@ job AdHocJobWithInputs {
 job AdHocJobWithoutInputs {
 	@permission(roles: [Admin])
 }
-role Admin {}
-	`
+role Admin {}`
+
 	expected := `
-export declare function JobWithoutInputs(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>;
-export declare function AdHocJobWithInputs(fn: (ctx: JobContextAPI, inputs: AdHocJobWithInputsMessage) => Promise<void>): Promise<void>;
-export declare function AdHocJobWithoutInputs(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>;`
+export declare const JobWithoutInputs: runtime.FuncWithConfig<{(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>}>;
+export declare const AdHocJobWithInputs: runtime.FuncWithConfig<{(fn: (ctx: JobContextAPI, inputs: AdHocJobWithInputsMessage) => Promise<void>): Promise<void>}>;
+export declare const AdHocJobWithoutInputs: runtime.FuncWithConfig<{(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>}>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		for _, j := range s.Jobs {

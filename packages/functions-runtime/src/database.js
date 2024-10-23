@@ -14,18 +14,7 @@ const ws = require("ws");
 // the user's custom function is wrapped in a transaction so we can rollback
 // the transaction if something goes wrong.
 // withDatabase shouldn't be exposed in the public api of the sdk
-async function withDatabase(db, actionType, cb) {
-  let requiresTransaction = true;
-
-  switch (actionType) {
-    case PROTO_ACTION_TYPES.SUBSCRIBER:
-    case PROTO_ACTION_TYPES.JOB:
-    case PROTO_ACTION_TYPES.GET:
-    case PROTO_ACTION_TYPES.LIST:
-      requiresTransaction = false;
-      break;
-  }
-
+async function withDatabase(db, requiresTransaction, cb) {
   // db.transaction() provides a kysely instance bound to a transaction.
   if (requiresTransaction) {
     return db.transaction().execute(async (transaction) => {

@@ -558,7 +558,7 @@ test("job function with identity - audit table populated", async () => {
   expect(weddingUpdateAudit.data.headcount).toEqual(1);
 });
 
-test("job function with error and no rollback - audit table is not rolled back", async () => {
+test("job function with error and default rollback - audit table is also rolled back", async () => {
   const identity = await models.identity.create({
     email: "keelson@keel.xyz",
     issuer: "https://keel.so",
@@ -594,7 +594,7 @@ test("job function with error and no rollback - audit table is not rolled back",
   >`SELECT * FROM keel_audit where table_name = 'wedding_invitee'`.execute(
     useDatabase()
   );
-  expect(inviteesAudits.rows.length).toEqual(4);
+  expect(inviteesAudits.rows.length).toEqual(3);
 
   const keelsonAudit = inviteesAudits.rows.at(0)!;
   expect(keelsonAudit.id).toHaveLength(27);
@@ -617,22 +617,12 @@ test("job function with error and no rollback - audit table is not rolled back",
   expect(weavetonAudit.identityId).toBeNull();
   expect(weavetonAudit.data.id).toEqual(prisma.id);
 
-  const keelerDeleteAudit = inviteesAudits.rows.at(3)!;
-  expect(keelerDeleteAudit.id).toHaveLength(27);
-  expect(keelerDeleteAudit.tableName).toEqual("wedding_invitee");
-  expect(keelerDeleteAudit.op).toEqual("delete");
-  expect(keelerDeleteAudit.identityId).toEqual(identity.id);
-  expect(keelerDeleteAudit.data.id).toEqual(keeler.id);
-  expect(keelerDeleteAudit.data.firstName).toEqual(keeler.firstName);
-  expect(keelerDeleteAudit.data.status).toEqual(keeler.status);
-  expect(keelerDeleteAudit.data.isFamily).toEqual(keeler.isFamily);
-
   const weddingAudits = await sql<
     Audit<Wedding>
   >`SELECT * FROM keel_audit where table_name = 'wedding'`.execute(
     useDatabase()
   );
-  expect(weddingAudits.rows.length).toEqual(2);
+  expect(weddingAudits.rows.length).toEqual(1);
 
   const weddingAudit = weddingAudits.rows.at(0)!;
   expect(weddingAudit.id).toHaveLength(27);
@@ -642,15 +632,6 @@ test("job function with error and no rollback - audit table is not rolled back",
   expect(weddingAudit.data.id).toEqual(wedding.id);
   expect(weddingAudit.data.name).toEqual(wedding.name);
   expect(weddingAudit.data.headcount).toEqual(0);
-
-  const weddingUpdateAudit = weddingAudits.rows.at(1)!;
-  expect(weddingUpdateAudit.id).toHaveLength(27);
-  expect(weddingUpdateAudit.tableName).toEqual("wedding");
-  expect(weddingUpdateAudit.op).toEqual("update");
-  expect(weddingUpdateAudit.identityId).toEqual(identity.id);
-  expect(weddingUpdateAudit.data.id).toEqual(wedding.id);
-  expect(weddingUpdateAudit.data.name).toEqual(wedding.name);
-  expect(weddingUpdateAudit.data.headcount).toEqual(1);
 });
 
 test("job function using kysely with identity - audit table populated", async () => {

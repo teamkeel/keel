@@ -11,11 +11,24 @@ const { PROTO_ACTION_TYPES } = require("./consts");
 // tryExecuteFunction will create a new database transaction around a function call
 // and handle any permissions checks. If a permission check fails, then an Error will be thrown and the catch block will be hit.
 function tryExecuteFunction(
-  { request, db, permitted, permissionFns, actionType, ctx },
+  { request, db, permitted, permissionFns, actionType, ctx, functionConfig },
   cb
 ) {
   return withPermissions(permitted, async ({ getPermissionState }) => {
-    return withDatabase(db, actionType, async ({ transaction }) => {
+    let requiresTransaction = true;
+    switch (actionType) {
+      case PROTO_ACTION_TYPES.GET:
+      case PROTO_ACTION_TYPES.LIST:
+      case PROTO_ACTION_TYPES.READ:
+        requiresTransaction = false;
+        break;
+    }
+
+    if (functionConfig?.dbTransaction !== undefined) {
+      requiresTransaction = functionConfig.dbTransaction;
+    }
+
+    return withDatabase(db, requiresTransaction, async ({ transaction }) => {
       const fnResult = await withAuditContext(request, async () => {
         return cb();
       });
