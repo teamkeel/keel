@@ -132,7 +132,7 @@ func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId str
 		return err
 	}
 
-	_, err = LoadFromBytes(b)
+	_, err = LoadFromBytes(b, "")
 	if err != nil && ToConfigErrors(err) == nil {
 		return err
 	}

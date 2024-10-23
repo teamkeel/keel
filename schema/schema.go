@@ -58,7 +58,7 @@ func (scm *Builder) MakeFromString(schemaString string, configString string) (*p
 		FileName: "schema.keel",
 	})
 
-	config, err := config.LoadFromBytes([]byte(configString))
+	config, err := config.LoadFromBytes([]byte(configString), "")
 	if err != nil {
 		return nil, err
 	}

@@ -8,13 +8,15 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"golang.org/x/exp/slices"
 
+	"github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml/parser"
 	"github.com/samber/lo"
 	"github.com/xeipuuv/gojsonschema"
-	"gopkg.in/yaml.v3"
 )
 
 const Empty = ""
@@ -95,7 +97,18 @@ type Secret struct {
 }
 
 type ConfigError struct {
-	Message string `json:"message,omitempty"`
+	Filename        string    `json:"filename"`
+	Type            string    `json:"type"`
+	Message         string    `json:"message,omitempty"`
+	Field           string    `json:"field"`
+	Pos             *Position `json:"pos"`
+	EndPos          *Position `json:"endPos"`
+	AnnotatedSource string    `json:"-"`
+}
+
+type Position struct {
+	Line   int `json:"line"`
+	Column int `json:"column"`
 }
 
 const (
@@ -176,14 +189,14 @@ func Load(dir string) (*ProjectConfig, error) {
 		return nil, fmt.Errorf("could not read config file: %w", err)
 	}
 
-	return parseAndValidate(loadConfig)
+	return parseAndValidate(loadConfig, dir)
 }
 
-func LoadFromBytes(data []byte) (*ProjectConfig, error) {
-	return parseAndValidate(data)
+func LoadFromBytes(data []byte, filename string) (*ProjectConfig, error) {
+	return parseAndValidate(data, filename)
 }
 
-func parseAndValidate(data []byte) (*ProjectConfig, error) {
+func parseAndValidate(data []byte, filename string) (*ProjectConfig, error) {
 	var config ProjectConfig
 	err := yaml.Unmarshal(data, &config)
 	if err != nil {
@@ -237,16 +250,28 @@ func parseAndValidate(data []byte) (*ProjectConfig, error) {
 
 	for _, err := range result.Errors() {
 		errors.Errors = append(errors.Errors, &ConfigError{
-			Message: err.String(),
+			Filename: filename,
+			Message:  err.String(),
+			Field:    err.Field(),
+			Type:     err.Type(),
 		})
 	}
 
 	for _, fn := range validators {
-		errors.Errors = append(errors.Errors, fn(&config)...)
+		errs := fn(&config)
+		for _, e := range errs {
+			e.Filename = filename
+		}
+		errors.Errors = append(errors.Errors, errs...)
 	}
 
 	if len(errors.Errors) == 0 {
 		return &config, nil
+	}
+
+	err = annotateErrors(data, errors)
+	if err != nil {
+		return nil, err
 	}
 
 	return &config, errors
@@ -286,6 +311,8 @@ func validateReserved(values []string, path string) []*ConfigError {
 			if strings.HasPrefix(v, p) {
 				errors = append(errors, &ConfigError{
 					Message: fmt.Sprintf("%s: The '%s' prefix is not allowed", fmt.Sprintf(path, i), p),
+					Field:   fmt.Sprintf(path, i),
+					Type:    "reserved-prefix",
 				})
 			}
 		}
@@ -326,6 +353,8 @@ func validateUnique(values []string, path string) []*ConfigError {
 			key := strings.Split(path, ".")
 			errors = append(errors, &ConfigError{
 				Message: fmt.Sprintf("%s: Duplicate %s %s", fmt.Sprintf(path, i), key[len(key)-1], v),
+				Field:   fmt.Sprintf(path, i),
+				Type:    "duplicate-value",
 			})
 		}
 		seen[v] = true
@@ -339,21 +368,29 @@ func validateAuthProviders(c *ProjectConfig) []*ConfigError {
 		if strings.HasPrefix(strings.ToLower(p.Name), "keel_") {
 			errors = append(errors, &ConfigError{
 				Message: fmt.Sprintf("auth.providers.%d.name: Cannot start with '%s'", i, p.Name[0:5]),
+				Field:   fmt.Sprintf("auth.providers.%d.name", i),
+				Type:    "reserved-prefix",
 			})
 		}
 		if p.Type == "oidc" && p.AuthorizationUrl == "" {
 			errors = append(errors, &ConfigError{
 				Message: fmt.Sprintf("auth.providers.%d: 'authorizationUrl' is required if 'type' is 'oidc'", i),
+				Field:   fmt.Sprintf("auth.providers.%d", i),
+				Type:    "required",
 			})
 		}
 		if p.Type == "oidc" && p.IssuerUrl == "" {
 			errors = append(errors, &ConfigError{
 				Message: fmt.Sprintf("auth.providers.%d: 'issuerUrl' is required if 'type' is 'oidc'", i),
+				Field:   fmt.Sprintf("auth.providers.%d", i),
+				Type:    "required",
 			})
 		}
 		if p.Type == "oidc" && p.TokenUrl == "" {
 			errors = append(errors, &ConfigError{
 				Message: fmt.Sprintf("auth.providers.%d: 'tokenUrl' is required if 'type' is 'oidc'", i),
+				Field:   fmt.Sprintf("auth.providers.%d", i),
+				Type:    "required",
 			})
 		}
 	}
@@ -371,4 +408,70 @@ func (c *ProjectConfig) ValidateSecrets(localSecrets map[string]string) (bool, [
 	}
 
 	return len(missing) > 0, missing
+}
+
+var arrayIndexRegex = regexp.MustCompile(`\.(\d+)(\.){0,1}`)
+var additionalPropertyRegex = regexp.MustCompile(`Additional property (\w+) is not allowed`)
+
+func annotateErrors(src []byte, errors *ConfigErrors) error {
+	file, err := parser.ParseBytes(src, 0)
+	if err != nil {
+		return err
+	}
+
+	for _, e := range errors.Errors {
+		field := e.Field
+
+		// Get rid of "(root)" which isn't valid in YAML path
+		if field == "(root)" {
+			field = ""
+		}
+
+		// change "foo.0.baz' into "foo[0].baz"
+		field = arrayIndexRegex.ReplaceAllString(field, "[$1]$2")
+		field = fmt.Sprintf("$.%s", field)
+
+		// Special case for additional properties - add that property to the end so
+		// we point to it
+		if e.Type == "additional_property_not_allowed" {
+			prop := additionalPropertyRegex.FindStringSubmatch(e.Message)
+			field = fmt.Sprintf("%s.%s", field, prop[1])
+		}
+
+		path, err := yaml.PathString(field)
+		if err != nil {
+			// If the YAML path ends up being invalid we'll just continue, don't want to
+			// blow up on this
+			fmt.Println("invalid YAMLPath:", field, err.Error())
+			continue
+		}
+
+		node, err := path.FilterFile(file)
+		if err != nil {
+			// This shouldn't really happen if the YAML path is valid but we'll just continue if it does
+			fmt.Println("unable to filter YAML file", err.Error())
+			continue
+		}
+
+		pos := node.GetToken().Position
+		e.Pos = &Position{
+			Line:   pos.Line,
+			Column: pos.Column,
+		}
+		e.EndPos = &Position{
+			Line:   pos.Line,
+			Column: pos.Column + len(node.GetToken().Value),
+		}
+
+		annotated, err := path.AnnotateSource(src, true)
+		if err != nil {
+			// Again not sure what kind of error can happen here but we'll just continue
+			fmt.Println("error annotating soure", err.Error())
+			continue
+		}
+
+		e.AnnotatedSource = string(annotated)
+	}
+
+	return nil
 }
