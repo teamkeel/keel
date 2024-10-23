@@ -40,11 +40,14 @@ var validateCmd = &cobra.Command{
 
 			_, err = b.MakeFromString(string(schema), string(configBytes))
 			if err != nil {
-				if _, ok := err.(*errorhandling.ValidationErrors); !ok {
+				switch err := err.(type) {
+				case *errorhandling.ValidationErrors:
+					validationErrors = err
+				case *config.ConfigErrors:
+					// Handle ConfigErrors if needed
+				default:
 					return err
 				}
-
-				validationErrors = err.(*errorhandling.ValidationErrors)
 			}
 
 			c, err := config.LoadFromBytes(configBytes, "")
