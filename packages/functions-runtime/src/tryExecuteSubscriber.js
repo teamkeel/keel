@@ -3,7 +3,7 @@ const { withAuditContext } = require("./auditing");
 
 // tryExecuteSubscriber will create a new database connection and execute the function call.
 function tryExecuteSubscriber({ request, db, functionConfig }, cb) {
-  let requiresTransaction = true;
+  let requiresTransaction = false;
   if (functionConfig?.dbTransaction !== undefined) {
     requiresTransaction = functionConfig.dbTransaction;
   }

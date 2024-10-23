@@ -72,8 +72,11 @@ test("events from failed job", async () => {
 
   const persons = await models.person.findMany();
 
-  // Due to default rollback
-  expect(persons).toHaveLength(0);
+  expect(persons).toHaveLength(2);
+  expect(persons[0].verifiedEmail).toBeTruthy();
+  expect(persons[1].verifiedEmail).toBeTruthy();
+  expect(persons[0].verifiedUpdate).toBeTruthy();
+  expect(persons[1].verifiedUpdate).toBeTruthy();
 });
 
 test("events from failed custom function with rollback", async () => {
