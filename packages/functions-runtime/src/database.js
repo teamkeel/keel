@@ -3,7 +3,6 @@ const neonserverless = require("@neondatabase/serverless");
 const { AsyncLocalStorage } = require("async_hooks");
 const { AuditContextPlugin } = require("./auditing");
 const pg = require("pg");
-const { PROTO_ACTION_TYPES } = require("./consts");
 const { withSpan } = require("./tracing");
 const ws = require("ws");
 

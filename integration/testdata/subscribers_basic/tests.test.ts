@@ -33,7 +33,7 @@ test("subscriber - mutating field", async () => {
   expect(updatedMary?.verified).toBeTruthy();
 });
 
-test("subscriber - exception - internal error with default rollback transaction", async () => {
+test("subscriber - exception - internal error without rollback transaction", async () => {
   await models.trackSubscriber.create({ didSubscriberRun: false });
 
   const mary = await models.member.create({
@@ -56,8 +56,8 @@ test("subscriber - exception - internal error with default rollback transaction"
     message: "something bad has happened!",
   });
 
-  // This would be true if the transaction didn't roll back.
-  expect(await subscriberRan()).toBeFalsy();
+  // This would be false if a transaction rolled back.
+  expect(await subscriberRan()).toBeTruthy();
 });
 
 test("subscriber - with env vars - successful", async () => {

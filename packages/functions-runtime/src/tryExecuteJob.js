@@ -7,7 +7,7 @@ const { PermissionError } = require("./errors");
 // and handle any permissions checks. If a permission check fails, then an Error will be thrown and the catch block will be hit.
 function tryExecuteJob({ db, permitted, request, functionConfig }, cb) {
   return withPermissions(permitted, async ({ getPermissionState }) => {
-    let requiresTransaction = true;
+    let requiresTransaction = false;
     if (functionConfig?.dbTransaction !== undefined) {
       requiresTransaction = functionConfig.dbTransaction;
     }
