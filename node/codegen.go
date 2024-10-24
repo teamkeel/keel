@@ -1377,6 +1377,7 @@ func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) 
 	w.Writeln(`import { handleRequest, handleJob, handleSubscriber, tracing } from '@teamkeel/functions-runtime';`)
 	w.Writeln(`import { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } from '@teamkeel/sdk';`)
 	w.Writeln(`import { createServer } from "http";`)
+	w.Writeln(`import process from "node:process";`)
 
 	functions := []*proto.Action{}
 	for _, model := range schema.Models {
@@ -1521,7 +1522,6 @@ const listener = async (req, res) => {
 
 tracing.init();
 
-const process = require('node:process');
 process.on('unhandledRejection', (reason, promise) => {
 	console.error('Unhandled Promise Rejection', promise, 'Reason:', reason);
 });
