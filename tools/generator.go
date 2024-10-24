@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/teamkeel/keel/config"
+	"github.com/teamkeel/keel/schema/parser"
 	"golang.org/x/exp/slices"
 
 	"github.com/teamkeel/keel/casing"
@@ -88,14 +89,16 @@ func (g *Generator) scaffoldTools() {
 		if api = proto.FindApi(g.Schema, *g.KeelConfig.Tools.UseApi); api == nil {
 			return
 		}
+	} else {
+		if api = proto.FindApi(g.Schema, parser.DefaultApi); api == nil {
+			return
+		}
 	}
 
 	for _, model := range g.Schema.GetModels() {
 		for _, action := range model.GetActions() {
-			if api != nil {
-				if !slices.Contains(proto.GetActionNamesForApi(g.Schema, api), action.Name) {
-					continue
-				}
+			if !slices.Contains(proto.GetActionNamesForApi(g.Schema, api), action.Name) {
+				continue
 			}
 
 			t := Tool{

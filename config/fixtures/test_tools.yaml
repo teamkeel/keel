@@ -1,2 +1,2 @@
-tools:
-  useApi: console
+console:
+  useApi: tools

@@ -126,6 +126,15 @@
         }
       },
       "additionalProperties": false
+    },
+    "console": {
+      "type": [ "object", "null" ],
+      "properties": {
+        "useApi": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false
