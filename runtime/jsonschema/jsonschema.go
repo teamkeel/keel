@@ -186,9 +186,9 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 	isAny := !messageIsNil && message.Name == parser.MessageFieldTypeAny
 
 	root := JSONSchema{
-		Type:                 "object",
-		Properties:           map[string]JSONSchema{},
-		AdditionalProperties: boolPtr(false),
+		Type:                  "object",
+		Properties:            map[string]JSONSchema{},
+		UnevaluatedProperties: boolPtr(false),
 	}
 
 	if isAny {
@@ -199,7 +199,6 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 
 		root.AnyOf = anyOf
 		root.Type = nil
-		root.AdditionalProperties = nil
 	}
 
 	if !isAny {
@@ -212,16 +211,10 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 		if oneOfConditions || anyOfConditions {
 			jsonSchema := []JSONSchema{}
 
-			var additionalProperties *bool
-			if oneOfConditions {
-				additionalProperties = boolPtr(false)
-			}
-
 			for _, field := range message.Fields {
 				jsonSchemaOption := JSONSchema{
-					Type:                 "object",
-					Properties:           map[string]JSONSchema{},
-					AdditionalProperties: additionalProperties,
+					Type:       "object",
+					Properties: map[string]JSONSchema{},
 				}
 
 				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable, []string{}, isInput)
@@ -238,8 +231,6 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 				jsonSchemaOption.Title = field.Name
 				jsonSchemaOption.Required = append(jsonSchemaOption.Required, field.Name)
 				// https://json-schema.org/understanding-json-schema/reference/object#unevaluatedproperties
-				root.UnevaluatedProperties = boolPtr(false)
-				root.AdditionalProperties = nil
 
 				jsonSchema = append(jsonSchema, jsonSchemaOption)
 			}
