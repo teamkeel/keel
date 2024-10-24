@@ -1,0 +1,991 @@
+{
+  "tools": [
+    {
+      "id": "createComment",
+      "name": "Create comment",
+      "actionName": "createComment",
+      "apiNames": ["Console", "Api"],
+      "modelName": "Comment",
+      "actionType": "ACTION_TYPE_CREATE",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.author"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Author",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.author.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "visible": true,
+          "modelName": "Identity",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.parent"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Parent",
+          "displayOrder": 1,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.parent.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "visible": true,
+          "getEntryAction": {
+            "toolId": "getPost",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.parent.id"
+                }
+              }
+            ]
+          },
+          "modelName": "BlogPost",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.content"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Content",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "content"
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author",
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "authorId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.parentId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Parent",
+          "displayOrder": 1,
+          "visible": true,
+          "link": {
+            "toolId": "getPost",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.parentId"
+                }
+              }
+            ]
+          },
+          "modelName": "Comment",
+          "fieldName": "parentId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.content"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Content",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "content"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 6,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 7,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 8,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "updatedAt"
+        }
+      ],
+      "title": {
+        "template": "Create comment"
+      },
+      "entitySingle": "comment",
+      "entityPlural": "comments",
+      "capabilities": {},
+      "getEntryAction": {
+        "toolId": "getComment",
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.id"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "getComment",
+      "name": "Get comment",
+      "actionName": "getComment",
+      "apiNames": ["Console", "Api"],
+      "modelName": "Comment",
+      "actionType": "ACTION_TYPE_GET",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "visible": true,
+          "lookupAction": {
+            "toolId": "listComments"
+          },
+          "modelName": "Comment",
+          "fieldName": "id"
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author",
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "authorId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.parentId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Parent",
+          "displayOrder": 1,
+          "visible": true,
+          "link": {
+            "toolId": "getPost",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.parentId"
+                }
+              }
+            ]
+          },
+          "modelName": "Comment",
+          "fieldName": "parentId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.content"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Content",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "content"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 6,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 7,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 8,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "updatedAt"
+        }
+      ],
+      "title": {
+        "template": "Comment"
+      },
+      "entitySingle": "comment",
+      "entityPlural": "comments",
+      "capabilities": {
+        "comments": true,
+        "audit": true
+      },
+      "createEntryAction": {
+        "toolId": "createComment"
+      }
+    },
+    {
+      "id": "getPost",
+      "name": "Get post",
+      "actionName": "getPost",
+      "apiNames": ["Console", "Api"],
+      "modelName": "BlogPost",
+      "actionType": "ACTION_TYPE_GET",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.title"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Title",
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "title"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.description"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Description",
+          "displayOrder": 1,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "description"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.content"
+          },
+          "fieldType": "TYPE_MARKDOWN",
+          "displayName": "Content",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "content"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.published"
+          },
+          "fieldType": "TYPE_BOOL",
+          "displayName": "Published",
+          "displayOrder": 3,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "published"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author",
+          "displayOrder": 4,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "authorId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.image"
+          },
+          "fieldType": "TYPE_FILE",
+          "displayName": "Image",
+          "displayOrder": 5,
+          "visible": true,
+          "imagePreview": true,
+          "modelName": "BlogPost",
+          "fieldName": "image"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.tags"
+          },
+          "fieldType": "TYPE_STRING",
+          "repeated": true,
+          "displayName": "Tags",
+          "displayOrder": 6,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "tags"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.categoryId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Category",
+          "displayOrder": 7,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "categoryId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.comments"
+          },
+          "fieldType": "TYPE_MODEL",
+          "repeated": true,
+          "displayName": "Comments",
+          "displayOrder": 8,
+          "visible": true,
+          "link": {
+            "toolId": "listComments",
+            "data": [
+              {
+                "key": "$.where.parent.id.equals",
+                "path": {
+                  "path": "$.id"
+                }
+              }
+            ]
+          },
+          "modelName": "BlogPost",
+          "fieldName": "comments"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.status"
+          },
+          "fieldType": "TYPE_ENUM",
+          "displayName": "Status",
+          "displayOrder": 9,
+          "visible": true,
+          "enumName": "Status",
+          "modelName": "BlogPost",
+          "fieldName": "status"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 13,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 14,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 15,
+          "visible": true,
+          "modelName": "BlogPost",
+          "fieldName": "updatedAt"
+        }
+      ],
+      "title": {
+        "template": "{{$.title}}"
+      },
+      "entitySingle": "blog post",
+      "entityPlural": "blog posts",
+      "capabilities": {
+        "comments": true,
+        "audit": true
+      },
+      "embeddedActions": [
+        {
+          "toolId": "listComments",
+          "data": [
+            {
+              "key": "$.where.parent.id.equals",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "title": {
+            "template": "comments"
+          },
+          "displayOrder": 1
+        }
+      ],
+      "embeddedTools": [
+        {
+          "id": "comments",
+          "title": {
+            "template": "comments"
+          },
+          "displayOrder": 1,
+          "tools": [
+            {
+              "actionLink": {
+                "toolId": "listComments",
+                "data": [
+                  {
+                    "key": "$.where.parent.id.equals",
+                    "path": {
+                      "path": "$.id"
+                    }
+                  }
+                ],
+                "title": {
+                  "template": "comments"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "listCategories",
+      "name": "List categories",
+      "actionName": "listCategories",
+      "apiNames": ["Console", "Api"],
+      "modelName": "Category",
+      "actionType": "ACTION_TYPE_LIST",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.where"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Where",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.first"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "First",
+          "displayOrder": 1,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.after"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "After",
+          "displayOrder": 2,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.last"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Last",
+          "displayOrder": 3,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.before"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Before",
+          "displayOrder": 4,
+          "visible": true
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.count"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Count"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.totalCount"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Total count"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.hasNextPage"
+          },
+          "fieldType": "TYPE_BOOL",
+          "displayName": "Has next page"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.startCursor"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Start cursor"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.endCursor"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "End cursor"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "repeated": true,
+          "displayName": "Results",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].name"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Name",
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "name"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 3,
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 4,
+          "visible": true,
+          "modelName": "Category",
+          "fieldName": "updatedAt"
+        }
+      ],
+      "title": {
+        "template": "Categories"
+      },
+      "entitySingle": "category",
+      "entityPlural": "categories",
+      "capabilities": {},
+      "pagination": {
+        "start": {
+          "requestInput": "after",
+          "responseField": {
+            "path": "$.pageInfo.startCursor"
+          }
+        },
+        "end": {
+          "requestInput": "before",
+          "responseField": {
+            "path": "$.pageInfo.endCursor"
+          }
+        },
+        "pageSize": {
+          "requestInput": "first",
+          "responseField": {
+            "path": "$.pageInfo.count"
+          },
+          "defaultValue": 50
+        },
+        "nextPage": {
+          "path": "$.pageInfo.hasNextPage"
+        },
+        "totalCount": {
+          "path": "$.pageInfo.totalCount"
+        }
+      }
+    },
+    {
+      "id": "listComments",
+      "name": "List comments",
+      "actionName": "listComments",
+      "apiNames": ["Console", "Api"],
+      "modelName": "Comment",
+      "actionType": "ACTION_TYPE_LIST",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.where"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Where",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.where.parent"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Parent",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.where.parent.id"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Id",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.where.parent.id.equals"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Equals",
+          "visible": true,
+          "modelName": "BlogPost"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.where.parent.id.oneOf"
+          },
+          "fieldType": "TYPE_ID",
+          "repeated": true,
+          "displayName": "One of",
+          "displayOrder": 1,
+          "visible": true,
+          "modelName": "BlogPost"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.where.parent.id.notEquals"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Not equals",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "BlogPost"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.first"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "First",
+          "displayOrder": 1,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.after"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "After",
+          "displayOrder": 2,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.last"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Last",
+          "displayOrder": 3,
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.before"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Before",
+          "displayOrder": 4,
+          "visible": true
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.count"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Count"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.totalCount"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Total count"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.hasNextPage"
+          },
+          "fieldType": "TYPE_BOOL",
+          "displayName": "Has next page"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.startCursor"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Start cursor"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.endCursor"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "End cursor"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "repeated": true,
+          "displayName": "Results",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].authorId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Author",
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "authorId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].parentId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Parent",
+          "displayOrder": 1,
+          "visible": true,
+          "link": {
+            "toolId": "getPost",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].parentId"
+                }
+              }
+            ]
+          },
+          "modelName": "Comment",
+          "fieldName": "parentId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].content"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Content",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "content"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 6,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 7,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 8,
+          "visible": true,
+          "modelName": "Comment",
+          "fieldName": "updatedAt"
+        }
+      ],
+      "title": {
+        "template": "Comments"
+      },
+      "entitySingle": "comment",
+      "entityPlural": "comments",
+      "capabilities": {},
+      "pagination": {
+        "start": {
+          "requestInput": "after",
+          "responseField": {
+            "path": "$.pageInfo.startCursor"
+          }
+        },
+        "end": {
+          "requestInput": "before",
+          "responseField": {
+            "path": "$.pageInfo.endCursor"
+          }
+        },
+        "pageSize": {
+          "requestInput": "first",
+          "responseField": {
+            "path": "$.pageInfo.count"
+          },
+          "defaultValue": 50
+        },
+        "nextPage": {
+          "path": "$.pageInfo.hasNextPage"
+        },
+        "totalCount": {
+          "path": "$.pageInfo.totalCount"
+        }
+      },
+      "entryActivityActions": [
+        {
+          "toolId": "getComment",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 1
+        }
+      ],
+      "getEntryAction": {
+        "toolId": "getComment",
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.results[*].id"
+            }
+          }
+        ]
+      },
+      "createEntryAction": {
+        "toolId": "createComment"
+      }
+    }
+  ]
+}

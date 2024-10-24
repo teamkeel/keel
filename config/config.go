@@ -37,6 +37,7 @@ type ProjectConfig struct {
 	UseDefaultApi *bool                 `yaml:"useDefaultApi,omitempty"`
 	Secrets       []Secret              `yaml:"secrets"`
 	Auth          AuthConfig            `yaml:"auth"`
+	Console       ConsoleConfig         `yaml:"console"`
 }
 
 func (p *ProjectConfig) GetEnvVars() map[string]string {
