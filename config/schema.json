@@ -126,7 +126,11 @@
         }
       },
       "additionalProperties": false
+    },
+    "disableKeelAuth": {
+      "type": "boolean"
     }
   },
+
   "additionalProperties": false
 }
