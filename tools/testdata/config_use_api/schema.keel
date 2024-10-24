@@ -7,6 +7,8 @@ model Comment {
     }
 
     actions {
+        get getComment(id)
+        create createComment() with (author.id, parent.id, content)
         list listComments(parent.id?)
     }
 }
@@ -67,10 +69,20 @@ model BlogPost {
         }
         delete deletePost(id)
     }
-
-    @permission(
-        actions: [create, get, list, update, delete],
-        expression: true
-    )
 }
 
+api Console {
+    models {
+        Comment
+        Category {
+            actions {
+                listCategories
+            }
+        }
+        BlogPost {
+            actions {
+                getPost
+            }
+        }
+    }
+}
