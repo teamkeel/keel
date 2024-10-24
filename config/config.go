@@ -37,6 +37,7 @@ type ProjectConfig struct {
 	UseDefaultApi *bool                 `yaml:"useDefaultApi,omitempty"`
 	Secrets       []Secret              `yaml:"secrets"`
 	Auth          AuthConfig            `yaml:"auth"`
+	Tools         ToolsConfig           `yaml:"tools"`
 	DisableAuth   bool                  `yaml:"disableKeelAuth"`
 }
 

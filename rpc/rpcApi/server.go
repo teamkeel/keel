@@ -174,7 +174,12 @@ func (s *Server) ListTools(ctx context.Context, input *rpc.ListToolsRequest) (*r
 		return nil, twirp.NewError(twirp.Internal, err.Error())
 	}
 
-	tools, err := tools.GenerateTools(ctx, schema)
+	config, err := GetConfig(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	tools, err := tools.GenerateTools(ctx, schema, config)
 	if err != nil {
 		return nil, twirp.NewError(twirp.Internal, err.Error())
 	}

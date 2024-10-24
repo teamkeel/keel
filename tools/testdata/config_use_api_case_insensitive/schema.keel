@@ -1,0 +1,21 @@
+model Category {
+    fields {
+        name Text
+    }
+
+    actions {
+        get getCategory(id)
+        delete deleteCategory(id)
+        list listCategories()
+    }
+}
+
+api Console {
+    models {
+        Category {
+            actions {
+                getCategory
+            }
+        }
+    }
+}
