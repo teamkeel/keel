@@ -1,0 +1,39 @@
+api Api {
+models {
+    // Something or other
+Author
+Post {
+actions {
+getPost
+listPosts
+}
+}
+Category {
+actions {
+    // Something or other
+listCategories
+}
+}
+}
+}
+
+===
+
+api Api {
+    models {
+        // Something or other
+        Author
+        Post {
+            actions {
+                getPost
+                listPosts
+            }
+        }
+        Category {
+            actions {
+                // Something or other
+                listCategories
+            }
+        }
+    }
+}
