@@ -1,13 +1,13 @@
 package config
 
 type ConsoleConfig struct {
-	UseApi *string `yaml:"useApi,omitempty"`
+	Api *string `yaml:"api,omitempty"`
 }
 
 // AccessTokenExpiry retrieves the configured or default access token expiry
 func (c *ConsoleConfig) ToolsApi() string {
-	if c.UseApi != nil {
-		return *c.UseApi
+	if c.Api != nil {
+		return *c.Api
 	} else {
 		return "api"
 	}

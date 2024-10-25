@@ -1,2 +1,2 @@
 console:
-  useApi: console
+  api: console

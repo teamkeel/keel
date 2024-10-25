@@ -85,8 +85,8 @@ func (g *Generator) Generate(ctx context.Context) error {
 // the completed generation is done later on
 func (g *Generator) scaffoldTools() {
 	var api *proto.Api
-	if g.KeelConfig.Console.UseApi != nil {
-		if api = proto.FindApi(g.Schema, *g.KeelConfig.Console.UseApi); api == nil {
+	if g.KeelConfig.Console.Api != nil {
+		if api = proto.FindApi(g.Schema, *g.KeelConfig.Console.Api); api == nil {
 			return
 		}
 	} else {

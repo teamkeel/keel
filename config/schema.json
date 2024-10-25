@@ -130,7 +130,7 @@
     "console": {
       "type": [ "object", "null" ],
       "properties": {
-        "useApi": {
+        "api": {
           "type": "string"
         }
       },
