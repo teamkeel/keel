@@ -127,6 +127,15 @@
       },
       "additionalProperties": false
     },
+    "console": {
+      "type": [ "object", "null" ],
+      "properties": {
+        "api": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "disableKeelAuth": {
       "type": "boolean"
     }

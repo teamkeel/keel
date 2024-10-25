@@ -7,6 +7,10 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/teamkeel/keel/config"
+	"github.com/teamkeel/keel/schema/parser"
+	"golang.org/x/exp/slices"
+
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	toolsproto "github.com/teamkeel/keel/tools/proto"
@@ -20,8 +24,9 @@ type Tool struct {
 }
 
 type Generator struct {
-	Schema *proto.Schema
-	Tools  map[string]*Tool
+	Schema     *proto.Schema
+	KeelConfig *config.ProjectConfig
+	Tools      map[string]*Tool
 }
 
 const fieldNameID = "id"
@@ -29,9 +34,10 @@ const fieldNameID = "id"
 var ErrInvalidSchema = errors.New("invalid schema")
 
 // NewGenerator creates a new tool config generator for the given schema
-func NewGenerator(schema *proto.Schema) (*Generator, error) {
+func NewGenerator(schema *proto.Schema, keelConfig *config.ProjectConfig) (*Generator, error) {
 	return &Generator{
-		Schema: schema,
+		Schema:     schema,
+		KeelConfig: keelConfig,
 	}, nil
 }
 
@@ -78,8 +84,23 @@ func (g *Generator) Generate(ctx context.Context) error {
 // response fields and any related/embedded tools, as these need to reference each other, so we first scaffold them and
 // the completed generation is done later on
 func (g *Generator) scaffoldTools() {
+	var api *proto.Api
+	if g.KeelConfig.Console.Api != nil {
+		if api = proto.FindApi(g.Schema, *g.KeelConfig.Console.Api); api == nil {
+			return
+		}
+	} else {
+		if api = proto.FindApi(g.Schema, parser.DefaultApi); api == nil {
+			return
+		}
+	}
+
 	for _, model := range g.Schema.GetModels() {
 		for _, action := range model.GetActions() {
+			if !slices.Contains(proto.GetActionNamesForApi(g.Schema, api), action.Name) {
+				continue
+			}
+
 			t := Tool{
 				Config: &toolsproto.ActionConfig{
 					Id:             action.GetName(),
