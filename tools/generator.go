@@ -157,7 +157,7 @@ func (g *Generator) decorateTools() error {
 	g.generateRelatedActionsLinks()
 	g.generateEntryActivityActionsLinks()
 	g.generateGetEntryActionLinks()
-	g.generateEmbeddedActionLinks()
+	g.generateEmbeddedTools()
 	g.generateCreateEntryActionLinks()
 
 	// decorate further...
@@ -298,10 +298,10 @@ func (g *Generator) generateCreateEntryActionLinks() {
 	}
 }
 
-// generateEmbeddedActionLinks will create links to embedded actions. These are generated for GET actions for models that
+// generateEmbeddedTools will create links to embedded actions. These are generated for GET actions for models that
 // have HasMany relationships provided that:
 // - the related model has a list action that has the parent field as a filter
-func (g *Generator) generateEmbeddedActionLinks() {
+func (g *Generator) generateEmbeddedTools() {
 	for _, tool := range g.Tools {
 		if !tool.Action.IsGet() {
 			continue
@@ -323,7 +323,7 @@ func (g *Generator) generateEmbeddedActionLinks() {
 					// embed the tool as a tool group
 					tool.Config.EmbeddedTools = append(tool.Config.EmbeddedTools, &toolsproto.ToolGroup{
 						Id:           f.Name,
-						Title:        &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
+						Title:        &toolsproto.StringTemplate{Template: casing.ToSentenceCase(f.Name)}, // e.g. `Order items` on a getOrder action
 						DisplayOrder: int32(displayOrder),
 						Tools: []*toolsproto.ToolGroup_GroupActionLink{
 							{

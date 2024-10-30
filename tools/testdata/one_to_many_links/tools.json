@@ -80,7 +80,7 @@
       "embeddedTools": [
         {
           "id": "items",
-          "title": { "template": "items" },
+          "title": { "template": "Items" },
           "displayOrder": 1,
           "tools": [
             {
