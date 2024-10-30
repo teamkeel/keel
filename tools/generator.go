@@ -363,7 +363,7 @@ func (g *Generator) generateInputs() error {
 			return ErrInvalidSchema
 		}
 
-		fields, err := g.makeInputsForMessage(tool.Action.Type, msg, "")
+		fields, err := g.makeInputsForMessage(tool.Action.Type, msg, "", nil)
 		if err != nil {
 			return err
 		}
@@ -430,6 +430,7 @@ func (g *Generator) generateResponses() error {
 				Repeated:      true,
 				DisplayName:   "Results",
 				Visible:       true,
+				Type:          toolsproto.ResponseFieldConfig_DEFAULT,
 			})
 		}
 		fields, err := g.makeResponsesForModel(tool.Model, pathPrefix, tool.Action.GetResponseEmbeds(), tool.SortableFields)
@@ -442,10 +443,21 @@ func (g *Generator) generateResponses() error {
 	return nil
 }
 
-func (g *Generator) makeInputsForMessage(actionType proto.ActionType, msg *proto.Message, pathPrefix string) ([]*toolsproto.RequestFieldConfig, error) {
+func (g *Generator) makeInputsForMessage(
+	actionType proto.ActionType,
+	msg *proto.Message,
+	pathPrefix string,
+	msgType *toolsproto.RequestFieldConfig_Type,
+) ([]*toolsproto.RequestFieldConfig, error) {
 	fields := []*toolsproto.RequestFieldConfig{}
 
 	for i, f := range msg.GetFields() {
+		var fType toolsproto.RequestFieldConfig_Type
+		if msgType == nil {
+			fType = inferInputType(actionType, f.Name)
+		} else {
+			fType = *msgType
+		}
 		if f.IsMessage() {
 			submsg := g.Schema.FindMessage(f.Type.MessageName.Value)
 			if submsg == nil {
@@ -453,6 +465,7 @@ func (g *Generator) makeInputsForMessage(actionType proto.ActionType, msg *proto
 			}
 
 			fields = append(fields, &toolsproto.RequestFieldConfig{
+				Type:          fType,
 				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 				FieldType:     f.Type.Type,
 				Repeated:      f.Type.Repeated,
@@ -466,7 +479,7 @@ func (g *Generator) makeInputsForMessage(actionType proto.ActionType, msg *proto
 				prefix = prefix + "[*]"
 			}
 
-			subFields, err := g.makeInputsForMessage(actionType, submsg, prefix)
+			subFields, err := g.makeInputsForMessage(actionType, submsg, prefix, &fType)
 			if err != nil {
 				return nil, err
 			}
@@ -476,6 +489,7 @@ func (g *Generator) makeInputsForMessage(actionType proto.ActionType, msg *proto
 		}
 
 		config := &toolsproto.RequestFieldConfig{
+			Type:          fType,
 			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			Repeated:      f.Type.Repeated,
@@ -530,6 +544,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			}
 
 			fields = append(fields, &toolsproto.ResponseFieldConfig{
+				Type:          toolsproto.ResponseFieldConfig_DEFAULT,
 				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 				FieldType:     f.Type.Type,
 				Repeated:      f.Type.Repeated,
@@ -557,6 +572,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			}
 
 			fields = append(fields, &toolsproto.ResponseFieldConfig{
+				Type:          toolsproto.ResponseFieldConfig_DEFAULT,
 				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 				FieldType:     f.Type.Type,
 				Repeated:      f.Type.Repeated,
@@ -580,6 +596,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 		}
 
 		config := &toolsproto.ResponseFieldConfig{
+			Type:          toolsproto.ResponseFieldConfig_DEFAULT,
 			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			Repeated:      f.Type.Repeated,
@@ -645,6 +662,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 		}
 
 		config := &toolsproto.ResponseFieldConfig{
+			Type:          toolsproto.ResponseFieldConfig_DEFAULT,
 			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			Repeated:      f.Type.Repeated,
@@ -889,38 +907,76 @@ func getPageInfoResponses() []*toolsproto.ResponseFieldConfig {
 			FieldType:     proto.Type_TYPE_OBJECT,
 			DisplayName:   "PageInfo",
 			Visible:       false,
+			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 		{
 			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.count"},
 			FieldType:     proto.Type_TYPE_INT,
 			DisplayName:   "Count",
 			Visible:       false,
+			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 		{
 			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.totalCount"},
 			FieldType:     proto.Type_TYPE_INT,
 			DisplayName:   "Total count",
 			Visible:       false,
+			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 		{
 			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.hasNextPage"},
 			FieldType:     proto.Type_TYPE_BOOL,
 			DisplayName:   "Has next page",
 			Visible:       false,
+			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 		{
 			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.startCursor"},
 			FieldType:     proto.Type_TYPE_STRING,
 			DisplayName:   "Start cursor",
 			Visible:       false,
+			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 		{
 			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.endCursor"},
 			FieldType:     proto.Type_TYPE_STRING,
 			DisplayName:   "End cursor",
 			Visible:       false,
+			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 	}
+}
+
+// inferInputType will infer the request field type based on the field name and path prefix. InputMessages are generated
+// with some hardcoded field names for certain actions (see makeproto.go):
+// Hardcoded field names from schema generation:
+// - where
+// - first
+// - after
+// - last
+// - before
+// - orderBy
+func inferInputType(actionType proto.ActionType, fieldName string) toolsproto.RequestFieldConfig_Type {
+	switch actionType {
+	case proto.ActionType_ACTION_TYPE_LIST:
+		switch fieldName {
+		case "where":
+			return toolsproto.RequestFieldConfig_FILTERS
+		case "orderBy":
+			return toolsproto.RequestFieldConfig_SORTING
+		case "first", "after", "last", "before":
+			return toolsproto.RequestFieldConfig_PAGINATION
+		}
+	case proto.ActionType_ACTION_TYPE_UPDATE:
+		switch fieldName {
+		case "where":
+			return toolsproto.RequestFieldConfig_FILTERS
+		case "orderBy":
+			return toolsproto.RequestFieldConfig_SORTING
+		}
+	}
+
+	return toolsproto.RequestFieldConfig_DEFAULT
 }
 
 // hasOnlyIDInput checks if the tool takes only one input, an ID
