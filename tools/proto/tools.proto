@@ -75,9 +75,6 @@ message ActionConfig {
 	// Only for List & Get; empty for mutations 
 	repeated ActionLink entry_activity_actions = 19; 
 	
-	// Tools that will be displayed inline (embedded) withing the one that we're defining. 
-	repeated ActionLink embedded_actions = 20;
-
 	// The action to use to get an entry on this model. Default to a get action on the same model
 	// Used for: 
 	// - fetching the record for prefilling a mutation
