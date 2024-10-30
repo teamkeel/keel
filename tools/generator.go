@@ -339,6 +339,7 @@ func (g *Generator) generateEmbeddedTools() {
 								},
 							},
 						},
+						Visible: true,
 					})
 
 					// and as an action for backwards compatibility

@@ -247,6 +247,8 @@ message ToolGroup {
 
 	// A list of decorated ActionLinks which will be embedded within this group
 	repeated GroupActionLink tools = 4;
+
+	bool visible = 5;
 }
 
 message ResponseOverrides {
