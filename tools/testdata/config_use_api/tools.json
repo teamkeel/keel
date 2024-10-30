@@ -488,7 +488,7 @@
         {
           "id": "comments",
           "title": {
-            "template": "comments"
+            "template": "Comments"
           },
           "displayOrder": 1,
           "tools": [

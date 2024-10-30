@@ -544,7 +544,7 @@
       "embeddedTools": [
         {
           "id": "comments",
-          "title": { "template": "comments" },
+          "title": { "template": "Comments" },
           "displayOrder": 1,
           "tools": [
             {
