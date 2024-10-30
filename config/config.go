@@ -372,13 +372,14 @@ func validateAuthProviders(c *ProjectConfig) []*ConfigError {
 				Type:    "reserved-prefix",
 			})
 		}
-		if p.Type == "oidc" && p.AuthorizationUrl == "" {
-			errors = append(errors, &ConfigError{
-				Message: fmt.Sprintf("auth.providers.%d: 'authorizationUrl' is required if 'type' is 'oidc'", i),
-				Field:   fmt.Sprintf("auth.providers.%d", i),
-				Type:    "required",
-			})
-		}
+		// Temporarily removed
+		// if p.Type == "oidc" && p.AuthorizationUrl == "" {
+		// 	errors = append(errors, &ConfigError{
+		// 		Message: fmt.Sprintf("auth.providers.%d: 'authorizationUrl' is required if 'type' is 'oidc'", i),
+		// 		Field:   fmt.Sprintf("auth.providers.%d", i),
+		// 		Type:    "required",
+		// 	})
+		// }
 		if p.Type == "oidc" && p.IssuerUrl == "" {
 			errors = append(errors, &ConfigError{
 				Message: fmt.Sprintf("auth.providers.%d: 'issuerUrl' is required if 'type' is 'oidc'", i),
@@ -386,13 +387,14 @@ func validateAuthProviders(c *ProjectConfig) []*ConfigError {
 				Type:    "required",
 			})
 		}
-		if p.Type == "oidc" && p.TokenUrl == "" {
-			errors = append(errors, &ConfigError{
-				Message: fmt.Sprintf("auth.providers.%d: 'tokenUrl' is required if 'type' is 'oidc'", i),
-				Field:   fmt.Sprintf("auth.providers.%d", i),
-				Type:    "required",
-			})
-		}
+		// Temporarily removed
+		// if p.Type == "oidc" && p.TokenUrl == "" {
+		// 	errors = append(errors, &ConfigError{
+		// 		Message: fmt.Sprintf("auth.providers.%d: 'tokenUrl' is required if 'type' is 'oidc'", i),
+		// 		Field:   fmt.Sprintf("auth.providers.%d", i),
+		// 		Type:    "required",
+		// 	})
+		// }
 	}
 
 	return errors
