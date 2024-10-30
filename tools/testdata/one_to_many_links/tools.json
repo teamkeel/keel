@@ -67,16 +67,6 @@
       "entitySingle": "order",
       "entityPlural": "orders",
       "capabilities": { "comments": true, "audit": true },
-      "embeddedActions": [
-        {
-          "toolId": "listLineItems",
-          "data": [
-            { "key": "$.where.order.id.equals", "path": { "path": "$.id" } }
-          ],
-          "title": { "template": "items" },
-          "displayOrder": 1
-        }
-      ],
       "embeddedTools": [
         {
           "id": "items",
@@ -95,7 +85,8 @@
                 "title": { "template": "items" }
               }
             }
-          ]
+          ],
+          "visible": true
         }
       ]
     },

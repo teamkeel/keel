@@ -530,16 +530,6 @@
           "displayOrder": 2
         }
       ],
-      "embeddedActions": [
-        {
-          "toolId": "listComments",
-          "data": [
-            { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
-          ],
-          "title": { "template": "comments" },
-          "displayOrder": 1
-        }
-      ],
       "createEntryAction": { "toolId": "createPost" },
       "embeddedTools": [
         {
@@ -559,7 +549,8 @@
                 "title": { "template": "comments" }
               }
             }
-          ]
+          ],
+          "visible": true
         }
       ]
     },
