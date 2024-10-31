@@ -1,7 +1,6 @@
 # auth.providers.0.tokenUrl: Does not match pattern '^https://'
 # auth.providers.1.tokenUrl: Does not match pattern '^https://'
 # auth.providers.1.tokenUrl: Does not match format 'uri'
-# auth.providers.2: 'tokenUrl' is required if 'type' is 'oidc'
 
 auth:
   tokens:
