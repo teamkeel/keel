@@ -339,19 +339,7 @@ func (g *Generator) generateEmbeddedTools() {
 								},
 							},
 						},
-					})
-
-					// and as an action for backwards compatibility
-					tool.Config.EmbeddedActions = append(tool.Config.EmbeddedActions, &toolsproto.ActionLink{
-						ToolId: toolId,
-						Title:  &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
-						Data: []*toolsproto.DataMapping{
-							{
-								Key:  input.FieldLocation.Path,
-								Path: &toolsproto.JsonPath{Path: tool.getIDResponseFieldPath()},
-							},
-						},
-						DisplayOrder: int32(displayOrder),
+						Visible: true,
 					})
 
 					break
