@@ -357,9 +357,7 @@
       "embeddedTools": [
         {
           "id": "comments",
-          "title": {
-            "template": "Comments"
-          },
+          "title": { "template": "Comments" },
           "displayOrder": 1,
           "tools": [
             {
@@ -392,67 +390,78 @@
           "fieldLocation": { "path": "$.where" },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
-          "visible": true
+          "visible": true,
+          "scope": "FILTERS"
         },
         {
           "fieldLocation": { "path": "$.first" },
           "fieldType": "TYPE_INT",
           "displayName": "First",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.after" },
           "fieldType": "TYPE_STRING",
           "displayName": "After",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.last" },
           "fieldType": "TYPE_INT",
           "displayName": "Last",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.before" },
           "fieldType": "TYPE_STRING",
           "displayName": "Before",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "scope": "PAGINATION"
         }
       ],
       "response": [
         {
           "fieldLocation": { "path": "$.pageInfo" },
           "fieldType": "TYPE_OBJECT",
-          "displayName": "PageInfo"
+          "displayName": "PageInfo",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.count" },
           "fieldType": "TYPE_INT",
-          "displayName": "Count"
+          "displayName": "Count",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.totalCount" },
           "fieldType": "TYPE_INT",
-          "displayName": "Total count"
+          "displayName": "Total count",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.hasNextPage" },
           "fieldType": "TYPE_BOOL",
-          "displayName": "Has next page"
+          "displayName": "Has next page",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.startCursor" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Start cursor"
+          "displayName": "Start cursor",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.endCursor" },
           "fieldType": "TYPE_STRING",
-          "displayName": "End cursor"
+          "displayName": "End cursor",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.results" },
@@ -532,26 +541,30 @@
           "fieldLocation": { "path": "$.where" },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
-          "visible": true
+          "visible": true,
+          "scope": "FILTERS"
         },
         {
           "fieldLocation": { "path": "$.where.parent" },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Parent",
-          "visible": true
+          "visible": true,
+          "scope": "FILTERS"
         },
         {
           "fieldLocation": { "path": "$.where.parent.id" },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Id",
-          "visible": true
+          "visible": true,
+          "scope": "FILTERS"
         },
         {
           "fieldLocation": { "path": "$.where.parent.id.equals" },
           "fieldType": "TYPE_ID",
           "displayName": "Equals",
           "visible": true,
-          "modelName": "BlogPost"
+          "modelName": "BlogPost",
+          "scope": "FILTERS"
         },
         {
           "fieldLocation": { "path": "$.where.parent.id.oneOf" },
@@ -560,7 +573,8 @@
           "displayName": "One of",
           "displayOrder": 1,
           "visible": true,
-          "modelName": "BlogPost"
+          "modelName": "BlogPost",
+          "scope": "FILTERS"
         },
         {
           "fieldLocation": { "path": "$.where.parent.id.notEquals" },
@@ -568,67 +582,78 @@
           "displayName": "Not equals",
           "displayOrder": 2,
           "visible": true,
-          "modelName": "BlogPost"
+          "modelName": "BlogPost",
+          "scope": "FILTERS"
         },
         {
           "fieldLocation": { "path": "$.first" },
           "fieldType": "TYPE_INT",
           "displayName": "First",
           "displayOrder": 1,
-          "visible": true
+          "visible": true,
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.after" },
           "fieldType": "TYPE_STRING",
           "displayName": "After",
           "displayOrder": 2,
-          "visible": true
+          "visible": true,
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.last" },
           "fieldType": "TYPE_INT",
           "displayName": "Last",
           "displayOrder": 3,
-          "visible": true
+          "visible": true,
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.before" },
           "fieldType": "TYPE_STRING",
           "displayName": "Before",
           "displayOrder": 4,
-          "visible": true
+          "visible": true,
+          "scope": "PAGINATION"
         }
       ],
       "response": [
         {
           "fieldLocation": { "path": "$.pageInfo" },
           "fieldType": "TYPE_OBJECT",
-          "displayName": "PageInfo"
+          "displayName": "PageInfo",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.count" },
           "fieldType": "TYPE_INT",
-          "displayName": "Count"
+          "displayName": "Count",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.totalCount" },
           "fieldType": "TYPE_INT",
-          "displayName": "Total count"
+          "displayName": "Total count",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.hasNextPage" },
           "fieldType": "TYPE_BOOL",
-          "displayName": "Has next page"
+          "displayName": "Has next page",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.startCursor" },
           "fieldType": "TYPE_STRING",
-          "displayName": "Start cursor"
+          "displayName": "Start cursor",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.endCursor" },
           "fieldType": "TYPE_STRING",
-          "displayName": "End cursor"
+          "displayName": "End cursor",
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.results" },

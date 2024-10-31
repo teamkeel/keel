@@ -100,6 +100,17 @@ message ActionConfig {
 }
 
 message RequestFieldConfig {
+	enum ScopeType {
+		// Generic input fields
+		DEFAULT = 0;
+		// Fields that control pagination
+		PAGINATION = 1;
+		// Fields used to filter the results of a list action (e.g. where)
+		FILTERS = 2;
+		// Inputs used to control sorting of results
+		SORTING = 3;
+	}
+
 	string id = 1;
 	// common fields
 	JsonPath field_location = 2;
@@ -134,9 +145,19 @@ message RequestFieldConfig {
 	// This field should only be set if `model_name` is set.
 	optional string field_name = 16;
 
+	// The scope of the request(input) field. Not to be confused with field_type which gives us the data
+	// type, this type tells us if the input controls pagination, filters or it's a generic input field
+	ScopeType scope = 17;
 }
 
 message ResponseFieldConfig {
+	enum ScopeType {
+		// Generic response fields (model fields, message fields)
+		DEFAULT = 0;
+		// Fields giving pagination info (e.g. cursor, pageSize, etc)
+		PAGINATION = 1;
+	}
+	
 	string id = 1;
 	JsonPath field_location = 2;
 	proto.Type field_type = 3;
@@ -168,6 +189,11 @@ message ResponseFieldConfig {
 	// This field indicates which field on `model_name` this type is referencing.
 	// This field should only be set if `model_name` is set.
 	optional string field_name = 14;
+
+	// The scope of the response field. Not to be confused with field_type which gives us the data
+	// type, this type tells us if the response is part of the pagination info or a generic api result 
+	// field
+	ScopeType scope = 15;
 }
 
 message ScalarValue {
