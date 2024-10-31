@@ -17,10 +17,23 @@ auth:
       name: google_2
       clientId: foo_2
 
+    # Built-in Slack provider
+    - type: slack
+      name: sl
+      clientId: foo_3
+
+    # Built-in Facebook provider
+    - type: facebook
+      name: fb
+      clientId: foo_4
+
+    # Built-in Gitlab provider
+    - type: gitlab
+      name: gitlab
+      clientId: foo_5
+
     # Custom OIDC
     - type: oidc
       name: baidu
       issuerUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
-      authorizationUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
-      tokenUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
       clientId: "kasj28fnq09ak"
