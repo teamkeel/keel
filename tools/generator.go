@@ -430,7 +430,7 @@ func (g *Generator) generateResponses() error {
 				Repeated:      true,
 				DisplayName:   "Results",
 				Visible:       true,
-				Type:          toolsproto.ResponseFieldConfig_DEFAULT,
+				Scope:         toolsproto.ResponseFieldConfig_DEFAULT,
 			})
 		}
 		fields, err := g.makeResponsesForModel(tool.Model, pathPrefix, tool.Action.GetResponseEmbeds(), tool.SortableFields)
@@ -447,16 +447,16 @@ func (g *Generator) makeInputsForMessage(
 	actionType proto.ActionType,
 	msg *proto.Message,
 	pathPrefix string,
-	msgType *toolsproto.RequestFieldConfig_Type,
+	scope *toolsproto.RequestFieldConfig_ScopeType,
 ) ([]*toolsproto.RequestFieldConfig, error) {
 	fields := []*toolsproto.RequestFieldConfig{}
 
 	for i, f := range msg.GetFields() {
-		var fType toolsproto.RequestFieldConfig_Type
-		if msgType == nil {
-			fType = inferInputType(actionType, f.Name)
+		var fScope toolsproto.RequestFieldConfig_ScopeType
+		if scope == nil {
+			fScope = inferInputType(actionType, f.Name)
 		} else {
-			fType = *msgType
+			fScope = *scope
 		}
 		if f.IsMessage() {
 			submsg := g.Schema.FindMessage(f.Type.MessageName.Value)
@@ -465,7 +465,7 @@ func (g *Generator) makeInputsForMessage(
 			}
 
 			fields = append(fields, &toolsproto.RequestFieldConfig{
-				Type:          fType,
+				Scope:         fScope,
 				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 				FieldType:     f.Type.Type,
 				Repeated:      f.Type.Repeated,
@@ -479,7 +479,7 @@ func (g *Generator) makeInputsForMessage(
 				prefix = prefix + "[*]"
 			}
 
-			subFields, err := g.makeInputsForMessage(actionType, submsg, prefix, &fType)
+			subFields, err := g.makeInputsForMessage(actionType, submsg, prefix, &fScope)
 			if err != nil {
 				return nil, err
 			}
@@ -489,7 +489,7 @@ func (g *Generator) makeInputsForMessage(
 		}
 
 		config := &toolsproto.RequestFieldConfig{
-			Type:          fType,
+			Scope:         fScope,
 			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			Repeated:      f.Type.Repeated,
@@ -544,7 +544,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			}
 
 			fields = append(fields, &toolsproto.ResponseFieldConfig{
-				Type:          toolsproto.ResponseFieldConfig_DEFAULT,
+				Scope:         toolsproto.ResponseFieldConfig_DEFAULT,
 				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 				FieldType:     f.Type.Type,
 				Repeated:      f.Type.Repeated,
@@ -572,7 +572,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			}
 
 			fields = append(fields, &toolsproto.ResponseFieldConfig{
-				Type:          toolsproto.ResponseFieldConfig_DEFAULT,
+				Scope:         toolsproto.ResponseFieldConfig_DEFAULT,
 				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 				FieldType:     f.Type.Type,
 				Repeated:      f.Type.Repeated,
@@ -596,7 +596,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 		}
 
 		config := &toolsproto.ResponseFieldConfig{
-			Type:          toolsproto.ResponseFieldConfig_DEFAULT,
+			Scope:         toolsproto.ResponseFieldConfig_DEFAULT,
 			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			Repeated:      f.Type.Repeated,
@@ -662,7 +662,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 		}
 
 		config := &toolsproto.ResponseFieldConfig{
-			Type:          toolsproto.ResponseFieldConfig_DEFAULT,
+			Scope:         toolsproto.ResponseFieldConfig_DEFAULT,
 			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
 			FieldType:     f.Type.Type,
 			Repeated:      f.Type.Repeated,
@@ -907,42 +907,42 @@ func getPageInfoResponses() []*toolsproto.ResponseFieldConfig {
 			FieldType:     proto.Type_TYPE_OBJECT,
 			DisplayName:   "PageInfo",
 			Visible:       false,
-			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
+			Scope:         toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 		{
 			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.count"},
 			FieldType:     proto.Type_TYPE_INT,
 			DisplayName:   "Count",
 			Visible:       false,
-			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
+			Scope:         toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 		{
 			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.totalCount"},
 			FieldType:     proto.Type_TYPE_INT,
 			DisplayName:   "Total count",
 			Visible:       false,
-			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
+			Scope:         toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 		{
 			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.hasNextPage"},
 			FieldType:     proto.Type_TYPE_BOOL,
 			DisplayName:   "Has next page",
 			Visible:       false,
-			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
+			Scope:         toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 		{
 			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.startCursor"},
 			FieldType:     proto.Type_TYPE_STRING,
 			DisplayName:   "Start cursor",
 			Visible:       false,
-			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
+			Scope:         toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 		{
 			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.endCursor"},
 			FieldType:     proto.Type_TYPE_STRING,
 			DisplayName:   "End cursor",
 			Visible:       false,
-			Type:          toolsproto.ResponseFieldConfig_PAGINATION,
+			Scope:         toolsproto.ResponseFieldConfig_PAGINATION,
 		},
 	}
 }
@@ -956,7 +956,7 @@ func getPageInfoResponses() []*toolsproto.ResponseFieldConfig {
 // - last
 // - before
 // - orderBy
-func inferInputType(actionType proto.ActionType, fieldName string) toolsproto.RequestFieldConfig_Type {
+func inferInputType(actionType proto.ActionType, fieldName string) toolsproto.RequestFieldConfig_ScopeType {
 	switch actionType {
 	case proto.ActionType_ACTION_TYPE_LIST:
 		switch fieldName {

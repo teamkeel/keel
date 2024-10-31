@@ -110,7 +110,7 @@
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
           "visible": true,
-          "type": "FILTERS"
+          "scope": "FILTERS"
         },
         {
           "fieldLocation": { "path": "$.first" },
@@ -118,7 +118,7 @@
           "displayName": "First",
           "displayOrder": 1,
           "visible": true,
-          "type": "PAGINATION"
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.after" },
@@ -126,7 +126,7 @@
           "displayName": "After",
           "displayOrder": 2,
           "visible": true,
-          "type": "PAGINATION"
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.last" },
@@ -134,7 +134,7 @@
           "displayName": "Last",
           "displayOrder": 3,
           "visible": true,
-          "type": "PAGINATION"
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.before" },
@@ -142,7 +142,7 @@
           "displayName": "Before",
           "displayOrder": 4,
           "visible": true,
-          "type": "PAGINATION"
+          "scope": "PAGINATION"
         }
       ],
       "response": [
@@ -150,37 +150,37 @@
           "fieldLocation": { "path": "$.pageInfo" },
           "fieldType": "TYPE_OBJECT",
           "displayName": "PageInfo",
-          "type": "PAGINATION"
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.count" },
           "fieldType": "TYPE_INT",
           "displayName": "Count",
-          "type": "PAGINATION"
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.totalCount" },
           "fieldType": "TYPE_INT",
           "displayName": "Total count",
-          "type": "PAGINATION"
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.hasNextPage" },
           "fieldType": "TYPE_BOOL",
           "displayName": "Has next page",
-          "type": "PAGINATION"
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.startCursor" },
           "fieldType": "TYPE_STRING",
           "displayName": "Start cursor",
-          "type": "PAGINATION"
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.pageInfo.endCursor" },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor",
-          "type": "PAGINATION"
+          "scope": "PAGINATION"
         },
         {
           "fieldLocation": { "path": "$.results" },
