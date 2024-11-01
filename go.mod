@@ -19,6 +19,7 @@ require (
 	github.com/fatih/camelcase v1.0.0
 	github.com/goccy/go-yaml v1.15.13
 	github.com/golang-jwt/jwt/v4 v4.5.1
+	github.com/google/cel-go v0.21.0
 	github.com/hashicorp/go-version v1.7.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.7.2
@@ -53,6 +54,7 @@ require (
 	go.opentelemetry.io/proto/otlp v1.5.0
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
 	golang.org/x/oauth2 v0.25.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d
 	google.golang.org/protobuf v1.36.2
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/postgres v1.5.11
@@ -61,6 +63,7 @@ require (
 
 require (
 	github.com/PaesslerAG/gval v1.2.4 // indirect
+	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/charmbracelet/x/ansi v0.6.0 // indirect
@@ -98,6 +101,7 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.12.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
+	github.com/stoewer/go-strcase v1.2.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tkuchiki/go-timezone v0.2.3 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect

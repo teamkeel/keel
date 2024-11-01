@@ -11,9 +11,9 @@ model BankAccount {
 
     actions {
         get getBankAccount(id) {
-            //expect-error:55:57:E027:Cannot compare User with operator 'in'
+            //expect-error:55:57:AttributeExpressionError:cannot use operator 'in' with types User and User
             @permission(expression: ctx.identity.user in bankAccount.identity.user)
-            //expect-error:55:56:E027:Cannot compare User with operator '>'
+            //expect-error:55:56:AttributeExpressionError:cannot use operator '>' with types User and User
             @permission(expression: ctx.identity.user > bankAccount.identity.user)
         }
     }

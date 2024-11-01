@@ -8,6 +8,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -29,10 +30,94 @@ const (
 type Value struct {
 	Type        ValueType
 	StringValue string // Set if Type is ValueString
-	NumberValue int    // Set if Type is ValueNumber
+	NumberValue int64  // Set if Type is ValueNumber
 	HeaderKey   string // Set if Type is ValueHeader
 	SecretKey   string // Set if Type is ValueSecret
 }
+
+type permissionGen struct {
+	schema *proto.Schema
+	model  *proto.Model
+	action *proto.Action
+	stmt   *statement
+}
+
+func gen(schema *proto.Schema, model *proto.Model, action *proto.Action, stmt *statement) resolve.Visitor[*statement] {
+	return &permissionGen{
+		schema: schema,
+		model:  model,
+		action: action,
+		stmt:   stmt,
+	}
+}
+
+func (v *permissionGen) StartCondition(nested bool) error {
+	if nested {
+		v.stmt.expression += "("
+	}
+	return nil
+}
+func (v *permissionGen) EndCondition(nested bool) error {
+	if nested {
+		v.stmt.expression += ")"
+	}
+
+	return nil
+}
+func (v *permissionGen) VisitAnd() error {
+	v.stmt.expression += " and "
+	return nil
+}
+func (v *permissionGen) VisitOr() error {
+	v.stmt.expression += " or "
+	return nil
+}
+func (v *permissionGen) VisitNot() error {
+	return nil
+}
+func (v *permissionGen) VisitOperator(op string) error {
+	v.stmt.expression += operatorMap[op][0]
+	return nil
+}
+func (v *permissionGen) VisitLiteral(value any) error {
+	if value == nil {
+		v.stmt.expression += "null"
+		return nil
+	}
+
+	switch value := value.(type) {
+	case int64:
+		v.stmt.expression += "?"
+		v.stmt.values = append(v.stmt.values, &Value{Type: ValueNumber, NumberValue: value})
+	case uint64:
+		v.stmt.expression += "?"
+		v.stmt.values = append(v.stmt.values, &Value{Type: ValueNumber, NumberValue: int64(value)})
+	case string:
+		v.stmt.expression += "?"
+		v.stmt.values = append(v.stmt.values, &Value{Type: ValueString, StringValue: fmt.Sprintf("\"%s\"", value)})
+	case bool:
+		if value {
+			v.stmt.expression += "true"
+		} else {
+			v.stmt.expression += "false"
+		}
+	default:
+		return fmt.Errorf("unsupported type in permission expression")
+	}
+
+	return nil
+}
+func (v *permissionGen) VisitIdent(ident *parser.ExpressionIdent) error {
+	return handleOperand(v.schema, v.model, ident, v.stmt)
+}
+func (v *permissionGen) VisitIdentArray(idents []*parser.ExpressionIdent) error {
+	return nil
+}
+func (v *permissionGen) Result() (*statement, error) {
+	return v.stmt, nil
+}
+
+var _ resolve.Visitor[*statement] = new(permissionGen)
 
 // ToSQL creates a single SQL query that can be run to determine if permission is granted for the
 // given action and a set of records.
@@ -43,7 +128,10 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 	tableName := identifier(m.Name)
 	pkField := identifier(m.PrimaryKeyFieldName())
 
-	stmt := &statement{}
+	stmt := &statement{
+		joins:  []string{},
+		values: []*Value{},
+	}
 	permissions := proto.PermissionsForAction(s, action)
 
 	for _, p := range permissions {
@@ -61,9 +149,9 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 			return sql, values, err
 		}
 
-		err = handleExpression(s, m, expr, stmt)
+		stmt, err = resolve.RunCelVisitor(expr, gen(s, m, action, stmt))
 		if err != nil {
-			return sql, values, err
+			return "", nil, err
 		}
 	}
 
@@ -92,118 +180,40 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 	return sql, stmt.values, nil
 }
 
-func handleExpression(s *proto.Schema, m *proto.Model, expr *parser.Expression, stmt *statement) (err error) {
-	stmt.expression += "("
-	for i, or := range expr.Or {
-		if i > 0 {
-			stmt.expression += " or "
+func handleOperand(s *proto.Schema, model *proto.Model, ident *parser.ExpressionIdent, stmt *statement) (err error) {
+	switch ident.Fragments[0] {
+	case "ctx":
+		return handleContext(s, ident, stmt)
+	case casing.ToLowerCamel(model.Name):
+		return handleModel(s, model, ident, stmt)
+	default:
+		// If not context of model must be enum, but still worth checking to be sure
+		enum := proto.FindEnum(s.Enums, ident.Fragments[0])
+		if enum == nil {
+			return fmt.Errorf("unknown ident %s", ident.Fragments[0])
 		}
-		for j, and := range or.And {
-			if j > 0 {
-				stmt.expression += " and "
-			}
 
-			if and.Expression != nil {
-				err = handleExpression(s, m, and.Expression, stmt)
-				if err != nil {
-					return err
-				}
-				continue
-			}
+		stmt.expression += "?"
+		stmt.values = append(stmt.values, &Value{Type: ValueString, StringValue: ident.Fragments[len(ident.Fragments)-1]})
 
-			cond := and.Condition
-			err = handleOperand(s, m, cond.LHS, stmt)
-			if err != nil {
-				return err
-			}
-
-			// If no RHS then we're done
-			if cond.Operator == nil {
-				continue
-			}
-
-			op := operatorMap[cond.Operator.Symbol]
-			opOpen := op[0]
-			opClose := ""
-			if len(op) == 2 {
-				opClose = op[1]
-			}
-
-			stmt.expression += opOpen
-
-			err = handleOperand(s, m, cond.RHS, stmt)
-			if err != nil {
-				return err
-			}
-
-			if opClose != "" {
-				stmt.expression += opClose
-			}
-		}
+		return nil
 	}
-
-	stmt.expression += ")"
-	return nil
 }
 
-func handleOperand(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *statement) (err error) {
-	switch {
-	case o.True:
-		stmt.expression += "true"
-		return nil
-	case o.False:
-		stmt.expression += "false"
-		return nil
-	case o.String != nil:
-		stmt.expression += "?"
-		stmt.values = append(stmt.values, &Value{Type: ValueString, StringValue: *o.String})
-		return nil
-	case o.Number != nil:
-		stmt.expression += "?"
-		stmt.values = append(stmt.values, &Value{Type: ValueNumber, NumberValue: int(*o.Number)})
-		return nil
-	case o.Null:
-		stmt.expression += "null"
-		return nil
-	case o.Array != nil:
-		return errors.New("arrays in permission rules not yet supported")
-	case o.Ident != nil:
-		switch o.Ident.Fragments[0].Fragment {
-		case "ctx":
-			return handleContext(s, o, stmt)
-		case casing.ToLowerCamel(model.Name):
-			return handleModel(s, model, o.Ident, stmt)
-		default:
-			// If not context of model must be enum, but still worth checking to be sure
-			enum := proto.FindEnum(s.Enums, o.Ident.Fragments[0].Fragment)
-			if enum == nil {
-				return fmt.Errorf("unknown ident %s", o.Ident.Fragments[0].Fragment)
-			}
-
-			stmt.expression += "?"
-			stmt.values = append(stmt.values, &Value{Type: ValueString, StringValue: o.Ident.LastFragment()})
-
-			return nil
-		}
-	}
-
-	return fmt.Errorf("unsupported operand: %s", o.ToString())
-}
-
-func handleContext(s *proto.Schema, o *parser.Operand, stmt *statement) error {
-	if len(o.Ident.Fragments) < 2 {
+func handleContext(s *proto.Schema, ident *parser.ExpressionIdent, stmt *statement) error {
+	if len(ident.Fragments) < 2 {
 		return errors.New("ctx used in expression with no properties")
 	}
 
-	switch o.Ident.Fragments[1].Fragment {
+	switch ident.Fragments[1] {
 	case "identity":
 		// ctx.identity is the same as ctx.identity.id
-		if len(o.Ident.Fragments) == 2 {
+		if len(ident.Fragments) == 2 {
 			stmt.expression += "?"
 			stmt.values = append(stmt.values, &Value{Type: ValueIdentityID})
 			return nil
 		}
-		switch o.Ident.Fragments[2].Fragment {
+		switch ident.Fragments[2] {
 		case "id":
 			stmt.expression += "?"
 			stmt.values = append(stmt.values, &Value{Type: ValueIdentityID})
@@ -217,9 +227,9 @@ func handleContext(s *proto.Schema, o *parser.Operand, stmt *statement) error {
 			err := handleModel(
 				s,
 				s.FindModel("Identity"),
-				&parser.Ident{
+				&parser.ExpressionIdent{
 					// We can drop the first fragments, which is "ctx"
-					Fragments: o.Ident.Fragments[1:],
+					Fragments: ident.Fragments[1:],
 				},
 				inner,
 			)
@@ -245,32 +255,32 @@ func handleContext(s *proto.Schema, o *parser.Operand, stmt *statement) error {
 		return nil
 	case "headers":
 		stmt.expression += "?"
-		key := o.Ident.Fragments[2].Fragment
+		key := ident.Fragments[2]
 		stmt.values = append(stmt.values, &Value{Type: ValueHeader, HeaderKey: key})
 		return nil
 	case "secrets":
 		stmt.expression += "?"
-		key := o.Ident.Fragments[2].Fragment
+		key := ident.Fragments[2]
 		stmt.values = append(stmt.values, &Value{Type: ValueSecret, SecretKey: key})
 		return nil
 	default:
-		return fmt.Errorf("unknown property %s of ctx", o.Ident.Fragments[1].Fragment)
+		return fmt.Errorf("unknown property %s of ctx", ident.Fragments[1])
 	}
 }
 
-func handleModel(s *proto.Schema, model *proto.Model, ident *parser.Ident, stmt *statement) (err error) {
+func handleModel(s *proto.Schema, model *proto.Model, ident *parser.ExpressionIdent, stmt *statement) (err error) {
 	fieldName := ""
 	for i, f := range ident.Fragments {
 		switch {
 		// The first fragment
 		case i == 0:
-			fieldName += casing.ToSnake(f.Fragment)
+			fieldName += casing.ToSnake(f)
 
 		// Remaining fragments
 		default:
-			field := proto.FindField(s.Models, model.Name, f.Fragment)
+			field := proto.FindField(s.Models, model.Name, f)
 			if field == nil {
-				return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
+				return fmt.Errorf("model %s has no field %s", model.Name, f)
 			}
 
 			isLast := i == len(ident.Fragments)-1
@@ -282,14 +292,14 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.Ident, stmt 
 				leftAlias := fieldName
 
 				// Append fragment to identifier
-				fieldName += "$" + casing.ToSnake(f.Fragment)
+				fieldName += "$" + casing.ToSnake(f)
 
 				// Right alias is the join table
 				rightAlias := fieldName
 
-				field := proto.FindField(s.Models, model.Name, f.Fragment)
+				field := proto.FindField(s.Models, model.Name, f)
 				if field == nil {
-					return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
+					return fmt.Errorf("model %s has no field %s", model.Name, f)
 				}
 
 				joinModel := s.FindModel(field.Type.ModelName.Value)
@@ -331,7 +341,7 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.Ident, stmt 
 						fieldName += "." + identifier("id")
 					}
 				} else {
-					fieldName += "." + identifier(f.Fragment)
+					fieldName += "." + identifier(f)
 				}
 			}
 		}
@@ -357,11 +367,11 @@ type statement struct {
 // SQL operators can be provided as just a simple value
 // or as a pair of opening and closing values
 var operatorMap = map[string][]string{
-	"==": {" IS NOT DISTINCT FROM "},
-	"!=": {" IS DISTINCT FROM "},
-	"<":  {" < "},
-	"<=": {" <= "},
-	">":  {" > "},
-	">=": {" >= "},
-	"in": {" IS NOT DISTINCT FROM "},
+	"_==_": {" IS NOT DISTINCT FROM "},
+	"_!=_": {" IS DISTINCT FROM "},
+	"_<_":  {" < "},
+	"_<=_": {" <= "},
+	"_>_":  {" > "},
+	"_>=_": {" >= "},
+	"@in":  {" IS NOT DISTINCT FROM "},
 }

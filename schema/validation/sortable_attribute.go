@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -100,7 +101,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			operand, err := arg.Expression.ToValue()
+			ident, err := resolve.AsIdent(arg.Expression)
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
@@ -113,19 +114,19 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			if operand.Ident == nil || len(operand.Ident.Fragments) != 1 {
+			if len(ident.Fragments) != 1 {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
 						Message: "@sortable argument is not correct formatted",
 						Hint:    "For example, use @sortable(firstName, surname)",
 					},
-					arg.Expression,
+					ident,
 				))
 				return
 			}
 
-			argumentValue := operand.Ident.Fragments[0].Fragment
+			argumentValue := ident.String()
 			modelField := query.ModelField(currentModel, argumentValue)
 
 			if modelField == nil {
@@ -134,7 +135,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 					errorhandling.ErrorDetails{
 						Message: fmt.Sprintf("@sortable argument '%s' must correspond to a field on this model", argumentValue),
 					},
-					arg.Expression,
+					ident,
 				))
 				return
 			}
@@ -145,7 +146,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 					errorhandling.ErrorDetails{
 						Message: "@sortable does not support ordering of relationships fields",
 					},
-					arg.Expression,
+					ident,
 				))
 				return
 			}
@@ -156,7 +157,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 					errorhandling.ErrorDetails{
 						Message: fmt.Sprintf("@sortable argument name '%s' already defined", argumentValue),
 					},
-					arg.Expression,
+					ident,
 				))
 				return
 			}
