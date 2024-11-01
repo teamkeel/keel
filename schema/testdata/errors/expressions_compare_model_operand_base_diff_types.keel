@@ -8,8 +8,8 @@ model BankAccount {
 
     actions {
         get getBankAccount(id) {
-            //expect-error:32:38:E027:Cannot compare BankAccount with operator 'notin'
-            @where(bankAccount not in ctx.identity.mainAccount)
+            //expect-error:34:36:AttributeExpressionError:cannot use operator 'in' with types BankAccount and BankAccount
+            @where(!(bankAccount in ctx.identity.mainAccount))
         }
     }
 }

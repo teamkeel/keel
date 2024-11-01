@@ -13,7 +13,11 @@ model Person {
         booleans Boolean[]  @default([true, true, false])
 
         // Empty array
-        dates Date[] @default([])
+        emptyTexts Text[] @default([])
+        emptyEnums MyEnum[] @default([])
+        emptyNumbers Number[] @default([])
+        emptyBooleans Boolean[]  @default([])
+        emptyDates Date[] @default([])
     }
 }
 
@@ -58,7 +62,11 @@ CREATE TABLE "person" (
 "enums" TEXT[] NOT NULL DEFAULT ARRAY['One','Two']::TEXT[],
 "numbers" INTEGER[] NOT NULL DEFAULT ARRAY[1,2,3]::INTEGER[],
 "booleans" BOOL[] NOT NULL DEFAULT ARRAY[true,true,false]::BOOL[],
-"dates" DATE[] NOT NULL DEFAULT '{}',
+"empty_texts" TEXT[] NOT NULL DEFAULT '{}',
+"empty_enums" TEXT[] NOT NULL DEFAULT '{}',
+"empty_numbers" INTEGER[] NOT NULL DEFAULT '{}',
+"empty_booleans" BOOL[] NOT NULL DEFAULT '{}',
+"empty_dates" DATE[] NOT NULL DEFAULT '{}',
 "id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()

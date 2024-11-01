@@ -36,7 +36,7 @@ model Book {
             @embed(code)
             //expect-error:20:21:AttributeArgumentError:The @embed attribute can only be used with valid model fields
             @embed(1)
-            //expect-error:20:28:AttributeArgumentError:@embed argument is not correctly formatted
+            //expect-error:20:28:AttributeArgumentError:The @embed attribute can only be used with valid model fields
             @embed(code = 1)
             //expect-error:29:30:AttributeArgumentError:The @embed attribute can only be used with valid model fields
             @embed(reviews, 2)

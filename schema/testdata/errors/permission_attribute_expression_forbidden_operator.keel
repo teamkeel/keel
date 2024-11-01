@@ -4,7 +4,7 @@ model Profile {
     }
 
     @permission(
-        //expect-error:38:39:E022:Operator '=' not permitted on @permission
+        //expect-error:21:48:AttributeExpressionError:assignment operator '=' not valid - did you mean to use the comparison operator '=='?
         expression: profile.username = "adaam2",
         actions: [get]
     )

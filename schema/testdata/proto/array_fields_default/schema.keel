@@ -1,7 +1,7 @@
 model Thing {
     fields {
         texts Text[] @default(["science"])
-        numbers Number[] @default([123,456])
+        numbers Number[] @default([123, 456])
         enums MyEnum[] @default([MyEnum.One, MyEnum.Two])
 
         emptyTexts Text[] @default([])

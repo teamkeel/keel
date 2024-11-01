@@ -4,8 +4,8 @@ model Order {
     }
 
     @permission(
-        //expect-error:155:162:E020:'postCod' not found on 'Address'
-        expression: order.customer.address.firstLine == "123 Fake Street" or (order.customer.address.secondLine == "Fake Town" and order.customer.address.postCod == "ABC123"),
+        //expect-error:153:154:AttributeExpressionError:field 'postCod' does not exist
+        expression: order.customer.address.firstLine == "123 Fake Street" || (order.customer.address.secondLine == "Fake Town" && order.customer.address.postCod == "ABC123"),
         actions: [get]
     )
 }

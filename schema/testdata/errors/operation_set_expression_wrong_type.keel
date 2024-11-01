@@ -1,0 +1,12 @@
+model Profile {
+    fields {
+        username Text @unique
+    }
+
+    actions {
+        create createProfile() {
+            //expect-error:37:40:AttributeExpressionError:expression expected to resolve to type Text but it is Number
+            @set(profile.username = 123)
+        }
+    }
+}

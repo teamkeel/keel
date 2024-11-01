@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema/parser"
 )
 
 // An ActionOperator gives a symbolic, machine-readable name to each
@@ -25,6 +24,7 @@ const (
 	Equals
 	EqualsRelative
 	NotEquals
+	Not
 	StartsWith
 	EndsWith
 	GreaterThan
@@ -157,33 +157,6 @@ func allQueryOperatorToActionOperator(in string) (out ActionOperator, err error)
 		return AllOnOrAfter, nil
 	default:
 		return out, fmt.Errorf("unrecognized operator for all query: %s", in)
-	}
-}
-
-// expressionOperatorToActionOperator converts the conditional operators that are used
-// in Keel Expressions (such as ">=") to its symbolic constant,
-// machine-readable, ActionOperator value.
-func expressionOperatorToActionOperator(in string) (out ActionOperator, err error) {
-	switch in {
-	case parser.OperatorEquals:
-		return Equals, nil
-	case parser.OperatorNotEquals:
-		return NotEquals, nil
-	case parser.OperatorGreaterThanOrEqualTo:
-		return GreaterThanEquals, nil
-	case parser.OperatorLessThanOrEqualTo:
-		return LessThanEquals, nil
-	case parser.OperatorLessThan:
-		return LessThan, nil
-	case parser.OperatorGreaterThan:
-		return GreaterThan, nil
-	case parser.OperatorIn:
-		return OneOf, nil
-	case parser.OperatorNotIn:
-		return NotOneOf, nil
-
-	default:
-		return Unknown, fmt.Errorf("this is not a recognized conditional operator: %s", in)
 	}
 }
 

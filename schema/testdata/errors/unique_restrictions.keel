@@ -10,10 +10,9 @@ model Author {
         name Text
         anotherField Text
         // timestamp cant be unique
-        //expect-error:30:37:TypeError:@unique is not permitted on Timestamp fields
+        //expect-error:30:37:TypeError:@unique is not permitted on Timestamp or Date fields
         joinedDate Timestamp @unique
         // has many cant be unique
-        //expect-error:9:14:RelationshipError:Cannot use @unique on a repeated model field
         //expect-error:22:29:TypeError:@unique is not permitted on has many relationships or arrays
         posts Post[] @unique
     }

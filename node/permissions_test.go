@@ -70,7 +70,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT DISTINCT "person"."id" 
 				FROM "person" 
-				WHERE (true) AND "person"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
+				WHERE true AND "person"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -102,7 +102,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE ("post"."publish_date" <= ${ctx.now()}) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
+				WHERE "post"."publish_date" <= ${ctx.now()} AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -136,7 +136,7 @@ module.exports.permissionFns = permissionFns;
 				SELECT DISTINCT "post"."id" 
 				FROM "post" 
 				LEFT JOIN "identity" AS "post$identity" ON "post"."identity_id" = "post$identity"."id" 
-				WHERE ("post$identity"."email" IS NOT DISTINCT FROM ${"adam@keel.xyz"}) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
+				WHERE "post$identity"."email" IS NOT DISTINCT FROM ${"adam@keel.xyz"} AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -168,7 +168,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE ("post"."view_count" < ${10}) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
+				WHERE "post"."view_count" < ${10} AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -201,7 +201,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE ("post"."identity_id" IS NOT DISTINCT FROM ${ctx.identity ? ctx.identity.id : ''}) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
+				WHERE "post"."identity_id" IS NOT DISTINCT FROM ${ctx.identity ? ctx.identity.id : ''} AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -235,7 +235,7 @@ module.exports.permissionFns = permissionFns;
 				SELECT DISTINCT "post"."id" 
 				FROM "post" 
 				LEFT JOIN "identity" AS "post$identity" ON "post"."identity_id" = "post$identity"."id" 
-				WHERE ("post$identity"."email" IS NOT DISTINCT FROM ${ctx.identity ? ctx.identity.email : ''}) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
+				WHERE "post$identity"."email" IS NOT DISTINCT FROM ${ctx.identity ? ctx.identity.email : ''} AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -268,7 +268,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE (${ctx.isAuthenticated}::boolean) AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
+				WHERE ${ctx.isAuthenticated}::boolean AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -300,7 +300,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE (${ctx.headers["secretkey"] || ""} IS NOT DISTINCT FROM "post"."secret_key") AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
+				WHERE ${ctx.headers["secretkey"] || ""} IS NOT DISTINCT FROM "post"."secret_key" AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 		{
@@ -332,7 +332,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT DISTINCT "post"."id" 
 				FROM "post" 
-				WHERE (${ctx.secrets["SECRET_KEY"] || ""} IS NOT DISTINCT FROM "post"."secret_key") AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
+				WHERE ${ctx.secrets["SECRET_KEY"] || ""} IS NOT DISTINCT FROM "post"."secret_key" AND "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 			`,
 		},
 	}

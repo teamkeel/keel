@@ -670,7 +670,7 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 
 			fields := query.ModelFields(model, func(f *parser.FieldNode) bool {
 				return f.IsScalar() &&
-					f.Type.Value != parser.FieldTypeDatetime &&
+					f.Type.Value != parser.FieldTypeTimestamp &&
 					f.Type.Value != parser.FieldTypeSecret &&
 					f.Type.Value != parser.FieldTypePassword &&
 					f.Type.Value != parser.FieldTypeID

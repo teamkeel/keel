@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/teamkeel/keel/cron"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -21,8 +22,19 @@ func ScheduleAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 			}
 
 			arg := attribute.Arguments[0]
-			op, err := arg.Expression.ToValue()
-			if err != nil || op.String == nil {
+			if arg.Label != nil {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeArgumentError,
+					errorhandling.ErrorDetails{
+						Message: "argument to @schedule cannot be labelled",
+					},
+					arg.Label,
+				))
+				return
+			}
+
+			value, _, err := resolve.ToValue[string](attribute.Arguments[0].Expression)
+			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
@@ -34,7 +46,7 @@ func ScheduleAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			src := strings.TrimPrefix(*op.String, `"`)
+			src := strings.TrimPrefix(value, `"`)
 			src = strings.TrimSuffix(src, `"`)
 
 			_, err = cron.Parse(src)
@@ -53,7 +65,7 @@ func ScheduleAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 
 				start, end := arg.Expression.GetPositionRange()
 				tok := cronError.Token
-				endOffset := (len(*op.String) - tok.End)
+				endOffset := (len(value) - tok.End)
 
 				errs.AppendError(&errorhandling.ValidationError{
 					Code: string(errorhandling.AttributeArgumentError),
@@ -68,9 +80,9 @@ func ScheduleAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 					},
 					EndPos: errorhandling.LexerPos{
 						Filename: end.Filename,
-						Offset:   end.Offset - endOffset,
+						Offset:   end.Offset - endOffset - 2,
 						Line:     end.Line,
-						Column:   end.Column - endOffset,
+						Column:   end.Column - endOffset - 2,
 					},
 				})
 			}

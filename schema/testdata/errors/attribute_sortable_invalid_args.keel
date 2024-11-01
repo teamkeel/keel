@@ -33,7 +33,7 @@ model Author {
             )
         }
         list listAuthors5() {
-            //expect-error:23:26:AttributeArgumentError:@sortable argument is not correct formatted
+            //expect-error:23:26:AttributeArgumentError:@sortable argument is not correctly formatted
             @sortable(123)
         }
     }

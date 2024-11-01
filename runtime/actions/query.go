@@ -46,10 +46,11 @@ func AllFields() *QueryOperand {
 }
 
 // Some field from the fragments of an expression or input.
-func ExpressionField(fragments []string, field string) *QueryOperand {
+func ExpressionField(fragments []string, field string, arrayField bool) *QueryOperand {
 	return &QueryOperand{
-		table:  casing.ToSnake(strings.Join(fragments, "$")),
-		column: casing.ToSnake(field),
+		table:      casing.ToSnake(strings.Join(fragments, "$")),
+		column:     casing.ToSnake(field),
+		arrayField: arrayField,
 	}
 }
 
@@ -78,6 +79,12 @@ func Null() *QueryOperand {
 	return &QueryOperand{}
 }
 
+func RuntimeEvaluated(identifier string) *QueryOperand {
+	return &QueryOperand{
+		runtimeIdentifier: identifier,
+	}
+}
+
 func ValueOrNullIfEmpty(value any) *QueryOperand {
 	if value == nil || reflect.ValueOf(value).IsZero() {
 		return Null()
@@ -86,11 +93,13 @@ func ValueOrNullIfEmpty(value any) *QueryOperand {
 }
 
 type QueryOperand struct {
-	query  *QueryBuilder
-	raw    string
-	table  string
-	column string
-	value  any
+	query             *QueryBuilder
+	raw               string
+	table             string
+	column            string
+	arrayField        bool
+	value             any
+	runtimeIdentifier string
 }
 
 // A query builder to be evaluated and injected as an operand.
@@ -136,6 +145,10 @@ func (o *QueryOperand) IsArrayValue() bool {
 	}
 
 	return true
+}
+
+func (o *QueryOperand) IsArrayField() bool {
+	return o.arrayField
 }
 
 func (o *QueryOperand) IsNull() bool {
@@ -461,6 +474,11 @@ func (query *QueryBuilder) Or() {
 	if len(query.filters) > 0 {
 		query.filters = append(query.filters, "OR")
 	}
+}
+
+// Opens a new conditional scope in the where expression (i.e. open parethesis).
+func (query *QueryBuilder) Not() {
+	query.filters = append(query.filters, "NOT")
 }
 
 // Opens a new conditional scope in the where expression (i.e. open parethesis).
@@ -810,13 +828,13 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 	// we want to create the common table expressions first,
 	// and ensure we only create the CTE once (as there may be more
 	// than once reference by other fields).
-	for _, col := range orderedKeys {
+	for i, col := range orderedKeys {
 		operand := row.values[col]
 		if !operand.IsInlineQuery() {
 			continue
 		}
 
-		cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+		cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 		cteExists := false
 		for _, c := range ctes {
 			if strings.HasPrefix(c, sqlQuote(cteAlias)) {
@@ -841,7 +859,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 		}
 	}
 
-	for _, col := range orderedKeys {
+	for i, col := range orderedKeys {
 		colName := casing.ToSnake(col)
 		columnNames = append(columnNames, sqlQuote(colName))
 		operand := row.values[col]
@@ -854,7 +872,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 			columnValues = append(columnValues, sql)
 			args = append(args, opArgs...)
 		case operand.IsInlineQuery():
-			cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+			cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 			columnAlias := ""
 
 			for i, s := range operand.query.selection {
@@ -950,13 +968,13 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 	}
 	sort.Strings(orderedKeys)
 
-	for _, v := range orderedKeys {
+	for i, v := range orderedKeys {
 		operand := query.writeValues.values[v]
 		if !operand.IsInlineQuery() {
 			continue
 		}
 
-		cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+		cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 		cteExists := false
 		for _, c := range ctes {
 			if strings.HasPrefix(c, sqlQuote(cteAlias)) {
@@ -981,11 +999,11 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 		}
 	}
 
-	for _, v := range orderedKeys {
+	for i, v := range orderedKeys {
 		operand := query.writeValues.values[v]
 
 		if operand.IsInlineQuery() {
-			cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+			cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 			columnAlias := ""
 
 			for i, s := range operand.query.selection {
@@ -1386,6 +1404,18 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		return "", nil, errors.New("no handling for rhs QueryOperand type")
 	}
 
+	// If the operand is not an array value nor an inline query,
+	// then we know it's a nested relationship lookup and
+	// so rather use Equals and NotEquals because we are joining.
+	if !rhs.IsArrayField() && !rhs.IsArrayValue() && !rhs.IsInlineQuery() {
+		if operator == OneOf {
+			operator = Equals
+		}
+		if operator == NotOneOf {
+			operator = NotEquals
+		}
+	}
+
 	switch operator {
 	case Equals:
 		template = fmt.Sprintf("%s IS NOT DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
@@ -1405,11 +1435,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		if rhs.IsInlineQuery() {
 			template = fmt.Sprintf("%s NOT IN %s", lhsSqlOperand, rhsSqlOperand)
 		} else {
-			if rhs.IsField() {
-				template = fmt.Sprintf("(NOT %s = ANY(%s) OR %s IS NOT DISTINCT FROM NULL)", lhsSqlOperand, rhsSqlOperand, rhsSqlOperand)
-			} else {
-				template = fmt.Sprintf("NOT %s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
-			}
+			template = fmt.Sprintf("NOT %s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
 		}
 	case LessThan, Before:
 		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
@@ -1424,7 +1450,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case AnyEquals:
 		template = fmt.Sprintf("%s = ANY(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AnyNotEquals:
-		template = fmt.Sprintf("(NOT %s = ANY(%s) OR %s IS NOT DISTINCT FROM NULL)", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
+		template = fmt.Sprintf("NOT %s = ANY(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AnyLessThan, AnyBefore:
 		template = fmt.Sprintf("%s > ANY(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AnyLessThanEquals, AnyOnOrBefore:
@@ -1438,7 +1464,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case AllEquals:
 		template = fmt.Sprintf("(%s = ALL(%s) AND %s IS DISTINCT FROM '{}')", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
 	case AllNotEquals:
-		template = fmt.Sprintf("(NOT %s = ALL(%s) OR %s IS NOT DISTINCT FROM '{}' OR %s IS NOT DISTINCT FROM NULL)", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
+		template = fmt.Sprintf("(NOT %s = ALL(%s) OR %s IS NOT DISTINCT FROM '{}')", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
 	case AllLessThan, AllBefore:
 		template = fmt.Sprintf("%s > ALL(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AllLessThanEquals, AllOnOrBefore:
