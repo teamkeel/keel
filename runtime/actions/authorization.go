@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/cel-go/cel"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -43,7 +44,7 @@ func AuthoriseForActionType(scope *Scope, opType proto.ActionType, rowsToAuthori
 }
 
 // authorise checks authorisation for rows using the slice of permission rules provided.
-func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[string]any, rowsToAuthorise []map[string]any) (authorised bool, err error) {
+func authorise(scope *Scope, permissions []*proto.PermissionRule, inputs map[string]any, rowsToAuthorise []map[string]any) (authorised bool, err error) {
 	ctx, span := tracer.Start(scope.Context, "Check permissions")
 	defer span.End()
 
@@ -56,8 +57,15 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 		return false, nil
 	}
 
-	canResolve, authorised, _ := TryResolveAuthorisationEarly(scope, permissions)
-	if canResolve {
+	canAuthorise, authorised, err := TryResolveAuthorisationEarly(scope, inputs, permissions)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return false, err
+	}
+
+	// If access can be concluded by role permissions alone
+	if canAuthorise {
 		return authorised, nil
 	}
 
@@ -74,7 +82,7 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 	})
 
 	// Generate SQL for the permission expressions.
-	stmt, err := GeneratePermissionStatement(scope, permissions, input, idsToAuthorise)
+	stmt, err := GeneratePermissionStatement(scope, permissions, inputs, idsToAuthorise)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -102,9 +110,39 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 	return authorised, nil
 }
 
+func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, expression string, inputs map[string]any) (bool, bool) {
+	env, err := cel.NewEnv()
+	if err != nil {
+		return false, false
+	}
+
+	ast, issues := env.Parse(expression)
+	if issues != nil && len(issues.Errors()) > 0 {
+		return false, false
+	}
+
+	prg, err := env.Program(ast)
+	if err != nil {
+		return false, false
+	}
+
+	out, _, err := prg.Eval(&OperandResolver{
+		context: ctx,
+		schema:  schema,
+		model:   model,
+		action:  action,
+		inputs:  inputs,
+	})
+	if err != nil {
+		return false, false
+	}
+
+	return true, out.Value().(bool)
+}
+
 // TryResolveAuthorisationEarly will attempt to check authorisation early without row-based querying.
 // This will take into account logical conditions and multiple expression and role permission attributes.
-func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionRule) (canResolveAll bool, authorised bool, err error) {
+func TryResolveAuthorisationEarly(scope *Scope, inputs map[string]any, permissions []*proto.PermissionRule) (canResolveAll bool, authorised bool, err error) {
 	hasDatabaseCheck := false
 	canResolveAll = false
 	for _, permission := range permissions {
@@ -112,13 +150,9 @@ func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionR
 		authorised := false
 		switch {
 		case permission.Expression != nil:
-			expression, err := parser.ParseExpression(permission.Expression.Source)
-			if err != nil {
-				return false, false, err
-			}
 
 			// Try resolve the permission early.
-			canResolve, authorised = expressions.TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, expression, map[string]any{})
+			canResolve, authorised = TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, permission.Expression.Source, inputs)
 
 			if !canResolve {
 				hasDatabaseCheck = true
@@ -206,10 +240,11 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 			return nil, err
 		}
 
-		err = query.whereByExpression(scope, expression, map[string]any{})
+		_, err = resolve.RunCelVisitor(expression, GenerateFilterQuery(scope.Context, query, scope.Schema, scope.Model, scope.Action, input))
 		if err != nil {
 			return nil, err
 		}
+
 		// Or with the next permission attribute
 		query.Or()
 	}

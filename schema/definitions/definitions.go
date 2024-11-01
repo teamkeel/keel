@@ -3,6 +3,7 @@ package definitions
 import (
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/reader"
@@ -72,19 +73,18 @@ func GetDefinition(schemaFiles []*reader.SchemaFile, pos Position) *Definition {
 					if arg.Expression == nil {
 						continue
 					}
-					for _, cond := range arg.Expression.Conditions() {
-						for _, op := range []*parser.Operand{cond.LHS, cond.RHS} {
-							if op == nil || op.Ident == nil {
-								continue
-							}
-							if op.Ident.Fragments[0].Fragment != strcase.ToLowerCamel(model.Name.Value) {
-								continue
-							}
-							op.Ident.Fragments = op.Ident.Fragments[1:]
-							def := definitionFromIdent(asts, model, op.Ident, pos)
-							if def != nil {
-								return def
-							}
+
+					operands, _ := resolve.IdentOperands(arg.Expression)
+					for _, op := range operands {
+						if op.Fragments[0] != strcase.ToLowerCamel(model.Name.Value) {
+							continue
+						}
+						op2 := &parser.ExpressionIdent{
+							Fragments: op.Fragments[1:],
+						}
+						def := definitionFromExpressionIdent(asts, model, op2, pos)
+						if def != nil {
+							return def
 						}
 					}
 				}
@@ -132,6 +132,29 @@ func definitionFromIdent(asts []*parser.AST, model *parser.ModelNode, ident *par
 		if !tokenContainsPosition(i.Tokens[0], pos) {
 			continue
 		}
+
+		return definitionFromPosition(field.Name.Pos)
+	}
+
+	return nil
+}
+
+func definitionFromExpressionIdent(asts []*parser.AST, model *parser.ModelNode, ident *parser.ExpressionIdent, pos Position) *Definition {
+	var field *parser.FieldNode
+	for _, i := range ident.Fragments {
+		if model == nil {
+			break
+		}
+
+		field = query.ModelField(model, i)
+		if field == nil {
+			break
+		}
+
+		model = query.Model(asts, field.Type.Value)
+		// if !tokenContainsPosition(ident.Tokens[0], pos) {
+		// 	continue
+		// }
 
 		return definitionFromPosition(field.Name.Pos)
 	}

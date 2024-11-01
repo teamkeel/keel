@@ -24,11 +24,11 @@ model Product {
         }
         //expect-error:13:30:ActionInputError:The action 'getBySkuOrShampoo' can only get a single record and therefore must be filtered by unique fields
         get getBySkuOrShampoo() {
-            @where(product.sku == ctx.identity.user.assignedProduct.sku or product.name == "Shampoo")
+            @where(product.sku == ctx.identity.user.assignedProduct.sku || product.name == "Shampoo")
         }
         //expect-error:13:34:ActionInputError:The action 'getBySkuOrIdOrShampoo' can only get a single record and therefore must be filtered by unique fields
         get getBySkuOrIdOrShampoo(productId: ID) {
-            @where(product.sku == ctx.identity.user.assignedProduct.sku and product.id == productId or product.name == "Shampoo")
+            @where(product.sku == ctx.identity.user.assignedProduct.sku && product.id == productId || product.name == "Shampoo")
         }
     }
 }

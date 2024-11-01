@@ -6,7 +6,7 @@ model Post {
 
     actions {
         get posts(id) {
-            //expect-error:32:33:E022:Operator '=' not permitted on @where
+            //expect-error:20:37:AttributeExpressionError:assignment operator '=' not valid - did you mean to use the comparison operator '=='?
             @where(post.titles = 123)
         }
     }

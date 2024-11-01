@@ -12,7 +12,7 @@ model Product {
         }
         //expect-error:13:38:ActionInputError:The action 'getByBarcodeOrShampooExpr' can only get a single record and therefore must be filtered by unique fields
         get getByBarcodeOrShampooExpr(barcode: Text) {
-            @where(product.stock.barcode == barcode or product.name == "Shampoo")
+            @where(product.stock.barcode == barcode || product.name == "Shampoo")
         }
         //expect-error:13:34:ActionInputError:The action 'getBySupplierSkuInput' can only get a single record and therefore must be filtered by unique fields
         get getBySupplierSkuInput(stock.supplierSku)

@@ -1,6 +1,6 @@
 model Post {
     fields {
-        //expect-error:32:39:E048:"Draft" is Text but field type is PostType
+        //expect-error:32:39:AttributeExpressionError:expression expected to resolve to type PostType but it is Text
         type PostType @default("Draft")
     }
 }

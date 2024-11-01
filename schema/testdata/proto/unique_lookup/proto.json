@@ -114,7 +114,7 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "whereExpressions": [
             {
-              "source": "product.sku == sku and product.name == \"Shampoo\""
+              "source": "product.sku == sku && product.name == \"Shampoo\""
             }
           ],
           "inputMessageName": "GetbySkuAndShampooInput"
@@ -126,7 +126,7 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "whereExpressions": [
             {
-              "source": "product.name == \"Shampoo\" and product.sku == sku"
+              "source": "product.name == \"Shampoo\" && product.sku == sku"
             }
           ],
           "inputMessageName": "GetbySkuAndShampooInverseInput"
@@ -138,7 +138,7 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "whereExpressions": [
             {
-              "source": "product.sku == ctx.identity.user.assignedProduct.sku or product.id == productId"
+              "source": "product.sku == ctx.identity.user.assignedProduct.sku || product.id == productId"
             }
           ],
           "inputMessageName": "GetbySkuOrIdInput"
@@ -150,7 +150,7 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "whereExpressions": [
             {
-              "source": "product.sku == sku and product.name != \"Shampoo\""
+              "source": "product.sku == sku && product.name != \"Shampoo\""
             }
           ],
           "inputMessageName": "GetbySkuAndNotShampooInput"

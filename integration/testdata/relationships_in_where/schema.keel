@@ -8,17 +8,17 @@ model Post {
     actions {
         // For testing AND conditions
         get getPost(id) {
-            @where(expression: post.theAuthor.isActive == true and post.isActive)
+            @where(expression: post.theAuthor.isActive == true && post.isActive)
         }
         list listPosts() {
-            @where(expression: post.theAuthor.isActive == true and post.isActive)
+            @where(expression: post.theAuthor.isActive == true && post.isActive)
         }
         // For testing OR conditions
         get getPostORed(id) {
-            @where(expression: post.theAuthor.isActive or post.isActive)
+            @where(expression: post.theAuthor.isActive || post.isActive)
         }
         list listPostsORed() {
-            @where(expression: post.theAuthor.isActive or post.isActive)
+            @where(expression: post.theAuthor.isActive || post.isActive)
         }
     }
 
@@ -35,17 +35,17 @@ model Author {
     actions {
         // For testing AND conditions
         get getAuthor(id) {
-            @where(expression: true in author.thePosts.isActive and author.isActive)
+            @where(expression: true in author.thePosts.isActive && author.isActive)
         }
         list listAuthors() {
-            @where(expression: true in author.thePosts.isActive and author.isActive)
+            @where(expression: true in author.thePosts.isActive && author.isActive)
         }
         // For testing OR conditions
         get getAuthorORed(id) {
-            @where(expression: true in author.thePosts.isActive or author.isActive)
+            @where(expression: true in author.thePosts.isActive || author.isActive)
         }
         list listAuthorsORed() {
-            @where(expression: true in author.thePosts.isActive or author.isActive)
+            @where(expression: true in author.thePosts.isActive || author.isActive)
         }
     }
 

@@ -8,13 +8,13 @@ model Post {
     actions {
         // For testing AND conditions
         create createPost() with (title, theAuthor.id, isActive?) {
-            @permission(expression: post.theAuthor.isActive == true and post.isActive)
+            @permission(expression: post.theAuthor.isActive == true && post.isActive)
         }
         get getPost(id) {
-            @permission(expression: post.theAuthor.isActive == true and post.isActive)
+            @permission(expression: post.theAuthor.isActive == true && post.isActive)
         }
         list listPosts() {
-            @permission(expression: post.theAuthor.isActive == true and post.isActive)
+            @permission(expression: post.theAuthor.isActive == true && post.isActive)
         }
         // For testing OR conditions
         create createPostORed() with (title, theAuthor.id, isActive?) {
@@ -41,10 +41,10 @@ model Author {
 
     actions {
         get getAuthor(id) {
-            @permission(expression: true in author.thePosts.isActive and author.isActive)
+            @permission(expression: true in author.thePosts.isActive && author.isActive)
         }
         list listAuthors() {
-            @permission(expression: true in author.thePosts.isActive and author.isActive)
+            @permission(expression: true in author.thePosts.isActive && author.isActive)
         }
         // For testing OR conditions
         get getAuthorORed(id) {

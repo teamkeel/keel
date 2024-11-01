@@ -53,7 +53,7 @@ model Thing {
         }
 
         list notInTextFieldToLit() {
-            @where(thing.title not in ["title2", "title3"])
+            @where(!(thing.title in ["title2", "title3"]))
         }
     }
 }

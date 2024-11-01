@@ -459,10 +459,9 @@ test("array fields - list action implicit querying - text", async () => {
     },
   });
 
-  expect(things10.results).toHaveLength(3);
-  expect(things10.results[0].id).toEqual(t4.id);
-  expect(things10.results[1].id).toEqual(t5.id);
-  expect(things10.results[2].id).toEqual(t7.id);
+  expect(things10.results).toHaveLength(2);
+  expect(things10.results[0].id).toEqual(t5.id);
+  expect(things10.results[1].id).toEqual(t7.id);
 
   const things11 = await actions.listThings({
     where: {
@@ -474,13 +473,12 @@ test("array fields - list action implicit querying - text", async () => {
     },
   });
 
-  expect(things11.results).toHaveLength(6);
+  expect(things11.results).toHaveLength(5);
   expect(things11.results[0].id).toEqual(t1.id);
   expect(things11.results[1].id).toEqual(t2.id);
   expect(things11.results[2].id).toEqual(t3.id);
-  expect(things11.results[3].id).toEqual(t4.id);
-  expect(things11.results[4].id).toEqual(t5.id);
-  expect(things11.results[5].id).toEqual(t6.id);
+  expect(things11.results[3].id).toEqual(t5.id);
+  expect(things11.results[4].id).toEqual(t6.id);
 });
 
 test("array fields - list action implicit querying - number", async () => {

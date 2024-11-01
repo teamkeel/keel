@@ -6,6 +6,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -39,6 +40,7 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 					},
 					attribute.Name,
 				))
+				return
 			}
 		},
 		LeaveAttribute: func(n *parser.AttributeNode) {
@@ -56,7 +58,7 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
 						Message: "@on does not support or require named arguments",
-						Hint:    "For example, @on([create, update], verifyEmailAddress)",
+						Hint:    "For example, use @on([create, update], verifyEmailAddress)",
 					},
 					arg,
 				))
@@ -65,19 +67,14 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 
 			// Rules for the first argument (the action types array)
 			if len(arguments) == 1 {
-				operand, err := arg.Expression.ToValue()
+				operands, err := resolve.AsIdentArray(arg.Expression)
 				if err != nil {
 					errs.AppendError(actionTypesNonArrayError(arg))
 					return
 				}
 
-				if operand.Array == nil {
-					errs.AppendError(actionTypesNonArrayError(arg))
-					return
-				}
-
-				for _, element := range operand.Array.Values {
-					if element.Ident == nil || len(element.Ident.Fragments) != 1 {
+				for _, element := range operands {
+					if len(element.Fragments) != 1 {
 						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 							errorhandling.AttributeArgumentError,
 							errorhandling.ErrorDetails{
@@ -89,14 +86,14 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 						continue
 					}
 
-					if !lo.Contains(supportedActionTypes, element.Ident.Fragments[0].Fragment) {
+					if !lo.Contains(supportedActionTypes, element.Fragments[0]) {
 						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 							errorhandling.AttributeArgumentError,
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf("@on only supports the following action types: %s", strings.Join(supportedActionTypes, ", ")),
 								Hint:    "For example, @on([create, update], verifyEmailAddress)",
 							},
-							element.Ident.Fragments[0],
+							element,
 						))
 					}
 				}
@@ -104,24 +101,18 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 
 			// Rules for the second argument (the subscriber name)
 			if len(arguments) == 2 {
-				operand, err := arg.Expression.ToValue()
+				ident, err := resolve.AsIdent(arg.Expression)
 				if err != nil {
 					errs.AppendError(subscriberNameInvalidError(arg))
 					return
 				}
 
-				if operand.Ident == nil {
-					errs.AppendError(subscriberNameInvalidError(arg))
+				if len(ident.Fragments) != 1 {
+					errs.AppendError(subscriberNameInvalidError(ident))
 					return
 				}
 
-				if len(operand.Ident.Fragments) != 1 {
-					errs.AppendError(subscriberNameInvalidError(arg))
-					return
-				}
-
-				name := operand.Ident.Fragments[0].Fragment
-
+				name := ident.String()
 				if name != strcase.ToLowerCamel(name) {
 					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 						errorhandling.AttributeArgumentError,
@@ -129,7 +120,7 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 							Message: "a valid function name must be in lower camel case",
 							Hint:    fmt.Sprintf("Try use '%s'", strcase.ToLowerCamel(name)),
 						},
-						arg,
+						ident,
 					))
 					return
 				}
@@ -153,7 +144,7 @@ func actionTypesNonArrayError(position node.ParserNode) *errorhandling.Validatio
 	return errorhandling.NewValidationErrorWithDetails(
 		errorhandling.AttributeArgumentError,
 		errorhandling.ErrorDetails{
-			Message: "@on action types argument must be an array",
+			Message: "@on argument must be an array of action types",
 			Hint:    "For example, @on([create, update], verifyEmailAddress)",
 		},
 		position)

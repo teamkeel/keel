@@ -14,7 +14,7 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
 	// Attempt to resolve permissions early; i.e. before row-based database querying.
-	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, input, permissions)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 }
 
 func GenerateGetStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {
-	err := query.applyImplicitFilters(scope, input)
+	err := query.ApplyImplicitFilters(scope, input)
 	if err != nil {
 		return nil, err
 	}

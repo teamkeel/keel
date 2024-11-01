@@ -142,9 +142,9 @@ func Execute(scope *Scope, input any) (result any, meta *common.ResponseMetadata
 }
 
 func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetadata, error) {
+	inputsAsMap, _ := inputs.(map[string]any)
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
-
-	canAuthoriseEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
+	canAuthoriseEarly, authorised, err := TryResolveAuthorisationEarly(scope, inputsAsMap, permissions)
 	if err != nil {
 		return nil, nil, err
 	}
