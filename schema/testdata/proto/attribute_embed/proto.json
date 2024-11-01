@@ -115,6 +115,17 @@
         },
         {
           "modelName": "Review",
+          "name": "bookId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Book",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Review",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -143,17 +154,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Review",
-          "name": "bookId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Book",
-            "relatedModelField": "id"
           }
         }
       ],
@@ -219,6 +219,17 @@
         },
         {
           "modelName": "Book",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Author",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Book",
           "name": "reviews",
           "type": {
             "type": "TYPE_MODEL",
@@ -267,17 +278,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Book",
-          "name": "authorId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Author",
-            "relatedModelField": "id"
           }
         }
       ],
@@ -352,6 +352,18 @@
         },
         {
           "modelName": "Code",
+          "name": "bookId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Book",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Code",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -380,18 +392,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Code",
-          "name": "bookId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Book",
-            "relatedModelField": "id"
           }
         }
       ]
@@ -868,7 +868,8 @@
           "messageName": "IdQueryInput",
           "name": "equals",
           "type": {
-            "type": "TYPE_ID"
+            "type": "TYPE_ID",
+            "modelName": "Book"
           },
           "optional": true,
           "nullable": true
@@ -878,6 +879,7 @@
           "name": "oneOf",
           "type": {
             "type": "TYPE_ID",
+            "modelName": "Book",
             "repeated": true
           },
           "optional": true
@@ -886,7 +888,8 @@
           "messageName": "IdQueryInput",
           "name": "notEquals",
           "type": {
-            "type": "TYPE_ID"
+            "type": "TYPE_ID",
+            "modelName": "Book"
           },
           "optional": true,
           "nullable": true

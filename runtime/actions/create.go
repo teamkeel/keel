@@ -23,15 +23,17 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		return nil, err
 	}
 
-	// handle file uploads
-	in, err := handleFileUploads(scope, input)
-	if err != nil {
-		return nil, fmt.Errorf("handling file uploads: %w", err)
+	if scope.Model.HasFiles() {
+		// handle file uploads
+		input, err = handleFileUploads(scope, input)
+		if err != nil {
+			return nil, fmt.Errorf("handling file uploads: %w", err)
+		}
 	}
 
 	// Generate the SQL statement
 	query := NewQuery(scope.Model)
-	statement, err := GenerateCreateStatement(query, scope, in)
+	statement, err := GenerateCreateStatement(query, scope, input)
 	if err != nil {
 		return nil, err
 	}
@@ -64,10 +66,13 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 			return nil
 		})
 	}
+	if err != nil {
+		return nil, err
+	}
 
 	// if we have any files in our results we need to transform them to the object structure required
 	if scope.Model.HasFiles() {
-		res, err = transformFileResponses(scope.Context, scope.Model, res)
+		res, err = transformModelFileResponses(scope.Context, scope.Model, res)
 	}
 
 	return res, err

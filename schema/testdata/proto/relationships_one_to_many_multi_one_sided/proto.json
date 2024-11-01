@@ -14,6 +14,17 @@
         },
         {
           "modelName": "Post",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Author",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Post",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -42,17 +53,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "authorId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Author",
-            "relatedModelField": "id"
           }
         }
       ]
@@ -71,6 +71,17 @@
         },
         {
           "modelName": "Author",
+          "name": "postId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Post",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Author",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -99,17 +110,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Author",
-          "name": "postId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Post",
-            "relatedModelField": "id"
           }
         }
       ]

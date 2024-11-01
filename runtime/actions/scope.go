@@ -95,7 +95,10 @@ func Execute(scope *Scope, input any) (result any, meta *common.ResponseMetadata
 	inputsAsMap, isMap := input.(map[string]any)
 
 	if isMap {
-		inputsAsMap, err = TransformInputTypes(scope.Schema, scope.Action, inputsAsMap)
+		message := scope.Schema.FindMessage(scope.Action.InputMessageName)
+		isFunction := scope.Action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+
+		inputsAsMap, err = TransformInputs(scope.Schema, message, inputsAsMap, isFunction)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -103,12 +106,6 @@ func Execute(scope *Scope, input any) (result any, meta *common.ResponseMetadata
 
 	switch scope.Action.Implementation {
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM:
-		if isMap {
-			input, err = TransformCustomFunctionsInputTypes(scope.Schema, scope.Action.InputMessageName, inputsAsMap)
-			if err != nil {
-				return nil, nil, err
-			}
-		}
 		result, meta, err = executeCustomFunction(scope, input)
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME:
 		if !isMap {
@@ -180,7 +177,7 @@ func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetad
 	message := scope.Schema.FindMessage(scope.Action.ResponseMessageName)
 
 	if asMap, ok := resp.(map[string]any); ok {
-		resp, err = transformFileResponsesForFunctions(scope.Context, message, asMap)
+		resp, err = transformMessageFileResponses(scope.Context, scope.Schema, message, asMap)
 		if err != nil {
 			return nil, nil, err
 		}

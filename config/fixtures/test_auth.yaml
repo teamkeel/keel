@@ -9,7 +9,7 @@ auth:
   providers:
     # Built-in Google provider
     - type: google
-      name: _Google_Client
+      name: google_client
       clientId: foo_1
 
     # Built-in Google provider
@@ -17,8 +17,23 @@ auth:
       name: google_2
       clientId: foo_2
 
+    # Built-in Slack provider
+    - type: slack
+      name: sl
+      clientId: foo_3
+
+    # Built-in Facebook provider
+    - type: facebook
+      name: fb
+      clientId: foo_4
+
+    # Built-in Gitlab provider
+    - type: gitlab
+      name: gitlab
+      clientId: foo_5
+
     # Custom OIDC
     - type: oidc
-      name: Baidu
-      issuerUrl: 'https://dev-skhlutl45lbqkvhv.us.auth0.com'
-      clientId: 'kasj28fnq09ak'
+      name: baidu
+      issuerUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
+      clientId: "kasj28fnq09ak"

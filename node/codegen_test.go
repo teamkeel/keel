@@ -81,12 +81,11 @@ model Account {
 
 	expected := `
 export interface Account {
+	identityId: string
 	id: string
 	createdAt: Date
 	updatedAt: Date
-	identityId: string
-}
-`
+}`
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := s.FindModel("Account")
 		writeModelInterface(w, m, false)
@@ -309,15 +308,15 @@ func TestModelAPIFindManyDeclaration(t *testing.T) {
 	t.Parallel()
 	expected := `
 export type PersonOrderBy = {
-	firstName?: SortDirection,
-	lastName?: SortDirection,
-	age?: SortDirection,
-	dateOfBirth?: SortDirection,
-	gender?: SortDirection,
-	hasChildren?: SortDirection,
-	id?: SortDirection,
-	createdAt?: SortDirection,
-	updatedAt?: SortDirection
+	firstName?: runtime.SortDirection,
+	lastName?: runtime.SortDirection,
+	age?: runtime.SortDirection,
+	dateOfBirth?: runtime.SortDirection,
+	gender?: runtime.SortDirection,
+	hasChildren?: runtime.SortDirection,
+	id?: runtime.SortDirection,
+	createdAt?: runtime.SortDirection,
+	updatedAt?: runtime.SortDirection
 }
 
 export interface PersonFindManyParams {
@@ -1272,10 +1271,10 @@ export interface ListPeopleWhere {
 	favouriteSport: SportQueryInput;
 }
 export interface ListPeopleOrderByName {
-	name: SortDirection;
+	name: runtime.SortDirection;
 }
 export interface ListPeopleOrderByFavouriteSport {
-	favouriteSport: SortDirection;
+	favouriteSport: runtime.SortDirection;
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhere;
@@ -1427,10 +1426,10 @@ model Person {
 		updatedAt: Date
 	}
 	birthplace: City
+	countryId: string
 	id: string
 	createdAt: Date
 	updatedAt: Date
-	countryId: string
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1790,8 +1789,8 @@ model Member {
 }`
 
 	expected := `
-export declare function VerifyEmail(fn: (ctx: SubscriberContextAPI, event: VerifyEmailEvent) => Promise<void>): Promise<void>;
-export declare function SendWelcomeEmail(fn: (ctx: SubscriberContextAPI, event: SendWelcomeEmailEvent) => Promise<void>): Promise<void>;`
+export declare const VerifyEmail: runtime.FuncWithConfig<{(fn: (ctx: SubscriberContextAPI, event: VerifyEmailEvent) => Promise<void>): Promise<void>}>;
+export declare const SendWelcomeEmail: runtime.FuncWithConfig<{(fn: (ctx: SubscriberContextAPI, event: SendWelcomeEmailEvent) => Promise<void>): Promise<void>}>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		for _, s := range s.Subscribers {
@@ -1816,12 +1815,12 @@ job AdHocJobWithInputs {
 job AdHocJobWithoutInputs {
 	@permission(roles: [Admin])
 }
-role Admin {}
-	`
+role Admin {}`
+
 	expected := `
-export declare function JobWithoutInputs(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>;
-export declare function AdHocJobWithInputs(fn: (ctx: JobContextAPI, inputs: AdHocJobWithInputsMessage) => Promise<void>): Promise<void>;
-export declare function AdHocJobWithoutInputs(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>;`
+export declare const JobWithoutInputs: runtime.FuncWithConfig<{(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>}>;
+export declare const AdHocJobWithInputs: runtime.FuncWithConfig<{(fn: (ctx: JobContextAPI, inputs: AdHocJobWithInputsMessage) => Promise<void>): Promise<void>}>;
+export declare const AdHocJobWithoutInputs: runtime.FuncWithConfig<{(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>}>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		for _, j := range s.Jobs {

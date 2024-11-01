@@ -729,16 +729,6 @@
   },
   "components": {
     "schemas": {
-      "User": {
-        "properties": {
-          "createdAt": { "type": "string", "format": "date-time" },
-          "firstName": { "type": "string" },
-          "id": { "type": "string" },
-          "surname": { "type": "string" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        },
-        "required": ["firstName", "surname", "id", "createdAt", "updatedAt"]
-      },
       "Book": {
         "properties": {
           "authorId": { "type": "string" },
@@ -747,17 +737,17 @@
           "title": { "type": "string" },
           "updatedAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["title", "id", "createdAt", "updatedAt", "authorId"]
+        "required": ["title", "authorId", "id", "createdAt", "updatedAt"]
       },
       "Code": {
         "properties": {
+          "bookId": { "type": "string" },
+          "code": { "type": "string" },
           "createdAt": { "type": "string", "format": "date-time" },
           "id": { "type": "string" },
-          "code": { "type": "string" },
-          "bookId": { "type": "string" },
           "updatedAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["code", "id", "createdAt", "updatedAt", "bookId"]
+        "required": ["code", "bookId", "id", "createdAt", "updatedAt"]
       },
       "CreateBookAuthorInput": {
         "type": "object",
@@ -839,7 +829,17 @@
           "id": { "type": "string" },
           "updatedAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["content", "id", "createdAt", "updatedAt", "bookId"]
+        "required": ["content", "bookId", "id", "createdAt", "updatedAt"]
+      },
+      "User": {
+        "properties": {
+          "createdAt": { "type": "string", "format": "date-time" },
+          "firstName": { "type": "string" },
+          "id": { "type": "string" },
+          "surname": { "type": "string" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["firstName", "surname", "id", "createdAt", "updatedAt"]
       }
     }
   }

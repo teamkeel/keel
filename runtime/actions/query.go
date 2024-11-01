@@ -723,7 +723,7 @@ func (query *QueryBuilder) InsertStatement(ctx context.Context) *Statement {
 	statement := fmt.Sprintf("WITH %s SELECT %s FROM %s",
 		strings.Join(ctes, ", "),
 		strings.Join(selection, ", "),
-		alias)
+		sqlQuote(alias))
 
 	return &Statement{
 		model:    query.Model,
@@ -745,14 +745,14 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 
 		// For every row that this references, we need to set the foreign key.
 		// For example, on the Sale row; customerId = (SELECT id FROM new_customer_1)
-		row.values[r.foreignKey.ForeignKeyFieldName.Value] = Raw(fmt.Sprintf("(SELECT id FROM %s)", primaryKeyTable))
+		row.values[r.foreignKey.ForeignKeyFieldName.Value] = Raw(fmt.Sprintf("(SELECT \"id\" FROM %s)", sqlQuote(primaryKeyTable)))
 	}
 
 	// Does this foreign key of the relationship exist on this row?
 	// This means this row exists as a referencedBy row for another.
 	// For example, on the SaleItem row; saleId = (SELECT id FROM new_sale_1)
 	if foreignKey != nil && row.model.Name == foreignKey.ModelName {
-		row.values[foreignKey.ForeignKeyFieldName.Value] = Raw(fmt.Sprintf("(SELECT id FROM %s)", primaryKeyTableAlias))
+		row.values[foreignKey.ForeignKeyFieldName.Value] = Raw(fmt.Sprintf("(SELECT \"id\" FROM %s)", sqlQuote(primaryKeyTableAlias)))
 	}
 
 	// Make iterating through the map with deterministic ordering
@@ -777,7 +777,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 		cteAlias := fmt.Sprintf("select_%s", operand.query.table)
 		cteExists := false
 		for _, c := range ctes {
-			if strings.HasPrefix(c, cteAlias) {
+			if strings.HasPrefix(c, sqlQuote(cteAlias)) {
 				cteExists = true
 				break
 			}
@@ -786,11 +786,11 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 		if !cteExists {
 			cteAliases := []string{}
 			for i := range operand.query.selection {
-				cteAliases = append(cteAliases, fmt.Sprintf("column_%v", i))
+				cteAliases = append(cteAliases, sqlQuote(fmt.Sprintf("column_%v", i)))
 			}
 
 			cte := fmt.Sprintf("%s (%s) AS (%s)",
-				cteAlias,
+				sqlQuote(cteAlias),
 				strings.Join(cteAliases, ", "),
 				operand.query.SelectStatement().SqlTemplate())
 
@@ -801,7 +801,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 
 	for _, col := range orderedKeys {
 		colName := casing.ToSnake(col)
-		columnNames = append(columnNames, colName)
+		columnNames = append(columnNames, sqlQuote(colName))
 		operand := row.values[col]
 
 		switch {
@@ -822,7 +822,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 				}
 			}
 
-			sql := fmt.Sprintf("(SELECT %s FROM %s)", columnAlias, cteAlias)
+			sql := fmt.Sprintf("(SELECT %s FROM %s)", sqlQuote(columnAlias), sqlQuote(cteAlias))
 			columnValues = append(columnValues, sql)
 		default:
 			panic("no handling for rhs QueryOperand type")
@@ -840,7 +840,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 	}
 
 	cte := fmt.Sprintf("%s AS (INSERT INTO %s %s RETURNING *)",
-		alias,
+		sqlQuote(alias),
 		sqlQuote(casing.ToSnake(row.model.Name)),
 		values)
 
@@ -917,7 +917,7 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 		cteAlias := fmt.Sprintf("select_%s", operand.query.table)
 		cteExists := false
 		for _, c := range ctes {
-			if strings.HasPrefix(c, cteAlias) {
+			if strings.HasPrefix(c, sqlQuote(cteAlias)) {
 				cteExists = true
 				break
 			}
@@ -926,11 +926,11 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 		if !cteExists {
 			cteAliases := []string{}
 			for i := range operand.query.selection {
-				cteAliases = append(cteAliases, fmt.Sprintf("column_%v", i))
+				cteAliases = append(cteAliases, sqlQuote(fmt.Sprintf("column_%v", i)))
 			}
 
 			cte := fmt.Sprintf("%s (%s) AS (%s)",
-				cteAlias,
+				sqlQuote(cteAlias),
 				strings.Join(cteAliases, ", "),
 				operand.query.SelectStatement().SqlTemplate())
 
@@ -953,28 +953,22 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 				}
 			}
 
-			sql := fmt.Sprintf("(SELECT %s FROM %s)", columnAlias, cteAlias)
-			sets = append(sets, fmt.Sprintf("%s = %s", casing.ToSnake(v), sql))
+			sql := fmt.Sprintf("(SELECT %s FROM %s)", sqlQuote(columnAlias), sqlQuote(cteAlias))
+			sets = append(sets, fmt.Sprintf("%s = %s", sqlQuote(casing.ToSnake(v)), sql))
 		} else {
 			sqlOperand := operand.toSqlOperandString(query)
 			sqlArgs := operand.toSqlArgs()
 
 			args = append(args, sqlArgs...)
-			sets = append(sets, fmt.Sprintf("%s = %s", casing.ToSnake(v), sqlOperand))
+			sets = append(sets, fmt.Sprintf("%s = %s", sqlQuote(casing.ToSnake(v)), sqlOperand))
 		}
 	}
 
 	args = append(args, query.args...)
 
-	var from string
 	if len(query.joins) > 0 {
-		for i, j := range query.joins {
-			if i == 0 {
-				from = fmt.Sprintf("FROM %s AS %s", j.table, j.alias)
-				queryFilters = append([]string{j.condition, "AND"}, queryFilters...)
-			} else {
-				joins += fmt.Sprintf("%s JOIN %s AS %s ON %s ", query.joinType, j.table, j.alias, j.condition)
-			}
+		for _, j := range query.joins {
+			joins += fmt.Sprintf("%s JOIN %s AS %s ON %s ", query.joinType, j.table, j.alias, j.condition)
 		}
 	}
 
@@ -1004,14 +998,25 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 		commonTableExpressions = fmt.Sprintf("WITH %s", strings.Join(ctes, ", "))
 	}
 
-	template := fmt.Sprintf("%s UPDATE %s SET %s %s %s %s %s",
-		commonTableExpressions,
-		sqlQuote(query.table),
-		strings.Join(sets, ", "),
-		from,
-		joins,
-		filters,
-		returning)
+	var template string
+	if len(query.joins) == 0 {
+		template = fmt.Sprintf("%s UPDATE %s SET %s %s %s",
+			commonTableExpressions,
+			sqlQuote(query.table),
+			strings.Join(sets, ", "),
+			filters,
+			returning)
+	} else {
+		template = fmt.Sprintf("%s UPDATE %s SET %s WHERE \"id\" = (SELECT %s.\"id\" FROM %s %s %s) %s",
+			commonTableExpressions,
+			sqlQuote(query.table),
+			strings.Join(sets, ", "),
+			sqlQuote(query.table),
+			sqlQuote(query.table),
+			joins,
+			filters,
+			returning)
+	}
 
 	return &Statement{
 		template: template,
@@ -1252,7 +1257,6 @@ func ParsePostgresArray[T any](array string, parse func(string) (T, error)) ([]T
 			}
 			arrayOpened = true
 		case escapeOpened:
-
 			item.WriteRune(r)
 			escapeOpened = false
 		case quoteOpened:

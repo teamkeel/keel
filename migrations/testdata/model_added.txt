@@ -23,10 +23,10 @@ model Animal {
 
 CREATE TABLE "animal" (
 "name" TEXT NOT NULL,
+"human_friend_id" TEXT NOT NULL,
 "id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-"human_friend_id" TEXT NOT NULL
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE "animal" ADD CONSTRAINT animal_id_pkey PRIMARY KEY ("id");
 ALTER TABLE "animal" ADD FOREIGN KEY ("human_friend_id") REFERENCES "person"("id") ON DELETE CASCADE;

@@ -4,7 +4,8 @@ const {
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
 const { fromEnv } = require("@aws-sdk/credential-providers");
-const { useDatabase } = require("./database");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { createDatabaseClient } = require("./database");
 const { DatabaseError } = require("./errors");
 const KSUID = require("ksuid");
 
@@ -105,9 +106,7 @@ class File extends InlineFile {
   async read() {
     if (this._contents) {
       const arrayBuffer = await this._contents.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      return buffer;
+      return Buffer.from(arrayBuffer);
     }
 
     if (isS3Storage()) {
@@ -122,12 +121,12 @@ class File extends InlineFile {
       };
       const command = new GetObjectCommand(params);
       const response = await s3Client.send(command);
-      const blob = response.Body.transformToByteArray();
+      const blob = await response.Body.transformToByteArray();
       return Buffer.from(blob);
     }
 
     // default to db storage
-    const db = useDatabase();
+    const db = createDatabaseClient();
 
     try {
       let query = db
@@ -139,6 +138,8 @@ class File extends InlineFile {
       return row.data;
     } catch (e) {
       throw new DatabaseError(e);
+    } finally {
+      await db.destroy();
     }
   }
 
@@ -157,12 +158,39 @@ class File extends InlineFile {
     return this;
   }
 
+  async getPresignedUrl() {
+    if (isS3Storage()) {
+      const s3Client = new S3Client({
+        credentials: fromEnv(),
+        region: process.env.KEEL_REGION,
+      });
+
+      const command = new GetObjectCommand({
+        Bucket: process.env.KEEL_FILES_BUCKET_NAME,
+        Key: "files/" + this.key,
+        ResponseContentDisposition: `attachment; filename="${encodeURIComponent(
+          this.filename
+        )}"`,
+      });
+
+      const url = await getSignedUrl(s3Client, command, { expiresIn: 60 * 60 });
+
+      return new URL(url);
+    } else {
+      const contents = await this.read();
+      const dataurl = `data:${this.contentType};name=${
+        this.filename
+      };base64,${contents.toString("base64")}`;
+      return new URL(dataurl);
+    }
+  }
+
   toDbRecord() {
     return {
       key: this.key,
       filename: this.filename,
       contentType: this.contentType,
-      size: this._size,
+      size: this.size,
     };
   }
 
@@ -188,14 +216,21 @@ async function storeFile(contents, key, filename, contentType, expires) {
       Key: "files/" + key,
       Body: contents,
       ContentType: contentType,
+      ContentDisposition: `attachment; filename="${encodeURIComponent(
+        this.filename
+      )}"`,
       Metadata: {
-        filename: filename,
+        filename: this.filename,
       },
       ACL: "private",
     };
 
     if (expires) {
-      params.Expires = expires;
+      if (expires instanceof Date) {
+        params.Expires = expires;
+      } else {
+        console.warn("Invalid expires value. Skipping Expires parameter.");
+      }
     }
 
     const command = new PutObjectCommand(params);
@@ -206,8 +241,7 @@ async function storeFile(contents, key, filename, contentType, expires) {
       throw error;
     }
   } else {
-    // default to db storage
-    const db = useDatabase();
+    const db = createDatabaseClient();
 
     try {
       let query = db
@@ -233,6 +267,8 @@ async function storeFile(contents, key, filename, contentType, expires) {
       await query.execute();
     } catch (e) {
       throw new DatabaseError(e);
+    } finally {
+      await db.destroy();
     }
   }
 }

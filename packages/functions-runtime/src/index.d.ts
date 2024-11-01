@@ -176,6 +176,9 @@ export declare class File extends InlineFile {
   get key(): string;
   // Gets size of the file's contents in bytes
   get isPublic(): boolean;
+  // Generates a presigned download URL
+  getPresignedUrl(): Promise<URL>;
+  // Creates a new instance from the database record
   static fromDbRecord(input: FileDbRecord): File;
   // Persists the file
   toDbRecord(): FileDbRecord;
@@ -223,4 +226,16 @@ export type Errors = {
    * This error indicates that an unexpected condition was encountered, preventing the server from fulfilling the request.
    */
   Unknown: typeof UnknownError;
+};
+
+export type FunctionConfig = {
+  /**
+   * All DB calls within the function will be executed within a transaction.
+   * The transaction is rolled back if the function throws an error.
+   */
+  dbTransaction?: boolean;
+};
+
+export type FuncWithConfig<T> = T & {
+  config: FunctionConfig;
 };

@@ -1,0 +1,17 @@
+
+
+model Product {
+    fields {
+        name Text
+        sku Text @unique
+    }
+
+    actions {
+        list listProducts()
+
+        update updateProduct(id)
+        write writeProductFunc(id) returns (Any)
+        read readProductFunc(id) returns (Any)
+    }
+}
+

@@ -62,6 +62,17 @@
         },
         {
           "modelName": "Post",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Account",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Post",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -90,17 +101,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "authorId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Account",
-            "relatedModelField": "id"
           }
         }
       ]

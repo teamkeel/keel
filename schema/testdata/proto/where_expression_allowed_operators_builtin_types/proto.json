@@ -35,6 +35,17 @@
         },
         {
           "modelName": "Post",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Post",
           "name": "date",
           "type": {
             "type": "TYPE_DATE"
@@ -84,6 +95,17 @@
             "modelName": "Identity"
           },
           "foreignKeyFieldName": "identity2Id"
+        },
+        {
+          "modelName": "Post",
+          "name": "identity2Id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Post",
@@ -137,28 +159,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "identity2Id",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
           }
         }
       ],

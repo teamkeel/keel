@@ -11,17 +11,23 @@ model MyFile {
         }
         create createFileInHook() @function 
         create createFileAndStoreInHook() @function 
+        update updateFileEmptyHooks(id) with (file) @function 
+        list listFilesEmptyHooks() @function
+        get getFileEmptyHooks(id) @function
         get getFileNumerateContents(id) @function
-        write storeAndWriteMany(file: File) returns (Any) {
+        write storeAndWriteMany(file: File) returns (FileMessage) {
             @permission(expression: true)
         }
-        write writeMany(FileMessage) returns (Any){
+        write writeMany(FileMessage) returns (FileMessage) {
             @permission(expression: true)
         }
-        write modelApiTests(Any) returns (Any){
+        write modelApiTests(Any) returns (Any) {
             @permission(expression: true)
         }
-        write kyselyTests(Any) returns (Any){
+        write kyselyTests(Any) returns (Any) {
+            @permission(expression: true)
+        }
+        read presignedUrl(file: File) returns (Any) {
             @permission(expression: true)
         }
     }
@@ -30,5 +36,9 @@ model MyFile {
 }
 
 message FileMessage {
+    msg AnotherFileMessage
+}
+
+message AnotherFileMessage {
     file File
 }

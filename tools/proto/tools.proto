@@ -1,0 +1,343 @@
+syntax = "proto3";
+package tools;
+
+option go_package = "github.com/teamkeel/keel/tools/proto";
+import "schema.proto";
+
+message Capabilities {
+  	bool comments = 1;
+  	bool audit = 2;
+	// Export data
+	// TBC more options
+}
+
+message ActionConfig {
+	// A slug identifier for this tool used to reference it regardless of the build/environment; 
+	// E.g. get-order, or get-order-2
+	string id = 1; 
+
+	// Sentence case the action name e.g "Get order"
+	string name = 2; 
+	
+	// Skipped for auto generated tools
+	optional string icon = 3; 
+
+	// The action in the schema e.g "getOrder"
+	string action_name = 4; 
+
+	// The names of the APIs in which this action sits
+	repeated string api_names = 5;
+
+	// The name of the model on which this tool operates on.
+	string model_name = 6;
+	
+	proto.ActionType action_type = 7;
+	proto.ActionImplementation implementation = 8;
+
+	repeated RequestFieldConfig inputs = 9;
+	repeated ResponseFieldConfig response = 10;
+
+	// Title of the tool.
+	// Default value: a template with the first field of the model if it's a text field,
+	// otherwise empty.
+	optional StringTemplate title = 11; 
+
+	// Template language support: markdown
+	optional StringTemplate help_text = 12; 
+
+	// The name of the entity associated with this tool, in a singular form (e.g. order, user).
+	// The word is lowercased; for generated tools it is the name of the model
+	string entity_single = 13; 
+
+	// The name of the entity associated with this tool, in a plural form (e.g. orders, users).
+	// The word is lowercased; for generated tools it is derived from name of the model
+	string entity_plural = 14; 
+
+	// What features are enabled for this tool
+	Capabilities capabilities = 15;
+
+	// Only for List actions; aka views.
+	// E.g. For a listOrders action; these would be tabs that show filtered orders by status 
+	// (Processed, Pending, Completed)
+	// For auto-generated configs, this is only populated for list actions, with links to other list 
+	// actions for the same model.
+	repeated ActionLink related_actions = 16; 
+
+	// Only for List actions; Support offset and cursor
+	optional CursorPaginationConfig pagination = 17;
+
+	// List of extenal links that will be displayed with this tool; used only for Get actions.
+	// Nothing for auto generated
+	repeated ExternalLink external_links = 18; 
+	
+	// Things you can do to this entry
+	// All update, deletes, creates, read and write on the same model.
+	// Only for List & Get; empty for mutations 
+	repeated ActionLink entry_activity_actions = 19; 
+	
+	// The action to use to get an entry on this model. Default to a get action on the same model
+	// Used for: 
+	// - fetching the record for prefilling a mutation
+	// - the link for clicking a row in a List 
+	// - the action to call after a mutation
+	optional ActionLink get_entry_action = 21;
+
+	// The action to use to create a new entry for this model. By default, this action link will be created
+	// for LIST and GET actions in the case where a CREATE action exists for the same model. It should 
+	// be used to add a button on the tool to `Create a new/another record`
+	optional ActionLink create_entry_action = 22;
+
+	// Embeded action groups are tools that will be displayed inline (embedded) withing the one that 
+	// we're defining. These tools will be rendered within this action's configuration, and can have
+	// specific config overrides.
+	repeated ToolGroup embedded_tools = 23;
+
+	// Configuration for different views that are enabled for this tool. A tool can be configured to be
+	// displayable in multiple types of views, for example, as a table, as an email inbox, or a kanban
+	// board. Each view will require specific configuration, these are supplied as part of the
+	// DisplayLayoutConfig message.
+	DisplayLayoutConfig display_layout = 24;
+}
+
+message RequestFieldConfig {
+	enum ScopeType {
+		// Generic input fields
+		DEFAULT = 0;
+		// Fields that control pagination
+		PAGINATION = 1;
+		// Fields used to filter the results of a list action (e.g. where)
+		FILTERS = 2;
+		// Inputs used to control sorting of results
+		SORTING = 3;
+	}
+
+	string id = 1;
+	// common fields
+	JsonPath field_location = 2;
+	proto.Type field_type = 3;
+	bool repeated = 4;
+	string display_name = 5;
+	int32 display_order = 6;
+	bool visible = 7;
+	optional StringTemplate help_text = 8;
+
+	// For a relation field - A list action with the fewest required inputs on the target model
+	// Used to display a lookup/dropdown to allow selecting a entry for this field
+	optional ActionLink lookup_action = 9; 
+
+	// For a relation field - Used for loading a preview
+	optional ActionLink get_entry_action = 10;
+
+	bool locked = 11;
+	optional ScalarValue default_value = 12;
+	optional StringTemplate placeholder = 13;
+
+	// If `type` is set to TYPE_ENUM then this value is the name of the
+	// the enum that the type refers to.
+	optional string enum_name = 14;
+	// If this field is set then this type is referring to another model.
+	// In the case of TYPE_MODEL this type _is_ the model named here.
+	// In the case of other types e.g. TYPE_ID this type is referencing a field
+	// on the model named here, and the specific field being referenced is indicated
+	// by `field_name`.
+	optional string model_name = 15;
+	// This field indicates which field on `model_name` this type is referencing.
+	// This field should only be set if `model_name` is set.
+	optional string field_name = 16;
+
+	// The scope of the request(input) field. Not to be confused with field_type which gives us the data
+	// type, this type tells us if the input controls pagination, filters or it's a generic input field
+	ScopeType scope = 17;
+}
+
+message ResponseFieldConfig {
+	enum ScopeType {
+		// Generic response fields (model fields, message fields)
+		DEFAULT = 0;
+		// Fields giving pagination info (e.g. cursor, pageSize, etc)
+		PAGINATION = 1;
+	}
+	
+	string id = 1;
+	JsonPath field_location = 2;
+	proto.Type field_type = 3;
+	bool repeated = 4;
+	// default to sentence case 
+	string display_name = 5;
+	int32 display_order = 6;
+	bool visible = 7;
+	optional StringTemplate help_text = 8;
+
+	bool sortable = 9; // Based on @sortable()
+
+	// Set if this field is a FK and link to a get/list action on the target model
+	// Or set to an appropriate list action if this field is a to-many field - for example, linking to listSaleItems(sale.id)
+	optional ActionLink link = 10; 
+
+	// for file fields only, display images inline
+	bool image_preview = 11; 	
+	
+	// If `type` is set to TYPE_ENUM then this value is the name of the
+	// the enum that the type refers to.
+	optional string enum_name = 12;
+	// If this field is set then this type is referring to another model.
+	// In the case of TYPE_MODEL this type _is_ the model named here.
+	// In the case of other types e.g. TYPE_ID this type is referencing a field
+	// on the model named here, and the specific field being referenced is indicated
+	// by `field_name`.
+	optional string model_name = 13;
+	// This field indicates which field on `model_name` this type is referencing.
+	// This field should only be set if `model_name` is set.
+	optional string field_name = 14;
+
+	// The scope of the response field. Not to be confused with field_type which gives us the data
+	// type, this type tells us if the response is part of the pagination info or a generic api result 
+	// field
+	ScopeType scope = 15;
+}
+
+message ScalarValue {
+	oneof value {
+		string string = 1;
+		int32 integer = 2;
+		float float = 3;
+		bool bool = 4;
+	}
+}
+
+message StringTemplate {
+	// e.g. "{{$.firstName}} {{$.lastName}}" template syntax TBC.
+	string template = 1;
+	
+	// If markdown is supported for this template. e.g. 
+	// Italic text: _{{$.Var}}_ 
+	bool markdown = 2;
+}
+
+message JsonPath {
+	string path = 1;
+}
+
+message ExternalLink {
+	StringTemplate label = 1;
+	StringTemplate href = 2;
+	optional string icon = 3;
+	int32 display_order = 4;
+}
+
+message ActionLink {
+	string id = 1;
+	string tool_id = 2;
+	
+	// The shape of this data is the input for the target action (i.e. 'where' and not 'values') but
+	// with JSON paths for field values. Is a full  object tree
+	// e.g. 
+	// {
+	// 	"where": {
+	// 		"id": "$.id" // JSON path on the current action repsonse. Can be recursive
+	// 	}
+	// }
+	repeated DataMapping data = 3;
+	
+	// Title/label to be displayed as part of the link/button created for this action link.
+	optional StringTemplate title = 4; // Empty by default
+
+	// An optional string template which is to be displayed as a description/tagline for this link.
+	optional StringTemplate description = 5; // Empty by default
+
+	// When the link is used within a list of action links, this field will be used to order items.
+	int32 display_order = 6;
+}
+
+message ToolGroup {
+	// When embedding ActionLinks, we need to provide extra-configuration that will override the 
+	// link's target tool configuration
+	message GroupActionLink {
+		ActionLink action_link = 1;
+		
+		// The config for responses of the target tool for this embedded action can be altered for 
+		// this embed group
+		repeated ResponseOverrides response_overrides = 2;
+	}
+
+	// A reference that persists for this tool group from build to build
+	string id = 1;
+	
+	// Title of the group
+	StringTemplate title = 2;
+	
+	int32 display_order = 3;
+
+	// A list of decorated ActionLinks which will be embedded within this group
+	repeated GroupActionLink tools = 4;
+
+	bool visible = 5;
+}
+
+message ResponseOverrides {
+	JsonPath field_location = 1;
+
+	// Controls the visibility of the response field 
+	bool visible = 2;
+}
+
+message CursorPaginationConfig {
+	// TBD
+	message FieldConfig {
+		string request_input = 1;
+		JsonPath response_field = 2;
+	}
+	message PageSizeConfig {
+		string request_input = 1;
+		JsonPath response_field = 2;
+		int32 default_value = 3;
+	}
+
+	FieldConfig start = 1;
+	FieldConfig end = 2;
+	PageSizeConfig page_size = 3;
+	JsonPath next_page = 4;
+	JsonPath total_count = 5;
+}
+
+// DataMapping maps a response value or a scalar value to inputs. For each input's key we can have one of:
+// - a path to a response field
+// - a dataMapping object (for nested fields)
+// - a scalar value
+message DataMapping {
+	string key = 1;
+	optional JsonPath path = 2;
+	repeated DataMapping object = 3;
+	optional ScalarValue value = 4;
+}
+
+message DisplayLayoutConfig {
+	enum Type {
+		UNKNOWN = 0;
+		INBOX = 1;
+	}
+
+	// The type of the view: e.g. Inbox, List, Calendar, Table, Data Grid
+	Type type = 1;
+
+	optional InboxViewConfig inbox_config = 2;
+}
+
+// An email inbox style display for list views. Each item in a list will be displayed as a row with
+// an exapandable view 
+message InboxViewConfig {
+	// A link to a get action that will be used when the item is expanded
+	ActionLink get_tool = 1; 
+	// The primary content of the row
+	StringTemplate title = 2;
+	// The secondary content of the row
+	optional StringTemplate description = 3; 
+	// Content to be displayed in the right hand side of the row
+	optional StringTemplate context_field = 4;
+	
+	// If an avatar/image is to be displayed with every row
+	bool avatar_enabled = 5;
+	// URL for the image.
+	optional StringTemplate avatar_url = 6;
+	optional StringTemplate avatar_fallback = 7;
+}

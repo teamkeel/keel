@@ -406,10 +406,29 @@ func printApi(writer *Writer, api *parser.APINode) {
 						writer.block(func() {
 							for _, model := range section.Models {
 								writer.comments(model, func() {
-									writer.writeLine(camel(model.Name.Value))
+									writer.write(camel(model.Name.Value))
+									if len(model.Sections) == 1 {
+										writer.block(func() {
+											writer.write("actions")
+											writer.block(func() {
+												for j, action := range model.Sections[0].Actions {
+													if j > 0 {
+														writer.writeLine("")
+													}
+													writer.comments(action, func() {
+														writer.write(action.Name.Value)
+													})
+												}
+												writer.writeLine("")
+											})
+										})
+									} else {
+										writer.writeLine("")
+									}
 								})
 							}
 						})
+
 					case section.Attribute != nil:
 						printAttributes(writer, []*parser.AttributeNode{section.Attribute})
 					}

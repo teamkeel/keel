@@ -116,6 +116,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 			// defined by the user
 			if action.IsArbitraryFunction() {
 				sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(action.Name))
+				sdk.Writeln("")
 			} else {
 				// writes the default implementation of a function. the user can specify hooks which can
 				// override the behaviour of the default implementation
@@ -439,7 +440,7 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 	})
 
 	for i, f := range relevantFields {
-		w.Writef("%s?: SortDirection", f.Name)
+		w.Writef("%s?: runtime.SortDirection", f.Name)
 
 		if i < len(relevantFields)-1 {
 			w.Write(",")
@@ -502,14 +503,19 @@ func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage boo
 		if msg.Name == parser.MessageFieldTypeAny {
 			continue
 		}
-		writeMessage(w, msg, isTestingPackage, isClientPackage)
+
+		if schema.IsActionResponseMessage(msg.Name) {
+			writeResponseMessage(w, msg, isTestingPackage, isClientPackage)
+		} else {
+			writeInputMessage(w, msg, isTestingPackage, isClientPackage)
+		}
 	}
 }
 
-func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool, isClientPackage bool) {
+func writeInputMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool, isClientPackage bool) {
 	if message.Type != nil {
 		w.Writef("export type %s = ", message.Name)
-		w.Write(toTypeScriptType(message.Type, true, isTestingPackage, false))
+		w.Write(toInputTypescriptType(message.Type, isTestingPackage, isClientPackage))
 		w.Writeln(";")
 		return
 	}
@@ -526,7 +532,44 @@ func writeMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bo
 
 		w.Write(": ")
 
-		w.Write(toTypeScriptType(field.Type, true, isTestingPackage, isClientPackage))
+		w.Write(toInputTypescriptType(field.Type, isTestingPackage, isClientPackage))
+
+		if field.Type.Repeated {
+			w.Write("[]")
+		}
+
+		if field.Nullable {
+			w.Write(" | null")
+		}
+
+		w.Writeln(";")
+	}
+
+	w.Dedent()
+	w.Writeln("}")
+}
+
+func writeResponseMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool, isClientPackage bool) {
+	if message.Type != nil {
+		w.Writef("export type %s = ", message.Name)
+		w.Write(toResponseTypescriptType(message.Type, isTestingPackage, isClientPackage))
+		w.Writeln(";")
+		return
+	}
+
+	w.Writef("export interface %s {\n", message.Name)
+	w.Indent()
+
+	for _, field := range message.Fields {
+		w.Write(field.Name)
+
+		if field.Optional {
+			w.Write("?")
+		}
+
+		w.Write(": ")
+
+		w.Write(toResponseTypescriptType(field.Type, isTestingPackage, isClientPackage))
 
 		if field.Type.Repeated {
 			w.Write("[]")
@@ -1184,7 +1227,7 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 	// we use the 'declare' keyword to indicate to the typescript compiler that the function
 	// has already been declared in the underlying vanilla javascript and therefore we are just
 	// decorating existing js code with types.
-	w.Writef("export declare function %s", casing.ToCamel(action.Name))
+	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(action.Name))
 
 	if action.IsArbitraryFunction() {
 		inputType := action.InputMessageName
@@ -1196,14 +1239,14 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 		w.Write(toCustomFunctionReturnType(model, action, false))
 		w.Write("): ")
 		w.Write(toCustomFunctionReturnType(model, action, false))
-		w.Writeln(";")
+		w.Writeln("}>;")
 		return
 	}
 
 	hooksType := fmt.Sprintf("%sHooks", casing.ToCamel(action.Name))
 
 	// TODO: void return type here is wrong. It should be the type of the function e.g. (ctx, inputs) => ReturnType
-	w.Writef("(hooks?: %s): void\n", hooksType)
+	w.Writef("(hooks?: %s): void}>\n", hooksType)
 
 	w.Writef("export type %s = ", hooksType)
 
@@ -1278,7 +1321,7 @@ func toCustomFunctionReturnType(model *proto.Model, op *proto.Action, isTestingP
 }
 
 func writeJobFunctionWrapperType(w *codegen.Writer, job *proto.Job) {
-	w.Writef("export declare function %s", casing.ToCamel(job.Name))
+	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(job.Name))
 
 	inputType := job.InputMessageName
 
@@ -1288,13 +1331,13 @@ func writeJobFunctionWrapperType(w *codegen.Writer, job *proto.Job) {
 		w.Writef("(fn: (ctx: JobContextAPI, inputs: %s) => Promise<void>): Promise<void>", inputType)
 	}
 
-	w.Writeln(";")
+	w.Writeln("}>;")
 }
 
 func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Subscriber) {
-	w.Writef("export declare function %s", casing.ToCamel(subscriber.Name))
+	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(subscriber.Name))
 	w.Writef("(fn: (ctx: SubscriberContextAPI, event: %s) => Promise<void>): Promise<void>", subscriber.InputMessageName)
-	w.Writeln(";")
+	w.Writeln("}>;")
 }
 
 func toActionReturnType(model *proto.Model, op *proto.Action) string {
@@ -1694,6 +1737,32 @@ func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	}
 }
 
+func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
+	switch t.Type {
+	case proto.Type_TYPE_FILE:
+		if isClientPackage {
+			return "string"
+		} else {
+			return "runtime.InlineFile"
+		}
+	default:
+		return toTypeScriptType(t, false, isTestingPackage, isClientPackage)
+	}
+}
+
+func toResponseTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
+	switch t.Type {
+	case proto.Type_TYPE_FILE:
+		if isClientPackage {
+			return "FileResponseObject"
+		} else {
+			return "runtime.File | runtime.InlineFile"
+		}
+	default:
+		return toTypeScriptType(t, false, isTestingPackage, isClientPackage)
+	}
+}
+
 func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_ID:
@@ -1720,10 +1789,10 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 			ret = t.ModelName.Value
 		}
 	case proto.Type_TYPE_SORT_DIRECTION:
-		if isTestingPackage {
-			ret = "sdk.SortDirection"
-		} else {
+		if isClientPackage {
 			ret = "SortDirection"
+		} else {
+			ret = "runtime.SortDirection"
 		}
 	case proto.Type_TYPE_UNION:
 		// Retrieve all the types that can satisfy this union field.
@@ -1736,7 +1805,7 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
-			ret = "string"
+			ret = "FileResponseObject"
 		} else {
 			if includeCompatibleTypes {
 				ret = "runtime.InlineFile | runtime.File"
@@ -1744,7 +1813,6 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 				ret = "runtime.File"
 			}
 		}
-
 	default:
 		ret = "any"
 	}

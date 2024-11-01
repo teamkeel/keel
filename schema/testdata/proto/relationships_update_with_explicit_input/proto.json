@@ -21,6 +21,17 @@
         },
         {
           "modelName": "ChildModel",
+          "name": "parentId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "ParentModel",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "ChildModel",
           "name": "parentOptional",
           "type": {
             "type": "TYPE_MODEL",
@@ -28,6 +39,18 @@
           },
           "optional": true,
           "foreignKeyFieldName": "parentOptionalId"
+        },
+        {
+          "modelName": "ChildModel",
+          "name": "parentOptionalId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "ParentModel",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "ChildModel",
@@ -59,29 +82,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "ChildModel",
-          "name": "parentId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "ParentModel",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "ChildModel",
-          "name": "parentOptionalId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "ParentModel",
-            "relatedModelField": "id"
           }
         }
       ],

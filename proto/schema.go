@@ -6,10 +6,16 @@ import (
 	"github.com/samber/lo"
 )
 
-// HasFiles checks if the given schema has any models with fields that are files
-func (p *Schema) HasFiles() bool {
-	for _, model := range p.Models {
+// HasFiles checks if the given schema has any models or messages with fields that are files
+func (s *Schema) HasFiles() bool {
+	for _, model := range s.Models {
 		if model.HasFiles() {
+			return true
+		}
+	}
+
+	for _, message := range s.Messages {
+		if messageHasFiles(s, message) {
 			return true
 		}
 	}
@@ -37,6 +43,59 @@ func (s *Schema) FindMessage(messageName string) *Message {
 	}
 
 	return nil
+}
+
+// IsActionInputMessage returns true if the message is used to define an action's inputs.
+func (s *Schema) IsActionInputMessage(messageName string) bool {
+	for _, m := range s.Models {
+		for _, a := range m.GetActions() {
+			if a.InputMessageName == messageName {
+				return true
+			}
+
+			msg := s.FindMessage(a.InputMessageName)
+			if msg.hasMessage(s, messageName) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// IsActionResponseMessage returns true if the message is used to define an action's response.
+func (s *Schema) IsActionResponseMessage(messageName string) bool {
+	for _, m := range s.Models {
+		for _, a := range m.GetActions() {
+			if a.ResponseMessageName == messageName {
+				return true
+			}
+
+			if a.ResponseMessageName != "" {
+				msg := s.FindMessage(a.ResponseMessageName)
+				if msg.hasMessage(s, messageName) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// hasMessage will check to see if a message has a field of type messageName recusively
+func (m *Message) hasMessage(s *Schema, messageName string) bool {
+	for _, f := range m.Fields {
+		if f.Type.Type == Type_TYPE_MESSAGE {
+			if f.Type.MessageName.Value == messageName {
+				return true
+			}
+
+			msg := s.FindMessage(f.Type.MessageName.Value)
+			if msg.hasMessage(s, messageName) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // ModelNames provides a (sorted) list of all the Model names used in the given schema.
@@ -98,19 +157,21 @@ func (s *Schema) FindEventSubscribers(event *Event) []*Subscriber {
 	return subscribers
 }
 
-// FindApiName finds the api name for the given model and action name.
-func (s *Schema) FindApiName(modelName, actionName string) string {
+// FindApiNames finds the api name for the given model and action name.
+func (s *Schema) FindApiNames(modelName, actionName string) []string {
+	names := []string{}
+
 	for _, api := range s.Apis {
 		for _, apiModel := range api.ApiModels {
 			if apiModel.ModelName == modelName {
 				for _, action := range apiModel.ModelActions {
 					if action.ActionName == actionName {
-						return api.Name
+						names = append(names, api.Name)
 					}
 				}
 			}
 		}
 	}
 
-	return ""
+	return names
 }

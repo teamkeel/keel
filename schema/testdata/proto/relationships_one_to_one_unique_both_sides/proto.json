@@ -15,6 +15,18 @@
         },
         {
           "modelName": "User",
+          "name": "studentId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Student",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "User",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -43,18 +55,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "User",
-          "name": "studentId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Student",
-            "relatedModelField": "id"
           }
         }
       ]
@@ -74,6 +74,18 @@
         },
         {
           "modelName": "Student",
+          "name": "userId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "User",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Student",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -102,18 +114,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Student",
-          "name": "userId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "User",
-            "relatedModelField": "id"
           }
         }
       ]

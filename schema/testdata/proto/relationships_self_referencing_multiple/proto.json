@@ -16,6 +16,18 @@
         },
         {
           "modelName": "Person",
+          "name": "bestFriendId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Person",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Person",
           "name": "bestFriendsOf",
           "type": {
             "type": "TYPE_MODEL",
@@ -34,6 +46,18 @@
           "optional": true,
           "foreignKeyFieldName": "motherId",
           "inverseFieldName": "children"
+        },
+        {
+          "modelName": "Person",
+          "name": "motherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Person",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Person",
@@ -75,30 +99,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Person",
-          "name": "bestFriendId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Person",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Person",
-          "name": "motherId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Person",
-            "relatedModelField": "id"
           }
         }
       ]
