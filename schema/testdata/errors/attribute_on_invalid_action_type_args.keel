@@ -11,19 +11,19 @@ model Account {
     @on
 
     @on(
-        //expect-error:10:13:AttributeArgumentError:@on only supports the following action types: create, delete, update
+        //expect-error:9:14:AttributeArgumentError:@on argument must be an array of action types
         [123],
         verifyEmail
     )
 
     @on(
-        //expect-error:9:15:AttributeArgumentError:@on action types argument must be an array
+        //expect-error:9:15:AttributeArgumentError:@on argument must be an array of action types
         create,
         verifyEmail
     )
 
     @on(
-        //expect-error:9:17:AttributeArgumentError:@on action types argument must be an array
+        //expect-error:9:17:AttributeArgumentError:@on argument must be an array of action types
         (create),
         verifyEmail
     )

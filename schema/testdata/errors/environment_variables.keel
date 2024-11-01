@@ -1,6 +1,6 @@
 model MyModel {
     @permission(
-        //expect-error:29:32:E020:'FOO' not found on 'Environment Variables'
+        //expect-error:28:29:AttributeExpressionError:field 'FOO' does not exist
         expression: ctx.env.FOO == "d",
         actions: [get]
     )

@@ -6,8 +6,7 @@ model Profile {
 
     actions {
         update createProfile(id) with (username) {
-            //expect-error:35:37:E022:Operator '==' not permitted on @set
-            //expect-error:18:50:AttributeArgumentError:The @set attribute cannot be a logical condition and must express an assignment
+            //expect-error:18:50:AttributeExpressionError:the @set attribute must be an assignment expression
             @set(profile.identity == ctx.identity)
         }
     }

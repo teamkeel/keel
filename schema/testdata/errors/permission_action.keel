@@ -14,12 +14,12 @@ model Person {
         }
         read customFunction(Any) returns (Any) {
             // Cannot use row-based permission inside a custom function
-            //expect-error:37:43:AttributeArgumentError:cannot use row-based permissions in a read action
+            //expect-error:37:52:AttributeArgumentError:cannot use row-based permissions in a read action
             @permission(expression: person.identity == ctx.identity)
         }
         read otherCustomFunction(Any) returns (Any) {
             // Cannot use row-based permission inside a custom function (RHS check)
-            //expect-error:53:59:AttributeArgumentError:cannot use row-based permissions in a read action
+            //expect-error:53:68:AttributeArgumentError:cannot use row-based permissions in a read action
             @permission(expression: ctx.identity == person.identity)
         }
     }

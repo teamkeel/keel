@@ -19,7 +19,7 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
 	// Attempt to resolve permissions early; i.e. before row-based database querying.
-	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, input, permissions)
 	if err != nil {
 		return nil, err
 	}

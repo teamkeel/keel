@@ -40,7 +40,7 @@ model Task {
     @permission(
         actions: [get],
         expression: (
-          ctx.identity in task.project.users.user.identity and 
+          ctx.identity in task.project.users.user.identity && 
           "Admin" in task.project.users.role
         )
     )

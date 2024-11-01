@@ -6,33 +6,33 @@ model Person {
 
     actions {
         list listPeople() {
-            //expect-error:32:39:E020:'invalid' not found
+            //expect-error:32:39:AttributeExpressionError:unknown identifier 'invalid'
             @where(expression: invalid)
         }
         list listPeople2() {
-            //expect-error:32:34:E020:'ct' not found
+            //expect-error:32:34:AttributeExpressionError:unknown identifier 'ct'
             @where(expression: ct.identity == person.identity)
         }
         list listPeople3() {
-            //expect-error:32:34:E020:'ct' not found
-            @where(expression: ct.invalid == person.identity)
+            //expect-error:35:36:AttributeExpressionError:field 'invalid' does not exist
+            @where(expression: ctx.invalid == person.identity)
         }
         list listPeople4() {
-            //expect-error:32:38:E061:Non-boolean single operand conditions such as '"true"' not permitted on @where
+            //expect-error:32:38:AttributeExpressionError:expression expected to resolve to type Boolean but it is Text
             @where(expression: "true")
         }
         list listPeople5() {
-            //expect-error:68:75:E020:'invalid' not found on 'Organisation'
+            //expect-error:67:68:AttributeExpressionError:field 'invalid' does not exist
             @where(expression: ctx.identity in person.organisation.invalid)
         }
         list listPeople6() {
-            //expect-error:92:99:E020:'invalid' not found on 'Organisation'
-            @where(expression: ctx.isAuthenticated and ctx.identity in person.organisation.invalid)
+            //expect-error:90:91:AttributeExpressionError:field 'invalid' does not exist
+            @where(expression: ctx.isAuthenticated && ctx.identity in person.organisation.invalid)
         }
         list listPeople7() {
-            //expect-error:52:59:E020:'invalid' not found on 'Boolean'
-            //expect-error:100:107:E020:'invalid' not found on 'Organisation'
-            @where(expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid)
+            //expect-error:98:99:AttributeExpressionError:field 'invalid' does not exist
+            //expect-error:51:52:AttributeExpressionError:type Boolean does not have any fields to select
+            @where(expression: ctx.isAuthenticated.invalid && ctx.identity in person.organisation.invalid)
         }
     }
 }
