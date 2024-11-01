@@ -2,8 +2,10 @@ package validation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -60,37 +62,48 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 				inputs = writeInputs
 			}
 
-			for _, cond := range expr.Conditions() {
-				operands := []*parser.Operand{cond.LHS}
-				if n.Name.Value == parser.AttributeWhere {
-					operands = append(operands, cond.RHS)
+			idents := []*parser.ExpressionIdent{}
+			var err error
+			switch n.Name.Value {
+			case parser.AttributeWhere:
+				idents, err = resolve.IdentOperands(n.Arguments[0].Expression)
+				if err != nil {
+					return
 				}
+			case parser.AttributeSet:
+				lhs, _, err := n.Arguments[0].Expression.ToAssignmentExpression()
+				if err != nil {
+					return
+				} else {
+					idents, err = resolve.IdentOperands(lhs)
+					if err != nil {
+						return
+					}
+				}
+			}
+			if err != nil {
+				return
+			}
 
-				for _, operand := range operands {
-					if operand == nil || operand.Ident == nil {
+			for _, operand := range idents {
+				for in := range inputs {
+					// in an expression the first ident fragment will be the model name
+					// we create an indent without the first fragment
+					identWithoutModelName := operand.Fragments[1:]
+
+					if in.Type.ToString() != strings.Join(identWithoutModelName, ".") {
 						continue
 					}
-					for in := range inputs {
-						// in an expression the first ident fragment will be the model name
-						// we create an indent without the first fragment
-						identWithoutModelName := &parser.Ident{
-							Fragments: operand.Ident.Fragments[1:],
-						}
 
-						if in.Type.ToString() != identWithoutModelName.ToString() {
-							continue
-						}
-
-						errs.AppendError(
-							errorhandling.NewValidationErrorWithDetails(
-								errorhandling.ActionInputError,
-								errorhandling.ErrorDetails{
-									Message: fmt.Sprintf("%s is already being used as an input so cannot also be used in an expression", in.Type.ToString()),
-								},
-								operand.Ident,
-							),
-						)
-					}
+					errs.AppendError(
+						errorhandling.NewValidationErrorWithDetails(
+							errorhandling.ActionInputError,
+							errorhandling.ErrorDetails{
+								Message: fmt.Sprintf("%s is already being used as an input so cannot also be used in an expression", in.Type.ToString()),
+							},
+							operand,
+						),
+					)
 				}
 			}
 		},

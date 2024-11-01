@@ -2,6 +2,8 @@ model Post {
     fields {
         author Author
         title Text
+        subTitle Text
+        someId ID
     }
 
     actions {
@@ -9,13 +11,11 @@ model Post {
             //expect-error:18:28:ActionInputError:title is already being used as an input so cannot also be used in an expression
             @set(post.title = title)
         }
+        update updatePost2(id) with (title) {
+            //expect-error:34:39:AttributeExpressionError:unknown identifier 'thing'
+            @set(post.subTitle = thing.title)
+        }
     }
-
-    @permission(
-        //expect-error:41:45:E020:'auth' not found on 'Post'
-        expression: post.author == post.auth,
-        actions: [get]
-    )
 }
 
 model Author {

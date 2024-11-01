@@ -1,0 +1,22 @@
+model Thing {
+    fields {
+        number Number
+    }
+
+    actions {
+        update updateThing1(id) {
+            //expect-error:46:47:AttributeExpressionError:operator '+' not supported in this context
+            @set(thing.number = thing.number + 1)
+        }
+    }
+}
+
+enum PostStatus {
+    Published
+    Draft
+}
+
+enum OtherPostStatus {
+    Something
+    Else
+}

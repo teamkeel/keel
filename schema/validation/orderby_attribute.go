@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -140,20 +141,8 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 
 			argumentLabels = append(argumentLabels, arg.Label.Value)
 
-			operand, err := arg.Expression.ToValue()
+			ident, err := resolve.AsIdent(arg.Expression)
 			if err != nil {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeArgumentError,
-					errorhandling.ErrorDetails{
-						Message: "@orderBy argument is not correctly formatted",
-						Hint:    "For example, @orderBy(surname: asc, firstName: asc)",
-					},
-					arg,
-				))
-				return
-			}
-
-			if operand.Ident == nil || (operand.Ident.Fragments[0].Fragment != parser.OrderByAscending && operand.Ident.Fragments[0].Fragment != parser.OrderByDescending) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
@@ -161,6 +150,18 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 						Hint:    "For example, @orderBy(surname: asc, firstName: asc)",
 					},
 					arg.Expression,
+				))
+				return
+			}
+
+			if ident == nil || (ident.Fragments[0] != parser.OrderByAscending && ident.Fragments[0] != parser.OrderByDescending) {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeArgumentError,
+					errorhandling.ErrorDetails{
+						Message: "@orderBy argument value must either be asc or desc",
+						Hint:    "For example, @orderBy(surname: asc, firstName: asc)",
+					},
+					ident,
 				))
 				return
 			}
