@@ -1,0 +1,13 @@
+model Profile {
+    fields {
+        username Text @unique
+    }
+
+    actions {
+        update createProfile(id) with (username) {
+            //expect-error:18:21:AttributeExpressionError:The @set attribute can only be used to set model fields
+            @set(123 = ctx.identity)
+        }
+    }
+}
+

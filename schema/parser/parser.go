@@ -43,9 +43,9 @@ type ModelNode struct {
 type ModelSectionNode struct {
 	node.Node
 
-	Fields    []*FieldNode   `( "fields" "{" @@* "}"`
-	Actions   []*ActionNode  `| "actions" "{" @@* "}"`
-	Attribute *AttributeNode `| @@)`
+	Fields    []*FieldNode   `( ("fields" "{" @@* "}")`
+	Actions   []*ActionNode  `| ("actions" "{" @@* "}")`
+	Attribute *AttributeNode `| @@ )`
 }
 
 type NameNode struct {
@@ -82,7 +82,7 @@ func (f *FieldNode) IsScalar() bool {
 		FieldTypeNumber,
 		FieldTypeDecimal,
 		FieldTypeText,
-		FieldTypeDatetime,
+		FieldTypeTimestamp,
 		FieldTypeDate,
 		FieldTypeSecret,
 		FieldTypeID,
@@ -105,8 +105,8 @@ type APINode struct {
 type APISectionNode struct {
 	node.Node
 
-	Models    []*APIModelNode `("models" "{" @@* "}"`
-	Attribute *AttributeNode  `| @@)`
+	Models    []*APIModelNode `( "models" "{" @@* "}"`
+	Attribute *AttributeNode  `| @@ )`
 }
 
 type APIModelNode struct {
@@ -165,7 +165,7 @@ type JobSectionNode struct {
 	node.Node
 
 	Inputs    []*JobInputNode `( "inputs" "{" @@* "}"`
-	Attribute *AttributeNode  `| @@)`
+	Attribute *AttributeNode  `| @@ )`
 }
 
 type JobInputNode struct {
@@ -196,7 +196,7 @@ type AttributeNode struct {
 	// - no parenthesis at all
 	// - empty parenthesis
 	// - parenthesis with args
-	Arguments []*AttributeArgumentNode `(( "(" @@ ( "," @@ )* ")" ) | ( "(" ")" ) )?`
+	Arguments []*AttributeArgumentNode `(( "(" ")" ) | ( "(" @@ ( "," @@ )* ")" ) )?`
 }
 
 type AttributeArgumentNode struct {
@@ -238,6 +238,31 @@ type ActionInputNode struct {
 	Label    *NameNode `(@@ ":")?`
 	Type     Ident     `@@`
 	Optional bool      `@( "?" )?`
+}
+
+type Ident struct {
+	node.Node
+
+	Fragments []*IdentFragment `( @@ ( "." @@ )* )`
+}
+
+func (ident *Ident) ToString() string {
+	ret := ""
+	for i, fragment := range ident.Fragments {
+		if i == len(ident.Fragments)-1 {
+			ret += fragment.Fragment
+		} else {
+			ret += fmt.Sprintf("%s.", fragment.Fragment)
+		}
+	}
+
+	return ret
+}
+
+type IdentFragment struct {
+	node.Node
+
+	Fragment string `@Ident`
 }
 
 func (a *ActionInputNode) Name() string {

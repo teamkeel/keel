@@ -1,14 +1,14 @@
 model Thing {
     fields {
-        //expect-error:31:40:E048:"science" is Text but field texts is Text[]
+        //expect-error:31:40:AttributeExpressionError:expression expected to resolve to type Text[] but it is Text
         texts Text[] @default("science")
-        //expect-error:33:44:E048:["science"] is Text[] but field enums is MyEnum[]
+        //expect-error:33:44:AttributeExpressionError:expression expected to resolve to type MyEnum[] but it is Text[]
         enums MyEnum[] @default(["science"])
-        //expect-error:30:41:E048:["science"] is Text[] but field enum is MyEnum
+        //expect-error:30:41:AttributeExpressionError:expression expected to resolve to type MyEnum but it is Text[]
         enum MyEnum @default(["science"])
-        //expect-error:28:39:E048:["science"] is Text[] but field text is Text
+        //expect-error:28:39:AttributeExpressionError:expression expected to resolve to type Text but it is Text[]
         text Text @default(["science"])
-        //expect-error:32:42:E048:MyEnum.One is MyEnum but field texts2 is Text[]
+        //expect-error:32:42:AttributeExpressionError:expression expected to resolve to type Text[] but it is MyEnum
         texts2 Text[] @default(MyEnum.One)
     }
 }

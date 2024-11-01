@@ -19,21 +19,6 @@ const (
 	KeywordInput   = "inputs"
 )
 
-// Types are roughly analogous to field types but they are used to type expressions
-const (
-	TypeNumber  = "Number"
-	TypeText    = "Text"
-	TypeBoolean = "Boolean"
-	TypeDecimal = "Decimal"
-
-	// These are unique to expressions
-	TypeNull  = "Null"
-	TypeArray = "Array"
-	TypeIdent = "Ident"
-	TypeEnum  = "Enum"
-	TypeModel = "Model"
-)
-
 const (
 	DefaultApi = "Api"
 )
@@ -41,18 +26,18 @@ const (
 // Built in Keel types. Worth noting a field type can also reference
 // another user-defined model
 const (
-	FieldTypeID       = "ID"        // a uuid or similar
-	FieldTypeText     = "Text"      // a string
-	FieldTypeNumber   = "Number"    // an integer
-	FieldTypeDecimal  = "Decimal"   // a decimal
-	FieldTypeDate     = "Date"      // a date with no time element
-	FieldTypeDatetime = "Timestamp" // a UTC unix timestamp
-	FieldTypeBoolean  = "Boolean"   // a boolean
-	FieldTypeSecret   = "Secret"    // an encrypted secret
-	FieldTypePassword = "Password"  // a hashed password
-	FieldTypeMarkdown = "Markdown"  // a markdown rich text
-	FieldTypeVector   = "Vector"    // a vector
-	FieldTypeFile     = "File"      // a inline file supplied as a data-url
+	FieldTypeID        = "ID"        // a uuid or similar
+	FieldTypeText      = "Text"      // a string
+	FieldTypeNumber    = "Number"    // an integer
+	FieldTypeDecimal   = "Decimal"   // a decimal
+	FieldTypeDate      = "Date"      // a date with no time element
+	FieldTypeTimestamp = "Timestamp" // a UTC unix timestamp
+	FieldTypeBoolean   = "Boolean"   // a boolean
+	FieldTypeSecret    = "Secret"    // an encrypted secret
+	FieldTypePassword  = "Password"  // a hashed password
+	FieldTypeMarkdown  = "Markdown"  // a markdown rich text
+	FieldTypeVector    = "Vector"    // a vector
+	FieldTypeFile      = "File"      // a inline file supplied as a data-url
 )
 
 // Types for Message fields
@@ -61,18 +46,18 @@ const (
 )
 
 var BuiltInTypes = map[string]bool{
-	FieldTypeID:       true,
-	FieldTypeText:     true,
-	FieldTypeNumber:   true,
-	FieldTypeDecimal:  true,
-	FieldTypeDate:     true,
-	FieldTypeDatetime: true,
-	FieldTypeBoolean:  true,
-	FieldTypeSecret:   true,
-	FieldTypePassword: true,
-	FieldTypeMarkdown: true,
-	FieldTypeVector:   true,
-	FieldTypeFile:     true,
+	FieldTypeID:        true,
+	FieldTypeText:      true,
+	FieldTypeNumber:    true,
+	FieldTypeDecimal:   true,
+	FieldTypeDate:      true,
+	FieldTypeTimestamp: true,
+	FieldTypeBoolean:   true,
+	FieldTypeSecret:    true,
+	FieldTypePassword:  true,
+	FieldTypeMarkdown:  true,
+	FieldTypeVector:    true,
+	FieldTypeFile:      true,
 }
 
 func IsBuiltInFieldType(s string) bool {
@@ -155,6 +140,7 @@ const (
 	AttributeFunction   = "function"
 	AttributeOn         = "on"
 	AttributeEmbed      = "embed"
+	AttributeComputed   = "computed"
 )
 
 const (

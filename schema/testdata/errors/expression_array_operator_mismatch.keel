@@ -4,7 +4,7 @@ model Post {
     }
 
     @permission(
-        //expect-error:27:28:E030:post.authors.name is an array. Only 'in' or 'not in' can be used
+        //expect-error:27:28:AttributeExpressionError:cannot use operator '>' with types Text and Text[]
         expression: "bob" > post.authors.name,
         actions: [get]
     )

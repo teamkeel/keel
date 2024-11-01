@@ -38,20 +38,12 @@ var validatorFuncs = []validationFunc{
 	actions.ActionModelInputsRule,
 	actions.CreateOperationNoReadInputsRule,
 	actions.CreateOperationRequiredFieldsRule,
-
 	field.ValidFieldTypesRule,
 	field.UniqueFieldNamesRule,
 	field.FieldNamesMaxLengthRule,
-
 	model.ModelNamesMaxLengthRule,
-
 	attribute.AttributeLocationsRule,
-	attribute.SetWhereAttributeRule,
-	attribute.ValidateFieldAttributeRule,
-	attribute.UniqueAttributeArgsRule,
-
 	role.UniqueRoleNamesRule,
-
 	api.UniqueAPINamesRule,
 	api.NamesCorrespondToModels,
 }
@@ -73,15 +65,18 @@ var visitorFuncs = []VisitorFunc{
 	UniqueLookup,
 	InvalidWithUsage,
 	AttributeArgumentsRules,
+	DefaultAttributeExpressionRules,
 	UniqueAttributeRule,
+	WhereAttributeRule,
 	OrderByAttributeRule,
 	SortableAttributeRule,
 	SetAttributeExpressionRules,
+	ComputedAttributeRules,
 	Jobs,
 	MessagesRule,
 	ScheduleAttributeRule,
 	DuplicateInputsRule,
-	PermissionsAttributeArguments,
+	PermissionsAttribute,
 	FunctionDisallowedBehavioursRule,
 	OnAttributeRule,
 	EmbedAttributeRule,

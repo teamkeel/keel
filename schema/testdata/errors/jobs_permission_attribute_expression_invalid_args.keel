@@ -1,15 +1,15 @@
 job MyJob1 {
-    //expect-error:29:38:E020:'something' not found
+    //expect-error:29:38:AttributeExpressionError:unknown identifier 'something'
     @permission(expression: something > 5)
 }
 
 job MyJob2 {
-    //expect-error:29:35:E020:'myJob3' not found
+    //expect-error:29:35:AttributeExpressionError:unknown identifier 'myJob3'
     @permission(expression: myJob3.id == true)
 }
 
 job MyJob3 {
-    //expect-error:29:38:E061:Non-boolean single operand conditions such as '"invalid"' not permitted on @permission
+    //expect-error:29:38:AttributeExpressionError:expression expected to resolve to type Boolean but it is Text
     @permission(expression: "invalid")
 }
 
@@ -26,14 +26,14 @@ job MyJob5 {
 }
 
 job MyJob6 {
-    //expect-error:29:30:E020:'c' not found
+    //expect-error:29:30:AttributeExpressionError:unknown identifier 'c'
     @permission(expression: c.isAuthenticated)
 }
 
 job MyJob7 {
-    //expect-error:49:56:E020:'invalid' not found on 'Boolean'
-    //expect-error:77:83:E020:'person' not found
-    @permission(expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid)
+    //expect-error:48:49:AttributeExpressionError:type Boolean does not have any fields to select
+    //expect-error:76:82:AttributeExpressionError:unknown identifier 'person'
+    @permission(expression: ctx.isAuthenticated.invalid && ctx.identity in person.organisation.invalid)
 }
 
 role Admin {

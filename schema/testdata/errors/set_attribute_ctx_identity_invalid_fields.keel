@@ -5,11 +5,11 @@ model UserExtension {
 
     actions {
         create createExt() {
-            //expect-error:55:62:E020:'unknown' not found on 'Identity'
+            //expect-error:54:55:AttributeExpressionError:field 'unknown' does not exist
             @set(userExtension.unknown = ctx.identity.unknown)
         }
         update updateExt(id) {
-            //expect-error:55:62:E020:'unknown' not found on 'Identity'
+            //expect-error:54:55:AttributeExpressionError:field 'unknown' does not exist
             @set(userExtension.unknown = ctx.identity.unknown)
         }
     }

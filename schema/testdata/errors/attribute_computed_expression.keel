@@ -1,0 +1,29 @@
+model Invoice {
+    fields {
+        items Item[]
+    }
+}
+
+model Item {
+    fields {
+        invoice Invoice
+        description Text
+        price Decimal
+        quantity Number
+        //expect-error:38:45:AttributeExpressionError:unknown identifier 'invalid'
+        unknownVar Decimal @computed(invalid)
+        //expect-error:37:42:AttributeExpressionError:unknown identifier 'price'
+        //expect-error:45:53:AttributeExpressionError:unknown identifier 'quantity'
+        noRootVar Decimal @computed(price * quantity)
+        //expect-error:37:53:AttributeExpressionError:expression expected to resolve to type Decimal but it is Text
+        wrongType Decimal @computed(item.description)
+        //expect-error:31:34:AttributeExpressionError:unknown identifier 'ctx'
+        ctx Boolean @computed(ctx.isAuthenticated)
+        //expect-error:27:50:AttributeNotAllowedError:@computed cannot be used on field of type Identity
+        identity Identity @computed(ctx.identity)
+
+    }
+    actions {
+        get getItem(id) 
+    }
+}

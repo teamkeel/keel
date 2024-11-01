@@ -72,6 +72,10 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
+		// if tc.Name() != "attribute_computed_expression.keel" {
+		// 	continue
+		// }
+
 		testCase := tc
 		if testCase.IsDir() {
 			t.Errorf("errors test data directory should only contain keel schema files - directory found: %s", testCase.Name())
@@ -79,7 +83,6 @@ func TestValidation(t *testing.T) {
 		}
 
 		testCaseDir := filepath.Join(dir, testCase.Name())
-
 		t.Run(testCase.Name(), func(t *testing.T) {
 			t.Parallel()
 			b, err := os.ReadFile(testCaseDir)
@@ -90,7 +93,7 @@ func TestValidation(t *testing.T) {
 
 			verrs := &errorhandling.ValidationErrors{}
 			if !errors.As(err, &verrs) {
-				t.Errorf("no validation errors returned: %v", err)
+				t.Errorf("no validation errors returned in %s: %v", testCase.Name(), err)
 			}
 
 			expectedErrors := []*errorhandling.ValidationError{}
