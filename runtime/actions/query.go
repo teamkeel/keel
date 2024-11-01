@@ -92,6 +92,22 @@ type QueryOperand struct {
 	value  any
 }
 
+func (o *QueryOperand) String() string {
+	if o.IsField() {
+		return o.table + " " + o.column
+	}
+
+	if o.IsValue() {
+		return fmt.Sprintf("%v", o.value)
+	}
+
+	if o.IsValue() {
+		return o.value.(string)
+	}
+
+	return "unknown"
+}
+
 // A query builder to be evaluated and injected as an operand.
 func (o *QueryOperand) IsInlineQuery() bool {
 	return o.query != nil
