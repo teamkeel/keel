@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -58,18 +59,30 @@ func UnusedInputRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 				return
 			}
 
-			expr := n.Arguments[0].Expression
-			if expr == nil {
+			var expression *parser.Expression
+			if n.Name.Value == parser.AttributeSet {
+				_, rhs, err := n.Arguments[0].Expression.ToAssignmentExpression()
+				if err != nil {
+					return
+				}
+				expression = rhs
+			} else {
+				expression = n.Arguments[0].Expression
+				if expression == nil {
+					return
+				}
+			}
+
+			operands, err := resolve.IdentOperands(expression)
+			if err != nil {
 				return
 			}
 
-			for _, cond := range expr.Conditions() {
-				for _, operand := range []*parser.Operand{cond.LHS, cond.RHS} {
-					if operand == nil || operand.Ident == nil {
-						continue
+			for _, operand := range operands {
+				for k, u := range unused {
+					if u.Value == operand.String() {
+						delete(unused, k)
 					}
-
-					delete(unused, operand.Ident.ToString())
 				}
 			}
 		},

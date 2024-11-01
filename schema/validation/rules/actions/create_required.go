@@ -6,6 +6,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -223,28 +224,25 @@ func satisfiedBySetExpr(rootModelName string, dotDelimPath string, action *parse
 	setExpressions := setExpressions(action)
 
 	for _, expr := range setExpressions {
-		assignment, err := expr.ToAssignmentCondition()
+		l, _, err := expr.ToAssignmentExpression()
 		if err != nil {
 			continue
 		}
-		lhs := assignment.LHS
 
-		if lhs.Ident == nil {
+		lhs, err := resolve.AsIdent(l)
+		if err != nil {
 			continue
 		}
 
-		fragStrings := lo.Map(lhs.Ident.Fragments, func(frag *parser.IdentFragment, _ int) string {
-			return frag.Fragment
-		})
-		if len(fragStrings) < 2 {
+		if len(lhs.Fragments) < 2 {
 			continue
 		}
 
-		if fragStrings[0] != rootModelName {
+		if lhs.Fragments[0] != rootModelName {
 			continue
 		}
 
-		remainingFragments := fragStrings[1:]
+		remainingFragments := lhs.Fragments[1:]
 		remainingPath := strings.Join(remainingFragments, ".")
 		if remainingPath == dotDelimPath {
 			return true

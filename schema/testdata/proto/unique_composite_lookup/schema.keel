@@ -21,10 +21,10 @@ model Product {
         get getBySupplierSkuInputAndIdInput(supplierSku, supplier.id)
         get getBySupplierSkuInputAndCodeInput(supplierSku, supplier.supplierCode)
         get getBySupplierSkuExprAndCodeExpr(supplierSku: Text, supplierCode: Text) {
-            @where(product.supplierSku == supplierSku and product.supplier.supplierCode == supplierCode)
+            @where(product.supplierSku == supplierSku && product.supplier.supplierCode == supplierCode)
         }
         get getBySupplierSkuExprAndIdExpr(supplierSku: Text, supplierId: ID) {
-            @where(product.supplierSku == supplierSku and product.supplier.id == supplierId)
+            @where(product.supplierSku == supplierSku && product.supplier.id == supplierId)
         }
         get getBySupplierSkuExprAndIdExprMultiWhere(
             supplierSku: Text,
@@ -34,7 +34,7 @@ model Product {
             @where(product.supplier.id == supplierId)
         }
         get getBySupplierSkuForXyz(supplierSku) {
-            @where(product.isActive == true and product.supplier.supplierCode == "XYZ")
+            @where(product.isActive == true && product.supplier.supplierCode == "XYZ")
         }
         get getByBarcode() {
             @where(product.stock.barcode == "1234")

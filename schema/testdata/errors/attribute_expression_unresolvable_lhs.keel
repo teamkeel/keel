@@ -4,19 +4,19 @@ model Post {
     }
 
     @permission(
-        //expect-error:26:31:E020:'autho' not found on 'Post'
+        //expect-error:25:26:AttributeExpressionError:field 'autho' does not exist
         expression: post.autho.name == "adam",
         actions: [get]
     )
 
     @permission(
-        //expect-error:21:27:E061:Non-boolean single operand conditions such as '"dave"' not permitted on @permission
+        //expect-error:21:27:AttributeExpressionError:expression expected to resolve to type Boolean but it is Text
         expression: "dave",
         actions: [get]
     )
 
     @permission(
-        //expect-error:21:37:E061:Non-boolean single operand conditions such as 'post.author.name' not permitted on @permission
+        //expect-error:21:37:AttributeExpressionError:expression expected to resolve to type Boolean but it is Text
         expression: post.author.name,
         actions: [get]
     )

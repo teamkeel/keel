@@ -18,13 +18,18 @@ job WrongArgType {
 
 job Labelled {
     //expect-error:15:19:AttributeArgumentError:unexpected argument 'cron' for @schedule as only a single argument is expected
-    //expect-error:21:26:AttributeArgumentError:invalid schedule - must be expression like 'every day at 9am' or cron syntax e.g. '0 9 * * *'
+    //expect-error:15:19:AttributeArgumentError:argument to @schedule cannot be labelled
     @schedule(cron: "foo")
 }
 
 job InvalidSchedule {
     //expect-error:25:29:AttributeArgumentError:unexpected token 'cats' - expected 'minutes' or 'hours'
     @schedule("every 10 cats")
+}
+
+job InvalidScheduleValue {
+    //expect-error:22:25:AttributeArgumentError:invalid day 'bob' - expected day of week e.g. 'monday', 'day' for every day, or 'weekday' for monday-friday
+    @schedule("every BOB hours")
 }
 
 job InvalidCron {
