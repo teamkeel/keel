@@ -30,10 +30,18 @@ func (a *Action) IsUpdate() bool {
 	return a.Type == ActionType_ACTION_TYPE_UPDATE
 }
 
+func (a *Action) IsCreate() bool {
+	return a.Type == ActionType_ACTION_TYPE_CREATE
+}
+
 func (a *Action) IsList() bool {
 	return a.Type == ActionType_ACTION_TYPE_LIST
 }
 
 func (a *Action) IsGet() bool {
 	return a.Type == ActionType_ACTION_TYPE_GET
+}
+
+func (a *Action) IsDelete() bool {
+	return a.Type == ActionType_ACTION_TYPE_DELETE
 }

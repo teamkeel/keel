@@ -1,19 +1,5 @@
 package proto
 
-import "github.com/samber/lo"
-
-// HasFiles checks if the message has any Inline file fields
-func (m *Message) HasFiles() bool {
-	return len(m.FileFields()) > 0
-}
-
-// FileFields will return a slice of fields for the model that are of type file
-func (m *Message) FileFields() []*MessageField {
-	return lo.Filter(m.Fields, func(f *MessageField, _ int) bool {
-		return f.IsFile()
-	})
-}
-
 // IsModelField returns true if the input targets a model field
 // and is handled automatically by the runtime.
 // This will only be true for inputs that are built-in actions,
@@ -55,4 +41,16 @@ func (m *Message) GetOrderByField() *MessageField {
 	}
 
 	return nil
+}
+
+func messageHasFiles(s *Schema, f *Message) bool {
+	for _, field := range f.Fields {
+		if field.Type.MessageName != nil {
+			message := s.FindMessage(field.Type.MessageName.Value)
+			return messageHasFiles(s, message)
+		} else if field.IsFile() {
+			return true
+		}
+	}
+	return false
 }

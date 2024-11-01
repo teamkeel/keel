@@ -12,6 +12,7 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
+	"github.com/teamkeel/keel/storage"
 	"github.com/teamkeel/keel/testhelpers"
 )
 
@@ -57,6 +58,11 @@ func MakeContext(t *testing.T, ctx context.Context, keelSchema string, resetData
 	database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, databaseName, resetDatabase)
 	require.NoError(t, err)
 	ctx = db.WithDatabase(ctx, database)
+
+	storer, err := storage.NewDbStore(ctx, database)
+	require.NoError(t, err)
+
+	ctx = runtimectx.WithStorage(ctx, storer)
 
 	return ctx, database, schema
 }

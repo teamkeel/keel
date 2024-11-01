@@ -1,0 +1,22 @@
+model Order {
+    fields {
+        items LineItem[]
+    }
+
+    actions {
+        get getOrder(id)
+        list listOrders(items.id)
+    }
+}
+
+model LineItem {
+    fields {
+        order Order
+        product Text
+    }
+
+    actions {
+        list listLineItems(order.id)
+    }
+}
+

@@ -14,6 +14,17 @@
         },
         {
           "modelName": "User",
+          "name": "assignedProductId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Product",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "User",
           "name": "identity",
           "type": {
             "type": "TYPE_MODEL",
@@ -22,6 +33,18 @@
           "unique": true,
           "foreignKeyFieldName": "identityId",
           "inverseFieldName": "user"
+        },
+        {
+          "modelName": "User",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "User",
@@ -53,29 +76,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "User",
-          "name": "assignedProductId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Product",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "User",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
           }
         }
       ]
@@ -111,6 +111,18 @@
         },
         {
           "modelName": "Product",
+          "name": "stockId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Stock",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Product",
           "name": "supplier",
           "type": {
             "type": "TYPE_MODEL",
@@ -119,6 +131,17 @@
           "uniqueWith": ["supplierSku"],
           "foreignKeyFieldName": "supplierId",
           "inverseFieldName": "products"
+        },
+        {
+          "modelName": "Product",
+          "name": "supplierId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Supplier",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Product",
@@ -165,29 +188,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Product",
-          "name": "stockId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Stock",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Product",
-          "name": "supplierId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Supplier",
-            "relatedModelField": "id"
           }
         }
       ],

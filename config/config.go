@@ -1,9 +1,11 @@
 package config
 
 import (
+	_ "embed"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -11,19 +13,31 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	"github.com/teamkeel/keel/casing"
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml/parser"
+	"github.com/samber/lo"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 const Empty = ""
 
+//go:embed schema.json
+var jsonSchema string
+
+type ConfigFile struct {
+	Filename string
+	Env      string
+	Config   *ProjectConfig
+	Errors   *ConfigErrors
+}
+
 // ProjectConfig is the configuration for a keel project
 type ProjectConfig struct {
-	Environment   []Input    `yaml:"environment"`
-	UseDefaultApi *bool      `yaml:"useDefaultApi,omitempty"`
-	Secrets       []Input    `yaml:"secrets"`
-	Auth          AuthConfig `yaml:"auth"`
-	DisableAuth   bool       `yaml:"disableKeelAuth"`
+	Environment   []EnvironmentVariable `yaml:"environment"`
+	UseDefaultApi *bool                 `yaml:"useDefaultApi,omitempty"`
+	Secrets       []Secret              `yaml:"secrets"`
+	Auth          AuthConfig            `yaml:"auth"`
+	Console       ConsoleConfig         `yaml:"console"`
 }
 
 func (p *ProjectConfig) GetEnvVars() map[string]string {
@@ -72,40 +86,34 @@ func (c *ProjectConfig) UsesAuthHook(hook FunctionHook) bool {
 	return slices.Contains(c.Auth.Hooks, hook)
 }
 
-// EnvironmentConfig is the configuration for a keel environment default, staging, production
-type EnvironmentConfig struct {
-	Default     []Input `yaml:"default"`
-	Development []Input `yaml:"development"`
-	Staging     []Input `yaml:"staging"`
-	Production  []Input `yaml:"production"`
-	Test        []Input `yaml:"test"`
-}
-
-// Input is the configuration for a keel environment variable or secret
-type Input struct {
+// EnvironmentVariable is the configuration for a keel environment variable or secret
+type EnvironmentVariable struct {
 	Name  string `yaml:"name"`
 	Value string `yaml:"value,omitempty"`
 }
 
+type Secret struct {
+	Name string `yaml:"name"`
+}
+
 type ConfigError struct {
-	Type    string `json:"type,omitempty"`
-	Message string `json:"message,omitempty"`
+	Filename        string    `json:"filename"`
+	Type            string    `json:"type"`
+	Message         string    `json:"message,omitempty"`
+	Field           string    `json:"field"`
+	Pos             *Position `json:"pos"`
+	EndPos          *Position `json:"endPos"`
+	AnnotatedSource string    `json:"-"`
+}
+
+type Position struct {
+	Line   int `json:"line"`
+	Column int `json:"column"`
 }
 
 const (
-	ConfigDuplicateErrorString                       = "environment variable %s has a duplicate set"
-	ConfigIncorrectNamingErrorString                 = "%s must be written in upper snakecase"
-	ConfigReservedNameErrorString                    = "environment variable %s cannot start with %s as it is reserved"
-	ConfigAuthTokenExpiryMustBePositive              = "%s token lifespan cannot be negative or zero for field: %s"
-	ConfigAuthProviderInvalidName                    = "auth provider name '%s' must only include alphanumeric characters and underscores, and cannot start with a number"
-	ConfigAuthProviderReservedPrefex                 = "cannot use reserved 'keel_' prefix in auth provider name: %s"
-	ConfigAuthProviderMissingFieldAtIndexErrorString = "auth provider at index %v is missing field: %s"
-	ConfigAuthProviderMissingFieldErrorString        = "auth provider '%s' is missing field: %s"
-	ConfigAuthProviderInvalidTypeErrorString         = "auth provider '%s' has invalid type '%s' which must be one of: %s"
-	ConfigAuthProviderDuplicateErrorString           = "auth provider name '%s' has been defined more than once, but must be unique"
-	ConfigAuthProviderInvalidHttpUrlErrorString      = "auth provider '%s' has missing or invalid https url for field: %s"
-	ConfigAuthInvalidRedirectUrlErrorString          = "auth redirectUrl '%s' is not a valid url"
-	ConfigAuthInvalidHook                            = "%s is not a recognised hook"
+	ConfigAuthProviderInvalidName          = "auth provider name '%s' must only include alphanumeric characters and underscores, and cannot start with a number"
+	ConfigAuthProviderDuplicateErrorString = "auth provider name '%s' has been defined more than once, but must be unique"
 )
 
 type ConfigErrors struct {
@@ -126,6 +134,47 @@ func (c ConfigErrors) Error() string {
 	return str
 }
 
+func ToConfigErrors(err error) *ConfigErrors {
+	v, ok := err.(*ConfigErrors)
+	if !ok {
+		return nil
+	}
+	return v
+}
+
+func LoadAll(dir string) ([]*ConfigFile, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	files := []*ConfigFile{}
+
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), "keelconfig") && strings.HasSuffix(entry.Name(), ".yaml") {
+			c, err := Load(filepath.Join(dir, entry.Name()))
+			if err != nil && ToConfigErrors(err) == nil {
+				return nil, err
+			}
+
+			parts := strings.Split(entry.Name(), ".")
+			env := ""
+			if len(parts) == 3 {
+				env = parts[1]
+			}
+
+			files = append(files, &ConfigFile{
+				Filename: entry.Name(),
+				Env:      env,
+				Config:   c,
+				Errors:   ToConfigErrors(err),
+			})
+		}
+	}
+
+	return files, nil
+}
+
 func Load(dir string) (*ProjectConfig, error) {
 	// If an absolute path to a file is provided then use it, otherwise append the default
 	// file name
@@ -140,298 +189,199 @@ func Load(dir string) (*ProjectConfig, error) {
 		return nil, fmt.Errorf("could not read config file: %w", err)
 	}
 
-	return parseAndValidate(loadConfig)
+	return parseAndValidate(loadConfig, dir)
 }
 
-func LoadFromBytes(data []byte) (*ProjectConfig, error) {
-	return parseAndValidate(data)
+func LoadFromBytes(data []byte, filename string) (*ProjectConfig, error) {
+	return parseAndValidate(data, filename)
 }
 
-func parseAndValidate(data []byte) (*ProjectConfig, error) {
+func parseAndValidate(data []byte, filename string) (*ProjectConfig, error) {
 	var config ProjectConfig
 	err := yaml.Unmarshal(data, &config)
 	if err != nil {
 		return nil, &ConfigErrors{
 			Errors: []*ConfigError{
 				{
-					Type:    "parsing",
 					Message: fmt.Sprintf("could not unmarshal config file: %s", err.Error()),
 				},
 			},
 		}
 	}
 
-	configErrors := Validate(&config)
-	if configErrors != nil {
-		return &config, configErrors
+	var yamlData map[string]interface{}
+	err = yaml.Unmarshal(data, &yamlData)
+	if err != nil {
+		return nil, &ConfigErrors{
+			Errors: []*ConfigError{
+				{
+					Message: fmt.Sprintf("could not unmarshal config file: %s", err.Error()),
+				},
+			},
+		}
 	}
 
-	return &config, nil
+	jsonData, err := json.Marshal(yamlData)
+	if err != nil {
+		return nil, &ConfigErrors{
+			Errors: []*ConfigError{
+				{
+					Message: fmt.Sprintf("error converting YAML to JSON for validation: %s", err.Error()),
+				},
+			},
+		}
+	}
+
+	// Special case - if the config is empty then we'll end up with null here. Since an empty
+	// config file is ok we can just return a plain config here
+	if string(jsonData) == "null" {
+		return &config, nil
+	}
+
+	schemaLoader := gojsonschema.NewStringLoader(jsonSchema)
+	documentLoader := gojsonschema.NewBytesLoader(jsonData)
+
+	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	if err != nil {
+		log.Fatalf("Error validating JSON: %v", err)
+	}
+
+	errors := &ConfigErrors{}
+
+	for _, err := range result.Errors() {
+		errors.Errors = append(errors.Errors, &ConfigError{
+			Filename: filename,
+			Message:  err.String(),
+			Field:    err.Field(),
+			Type:     err.Type(),
+		})
+	}
+
+	for _, fn := range validators {
+		errs := fn(&config)
+		for _, e := range errs {
+			e.Filename = filename
+		}
+		errors.Errors = append(errors.Errors, errs...)
+	}
+
+	if len(errors.Errors) == 0 {
+		return &config, nil
+	}
+
+	err = annotateErrors(data, errors)
+	if err != nil {
+		return nil, err
+	}
+
+	return &config, errors
 }
 
-var reservedEnvVarRegex = regexp.MustCompile(`^AWS_|^_|^OTEL_|^OPENCOLLECTOR_CONFIG|^KEEL_`)
+type ValidationFunc func(c *ProjectConfig) []*ConfigError
 
-func Validate(config *ProjectConfig) *ConfigErrors {
-	var errors []*ConfigError
+var validators = []ValidationFunc{
+	validateUniqueNames,
+	validateReservedPrefixes,
+	validateAuthProviders,
+}
 
-	duplicates, results := checkForDuplicates(config)
-	if duplicates {
-		for duplicatedEnvVarName := range results {
-			errors = append(errors, &ConfigError{
-				Type:    "duplicate",
-				Message: fmt.Sprintf(ConfigDuplicateErrorString, duplicatedEnvVarName),
-			})
-		}
-	}
+func validateReservedPrefixes(c *ProjectConfig) []*ConfigError {
+	errors := []*ConfigError{}
 
-	hasIncorrectNames, incorrectNames := validateFormat(config, "snakecase")
-	if hasIncorrectNames {
-		for incorrectName := range incorrectNames {
-			errors = append(errors, &ConfigError{
-				Type:    "nonSnakecase",
-				Message: fmt.Sprintf(ConfigIncorrectNamingErrorString, incorrectName),
-			})
-		}
-	}
+	values := lo.Map(c.Environment, func(v EnvironmentVariable, _ int) string {
+		return v.Name
+	})
+	errors = append(errors, validateReserved(values, "environment.%d.name")...)
 
-	hasIncorrectNames, incorrectNames = validateFormat(config, "reserved")
-	if hasIncorrectNames {
-		for incorrectName := range incorrectNames {
-			startsWith := reservedEnvVarRegex.FindString(incorrectName)
-			errors = append(errors, &ConfigError{
-				Type:    "reserved",
-				Message: fmt.Sprintf(ConfigReservedNameErrorString, incorrectName, startsWith),
-			})
-		}
-	}
+	values = lo.Map(c.Secrets, func(v Secret, _ int) string {
+		return v.Name
+	})
+	errors = append(errors, validateReserved(values, "secrets.%d.name")...)
 
-	if config.Auth.AccessTokenExpiry() <= 0 {
-		errors = append(errors, &ConfigError{
-			Type:    "invalid",
-			Message: fmt.Sprintf(ConfigAuthTokenExpiryMustBePositive, "access", "accessTokenExpiry"),
-		})
-	}
+	return errors
+}
 
-	if config.Auth.RefreshTokenExpiry() <= 0 {
-		errors = append(errors, &ConfigError{
-			Type:    "invalid",
-			Message: fmt.Sprintf(ConfigAuthTokenExpiryMustBePositive, "refresh", "refreshTokenExpiry"),
-		})
-	}
+var ReservedPrefixes = []string{"KEEL_", "OTEL_", "AWS_"}
 
-	invalidProviderNames := findAuthProviderInvalidName(config.Auth.Providers)
-	for _, p := range invalidProviderNames {
-		errors = append(errors, &ConfigError{
-			Type:    "invalid",
-			Message: fmt.Sprintf(ConfigAuthProviderInvalidName, p.Name),
-		})
-	}
+func validateReserved(values []string, path string) []*ConfigError {
+	errors := []*ConfigError{}
 
-	missingProviderNames := findAuthProviderMissingName(config.Auth.Providers)
-	for i := range missingProviderNames {
-		errors = append(errors, &ConfigError{
-			Type:    "missing",
-			Message: fmt.Sprintf(ConfigAuthProviderMissingFieldAtIndexErrorString, i, "name"),
-		})
-	}
-
-	invalidProviderTypes := findAuthProviderInvalidType(config.Auth.Providers)
-	for _, p := range invalidProviderTypes {
-		if p.Name == "" {
-			continue
-		}
-		errors = append(errors, &ConfigError{
-			Type:    "missing",
-			Message: fmt.Sprintf(ConfigAuthProviderInvalidTypeErrorString, p.Name, p.Type, strings.Join(SupportedProviderTypes, ", ")),
-		})
-	}
-
-	duplicateProviders := findAuthProviderDuplicateName(config.Auth.Providers)
-	for _, p := range duplicateProviders {
-		if p.Name == "" {
-			continue
-		}
-		errors = append(errors, &ConfigError{
-			Type:    "duplicate",
-			Message: fmt.Sprintf(ConfigAuthProviderDuplicateErrorString, p.Name),
-		})
-	}
-
-	reservedNames := findAuthProviderReservedName(config.Auth.Providers)
-	for _, p := range reservedNames {
-		if p.Name == "" {
-			continue
-		}
-		errors = append(errors, &ConfigError{
-			Type:    "reserved",
-			Message: fmt.Sprintf(ConfigAuthProviderReservedPrefex, p.Name),
-		})
-	}
-
-	missingClientIds := findAuthProviderMissingClientId(config.Auth.Providers)
-	for _, p := range missingClientIds {
-		if p.Name == "" {
-			continue
-		}
-		errors = append(errors, &ConfigError{
-			Type:    "missing",
-			Message: fmt.Sprintf(ConfigAuthProviderMissingFieldErrorString, p.Name, "clientId"),
-		})
-	}
-
-	missingOrInvalidIssuerUrls := findAuthProviderMissingOrInvalidIssuerUrl(config.Auth.GetOidcProviders())
-	for _, p := range missingOrInvalidIssuerUrls {
-		if p.Name == "" {
-			continue
-		}
-		errors = append(errors, &ConfigError{
-			Type:    "invalid",
-			Message: fmt.Sprintf(ConfigAuthProviderInvalidHttpUrlErrorString, p.Name, "issuerUrl"),
-		})
-	}
-
-	missingOrInvalidTokenUrls := findAuthProviderMissingOrInvalidTokenUrl(config.Auth.GetOAuthProviders())
-	for _, p := range missingOrInvalidTokenUrls {
-		if p.Name == "" {
-			continue
-		}
-		errors = append(errors, &ConfigError{
-			Type:    "invalid",
-			Message: fmt.Sprintf(ConfigAuthProviderInvalidHttpUrlErrorString, p.Name, "tokenUrl"),
-		})
-	}
-
-	missingOrInvalidAuthUrls := findAuthProviderMissingOrInvalidAuthorizationUrl(config.Auth.GetOAuthProviders())
-	for _, p := range missingOrInvalidAuthUrls {
-		if p.Name == "" {
-			continue
-		}
-		errors = append(errors, &ConfigError{
-			Type:    "invalid",
-			Message: fmt.Sprintf(ConfigAuthProviderInvalidHttpUrlErrorString, p.Name, "authorizationUrl"),
-		})
-	}
-
-	if config.Auth.RedirectUrl != nil {
-		_, err := url.ParseRequestURI(*config.Auth.RedirectUrl)
-		if err != nil {
-			errors = append(errors, &ConfigError{
-				Type:    "invalid",
-				Message: fmt.Sprintf(ConfigAuthInvalidRedirectUrlErrorString, *config.Auth.RedirectUrl),
-			})
-		}
-	}
-
-	if config.Auth.Hooks != nil {
-		for _, v := range config.Auth.Hooks {
-			if !slices.Contains(supportedAuthHooks, v) {
+	for i, v := range values {
+		for _, p := range ReservedPrefixes {
+			if strings.HasPrefix(v, p) {
 				errors = append(errors, &ConfigError{
-					Type:    "invalid",
-					Message: fmt.Sprintf(ConfigAuthInvalidHook, v),
+					Message: fmt.Sprintf("%s: The '%s' prefix is not allowed", fmt.Sprintf(path, i), p),
+					Field:   fmt.Sprintf(path, i),
+					Type:    "reserved-prefix",
 				})
 			}
 		}
 	}
 
-	if len(errors) == 0 {
-		return nil
-	}
-
-	return &ConfigErrors{
-		Errors: errors,
-	}
+	return errors
 }
 
-// checkForDuplicates checks for duplicate environment variables in a keel project
-func checkForDuplicates(config *ProjectConfig) (bool, map[string][]string) {
-	results := make(map[string][]string, 2)
-	envDuplicates, staging := findDuplicates(config.Environment)
+func validateUniqueNames(c *ProjectConfig) []*ConfigError {
+	errors := []*ConfigError{}
 
-	if len(staging) > 0 {
-		for _, key := range staging {
-			results[key] = append(results[key], "staging")
-		}
-	}
+	values := lo.Map(c.Environment, func(v EnvironmentVariable, _ int) string {
+		return v.Name
+	})
+	errors = append(errors, validateUnique(values, "environment.%d.name")...)
 
-	secretDuplicates, secrets := findDuplicates(config.Secrets)
-	if len(secrets) > 0 {
-		for _, key := range secrets {
-			results[key] = append(results[key], "secrets")
-		}
-	}
+	values = lo.Map(c.Secrets, func(v Secret, _ int) string {
+		return v.Name
+	})
+	errors = append(errors, validateUnique(values, "secrets.%d.name")...)
 
-	if envDuplicates || secretDuplicates {
-		return true, results
-	}
+	values = lo.Map(c.Auth.Providers, func(p Provider, _ int) string {
+		return p.Name
+	})
+	errors = append(errors, validateUnique(values, "auth.providers.%d.name")...)
 
-	return false, results
+	return errors
 }
 
-// findDuplicates checks for duplicate environment variables or secrets for a given environment
-func findDuplicates(environment []Input) (bool, []string) {
-	keys := make(map[string]bool)
-
-	duplicates := []string{}
-	for _, envVar := range environment {
-		if _, value := keys[envVar.Name]; !value {
-			keys[envVar.Name] = true
-		} else {
-			duplicates = append(duplicates, envVar.Name)
+func validateUnique(values []string, path string) []*ConfigError {
+	seen := map[string]bool{}
+	errors := []*ConfigError{}
+	for i, v := range values {
+		if v == "" {
+			continue
 		}
+		if _, ok := seen[v]; ok {
+			key := strings.Split(path, ".")
+			errors = append(errors, &ConfigError{
+				Message: fmt.Sprintf("%s: Duplicate %s %s", fmt.Sprintf(path, i), key[len(key)-1], v),
+				Field:   fmt.Sprintf(path, i),
+				Type:    "duplicate-value",
+			})
+		}
+		seen[v] = true
 	}
-
-	return len(duplicates) > 0, duplicates
+	return errors
 }
 
-// validateFormat checks if any secret name or environment variables are written in the wrong format.
-// must be screaming snakecase or, if an environment variable, a non-reserved name.
-func validateFormat(config *ProjectConfig, formatType string) (bool, map[string]bool) {
-	envs := config.Environment
-	secrets := config.Secrets
-
-	incorrectNamesMap := make(map[string]bool)
-
-	if formatType == "snakecase" {
-		for _, secret := range secrets {
-			if ok := incorrectNamesMap[secret.Name]; ok {
-				continue
-			}
-
-			ssName := strings.ToUpper(secret.Name)
-
-			if secret.Name != ssName {
-				incorrectNamesMap[secret.Name] = true
-			}
-			continue
+func validateAuthProviders(c *ProjectConfig) []*ConfigError {
+	errors := []*ConfigError{}
+	for i, p := range c.Auth.Providers {
+		if strings.HasPrefix(strings.ToLower(p.Name), "keel_") {
+			errors = append(errors, &ConfigError{
+				Message: fmt.Sprintf("auth.providers.%d.name: Cannot start with '%s'", i, p.Name[0:5]),
+				Field:   fmt.Sprintf("auth.providers.%d.name", i),
+				Type:    "reserved-prefix",
+			})
+		}
+		if p.Type == "oidc" && p.IssuerUrl == "" {
+			errors = append(errors, &ConfigError{
+				Message: fmt.Sprintf("auth.providers.%d: 'issuerUrl' is required if 'type' is 'oidc'", i),
+				Field:   fmt.Sprintf("auth.providers.%d", i),
+				Type:    "required",
+			})
 		}
 	}
 
-	for _, envVar := range envs {
-		if ok := incorrectNamesMap[envVar.Name]; ok {
-			continue
-		}
-
-		switch formatType {
-		case "snakecase":
-			ssName := casing.ToScreamingSnake(envVar.Name)
-
-			if envVar.Name != ssName {
-				incorrectNamesMap[envVar.Name] = true
-			}
-			continue
-		case "reserved":
-			found := reservedEnvVarRegex.FindString(envVar.Name)
-
-			if found != "" {
-				incorrectNamesMap[envVar.Name] = true
-			}
-			continue
-		default:
-			break
-		}
-	}
-
-	return len(incorrectNamesMap) > 0, incorrectNamesMap
+	return errors
 }
 
 func (c *ProjectConfig) ValidateSecrets(localSecrets map[string]string) (bool, []string) {
@@ -444,4 +394,70 @@ func (c *ProjectConfig) ValidateSecrets(localSecrets map[string]string) (bool, [
 	}
 
 	return len(missing) > 0, missing
+}
+
+var arrayIndexRegex = regexp.MustCompile(`\.(\d+)(\.){0,1}`)
+var additionalPropertyRegex = regexp.MustCompile(`Additional property (\w+) is not allowed`)
+
+func annotateErrors(src []byte, errors *ConfigErrors) error {
+	file, err := parser.ParseBytes(src, 0)
+	if err != nil {
+		return err
+	}
+
+	for _, e := range errors.Errors {
+		field := e.Field
+
+		// Get rid of "(root)" which isn't valid in YAML path
+		if field == "(root)" {
+			field = ""
+		}
+
+		// change "foo.0.baz' into "foo[0].baz"
+		field = arrayIndexRegex.ReplaceAllString(field, "[$1]$2")
+		field = fmt.Sprintf("$.%s", field)
+
+		// Special case for additional properties - add that property to the end so
+		// we point to it
+		if e.Type == "additional_property_not_allowed" {
+			prop := additionalPropertyRegex.FindStringSubmatch(e.Message)
+			field = fmt.Sprintf("%s.%s", field, prop[1])
+		}
+
+		path, err := yaml.PathString(field)
+		if err != nil {
+			// If the YAML path ends up being invalid we'll just continue, don't want to
+			// blow up on this
+			fmt.Println("invalid YAMLPath:", field, err.Error())
+			continue
+		}
+
+		node, err := path.FilterFile(file)
+		if err != nil {
+			// This shouldn't really happen if the YAML path is valid but we'll just continue if it does
+			fmt.Println("unable to filter YAML file", err.Error())
+			continue
+		}
+
+		pos := node.GetToken().Position
+		e.Pos = &Position{
+			Line:   pos.Line,
+			Column: pos.Column,
+		}
+		e.EndPos = &Position{
+			Line:   pos.Line,
+			Column: pos.Column + len(node.GetToken().Value),
+		}
+
+		annotated, err := path.AnnotateSource(src, true)
+		if err != nil {
+			// Again not sure what kind of error can happen here but we'll just continue
+			fmt.Println("error annotating soure", err.Error())
+			continue
+		}
+
+		e.AnnotatedSource = string(annotated)
+	}
+
+	return nil
 }

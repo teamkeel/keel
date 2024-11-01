@@ -54,7 +54,9 @@ func TestProto(t *testing.T) {
 				return
 			}
 
+			fmt.Println(testCase.Name())
 			fmt.Println(string(actual))
+			fmt.Println()
 
 			assert.Fail(t, "actual proto JSON does not match expected", explanation)
 		})
@@ -88,7 +90,7 @@ func TestValidation(t *testing.T) {
 
 			verrs := &errorhandling.ValidationErrors{}
 			if !errors.As(err, &verrs) {
-				t.Errorf("no validation errors returned")
+				t.Errorf("no validation errors returned: %v", err)
 			}
 
 			expectedErrors := []*errorhandling.ValidationError{}

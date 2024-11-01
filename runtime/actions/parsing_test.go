@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/types"
 )
@@ -41,7 +42,10 @@ model Post {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	parsed, err := actions.TransformInputTypes(scope.Schema, action, data)
+	message := scope.Schema.FindMessage(action.InputMessageName)
+	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+
+	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)
 
 	assert.IsType(t, "", parsed["title"])
@@ -80,7 +84,10 @@ model Post {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	parsed, err := actions.TransformInputTypes(scope.Schema, action, data)
+	message := scope.Schema.FindMessage(action.InputMessageName)
+	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+
+	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)
 
 	assert.IsType(t, []string{}, parsed["texts"])
@@ -124,7 +131,10 @@ model Post {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	parsed, err := actions.TransformInputTypes(scope.Schema, action, data)
+	message := scope.Schema.FindMessage(action.InputMessageName)
+	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+
+	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)
 
 	assert.IsType(t, map[string]any{}, parsed["where"])
@@ -189,7 +199,10 @@ model Post {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	parsed, err := actions.TransformInputTypes(scope.Schema, action, data)
+	message := scope.Schema.FindMessage(action.InputMessageName)
+	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+
+	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)
 
 	assert.IsType(t, "", parsed["name"])
@@ -246,7 +259,10 @@ model Post {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	parsed, err := actions.TransformInputTypes(scope.Schema, action, data)
+	message := scope.Schema.FindMessage(action.InputMessageName)
+	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+
+	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "Keel post", parsed["title"])
@@ -289,7 +305,10 @@ message FileResponse {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	parsed, err := actions.TransformCustomFunctionsInputTypes(scope.Schema, action.InputMessageName, data)
+	message := scope.Schema.FindMessage(action.InputMessageName)
+	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+
+	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)
 
 	assert.IsType(t, map[string]any{}, parsed["file"])

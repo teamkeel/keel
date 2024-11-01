@@ -106,7 +106,7 @@ test("nested image test", async () => {
   });
 });
 
-test("nested structure", async () => {
+test("arrays", async () => {
   const params = {
     names: ["james", "susan"],
     ages: [1, 2],

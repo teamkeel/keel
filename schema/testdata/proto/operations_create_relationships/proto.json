@@ -85,12 +85,34 @@
         },
         {
           "modelName": "SaleItem",
+          "name": "saleId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Sale",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "SaleItem",
           "name": "product",
           "type": {
             "type": "TYPE_MODEL",
             "modelName": "Product"
           },
           "foreignKeyFieldName": "productId"
+        },
+        {
+          "modelName": "SaleItem",
+          "name": "productId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Product",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "SaleItem",
@@ -129,28 +151,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "SaleItem",
-          "name": "saleId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Sale",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "SaleItem",
-          "name": "productId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Product",
-            "relatedModelField": "id"
           }
         }
       ],

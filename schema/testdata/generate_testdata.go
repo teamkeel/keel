@@ -109,6 +109,7 @@ func main() {
 
 			// protojson does some slightly weird things with whitespace so we run
 			// the output through go's default indenter to fix this
+
 			var dest bytes.Buffer
 			_ = json.Indent(&dest, b, "", "  ")
 			outputContents = dest.Bytes()

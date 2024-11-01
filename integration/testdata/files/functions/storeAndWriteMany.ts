@@ -4,9 +4,9 @@ import { StoreAndWriteMany, models } from "@teamkeel/sdk";
 export default StoreAndWriteMany(async (ctx, inputs) => {
   const stored = await inputs.file.store();
 
-  const f1 = await models.myFile.create({ file: stored });
-  const f2 = await models.myFile.create({ file: stored });
-  const f3 = await models.myFile.create({ file: stored });
+  await models.myFile.create({ file: stored });
+  await models.myFile.create({ file: stored });
+  await models.myFile.create({ file: stored });
 
-  return "";
+  return { msg: { file: stored } };
 });

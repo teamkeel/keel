@@ -1,15 +1,13 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 
-	"github.com/samber/lo"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -29,7 +27,6 @@ const (
 	GitLabProvider        = "gitlab"
 	SlackProvider         = "slack"
 	OpenIdConnectProvider = "oidc"
-	OAuthProvider         = "oauth"
 )
 
 var (
@@ -47,13 +44,6 @@ type FunctionHook string
 const (
 	HookAfterAuthentication  FunctionHook = "afterAuthentication"
 	HookAfterIdentityCreated FunctionHook = "afterIdentityCreated"
-)
-
-var (
-	supportedAuthHooks = []FunctionHook{
-		HookAfterAuthentication,
-		HookAfterIdentityCreated,
-	}
 )
 
 type AuthConfig struct {
@@ -118,19 +108,14 @@ func (c *AuthConfig) RefreshTokenRotationEnabled() bool {
 
 // AddOidcProvider adds an OpenID Connect provider to the list of supported authentication providers
 func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId string) error {
-	if invalidName(name) {
-		return fmt.Errorf(ConfigAuthProviderInvalidName, name)
+	if name == "" {
+		return fmt.Errorf("name is required")
 	}
-	for _, v := range c.Providers {
-		if v.Name == name {
-			return fmt.Errorf(ConfigAuthProviderDuplicateErrorString, name)
-		}
-	}
-	if invalidUrl(issuerUrl) {
-		return fmt.Errorf("invalid issuerUrl: %s", issuerUrl)
+	if issuerUrl == "" {
+		return fmt.Errorf("issuerUrl is required")
 	}
 	if clientId == "" {
-		return errors.New("provider clientId cannot be empty")
+		return fmt.Errorf("clientId is required")
 	}
 
 	provider := Provider{
@@ -141,6 +126,33 @@ func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId str
 	}
 
 	c.Providers = append(c.Providers, provider)
+
+	b, err := yaml.Marshal(&ProjectConfig{Auth: *c})
+	if err != nil {
+		return err
+	}
+
+	_, err = LoadFromBytes(b, "")
+	if err != nil && ToConfigErrors(err) == nil {
+		return err
+	}
+
+	newProviderIndex := len(c.Providers) - 1
+	for _, err := range ToConfigErrors(err).Errors {
+		if strings.HasPrefix(err.Message, fmt.Sprintf("auth.providers.%d.name", newProviderIndex)) {
+			// This function allows the adding of internal auth providers which can start with 'keel_'
+			if !strings.Contains(err.Message, "Cannot start with 'keel_'") {
+				return fmt.Errorf(err.Message)
+			}
+		}
+		if strings.HasPrefix(err.Message, fmt.Sprintf("auth.providers.%d.issuerUrl", newProviderIndex)) {
+			return fmt.Errorf(err.Message)
+		}
+		if strings.HasPrefix(err.Message, fmt.Sprintf("auth.providers.%d.clientId", newProviderIndex)) {
+			return fmt.Errorf(err.Message)
+		}
+	}
+
 	return nil
 }
 
@@ -161,10 +173,6 @@ func (c *AuthConfig) GetOidcProvidersByIssuer(issuer string) ([]Provider, error)
 	providers := []Provider{}
 
 	for _, p := range c.Providers {
-		if p.Type == OAuthProvider {
-			continue
-		}
-
 		issuerUrl, hasIssuer := p.GetIssuerUrl()
 		if !hasIssuer {
 			return nil, fmt.Errorf("issuer url has not been configured: %s", issuer)
@@ -200,16 +208,6 @@ func (p *Provider) GetCallbackUrl() (*url.URL, error) {
 		return nil, err
 	}
 	return apiUrl.JoinPath("/auth/callback/" + strings.ToLower(p.Name)), nil
-}
-
-func (c *AuthConfig) GetOAuthProviders() []Provider {
-	oidcProviders := []Provider{}
-	for _, p := range c.Providers {
-		if p.Type == OAuthProvider {
-			oidcProviders = append(oidcProviders, p)
-		}
-	}
-	return oidcProviders
 }
 
 // GetProvider retrieves the provider by its name (case insensitive)
@@ -252,8 +250,6 @@ func (p *Provider) GetTokenUrl() (string, bool) {
 		return "https://slack.com/api/openid.connect.token", true
 	case OpenIdConnectProvider:
 		return p.TokenUrl, true
-	case OAuthProvider:
-		return p.TokenUrl, true
 	default:
 		return "", false
 	}
@@ -271,132 +267,7 @@ func (p *Provider) GetAuthorizationUrl() (string, bool) {
 		return "https://slack.com/openid/connect/authorize", true
 	case OpenIdConnectProvider:
 		return p.AuthorizationUrl, true
-	case OAuthProvider:
-		return p.AuthorizationUrl, true
 	default:
 		return "", false
 	}
-}
-
-// findAuthProviderInvalidName checks for invalid provider names
-func findAuthProviderInvalidName(providers []Provider) []Provider {
-	invalid := []Provider{}
-	for _, p := range providers {
-		if invalidName(p.Name) {
-			invalid = append(invalid, p)
-		}
-	}
-
-	return invalid
-}
-
-// findAuthProviderMissingName checks for missing provider names
-func findAuthProviderMissingName(providers []Provider) []Provider {
-	invalid := []Provider{}
-	for _, p := range providers {
-		if p.Name == "" {
-			invalid = append(invalid, p)
-		}
-	}
-
-	return invalid
-}
-
-// findAuthProviderDuplicateName checks for duplicate auth provider names
-func findAuthProviderDuplicateName(providers []Provider) []Provider {
-	keys := make(map[string]bool)
-
-	duplicates := []Provider{}
-	for _, p := range providers {
-		if _, value := keys[p.Name]; !value {
-			keys[p.Name] = true
-		} else {
-			duplicates = append(duplicates, p)
-		}
-	}
-
-	return duplicates
-}
-
-// findAuthProviderReservedName checks for reserved names
-func findAuthProviderReservedName(providers []Provider) []Provider {
-	invalid := []Provider{}
-	for _, p := range providers {
-		if strings.HasPrefix(strings.ToLower(p.Name), ReservedProviderNamePrefix) {
-			invalid = append(invalid, p)
-		}
-	}
-
-	return invalid
-}
-
-// findAuthProviderInvalidType checks for invalid provider types
-func findAuthProviderInvalidType(providers []Provider) []Provider {
-	invalid := []Provider{}
-	for _, p := range providers {
-		if !lo.Contains(SupportedProviderTypes, p.Type) {
-			invalid = append(invalid, p)
-		}
-	}
-
-	return invalid
-}
-
-// findAuthProviderMissingClientId checks for missing client IDs
-func findAuthProviderMissingClientId(providers []Provider) []Provider {
-	invalid := []Provider{}
-	for _, p := range providers {
-		if p.ClientId == "" {
-			invalid = append(invalid, p)
-		}
-	}
-
-	return invalid
-}
-
-// findAuthProviderMissingIssuerUrl checks for missing or invalid issuer URLs
-func findAuthProviderMissingOrInvalidIssuerUrl(providers []Provider) []Provider {
-	invalid := []Provider{}
-	for _, p := range providers {
-		if invalidUrl(p.IssuerUrl) {
-			invalid = append(invalid, p)
-			continue
-		}
-	}
-
-	return invalid
-}
-
-// findAuthProviderMissingOrInvalidTokenUrl checks for missing or invalid token URLs
-func findAuthProviderMissingOrInvalidTokenUrl(providers []Provider) []Provider {
-	invalid := []Provider{}
-	for _, p := range providers {
-		if invalidUrl(p.TokenUrl) {
-			invalid = append(invalid, p)
-			continue
-		}
-	}
-
-	return invalid
-}
-
-// findAuthProviderMissingOrInvalidAuthorizationUrl checks for missing or invalid authorization URLs
-func findAuthProviderMissingOrInvalidAuthorizationUrl(providers []Provider) []Provider {
-	invalid := []Provider{}
-	for _, p := range providers {
-		if invalidUrl(p.AuthorizationUrl) {
-			invalid = append(invalid, p)
-			continue
-		}
-	}
-	return invalid
-}
-
-func invalidName(name string) bool {
-	return !regexp.MustCompile(`^[A-Za-z_]\w*$`).MatchString(name)
-}
-
-func invalidUrl(u string) bool {
-	parsed, err := url.Parse(u)
-	return err != nil || parsed.Scheme != "https"
 }

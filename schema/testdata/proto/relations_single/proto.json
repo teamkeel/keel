@@ -51,6 +51,17 @@
         },
         {
           "modelName": "Book",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Person",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Book",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -79,17 +90,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Book",
-          "name": "authorId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Person",
-            "relatedModelField": "id"
           }
         }
       ]

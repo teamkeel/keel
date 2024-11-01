@@ -53,6 +53,15 @@ message SinglePersonResponse {
     person Person
 }
 
+message ComplexMessage {
+    msg ComplexInnerMessage
+    msgArray ComplexInnerMessage[]
+}
+
+message ComplexInnerMessage {
+    texts Text[]
+}
+
 model Person {
     fields {
         name Text
@@ -78,6 +87,7 @@ model Person {
         write updateWithFile(FileInput) returns (SinglePersonResponse)
         write updatePhoto(id, photo) returns (SinglePersonResponse)
         read readFile(id) returns (Any)
+        read readComplex(ComplexMessage) returns (ComplexMessage) 
     }
 }
 

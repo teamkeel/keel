@@ -1,0 +1,88 @@
+// Visit https://docs.keel.so/ for documentation on how to get started
+model Comment {
+    fields {
+        author Identity
+        parent BlogPost
+        content Text
+    }
+
+    actions {
+        get getComment(id)
+        create createComment() with (author.id, parent.id, content)
+        list listComments(parent.id?)
+    }
+}
+
+model Category {
+    fields {
+        name Text
+    }
+
+    actions {
+        get getCategory(id)
+        delete deleteCategory(id)
+        list listCategories()
+    }
+}
+
+enum Status {
+    Published
+    Unpublished
+}
+
+model BlogPost {
+    fields {
+        title Text
+        description Text
+        content Markdown
+        published Boolean @default(false)
+        author Identity?
+        image File?
+        tags Text[]?
+        category Category?
+        comments Comment[]
+        status Status @default(Status.Published)
+    }
+
+    actions {
+        get getPost(id)
+        update updatePost(id) with (
+            title?,
+            description?,
+            content?,
+            tags?,
+            image?,
+            category.id?,
+        )
+        create createPost() with (title, description, content, tags?, image?, category.id?) {
+            @set(blogPost.author = ctx.identity)
+        }
+        list listPosts() {
+            @sortable(title)
+        }
+        list listPostsEmbeds() {
+            @embed(author)
+            @embed(category)
+        }
+        write createFromImage(image) returns (Any) {
+            @permission(expression: true)
+        }
+        delete deletePost(id)
+    }
+}
+
+api Console {
+    models {
+        Comment
+        Category {
+            actions {
+                listCategories
+            }
+        }
+        BlogPost {
+            actions {
+                getPost
+            }
+        }
+    }
+}

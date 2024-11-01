@@ -23,6 +23,17 @@
         },
         {
           "modelName": "Product",
+          "name": "publisherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Publisher",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Product",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -51,17 +62,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Product",
-          "name": "publisherId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Publisher",
-            "relatedModelField": "id"
           }
         }
       ]

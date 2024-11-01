@@ -179,6 +179,10 @@ var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
 var fileType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "File",
 	Fields: graphql.Fields{
+		"key": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "Unique reference for this file.",
+		},
 		"contentType": &graphql.Field{
 			Type:        graphql.NewNonNull(graphql.String),
 			Description: "MIME type for the file.",
@@ -186,14 +190,6 @@ var fileType = graphql.NewObject(graphql.ObjectConfig{
 		"filename": &graphql.Field{
 			Type:        graphql.NewNonNull(graphql.String),
 			Description: "The name of the file when it was uploaded.",
-		},
-		"key": &graphql.Field{
-			Type:        graphql.NewNonNull(graphql.String),
-			Description: "Unique reference for this file.",
-		},
-		"public": &graphql.Field{
-			Type:        graphql.NewNonNull(graphql.Boolean),
-			Description: "If the file is public or private.",
 		},
 		"size": &graphql.Field{
 			Type:        graphql.NewNonNull(graphql.Int),

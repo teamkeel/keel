@@ -1,0 +1,14 @@
+model Account {
+    fields {
+        photo File
+    }
+    actions {
+        get getAccount(id) 
+        list listAccounts()
+        write writeAccounts(FileMessage) returns (FileMessage)
+    }
+}
+
+message FileMessage {
+    file File
+}

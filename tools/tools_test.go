@@ -19,6 +19,7 @@ func TestGenerateTools(t *testing.T) {
 	t.Parallel()
 	testdataDir := "./testdata"
 	testCases, err := os.ReadDir(testdataDir)
+
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
@@ -39,7 +40,7 @@ func TestGenerateTools(t *testing.T) {
 			schema, err := builder.MakeFromDirectory(testCaseDir)
 			require.NoError(t, err)
 
-			tools, err := GenerateTools(context.Background(), schema)
+			tools, err := GenerateTools(context.Background(), schema, builder.Config)
 			require.NoError(t, err)
 
 			response := &rpc.ListToolsResponse{
@@ -56,7 +57,7 @@ func TestGenerateTools(t *testing.T) {
 				return
 			}
 
-			fmt.Println(string(actual))
+			fmt.Printf("%s - %s\n\n", testCase.Name(), string(actual))
 
 			assert.Fail(t, "actual tools JSON does not match expected", explanation)
 		})

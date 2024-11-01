@@ -70,6 +70,18 @@
         },
         {
           "modelName": "Author",
+          "name": "publisherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Publisher",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "Author",
           "name": "books",
           "type": {
             "type": "TYPE_MODEL",
@@ -109,18 +121,6 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Author",
-          "name": "publisherId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Publisher",
-            "relatedModelField": "id"
-          }
         }
       ]
     },
@@ -136,6 +136,17 @@
           },
           "foreignKeyFieldName": "authorId",
           "inverseFieldName": "books"
+        },
+        {
+          "modelName": "Book",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Author",
+            "relatedModelField": "id"
+          }
         },
         {
           "modelName": "Book",
@@ -167,17 +178,6 @@
           },
           "defaultValue": {
             "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Book",
-          "name": "authorId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Author",
-            "relatedModelField": "id"
           }
         }
       ],

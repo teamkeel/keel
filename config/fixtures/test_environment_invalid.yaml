@@ -1,0 +1,17 @@
+# environment.0.name: Does not match pattern '^[A-Z][A-Z0-9_]*$'
+# environment.1.name: The 'AWS_' prefix is not allowed
+# environment.2.name: The 'OTEL_' prefix is not allowed
+# environment.3.name: The 'KEEL_' prefix is not allowed
+# environment.4.name: Does not match pattern '^[A-Z][A-Z0-9_]*$'
+
+environment:
+  - name: lower-case
+    value: "test"
+  - name: AWS_FOO
+    value: some-value
+  - name: OTEL_SOMETHING
+    value: "foo"
+  - name: KEEL_THING
+    value: "a thing"
+  - name: 123_FOO
+    value: "bar"

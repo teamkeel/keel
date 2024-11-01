@@ -68,8 +68,18 @@ async function handleRequest(request, config) {
         const customFunction = functions[request.method];
         const actionType = actionTypes[request.method];
 
+        const functionConfig = customFunction?.config ?? {};
+
         const result = await tryExecuteFunction(
-          { request, ctx, permitted, db, permissionFns, actionType },
+          {
+            request,
+            ctx,
+            permitted,
+            db,
+            permissionFns,
+            actionType,
+            functionConfig,
+          },
           async () => {
             // parse request params to convert objects into rich field types (e.g. InlineFile)
             const inputs = parseInputs(request.params);
@@ -80,6 +90,7 @@ async function handleRequest(request, config) {
             return customFunction(ctx, inputs);
           }
         );
+
         if (result instanceof Error) {
           span.recordException(result);
           span.setStatus({

@@ -1,0 +1,22 @@
+model Product {
+    fields {
+        name Text
+        sku Text @unique
+        supplier Supplier
+    }
+
+    actions {
+        get getProduct(id)
+        get getProductBySku(sku)
+        get getProductWithSupplier(id) {
+            @embed(supplier)
+        }
+
+        list listProducts()
+        update updateProduct(id)
+        write writeProductFunc(id) returns (Any)
+        read readProductFunc(id) returns (Any)
+    }
+}
+
+model Supplier {}

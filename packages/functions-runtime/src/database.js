@@ -3,7 +3,6 @@ const neonserverless = require("@neondatabase/serverless");
 const { AsyncLocalStorage } = require("async_hooks");
 const { AuditContextPlugin } = require("./auditing");
 const pg = require("pg");
-const { PROTO_ACTION_TYPES } = require("./consts");
 const { withSpan } = require("./tracing");
 const ws = require("ws");
 
@@ -14,18 +13,7 @@ const ws = require("ws");
 // the user's custom function is wrapped in a transaction so we can rollback
 // the transaction if something goes wrong.
 // withDatabase shouldn't be exposed in the public api of the sdk
-async function withDatabase(db, actionType, cb) {
-  let requiresTransaction = true;
-
-  switch (actionType) {
-    case PROTO_ACTION_TYPES.SUBSCRIBER:
-    case PROTO_ACTION_TYPES.JOB:
-    case PROTO_ACTION_TYPES.GET:
-    case PROTO_ACTION_TYPES.LIST:
-      requiresTransaction = false;
-      break;
-  }
-
+async function withDatabase(db, requiresTransaction, cb) {
   // db.transaction() provides a kysely instance bound to a transaction.
   if (requiresTransaction) {
     return db.transaction().execute(async (transaction) => {
@@ -70,6 +58,7 @@ function useDatabase() {
 
   // If we've gotten to this point, then we know that we are in a custom function runtime server
   // context and we haven't been able to retrieve the in-context instance of Kysely, which means we should throw an error.
+  console.trace();
   throw new Error("useDatabase must be called within a function");
 }
 
