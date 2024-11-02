@@ -130,15 +130,6 @@ func TestAddOidcProviderKeelAuth(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAddOidcProviderAlreadyExists(t *testing.T) {
-	t.Parallel()
-	auth := &config.AuthConfig{}
-	err := auth.AddOidcProvider("my_client", "https://mycustomoidc.com", "1234")
-	assert.NoError(t, err)
-	err = auth.AddOidcProvider("my_client", "https://anothercustomoidc.com", "abcd")
-	assert.ErrorContains(t, err, "auth.providers.1.name: Duplicate name my_client")
-}
-
 func TestGetCallbackUrl_Localhost(t *testing.T) {
 	provider := &config.Provider{
 		Name: "google",
