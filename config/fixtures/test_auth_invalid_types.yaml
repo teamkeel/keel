@@ -16,8 +16,6 @@ auth:
     - type: oauth
       name: github
       clientId: hfjuw983h1hfsdf
-      authorizationUrl: https://github.com/auth
-      tokenUrl: https://github.com/token
 
     - type: whoops
       name: Baidu

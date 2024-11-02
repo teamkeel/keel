@@ -70,14 +70,10 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, err.Error(), err)
 		}
 
-		authUrl, hasAuthUrl := provider.GetAuthorizationUrl()
-		if !hasAuthUrl {
-			return common.InternalServerErrorResponse(ctx, errors.New("provider does not have an authorization endpoint configured"))
-		}
-
-		tokenUrl, hasTokenUrl := provider.GetTokenUrl()
-		if !hasTokenUrl {
-			return common.InternalServerErrorResponse(ctx, errors.New("provider does not have an token endpoint configured"))
+		// Establishes new OIDC provider. This will call the providers discovery endpoint
+		oidcProvider, err := oidc.NewProvider(ctx, provider.IssuerUrl)
+		if err != nil {
+			return common.InternalServerErrorResponse(ctx, err)
 		}
 
 		callbackUrl, err := provider.GetCallbackUrl()
@@ -90,8 +86,8 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 		oauthConfig := &oauth2.Config{
 			ClientID: provider.ClientId,
 			Endpoint: oauth2.Endpoint{
-				AuthURL:  authUrl,
-				TokenURL: tokenUrl,
+				AuthURL:  oidcProvider.Endpoint().AuthURL,
+				TokenURL: oidcProvider.Endpoint().TokenURL,
 			},
 			Scopes:      []string{"openid", "email", "profile"},
 			RedirectURL: callbackUrl.String(),
@@ -163,14 +159,10 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		authUrl, hasAuthUrl := provider.GetAuthorizationUrl()
-		if !hasAuthUrl {
-			return common.InternalServerErrorResponse(ctx, errors.New("provider does not have an authorization endpoint configured"))
-		}
-
-		tokenUrl, hasTokenUrl := provider.GetTokenUrl()
-		if !hasTokenUrl {
-			return common.InternalServerErrorResponse(ctx, errors.New("provider does not have an token endpoint configured"))
+		// Establishes new OIDC provider. This will call the providers discovery endpoint
+		oidcProvider, err := oidc.NewProvider(ctx, provider.IssuerUrl)
+		if err != nil {
+			return common.InternalServerErrorResponse(ctx, err)
 		}
 
 		// ClientSecret is required for token exchange
@@ -178,8 +170,8 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			ClientID:     provider.ClientId,
 			ClientSecret: secret,
 			Endpoint: oauth2.Endpoint{
-				AuthURL:  authUrl,
-				TokenURL: tokenUrl,
+				AuthURL:  oidcProvider.Endpoint().AuthURL,
+				TokenURL: oidcProvider.Endpoint().TokenURL,
 			},
 			RedirectURL: callbackUrl.String(),
 		}
