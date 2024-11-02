@@ -9,5 +9,3 @@ auth:
     - type: oidc
       name: Baidu
       issuerUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
-      authorizationUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"
-      tokenUrl: "https://dev-skhlutl45lbqkvhv.us.auth0.com"

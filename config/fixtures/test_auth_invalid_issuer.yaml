@@ -9,27 +9,19 @@ auth:
   providers:
     - type: oidc
       name: not_https
-      authorizationUrl: "https://valid.com"
       issuerUrl: "http://not-https.com"
-      tokenUrl: "https://not-https.com"
       clientId: "kasj28fnq09ak"
 
     - type: oidc
       name: missing_issuer
-      authorizationUrl: "https://valid.com"
-      tokenUrl: "https://valid.com"
       clientId: "kasj28fnq09ak"
 
     - type: oidc
       name: no_schema
-      authorizationUrl: "https://valid.com"
-      tokenUrl: "https://valid.com"
       issuerUrl: "not-https.com"
       clientId: "kasj28fnq09ak"
 
     - type: oidc
       name: invalid_url
-      authorizationUrl: "https://valid.com"
-      tokenUrl: "https://valid.com"
       issuerUrl: "whoops"
       clientId: "kasj28fnq09ak"

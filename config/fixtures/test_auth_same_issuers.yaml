@@ -14,7 +14,5 @@ auth:
 
     - type: oidc
       name: google_3
-      authorizationUrl: https://some.url
-      tokenUrl: https://some.url
       issuerUrl: https://accounts.google.com/
       clientId: "1234"

@@ -39,12 +39,10 @@ func TestSsoLogin_Success(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:             config.OpenIdConnectProvider,
-				Name:             "myoidc",
-				ClientId:         "oidc-client-id",
-				IssuerUrl:        server.Issuer,
-				TokenUrl:         server.TokenUrl,
-				AuthorizationUrl: server.AuthorizeUrl,
+				Type:      config.OpenIdConnectProvider,
+				Name:      "myoidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
 			},
 		},
 		Claims: []config.IdentityClaim{
@@ -206,12 +204,10 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:             config.OpenIdConnectProvider,
-				Name:             "myoidc",
-				ClientId:         "oidc-client-id",
-				IssuerUrl:        server.Issuer,
-				TokenUrl:         server.TokenUrl,
-				AuthorizationUrl: server.AuthorizeUrl,
+				Type:      config.OpenIdConnectProvider,
+				Name:      "myoidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
 			},
 		},
 	})
@@ -274,12 +270,10 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:             config.OpenIdConnectProvider,
-				Name:             "myoidc",
-				ClientId:         "oidc-client-id",
-				IssuerUrl:        server.Issuer,
-				TokenUrl:         server.TokenUrl,
-				AuthorizationUrl: server.AuthorizeUrl,
+				Type:      config.OpenIdConnectProvider,
+				Name:      "myoidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
 			},
 		},
 	})
@@ -383,12 +377,10 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:             config.OpenIdConnectProvider,
-				Name:             "myoidc",
-				ClientId:         "oidc-client-id",
-				IssuerUrl:        server.Issuer,
-				TokenUrl:         server.TokenUrl,
-				AuthorizationUrl: server.AuthorizeUrl,
+				Type:      config.OpenIdConnectProvider,
+				Name:      "myoidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
 			},
 		},
 	})
@@ -459,12 +451,10 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:             config.OpenIdConnectProvider,
-				Name:             "myoidc",
-				ClientId:         "oidc-client-id",
-				IssuerUrl:        server.Issuer,
-				TokenUrl:         server.TokenUrl,
-				AuthorizationUrl: server.AuthorizeUrl,
+				Type:      config.OpenIdConnectProvider,
+				Name:      "myoidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
 			},
 		},
 	})
@@ -521,12 +511,10 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
-				Type:             config.OpenIdConnectProvider,
-				Name:             "myoidc",
-				ClientId:         "oidc-client-id",
-				IssuerUrl:        server.Issuer,
-				TokenUrl:         server.TokenUrl,
-				AuthorizationUrl: server.AuthorizeUrl,
+				Type:      config.OpenIdConnectProvider,
+				Name:      "myoidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
 			},
 		},
 	})
@@ -594,12 +582,10 @@ func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
 	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
 		Providers: []config.Provider{
 			{
-				Type:             config.OpenIdConnectProvider,
-				Name:             "myoidc",
-				ClientId:         "oidc-client-id",
-				IssuerUrl:        server.Issuer,
-				TokenUrl:         server.TokenUrl,
-				AuthorizationUrl: server.AuthorizeUrl,
+				Type:      config.OpenIdConnectProvider,
+				Name:      "myoidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
 			},
 		},
 	})
