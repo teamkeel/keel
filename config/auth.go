@@ -61,12 +61,10 @@ type TokensConfig struct {
 }
 
 type Provider struct {
-	Type             string `yaml:"type"`
-	Name             string `yaml:"name"`
-	ClientId         string `yaml:"clientId"`
-	IssuerUrl        string `yaml:"issuerUrl"`
-	TokenUrl         string `yaml:"tokenUrl"`
-	AuthorizationUrl string `yaml:"authorizationUrl"`
+	Type      string `yaml:"type"`
+	Name      string `yaml:"name"`
+	ClientId  string `yaml:"clientId"`
+	IssuerUrl string `yaml:"issuerUrl"`
 }
 
 type IdentityClaim struct {
@@ -233,40 +231,6 @@ func (p *Provider) GetIssuerUrl() (string, bool) {
 		return "https://slack.com", true
 	case OpenIdConnectProvider:
 		return p.IssuerUrl, true
-	default:
-		return "", false
-	}
-}
-
-func (p *Provider) GetTokenUrl() (string, bool) {
-	switch p.Type {
-	case GoogleProvider:
-		return "https://oauth2.googleapis.com/token", true
-	case FacebookProvider:
-		return "https://graph.facebook.com/v11.0/oauth/access_token", true
-	case GitLabProvider:
-		return "https://gitlab.com/oauth/token", true
-	case SlackProvider:
-		return "https://slack.com/api/openid.connect.token", true
-	case OpenIdConnectProvider:
-		return p.TokenUrl, true
-	default:
-		return "", false
-	}
-}
-
-func (p *Provider) GetAuthorizationUrl() (string, bool) {
-	switch p.Type {
-	case GoogleProvider:
-		return "https://accounts.google.com/o/oauth2/auth", true
-	case FacebookProvider:
-		return "https://www.facebook.com/v11.0/dialog/oauth", true
-	case GitLabProvider:
-		return "https://gitlab.com/oauth/authorize", true
-	case SlackProvider:
-		return "https://slack.com/openid/connect/authorize", true
-	case OpenIdConnectProvider:
-		return p.AuthorizationUrl, true
 	default:
 		return "", false
 	}

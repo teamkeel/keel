@@ -1,0 +1,8 @@
+auth:
+  providers:
+    - type: oidc
+      name: myoidc
+      authorizationUrl: "https://website.com"
+      issuerUrl: "https://website.com"
+      tokenUrl: "https://website.com"
+      clientId: "kasj28fnq09ak"

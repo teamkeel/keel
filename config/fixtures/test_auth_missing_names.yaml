@@ -8,6 +8,4 @@ auth:
 
     - type: oidc
       clientId: abcdef
-      authorizationUrl: https://some.url
-      tokenUrl: https://some.url
       issuerUrl: https://some.url

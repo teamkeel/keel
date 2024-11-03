@@ -21,7 +21,5 @@ auth:
 
     - type: oidc
       name: google
-      authorizationUrl: https://some-url.com
-      tokenUrl: https://some-url.com
       issuerUrl: https://some-url.com
       clientId: abcdef
