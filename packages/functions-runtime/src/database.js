@@ -1,6 +1,5 @@
 const { Kysely, PostgresDialect, CamelCasePlugin } = require("kysely");
 const neonserverless = require("@neondatabase/serverless");
-const types = require("@neondatabase/serverless");
 const { AsyncLocalStorage } = require("async_hooks");
 const { AuditContextPlugin } = require("./auditing");
 const pg = require("pg");
@@ -23,7 +22,7 @@ async function withDatabase(db, requiresTransaction, cb) {
       });
     });
   }
-
+  
   // db.connection() provides a kysely instance bound to a single database connection.
   return db.connection().execute(async (sDb) => {
     return dbInstance.run(sDb, async () => {
@@ -172,7 +171,7 @@ function getDialect() {
     case "neon":
       // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
       // 1700 = type for NUMERIC
-      types.setTypeParser(1700, function (val) {
+      neonserverless.types.setTypeParser(1700, function (val) {
         return parseFloat(val);
       });
 
