@@ -22,7 +22,7 @@ async function withDatabase(db, requiresTransaction, cb) {
       });
     });
   }
-  
+
   // db.connection() provides a kysely instance bound to a single database connection.
   return db.connection().execute(async (sDb) => {
     return dbInstance.run(sDb, async () => {
