@@ -1,5 +1,6 @@
 const { Kysely, PostgresDialect, CamelCasePlugin } = require("kysely");
 const neonserverless = require("@neondatabase/serverless");
+const types = require("@neondatabase/serverless");
 const { AsyncLocalStorage } = require("async_hooks");
 const { AuditContextPlugin } = require("./auditing");
 const pg = require("pg");
@@ -140,15 +141,15 @@ class InstrumentedClient extends pg.Client {
 }
 
 function getDialect() {
-  // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
-  // 1700 = type for NUMERIC
-  pg.types.setTypeParser(1700, function (val) {
-    return parseFloat(val);
-  });
-
   const dbConnType = process.env["KEEL_DB_CONN_TYPE"];
   switch (dbConnType) {
     case "pg":
+      // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
+      // 1700 = type for NUMERIC
+      pg.types.setTypeParser(1700, function (val) {
+        return parseFloat(val);
+      });
+
       return new PostgresDialect({
         pool: new InstrumentedPool({
           Client: InstrumentedClient,
@@ -169,6 +170,12 @@ function getDialect() {
         }),
       });
     case "neon":
+      // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
+      // 1700 = type for NUMERIC
+      types.setTypeParser(1700, function (val) {
+        return parseFloat(val);
+      });
+
       neonserverless.neonConfig.webSocketConstructor = ws;
 
       const pool = new InstrumentedNeonServerlessPool({
