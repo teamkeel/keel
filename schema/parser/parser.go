@@ -202,8 +202,80 @@ type AttributeNode struct {
 type AttributeArgumentNode struct {
 	node.Node
 
-	Label      *NameNode   `(@@ ":")?`
-	Expression *Expression `@@`
+	Label      *NameNode `(@@ ":")?`
+	Expression *Expr     `@@`
+}
+
+type Expr string
+
+type ExpressionNode struct {
+	node.Node
+
+	Value *string
+}
+
+// func (b *Expr) Capture(values []string) error {
+// 	s := "hello"
+// 	e := Expr(s)
+// 	*b = e
+// 	return nil
+// }
+
+func (b *Expr) Parse(lex *lexer.PeekingLexer) error {
+
+	token := lex.Next()
+
+	s := token.Value
+
+	// token = lex.Next()
+
+	// s += token.Value
+
+	// token = lex.Next()
+
+	// s += token.Value
+
+	// token = lex.Next()
+
+	// s += token.Value
+
+	// token = lex.Next()
+
+	// s += token.Value
+
+	// token = lex.Next()
+
+	// s += token.Value
+
+	// token = lex.Next()
+
+	// s += token.Value
+
+	// token = lex.Next()
+
+	// s += token.Value
+
+	// token = lex.Next()
+
+	// s += token.Value
+
+	e := Expr(s)
+	*b = e
+	return nil
+}
+
+func (b *ExpressionNode) Capture(values []string) error {
+	s := "hello"
+	//e := Expr(s)
+	*b = ExpressionNode{Value: &s}
+	return nil
+}
+
+func (b *ExpressionNode) Parse(lex *lexer.PeekingLexer) error {
+	s := "hello"
+	//e := Expr(s)
+	*b = ExpressionNode{Value: &s}
+	return nil
 }
 
 type ActionNode struct {
