@@ -1,48 +1,30 @@
 {
+  "type": "object",
+  "properties": {
+    "values": { "$ref": "#/components/schemas/TestActionValues" },
+    "where": { "$ref": "#/components/schemas/TestActionWhere" }
+  },
+  "unevaluatedProperties": false,
+  "required": ["where", "values"],
   "components": {
     "schemas": {
       "TestActionValues": {
-        "additionalProperties": false,
+        "type": "object",
         "properties": {
-          "birthday": {
-            "format": "date",
-            "type": "string"
-          },
-          "hobby": {
-            "enum": ["Tennis", "Chess"]
-          },
-          "name": {
-            "type": "string"
-          },
-          "picture": {
-            "type": "string",
-            "format": "data-url"
-          }
+          "birthday": { "type": "string", "format": "date" },
+          "hobby": { "enum": ["Tennis", "Chess"] },
+          "name": { "type": "string" },
+          "picture": { "type": "string", "format": "data-url" }
         },
-        "required": ["name", "birthday", "hobby", "picture"],
-        "type": "object"
+        "unevaluatedProperties": false,
+        "required": ["name", "birthday", "hobby", "picture"]
       },
       "TestActionWhere": {
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": ["id"],
-        "type": "object"
+        "type": "object",
+        "properties": { "id": { "type": "string" } },
+        "unevaluatedProperties": false,
+        "required": ["id"]
       }
     }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "values": {
-      "$ref": "#/components/schemas/TestActionValues"
-    },
-    "where": {
-      "$ref": "#/components/schemas/TestActionWhere"
-    }
-  },
-  "required": ["where", "values"],
-  "type": "object"
+  }
 }

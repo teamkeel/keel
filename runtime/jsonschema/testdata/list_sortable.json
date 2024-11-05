@@ -1,66 +1,43 @@
 {
   "type": "object",
   "properties": {
-    "after": {
-      "type": "string"
-    },
-    "before": {
-      "type": "string"
-    },
-    "first": {
-      "type": "number"
-    },
-    "last": {
-      "type": "number"
-    },
+    "after": { "type": "string" },
+    "before": { "type": "string" },
+    "first": { "type": "number" },
+    "last": { "type": "number" },
     "orderBy": {
       "type": "array",
       "items": {
         "oneOf": [
-          {
-            "$ref": "#/components/schemas/TestActionOrderBySurname"
-          },
-          {
-            "$ref": "#/components/schemas/TestActionOrderByFirstName"
-          }
+          { "$ref": "#/components/schemas/TestActionOrderBySurname" },
+          { "$ref": "#/components/schemas/TestActionOrderByFirstName" }
         ]
       }
     },
-    "where": {
-      "$ref": "#/components/schemas/TestActionWhere"
-    }
+    "where": { "$ref": "#/components/schemas/TestActionWhere" }
   },
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "components": {
     "schemas": {
       "TestActionOrderByFirstName": {
         "type": "object",
         "properties": {
-          "firstName": {
-            "type": "string",
-            "enum": ["asc", "desc"]
-          }
+          "firstName": { "type": "string", "enum": ["asc", "desc"] }
         },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["firstName"],
         "title": "firstName"
       },
       "TestActionOrderBySurname": {
         "type": "object",
         "properties": {
-          "surname": {
-            "type": "string",
-            "enum": ["asc", "desc"]
-          }
+          "surname": { "type": "string", "enum": ["asc", "desc"] }
         },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["surname"],
         "title": "surname"
       },
-      "TestActionWhere": {
-        "type": "object",
-        "additionalProperties": false
-      }
+      "TestActionWhere": { "type": "object", "unevaluatedProperties": false }
     }
   }
 }

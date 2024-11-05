@@ -1,28 +1,18 @@
 {
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string"
-    },
-    "nested": {
-      "$ref": "#/components/schemas/NestedObject"
-    },
-    "optionalNested": {
-      "$ref": "#/components/schemas/NestedObject"
-    }
+    "name": { "type": "string" },
+    "nested": { "$ref": "#/components/schemas/NestedObject" },
+    "optionalNested": { "$ref": "#/components/schemas/NestedObject" }
   },
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "required": ["name", "nested"],
   "components": {
     "schemas": {
       "NestedObject": {
         "type": "object",
-        "properties": {
-          "bool": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false,
+        "properties": { "bool": { "type": "boolean" } },
+        "unevaluatedProperties": false,
         "required": ["bool"]
       }
     }

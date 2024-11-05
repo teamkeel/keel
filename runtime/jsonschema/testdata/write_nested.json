@@ -5,14 +5,14 @@
     "nested": { "$ref": "#/components/schemas/NestedObject" },
     "optionalNested": { "$ref": "#/components/schemas/NestedObject" }
   },
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "required": ["name", "nested"],
   "components": {
     "schemas": {
       "NestedObject": {
         "type": "object",
         "properties": { "bool": { "type": "boolean" } },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["bool"]
       }
     }

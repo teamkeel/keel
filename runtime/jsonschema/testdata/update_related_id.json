@@ -1,45 +1,31 @@
 {
   "type": "object",
   "properties": {
-    "values": {
-      "$ref": "#/components/schemas/TestActionValues"
-    },
-    "where": {
-      "$ref": "#/components/schemas/TestActionWhere"
-    }
+    "values": { "$ref": "#/components/schemas/TestActionValues" },
+    "where": { "$ref": "#/components/schemas/TestActionWhere" }
   },
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "required": ["where", "values"],
   "components": {
     "schemas": {
       "TestActionCompanyInput": {
         "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
+        "properties": { "id": { "type": "string" } },
+        "unevaluatedProperties": false,
         "required": ["id"]
       },
       "TestActionValues": {
         "type": "object",
         "properties": {
-          "company": {
-            "$ref": "#/components/schemas/TestActionCompanyInput"
-          }
+          "company": { "$ref": "#/components/schemas/TestActionCompanyInput" }
         },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["company"]
       },
       "TestActionWhere": {
         "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
+        "properties": { "id": { "type": "string" } },
+        "unevaluatedProperties": false,
         "required": ["id"]
       }
     }

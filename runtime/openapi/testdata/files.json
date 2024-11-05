@@ -12,7 +12,7 @@
               "schema": {
                 "type": "object",
                 "properties": { "id": { "type": "string" } },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["id"]
               }
             }
@@ -71,7 +71,7 @@
                   "last": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/ListAccountsWhere" }
                 },
-                "additionalProperties": false
+                "unevaluatedProperties": false
               }
             }
           }
@@ -142,7 +142,7 @@
                   "email": { "type": "string" },
                   "redirectUrl": { "type": "string" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["email", "redirectUrl"]
               }
             }
@@ -153,7 +153,7 @@
             "description": "requestPasswordReset Response",
             "content": {
               "application/json": {
-                "schema": { "type": "object", "additionalProperties": false }
+                "schema": { "type": "object", "unevaluatedProperties": false }
               }
             }
           },
@@ -198,7 +198,7 @@
                   "password": { "type": "string" },
                   "token": { "type": "string" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["token", "password"]
               }
             }
@@ -209,7 +209,7 @@
             "description": "resetPassword Response",
             "content": {
               "application/json": {
-                "schema": { "type": "object", "additionalProperties": false }
+                "schema": { "type": "object", "unevaluatedProperties": false }
               }
             }
           },
@@ -253,7 +253,7 @@
                 "properties": {
                   "file": { "type": "string", "format": "data-url" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["file"]
               }
             }
@@ -285,7 +285,7 @@
                       ]
                     }
                   },
-                  "additionalProperties": false,
+                  "unevaluatedProperties": false,
                   "required": ["file"]
                 }
               }
@@ -341,7 +341,7 @@
         },
         "required": ["photo", "id", "createdAt", "updatedAt"]
       },
-      "ListAccountsWhere": { "type": "object", "additionalProperties": false }
+      "ListAccountsWhere": { "type": "object", "unevaluatedProperties": false }
     }
   }
 }

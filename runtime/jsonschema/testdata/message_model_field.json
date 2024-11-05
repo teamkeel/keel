@@ -1,36 +1,24 @@
 {
-  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "people": {
+      "type": "array",
+      "items": { "$ref": "#/components/schemas/Person" }
+    },
+    "person": { "$ref": "#/components/schemas/Person" }
+  },
+  "unevaluatedProperties": false,
+  "required": ["person", "people"],
   "components": {
     "schemas": {
       "Person": {
         "properties": {
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
+          "createdAt": { "type": "string", "format": "date-time" },
+          "id": { "type": "string" },
+          "updatedAt": { "type": "string", "format": "date-time" }
         },
         "required": ["id", "createdAt", "updatedAt"]
       }
     }
-  },
-  "properties": {
-    "people": {
-      "items": {
-        "$ref": "#/components/schemas/Person"
-      },
-      "type": "array"
-    },
-    "person": {
-      "$ref": "#/components/schemas/Person"
-    }
-  },
-  "required": ["person", "people"],
-  "type": "object"
+  }
 }

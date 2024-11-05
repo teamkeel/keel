@@ -18,7 +18,7 @@
                   "last": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/ThingsWhere" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["where"]
               }
             }
@@ -90,7 +90,7 @@
           "onOrAfter": { "type": "string", "format": "date" },
           "onOrBefore": { "type": "string", "format": "date" }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "DateArrayAnyQueryInput": {
         "type": "object",
@@ -102,7 +102,7 @@
           "onOrAfter": { "type": "string", "format": "date" },
           "onOrBefore": { "type": "string", "format": "date" }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "DateArrayQueryInput": {
         "type": "object",
@@ -118,7 +118,7 @@
             "items": { "type": "string", "format": "date" }
           }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "IntArrayAllQueryInput": {
         "type": "object",
@@ -130,7 +130,7 @@
           "lessThanOrEquals": { "type": "number" },
           "notEquals": { "type": "number" }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "IntArrayAnyQueryInput": {
         "type": "object",
@@ -142,7 +142,7 @@
           "lessThanOrEquals": { "type": "number" },
           "notEquals": { "type": "number" }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "IntArrayQueryInput": {
         "type": "object",
@@ -158,7 +158,7 @@
             "items": { "type": "number" }
           }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "MyEnumArrayAllQueryInput": {
         "type": "object",
@@ -166,7 +166,7 @@
           "equals": { "enum": ["One", "Two", "Three"] },
           "notEquals": { "enum": ["One", "Two", "Three"] }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "MyEnumArrayAnyQueryInput": {
         "type": "object",
@@ -174,7 +174,7 @@
           "equals": { "enum": ["One", "Two", "Three"] },
           "notEquals": { "enum": ["One", "Two", "Three"] }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "MyEnumArrayQueryInput": {
         "type": "object",
@@ -190,7 +190,7 @@
             "items": { "enum": ["One", "Two", "Three", null] }
           }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "StringArrayAllQueryInput": {
         "type": "object",
@@ -198,7 +198,7 @@
           "equals": { "type": "string" },
           "notEquals": { "type": "string" }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "StringArrayAnyQueryInput": {
         "type": "object",
@@ -206,7 +206,7 @@
           "equals": { "type": "string" },
           "notEquals": { "type": "string" }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "StringArrayQueryInput": {
         "type": "object",
@@ -222,7 +222,7 @@
             "items": { "type": "string" }
           }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "Thing": {
         "properties": {
@@ -258,7 +258,7 @@
           "numbers": { "$ref": "#/components/schemas/IntArrayQueryInput" },
           "texts": { "$ref": "#/components/schemas/StringArrayQueryInput" }
         },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["texts", "numbers", "enums", "dates"]
       }
     }
