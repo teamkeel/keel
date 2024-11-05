@@ -8,6 +8,7 @@ import (
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
+// typeProvider supplies the CEL context with the relevant Keel types and identifiers
 type typeProvider struct {
 	schema *proto.Schema
 	types.Provider
@@ -17,10 +18,6 @@ var _ types.Provider = new(typeProvider)
 
 func NewTypeProvider(schema *proto.Schema) *typeProvider {
 	return &typeProvider{schema: schema}
-}
-
-func (p *typeProvider) AsWhereExpression(root *proto.Model) {
-
 }
 
 func (p *typeProvider) EnumValue(enumName string) ref.Val {
@@ -73,7 +70,13 @@ func (p *typeProvider) FindStructFieldType(structType, fieldName string) (*types
 		return nil, false
 	}
 
-	return &types.FieldType{Type: fromKeel(field.Type)}, true
+	t := fromKeel(field.Type)
+
+	if field.Optional {
+		t = types.NewNullableType(t)
+	}
+
+	return &types.FieldType{Type: t}, true
 }
 
 func (p *typeProvider) FindFieldType(messageType string, fieldName string) (*types.FieldType, bool) {

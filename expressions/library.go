@@ -13,6 +13,7 @@ import (
 	"github.com/google/cel-go/common/types/traits"
 )
 
+// Our library of syntax support
 type keelLibrary struct{}
 
 var _ cel.Library = new(keelLibrary)
@@ -246,9 +247,9 @@ func (l *keelLibrary) CompileOptions() []cel.EnvOption {
 				return lhs.(traits.Indexer).Get(rhs)
 			}, traits.IndexerType)),
 
-		// UPPERCASE(string) custom global function
-		cel.Function("UPPERCASE",
-			cel.MemberOverload("string_uppercase_string",
+		// UPPER(string) custom global function
+		cel.Function("upper",
+			cel.Overload("upper_string",
 				[]*cel.Type{cel.StringType},
 				cel.StringType,
 				cel.UnaryBinding(func(lhs ref.Val) ref.Val {

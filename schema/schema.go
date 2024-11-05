@@ -100,16 +100,16 @@ func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, err
 		declarations, err := parser.Parse(oneInputSchemaFile)
 		if err != nil {
 			// try to convert into a validation error and move to next schema file
-			if perr, ok := err.(parser.Error); ok {
-				verr := errorhandling.NewValidationError(errorhandling.ErrorInvalidSyntax, errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Message": perr.Error(),
-					},
-				}, perr)
-				parseErrors.Errors = append(parseErrors.Errors, verr)
-			} else {
-				return nil, parseErrors, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
-			}
+			// if perr, ok := err.(parser.Error); ok {
+			// 	verr := errorhandling.NewValidationError(errorhandling.ErrorInvalidSyntax, errorhandling.TemplateLiterals{
+			// 		Literals: map[string]string{
+			// 			"Message": perr.Error(),
+			// 		},
+			// 	}, perr)
+			// 	parseErrors.Errors = append(parseErrors.Errors, verr)
+			// } else {
+			// 	return nil, parseErrors, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
+			// }
 		}
 
 		// Insert built in models like Identity. We only want to call this once

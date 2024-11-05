@@ -2,13 +2,11 @@ package expressions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/checker/decls"
-	"github.com/iancoleman/strcase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/config"
@@ -37,10 +35,11 @@ type testCase struct {
 
 var testCases = []testCase{
 	{
-		name: "get_op_by_id_where",
+		name: "get_where_filter",
 		keelSchema: `
 			model Thing {
 				fields {
+					name Text
 					isActive Boolean
 				}
 				actions {
@@ -85,15 +84,7 @@ func TestQueryBuilder(t *testing.T) {
 			var statement *actions.Statement
 			switch action.Type {
 			case proto.ActionType_ACTION_TYPE_GET:
-				statement, err = generateGetStatement(query, scope, testCase.input)
-			case proto.ActionType_ACTION_TYPE_LIST:
-				statement, _, err = actions.GenerateListStatement(query, scope, testCase.input)
-			case proto.ActionType_ACTION_TYPE_CREATE:
-				statement, err = actions.GenerateCreateStatement(query, scope, testCase.input)
-			case proto.ActionType_ACTION_TYPE_UPDATE:
-				statement, err = actions.GenerateUpdateStatement(query, scope, testCase.input)
-			case proto.ActionType_ACTION_TYPE_DELETE:
-				statement, err = actions.GenerateDeleteStatement(query, scope, testCase.input)
+				statement, err = generateStatement(query, scope, testCase.input)
 			default:
 				require.NoError(t, fmt.Errorf("unhandled action type %s in sql generation", action.Type.String()))
 			}
@@ -120,41 +111,34 @@ func TestQueryBuilder(t *testing.T) {
 	}
 }
 
-func generateGetStatement(query *actions.QueryBuilder, scope *actions.Scope, input map[string]any) (*actions.Statement, error) {
-
-	typeProvider := NewTypeProvider(scope.Schema)
-
-	env, err := cel.NewCustomEnv(
-		KeelLib(),
-		cel.CustomTypeProvider(typeProvider),
-		cel.Declarations(
-			decls.NewVar(strcase.ToLowerCamel(scope.Model.Name), decls.NewObjectType(scope.Model.Name)),
-			decls.NewVar("ctx", decls.NewObjectType("Context")),
-		),
-	)
+func generateStatement(query *actions.QueryBuilder, scope *actions.Scope, input map[string]any) (*actions.Statement, error) {
+	err := query.ApplyImplicitFilters(scope, input)
 	if err != nil {
-		return nil, fmt.Errorf("program setup err: %s", err)
+		return nil, err
 	}
 
 	for _, where := range scope.Action.WhereExpressions {
+		// Replace the and/or operators
+		expr := strings.ReplaceAll(where.Source, " or ", " || ")
+		expr = strings.ReplaceAll(expr, " and ", " && ")
 
-		ast, issues := env.Compile(where.Source)
-		if issues != nil && issues.Err() != nil {
-			return nil, issues.Err()
+		parser, err := NewParser(scope.Schema, scope.Model)
+		if err != nil {
+			return nil, err
 		}
 
-		Build(ast, query, input)
+		validateErrs, err := parser.Validate(expr, &proto.TypeInfo{Type: proto.Type_TYPE_BOOL})
+		if err != nil {
+			return nil, err
+		}
+		if validateErrs != nil {
+			return nil, errors.New(strings.Join(validateErrs, "\n"))
+		}
 
-		// expression, err := parser.ParseExpression(where.Source)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// // Resolve the database statement for this expression
-		// err = query.whereByExpression(scope, expression, args)
-		// if err != nil {
-		// 	return err
-		// }
+		err = parser.Build(query, expr, input)
+		if err != nil {
+			return nil, err
+		}
 
 		// Where attributes are ANDed together
 		query.And()

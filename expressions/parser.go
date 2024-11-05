@@ -8,27 +8,41 @@ import (
 
 	"github.com/google/cel-go/checker/decls"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/actions"
 )
 
-func Validate(schema *proto.Schema, model *proto.Model, expression string, expectedOutoutType *proto.TypeInfo) ([]string, error) {
+// Parser performs parsing, validation and query building of Keel expressions
+type Parser struct {
+	env *cel.Env
+	ast *cel.Ast
+}
+
+func NewParser(schema *proto.Schema, model *proto.Model) (*Parser, error) {
 
 	typeProvider := NewTypeProvider(schema)
 
 	env, err := cel.NewCustomEnv(
 		KeelLib(),
-
+		cel.ClearMacros(),
 		cel.CustomTypeProvider(typeProvider),
-
 		cel.Declarations(
 			decls.NewVar(strcase.ToLowerCamel(model.Name), decls.NewObjectType(model.Name)),
 			decls.NewVar("ctx", decls.NewObjectType("Context")),
 		),
+		cel.EagerlyValidateDeclarations(true),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("program setup err: %s", err)
 	}
 
-	ast, issues := env.Compile(expression)
+	return &Parser{
+		env: env,
+	}, nil
+}
+
+// Validate parses and validates the expression
+func (p *Parser) Validate(expression string, expectedOutoutType *proto.TypeInfo) ([]string, error) {
+	ast, issues := p.env.Compile(expression)
 	if issues != nil && issues.Err() != nil {
 		validationErrors := []string{}
 		for _, e := range issues.Errors() {
@@ -41,36 +55,31 @@ func Validate(schema *proto.Schema, model *proto.Model, expression string, expec
 		return []string{fmt.Sprintf("expression expected to resolve to type '%s'", expectedOutoutType.GetType())}, nil
 	}
 
+	p.ast = ast
+
 	// Valid expression
 	return nil, nil
 }
 
-func Evaluate(schema *proto.Schema, model *proto.Model, expression string) {
+// Evaluate will evaluate the expression in-proc if possible (early evaluation) without hitting the DB
+func (p *Parser) Evaluate(schema *proto.Schema, model *proto.Model, expression string) {
 
 }
 
-func ToSQL(schema *proto.Schema, model *proto.Model, expression string) (string, error) {
-	typeProvider := NewTypeProvider(schema)
-
-	env, err := cel.NewCustomEnv(
-		KeelLib(),
-		cel.CustomTypeProvider(typeProvider),
-		cel.Declarations(
-			decls.NewVar(strcase.ToLowerCamel(model.Name), decls.NewObjectType(model.Name)),
-			decls.NewVar("ctx", decls.NewObjectType("Context")),
-		),
-	)
+// Build will construct a SQL statement for the expression
+func (p *Parser) Build(query *actions.QueryBuilder, expression string, input map[string]any) error {
+	checkedExpr, err := cel.AstToCheckedExpr(p.ast)
 	if err != nil {
-		return "", fmt.Errorf("program setup err: %s", err)
+		return err
 	}
 
-	ast, issues := env.Compile(expression)
-	if issues != nil && issues.Err() != nil {
-		return "", issues.Err()
+	un := &builder{
+		typeMap: checkedExpr.TypeMap,
+		query:   query,
+	}
+	if err := un.visit(checkedExpr.Expr); err != nil {
+		return err
 	}
 
-	sql, err := Convert(ast)
-
-	return sql, err
-
+	return nil
 }

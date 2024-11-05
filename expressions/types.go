@@ -19,7 +19,3 @@ func fromKeel(t *proto.TypeInfo) *types.Type {
 
 	panic("not implemented")
 }
-
-// func fromCEL(t ref.Type) proto.Type {
-
-// }

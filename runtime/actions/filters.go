@@ -8,7 +8,7 @@ import (
 )
 
 // Applies all implicit input filters to the query.
-func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]any) error {
+func (query *QueryBuilder) ApplyImplicitFilters(scope *Scope, args map[string]any) error {
 	message := proto.FindWhereInputMessage(scope.Schema, scope.Action.Name)
 	if message == nil {
 		return nil

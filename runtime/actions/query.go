@@ -448,6 +448,14 @@ func (query *QueryBuilder) CloseParenthesis() {
 	query.filters = append(query.filters, ")")
 }
 
+func (query *QueryBuilder) OpenFunction(function string) {
+	query.filters = append(query.filters, function+"(")
+}
+
+func (query *QueryBuilder) CloseFunction(function string) {
+	query.filters = append(query.filters, ")")
+}
+
 // Trims an excess OR / AND operators from the rhs side of the filter conditions.
 func trimRhsOperators(filters []string) []string {
 	return lo.DropRightWhile(filters, func(s string) bool { return s == "OR" || s == "AND" })

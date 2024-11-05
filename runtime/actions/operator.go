@@ -57,6 +57,13 @@ const (
 	AnyOnOrAfter
 	AllOnOrBefore
 	AnyOnOrBefore
+
+	Addition
+	Subtraction
+	Multiplication
+	Division
+
+	Not
 )
 
 // queryOperatorToActionOperator converts the conditional operators that are used

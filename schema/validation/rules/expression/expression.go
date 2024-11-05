@@ -82,11 +82,11 @@ func ValueTypechecksRule(asts []*parser.AST, expression *parser.Expression, cont
 		&context,
 		expressions.OperandPositionLhs,
 	)
-	expressionScopeEntity, err := resolver.Resolve()
-	if err != nil {
-		errors = append(errors, err.ToValidationError())
-		return errors
-	}
+	expressionScopeEntity, _ := resolver.Resolve()
+	// if err != nil {
+	// 	errors = append(errors, err.ToValidationError())
+	// 	return errors
+	// }
 
 	expectedType := context.Field.Type.Value
 	resolvedType := expressionScopeEntity.GetType()

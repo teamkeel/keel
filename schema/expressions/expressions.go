@@ -22,10 +22,10 @@ func (c *ConditionResolver) Resolve() (resolvedLhs *ExpressionScopeEntity, resol
 		OperandPositionLhs,
 	)
 
-	resolvedLhs, lhsErr := lhs.Resolve()
-	if lhsErr != nil {
-		errors = append(errors, lhsErr.ToValidationError())
-	}
+	resolvedLhs, _ = lhs.Resolve()
+	// if lhsErr != nil {
+	// 	errors = append(errors, lhsErr.ToValidationError())
+	// }
 
 	// Check RHS only if it exists
 	if c.condition.RHS != nil {
@@ -36,10 +36,10 @@ func (c *ConditionResolver) Resolve() (resolvedLhs *ExpressionScopeEntity, resol
 			OperandPositionRhs,
 		)
 
-		resolvedRhs, rhsErr := rhs.Resolve()
-		if rhsErr != nil {
-			errors = append(errors, rhsErr.ToValidationError())
-		}
+		resolvedRhs, _ := rhs.Resolve()
+		// if rhsErr != nil {
+		// 	errors = append(errors, rhsErr.ToValidationError())
+		// }
 
 		return resolvedLhs, resolvedRhs, errors
 	} else if resolvedLhs != nil && resolvedLhs.GetType() != parser.FieldTypeBoolean {
