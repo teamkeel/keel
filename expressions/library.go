@@ -248,7 +248,7 @@ func (l *keelLibrary) CompileOptions() []cel.EnvOption {
 			}, traits.IndexerType)),
 
 		// UPPER(string) custom global function
-		cel.Function("upper",
+		cel.Function("UPPER",
 			cel.Overload("upper_string",
 				[]*cel.Type{cel.StringType},
 				cel.StringType,
@@ -269,9 +269,5 @@ func argTypes(args ...*types.Type) []*types.Type {
 }
 
 func noBinaryOverrides(rhs, lhs ref.Val) ref.Val {
-	return types.NoSuchOverloadErr()
-}
-
-func noFunctionOverrides(args ...ref.Val) ref.Val {
 	return types.NoSuchOverloadErr()
 }

@@ -74,8 +74,7 @@ func (p *Parser) Build(query *actions.QueryBuilder, expression string, input map
 	}
 
 	un := &builder{
-		typeMap: checkedExpr.TypeMap,
-		query:   query,
+		query: query,
 	}
 	if err := un.visit(checkedExpr.Expr); err != nil {
 		return err

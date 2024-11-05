@@ -214,7 +214,7 @@ func TestValidFunction(t *testing.T) {
 		}
 	}`
 
-	expression := `upper(person.name) == upper("Keelson")`
+	expression := `UPPER(person.name) == UPPER("Keelson")`
 
 	builder := &schema.Builder{}
 	schema, err := builder.MakeFromString(keelSchema, config.Empty)
@@ -237,7 +237,7 @@ func TestValidFunctionWithExpression(t *testing.T) {
 		}
 	}`
 
-	expression := `upper(person.firstName + " " + person.lastName) == "KEEL KEELSON"`
+	expression := `UPPER(person.firstName + " " + person.lastName) == "KEEL KEELSON"`
 
 	builder := &schema.Builder{}
 	schema, err := builder.MakeFromString(keelSchema, config.Empty)
@@ -257,10 +257,10 @@ func TestInvalidFunctionArgumentType(t *testing.T) {
 		fields {
 			name Text
 			age Number
-		}
+		} 
 	}`
 
-	expression := `upper(person.age) == "40"`
+	expression := `UPPER(person.age) == "40"`
 
 	builder := &schema.Builder{}
 	schema, err := builder.MakeFromString(keelSchema, config.Empty)

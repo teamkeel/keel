@@ -29,7 +29,6 @@ func (p *typeProvider) FindIdent(identName string) (ref.Val, bool) {
 }
 
 func (p *typeProvider) FindType(typeName string) (*expr.Type, bool) {
-
 	return decls.NewTypeType(decls.NewObjectType(typeName)), true
 }
 

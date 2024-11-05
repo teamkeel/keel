@@ -3,7 +3,6 @@ package expressions
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/google/cel-go/common/operators"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -12,9 +11,7 @@ import (
 
 // builder walks through the CEL AST and calls out to our query builder to construct the SQL statement
 type builder struct {
-	str     strings.Builder
-	typeMap map[int64]*exprpb.Type
-	query   *actions.QueryBuilder
+	query *actions.QueryBuilder
 
 	operator actions.ActionOperator
 	operands []*actions.QueryOperand
@@ -156,30 +153,29 @@ func (con *builder) visitCallFunc(expr *exprpb.Expr) error {
 	switch fun {
 	case "UPPER":
 		sqlFun = "UPPER"
+	default:
+		return fmt.Errorf("not implemeneted yet: %s", fun)
 	}
 
 	con.query.OpenFunction(sqlFun)
 
-	con.str.WriteString(sqlFun)
-	con.str.WriteString("(")
 	if target != nil {
 		nested := isBinaryOrTernaryOperator(target)
 		err := con.visitNested(target, nested)
 		if err != nil {
 			return err
 		}
-		con.str.WriteString(", ")
 	}
-	for i, arg := range args {
+	for _, arg := range args {
 		err := con.visit(arg)
 		if err != nil {
 			return err
 		}
-		if i < len(args)-1 {
-			con.str.WriteString(", ")
-		}
+		// TODO: add next arg
 	}
-	con.str.WriteString(")")
+
+	con.query.CloseFunction(sqlFun)
+
 	return nil
 }
 
@@ -252,10 +248,6 @@ func (con *builder) visitNested(expr *exprpb.Expr, nested bool) error {
 	return nil
 }
 
-func (con *builder) getType(node *exprpb.Expr) *exprpb.Type {
-	return con.typeMap[node.GetId()]
-}
-
 // isLeftRecursive indicates whether the parser resolves the call in a left-recursive manner as
 // this can have an effect of how parentheses affect the order of operations in the AST.
 func isLeftRecursive(op string) bool {
@@ -314,41 +306,4 @@ func isBinaryOrTernaryOperator(expr *exprpb.Expr) bool {
 	}
 	_, isBinaryOp := operators.FindReverseBinaryOperator(expr.GetCallExpr().GetFunction())
 	return isBinaryOp || isSamePrecedence(operators.Conditional, expr)
-}
-
-func isNullLiteral(node *exprpb.Expr) bool {
-	_, isConst := node.ExprKind.(*exprpb.Expr_ConstExpr)
-	if !isConst {
-		return false
-	}
-	_, isNull := node.GetConstExpr().ConstantKind.(*exprpb.Constant_NullValue)
-	return isNull
-}
-
-func isBoolLiteral(node *exprpb.Expr) bool {
-	_, isConst := node.ExprKind.(*exprpb.Expr_ConstExpr)
-	if !isConst {
-		return false
-	}
-	_, isBool := node.GetConstExpr().ConstantKind.(*exprpb.Constant_BoolValue)
-	return isBool
-}
-
-func isStringLiteral(node *exprpb.Expr) bool {
-	_, isConst := node.ExprKind.(*exprpb.Expr_ConstExpr)
-	if !isConst {
-		return false
-	}
-	_, isString := node.GetConstExpr().ConstantKind.(*exprpb.Constant_StringValue)
-	return isString
-}
-
-// bytesToOctets converts byte sequences to a string using a three digit octal encoded value
-// per byte.
-func bytesToOctets(byteVal []byte) string {
-	var b strings.Builder
-	for _, c := range byteVal {
-		_, _ = fmt.Fprintf(&b, "\\%03o", c)
-	}
-	return b.String()
 }
