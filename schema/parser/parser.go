@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 	"strings"
-	"text/scanner"
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
@@ -397,16 +396,41 @@ func (e Error) GetTokens() []lexer.Token {
 
 func Parse(s *reader.SchemaFile) (*AST, error) {
 	// Customise the lexer to not ignore comments
-	lex := lexer.NewTextScannerLexer(func(s *scanner.Scanner) {
-		s.Mode =
-			scanner.ScanIdents |
-				scanner.ScanFloats |
-				scanner.ScanChars |
-				scanner.ScanStrings |
-				scanner.ScanComments
+	// lex := lexer.NewTextScannerLexer(func(s *scanner.Scanner) {
+	// 	s.Mode =
+	// 		scanner.ScanIdents |
+	// 			scanner.ScanFloats |
+	// 			scanner.ScanChars |
+	// 			scanner.ScanStrings |
+	// 			scanner.ScanComments
+	// })
+
+	basicLexer := lexer.MustSimple([]lexer.SimpleRule{
+		{"Comment", `(?:#|//)[^\n]*\n?`},
+		{"String", `"(\\"|[^"])*"`},
+		{"Int", `[-+]?\d+`},
+		{"Float", `[-+]?(\d*\.)?\d+`},
+		{"Ident", `[a-zA-Z_0-9]\w*`},
+		{"Punct", `[-[!@%*()/+_={}:"'<,>.?]|]`},
+		{"Expression", `[a-zA-Z0-9.+-*/()]+`},
+		{"EOL", `[\n]+`},
+		{"whitespace", `[ \t]+`},
 	})
 
-	parser, err := participle.Build[AST](participle.Lexer(lex), participle.Elide("Comment"))
+	// sqlLexer := lexer.MustSimple([]lexer.SimpleRule{
+	// 	{`Keyword`, `(?i)\b(SELECT|FROM|TOP|DISTINCT|ALL|WHERE|GROUP|BY|HAVING|UNION|MINUS|EXCEPT|INTERSECT|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|ANY|SOME|BETWEEN|AND|OR|LIKE|AS|IN)\b`},
+	// 	{`Ident`, `[a-zA-Z][a-zA-Z0-9]*`},
+	// 	{`Number`, `[-+]?\d*\.?\d+([eE][-+]?\d+)?`},
+	// 	{`String`, `'[^']*'|"[^"]*"`},
+	// 	{`Operators`, `<>|!=|<=|>=|[-+*/%,.()=<>]`},
+	// 	{"whitespace", `\s+`},
+	// })
+
+	// parser = participle.MustBuild[AST](
+	// 	participle.Lexer(sqlLexer),
+	// 	participle.Elide("Comment"))
+
+	parser, err := participle.Build[AST](participle.Lexer(basicLexer), participle.Elide("EOL"), participle.Elide("Comment"))
 	if err != nil {
 		return nil, err
 	}

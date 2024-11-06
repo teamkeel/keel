@@ -118,7 +118,7 @@ func TestInvalidOutputType(t *testing.T) {
 		}
 	}`
 
-	expression := `person.org.companyName`
+	expression := `person.org.companyName = "hello"`
 
 	builder := &schema.Builder{}
 	schema, err := builder.MakeFromString(keelSchema, config.Empty)
