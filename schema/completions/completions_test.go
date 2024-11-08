@@ -656,7 +656,7 @@ func TestActionCompletions(t *testing.T) {
 				}
 			  }
 		    }`,
-			expected: []string{"@function", "@orderBy", "@permission", "@set", "@sortable", "@validate", "@where"},
+			expected: []string{"@embed", "@function", "@orderBy", "@permission", "@set", "@sortable", "@validate", "@where"},
 		},
 		{
 			name: "action-attributes-whitespace",
@@ -671,7 +671,7 @@ func TestActionCompletions(t *testing.T) {
 				}
 			  }
 		    }`,
-			expected: []string{"@function", "@orderBy", "@permission", "@set", "@sortable", "@validate", "@where"},
+			expected: []string{"@embed", "@function", "@orderBy", "@permission", "@set", "@sortable", "@validate", "@where"},
 		},
 	}
 
