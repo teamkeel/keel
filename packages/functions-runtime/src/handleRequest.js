@@ -64,7 +64,9 @@ async function handleRequest(request, config) {
             ? true
             : null;
 
-        db = createDatabaseClient();
+        db = createDatabaseClient({
+          connString: request.meta?.secrets?.KEEL_DB_CONN,
+        });
         const customFunction = functions[request.method];
         const actionType = actionTypes[request.method];
 
@@ -87,7 +89,9 @@ async function handleRequest(request, config) {
             // Return the custom function to the containing tryExecuteFunction block
             // Once the custom function is called, tryExecuteFunction will check the schema's permission rules to see if it can continue committing
             // the transaction to the db. If a permission rule is violated, any changes made inside the transaction are rolled back.
-            return customFunction(ctx, inputs);
+            const result = await customFunction(ctx, inputs);
+
+            return parseOutputs(result);
           }
         );
 
@@ -100,9 +104,7 @@ async function handleRequest(request, config) {
           return errorToJSONRPCResponse(request, result);
         }
 
-        const parsed = await parseOutputs(result);
-
-        const response = createJSONRPCSuccessResponse(request.id, parsed);
+        const response = createJSONRPCSuccessResponse(request.id, result);
 
         const responseHeaders = {};
         for (const pair of headers.entries()) {

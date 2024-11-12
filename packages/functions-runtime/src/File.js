@@ -5,7 +5,7 @@ const {
 } = require("@aws-sdk/client-s3");
 const { fromEnv } = require("@aws-sdk/credential-providers");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const { createDatabaseClient } = require("./database");
+const { useDatabase } = require("./database");
 const { DatabaseError } = require("./errors");
 const KSUID = require("ksuid");
 
@@ -126,7 +126,7 @@ class File extends InlineFile {
     }
 
     // default to db storage
-    const db = createDatabaseClient();
+    const db = useDatabase();
 
     try {
       let query = db
@@ -138,8 +138,6 @@ class File extends InlineFile {
       return row.data;
     } catch (e) {
       throw new DatabaseError(e);
-    } finally {
-      await db.destroy();
     }
   }
 
@@ -241,7 +239,7 @@ async function storeFile(contents, key, filename, contentType, expires) {
       throw error;
     }
   } else {
-    const db = createDatabaseClient();
+    const db = useDatabase();
 
     try {
       let query = db
@@ -267,8 +265,6 @@ async function storeFile(contents, key, filename, contentType, expires) {
       await query.execute();
     } catch (e) {
       throw new DatabaseError(e);
-    } finally {
-      await db.destroy();
     }
   }
 }

@@ -5,6 +5,7 @@ const { AuditContextPlugin } = require("./auditing");
 const pg = require("pg");
 const { withSpan } = require("./tracing");
 const ws = require("ws");
+const fs = require("node:fs");
 
 // withDatabase is responsible for setting the correct database client in our AsyncLocalStorage
 // so that the the code in a custom function uses the correct client.
@@ -65,9 +66,9 @@ function useDatabase() {
 // createDatabaseClient will return a brand new instance of Kysely. Every instance of Kysely
 // represents an individual connection to the database.
 // not to be exported externally from our sdk - consumers should use useDatabase
-function createDatabaseClient() {
+function createDatabaseClient({ connString } = {}) {
   const db = new Kysely({
-    dialect: getDialect(),
+    dialect: getDialect(connString),
     plugins: [
       // ensures that the audit context data is written to Postgres configuration parameters
       new AuditContextPlugin(),
@@ -139,8 +140,8 @@ class InstrumentedClient extends pg.Client {
   }
 }
 
-function getDialect() {
-  const dbConnType = process.env["KEEL_DB_CONN_TYPE"];
+function getDialect(connString) {
+  const dbConnType = process.env.KEEL_DB_CONN_TYPE;
   switch (dbConnType) {
     case "pg":
       // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
@@ -165,7 +166,14 @@ function getDialect() {
           // time is takes for a lambda to freeze (which is not a constant, but could be as short as several minutes,
           // https://www.pluralsight.com/resources/blog/cloud/how-long-does-aws-lambda-keep-your-idle-functions-around-before-a-cold-start)
           idleTimeoutMillis: 50000,
-          connectionString: mustEnv("KEEL_DB_CONN"),
+
+          // If connString is not passed fall back to reading from env var
+          connectionString: connString || process.env.KEEL_DB_CONN,
+
+          // Allow the setting of a cert (.pem) file. RDS requires this to enforce SSL.
+          ...(process.env.KEEL_DB_CERT
+            ? { ssl: { ca: fs.readFileSync(process.env.KEEL_DB_CERT) } }
+            : undefined),
         }),
       });
     case "neon":
@@ -178,7 +186,8 @@ function getDialect() {
       neonserverless.neonConfig.webSocketConstructor = ws;
 
       const pool = new InstrumentedNeonServerlessPool({
-        connectionString: mustEnv("KEEL_DB_CONN"),
+        // If connString is not passed fall back to reading from env var
+        connectionString: connString || process.env.KEEL_DB_CONN,
       });
 
       pool.on("connect", (client) => {
@@ -196,7 +205,7 @@ function getDialect() {
           return withSpan(spanName, function (span) {
             if (sqlAttribute) {
               span.setAttribute("sql", args[0]);
-              span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
+              span.setAttribute("dialect", dbConnType);
             }
             return originalQuery.apply(client, args);
           });
@@ -209,14 +218,6 @@ function getDialect() {
     default:
       throw Error("unexpected KEEL_DB_CONN_TYPE: " + dbConnType);
   }
-}
-
-function mustEnv(key) {
-  const v = process.env[key];
-  if (!v) {
-    throw new Error(`expected environment variable ${key} to be set`);
-  }
-  return v;
 }
 
 module.exports = {

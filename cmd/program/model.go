@@ -480,7 +480,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		ctx = db.WithDatabase(ctx, m.Database)
+
+		m.Secrets["KEEL_DB_CONN"] = m.DatabaseConnInfo.String()
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
+
 		ctx = runtimectx.WithOAuthConfig(ctx, &m.Config.Auth)
 		if m.Storage != nil {
 			ctx = runtimectx.WithStorage(ctx, m.Storage)

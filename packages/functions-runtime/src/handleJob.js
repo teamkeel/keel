@@ -53,7 +53,9 @@ async function handleJob(request, config) {
             ? true
             : null;
 
-        db = createDatabaseClient();
+        db = createDatabaseClient({
+          connString: request.meta?.secrets?.KEEL_DB_CONN,
+        });
         const jobFunction = jobs[request.method];
         const actionType = PROTO_ACTION_TYPES.JOB;
 
