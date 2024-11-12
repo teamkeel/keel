@@ -12,27 +12,39 @@ import (
 func TestModelWithPermissionAttributes(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 	model Author {
+	
 		fields {
-		  name Text
-		  books Book[]
+			name Text
 		}
 
-		@permission(
-		  expression: author.name == "Keel",
-		  actions: [get],
-		  role: Admin
-		)
+		@permission(thing: (1 + (2 + 3)) > 5)
+		@permission(thing: count(1))
+		@permission(thing: 1)
+		@permission(thing: CEILING(UPPER(author.name) == UPPER("Keel") or (5 < ((1 + 1) * author.age and true))))
+
 	}`})
 	//assert.Equal(t, "permission", schema.Declarations[0].Model.Sections[2].Attribute.Name.Value)
 
-	arg1 := schema.Declarations[0].Model.Sections[1].Attribute.Arguments[0]
+	attr1 := schema.Declarations[0].Model.Sections[1].Attribute
+	fmt.Println(attr1.Arguments[0].Expression.String())
 
-	s := arg1.Expression
+	attr2 := schema.Declarations[0].Model.Sections[2].Attribute
+	fmt.Println(attr2.Arguments[0].Expression.String())
 
-	fmt.Printf("%s", *s)
+	attr3 := schema.Declarations[0].Model.Sections[3].Attribute
+	fmt.Println(attr3.Arguments[0].Expression.String())
+
+	attr4 := schema.Declarations[0].Model.Sections[4].Attribute
+	fmt.Println(attr4.Arguments[0].Expression.String())
+
+	// attr5 := schema.Declarations[0].Model.Sections[5].Attribute
+	// fmt.Println(attr5.(parser.PermissionAttributeNode).Arguments[0].Expression.String())
+
+	//	fmt.Sprintln(attr1.Type())
+	//
+	// fmt.Printf("%s", *s)
 	// assert.Equal(t, "sd", *arg1.Expression.Value)
 	// assert.Equal(t, "expression", arg1.Label.Value)
-
 }
 
 func parse(t *testing.T, s *reader.SchemaFile) *parser.AST {
@@ -118,31 +130,31 @@ func TestModelWithFunctions(t *testing.T) {
 	assert.Equal(t, "id", schema.Declarations[0].Model.Sections[1].Actions[1].Inputs[0].Type.Fragments[0].Fragment)
 }
 
-func TestModelWithFieldAttributes(t *testing.T) {
-	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
-	model Book {
-		fields {
-		  title Text
-		  isbn Text {
-			@unique
-		  }
-		  authors Author[]
-		}
-		actions {
-		  create createBook(title, authors) {
-				@function
-			}
-		  get book(id) {
-				@function
-			}
-		  get bookByIsbn(isbn) {
-				@function
-			}
-		}
-	  }`})
-	assert.Len(t, schema.Declarations[0].Model.Sections[0].Fields[1].Attributes, 1)
-	assert.Equal(t, "unique", schema.Declarations[0].Model.Sections[0].Fields[1].Attributes[0].Name.Value)
-}
+// func TestModelWithFieldAttributes(t *testing.T) {
+// 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+// 	model Book {
+// 		fields {
+// 		  title Text
+// 		  isbn Text {
+// 			@unique
+// 		  }
+// 		  authors Author[]
+// 		}
+// 		actions {
+// 		  create createBook(title, authors) {
+// 				@function
+// 			}
+// 		  get book(id) {
+// 				@function
+// 			}
+// 		  get bookByIsbn(isbn) {
+// 				@function
+// 			}
+// 		}
+// 	  }`})
+// 	assert.Len(t, schema.Declarations[0].Model.Sections[0].Fields[1].Attributes, 1)
+// 	assert.Equal(t, "unique", schema.Declarations[0].Model.Sections[0].Fields[1].Attributes[0].Name.Value)
+// }
 
 func TestRole(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `

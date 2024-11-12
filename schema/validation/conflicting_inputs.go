@@ -60,37 +60,34 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 				inputs = writeInputs
 			}
 
-			for _, cond := range expr.Conditions() {
-				operands := []*parser.Operand{cond.LHS}
-				if n.Name.Value == parser.AttributeWhere {
-					operands = append(operands, cond.RHS)
+			for _, operand := range expr.Operands() {
+				if operand.Ident == nil {
+					continue
 				}
 
-				for _, operand := range operands {
-					if operand == nil || operand.Ident == nil {
+				if operand == nil || operand.Ident == nil {
+					continue
+				}
+				for in := range inputs {
+					// in an expression the first ident fragment will be the model name
+					// we create an indent without the first fragment
+					identWithoutModelName := &parser.Ident{
+						Fragments: operand.Ident.Fragments[1:],
+					}
+
+					if in.Type.ToString() != identWithoutModelName.ToString() {
 						continue
 					}
-					for in := range inputs {
-						// in an expression the first ident fragment will be the model name
-						// we create an indent without the first fragment
-						identWithoutModelName := &parser.Ident{
-							Fragments: operand.Ident.Fragments[1:],
-						}
 
-						if in.Type.ToString() != identWithoutModelName.ToString() {
-							continue
-						}
-
-						errs.AppendError(
-							errorhandling.NewValidationErrorWithDetails(
-								errorhandling.ActionInputError,
-								errorhandling.ErrorDetails{
-									Message: fmt.Sprintf("%s is already being used as an input so cannot also be used in an expression", in.Type.ToString()),
-								},
-								operand.Ident,
-							),
-						)
-					}
+					errs.AppendError(
+						errorhandling.NewValidationErrorWithDetails(
+							errorhandling.ActionInputError,
+							errorhandling.ErrorDetails{
+								Message: fmt.Sprintf("%s is already being used as an input so cannot also be used in an expression", in.Type.ToString()),
+							},
+							operand.Ident,
+						),
+					)
 				}
 			}
 		},

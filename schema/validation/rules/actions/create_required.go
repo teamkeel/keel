@@ -223,7 +223,7 @@ func satisfiedBySetExpr(rootModelName string, dotDelimPath string, action *parse
 	setExpressions := setExpressions(action)
 
 	for _, expr := range setExpressions {
-		assignment, err := expr.ToAssignmentCondition()
+		assignment, err := expr.ToAssignmentExpression()
 		if err != nil {
 			continue
 		}

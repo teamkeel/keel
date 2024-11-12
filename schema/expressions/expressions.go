@@ -1,254 +1,246 @@
 package expressions
 
-import (
-	"fmt"
+// type ConditionResolver struct {
+// 	condition *parser.Condition
+// 	context   *ExpressionContext
+// 	asts      []*parser.AST
+// }
 
-	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
-	"github.com/teamkeel/keel/schema/validation/errorhandling"
-)
+// func (c *ConditionResolver) Resolve() (resolvedLhs *ExpressionScopeEntity, resolvedRhs *ExpressionScopeEntity, errors []error) {
+// 	lhs := NewOperandResolver(
+// 		c.condition.LHS,
+// 		c.asts,
+// 		c.context,
+// 		OperandPositionLhs,
+// 	)
 
-type ConditionResolver struct {
-	condition *parser.Condition
-	context   *ExpressionContext
-	asts      []*parser.AST
-}
+// 	resolvedLhs, _ = lhs.Resolve()
+// 	// if lhsErr != nil {
+// 	// 	errors = append(errors, lhsErr.ToValidationError())
+// 	// }
 
-func (c *ConditionResolver) Resolve() (resolvedLhs *ExpressionScopeEntity, resolvedRhs *ExpressionScopeEntity, errors []error) {
-	lhs := NewOperandResolver(
-		c.condition.LHS,
-		c.asts,
-		c.context,
-		OperandPositionLhs,
-	)
+// 	// Check RHS only if it exists
+// 	if c.condition.RHS != nil {
+// 		rhs := NewOperandResolver(
+// 			c.condition.RHS,
+// 			c.asts,
+// 			c.context,
+// 			OperandPositionRhs,
+// 		)
 
-	resolvedLhs, _ = lhs.Resolve()
-	// if lhsErr != nil {
-	// 	errors = append(errors, lhsErr.ToValidationError())
-	// }
+// 		resolvedRhs, _ := rhs.Resolve()
+// 		// if rhsErr != nil {
+// 		// 	errors = append(errors, rhsErr.ToValidationError())
+// 		// }
 
-	// Check RHS only if it exists
-	if c.condition.RHS != nil {
-		rhs := NewOperandResolver(
-			c.condition.RHS,
-			c.asts,
-			c.context,
-			OperandPositionRhs,
-		)
+// 		return resolvedLhs, resolvedRhs, errors
+// 	} else if resolvedLhs != nil && resolvedLhs.GetType() != parser.FieldTypeBoolean {
+// 		errors = append(errors,
+// 			errorhandling.NewValidationError(
+// 				errorhandling.ErrorExpressionSingleConditionNotBoolean,
+// 				errorhandling.TemplateLiterals{
+// 					Literals: map[string]string{
+// 						"Value":      lhs.operand.ToString(),
+// 						"Attribute":  fmt.Sprintf("@%s", c.context.Attribute.Name.Value),
+// 						"Suggestion": fmt.Sprintf("%s == xxx", lhs.operand.ToString()),
+// 					},
+// 				},
+// 				lhs.operand.Node,
+// 			),
+// 		)
+// 	}
 
-		resolvedRhs, _ := rhs.Resolve()
-		// if rhsErr != nil {
-		// 	errors = append(errors, rhsErr.ToValidationError())
-		// }
+// 	return resolvedLhs, nil, errors
+// }
 
-		return resolvedLhs, resolvedRhs, errors
-	} else if resolvedLhs != nil && resolvedLhs.GetType() != parser.FieldTypeBoolean {
-		errors = append(errors,
-			errorhandling.NewValidationError(
-				errorhandling.ErrorExpressionSingleConditionNotBoolean,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Value":      lhs.operand.ToString(),
-						"Attribute":  fmt.Sprintf("@%s", c.context.Attribute.Name.Value),
-						"Suggestion": fmt.Sprintf("%s == xxx", lhs.operand.ToString()),
-					},
-				},
-				lhs.operand.Node,
-			),
-		)
-	}
+// func NewConditionResolver(condition *parser.Condition, asts []*parser.AST, context *ExpressionContext) *ConditionResolver {
+// 	return &ConditionResolver{
+// 		condition: condition,
+// 		context:   context,
+// 		asts:      asts,
+// 	}
+// }
 
-	return resolvedLhs, nil, errors
-}
+// type OperandResolver struct {
+// 	operand  *parser.Operand
+// 	asts     []*parser.AST
+// 	context  *ExpressionContext
+// 	scope    *ExpressionScope
+// 	position OperandPosition
+// }
 
-func NewConditionResolver(condition *parser.Condition, asts []*parser.AST, context *ExpressionContext) *ConditionResolver {
-	return &ConditionResolver{
-		condition: condition,
-		context:   context,
-		asts:      asts,
-	}
-}
+// func NewOperandResolver(operand *parser.Operand, asts []*parser.AST, context *ExpressionContext, position OperandPosition) *OperandResolver {
+// 	return &OperandResolver{
+// 		operand:  operand,
+// 		asts:     asts,
+// 		context:  context,
+// 		scope:    &ExpressionScope{},
+// 		position: position,
+// 	}
+// }
 
-type OperandResolver struct {
-	operand  *parser.Operand
-	asts     []*parser.AST
-	context  *ExpressionContext
-	scope    *ExpressionScope
-	position OperandPosition
-}
+// // A condition is composed of a LHS operand (and an operator, and a RHS operand if not a value only condition like expression: true)
+// // Given an operand of a condition, tries to resolve all of the fragments defined within the operand
+// // an operand might be:
+// // - post.author.name
+// // - post.author
+// // - MyEnum.ValueName
+// // - "123"
+// // - true
+// // - ctx.identity.account
+// // - ctx.identity.account.name
+// // All of these types above are checked / attempted to be resolved in this method.
+// func (o *OperandResolver) Resolve() (entity *ExpressionScopeEntity, err *ResolutionError) {
+// 	// build the default expression scope for all expressions
+// 	o.scope = buildRootExpressionScope(o.asts, o.context)
+// 	// build additional root scopes based on position of operand
+// 	// and also what type attribute the expression is used in.
+// 	o.scope = applyAdditionalOperandScopes(o.asts, o.scope, o.context)
 
-func NewOperandResolver(operand *parser.Operand, asts []*parser.AST, context *ExpressionContext, position OperandPosition) *OperandResolver {
-	return &OperandResolver{
-		operand:  operand,
-		asts:     asts,
-		context:  context,
-		scope:    &ExpressionScope{},
-		position: position,
-	}
-}
+// 	// If it is a literal then handle differently.
+// 	if ok, _ := o.operand.IsLiteralType(); ok {
+// 		if o.operand.Type() == parser.TypeArray {
+// 			array := []*ExpressionScopeEntity{}
 
-// A condition is composed of a LHS operand (and an operator, and a RHS operand if not a value only condition like expression: true)
-// Given an operand of a condition, tries to resolve all of the fragments defined within the operand
-// an operand might be:
-// - post.author.name
-// - post.author
-// - MyEnum.ValueName
-// - "123"
-// - true
-// - ctx.identity.account
-// - ctx.identity.account.name
-// All of these types above are checked / attempted to be resolved in this method.
-func (o *OperandResolver) Resolve() (entity *ExpressionScopeEntity, err *ResolutionError) {
-	// build the default expression scope for all expressions
-	o.scope = buildRootExpressionScope(o.asts, o.context)
-	// build additional root scopes based on position of operand
-	// and also what type attribute the expression is used in.
-	o.scope = applyAdditionalOperandScopes(o.asts, o.scope, o.context)
+// 			for _, item := range o.operand.Array.Values {
+// 				array = append(array,
+// 					&ExpressionScopeEntity{
+// 						Literal: item,
+// 					},
+// 				)
+// 			}
 
-	// If it is a literal then handle differently.
-	if ok, _ := o.operand.IsLiteralType(); ok {
-		if o.operand.Type() == parser.TypeArray {
-			array := []*ExpressionScopeEntity{}
+// 			entity = &ExpressionScopeEntity{
+// 				Array: array,
+// 			}
 
-			for _, item := range o.operand.Array.Values {
-				array = append(array,
-					&ExpressionScopeEntity{
-						Literal: item,
-					},
-				)
-			}
+// 			return entity, nil
+// 		} else {
+// 			entity = &ExpressionScopeEntity{
+// 				Literal: o.operand,
+// 			}
+// 			return entity, nil
+// 		}
+// 	}
 
-			entity = &ExpressionScopeEntity{
-				Array: array,
-			}
+// 	// For an array of enums, we need to rather iterate through and resolve each value
+// 	if o.operand.Array != nil {
+// 		array := []*ExpressionScopeEntity{}
 
-			return entity, nil
-		} else {
-			entity = &ExpressionScopeEntity{
-				Literal: o.operand,
-			}
-			return entity, nil
-		}
-	}
+// 		for _, operand := range o.operand.Array.Values {
+// 			r := NewOperandResolver(
+// 				operand,
+// 				o.asts,
+// 				o.context,
+// 				o.position,
+// 			)
 
-	// For an array of enums, we need to rather iterate through and resolve each value
-	if o.operand.Array != nil {
-		array := []*ExpressionScopeEntity{}
+// 			e, err := r.Resolve()
+// 			if err != nil {
+// 				return nil, err
+// 			}
 
-		for _, operand := range o.operand.Array.Values {
-			r := NewOperandResolver(
-				operand,
-				o.asts,
-				o.context,
-				o.position,
-			)
+// 			array = append(array, e)
+// 		}
 
-			e, err := r.Resolve()
-			if err != nil {
-				return nil, err
-			}
+// 		return &ExpressionScopeEntity{
+// 			Array: array,
+// 		}, nil
+// 	}
 
-			array = append(array, e)
-		}
+// 	// We want to loop over every fragment in the Ident, each time checking if the Ident matches anything
+// 	// stored in the expression scope.
+// 	// e.g if the first ident fragment is "ctx", and the ExpressionScope has a matching key
+// 	// (which it does if you use the DefaultExpressionScope)
+// 	// then it will continue onto the next fragment, setting the new scope to Ctx
+// 	// so that the next fragment can be compared to fields that exist on the Ctx object
+// fragments:
+// 	for _, fragment := range o.operand.Ident.Fragments {
+// 		if entity != nil && entity.Type == TypeStringMap {
+// 			o.scope = &ExpressionScope{
+// 				Parent: o.scope,
+// 			}
 
-		return &ExpressionScopeEntity{
-			Array: array,
-		}, nil
-	}
+// 			entity = &ExpressionScopeEntity{
+// 				Type: parser.TypeText,
+// 			}
 
-	// We want to loop over every fragment in the Ident, each time checking if the Ident matches anything
-	// stored in the expression scope.
-	// e.g if the first ident fragment is "ctx", and the ExpressionScope has a matching key
-	// (which it does if you use the DefaultExpressionScope)
-	// then it will continue onto the next fragment, setting the new scope to Ctx
-	// so that the next fragment can be compared to fields that exist on the Ctx object
-fragments:
-	for _, fragment := range o.operand.Ident.Fragments {
-		if entity != nil && entity.Type == TypeStringMap {
-			o.scope = &ExpressionScope{
-				Parent: o.scope,
-			}
+// 			continue
+// 		}
 
-			entity = &ExpressionScopeEntity{
-				Type: parser.TypeText,
-			}
+// 		for _, e := range o.scope.Entities {
+// 			if e.Name != fragment.Fragment {
+// 				continue
+// 			}
 
-			continue
-		}
+// 			switch {
+// 			case e.Model != nil:
+// 				// crucially, scope is redefined for the next iteration of the outer loop
+// 				// so that we check the subsequent fragment against the models fields
+// 				// e.g post.field - fragment at idx 0 would be post, so scopeFromModel finds the fields on the
+// 				// Post model and populates the new scope with them.
+// 				o.scope = scopeFromModel(o.scope, e, e.Model)
+// 			case e.Field != nil:
 
-		for _, e := range o.scope.Entities {
-			if e.Name != fragment.Fragment {
-				continue
-			}
+// 				model := query.Model(o.asts, e.Field.Type.Value)
+// 				enum := query.Enum(o.asts, e.Field.Type.Value)
 
-			switch {
-			case e.Model != nil:
-				// crucially, scope is redefined for the next iteration of the outer loop
-				// so that we check the subsequent fragment against the models fields
-				// e.g post.field - fragment at idx 0 would be post, so scopeFromModel finds the fields on the
-				// Post model and populates the new scope with them.
-				o.scope = scopeFromModel(o.scope, e, e.Model)
-			case e.Field != nil:
+// 				if model != nil {
+// 					// If the field type is a model the scope is now that models fields
+// 					o.scope = scopeFromModel(o.scope, e, model)
+// 				} else {
+// 					// For enums we add some extra context to the scope entity so we can
+// 					// resolve it properly later on
+// 					if enum != nil {
+// 						e.Type = parser.TypeEnum
+// 					}
 
-				model := query.Model(o.asts, e.Field.Type.Value)
-				enum := query.Enum(o.asts, e.Field.Type.Value)
+// 					// Non-model fields have no sub-properties, so the scope is now empty
+// 					o.scope = &ExpressionScope{
+// 						Parent: o.scope,
+// 					}
+// 				}
+// 			case e.Object != nil:
+// 				// object is a special wrapper type to describe entities we want
+// 				// to be in scope that aren't models. It is a more flexible type that
+// 				// allows us to add fields to an object at our choosing
+// 				// Mostly used for ctx
+// 				o.scope = scopeFromObject(o.scope, e)
+// 			case e.Enum != nil:
+// 				// if the first fragment of the Ident matches an Enum name, then we want to proceed populating the scope for the next fragment
+// 				// with all of the potential values of the enum
+// 				o.scope = scopeFromEnum(o.scope, e)
+// 			case e.EnumValue != nil:
+// 				// if we are evaluating an EnumValue, then there are no more
+// 				// child entities to append as an EnumValue is a termination point.
+// 				// e.g EnumName.EnumValue.SomethingElse isnt a thing.
+// 				o.scope = &ExpressionScope{
+// 					Parent: o.scope,
+// 				}
+// 			case e.Type != "":
+// 				// Otherwise, the scope is empty of any new entities
+// 				o.scope = &ExpressionScope{
+// 					Parent: o.scope,
+// 				}
+// 			}
 
-				if model != nil {
-					// If the field type is a model the scope is now that models fields
-					o.scope = scopeFromModel(o.scope, e, model)
-				} else {
-					// For enums we add some extra context to the scope entity so we can
-					// resolve it properly later on
-					if enum != nil {
-						e.Type = parser.TypeEnum
-					}
+// 			entity = e
+// 			continue fragments
+// 		}
 
-					// Non-model fields have no sub-properties, so the scope is now empty
-					o.scope = &ExpressionScope{
-						Parent: o.scope,
-					}
-				}
-			case e.Object != nil:
-				// object is a special wrapper type to describe entities we want
-				// to be in scope that aren't models. It is a more flexible type that
-				// allows us to add fields to an object at our choosing
-				// Mostly used for ctx
-				o.scope = scopeFromObject(o.scope, e)
-			case e.Enum != nil:
-				// if the first fragment of the Ident matches an Enum name, then we want to proceed populating the scope for the next fragment
-				// with all of the potential values of the enum
-				o.scope = scopeFromEnum(o.scope, e)
-			case e.EnumValue != nil:
-				// if we are evaluating an EnumValue, then there are no more
-				// child entities to append as an EnumValue is a termination point.
-				// e.g EnumName.EnumValue.SomethingElse isnt a thing.
-				o.scope = &ExpressionScope{
-					Parent: o.scope,
-				}
-			case e.Type != "":
-				// Otherwise, the scope is empty of any new entities
-				o.scope = &ExpressionScope{
-					Parent: o.scope,
-				}
-			}
+// 		parent := ""
 
-			entity = e
-			continue fragments
-		}
+// 		if entity != nil {
+// 			parent = entity.GetType()
+// 		}
 
-		parent := ""
+// 		return nil, &ResolutionError{
+// 			fragment: fragment,
+// 			parent:   parent,
+// 			scope:    o.scope,
+// 			operand:  o.operand,
+// 		}
+// 	}
 
-		if entity != nil {
-			parent = entity.GetType()
-		}
-
-		return nil, &ResolutionError{
-			fragment: fragment,
-			parent:   parent,
-			scope:    o.scope,
-			operand:  o.operand,
-		}
-	}
-
-	return entity, nil
-}
+// 	return entity, nil
+// }

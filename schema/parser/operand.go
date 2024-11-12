@@ -6,110 +6,110 @@ import (
 	"github.com/teamkeel/keel/schema/node"
 )
 
-// type Operand struct {
-// 	node.Node
+type Operand struct {
+	node.Node
 
-// 	Number  *int64   `  @('-'? Int)`
-// 	Decimal *float64 `| @('-'? Float)`
-// 	String  *string  `| @String`
-// 	Null    bool     `| @"null"`
-// 	True    bool     `| @"true"`
-// 	False   bool     `| @"false"`
-// 	Array   *Array   `| @@`
-// 	Ident   *Ident   `| @@`
-// }
+	Number  *int64   `  @('-'? Int)`
+	Decimal *float64 `| @('-'? Float)`
+	String  *string  `| @String`
+	Null    bool     `| @"null"`
+	True    bool     `| @"true"`
+	False   bool     `| @"false"`
+	Array   *Array   `| @@`
+	Ident   *Ident   `| @@`
+}
 
-// func (o *Operand) ToString() string {
-// 	if o == nil {
-// 		return ""
-// 	}
+func (o *Operand) ToString() string {
+	if o == nil {
+		return ""
+	}
 
-// 	switch o.Type() {
-// 	case TypeDecimal:
-// 		return fmt.Sprintf("%f", *o.Decimal)
-// 	case TypeNumber:
-// 		return fmt.Sprintf("%d", *o.Number)
-// 	case TypeText:
-// 		return *o.String
-// 	case TypeNull:
-// 		return "null"
-// 	case TypeBoolean:
-// 		if o.False {
-// 			return "false"
-// 		} else {
-// 			return "true"
-// 		}
-// 	case TypeArray:
-// 		r := "["
-// 		for i, el := range o.Array.Values {
-// 			if i > 0 {
-// 				r += ", "
-// 			}
-// 			r += el.ToString()
-// 		}
-// 		return r + "]"
-// 	case TypeIdent:
-// 		return o.Ident.ToString()
-// 	default:
-// 		return ""
-// 	}
-// }
+	switch o.Type() {
+	case TypeDecimal:
+		return fmt.Sprintf("%f", *o.Decimal)
+	case TypeNumber:
+		return fmt.Sprintf("%d", *o.Number)
+	case TypeText:
+		return *o.String
+	case TypeNull:
+		return "null"
+	case TypeBoolean:
+		if o.False {
+			return "false"
+		} else {
+			return "true"
+		}
+	case TypeArray:
+		r := "["
+		for i, el := range o.Array.Values {
+			if i > 0 {
+				r += ", "
+			}
+			r += el.ToString()
+		}
+		return r + "]"
+	case TypeIdent:
+		return o.Ident.ToString()
+	default:
+		return ""
+	}
+}
 
-// func (o *Operand) Type() string {
-// 	switch {
-// 	case o.Decimal != nil:
-// 		return TypeDecimal
-// 	case o.Number != nil:
-// 		return TypeNumber
-// 	case o.String != nil:
-// 		return TypeText
-// 	case o.Null:
-// 		return TypeNull
-// 	case o.False:
-// 		return TypeBoolean
-// 	case o.True:
-// 		return TypeBoolean
-// 	case o.Array != nil:
-// 		return TypeArray
-// 	case o.Ident != nil && len(o.Ident.Fragments) > 0:
-// 		return TypeIdent
-// 	default:
-// 		return ""
-// 	}
-// }
+func (o *Operand) Type() string {
+	switch {
+	case o.Decimal != nil:
+		return TypeDecimal
+	case o.Number != nil:
+		return TypeNumber
+	case o.String != nil:
+		return TypeText
+	case o.Null:
+		return TypeNull
+	case o.False:
+		return TypeBoolean
+	case o.True:
+		return TypeBoolean
+	case o.Array != nil:
+		return TypeArray
+	case o.Ident != nil && len(o.Ident.Fragments) > 0:
+		return TypeIdent
+	default:
+		return ""
+	}
+}
 
-// func (o *Operand) IsLiteralType() (bool, string) {
-// 	switch {
-// 	case o.Number != nil:
-// 		return true, o.ToString()
-// 	case o.Decimal != nil:
-// 		return true, o.ToString()
-// 	case o.String != nil:
-// 		return true, o.ToString()
-// 	case o.Null:
-// 		return true, o.ToString()
-// 	case o.False:
-// 		return true, o.ToString()
-// 	case o.True:
-// 		return true, o.ToString()
-// 	case o.Array != nil:
-// 		allLiterals := true
+func (o *Operand) IsLiteralType() (bool, string) {
+	switch {
+	case o.Number != nil:
+		return true, o.ToString()
+	case o.Decimal != nil:
+		return true, o.ToString()
+	case o.String != nil:
+		return true, o.ToString()
+	case o.Null:
+		return true, o.ToString()
+	case o.False:
+		return true, o.ToString()
+	case o.True:
+		return true, o.ToString()
+	case o.Array != nil:
+		allLiterals := true
 
-// 		for _, item := range o.Array.Values {
-// 			if ok, _ := item.IsLiteralType(); ok {
-// 				continue
-// 			}
+		for _, item := range o.Array.Values {
+			if ok, _ := item.IsLiteralType(); ok {
+				continue
+			}
 
-// 			allLiterals = false
-// 		}
+			allLiterals = false
+		}
 
-// 		return allLiterals, o.ToString()
-// 	case o.Ident != nil && len(o.Ident.Fragments) > 0:
-// 		return false, o.ToString()
-// 	default:
-// 		return true, o.ToString()
-// 	}
-// }
+		return allLiterals, o.ToString()
+	case o.Ident != nil && len(o.Ident.Fragments) > 0:
+		return false, o.ToString()
+	default:
+		return true, o.ToString()
+	}
+}
 
 type Ident struct {
 	node.Node
@@ -207,8 +207,8 @@ type IdentFragment struct {
 	Fragment string `@Ident`
 }
 
-// type Array struct {
-// 	node.Node
+type Array struct {
+	node.Node
 
-// 	Values []*Operand `"[" @@* ( "," @@ )* "]"`
-// }
+	Values []*Operand `"[" @@* ( "," @@ )* "]"`
+}

@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"strings"
+	"text/scanner"
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
@@ -42,9 +43,9 @@ type ModelNode struct {
 type ModelSectionNode struct {
 	node.Node
 
-	Fields    []*FieldNode   `( "fields" "{" @@* "}"`
-	Actions   []*ActionNode  `| "actions" "{" @@* "}"`
-	Attribute *AttributeNode `| @@)`
+	Fields    []*FieldNode   `( ("fields" "{" @@* "}")`
+	Actions   []*ActionNode  `| ("actions" "{" @@* "}")`
+	Attribute *AttributeNode `| @@ )`
 }
 
 type NameNode struct {
@@ -104,8 +105,8 @@ type APINode struct {
 type APISectionNode struct {
 	node.Node
 
-	Models    []*APIModelNode `("models" "{" @@* "}"`
-	Attribute *AttributeNode  `| @@)`
+	Models    []*APIModelNode `( "models" "{" @@* "}"`
+	Attribute *AttributeNode  `| @@ )`
 }
 
 type APIModelNode struct {
@@ -164,7 +165,7 @@ type JobSectionNode struct {
 	node.Node
 
 	Inputs    []*JobInputNode `( "inputs" "{" @@* "}"`
-	Attribute *AttributeNode  `| @@)`
+	Attribute *AttributeNode  `| @@ )`
 }
 
 type JobInputNode struct {
@@ -176,6 +177,11 @@ type JobInputNode struct {
 	Optional bool     `| @( "?" ))?`
 }
 
+// type AttributeNode interface {
+// 	value()
+// 	Type() string
+// }
+
 // Attributes:
 // - @permission
 // - @set
@@ -185,7 +191,7 @@ type JobInputNode struct {
 // - @default
 // - @orderBy
 // - @sortable
-// - @on
+// // - @on
 type AttributeNode struct {
 	node.Node
 
@@ -198,14 +204,48 @@ type AttributeNode struct {
 	Arguments []*AttributeArgumentNode `(( "(" @@ ( "," @@ )* ")" ) | ( "(" ")" ) )?`
 }
 
+// type PermissionAttributeNode struct {
+// 	node.Node
+
+// 	Arguments []*AttributeArgumentNode `"@" "permission" "(" @@ ( "," @@ )* ")"`
+// }
+
+// func (PermissionAttributeNode) value()       {}
+// func (PermissionAttributeNode) Type() string { return AttributePermission }
+
+// type WhereAttributeNode struct {
+// 	node.Node
+// 	//Arguments string `"@" "where" "(" @Ident ")"`
+// 	Arguments *AttributeArgumentNode `"@" "where" "(" @@ ")"`
+// }
+
+// func (WhereAttributeNode) value()       {}
+// func (WhereAttributeNode) Type() string { return AttributeWhere }
+
+// type SetAttributeNode struct {
+// 	node.Node
+// 	//Arguments string `"@" "where" "(" @Ident ")"`
+// 	Arguments *AttributeArgumentNode `"@" "set" "(" @@ ")"`
+// }
+
+// func (SetAttributeNode) value()       {}
+// func (SetAttributeNode) Type() string { return AttributeSet }
+
+// type OrderByAttributeNode struct {
+// 	node.Node
+// 	//Arguments string `"@" "where" "(" @Ident ")"`
+// 	Arguments []*AttributeArgumentNode `"@" "orderBy" "(" @@ ( "," @@ )* ")"`
+// }
+
+// func (OrderByAttributeNode) value()       {}
+// func (OrderByAttributeNode) Type() string { return AttributeSet }
+
 type AttributeArgumentNode struct {
 	node.Node
 
-	Label      *NameNode `(@@ ":")?`
-	Expression *Expr     `@@`
+	Label      *NameNode   `(@@ ":")?`
+	Expression *Expression `@@`
 }
-
-type Expr string
 
 type ExpressionNode struct {
 	node.Node
@@ -213,69 +253,164 @@ type ExpressionNode struct {
 	Value *string
 }
 
-// func (b *Expr) Capture(values []string) error {
-// 	s := "hello"
-// 	e := Expr(s)
-// 	*b = e
-// 	return nil
+func (e *ExpressionNode) Operands() {
+
+}
+
+type Grouped struct {
+	node.Node
+
+	Exp *Expression `"(" @@ ")"`
+}
+
+type Expression struct {
+	node.Node
+
+	LHS      *Term       `@@`
+	Operator *Operator   `( @@`
+	RHS      *Expression `@@ )?`
+}
+
+type Term struct {
+	node.Node
+
+	LHS      *Factor   `@@`
+	Operator *Operator `( @@`
+	RHS      *Term     `  @@ )?`
+}
+
+type Factor struct {
+	node.Node
+
+	Grouped  *Grouped  `  @@`
+	Function *Function `| @@`
+	Operand  *Operand  `| @@`
+}
+
+type Function struct {
+	node.Node
+
+	Name      *NameNode     `@@`
+	Arguments []*Expression `"(" (@@ ( "," @@ )* )? ")"`
+}
+
+type ExpressionPart interface {
+	String() string
+	Operands() []*Operand
+}
+
+func (e *Expression) String() string {
+	if e.Operator == nil || e.RHS == nil {
+		return e.LHS.String()
+	}
+	return fmt.Sprintf("%s %s %s", e.LHS.String(), e.Operator.ToString(), e.RHS.String())
+}
+
+func (t *Term) String() string {
+	if t.Operator == nil || t.RHS == nil {
+		return t.LHS.String()
+	}
+	return fmt.Sprintf("%s %s %s", t.LHS.String(), t.Operator.ToString(), t.RHS.String())
+}
+
+func (f *Factor) String() string {
+	switch {
+	case f.Grouped != nil:
+		return f.Grouped.String()
+	case f.Function != nil:
+		return f.Function.String()
+	case f.Operand != nil:
+		return f.Operand.ToString()
+	default:
+		return ""
+	}
+}
+
+func (g *Grouped) String() string {
+	if g.Exp == nil {
+		return "()"
+	}
+	return fmt.Sprintf("(%s)", g.Exp.String())
+}
+
+func (f *Function) String() string {
+	args := make([]string, len(f.Arguments))
+	for i, arg := range f.Arguments {
+		args[i] = arg.String()
+	}
+	return fmt.Sprintf("%s(%s)", f.Name.Value, strings.Join(args, ", "))
+}
+
+func (e *Expression) Operands() []*Operand {
+	if e.Operator == nil || e.RHS == nil {
+		return e.LHS.Operands()
+	}
+	return append(e.LHS.Operands(), e.RHS.Operands()...)
+}
+
+func (t *Term) Operands() []*Operand {
+	if t.Operator == nil || t.RHS == nil {
+		return t.LHS.Operands()
+	}
+	return append(t.LHS.Operands(), t.RHS.Operands()...)
+}
+
+func (f *Factor) Operands() []*Operand {
+	switch {
+	case f.Grouped != nil:
+		return f.Grouped.Operands()
+	case f.Function != nil:
+		return f.Function.Operands()
+	case f.Operand != nil:
+		return []*Operand{f.Operand}
+	default:
+		return []*Operand{}
+	}
+}
+
+func (g *Grouped) Operands() []*Operand {
+	if g.Exp == nil {
+		return []*Operand{}
+	}
+	return g.Exp.Operands()
+}
+
+func (f *Function) Operands() []*Operand {
+	args := make([]*Operand, len(f.Arguments))
+	for _, arg := range f.Arguments {
+		args = append(args, arg.Operands()...)
+	}
+	return args
+}
+
+// type ExpressionNode struct {
+// 	node.Node
+
+// 	Value  *string
+// 	Tokens []*lexer.Token
 // }
 
-func (b *Expr) Parse(lex *lexer.PeekingLexer) error {
+// func (b *ExpressionNode) Parse(lex *lexer.PeekingLexer) error {
+// 	expression := ""
+// 	tokens := []*lexer.Token{}
 
-	token := lex.Next()
+// 	for {
+// 		token := lex.Peek()
 
-	s := token.Value
+// 		if token.Value == ")" || token.Value == "," { // TODO: terribly crude
+// 			break
+// 		}
 
-	// token = lex.Next()
+// 		expression += lex.Next().Value
+// 		tokens = append(tokens, token)
+// 	}
 
-	// s += token.Value
+// 	*b = ExpressionNode{
+// 		Value: &expression,
+// 	}
 
-	// token = lex.Next()
-
-	// s += token.Value
-
-	// token = lex.Next()
-
-	// s += token.Value
-
-	// token = lex.Next()
-
-	// s += token.Value
-
-	// token = lex.Next()
-
-	// s += token.Value
-
-	// token = lex.Next()
-
-	// s += token.Value
-
-	// token = lex.Next()
-
-	// s += token.Value
-
-	// token = lex.Next()
-
-	// s += token.Value
-
-	e := Expr(s)
-	*b = e
-	return nil
-}
-
-func (b *ExpressionNode) Capture(values []string) error {
-	s := "hello"
-	//e := Expr(s)
-	*b = ExpressionNode{Value: &s}
-	return nil
-}
-
-func (b *ExpressionNode) Parse(lex *lexer.PeekingLexer) error {
-	s := "hello"
-	//e := Expr(s)
-	*b = ExpressionNode{Value: &s}
-	return nil
-}
+// 	return nil
+// }
 
 type ActionNode struct {
 	node.Node
@@ -396,41 +531,20 @@ func (e Error) GetTokens() []lexer.Token {
 
 func Parse(s *reader.SchemaFile) (*AST, error) {
 	// Customise the lexer to not ignore comments
-	// lex := lexer.NewTextScannerLexer(func(s *scanner.Scanner) {
-	// 	s.Mode =
-	// 		scanner.ScanIdents |
-	// 			scanner.ScanFloats |
-	// 			scanner.ScanChars |
-	// 			scanner.ScanStrings |
-	// 			scanner.ScanComments
-	// })
-
-	basicLexer := lexer.MustSimple([]lexer.SimpleRule{
-		{"Comment", `(?:#|//)[^\n]*\n?`},
-		{"String", `"(\\"|[^"])*"`},
-		{"Int", `[-+]?\d+`},
-		{"Float", `[-+]?(\d*\.)?\d+`},
-		{"Ident", `[a-zA-Z_0-9]\w*`},
-		{"Punct", `[-[!@%*()/+_={}:"'<,>.?]|]`},
-		{"Expression", `[a-zA-Z0-9.+-*/()]+`},
-		{"EOL", `[\n]+`},
-		{"whitespace", `[ \t]+`},
+	lex := lexer.NewTextScannerLexer(func(s *scanner.Scanner) {
+		s.Mode =
+			scanner.ScanIdents |
+				scanner.ScanFloats |
+				scanner.ScanChars |
+				scanner.ScanStrings |
+				scanner.ScanComments
 	})
 
-	// sqlLexer := lexer.MustSimple([]lexer.SimpleRule{
-	// 	{`Keyword`, `(?i)\b(SELECT|FROM|TOP|DISTINCT|ALL|WHERE|GROUP|BY|HAVING|UNION|MINUS|EXCEPT|INTERSECT|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|ANY|SOME|BETWEEN|AND|OR|LIKE|AS|IN)\b`},
-	// 	{`Ident`, `[a-zA-Z][a-zA-Z0-9]*`},
-	// 	{`Number`, `[-+]?\d*\.?\d+([eE][-+]?\d+)?`},
-	// 	{`String`, `'[^']*'|"[^"]*"`},
-	// 	{`Operators`, `<>|!=|<=|>=|[-+*/%,.()=<>]`},
-	// 	{"whitespace", `\s+`},
-	// })
-
-	// parser = participle.MustBuild[AST](
-	// 	participle.Lexer(sqlLexer),
-	// 	participle.Elide("Comment"))
-
-	parser, err := participle.Build[AST](participle.Lexer(basicLexer), participle.Elide("EOL"), participle.Elide("Comment"))
+	parser, err := participle.Build[AST](
+		participle.Lexer(lex),
+		//participle.Union[AttributeNode](WhereAttributeNode{}, PermissionAttributeNode{}),
+		//	participle.Union[AbsExpression](BinaryExpression{}, Operand{}, FunctionCall{}, Grouped{}),
+		participle.Elide("Comment"))
 	if err != nil {
 		return nil, err
 	}

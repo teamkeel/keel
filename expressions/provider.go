@@ -1,23 +1,31 @@
-package expressions
+package orderby_expression
 
 import (
 	"github.com/google/cel-go/checker/decls"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
-	"github.com/teamkeel/keel/proto"
+	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
 // typeProvider supplies the CEL context with the relevant Keel types and identifiers
 type typeProvider struct {
-	schema *proto.Schema
-	types.Provider
+	asts    []*parser.AST
+	model   string
+	context map[string]map[string]*types.Type
+	// Person -> name -> Text
+	//        -> age  -> Number
+
 }
 
 var _ types.Provider = new(typeProvider)
 
-func NewTypeProvider(schema *proto.Schema) *typeProvider {
-	return &typeProvider{schema: schema}
+func NewTypeProvider() *typeProvider {
+	return &typeProvider{
+		context: map[string]map[string]*types.Type{},
+	}
 }
 
 func (p *typeProvider) EnumValue(enumName string) ref.Val {
@@ -29,13 +37,14 @@ func (p *typeProvider) FindIdent(identName string) (ref.Val, bool) {
 }
 
 func (p *typeProvider) FindType(typeName string) (*expr.Type, bool) {
-	return decls.NewTypeType(decls.NewObjectType(typeName)), true
+	return decls.NewTypeType(decls.NewObjectType(strcase.ToCamel(typeName))), true
 }
 
 func (p *typeProvider) FindStructType(structType string) (*types.Type, bool) {
 
 	switch {
-	case p.schema.FindModel(structType) != nil:
+
+	case query.Model(p.asts, strcase.ToCamel(structType)) != nil:
 		return types.NewObjectType(structType), true
 	case structType == "Context":
 		return types.NewObjectType(structType), true
@@ -60,22 +69,23 @@ func (p *typeProvider) FindStructFieldType(structType, fieldName string) (*types
 		}
 	}
 
-	if model := p.schema.FindModel(structType); model == nil {
-		return nil, false
+	if model := query.Model(p.asts, strcase.ToCamel(structType)); model != nil {
+		field := query.Field(model, fieldName)
+		if field == nil {
+			return nil, false
+		}
+
+		t := mapType(field)
+
+		if field.Optional {
+			t = types.NewNullableType(t)
+		}
+
+		return &types.FieldType{Type: t}, true
 	}
 
-	field := proto.FindField(p.schema.Models, structType, fieldName)
-	if field == nil {
-		return nil, false
-	}
+	return nil, false
 
-	t := fromKeel(field.Type)
-
-	if field.Optional {
-		t = types.NewNullableType(t)
-	}
-
-	return &types.FieldType{Type: t}, true
 }
 
 func (p *typeProvider) FindFieldType(messageType string, fieldName string) (*types.FieldType, bool) {

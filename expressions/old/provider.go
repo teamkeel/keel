@@ -1,4 +1,4 @@
-package orderby_expression
+package expressions
 
 import (
 	"github.com/google/cel-go/checker/decls"
@@ -11,14 +11,13 @@ import (
 // typeProvider supplies the CEL context with the relevant Keel types and identifiers
 type typeProvider struct {
 	schema *proto.Schema
-	model  *proto.Model
 	types.Provider
 }
 
 var _ types.Provider = new(typeProvider)
 
-func NewTypeProvider(schema *proto.Schema, model *proto.Model) *typeProvider {
-	return &typeProvider{schema: schema, model: model}
+func NewTypeProvider(schema *proto.Schema) *typeProvider {
+	return &typeProvider{schema: schema}
 }
 
 func (p *typeProvider) EnumValue(enumName string) ref.Val {

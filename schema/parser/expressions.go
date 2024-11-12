@@ -1,13 +1,12 @@
 package parser
 
-// import (
-// 	"errors"
-// 	"fmt"
+import (
+	"errors"
 
-// 	"github.com/alecthomas/participle/v2"
-// 	"github.com/samber/lo"
-// 	"github.com/teamkeel/keel/schema/node"
-// )
+	"github.com/alecthomas/participle/v2"
+	"github.com/samber/lo"
+	"github.com/teamkeel/keel/schema/node"
+)
 
 // type Expression struct {
 // 	node.Node
@@ -58,12 +57,12 @@ package parser
 // 	RHS      *Operand  `@@ )?`
 // }
 
-// var (
-// 	AssignmentCondition = "assignment"
-// 	LogicalCondition    = "logical"
-// 	ValueCondition      = "value"
-// 	UnknownCondition    = "unknown"
-// )
+var (
+	AssignmentCondition = "assignment"
+	LogicalCondition    = "logical"
+	ValueCondition      = "value"
+	UnknownCondition    = "unknown"
+)
 
 // func (c *Condition) Type() string {
 // 	if c.Operator == nil && c.RHS == nil && c.LHS != nil {
@@ -81,49 +80,49 @@ package parser
 // 	return UnknownCondition
 // }
 
-// type Operator struct {
-// 	node.Node
+type Operator struct {
+	node.Node
 
-// 	// Todo need to figure out how we can share with the consts below
-// 	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=")`
-// }
+	// Todo need to figure out how we can share with the consts below
+	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=" | "or" | "and" | "+" | "-" | "*" | "/" )`
+}
 
-// func (o *Operator) ToString() string {
-// 	if o == nil {
-// 		return ""
-// 	}
+func (o *Operator) ToString() string {
+	if o == nil {
+		return ""
+	}
 
-// 	return o.Symbol
-// }
+	return o.Symbol
+}
 
-// var (
-// 	OperatorEquals               = "=="
-// 	OperatorAssignment           = "="
-// 	OperatorNotEquals            = "!="
-// 	OperatorGreaterThanOrEqualTo = ">="
-// 	OperatorLessThanOrEqualTo    = "<="
-// 	OperatorLessThan             = "<"
-// 	OperatorGreaterThan          = ">"
-// 	OperatorIn                   = "in"
-// 	OperatorNotIn                = "notin"
-// 	OperatorIncrement            = "+="
-// 	OperatorDecrement            = "-="
-// )
+var (
+	OperatorEquals               = "=="
+	OperatorAssignment           = "="
+	OperatorNotEquals            = "!="
+	OperatorGreaterThanOrEqualTo = ">="
+	OperatorLessThanOrEqualTo    = "<="
+	OperatorLessThan             = "<"
+	OperatorGreaterThan          = ">"
+	OperatorIn                   = "in"
+	OperatorNotIn                = "notin"
+	OperatorIncrement            = "+="
+	OperatorDecrement            = "-="
+)
 
-// var AssignmentOperators = []string{
-// 	OperatorAssignment,
-// }
+var AssignmentOperators = []string{
+	OperatorAssignment,
+}
 
-// var LogicalOperators = []string{
-// 	OperatorEquals,
-// 	OperatorNotEquals,
-// 	OperatorGreaterThan,
-// 	OperatorGreaterThanOrEqualTo,
-// 	OperatorLessThan,ƒ
-// 	OperatorLessThanOrEqualTo,
-// 	OperatorIn,
-// 	OperatorNotIn,
-// }
+var LogicalOperators = []string{
+	OperatorEquals,
+	OperatorNotEquals,
+	OperatorGreaterThan,
+	OperatorGreaterThanOrEqualTo,
+	OperatorLessThan,
+	OperatorLessThanOrEqualTo,
+	OperatorIn,
+	OperatorNotIn,
+}
 
 // func (condition *Condition) ToString() string {
 // 	result := ""
@@ -143,19 +142,19 @@ package parser
 // 	return result
 // }
 
-// func ParseExpression(source string) (*Expression, error) {
-// 	parser, err := participle.Build[Expression]()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func ParseExpression(source string) (*Expression, error) {
+	parser, err := participle.Build[Expression]()
+	if err != nil {
+		return nil, err
+	}
 
-// 	expr, err := parser.ParseString("", source)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	expr, err := parser.ParseString("", source)
+	if err != nil {
+		return nil, err
+	}
 
-// 	return expr, nil
-// }
+	return expr, nil
+}
 
 // func (expr *Expression) ToString() (string, error) {
 // 	result := ""
@@ -208,59 +207,43 @@ package parser
 // 	return v != nil
 // }
 
-// var ErrNotValue = errors.New("expression is not a single value")
+var ErrNotValue = errors.New("expression is not a single value")
 
-// func (expr *Expression) ToValue() (*Operand, error) {
-// 	if len(expr.Or) > 1 {
-// 		return nil, ErrNotValue
-// 	}
+func (expr *Expression) ToValue() (*Operand, error) {
+	if expr.Operator != nil || expr.RHS != nil {
+		return nil, ErrNotValue
+	}
 
-// 	or := expr.Or[0]
-// 	if len(or.And) > 1 {
-// 		return nil, ErrNotValue
-// 	}
-// 	and := or.And[0]
+	if expr.LHS.Operator != nil || expr.LHS.RHS != nil {
+		return nil, ErrNotValue
+	}
 
-// 	if and.Expression != nil {
-// 		return nil, ErrNotValue
-// 	}
+	if expr.LHS.LHS.Operand == nil {
+		return nil, ErrNotValue
+	}
 
-// 	cond := and.Condition
+	return expr.LHS.LHS.Operand, nil
+}
 
-// 	if cond.Operator != nil && cond.Operator.Symbol != "" {
-// 		return nil, ErrNotValue
-// 	}
+var ErrNotAssignment = errors.New("expression is not using an assignment, e.g. a = b")
 
-// 	return cond.LHS, nil
-// }
+func (expr *Expression) IsAssignment() bool {
+	_, _, err := expr.ToAssignmentExpression()
+	return err == ErrNotAssignment
+}
 
-// var ErrNotAssignment = errors.New("expression is not using an assignment, e.g. a = b")
+func (expr *Expression) ToAssignmentExpression() (*Operand, ExpressionPart, error) {
+	if expr.LHS == nil || expr.LHS.LHS == nil || expr.LHS.LHS.Operand == nil || expr.LHS.LHS.Operand.Ident == nil {
+		return nil, nil, ErrNotAssignment
+	}
 
-// func (expr *Expression) IsAssignment() bool {
-// 	v, _ := expr.ToAssignmentCondition()
-// 	return v != nil
-// }
+	if expr.LHS.Operator == nil || !lo.Contains(AssignmentOperators, expr.LHS.Operator.Symbol) {
+		return nil, nil, ErrNotAssignment
+	}
 
-// func (expr *Expression) ToAssignmentCondition() (*Condition, error) {
-// 	if len(expr.Or) > 1 {
-// 		return nil, ErrNotAssignment
-// 	}
+	if expr.LHS.RHS == nil {
+		return nil, nil, ErrNotAssignment
+	}
 
-// 	or := expr.Or[0]
-// 	if len(or.And) > 1 {
-// 		return nil, ErrNotAssignment
-// 	}
-
-// 	and := or.And[0]
-
-// 	if and.Expression != nil {
-// 		return nil, ErrNotAssignment
-// 	}
-// 	cond := and.Condition
-
-// 	if cond.Operator == nil || !lo.Contains(AssignmentOperators, cond.Operator.Symbol) {
-// 		return nil, ErrNotAssignment
-// 	}
-
-// 	return cond, nil
-// }
+	return expr.LHS.LHS.Operand, expr.LHS.RHS, nil
+}

@@ -39,7 +39,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
-		assignment, err := expression.ToAssignmentCondition()
+		assignment, err := expression.ToAssignmentExpression()
 		if err != nil {
 			return err
 		}
