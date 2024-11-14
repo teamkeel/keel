@@ -214,36 +214,38 @@ func (expr *Expression) ToValue() (*Operand, error) {
 		return nil, ErrNotValue
 	}
 
-	if expr.LHS.Operator != nil || expr.LHS.RHS != nil {
+	if expr.LHS.Operator != nil || expr.LHS.Term != nil {
 		return nil, ErrNotValue
 	}
 
-	if expr.LHS.LHS.Operand == nil {
+	if expr.LHS.Factor.Operand == nil {
 		return nil, ErrNotValue
 	}
 
-	return expr.LHS.LHS.Operand, nil
+	return expr.LHS.Factor.Operand, nil
 }
 
-var ErrNotAssignment = errors.New("expression is not using an assignment, e.g. a = b")
+var ErrNotAssignmentOperand = errors.New("assignment expression requires an ident LHS operand")
+var ErrNotAssignmentOperator = errors.New("assignment expression is not using the correct assignment operator")
+var ErrNotAssignmentExpression = errors.New("assignment expression does not have a RHS expression")
 
 func (expr *Expression) IsAssignment() bool {
 	_, _, err := expr.ToAssignmentExpression()
-	return err == ErrNotAssignment
+	return err == ErrNotAssignmentOperand || err == ErrNotAssignmentOperator || err == ErrNotAssignmentExpression
 }
 
 func (expr *Expression) ToAssignmentExpression() (*Operand, ExpressionPart, error) {
-	if expr.LHS == nil || expr.LHS.LHS == nil || expr.LHS.LHS.Operand == nil || expr.LHS.LHS.Operand.Ident == nil {
-		return nil, nil, ErrNotAssignment
+	if expr.LHS == nil || expr.LHS.Factor == nil || expr.LHS.Factor.Operand == nil {
+		return nil, nil, ErrNotAssignmentOperand
 	}
 
 	if expr.LHS.Operator == nil || !lo.Contains(AssignmentOperators, expr.LHS.Operator.Symbol) {
-		return nil, nil, ErrNotAssignment
+		return nil, nil, ErrNotAssignmentOperator
 	}
 
-	if expr.LHS.RHS == nil {
-		return nil, nil, ErrNotAssignment
+	if expr.LHS.Term == nil {
+		return nil, nil, ErrNotAssignmentExpression
 	}
 
-	return expr.LHS.LHS.Operand, expr.LHS.RHS, nil
+	return expr.LHS.Factor.Operand, expr.LHS.Term, nil
 }

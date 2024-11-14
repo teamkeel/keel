@@ -29,7 +29,7 @@ func TestValid(t *testing.T) {
 	require.Equal(t, "person", operand.Ident.Fragments[0].Fragment)
 	require.Equal(t, "isActive", operand.Ident.Fragments[1].Fragment)
 
-	parser, err := attributes.NewSetExpressionParser(schema, operand.Ident, schema[0].Declarations[0].Model)
+	parser, err := attributes.NewSetExpressionParser(schema, operand.Ident, schema[0].Declarations[0].Model.Sections[1].Actions[0])
 
 	issues, err := parser.Validate(expression.String())
 	require.NoError(t, err)

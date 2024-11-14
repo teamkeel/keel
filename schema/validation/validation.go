@@ -3,6 +3,11 @@ package validation
 import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"github.com/teamkeel/keel/schema/validation/rules/actions"
+	"github.com/teamkeel/keel/schema/validation/rules/api"
+	"github.com/teamkeel/keel/schema/validation/rules/field"
+	"github.com/teamkeel/keel/schema/validation/rules/model"
+	"github.com/teamkeel/keel/schema/validation/rules/role"
 )
 
 type Validator struct {
@@ -25,62 +30,62 @@ func NewValidator(asts []*parser.AST) *Validator {
 type validationFunc func(asts []*parser.AST) errorhandling.ValidationErrors
 
 var validatorFuncs = []validationFunc{
-	// actions.ActionTypesRule,
-	// actions.ValidActionInputTypesRule,
-	// actions.ValidActionInputLabelRule,
-	// actions.ValidArbitraryFunctionReturns,
-	// actions.ActionModelInputsRule,
-	// actions.CreateOperationNoReadInputsRule,
-	// actions.CreateOperationRequiredFieldsRule,
+	actions.ActionTypesRule,
+	actions.ValidActionInputTypesRule,
+	actions.ValidActionInputLabelRule,
+	actions.ValidArbitraryFunctionReturns,
+	actions.ActionModelInputsRule,
+	actions.CreateOperationNoReadInputsRule,
+	actions.CreateOperationRequiredFieldsRule,
 
-	// field.ValidFieldTypesRule,
-	// field.UniqueFieldNamesRule,
-	// field.FieldNamesMaxLengthRule,
+	field.ValidFieldTypesRule,
+	field.UniqueFieldNamesRule,
+	field.FieldNamesMaxLengthRule,
 
-	// model.ModelNamesMaxLengthRule,
+	model.ModelNamesMaxLengthRule,
 
 	// attribute.AttributeLocationsRule,
 	// attribute.SetWhereAttributeRule,
 	// attribute.ValidateFieldAttributeRule,
 	// attribute.UniqueAttributeArgsRule,
 
-	// role.UniqueRoleNamesRule,
+	role.UniqueRoleNamesRule,
 
-	// api.UniqueAPINamesRule,
-	// api.NamesCorrespondToModels,
+	api.UniqueAPINamesRule,
+	api.NamesCorrespondToModels,
 }
 
 var visitorFuncs = []VisitorFunc{
-	// DuplicateModelNames,
-	// DuplicateEnumNames,
-	// DuplicateMessageNames,
-	// DuplicateActionNames,
-	// DuplicateJobNames,
-	// CasingRule,
-	// NameClashesRule,
-	// RecursiveFieldsRule,
-	// RequiredFieldOfSameModelType,
-	// UnusedInputRule,
-	// NotMutableInputs,
-	// CreateNestedInputIsMany,
-	// ConflictingInputsRule,
-	// UniqueLookup,
-	// InvalidWithUsage,
-	// UniqueAttributeRule,
-	// OrderByAttributeRule,
-	// SortableAttributeRule,
-	// SetAttributeExpressionRules,
-	// Jobs,
-	// MessagesRule,
-	// ScheduleAttributeRule,
-	// DuplicateInputsRule,
-	// PermissionsAttributeArguments,
-	// FunctionDisallowedBehavioursRule,
-	// OnAttributeRule,
-	// EmbedAttributeRule,
-	// RelationshipsRules,
-	// ApiModelActions,
-	// StudioFeatures,
+	DuplicateModelNames,
+	DuplicateEnumNames,
+	DuplicateMessageNames,
+	DuplicateActionNames,
+	DuplicateJobNames,
+	CasingRule,
+	NameClashesRule,
+	RecursiveFieldsRule,
+	RequiredFieldOfSameModelType,
+	UnusedInputRule,
+	NotMutableInputs,
+	CreateNestedInputIsMany,
+	ConflictingInputsRule,
+	UniqueLookup,
+	InvalidWithUsage,
+	UniqueAttributeRule,
+	OrderByAttributeRule,
+	SortableAttributeRule,
+	SetAttributeExpressionRules,
+	Jobs,
+	MessagesRule,
+	ScheduleAttributeRule,
+	DuplicateInputsRule,
+	PermissionsAttributeArguments,
+	FunctionDisallowedBehavioursRule,
+	OnAttributeRule,
+	EmbedAttributeRule,
+	RelationshipsRules,
+	ApiModelActions,
+	StudioFeatures,
 }
 
 // RunAllValidators will run all the validators available. If withWarnings is true, it will return the errors even if

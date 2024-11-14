@@ -64,7 +64,9 @@ func UnusedInputRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 			}
 
 			for _, operand := range expr.Operands() {
-				delete(unused, operand.Ident.ToString())
+				if operand.Ident != nil {
+					delete(unused, operand.Ident.ToString())
+				}
 			}
 		},
 	}

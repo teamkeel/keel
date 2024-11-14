@@ -2,10 +2,18 @@ model Foo {
   fields {
     f1 Boolean
     f2 Text
+    f3 Text
+    someId ID
   }
   actions {
     create createPost() with (f2) {
       @set(foo.f1 = true)
+    }
+    update updatePost1(id) with (f1) {
+      @set(foo.f3 = f1)
+    }
+    update updatePost2(id) {
+      @set(post.someId = id)
     }
   }
 }

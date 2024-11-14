@@ -4,16 +4,18 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
-	"github.com/teamkeel/keel/expressions/attributes/expressions"
+
+	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 )
 
-func NewSetExpressionParser(schema []*parser.AST, targetField *parser.Ident, model *parser.ModelNode) (*expressions.ExpressionParser, error) {
-
+func NewSetExpressionParser(schema []*parser.AST, targetField *parser.Ident, action *parser.ActionNode) (*expressions.ExpressionParser, error) {
 	if len(targetField.Fragments) < 2 {
 		return nil, fmt.Errorf("lhs operand incorrect")
 	}
+
+	model := query.ActionModel(schema, action.Name.Value)
 
 	if targetField.Fragments[0].Fragment != strcase.ToLowerCamel(model.Name.Value) {
 		return nil, fmt.Errorf("wrong model")
@@ -31,12 +33,25 @@ func NewSetExpressionParser(schema []*parser.AST, targetField *parser.Ident, mod
 		}
 	}
 
-	p, err := expressions.NewParser(
+	opts := []expressions.Option{
 		expressions.WithCtx(),
 		expressions.WithSchema(schema),
-		expressions.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
-		expressions.WithReturnTypeAssertion(field.Type.Value))
+		expressions.WithReturnTypeAssertion(field.Type.Value),
+	}
 
+	// Add filter inputs as variables
+	for _, f := range action.Inputs {
+		t := query.ResolveInputType(schema, f, model, action)
+		opts = append(opts, expressions.WithVariable(f.Name(), t))
+	}
+
+	// Add with inputs as variables
+	for _, f := range action.With {
+		t := query.ResolveInputType(schema, f, model, action)
+		opts = append(opts, expressions.WithVariable(f.Name(), t))
+	}
+
+	p, err := expressions.NewParser(opts...)
 	if err != nil {
 		return nil, err
 	}

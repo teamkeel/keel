@@ -274,9 +274,9 @@ type Expression struct {
 type Term struct {
 	node.Node
 
-	LHS      *Factor   `@@`
+	Factor   *Factor   `@@`
 	Operator *Operator `( @@`
-	RHS      *Term     `  @@ )?`
+	Term     *Term     `  @@ )?`
 }
 
 type Factor struct {
@@ -297,6 +297,7 @@ type Function struct {
 type ExpressionPart interface {
 	String() string
 	Operands() []*Operand
+	AstNode() node.Node
 }
 
 func (e *Expression) String() string {
@@ -307,10 +308,10 @@ func (e *Expression) String() string {
 }
 
 func (t *Term) String() string {
-	if t.Operator == nil || t.RHS == nil {
-		return t.LHS.String()
+	if t.Operator == nil || t.Term == nil {
+		return t.Factor.String()
 	}
-	return fmt.Sprintf("%s %s %s", t.LHS.String(), t.Operator.ToString(), t.RHS.String())
+	return fmt.Sprintf("%s %s %s", t.Factor.String(), t.Operator.ToString(), t.Term.String())
 }
 
 func (f *Factor) String() string {
@@ -349,10 +350,10 @@ func (e *Expression) Operands() []*Operand {
 }
 
 func (t *Term) Operands() []*Operand {
-	if t.Operator == nil || t.RHS == nil {
-		return t.LHS.Operands()
+	if t.Operator == nil || t.Term == nil {
+		return t.Factor.Operands()
 	}
-	return append(t.LHS.Operands(), t.RHS.Operands()...)
+	return append(t.Factor.Operands(), t.Term.Operands()...)
 }
 
 func (f *Factor) Operands() []*Operand {
@@ -381,6 +382,26 @@ func (f *Function) Operands() []*Operand {
 		args = append(args, arg.Operands()...)
 	}
 	return args
+}
+
+func (e *Expression) AstNode() node.Node {
+	return e.Node
+}
+
+func (t *Term) AstNode() node.Node {
+	return t.Node
+}
+
+func (f *Factor) AstNode() node.Node {
+	return f.Node
+}
+
+func (g *Grouped) AstNode() node.Node {
+	return g.Node
+}
+
+func (f *Function) AstNode() node.Node {
+	return f.Node
 }
 
 // type ExpressionNode struct {

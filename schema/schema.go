@@ -412,26 +412,19 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 					Name: parser.AttributeNameToken{
 						Value: parser.AttributeDefault,
 					},
-					// TODO: rework
-					// Arguments: []*parser.AttributeArgumentNode{
-					// 	{
-					// 		Expression: &parser.Expression{
-					// 			Or: []*parser.OrExpression{
-					// 				{
-					// 					And: []*parser.ConditionWrap{
-					// 						{
-					// 							Condition: &parser.Condition{
-					// 								LHS: &parser.Operand{
-					// 									False: true,
-					// 								},
-					// 							},
-					// 						},
-					// 					},
-					// 				},
-					// 			},
-					// 		},
-					// 	},
-					// },
+					Arguments: []*parser.AttributeArgumentNode{
+						{
+							Expression: &parser.Expression{
+								LHS: &parser.Term{
+									Factor: &parser.Factor{
+										Operand: &parser.Operand{
+											False: true,
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},
@@ -785,24 +778,17 @@ func (scm *Builder) emailUniqueAttributeNode() *parser.AttributeNode {
 		},
 		Arguments: []*parser.AttributeArgumentNode{
 			{
-				// TODO: rework
-				// Expression: &parser.Expression{
-				// 	Or: []*parser.OrExpression{
-				// 		{
-				// 			And: []*parser.ConditionWrap{
-				// 				{
-				// 					Condition: &parser.Condition{
-				// 						LHS: &parser.Operand{
-				// 							Array: &parser.Array{
-				// 								Values: operands,
-				// 							},
-				// 						},
-				// 					},
-				// 				},
-				// 			},
-				// 		},
-				// 	},
-				// },
+				Expression: &parser.Expression{
+					LHS: &parser.Term{
+						Factor: &parser.Factor{
+							Operand: &parser.Operand{
+								Array: &parser.Array{
+									Values: operands,
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}

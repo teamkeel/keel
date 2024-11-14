@@ -60,7 +60,17 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 				inputs = writeInputs
 			}
 
-			for _, operand := range expr.Operands() {
+			operands := []*parser.Operand{}
+			switch n.Name.Value {
+			case parser.AttributeWhere:
+				operands = expr.Operands()
+			case parser.AttributeSet:
+				if expr.LHS != nil && expr.LHS.Factor != nil {
+					operands = expr.LHS.Factor.Operands()
+				}
+			}
+
+			for _, operand := range operands {
 				if operand.Ident == nil {
 					continue
 				}
