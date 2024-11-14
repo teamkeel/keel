@@ -23,7 +23,6 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 		@permission(thing: CEILING(UPPER(author.name) == UPPER("Keel") or (5 < ((1 + 1) * author.age and true))))
 
 	}`})
-	//assert.Equal(t, "permission", schema.Declarations[0].Model.Sections[2].Attribute.Name.Value)
 
 	attr1 := schema.Declarations[0].Model.Sections[1].Attribute
 	fmt.Println(attr1.Arguments[0].Expression.String())
@@ -36,15 +35,6 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 
 	attr4 := schema.Declarations[0].Model.Sections[4].Attribute
 	fmt.Println(attr4.Arguments[0].Expression.String())
-
-	// attr5 := schema.Declarations[0].Model.Sections[5].Attribute
-	// fmt.Println(attr5.(parser.PermissionAttributeNode).Arguments[0].Expression.String())
-
-	//	fmt.Sprintln(attr1.Type())
-	//
-	// fmt.Printf("%s", *s)
-	// assert.Equal(t, "sd", *arg1.Expression.Value)
-	// assert.Equal(t, "expression", arg1.Label.Value)
 }
 
 func parse(t *testing.T, s *reader.SchemaFile) *parser.AST {

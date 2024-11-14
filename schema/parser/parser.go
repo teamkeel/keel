@@ -404,35 +404,6 @@ func (f *Function) AstNode() node.Node {
 	return f.Node
 }
 
-// type ExpressionNode struct {
-// 	node.Node
-
-// 	Value  *string
-// 	Tokens []*lexer.Token
-// }
-
-// func (b *ExpressionNode) Parse(lex *lexer.PeekingLexer) error {
-// 	expression := ""
-// 	tokens := []*lexer.Token{}
-
-// 	for {
-// 		token := lex.Peek()
-
-// 		if token.Value == ")" || token.Value == "," { // TODO: terribly crude
-// 			break
-// 		}
-
-// 		expression += lex.Next().Value
-// 		tokens = append(tokens, token)
-// 	}
-
-// 	*b = ExpressionNode{
-// 		Value: &expression,
-// 	}
-
-// 	return nil
-// }
-
 type ActionNode struct {
 	node.Node
 
@@ -563,8 +534,6 @@ func Parse(s *reader.SchemaFile) (*AST, error) {
 
 	parser, err := participle.Build[AST](
 		participle.Lexer(lex),
-		//participle.Union[AttributeNode](WhereAttributeNode{}, PermissionAttributeNode{}),
-		//	participle.Union[AbsExpression](BinaryExpression{}, Operand{}, FunctionCall{}, Grouped{}),
 		participle.Elide("Comment"))
 	if err != nil {
 		return nil, err
