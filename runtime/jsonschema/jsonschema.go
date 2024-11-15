@@ -566,6 +566,19 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 			}
 			prop.Required = []string{"key", "filename", "contentType", "size", "url"}
 		}
+	case proto.Type_TYPE_TIME_PERIOD:
+		d := "day"
+		w := "week"
+		m := "month"
+		y := "year"
+
+		prop.Type = "object"
+		prop.Properties = map[string]JSONSchema{
+			"period":   {Type: "string", Enum: []*string{&d, &w, &m, &y}},
+			"offset":   {Type: "number"},
+			"complete": {Type: "boolean"},
+		}
+		prop.Required = []string{"period", "offset", "complete"}
 	}
 
 	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL && t.Type != proto.Type_TYPE_UNION) {

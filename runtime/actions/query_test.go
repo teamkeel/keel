@@ -14,6 +14,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/runtime/types"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/trace"
@@ -849,6 +850,106 @@ var testCases = []testCase{
 			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), 50},
+	},
+	{
+		name: "list_op_implicit_input_timestamp_beforePeriod-this-week",
+		keelSchema: `
+			model Thing {
+				actions {
+					list listThings(createdAt)
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		actionName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"createdAt": map[string]any{
+					"beforePeriod": types.TimePeriod{
+						Period:   "week",
+						Offset:   0,
+						Complete: true,
+					},
+				},
+			},
+		},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" < date_trunc('week', NOW())) AS totalCount
+			FROM
+				"thing"
+			WHERE
+				"thing"."created_at" < date_trunc('week', NOW())
+			ORDER BY
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
+		name: "list_op_implicit_input_timestamp_afterPeriod",
+		keelSchema: `
+			model Thing {
+				actions {
+					list listThings(createdAt)
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		actionName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"createdAt": map[string]any{
+					"afterPeriod": types.TimePeriod{
+						Period:   "day",
+						Offset:   -10,
+						Complete: false,
+					},
+				},
+			},
+		},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" > (NOW() + INTERVAL '-10 day')) AS totalCount
+			FROM
+				"thing"
+			WHERE
+				"thing"."created_at" > (NOW() + INTERVAL '-10 day')
+			ORDER BY
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+
+	{
+		name: "list_op_implicit_input_timestamp_equalsPeriod",
+		keelSchema: `
+			model Thing {
+				actions {
+					list listThings(createdAt)
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		actionName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"createdAt": map[string]any{
+					"equalsPeriod": types.TimePeriod{
+						Period:   "month",
+						Offset:   -1,
+						Complete: true,
+					},
+				},
+			},
+		},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" > date_trunc('month', NOW() + INTERVAL '-1 month') AND "thing"."created_at" < (date_trunc('month', NOW() + INTERVAL '-1 month') + INTERVAL '1 month')) AS totalCount
+			FROM
+				"thing"
+			WHERE
+				"thing"."created_at" > date_trunc('month', NOW() + INTERVAL '-1 month') AND "thing"."created_at" < (date_trunc('month', NOW() + INTERVAL '-1 month') + INTERVAL '1 month')
+			ORDER BY
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
 	},
 	{
 		name: "list_op_expression_text_in",

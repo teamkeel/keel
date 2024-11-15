@@ -124,6 +124,19 @@ func (o *QueryOperand) IsArrayValue() bool {
 	return true
 }
 
+func (o *QueryOperand) IsTimePeriodValue() bool {
+	if !o.IsValue() {
+		return false
+	}
+
+	switch o.value.(type) {
+	case types.TimePeriod:
+		return true
+	}
+
+	return false
+}
+
 func (o *QueryOperand) IsNull() bool {
 	return o.query == nil && o.table == "" && o.column == "" && o.value == nil && o.raw == ""
 }
@@ -131,6 +144,19 @@ func (o *QueryOperand) IsNull() bool {
 func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	switch {
 	case o.IsValue() && !o.IsArrayValue():
+		if o.IsTimePeriodValue() {
+			tp, _ := o.value.(types.TimePeriod)
+			sql := "NOW()"
+			if tp.Offset != 0 {
+				sql = fmt.Sprintf("NOW() + INTERVAL '%d %s'", tp.Offset, tp.Period)
+			}
+			if tp.Complete {
+				sql = fmt.Sprintf("date_trunc('%s', %s)", tp.Period, sql)
+			} else {
+				sql = fmt.Sprintf("(%s)", sql)
+			}
+			return sql
+		}
 		return "?"
 	case o.IsValue() && o.IsArrayValue():
 		operands := []string{}
@@ -182,6 +208,9 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 func (o *QueryOperand) toSqlArgs() []any {
 	switch {
 	case o.IsValue() && !o.IsArrayValue():
+		if o.IsTimePeriodValue() {
+			return nil
+		}
 		return []any{o.value}
 	case o.IsValue() && o.IsArrayValue():
 		// Safely map rhs slice to []any
@@ -1362,11 +1391,11 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 				template = fmt.Sprintf("NOT %s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
 			}
 		}
-	case LessThan, Before:
+	case LessThan, Before, BeforePeriod:
 		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
 	case LessThanEquals, OnOrBefore:
 		template = fmt.Sprintf("%s <= %s", lhsSqlOperand, rhsSqlOperand)
-	case GreaterThan, After:
+	case GreaterThan, After, AfterPeriod:
 		template = fmt.Sprintf("%s > %s", lhsSqlOperand, rhsSqlOperand)
 	case GreaterThanEquals, OnOrAfter:
 		template = fmt.Sprintf("%s >= %s", lhsSqlOperand, rhsSqlOperand)
@@ -1398,7 +1427,12 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		template = fmt.Sprintf("%s < ALL(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AllGreaterThanEquals, AllOnOrAfter:
 		template = fmt.Sprintf("%s <= ALL(%s)", rhsSqlOperand, lhsSqlOperand)
-
+	case EqualsPeriod:
+		if !rhs.IsTimePeriodValue() {
+			return "", nil, fmt.Errorf("operand: %v is not a valid time period", rhs)
+		}
+		tp, _ := rhs.value.(types.TimePeriod)
+		template = fmt.Sprintf("%s > %s AND %s < %s", lhsSqlOperand, rhsSqlOperand, lhsSqlOperand, fmt.Sprintf("(%s + INTERVAL '1 %s')", rhsSqlOperand, tp.Period))
 	default:
 		return "", nil, fmt.Errorf("operator: %v is not yet supported", operator)
 	}

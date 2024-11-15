@@ -47,6 +47,24 @@ var sortDirectionType = graphql.NewEnum(graphql.EnumConfig{
 	},
 })
 
+var timePeriodType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "TimePeriod",
+	Fields: graphql.Fields{
+		"offset": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.Int),
+			Description: "Offset for this time period.",
+		},
+		"complete": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.Boolean),
+			Description: "If the period should be complete; i.e. this whole week.",
+		},
+		"period": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "The period size.",
+		},
+	},
+})
+
 const (
 	iso8601Layout = "2006-01-02T15:04:05.00Z0700"
 )
@@ -314,18 +332,19 @@ var dateType = graphql.NewObject(graphql.ObjectConfig{
 })
 
 var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
-	proto.Type_TYPE_ID:       graphql.ID,
-	proto.Type_TYPE_STRING:   graphql.String,
-	proto.Type_TYPE_INT:      graphql.Int,
-	proto.Type_TYPE_DECIMAL:  graphql.Float,
-	proto.Type_TYPE_BOOL:     graphql.Boolean,
-	proto.Type_TYPE_DATETIME: timestampType,
-	proto.Type_TYPE_DATE:     dateType,
-	proto.Type_TYPE_SECRET:   graphql.String,
-	proto.Type_TYPE_MARKDOWN: graphql.String,
-	proto.Type_TYPE_FILE:     fileType,
-	proto.Type_TYPE_ANY:      anyType,
-	proto.Type_TYPE_VECTOR:   graphql.NewList(graphql.Float),
+	proto.Type_TYPE_ID:          graphql.ID,
+	proto.Type_TYPE_STRING:      graphql.String,
+	proto.Type_TYPE_INT:         graphql.Int,
+	proto.Type_TYPE_DECIMAL:     graphql.Float,
+	proto.Type_TYPE_BOOL:        graphql.Boolean,
+	proto.Type_TYPE_DATETIME:    timestampType,
+	proto.Type_TYPE_DATE:        dateType,
+	proto.Type_TYPE_SECRET:      graphql.String,
+	proto.Type_TYPE_MARKDOWN:    graphql.String,
+	proto.Type_TYPE_FILE:        fileType,
+	proto.Type_TYPE_ANY:         anyType,
+	proto.Type_TYPE_VECTOR:      graphql.NewList(graphql.Float),
+	proto.Type_TYPE_TIME_PERIOD: timePeriodType,
 }
 
 var timestampInputType = iso8601Type
@@ -348,6 +367,7 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_MARKDOWN:       graphql.String,
 	proto.Type_TYPE_VECTOR:         graphql.NewList(graphql.Float),
 	proto.Type_TYPE_FILE:           graphql.String,
+	proto.Type_TYPE_TIME_PERIOD:    timePeriodType,
 }
 
 // for fields where the underlying source is a date/datetime

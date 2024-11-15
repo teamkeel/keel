@@ -65,6 +65,8 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 				input[f.Name], err = parseItem(v, true, toFloat)
 			case proto.Type_TYPE_UNION, proto.Type_TYPE_ANY, proto.Type_TYPE_MODEL, proto.Type_TYPE_OBJECT:
 				return input, nil
+			case proto.Type_TYPE_TIME_PERIOD:
+				input[f.Name], err = parseItem(v, f.Type.Repeated, toTimePeriod)
 			case proto.Type_TYPE_FILE:
 				if forFunctions {
 					input[f.Name], err = parseItem(v, f.Type.Repeated, toInlineFileForFunctions)
@@ -188,5 +190,30 @@ var toInlineFileForFunctions = func(value any) (map[string]any, error) {
 		}, nil
 	default:
 		return nil, fmt.Errorf("incompatible type %T parsing to inline file for functions", t)
+	}
+}
+
+var toTimePeriod = func(value any) (types.TimePeriod, error) {
+	switch t := value.(type) {
+	case map[string]interface{}:
+		p, ok := t["period"].(string)
+		if !ok {
+			return types.TimePeriod{}, fmt.Errorf("incompatible period for time period: %v", t["period"])
+		}
+		o, ok := t["offset"].(float64)
+		if !ok {
+			return types.TimePeriod{}, fmt.Errorf("incompatible offset for time period: %v", t["offset"])
+		}
+		c, ok := t["complete"].(bool)
+		if !ok {
+			return types.TimePeriod{}, fmt.Errorf("incompatible complete for time period: %v", t["complete"])
+		}
+		return types.TimePeriod{
+			Period:   p,
+			Offset:   int(o),
+			Complete: c,
+		}, nil
+	default:
+		return types.TimePeriod{}, fmt.Errorf("incompatible type %T parsing to time period", t)
 	}
 }

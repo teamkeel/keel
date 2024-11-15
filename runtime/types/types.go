@@ -20,3 +20,9 @@ type Timestamp struct {
 func (t Timestamp) Value() (driver.Value, error) {
 	return t.Time, nil
 }
+
+type TimePeriod struct {
+	Period   string
+	Offset   int
+	Complete bool
+}
