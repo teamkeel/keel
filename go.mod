@@ -1,6 +1,6 @@
 module github.com/teamkeel/keel
 
-go 1.20
+go 1.23
 
 require (
 	github.com/99designs/gqlgen v0.17.16
