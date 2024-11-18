@@ -5,24 +5,23 @@ import (
 
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 // AttributeArgumentsRules tests for the very basic rules around required arguments for attributes
 func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
-	var model *parser.ModelNode
+	//var model *parser.ModelNode
 	var field *parser.FieldNode
 	var action *parser.ActionNode
 	var job *parser.JobNode
 
 	return Visitor{
-		EnterModel: func(m *parser.ModelNode) {
-			model = m
-		},
-		LeaveModel: func(*parser.ModelNode) {
-			model = nil
-		},
+		// EnterModel: func(m *parser.ModelNode) {
+		// 	model = m
+		// },
+		// LeaveModel: func(*parser.ModelNode) {
+		// 	model = nil
+		// },
 		EnterAction: func(a *parser.ActionNode) {
 			action = a
 		},
@@ -126,15 +125,6 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 
 					hint = `the @permission attribute at the model level accepts either an expression or a roles argument, and an actions argument, for e.g. @permission(expression: ctx.isAuthenticated, actions: [get, list])`
 				}
-			case parser.AttributeEmbed:
-				template = map[string]bool{}
-				for _, f := range query.ModelFields(model) {
-					if query.Model(asts, f.Type.Value) != nil {
-						template[f.Name.Value] = false
-					}
-				}
-
-				hint = `the @embed attribute accepts any number of model fields, for e.g. @embed(author, publisher)`
 			default:
 				return
 			}
