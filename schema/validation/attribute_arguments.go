@@ -2,7 +2,6 @@ package validation
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
@@ -44,6 +43,7 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 		},
 		EnterAttribute: func(attribute *parser.AttributeNode) {
 			var template map[string]bool
+			var hint string
 			validationErrors := []*errorhandling.ValidationError{}
 
 			switch attribute.Name.Value {
@@ -52,18 +52,26 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 				template = map[string]bool{
 					"": false,
 				}
+
+				hint = "the @default attribute takes a literal value - e.g. @default(1) - or no argument which will use the default value for this type"
 			case parser.AttributeFunction:
 				// No arguments
 				template = map[string]bool{}
+
+				hint = "the @function attribute does not accept any arguments"
 			case parser.AttributeUnique:
 				if field == nil {
 					// A composite unique requires a single argument
 					template = map[string]bool{
 						"": true,
 					}
+
+					hint = "the @unique attribute at the model level is used to define composite uniques, for e.g. @unique(supplier, sku)"
 				} else {
 					// A field-level unique has no arguments
 					template = map[string]bool{}
+
+					hint = "the @unique attribute at the field level does not accept any arguments"
 				}
 			case parser.AttributeWhere:
 				// Optional expression argument
@@ -71,28 +79,52 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 					"":           false,
 					"expression": false,
 				}
-			case parser.AttributeRelation, parser.AttributeSet, parser.AttributeSchedule:
+
+				hint = "the @where attribute accepts an expression as an argument, for e.g. @where(order.status == Status.Complete)"
+			case parser.AttributeRelation:
 				// A single required argument without a label
 				template = map[string]bool{
 					"": true,
 				}
+
+				hint = "the @relation attribute accepts the field name on the related model, for e.g. @relation(author)"
+			case parser.AttributeSet:
+				// A single required argument without a label
+				template = map[string]bool{
+					"": true,
+				}
+
+				hint = "the @set attribute sets a field on this model to some literal, for e.g. @set(order.status = Status.New)"
+			case parser.AttributeSchedule:
+				// A single required argument without a label
+				template = map[string]bool{
+					"": true,
+				}
+
+				hint = `the @schedule attribute accepts cron syntax as a string, for e.g. @schedule("every weekday at 9am")`
 			case parser.AttributePermission:
 				if action != nil {
 					template = map[string]bool{
 						"expression": false,
 						"roles":      false,
 					}
+
+					hint = `the @permission attribute at the action level can accept either an expression or a roles argument, for e.g. @permission(expression: ctx.isAuthenticated)`
 				} else if job != nil {
 					template = map[string]bool{
 						"expression": false,
 						"roles":      false,
 					}
+
+					hint = `the @permission attribute in jobs can accept either an expression or a roles argument, for e.g. @permission(expression: ctx.isAuthenticated)`
 				} else {
 					template = map[string]bool{
 						"expression": false,
 						"roles":      false,
 						"actions":    false,
 					}
+
+					hint = `the @permission attribute at the model level accepts either an expression or a roles argument, and an actions argument, for e.g. @permission(expression: ctx.isAuthenticated, actions: [get, list])`
 				}
 			case parser.AttributeEmbed:
 				template = map[string]bool{}
@@ -101,6 +133,8 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 						template[f.Name.Value] = false
 					}
 				}
+
+				hint = `the @embed attribute accepts any number of model fields, for e.g. @embed(author, publisher)`
 			default:
 				return
 			}
@@ -109,8 +143,6 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 			for k := range template {
 				expected = append(expected, k)
 			}
-
-			hint := fmt.Sprintf("the signature for this @%s attribute is (%s)", attribute.Name.Value, strings.Join(expected, ", "))
 
 			// copy a map
 			arguments := make(map[string]bool)
@@ -192,22 +224,6 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 			}
 
 			errs.AppendErrors(validationErrors)
-
 		},
 	}
 }
-
-// E024:
-// message: "{{ .ActualArgsCount }} argument(s) provided to @{{ .AttributeName }} but expected {{ .ExpectedArgsCount }}"
-// hint: '{{ if eq .Signature "()" }}@{{ .AttributeName }} doesn''t accept any arguments{{ else }}the signature of this attribute is @{{ .AttributeName }}{{ .Signature }}{{ end }}'
-
-// func makeWhereExpressionError(t errorhandling.ErrorType, message string, hint string, node node.ParserNode) *errorhandling.ValidationError {
-// 	return errorhandling.NewValidationErrorWithDetails(
-// 		t,
-// 		errorhandling.ErrorDetails{
-// 			Message: message,
-// 			Hint:    hint,
-// 		},
-// 		node,
-// 	)
-// }

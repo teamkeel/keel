@@ -197,15 +197,8 @@ func validateActionAttributeWithExpression(
 	action *parser.ActionNode,
 	attr *parser.AttributeNode,
 ) (errs errorhandling.ValidationErrors) {
-	//argLength := len(attr.Arguments)
-
-	// if argLength == 1 {
-	// 	// Attribute required arguments are validated elsewhere
-	// 	return
-	// }
 
 	expr := attr.Arguments[0].Expression
-
 	rules := []expression.Rule{}
 
 	if attr.Name.Value == parser.AttributeSet {
