@@ -14,11 +14,13 @@ type TimePeriod struct {
 }
 
 // Parse will return a TimePeriodStruct from the given expression. Expressions follow the following form
-// {this/last/next} {n}? {complete}? {hour/day/week/month/year}
+//   - {this/last/next} {n}? {complete}? {second(s)/minute(s)/hour(s)/day(s)/week(s)/month(s)/year(s)}
+//   - or one of the supported shorthand values: now/today/tomorrow/yesterday
 //
+// Expression rules:
 // * if `this`, then there is no n and no complete; i.e. `this month`, `this day`, `this year`
 // * n = positive integer
-// * complete is optional
+// * `complete“ is optional
 // * period can be either plural or singular version
 func Parse(expression any) (TimePeriod, error) {
 	switch t := expression.(type) {
@@ -69,13 +71,13 @@ func toTokens(expr string) tokens {
 func (t tokens) period() string {
 	p := strings.TrimSuffix(strings.ToLower(t[len(t)-1]), "s")
 	switch p {
-	case "hour", "day", "week", "month", "year":
+	case "second", "minute", "hour", "day", "week", "month", "year":
 		return p
 	}
 	return ""
 }
 
-func (t tokens) attribute() string {
+func (t tokens) direction() string {
 	if len(t) == 0 {
 		return ""
 	}
@@ -93,7 +95,7 @@ func (t tokens) attribute() string {
 
 // complete
 func (t tokens) complete() bool {
-	if t.attribute() == "this" {
+	if t.direction() == "this" {
 		return true
 	}
 	if len(t) < 3 {
@@ -104,7 +106,7 @@ func (t tokens) complete() bool {
 }
 
 func (t tokens) value() int {
-	switch t.attribute() {
+	switch t.direction() {
 	case "this":
 		return 1
 	case "next", "last":
@@ -116,7 +118,7 @@ func (t tokens) value() int {
 }
 
 func (t tokens) offset() int {
-	switch t.attribute() {
+	switch t.direction() {
 	case "next":
 		if t.complete() {
 			return 1
@@ -146,7 +148,7 @@ func (t tokens) validate() error {
 		return nil
 	}
 
-	a := t.attribute()
+	a := t.direction()
 	if a == "" {
 		return fmt.Errorf("time period expression should start with this/next/last")
 	}
