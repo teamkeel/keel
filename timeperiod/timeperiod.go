@@ -54,7 +54,7 @@ func toTokens(expr string) tokens {
 // period will extract the period from the tokens, will return "" if no valid period. The period should always be at the
 // end of the expression
 func (t tokens) period() string {
-	p := strings.ToLower(strings.TrimSuffix(t[len(t)-1], "s"))
+	p := strings.TrimSuffix(strings.ToLower(t[len(t)-1]), "s")
 	switch p {
 	case "hour", "day", "week", "month", "year":
 		return p
@@ -132,6 +132,9 @@ func (t tokens) validate() error {
 		}
 		if len(t) > 4 || (len(t) == 4 && !t.complete()) {
 			return fmt.Errorf("time period expression should be in the form of `{next/last} {n}? {complete}? {day/week/month/year}`")
+		}
+		if t.value() < 1 {
+			return fmt.Errorf("time period expression should have a positive amount of periods; e.g, `next 5 days")
 		}
 	default:
 		return fmt.Errorf("time period expression should start with this/next/last")

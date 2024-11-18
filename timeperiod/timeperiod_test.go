@@ -93,7 +93,7 @@ func Test_parseString(t *testing.T) {
 			},
 		},
 		{
-			expr: "next 5 months",
+			expr: "next 5 MONTHS",
 			want: TimePeriod{
 				Period:   "month",
 				Offset:   0,
@@ -103,6 +103,18 @@ func Test_parseString(t *testing.T) {
 		},
 		{
 			expr:    "this complete day",
+			wantErr: true,
+		},
+		{
+			expr:    "next something wrong",
+			wantErr: true,
+		},
+		{
+			expr:    "next 0 days",
+			wantErr: true,
+		},
+		{
+			expr:    "next -10 months",
 			wantErr: true,
 		},
 	}
