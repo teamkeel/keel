@@ -552,7 +552,7 @@ func makeDateQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "beforePeriod",
+			Name:        "beforeRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,
@@ -560,7 +560,7 @@ func makeDateQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "afterPeriod",
+			Name:        "afterRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,
@@ -568,7 +568,7 @@ func makeDateQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "equalsPeriod",
+			Name:        "equalsRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,
@@ -629,7 +629,7 @@ func makeDateArrayQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "beforePeriod",
+			Name:        "beforeRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,
@@ -637,7 +637,7 @@ func makeDateArrayQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "afterPeriod",
+			Name:        "afterRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,
@@ -645,7 +645,7 @@ func makeDateArrayQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "equalsPeriod",
+			Name:        "equalsRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,
@@ -674,7 +674,7 @@ func makeTimestampQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "beforePeriod",
+			Name:        "beforeRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,
@@ -682,7 +682,7 @@ func makeTimestampQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "afterPeriod",
+			Name:        "afterRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,
@@ -690,7 +690,7 @@ func makeTimestampQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "equalsPeriod",
+			Name:        "equalsRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,
@@ -719,7 +719,7 @@ func makeTimestampArrayQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "beforePeriod",
+			Name:        "beforeRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,
@@ -727,7 +727,7 @@ func makeTimestampArrayQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "afterPeriod",
+			Name:        "afterRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,
@@ -735,7 +735,7 @@ func makeTimestampArrayQueryInputMessage(name string) *proto.Message {
 		},
 		{
 			MessageName: name,
-			Name:        "equalsPeriod",
+			Name:        "equalsRelative",
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_STRING,

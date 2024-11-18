@@ -1343,7 +1343,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			rhs.value = "%%" + rhs.value.(string)
 		case Contains, NotContains:
 			rhs.value = "%%" + rhs.value.(string) + "%%"
-		case BeforePeriod, AfterPeriod, EqualsPeriod:
+		case BeforeRelative, AfterRelative, EqualsRelative:
 			timePeriod, err := timeperiod.Parse(rhs.value)
 			// if we're filtering by time period expressions, turn rhs operand into a timeperiod struct
 			if err != nil {
@@ -1436,20 +1436,30 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case AllGreaterThanEquals, AllOnOrAfter:
 		template = fmt.Sprintf("%s <= ALL(%s)", rhsSqlOperand, lhsSqlOperand)
 
-	case BeforePeriod:
+	/* All relative date operators */
+	case BeforeRelative:
 		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
-	case AfterPeriod:
+	case AfterRelative:
 		if !rhs.IsTimePeriodValue() {
 			return "", nil, fmt.Errorf("operand: %+v is not a valid time period", rhs)
 		}
 		tp, _ := rhs.value.(timeperiod.TimePeriod)
-		template = fmt.Sprintf("%s > %s", lhsSqlOperand, fmt.Sprintf("(%s + INTERVAL '%d %s')", rhsSqlOperand, tp.Value, tp.Period))
-	case EqualsPeriod:
+		end := rhsSqlOperand
+		if tp.Value != 0 {
+			end = fmt.Sprintf("(%s + INTERVAL '%d %s')", end, tp.Value, tp.Period)
+		}
+		template = fmt.Sprintf("%s > %s", lhsSqlOperand, end)
+	case EqualsRelative:
 		if !rhs.IsTimePeriodValue() {
 			return "", nil, fmt.Errorf("operand: %+v is not a valid time period", rhs)
 		}
 		tp, _ := rhs.value.(timeperiod.TimePeriod)
-		template = fmt.Sprintf("%s > %s AND %s < %s", lhsSqlOperand, rhsSqlOperand, lhsSqlOperand, fmt.Sprintf("(%s + INTERVAL '%d %s')", rhsSqlOperand, tp.Value, tp.Period))
+		end := rhsSqlOperand
+		if tp.Value != 0 {
+			end = fmt.Sprintf("(%s + INTERVAL '%d %s')", end, tp.Value, tp.Period)
+		}
+
+		template = fmt.Sprintf("%s > %s AND %s < %s", lhsSqlOperand, rhsSqlOperand, lhsSqlOperand, end)
 	default:
 		return "", nil, fmt.Errorf("operator: %v is not yet supported", operator)
 	}

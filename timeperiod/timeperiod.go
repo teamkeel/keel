@@ -36,6 +36,19 @@ func parseString(expr string) (TimePeriod, error) {
 		return TimePeriod{}, fmt.Errorf("invalid time period expression: %w", err)
 	}
 
+	if tkns.isShorthand() {
+		switch tkns[0] {
+		case "now":
+			return TimePeriod{}, nil
+		case "today":
+			return parseString("this day")
+		case "tomorrow":
+			return parseString("next complete day")
+		case "yesterday":
+			return parseString("last complete day")
+		}
+	}
+
 	return TimePeriod{
 		Period:   tkns.period(),
 		Offset:   tkns.offset(),
@@ -115,7 +128,24 @@ func (t tokens) offset() int {
 	return 0
 }
 
+func (t tokens) isShorthand() bool {
+	if len(t) != 1 {
+		return false
+	}
+
+	switch t[0] {
+	case "now", "today", "tomorrow", "yesterday":
+		return true
+	}
+
+	return false
+}
+
 func (t tokens) validate() error {
+	if t.isShorthand() {
+		return nil
+	}
+
 	a := t.attribute()
 	if a == "" {
 		return fmt.Errorf("time period expression should start with this/next/last")

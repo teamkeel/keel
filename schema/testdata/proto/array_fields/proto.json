@@ -806,7 +806,7 @@
         },
         {
           "messageName": "DateArrayAllQueryInput",
-          "name": "beforePeriod",
+          "name": "beforeRelative",
           "type": {
             "type": "TYPE_STRING"
           },
@@ -814,7 +814,7 @@
         },
         {
           "messageName": "DateArrayAllQueryInput",
-          "name": "afterPeriod",
+          "name": "afterRelative",
           "type": {
             "type": "TYPE_STRING"
           },
@@ -822,7 +822,7 @@
         },
         {
           "messageName": "DateArrayAllQueryInput",
-          "name": "equalsPeriod",
+          "name": "equalsRelative",
           "type": {
             "type": "TYPE_STRING"
           },
@@ -883,7 +883,7 @@
         },
         {
           "messageName": "DateArrayAnyQueryInput",
-          "name": "beforePeriod",
+          "name": "beforeRelative",
           "type": {
             "type": "TYPE_STRING"
           },
@@ -891,7 +891,7 @@
         },
         {
           "messageName": "DateArrayAnyQueryInput",
-          "name": "afterPeriod",
+          "name": "afterRelative",
           "type": {
             "type": "TYPE_STRING"
           },
@@ -899,7 +899,7 @@
         },
         {
           "messageName": "DateArrayAnyQueryInput",
-          "name": "equalsPeriod",
+          "name": "equalsRelative",
           "type": {
             "type": "TYPE_STRING"
           },
@@ -971,7 +971,7 @@
         },
         {
           "messageName": "TimestampArrayAllQueryInput",
-          "name": "beforePeriod",
+          "name": "beforeRelative",
           "type": {
             "type": "TYPE_STRING"
           },
@@ -979,7 +979,7 @@
         },
         {
           "messageName": "TimestampArrayAllQueryInput",
-          "name": "afterPeriod",
+          "name": "afterRelative",
           "type": {
             "type": "TYPE_STRING"
           },
@@ -987,7 +987,7 @@
         },
         {
           "messageName": "TimestampArrayAllQueryInput",
-          "name": "equalsPeriod",
+          "name": "equalsRelative",
           "type": {
             "type": "TYPE_STRING"
           },
@@ -1016,7 +1016,7 @@
         },
         {
           "messageName": "TimestampArrayAnyQueryInput",
-          "name": "beforePeriod",
+          "name": "beforeRelative",
           "type": {
             "type": "TYPE_STRING"
           },
@@ -1024,7 +1024,7 @@
         },
         {
           "messageName": "TimestampArrayAnyQueryInput",
-          "name": "afterPeriod",
+          "name": "afterRelative",
           "type": {
             "type": "TYPE_STRING"
           },
@@ -1032,7 +1032,7 @@
         },
         {
           "messageName": "TimestampArrayAnyQueryInput",
-          "name": "equalsPeriod",
+          "name": "equalsRelative",
           "type": {
             "type": "TYPE_STRING"
           },

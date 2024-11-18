@@ -102,6 +102,42 @@ func Test_parseString(t *testing.T) {
 			},
 		},
 		{
+			expr: "now",
+			want: TimePeriod{
+				Period:   "",
+				Offset:   0,
+				Value:    0,
+				Complete: false,
+			},
+		},
+		{
+			expr: "today",
+			want: TimePeriod{
+				Period:   "day",
+				Offset:   0,
+				Value:    1,
+				Complete: true,
+			},
+		},
+		{
+			expr: "tomorrow",
+			want: TimePeriod{
+				Period:   "day",
+				Offset:   1,
+				Value:    1,
+				Complete: true,
+			},
+		},
+		{
+			expr: "yesterday",
+			want: TimePeriod{
+				Period:   "day",
+				Offset:   -1,
+				Value:    1,
+				Complete: true,
+			},
+		},
+		{
 			expr:    "this complete day",
 			wantErr: true,
 		},
