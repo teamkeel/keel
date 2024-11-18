@@ -6,7 +6,7 @@ model Profile {
 
     actions {
         get getProfile(username) {
-            //expect-error:40:47:E020:'context' not found
+            //expect-error:20:56:AttributeExpressionError:undeclared reference to 'context' (in container '')
             @where(profile.identity == context.identity)
         }
     }

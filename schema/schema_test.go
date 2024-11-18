@@ -72,13 +72,13 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
-		if !strings.Contains(tc.Name(), "set_") {
+		if !strings.Contains(tc.Name(), "operation_where_") {
 			continue
 		}
 
-		if tc.Name() != "set_attribute_backlink_repeated_lhs_fields.keel" {
-			continue
-		}
+		// if tc.Name() != "set_attribute_backlink_repeated_lhs_fields.keel" {
+		// 	continue
+		// }
 
 		testCase := tc
 		if testCase.IsDir() {
