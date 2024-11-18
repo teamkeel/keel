@@ -98,7 +98,11 @@ func (p *typeProvider) FindStructFieldType(structType, fieldName string) (*types
 		}
 
 		if field.Repeated || parentIsArray {
-			t = cel.ObjectType(field.Type.Value+"[]", traits.ContainerType)
+			if query.Model(p.schema, field.Type.Value) != nil {
+				t = cel.ObjectType(field.Type.Value+"[]", traits.ContainerType)
+			} else {
+				t = cel.ListType(t)
+			}
 		}
 
 		return &types.FieldType{Type: t}, true

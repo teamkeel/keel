@@ -14,6 +14,7 @@ type ExpressionParser struct {
 	expectedReturnType *types.Type
 }
 
+// NewParser creates a new expression parser with all the options applied
 func NewParser(options ...Option) (*ExpressionParser, error) {
 	typeProvider := NewTypeProvider()
 

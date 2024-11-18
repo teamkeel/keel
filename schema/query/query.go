@@ -73,6 +73,23 @@ func Model(asts []*parser.AST, name string) *parser.ModelNode {
 	return nil
 }
 
+func Action(asts []*parser.AST, name string) *parser.ActionNode {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Model != nil {
+				for _, sec := range decl.Model.Sections {
+					for _, action := range sec.Actions {
+						if action.Name.Value == name {
+							return action
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func ActionModel(asts []*parser.AST, name string) *parser.ModelNode {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {

@@ -3,7 +3,6 @@ package parser
 import (
 	"errors"
 
-	"github.com/alecthomas/participle/v2"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/node"
 )
@@ -25,6 +24,14 @@ type Operator struct {
 func (o *Operator) ToString() string {
 	if o == nil {
 		return ""
+	}
+
+	if o.Symbol == "and" {
+		return "&&"
+	}
+
+	if o.Symbol == "or" {
+		return "||"
 	}
 
 	return o.Symbol
@@ -59,19 +66,19 @@ var LogicalOperators = []string{
 	OperatorNotIn,
 }
 
-func ParseExpression(source string) (*Expression, error) {
-	parser, err := participle.Build[Expression]()
-	if err != nil {
-		return nil, err
-	}
+// func ParseExpression(source string) (*Expression, error) {
+// 	parser, err := participle.Build[Expression]()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	expr, err := parser.ParseString("", source)
-	if err != nil {
-		return nil, err
-	}
+// 	expr, err := parser.ParseString("", source)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return expr, nil
-}
+// 	return expr, nil
+// }
 
 var ErrNotValue = errors.New("expression is not a single value")
 

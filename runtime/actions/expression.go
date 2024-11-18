@@ -43,41 +43,41 @@ func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []str
 // Include a filter (where condition) on the query based on an expression.
 func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Expression, args map[string]any) error {
 	// Only use parenthesis if there are multiple conditions
-	useParenthesis := len(expression.Or) > 1
-	for _, or := range expression.Or {
-		if len(or.And) > 1 {
-			useParenthesis = true
-			break
-		}
-	}
+	// useParenthesis := len(expression.Or) > 1
+	// for _, or := range expression.Or {
+	// 	if len(or.And) > 1 {
+	// 		useParenthesis = true
+	// 		break
+	// 	}
+	// }
 
-	if useParenthesis {
-		query.OpenParenthesis()
-	}
+	// if useParenthesis {
+	// 	query.OpenParenthesis()
+	// }
 
-	for _, or := range expression.Or {
-		for _, and := range or.And {
-			if and.Expression != nil {
-				err := query.whereByExpression(scope, and.Expression, args)
-				if err != nil {
-					return err
-				}
-			}
+	// for _, or := range expression.Or {
+	// 	for _, and := range or.And {
+	// 		if and.Expression != nil {
+	// 			err := query.whereByExpression(scope, and.Expression, args)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 		}
 
-			if and.Condition != nil {
-				err := query.whereByCondition(scope, and.Condition, args)
-				if err != nil {
-					return err
-				}
-			}
-			query.And()
-		}
-		query.Or()
-	}
+	// 		if and.Condition != nil {
+	// 			err := query.whereByCondition(scope, and.Condition, args)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 		}
+	// 		query.And()
+	// 	}
+	// 	query.Or()
+	// }
 
-	if useParenthesis {
-		query.CloseParenthesis()
-	}
+	// if useParenthesis {
+	// 	query.CloseParenthesis()
+	// }
 
 	return nil
 }

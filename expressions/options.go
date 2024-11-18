@@ -120,16 +120,18 @@ func WithComparisonOperators() Option {
 						cel.Overload(fmt.Sprintf("equals_%s", strcase.ToLowerCamel(model.Name.Value)), argTypes(modelType, modelType), types.BoolType),
 					))
 			}
-
 		}
 
 		p.celEnv, err = p.celEnv.Extend(
 			cel.Function(operators.Equals,
 				cel.Overload("equals_string", argTypes(types.StringType, types.StringType), types.BoolType),
 				cel.Overload("equals_int", argTypes(types.IntType, types.IntType), types.BoolType),
-				cel.Overload("equals_uint", argTypes(types.UintType, types.UintType), types.BoolType),
 				cel.Overload("equals_double", argTypes(types.DoubleType, types.DoubleType), types.BoolType),
 				cel.Overload("equals_boolean", argTypes(types.BoolType, types.BoolType), types.BoolType),
+				cel.Overload("equals_string_list", argTypes(types.NewListType(types.StringType), types.NewListType(types.StringType)), types.BoolType),
+				cel.Overload("equals_int_list", argTypes(types.NewListType(types.IntType), types.NewListType(types.IntType)), types.BoolType),
+				cel.Overload("equals_double_list", argTypes(types.NewListType(types.DoubleType), types.NewListType(types.DoubleType)), types.BoolType),
+				cel.Overload("equals_bool_list", argTypes(types.NewListType(types.BoolType), types.NewListType(types.BoolType)), types.BoolType),
 			),
 			cel.Function(operators.NotEquals,
 				cel.Overload(overloads.NotEquals, argTypes(paramA, paramA), types.BoolType)),

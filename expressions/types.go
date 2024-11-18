@@ -17,6 +17,8 @@ func mapType(schema []*parser.AST, typeName string) (*types.Type, error) {
 		return types.StringType, nil
 	case parser.FieldTypeNumber:
 		return types.IntType, nil
+	case parser.FieldTypeDecimal:
+		return types.DoubleType, nil
 	case parser.FieldTypeBoolean:
 		return types.BoolType, nil
 	default:
