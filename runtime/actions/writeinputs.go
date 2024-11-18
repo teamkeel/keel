@@ -39,13 +39,13 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
-		assignment, err := expression.ToAssignmentExpression()
+		operand, assignment, err := expression.ToAssignmentExpression()
 		if err != nil {
 			return err
 		}
 
-		lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, assignment.LHS)
-		rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, assignment.RHS)
+		lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, operand)
+		rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, assignment.Factor.Operand)
 
 		if !lhsResolver.IsModelDbColumn() {
 			return errors.New("lhs operand of assignment expression must be a model field")

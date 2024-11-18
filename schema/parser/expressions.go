@@ -3,6 +3,7 @@ package parser
 import (
 	"errors"
 
+	"github.com/alecthomas/participle/v2"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/node"
 )
@@ -66,19 +67,19 @@ var LogicalOperators = []string{
 	OperatorNotIn,
 }
 
-// func ParseExpression(source string) (*Expression, error) {
-// 	parser, err := participle.Build[Expression]()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func ParseExpression(source string) (*Expression, error) {
+	parser, err := participle.Build[Expression]()
+	if err != nil {
+		return nil, err
+	}
 
-// 	expr, err := parser.ParseString("", source)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	expr, err := parser.ParseString("", source)
+	if err != nil {
+		return nil, err
+	}
 
-// 	return expr, nil
-// }
+	return expr, nil
+}
 
 var ErrNotValue = errors.New("expression is not a single value")
 
@@ -107,7 +108,7 @@ func (expr *Expression) IsAssignment() bool {
 	return err == ErrNotAssignmentOperand || err == ErrNotAssignmentOperator || err == ErrNotAssignmentExpression
 }
 
-func (expr *Expression) ToAssignmentExpression() (*Operand, ExpressionPart, error) {
+func (expr *Expression) ToAssignmentExpression() (*Operand, *Term, error) {
 	if expr.LHS == nil || expr.LHS.Factor == nil || expr.LHS.Factor.Operand == nil {
 		return nil, nil, ErrNotAssignmentOperand
 	}
