@@ -21,7 +21,7 @@ func Test_parseString(t *testing.T) {
 			},
 		},
 		{
-			expr: "this year",
+			expr: "this    year  ",
 			want: TimePeriod{
 				Period:   "year",
 				Offset:   0,
@@ -39,7 +39,7 @@ func Test_parseString(t *testing.T) {
 			},
 		},
 		{
-			expr: "next day",
+			expr: "  next day",
 			want: TimePeriod{
 				Period:   "day",
 				Offset:   0,
@@ -129,7 +129,7 @@ func Test_parseString(t *testing.T) {
 			},
 		},
 		{
-			expr: "yesterday",
+			expr: "yesterday     ",
 			want: TimePeriod{
 				Period:   "day",
 				Offset:   -1,
@@ -138,7 +138,7 @@ func Test_parseString(t *testing.T) {
 			},
 		},
 		{
-			expr:    "this complete day",
+			expr:    "this  complete day",
 			wantErr: true,
 		},
 		{
@@ -151,6 +151,10 @@ func Test_parseString(t *testing.T) {
 		},
 		{
 			expr:    "next -10 months",
+			wantErr: true,
+		},
+		{
+			expr:    "today 3 months",
 			wantErr: true,
 		},
 	}
