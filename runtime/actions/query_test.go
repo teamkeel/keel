@@ -851,6 +851,93 @@ var testCases = []testCase{
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), 50},
 	},
 	{
+		name: "list_op_implicit_input_timestamp_beforeRelative-this-week",
+		keelSchema: `
+			model Thing {
+				actions {
+					list listThings(createdAt)
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		actionName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"createdAt": map[string]any{
+					"beforeRelative": "this week",
+				},
+			},
+		},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" < date_trunc('week', NOW())) AS totalCount
+			FROM
+				"thing"
+			WHERE
+				"thing"."created_at" < date_trunc('week', NOW())
+			ORDER BY
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
+		name: "list_op_implicit_input_timestamp_afterRelative",
+		keelSchema: `
+			model Thing {
+				actions {
+					list listThings(createdAt)
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		actionName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"createdAt": map[string]any{
+					"afterRelative": "now",
+				},
+			},
+		},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" > (NOW())) AS totalCount
+			FROM
+				"thing"
+			WHERE
+				"thing"."created_at" > (NOW())
+			ORDER BY
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
+		name: "list_op_implicit_input_timestamp_equalsRelative",
+		keelSchema: `
+			model Thing {
+				actions {
+					list listThings(createdAt)
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		actionName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"createdAt": map[string]any{
+					"equalsRelative": "this month",
+				},
+			},
+		},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" > date_trunc('month', NOW()) AND "thing"."created_at" < (date_trunc('month', NOW()) + INTERVAL '1 month')) AS totalCount
+			FROM
+				"thing"
+			WHERE
+				"thing"."created_at" > date_trunc('month', NOW()) AND "thing"."created_at" < (date_trunc('month', NOW()) + INTERVAL '1 month')
+			ORDER BY
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
 		name: "list_op_expression_text_in",
 		keelSchema: `
 			model Thing {
