@@ -197,7 +197,6 @@ func validateActionAttributeWithExpression(
 	action *parser.ActionNode,
 	attr *parser.AttributeNode,
 ) (errs errorhandling.ValidationErrors) {
-
 	expr := attr.Arguments[0].Expression
 	rules := []expression.Rule{}
 

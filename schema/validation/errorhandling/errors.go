@@ -117,9 +117,7 @@ func (v *ValidationErrors) AppendError(e *ValidationError) {
 }
 
 func (v *ValidationErrors) AppendErrors(errs []*ValidationError) {
-	for _, e := range errs {
-		v.Errors = append(v.Errors, e)
-	}
+	v.Errors = append(v.Errors, errs...)
 }
 
 func (v *ValidationErrors) Concat(verrs ValidationErrors) {
