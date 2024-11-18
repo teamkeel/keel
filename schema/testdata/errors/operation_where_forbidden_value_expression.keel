@@ -6,7 +6,7 @@ model Profile {
 
     actions {
         get getProfile(username) {
-            //expect-error:20:36:E061:Non-boolean single operand conditions such as 'profile.identity' not permitted on @where
+            //expect-error:20:36:AttributeExpressionError:expression expected to resolve to type 'bool' but it is 'Identity'
             @where(profile.identity)
         }
     }

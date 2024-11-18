@@ -6,7 +6,7 @@ model Profile {
 
     actions {
         update updateProfile(id) with (username) {
-            //expect-error:37:38:E022:Operator '=' not permitted on @where
+            //expect-error:20:51:AttributeExpressionError:Syntax error: token recognition error at: '= '
             @where(profile.identity = ctx.identity)
         }
     }

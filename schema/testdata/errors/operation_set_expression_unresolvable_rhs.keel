@@ -5,7 +5,7 @@ model Profile {
 
     actions {
         create createProfile() {
-            //expect-error:37:44:E020:'context' not found
+            //expect-error:37:53:AttributeExpressionError:undeclared reference to 'context' (in container '')
             @set(profile.username = context.identity)
         }
     }

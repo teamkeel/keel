@@ -1,0 +1,32 @@
+model Post {
+    fields {
+        name Text?
+        published Boolean?
+        identity Identity?
+    }
+
+    actions {
+        create createPost1() {
+            //expect-error:28:30:AttributeExpressionError:Operator '==' not permitted on @set
+            @set(post.name == "Keel")
+        }
+        create createPost2() {
+            //expect-error:30:44:AttributeExpressionError:undeclared reference to '_+_' (in container '')
+            @set(post.name = "Keel" + "son")
+        }
+        create createPost3() {
+            //expect-error:30:33:AttributeExpressionError:expression expected to resolve to type 'string'
+            @set(post.name = 123)
+        }
+        create createPost4() {
+            //expect-error:18:27:AttributeExpressionError:The @set attribute cannot be a value condition and must express an assignment
+            @set(post.name =)
+        }
+    }
+}
+
+model Publisher {
+    fields {
+        name Text
+    }
+}

@@ -7,7 +7,7 @@ model Record {
 
     actions {
         create createRecordWithChildren() {
-            //expect-error:31:32:E030:ctx.identity.user.records.owner is an array. Only 'in' or 'not in' can be used
+            //expect-error:33:64:AttributeExpressionError:expression expected to resolve to type 'User' but it is 'User[]'
             @set(record.owner = ctx.identity.user.records.owner)
         }
     }

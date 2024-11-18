@@ -5,7 +5,6 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"github.com/teamkeel/keel/schema/validation/rules/actions"
 	"github.com/teamkeel/keel/schema/validation/rules/api"
-	"github.com/teamkeel/keel/schema/validation/rules/attribute"
 	"github.com/teamkeel/keel/schema/validation/rules/field"
 	"github.com/teamkeel/keel/schema/validation/rules/model"
 	"github.com/teamkeel/keel/schema/validation/rules/role"
@@ -45,10 +44,10 @@ var validatorFuncs = []validationFunc{
 
 	model.ModelNamesMaxLengthRule,
 
-	attribute.AttributeLocationsRule,
-	attribute.SetWhereAttributeRule,
-	attribute.ValidateFieldAttributeRule,
-	attribute.UniqueAttributeArgsRule,
+	// attribute.AttributeLocationsRule,
+	// attribute.SetWhereAttributeRule,
+	// attribute.ValidateFieldAttributeRule,
+	// attribute.UniqueAttributeArgsRule,
 
 	role.UniqueRoleNamesRule,
 
@@ -76,6 +75,7 @@ var visitorFuncs = []VisitorFunc{
 	OrderByAttributeRule,
 	SortableAttributeRule,
 	SetAttributeExpressionRules,
+	WhereAttributeExpressionRules,
 	Jobs,
 	MessagesRule,
 	ScheduleAttributeRule,

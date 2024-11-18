@@ -43,9 +43,9 @@ type ModelNode struct {
 type ModelSectionNode struct {
 	node.Node
 
-	Fields    []*FieldNode   `( "fields" "{" @@* "}"`
-	Actions   []*ActionNode  `| "actions" "{" @@* "}"`
-	Attribute *AttributeNode `| @@)`
+	Fields    []*FieldNode   `( ("fields" "{" @@* "}")`
+	Actions   []*ActionNode  `| ("actions" "{" @@* "}")`
+	Attribute *AttributeNode `| @@ )`
 }
 
 type NameNode struct {
@@ -105,8 +105,8 @@ type APINode struct {
 type APISectionNode struct {
 	node.Node
 
-	Models    []*APIModelNode `("models" "{" @@* "}"`
-	Attribute *AttributeNode  `| @@)`
+	Models    []*APIModelNode `( "models" "{" @@* "}"`
+	Attribute *AttributeNode  `| @@ )`
 }
 
 type APIModelNode struct {
@@ -165,7 +165,7 @@ type JobSectionNode struct {
 	node.Node
 
 	Inputs    []*JobInputNode `( "inputs" "{" @@* "}"`
-	Attribute *AttributeNode  `| @@)`
+	Attribute *AttributeNode  `| @@ )`
 }
 
 type JobInputNode struct {
@@ -177,6 +177,11 @@ type JobInputNode struct {
 	Optional bool     `| @( "?" ))?`
 }
 
+// type AttributeNode interface {
+// 	value()
+// 	Type() string
+// }
+
 // Attributes:
 // - @permission
 // - @set
@@ -186,7 +191,7 @@ type JobInputNode struct {
 // - @default
 // - @orderBy
 // - @sortable
-// - @on
+// // - @on
 type AttributeNode struct {
 	node.Node
 
@@ -199,11 +204,204 @@ type AttributeNode struct {
 	Arguments []*AttributeArgumentNode `(( "(" @@ ( "," @@ )* ")" ) | ( "(" ")" ) )?`
 }
 
+// type PermissionAttributeNode struct {
+// 	node.Node
+
+// 	Arguments []*AttributeArgumentNode `"@" "permission" "(" @@ ( "," @@ )* ")"`
+// }
+
+// func (PermissionAttributeNode) value()       {}
+// func (PermissionAttributeNode) Type() string { return AttributePermission }
+
+// type WhereAttributeNode struct {
+// 	node.Node
+// 	//Arguments string `"@" "where" "(" @Ident ")"`
+// 	Arguments *AttributeArgumentNode `"@" "where" "(" @@ ")"`
+// }
+
+// func (WhereAttributeNode) value()       {}
+// func (WhereAttributeNode) Type() string { return AttributeWhere }
+
+// type SetAttributeNode struct {
+// 	node.Node
+// 	//Arguments string `"@" "where" "(" @Ident ")"`
+// 	Arguments *AttributeArgumentNode `"@" "set" "(" @@ ")"`
+// }
+
+// func (SetAttributeNode) value()       {}
+// func (SetAttributeNode) Type() string { return AttributeSet }
+
+// type OrderByAttributeNode struct {
+// 	node.Node
+// 	//Arguments string `"@" "where" "(" @Ident ")"`
+// 	Arguments []*AttributeArgumentNode `"@" "orderBy" "(" @@ ( "," @@ )* ")"`
+// }
+
+// func (OrderByAttributeNode) value()       {}
+// func (OrderByAttributeNode) Type() string { return AttributeSet }
+
 type AttributeArgumentNode struct {
 	node.Node
 
 	Label      *NameNode   `(@@ ":")?`
 	Expression *Expression `@@`
+}
+
+type ExpressionNode struct {
+	node.Node
+
+	Value *string
+}
+
+func (e *ExpressionNode) Operands() {
+
+}
+
+type Grouped struct {
+	node.Node
+
+	Exp *Expression `"(" @@ ")"`
+}
+
+type Expression struct {
+	node.Node
+
+	LHS      *Term       `@@`
+	Operator *Operator   `( @@`
+	RHS      *Expression `@@ )?`
+}
+
+type Term struct {
+	node.Node
+
+	Factor   *Factor   `@@`
+	Operator *Operator `( @@`
+	Term     *Term     `  @@ )?`
+}
+
+type Factor struct {
+	node.Node
+
+	Grouped  *Grouped  `  @@`
+	Function *Function `| @@`
+	Operand  *Operand  `| @@`
+}
+
+type Function struct {
+	node.Node
+
+	Name      *NameNode     `@@`
+	Arguments []*Expression `"(" (@@ ( "," @@ )* )? ")"`
+}
+
+type ExpressionPart interface {
+	String() string
+	Operands() []*Operand
+	AstNode() node.Node
+}
+
+func (e *Expression) String() string {
+	if e.Operator == nil || e.RHS == nil {
+		return e.LHS.String()
+	}
+	return fmt.Sprintf("%s %s %s", e.LHS.String(), e.Operator.ToString(), e.RHS.String())
+}
+
+func (t *Term) String() string {
+	if t.Operator == nil || t.Term == nil {
+		return t.Factor.String()
+	}
+	return fmt.Sprintf("%s %s %s", t.Factor.String(), t.Operator.ToString(), t.Term.String())
+}
+
+func (f *Factor) String() string {
+	switch {
+	case f.Grouped != nil:
+		return f.Grouped.String()
+	case f.Function != nil:
+		return f.Function.String()
+	case f.Operand != nil:
+		return f.Operand.ToString()
+	default:
+		return ""
+	}
+}
+
+func (g *Grouped) String() string {
+	if g.Exp == nil {
+		return "()"
+	}
+	return fmt.Sprintf("(%s)", g.Exp.String())
+}
+
+func (f *Function) String() string {
+	args := make([]string, len(f.Arguments))
+	for i, arg := range f.Arguments {
+		args[i] = arg.String()
+	}
+	return fmt.Sprintf("%s(%s)", f.Name.Value, strings.Join(args, ", "))
+}
+
+func (e *Expression) Operands() []*Operand {
+	if e.Operator == nil || e.RHS == nil {
+		return e.LHS.Operands()
+	}
+	return append(e.LHS.Operands(), e.RHS.Operands()...)
+}
+
+func (t *Term) Operands() []*Operand {
+	if t.Operator == nil || t.Term == nil {
+		return t.Factor.Operands()
+	}
+	return append(t.Factor.Operands(), t.Term.Operands()...)
+}
+
+func (f *Factor) Operands() []*Operand {
+	switch {
+	case f.Grouped != nil:
+		return f.Grouped.Operands()
+	case f.Function != nil:
+		return f.Function.Operands()
+	case f.Operand != nil:
+		return []*Operand{f.Operand}
+	default:
+		return []*Operand{}
+	}
+}
+
+func (g *Grouped) Operands() []*Operand {
+	if g.Exp == nil {
+		return []*Operand{}
+	}
+	return g.Exp.Operands()
+}
+
+func (f *Function) Operands() []*Operand {
+	args := make([]*Operand, len(f.Arguments))
+	for _, arg := range f.Arguments {
+		args = append(args, arg.Operands()...)
+	}
+	return args
+}
+
+func (e *Expression) AstNode() node.Node {
+	return e.Node
+}
+
+func (t *Term) AstNode() node.Node {
+	return t.Node
+}
+
+func (f *Factor) AstNode() node.Node {
+	return f.Node
+}
+
+func (g *Grouped) AstNode() node.Node {
+	return g.Node
+}
+
+func (f *Function) AstNode() node.Node {
+	return f.Node
 }
 
 type ActionNode struct {
@@ -334,7 +532,9 @@ func Parse(s *reader.SchemaFile) (*AST, error) {
 				scanner.ScanComments
 	})
 
-	parser, err := participle.Build[AST](participle.Lexer(lex), participle.Elide("Comment"))
+	parser, err := participle.Build[AST](
+		participle.Lexer(lex),
+		participle.Elide("Comment"))
 	if err != nil {
 		return nil, err
 	}

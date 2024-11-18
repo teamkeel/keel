@@ -1860,26 +1860,26 @@ func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoAction
 			perm.ActionName = wrapperspb.String(protoAction.Name)
 			protoAction.Permissions = append(protoAction.Permissions, perm)
 		case parser.AttributeWhere:
-			expr, _ := attribute.Arguments[0].Expression.ToString()
+			expr := attribute.Arguments[0].Expression.String()
 			where := &proto.Expression{Source: expr}
 			protoAction.WhereExpressions = append(protoAction.WhereExpressions, where)
 		case parser.AttributeSet:
-			expr, _ := attribute.Arguments[0].Expression.ToString()
+			expr := attribute.Arguments[0].Expression.String()
 			set := &proto.Expression{Source: expr}
 			protoAction.SetExpressions = append(protoAction.SetExpressions, set)
 		case parser.AttributeValidate:
-			expr, _ := attribute.Arguments[0].Expression.ToString()
+			expr := attribute.Arguments[0].Expression.String()
 			set := &proto.Expression{Source: expr}
 			protoAction.ValidationExpressions = append(protoAction.ValidationExpressions, set)
 		case parser.AttributeEmbed:
 			for _, arg := range attribute.Arguments {
-				expr, _ := arg.Expression.ToString()
+				expr := arg.Expression.String()
 				protoAction.ResponseEmbeds = append(protoAction.ResponseEmbeds, expr)
 			}
 		case parser.AttributeOrderBy:
 			for _, arg := range attribute.Arguments {
 				field := arg.Label.Value
-				direction, _ := arg.Expression.ToString()
+				direction := arg.Expression.String()
 				orderBy := &proto.OrderByStatement{
 					FieldName: field,
 					Direction: mapToOrderByDirection(direction),
@@ -1902,7 +1902,7 @@ func (scm *Builder) applyFieldAttributes(parserField *parser.FieldNode, protoFie
 			defaultValue := &proto.DefaultValue{}
 			if len(fieldAttribute.Arguments) == 1 {
 				expr := fieldAttribute.Arguments[0].Expression
-				source, _ := expr.ToString()
+				source := expr.String()
 				defaultValue.Expression = &proto.Expression{
 					Source: source,
 				}
@@ -1937,7 +1937,7 @@ func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.AttributeN
 	for _, arg := range attr.Arguments {
 		switch arg.Label.Value {
 		case "expression":
-			expr, _ := arg.Expression.ToString()
+			expr := arg.Expression.String()
 			pr.Expression = &proto.Expression{Source: expr}
 		case "roles":
 			value, _ := arg.Expression.ToValue()

@@ -6,7 +6,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/attributes"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -42,67 +42,102 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				return
 			}
 
-			if len(attribute.Arguments) != 1 || attribute.Arguments[0].Expression == nil {
-				return
-			}
+			expr := attribute.Arguments[0].Expression
 
-			conditions := attribute.Arguments[0].Expression.Conditions()
-
-			if len(conditions) > 1 {
+			if expr.LHS == nil || expr.LHS.Operator == nil || expr.LHS.Term == nil {
 				errs.AppendError(makeSetExpressionError(
-					"A @set attribute can only consist of a single assignment expression",
-					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-					attribute.Arguments[0].Expression,
-				))
-				return
-			}
-
-			expressionContext := expressions.ExpressionContext{
-				Model:     model,
-				Attribute: attribute,
-				Action:    action,
-			}
-
-			if conditions[0].Type() == parser.ValueCondition {
-				errs.AppendError(makeSetExpressionError(
+					errorhandling.AttributeExpressionError,
 					"The @set attribute cannot be a value condition and must express an assignment",
 					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-					conditions[0],
+					expr,
 				))
 				return
 			}
 
-			if conditions[0].Type() == parser.LogicalCondition {
+			if !lo.Contains(parser.AssignmentOperators, expr.LHS.Operator.Symbol) {
 				errs.AppendError(makeSetExpressionError(
-					"The @set attribute cannot be a logical condition and must express an assignment",
+					errorhandling.AttributeExpressionError,
+					fmt.Sprintf("Operator '%s' not permitted on @set", expr.LHS.Operator.Symbol),
 					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-					conditions[0],
+					expr.LHS.Operator,
 				))
 				return
 			}
 
-			// We resolve whether the actual fragments are valid idents in other validations,
-			// but we need to exit early here if they dont resolve.
-			resolver := expressions.NewConditionResolver(conditions[0], asts, &expressionContext)
-			_, _, err := resolver.Resolve()
-			if err != nil {
-				return
-			}
-
-			lhs := conditions[0].LHS
-
-			if lhs.Ident == nil {
+			operand, assignmentExpression, err := attribute.Arguments[0].Expression.ToAssignmentExpression()
+			switch err {
+			case parser.ErrNotAssignmentOperand:
 				errs.AppendError(makeSetExpressionError(
+					errorhandling.AttributeExpressionError,
 					"The @set attribute can only be used to set model fields",
 					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-					lhs,
+					expr,
+				))
+				return
+			case parser.ErrNotAssignmentOperator:
+				errs.AppendError(makeSetExpressionError(
+					errorhandling.AttributeExpressionError,
+					"The @set attribute expression must be an assignment expression",
+					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+					expr,
+				))
+				return
+			case parser.ErrNotAssignmentExpression:
+				errs.AppendError(makeSetExpressionError(
+					errorhandling.AttributeExpressionError,
+					"The @set attribute expression's requires a valid right-hand side expression",
+					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+					expr,
 				))
 				return
 			}
+
+			if operand.Ident == nil {
+				errs.AppendError(makeSetExpressionError(
+					errorhandling.AttributeExpressionError,
+					"The @set attribute can only be used to set model fields",
+					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+					operand,
+				))
+				return
+			}
+
+			// if len(conditions) > 1 {
+			// 	errs.AppendError(makeSetExpressionError(
+			// 		"A @set attribute can only consist of a single assignment expression",
+			// 		fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+			// 		attribute.Arguments[0].Expression,
+			// 	))
+			// 	return
+			// }
+
+			// expressionContext := expressions.ExpressionContext{
+			// 	Model:     model,
+			// 	Attribute: attribute,
+			// 	Action:    action,
+			// }
+
+			// if conditions[0].Type() == parser.ValueCondition {
+			// 	errs.AppendError(makeSetExpressionError(
+			// 		"The @set attribute cannot be a value condition and must express an assignment",
+			// 		fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+			// 		conditions[0],
+			// 	))
+			// 	return
+			// }
+
+			// TODO: replace with expression parser
+			// // We resolve whether the actual fragments are valid idents in other validations,
+			// // but we need to exit early here if they dont resolve.
+			// resolver := expressions.NewConditionResolver(conditions[0], asts, &expressionContext)
+			// _, _, err := resolver.Resolve()
+			// if err != nil {
+			// 	return
+			// }
 
 			// Drop the 'id' at the end if it exists
 			fragments := []*parser.IdentFragment{}
-			for _, fragment := range lhs.Ident.Fragments {
+			for _, fragment := range operand.Ident.Fragments {
 				if fragment.Fragment != "id" {
 					fragments = append(fragments, fragment)
 				}
@@ -118,9 +153,10 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 			for i, fragment := range fragments {
 				if i == 0 && fragment.Fragment != strcase.ToLowerCamel(model.Name.Value) {
 					errs.AppendError(makeSetExpressionError(
-						"The @set attribute can only be used to set model fields",
+						errorhandling.AttributeExpressionError,
+						fmt.Sprintf("The identifier '%s' does not exist or is not available to be set", operand.Ident.ToString()),
 						fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-						lhs,
+						operand.Ident,
 					))
 					return
 				}
@@ -128,6 +164,17 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				if i > 0 {
 					// get the next field in the relationship fragments
 					currentField = query.ModelField(currentModel, fragment.Fragment)
+
+					if currentField == nil {
+						errs.AppendError(makeSetExpressionError(
+							errorhandling.AttributeExpressionError,
+							fmt.Sprintf("The field '%s' does not exist", fragment.Fragment),
+							fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+							operand.Ident,
+						))
+						return
+					}
+
 					// currentModel will be null if this is not a model field
 					currentModel = query.Model(asts, currentField.Type.Value)
 				}
@@ -161,7 +208,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 							continue
 						}
 
-						if lhs.Ident.Fragments[i].Fragment == input.Type.Fragments[i-1].Fragment {
+						if operand.Ident.Fragments[i].Fragment == input.Type.Fragments[i-1].Fragment {
 							if input.Type.Fragments[i].Fragment != "id" {
 								withinWriteScope = true
 							}
@@ -172,9 +219,10 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 
 					if !withinWriteScope {
 						errs.AppendError(makeSetExpressionError(
+							errorhandling.AttributeExpressionError,
 							"Cannot set a field which is beyond scope of the data being created or updated",
 							"Use a field which is part of a model being created or updated within this action's inputs",
-							lhs,
+							operand,
 						))
 						return
 					}
@@ -202,9 +250,10 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 						if has {
 							if cut == ".id" || len(cut) == 0 {
 								errs.AppendError(makeSetExpressionError(
+									errorhandling.AttributeExpressionError,
 									fmt.Sprintf("Cannot associate to the %s model here as it is already provided as an action input.", currentModel.Name.Value),
 									"",
-									lhs,
+									operand,
 								))
 								return
 							}
@@ -215,6 +264,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				if i == len(fragments)-1 && currentModel == nil {
 					if lo.Contains(fieldsNotMutable, currentField.Name.Value) {
 						errs.AppendError(makeSetExpressionError(
+							errorhandling.AttributeExpressionError,
 							fmt.Sprintf("Cannot set the field '%s' as it is a built-in field and can only be mutated internally", currentField.Name.Value),
 							"Target another field on the model or remove the @set attribute entirely",
 							fragment,
@@ -223,13 +273,32 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 					}
 				}
 			}
+
+			p, err := attributes.NewSetExpressionParser(asts, operand.Ident, action)
+			if err != nil {
+
+			}
+			issues, err := p.Validate(assignmentExpression.String())
+
+			if len(issues) > 0 {
+				for _, issue := range issues {
+					errs.AppendError(makeSetExpressionError(
+						errorhandling.AttributeExpressionError,
+						issue,
+						fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+						assignmentExpression.AstNode(),
+					))
+				}
+				return
+			}
+
 		},
 	}
 }
 
-func makeSetExpressionError(message string, hint string, node node.ParserNode) *errorhandling.ValidationError {
+func makeSetExpressionError(t errorhandling.ErrorType, message string, hint string, node node.ParserNode) *errorhandling.ValidationError {
 	return errorhandling.NewValidationErrorWithDetails(
-		errorhandling.AttributeArgumentError,
+		t,
 		errorhandling.ErrorDetails{
 			Message: message,
 			Hint:    hint,

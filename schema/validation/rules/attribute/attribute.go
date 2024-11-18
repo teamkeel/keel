@@ -6,11 +6,9 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/formatting"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
-	"github.com/teamkeel/keel/schema/validation/rules/expression"
 )
 
 // attributeLocationsRule checks that attributes are used in valid places
@@ -114,147 +112,148 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 	return
 }
 
-func ValidateFieldAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, field := range query.ModelFields(model) {
-			for _, attr := range field.Attributes {
-				if attr.Name.Value != parser.AttributeDefault {
-					continue
-				}
+// func ValidateFieldAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+// 	for _, model := range query.Models(asts) {
+// 		for _, field := range query.ModelFields(model) {
+// 			for _, attr := range field.Attributes {
+// 				if attr.Name.Value != parser.AttributeDefault {
+// 					continue
+// 				}
 
-				errs.Concat(
-					validateModelFieldDefaultAttribute(asts, model, field, attr),
-				)
-			}
-		}
-	}
+// 				errs.Concat(
+// 					validateModelFieldDefaultAttribute(asts, model, field, attr),
+// 				)
+// 			}
+// 		}
+// 	}
 
-	return
-}
+// 	return
+// }
 
-func SetWhereAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
-			for _, attr := range action.Attributes {
-				if attr.Name.Value != parser.AttributeSet && attr.Name.Value != parser.AttributeWhere {
-					continue
-				}
+// func SetWhereAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+// 	for _, model := range query.Models(asts) {
+// 		for _, action := range query.ModelActions(model) {
+// 			for _, attr := range action.Attributes {
+// 				if attr.Name.Value != parser.AttributeSet && attr.Name.Value != parser.AttributeWhere {
+// 					continue
+// 				}
 
-				errs.Concat(
-					validateActionAttributeWithExpression(asts, model, action, attr),
-				)
-			}
-		}
-	}
+// 				errs.Concat(
+// 					validateActionAttributeWithExpression(asts, model, action, attr),
+// 				)
+// 			}
+// 		}
+// 	}
 
-	return
-}
-func validateModelFieldDefaultAttribute(
-	asts []*parser.AST,
-	model *parser.ModelNode,
-	field *parser.FieldNode,
-	attr *parser.AttributeNode,
-) (errs errorhandling.ValidationErrors) {
-	expressionContext := expressions.ExpressionContext{
-		Model:     model,
-		Attribute: attr,
-		Field:     field,
-	}
+// 	return
+// }
 
-	argLength := len(attr.Arguments)
+// func validateModelFieldDefaultAttribute(
+// 	asts []*parser.AST,
+// 	model *parser.ModelNode,
+// 	field *parser.FieldNode,
+// 	attr *parser.AttributeNode,
+// ) (errs errorhandling.ValidationErrors) {
+// 	expressionContext := expressions.ExpressionContext{
+// 		Model:     model,
+// 		Attribute: attr,
+// 		Field:     field,
+// 	}
 
-	if argLength == 0 {
-		err := expression.DefaultCanUseZeroValueRule(asts, attr, expressionContext)
-		for _, e := range err {
-			errs.AppendError(e)
-		}
-		return
-	}
+// 	argLength := len(attr.Arguments)
 
-	if argLength >= 2 {
-		errs.Append(
-			errorhandling.ErrorIncorrectArguments,
-			map[string]string{
-				"AttributeName":     attr.Name.Value,
-				"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
-				"ExpectedArgsCount": "1",
-				"Signature":         "(expression)",
-			},
-			attr,
-		)
-		return
-	}
+// 	if argLength == 0 {
+// 		err := expression.DefaultCanUseZeroValueRule(asts, attr, expressionContext)
+// 		for _, e := range err {
+// 			errs.AppendError(e)
+// 		}
+// 		return
+// 	}
 
-	expr := attr.Arguments[0].Expression
+// 	if argLength >= 2 {
+// 		errs.Append(
+// 			errorhandling.ErrorIncorrectArguments,
+// 			map[string]string{
+// 				"AttributeName":     attr.Name.Value,
+// 				"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
+// 				"ExpectedArgsCount": "1",
+// 				"Signature":         "(expression)",
+// 			},
+// 			attr,
+// 		)
+// 		return
+// 	}
 
-	rules := []expression.Rule{expression.ValueTypechecksRule}
+// 	expr := attr.Arguments[0].Expression
 
-	err := expression.ValidateExpression(
-		asts,
-		expr,
-		rules,
-		expressionContext,
-	)
-	for _, e := range err {
-		// TODO: remove case when expression.ValidateExpression returns correct type
-		errs.AppendError(e.(*errorhandling.ValidationError))
-	}
+// 	rules := []expression.Rule{expression.ValueTypechecksRule}
 
-	return
-}
+// 	err := expression.ValidateExpression(
+// 		asts,
+// 		expr,
+// 		rules,
+// 		expressionContext,
+// 	)
+// 	for _, e := range err {
+// 		// TODO: remove case when expression.ValidateExpression returns correct type
+// 		errs.AppendError(e.(*errorhandling.ValidationError))
+// 	}
 
-// validateActionAttributeWithExpression validates attributes that have the
-// signature @attributeName(expression) and exist inside an action. This applies
-// to @set, @where, and @validate attributes
-func validateActionAttributeWithExpression(
-	asts []*parser.AST,
-	model *parser.ModelNode,
-	action *parser.ActionNode,
-	attr *parser.AttributeNode,
-) (errs errorhandling.ValidationErrors) {
-	argLength := len(attr.Arguments)
+// 	return
+// }
 
-	if argLength == 0 || argLength >= 2 {
-		errs.Append(
-			errorhandling.ErrorIncorrectArguments,
-			map[string]string{
-				"AttributeName":     attr.Name.Value,
-				"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
-				"ExpectedArgsCount": "1",
-				"Signature":         "(expression)",
-			},
-			attr,
-		)
-		return
-	}
+// // validateActionAttributeWithExpression validates attributes that have the
+// // signature @attributeName(expression) and exist inside an action. This applies
+// // to @set, @where, and @validate attributes
+// func validateActionAttributeWithExpression(
+// 	asts []*parser.AST,
+// 	model *parser.ModelNode,
+// 	action *parser.ActionNode,
+// 	attr *parser.AttributeNode,
+// ) (errs errorhandling.ValidationErrors) {
+// 	argLength := len(attr.Arguments)
 
-	expr := attr.Arguments[0].Expression
+// 	if argLength == 0 || argLength >= 2 {
+// 		errs.Append(
+// 			errorhandling.ErrorIncorrectArguments,
+// 			map[string]string{
+// 				"AttributeName":     attr.Name.Value,
+// 				"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
+// 				"ExpectedArgsCount": "1",
+// 				"Signature":         "(expression)",
+// 			},
+// 			attr,
+// 		)
+// 		return
+// 	}
 
-	rules := []expression.Rule{}
+// 	expr := attr.Arguments[0].Expression
 
-	if attr.Name.Value == parser.AttributeSet {
-		rules = append(rules, expression.OperatorAssignmentRule)
-	} else {
-		rules = append(rules, expression.OperatorLogicalRule)
-	}
+// 	rules := []expression.Rule{}
 
-	err := expression.ValidateExpression(
-		asts,
-		expr,
-		rules,
-		expressions.ExpressionContext{
-			Model:     model,
-			Attribute: attr,
-			Action:    action,
-		},
-	)
-	for _, e := range err {
-		// TODO: remove case when expression.ValidateExpression returns correct type
-		errs.AppendError(e.(*errorhandling.ValidationError))
-	}
+// 	if attr.Name.Value == parser.AttributeSet {
+// 		rules = append(rules, expression.OperatorAssignmentRule)
+// 	} else {
+// 		rules = append(rules, expression.OperatorLogicalRule)
+// 	}
 
-	return
-}
+// 	err := expression.ValidateExpression(
+// 		asts,
+// 		expr,
+// 		rules,
+// 		expressions.ExpressionContext{
+// 			Model:     model,
+// 			Attribute: attr,
+// 			Action:    action,
+// 		},
+// 	)
+// 	for _, e := range err {
+// 		// TODO: remove case when expression.ValidateExpression returns correct type
+// 		errs.AppendError(e.(*errorhandling.ValidationError))
+// 	}
+
+// 	return
+// }
 
 func validateIdentArray(expr *parser.Expression, allowedIdents []string) (errs errorhandling.ValidationErrors) {
 	value, err := expr.ToValue()

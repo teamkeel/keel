@@ -84,17 +84,18 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				return
 			}
 
-			if !arg.Expression.IsValue() {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeArgumentError,
-					errorhandling.ErrorDetails{
-						Message: "@embed argument is not correctly formatted",
-						Hint:    "For example, use @embed(fieldName)",
-					},
-					arg,
-				))
-				return
-			}
+			// TODO: to be covered by expression parser
+			// if !arg.Expression.IsValue() {
+			// 	errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+			// 		errorhandling.AttributeArgumentError,
+			// 		errorhandling.ErrorDetails{
+			// 			Message: "@embed argument is not correctly formatted",
+			// 			Hint:    "For example, use @embed(fieldName)",
+			// 		},
+			// 		arg,
+			// 	))
+			// 	return
+			// }
 
 			operand, err := arg.Expression.ToValue()
 			if err != nil {

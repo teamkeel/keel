@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -144,79 +143,80 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 // expressionHasUniqueLookup will work through the logical expression syntax to determine if a unique lookup is possible
 func expressionHasUniqueLookup(asts []*parser.AST, expression *parser.Expression, fieldsInCompositeUnique map[*parser.ModelNode][]*parser.FieldNode) bool {
 	hasUniqueLookup := false
-	for _, or := range expression.Or {
-		for _, and := range or.And {
-			if and.Expression != nil {
-				hasUniqueLookup = expressionHasUniqueLookup(asts, and.Expression, fieldsInCompositeUnique)
-			}
+	// TODO: we'll need to rework this
+	// for _, or := range expression.Or {
+	// 	for _, and := range or.And {
+	// 		if and.Expression != nil {
+	// 			hasUniqueLookup = expressionHasUniqueLookup(asts, and.Expression, fieldsInCompositeUnique)
+	// 		}
 
-			if and.Condition != nil {
-				if and.Condition.Type() != parser.LogicalCondition {
-					continue
-				}
+	// 		if and.Condition != nil {
+	// 			if and.Condition.Type() != parser.LogicalCondition {
+	// 				continue
+	// 			}
 
-				operator := and.Condition.Operator.Symbol
+	// 			operator := and.Condition.Operator.Symbol
 
-				// Only the equal operator can guarantee unique lookups
-				if operator != parser.OperatorEquals {
-					continue
-				}
+	// 			// Only the equal operator can guarantee unique lookups
+	// 			if operator != parser.OperatorEquals {
+	// 				continue
+	// 			}
 
-				operands := []*parser.Operand{and.Condition.LHS}
+	// 			operands := []*parser.Operand{and.Condition.LHS}
 
-				// If it's an equal operator we can check both sides
-				if operator == parser.OperatorEquals {
-					operands = append(operands, and.Condition.RHS)
-				}
+	// 			// If it's an equal operator we can check both sides
+	// 			if operator == parser.OperatorEquals {
+	// 				operands = append(operands, and.Condition.RHS)
+	// 			}
 
-				for _, op := range operands {
-					if op.Null {
-						hasUniqueLookup = false
-						break
-					}
+	// 			for _, op := range operands {
+	// 				if op.Null {
+	// 					hasUniqueLookup = false
+	// 					break
+	// 				}
 
-					if op.Ident == nil {
-						continue
-					}
+	// 				if op.Ident == nil {
+	// 					continue
+	// 				}
 
-					modelName := op.Ident.Fragments[0].Fragment
-					model := query.Model(asts, casing.ToCamel(modelName))
+	// 				modelName := op.Ident.Fragments[0].Fragment
+	// 				model := query.Model(asts, casing.ToCamel(modelName))
 
-					if model == nil {
-						// For example, ctx, or an explicit input
-						continue
-					}
+	// 				if model == nil {
+	// 					// For example, ctx, or an explicit input
+	// 					continue
+	// 				}
 
-					// If there is only a single fragment in the expression,
-					// and we know it's the model, therefore this is a unique lookup
-					if len(op.Ident.Fragments) == 1 {
-						return true
-					}
+	// 				// If there is only a single fragment in the expression,
+	// 				// and we know it's the model, therefore this is a unique lookup
+	// 				if len(op.Ident.Fragments) == 1 {
+	// 					return true
+	// 				}
 
-					var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
-					hasUniqueLookup, fieldsInComposite = fragmentsUnique(asts, model, op.Ident.Fragments[1:])
+	// 				var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
+	// 				hasUniqueLookup, fieldsInComposite = fragmentsUnique(asts, model, op.Ident.Fragments[1:])
 
-					if len(expression.Or) == 1 {
-						for k, v := range fieldsInComposite {
-							fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
-						}
-					}
-				}
-			}
+	// 				if len(expression.Or) == 1 {
+	// 					for k, v := range fieldsInComposite {
+	// 						fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
+	// 					}
+	// 				}
+	// 			}
+	// 		}
 
-			// Once we find a unique lookup between ANDs,
-			// then we know the expression is a unique lookup
-			if hasUniqueLookup {
-				break
-			}
-		}
+	// 		// Once we find a unique lookup between ANDs,
+	// 		// then we know the expression is a unique lookup
+	// 		if hasUniqueLookup {
+	// 			break
+	// 		}
+	// 	}
 
-		// There is no point checking further conditions in this expression
-		// because all ORed conditions need to be unique lookup
-		if !hasUniqueLookup {
-			return false
-		}
-	}
+	// 	// There is no point checking further conditions in this expression
+	// 	// because all ORed conditions need to be unique lookup
+	// 	if !hasUniqueLookup {
+	// 		return false
+	// 	}
+	// }
 
 	return hasUniqueLookup
 }

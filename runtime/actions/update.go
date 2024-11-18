@@ -98,7 +98,7 @@ func GenerateUpdateStatement(query *QueryBuilder, scope *Scope, input map[string
 		where = map[string]any{}
 	}
 
-	err = query.applyImplicitFilters(scope, where)
+	err = query.ApplyImplicitFilters(scope, where)
 	if err != nil {
 		return nil, err
 	}

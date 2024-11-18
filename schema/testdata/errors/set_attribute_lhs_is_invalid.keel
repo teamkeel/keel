@@ -7,35 +7,35 @@ model Post {
 
     actions {
         create unknownIdentifier() with (name, published) {
-            //expect-error:18:22:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:22:AttributeExpressionError:The identifier 'name' does not exist or is not available to be set
             @set(name = "hello")
         }
         create namedInput() with (n: Text, published) {
-            //expect-error:18:19:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:19:AttributeExpressionError:The identifier 'n' does not exist or is not available to be set
             @set(n = post.name)
         }
         create literal() with (name, published) {
-            //expect-error:18:25:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:25:AttributeExpressionError:The @set attribute can only be used to set model fields
             @set("hello" = post.name)
         }
         create null() with (name, published) {
-            //expect-error:18:22:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:22:AttributeExpressionError:The @set attribute can only be used to set model fields
             @set(null = post.name)
         }
         create ctx() with (name, published) {
-            //expect-error:18:37:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:37:AttributeExpressionError:The identifier 'ctx.isAuthenticated' does not exist or is not available to be set
             @set(ctx.isAuthenticated = post.published)
         }
         create ctxIdentity() with (name, published) {
-            //expect-error:18:30:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:30:AttributeExpressionError:The identifier 'ctx.identity' does not exist or is not available to be set
             @set(ctx.identity = post.identity)
         }
         create ctxIdentityEmail() with (name, published) {
-            //expect-error:18:36:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:36:AttributeExpressionError:The identifier 'ctx.identity.email' does not exist or is not available to be set
             @set(ctx.identity.email = "email")
         }
         create anotherModel() {
-            //expect-error:18:27:E020:'publisher' not found
+            //expect-error:18:32:AttributeExpressionError:The identifier 'publisher.name' does not exist or is not available to be set
             @set(publisher.name = "email")
         }
     }

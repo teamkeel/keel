@@ -157,6 +157,7 @@ const (
 	ActionInputError         ErrorType = "ActionInputError"
 	AttributeArgumentError   ErrorType = "AttributeArgumentError"
 	AttributeNotAllowedError ErrorType = "AttributeNotAllowedError"
+	AttributeExpressionError ErrorType = "AttributeExpressionError"
 	RelationshipError        ErrorType = "RelationshipError"
 	JobDefinitionError       ErrorType = "JobDefinitionError"
 	UnsupportedFeatureError  ErrorType = "UnsupportedFeatureError"

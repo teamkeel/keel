@@ -72,19 +72,17 @@ func GetDefinition(schemaFiles []*reader.SchemaFile, pos Position) *Definition {
 					if arg.Expression == nil {
 						continue
 					}
-					for _, cond := range arg.Expression.Conditions() {
-						for _, op := range []*parser.Operand{cond.LHS, cond.RHS} {
-							if op == nil || op.Ident == nil {
-								continue
-							}
-							if op.Ident.Fragments[0].Fragment != strcase.ToLowerCamel(model.Name.Value) {
-								continue
-							}
-							op.Ident.Fragments = op.Ident.Fragments[1:]
-							def := definitionFromIdent(asts, model, op.Ident, pos)
-							if def != nil {
-								return def
-							}
+					for _, op := range arg.Expression.Operands() {
+						if op == nil || op.Ident == nil {
+							continue
+						}
+						if op.Ident.Fragments[0].Fragment != strcase.ToLowerCamel(model.Name.Value) {
+							continue
+						}
+						op.Ident.Fragments = op.Ident.Fragments[1:]
+						def := definitionFromIdent(asts, model, op.Ident, pos)
+						if def != nil {
+							return def
 						}
 					}
 				}

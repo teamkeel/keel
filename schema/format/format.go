@@ -482,7 +482,7 @@ func printAttributes(writer *Writer, attributes []*parser.AttributeNode) {
 						if arg.Label != nil {
 							writer.write("%s: ", lowerCamel(arg.Label.Value))
 						}
-						expr, _ := arg.Expression.ToString()
+						expr := arg.Expression.String()
 						writer.write(expr)
 					})
 				}

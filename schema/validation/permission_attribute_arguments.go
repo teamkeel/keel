@@ -6,11 +6,9 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
-	"github.com/teamkeel/keel/schema/validation/rules/expression"
 )
 
 func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
@@ -86,50 +84,50 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 				case "expression":
 					hasExpression = true
 
-					context := expressions.ExpressionContext{
-						Model:     model,
-						Attribute: attr,
-						Action:    action,
-					}
-					rules := []expression.Rule{
-						expression.OperatorLogicalRule,
-					}
+					// context := expressions.ExpressionContext{
+					// 	Model:     model,
+					// 	Attribute: attr,
+					// 	Action:    action,
+					// }
+					// rules := []expression.Rule{
+					// 	expression.OperatorLogicalRule,
+					// }
 
-					expressionErrors := expression.ValidateExpression(
-						asts,
-						arg.Expression,
-						rules,
-						context,
-					)
-					for _, err := range expressionErrors {
-						// TODO: remove cast when expression.ValidateExpression returns correct type
-						errs.AppendError(err.(*errorhandling.ValidationError))
-					}
+					// TODO: use expression parser
+
+					// expressionErrors := expression.ValidateExpression(
+					// 	asts,
+					// 	arg.Expression,
+					// 	rules,
+					// 	context,
+					// )
+					// for _, err := range expressionErrors {
+					// 	// TODO: remove cast when expression.ValidateExpression returns correct type
+					// 	errs.AppendError(err.(*errorhandling.ValidationError))
+					// }
 
 					// Extra check for using row-based expression in a read/write function
 					// Ideally this would be done as part of the expression validation, but
 					// if we don't provide the model as context the error is not very helpful.
 					if action != nil && (action.Type.Value == "read" || action.Type.Value == "write") {
-						for _, cond := range arg.Expression.Conditions() {
-							for _, op := range []*parser.Operand{cond.LHS, cond.RHS} {
-								if op == nil || op.Ident == nil {
-									continue
-								}
-								// An ident must have at least one fragment - we only care about the first one
-								fragment := op.Ident.Fragments[0]
-								if fragment.Fragment == casing.ToLowerCamel(model.Name.Value) {
-									errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-										errorhandling.AttributeArgumentError,
-										errorhandling.ErrorDetails{
-											Message: fmt.Sprintf(
-												"cannot use row-based permissions in a %s action",
-												action.Type.Value,
-											),
-											Hint: "implement your permissions logic in your function code using the permissions API - https://docs.keel.so/functions#permissions",
-										},
-										fragment,
-									))
-								}
+						for _, op := range arg.Expression.Operands() {
+							if op == nil || op.Ident == nil {
+								continue
+							}
+							// An ident must have at least one fragment - we only care about the first one
+							fragment := op.Ident.Fragments[0]
+							if fragment.Fragment == casing.ToLowerCamel(model.Name.Value) {
+								errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+									errorhandling.AttributeArgumentError,
+									errorhandling.ErrorDetails{
+										Message: fmt.Sprintf(
+											"cannot use row-based permissions in a %s action",
+											action.Type.Value,
+										),
+										Hint: "implement your permissions logic in your function code using the permissions API - https://docs.keel.so/functions#permissions",
+									},
+									fragment,
+								))
 							}
 						}
 					}

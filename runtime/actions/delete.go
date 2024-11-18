@@ -29,7 +29,7 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 		return nil, common.NewPermissionError()
 	case !canResolveEarly:
 		authQuery := NewQuery(scope.Model)
-		err := authQuery.applyImplicitFilters(scope, input)
+		err := authQuery.ApplyImplicitFilters(scope, input)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 }
 
 func GenerateDeleteStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {
-	err := query.applyImplicitFilters(scope, input)
+	err := query.ApplyImplicitFilters(scope, input)
 	if err != nil {
 		return nil, err
 	}

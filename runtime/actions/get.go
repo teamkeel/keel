@@ -81,7 +81,7 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 }
 
 func GenerateGetStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {
-	err := query.applyImplicitFilters(scope, input)
+	err := query.ApplyImplicitFilters(scope, input)
 	if err != nil {
 		return nil, err
 	}
