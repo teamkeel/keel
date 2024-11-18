@@ -1459,7 +1459,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			end = fmt.Sprintf("(%s + INTERVAL '%d %s')", end, tp.Value, tp.Period)
 		}
 
-		template = fmt.Sprintf("%s > %s AND %s < %s", lhsSqlOperand, rhsSqlOperand, lhsSqlOperand, end)
+		template = fmt.Sprintf("%s >= %s AND %s < %s", lhsSqlOperand, rhsSqlOperand, lhsSqlOperand, end)
 	default:
 		return "", nil, fmt.Errorf("operator: %v is not yet supported", operator)
 	}

@@ -808,7 +808,7 @@
           "messageName": "DateArrayAllQueryInput",
           "name": "beforeRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         },
@@ -816,7 +816,7 @@
           "messageName": "DateArrayAllQueryInput",
           "name": "afterRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         },
@@ -824,7 +824,7 @@
           "messageName": "DateArrayAllQueryInput",
           "name": "equalsRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         }
@@ -885,7 +885,7 @@
           "messageName": "DateArrayAnyQueryInput",
           "name": "beforeRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         },
@@ -893,7 +893,7 @@
           "messageName": "DateArrayAnyQueryInput",
           "name": "afterRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         },
@@ -901,7 +901,7 @@
           "messageName": "DateArrayAnyQueryInput",
           "name": "equalsRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         }
@@ -973,7 +973,7 @@
           "messageName": "TimestampArrayAllQueryInput",
           "name": "beforeRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         },
@@ -981,7 +981,7 @@
           "messageName": "TimestampArrayAllQueryInput",
           "name": "afterRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         },
@@ -989,7 +989,7 @@
           "messageName": "TimestampArrayAllQueryInput",
           "name": "equalsRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         }
@@ -1018,7 +1018,7 @@
           "messageName": "TimestampArrayAnyQueryInput",
           "name": "beforeRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         },
@@ -1026,7 +1026,7 @@
           "messageName": "TimestampArrayAnyQueryInput",
           "name": "afterRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         },
@@ -1034,7 +1034,7 @@
           "messageName": "TimestampArrayAnyQueryInput",
           "name": "equalsRelative",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_RELATIVE_DATE"
           },
           "optional": true
         }
