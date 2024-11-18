@@ -966,6 +966,64 @@ export interface ListPeopleInput {
 	})
 }
 
+func TestWriteActionInputTypesListActionDates(t *testing.T) {
+	t.Parallel()
+	schema := `
+model Person {
+	fields {
+		name Text
+		dob Date
+	}
+	actions {
+		list listPeople(name, dob, createdAt?)
+	}
+}
+	`
+	expected := `
+export interface StringQueryInput {
+	equals?: string | null;
+	notEquals?: string | null;
+	startsWith?: string;
+	endsWith?: string;
+	contains?: string;
+	oneOf?: string[];
+}
+export interface DateQueryInput {
+	equals?: Date | null;
+	notEquals?: Date | null;
+	before?: Date;
+	onOrBefore?: Date;
+	after?: Date;
+	onOrAfter?: Date;
+	beforeRelative?: RelativeDateString;
+	afterRelative?: RelativeDateString;
+	equalsRelative?: RelativeDateString;
+}
+export interface TimestampQueryInput {
+	before?: Date;
+	after?: Date;
+	beforeRelative?: RelativeDateString;
+	afterRelative?: RelativeDateString;
+	equalsRelative?: RelativeDateString;
+}
+export interface ListPeopleWhere {
+	name: StringQueryInput;
+	dob: DateQueryInput;
+	createdAt?: TimestampQueryInput;
+}
+export interface ListPeopleInput {
+	where: ListPeopleWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false, false)
+	})
+}
+
 func TestWriteActionInputTypesListRelationshipToOne(t *testing.T) {
 	t.Parallel()
 	schema := `

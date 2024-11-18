@@ -1739,6 +1739,8 @@ func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 
 func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
+	case proto.Type_TYPE_RELATIVE_DATE:
+		return "RelativeDateString"
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
 			return "string"
@@ -1752,6 +1754,8 @@ func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPac
 
 func toResponseTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
+	case proto.Type_TYPE_RELATIVE_DATE:
+		return "RelativeDateString"
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
 			return "FileResponseObject"

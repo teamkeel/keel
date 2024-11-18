@@ -156,3 +156,30 @@ type FileResponseObject = {
   size: number;
   url: string;
 };
+
+type unit =
+  | "year"
+  | "years"
+  | "month"
+  | "months"
+  | "day"
+  | "days"
+  | "hour"
+  | "hours"
+  | "minute"
+  | "minutes"
+  | "second"
+  | "seconds";
+type direction = "next" | "last";
+type completed = "complete";
+type value = number;
+
+type RelativeDateString =
+  | "now"
+  | "today"
+  | "tomorrow"
+  | "yesterday"
+  | `this ${unit}`
+  | `${direction} ${unit}`
+  | `${direction} ${value} ${unit}`
+  | `${direction} ${value} ${completed} ${unit}`;
