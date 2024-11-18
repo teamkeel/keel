@@ -14,10 +14,12 @@ type TimePeriod struct {
 }
 
 // Parse will return a TimePeriodStruct from the given expression. Expressions follow the following form
-// {this/last/next} {n}? {full}? {hour/day/week/month/year}
+// {this/last/next} {n}? {complete}? {hour/day/week/month/year}
 //
-// if `this`, then there is no n and no full; i.e.
-// - this month, this day, this hour
+// * if `this`, then there is no n and no complete; i.e. `this month`, `this day`, `this year`
+// * n = positive integer
+// * complete is optional
+// * period can be either plural or singular version
 func Parse(expression any) (TimePeriod, error) {
 	switch t := expression.(type) {
 	case string:

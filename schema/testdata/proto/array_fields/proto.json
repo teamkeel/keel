@@ -103,7 +103,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -140,7 +142,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -372,7 +376,9 @@
             "fieldName": "texts",
             "repeated": true
           },
-          "target": ["texts"]
+          "target": [
+            "texts"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -383,7 +389,9 @@
             "fieldName": "numbers",
             "repeated": true
           },
-          "target": ["numbers"]
+          "target": [
+            "numbers"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -394,7 +402,9 @@
             "fieldName": "booleans",
             "repeated": true
           },
-          "target": ["booleans"]
+          "target": [
+            "booleans"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -405,7 +415,9 @@
             "fieldName": "dates",
             "repeated": true
           },
-          "target": ["dates"]
+          "target": [
+            "dates"
+          ]
         },
         {
           "messageName": "CreateThingInput",
@@ -416,7 +428,9 @@
             "fieldName": "timestamps",
             "repeated": true
           },
-          "target": ["timestamps"]
+          "target": [
+            "timestamps"
+          ]
         }
       ]
     },
@@ -789,6 +803,30 @@
             "type": "TYPE_DATE"
           },
           "optional": true
+        },
+        {
+          "messageName": "DateArrayAllQueryInput",
+          "name": "beforePeriod",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DateArrayAllQueryInput",
+          "name": "afterPeriod",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DateArrayAllQueryInput",
+          "name": "equalsPeriod",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
         }
       ]
     },
@@ -840,6 +878,30 @@
           "name": "onOrAfter",
           "type": {
             "type": "TYPE_DATE"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DateArrayAnyQueryInput",
+          "name": "beforePeriod",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DateArrayAnyQueryInput",
+          "name": "afterPeriod",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DateArrayAnyQueryInput",
+          "name": "equalsPeriod",
+          "type": {
+            "type": "TYPE_STRING"
           },
           "optional": true
         }
@@ -906,6 +968,30 @@
             "type": "TYPE_TIMESTAMP"
           },
           "optional": true
+        },
+        {
+          "messageName": "TimestampArrayAllQueryInput",
+          "name": "beforePeriod",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "TimestampArrayAllQueryInput",
+          "name": "afterPeriod",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "TimestampArrayAllQueryInput",
+          "name": "equalsPeriod",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
         }
       ]
     },
@@ -925,6 +1011,30 @@
           "name": "after",
           "type": {
             "type": "TYPE_TIMESTAMP"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "TimestampArrayAnyQueryInput",
+          "name": "beforePeriod",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "TimestampArrayAnyQueryInput",
+          "name": "afterPeriod",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "TimestampArrayAnyQueryInput",
+          "name": "equalsPeriod",
+          "type": {
+            "type": "TYPE_STRING"
           },
           "optional": true
         }
@@ -983,7 +1093,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringArrayQueryInput"
           },
-          "target": ["texts"]
+          "target": [
+            "texts"
+          ]
         },
         {
           "messageName": "ListThingsWhere",
@@ -992,7 +1104,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "IntArrayQueryInput"
           },
-          "target": ["numbers"]
+          "target": [
+            "numbers"
+          ]
         },
         {
           "messageName": "ListThingsWhere",
@@ -1001,7 +1115,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "BooleanArrayQueryInput"
           },
-          "target": ["booleans"]
+          "target": [
+            "booleans"
+          ]
         },
         {
           "messageName": "ListThingsWhere",
@@ -1010,7 +1126,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "DateArrayQueryInput"
           },
-          "target": ["dates"]
+          "target": [
+            "dates"
+          ]
         },
         {
           "messageName": "ListThingsWhere",
@@ -1019,7 +1137,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "TimestampArrayQueryInput"
           },
-          "target": ["timestamps"]
+          "target": [
+            "timestamps"
+          ]
         }
       ]
     },
