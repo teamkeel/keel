@@ -20,6 +20,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/types"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/timeperiod"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -110,6 +111,19 @@ func (o *QueryOperand) IsValue() bool {
 	return o.value != nil && o.query == nil
 }
 
+func (o *QueryOperand) IsTimePeriodValue() bool {
+	if !o.IsValue() {
+		return false
+	}
+
+	switch o.value.(type) {
+	case timeperiod.TimePeriod:
+		return true
+	}
+
+	return false
+}
+
 func (o *QueryOperand) IsArrayValue() bool {
 	if !o.IsValue() {
 		return false
@@ -131,6 +145,20 @@ func (o *QueryOperand) IsNull() bool {
 func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	switch {
 	case o.IsValue() && !o.IsArrayValue():
+		if o.IsTimePeriodValue() {
+			tp, _ := o.value.(timeperiod.TimePeriod)
+			sql := "NOW()"
+			if tp.Offset != 0 {
+				sql = fmt.Sprintf("NOW() + INTERVAL '%d %s'", tp.Offset, tp.Period)
+			}
+			if tp.Complete {
+				sql = fmt.Sprintf("date_trunc('%s', %s)", tp.Period, sql)
+			} else {
+				sql = fmt.Sprintf("(%s)", sql)
+			}
+			return sql
+		}
+
 		return "?"
 	case o.IsValue() && o.IsArrayValue():
 		operands := []string{}
@@ -181,6 +209,8 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 
 func (o *QueryOperand) toSqlArgs() []any {
 	switch {
+	case o.IsTimePeriodValue():
+		return nil
 	case o.IsValue() && !o.IsArrayValue():
 		return []any{o.value}
 	case o.IsValue() && o.IsArrayValue():
@@ -1313,6 +1343,13 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			rhs.value = "%%" + rhs.value.(string)
 		case Contains, NotContains:
 			rhs.value = "%%" + rhs.value.(string) + "%%"
+		case BeforePeriod, AfterPeriod, EqualsPeriod:
+			timePeriod, err := timeperiod.Parse(rhs.value)
+			// if we're filtering by time period expressions, turn rhs operand into a timeperiod struct
+			if err != nil {
+				return "", nil, fmt.Errorf("operand: %v is not a valid time period: %w", rhs, err)
+			}
+			rhs.value = timePeriod
 		}
 	}
 
@@ -1399,6 +1436,20 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case AllGreaterThanEquals, AllOnOrAfter:
 		template = fmt.Sprintf("%s <= ALL(%s)", rhsSqlOperand, lhsSqlOperand)
 
+	case BeforePeriod:
+		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
+	case AfterPeriod:
+		if !rhs.IsTimePeriodValue() {
+			return "", nil, fmt.Errorf("operand: %+v is not a valid time period", rhs)
+		}
+		tp, _ := rhs.value.(timeperiod.TimePeriod)
+		template = fmt.Sprintf("%s > %s", lhsSqlOperand, fmt.Sprintf("(%s + INTERVAL '%d %s')", rhsSqlOperand, tp.Value, tp.Period))
+	case EqualsPeriod:
+		if !rhs.IsTimePeriodValue() {
+			return "", nil, fmt.Errorf("operand: %+v is not a valid time period", rhs)
+		}
+		tp, _ := rhs.value.(timeperiod.TimePeriod)
+		template = fmt.Sprintf("%s > %s AND %s < %s", lhsSqlOperand, rhsSqlOperand, lhsSqlOperand, fmt.Sprintf("(%s + INTERVAL '%d %s')", rhsSqlOperand, tp.Value, tp.Period))
 	default:
 		return "", nil, fmt.Errorf("operator: %v is not yet supported", operator)
 	}

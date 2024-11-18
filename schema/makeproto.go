@@ -550,6 +550,30 @@ func makeDateQueryInputMessage(name string) *proto.Message {
 				Type: proto.Type_TYPE_DATE,
 			},
 		},
+		{
+			MessageName: name,
+			Name:        "beforePeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "afterPeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "equalsPeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
 	}}
 }
 
@@ -603,6 +627,30 @@ func makeDateArrayQueryInputMessage(name string) *proto.Message {
 				Type: proto.Type_TYPE_DATE,
 			},
 		},
+		{
+			MessageName: name,
+			Name:        "beforePeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "afterPeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "equalsPeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
 	}}
 }
 
@@ -624,6 +672,30 @@ func makeTimestampQueryInputMessage(name string) *proto.Message {
 				Type: proto.Type_TYPE_TIMESTAMP,
 			},
 		},
+		{
+			MessageName: name,
+			Name:        "beforePeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "afterPeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "equalsPeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
 	}}
 }
 
@@ -643,6 +715,30 @@ func makeTimestampArrayQueryInputMessage(name string) *proto.Message {
 			Optional:    true,
 			Type: &proto.TypeInfo{
 				Type: proto.Type_TYPE_TIMESTAMP,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "beforePeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "afterPeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "equalsPeriod",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
 			},
 		},
 	}}
