@@ -1,6 +1,6 @@
 job MyJob {
     @permission(
-        //expect-error:9:16:AttributeArgumentError:cannot provide 'actions' arguments when using @permission in a job
+        //expect-error:9:16:AttributeArgumentError:unexpected argument 'actions' for @permission
         actions: [get],
         roles: [MyRole]
     )

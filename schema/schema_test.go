@@ -72,6 +72,7 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
+
 		testCase := tc
 		if testCase.IsDir() {
 			t.Errorf("errors test data directory should only contain keel schema files - directory found: %s", testCase.Name())
@@ -139,10 +140,10 @@ func TestValidation(t *testing.T) {
 
 			missing, unexpected := lo.Difference(lo.Map(expectedErrors, errorToString), lo.Map(verrs.Errors, errorToString))
 			for _, v := range missing {
-				t.Errorf("  Expected:   %s", v)
+				t.Errorf("  Expected in %s:   %s", testCase.Name(), v)
 			}
 			for _, v := range unexpected {
-				t.Errorf("  Unexpected: %s", v)
+				t.Errorf("  Unexpected in %s: %s", testCase.Name(), v)
 			}
 		})
 	}

@@ -47,34 +47,14 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 			hasRoles := false
 
 			for _, arg := range attr.Arguments {
-				if arg.Label == nil || arg.Label.Value == "" {
-					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-						errorhandling.AttributeArgumentError,
-						errorhandling.ErrorDetails{
-							Message: "@permission requires all arguments to be named, for example @permission(roles: [MyRole])",
-						},
-						arg,
-					))
+				if arg.Label == nil {
+					// Argument validation happens elsewhere
 					continue
 				}
 
 				switch arg.Label.Value {
 				case "actions":
 					hasActions = true
-
-					if action != nil || job != nil {
-						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-							errorhandling.AttributeArgumentError,
-							errorhandling.ErrorDetails{
-								Message: fmt.Sprintf(
-									"cannot provide 'actions' arguments when using @permission in %s",
-									lo.Ternary(action != nil, "an action", "a job"),
-								),
-							},
-							arg.Label,
-						))
-						continue
-					}
 
 					errs.Concat(validateIdentArray(arg.Expression, []string{
 						parser.ActionTypeGet,
@@ -143,18 +123,6 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 					}
 
 					errs.Concat(validateIdentArray(arg.Expression, roles, "role defined in your schema"))
-				default:
-					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-						errorhandling.AttributeArgumentError,
-						errorhandling.ErrorDetails{
-							Message: fmt.Sprintf(
-								"'%s' is not a valid argument for @permission",
-								arg.Label.Value,
-							),
-							Hint: "Did you mean one of 'actions', 'expression', or 'roles'?",
-						},
-						arg.Label,
-					))
 				}
 			}
 

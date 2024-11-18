@@ -32,7 +32,6 @@ const (
 	ErrorUniqueEnumGlobally                  = "E019"
 	ErrorUnresolvableExpression              = "E020"
 	ErrorForbiddenExpressionAction           = "E022"
-	ErrorIncorrectArguments                  = "E024"
 	ErrorInvalidSyntax                       = "E025"
 	ErrorExpressionTypeMismatch              = "E026"
 	ErrorForbiddenOperator                   = "E027"
@@ -113,6 +112,12 @@ func (v *ValidationErrors) AppendWarning(e *ValidationError) {
 
 func (v *ValidationErrors) AppendError(e *ValidationError) {
 	if e != nil {
+		v.Errors = append(v.Errors, e)
+	}
+}
+
+func (v *ValidationErrors) AppendErrors(errs []*ValidationError) {
+	for _, e := range errs {
 		v.Errors = append(v.Errors, e)
 	}
 }

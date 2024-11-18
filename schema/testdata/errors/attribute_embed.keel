@@ -39,6 +39,7 @@ model Book {
             //expect-error:20:28:AttributeArgumentError:@embed argument is not correctly formatted
             @embed(code = 1)
             //expect-error:29:30:AttributeArgumentError:The @embed attribute can only be used with valid model fields
+            //expect-error:29:30:AttributeArgumentError:unexpected argument for @embed as only a single argument is expected
             @embed(reviews, 2)
             //expect-error:20:26:AttributeArgumentError:The @embed attribute can only be used with valid model fields
             @embed("code")

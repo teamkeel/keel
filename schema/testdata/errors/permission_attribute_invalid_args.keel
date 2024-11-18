@@ -3,8 +3,8 @@ model Person {
         get getPerson(id)
     }
 
-    //expect-error:17:21:AttributeArgumentError:@permission requires all arguments to be named, for example @permission(roles: [MyRole])
     //expect-error:5:16:AttributeArgumentError:required argument 'actions' missing
     //expect-error:5:16:AttributeArgumentError:@permission requires either the 'expressions' or 'roles' argument to be provided
+    //expect-error:17:21:AttributeArgumentError:unexpected argument for @permission
     @permission(true)
 }

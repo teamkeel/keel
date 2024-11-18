@@ -69,7 +69,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "@orderBy requires at least once argument",
+						Message: "@orderBy requires at least one argument",
 					},
 					attribute,
 				))

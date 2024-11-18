@@ -7,7 +7,7 @@ model Person {
         get getPerson(id) {
             // Invalid to provide actions inside an action
             @permission(
-                //expect-error:17:24:AttributeArgumentError:cannot provide 'actions' arguments when using @permission in an action
+                //expect-error:17:24:AttributeArgumentError:unexpected argument 'actions' for @permission
                 actions: [create],
                 expression: true
             )
