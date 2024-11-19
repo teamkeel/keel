@@ -2,7 +2,6 @@ package attribute
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/formatting"
@@ -171,20 +170,6 @@ func validateModelFieldDefaultAttribute(
 		return
 	}
 
-	if argLength >= 2 {
-		errs.Append(
-			errorhandling.ErrorIncorrectArguments,
-			map[string]string{
-				"AttributeName":     attr.Name.Value,
-				"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
-				"ExpectedArgsCount": "1",
-				"Signature":         "(expression)",
-			},
-			attr,
-		)
-		return
-	}
-
 	expr := attr.Arguments[0].Expression
 
 	rules := []expression.Rule{expression.ValueTypechecksRule}
@@ -212,24 +197,7 @@ func validateActionAttributeWithExpression(
 	action *parser.ActionNode,
 	attr *parser.AttributeNode,
 ) (errs errorhandling.ValidationErrors) {
-	argLength := len(attr.Arguments)
-
-	if argLength == 0 || argLength >= 2 {
-		errs.Append(
-			errorhandling.ErrorIncorrectArguments,
-			map[string]string{
-				"AttributeName":     attr.Name.Value,
-				"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
-				"ExpectedArgsCount": "1",
-				"Signature":         "(expression)",
-			},
-			attr,
-		)
-		return
-	}
-
 	expr := attr.Arguments[0].Expression
-
 	rules := []expression.Rule{}
 
 	if attr.Name.Value == parser.AttributeSet {
@@ -313,26 +281,6 @@ func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationE
 		if model.BuiltIn {
 			continue
 		}
-		// field level e.g. @unique
-		for _, field := range query.ModelFields(model) {
-			for _, attr := range field.Attributes {
-				if attr.Name.Value != parser.AttributeUnique {
-					continue
-				}
-
-				if len(attr.Arguments) > 0 {
-					errs.Append(errorhandling.ErrorIncorrectArguments,
-						map[string]string{
-							"AttributeName":     attr.Name.Value,
-							"ActualArgsCount":   strconv.FormatInt(int64(len(attr.Arguments)), 10),
-							"ExpectedArgsCount": "0",
-							"Signature":         "()",
-						},
-						attr,
-					)
-				}
-			}
-		}
 
 		// model level e.g. @unique([fieldOne, fieldTwo])
 		for _, attr := range query.ModelAttributes(model) {
@@ -341,15 +289,7 @@ func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationE
 			}
 
 			if len(attr.Arguments) != 1 {
-				errs.Append(errorhandling.ErrorIncorrectArguments,
-					map[string]string{
-						"AttributeName":     attr.Name.Value,
-						"ActualArgsCount":   strconv.FormatInt(int64(len(attr.Arguments)), 10),
-						"ExpectedArgsCount": "1",
-						"Signature":         "([fieldName, otherFieldName])",
-					},
-					attr.Name,
-				)
+				// Attribute required arguments are validated elsewhere
 				continue
 			}
 

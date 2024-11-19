@@ -32,7 +32,6 @@ const (
 	ErrorUniqueEnumGlobally                  = "E019"
 	ErrorUnresolvableExpression              = "E020"
 	ErrorForbiddenExpressionAction           = "E022"
-	ErrorIncorrectArguments                  = "E024"
 	ErrorInvalidSyntax                       = "E025"
 	ErrorExpressionTypeMismatch              = "E026"
 	ErrorForbiddenOperator                   = "E027"
@@ -115,6 +114,10 @@ func (v *ValidationErrors) AppendError(e *ValidationError) {
 	if e != nil {
 		v.Errors = append(v.Errors, e)
 	}
+}
+
+func (v *ValidationErrors) AppendErrors(errs []*ValidationError) {
+	v.Errors = append(v.Errors, errs...)
 }
 
 func (v *ValidationErrors) Concat(verrs ValidationErrors) {

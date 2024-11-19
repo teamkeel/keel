@@ -6,9 +6,9 @@ model Profile {
 
     actions {
         get getProfile(username) {
-            //expect-error:13:14:E024:2 argument(s) provided to @where but expected 1
             @where(
                 profile.identity == ctx.identity,
+                //expect-error:17:45:AttributeArgumentError:unexpected argument for @where
                 profile.username == "adaam2"
             )
         }

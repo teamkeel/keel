@@ -15,29 +15,12 @@ func ScheduleAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			if len(attribute.Arguments) != 1 {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeArgumentError,
-					errorhandling.ErrorDetails{
-						Message: "@schedule must have exactly one argument",
-					},
-					attribute.Name,
-				))
+			if len(attribute.Arguments) == 0 {
+				// Argument validation is handled elsewhere
 				return
 			}
 
 			arg := attribute.Arguments[0]
-			if arg.Label != nil {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeArgumentError,
-					errorhandling.ErrorDetails{
-						Message: "argument to @schedule cannot be labelled",
-					},
-					arg.Label,
-				))
-				return
-			}
-
 			op, err := arg.Expression.ToValue()
 			if err != nil || op.String == nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(

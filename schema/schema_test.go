@@ -139,10 +139,10 @@ func TestValidation(t *testing.T) {
 
 			missing, unexpected := lo.Difference(lo.Map(expectedErrors, errorToString), lo.Map(verrs.Errors, errorToString))
 			for _, v := range missing {
-				t.Errorf("  Expected:   %s", v)
+				t.Errorf("  Expected in %s:   %s", testCase.Name(), v)
 			}
 			for _, v := range unexpected {
-				t.Errorf("  Unexpected: %s", v)
+				t.Errorf("  Unexpected in %s: %s", testCase.Name(), v)
 			}
 		})
 	}

@@ -14,14 +14,14 @@ job MyJob3 {
 }
 
 job MyJob4 {
-    //expect-error:17:36:AttributeArgumentError:@permission requires all arguments to be named, for example @permission(roles: [MyRole])
     //expect-error:5:16:AttributeArgumentError:@permission requires either the 'expressions' or 'roles' argument to be provided
+    //expect-error:17:36:AttributeArgumentError:unexpected argument for @permission
     @permission(ctx.isAuthenticated)
 }
 
 job MyJob5 {
-    //expect-error:17:21:AttributeArgumentError:'expr' is not a valid argument for @permission
     //expect-error:5:16:AttributeArgumentError:@permission requires either the 'expressions' or 'roles' argument to be provided
+    //expect-error:17:21:AttributeArgumentError:unexpected argument 'expr' for @permission
     @permission(expr: ctx.isAuthenticated)
 }
 
