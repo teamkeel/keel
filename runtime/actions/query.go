@@ -1448,7 +1448,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		if tp.Value != 0 {
 			end = fmt.Sprintf("(%s + INTERVAL '%d %s')", end, tp.Value, tp.Period)
 		}
-		template = fmt.Sprintf("%s > %s", lhsSqlOperand, end)
+		template = fmt.Sprintf("%s >= %s", lhsSqlOperand, end)
 	case EqualsRelative:
 		if !rhs.IsTimePeriodValue() {
 			return "", nil, fmt.Errorf("operand: %+v is not a valid time period", rhs)
