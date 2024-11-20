@@ -899,11 +899,11 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" > (NOW())) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" >= (NOW())) AS totalCount
 			FROM
 				"thing"
 			WHERE
-				"thing"."created_at" > (NOW())
+				"thing"."created_at" >= (NOW())
 			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{50},
