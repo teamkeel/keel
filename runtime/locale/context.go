@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	_ "time/tzdata"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
