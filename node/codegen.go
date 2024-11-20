@@ -1374,9 +1374,10 @@ func toActionReturnType(model *proto.Model, op *proto.Action) string {
 
 func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) codegen.GeneratedFiles {
 	w := &codegen.Writer{}
-	w.Writeln(`import { handleRequest, handleJob, handleSubscriber, tracing } from '@teamkeel/functions-runtime';`)
-	w.Writeln(`import { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } from '@teamkeel/sdk';`)
-	w.Writeln(`import { createServer } from "http";`)
+	w.Writeln(`const { handleRequest, handleJob, handleSubscriber, tracing } = require('@teamkeel/functions-runtime');`)
+	w.Writeln(`const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } = require('@teamkeel/sdk');`)
+	w.Writeln(`const { createServer } = require("node:http");`)
+	w.Writeln(`const process = require("node:process");`)
 
 	functions := []*proto.Action{}
 	for _, model := range schema.Models {
@@ -1386,7 +1387,7 @@ func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) 
 			}
 			functions = append(functions, action)
 			// namespace import to avoid naming clashes
-			w.Writef(`import function_%s from "../functions/%s.ts"`, action.Name, action.Name)
+			w.Writef(`const function_%s = require("../functions/%s").default`, action.Name, action.Name)
 			w.Writeln(";")
 		}
 	}
@@ -1394,19 +1395,19 @@ func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) 
 	for _, job := range schema.Jobs {
 		name := strcase.ToLowerCamel(job.Name)
 		// namespace import to avoid naming clashes
-		w.Writef(`import job_%s from "../jobs/%s.ts"`, name, name)
+		w.Writef(`const job_%s = require("../jobs/%s").default`, name, name)
 		w.Writeln(";")
 	}
 
 	for _, subscriber := range schema.Subscribers {
 		name := subscriber.Name
 		// namespace import to avoid naming clashes
-		w.Writef(`import subscriber_%s from "../subscribers/%s.ts"`, name, name)
+		w.Writef(`const subscriber_%s = require("../subscribers/%s").default`, name, name)
 		w.Writeln(";")
 	}
 
 	for _, v := range cfg.Auth.EnabledHooks() {
-		w.Writef(`import function_%s from "../functions/auth/%s.ts"`, v, v)
+		w.Writef(`const function_%s = require("../functions/auth/%s").default`, v, v)
 		w.Writeln(";")
 	}
 
@@ -1521,7 +1522,6 @@ const listener = async (req, res) => {
 
 tracing.init();
 
-const process = require('node:process');
 process.on('unhandledRejection', (reason, promise) => {
 	console.error('Unhandled Promise Rejection', promise, 'Reason:', reason);
 });

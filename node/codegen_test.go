@@ -375,10 +375,14 @@ export declare function useDatabase(): Kysely<database>;`
 func TestWriteDevelopmentServer(t *testing.T) {
 	t.Parallel()
 	expected := `
-import function_createPost from "../functions/createPost.ts";
-import function_updatePost from "../functions/updatePost.ts";
-import job_batchPosts from "../jobs/batchPosts.ts";
-import subscriber_checkGrammar from "../subscribers/checkGrammar.ts";
+const { handleRequest, handleJob, handleSubscriber, tracing } = require('@teamkeel/functions-runtime');
+const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } = require('@teamkeel/sdk');
+const { createServer } = require("node:http");
+const process = require("node:process");
+const function_createPost = require("../functions/createPost").default;
+const function_updatePost = require("../functions/updatePost").default;
+const job_batchPosts = require("../jobs/batchPosts").default;
+const subscriber_checkGrammar = require("../subscribers/checkGrammar").default;
 const functions = {
 	createPost: function_createPost,
 	updatePost: function_updatePost,

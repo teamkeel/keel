@@ -41,10 +41,10 @@ jobs:
           go-version: "1.23"
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 22.11
       - uses: pnpm/action-setup@v4
         with:
-          version: 8.5.1
+          version: 9.12.3
       - uses: actions/checkout@v4
       - name: Install @teamkeel/functions-runtime deps
         working-directory: ./packages/functions-runtime
