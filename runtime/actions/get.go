@@ -6,6 +6,7 @@ import (
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/locale"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -22,7 +23,12 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Generate the SQL statement
-	query := NewQuery(scope.Model)
+	opts := []QueryBuilderOption{}
+	if location, err := locale.GetTimeLocation(scope.Context); err == nil {
+		opts = append(opts, WithTimezone(location.String()))
+	}
+	query := NewQuery(scope.Model, opts...)
+
 	statement, err := GenerateGetStatement(query, scope, input)
 	if err != nil {
 		return nil, err

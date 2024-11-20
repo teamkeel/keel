@@ -171,3 +171,54 @@ func Test_parseString(t *testing.T) {
 		})
 	}
 }
+
+func TestTimePeriod_IsTimezoneRelative(t *testing.T) {
+	tests := []struct {
+		expr string
+		want bool
+	}{
+		{
+			expr: "this month",
+			want: true,
+		},
+		{
+			expr: "this year",
+			want: true,
+		},
+		{
+			expr: "this hour",
+			want: false,
+		},
+		{
+			expr: "yesterday",
+			want: true,
+		},
+		{
+			expr: "last month",
+			want: false,
+		},
+		{
+			expr: "next complete week",
+			want: true,
+		},
+		{
+			expr: "next 5 complete hours",
+			want: false,
+		},
+		{
+			expr: "next 5 complete days",
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.expr, func(t *testing.T) {
+			tp, err := parseString(tt.expr)
+			if err != nil {
+				t.Error("failed parsing expression: %w", err)
+			}
+			if got := tp.IsTimezoneRelative(); got != tt.want {
+				t.Errorf("TimePeriod.IsTimezoneRelative() %s => %v, want %v", tt.expr, got, tt.want)
+			}
+		})
+	}
+}

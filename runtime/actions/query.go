@@ -148,8 +148,11 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 		if o.IsTimePeriodValue() {
 			tp, _ := o.value.(timeperiod.TimePeriod)
 			sql := "NOW()"
+			if tp.IsTimezoneRelative() && query.timezone != "" {
+				sql = fmt.Sprintf("(NOW() AT TIME ZONE '%s')", query.timezone)
+			}
 			if tp.Offset != 0 {
-				sql = fmt.Sprintf("NOW() + INTERVAL '%d %s'", tp.Offset, tp.Period)
+				sql = fmt.Sprintf("%s + INTERVAL '%d %s'", sql, tp.Offset, tp.Period)
 			}
 			if tp.Complete {
 				sql = fmt.Sprintf("date_trunc('%s', %s)", tp.Period, sql)
@@ -274,6 +277,8 @@ type QueryBuilder struct {
 	writeValues *Row
 	// The type of SQL join to use.
 	joinType JoinType
+	// The timezone to be used if we're dealing with relative dates (e.g. date_trunc("day", NOW()))
+	timezone string
 }
 
 type JoinType string
@@ -324,6 +329,13 @@ type QueryBuilderOption func(qb *QueryBuilder)
 func WithJoinType(joinType JoinType) QueryBuilderOption {
 	return func(qb *QueryBuilder) {
 		qb.joinType = joinType
+	}
+}
+
+// WithTimezone sets the time zone for the query
+func WithTimezone(tz string) QueryBuilderOption {
+	return func(qb *QueryBuilder) {
+		qb.timezone = tz
 	}
 }
 

@@ -24,6 +24,7 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/runtime/locale"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/storage"
@@ -325,6 +326,9 @@ func HandleJobExecutorRequest(ctx context.Context, schema *proto.Schema, jobName
 	if identity != nil {
 		ctx = auth.WithIdentity(ctx, identity)
 	}
+
+	// handle any Time-Zone headers
+	ctx = locale.HandleTimezoneHeader(ctx, r.Header)
 
 	var inputs map[string]any
 	// if no json body has been sent, just return an empty map for the inputs

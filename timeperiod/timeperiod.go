@@ -13,6 +13,25 @@ type TimePeriod struct {
 	Complete bool
 }
 
+// IsTimezoneRelative determines if the user's timezone would have an impact for this time period.
+//
+// When handling a date relative period, such as `last complete day`/`yesterday`, this will have an impact:
+// Given a current time of 15/11/2024 01:15 in UTC
+// * for America/Toronto UTC -5: date_trunc('day', NOW()) should be 14/11/2024
+// * for Europe/Rome UTC +1:  date_trunc('day', NOW()) should be 15/11/2024
+func (tp *TimePeriod) IsTimezoneRelative() bool {
+	if !tp.Complete {
+		return false
+	}
+
+	switch tp.Period {
+	case "day", "week", "month", "year":
+		return true
+	}
+
+	return false
+}
+
 // Parse will return a TimePeriodStruct from the given expression. Expressions follow the following form
 //   - {this/last/next} {n}? {complete}? {second(s)/minute(s)/hour(s)/day(s)/week(s)/month(s)/year(s)}
 //   - or one of the supported shorthand values: now/today/tomorrow/yesterday
