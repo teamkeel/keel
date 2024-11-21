@@ -870,11 +870,11 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" < date_trunc('week', NOW())) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" < DATE_TRUNC('week', NOW())) AS totalCount
 			FROM
 				"thing"
 			WHERE
-				"thing"."created_at" < date_trunc('week', NOW())
+				"thing"."created_at" < DATE_TRUNC('week', NOW())
 			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{50},
@@ -928,11 +928,11 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" >= date_trunc('month', NOW()) AND "thing"."created_at" < (date_trunc('month', NOW()) + INTERVAL '1 month')) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" >= DATE_TRUNC('month', NOW()) AND "thing"."created_at" < (DATE_TRUNC('month', NOW()) + INTERVAL '1 month')) AS totalCount
 			FROM
 				"thing"
 			WHERE
-				"thing"."created_at" >= date_trunc('month', NOW()) AND "thing"."created_at" < (date_trunc('month', NOW()) + INTERVAL '1 month')
+				"thing"."created_at" >= DATE_TRUNC('month', NOW()) AND "thing"."created_at" < (DATE_TRUNC('month', NOW()) + INTERVAL '1 month')
 			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{50},
