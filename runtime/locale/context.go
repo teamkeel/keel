@@ -19,6 +19,9 @@ const (
 
 // WithTimeLocation sets the given time location on the context
 func WithTimeLocation(ctx context.Context, location time.Location) context.Context {
+	span := trace.SpanFromContext(ctx)
+	span.SetAttributes(attribute.String("timezone.location", location.String()))
+
 	return context.WithValue(ctx, locationContextKey, location)
 }
 
@@ -41,19 +44,12 @@ func HasTimeLocation(ctx context.Context) bool {
 // HandleTimezoneHeader will extract the time location from the Time-Zone header and set it on the context.
 // The location will also be set as an attribute to the context's tracing span.
 // If no header set, the location will default to UTC
-func HandleTimezoneHeader(ctx context.Context, headers http.Header) context.Context {
-	span := trace.SpanFromContext(ctx)
-
+func HandleTimezoneHeader(ctx context.Context, headers http.Header) (time.Location, error) {
 	// if no header, a UTC location will be returned
 	location, err := time.LoadLocation(headers.Get("Time-Zone"))
 	if err != nil {
-		// log error in span
-		span.AddEvent("Invalid Timezone", trace.WithAttributes(attribute.String("error", err.Error())))
-
-		return ctx
+		return time.Location{}, fmt.Errorf("invalid Time-Zone header: %w", err)
 	}
 
-	span.SetAttributes(attribute.String("timezone.location", location.String()))
-
-	return WithTimeLocation(ctx, *location)
+	return *location, nil
 }

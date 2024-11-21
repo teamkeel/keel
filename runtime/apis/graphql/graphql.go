@@ -65,7 +65,19 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.HandlerFunc {
 		}
 
 		// handle any Time-Zone headers
-		ctx = locale.HandleTimezoneHeader(ctx, r.Header)
+		location, err := locale.HandleTimezoneHeader(ctx, r.Header)
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+			return common.NewJsonResponse(http.StatusBadRequest, graphql.Result{
+				Errors: []gqlerrors.FormattedError{
+					{
+						Message: fmt.Sprintf("error setting timezone: %s", err.Error()),
+					},
+				},
+			}, nil)
+		}
+		ctx = locale.WithTimeLocation(ctx, location)
 
 		// We lazily initialise the GraphQL schema as until there is actually
 		// a GraphQL request to handle we don't need it. Also we don't want the

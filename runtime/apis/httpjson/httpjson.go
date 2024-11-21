@@ -51,7 +51,11 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.HandlerFunc {
 		}
 
 		// handle any Time-Zone headers
-		ctx = locale.HandleTimezoneHeader(ctx, r.Header)
+		location, err := locale.HandleTimezoneHeader(ctx, r.Header)
+		if err != nil {
+			return NewErrorResponse(ctx, common.NewInputMalformedError(err.Error()), nil)
+		}
+		ctx = locale.WithTimeLocation(ctx, location)
 
 		switch r.Method {
 		case http.MethodGet:

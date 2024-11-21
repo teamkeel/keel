@@ -328,7 +328,11 @@ func HandleJobExecutorRequest(ctx context.Context, schema *proto.Schema, jobName
 	}
 
 	// handle any Time-Zone headers
-	ctx = locale.HandleTimezoneHeader(ctx, r.Header)
+	location, err := locale.HandleTimezoneHeader(ctx, r.Header)
+	if err != nil {
+		return err
+	}
+	ctx = locale.WithTimeLocation(ctx, location)
 
 	var inputs map[string]any
 	// if no json body has been sent, just return an empty map for the inputs

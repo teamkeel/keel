@@ -51,7 +51,11 @@ func NewHandler(schema *proto.Schema, api *proto.Api) common.HandlerFunc {
 		}
 
 		// handle any Time-Zone headers
-		ctx = locale.HandleTimezoneHeader(ctx, r.Header)
+		location, err := locale.HandleTimezoneHeader(ctx, r.Header)
+		if err != nil {
+			return NewErrorResponse(ctx, nil, err)
+		}
+		ctx = locale.WithTimeLocation(ctx, location)
 
 		req, err := parseJsonRpcRequest(r.Body)
 		if err != nil {
