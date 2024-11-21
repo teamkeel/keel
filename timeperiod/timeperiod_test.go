@@ -138,6 +138,10 @@ func Test_Parse(t *testing.T) {
 			},
 		},
 		{
+			expr:    "5 days",
+			wantErr: true,
+		},
+		{
 			expr:    "this  complete day",
 			wantErr: true,
 		},
