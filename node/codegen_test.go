@@ -2041,6 +2041,7 @@ export interface AdHocJobWithInputsMessage {
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
+	withTimezone(timezone: string): this;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }
@@ -2097,6 +2098,7 @@ export interface VerifyEmailClubHouseUpdatedEventTarget {
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
+	withTimezone(timezone: string): this;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }
@@ -2218,6 +2220,7 @@ export interface PeopleByHobbyInput {
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
+	withTimezone(timezone: string): this;
 	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
