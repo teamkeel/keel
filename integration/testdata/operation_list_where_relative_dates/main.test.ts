@@ -104,3 +104,37 @@ test("List Where filters - timestamps - filters correctly", async () => {
   expect(posts3).toContain("Now");
   expect(posts3).toContain("Yesterday");
 });
+
+test("List Where filters - date - with timezones", async () => {
+  // all these dates go in UTC
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  await actions.createPost({ title: "Yesterday", aDate: yesterday });
+  await actions.createPost({ title: "Today", aDate: today });
+  await actions.createPost({ title: "Tomorrow", aDate: tomorrow });
+
+  // Pacific/Kiritimati = UTC +14h
+  // Pacific/Midway = UTC -11h
+
+  // difference between Kiritimati and Midway = 25 hrs, therefore at any UTC time, Midway should have 1 less results as the
+  // date would be 1 day behind Kiritimati.
+  const r1 = await actions.withTimezone("Pacific/Kiritimati").listPostsByDate({
+    where: {
+      aDate: {
+        beforeRelative: "today",
+      },
+    },
+  });
+  const r2 = await actions.withTimezone("Pacific/Midway").listPostsByDate({
+    where: {
+      aDate: {
+        beforeRelative: "today",
+      },
+    },
+  });
+  expect(r2.results.length).toBeLessThan(r1.results.length);
+});

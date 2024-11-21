@@ -1645,6 +1645,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Indent()
 	w.Writeln("withIdentity(identity: sdk.Identity): ActionExecutor;")
 	w.Writeln("withAuthToken(token: string): ActionExecutor;")
+	w.Writeln("withTimezone(timezone: string): this;")
 	for _, model := range schema.Models {
 		for _, action := range model.Actions {
 			msg := schema.FindMessage(action.InputMessageName)
