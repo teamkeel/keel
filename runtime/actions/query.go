@@ -155,7 +155,7 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 				sql = fmt.Sprintf("%s + INTERVAL '%d %s'", sql, tp.Offset, tp.Period)
 			}
 			if tp.Complete {
-				sql = fmt.Sprintf("date_trunc('%s', %s)", tp.Period, sql)
+				sql = fmt.Sprintf("DATE_TRUNC('%s', %s)", tp.Period, sql)
 			} else {
 				sql = fmt.Sprintf("(%s)", sql)
 			}
@@ -277,7 +277,7 @@ type QueryBuilder struct {
 	writeValues *Row
 	// The type of SQL join to use.
 	joinType JoinType
-	// The timezone to be used if we're dealing with relative dates (e.g. date_trunc("day", NOW()))
+	// The timezone to be used if we're dealing with relative dates (e.g. DATE_TRUNC("day", NOW()))
 	timezone string
 }
 
