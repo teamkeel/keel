@@ -1,16 +1,17 @@
-import { ListPostsByDateWithHook, ListPostsByDateWithHookHooks } from '@teamkeel/sdk';
+import {
+  ListPostsByDateWithHook,
+  ListPostsByDateWithHookHooks,
+} from "@teamkeel/sdk";
 
 // To learn more about what you can do with hooks, visit https://docs.keel.so/functions
-const hooks : ListPostsByDateWithHookHooks = {
-    beforeQuery(ctx, inputs, query) {
-        return query.where({
-            aDate: {
-                beforeRelative: "today",
-            },
-        });
-    },
+const hooks: ListPostsByDateWithHookHooks = {
+  beforeQuery(ctx, inputs, query) {
+    return query.where({
+      aDate: {
+        beforeRelative: "today",
+      },
+    });
+  },
 };
 
-
 export default ListPostsByDateWithHook(hooks);
-	

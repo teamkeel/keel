@@ -152,17 +152,18 @@ test("List Where filters - with hook", async () => {
   await actions.createPost({ title: "Tomorrow", aDate: tomorrow });
 
   // the hook sets beforeRelative = "today"
-  const r1 = await actions.listPostsByDateWithHook({where: {}});
+  const r1 = await actions.listPostsByDateWithHook({ where: {} });
   expect(r1.results.length).toEqual(1);
   expect(r1.results[0].title).toEqual("Yesterday");
 
   // the hook sets beforeRelative = "today"
-  const r2 = await actions.listPostsByDateWithHook({where: {
-    aDate: {
-      beforeRelative: "tomorrow"
-    }
-  }});
+  const r2 = await actions.listPostsByDateWithHook({
+    where: {
+      aDate: {
+        beforeRelative: "tomorrow",
+      },
+    },
+  });
   expect(r2.results.length).toEqual(1);
   expect(r2.results[0].title).toEqual("Yesterday");
-
 });
