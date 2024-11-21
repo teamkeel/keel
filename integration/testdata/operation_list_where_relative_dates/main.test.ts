@@ -139,7 +139,24 @@ test("List Where filters - date - with timezones", async () => {
   expect(r2.results.length).toBeLessThan(r1.results.length);
 });
 
+test("List Where filters - date - with invalid timezone", async () => {
+  await expect(
+    actions.withTimezone("Europe/SuttonColdfield").listPostsByDate({
+      where: {
+        aDate: {
+          beforeRelative: "today",
+        },
+      },
+    })
+  ).toHaveError({
+    code: "ERR_INPUT_MALFORMED",
+    message:
+      "invalid Time-Zone header: unknown time zone Europe/SuttonColdfield",
+  });
+});
+
 test("List Where filters - with hook", async () => {
+  actions.withTimezone("UTC");
   // all these dates go in UTC
   const today = new Date();
   const tomorrow = new Date();
