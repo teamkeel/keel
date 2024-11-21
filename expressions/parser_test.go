@@ -9,6 +9,22 @@ import (
 	"github.com/teamkeel/keel/schema/reader"
 )
 
+func TestParser_Variable(t *testing.T) {
+
+	expression := `myVar == "Keel"`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithVariable("myVar", parser.FieldTypeText),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
 func TestParser_TextEquality(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 		model Person {

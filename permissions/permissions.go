@@ -93,56 +93,56 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 }
 
 func handleExpression(s *proto.Schema, m *proto.Model, expr *parser.Expression, stmt *statement) (err error) {
-	stmt.expression += "("
-	for i, or := range expr.Or {
-		if i > 0 {
-			stmt.expression += " or "
-		}
-		for j, and := range or.And {
-			if j > 0 {
-				stmt.expression += " and "
-			}
+	// stmt.expression += "("
+	// for i, or := range expr.Or {
+	// 	if i > 0 {
+	// 		stmt.expression += " or "
+	// 	}
+	// 	for j, and := range or.And {
+	// 		if j > 0 {
+	// 			stmt.expression += " and "
+	// 		}
 
-			if and.Expression != nil {
-				err = handleExpression(s, m, and.Expression, stmt)
-				if err != nil {
-					return err
-				}
-				continue
-			}
+	// 		if and.Expression != nil {
+	// 			err = handleExpression(s, m, and.Expression, stmt)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 			continue
+	// 		}
 
-			cond := and.Condition
-			err = handleOperand(s, m, cond.LHS, stmt)
-			if err != nil {
-				return err
-			}
+	// 		cond := and.Condition
+	// 		err = handleOperand(s, m, cond.LHS, stmt)
+	// 		if err != nil {
+	// 			return err
+	// 		}
 
-			// If no RHS then we're done
-			if cond.Operator == nil {
-				continue
-			}
+	// 		// If no RHS then we're done
+	// 		if cond.Operator == nil {
+	// 			continue
+	// 		}
 
-			op := operatorMap[cond.Operator.Symbol]
-			opOpen := op[0]
-			opClose := ""
-			if len(op) == 2 {
-				opClose = op[1]
-			}
+	// 		op := operatorMap[cond.Operator.Symbol]
+	// 		opOpen := op[0]
+	// 		opClose := ""
+	// 		if len(op) == 2 {
+	// 			opClose = op[1]
+	// 		}
 
-			stmt.expression += opOpen
+	// 		stmt.expression += opOpen
 
-			err = handleOperand(s, m, cond.RHS, stmt)
-			if err != nil {
-				return err
-			}
+	// 		err = handleOperand(s, m, cond.RHS, stmt)
+	// 		if err != nil {
+	// 			return err
+	// 		}
 
-			if opClose != "" {
-				stmt.expression += opClose
-			}
-		}
-	}
+	// 		if opClose != "" {
+	// 			stmt.expression += opClose
+	// 		}
+	// 	}
+	// }
 
-	stmt.expression += ")"
+	// stmt.expression += ")"
 	return nil
 }
 

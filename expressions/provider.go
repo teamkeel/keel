@@ -45,9 +45,6 @@ func (p *typeProvider) EnumValue(enumName string) ref.Val {
 }
 
 func (p *typeProvider) FindIdent(identName string) (ref.Val, bool) {
-	if identName == "Status.Married" {
-
-	}
 	return nil, false
 }
 
