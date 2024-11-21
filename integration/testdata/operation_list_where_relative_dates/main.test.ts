@@ -138,3 +138,31 @@ test("List Where filters - date - with timezones", async () => {
   });
   expect(r2.results.length).toBeLessThan(r1.results.length);
 });
+
+test("List Where filters - with hook", async () => {
+  // all these dates go in UTC
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  await actions.createPost({ title: "Yesterday", aDate: yesterday });
+  await actions.createPost({ title: "Today", aDate: today });
+  await actions.createPost({ title: "Tomorrow", aDate: tomorrow });
+
+  // the hook sets beforeRelative = "today"
+  const r1 = await actions.listPostsByDateWithHook({where: {}});
+  expect(r1.results.length).toEqual(1);
+  expect(r1.results[0].title).toEqual("Yesterday");
+
+  // the hook sets beforeRelative = "today"
+  const r2 = await actions.listPostsByDateWithHook({where: {
+    aDate: {
+      beforeRelative: "tomorrow"
+    }
+  }});
+  expect(r2.results.length).toEqual(1);
+  expect(r2.results[0].title).toEqual("Yesterday");
+
+});

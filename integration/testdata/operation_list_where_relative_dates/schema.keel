@@ -11,6 +11,7 @@ model Post {
         create createPost() with (title?, length?, aDate?, aTimestamp?, aDecimal?)
         list listPostsByDate(aDate)
         list listPostsByTimestamp(aTimestamp)
+        list listPostsByDateWithHook(aDate?) @function
     }
 
     @permission(
