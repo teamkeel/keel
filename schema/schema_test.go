@@ -72,7 +72,7 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
-		if !strings.Contains(tc.Name(), "operation_where_") {
+		if !strings.Contains(tc.Name(), "where_expression_") {
 			continue
 		}
 
@@ -98,7 +98,7 @@ func TestValidation(t *testing.T) {
 
 			verrs := &errorhandling.ValidationErrors{}
 			if !errors.As(err, &verrs) {
-				t.Errorf("no validation errors returned: %v", err)
+				t.Errorf("no validation errors returned in %s: %v", testCase.Name(), err)
 			}
 
 			expectedErrors := []*errorhandling.ValidationError{}
@@ -147,10 +147,10 @@ func TestValidation(t *testing.T) {
 
 			missing, unexpected := lo.Difference(lo.Map(expectedErrors, errorToString), lo.Map(verrs.Errors, errorToString))
 			for _, v := range missing {
-				t.Errorf("  Expected:   %s", v)
+				t.Errorf("  Expected in %s:   %s", testCase.Name(), v)
 			}
 			for _, v := range unexpected {
-				t.Errorf("  Unexpected: %s", v)
+				t.Errorf("  Unexpected in %s: %s", testCase.Name(), v)
 			}
 		})
 	}

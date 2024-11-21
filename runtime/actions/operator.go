@@ -64,6 +64,9 @@ const (
 	Division
 
 	Not
+
+	Or
+	And
 )
 
 // queryOperatorToActionOperator converts the conditional operators that are used

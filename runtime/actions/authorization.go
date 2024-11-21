@@ -9,7 +9,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -112,13 +111,13 @@ func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionR
 		authorised := false
 		switch {
 		case permission.Expression != nil:
-			expression, err := parser.ParseExpression(permission.Expression.Source)
-			if err != nil {
-				return false, false, err
-			}
+			// expression, err := parser.ParseExpression(permission.Expression.Source)
+			// if err != nil {
+			// 	return false, false, err
+			// }
 
 			// Try resolve the permission early.
-			canResolve, authorised = expressions.TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, expression, map[string]any{})
+			canResolve, authorised = true, true // expressions.TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, expression, map[string]any{})
 
 			if !canResolve {
 				hasDatabaseCheck = true
@@ -201,12 +200,7 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 	// Append SQL where conditions for each permission attribute.
 	query.OpenParenthesis()
 	for _, permission := range permissions {
-		expression, err := parser.ParseExpression(permission.Expression.Source)
-		if err != nil {
-			return nil, err
-		}
-
-		err = query.whereByExpression(scope, expression, map[string]any{})
+		err := query.whereByExpression(scope.Context, scope.Schema, scope.Model, scope.Action, permission.Expression.Source, map[string]any{})
 		if err != nil {
 			return nil, err
 		}

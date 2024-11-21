@@ -103,7 +103,7 @@ func GenerateUpdateStatement(query *QueryBuilder, scope *Scope, input map[string
 		return nil, err
 	}
 
-	err = query.applyExpressionFilters(scope, where)
+	err = query.applyExpressionFiltersWithCel(scope, where)
 	if err != nil {
 		return nil, err
 	}

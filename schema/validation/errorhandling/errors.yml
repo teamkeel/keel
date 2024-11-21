@@ -141,6 +141,3 @@ en:
   E060:
     message: "{{.OperandName}} cannot be null"
     hint: "You cannot evaluate a field against null unless it is defined as optional"
-  E061:
-    message: "Non-boolean single operand conditions such as '{{ .Value }}' not permitted on {{ .Attribute }}"
-    hint: "Please add an operator and second operand. Did you mean '{{ .Suggestion }}'?"

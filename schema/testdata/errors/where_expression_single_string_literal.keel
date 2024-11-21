@@ -6,7 +6,7 @@ model Post {
 
     actions {
         get posts(id) {
-            //expect-error:20:31:E061:Non-boolean single operand conditions such as '"something"' not permitted on @where
+            //expect-error:20:31:AttributeExpressionError:expression expected to resolve to type 'bool' but it is 'string'
             @where("something")
         }
     }

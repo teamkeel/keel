@@ -6,7 +6,7 @@ model Profile {
 
     actions {
         get getProfile(username) {
-            //expect-error:28:35:20:51:AttributeExpressionError:undefined field 'identit'
+            //expect-error:20:51:AttributeExpressionError:undefined field 'identit'
             @where(profile.identit == ctx.identity)
         }
     }

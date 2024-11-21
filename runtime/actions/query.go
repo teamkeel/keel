@@ -92,6 +92,19 @@ type QueryOperand struct {
 	value  any
 }
 
+func (o *QueryOperand) String() string {
+	switch {
+	case o.IsField():
+		return o.column
+	case o.IsValue():
+		return fmt.Sprintf("%v", o.value)
+	case o.IsNull():
+		return "null"
+	}
+
+	return "NOT IMPL"
+}
+
 // A query builder to be evaluated and injected as an operand.
 func (o *QueryOperand) IsInlineQuery() bool {
 	return o.query != nil
@@ -407,7 +420,7 @@ func (query *QueryBuilder) Where(left *QueryOperand, operator ActionOperator, ri
 
 // Appends the next condition with a logical AND.
 func (query *QueryBuilder) And() {
-	query.filters = trimRhsOperators(query.filters)
+	//query.filters = trimRhsOperators(query.filters)
 	if len(query.filters) > 0 {
 		query.filters = append(query.filters, "AND")
 	}
@@ -415,7 +428,7 @@ func (query *QueryBuilder) And() {
 
 // Appends the next condition with a logical OR.
 func (query *QueryBuilder) Or() {
-	query.filters = trimRhsOperators(query.filters)
+	//query.filters = trimRhsOperators(query.filters)
 	if len(query.filters) > 0 {
 		query.filters = append(query.filters, "OR")
 	}
@@ -428,7 +441,7 @@ func (query *QueryBuilder) OpenParenthesis() {
 
 // Closes the current conditional scope in the where expression (i.e. close parethesis).
 func (query *QueryBuilder) CloseParenthesis() {
-	query.filters = trimRhsOperators(query.filters)
+	//query.filters = trimRhsOperators(query.filters)
 	query.filters = append(query.filters, ")")
 }
 

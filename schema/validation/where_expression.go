@@ -42,7 +42,7 @@ func WhereAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Valid
 					errs.AppendError(makeWhereExpressionError(
 						errorhandling.AttributeExpressionError,
 						issue,
-						"boop",
+						"TODO", // TODO: hints
 						expr.AstNode(),
 					))
 				}

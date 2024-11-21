@@ -6,32 +6,35 @@ model Person {
 
     actions {
         list listPeople() {
-            //expect-error:32:39:E020:'invalid' not found
+            //expect-error:32:39:AttributeExpressionError:undeclared reference to 'invalid' (in container '')
             @where(expression: invalid)
         }
         list listPeople2() {
-            //expect-error:32:34:E020:'ct' not found
+            //expect-error:32:62:AttributeExpressionError:undeclared reference to 'ct' (in container '')
             @where(expression: ct.identity == person.identity)
         }
         list listPeople3() {
-            //expect-error:32:34:E020:'ct' not found
-            @where(expression: ct.invalid == person.identity)
+            //expect-error:32:62:AttributeExpressionError:undefined field 'invalid'
+            @where(expression: ctx.invalid == person.identity)
         }
         list listPeople4() {
-            //expect-error:32:38:E061:Non-boolean single operand conditions such as '"true"' not permitted on @where
+            //expect-error:32:38:AttributeExpressionError:expression expected to resolve to type 'bool' but it is 'string'
             @where(expression: "true")
         }
         list listPeople5() {
-            //expect-error:68:75:E020:'invalid' not found on 'Organisation'
+            //expect-error:32:75:AttributeExpressionError:undeclared reference to '@in' (in container '')
+            //expect-error:32:75:AttributeExpressionError:undefined field 'invalid'
             @where(expression: ctx.identity in person.organisation.invalid)
         }
         list listPeople6() {
-            //expect-error:92:99:E020:'invalid' not found on 'Organisation'
+            //expect-error:32:99:AttributeExpressionError:undeclared reference to '@in' (in container '')
+            //expect-error:32:99:AttributeExpressionError:undefined field 'invalid'
             @where(expression: ctx.isAuthenticated and ctx.identity in person.organisation.invalid)
         }
         list listPeople7() {
-            //expect-error:52:59:E020:'invalid' not found on 'Boolean'
-            //expect-error:100:107:E020:'invalid' not found on 'Organisation'
+            //expect-error:32:107:AttributeExpressionError:undefined field 'invalid'
+            //expect-error:32:107:AttributeExpressionError:undeclared reference to '@in' (in container '')
+            //expect-error:32:107:AttributeExpressionError:type 'bool' does not support field selection
             @where(expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid)
         }
     }
