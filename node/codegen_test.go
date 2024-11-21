@@ -1981,6 +1981,7 @@ export interface ListPeopleInput {
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
+	withTimezone(timezone: string): this;
 	getPerson(i: GetPersonInput): Promise<sdk.Person | null>;
 	createPerson(i?: CreatePersonInput): Promise<sdk.Person>;
 	updatePerson(i?: UpdatePersonInput): Promise<sdk.Person>;
