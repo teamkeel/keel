@@ -41,17 +41,8 @@ func (tp *TimePeriod) IsTimezoneRelative() bool {
 // * n = positive integer
 // * `complete“ is optional
 // * period can be either plural or singular version
-func Parse(expression any) (TimePeriod, error) {
-	switch t := expression.(type) {
-	case string:
-		return parseString(t)
-	}
-
-	return TimePeriod{}, fmt.Errorf("unsupported expression type")
-}
-
-func parseString(expr string) (TimePeriod, error) {
-	tkns := toTokens(expr)
+func Parse(expression string) (TimePeriod, error) {
+	tkns := toTokens(expression)
 
 	if err := tkns.validate(); err != nil {
 		return TimePeriod{}, fmt.Errorf("invalid time period expression: %w", err)
@@ -62,11 +53,11 @@ func parseString(expr string) (TimePeriod, error) {
 		case "now":
 			return TimePeriod{}, nil
 		case "today":
-			return parseString("this day")
+			return Parse("this day")
 		case "tomorrow":
-			return parseString("next complete day")
+			return Parse("next complete day")
 		case "yesterday":
-			return parseString("last complete day")
+			return Parse("last complete day")
 		}
 	}
 

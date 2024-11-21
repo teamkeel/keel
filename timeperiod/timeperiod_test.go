@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_parseString(t *testing.T) {
+func Test_Parse(t *testing.T) {
 	tests := []struct {
 		expr    string
 		want    TimePeriod
@@ -160,7 +160,7 @@ func Test_parseString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.expr, func(t *testing.T) {
-			got, err := parseString(tt.expr)
+			got, err := Parse(tt.expr)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("parseString() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -212,7 +212,7 @@ func TestTimePeriod_IsTimezoneRelative(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.expr, func(t *testing.T) {
-			tp, err := parseString(tt.expr)
+			tp, err := Parse(tt.expr)
 			if err != nil {
 				t.Error("failed parsing expression: %w", err)
 			}

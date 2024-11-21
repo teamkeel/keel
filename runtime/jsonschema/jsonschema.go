@@ -531,7 +531,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 	case proto.Type_TYPE_DATE:
 		prop.Type = "string"
 		prop.Format = "date"
-	case proto.Type_TYPE_RELATIVE_DATE:
+	case proto.Type_TYPE_RELATIVE_PERIOD:
 		prop.Type = "string"
 	case proto.Type_TYPE_ENUM:
 		// For enum's we actually don't need to set the `type` field at all

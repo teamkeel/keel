@@ -1356,7 +1356,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		case Contains, NotContains:
 			rhs.value = "%%" + rhs.value.(string) + "%%"
 		case BeforeRelative, AfterRelative, EqualsRelative:
-			timePeriod, err := timeperiod.Parse(rhs.value)
+			timePeriod, err := timeperiod.Parse(rhs.value.(string))
 			// if we're filtering by time period expressions, turn rhs operand into a timeperiod struct
 			if err != nil {
 				return "", nil, fmt.Errorf("operand: %v is not a valid time period: %w", rhs, err)
