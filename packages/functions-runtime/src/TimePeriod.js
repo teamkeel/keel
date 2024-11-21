@@ -86,5 +86,4 @@ class TimePeriod {
 
 module.exports = {
   TimePeriod,
-  File,
 };
