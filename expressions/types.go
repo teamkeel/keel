@@ -9,10 +9,10 @@ import (
 )
 
 func mapType(schema []*parser.AST, typeName string) (*types.Type, error) {
-
+	// TODO: shoudl we define our own types?  i.e. types.NewOpaqueType("ID")
 	switch typeName {
 	case parser.FieldTypeID:
-		return types.NewOpaqueType("ID"), nil
+		return types.StringType, nil
 	case parser.FieldTypeText:
 		return types.StringType, nil
 	case parser.FieldTypeNumber:
@@ -21,13 +21,21 @@ func mapType(schema []*parser.AST, typeName string) (*types.Type, error) {
 		return types.DoubleType, nil
 	case parser.FieldTypeBoolean:
 		return types.BoolType, nil
+	case parser.FieldTypeDatetime:
+		return types.TimestampType, nil
+	case parser.FieldTypeDate:
+		return types.TimestampType, nil
+	case parser.FieldTypeMarkdown:
+		return types.StringType, nil
 	default:
-		switch {
-		case query.Enum(schema, typeName) != nil:
-			return types.NewOpaqueType(typeName), nil
-		case query.Model(schema, typeName) != nil:
-			return types.NewObjectType(typeName), nil
-		}
+
+	}
+
+	switch {
+	case query.Enum(schema, typeName) != nil:
+		return types.NewOpaqueType(typeName), nil
+	case query.Model(schema, typeName) != nil:
+		return types.NewObjectType(typeName), nil
 	}
 
 	return nil, fmt.Errorf("cannot map from type '%s'", typeName)

@@ -55,7 +55,7 @@ func (p *ExpressionParser) Validate(expression string) ([]string, error) {
 	}
 
 	if p.expectedReturnType != nil {
-		if !ast.OutputType().IsExactType(p.expectedReturnType) {
+		if !ast.OutputType().IsAssignableType(p.expectedReturnType) {
 			return []string{fmt.Sprintf("expression expected to resolve to type '%s' but it is '%s'", p.expectedReturnType.String(), ast.OutputType().String())}, nil
 		}
 	}

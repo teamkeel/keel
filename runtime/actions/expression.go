@@ -22,7 +22,7 @@ func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []str
 	right := Value(value)
 
 	// Add join for the implicit input
-	err = query.addJoinFromFragments(scope, fragments)
+	err = query.AddJoinFromFragments(scope.Schema, fragments)
 	if err != nil {
 		return err
 	}
@@ -179,21 +179,21 @@ func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []str
 
 // Constructs and adds an LEFT JOIN from a splice of fragments (representing an operand in an expression or implicit input).
 // The fragment slice must include the base model as the first item, for example: "post." in post.author.publisher.isActive
-func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string) error {
+func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments []string) error {
 	model := casing.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
 
 	for i := 1; i < fragmentCount-1; i++ {
 		currentFragment := fragments[i]
 
-		if !proto.ModelHasField(scope.Schema, model, currentFragment) {
+		if !proto.ModelHasField(schema, model, currentFragment) {
 			return fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
 		}
 
 		// We know that the current fragment is a related model because it's not the last fragment
-		relatedModelField := proto.FindField(scope.Schema.Models, model, currentFragment)
+		relatedModelField := proto.FindField(schema.Models, model, currentFragment)
 		relatedModel := relatedModelField.Type.ModelName.Value
-		foreignKeyField := proto.GetForeignKeyFieldName(scope.Schema.Models, relatedModelField)
+		foreignKeyField := proto.GetForeignKeyFieldName(schema.Models, relatedModelField)
 		primaryKey := "id"
 
 		var leftOperand *QueryOperand
@@ -202,12 +202,12 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 		switch {
 		case relatedModelField.IsBelongsTo():
 			// In a "belongs to" the foreign key is on _this_ model
-			leftOperand = ExpressionField(fragments[:i+1], primaryKey)
-			rightOperand = ExpressionField(fragments[:i], foreignKeyField)
+			leftOperand = ExpressionField(fragments[:i+1], primaryKey, false)
+			rightOperand = ExpressionField(fragments[:i], foreignKeyField, false)
 		default:
 			// In all others the foreign key is on the _other_ model
-			leftOperand = ExpressionField(fragments[:i+1], foreignKeyField)
-			rightOperand = ExpressionField(fragments[:i], primaryKey)
+			leftOperand = ExpressionField(fragments[:i+1], foreignKeyField, false)
+			rightOperand = ExpressionField(fragments[:i], primaryKey, false)
 		}
 
 		query.Join(relatedModel, leftOperand, rightOperand)
@@ -218,12 +218,14 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 	return nil
 }
 
+// TODO: reuse
 // Constructs a QueryOperand from a splice of fragments, representing an expression operand or implicit input.
 // The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive
 func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOperand, error) {
 	var field string
 	model := casing.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
+	isArray := false
 
 	for i := 1; i < fragmentCount; i++ {
 		currentFragment := fragments[i]
@@ -239,10 +241,12 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 		} else {
 			// The last fragment is referencing the field
 			field = currentFragment
+			isArray = proto.FindField(schema.Models, model, currentFragment).Type.Repeated
+
 		}
 	}
 
-	return ExpressionField(fragments[:len(fragments)-1], field), nil
+	return ExpressionField(fragments[:len(fragments)-1], field, isArray), nil
 }
 
 // // Generates a database QueryOperand, either representing a field, inline query, a value or null.

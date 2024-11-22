@@ -100,6 +100,8 @@ func WithLogicalOperators() Option {
 func WithComparisonOperators() Option {
 	return func(p *ExpressionParser) error {
 		paramA := types.NewTypeParamType("A")
+		//structA := types.NewObjectType("B")
+		//	listA := types.NewListType(paramA)
 		//statusEnum := types.NewOpaqueType("Status")
 		//s := decls.NewAbstractType("DATE")
 		var err error
@@ -107,22 +109,39 @@ func WithComparisonOperators() Option {
 		if p.provider.schema != nil {
 			for _, enum := range query.Enums(p.provider.schema) {
 				enumType := types.NewOpaqueType(enum.Name.Value)
+				enumTypeArr := cel.ObjectType(enum.Name.Value + "[]")
+
 				p.celEnv, err = p.celEnv.Extend(
 					cel.Function(operators.Equals,
 						cel.Overload(fmt.Sprintf("equals_%s", strcase.ToLowerCamel(enum.Name.Value)), argTypes(enumType, enumType), types.BoolType),
+					),
+					cel.Function(operators.In,
+						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(enum.Name.Value)), argTypes(enumType, enumTypeArr), types.BoolType),
 					))
+				if err != nil {
+					return err
+				}
 			}
 
 			for _, model := range query.Models(p.provider.schema) {
 				modelType := types.NewObjectType(model.Name.Value)
+				modelTypeArr := cel.ObjectType(model.Name.Value + "[]")
+
 				p.celEnv, err = p.celEnv.Extend(
 					cel.Function(operators.Equals,
 						cel.Overload(fmt.Sprintf("equals_%s", strcase.ToLowerCamel(model.Name.Value)), argTypes(modelType, modelType), types.BoolType),
+					),
+					cel.Function(operators.In,
+						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(model.Name.Value)), argTypes(modelType, modelTypeArr), types.BoolType),
 					))
+				if err != nil {
+					return err
+				}
 			}
 		}
 
 		p.celEnv, err = p.celEnv.Extend(
+			// Equals
 			cel.Function(operators.Equals,
 				cel.Overload("equals_string", argTypes(types.StringType, types.StringType), types.BoolType),
 				cel.Overload("equals_int", argTypes(types.IntType, types.IntType), types.BoolType),
@@ -133,8 +152,29 @@ func WithComparisonOperators() Option {
 				cel.Overload("equals_double_list", argTypes(types.NewListType(types.DoubleType), types.NewListType(types.DoubleType)), types.BoolType),
 				cel.Overload("equals_bool_list", argTypes(types.NewListType(types.BoolType), types.NewListType(types.BoolType)), types.BoolType),
 			),
+
+			//TODO:the rest
 			cel.Function(operators.NotEquals,
 				cel.Overload(overloads.NotEquals, argTypes(paramA, paramA), types.BoolType)),
+
+			// // In
+			// cel.Function(operators.In,
+			// 	cel.Overload("in_string", argTypes(types.StringType, types.NewListType(types.StringType)), types.BoolType),
+			// 	cel.Overload("in_int", argTypes(types.IntType, types.NewListType(types.IntType)), types.BoolType),
+			// 	cel.Overload("in_double", argTypes(types.DoubleType, types.NewListType(types.DoubleType)), types.BoolType),
+			// 	cel.Overload("in_boolean", argTypes(types.BoolType, types.BoolType), types.BoolType),
+			// ),
+
+			// In
+			cel.Function(operators.In,
+				cel.Overload("in", argTypes(paramA, types.NewListType(paramA)), types.BoolType),
+
+				//cel.Overload("in_string2", argTypes(structA, types.NewListType(structA)), types.BoolType),
+				// cel.Overload("in_int", argTypes(types.IntType, types.NewListType(types.IntType)), types.BoolType),
+				// cel.Overload("in_double", argTypes(types.DoubleType, types.NewListType(types.DoubleType)), types.BoolType),
+				// cel.Overload("in_boolean", argTypes(types.BoolType, types.BoolType), types.BoolType),
+			),
+
 			// Greater
 			cel.Function(operators.Greater,
 				cel.Overload(overloads.GreaterInt64, argTypes(types.IntType, types.IntType), types.BoolType),
@@ -338,10 +378,14 @@ func WithFunctions() Option {
 	}
 }
 
-func WithReturnTypeAssertion(returnType string) Option {
+func WithReturnTypeAssertion(returnType string, asArray bool) Option {
 	return func(p *ExpressionParser) error {
 		var err error
 		p.expectedReturnType, err = mapType(p.provider.schema, returnType)
+
+		if asArray {
+			p.expectedReturnType = cel.ListType(p.expectedReturnType)
+		}
 		return err
 	}
 }

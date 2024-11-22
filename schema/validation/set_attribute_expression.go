@@ -276,7 +276,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 
 			p, err := attributes.NewSetExpressionParser(asts, operand.Ident, action)
 			if err != nil {
-
+				panic(err)
 			}
 			issues, err := p.Validate(assignmentExpression.String())
 

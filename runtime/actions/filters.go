@@ -37,35 +37,16 @@ func (query *QueryBuilder) ApplyImplicitFilters(scope *Scope, args map[string]an
 	return nil
 }
 
-// // Applies all exlicit where attribute filters to the query.
-// func (query *QueryBuilder) applyExpressionFilters(scope *Scope, args map[string]any) error {
-// 	for _, where := range scope.Action.WhereExpressions {
-// 		expression, err := parser.ParseExpression(where.Source)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		// Resolve the database statement for this expression
-// 		err = query.whereByExpression(scope, expression, args)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		// Where attributes are ANDed together
-// 		query.And()
-// 	}
-
-// 	return nil
-// }
-
 // Applies all exlicit where attribute filters to the query.
-func (query *QueryBuilder) applyExpressionFiltersWithCel(scope *Scope, args map[string]any) error {
+func (query *QueryBuilder) applyExpressionFilters(scope *Scope, args map[string]any) error {
 	for _, where := range scope.Action.WhereExpressions {
 
 		err := query.whereByExpression(scope.Context, scope.Schema, scope.Model, scope.Action, where.Source, args)
 		if err != nil {
 			return err
 		}
+
+		query.And()
 	}
 
 	return nil

@@ -33,9 +33,12 @@ func WhereAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Valid
 
 			p, err := attributes.NewWhereExpressionParser(asts, action)
 			if err != nil {
-
+				panic(err.Error())
 			}
 			issues, err := p.Validate(expr.String())
+			if err != nil {
+				panic(err.Error())
+			}
 
 			if len(issues) > 0 {
 				for _, issue := range issues {

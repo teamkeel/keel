@@ -16,7 +16,7 @@ func NewWhereExpressionParser(schema []*parser.AST, action *parser.ActionNode) (
 		expressions.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
 		expressions.WithComparisonOperators(),
 		expressions.WithLogicalOperators(),
-		expressions.WithReturnTypeAssertion(parser.FieldTypeBoolean),
+		expressions.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	}
 
 	// Add filter inputs as variables

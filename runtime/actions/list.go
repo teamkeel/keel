@@ -227,7 +227,7 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 		return nil, nil, err
 	}
 
-	err = query.applyExpressionFiltersWithCel(scope, input)
+	err = query.applyExpressionFilters(scope, where)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -3,13 +3,14 @@ package actions
 import (
 	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/google/cel-go/cel"
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -34,18 +35,43 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 	}
 
 	for _, setExpression := range scope.Action.SetExpressions {
-		expression, err := parser.ParseExpression(setExpression.Source)
+		// expression, err := parser.ParseExpression(setExpression.Source)
+		// if err != nil {
+		// 	return err
+		// }
+
+		// operand, assignment, err := expression.ToAssignmentExpression()
+		// if err != nil {
+		// 	return err
+		// }
+
+		parts := strings.Split(setExpression.Source, "=")
+
+		env, err := cel.NewEnv()
+		if err != nil {
+			return fmt.Errorf("program setup err: %s", err)
+		}
+
+		ast, issues := env.Parse(parts[0])
+		if issues != nil && len(issues.Errors()) > 0 {
+			return errors.New("unexpected ast parsing issues")
+		}
+		checkedLhsExpr, err := cel.AstToParsedExpr(ast)
 		if err != nil {
 			return err
 		}
 
-		operand, assignment, err := expression.ToAssignmentExpression()
+		ast2, issues := env.Parse(parts[0])
+		if issues != nil && len(issues.Errors()) > 0 {
+			return errors.New("unexpected ast parsing issues")
+		}
+		checkedRhsExpr, err := cel.AstToParsedExpr(ast2)
 		if err != nil {
 			return err
 		}
 
-		lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, operand)
-		rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, assignment.Factor.Operand)
+		lhsResolver := NewOperandResolverCel(scope.Context, scope.Schema, scope.Model, scope.Action, checkedLhsExpr.Expr, args)
+		rhsResolver := NewOperandResolverCel(scope.Context, scope.Schema, scope.Model, scope.Action, checkedRhsExpr.Expr, args)
 
 		if !lhsResolver.IsModelDbColumn() {
 			return errors.New("lhs operand of assignment expression must be a model field")
@@ -104,7 +130,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 					return err
 				}
 
-				row.values[field] = ExpressionField(rhsFragments, field)
+				row.values[field] = ExpressionField(rhsFragments, field, false)
 			} else if rhsResolver.IsContextDbColumn() {
 				// If this is a value from ctx that requires a database read (such as with identity backlinks),
 				// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
@@ -118,23 +144,23 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 				// Remove the ctx fragment
 				fragments = fragments[1:]
 
-				err = identityQuery.addJoinFromFragments(ctxScope, fragments)
+				err = identityQuery.AddJoinFromFragments(ctxScope.Schema, fragments)
 				if err != nil {
 					return err
 				}
 
-				selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1])
+				selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1], false)
 
 				identityQuery.Select(selectField)
 
 				row.values[field] = InlineQuery(identityQuery, selectField)
 			} else if rhsResolver.IsContextField() || rhsResolver.IsLiteral() || rhsResolver.IsExplicitInput() || rhsResolver.IsImplicitInput() {
-				value, err := rhsResolver.ResolveValue(args)
+				value, err := rhsResolver.QueryOperand()
 				if err != nil {
 					return err
 				}
 
-				row.values[field] = Value(value)
+				row.values[field] = value
 			}
 		}
 	}

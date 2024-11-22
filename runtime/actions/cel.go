@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -10,9 +11,6 @@ import (
 	"github.com/google/cel-go/common/operators"
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/runtime/expressions"
-	"github.com/teamkeel/keel/schema/parser"
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
@@ -23,7 +21,10 @@ func (query *QueryBuilder) whereByExpression(ctx context.Context, schema *proto.
 		return fmt.Errorf("program setup err: %s", err)
 	}
 
-	ast, _ := env.Parse(expression)
+	ast, issues := env.Parse(expression)
+	if issues != nil && len(issues.Errors()) > 0 {
+		return errors.New("unexpected ast parsing issues")
+	}
 
 	checkedExpr, err := cel.AstToParsedExpr(ast)
 	if err != nil {
@@ -31,22 +32,28 @@ func (query *QueryBuilder) whereByExpression(ctx context.Context, schema *proto.
 	}
 
 	un := &celSqlGenerator{
-		ctx:       ctx,
-		query:     query,
-		schema:    schema,
-		model:     model,
-		action:    action,
-		operators: arraystack.New(),
-		operands:  arraystack.New(),
+		ctx:        ctx,
+		query:      query,
+		schema:     schema,
+		model:      model,
+		action:     action,
+		inputs:     inputs,
+		operators:  arraystack.New(),
+		operands:   arraystack.New(),
+		printStack: false,
 	}
 
-	query.OpenParenthesis()
+	if strings.Contains(expression, " && ") || strings.Contains(expression, " || ") {
+		query.OpenParenthesis()
+	}
 
 	if err := un.visit(checkedExpr.Expr); err != nil {
 		return err
 	}
 
-	query.CloseParenthesis()
+	if strings.Contains(expression, " && ") || strings.Contains(expression, " || ") {
+		query.CloseParenthesis()
+	}
 
 	return nil
 }
@@ -58,9 +65,11 @@ type celSqlGenerator struct {
 	schema *proto.Schema
 	model  *proto.Model
 	action *proto.Action
+	inputs map[string]any
 
-	operators *arraystack.Stack
-	operands  *arraystack.Stack
+	operators  *arraystack.Stack
+	operands   *arraystack.Stack
+	printStack bool
 }
 
 var indent string
@@ -72,76 +81,119 @@ func (con *celSqlGenerator) visit(expr *exprpb.Expr) error {
 
 	switch expr.ExprKind.(type) {
 	case *exprpb.Expr_CallExpr:
-
 		err := con.visitCall(expr)
 		if err != nil {
 			return err
 		}
 
+		// This handles double operand conditions, such is post.IsActive == false
 		if o, ok := con.operators.Peek(); ok && o != And && o != Or {
-
 			operator, _ := con.operators.Pop()
 
 			r, _ := con.operands.Pop()
 			if !ok {
-				panic("sd")
+				panic("no rhs operand")
 			}
 			l, ok := con.operands.Pop()
 			if !ok {
-				panic("sd")
+				panic("no lhs operand")
 			}
 
-			rhs := r.(*QueryOperand)
 			lhs := l.(*QueryOperand)
+			rhs := r.(*QueryOperand)
 
-			fmt.Printf("%swhere(%s %v %s)", indent, lhs.String(), operator.(ActionOperator), rhs.String())
-			fmt.Println()
+			if con.printStack {
+				fmt.Printf("%swhere(%s %v %s)", indent, lhs.String(), operator.(ActionOperator), rhs.String())
+				fmt.Println()
+			}
 
 			err = con.query.Where(lhs, operator.(ActionOperator), rhs)
+			if err != nil {
+				return err
+			}
 		}
-
 	case *exprpb.Expr_ConstExpr:
-
 		o, err := con.visitConst(expr)
 		if err != nil {
 			return err
 		}
 		con.operands.Push(o)
 
-		fmt.Println(fmt.Sprintf(indent+"Const: %v", o.value))
-
+		if con.printStack {
+			fmt.Println(fmt.Sprintf(indent+"Const: %v", o.value))
+		}
 	case *exprpb.Expr_ListExpr:
-		fmt.Println(indent + "Expr_ListExpr")
-	case *exprpb.Expr_StructExpr:
-		fmt.Println(indent + "Expr_StructExpr")
-	case *exprpb.Expr_ComprehensionExpr:
-		fmt.Println(indent + "Expr_ComprehensionExpr")
-	case *exprpb.Expr_SelectExpr:
-
-		o, err := con.visitSelect(expr)
+		o, err := con.visitList(expr)
 		if err != nil {
 			return err
 		}
 		con.operands.Push(o)
 
-	case *exprpb.Expr_IdentExpr:
-		_, err := con.visitIdent(expr)
+		if con.printStack {
+			fmt.Println(fmt.Sprintf(indent+"List: %v", o.value))
+		}
+	case *exprpb.Expr_StructExpr:
+		panic("no Expr_StructExpr support")
+	case *exprpb.Expr_ComprehensionExpr:
+		panic("no Expr_ComprehensionExpr support")
+	case *exprpb.Expr_SelectExpr:
+		o, err := con.visitSelect(expr)
 		if err != nil {
 			return err
 		}
+		con.operands.Push(o)
+	case *exprpb.Expr_IdentExpr:
+		o, err := con.visitIdent(expr)
+		if err != nil {
+			return err
+		}
+		con.operands.Push(o)
+	default:
+		return fmt.Errorf("no support for expr type: %v", expr.ExprKind)
+
 	}
 
 	indent = strings.TrimSuffix(indent, "   ")
+
+	// fmt.Print(indent + " ")
+	// o, ok := con.operators.Peek()
+	// if ok {
+	// 	fmt.Printf(" (next operator: %v)", o.(ActionOperator))
+	// } else {
+	// 	fmt.Printf(" (no next operator)")
+	// }
+	// op, ok := con.operands.Peek()
+	// if ok {
+	// 	fmt.Printf(" (next operand: %s)", op.(*QueryOperand).String())
+	// } else {
+	// 	fmt.Printf(" (no next operand)")
+	// }
+	// fmt.Println()
+
+	// This handles single operand conditions, such is post.IsActive
+	if operator, ok := con.operators.Peek(); !ok || operator == And || operator == Or {
+		l, hasOperand := con.operands.Pop()
+		if hasOperand {
+			lhs := l.(*QueryOperand)
+			err = con.query.Where(lhs, Equals, Value(true))
+
+			if con.printStack {
+				fmt.Printf("%swhere(%s %v %s)", indent, lhs.String(), Equals, Value(true))
+				fmt.Println()
+			}
+		}
+	}
 
 	return err
 }
 
 func (con *celSqlGenerator) visitCall(expr *exprpb.Expr) error {
 	c := expr.GetCallExpr()
-
 	fun := c.GetFunction()
 
-	fmt.Println(indent + "Call: " + fun)
+	if con.printStack {
+		fmt.Println(indent + "Call: " + fun)
+	}
 
 	var err error
 	switch fun {
@@ -170,12 +222,15 @@ func (con *celSqlGenerator) visitCall(expr *exprpb.Expr) error {
 		err = con.visitCallFunc(expr)
 	}
 
-	fmt.Println(indent + "EndCall: " + fun)
+	if con.printStack {
+		fmt.Println(indent + "EndCall: " + fun)
+	}
 
 	return err
 }
 
 func (con *celSqlGenerator) visitCallBinary(expr *exprpb.Expr) error {
+
 	c := expr.GetCallExpr()
 	fun := c.GetFunction()
 	args := c.GetArgs()
@@ -200,6 +255,8 @@ func (con *celSqlGenerator) visitCallBinary(expr *exprpb.Expr) error {
 		con.operators.Push(Or)
 	case operators.LogicalAnd:
 		con.operators.Push(And)
+	case operators.In:
+		con.operators.Push(OneOf)
 	default:
 		return fmt.Errorf("not implemeneted yet: %s", fun)
 	}
@@ -222,10 +279,14 @@ func (con *celSqlGenerator) visitCallBinary(expr *exprpb.Expr) error {
 		operator, _ := con.operators.Pop()
 		switch operator {
 		case And:
-			fmt.Println(indent + "AND")
+			if con.printStack {
+				fmt.Println(indent + "AND")
+			}
 			con.query.And()
 		case Or:
-			fmt.Println(indent + "OR")
+			if con.printStack {
+				fmt.Println(indent + "OR")
+			}
 			con.query.Or()
 		}
 	}
@@ -233,11 +294,6 @@ func (con *celSqlGenerator) visitCallBinary(expr *exprpb.Expr) error {
 	if err := con.visitNested(rhs, rhsParen); err != nil {
 		return err
 	}
-
-	// if expr.GetCallExpr().Function == "_&&_" {
-	// 	fmt.Println(indent + "AND")
-	// 	con.query.And()
-	// }
 
 	return nil
 }
@@ -253,7 +309,7 @@ func (con *celSqlGenerator) visitCallFunc(expr *exprpb.Expr) error {
 	case "UPPER":
 		sqlFun = "UPPER"
 	default:
-		return fmt.Errorf("not implemeneted yet: %s", fun)
+		return fmt.Errorf("not implemented: %s", fun)
 	}
 
 	con.query.OpenFunction(sqlFun)
@@ -287,7 +343,7 @@ func (con *celSqlGenerator) visitCallUnary(expr *exprpb.Expr) error {
 	case "NOT":
 		con.operators.Push(Not)
 	default:
-		return fmt.Errorf("not implemented : %s", fun)
+		return fmt.Errorf("not implemented: %s", fun)
 	}
 
 	nested := isComplexOperator(args[0])
@@ -295,58 +351,104 @@ func (con *celSqlGenerator) visitCallUnary(expr *exprpb.Expr) error {
 }
 
 func (con *celSqlGenerator) visitConst(expr *exprpb.Expr) (*QueryOperand, error) {
-	c := expr.GetConstExpr()
+	resolver := NewOperandResolverCel(con.ctx, con.schema, con.model, con.action, expr, con.inputs)
+	return resolver.QueryOperand()
+}
 
-	switch c.ConstantKind.(type) {
-	case *exprpb.Constant_BoolValue:
-		return Value(c.GetBoolValue()), nil
-	case *exprpb.Constant_DoubleValue:
-		return Value(c.GetDoubleValue()), nil
-	case *exprpb.Constant_Int64Value:
-		return Value(c.GetInt64Value()), nil
-	case *exprpb.Constant_NullValue:
-		return Null(), nil
-	case *exprpb.Constant_StringValue:
-		return Value(c.GetStringValue()), nil
-	case *exprpb.Constant_Uint64Value:
-		return Value(c.GetUint64Value()), nil
-	default:
-		return nil, fmt.Errorf("not implemented : %v", expr)
-	}
+func (con *celSqlGenerator) visitList(expr *exprpb.Expr) (*QueryOperand, error) {
+
+	resolver := NewOperandResolverCel(con.ctx, con.schema, con.model, con.action, expr, con.inputs)
+
+	return resolver.QueryOperand()
+
+	// l := expr.GetListExpr()
+	// elems := l.GetElements()
+
+	// arr := make([]any, len(elems))
+
+	// for i, elem := range elems {
+	// 	switch elem.ExprKind.(type) {
+	// 	case *exprpb.Expr_SelectExpr:
+	// 		// Enum values
+	// 		s := elem.GetSelectExpr()
+	// 		op := s.GetField()
+	// 		arr[i] = op
+	// 	case *exprpb.Expr_ConstExpr:
+	// 		// Literal values
+	// 		c := elem.GetConstExpr()
+	// 		v, err := toNative(c)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		arr[i] = v
+	// 	}
+
+	// }
+
+	// return Value(arr), nil
 }
 
 func (con *celSqlGenerator) visitIdent(expr *exprpb.Expr) (*QueryOperand, error) {
-	//TODO: if not a variable (i.e. input), ignore
-	//fmt.Println("visitIdent: " + expr.String())
-	return nil, nil //Field(expr.GetIdentExpr().GetName()), nil
+
+	ident := expr.GetIdentExpr()
+	if con.printStack {
+		fmt.Println(fmt.Sprintf(indent+"Ident: %v", ident.Name))
+	}
+
+	if ident.Name == strcase.ToLowerCamel(con.model.Name) {
+		return IdField(), nil
+	}
+
+	resolver := NewOperandResolverCel(con.ctx, con.schema, con.model, con.action, expr, con.inputs)
+
+	operand, err := resolver.QueryOperand()
+	if err != nil {
+		return nil, err
+	}
+
+	// if inputs, ok := con.inputs["where"]; ok {
+	// 	for k, value := range inputs.(map[string]any) {
+	// 		if k == ident.Name {
+	// 			return Value(value), nil
+	// 		}
+	// 	}
+	// }
+
+	return operand, nil
 }
 
 func (con *celSqlGenerator) visitSelect(expr *exprpb.Expr) (*QueryOperand, error) {
 	sel := expr.GetSelectExpr()
 
-	resolver := expressions.NewOperandResolverCel(con.ctx, con.schema, con.model, con.action, expr)
-	f, err := resolver.Fragments()
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(indent + "Select: " + strings.Join(f, "."))
+	resolver := NewOperandResolverCel(con.ctx, con.schema, con.model, con.action, expr, con.inputs)
+	// f, err := resolver.Fragments()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	nested := isBinaryOrTernaryOperator(sel.GetOperand())
-	err = con.visitNested(sel.GetOperand(), nested)
-	if err != nil {
-		return nil, err
-	}
+	// if con.printStack {
+	// 	fmt.Println(indent + "Select: " + strings.Join(f, "."))
+	// }
 
-	if resolver.IsModelDbColumn() {
-		fragments, _ := resolver.NormalisedFragments()
-
-		err := con.query.addJoinFromFragments(NewModelScope(con.ctx, con.model, con.schema), fragments)
+	switch expr.ExprKind.(type) {
+	case *exprpb.Expr_CallExpr:
+		nested := isBinaryOrTernaryOperator(sel.GetOperand())
+		err := con.visitNested(sel.GetOperand(), nested)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	operand, err := generateQueryOperandFromExpr(resolver)
+	if resolver.IsModelDbColumn() {
+		fragments, _ := resolver.NormalisedFragments()
+
+		err := con.query.AddJoinFromFragments(con.schema, fragments)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	operand, err := resolver.QueryOperand()
 	if err != nil {
 		return nil, err
 	}
@@ -354,113 +456,12 @@ func (con *celSqlGenerator) visitSelect(expr *exprpb.Expr) (*QueryOperand, error
 	return operand, nil
 }
 
-// Generates a database QueryOperand, either representing a field, inline query, a value or null.
-func generateQueryOperandFromExpr(resolver *expressions.OperandResolverCel) (*QueryOperand, error) { //, args map[string]any
-	var queryOperand *QueryOperand
-
-	switch {
-	case resolver.IsContextDbColumn():
-		// If this is a value from ctx that requires a database read (such as with identity backlinks),
-		// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
-		// from the current query builder.
-
-		fragments, err := resolver.NormalisedFragments()
-		if err != nil {
-			return nil, err
-		}
-
-		// Remove the ctx fragment
-		fragments = fragments[1:]
-
-		identityModel := resolver.Schema.FindModel(strcase.ToCamel(fragments[0]))
-		ctxScope := NewModelScope(resolver.Context, identityModel, resolver.Schema)
-		query := NewQuery(identityModel)
-
-		identityId := ""
-		if auth.IsAuthenticated(resolver.Context) {
-			identity, err := auth.GetIdentity(resolver.Context)
-			if err != nil {
-				return nil, err
-			}
-			identityId = identity[parser.FieldNameId].(string)
-		}
-
-		err = query.addJoinFromFragments(ctxScope, fragments)
-		if err != nil {
-			return nil, err
-		}
-
-		err = query.Where(IdField(), Equals, Value(identityId))
-		if err != nil {
-			return nil, err
-		}
-
-		selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1])
-
-		// If there are no matches in the subquery then null will be returned, but null
-		// will cause IN and NOT IN filtering of this subquery result to always evaluate as false.
-		// Therefore we need to filter out null.
-		query.And()
-		err = query.Where(selectField, NotEquals, Null())
-		if err != nil {
-			return nil, err
-		}
-
-		currModel := identityModel
-		for i := 1; i < len(fragments)-1; i++ {
-			name := proto.FindField(resolver.Schema.Models, currModel.Name, fragments[i]).Type.ModelName.Value
-			currModel = resolver.Schema.FindModel(name)
-		}
-		currField := proto.FindField(resolver.Schema.Models, currModel.Name, fragments[len(fragments)-1])
-
-		if currField.Type.Repeated {
-			query.SelectUnnested(selectField)
-		} else {
-			query.Select(selectField)
-		}
-
-		queryOperand = InlineQuery(query, selectField)
-
-	case resolver.IsModelDbColumn():
-		// If this is a model field then generate the appropriate column operand for the database query.
-
-		fragments, err := resolver.NormalisedFragments()
-		if err != nil {
-			return nil, err
-		}
-
-		// Generate QueryOperand from the fragments that make up the expression operand
-		queryOperand, err = operandFromFragments(resolver.Schema, fragments)
-		if err != nil {
-			return nil, err
-		}
-	default:
-		c := resolver.Operand.GetConstExpr()
-		switch c.ConstantKind.(type) {
-		case *exprpb.Constant_BoolValue:
-			return Value(c.GetBoolValue()), nil
-		case *exprpb.Constant_DoubleValue:
-			return Value(c.GetDoubleValue()), nil
-		case *exprpb.Constant_Int64Value:
-			return Value(c.GetInt64Value()), nil
-		case *exprpb.Constant_NullValue:
-			return Null(), nil
-		case *exprpb.Constant_StringValue:
-			return Value(c.GetStringValue()), nil
-		case *exprpb.Constant_Uint64Value:
-			return Value(c.GetUint64Value()), nil
-		default:
-			return nil, fmt.Errorf("not implemented : %v", c.ConstantKind)
-		}
-	}
-
-	return queryOperand, nil
-}
-
 func (con *celSqlGenerator) visitNested(expr *exprpb.Expr, nested bool) error {
 
 	if nested {
-		fmt.Println(indent + "(")
+		if con.printStack {
+			fmt.Println(indent + "(")
+		}
 		con.query.OpenParenthesis()
 	}
 
@@ -470,7 +471,9 @@ func (con *celSqlGenerator) visitNested(expr *exprpb.Expr, nested bool) error {
 	}
 
 	if nested {
-		fmt.Println(indent + ")")
+		if con.printStack {
+			fmt.Println(indent + ")")
+		}
 
 		con.query.CloseParenthesis()
 	}

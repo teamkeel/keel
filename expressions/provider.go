@@ -7,7 +7,6 @@ import (
 	"github.com/google/cel-go/checker/decls"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
-	"github.com/google/cel-go/common/types/traits"
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -96,7 +95,7 @@ func (p *typeProvider) FindStructFieldType(structType, fieldName string) (*types
 
 		if field.Repeated || parentIsArray {
 			if query.Model(p.schema, field.Type.Value) != nil {
-				t = cel.ObjectType(field.Type.Value+"[]", traits.ContainerType)
+				t = cel.ObjectType(field.Type.Value + "[]")
 			} else {
 				t = cel.ListType(t)
 			}

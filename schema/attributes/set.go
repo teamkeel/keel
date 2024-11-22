@@ -36,7 +36,7 @@ func NewSetExpressionParser(schema []*parser.AST, targetField *parser.Ident, act
 	opts := []expressions.Option{
 		expressions.WithCtx(),
 		expressions.WithSchema(schema),
-		expressions.WithReturnTypeAssertion(field.Type.Value),
+		expressions.WithReturnTypeAssertion(field.Type.Value, field.Repeated),
 	}
 
 	// Add filter inputs as variables

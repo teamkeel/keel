@@ -45,10 +45,11 @@ func AllFields() *QueryOperand {
 }
 
 // Some field from the fragments of an expression or input.
-func ExpressionField(fragments []string, field string) *QueryOperand {
+func ExpressionField(fragments []string, field string, arrayField bool) *QueryOperand {
 	return &QueryOperand{
-		table:  casing.ToSnake(strings.Join(fragments, "$")),
-		column: casing.ToSnake(field),
+		table:      casing.ToSnake(strings.Join(fragments, "$")),
+		column:     casing.ToSnake(field),
+		arrayField: arrayField,
 	}
 }
 
@@ -85,11 +86,12 @@ func ValueOrNullIfEmpty(value any) *QueryOperand {
 }
 
 type QueryOperand struct {
-	query  *QueryBuilder
-	raw    string
-	table  string
-	column string
-	value  any
+	query      *QueryBuilder
+	raw        string
+	table      string
+	column     string
+	arrayField bool
+	value      any
 }
 
 func (o *QueryOperand) String() string {
@@ -135,6 +137,10 @@ func (o *QueryOperand) IsArrayValue() bool {
 	}
 
 	return true
+}
+
+func (o *QueryOperand) IsArrayField() bool {
+	return o.arrayField
 }
 
 func (o *QueryOperand) IsNull() bool {
@@ -420,7 +426,7 @@ func (query *QueryBuilder) Where(left *QueryOperand, operator ActionOperator, ri
 
 // Appends the next condition with a logical AND.
 func (query *QueryBuilder) And() {
-	//query.filters = trimRhsOperators(query.filters)
+	query.filters = trimRhsOperators(query.filters)
 	if len(query.filters) > 0 {
 		query.filters = append(query.filters, "AND")
 	}
@@ -428,7 +434,7 @@ func (query *QueryBuilder) And() {
 
 // Appends the next condition with a logical OR.
 func (query *QueryBuilder) Or() {
-	//query.filters = trimRhsOperators(query.filters)
+	query.filters = trimRhsOperators(query.filters)
 	if len(query.filters) > 0 {
 		query.filters = append(query.filters, "OR")
 	}
@@ -441,7 +447,7 @@ func (query *QueryBuilder) OpenParenthesis() {
 
 // Closes the current conditional scope in the where expression (i.e. close parethesis).
 func (query *QueryBuilder) CloseParenthesis() {
-	//query.filters = trimRhsOperators(query.filters)
+	query.filters = trimRhsOperators(query.filters)
 	query.filters = append(query.filters, ")")
 }
 
@@ -1371,7 +1377,11 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		if rhs.IsInlineQuery() {
 			template = fmt.Sprintf("%s IN %s", lhsSqlOperand, rhsSqlOperand)
 		} else {
-			template = fmt.Sprintf("%s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
+			if rhs.IsArrayValue() || rhs.IsArrayField() {
+				template = fmt.Sprintf("%s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
+			} else {
+				template = fmt.Sprintf("%s IS NOT DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
+			}
 		}
 	case NotOneOf:
 		if rhs.IsInlineQuery() {

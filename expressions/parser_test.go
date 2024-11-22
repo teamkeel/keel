@@ -10,14 +10,13 @@ import (
 )
 
 func TestParser_Variable(t *testing.T) {
-
 	expression := `myVar == "Keel"`
 
 	parser, err := NewParser(
 		WithCtx(),
 		WithVariable("myVar", parser.FieldTypeText),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -40,7 +39,7 @@ func TestParser_TextEquality(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -63,7 +62,7 @@ func TestParser_TextInequality(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -71,21 +70,89 @@ func TestParser_TextInequality(t *testing.T) {
 	require.Empty(t, issues)
 }
 
-func TestParser_UnknownVariable(t *testing.T) {
-	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
-		model Person {
-			fields {
-				name Text
-			}
-		}`})
+func TestParser_Array(t *testing.T) {
+	expression := `[1,2,3]`
 
+	parser, err := NewParser(
+		WithCtx(),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeNumber, true))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
+func TestParser_ExpectedArray(t *testing.T) {
+	expression := `[1,2,3]`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeNumber, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "expression expected to resolve to type 'int' but it is 'list(int)'", issues[0])
+}
+
+func TestParser_In(t *testing.T) {
+	expression := `1 in [1,2,3]`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
+func TestParser_InInvalid(t *testing.T) {
+	expression := `"keel" in "keel"`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "found no matching overload for '@in' applied to '(string, string)'", issues[0])
+}
+
+func TestParser_InInvalidTypes(t *testing.T) {
+	expression := `"keel" in [1,2,3]`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "found no matching overload for '@in' applied to '(string, list(int))'", issues[0])
+}
+
+func TestParser_UnknownVariable(t *testing.T) {
 	expression := `person.name == 'Keel'`
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -110,7 +177,7 @@ func TestParser_UnknownField(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -134,7 +201,7 @@ func TestParser_UnknownOperators(t *testing.T) {
 		WithCtx(),
 		WithSchema(schema),
 		WithVariable("person", "Person"),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -160,7 +227,7 @@ func TestParser_TypeMismatch(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -185,7 +252,7 @@ func TestParser_ReturnAssertion(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -195,7 +262,7 @@ func TestParser_ReturnAssertion(t *testing.T) {
 	require.Equal(t, "expression expected to resolve to type 'bool' but it is 'string'", issues[0])
 }
 
-func TestParser_Enum(t *testing.T) {
+func TestParser_EnumEquals(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 		model Person {
 			fields {
@@ -214,7 +281,7 @@ func TestParser_Enum(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	)
 	require.NoError(t, err)
 
@@ -223,7 +290,65 @@ func TestParser_Enum(t *testing.T) {
 	require.Empty(t, issues)
 }
 
-func TestParser_InvalidEnumValue(t *testing.T) {
+func TestParser_EnumNotEquals(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				status Status
+			}
+		}
+		enum Status {
+			Married
+			Single
+		}`})
+
+	expression := `person.status != Status.Married`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithSchema(schema),
+		WithVariable("person", "Person"),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
+	)
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
+func TestParser_EnumInvalidOperator(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				status Status
+			}
+		}
+		enum Status {
+			Married
+			Single
+		}`})
+
+	expression := `person.status > Status.Married`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithSchema(schema),
+		WithVariable("person", "Person"),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
+	)
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "found no matching overload for '_>_' applied to '(Status, Status)'", issues[0])
+}
+
+func TestParser_EnumInvalidValue(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 		model Person {
 			fields {
@@ -242,7 +367,7 @@ func TestParser_InvalidEnumValue(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	)
 	require.NoError(t, err)
 
@@ -272,7 +397,7 @@ func TestParser_EnumWithoutValue(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	)
 	require.NoError(t, err)
 
@@ -308,7 +433,7 @@ func TestParser_EnumTypeMismatch(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	)
 	require.NoError(t, err)
 
@@ -319,7 +444,7 @@ func TestParser_EnumTypeMismatch(t *testing.T) {
 	require.Equal(t, "found no matching overload for '_==_' applied to '(Status, Employment)'", issues[0])
 }
 
-func TestParser_StringArrays(t *testing.T) {
+func TestParser_ArrayString(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 		model Person {
 			fields {
@@ -334,7 +459,7 @@ func TestParser_StringArrays(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -342,7 +467,7 @@ func TestParser_StringArrays(t *testing.T) {
 	require.Empty(t, issues)
 }
 
-func TestParser_IntArrays(t *testing.T) {
+func TestParser_ArrayInt(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 		model Person {
 			fields {
@@ -357,7 +482,7 @@ func TestParser_IntArrays(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -365,7 +490,7 @@ func TestParser_IntArrays(t *testing.T) {
 	require.Empty(t, issues)
 }
 
-func TestParser_DoubleArrays(t *testing.T) {
+func TestParser_ArrayDouble(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 		model Person {
 			fields {
@@ -380,7 +505,30 @@ func TestParser_DoubleArrays(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
+func TestParser_ArrayEmpty(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				names Text[]
+			}
+		}`})
+
+	expression := `person.names == []`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithSchema(schema),
+		WithVariable("person", "Person"),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -403,14 +551,140 @@ func TestParser_ArrayTypeMismatch(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '_==_' applied to '(Text[], string)'", issues[0])
+	require.Equal(t, "found no matching overload for '_==_' applied to '(list(string), string)'", issues[0])
+}
+
+func TestParser_ModelEquals(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				p Person?
+			}
+		}`})
+
+	expression := `person == person.p`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithSchema(schema),
+		WithVariable("person", "Person"),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
+func TestParser_ModelIn(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+			model Account {
+				fields {
+					identity Identity @unique
+					friends Befriend[]
+				}
+			}
+			model Befriend {
+				fields {
+					follower Account 
+				}
+				@unique([follower, followee])
+			}
+			model Identity {
+				fields {
+					account Account
+				}
+			}`})
+
+	expression := `account in ctx.identity.account.friends.follower`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithSchema(schema),
+		WithVariable("account", "Account"),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+	require.Len(t, issues, 0)
+}
+
+func TestParser_ModelInNotToMany(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+			model Account {
+				fields {
+					identity Identity @unique
+				}
+			}
+			model Identity {
+				fields {
+					account Account
+				}
+			}`})
+
+	expression := `account in ctx.identity.account`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithSchema(schema),
+		WithVariable("account", "Account"),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "found no matching overload for '@in' applied to '(Account, Account)'", issues[0])
+}
+
+func TestParser_ModelInWrongType(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+			model Account {
+				fields {
+					identity Identity @unique
+					friends Befriend[]
+				}
+			}
+			model Befriend {
+				fields {
+					follower Account 
+				}
+				@unique([follower, followee])
+			}
+			model Identity {
+				fields {
+					account Account
+				}
+			}`})
+
+	expression := `account in ctx.identity.account.friends`
+
+	parser, err := NewParser(
+		WithCtx(),
+		WithSchema(schema),
+		WithVariable("account", "Account"),
+		WithComparisonOperators(),
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "found no matching overload for '@in' applied to '(Account, Befriend[])'", issues[0])
 }
 
 func TestParser_ToOneRelationship(t *testing.T) {
@@ -435,7 +709,7 @@ func TestParser_ToOneRelationship(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)
@@ -465,7 +739,7 @@ func TestParser_ToManyRelationship(t *testing.T) {
 		WithSchema(schema),
 		WithVariable("organisation", "Organisation"),
 		WithComparisonOperators(),
-		WithReturnTypeAssertion(parser.FieldTypeBoolean))
+		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
 	issues, err := parser.Validate(expression)

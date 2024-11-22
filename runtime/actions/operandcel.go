@@ -1,14 +1,18 @@
-package expressions
+package actions
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"net/textproto"
+	"os"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
@@ -22,15 +26,17 @@ type OperandResolverCel struct {
 	Model   *proto.Model
 	Action  *proto.Action
 	Operand *expr.Expr
+	Inputs  map[string]any
 }
 
-func NewOperandResolverCel(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, operand *expr.Expr) *OperandResolverCel {
+func NewOperandResolverCel(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, operand *expr.Expr, inputs map[string]any) *OperandResolverCel {
 	return &OperandResolverCel{
 		Context: ctx,
 		Schema:  schema,
 		Model:   model,
 		Action:  action,
 		Operand: operand,
+		Inputs:  inputs,
 	}
 }
 
@@ -39,8 +45,6 @@ func (resolver *OperandResolverCel) Fragments() ([]string, error) {
 	e := resolver.Operand
 
 	for {
-		switch {
-		}
 		if s, ok := e.ExprKind.(*expr.Expr_SelectExpr); ok {
 			expre = append([]string{e.GetSelectExpr().GetField()}, expre...)
 			e = s.SelectExpr.Operand
@@ -51,8 +55,6 @@ func (resolver *OperandResolverCel) Fragments() ([]string, error) {
 			return nil, errors.New("unhandled expression type")
 		}
 	}
-
-	//TODO: normalise?
 
 	return expre, nil
 }
@@ -117,48 +119,24 @@ func (resolver *OperandResolverCel) NormalisedFragments() ([]string, error) {
 // For example, a number or string literal written straight into the Keel schema,
 // such as the right-hand side operand in @where(person.age > 21).
 func (resolver *OperandResolverCel) IsLiteral() bool {
-	// // Check if literal or array of literals, such as a "keel" or ["keel", "weave"]
-	// isLiteral, _ := resolver.operand.IsLiteralType()
-	// if isLiteral {
-	// 	return true
-	// }
 
-	// // Check if an enum, such as Sport.Cricket
-	// isEnumLiteral := resolver.operand.Ident != nil && proto.EnumExists(resolver.Schema.Enums, resolver.operand.Ident.Fragments[0].Fragment)
-	// if isEnumLiteral {
-	// 	return true
-	// }
-
-	// if resolver.operand.Ident == nil && resolver.operand.Array != nil {
-	// 	// Check if an empty array, such as []
-	// 	isEmptyArray := resolver.operand.Ident == nil && resolver.operand.Array != nil && len(resolver.operand.Array.Values) == 0
-	// 	if isEmptyArray {
-	// 		return true
-	// 	}
-
-	// 	// Check if an array of enums, such as [Sport.Cricket, Sport.Rugby]
-	// 	isEnumLiteralArray := true
-	// 	for _, item := range resolver.operand.Array.Values {
-	// 		if !proto.EnumExists(resolver.Schema.Enums, item.Ident.Fragments[0].Fragment) {
-	// 			isEnumLiteralArray = false
-	// 		}
-	// 	}
-	// 	if isEnumLiteralArray {
-	// 		return true
-	// 	}
-	// }
+	switch resolver.Operand.ExprKind.(type) {
+	case *expr.Expr_ListExpr:
+		return true // TODO: check elements
+	case *expr.Expr_ConstExpr:
+		return true
+	}
 
 	return false
 }
 
-// IsImplicitInput returns true if the expression operand refers to an implicit input on an action.
-// For example, an input value provided in a create action might require validation,
-// such as: create createThing() with (name) @validation(name != "")
+// // IsImplicitInput returns true if the expression operand refers to an implicit input on an action.
+// // For example, an input value provided in a create action might require validation,
+// // such as: create createThing() with (name) @validation(name != "")
 func (resolver *OperandResolverCel) IsImplicitInput() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
-		panic(err)
-		//return nil, err
+		return false
 	}
 
 	if len(fragments) > 1 {
@@ -191,8 +169,7 @@ func (resolver *OperandResolverCel) IsImplicitInput() bool {
 func (resolver *OperandResolverCel) IsExplicitInput() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
-		panic(err)
-		//return nil, err
+		return false
 	}
 
 	if len(fragments) > 1 {
@@ -363,7 +340,7 @@ func (resolver *OperandResolverCel) IsContextSecretField() bool {
 
 // GetOperandType returns the equivalent protobuf type for the expression operand and whether it is an array or not
 func (resolver *OperandResolverCel) GetOperandType() (proto.Type, bool, error) {
-	action := resolver.Action
+	//action := resolver.Action
 	schema := resolver.Schema
 
 	fragments, err := resolver.Fragments()
@@ -371,102 +348,261 @@ func (resolver *OperandResolverCel) GetOperandType() (proto.Type, bool, error) {
 		return proto.Type_TYPE_UNKNOWN, false, err
 	}
 
+	if fragments[0] == "ctx" {
+		// If this is a context backlink, then remove the first "ctx" fragment.
+		fragments = fragments[1:]
+	}
+
+	// The first fragment will always be the root model name, e.g. "author" in author.posts.title
+	modelTarget := schema.FindModel(casing.ToCamel(fragments[0]))
+	if modelTarget == nil {
+		return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[0]))
+	}
+
+	var fieldTarget *proto.Field
+	for i := 1; i < len(fragments); i++ {
+		fieldTarget = proto.FindField(schema.Models, modelTarget.Name, fragments[i])
+		if fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
+			modelTarget = schema.FindModel(fieldTarget.Type.ModelName.Value)
+			if modelTarget == nil {
+				return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.Type.ModelName.Value)
+			}
+		}
+	}
+
+	// If no field is provided, for example: @where(account in ...)
+	// Or if the target field is a MODEL, for example:
+	if fieldTarget == nil || fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
+		return proto.Type_TYPE_MODEL, false, nil
+	}
+
+	return fieldTarget.Type.Type, fieldTarget.Type.Repeated, nil
+
+}
+
+// Generates a QueryOperand which
+func (resolver *OperandResolverCel) QueryOperand() (*QueryOperand, error) {
+	var queryOperand *QueryOperand
+
 	switch {
-	// case resolver.IsLiteral():
-	// 	if operand.Ident == nil {
-	// 		switch {
-	// 		case operand.String != nil:
-	// 			return proto.Type_TYPE_STRING, false, nil
-	// 		case operand.Number != nil:
-	// 			return proto.Type_TYPE_INT, false, nil
-	// 		case operand.Decimal != nil:
-	// 			return proto.Type_TYPE_DECIMAL, false, nil
-	// 		case operand.True || operand.False:
-	// 			return proto.Type_TYPE_BOOL, false, nil
-	// 		case operand.Array != nil:
-	// 			return proto.Type_TYPE_UNKNOWN, true, nil
-	// 		case operand.Null:
-	// 			return proto.Type_TYPE_UNKNOWN, false, nil
-	// 		default:
-	// 			return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("cannot handle operand type")
-	// 		}
-	// 	} else if resolver.operand.Ident != nil && proto.EnumExists(resolver.Schema.Enums, resolver.operand.Ident.Fragments[0].Fragment) {
-	// 		return proto.Type_TYPE_ENUM, false, nil
-	// 	} else {
-	// 		return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("unknown literal type")
-	// 	}
+	case resolver.IsLiteral():
+		switch resolver.Operand.ExprKind.(type) {
+		case *expr.Expr_ListExpr:
+			l := resolver.Operand.GetListExpr()
+			elems := l.GetElements()
 
-	case resolver.IsModelDbColumn(), resolver.IsContextDbColumn():
-		if resolver.IsContextDbColumn() {
-			// If this is a context backlink, then remove the first "ctx" fragment.
-			fragments = fragments[1:]
-		}
+			arr := make([]any, len(elems))
 
-		// The first fragment will always be the root model name, e.g. "author" in author.posts.title
-		modelTarget := schema.FindModel(casing.ToCamel(fragments[0]))
-		if modelTarget == nil {
-			return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[0]))
-		}
-
-		var fieldTarget *proto.Field
-		for i := 1; i < len(fragments); i++ {
-			fieldTarget = proto.FindField(schema.Models, modelTarget.Name, fragments[i])
-			if fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
-				modelTarget = schema.FindModel(fieldTarget.Type.ModelName.Value)
-				if modelTarget == nil {
-					return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.Type.ModelName.Value)
+			for i, elem := range elems {
+				switch elem.ExprKind.(type) {
+				case *expr.Expr_SelectExpr:
+					// Enum values
+					s := elem.GetSelectExpr()
+					op := s.GetField()
+					arr[i] = op
+				case *expr.Expr_ConstExpr:
+					// Literal values
+					c := elem.GetConstExpr()
+					v, err := toNative(c)
+					if err != nil {
+						return nil, err
+					}
+					arr[i] = v
 				}
 			}
-		}
 
-		// If no field is provided, for example: @where(account in ...)
-		// Or if the target field is a MODEL, for example:
-		if fieldTarget == nil || fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
-			return proto.Type_TYPE_MODEL, false, nil
-		}
+			return Value(arr), nil
+		case *expr.Expr_ConstExpr:
+			c := resolver.Operand.GetConstExpr()
 
-		return fieldTarget.Type.Type, fieldTarget.Type.Repeated, nil
-	case resolver.IsImplicitInput():
-		modelTarget := casing.ToCamel(action.ModelName)
-		inputName := fragments[0]
-		field := proto.FindField(schema.Models, modelTarget, inputName)
-		return field.Type.Type, field.Type.Repeated, nil
-	case resolver.IsExplicitInput():
-		inputName := fragments[0]
-		var field *proto.MessageField
-		switch action.Type {
-		case proto.ActionType_ACTION_TYPE_CREATE:
-			message := proto.FindValuesInputMessage(schema, action.Name)
-			field = message.FindField(inputName)
-		case proto.ActionType_ACTION_TYPE_GET, proto.ActionType_ACTION_TYPE_LIST, proto.ActionType_ACTION_TYPE_DELETE:
-			message := proto.FindWhereInputMessage(schema, action.Name)
-			field = message.FindField(inputName)
-		case proto.ActionType_ACTION_TYPE_UPDATE:
-			message := proto.FindValuesInputMessage(schema, action.Name)
-			field = message.FindField(inputName)
-			if field == nil {
-				message := proto.FindWhereInputMessage(schema, action.Name)
-				field = message.FindField(inputName)
+			v, err := toNative(c)
+			if err != nil {
+				return nil, err
 			}
+
+			return Value(v), nil
 		default:
-			return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("unhandled action type %s for explicit input", action.Type)
+			return nil, errors.New("unknown literal")
 		}
-		if field == nil {
-			return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("could not find explicit input %s on action %s", inputName, action.Name)
+
+	case resolver.IsContextDbColumn():
+		// If this is a value from ctx that requires a database read (such as with identity backlinks),
+		// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
+		// from the current query builder.
+
+		fragments, err := resolver.NormalisedFragments()
+		if err != nil {
+			return nil, err
 		}
-		return field.Type.Type, field.Type.Repeated, nil
+
+		// Remove the ctx fragment
+		fragments = fragments[1:]
+
+		identityModel := resolver.Schema.FindModel(strcase.ToCamel(fragments[0]))
+		query := NewQuery(identityModel)
+
+		identityId := ""
+		if auth.IsAuthenticated(resolver.Context) {
+			identity, err := auth.GetIdentity(resolver.Context)
+			if err != nil {
+				return nil, err
+			}
+			identityId = identity[parser.FieldNameId].(string)
+		}
+
+		err = query.AddJoinFromFragments(resolver.Schema, fragments)
+		if err != nil {
+			return nil, err
+		}
+
+		err = query.Where(IdField(), Equals, Value(identityId))
+		if err != nil {
+			return nil, err
+		}
+
+		selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1], false)
+
+		// If there are no matches in the subquery then null will be returned, but null
+		// will cause IN and NOT IN filtering of this subquery result to always evaluate as false.
+		// Therefore we need to filter out null.
+		query.And()
+		err = query.Where(selectField, NotEquals, Null())
+		if err != nil {
+			return nil, err
+		}
+
+		currModel := identityModel
+		for i := 1; i < len(fragments)-1; i++ {
+			name := proto.FindField(resolver.Schema.Models, currModel.Name, fragments[i]).Type.ModelName.Value
+			currModel = resolver.Schema.FindModel(name)
+		}
+		currField := proto.FindField(resolver.Schema.Models, currModel.Name, fragments[len(fragments)-1])
+
+		if currField.Type.Repeated {
+			query.SelectUnnested(selectField)
+		} else {
+			query.Select(selectField)
+		}
+
+		queryOperand = InlineQuery(query, selectField)
+
+	case resolver.IsImplicitInput(), resolver.IsExplicitInput():
+		fragments, err := resolver.Fragments()
+		if err != nil {
+			return nil, err
+		}
+
+		inputName := fragments[0]
+		value, ok := resolver.Inputs[inputName]
+		if !ok {
+			return nil, fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", inputName)
+		}
+		return Value(value), nil
+
+	case resolver.IsModelDbColumn():
+		// If this is a model field then generate the appropriate column operand for the database query.
+
+		fragments, err := resolver.NormalisedFragments()
+		if err != nil {
+			return nil, err
+		}
+
+		// Generate QueryOperand from the fragments that make up the expression operand
+		queryOperand, err = operandFromFragments(resolver.Schema, fragments)
+		if err != nil {
+			return nil, err
+		}
+	case resolver.IsContextIdentityId():
+		isAuthenticated := auth.IsAuthenticated(resolver.Context)
+		if !isAuthenticated {
+			return nil, nil
+		}
+
+		identity, err := auth.GetIdentity(resolver.Context)
+		if err != nil {
+			return nil, err
+		}
+		return Value(identity[parser.FieldNameId].(string)), nil
+	case resolver.IsContextIdentityId():
+		isAuthenticated := auth.IsAuthenticated(resolver.Context)
+		if !isAuthenticated {
+			return nil, nil
+		}
+
+		identity, err := auth.GetIdentity(resolver.Context)
+		if err != nil {
+			return nil, err
+		}
+		return Value(identity[parser.FieldNameId].(string)), nil
+	case resolver.IsContextIsAuthenticatedField():
+		isAuthenticated := auth.IsAuthenticated(resolver.Context)
+		return Value(isAuthenticated), nil
 	case resolver.IsContextNowField():
-		return proto.Type_TYPE_TIMESTAMP, false, nil
+		return Value(runtimectx.GetNow()), nil
 	case resolver.IsContextEnvField():
-		return proto.Type_TYPE_STRING, false, nil
+		fragments, err := resolver.Fragments()
+		if err != nil {
+			return nil, err
+		}
+
+		envVarName := fragments[2]
+		return Value(os.Getenv(envVarName)), nil
 	case resolver.IsContextSecretField():
-		return proto.Type_TYPE_STRING, false, nil
+		fragments, err := resolver.Fragments()
+		if err != nil {
+			return nil, err
+		}
+
+		secret, err := runtimectx.GetSecret(resolver.Context, fragments[2])
+		if err != nil {
+			return nil, err
+		}
+
+		return Value(secret), nil
 	case resolver.IsContextHeadersField():
-		return proto.Type_TYPE_STRING, false, nil
-	case resolver.IsContext():
-		fieldName := fragments[1]
-		return runtimectx.ContextFieldTypes[fieldName], false, nil
+		fragments, err := resolver.Fragments()
+		if err != nil {
+			return nil, err
+		}
+
+		headerName := fragments[2]
+
+		// First we parse the header name to kebab. MyCustomHeader will become my-custom-header.
+		kebab := strcase.ToKebab(headerName)
+
+		// Then get canonical name. my-custom-header will become My-Custom-Header.
+		// https://pkg.go.dev/net/http#Header.Get
+		canonicalName := textproto.CanonicalMIMEHeaderKey(kebab)
+
+		headers, err := runtimectx.GetRequestHeaders(resolver.Context)
+		if err != nil {
+			return nil, err
+		}
+		if value, ok := headers[canonicalName]; ok {
+			return Value(strings.Join(value, ", ")), nil
+		}
+		return Value(""), nil
+
+	}
+
+	return queryOperand, nil
+}
+
+func toNative(c *expr.Constant) (any, error) {
+	switch c.ConstantKind.(type) {
+	case *expr.Constant_BoolValue:
+		return c.GetBoolValue(), nil
+	case *expr.Constant_DoubleValue:
+		return c.GetDoubleValue(), nil
+	case *expr.Constant_Int64Value:
+		return c.GetInt64Value(), nil
+	case *expr.Constant_NullValue:
+		return nil, nil
+	case *expr.Constant_StringValue:
+		return c.GetStringValue(), nil
+	case *expr.Constant_Uint64Value:
+		return c.GetUint64Value(), nil
 	default:
-		return proto.Type_TYPE_UNKNOWN, false, fmt.Errorf("cannot handle operand target %s", fragments[0])
+		return nil, fmt.Errorf("not implemented : %v", c)
 	}
 }

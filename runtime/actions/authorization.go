@@ -117,7 +117,7 @@ func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionR
 			// }
 
 			// Try resolve the permission early.
-			canResolve, authorised = true, true // expressions.TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, expression, map[string]any{})
+			canResolve, authorised = false, false // expressions.TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, expression, map[string]any{})
 
 			if !canResolve {
 				hasDatabaseCheck = true
