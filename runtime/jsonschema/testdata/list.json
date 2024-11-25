@@ -16,18 +16,14 @@
         "oneOf": [
           {
             "type": "object",
-            "properties": {
-              "equals": { "type": ["boolean", "null"] }
-            },
+            "properties": { "equals": { "type": ["boolean", "null"] } },
             "additionalProperties": false,
             "required": ["equals"],
             "title": "equals"
           },
           {
             "type": "object",
-            "properties": {
-              "notEquals": { "type": ["boolean", "null"] }
-            },
+            "properties": { "notEquals": { "type": ["boolean", "null"] } },
             "additionalProperties": false,
             "required": ["notEquals"],
             "title": "notEquals"
@@ -55,9 +51,7 @@
           },
           {
             "type": "object",
-            "properties": {
-              "before": { "type": "string", "format": "date" }
-            },
+            "properties": { "before": { "type": "string", "format": "date" } },
             "required": ["before"],
             "title": "before"
           },
@@ -71,9 +65,7 @@
           },
           {
             "type": "object",
-            "properties": {
-              "after": { "type": "string", "format": "date" }
-            },
+            "properties": { "after": { "type": "string", "format": "date" } },
             "required": ["after"],
             "title": "after"
           },
@@ -84,6 +76,24 @@
             },
             "required": ["onOrAfter"],
             "title": "onOrAfter"
+          },
+          {
+            "type": "object",
+            "properties": { "beforeRelative": { "type": "string" } },
+            "required": ["beforeRelative"],
+            "title": "beforeRelative"
+          },
+          {
+            "type": "object",
+            "properties": { "afterRelative": { "type": "string" } },
+            "required": ["afterRelative"],
+            "title": "afterRelative"
+          },
+          {
+            "type": "object",
+            "properties": { "equalsRelative": { "type": "string" } },
+            "required": ["equalsRelative"],
+            "title": "equalsRelative"
           }
         ]
       },
@@ -153,49 +163,37 @@
         "anyOf": [
           {
             "type": "object",
-            "properties": {
-              "equals": { "type": ["number", "null"] }
-            },
+            "properties": { "equals": { "type": ["number", "null"] } },
             "required": ["equals"],
             "title": "equals"
           },
           {
             "type": "object",
-            "properties": {
-              "notEquals": { "type": ["number", "null"] }
-            },
+            "properties": { "notEquals": { "type": ["number", "null"] } },
             "required": ["notEquals"],
             "title": "notEquals"
           },
           {
             "type": "object",
-            "properties": {
-              "lessThan": { "type": "number" }
-            },
+            "properties": { "lessThan": { "type": "number" } },
             "required": ["lessThan"],
             "title": "lessThan"
           },
           {
             "type": "object",
-            "properties": {
-              "lessThanOrEquals": { "type": "number" }
-            },
+            "properties": { "lessThanOrEquals": { "type": "number" } },
             "required": ["lessThanOrEquals"],
             "title": "lessThanOrEquals"
           },
           {
             "type": "object",
-            "properties": {
-              "greaterThan": { "type": "number" }
-            },
+            "properties": { "greaterThan": { "type": "number" } },
             "required": ["greaterThan"],
             "title": "greaterThan"
           },
           {
             "type": "object",
-            "properties": {
-              "greaterThanOrEquals": { "type": "number" }
-            },
+            "properties": { "greaterThanOrEquals": { "type": "number" } },
             "required": ["greaterThanOrEquals"],
             "title": "greaterThanOrEquals"
           },
@@ -326,6 +324,24 @@
             },
             "required": ["after"],
             "title": "after"
+          },
+          {
+            "type": "object",
+            "properties": { "beforeRelative": { "type": "string" } },
+            "required": ["beforeRelative"],
+            "title": "beforeRelative"
+          },
+          {
+            "type": "object",
+            "properties": { "afterRelative": { "type": "string" } },
+            "required": ["afterRelative"],
+            "title": "afterRelative"
+          },
+          {
+            "type": "object",
+            "properties": { "equalsRelative": { "type": "string" } },
+            "required": ["equalsRelative"],
+            "title": "equalsRelative"
           }
         ]
       }

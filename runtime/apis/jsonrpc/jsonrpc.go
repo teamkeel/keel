@@ -12,6 +12,7 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/locale"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -48,6 +49,13 @@ func NewHandler(schema *proto.Schema, api *proto.Api) common.HandlerFunc {
 		if identity != nil {
 			ctx = auth.WithIdentity(ctx, identity)
 		}
+
+		// handle any Time-Zone headers
+		location, err := locale.HandleTimezoneHeader(ctx, r.Header)
+		if err != nil {
+			return NewErrorResponse(ctx, nil, err)
+		}
+		ctx = locale.WithTimeLocation(ctx, location)
 
 		req, err := parseJsonRpcRequest(r.Body)
 		if err != nil {

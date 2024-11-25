@@ -5,8 +5,11 @@ type Query {
 
 input DateArrayAllQueryInput {
   after: ISO8601
+  afterRelative: String
   before: ISO8601
+  beforeRelative: String
   equals: ISO8601
+  equalsRelative: String
   notEquals: ISO8601
   onOrAfter: ISO8601
   onOrBefore: ISO8601
@@ -14,8 +17,11 @@ input DateArrayAllQueryInput {
 
 input DateArrayAnyQueryInput {
   after: ISO8601
+  afterRelative: String
   before: ISO8601
+  beforeRelative: String
   equals: ISO8601
+  equalsRelative: String
   notEquals: ISO8601
   onOrAfter: ISO8601
   onOrBefore: ISO8601

@@ -84,8 +84,11 @@
         "type": "object",
         "properties": {
           "after": { "type": "string", "format": "date" },
+          "afterRelative": { "type": "string" },
           "before": { "type": "string", "format": "date" },
+          "beforeRelative": { "type": "string" },
           "equals": { "type": "string", "format": "date" },
+          "equalsRelative": { "type": "string" },
           "notEquals": { "type": "string", "format": "date" },
           "onOrAfter": { "type": "string", "format": "date" },
           "onOrBefore": { "type": "string", "format": "date" }
@@ -96,8 +99,11 @@
         "type": "object",
         "properties": {
           "after": { "type": "string", "format": "date" },
+          "afterRelative": { "type": "string" },
           "before": { "type": "string", "format": "date" },
+          "beforeRelative": { "type": "string" },
           "equals": { "type": "string", "format": "date" },
+          "equalsRelative": { "type": "string" },
           "notEquals": { "type": "string", "format": "date" },
           "onOrAfter": { "type": "string", "format": "date" },
           "onOrBefore": { "type": "string", "format": "date" }

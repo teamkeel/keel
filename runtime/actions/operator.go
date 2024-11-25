@@ -23,6 +23,7 @@ const (
 	Contains
 	NotContains
 	Equals
+	EqualsRelative
 	NotEquals
 	StartsWith
 	EndsWith
@@ -33,7 +34,9 @@ const (
 	OneOf
 	NotOneOf
 	After
+	AfterRelative
 	Before
+	BeforeRelative
 	OnOrAfter
 	OnOrBefore
 
@@ -66,6 +69,8 @@ func queryOperatorToActionOperator(in string) (out ActionOperator, err error) {
 	switch in {
 	case "equals":
 		return Equals, nil
+	case "equalsRelative":
+		return EqualsRelative, nil
 	case "notEquals":
 		return NotEquals, nil
 	case "startsWith":
@@ -86,8 +91,12 @@ func queryOperatorToActionOperator(in string) (out ActionOperator, err error) {
 		return GreaterThanEquals, nil
 	case "before":
 		return Before, nil
+	case "beforeRelative":
+		return BeforeRelative, nil
 	case "after":
 		return After, nil
+	case "afterRelative":
+		return AfterRelative, nil
 	case "onOrBefore":
 		return OnOrBefore, nil
 	case "onOrAfter":

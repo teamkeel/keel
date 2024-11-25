@@ -5,6 +5,7 @@ export class Executor {
   constructor(props) {
     this._identity = props.identity || null;
     this._authToken = props.authToken || null;
+    this._timezone = props.timezone || null;
     this._apiBaseUrl = props.apiBaseUrl;
     this._parseJsonResult = props.parseJsonResult;
 
@@ -37,6 +38,10 @@ export class Executor {
       parseJsonResult: this._parseJsonResult,
     });
   }
+  withTimezone(t) {
+    this._timezone = t;
+    return this;
+  }
   _execute(method, params) {
     const headers = { "Content-Type": "application/json" };
 
@@ -62,6 +67,11 @@ export class Executor {
     // If an auth token is provided that can be sent as-is
     if (this._authToken !== null) {
       headers["Authorization"] = "Bearer " + this._authToken;
+    }
+
+    // If a timezone is set, it should be sent in the headers
+    if (this._timezone !== null) {
+      headers["Time-Zone"] = this._timezone;
     }
 
     if (params?.scheduled) {

@@ -1645,6 +1645,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Indent()
 	w.Writeln("withIdentity(identity: sdk.Identity): ActionExecutor;")
 	w.Writeln("withAuthToken(token: string): ActionExecutor;")
+	w.Writeln("withTimezone(timezone: string): this;")
 	for _, model := range schema.Models {
 		for _, action := range model.Actions {
 			msg := schema.FindMessage(action.InputMessageName)
@@ -1739,6 +1740,8 @@ func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 
 func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
+	case proto.Type_TYPE_RELATIVE_PERIOD:
+		return "RelativeDateString"
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
 			return "string"
@@ -1752,6 +1755,8 @@ func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPac
 
 func toResponseTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
+	case proto.Type_TYPE_RELATIVE_PERIOD:
+		return "RelativeDateString"
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
 			return "FileResponseObject"

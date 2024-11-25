@@ -20,6 +20,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/types"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/timeperiod"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -110,6 +111,19 @@ func (o *QueryOperand) IsValue() bool {
 	return o.value != nil && o.query == nil
 }
 
+func (o *QueryOperand) IsTimePeriodValue() bool {
+	if !o.IsValue() {
+		return false
+	}
+
+	switch o.value.(type) {
+	case timeperiod.TimePeriod:
+		return true
+	}
+
+	return false
+}
+
 func (o *QueryOperand) IsArrayValue() bool {
 	if !o.IsValue() {
 		return false
@@ -131,6 +145,23 @@ func (o *QueryOperand) IsNull() bool {
 func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	switch {
 	case o.IsValue() && !o.IsArrayValue():
+		if o.IsTimePeriodValue() {
+			tp, _ := o.value.(timeperiod.TimePeriod)
+			sql := "NOW()"
+			if tp.IsTimezoneRelative() && query.timezone != "" {
+				sql = fmt.Sprintf("(NOW() AT TIME ZONE '%s')", query.timezone)
+			}
+			if tp.Offset != 0 {
+				sql = fmt.Sprintf("%s + INTERVAL '%d %s'", sql, tp.Offset, tp.Period)
+			}
+			if tp.Complete {
+				sql = fmt.Sprintf("DATE_TRUNC('%s', %s)", tp.Period, sql)
+			} else {
+				sql = fmt.Sprintf("(%s)", sql)
+			}
+			return sql
+		}
+
 		return "?"
 	case o.IsValue() && o.IsArrayValue():
 		operands := []string{}
@@ -181,6 +212,8 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 
 func (o *QueryOperand) toSqlArgs() []any {
 	switch {
+	case o.IsTimePeriodValue():
+		return nil
 	case o.IsValue() && !o.IsArrayValue():
 		return []any{o.value}
 	case o.IsValue() && o.IsArrayValue():
@@ -244,6 +277,8 @@ type QueryBuilder struct {
 	writeValues *Row
 	// The type of SQL join to use.
 	joinType JoinType
+	// The timezone to be used if we're dealing with relative dates (e.g. DATE_TRUNC("day", NOW()))
+	timezone string
 }
 
 type JoinType string
@@ -294,6 +329,13 @@ type QueryBuilderOption func(qb *QueryBuilder)
 func WithJoinType(joinType JoinType) QueryBuilderOption {
 	return func(qb *QueryBuilder) {
 		qb.joinType = joinType
+	}
+}
+
+// WithTimezone sets the time zone for the query
+func WithTimezone(tz string) QueryBuilderOption {
+	return func(qb *QueryBuilder) {
+		qb.timezone = tz
 	}
 }
 
@@ -1313,6 +1355,13 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			rhs.value = "%%" + rhs.value.(string)
 		case Contains, NotContains:
 			rhs.value = "%%" + rhs.value.(string) + "%%"
+		case BeforeRelative, AfterRelative, EqualsRelative:
+			timePeriod, err := timeperiod.Parse(rhs.value.(string))
+			// if we're filtering by time period expressions, turn rhs operand into a timeperiod struct
+			if err != nil {
+				return "", nil, fmt.Errorf("operand: %v is not a valid time period: %w", rhs, err)
+			}
+			rhs.value = timePeriod
 		}
 	}
 
@@ -1399,6 +1448,30 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case AllGreaterThanEquals, AllOnOrAfter:
 		template = fmt.Sprintf("%s <= ALL(%s)", rhsSqlOperand, lhsSqlOperand)
 
+	/* All relative date operators */
+	case BeforeRelative:
+		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
+	case AfterRelative:
+		if !rhs.IsTimePeriodValue() {
+			return "", nil, fmt.Errorf("operand: %+v is not a valid time period", rhs)
+		}
+		tp, _ := rhs.value.(timeperiod.TimePeriod)
+		end := rhsSqlOperand
+		if tp.Value != 0 {
+			end = fmt.Sprintf("(%s + INTERVAL '%d %s')", end, tp.Value, tp.Period)
+		}
+		template = fmt.Sprintf("%s >= %s", lhsSqlOperand, end)
+	case EqualsRelative:
+		if !rhs.IsTimePeriodValue() {
+			return "", nil, fmt.Errorf("operand: %+v is not a valid time period", rhs)
+		}
+		tp, _ := rhs.value.(timeperiod.TimePeriod)
+		end := rhsSqlOperand
+		if tp.Value != 0 {
+			end = fmt.Sprintf("(%s + INTERVAL '%d %s')", end, tp.Value, tp.Period)
+		}
+
+		template = fmt.Sprintf("%s >= %s AND %s < %s", lhsSqlOperand, rhsSqlOperand, lhsSqlOperand, end)
 	default:
 		return "", nil, fmt.Errorf("operator: %v is not yet supported", operator)
 	}
