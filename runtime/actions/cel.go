@@ -14,7 +14,6 @@ import (
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
-// GenSql will construct a SQL statement for the expression
 func (query *QueryBuilder) whereByExpression(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, expression string, inputs map[string]any) error {
 	env, err := cel.NewEnv()
 	if err != nil {
@@ -32,15 +31,14 @@ func (query *QueryBuilder) whereByExpression(ctx context.Context, schema *proto.
 	}
 
 	un := &celSqlGenerator{
-		ctx:        ctx,
-		query:      query,
-		schema:     schema,
-		model:      model,
-		action:     action,
-		inputs:     inputs,
-		operators:  arraystack.New(),
-		operands:   arraystack.New(),
-		printStack: false,
+		ctx:       ctx,
+		query:     query,
+		schema:    schema,
+		model:     model,
+		action:    action,
+		inputs:    inputs,
+		operators: arraystack.New(),
+		operands:  arraystack.New(),
 	}
 
 	if strings.Contains(expression, " && ") || strings.Contains(expression, " || ") {
@@ -60,16 +58,14 @@ func (query *QueryBuilder) whereByExpression(ctx context.Context, schema *proto.
 
 // celSqlGenerator walks through the CEL AST and calls out to our query celSqlGenerator to construct the SQL statement
 type celSqlGenerator struct {
-	ctx    context.Context
-	query  *QueryBuilder
-	schema *proto.Schema
-	model  *proto.Model
-	action *proto.Action
-	inputs map[string]any
-
-	operators  *arraystack.Stack
-	operands   *arraystack.Stack
-	printStack bool
+	ctx       context.Context
+	query     *QueryBuilder
+	schema    *proto.Schema
+	model     *proto.Model
+	action    *proto.Action
+	inputs    map[string]any
+	operators *arraystack.Stack
+	operands  *arraystack.Stack
 }
 
 func (con *celSqlGenerator) visit(expr *exprpb.Expr) error {
@@ -271,7 +267,6 @@ func (con *celSqlGenerator) visitCallFunc(expr *exprpb.Expr) error {
 		if err != nil {
 			return err
 		}
-		// TODO: add next arg
 	}
 
 	con.query.CloseFunction(sqlFun)

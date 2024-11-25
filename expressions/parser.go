@@ -9,7 +9,6 @@ import (
 )
 
 type ExpressionParser struct {
-	celAst             *cel.Ast
 	celEnv             *cel.Env
 	provider           *typeProvider
 	expectedReturnType *types.Type
@@ -63,24 +62,3 @@ func (p *ExpressionParser) Validate(expression string) ([]string, error) {
 	// Valid expression
 	return nil, nil
 }
-
-func (p *ExpressionParser) Ast() *cel.Ast {
-	return p.celAst
-}
-
-// // Build will construct a SQL statement for the expression
-// func (p *Parser) Build(query *actions.QueryBuilder, expression string, input map[string]any) error {
-// 	checkedExpr, err := cel.AstToCheckedExpr(p.ast)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	un := &builder{
-// 		query: query,
-// 	}
-// 	if err := un.visit(checkedExpr.Expr); err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
