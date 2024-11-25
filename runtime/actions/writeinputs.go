@@ -35,16 +35,6 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 	}
 
 	for _, setExpression := range scope.Action.SetExpressions {
-		// expression, err := parser.ParseExpression(setExpression.Source)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// operand, assignment, err := expression.ToAssignmentExpression()
-		// if err != nil {
-		// 	return err
-		// }
-
 		parts := strings.Split(setExpression.Source, "=")
 
 		env, err := cel.NewEnv()
@@ -61,7 +51,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
-		ast2, issues := env.Parse(parts[0])
+		ast2, issues := env.Parse(parts[1])
 		if issues != nil && len(issues.Errors()) > 0 {
 			return errors.New("unexpected ast parsing issues")
 		}

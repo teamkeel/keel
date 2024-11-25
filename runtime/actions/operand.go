@@ -18,9 +18,9 @@ import (
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
-// OperandResolverCel hides some of the complexity of expression parsing so that the runtime action code
+// OperandResolver hides some of the complexity of expression parsing so that the runtime action code
 // can reason about and execute expression logic without stepping through the AST.
-type OperandResolverCel struct {
+type OperandResolver struct {
 	Context context.Context
 	Schema  *proto.Schema
 	Model   *proto.Model
@@ -29,8 +29,8 @@ type OperandResolverCel struct {
 	Inputs  map[string]any
 }
 
-func NewOperandResolverCel(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, operand *expr.Expr, inputs map[string]any) *OperandResolverCel {
-	return &OperandResolverCel{
+func NewOperandResolverCel(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, operand *expr.Expr, inputs map[string]any) *OperandResolver {
+	return &OperandResolver{
 		Context: ctx,
 		Schema:  schema,
 		Model:   model,
@@ -40,7 +40,7 @@ func NewOperandResolverCel(ctx context.Context, schema *proto.Schema, model *pro
 	}
 }
 
-func (resolver *OperandResolverCel) Fragments() ([]string, error) {
+func (resolver *OperandResolver) Fragments() ([]string, error) {
 	expre := []string{}
 	e := resolver.Operand
 
@@ -65,7 +65,7 @@ func (resolver *OperandResolverCel) Fragments() ([]string, error) {
 //
 //	account.id
 //	ctx.identity.primaryAccount.following.followeeId
-func (resolver *OperandResolverCel) NormalisedFragments() ([]string, error) {
+func (resolver *OperandResolver) NormalisedFragments() ([]string, error) {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return nil, err
@@ -118,8 +118,7 @@ func (resolver *OperandResolverCel) NormalisedFragments() ([]string, error) {
 // IsLiteral returns true if the expression operand is a literal type.
 // For example, a number or string literal written straight into the Keel schema,
 // such as the right-hand side operand in @where(person.age > 21).
-func (resolver *OperandResolverCel) IsLiteral() bool {
-
+func (resolver *OperandResolver) IsLiteral() bool {
 	switch resolver.Operand.ExprKind.(type) {
 	case *expr.Expr_ListExpr:
 		return true // TODO: check elements
@@ -133,7 +132,7 @@ func (resolver *OperandResolverCel) IsLiteral() bool {
 // // IsImplicitInput returns true if the expression operand refers to an implicit input on an action.
 // // For example, an input value provided in a create action might require validation,
 // // such as: create createThing() with (name) @validation(name != "")
-func (resolver *OperandResolverCel) IsImplicitInput() bool {
+func (resolver *OperandResolver) IsImplicitInput() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return false
@@ -166,7 +165,7 @@ func (resolver *OperandResolverCel) IsImplicitInput() bool {
 // IsExplicitInput returns true if the expression operand refers to an explicit input on an action.
 // For example, a where condition might use an explicit input,
 // such as: list listThings(isActive: Boolean) @where(thing.isActive == isActive)
-func (resolver *OperandResolverCel) IsExplicitInput() bool {
+func (resolver *OperandResolver) IsExplicitInput() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return false
@@ -199,7 +198,7 @@ func (resolver *OperandResolverCel) IsExplicitInput() bool {
 // IsModelDbColumn returns true if the expression operand refers to a field value residing in the database.
 // For example, a where condition might filter on reading data,
 // such as: @where(post.author.isActive)
-func (resolver *OperandResolverCel) IsModelDbColumn() bool {
+func (resolver *OperandResolver) IsModelDbColumn() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return false
@@ -211,12 +210,12 @@ func (resolver *OperandResolverCel) IsModelDbColumn() bool {
 // IsContextDbColumn returns true if the expression refers to a value on the context
 // which will require database access (such as with identity backlinks),
 // such as: @permission(expression: ctx.identity.user.isActive)
-func (resolver *OperandResolverCel) IsContextDbColumn() bool {
+func (resolver *OperandResolver) IsContextDbColumn() bool {
 	return resolver.IsContextIdentity() && !resolver.IsContextIdentityId()
 
 }
 
-func (resolver *OperandResolverCel) IsContextIdentity() bool {
+func (resolver *OperandResolver) IsContextIdentity() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return false
@@ -233,7 +232,7 @@ func (resolver *OperandResolverCel) IsContextIdentity() bool {
 	return false
 }
 
-func (resolver *OperandResolverCel) IsContextIdentityId() bool {
+func (resolver *OperandResolver) IsContextIdentityId() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return false
@@ -254,7 +253,7 @@ func (resolver *OperandResolverCel) IsContextIdentityId() bool {
 	return false
 }
 
-func (resolver *OperandResolverCel) IsContextIsAuthenticatedField() bool {
+func (resolver *OperandResolver) IsContextIsAuthenticatedField() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return false
@@ -277,11 +276,11 @@ func (resolver *OperandResolverCel) IsContextIsAuthenticatedField() bool {
 // "ctx.identity.user"
 // then it returns false, because that can no longer be resolved solely from the
 // in memory context data.
-func (resolver *OperandResolverCel) IsContextField() bool {
+func (resolver *OperandResolver) IsContextField() bool {
 	return resolver.IsContext() && !resolver.IsContextDbColumn()
 }
 
-func (resolver *OperandResolverCel) IsContext() bool {
+func (resolver *OperandResolver) IsContext() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return false
@@ -290,7 +289,7 @@ func (resolver *OperandResolverCel) IsContext() bool {
 	return fragments[0] == "ctx"
 }
 
-func (resolver *OperandResolverCel) IsContextNowField() bool {
+func (resolver *OperandResolver) IsContextNowField() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return false
@@ -302,7 +301,7 @@ func (resolver *OperandResolverCel) IsContextNowField() bool {
 	return false
 }
 
-func (resolver *OperandResolverCel) IsContextHeadersField() bool {
+func (resolver *OperandResolver) IsContextHeadersField() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return false
@@ -314,7 +313,7 @@ func (resolver *OperandResolverCel) IsContextHeadersField() bool {
 	return false
 }
 
-func (resolver *OperandResolverCel) IsContextEnvField() bool {
+func (resolver *OperandResolver) IsContextEnvField() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return false
@@ -326,7 +325,7 @@ func (resolver *OperandResolverCel) IsContextEnvField() bool {
 	return false
 }
 
-func (resolver *OperandResolverCel) IsContextSecretField() bool {
+func (resolver *OperandResolver) IsContextSecretField() bool {
 	fragments, err := resolver.Fragments()
 	if err != nil {
 		return false
@@ -338,9 +337,9 @@ func (resolver *OperandResolverCel) IsContextSecretField() bool {
 	return false
 }
 
+// TODO: incorporate into NormalisedFragments
 // GetOperandType returns the equivalent protobuf type for the expression operand and whether it is an array or not
-func (resolver *OperandResolverCel) GetOperandType() (proto.Type, bool, error) {
-	//action := resolver.Action
+func (resolver *OperandResolver) GetOperandType() (proto.Type, bool, error) {
 	schema := resolver.Schema
 
 	fragments, err := resolver.Fragments()
@@ -381,7 +380,7 @@ func (resolver *OperandResolverCel) GetOperandType() (proto.Type, bool, error) {
 }
 
 // Generates a QueryOperand which
-func (resolver *OperandResolverCel) QueryOperand() (*QueryOperand, error) {
+func (resolver *OperandResolver) QueryOperand() (*QueryOperand, error) {
 	var queryOperand *QueryOperand
 
 	switch {
@@ -515,7 +514,7 @@ func (resolver *OperandResolverCel) QueryOperand() (*QueryOperand, error) {
 	case resolver.IsContextIdentityId():
 		isAuthenticated := auth.IsAuthenticated(resolver.Context)
 		if !isAuthenticated {
-			return nil, nil
+			return Value(""), nil
 		}
 
 		identity, err := auth.GetIdentity(resolver.Context)
@@ -581,8 +580,8 @@ func (resolver *OperandResolverCel) QueryOperand() (*QueryOperand, error) {
 		if value, ok := headers[canonicalName]; ok {
 			return Value(strings.Join(value, ", ")), nil
 		}
-		return Value(""), nil
 
+		return Value(""), nil
 	}
 
 	return queryOperand, nil

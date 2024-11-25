@@ -3508,6 +3508,10 @@ func TestQueryBuilder(t *testing.T) {
 	for _, testCase := range testCases {
 		testCase := testCase
 
+		// if testCase.name != "create_op_set_attribute_literals" {
+		// 	continue
+		// }
+
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()

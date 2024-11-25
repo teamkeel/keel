@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/cel-go/cel"
+	"github.com/google/cel-go/interpreter"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -101,6 +104,95 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 	return authorised, nil
 }
 
+func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, expression string, inputs map[string]any) (bool, bool) {
+
+	env, err := cel.NewEnv()
+	if err != nil {
+		return false, false
+	}
+
+	ast, issues := env.Parse(expression)
+	if issues != nil && len(issues.Errors()) > 0 {
+		return false, false
+	}
+
+	prg, err := env.Program(ast)
+	if err != nil {
+		return false, false
+	}
+
+	d := &Act{
+		context: ctx,
+		schema:  schema,
+	}
+	out, _, err := prg.Eval(d)
+
+	if err != nil {
+		return false, false
+	}
+
+	return true, out.Value().(bool)
+}
+
+type Act struct {
+	context context.Context
+	schema  *proto.Schema
+	model   *proto.Model
+	action  *proto.Action
+}
+
+func (a *Act) ResolveName(name string) (any, bool) {
+	//resolver := NewOperandResolverCel()
+
+	//expr
+
+	switch name {
+	case "ctx.isAuthenticated":
+
+		return auth.IsAuthenticated(a.context), true
+	case "ctx.identity", "ctx.identity.id":
+		isAuthenticated := auth.IsAuthenticated(a.context)
+		if !isAuthenticated {
+			return false, true
+		}
+
+		identity, err := auth.GetIdentity(a.context)
+		if err != nil {
+			return false, false
+		}
+
+		return identity[parser.FieldNameId].(string), true
+	case "ctx.now":
+		return runtimectx.GetNow(), true
+	}
+
+	if secretName, found := strings.CutPrefix(name, "ctx.secrets."); found {
+		secrets := runtimectx.GetSecrets(a.context)
+		if value, ok := secrets[secretName]; ok {
+			return value, true
+		} else {
+			return nil, true
+		}
+	}
+
+	// if header, found := strings.CutPrefix(name, "ctx.headers."); found {
+	// 	secrets := runtimectx.GetSecrets(a.context)
+	// 	if value, ok := secrets[secretName]; ok {
+	// 		return value, true
+	// 	} else {
+	// 		return nil, true
+	// 	}
+	// }
+
+	return nil, false
+}
+
+// Parent returns the parent of the current activation, may be nil.
+// If non-nil, the parent will be searched during resolve calls.
+func (a *Act) Parent() interpreter.Activation {
+	return nil
+}
+
 // TryResolveAuthorisationEarly will attempt to check authorisation early without row-based querying.
 // This will take into account logical conditions and multiple expression and role permission attributes.
 func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionRule) (canResolveAll bool, authorised bool, err error) {
@@ -117,7 +209,7 @@ func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionR
 			// }
 
 			// Try resolve the permission early.
-			canResolve, authorised = false, false // expressions.TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, expression, map[string]any{})
+			canResolve, authorised = TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, permission.Expression.Source, map[string]any{})
 
 			if !canResolve {
 				hasDatabaseCheck = true

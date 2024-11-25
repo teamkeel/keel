@@ -384,18 +384,18 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 			}`,
 		actionName: "getThing",
-		expectedTemplate: `
-			SELECT
-				COUNT(DISTINCT "thing"."id") = 1 AS authorised
-			FROM
-				"thing"
-			WHERE
-				(? IS NOT DISTINCT FROM ?)`,
-		expectedArgs: []any{true, unverifiedIdentity[parser.FieldNameId].(string), "idToAuthorise"},
-		earlyAuth:    CouldNotAuthoriseEarly(),
-		identity:     unverifiedIdentity,
-		// earlyAuth:  AuthorisationGrantedEarly(),
-		// identity:   unverifiedIdentity,
+		// expectedTemplate: `
+		// 	SELECT
+		// 		COUNT(DISTINCT "thing"."id") = 1 AS authorised
+		// 	FROM
+		// 		"thing"
+		// 	WHERE
+		// 		(? IS NOT DISTINCT FROM ?)`,
+		// expectedArgs: []any{true, unverifiedIdentity[parser.FieldNameId].(string), "idToAuthorise"},
+		// earlyAuth:    CouldNotAuthoriseEarly(),
+		// identity:     unverifiedIdentity,
+		earlyAuth: AuthorisationGrantedEarly(),
+		identity:  unverifiedIdentity,
 	},
 	{
 		name: "early_evaluate_update_op",
@@ -1431,7 +1431,7 @@ func TestPermissionQueryBuilder(t *testing.T) {
 	for _, tc := range authorisationTestCases {
 		testCase := tc
 
-		// if testCase.name != "early_evaluate_get_op" {
+		// if testCase.name != "cannot_early_evaluate_failed_role_and_failed_permissions_and_database_3" {
 		// 	continue
 		// }
 
