@@ -141,17 +141,6 @@ func (query *QueryBuilder) applyRequestOrdering(orderBy []any) {
 }
 
 func List(scope *Scope, input map[string]any) (map[string]any, error) {
-	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
-
-	// Attempt to resolve permissions early; i.e. before row-based database querying.
-	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
-	if err != nil {
-		return nil, err
-	}
-	if canResolveEarly && !authorised {
-		return nil, common.NewPermissionError()
-	}
-
 	// Generate the SQL statement.
 	query := NewQuery(scope.Model)
 	statement, page, err := GenerateListStatement(query, scope, input)

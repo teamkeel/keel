@@ -3,18 +3,10 @@ package actions
 import (
 	"errors"
 
-	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
 func Delete(scope *Scope, input map[string]any) (res *string, err error) {
-	// Attempt to resolve permissions early; i.e. before row-based database querying.
-	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
-	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
-	if err != nil {
-		return nil, err
-	}
-
 	// Generate the SQL statement
 	query := NewQuery(scope.Model)
 	statement, err := GenerateDeleteStatement(query, scope, input)
@@ -22,46 +14,39 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 		return nil, err
 	}
 
-	var row map[string]any
+	authQuery := NewQuery(scope.Model)
+	err = authQuery.ApplyImplicitFilters(scope, input)
+	if err != nil {
+		return nil, err
+	}
 
-	switch {
-	case canResolveEarly && !authorised:
+	err = authQuery.applyExpressionFilters(scope, input)
+	if err != nil {
+		return nil, err
+	}
+	authQuery.Select(IdField())
+	authQuery.DistinctOn(IdField())
+	rows, err := authQuery.SelectStatement().ExecuteToSingle(scope.Context)
+	if err != nil {
+		return nil, err
+	}
+
+	rowsToAuthorise := []map[string]any{}
+	if rows != nil {
+		rowsToAuthorise = append(rowsToAuthorise, rows)
+	}
+
+	isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isAuthorised {
 		return nil, common.NewPermissionError()
-	case !canResolveEarly:
-		authQuery := NewQuery(scope.Model)
-		err := authQuery.ApplyImplicitFilters(scope, input)
-		if err != nil {
-			return nil, err
-		}
-
-		err = authQuery.applyExpressionFilters(scope, input)
-		if err != nil {
-			return nil, err
-		}
-		authQuery.Select(IdField())
-		authQuery.DistinctOn(IdField())
-		rows, err := authQuery.SelectStatement().ExecuteToSingle(scope.Context)
-		if err != nil {
-			return nil, err
-		}
-
-		rowsToAuthorise := []map[string]any{}
-		if rows != nil {
-			rowsToAuthorise = append(rowsToAuthorise, rows)
-		}
-
-		isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
-		if err != nil {
-			return nil, err
-		}
-
-		if !isAuthorised {
-			return nil, common.NewPermissionError()
-		}
 	}
 
 	// Execute database request, expecting a single result
-	row, err = statement.ExecuteToSingle(scope.Context)
+	row, err := statement.ExecuteToSingle(scope.Context)
 	if err != nil {
 		return nil, err
 	}

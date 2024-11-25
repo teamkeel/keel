@@ -194,13 +194,13 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, input map[
 	permissionState := common.NewPermissionState()
 
 	if trigger == functions.ManualTrigger {
-		// Check if authorisation can be achieved early.
-		canAuthoriseEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, job.Permissions)
+		// Check if authorisation can be concluded by role permissions
+		canAuthorise, authorised, err := actions.TryAuthoriseByRolePermissions(scope, job.Permissions)
 		if err != nil {
 			return err
 		}
 
-		if canAuthoriseEarly {
+		if canAuthorise {
 			if authorised {
 				permissionState.Grant()
 			} else {

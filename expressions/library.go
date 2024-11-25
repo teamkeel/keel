@@ -46,7 +46,3 @@ func (*standardKeelLib) ProgramOptions() []cel.ProgramOption {
 func argTypes(args ...*types.Type) []*types.Type {
 	return args
 }
-
-func noBinaryOverrides(rhs, lhs ref.Val) ref.Val {
-	return types.NoSuchOverloadErr()
-}

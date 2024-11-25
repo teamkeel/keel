@@ -58,8 +58,15 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 		return false, nil
 	}
 
-	canResolve, authorised, _ := TryResolveAuthorisationEarly(scope, permissions)
-	if canResolve {
+	canAuthorise, authorised, err := TryAuthoriseByRolePermissions(scope, permissions)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return false, err
+	}
+
+	// If access can be concluded by role permissions alone
+	if canAuthorise {
 		return authorised, nil
 	}
 
@@ -193,53 +200,39 @@ func (a *Act) Parent() interpreter.Activation {
 	return nil
 }
 
-// TryResolveAuthorisationEarly will attempt to check authorisation early without row-based querying.
+// TryAuthoriseByRolePermissions will attempt to check authorisation early without row-based querying.
 // This will take into account logical conditions and multiple expression and role permission attributes.
-func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionRule) (canResolveAll bool, authorised bool, err error) {
-	hasDatabaseCheck := false
-	canResolveAll = false
+func TryAuthoriseByRolePermissions(scope *Scope, permissions []*proto.PermissionRule) (canAuthorise bool, authorised bool, err error) {
+	hasExpression := false
+
 	for _, permission := range permissions {
-		canResolve := false
-		authorised := false
 		switch {
 		case permission.Expression != nil:
-			// expression, err := parser.ParseExpression(permission.Expression.Source)
-			// if err != nil {
-			// 	return false, false, err
-			// }
-
-			// Try resolve the permission early.
-			canResolve, authorised = TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, permission.Expression.Source, map[string]any{})
-
-			if !canResolve {
-				hasDatabaseCheck = true
-			}
-
+			hasExpression = true
 		case permission.RoleNames != nil:
-			// Roles can always be resolved early.
-			canResolve = true
-
 			// Check if this role permission is satisfied.
-			authorised, err = resolveRolePermissionRule(scope.Context, scope.Schema, permission)
+			authorised, err := resolveRolePermissionRule(scope.Context, scope.Schema, permission)
 			if err != nil {
 				return false, false, err
 			}
-		}
 
-		// If this permission can be resolved now and is satisfied,
-		// then we know the permission will be granted because
-		// permission attributes are ORed.
-		if canResolve && authorised {
-			return true, true, nil
+			// If this permission is satisfied,
+			// then access is granted because
+			// permission attributes are ORed.
+			if authorised {
+				return true, true, nil
+			}
 		}
-
-		// If this permission can be resolved now and
-		// there hasn't been a row/db permission, then
-		// assume we can still resolve the entire action.
-		canResolveAll = canResolve && !hasDatabaseCheck
 	}
 
-	return canResolveAll, false, nil
+	// If there exists an expression attribute, then we can't conclusively deny access yet
+	if hasExpression {
+		return false, false, nil
+	}
+
+	// If there is no expression attribute, then we can conclude that access is denied
+	// because all role permissions failed
+	return true, false, nil
 }
 
 // resolveRolePermissionRule returns true if there is a role-based permission among the
