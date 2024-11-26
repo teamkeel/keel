@@ -29,6 +29,11 @@ export class Core {
 
         const token = this.auth.accessToken.get();
 
+        let tz;
+        try {
+          tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        } catch {}
+
         const result = await globalThis.fetch(
           stripTrailingSlash(this.config.baseUrl) + "/json/" + action,
           {
@@ -37,6 +42,7 @@ export class Core {
             headers: {
               accept: "application/json",
               "content-type": "application/json",
+              ...(tz ? { "time-zone": tz } : {}),
               ...this.config.headers,
               ...(token != null
                 ? {
@@ -134,12 +140,12 @@ export class Core {
     /**
      * Get or set the access token from the configured token store.
      */
-    accessToken: this.config.accessTokenStore || new InMemoryStore(),
+    accessToken: this.config?.accessTokenStore || new InMemoryStore(),
 
     /**
      * Get or set the refresh token from the configured token store.
      */
-    refreshToken: this.config.refreshTokenStore || new InMemoryStore(),
+    refreshToken: this.config?.refreshTokenStore || new InMemoryStore(),
 
     /**
      * Returns data field set to the list of supported authentication providers and their SSO login URLs.
