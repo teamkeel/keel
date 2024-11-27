@@ -134,10 +134,10 @@ var authorisationTestCases = []authorisationTestCase{
 			FROM
 				"thing"
 			WHERE
-				( "thing"."created_by_id" IS NOT DISTINCT FROM ? )
+				( "thing"."created_by_id" IS NOT DISTINCT FROM NULL )
 				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		earlyAuth:    CouldNotAuthoriseEarly(),
-		expectedArgs: []any{"", "idToAuthorise"},
+		expectedArgs: []any{"idToAuthorise"},
 	},
 	{
 		name: "identity_on_related_model",
@@ -605,7 +605,7 @@ var authorisationTestCases = []authorisationTestCase{
 			}`,
 		actionName: "getThing",
 		input:      map[string]any{"id": "123", "bool": false},
-		earlyAuth:  AuthorisationGrantedEarly(),
+		earlyAuth:  AuthorisationDeniedEarly(),
 		identity:   unverifiedIdentity,
 	},
 	{

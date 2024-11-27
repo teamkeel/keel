@@ -72,7 +72,7 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
-		if !strings.Contains(tc.Name(), "where_expression_") {
+		if !strings.Contains(tc.Name(), "default") {
 			continue
 		}
 

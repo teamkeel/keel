@@ -123,9 +123,6 @@ en:
   E049:
     message: "expression should have a single value"
     hint: ""
-  E050:
-    message: "default requires an expression"
-    hint: "Try @default(MyDefaultValue) instead"
   E051:
     message: "default expression doesn't support operators"
     hint: "Try removing '{{ .Op }}'"

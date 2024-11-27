@@ -153,10 +153,9 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 		queryOperand = InlineQuery(query, selectField)
 
 	case expressions.IsContextIdentityId(fragments):
-
 		isAuthenticated := auth.IsAuthenticated(ctx)
 		if !isAuthenticated {
-			queryOperand = Value("")
+			queryOperand = Null()
 		} else {
 			identity, err := auth.GetIdentity(ctx)
 			if err != nil {
