@@ -3,10 +3,18 @@ package actions
 import (
 	"fmt"
 
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
 func Update(scope *Scope, input map[string]any) (res map[string]any, err error) {
+	// Attempt to resolve permissions early; i.e. before row-based database querying.
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, input, permissions)
+	if err != nil {
+		return nil, err
+	}
+
 	if scope.Model.HasFiles() {
 		// handle file uploads and change input values to file data if applicable
 		if values, ok := input["values"].(map[string]any); ok {
@@ -25,25 +33,33 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		return nil, err
 	}
 
-	query.Select(IdField())
-	query.DistinctOn(IdField())
-	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.Context)
-	if err != nil {
-		return nil, err
-	}
-
-	rowsToAuthorise := []map[string]any{}
-	if rowToAuthorise != nil {
-		rowsToAuthorise = append(rowsToAuthorise, rowToAuthorise)
-	}
-
-	isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
-	if err != nil {
-		return nil, err
-	}
-
-	if !isAuthorised {
+	switch {
+	case canResolveEarly && !authorised:
 		return nil, common.NewPermissionError()
+	case !canResolveEarly:
+		query.Select(IdField())
+		query.DistinctOn(IdField())
+		rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.Context)
+		if err != nil {
+			return nil, err
+		}
+
+		rowsToAuthorise := []map[string]any{}
+		if rowToAuthorise != nil {
+			rowsToAuthorise = append(rowsToAuthorise, rowToAuthorise)
+		}
+
+		isAuthorised, err := AuthoriseAction(scope, input, rowsToAuthorise)
+		if err != nil {
+			return nil, err
+		}
+
+		if !isAuthorised {
+			return nil, common.NewPermissionError()
+		}
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	// Execute database request, expecting a single result

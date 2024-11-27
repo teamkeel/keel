@@ -29,7 +29,7 @@ open
 	close
 close`
 
-	res, err := RunCelResolver(expression, DebugStringGenerator())
+	res, err := RunCelVisitor(expression, DebugStringGenerator())
 	assert.NoError(t, err)
 
 	// diff := diffmatchpatch.New()

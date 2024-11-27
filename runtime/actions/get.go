@@ -4,11 +4,23 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
 func Get(scope *Scope, input map[string]any) (map[string]any, error) {
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
+
+	// Attempt to resolve permissions early; i.e. before row-based database querying.
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, input, permissions)
+	if err != nil {
+		return nil, err
+	}
+	if canResolveEarly && !authorised {
+		return nil, common.NewPermissionError()
+	}
+
 	// Generate the SQL statement
 	query := NewQuery(scope.Model)
 	statement, err := GenerateGetStatement(query, scope, input)

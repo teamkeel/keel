@@ -325,6 +325,35 @@ var testCases = []testCase{
 		expectedArgs: []any{identity[parser.FieldNameId].(string), "Dave", identity[parser.FieldNameId].(string)},
 	},
 	{
+		name: "create_op_set_attribute_set_related_model_by_id",
+		keelSchema: `
+			model CompanyUser {
+			}
+			model Record {
+				fields {
+					name Text
+					user CompanyUser
+				}
+				actions {
+					create createRecord() with (name, someId: ID) {
+						@set(record.user.id = someId)
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		actionName: "createRecord",
+		input:      map[string]any{"name": "Dave", "someId": "123"},
+		expectedTemplate: `
+			WITH 
+				"new_1_record" AS (
+					INSERT INTO "record" ("name", "user_id") 
+					VALUES (?, ?) 
+					RETURNING *) 
+			SELECT *, set_identity_id(?) AS __keel_identity_id FROM "new_1_record"`,
+		identity:     identity,
+		expectedArgs: []any{"Dave", "123", identity[parser.FieldNameId].(string)},
+	},
+	{
 		name: "create_op_set_attribute_identity_user_backlink_field",
 		keelSchema: `
 			model CompanyUser {
@@ -461,39 +490,39 @@ var testCases = []testCase{
 			RETURNING "person".*`,
 		expectedArgs: []any{"Dave", "Dave", "xyz"},
 	},
-	// {
-	// 	name: "update_op_set_attribute_ctx",
-	// 	keelSchema: `
-	// 		model Person {
-	// 			fields {
-	// 				name Text
-	// 				signedIn Boolean
-	// 			}
-	// 			actions {
-	// 				update updatePerson(id) with (name) {
-	// 					@set(person.signedIn = ctx.isAuthenticated)
-	// 				}
-	// 			}
-	// 			@permission(expression: true, actions: [update])
-	// 		}`,
-	// 	actionName: "updatePerson",
-	// 	input: map[string]any{
-	// 		"where": map[string]any{
-	// 			"id": "xyz",
-	// 		},
-	// 		"values": map[string]any{
-	// 			"name": "Dave",
-	// 		},
-	// 	},
-	// 	expectedTemplate: `
-	// 		UPDATE "person"
-	// 		SET
-	// 			"name" = ?,
-	// 			"nick_name" = ?
-	// 		WHERE "person"."id" IS NOT DISTINCT FROM ?
-	// 		RETURNING "person".*`,
-	// 	expectedArgs: []any{"Dave", "Dave", "xyz"},
-	// },
+	{
+		name: "update_op_set_attribute_ctx",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+					signedIn Boolean
+				}
+				actions {
+					update updatePerson(id) with (name) {
+						@set(person.signedIn = ctx.isAuthenticated)
+					}
+				}
+				@permission(expression: true, actions: [update])
+			}`,
+		actionName: "updatePerson",
+		input: map[string]any{
+			"where": map[string]any{
+				"id": "xyz",
+			},
+			"values": map[string]any{
+				"name": "Dave",
+			},
+		},
+		expectedTemplate: `
+			UPDATE "person"
+			SET
+				"name" = ?,
+				"nick_name" = ?
+			WHERE "person"."id" IS NOT DISTINCT FROM ?
+			RETURNING "person".*`,
+		expectedArgs: []any{"Dave", "Dave", "xyz"},
+	},
 	{
 		name: "update_op_set_attribute_identity_user_backlink_field",
 		keelSchema: `
@@ -3546,7 +3575,7 @@ func TestQueryBuilder(t *testing.T) {
 	for _, testCase := range testCases {
 		testCase := testCase
 		//list_multiple_conditions_parenthesis_on_ands
-		// if testCase.name != "create_op_set_attribute_identity_user_backlink_field" {
+		// if testCase.name != "update_op_set_attribute_context_identity" {
 		// 	continue
 		// }
 		//get_op_by_id_where_single_operand

@@ -66,7 +66,7 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 	return nil
 }
 
-func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Model, fragments []string) (*QueryOperand, error) {
+func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any, fragments []string) (*QueryOperand, error) {
 	fragments, err := normalisedFragments(schema, fragments)
 	if err != nil {
 		return nil, err
@@ -85,6 +85,13 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 		if err != nil {
 			return nil, err
 		}
+
+	case expressions.IsInput(schema, action, fragments):
+		value, ok := inputs[fragments[0]]
+		if !ok {
+			return nil, fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", fragments[0])
+		}
+		return Value(value), nil
 
 	case expressions.IsContextDbColumn(fragments):
 		// If this is a value from ctx that requires a database read (such as with identity backlinks),
@@ -202,6 +209,11 @@ func normalisedFragments(schema *proto.Schema, fragments []string) ([]string, er
 	isCtx := fragments[0] == "ctx"
 
 	if isCtx {
+		// We dont bother normalising ctx.isAuthenticated, ctx.secrets, etc.
+		if fragments[1] != "identity" {
+			return fragments, nil
+		}
+
 		// If this is a context backlink, then remove the first "ctx" fragment.
 		fragments = fragments[1:]
 	}
@@ -209,7 +221,9 @@ func normalisedFragments(schema *proto.Schema, fragments []string) ([]string, er
 	// The first fragment will always be the root model name, e.g. "author" in author.posts.title
 	modelTarget := schema.FindModel(casing.ToCamel(fragments[0]))
 	if modelTarget == nil {
-		return nil, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[0]))
+		// If it's not the model, then it could be an input
+		return fragments, nil
+		//return nil, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[0]))
 	}
 
 	var fieldTarget *proto.Field

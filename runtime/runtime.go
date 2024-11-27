@@ -181,7 +181,7 @@ func NewJobHandler(currSchema *proto.Schema) JobHandler {
 }
 
 // RunJob will run the job function in the runtime.
-func (handler JobHandler) RunJob(ctx context.Context, jobName string, input map[string]any, trigger functions.TriggerType) error {
+func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map[string]any, trigger functions.TriggerType) error {
 	ctx, span := tracer.Start(ctx, "Run job")
 	defer span.End()
 
@@ -195,7 +195,7 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, input map[
 
 	if trigger == functions.ManualTrigger {
 		// Check if authorisation can be concluded by role permissions
-		canAuthorise, authorised, err := actions.TryAuthoriseByRolePermissions(scope, job.Permissions)
+		canAuthorise, authorised, err := actions.TryResolveAuthorisationEarly(scope, inputs, job.Permissions)
 		if err != nil {
 			return err
 		}
@@ -212,7 +212,7 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, input map[
 	var err error
 	if job.InputMessageName != "" {
 		message := scope.Schema.FindMessage(job.InputMessageName)
-		input, err = actions.TransformInputs(handler.schema, message, input, true)
+		inputs, err = actions.TransformInputs(handler.schema, message, inputs, true)
 		if err != nil {
 			return err
 		}
@@ -221,7 +221,7 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, input map[
 	err = functions.CallJob(
 		ctx,
 		job,
-		input,
+		inputs,
 		permissionState,
 		trigger,
 	)

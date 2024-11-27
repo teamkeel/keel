@@ -31,11 +31,16 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
+		// TODO: put somewhere
 		fragments, err := selectToFragments(checkedLhsExpr.Expr)
 		if err != nil {
 			return err
 		}
 
+		fragments, err = normalisedFragments(scope.Schema, fragments)
+		if err != nil {
+			return err
+		}
 		// fragments, err := lhsResolver.NormalisedFragments()
 		// if err != nil {
 		// 	return err
@@ -81,7 +86,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			currRows = nextRows
 		}
 
-		operand, err := RunCelResolver(parts[1], SetQueryGen(scope.Context, query, scope.Schema, args))
+		operand, err := RunCelVisitor(parts[1], SetQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}

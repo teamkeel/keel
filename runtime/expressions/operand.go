@@ -2,6 +2,7 @@ package expressions
 
 import (
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -87,4 +88,58 @@ func IsContextSecretField(fragments []string) bool {
 
 func IsContext(fragments []string) bool {
 	return fragments[0] == "ctx"
+}
+
+// IsImplicitInput returns true if the expression operand refers to an implicit input on an action.
+// For example, an input value provided in a create action might require validation,
+// such as: create createThing() with (name) @validation(name != "")
+func IsImplicitInput(schema *proto.Schema, action *proto.Action, fragments []string) bool {
+	if len(fragments) <= 1 {
+		return false
+	}
+
+	foundImplicitWhereInput := false
+	foundImplicitValueInput := false
+
+	whereInputs := proto.FindWhereInputMessage(schema, action.Name)
+	if whereInputs != nil {
+		_, foundImplicitWhereInput = lo.Find(whereInputs.Fields, func(in *proto.MessageField) bool {
+			return in.Name == fragments[0] && in.IsModelField()
+		})
+	}
+
+	valuesInputs := proto.FindValuesInputMessage(schema, action.Name)
+	if valuesInputs != nil {
+		_, foundImplicitValueInput = lo.Find(valuesInputs.Fields, func(in *proto.MessageField) bool {
+			return in.Name == fragments[0] && in.IsModelField()
+		})
+	}
+
+	return foundImplicitWhereInput || foundImplicitValueInput
+}
+
+// IsInput returns true if the expression operand refers to a named input or a model field input on an action.
+// For example, for a where condition might use an named input,
+// such as: list listThings(isActive: Boolean) @where(thing.isActive == isActive)
+// Or a model field input,
+// such as: list listThings(thing.isActive)
+func IsInput(schema *proto.Schema, action *proto.Action, fragments []string) bool {
+	foundExplicitWhereInput := false
+	foundExplicitValueInput := false
+
+	whereInputs := proto.FindWhereInputMessage(schema, action.Name)
+	if whereInputs != nil {
+		_, foundExplicitWhereInput = lo.Find(whereInputs.Fields, func(in *proto.MessageField) bool {
+			return in.Name == fragments[0]
+		})
+	}
+
+	valuesInputs := proto.FindValuesInputMessage(schema, action.Name)
+	if valuesInputs != nil {
+		_, foundExplicitValueInput = lo.Find(valuesInputs.Fields, func(in *proto.MessageField) bool {
+			return in.Name == fragments[0]
+		})
+	}
+
+	return foundExplicitWhereInput || foundExplicitValueInput
 }

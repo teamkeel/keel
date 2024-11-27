@@ -3,17 +3,18 @@ package actions
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/emirpasic/gods/stacks/arraystack"
 	"github.com/teamkeel/keel/proto"
 )
 
-func WhereQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, inputs map[string]any) expressionVisitor[bool] {
+func FilterQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) expressionVisitor[bool] {
 	return &whereQueryGen{
 		ctx:       ctx,
 		query:     query,
 		schema:    schema,
+		model:     model,
+		action:    action,
 		inputs:    inputs,
 		operators: arraystack.New(),
 		operands:  arraystack.New(),
@@ -26,9 +27,11 @@ type whereQueryGen struct {
 	ctx       context.Context
 	query     *QueryBuilder
 	schema    *proto.Schema
+	model     *proto.Model
+	action    *proto.Action
+	inputs    map[string]any
 	operators *arraystack.Stack
 	operands  *arraystack.Stack
-	inputs    map[string]any
 }
 
 func (v *whereQueryGen) result() bool {
@@ -108,17 +111,17 @@ func (v *whereQueryGen) visitLiteral(value any) error {
 }
 
 func (v *whereQueryGen) visitInput(name string) error {
-	value, ok := v.inputs[name]
-	if !ok {
-		return fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", name)
+	operand, err := generateOperand(v.ctx, v.schema, v.model, v.action, v.inputs, []string{name})
+	if err != nil {
+		return err
 	}
 
-	v.operands.Push(Value(value))
+	v.operands.Push(operand)
 	return nil
 }
 
 func (v *whereQueryGen) visitField(fragments []string) error {
-	operand, err := generateOperand(v.ctx, v.schema, v.query.Model, fragments)
+	operand, err := generateOperand(v.ctx, v.schema, v.model, v.action, v.inputs, fragments)
 	if err != nil {
 		return err
 	}

@@ -71,7 +71,7 @@ func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []str
 func (query *QueryBuilder) applyExpressionFilters(scope *Scope, args map[string]any) error {
 	for _, where := range scope.Action.WhereExpressions {
 
-		_, err := RunCelResolver(where.Source, WhereQueryGen(scope.Context, query, scope.Schema, args))
+		_, err := RunCelVisitor(where.Source, FilterQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}

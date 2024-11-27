@@ -8,11 +8,13 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-func SetQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, inputs map[string]any) expressionVisitor[*QueryOperand] {
+func SetQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) expressionVisitor[*QueryOperand] {
 	return &setQueryGen{
 		ctx:    ctx,
 		query:  query,
 		schema: schema,
+		model:  model,
+		action: action,
 		inputs: inputs,
 	}
 }
@@ -24,6 +26,8 @@ type setQueryGen struct {
 	query   *QueryBuilder
 	operand *QueryOperand
 	schema  *proto.Schema
+	model   *proto.Model
+	action  *proto.Action
 	inputs  map[string]any
 }
 
@@ -57,17 +61,17 @@ func (v *setQueryGen) visitLiteral(value any) error {
 }
 
 func (v *setQueryGen) visitInput(name string) error {
-	value, ok := v.inputs[name]
-	if !ok {
-		return fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", name)
+	operand, err := generateOperand(v.ctx, v.schema, v.model, v.action, v.inputs, []string{name})
+	if err != nil {
+		return err
 	}
+	v.operand = operand
 
-	v.operand = Value(value)
 	return nil
 }
 
 func (v *setQueryGen) visitField(fragments []string) error {
-	operand, err := generateOperand(v.ctx, v.schema, v.query.Model, fragments)
+	operand, err := generateOperand(v.ctx, v.schema, v.model, v.action, v.inputs, fragments)
 	if err != nil {
 		return err
 	}

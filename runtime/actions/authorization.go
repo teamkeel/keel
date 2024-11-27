@@ -11,7 +11,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -45,7 +44,7 @@ func AuthoriseForActionType(scope *Scope, opType proto.ActionType, rowsToAuthori
 }
 
 // authorise checks authorisation for rows using the slice of permission rules provided.
-func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[string]any, rowsToAuthorise []map[string]any) (authorised bool, err error) {
+func authorise(scope *Scope, permissions []*proto.PermissionRule, inputs map[string]any, rowsToAuthorise []map[string]any) (authorised bool, err error) {
 	ctx, span := tracer.Start(scope.Context, "Check permissions")
 	defer span.End()
 
@@ -58,7 +57,7 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 		return false, nil
 	}
 
-	canAuthorise, authorised, err := TryAuthoriseByRolePermissions(scope, permissions)
+	canAuthorise, authorised, err := TryResolveAuthorisationEarly(scope, inputs, permissions)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -83,7 +82,7 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, input map[stri
 	})
 
 	// Generate SQL for the permission expressions.
-	stmt, err := GeneratePermissionStatement(scope, permissions, input, idsToAuthorise)
+	stmt, err := GeneratePermissionStatement(scope, permissions, inputs, idsToAuthorise)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -131,6 +130,9 @@ func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model 
 	d := &Act{
 		context: ctx,
 		schema:  schema,
+		model:   model,
+		action:  action,
+		inputs:  inputs,
 	}
 	out, _, err := prg.Eval(d)
 
@@ -146,52 +148,28 @@ type Act struct {
 	schema  *proto.Schema
 	model   *proto.Model
 	action  *proto.Action
+	inputs  map[string]any
 }
 
 func (a *Act) ResolveName(name string) (any, bool) {
-	//resolver := NewOperandResolverCel()
 
-	//expr
+	fragments := strings.Split(name, ".")
 
-	switch name {
-	case "ctx.isAuthenticated":
-
-		return auth.IsAuthenticated(a.context), true
-	case "ctx.identity", "ctx.identity.id":
-		isAuthenticated := auth.IsAuthenticated(a.context)
-		if !isAuthenticated {
-			return false, true
-		}
-
-		identity, err := auth.GetIdentity(a.context)
-		if err != nil {
-			return false, false
-		}
-
-		return identity[parser.FieldNameId].(string), true
-	case "ctx.now":
-		return runtimectx.GetNow(), true
+	fragments, err := normalisedFragments(a.schema, fragments)
+	if err != nil {
+		return nil, false
 	}
 
-	if secretName, found := strings.CutPrefix(name, "ctx.secrets."); found {
-		secrets := runtimectx.GetSecrets(a.context)
-		if value, ok := secrets[secretName]; ok {
-			return value, true
-		} else {
-			return nil, true
-		}
+	operand, err := generateOperand(a.context, a.schema, a.model, a.action, a.inputs, fragments)
+	if err != nil {
+		return nil, false
 	}
 
-	// if header, found := strings.CutPrefix(name, "ctx.headers."); found {
-	// 	secrets := runtimectx.GetSecrets(a.context)
-	// 	if value, ok := secrets[secretName]; ok {
-	// 		return value, true
-	// 	} else {
-	// 		return nil, true
-	// 	}
-	// }
+	if !operand.IsValue() {
+		return nil, false
+	}
 
-	return nil, false
+	return operand.value, true
 }
 
 // Parent returns the parent of the current activation, may be nil.
@@ -200,39 +178,49 @@ func (a *Act) Parent() interpreter.Activation {
 	return nil
 }
 
-// TryAuthoriseByRolePermissions will attempt to check authorisation early without row-based querying.
+// TryResolveAuthorisationEarly will attempt to check authorisation early without row-based querying.
 // This will take into account logical conditions and multiple expression and role permission attributes.
-func TryAuthoriseByRolePermissions(scope *Scope, permissions []*proto.PermissionRule) (canAuthorise bool, authorised bool, err error) {
-	hasExpression := false
-
+func TryResolveAuthorisationEarly(scope *Scope, inputs map[string]any, permissions []*proto.PermissionRule) (canResolveAll bool, authorised bool, err error) {
+	hasDatabaseCheck := false
+	canResolveAll = false
 	for _, permission := range permissions {
+		canResolve := false
+		authorised := false
 		switch {
 		case permission.Expression != nil:
-			hasExpression = true
+
+			// Try resolve the permission early.
+			canResolve, authorised = TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, permission.Expression.Source, map[string]any{})
+
+			if !canResolve {
+				hasDatabaseCheck = true
+			}
+
 		case permission.RoleNames != nil:
+			// Roles can always be resolved early.
+			canResolve = true
+
 			// Check if this role permission is satisfied.
-			authorised, err := resolveRolePermissionRule(scope.Context, scope.Schema, permission)
+			authorised, err = resolveRolePermissionRule(scope.Context, scope.Schema, permission)
 			if err != nil {
 				return false, false, err
 			}
-
-			// If this permission is satisfied,
-			// then access is granted because
-			// permission attributes are ORed.
-			if authorised {
-				return true, true, nil
-			}
 		}
+
+		// If this permission can be resolved now and is satisfied,
+		// then we know the permission will be granted because
+		// permission attributes are ORed.
+		if canResolve && authorised {
+			return true, true, nil
+		}
+
+		// If this permission can be resolved now and
+		// there hasn't been a row/db permission, then
+		// assume we can still resolve the entire action.
+		canResolveAll = canResolve && !hasDatabaseCheck
 	}
 
-	// If there exists an expression attribute, then we can't conclusively deny access yet
-	if hasExpression {
-		return false, false, nil
-	}
-
-	// If there is no expression attribute, then we can conclude that access is denied
-	// because all role permissions failed
-	return true, false, nil
+	return canResolveAll, false, nil
 }
 
 // resolveRolePermissionRule returns true if there is a role-based permission among the
@@ -285,7 +273,7 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 	// Append SQL where conditions for each permission attribute.
 	query.OpenParenthesis()
 	for _, permission := range permissions {
-		_, err := RunCelResolver(permission.Expression.Source, WhereQueryGen(scope.Context, query, scope.Schema, input))
+		_, err := RunCelVisitor(permission.Expression.Source, FilterQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, input))
 		if err != nil {
 			return nil, err
 		}

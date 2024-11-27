@@ -24,20 +24,20 @@ type expressionVisitor[T any] interface {
 	modelName() string
 }
 
-func RunCelResolver[T any](expression string, visitor expressionVisitor[T]) (T, error) {
-	resolver := &CelResolver[T]{
+func RunCelVisitor[T any](expression string, visitor expressionVisitor[T]) (T, error) {
+	resolver := &CelVisitor[T]{
 		visitor: visitor,
 	}
 
 	return resolver.run(expression)
 }
 
-// CelResolver steps through the CEL AST and calls out to the visitor
-type CelResolver[T any] struct {
+// CelVisitor steps through the CEL AST and calls out to the visitor
+type CelVisitor[T any] struct {
 	visitor expressionVisitor[T]
 }
 
-func (w *CelResolver[T]) run(expression string) (T, error) {
+func (w *CelVisitor[T]) run(expression string) (T, error) {
 	var zero T
 	env, err := cel.NewEnv()
 	if err != nil {
@@ -63,7 +63,7 @@ func (w *CelResolver[T]) run(expression string) (T, error) {
 	return w.visitor.result(), nil
 }
 
-func (w *CelResolver[T]) eval(expr *exprpb.Expr, nested bool, inBinaryCondition bool) error {
+func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinaryCondition bool) error {
 	var err error
 
 	switch expr.ExprKind.(type) {
@@ -119,7 +119,7 @@ func (w *CelResolver[T]) eval(expr *exprpb.Expr, nested bool, inBinaryCondition 
 	return err
 }
 
-func (w *CelResolver[T]) callExpr(expr *exprpb.Expr, nested bool) error {
+func (w *CelVisitor[T]) callExpr(expr *exprpb.Expr, nested bool) error {
 	c := expr.GetCallExpr()
 	fun := c.GetFunction()
 
@@ -150,7 +150,7 @@ func (w *CelResolver[T]) callExpr(expr *exprpb.Expr, nested bool) error {
 	return err
 }
 
-func (w *CelResolver[T]) binaryCall(expr *exprpb.Expr, nested bool) error {
+func (w *CelVisitor[T]) binaryCall(expr *exprpb.Expr, nested bool) error {
 	c := expr.GetCallExpr()
 	fun := c.GetFunction()
 	args := c.GetArgs()
@@ -208,7 +208,7 @@ func (w *CelResolver[T]) binaryCall(expr *exprpb.Expr, nested bool) error {
 	return w.visitor.endCondition(nested)
 }
 
-func (w *CelResolver[T]) unaryCall(expr *exprpb.Expr) error {
+func (w *CelVisitor[T]) unaryCall(expr *exprpb.Expr) error {
 	c := expr.GetCallExpr()
 	fun := c.GetFunction()
 	args := c.GetArgs()
@@ -224,7 +224,7 @@ func (w *CelResolver[T]) unaryCall(expr *exprpb.Expr) error {
 	return w.eval(args[0], nested, false)
 }
 
-func (w *CelResolver[T]) constExpr(expr *exprpb.Expr) error {
+func (w *CelVisitor[T]) constExpr(expr *exprpb.Expr) error {
 	c := expr.GetConstExpr()
 
 	v, err := toNative(c)
@@ -235,7 +235,7 @@ func (w *CelResolver[T]) constExpr(expr *exprpb.Expr) error {
 	return w.visitor.visitLiteral(v)
 }
 
-func (w *CelResolver[T]) listExpr(expr *exprpb.Expr) error {
+func (w *CelVisitor[T]) listExpr(expr *exprpb.Expr) error {
 	l := expr.GetListExpr()
 	elems := l.GetElements()
 	arr := make([]any, len(elems))
@@ -261,7 +261,7 @@ func (w *CelResolver[T]) listExpr(expr *exprpb.Expr) error {
 	return w.visitor.visitLiteral(arr)
 }
 
-func (w *CelResolver[T]) identExpr(expr *exprpb.Expr) error {
+func (w *CelVisitor[T]) identExpr(expr *exprpb.Expr) error {
 	ident := expr.GetIdentExpr()
 
 	var err error
@@ -274,7 +274,7 @@ func (w *CelResolver[T]) identExpr(expr *exprpb.Expr) error {
 	return err
 }
 
-func (w *CelResolver[T]) selectExpr(expr *exprpb.Expr) error {
+func (w *CelVisitor[T]) selectExpr(expr *exprpb.Expr) error {
 	sel := expr.GetSelectExpr()
 
 	switch expr.ExprKind.(type) {
