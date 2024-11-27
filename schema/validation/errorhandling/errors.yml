@@ -59,9 +59,6 @@ en:
   E022:
     message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
     hint: "{{ .Suggestion }}"
-  E021:
-    message: "Model '{{ .Name }}' has already been included in the {{ .Parent }} API"
-    hint: "Please remove one of the duplicates"
   E025:
     message: "{{ .Message }}"
   E026:
