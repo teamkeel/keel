@@ -285,10 +285,11 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 	// Append SQL where conditions for each permission attribute.
 	query.OpenParenthesis()
 	for _, permission := range permissions {
-		err := query.whereByExpression(scope.Context, scope.Schema, scope.Model, scope.Action, permission.Expression.Source, map[string]any{})
+		_, err := RunCelResolver(permission.Expression.Source, WhereQueryGen(scope.Context, query, scope.Schema, input))
 		if err != nil {
 			return nil, err
 		}
+
 		// Or with the next permission attribute
 		query.Or()
 	}

@@ -15,58 +15,48 @@ import (
 // By design, the ActionOperator has no knowledge (in of itself) of how these
 // might be expressed in schema's or in request inputs, or in expressions for
 // example.
-type ActionOperator int
+type ActionOperator string
 
 const (
-	Unknown ActionOperator = iota
+	Unknown ActionOperator = "Unknown"
 
-	Contains
-	NotContains
-	Equals
-	NotEquals
-	StartsWith
-	EndsWith
-	GreaterThan
-	GreaterThanEquals
-	LessThan
-	LessThanEquals
-	OneOf
-	NotOneOf
-	After
-	Before
-	OnOrAfter
-	OnOrBefore
+	Contains          = "Contains"
+	NotContains       = "NotContains"
+	Equals            = "Equals"
+	NotEquals         = "NotEquals"
+	StartsWith        = "StartsWith"
+	EndsWith          = "EndsWith"
+	GreaterThan       = "GreaterThan"
+	GreaterThanEquals = "GreaterThanEquals"
+	LessThan          = "LessThan"
+	LessThanEquals    = "LessThanEquals"
+	OneOf             = "OneOf"
+	NotOneOf          = "NotOneOf"
+	After             = "After"
+	Before            = "Before"
+	OnOrAfter         = "OnOrAfter"
+	OnOrBefore        = "OnOrBefore"
 
-	AllEquals
-	AnyEquals
-	AllNotEquals
-	AnyNotEquals
-	AllGreaterThan
-	AnyGreaterThan
-	AllGreaterThanEquals
-	AnyGreaterThanEquals
-	AllLessThan
-	AnyLessThan
-	AllLessThanEquals
-	AnyLessThanEquals
-	AllAfter
-	AnyAfter
-	AllBefore
-	AnyBefore
-	AllOnOrAfter
-	AnyOnOrAfter
-	AllOnOrBefore
-	AnyOnOrBefore
-
-	Addition
-	Subtraction
-	Multiplication
-	Division
-
-	Not
-
-	Or
-	And
+	AllEquals            = "AllEquals"
+	AnyEquals            = "AnyEquals"
+	AllNotEquals         = "AllNotEquals"
+	AnyNotEquals         = "AnyNotEquals"
+	AllGreaterThan       = "AllGreaterThan"
+	AnyGreaterThan       = "AnyGreaterThan"
+	AllGreaterThanEquals = "AllGreaterThanEquals"
+	AnyGreaterThanEquals = "AnyGreaterThanEquals"
+	AllLessThan          = "AllLessThan"
+	AnyLessThan          = "AnyLessThan"
+	AllLessThanEquals    = "AllLessThanEquals"
+	AnyLessThanEquals    = "AnyLessThanEquals"
+	AllAfter             = "AllAfter"
+	AnyAfter             = "AnyAfter"
+	AllBefore            = "AllBefore"
+	AnyBefore            = "AnyBefore"
+	AllOnOrAfter         = "AllOnOrAfter"
+	AnyOnOrAfter         = "AnyOnOrAfter"
+	AllOnOrBefore        = "AllOnOrBefore"
+	AnyOnOrBefore        = "AnyOnOrBefore"
 )
 
 // queryOperatorToActionOperator converts the conditional operators that are used

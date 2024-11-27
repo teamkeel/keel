@@ -9,7 +9,7 @@ import (
 )
 
 func mapType(schema []*parser.AST, typeName string) (*types.Type, error) {
-	// TODO: shoudl we define our own types?  i.e. types.NewOpaqueType("ID")
+	// TODO: should we define our own types?  i.e. types.NewOpaqueType("ID")
 	switch typeName {
 	case parser.FieldTypeID:
 		return types.StringType, nil

@@ -10,30 +10,10 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/schema/parser"
 )
 
 // Updates the query with all set attributes defined on the action.
 func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
-	model := scope.Schema.FindModel(strcase.ToCamel("identity"))
-	ctxScope := NewModelScope(scope.Context, model, scope.Schema)
-	identityQuery := NewQuery(model)
-
-	identityId := ""
-	if auth.IsAuthenticated(scope.Context) {
-		identity, err := auth.GetIdentity(scope.Context)
-		if err != nil {
-			return err
-		}
-		identityId = identity[parser.FieldNameId].(string)
-	}
-
-	err := identityQuery.Where(IdField(), Equals, Value(identityId))
-	if err != nil {
-		return err
-	}
-
 	for _, setExpression := range scope.Action.SetExpressions {
 		parts := strings.Split(setExpression.Source, "=")
 
@@ -51,26 +31,15 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
-		ast2, issues := env.Parse(parts[1])
-		if issues != nil && len(issues.Errors()) > 0 {
-			return errors.New("unexpected ast parsing issues")
-		}
-		checkedRhsExpr, err := cel.AstToParsedExpr(ast2)
+		fragments, err := selectToFragments(checkedLhsExpr.Expr)
 		if err != nil {
 			return err
 		}
 
-		lhsResolver := NewOperandResolverCel(scope.Context, scope.Schema, scope.Model, scope.Action, checkedLhsExpr.Expr, args)
-		rhsResolver := NewOperandResolverCel(scope.Context, scope.Schema, scope.Model, scope.Action, checkedRhsExpr.Expr, args)
-
-		if !lhsResolver.IsModelDbColumn() {
-			return errors.New("lhs operand of assignment expression must be a model field")
-		}
-
-		fragments, err := lhsResolver.NormalisedFragments()
-		if err != nil {
-			return err
-		}
+		// fragments, err := lhsResolver.NormalisedFragments()
+		// if err != nil {
+		// 	return err
+		// }
 
 		currRows := []*Row{query.writeValues}
 
@@ -112,46 +81,14 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			currRows = nextRows
 		}
 
+		operand, err := RunCelResolver(parts[1], SetQueryGen(scope.Context, query, scope.Schema, args))
+		if err != nil {
+			return err
+		}
+
 		// Set the field on all rows.
 		for _, row := range currRows {
-			if rhsResolver.IsModelDbColumn() {
-				rhsFragments, err := rhsResolver.NormalisedFragments()
-				if err != nil {
-					return err
-				}
-
-				row.values[field] = ExpressionField(rhsFragments, field, false)
-			} else if rhsResolver.IsContextDbColumn() {
-				// If this is a value from ctx that requires a database read (such as with identity backlinks),
-				// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
-				// from the current query builder.
-
-				fragments, err := rhsResolver.NormalisedFragments()
-				if err != nil {
-					return err
-				}
-
-				// Remove the ctx fragment
-				fragments = fragments[1:]
-
-				err = identityQuery.AddJoinFromFragments(ctxScope.Schema, fragments)
-				if err != nil {
-					return err
-				}
-
-				selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1], false)
-
-				identityQuery.Select(selectField)
-
-				row.values[field] = InlineQuery(identityQuery, selectField)
-			} else if rhsResolver.IsContextField() || rhsResolver.IsLiteral() || rhsResolver.IsExplicitInput() || rhsResolver.IsImplicitInput() {
-				value, err := rhsResolver.QueryOperand()
-				if err != nil {
-					return err
-				}
-
-				row.values[field] = value
-			}
+			row.values[field] = operand
 		}
 	}
 	return nil

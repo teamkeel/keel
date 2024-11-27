@@ -795,13 +795,13 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 	// we want to create the common table expressions first,
 	// and ensure we only create the CTE once (as there may be more
 	// than once reference by other fields).
-	for _, col := range orderedKeys {
+	for i, col := range orderedKeys {
 		operand := row.values[col]
 		if !operand.IsInlineQuery() {
 			continue
 		}
 
-		cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+		cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 		cteExists := false
 		for _, c := range ctes {
 			if strings.HasPrefix(c, sqlQuote(cteAlias)) {
@@ -826,7 +826,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 		}
 	}
 
-	for _, col := range orderedKeys {
+	for i, col := range orderedKeys {
 		colName := casing.ToSnake(col)
 		columnNames = append(columnNames, sqlQuote(colName))
 		operand := row.values[col]
@@ -839,7 +839,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 			columnValues = append(columnValues, sql)
 			args = append(args, opArgs...)
 		case operand.IsInlineQuery():
-			cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+			cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 			columnAlias := ""
 
 			for i, s := range operand.query.selection {
@@ -935,13 +935,13 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 	}
 	sort.Strings(orderedKeys)
 
-	for _, v := range orderedKeys {
+	for i, v := range orderedKeys {
 		operand := query.writeValues.values[v]
 		if !operand.IsInlineQuery() {
 			continue
 		}
 
-		cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+		cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 		cteExists := false
 		for _, c := range ctes {
 			if strings.HasPrefix(c, sqlQuote(cteAlias)) {
@@ -966,11 +966,11 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 		}
 	}
 
-	for _, v := range orderedKeys {
+	for i, v := range orderedKeys {
 		operand := query.writeValues.values[v]
 
 		if operand.IsInlineQuery() {
-			cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+			cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 			columnAlias := ""
 
 			for i, s := range operand.query.selection {

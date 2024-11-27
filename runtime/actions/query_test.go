@@ -351,21 +351,26 @@ var testCases = []testCase{
 		input:      map[string]any{"name": "Dave"},
 		expectedTemplate: `
 			WITH
-				"select_identity" ("column_0", "column_1") AS (
-					SELECT "identity$user"."id", "identity$user"."is_active"
+				"select_identity_0" ("column_0") AS (
+					SELECT "identity$user"."is_active"
+					FROM "identity"
+					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
+				"select_identity_2" ("column_0") AS (
+					SELECT "identity$user"."id"
 					FROM "identity"
 					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
 					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
 				"new_1_record" AS (
 					INSERT INTO "record" ("is_active", "name", "user_id")
 					VALUES (
-						(SELECT "column_1" FROM "select_identity"),
+						(SELECT "column_0" FROM "select_identity_0"),
 						?,
-						(SELECT "column_0" FROM "select_identity"))
+						(SELECT "column_0" FROM "select_identity_2"))
 					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM "new_1_record"`,
 		identity:     identity,
-		expectedArgs: []any{identity[parser.FieldNameId].(string), "Dave", identity[parser.FieldNameId].(string)},
+		expectedArgs: []any{identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string), "Dave", identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "update_op_set_attribute_context_identity_id",
@@ -456,6 +461,39 @@ var testCases = []testCase{
 			RETURNING "person".*`,
 		expectedArgs: []any{"Dave", "Dave", "xyz"},
 	},
+	// {
+	// 	name: "update_op_set_attribute_ctx",
+	// 	keelSchema: `
+	// 		model Person {
+	// 			fields {
+	// 				name Text
+	// 				signedIn Boolean
+	// 			}
+	// 			actions {
+	// 				update updatePerson(id) with (name) {
+	// 					@set(person.signedIn = ctx.isAuthenticated)
+	// 				}
+	// 			}
+	// 			@permission(expression: true, actions: [update])
+	// 		}`,
+	// 	actionName: "updatePerson",
+	// 	input: map[string]any{
+	// 		"where": map[string]any{
+	// 			"id": "xyz",
+	// 		},
+	// 		"values": map[string]any{
+	// 			"name": "Dave",
+	// 		},
+	// 	},
+	// 	expectedTemplate: `
+	// 		UPDATE "person"
+	// 		SET
+	// 			"name" = ?,
+	// 			"nick_name" = ?
+	// 		WHERE "person"."id" IS NOT DISTINCT FROM ?
+	// 		RETURNING "person".*`,
+	// 	expectedArgs: []any{"Dave", "Dave", "xyz"},
+	// },
 	{
 		name: "update_op_set_attribute_identity_user_backlink_field",
 		keelSchema: `
@@ -2067,7 +2105,7 @@ var testCases = []testCase{
 				}
 				actions {
 					list listThing() {
-						@where(thing.first == "first" or (thing.second == 10 and (thing.third == true or thing.second > 100)))
+						@where(thing.first == "first" or (thing.second == 10 and (thing.third or thing.second > 100)))
 					}
 				}
 				@permission(expression: true, actions: [list])
@@ -3507,11 +3545,15 @@ func TestQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range testCases {
 		testCase := testCase
-
-		// if testCase.name != "create_op_set_attribute_literals" {
+		//list_multiple_conditions_parenthesis_on_ands
+		// if testCase.name != "create_op_set_attribute_identity_user_backlink_field" {
 		// 	continue
 		// }
+		//get_op_by_id_where_single_operand
+		//list_multiple_conditions_nested_parenthesis
+		//list_multiple_conditions_parenthesis_on_ands
 
+		//delete_by_unique_key
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()

@@ -70,7 +70,8 @@ func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []str
 // Applies all exlicit where attribute filters to the query.
 func (query *QueryBuilder) applyExpressionFilters(scope *Scope, args map[string]any) error {
 	for _, where := range scope.Action.WhereExpressions {
-		err := query.whereByExpression(scope.Context, scope.Schema, scope.Model, scope.Action, where.Source, args)
+
+		_, err := RunCelResolver(where.Source, WhereQueryGen(scope.Context, query, scope.Schema, args))
 		if err != nil {
 			return err
 		}

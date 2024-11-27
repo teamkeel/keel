@@ -945,6 +945,10 @@ func TestPermissionQueryBuilder(t *testing.T) {
 	for _, tc := range authorisationTestCases {
 		testCase := tc
 
+		// if testCase.name != "op_level_permissions_granted" {
+		// 	continue
+		// }
+
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()
