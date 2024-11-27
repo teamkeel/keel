@@ -174,7 +174,6 @@ model BookWithIdentity {
             @permission(expression: true)
             @set(bookWithIdentity.lastUpdatedBy.id = ctx.identity.id)
         }
-
  
         create createDbPermissionRequiresIdentity() with (title) {
             @permission(expression: bookWithIdentity.lastUpdatedBy == ctx.identity)

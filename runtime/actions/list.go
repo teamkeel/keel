@@ -221,11 +221,6 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 		return nil, nil, err
 	}
 
-	// err = query.applyExpressionFilters(scope, where)
-	// if err != nil {
-	// 	return nil, nil, err
-	// }
-
 	err = query.applySchemaOrdering(scope)
 	if err != nil {
 		return nil, nil, err

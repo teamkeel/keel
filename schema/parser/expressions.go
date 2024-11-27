@@ -19,7 +19,7 @@ type Operator struct {
 	node.Node
 
 	// Todo need to figure out how we can share with the consts below
-	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=" | "or" | "and" | "+" | "-" | "*" | "/" )`
+	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=" | "or" | "and" )`
 }
 
 func (o *Operator) ToString() string {

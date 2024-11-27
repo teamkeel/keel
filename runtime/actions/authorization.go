@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/interpreter"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
@@ -111,7 +110,6 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, inputs map[str
 }
 
 func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, expression string, inputs map[string]any) (bool, bool) {
-
 	env, err := cel.NewEnv()
 	if err != nil {
 		return false, false
@@ -127,7 +125,7 @@ func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model 
 		return false, false
 	}
 
-	d := &Act{
+	d := &OperandResolver{
 		context: ctx,
 		schema:  schema,
 		model:   model,
@@ -141,41 +139,6 @@ func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model 
 	}
 
 	return true, out.Value().(bool)
-}
-
-type Act struct {
-	context context.Context
-	schema  *proto.Schema
-	model   *proto.Model
-	action  *proto.Action
-	inputs  map[string]any
-}
-
-func (a *Act) ResolveName(name string) (any, bool) {
-
-	fragments := strings.Split(name, ".")
-
-	fragments, err := normalisedFragments(a.schema, fragments)
-	if err != nil {
-		return nil, false
-	}
-
-	operand, err := generateOperand(a.context, a.schema, a.model, a.action, a.inputs, fragments)
-	if err != nil {
-		return nil, false
-	}
-
-	if !operand.IsValue() {
-		return nil, false
-	}
-
-	return operand.value, true
-}
-
-// Parent returns the parent of the current activation, may be nil.
-// If non-nil, the parent will be searched during resolve calls.
-func (a *Act) Parent() interpreter.Activation {
-	return nil
 }
 
 // TryResolveAuthorisationEarly will attempt to check authorisation early without row-based querying.

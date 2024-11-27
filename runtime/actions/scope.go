@@ -142,20 +142,20 @@ func Execute(scope *Scope, input any) (result any, meta *common.ResponseMetadata
 }
 
 func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetadata, error) {
-	permissionState := common.NewPermissionState()
+	inputsAsMap, _ := inputs.(map[string]any)
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
-	if len(permissions) > 0 {
-		authorised, err := AuthoriseAction(scope, nil, nil)
-		if err != nil {
-			return nil, nil, err
-		}
+	canAuthoriseEarly, authorised, err := TryResolveAuthorisationEarly(scope, inputsAsMap, permissions)
+	if err != nil {
+		return nil, nil, err
+	}
 
+	permissionState := common.NewPermissionState()
+	if canAuthoriseEarly {
 		if authorised {
 			permissionState.Grant()
 		} else {
 			return nil, nil, common.NewPermissionError()
 		}
-
 	}
 
 	resp, meta, err := functions.CallFunction(

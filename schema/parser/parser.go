@@ -204,42 +204,6 @@ type AttributeNode struct {
 	Arguments []*AttributeArgumentNode `(( "(" @@ ( "," @@ )* ")" ) | ( "(" ")" ) )?`
 }
 
-// type PermissionAttributeNode struct {
-// 	node.Node
-
-// 	Arguments []*AttributeArgumentNode `"@" "permission" "(" @@ ( "," @@ )* ")"`
-// }
-
-// func (PermissionAttributeNode) value()       {}
-// func (PermissionAttributeNode) Type() string { return AttributePermission }
-
-// type WhereAttributeNode struct {
-// 	node.Node
-// 	//Arguments string `"@" "where" "(" @Ident ")"`
-// 	Arguments *AttributeArgumentNode `"@" "where" "(" @@ ")"`
-// }
-
-// func (WhereAttributeNode) value()       {}
-// func (WhereAttributeNode) Type() string { return AttributeWhere }
-
-// type SetAttributeNode struct {
-// 	node.Node
-// 	//Arguments string `"@" "where" "(" @Ident ")"`
-// 	Arguments *AttributeArgumentNode `"@" "set" "(" @@ ")"`
-// }
-
-// func (SetAttributeNode) value()       {}
-// func (SetAttributeNode) Type() string { return AttributeSet }
-
-// type OrderByAttributeNode struct {
-// 	node.Node
-// 	//Arguments string `"@" "where" "(" @Ident ")"`
-// 	Arguments []*AttributeArgumentNode `"@" "orderBy" "(" @@ ( "," @@ )* ")"`
-// }
-
-// func (OrderByAttributeNode) value()       {}
-// func (OrderByAttributeNode) Type() string { return AttributeSet }
-
 type AttributeArgumentNode struct {
 	node.Node
 
