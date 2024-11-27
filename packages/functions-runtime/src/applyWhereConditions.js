@@ -1,5 +1,6 @@
 const { sql, Kysely } = require("kysely");
 const { snakeCase } = require("./casing");
+const { TimePeriod } = require("./TimePeriod");
 
 const opMapping = {
   startsWith: { op: "like", value: (v) => `${v}%` },
@@ -16,6 +17,22 @@ const opMapping = {
   onOrAfter: { op: ">=" },
   equals: { op: sql`is not distinct from` },
   notEquals: { op: sql`is distinct from` },
+  equalsRelative: {
+    op: sql`BETWEEN`,
+    value: (v) =>
+      sql`${sql.raw(
+        TimePeriod.fromExpression(v).periodStartSQL()
+      )} AND ${sql.raw(TimePeriod.fromExpression(v).periodEndSQL())}`,
+  },
+  beforeRelative: {
+    op: "<",
+    value: (v) =>
+      sql`${sql.raw(TimePeriod.fromExpression(v).periodStartSQL())}`,
+  },
+  afterRelative: {
+    op: ">=",
+    value: (v) => sql`${sql.raw(TimePeriod.fromExpression(v).periodEndSQL())}`,
+  },
   any: {
     isArrayQuery: true,
     greaterThan: { op: ">" },

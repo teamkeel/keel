@@ -375,6 +375,8 @@ enum Type {
     TYPE_VECTOR = 23;
     // A file storage type.
     TYPE_FILE = 24;
+    // A relative period expression string; e.g. `today/next year`
+    TYPE_RELATIVE_PERIOD = 25;
 }
 
 enum OrderDirection {

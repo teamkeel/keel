@@ -29,9 +29,12 @@ export type NumberWhereCondition = {
 
 export type DateWhereCondition = {
   equals?: Date | string | null;
+  equalsRelative?: RelativeDateString | null;
   before?: Date | string | null;
+  beforeRelative?: RelativeDateString | null;
   onOrBefore?: Date | string | null;
   after?: Date | string | null;
+  afterRelative?: RelativeDateString | null;
   onOrAfter?: Date | string | null;
 };
 
@@ -46,6 +49,9 @@ export type DateQueryInput = {
 export type TimestampQueryInput = {
   before: string | null;
   after: string | null;
+  equalsRelative?: RelativeDateString | null;
+  beforeRelative?: RelativeDateString | null;
+  afterRelative?: RelativeDateString | null;
 };
 
 export type StringArrayWhereCondition = {
@@ -239,3 +245,30 @@ export type FunctionConfig = {
 export type FuncWithConfig<T> = T & {
   config: FunctionConfig;
 };
+
+type unit =
+  | "year"
+  | "years"
+  | "month"
+  | "months"
+  | "day"
+  | "days"
+  | "hour"
+  | "hours"
+  | "minute"
+  | "minutes"
+  | "second"
+  | "seconds";
+type direction = "next" | "last";
+type completed = "complete";
+type value = number;
+
+export type RelativeDateString =
+  | "now"
+  | "today"
+  | "tomorrow"
+  | "yesterday"
+  | `this ${unit}`
+  | `${direction} ${unit}`
+  | `${direction} ${value} ${unit}`
+  | `${direction} ${value} ${completed} ${unit}`;

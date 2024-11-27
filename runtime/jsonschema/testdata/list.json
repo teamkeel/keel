@@ -74,6 +74,24 @@
             },
             "required": ["onOrAfter"],
             "title": "onOrAfter"
+          },
+          {
+            "type": "object",
+            "properties": { "beforeRelative": { "type": "string" } },
+            "required": ["beforeRelative"],
+            "title": "beforeRelative"
+          },
+          {
+            "type": "object",
+            "properties": { "afterRelative": { "type": "string" } },
+            "required": ["afterRelative"],
+            "title": "afterRelative"
+          },
+          {
+            "type": "object",
+            "properties": { "equalsRelative": { "type": "string" } },
+            "required": ["equalsRelative"],
+            "title": "equalsRelative"
           }
         ]
       },
@@ -292,6 +310,24 @@
             },
             "required": ["after"],
             "title": "after"
+          },
+          {
+            "type": "object",
+            "properties": { "beforeRelative": { "type": "string" } },
+            "required": ["beforeRelative"],
+            "title": "beforeRelative"
+          },
+          {
+            "type": "object",
+            "properties": { "afterRelative": { "type": "string" } },
+            "required": ["afterRelative"],
+            "title": "afterRelative"
+          },
+          {
+            "type": "object",
+            "properties": { "equalsRelative": { "type": "string" } },
+            "required": ["equalsRelative"],
+            "title": "equalsRelative"
           }
         ]
       }

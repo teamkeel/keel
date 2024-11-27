@@ -1,0 +1,33 @@
+model Post {
+    fields {
+        title Text?
+        length Number?
+        aDate Date?
+        aTimestamp Timestamp?
+        aDecimal Decimal?
+    }
+
+    actions {
+        create createPost() with (title?, length?, aDate?, aTimestamp?, aDecimal?)
+        list listPostsByDate(aDate)
+        list listPostsByTimestamp(aTimestamp)
+        list listPostsByDateWithHook(aDate?) @function
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
+}
+
+enum Category {
+    Technical
+    Lifestyle
+    Food
+}
+
+api Web {
+    models {
+        Post
+    }
+}
