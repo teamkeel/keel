@@ -154,11 +154,11 @@ jobs:
           go-version: "1.23"
       - uses: actions/setup-node@v3
         with:
-          node-version: 18.12.1
+          node-version: 22.11
           token: ${{ secrets.NPM_TOKEN }}
       - uses: pnpm/action-setup@v4
         with:
-          version: 8.10.0
+          version: 9.12.3
       - name: Checkout
         uses: actions/checkout@v4
         with:
