@@ -1,57 +1,39 @@
 {
   "type": "object",
   "properties": {
-    "customer": {
-      "$ref": "#/components/schemas/TestActionCustomerInput"
-    },
+    "customer": { "$ref": "#/components/schemas/TestActionCustomerInput" },
     "items": {
       "type": "array",
-      "items": {
-        "$ref": "#/components/schemas/TestActionItemsInput"
-      }
+      "items": { "$ref": "#/components/schemas/TestActionItemsInput" }
     },
-    "onPromotion": {
-      "type": "boolean"
-    }
+    "onPromotion": { "type": "boolean" }
   },
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "required": ["customer", "onPromotion", "items"],
   "components": {
     "schemas": {
       "TestActionCustomerInput": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
+        "properties": { "name": { "type": "string" } },
+        "unevaluatedProperties": false,
         "required": ["name"]
       },
       "TestActionItemsInput": {
         "type": "object",
         "properties": {
-          "price": {
-            "type": "number"
-          },
+          "price": { "type": "number" },
           "product": {
             "$ref": "#/components/schemas/TestActionItemsProductInput"
           },
-          "quantity": {
-            "type": "number"
-          }
+          "quantity": { "type": "number" }
         },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["quantity", "price", "product"]
       },
       "TestActionItemsProductInput": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
+        "properties": { "name": { "type": "string" } },
+        "unevaluatedProperties": false,
         "required": ["name"]
       }
     }

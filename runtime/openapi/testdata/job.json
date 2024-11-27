@@ -26,7 +26,7 @@
                     "format": "data-url"
                   }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["input1", "input2", "input3"]
               }
             }

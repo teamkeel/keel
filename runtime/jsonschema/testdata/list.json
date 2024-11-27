@@ -7,7 +7,7 @@
     "last": { "type": "number" },
     "where": { "$ref": "#/components/schemas/TestActionWhere" }
   },
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "required": ["where"],
   "components": {
     "schemas": {
@@ -17,14 +17,12 @@
           {
             "type": "object",
             "properties": { "equals": { "type": ["boolean", "null"] } },
-            "additionalProperties": false,
             "required": ["equals"],
             "title": "equals"
           },
           {
             "type": "object",
             "properties": { "notEquals": { "type": ["boolean", "null"] } },
-            "additionalProperties": false,
             "required": ["notEquals"],
             "title": "notEquals"
           }
@@ -103,7 +101,6 @@
           {
             "type": "object",
             "properties": { "equals": { "enum": ["Tennis", "Chess", null] } },
-            "additionalProperties": false,
             "required": ["equals"],
             "title": "equals"
           },
@@ -112,7 +109,6 @@
             "properties": {
               "notEquals": { "enum": ["Tennis", "Chess", null] }
             },
-            "additionalProperties": false,
             "required": ["notEquals"],
             "title": "notEquals"
           },
@@ -124,7 +120,6 @@
                 "items": { "enum": ["Tennis", "Chess"] }
               }
             },
-            "additionalProperties": false,
             "required": ["oneOf"],
             "title": "oneOf"
           }
@@ -136,7 +131,6 @@
           {
             "type": "object",
             "properties": { "equals": { "type": ["string", "null"] } },
-            "additionalProperties": false,
             "required": ["equals"],
             "title": "equals"
           },
@@ -145,14 +139,12 @@
             "properties": {
               "oneOf": { "type": "array", "items": { "type": "string" } }
             },
-            "additionalProperties": false,
             "required": ["oneOf"],
             "title": "oneOf"
           },
           {
             "type": "object",
             "properties": { "notEquals": { "type": ["string", "null"] } },
-            "additionalProperties": false,
             "required": ["notEquals"],
             "title": "notEquals"
           }
@@ -213,35 +205,30 @@
           {
             "type": "object",
             "properties": { "equals": { "type": ["string", "null"] } },
-            "additionalProperties": false,
             "required": ["equals"],
             "title": "equals"
           },
           {
             "type": "object",
             "properties": { "notEquals": { "type": ["string", "null"] } },
-            "additionalProperties": false,
             "required": ["notEquals"],
             "title": "notEquals"
           },
           {
             "type": "object",
             "properties": { "startsWith": { "type": "string" } },
-            "additionalProperties": false,
             "required": ["startsWith"],
             "title": "startsWith"
           },
           {
             "type": "object",
             "properties": { "endsWith": { "type": "string" } },
-            "additionalProperties": false,
             "required": ["endsWith"],
             "title": "endsWith"
           },
           {
             "type": "object",
             "properties": { "contains": { "type": "string" } },
-            "additionalProperties": false,
             "required": ["contains"],
             "title": "contains"
           },
@@ -250,7 +237,6 @@
             "properties": {
               "oneOf": { "type": "array", "items": { "type": "string" } }
             },
-            "additionalProperties": false,
             "required": ["oneOf"],
             "title": "oneOf"
           }
@@ -261,7 +247,7 @@
         "properties": {
           "name": { "$ref": "#/components/schemas/StringQueryInput" }
         },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["name"]
       },
       "TestActionPreviousCityInput": {
@@ -269,7 +255,7 @@
         "properties": {
           "name": { "$ref": "#/components/schemas/StringQueryInput" }
         },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["name"]
       },
       "TestActionWhere": {
@@ -291,7 +277,7 @@
           },
           "secondHobby": { "$ref": "#/components/schemas/HobbyQueryInput" }
         },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": [
           "id",
           "name",

@@ -12,7 +12,7 @@
               "schema": {
                 "type": "object",
                 "properties": { "id": { "type": "string" } },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["id"]
               }
             }
@@ -63,7 +63,7 @@
               "schema": {
                 "type": "object",
                 "properties": { "id": { "type": "string" } },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["id"]
               }
             }
@@ -116,7 +116,7 @@
               "schema": {
                 "type": "object",
                 "properties": { "id": { "type": "string" } },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["id"]
               }
             }
@@ -172,7 +172,7 @@
                   "email": { "type": "string" },
                   "redirectUrl": { "type": "string" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["email", "redirectUrl"]
               }
             }
@@ -183,7 +183,7 @@
             "description": "requestPasswordReset Response",
             "content": {
               "application/json": {
-                "schema": { "type": "object", "additionalProperties": false }
+                "schema": { "type": "object", "unevaluatedProperties": false }
               }
             }
           },
@@ -231,7 +231,7 @@
                   "last": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/SearchBooksWhere" }
                 },
-                "additionalProperties": false
+                "unevaluatedProperties": false
               }
             }
           }
@@ -308,7 +308,7 @@
         },
         "required": ["id", "createdAt", "updatedAt"]
       },
-      "SearchBooksWhere": { "type": "object", "additionalProperties": false }
+      "SearchBooksWhere": { "type": "object", "unevaluatedProperties": false }
     }
   }
 }

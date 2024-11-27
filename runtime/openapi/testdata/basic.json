@@ -21,7 +21,7 @@
                   "picture": { "type": "string", "format": "data-url" },
                   "weight": { "type": "number", "format": "float" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": [
                   "name",
                   "dateOfBirth",
@@ -87,7 +87,7 @@
                   "last": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/CustomersWhere" }
                 },
-                "additionalProperties": false
+                "unevaluatedProperties": false
               }
             }
           }
@@ -155,7 +155,7 @@
               "schema": {
                 "type": "object",
                 "properties": { "id": { "type": "string" } },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["id"]
               }
             }
@@ -215,7 +215,7 @@
                     "$ref": "#/components/schemas/UpdateCustomerWhere"
                   }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["where"]
               }
             }
@@ -267,7 +267,7 @@
           "addressLine1": { "type": "string" },
           "town": { "type": "string" }
         },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["addressLine1", "town"]
       },
       "Customer": {
@@ -281,9 +281,9 @@
           "picture": {
             "type": "object",
             "properties": {
-              "key": { "type": "string" },
               "contentType": { "type": "string" },
               "filename": { "type": "string" },
+              "key": { "type": "string" },
               "size": { "type": "number" },
               "url": { "type": "string" }
             },
@@ -309,7 +309,7 @@
         "properties": {
           "name": { "$ref": "#/components/schemas/StringQueryInput" }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "StringQueryInput": {
         "unevaluatedProperties": false,
@@ -317,35 +317,30 @@
           {
             "type": "object",
             "properties": { "equals": { "type": ["string", "null"] } },
-            "additionalProperties": false,
             "required": ["equals"],
             "title": "equals"
           },
           {
             "type": "object",
             "properties": { "notEquals": { "type": ["string", "null"] } },
-            "additionalProperties": false,
             "required": ["notEquals"],
             "title": "notEquals"
           },
           {
             "type": "object",
             "properties": { "startsWith": { "type": "string" } },
-            "additionalProperties": false,
             "required": ["startsWith"],
             "title": "startsWith"
           },
           {
             "type": "object",
             "properties": { "endsWith": { "type": "string" } },
-            "additionalProperties": false,
             "required": ["endsWith"],
             "title": "endsWith"
           },
           {
             "type": "object",
             "properties": { "contains": { "type": "string" } },
-            "additionalProperties": false,
             "required": ["contains"],
             "title": "contains"
           },
@@ -354,7 +349,6 @@
             "properties": {
               "oneOf": { "type": "array", "items": { "type": "string" } }
             },
-            "additionalProperties": false,
             "required": ["oneOf"],
             "title": "oneOf"
           }
@@ -369,12 +363,12 @@
           "picture": { "type": "string", "format": "data-url" },
           "weight": { "type": "number", "format": "float" }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "UpdateCustomerWhere": {
         "type": "object",
         "properties": { "id": { "type": "string" } },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["id"]
       }
     }
