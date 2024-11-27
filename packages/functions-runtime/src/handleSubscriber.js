@@ -48,7 +48,9 @@ async function handleSubscriber(request, config) {
           meta: request.meta,
         });
 
-        db = createDatabaseClient();
+        db = createDatabaseClient({
+          connString: request.meta?.secrets?.KEEL_DB_CONN,
+        });
         const subscriberFunction = subscribers[request.method];
         const actionType = PROTO_ACTION_TYPES.SUBSCRIBER;
 

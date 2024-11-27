@@ -137,7 +137,6 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 	if node.HasFunctions(schema, builder.Config) {
 		functionEnvVars := map[string]string{
 			"KEEL_DB_CONN_TYPE":        "pg",
-			"KEEL_DB_CONN":             dbConnString,
 			"KEEL_TRACING_ENABLED":     os.Getenv("TRACING_ENABLED"),
 			"OTEL_RESOURCE_ATTRIBUTES": "service.name=functions",
 		}
@@ -189,7 +188,12 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 
 			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 			ctx = db.WithDatabase(ctx, database)
+
+			// Pass db conn as secret - we do this here as we change the db name in this function
+			// so can't set it in the secrets passed in as options
+			opts.Secrets["KEEL_DB_CONN"] = dbConnString
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
+
 			ctx = runtimectx.WithOAuthConfig(ctx, &builder.Config.Auth)
 			ctx = runtimectx.WithStorage(ctx, storer)
 

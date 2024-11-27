@@ -405,6 +405,8 @@ func StartFunctions(m *Model) tea.Cmd {
 	return func() tea.Msg {
 		envVars := m.Config.GetEnvVars()
 		envVars["KEEL_DB_CONN_TYPE"] = "pg"
+		// KEEL_DB_CONN is passed via a secret but for backwards compatibility with old functions-runtimes
+		// we'll also pass as an env var for now
 		envVars["KEEL_DB_CONN"] = m.DatabaseConnInfo.String()
 		envVars["KEEL_TRACING_ENABLED"] = "true"
 		envVars["OTEL_RESOURCE_ATTRIBUTES"] = "service.name=functions"
