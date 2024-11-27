@@ -31,6 +31,7 @@ const (
 	ErrorUniqueRoleGlobally                  = "E018"
 	ErrorUniqueEnumGlobally                  = "E019"
 	ErrorUnresolvableExpression              = "E020"
+	ErrorUniqueAPIModel                      = "E021"
 	ErrorForbiddenExpressionAction           = "E022"
 	ErrorInvalidSyntax                       = "E025"
 	ErrorExpressionTypeMismatch              = "E026"

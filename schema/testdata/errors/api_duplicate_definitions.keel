@@ -1,4 +1,12 @@
+model Test {
+}
+
 api Web {
+    models {
+        Test
+        //expect-error:9:13:E021:Model 'Test' has already been included in the Web API
+        Test
+    }
 }
 
 //expect-error:5:8:E017:You have a duplicate definition for 'api Web'
