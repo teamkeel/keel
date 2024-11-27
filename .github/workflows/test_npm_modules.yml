@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: 22.11
+          node-version: 20.16 # vscode (electron) uses this so we want to make the tests use a comparable environment https://github.com/microsoft/vscode/blob/main/package.json#L157 - https://www.electronjs.org/blog/electron-32-0
       - uses: pnpm/action-setup@v4
         with:
           version: 9.12.3
