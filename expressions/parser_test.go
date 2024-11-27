@@ -36,7 +36,7 @@ func TestParser_TextEquality(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -59,7 +59,7 @@ func TestParser_TextInequality(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -174,7 +174,7 @@ func TestParser_UnknownField(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -199,7 +199,7 @@ func TestParser_UnknownOperators(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -224,7 +224,7 @@ func TestParser_TypeMismatch(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -249,7 +249,7 @@ func TestParser_ReturnAssertion(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -278,7 +278,7 @@ func TestParser_EnumEquals(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
@@ -306,7 +306,7 @@ func TestParser_EnumNotEquals(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
@@ -334,7 +334,7 @@ func TestParser_EnumInvalidOperator(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
@@ -364,7 +364,7 @@ func TestParser_EnumInvalidValue(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
@@ -394,7 +394,7 @@ func TestParser_EnumWithoutValue(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
@@ -430,7 +430,7 @@ func TestParser_EnumTypeMismatch(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
@@ -456,7 +456,7 @@ func TestParser_ArrayString(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -479,7 +479,7 @@ func TestParser_ArrayInt(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -502,7 +502,7 @@ func TestParser_ArrayDouble(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -525,7 +525,7 @@ func TestParser_ArrayEmpty(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -548,7 +548,7 @@ func TestParser_ArrayTypeMismatch(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -573,7 +573,7 @@ func TestParser_ModelEquals(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -608,7 +608,7 @@ func TestParser_ModelIn(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("account", "Account"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -637,7 +637,7 @@ func TestParser_ModelInNotToMany(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("account", "Account"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -674,7 +674,7 @@ func TestParser_ModelInWrongType(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("account", "Account"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -706,7 +706,7 @@ func TestParser_ToOneRelationship(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("person", "Person"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
@@ -736,7 +736,7 @@ func TestParser_ToManyRelationship(t *testing.T) {
 
 	parser, err := NewParser(
 		WithCtx(),
-		WithSchema(schema),
+		WithSchemaTypes(schema),
 		WithVariable("organisation", "Organisation"),
 		WithComparisonOperators(),
 		WithReturnTypeAssertion(parser.FieldTypeBoolean, false))

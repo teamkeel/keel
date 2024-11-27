@@ -238,3 +238,75 @@ func TestDefault_InvalidBoolean(t *testing.T) {
 	require.Len(t, issues, 1)
 	require.Equal(t, "expression expected to resolve to type 'bool' but it is 'int'", issues[0])
 }
+
+func TestDefault_InvalidWithOperators(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Person {
+		fields {
+			isEmployed Boolean @default(true == true)
+		}
+	}`})
+
+	model := query.Model(schema, "Person")
+	field := query.Field(model, "isEmployed")
+	defaultAttr := field.Attributes[0]
+
+	expression := defaultAttr.Arguments[0].Expression.String()
+
+	parser, err := attributes.NewDefaultExpressionParser(schema, field)
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "undeclared reference to '_==_' (in container '')", issues[0])
+}
+
+func TestDefault_InvalidWithCtx(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Person {
+		fields {
+			isEmployed Boolean @default(ctx.isAuthenticated)
+		}
+	}`})
+
+	model := query.Model(schema, "Person")
+	field := query.Field(model, "isEmployed")
+	defaultAttr := field.Attributes[0]
+
+	expression := defaultAttr.Arguments[0].Expression.String()
+
+	parser, err := attributes.NewDefaultExpressionParser(schema, field)
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "undeclared reference to 'ctx' (in container '')", issues[0])
+}
+
+func TestDefault_InvalidArithmetic(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Person {
+		fields {
+			num Number @default(1 + 1)
+		}
+	}`})
+
+	model := query.Model(schema, "Person")
+	field := query.Field(model, "num")
+	defaultAttr := field.Attributes[0]
+
+	expression := defaultAttr.Arguments[0].Expression.String()
+
+	parser, err := attributes.NewDefaultExpressionParser(schema, field)
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "undeclared reference to '_+_' (in container '')", issues[0])
+}

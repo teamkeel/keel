@@ -253,10 +253,6 @@ type ExpressionNode struct {
 	Value *string
 }
 
-func (e *ExpressionNode) Operands() {
-
-}
-
 type Grouped struct {
 	node.Node
 

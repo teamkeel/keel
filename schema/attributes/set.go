@@ -10,7 +10,7 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
-func NewSetExpressionParser(schema []*parser.AST, targetField *parser.Ident, action *parser.ActionNode) (*expressions.ExpressionParser, error) {
+func NewSetExpressionParser(schema []*parser.AST, targetField *parser.Ident, action *parser.ActionNode) (*expressions.Parser, error) {
 	if len(targetField.Fragments) < 2 {
 		return nil, fmt.Errorf("lhs operand incorrect")
 	}
@@ -35,20 +35,9 @@ func NewSetExpressionParser(schema []*parser.AST, targetField *parser.Ident, act
 
 	opts := []expressions.Option{
 		expressions.WithCtx(),
-		expressions.WithSchema(schema),
+		expressions.WithSchemaTypes(schema),
+		expressions.WithActionInputs(schema, action),
 		expressions.WithReturnTypeAssertion(field.Type.Value, field.Repeated),
-	}
-
-	// Add filter inputs as variables
-	for _, f := range action.Inputs {
-		t := query.ResolveInputType(schema, f, model, action)
-		opts = append(opts, expressions.WithVariable(f.Name(), t))
-	}
-
-	// Add with inputs as variables
-	for _, f := range action.With {
-		t := query.ResolveInputType(schema, f, model, action)
-		opts = append(opts, expressions.WithVariable(f.Name(), t))
 	}
 
 	p, err := expressions.NewParser(opts...)

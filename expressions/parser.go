@@ -8,14 +8,14 @@ import (
 	"github.com/google/cel-go/common/types"
 )
 
-type ExpressionParser struct {
+type Parser struct {
 	celEnv             *cel.Env
 	provider           *typeProvider
 	expectedReturnType *types.Type
 }
 
 // NewParser creates a new expression parser with all the options applied
-func NewParser(options ...Option) (*ExpressionParser, error) {
+func NewParser(options ...Option) (*Parser, error) {
 	typeProvider := NewTypeProvider()
 
 	env, err := cel.NewCustomEnv(
@@ -28,7 +28,7 @@ func NewParser(options ...Option) (*ExpressionParser, error) {
 		return nil, fmt.Errorf("program setup err: %s", err)
 	}
 
-	parser := &ExpressionParser{
+	parser := &Parser{
 		celEnv:   env,
 		provider: typeProvider,
 	}
@@ -43,7 +43,7 @@ func NewParser(options ...Option) (*ExpressionParser, error) {
 }
 
 // Validate parses and validates the expression
-func (p *ExpressionParser) Validate(expression string) ([]string, error) {
+func (p *Parser) Validate(expression string) ([]string, error) {
 	ast, issues := p.celEnv.Compile(expression)
 	if issues != nil && issues.Err() != nil {
 		validationErrors := []string{}

@@ -23,16 +23,18 @@ func DefaultAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Val
 			}
 
 			typesWithZeroValue := []string{"Text", "Number", "Boolean", "ID", "Timestamp"}
-
 			if len(attribute.Arguments) == 0 && !lo.Contains(typesWithZeroValue, field.Type.Value) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "The default attribute requires an expression",
+						Message: "This default attribute requires an expression",
 						Hint:    "Try @default(MyDefaultValue) instead",
 					},
 					attribute,
 				))
+			}
+
+			if len(attribute.Arguments) == 0 {
 				return
 			}
 

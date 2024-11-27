@@ -5,8 +5,9 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-func NewDefaultExpressionParser(schema []*parser.AST, field *parser.FieldNode) (*expressions.ExpressionParser, error) {
+func NewDefaultExpressionParser(schema []*parser.AST, field *parser.FieldNode) (*expressions.Parser, error) {
 	opts := []expressions.Option{
+		expressions.WithSchemaTypes(schema),
 		expressions.WithReturnTypeAssertion(field.Type.Value, field.Repeated),
 	}
 

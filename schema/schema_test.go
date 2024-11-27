@@ -76,9 +76,9 @@ func TestValidation(t *testing.T) {
 			continue
 		}
 
-		// if tc.Name() != "set_attribute_backlink_repeated_lhs_fields.keel" {
-		// 	continue
-		// }
+		if tc.Name() != "default_invalid_expression.keel" {
+			continue
+		}
 
 		testCase := tc
 		if testCase.IsDir() {

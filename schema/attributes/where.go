@@ -7,28 +7,17 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
-func NewWhereExpressionParser(schema []*parser.AST, action *parser.ActionNode) (*expressions.ExpressionParser, error) {
+func NewWhereExpressionParser(schema []*parser.AST, action *parser.ActionNode) (*expressions.Parser, error) {
 	model := query.ActionModel(schema, action.Name.Value)
 
 	opts := []expressions.Option{
 		expressions.WithCtx(),
-		expressions.WithSchema(schema),
+		expressions.WithSchemaTypes(schema),
+		expressions.WithActionInputs(schema, action),
 		expressions.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
 		expressions.WithComparisonOperators(),
 		expressions.WithLogicalOperators(),
 		expressions.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
-	}
-
-	// Add filter inputs as variables
-	for _, f := range action.Inputs {
-		t := query.ResolveInputType(schema, f, model, action)
-		opts = append(opts, expressions.WithVariable(f.Name(), t))
-	}
-
-	// Add with inputs as variables
-	for _, f := range action.With {
-		t := query.ResolveInputType(schema, f, model, action)
-		opts = append(opts, expressions.WithVariable(f.Name(), t))
 	}
 
 	p, err := expressions.NewParser(opts...)

@@ -35,6 +35,92 @@ func TestWhere_Valid(t *testing.T) {
 	require.Empty(t, issues)
 }
 
+func TestWhere_UnknownVariable(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				name Text
+				isActive Boolean
+			}
+			actions {
+				list listPeople(name) {
+					@where(person.name == something)
+				}
+			}
+		}`})
+
+	action := query.Action(schema, "listPeople")
+	where := action.Attributes[0]
+
+	expression := where.Arguments[0].Expression
+
+	parser, err := attributes.NewWhereExpressionParser(schema, action)
+
+	issues, err := parser.Validate(expression.String())
+	require.NoError(t, err)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "undeclared reference to 'something' (in container '')", issues[0])
+}
+
+func TestWhere_ValidField(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				name Text
+				secondName Text
+			}
+			actions {
+				list listPeople(name) {
+					@where(person.name == person.secondName)
+				}
+			}
+		}`})
+
+	action := query.Action(schema, "listPeople")
+	where := action.Attributes[0]
+
+	expression := where.Arguments[0].Expression
+
+	parser, err := attributes.NewWhereExpressionParser(schema, action)
+
+	issues, err := parser.Validate(expression.String())
+	require.NoError(t, err)
+	require.NoError(t, err)
+
+	require.Empty(t, issues)
+}
+
+func TestWhere_UnknownField(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				name Text
+				secondName Text
+			}
+			actions {
+				list listPeople(name) {
+					@where(person.name == person.something)
+				}
+			}
+		}`})
+
+	action := query.Action(schema, "listPeople")
+	where := action.Attributes[0]
+
+	expression := where.Arguments[0].Expression
+
+	parser, err := attributes.NewWhereExpressionParser(schema, action)
+
+	issues, err := parser.Validate(expression.String())
+	require.NoError(t, err)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "undefined field 'something'", issues[0])
+}
+
 func TestWhere_NamedInput(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 		model Person {
@@ -45,6 +131,32 @@ func TestWhere_NamedInput(t *testing.T) {
 			actions {
 				list listPeople(n: Text) {
 					@where(person.name == n)
+				}
+			}
+		}`})
+
+	action := query.Action(schema, "listPeople")
+	where := action.Attributes[0]
+
+	expression := where.Arguments[0].Expression
+
+	parser, err := attributes.NewWhereExpressionParser(schema, action)
+
+	issues, err := parser.Validate(expression.String())
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
+func TestWhere_FieldInput(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				name Text
+				isActive Boolean
+			}
+			actions {
+				list listPeople(name) {
+					@where(person.name == name)
 				}
 			}
 		}`})

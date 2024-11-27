@@ -2,5 +2,7 @@ model Post {
     fields {
         //expect-error:36:49:E051:default expression doesn't support operators
         published Boolean @default(true == false)
+        //expect-error:35:54:AttributeExpressionError:undeclared reference to 'ctx' (in container '')
+        isAuthed Boolean @default(ctx.isAuthenticated)
     }
 }

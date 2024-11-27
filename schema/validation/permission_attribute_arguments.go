@@ -2,12 +2,11 @@ package validation
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/schema/attributes"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -74,37 +73,53 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 						continue
 					}
 
-					errs.Concat(validateIdentArray(arg.Expression, []string{
-						parser.ActionTypeGet,
-						parser.ActionTypeCreate,
-						parser.ActionTypeUpdate,
-						parser.ActionTypeList,
-						parser.ActionTypeDelete,
-					}, "valid action type"))
+					p, err := attributes.NewPermissionActionsParser()
+					if err != nil {
+						panic(err.Error())
+					}
+					issues, err := p.Validate(arg.Expression.String())
+					if err != nil {
+						panic(err.Error())
+					}
+
+					if len(issues) > 0 {
+						for _, issue := range issues {
+							errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+								errorhandling.AttributeNotAllowedError,
+								errorhandling.ErrorDetails{
+									Message: issue,
+									Hint:    "",
+								},
+								arg.Expression,
+							))
+						}
+						return
+					}
 				case "expression":
 					hasExpression = true
 
-					// context := expressions.ExpressionContext{
-					// 	Model:     model,
-					// 	Attribute: attr,
-					// 	Action:    action,
-					// }
-					// rules := []expression.Rule{
-					// 	expression.OperatorLogicalRule,
-					// }
+					p, err := attributes.NewPermissionExpressionParser(asts, action)
+					if err != nil {
+						panic(err.Error())
+					}
+					issues, err := p.Validate(arg.Expression.String())
+					if err != nil {
+						panic(err.Error())
+					}
 
-					// TODO: use expression parser
-
-					// expressionErrors := expression.ValidateExpression(
-					// 	asts,
-					// 	arg.Expression,
-					// 	rules,
-					// 	context,
-					// )
-					// for _, err := range expressionErrors {
-					// 	// TODO: remove cast when expression.ValidateExpression returns correct type
-					// 	errs.AppendError(err.(*errorhandling.ValidationError))
-					// }
+					if len(issues) > 0 {
+						for _, issue := range issues {
+							errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+								errorhandling.AttributeNotAllowedError,
+								errorhandling.ErrorDetails{
+									Message: issue,
+									Hint:    "",
+								},
+								arg.Expression,
+							))
+						}
+						return
+					}
 
 					// Extra check for using row-based expression in a read/write function
 					// Ideally this would be done as part of the expression validation, but
@@ -135,12 +150,28 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 				case "roles":
 					hasRoles = true
 
-					roles := []string{}
-					for _, role := range query.Roles(asts) {
-						roles = append(roles, role.Name.Value)
+					p, err := attributes.NewPermissionRoleParser(asts)
+					if err != nil {
+						panic(err.Error())
+					}
+					issues, err := p.Validate(arg.Expression.String())
+					if err != nil {
+						panic(err.Error())
 					}
 
-					errs.Concat(validateIdentArray(arg.Expression, roles, "role defined in your schema"))
+					if len(issues) > 0 {
+						for _, issue := range issues {
+							errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+								errorhandling.AttributeNotAllowedError,
+								errorhandling.ErrorDetails{
+									Message: issue,
+									Hint:    "",
+								},
+								arg.Expression,
+							))
+						}
+						return
+					}
 				default:
 					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 						errorhandling.AttributeArgumentError,
@@ -179,43 +210,4 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 			}
 		},
 	}
-}
-
-func validateIdentArray(expr *parser.Expression, allowed []string, identType string) (errs errorhandling.ValidationErrors) {
-	value, err := expr.ToValue()
-	if err != nil || value.Array == nil {
-		example := ""
-		if len(allowed) > 0 {
-			example = allowed[0]
-		}
-		errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-			errorhandling.AttributeArgumentError,
-			errorhandling.ErrorDetails{
-				Message: fmt.Sprintf("value should be a list e.g. [%s]", example),
-			},
-			expr,
-		))
-		return
-	}
-
-	for _, item := range value.Array.Values {
-		valid := item.Ident != nil && lo.Contains(allowed, item.ToString())
-
-		if !valid {
-			hint := ""
-			if len(allowed) > 0 {
-				hint = fmt.Sprintf("valid values are: %s", strings.Join(allowed, ", "))
-			}
-			errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-				errorhandling.AttributeArgumentError,
-				errorhandling.ErrorDetails{
-					Message: fmt.Sprintf("%s is not a %s", item.ToString(), identType),
-					Hint:    hint,
-				},
-				item,
-			))
-		}
-	}
-
-	return
 }

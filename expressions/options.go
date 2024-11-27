@@ -15,15 +15,19 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
-type Option func(*ExpressionParser) error
+type Option func(*Parser) error
 
-func WithSchema(schema []*parser.AST) Option {
-	return func(p *ExpressionParser) error {
+func WithSchemaTypes(schema []*parser.AST) Option {
+	return func(p *Parser) error {
 		p.provider.schema = schema
 
 		var options []cel.EnvOption
 		for _, enum := range query.Enums(schema) {
 			options = append(options, cel.Constant(enum.Name.Value, types.NewObjectType(fmt.Sprintf("%s_EnumDefinition", enum.Name.Value)), nil))
+		}
+
+		for _, role := range query.Roles(schema) {
+			options = append(options, cel.Constant(role.Name.Value, types.NewOpaqueType("_RoleDefinition"), nil))
 		}
 
 		if options != nil {
@@ -38,8 +42,20 @@ func WithSchema(schema []*parser.AST) Option {
 	}
 }
 
+func WithConstant(value string, typeName string) Option {
+	return func(p *Parser) error {
+		var err error
+		p.celEnv, err = p.celEnv.Extend(cel.Constant(value, types.NewOpaqueType(typeName), nil))
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
 func WithCtx() Option {
-	return func(p *ExpressionParser) error {
+	return func(p *Parser) error {
 		fields := map[string]*types.Type{
 			"identity":        types.NewObjectType("Identity"),
 			"isAuthenticated": types.BoolType,
@@ -61,7 +77,7 @@ func WithCtx() Option {
 }
 
 func WithVariable(identifier string, typeName string) Option {
-	return func(p *ExpressionParser) error {
+	return func(p *Parser) error {
 		t, err := mapType(p.provider.schema, typeName)
 		if err != nil {
 			return err
@@ -78,8 +94,48 @@ func WithVariable(identifier string, typeName string) Option {
 	}
 }
 
+func WithActionInputs(schema []*parser.AST, action *parser.ActionNode) Option {
+	return func(p *Parser) error {
+		model := query.ActionModel(schema, action.Name.Value)
+		opts := []cel.EnvOption{}
+
+		// Add filter inputs as variables
+		for _, f := range action.Inputs {
+			typeName := query.ResolveInputType(schema, f, model, action)
+
+			t, err := mapType(p.provider.schema, typeName)
+			if err != nil {
+				return err
+			}
+
+			opts = append(opts, cel.Variable(f.Name(), t))
+		}
+
+		// Add with inputs as variables
+		for _, f := range action.With {
+			typeName := query.ResolveInputType(schema, f, model, action)
+
+			t, err := mapType(p.provider.schema, typeName)
+			if err != nil {
+				return err
+			}
+
+			opts = append(opts, cel.Variable(f.Name(), t))
+		}
+
+		env, err := p.celEnv.Extend(opts...)
+		if err != nil {
+			return err
+		}
+
+		p.celEnv = env
+
+		return nil
+	}
+}
+
 func WithLogicalOperators() Option {
-	return func(p *ExpressionParser) error {
+	return func(p *Parser) error {
 		var err error
 
 		p.celEnv, err = p.celEnv.Extend(
@@ -98,7 +154,7 @@ func WithLogicalOperators() Option {
 }
 
 func WithComparisonOperators() Option {
-	return func(p *ExpressionParser) error {
+	return func(p *Parser) error {
 		paramA := types.NewTypeParamType("A")
 		//structA := types.NewObjectType("B")
 		//	listA := types.NewListType(paramA)
@@ -292,7 +348,7 @@ func WithComparisonOperators() Option {
 }
 
 func WithArithmeticOperators() Option {
-	return func(p *ExpressionParser) error {
+	return func(p *Parser) error {
 		var err error
 
 		p.celEnv, err = p.celEnv.Extend(
@@ -355,7 +411,7 @@ func WithArithmeticOperators() Option {
 }
 
 func WithFunctions() Option {
-	return func(p *ExpressionParser) error {
+	return func(p *Parser) error {
 		var err error
 
 		p.celEnv, err = p.celEnv.Extend(
@@ -379,7 +435,7 @@ func WithFunctions() Option {
 }
 
 func WithReturnTypeAssertion(returnType string, asArray bool) Option {
-	return func(p *ExpressionParser) error {
+	return func(p *Parser) error {
 		var err error
 		p.expectedReturnType, err = mapType(p.provider.schema, returnType)
 
