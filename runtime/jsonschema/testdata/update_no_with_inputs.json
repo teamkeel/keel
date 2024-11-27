@@ -1,29 +1,18 @@
 {
   "type": "object",
   "properties": {
-    "values": {
-      "$ref": "#/components/schemas/TestActionValues"
-    },
-    "where": {
-      "$ref": "#/components/schemas/TestActionWhere"
-    }
+    "values": { "$ref": "#/components/schemas/TestActionValues" },
+    "where": { "$ref": "#/components/schemas/TestActionWhere" }
   },
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "required": ["where"],
   "components": {
     "schemas": {
-      "TestActionValues": {
-        "type": "object",
-        "additionalProperties": false
-      },
+      "TestActionValues": { "type": "object", "unevaluatedProperties": false },
       "TestActionWhere": {
         "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
+        "properties": { "id": { "type": "string" } },
+        "unevaluatedProperties": false,
         "required": ["id"]
       }
     }

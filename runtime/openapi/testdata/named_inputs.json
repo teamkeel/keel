@@ -16,7 +16,7 @@
                   "iterations": { "type": "number" },
                   "rollback": { "type": "boolean" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["iterations", "arraySize", "rollback"]
               }
             }
@@ -28,6 +28,7 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "unevaluatedProperties": false,
                   "anyOf": [
                     { "type": "string", "title": "string" },
                     { "type": "object", "title": "object" },

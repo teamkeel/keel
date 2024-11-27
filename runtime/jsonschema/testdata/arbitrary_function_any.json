@@ -1,32 +1,12 @@
 {
+  "unevaluatedProperties": false,
   "anyOf": [
-    {
-      "title": "string",
-      "type": "string"
-    },
-    {
-      "title": "object",
-      "type": "object"
-    },
-    {
-      "title": "array",
-      "type": "array"
-    },
-    {
-      "title": "integer",
-      "type": "integer"
-    },
-    {
-      "title": "number",
-      "type": "number"
-    },
-    {
-      "title": "boolean",
-      "type": "boolean"
-    },
-    {
-      "title": "null",
-      "type": "null"
-    }
+    { "type": "string", "title": "string" },
+    { "type": "object", "title": "object" },
+    { "type": "array", "title": "array" },
+    { "type": "integer", "title": "integer" },
+    { "type": "number", "title": "number" },
+    { "type": "boolean", "title": "boolean" },
+    { "type": "null", "title": "null" }
   ]
 }

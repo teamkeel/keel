@@ -15,7 +15,7 @@
                   "email": { "type": "string" },
                   "redirectUrl": { "type": "string" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["email", "redirectUrl"]
               }
             }
@@ -26,7 +26,7 @@
             "description": "requestPasswordReset Response",
             "content": {
               "application/json": {
-                "schema": { "type": "object", "additionalProperties": false }
+                "schema": { "type": "object", "unevaluatedProperties": false }
               }
             }
           },
@@ -71,7 +71,7 @@
                   "password": { "type": "string" },
                   "token": { "type": "string" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["token", "password"]
               }
             }
@@ -82,7 +82,7 @@
             "description": "resetPassword Response",
             "content": {
               "application/json": {
-                "schema": { "type": "object", "additionalProperties": false }
+                "schema": { "type": "object", "unevaluatedProperties": false }
               }
             }
           },

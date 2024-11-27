@@ -15,7 +15,7 @@
                   "firstName": { "type": "string" },
                   "surname": { "type": "string" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["firstName", "surname"]
               }
             }
@@ -73,7 +73,7 @@
                   },
                   "title": { "type": "string" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["title", "author"]
               }
             }
@@ -131,7 +131,7 @@
                   },
                   "content": { "type": "string" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["content", "book"]
               }
             }
@@ -184,7 +184,7 @@
               "schema": {
                 "type": "object",
                 "properties": { "id": { "type": "string" } },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["id"]
               }
             }
@@ -283,7 +283,7 @@
               "schema": {
                 "type": "object",
                 "properties": { "id": { "type": "string" } },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["id"]
               }
             }
@@ -336,7 +336,7 @@
               "schema": {
                 "type": "object",
                 "properties": { "id": { "type": "string" } },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["id"]
               }
             }
@@ -408,7 +408,7 @@
                   },
                   "where": { "$ref": "#/components/schemas/ListAuthorsWhere" }
                 },
-                "additionalProperties": false
+                "unevaluatedProperties": false
               }
             }
           }
@@ -482,7 +482,7 @@
                   "last": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/ListBooksWhere" }
                 },
-                "additionalProperties": false
+                "unevaluatedProperties": false
               }
             }
           }
@@ -556,7 +556,7 @@
                   "last": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/ListReviewsWhere" }
                 },
-                "additionalProperties": false
+                "unevaluatedProperties": false
               }
             }
           }
@@ -627,7 +627,7 @@
                   "email": { "type": "string" },
                   "redirectUrl": { "type": "string" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["email", "redirectUrl"]
               }
             }
@@ -638,7 +638,7 @@
             "description": "requestPasswordReset Response",
             "content": {
               "application/json": {
-                "schema": { "type": "object", "additionalProperties": false }
+                "schema": { "type": "object", "unevaluatedProperties": false }
               }
             }
           },
@@ -683,7 +683,7 @@
                   "password": { "type": "string" },
                   "token": { "type": "string" }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["token", "password"]
               }
             }
@@ -694,7 +694,7 @@
             "description": "resetPassword Response",
             "content": {
               "application/json": {
-                "schema": { "type": "object", "additionalProperties": false }
+                "schema": { "type": "object", "unevaluatedProperties": false }
               }
             }
           },
@@ -752,13 +752,13 @@
       "CreateBookAuthorInput": {
         "type": "object",
         "properties": { "id": { "type": "string" } },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["id"]
       },
       "CreateReviewBookInput": {
         "type": "object",
         "properties": { "id": { "type": "string" } },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["id"]
       },
       "IdQueryInput": {
@@ -767,7 +767,6 @@
           {
             "type": "object",
             "properties": { "equals": { "type": ["string", "null"] } },
-            "additionalProperties": false,
             "required": ["equals"],
             "title": "equals"
           },
@@ -776,14 +775,12 @@
             "properties": {
               "oneOf": { "type": "array", "items": { "type": "string" } }
             },
-            "additionalProperties": false,
             "required": ["oneOf"],
             "title": "oneOf"
           },
           {
             "type": "object",
             "properties": { "notEquals": { "type": ["string", "null"] } },
-            "additionalProperties": false,
             "required": ["notEquals"],
             "title": "notEquals"
           }
@@ -794,7 +791,7 @@
         "properties": {
           "firstName": { "type": "string", "enum": ["asc", "desc"] }
         },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["firstName"],
         "title": "firstName"
       },
@@ -803,23 +800,23 @@
         "properties": {
           "surname": { "type": "string", "enum": ["asc", "desc"] }
         },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["surname"],
         "title": "surname"
       },
-      "ListAuthorsWhere": { "type": "object", "additionalProperties": false },
-      "ListBooksWhere": { "type": "object", "additionalProperties": false },
+      "ListAuthorsWhere": { "type": "object", "unevaluatedProperties": false },
+      "ListBooksWhere": { "type": "object", "unevaluatedProperties": false },
       "ListReviewsBookInput": {
         "type": "object",
         "properties": { "id": { "$ref": "#/components/schemas/IdQueryInput" } },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "ListReviewsWhere": {
         "type": "object",
         "properties": {
           "book": { "$ref": "#/components/schemas/ListReviewsBookInput" }
         },
-        "additionalProperties": false
+        "unevaluatedProperties": false
       },
       "Review": {
         "properties": {

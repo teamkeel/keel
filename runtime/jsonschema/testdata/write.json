@@ -1,13 +1,9 @@
 {
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string"
-    },
-    "optionalName": {
-      "type": "string"
-    }
+    "name": { "type": "string" },
+    "optionalName": { "type": "string" }
   },
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "required": ["name"]
 }

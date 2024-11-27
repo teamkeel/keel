@@ -4,6 +4,6 @@
     "tags": { "type": "array", "items": { "type": "string" } },
     "title": { "type": "string" }
   },
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "required": ["title", "tags"]
 }

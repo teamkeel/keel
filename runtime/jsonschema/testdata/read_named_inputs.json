@@ -5,6 +5,6 @@
     "iterations": { "type": "number" },
     "rollback": { "type": "boolean" }
   },
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "required": ["iterations", "arraySize", "rollback"]
 }

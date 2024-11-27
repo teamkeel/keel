@@ -1,17 +1,10 @@
 {
   "type": "object",
   "properties": {
-    "birthday": {
-      "type": "string",
-      "format": "date"
-    },
-    "name": {
-      "type": "string"
-    },
-    "nickName": {
-      "type": ["string", "null"]
-    }
+    "birthday": { "type": "string", "format": "date" },
+    "name": { "type": "string" },
+    "nickName": { "type": ["string", "null"] }
   },
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "required": ["name", "nickName", "birthday"]
 }

@@ -12,7 +12,7 @@
               "schema": {
                 "type": "object",
                 "properties": { "funnyName": { "type": "string" } },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["funnyName"]
               }
             }
@@ -31,7 +31,7 @@
                       "items": { "$ref": "#/components/schemas/Person" }
                     }
                   },
-                  "additionalProperties": false,
+                  "unevaluatedProperties": false,
                   "required": ["people"]
                 }
               }
@@ -81,7 +81,7 @@
                     "items": { "$ref": "#/components/schemas/Person" }
                   }
                 },
-                "additionalProperties": false,
+                "unevaluatedProperties": false,
                 "required": ["people", "meta"]
               }
             }
@@ -98,7 +98,7 @@
                     "createdCount": { "type": "number" },
                     "meta": { "$ref": "#/components/schemas/Meta" }
                   },
-                  "additionalProperties": false,
+                  "unevaluatedProperties": false,
                   "required": ["createdCount", "meta"]
                 }
               }
@@ -138,7 +138,7 @@
       "Meta": {
         "type": "object",
         "properties": { "creatorUsername": { "type": "string" } },
-        "additionalProperties": false,
+        "unevaluatedProperties": false,
         "required": ["creatorUsername"]
       },
       "Person": {

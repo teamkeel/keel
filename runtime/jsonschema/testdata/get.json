@@ -1,10 +1,6 @@
 {
   "type": "object",
-  "properties": {
-    "id": {
-      "type": "string"
-    }
-  },
-  "additionalProperties": false,
+  "properties": { "id": { "type": "string" } },
+  "unevaluatedProperties": false,
   "required": ["id"]
 }
