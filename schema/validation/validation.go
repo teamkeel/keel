@@ -54,7 +54,6 @@ var validatorFuncs = []validationFunc{
 
 	api.UniqueAPINamesRule,
 	api.NamesCorrespondToModels,
-	api.DuplicateAPIModelsRule,
 }
 
 var visitorFuncs = []VisitorFunc{
@@ -87,7 +86,8 @@ var visitorFuncs = []VisitorFunc{
 	OnAttributeRule,
 	EmbedAttributeRule,
 	RelationshipsRules,
-	ApiModelActions,
+	ApiModelActionsRule,
+	ApiDuplicateModelNamesRule,
 	StudioFeatures,
 }
 

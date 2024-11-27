@@ -30,31 +30,6 @@ func UniqueAPINamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors
 	return
 }
 
-func DuplicateAPIModelsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, api := range query.APIs(asts) {
-		seenModelNames := map[string]bool{}
-		for _, section := range api.Sections {
-			for _, model := range section.Models {
-				if _, ok := seenModelNames[model.Name.Value]; ok {
-					errs.Append(errorhandling.ErrorUniqueAPIModel,
-						map[string]string{
-							"Name":   model.Name.Value,
-							"Parent": api.Name.Value,
-						},
-						model.Name,
-					)
-
-					continue
-				}
-
-				seenModelNames[model.Name.Value] = true
-			}
-		}
-	}
-
-	return
-}
-
 func NamesCorrespondToModels(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	modelNames := query.ModelNames(asts)
 	for _, api := range query.APIs(asts) {
