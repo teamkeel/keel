@@ -19,6 +19,15 @@ func APIs(asts []*parser.AST) (res []*parser.APINode) {
 	return res
 }
 
+// APIModelNodes returns all the models included in the given API
+func APIModelNodes(api *parser.APINode) (res []*parser.APIModelNode) {
+	for _, section := range api.Sections {
+		res = append(res, section.Models...)
+	}
+
+	return res
+}
+
 type ModelFilter func(m *parser.ModelNode) bool
 
 func ExcludeBuiltInModels(m *parser.ModelNode) bool {

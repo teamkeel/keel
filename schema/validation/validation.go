@@ -86,7 +86,8 @@ var visitorFuncs = []VisitorFunc{
 	OnAttributeRule,
 	EmbedAttributeRule,
 	RelationshipsRules,
-	ApiModelActions,
+	ApiModelActionsRule,
+	ApiDuplicateModelNamesRule,
 	StudioFeatures,
 }
 
