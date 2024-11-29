@@ -2,8 +2,10 @@ package validation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -97,7 +99,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			// 	return
 			// }
 
-			operand, err := arg.Expression.ToValue()
+			operand, err := resolve.AsIdent(arg.Expression.String())
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
@@ -110,29 +112,29 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				return
 			}
 
-			// check if the arg is an identifier
-			if operand.Type() != parser.TypeIdent {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeArgumentError,
-					errorhandling.ErrorDetails{
-						Message: "The @embed attribute can only be used with valid model fields",
-						Hint:    "For example, use @embed(fieldName)",
-					},
-					arg,
-				))
-				return
-			}
+			// // check if the arg is an identifier
+			// if operand.Type() != parser.TypeIdent {
+			// 	errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+			// 		errorhandling.AttributeArgumentError,
+			// 		errorhandling.ErrorDetails{
+			// 			Message: "The @embed attribute can only be used with valid model fields",
+			// 			Hint:    "For example, use @embed(fieldName)",
+			// 		},
+			// 		arg,
+			// 	))
+			// 	return
+			// }
 
 			// now we go through the identifier fragments and ensure that they are relationships
 			model := currentModel
-			for _, fragment := range operand.Ident.Fragments {
+			for _, fragment := range operand {
 				// get the field in the relationship fragments
-				currentField := query.ModelField(model, fragment.Fragment)
+				currentField := query.ModelField(model, fragment)
 				if currentField == nil {
 					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 						errorhandling.AttributeArgumentError,
 						errorhandling.ErrorDetails{
-							Message: fmt.Sprintf("%s is not a field in the %s model", fragment.Fragment, model.Name.Value),
+							Message: fmt.Sprintf("%s is not a field in the %s model", fragment, model.Name.Value),
 							Hint:    "The @embed attribute must reference an existing model field",
 						},
 						arg,
@@ -157,18 +159,18 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				}
 			}
 
-			if lo.SomeBy(arguments, func(a string) bool { return a == operand.Ident.ToString() }) {
+			if lo.SomeBy(arguments, func(a string) bool { return a == strings.Join(operand, ".") }) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: fmt.Sprintf("@embed argument '%s' already defined within this action", operand.Ident.ToString()),
+						Message: fmt.Sprintf("@embed argument '%s' already defined within this action", strings.Join(operand, ".")),
 					},
 					arg.Expression,
 				))
 				return
 			}
 
-			arguments = append(arguments, operand.Ident.ToString())
+			arguments = append(arguments, strings.Join(operand, "."))
 		},
 	}
 }

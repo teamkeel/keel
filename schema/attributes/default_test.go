@@ -23,10 +23,7 @@ func TestDefault_ValidString(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
-	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -45,12 +42,8 @@ func TestDefault_InvalidString(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
-	require.NoError(t, err)
-
 	require.Len(t, issues, 1)
 	require.Equal(t, "expression expected to resolve to type 'string' but it is 'int'", issues[0])
 }
@@ -69,10 +62,7 @@ func TestDefault_ValidStringArray(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
-	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -91,12 +81,8 @@ func TestDefault_InValidStringArray(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
-	require.NoError(t, err)
-
 	require.Len(t, issues, 1)
 	require.Equal(t, "expression expected to resolve to type 'list(string)' but it is 'string'", issues[0])
 }
@@ -115,10 +101,7 @@ func TestDefault_ValidNumber(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
-	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -137,12 +120,8 @@ func TestDefault_InvalidNumber(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
-	require.NoError(t, err)
-
 	require.Len(t, issues, 1)
 	require.Equal(t, "expression expected to resolve to type 'int' but it is 'double'", issues[0])
 }
@@ -161,10 +140,7 @@ func TestDefault_ValidID(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
-	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -183,12 +159,8 @@ func TestDefault_InvalidID(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
-	require.NoError(t, err)
-
 	require.Len(t, issues, 1)
 	require.Equal(t, "expression expected to resolve to type 'string' but it is 'int'", issues[0])
 }
@@ -207,10 +179,7 @@ func TestDefault_ValidBooleanb(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
-	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -229,12 +198,8 @@ func TestDefault_InvalidBoolean(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
-	require.NoError(t, err)
-
 	require.Len(t, issues, 1)
 	require.Equal(t, "expression expected to resolve to type 'bool' but it is 'int'", issues[0])
 }
@@ -253,12 +218,8 @@ func TestDefault_InvalidWithOperators(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
-	require.NoError(t, err)
-
 	require.Len(t, issues, 1)
 	require.Equal(t, "undeclared reference to '_==_' (in container '')", issues[0])
 }
@@ -277,12 +238,8 @@ func TestDefault_InvalidWithCtx(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
-	require.NoError(t, err)
-
 	require.Len(t, issues, 1)
 	require.Equal(t, "undeclared reference to 'ctx' (in container '')", issues[0])
 }
@@ -301,12 +258,8 @@ func TestDefault_InvalidArithmetic(t *testing.T) {
 
 	expression := defaultAttr.Arguments[0].Expression.String()
 
-	parser, err := attributes.NewDefaultExpressionParser(schema, field)
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
-	require.NoError(t, err)
-
 	require.Len(t, issues, 1)
 	require.Equal(t, "undeclared reference to '_+_' (in container '')", issues[0])
 }

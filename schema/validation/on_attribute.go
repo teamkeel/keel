@@ -6,6 +6,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -65,38 +66,33 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 
 			// Rules for the first argument (the action types array)
 			if len(arguments) == 1 {
-				operand, err := arg.Expression.ToValue()
+				operands, err := resolve.AsIdentArray(arg.Expression.String())
 				if err != nil {
 					errs.AppendError(actionTypesNonArrayError(arg))
 					return
 				}
 
-				if operand.Array == nil {
-					errs.AppendError(actionTypesNonArrayError(arg))
-					return
-				}
-
-				for _, element := range operand.Array.Values {
-					if element.Ident == nil || len(element.Ident.Fragments) != 1 {
+				for _, element := range operands {
+					if len(element) != 1 {
 						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 							errorhandling.AttributeArgumentError,
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf("@on only supports the following action types: %s", strings.Join(supportedActionTypes, ", ")),
 								Hint:    "For example, @on([create, update], verifyEmailAddress)",
 							},
-							element,
+							arg.Expression,
 						))
 						continue
 					}
 
-					if !lo.Contains(supportedActionTypes, element.Ident.Fragments[0].Fragment) {
+					if !lo.Contains(supportedActionTypes, element[0]) {
 						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 							errorhandling.AttributeArgumentError,
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf("@on only supports the following action types: %s", strings.Join(supportedActionTypes, ", ")),
 								Hint:    "For example, @on([create, update], verifyEmailAddress)",
 							},
-							element.Ident.Fragments[0],
+							arg.Expression,
 						))
 					}
 				}
@@ -104,23 +100,23 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 
 			// Rules for the second argument (the subscriber name)
 			if len(arguments) == 2 {
-				operand, err := arg.Expression.ToValue()
+				operand, err := resolve.AsIdent(arg.Expression.String())
 				if err != nil {
 					errs.AppendError(subscriberNameInvalidError(arg))
 					return
 				}
 
-				if operand.Ident == nil {
+				if operand == nil {
 					errs.AppendError(subscriberNameInvalidError(arg))
 					return
 				}
 
-				if len(operand.Ident.Fragments) != 1 {
+				if len(operand) != 1 {
 					errs.AppendError(subscriberNameInvalidError(arg))
 					return
 				}
 
-				name := operand.Ident.Fragments[0].Fragment
+				name := operand[0]
 
 				if name != strcase.ToLowerCamel(name) {
 					errs.AppendError(errorhandling.NewValidationErrorWithDetails(

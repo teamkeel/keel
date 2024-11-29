@@ -2,13 +2,14 @@ package attributes
 
 import (
 	"github.com/teamkeel/keel/expressions"
+	"github.com/teamkeel/keel/expressions/options"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-func NewDefaultExpressionParser(schema []*parser.AST, field *parser.FieldNode) (*expressions.Parser, error) {
+func ValidateDefaultExpression(schema []*parser.AST, field *parser.FieldNode, expression string) ([]string, error) {
 	opts := []expressions.Option{
-		expressions.WithSchemaTypes(schema),
-		expressions.WithReturnTypeAssertion(field.Type.Value, field.Repeated),
+		options.WithSchemaTypes(schema),
+		options.WithReturnTypeAssertion(field.Type.Value, field.Repeated),
 	}
 
 	p, err := expressions.NewParser(opts...)
@@ -16,5 +17,5 @@ func NewDefaultExpressionParser(schema []*parser.AST, field *parser.FieldNode) (
 		return nil, err
 	}
 
-	return p, nil
+	return p.Validate(expression)
 }

@@ -2,8 +2,10 @@ package validation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -60,32 +62,29 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 				inputs = writeInputs
 			}
 
-			operands := []*parser.Operand{}
+			operands := [][]string{}
+			var err error
 			switch n.Name.Value {
 			case parser.AttributeWhere:
-				operands = expr.Operands()
+
+				operands, err = resolve.IdentOperands(n.Arguments[0].Expression.String())
 			case parser.AttributeSet:
-				if expr.LHS != nil && expr.LHS.Factor != nil {
-					operands = expr.LHS.Factor.Operands()
-				}
+				operands, err = resolve.IdentOperands(n.Arguments[0].Expression.String())
+				// if expr.LHS != nil && expr.LHS.Factor != nil {
+				// 	operands = expr.LHS.Factor.Operands()
+				// }
+			}
+			if err != nil {
+				panic("do something")
 			}
 
 			for _, operand := range operands {
-				if operand.Ident == nil {
-					continue
-				}
-
-				if operand == nil || operand.Ident == nil {
-					continue
-				}
 				for in := range inputs {
 					// in an expression the first ident fragment will be the model name
 					// we create an indent without the first fragment
-					identWithoutModelName := &parser.Ident{
-						Fragments: operand.Ident.Fragments[1:],
-					}
+					identWithoutModelName := operand[1:]
 
-					if in.Type.ToString() != identWithoutModelName.ToString() {
+					if in.Type.ToString() != strings.Join(identWithoutModelName, ".") {
 						continue
 					}
 
@@ -95,7 +94,7 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf("%s is already being used as an input so cannot also be used in an expression", in.Type.ToString()),
 							},
-							operand.Ident,
+							n.Arguments[0].Expression,
 						),
 					)
 				}

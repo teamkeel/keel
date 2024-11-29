@@ -2,8 +2,10 @@ package validation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -63,10 +65,13 @@ func UnusedInputRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 				return
 			}
 
-			for _, operand := range expr.Operands() {
-				if operand.Ident != nil {
-					delete(unused, operand.Ident.ToString())
-				}
+			operands, err := resolve.IdentOperands(expr.String())
+			if err != nil {
+				return
+			}
+
+			for _, operand := range operands {
+				delete(unused, strings.Join(operand, "."))
 			}
 		},
 	}

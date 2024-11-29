@@ -223,27 +223,20 @@ func satisfiedBySetExpr(rootModelName string, dotDelimPath string, action *parse
 	setExpressions := setExpressions(action)
 
 	for _, expr := range setExpressions {
-		operand, _, err := expr.ToAssignmentExpression()
+		target, _, err := expr.ToAssignmentExpression()
 		if err != nil {
 			continue
 		}
 
-		if operand.Ident == nil {
+		if len(target) < 2 {
 			continue
 		}
 
-		fragStrings := lo.Map(operand.Ident.Fragments, func(frag *parser.IdentFragment, _ int) string {
-			return frag.Fragment
-		})
-		if len(fragStrings) < 2 {
+		if target[0] != rootModelName {
 			continue
 		}
 
-		if fragStrings[0] != rootModelName {
-			continue
-		}
-
-		remainingFragments := fragStrings[1:]
+		remainingFragments := target[1:]
 		remainingPath := strings.Join(remainingFragments, ".")
 		if remainingPath == dotDelimPath {
 			return true

@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/cron"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -1369,9 +1370,9 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 			continue
 		}
 
-		value, _ := attr.Arguments[0].Expression.ToValue()
-		fieldNames := lo.Map(value.Array.Values, func(v *parser.Operand, i int) string {
-			return v.Ident.ToString()
+		idents, _ := resolve.AsIdentArray(attr.Arguments[0].Expression.String())
+		fieldNames := lo.Map(idents, func(v []string, i int) string {
+			return strings.Join(v, ".")
 		})
 
 		if !lo.Contains(fieldNames, parserField.Name.Value) {
@@ -1471,9 +1472,8 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 // you know that it is well formed for that.
 func attributeFirstArgAsIdentifier(attr *parser.AttributeNode) string {
 	expr := attr.Arguments[0].Expression
-	operand, _ := expr.ToValue()
-	theString := operand.Ident.Fragments[0].Fragment
-	return theString
+	theString, _ := resolve.AsIdent(expr.String())
+	return strings.Join(theString, ".")
 }
 
 func (scm *Builder) makeActions(actions []*parser.ActionNode, modelName string, builtIn bool) []*proto.Action {
@@ -1715,15 +1715,14 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 		perm.ModelName = protoModel.Name
 		protoModel.Permissions = append(protoModel.Permissions, perm)
 	case parser.AttributeOn:
-		subscriberArg, _ := attribute.Arguments[1].Expression.ToValue()
-		subscriberName := subscriberArg.Ident.Fragments[0].Fragment
+		subscriberName, _ := resolve.AsIdent(attribute.Arguments[1].Expression.String())
 
 		// Create the subscriber if it has not yet been created yet.
-		subscriber := proto.FindSubscriber(scm.proto.Subscribers, subscriberName)
+		subscriber := proto.FindSubscriber(scm.proto.Subscribers, subscriberName[0])
 		if subscriber == nil {
 			subscriber = &proto.Subscriber{
-				Name:             subscriberName,
-				InputMessageName: makeSubscriberMessageName(subscriberName),
+				Name:             subscriberName[0],
+				InputMessageName: makeSubscriberMessageName(subscriberName[0]),
 				EventNames:       []string{},
 			}
 			scm.proto.Subscribers = append(scm.proto.Subscribers, subscriber)
@@ -1731,9 +1730,9 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 
 		// For each event, add to the proto schema if it doesn't exist,
 		// and add it to the current subscriber's EventNames field.
-		actionTypesArg, _ := attribute.Arguments[0].Expression.ToValue()
-		for _, arg := range actionTypesArg.Array.Values {
-			actionType := scm.mapToActionType(arg.Ident.Fragments[0].Fragment)
+		actionTypesArg, _ := resolve.AsIdentArray(attribute.Arguments[0].Expression.String())
+		for _, arg := range actionTypesArg {
+			actionType := scm.mapToActionType(arg[0])
 			eventName := makeEventName(parserModel.Name.Value, mapToEventType(actionType))
 
 			event := proto.FindEvent(scm.proto.Events, eventName)
@@ -1940,14 +1939,14 @@ func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.AttributeN
 			expr := arg.Expression.String()
 			pr.Expression = &proto.Expression{Source: expr}
 		case "roles":
-			value, _ := arg.Expression.ToValue()
-			for _, item := range value.Array.Values {
-				pr.RoleNames = append(pr.RoleNames, item.Ident.Fragments[0].Fragment)
+			idents, _ := resolve.AsIdentArray(arg.Expression.String())
+			for _, item := range idents {
+				pr.RoleNames = append(pr.RoleNames, item[0])
 			}
 		case "actions":
-			value, _ := arg.Expression.ToValue()
-			for _, v := range value.Array.Values {
-				pr.ActionTypes = append(pr.ActionTypes, scm.mapToActionType(v.Ident.Fragments[0].Fragment))
+			idents, _ := resolve.AsIdentArray(arg.Expression.String())
+			for _, items := range idents {
+				pr.ActionTypes = append(pr.ActionTypes, scm.mapToActionType(items[0]))
 			}
 		}
 	}
@@ -2004,9 +2003,8 @@ func (scm *Builder) applyJobAttribute(protoJob *proto.Job, attribute *parser.Att
 	case parser.AttributePermission:
 		protoJob.Permissions = append(protoJob.Permissions, scm.permissionAttributeToProtoPermission(attribute))
 	case parser.AttributeSchedule:
-		val, _ := attribute.Arguments[0].Expression.ToValue()
-
-		src := strings.TrimPrefix(*val.String, `"`)
+		val, _ := resolve.AsString(attribute.Arguments[0].Expression.String())
+		src := strings.TrimPrefix(val, `"`)
 		src = strings.TrimSuffix(src, `"`)
 
 		c, _ := cron.Parse(src)

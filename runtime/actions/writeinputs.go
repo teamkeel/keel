@@ -9,6 +9,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/expressions/visitor"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -32,7 +33,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 		}
 
 		// TODO: put somewhere
-		fragments, err := selectToFragments(checkedLhsExpr.Expr)
+		fragments, err := visitor.SelectToFragments(checkedLhsExpr.Expr)
 		if err != nil {
 			return err
 		}
@@ -86,7 +87,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			currRows = nextRows
 		}
 
-		operand, err := RunCelVisitor(parts[1], SetQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
+		operand, err := visitor.RunCelVisitor(parts[1], SetQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}

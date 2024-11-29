@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -100,7 +101,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			operand, err := arg.Expression.ToValue()
+			operand, err := resolve.AsIdent(arg.Expression.String())
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
@@ -113,7 +114,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			if operand.Ident == nil || len(operand.Ident.Fragments) != 1 {
+			if len(operand) != 1 {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
@@ -125,7 +126,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			argumentValue := operand.Ident.Fragments[0].Fragment
+			argumentValue := operand[0]
 			modelField := query.ModelField(currentModel, argumentValue)
 
 			if modelField == nil {

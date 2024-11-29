@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/teamkeel/keel/cron"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -38,8 +39,8 @@ func ScheduleAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			op, err := arg.Expression.ToValue()
-			if err != nil || op.String == nil {
+			value, err := resolve.AsString(attribute.Arguments[0].Expression.String())
+			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
@@ -51,7 +52,7 @@ func ScheduleAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			src := strings.TrimPrefix(*op.String, `"`)
+			src := strings.TrimPrefix(value, `"`)
 			src = strings.TrimSuffix(src, `"`)
 
 			_, err = cron.Parse(src)
@@ -70,7 +71,7 @@ func ScheduleAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 
 				start, end := arg.Expression.GetPositionRange()
 				tok := cronError.Token
-				endOffset := (len(*op.String) - tok.End)
+				endOffset := (len(value) - tok.End)
 
 				errs.AppendError(&errorhandling.ValidationError{
 					Code: string(errorhandling.AttributeArgumentError),

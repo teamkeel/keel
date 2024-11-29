@@ -5,6 +5,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/attributes"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -73,11 +74,7 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 						continue
 					}
 
-					p, err := attributes.NewPermissionActionsParser()
-					if err != nil {
-						panic(err.Error())
-					}
-					issues, err := p.Validate(arg.Expression.String())
+					issues, err := attributes.ValidatePermissionActions(arg.Expression.String())
 					if err != nil {
 						panic(err.Error())
 					}
@@ -98,11 +95,7 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 				case "expression":
 					hasExpression = true
 
-					p, err := attributes.NewPermissionExpressionParser(asts, action)
-					if err != nil {
-						panic(err.Error())
-					}
-					issues, err := p.Validate(arg.Expression.String())
+					issues, err := attributes.ValidatePermissionExpression(asts, action, arg.Expression.String())
 					if err != nil {
 						panic(err.Error())
 					}
@@ -125,13 +118,16 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 					// Ideally this would be done as part of the expression validation, but
 					// if we don't provide the model as context the error is not very helpful.
 					if action != nil && (action.Type.Value == "read" || action.Type.Value == "write") {
-						for _, op := range arg.Expression.Operands() {
-							if op == nil || op.Ident == nil {
-								continue
-							}
+
+						operands, err := resolve.IdentOperands(arg.Expression.String())
+						if err != nil {
+							return
+						}
+
+						for _, op := range operands {
 							// An ident must have at least one fragment - we only care about the first one
-							fragment := op.Ident.Fragments[0]
-							if fragment.Fragment == casing.ToLowerCamel(model.Name.Value) {
+							fragment := op[0]
+							if fragment == casing.ToLowerCamel(model.Name.Value) {
 								errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 									errorhandling.AttributeArgumentError,
 									errorhandling.ErrorDetails{
@@ -141,7 +137,7 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 										),
 										Hint: "implement your permissions logic in your function code using the permissions API - https://docs.keel.so/functions#permissions",
 									},
-									fragment,
+									arg.Expression,
 								))
 							}
 						}
@@ -150,11 +146,7 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 				case "roles":
 					hasRoles = true
 
-					p, err := attributes.NewPermissionRoleParser(asts)
-					if err != nil {
-						panic(err.Error())
-					}
-					issues, err := p.Validate(arg.Expression.String())
+					issues, err := attributes.ValidatePermissionRole(asts, arg.Expression.String())
 					if err != nil {
 						panic(err.Error())
 					}

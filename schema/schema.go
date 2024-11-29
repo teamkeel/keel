@@ -3,6 +3,7 @@ package schema
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/samber/lo"
@@ -387,6 +388,8 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		},
 	}
 
+	expressionTrueLit, _ := parser.ParseExpression("true")
+
 	identityFields := []*parser.FieldNode{
 		{
 			BuiltIn: true,
@@ -414,15 +417,16 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 					},
 					Arguments: []*parser.AttributeArgumentNode{
 						{
-							Expression: &parser.Expression{
-								LHS: &parser.Term{
-									Factor: &parser.Factor{
-										Operand: &parser.Operand{
-											False: true,
-										},
-									},
-								},
-							},
+							Expression: expressionTrueLit,
+							// &parser.Expression{
+							// 	LHS: &parser.Term{
+							// 		Factor: &parser.Factor{
+							// 			Operand: &parser.Operand{
+							// 				False: true,
+							// 			},
+							// 		},
+							// 	},
+							// },
 						},
 					},
 				},
@@ -733,26 +737,7 @@ func (scm *Builder) addSecrets(declarations *parser.AST) {
 }
 
 func (scm *Builder) emailUniqueAttributeNode() *parser.AttributeNode {
-	operands := []*parser.Operand{
-		{
-			Ident: &parser.Ident{
-				Fragments: []*parser.IdentFragment{
-					{
-						Fragment: "email",
-					},
-				},
-			},
-		},
-		{
-			Ident: &parser.Ident{
-				Fragments: []*parser.IdentFragment{
-					{
-						Fragment: "issuer",
-					},
-				},
-			},
-		},
-	}
+	operands := []string{"email", "issuer"}
 
 	if scm.Config != nil {
 		for _, c := range scm.Config.Auth.Claims {
@@ -760,17 +745,11 @@ func (scm *Builder) emailUniqueAttributeNode() *parser.AttributeNode {
 				continue
 			}
 
-			operands = append(operands, &parser.Operand{
-				Ident: &parser.Ident{
-					Fragments: []*parser.IdentFragment{
-						{
-							Fragment: c.Field,
-						},
-					},
-				},
-			})
+			operands = append(operands, c.Field)
 		}
 	}
+
+	operandsExpr, _ := parser.ParseExpression(fmt.Sprintf("[%s]", strings.Join(operands, ",")))
 
 	return &parser.AttributeNode{
 		Name: parser.AttributeNameToken{
@@ -778,17 +757,7 @@ func (scm *Builder) emailUniqueAttributeNode() *parser.AttributeNode {
 		},
 		Arguments: []*parser.AttributeArgumentNode{
 			{
-				Expression: &parser.Expression{
-					LHS: &parser.Term{
-						Factor: &parser.Factor{
-							Operand: &parser.Operand{
-								Array: &parser.Array{
-									Values: operands,
-								},
-							},
-						},
-					},
-				},
+				Expression: operandsExpr,
 			},
 		},
 	}

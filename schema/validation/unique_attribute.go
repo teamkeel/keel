@@ -2,8 +2,10 @@ package validation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -56,54 +58,49 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 			switch {
 			case compositeUnique:
 				if len(attr.Arguments) > 0 {
-					value, _ := attr.Arguments[0].Expression.ToValue()
+					operands, err := resolve.AsIdentArray(attr.Arguments[0].Expression.String())
+					if err != nil {
+						// TODO
+					}
 
-					if value.Array != nil {
-						invalidFieldNames := lo.SomeBy(value.Array.Values, func(o *parser.Operand) bool {
-							return o.Ident == nil
-						})
-						if invalidFieldNames {
-							return
-						}
+					fieldNames := lo.Map(operands, func(o []string, _ int) string {
+						return strings.Join(o, ".")
+					})
 
-						fieldNames := lo.Map(value.Array.Values, func(o *parser.Operand, _ int) string {
-							return o.Ident.ToString()
-						})
+					// check there are no duplicate field names specified in the composite uniqueness
+					// constraint e.g @unique([fieldA, fieldA])
 
-						// check there are no duplicate field names specified in the composite uniqueness
-						// constraint e.g @unique([fieldA, fieldA])
+					dupes := findDuplicateConstraints(fieldNames)
 
-						dupes := findDuplicateConstraints(fieldNames)
+					if len(dupes) > 0 {
+						for _, dupe := range dupes {
+							// find the last occurrence of the duplicate in the composite uniqueness constraint values list
+							// so we can highlight that node in the validation error.
+							_, _, found := lo.FindLastIndexOf(operands, func(o []string) bool {
+								return strings.Join(o, ".") == dupe
+							})
 
-						if len(dupes) > 0 {
-							for _, dupe := range dupes {
-								// find the last occurrence of the duplicate in the composite uniqueness constraint values list
-								// so we can highlight that node in the validation error.
-								_, index, found := lo.FindLastIndexOf(value.Array.Values, func(o *parser.Operand) bool {
-									return o.Ident.ToString() == dupe
-								})
-
-								if found {
-									errs.AppendError(uniqueRestrictionError(value.Array.Values[index].Node, fmt.Sprintf("Field '%s' has already been specified as a constraint", dupe)))
-								}
-							}
-						}
-
-						// check every field specified in the unique constraint against the standard
-						// restrictions for @unique attribute usage
-						for i, uniqueField := range fieldNames {
-							field := query.ModelField(currentModel, uniqueField)
-
-							if field == nil {
-								// the field isnt a recognised field on the model, so abort as this is covered
-								// by another validation
-								continue
-							}
-							if permitted, reason := uniquePermitted(field); !permitted {
-								errs.AppendError(uniqueRestrictionError(value.Array.Values[i].Node, reason))
+							if found {
+								errs.AppendError(uniqueRestrictionError(attr.Arguments[0].Expression.Node, fmt.Sprintf("Field '%s' has already been specified as a constraint", dupe)))
 							}
 						}
 					}
+
+					// check every field specified in the unique constraint against the standard
+					// restrictions for @unique attribute usage
+					for _, uniqueField := range fieldNames {
+						field := query.ModelField(currentModel, uniqueField)
+
+						if field == nil {
+							// the field isnt a recognised field on the model, so abort as this is covered
+							// by another validation
+							continue
+						}
+						if permitted, reason := uniquePermitted(field); !permitted {
+							errs.AppendError(uniqueRestrictionError(attr.Arguments[0].Expression.Node, reason))
+						}
+					}
+
 				}
 			default:
 				// in this case, we know we are dealing with a @unique attribute attached

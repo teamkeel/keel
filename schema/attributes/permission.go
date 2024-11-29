@@ -3,21 +3,22 @@ package attributes
 import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/expressions"
+	"github.com/teamkeel/keel/expressions/options"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 )
 
-func NewPermissionExpressionParser(schema []*parser.AST, action *parser.ActionNode) (*expressions.Parser, error) {
+func ValidatePermissionExpression(schema []*parser.AST, action *parser.ActionNode, expression string) ([]string, error) {
 	model := query.ActionModel(schema, action.Name.Value)
 
 	opts := []expressions.Option{
-		expressions.WithCtx(),
-		expressions.WithSchemaTypes(schema),
-		expressions.WithActionInputs(schema, action),
-		expressions.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
-		expressions.WithComparisonOperators(),
-		expressions.WithLogicalOperators(),
-		expressions.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
+		options.WithCtx(),
+		options.WithSchemaTypes(schema),
+		options.WithActionInputs(schema, action),
+		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
+		options.WithComparisonOperators(),
+		options.WithLogicalOperators(),
+		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	}
 
 	p, err := expressions.NewParser(opts...)
@@ -25,13 +26,13 @@ func NewPermissionExpressionParser(schema []*parser.AST, action *parser.ActionNo
 		return nil, err
 	}
 
-	return p, nil
+	return p.Validate(expression)
 }
 
-func NewPermissionRoleParser(schema []*parser.AST) (*expressions.Parser, error) {
+func ValidatePermissionRole(schema []*parser.AST, expression string) ([]string, error) {
 	opts := []expressions.Option{
-		expressions.WithSchemaTypes(schema),
-		expressions.WithReturnTypeAssertion("_RoleDefinition", true),
+		options.WithSchemaTypes(schema),
+		options.WithReturnTypeAssertion("_RoleDefinition", true),
 	}
 
 	p, err := expressions.NewParser(opts...)
@@ -39,17 +40,17 @@ func NewPermissionRoleParser(schema []*parser.AST) (*expressions.Parser, error) 
 		return nil, err
 	}
 
-	return p, nil
+	return p.Validate(expression)
 }
 
-func NewPermissionActionsParser() (*expressions.Parser, error) {
+func ValidatePermissionActions(expression string) ([]string, error) {
 	opts := []expressions.Option{
-		expressions.WithVariable(parser.ActionTypeGet, "_ActionTypeDefinition"),
-		expressions.WithVariable(parser.ActionTypeCreate, "_ActionTypeDefinition"),
-		expressions.WithVariable(parser.ActionTypeUpdate, "_ActionTypeDefinition"),
-		expressions.WithVariable(parser.ActionTypeList, "_ActionTypeDefinition"),
-		expressions.WithVariable(parser.ActionTypeDelete, "_ActionTypeDefinition"),
-		expressions.WithReturnTypeAssertion("_ActionTypeDefinition", true),
+		options.WithVariable(parser.ActionTypeGet, "_ActionTypeDefinition"),
+		options.WithVariable(parser.ActionTypeCreate, "_ActionTypeDefinition"),
+		options.WithVariable(parser.ActionTypeUpdate, "_ActionTypeDefinition"),
+		options.WithVariable(parser.ActionTypeList, "_ActionTypeDefinition"),
+		options.WithVariable(parser.ActionTypeDelete, "_ActionTypeDefinition"),
+		options.WithReturnTypeAssertion("_ActionTypeDefinition", true),
 	}
 
 	p, err := expressions.NewParser(opts...)
@@ -57,5 +58,5 @@ func NewPermissionActionsParser() (*expressions.Parser, error) {
 		return nil, err
 	}
 
-	return p, nil
+	return p.Validate(expression)
 }

@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/teamkeel/keel/expressions/visitor"
 	"github.com/teamkeel/keel/proto"
 )
 
-func SetQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) expressionVisitor[*QueryOperand] {
+func SetQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) visitor.Visitor[*QueryOperand] {
 	return &setQueryGen{
 		ctx:    ctx,
 		query:  query,
@@ -19,7 +20,7 @@ func SetQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema,
 	}
 }
 
-var _ expressionVisitor[*QueryOperand] = new(setQueryGen)
+var _ visitor.Visitor[*QueryOperand] = new(setQueryGen)
 
 type setQueryGen struct {
 	ctx     context.Context
@@ -31,27 +32,27 @@ type setQueryGen struct {
 	inputs  map[string]any
 }
 
-func (v *setQueryGen) startCondition(parenthesis bool) error {
+func (v *setQueryGen) StartCondition(parenthesis bool) error {
 	return nil
 }
 
-func (v *setQueryGen) endCondition(parenthesis bool) error {
+func (v *setQueryGen) EndCondition(parenthesis bool) error {
 	return nil
 }
 
-func (v *setQueryGen) visitAnd() error {
+func (v *setQueryGen) VisitAnd() error {
 	return errors.New("and operator not supported with set")
 }
 
-func (v *setQueryGen) visitOr() error {
+func (v *setQueryGen) VisitOr() error {
 	return errors.New("or operator not supported with set")
 }
 
-func (v *setQueryGen) visitOperator(op ActionOperator) error {
+func (v *setQueryGen) VisitOperator(op string) error {
 	return errors.New(fmt.Sprintf("%s operator not supported with set", op))
 }
 
-func (v *setQueryGen) visitLiteral(value any) error {
+func (v *setQueryGen) VisitLiteral(value any) error {
 	if value == nil {
 		v.operand = Null()
 	} else {
@@ -60,7 +61,7 @@ func (v *setQueryGen) visitLiteral(value any) error {
 	return nil
 }
 
-func (v *setQueryGen) visitInput(name string) error {
+func (v *setQueryGen) VisitVariable(name string) error {
 	operand, err := generateOperand(v.ctx, v.schema, v.model, v.action, v.inputs, []string{name})
 	if err != nil {
 		return err
@@ -70,7 +71,7 @@ func (v *setQueryGen) visitInput(name string) error {
 	return nil
 }
 
-func (v *setQueryGen) visitField(fragments []string) error {
+func (v *setQueryGen) VisitField(fragments []string) error {
 	operand, err := generateOperand(v.ctx, v.schema, v.model, v.action, v.inputs, fragments)
 	if err != nil {
 		return err
@@ -80,10 +81,10 @@ func (v *setQueryGen) visitField(fragments []string) error {
 	return nil
 }
 
-func (v *setQueryGen) modelName() string {
+func (v *setQueryGen) ModelName() string {
 	return v.query.Model.Name
 }
 
-func (v *setQueryGen) result() *QueryOperand {
+func (v *setQueryGen) Result() *QueryOperand {
 	return v.operand
 }

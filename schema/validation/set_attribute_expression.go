@@ -44,29 +44,29 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 
 			expr := attribute.Arguments[0].Expression
 
-			if expr.LHS == nil || expr.LHS.Operator == nil || expr.LHS.Term == nil {
-				errs.AppendError(makeSetExpressionError(
-					errorhandling.AttributeExpressionError,
-					"The @set attribute cannot be a value condition and must express an assignment",
-					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-					expr,
-				))
-				return
-			}
+			// if expr.LHS == nil || expr.LHS.Operator == nil || expr.LHS.Term == nil {
+			// 	errs.AppendError(makeSetExpressionError(
+			// 		errorhandling.AttributeExpressionError,
+			// 		"The @set attribute cannot be a value condition and must express an assignment",
+			// 		fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+			// 		expr,
+			// 	))
+			// 	return
+			// }
 
-			if !lo.Contains(parser.AssignmentOperators, expr.LHS.Operator.Symbol) {
-				errs.AppendError(makeSetExpressionError(
-					errorhandling.AttributeExpressionError,
-					fmt.Sprintf("Operator '%s' not permitted on @set", expr.LHS.Operator.Symbol),
-					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-					expr.LHS.Operator,
-				))
-				return
-			}
+			// if !lo.Contains(parser.AssignmentOperators, expr.LHS.Operator.Symbol) {
+			// 	errs.AppendError(makeSetExpressionError(
+			// 		errorhandling.AttributeExpressionError,
+			// 		fmt.Sprintf("Operator '%s' not permitted on @set", expr.LHS.Operator.Symbol),
+			// 		fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+			// 		expr.LHS.Operator,
+			// 	))
+			// 	return
+			// }
 
-			operand, assignmentExpression, err := attribute.Arguments[0].Expression.ToAssignmentExpression()
+			target, assignmentExpression, err := attribute.Arguments[0].Expression.ToAssignmentExpression()
 			switch err {
-			case parser.ErrNotAssignmentOperand:
+			case parser.ErrInvalidAssignmentExpression:
 				errs.AppendError(makeSetExpressionError(
 					errorhandling.AttributeExpressionError,
 					"The @set attribute can only be used to set model fields",
@@ -74,33 +74,33 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 					expr,
 				))
 				return
-			case parser.ErrNotAssignmentOperator:
-				errs.AppendError(makeSetExpressionError(
-					errorhandling.AttributeExpressionError,
-					"The @set attribute expression must be an assignment expression",
-					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-					expr,
-				))
-				return
-			case parser.ErrNotAssignmentExpression:
-				errs.AppendError(makeSetExpressionError(
-					errorhandling.AttributeExpressionError,
-					"The @set attribute expression's requires a valid right-hand side expression",
-					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-					expr,
-				))
-				return
+				// case parser.ErrNotAssignmentOperator:
+				// 	errs.AppendError(makeSetExpressionError(
+				// 		errorhandling.AttributeExpressionError,
+				// 		"The @set attribute expression must be an assignment expression",
+				// 		fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+				// 		expr,
+				// 	))
+				// 	return
+				// case parser.ErrNotAssignmentExpression:
+				// 	errs.AppendError(makeSetExpressionError(
+				// 		errorhandling.AttributeExpressionError,
+				// 		"The @set attribute expression's requires a valid right-hand side expression",
+				// 		fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+				// 		expr,
+				// 	))
+				// 	return
 			}
 
-			if operand.Ident == nil {
-				errs.AppendError(makeSetExpressionError(
-					errorhandling.AttributeExpressionError,
-					"The @set attribute can only be used to set model fields",
-					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-					operand,
-				))
-				return
-			}
+			// if operand.Ident == nil {
+			// 	errs.AppendError(makeSetExpressionError(
+			// 		errorhandling.AttributeExpressionError,
+			// 		"The @set attribute can only be used to set model fields",
+			// 		fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+			// 		operand,
+			// 	))
+			// 	return
+			// }
 
 			// if len(conditions) > 1 {
 			// 	errs.AppendError(makeSetExpressionError(
@@ -136,9 +136,9 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 			// }
 
 			// Drop the 'id' at the end if it exists
-			fragments := []*parser.IdentFragment{}
-			for _, fragment := range operand.Ident.Fragments {
-				if fragment.Fragment != "id" {
+			fragments := []string{}
+			for _, fragment := range target {
+				if fragment != "id" {
 					fragments = append(fragments, fragment)
 				}
 			}
@@ -151,26 +151,26 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 			// - is starts at the root model
 			// - it is a field which is part of a model being created or updated (including nested creates)
 			for i, fragment := range fragments {
-				if i == 0 && fragment.Fragment != strcase.ToLowerCamel(model.Name.Value) {
+				if i == 0 && fragment != strcase.ToLowerCamel(model.Name.Value) {
 					errs.AppendError(makeSetExpressionError(
 						errorhandling.AttributeExpressionError,
-						fmt.Sprintf("The identifier '%s' does not exist or is not available to be set", operand.Ident.ToString()),
+						fmt.Sprintf("The identifier '%s' does not exist or is not available to be set", strings.Join(target, ".")),
 						fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-						operand.Ident,
+						attribute.Arguments[0].Expression,
 					))
 					return
 				}
 
 				if i > 0 {
 					// get the next field in the relationship fragments
-					currentField = query.ModelField(currentModel, fragment.Fragment)
+					currentField = query.ModelField(currentModel, fragment)
 
 					if currentField == nil {
 						errs.AppendError(makeSetExpressionError(
 							errorhandling.AttributeExpressionError,
-							fmt.Sprintf("The field '%s' does not exist", fragment.Fragment),
+							fmt.Sprintf("The field '%s' does not exist", fragment),
 							fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-							operand.Ident,
+							attribute.Arguments[0].Expression,
 						))
 						return
 					}
@@ -208,7 +208,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 							continue
 						}
 
-						if operand.Ident.Fragments[i].Fragment == input.Type.Fragments[i-1].Fragment {
+						if target[i] == input.Type.Fragments[i-1].Fragment {
 							if input.Type.Fragments[i].Fragment != "id" {
 								withinWriteScope = true
 							}
@@ -222,7 +222,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 							errorhandling.AttributeExpressionError,
 							"Cannot set a field which is beyond scope of the data being created or updated",
 							"Use a field which is part of a model being created or updated within this action's inputs",
-							operand,
+							attribute.Arguments[0].Expression,
 						))
 						return
 					}
@@ -233,10 +233,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				// is being created and not associated.
 				if i == len(fragments)-1 && currentModel != nil {
 					// We know this is setting (associating to an existing model) at this point
-					setFrags := lo.Map(fragments, func(f *parser.IdentFragment, _ int) string {
-						return f.Fragment
-					})
-
+					setFrags := fragments
 					setFragsString := strings.Join(setFrags[1:], ".")
 
 					for _, input := range action.With {
@@ -253,7 +250,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 									errorhandling.AttributeExpressionError,
 									fmt.Sprintf("Cannot associate to the %s model here as it is already provided as an action input.", currentModel.Name.Value),
 									"",
-									operand,
+									attribute.Arguments[0].Expression,
 								))
 								return
 							}
@@ -267,18 +264,17 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 							errorhandling.AttributeExpressionError,
 							fmt.Sprintf("Cannot set the field '%s' as it is a built-in field and can only be mutated internally", currentField.Name.Value),
 							"Target another field on the model or remove the @set attribute entirely",
-							fragment,
+							attribute.Arguments[0].Expression,
 						))
 						return
 					}
 				}
 			}
 
-			p, err := attributes.NewSetExpressionParser(asts, operand.Ident, action)
+			issues, err := attributes.ValidateSetExpression(asts, target, action, assignmentExpression)
 			if err != nil {
 				panic(err)
 			}
-			issues, err := p.Validate(assignmentExpression.String())
 
 			if len(issues) > 0 {
 				for _, issue := range issues {
@@ -286,7 +282,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 						errorhandling.AttributeExpressionError,
 						issue,
 						fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-						assignmentExpression.AstNode(),
+						attribute.Arguments[0].Expression,
 					))
 				}
 				return

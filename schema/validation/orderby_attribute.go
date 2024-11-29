@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -140,7 +141,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 
 			argumentLabels = append(argumentLabels, arg.Label.Value)
 
-			operand, err := arg.Expression.ToValue()
+			fragments, err := resolve.AsIdent(arg.Expression.String())
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
@@ -153,7 +154,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				return
 			}
 
-			if operand.Ident == nil || (operand.Ident.Fragments[0].Fragment != parser.OrderByAscending && operand.Ident.Fragments[0].Fragment != parser.OrderByDescending) {
+			if fragments == nil || (fragments[0] != parser.OrderByAscending && fragments[0] != parser.OrderByDescending) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{

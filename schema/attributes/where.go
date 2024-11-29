@@ -3,21 +3,22 @@ package attributes
 import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/expressions"
+	"github.com/teamkeel/keel/expressions/options"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 )
 
-func NewWhereExpressionParser(schema []*parser.AST, action *parser.ActionNode) (*expressions.Parser, error) {
+func ValidateWhereExpression(schema []*parser.AST, action *parser.ActionNode, expression string) ([]string, error) {
 	model := query.ActionModel(schema, action.Name.Value)
 
 	opts := []expressions.Option{
-		expressions.WithCtx(),
-		expressions.WithSchemaTypes(schema),
-		expressions.WithActionInputs(schema, action),
-		expressions.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
-		expressions.WithComparisonOperators(),
-		expressions.WithLogicalOperators(),
-		expressions.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
+		options.WithCtx(),
+		options.WithSchemaTypes(schema),
+		options.WithActionInputs(schema, action),
+		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
+		options.WithComparisonOperators(),
+		options.WithLogicalOperators(),
+		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	}
 
 	p, err := expressions.NewParser(opts...)
@@ -25,5 +26,5 @@ func NewWhereExpressionParser(schema []*parser.AST, action *parser.ActionNode) (
 		return nil, err
 	}
 
-	return p, nil
+	return p.Validate(expression)
 }

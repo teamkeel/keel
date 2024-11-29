@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -113,8 +114,9 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 }
 
 func validateIdentArray(expr *parser.Expression, allowedIdents []string) (errs errorhandling.ValidationErrors) {
-	value, err := expr.ToValue()
-	if err != nil || value.Array == nil {
+	idents, err := resolve.AsIdentArray(expr.String())
+
+	if err != nil {
 		expected := ""
 		if len(allowedIdents) > 0 {
 			expected = "an array containing any of the following identifiers - " + formatting.HumanizeList(allowedIdents, formatting.DelimiterOr)
@@ -129,18 +131,18 @@ func validateIdentArray(expr *parser.Expression, allowedIdents []string) (errs e
 		return
 	}
 
-	for _, item := range value.Array.Values {
+	for _, item := range idents {
 		// Each item should be a singular ident e.g. "foo" and not "foo.baz.bop"
 		// String literal idents e.g ["thisisinvalid"] are assumed not to be invalid
 		valid := false
 
-		if item.Ident != nil {
-			valid = len(item.Ident.Fragments) == 1
+		if item != nil {
+			valid = len(item) == 1
 		}
 
 		if valid {
 			// If it is a single ident check it's an allowed value
-			name := item.Ident.Fragments[0].Fragment
+			name := item[0]
 			valid = lo.Contains(allowedIdents, name)
 		}
 
@@ -150,12 +152,10 @@ func validateIdentArray(expr *parser.Expression, allowedIdents []string) (errs e
 				expected = "any of the following identifiers - " + formatting.HumanizeList(allowedIdents, formatting.DelimiterOr)
 			}
 			errs.Append(errorhandling.ErrorInvalidValue,
-
 				map[string]string{
 					"Expected": expected,
 				},
-
-				item,
+				expr,
 			)
 		}
 	}
@@ -215,8 +215,8 @@ func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationE
 				continue
 			}
 
-			value, _ := attr.Arguments[0].Expression.ToValue()
-			if len(value.Array.Values) < 2 {
+			idents, err := resolve.AsIdentArray(attr.Arguments[0].Expression.String())
+			if len(idents) < 2 || err != nil {
 				errs.Append(errorhandling.ErrorInvalidValue,
 					map[string]string{
 						"Expected": "at least two field names to be provided",

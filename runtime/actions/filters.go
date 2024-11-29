@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/expressions/visitor"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -71,7 +72,7 @@ func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []str
 func (query *QueryBuilder) applyExpressionFilters(scope *Scope, args map[string]any) error {
 	for _, where := range scope.Action.WhereExpressions {
 
-		_, err := RunCelVisitor(where.Source, FilterQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
+		_, err := visitor.RunCelVisitor(where.Source, FilterQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}

@@ -8,16 +8,9 @@ import (
 )
 
 func WhereAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
-	//var model *parser.ModelNode
 	var action *parser.ActionNode
 
 	return Visitor{
-		EnterModel: func(m *parser.ModelNode) {
-			//model = m
-		},
-		LeaveModel: func(_ *parser.ModelNode) {
-			//model = nil
-		},
 		EnterAction: func(a *parser.ActionNode) {
 			action = a
 		},
@@ -29,13 +22,9 @@ func WhereAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Valid
 				return
 			}
 
-			expr := attribute.Arguments[0].Expression
+			expression := attribute.Arguments[0].Expression
 
-			p, err := attributes.NewWhereExpressionParser(asts, action)
-			if err != nil {
-				panic(err.Error())
-			}
-			issues, err := p.Validate(expr.String())
+			issues, err := attributes.ValidateWhereExpression(asts, action, expression.String())
 			if err != nil {
 				panic(err.Error())
 			}
@@ -46,7 +35,7 @@ func WhereAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Valid
 						errorhandling.AttributeExpressionError,
 						issue,
 						"TODO", // TODO: hints
-						expr.AstNode(),
+						expression,
 					))
 				}
 				return

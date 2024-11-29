@@ -72,7 +72,7 @@ func GetDefinition(schemaFiles []*reader.SchemaFile, pos Position) *Definition {
 					if arg.Expression == nil {
 						continue
 					}
-					for _, op := range arg.Expression.Operands() {
+					for _, op := range resolve.IdentOperands(arg.Expression) {
 						if op == nil || op.Ident == nil {
 							continue
 						}

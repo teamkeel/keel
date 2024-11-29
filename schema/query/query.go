@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -349,23 +350,19 @@ func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeN
 	fields := []*parser.FieldNode{}
 
 	if len(attribute.Arguments) > 0 {
-		value, err := attribute.Arguments[0].Expression.ToValue()
+
+		operands, err := resolve.AsIdentArray(attribute.Arguments[0].Expression.String())
 		if err != nil {
 			return fields
 		}
 
-		if value.Array != nil {
-			fieldNames := lo.Map(value.Array.Values, func(o *parser.Operand, _ int) string {
-				return o.Ident.ToString()
-			})
-
-			for _, f := range fieldNames {
-				field := Field(model, f)
-				if field != nil {
-					fields = append(fields, field)
-				}
+		for _, f := range operands {
+			field := Field(model, strings.Join(f, "."))
+			if field != nil {
+				fields = append(fields, field)
 			}
 		}
+
 	}
 
 	return fields
@@ -400,11 +397,11 @@ func ActionSortableFieldNames(action *parser.ActionNode) ([]string, error) {
 
 	if attribute != nil {
 		for _, arg := range attribute.Arguments {
-			fieldName, err := arg.Expression.ToValue()
+			fieldName, err := resolve.AsIdent(arg.Expression.String())
 			if err != nil {
 				return nil, err
 			}
-			fields = append(fields, fieldName.Ident.Fragments[0].Fragment)
+			fields = append(fields, fieldName[0])
 		}
 	}
 
@@ -595,9 +592,10 @@ func SubscriberNames(asts []*parser.AST) (res []string) {
 
 						if len(attribute.Arguments) == 2 {
 							subscriberArg := attribute.Arguments[1]
-							operand, err := subscriberArg.Expression.ToValue()
-							if err == nil && operand.Ident != nil && len(operand.Ident.Fragments) == 1 {
-								name := operand.Ident.Fragments[0].Fragment
+
+							fragments, err := resolve.AsIdent(subscriberArg.Expression.String())
+							if err == nil && fragments != nil && len(fragments) == 1 {
+								name := fragments[0]
 								if !lo.Contains(res, name) {
 									res = append(res, name)
 								}
@@ -784,15 +782,14 @@ func RelationAttributeValue(attr *parser.AttributeNode) (field string, ok bool) 
 		return "", false
 	}
 
-	expr := attr.Arguments[0].Expression
-	operand, err := expr.ToValue()
+	operand, err := resolve.AsIdent(attr.Arguments[0].Expression.String())
 	if err != nil {
 		return "", false
 	}
 
-	if operand.Ident == nil {
+	if operand == nil {
 		return "", false
 	}
 
-	return operand.Ident.Fragments[0].Fragment, true
+	return operand[0], true
 }

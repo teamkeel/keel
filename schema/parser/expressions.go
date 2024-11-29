@@ -2,10 +2,10 @@ package parser
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/alecthomas/participle/v2"
-	"github.com/samber/lo"
-	"github.com/teamkeel/keel/schema/node"
+	"github.com/google/cel-go/cel"
 )
 
 var (
@@ -15,57 +15,57 @@ var (
 	UnknownCondition    = "unknown"
 )
 
-type Operator struct {
-	node.Node
+// type Operator struct {
+// 	node.Node
 
-	// Todo need to figure out how we can share with the consts below
-	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=" | "or" | "and" )`
-}
+// 	// Todo need to figure out how we can share with the consts below
+// 	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=" | "or" | "and" )`
+// }
 
-func (o *Operator) ToString() string {
-	if o == nil {
-		return ""
-	}
+// func (o *Operator) ToString() string {
+// 	if o == nil {
+// 		return ""
+// 	}
 
-	if o.Symbol == "and" {
-		return "&&"
-	}
+// 	if o.Symbol == "and" {
+// 		return "&&"
+// 	}
 
-	if o.Symbol == "or" {
-		return "||"
-	}
+// 	if o.Symbol == "or" {
+// 		return "||"
+// 	}
 
-	return o.Symbol
-}
+// 	return o.Symbol
+// }
 
-var (
-	OperatorEquals               = "=="
-	OperatorAssignment           = "="
-	OperatorNotEquals            = "!="
-	OperatorGreaterThanOrEqualTo = ">="
-	OperatorLessThanOrEqualTo    = "<="
-	OperatorLessThan             = "<"
-	OperatorGreaterThan          = ">"
-	OperatorIn                   = "in"
-	OperatorNotIn                = "notin"
-	OperatorIncrement            = "+="
-	OperatorDecrement            = "-="
-)
+// var (
+// 	OperatorEquals               = "=="
+// 	OperatorAssignment           = "="
+// 	OperatorNotEquals            = "!="
+// 	OperatorGreaterThanOrEqualTo = ">="
+// 	OperatorLessThanOrEqualTo    = "<="
+// 	OperatorLessThan             = "<"
+// 	OperatorGreaterThan          = ">"
+// 	OperatorIn                   = "in"
+// 	OperatorNotIn                = "notin"
+// 	OperatorIncrement            = "+="
+// 	OperatorDecrement            = "-="
+// )
 
-var AssignmentOperators = []string{
-	OperatorAssignment,
-}
+// var AssignmentOperators = []string{
+// 	OperatorAssignment,
+// }
 
-var LogicalOperators = []string{
-	OperatorEquals,
-	OperatorNotEquals,
-	OperatorGreaterThan,
-	OperatorGreaterThanOrEqualTo,
-	OperatorLessThan,
-	OperatorLessThanOrEqualTo,
-	OperatorIn,
-	OperatorNotIn,
-}
+// var LogicalOperators = []string{
+// 	OperatorEquals,
+// 	OperatorNotEquals,
+// 	OperatorGreaterThan,
+// 	OperatorGreaterThanOrEqualTo,
+// 	OperatorLessThan,
+// 	OperatorLessThanOrEqualTo,
+// 	OperatorIn,
+// 	OperatorNotIn,
+// }
 
 func ParseExpression(source string) (*Expression, error) {
 	parser, err := participle.Build[Expression]()
@@ -83,43 +83,42 @@ func ParseExpression(source string) (*Expression, error) {
 
 var ErrNotValue = errors.New("expression is not a single value")
 
-func (expr *Expression) ToValue() (*Operand, error) {
-	if expr.Operator != nil || expr.RHS != nil {
-		return nil, ErrNotValue
+//func (expr *Expression) ToValue() (any, error) {
+
+func (expr *Expression) ToValue() (any, error) {
+	env, err := cel.NewEnv()
+	if err != nil {
+		return nil, errors.New("failed to parse expression")
 	}
 
-	if expr.LHS.Operator != nil || expr.LHS.Term != nil {
-		return nil, ErrNotValue
+	ast, issues := env.Parse(expr.String())
+	if issues != nil && len(issues.Errors()) > 0 {
+		return nil, errors.New("failed to parse expression")
 	}
 
-	if expr.LHS.Factor.Operand == nil {
-		return nil, ErrNotValue
+	prg, err := env.Program(ast)
+	if err != nil {
+		return nil, errors.New("failed to parse expression")
 	}
 
-	return expr.LHS.Factor.Operand, nil
+	out, _, err := prg.Eval(nil)
+
+	if err != nil {
+		return nil, errors.New("failed to evaluate expression")
+	}
+
+	return out.Value(), nil
 }
 
-var ErrNotAssignmentOperand = errors.New("assignment expression requires an ident LHS operand")
-var ErrNotAssignmentOperator = errors.New("assignment expression is not using the correct assignment operator")
-var ErrNotAssignmentExpression = errors.New("assignment expression does not have a RHS expression")
+var ErrInvalidAssignmentExpression = errors.New("assignment expression is not valid")
 
-func (expr *Expression) IsAssignment() bool {
-	_, _, err := expr.ToAssignmentExpression()
-	return err == ErrNotAssignmentOperand || err == ErrNotAssignmentOperator || err == ErrNotAssignmentExpression
-}
+func (expr *Expression) ToAssignmentExpression() ([]string, string, error) {
 
-func (expr *Expression) ToAssignmentExpression() (*Operand, *Term, error) {
-	if expr.LHS == nil || expr.LHS.Factor == nil || expr.LHS.Factor.Operand == nil {
-		return nil, nil, ErrNotAssignmentOperand
+	parts := strings.Split(expr.String(), "=")
+
+	if len(parts) != 2 {
+		return nil, "", ErrInvalidAssignmentExpression
 	}
 
-	if expr.LHS.Operator == nil || !lo.Contains(AssignmentOperators, expr.LHS.Operator.Symbol) {
-		return nil, nil, ErrNotAssignmentOperator
-	}
-
-	if expr.LHS.Term == nil {
-		return nil, nil, ErrNotAssignmentExpression
-	}
-
-	return expr.LHS.Factor.Operand, expr.LHS.Term, nil
+	return strings.Split(parts[0], "."), parts[1], nil
 }

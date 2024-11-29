@@ -40,11 +40,10 @@ func DefaultAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Val
 
 			expression := attribute.Arguments[0].Expression
 
-			p, err := attributes.NewDefaultExpressionParser(asts, field)
+			issues, err := attributes.ValidateDefaultExpression(asts, field, expression.String())
 			if err != nil {
 				panic(err)
 			}
-			issues, err := p.Validate(expression.String())
 
 			if len(issues) > 0 {
 				for _, issue := range issues {

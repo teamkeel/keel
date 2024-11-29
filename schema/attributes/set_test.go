@@ -27,15 +27,13 @@ func TestValid(t *testing.T) {
 	action := query.Action(schema, "createPerson")
 	set := action.Attributes[0]
 
-	operand, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
+	target, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
 	require.NoError(t, err)
 
-	require.Equal(t, "person", operand.Ident.Fragments[0].Fragment)
-	require.Equal(t, "isActive", operand.Ident.Fragments[1].Fragment)
+	require.Equal(t, "person", target[0])
+	require.Equal(t, "isActive", target[1])
 
-	parser, err := attributes.NewSetExpressionParser(schema, operand.Ident, action)
-
-	issues, err := parser.Validate(expression.String())
+	issues, err := attributes.ValidateSetExpression(schema, target, action, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -65,16 +63,14 @@ func TestValidWithRelationship(t *testing.T) {
 	action := query.Action(schema, "createPerson")
 	set := action.Attributes[0]
 
-	operand, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
+	target, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
 	require.NoError(t, err)
 
-	require.Equal(t, "person", operand.Ident.Fragments[0].Fragment)
-	require.Equal(t, "company", operand.Ident.Fragments[1].Fragment)
-	require.Equal(t, "isActive", operand.Ident.Fragments[2].Fragment)
+	require.Equal(t, "person", target[0])
+	require.Equal(t, "company", target[1])
+	require.Equal(t, "isActive", target[2])
 
-	parser, err := attributes.NewSetExpressionParser(schema, operand.Ident, action)
-
-	issues, err := parser.Validate(expression.String())
+	issues, err := attributes.ValidateSetExpression(schema, target, action, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -96,17 +92,14 @@ func TestInvalidTypes(t *testing.T) {
 	action := query.Action(schema, "createPerson")
 	set := action.Attributes[0]
 
-	operand, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
+	target, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
 	require.NoError(t, err)
 
-	require.Equal(t, "person", operand.Ident.Fragments[0].Fragment)
-	require.Equal(t, "isActive", operand.Ident.Fragments[1].Fragment)
+	require.Equal(t, "person", target[0])
+	require.Equal(t, "isActive", target[1])
 
-	parser, err := attributes.NewSetExpressionParser(schema, operand.Ident, action)
-
-	issues, err := parser.Validate(expression.String())
+	issues, err := attributes.ValidateSetExpression(schema, target, action, expression)
 	require.NoError(t, err)
-
 	require.Len(t, issues, 1)
 	require.Equal(t, "expression expected to resolve to type 'bool' but it is 'string'", issues[0])
 }
