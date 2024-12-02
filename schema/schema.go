@@ -244,7 +244,7 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 					Value: parser.FieldNameCreatedAt,
 				},
 				Type: parser.NameNode{
-					Value: parser.FieldTypeDatetime,
+					Value: parser.FieldTypeTimestamp,
 				},
 				Attributes: []*parser.AttributeNode{
 					{
@@ -260,7 +260,7 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 					Value: parser.FieldNameUpdatedAt,
 				},
 				Type: parser.NameNode{
-					Value: parser.FieldTypeDatetime,
+					Value: parser.FieldTypeTimestamp,
 				},
 				Attributes: []*parser.AttributeNode{
 					{

@@ -76,7 +76,7 @@ var visitorFuncs = []VisitorFunc{
 	OrderByAttributeRule,
 	SortableAttributeRule,
 	SetAttributeExpressionRules,
-	WhereAttributeExpressionRules,
+	ExpressionRules,
 	Jobs,
 	MessagesRule,
 	ScheduleAttributeRule,

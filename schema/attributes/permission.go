@@ -8,7 +8,7 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
-func ValidatePermissionExpression(schema []*parser.AST, action *parser.ActionNode, expression string) ([]string, error) {
+func ValidatePermissionExpression(schema []*parser.AST, action *parser.ActionNode, expression string) ([]expressions.ValidationError, error) {
 	model := query.ActionModel(schema, action.Name.Value)
 
 	opts := []expressions.Option{
@@ -29,7 +29,7 @@ func ValidatePermissionExpression(schema []*parser.AST, action *parser.ActionNod
 	return p.Validate(expression)
 }
 
-func ValidatePermissionRole(schema []*parser.AST, expression string) ([]string, error) {
+func ValidatePermissionRoles(schema []*parser.AST, expression string) ([]expressions.ValidationError, error) {
 	opts := []expressions.Option{
 		options.WithSchemaTypes(schema),
 		options.WithReturnTypeAssertion("_RoleDefinition", true),
@@ -43,7 +43,7 @@ func ValidatePermissionRole(schema []*parser.AST, expression string) ([]string, 
 	return p.Validate(expression)
 }
 
-func ValidatePermissionActions(expression string) ([]string, error) {
+func ValidatePermissionActions(expression string) ([]expressions.ValidationError, error) {
 	opts := []expressions.Option{
 		options.WithVariable(parser.ActionTypeGet, "_ActionTypeDefinition"),
 		options.WithVariable(parser.ActionTypeCreate, "_ActionTypeDefinition"),

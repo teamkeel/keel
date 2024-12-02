@@ -28,7 +28,7 @@ func TestWhere_Valid(t *testing.T) {
 
 	expression := where.Arguments[0].Expression
 
-	issues, err := attributes.ValidateWhereExpression(schema, action, expression.String())
+	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -52,7 +52,7 @@ func TestWhere_UnknownVariable(t *testing.T) {
 
 	expression := where.Arguments[0].Expression
 
-	issues, err := attributes.ValidateWhereExpression(schema, action, expression.String())
+	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
 	require.Equal(t, "undeclared reference to 'something' (in container '')", issues[0])
@@ -77,7 +77,7 @@ func TestWhere_ValidField(t *testing.T) {
 
 	expression := where.Arguments[0].Expression
 
-	issues, err := attributes.ValidateWhereExpression(schema, action, expression.String())
+	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -101,7 +101,7 @@ func TestWhere_UnknownField(t *testing.T) {
 
 	expression := where.Arguments[0].Expression
 
-	issues, err := attributes.ValidateWhereExpression(schema, action, expression.String())
+	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
 	require.Equal(t, "undefined field 'something'", issues[0])
@@ -126,7 +126,7 @@ func TestWhere_NamedInput(t *testing.T) {
 
 	expression := where.Arguments[0].Expression
 
-	issues, err := attributes.ValidateWhereExpression(schema, action, expression.String())
+	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -150,7 +150,7 @@ func TestWhere_FieldInput(t *testing.T) {
 
 	expression := where.Arguments[0].Expression
 
-	issues, err := attributes.ValidateWhereExpression(schema, action, expression.String())
+	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -174,7 +174,7 @@ func TestWhere_MultiConditions(t *testing.T) {
 
 	expression := where.Arguments[0].Expression
 
-	issues, err := attributes.ValidateWhereExpression(schema, action, expression.String())
+	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }

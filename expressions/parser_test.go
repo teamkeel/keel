@@ -3,6 +3,7 @@ package expressions_test
 import (
 	"testing"
 
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/expressions"
@@ -72,6 +73,55 @@ func TestParser_TextInequality(t *testing.T) {
 	require.Empty(t, issues)
 }
 
+func TestParser_DateTimeEquality(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				date Timestamp
+			}
+		}`})
+
+	expression := `person.date == ctx.now`
+
+	parser, err := expressions.NewParser(
+		options.WithCtx(),
+		options.WithSchemaTypes(schema),
+		options.WithVariable("person", "Person"),
+		options.WithComparisonOperators(),
+		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
+func TestParser_CompareNullWithRequiredField(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Post {
+			fields {
+				name Text?
+			}
+			actions {
+				list listPosts() 
+			}
+		}`})
+
+	expression := `post.name == null`
+
+	parser, err := expressions.NewParser(
+		options.WithCtx(),
+		options.WithSchemaTypes(schema),
+		options.WithVariable("post", "Post"),
+		options.WithComparisonOperators(),
+		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
 func TestParser_Array(t *testing.T) {
 	expression := `[1,2,3]`
 
@@ -99,7 +149,7 @@ func TestParser_ExpectedArray(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'int' but it is 'list(int)'", issues[0])
+	require.Equal(t, "expression expected to resolve to type 'int' but it is 'list(int)'", issues[0].Message)
 }
 
 func TestParser_In(t *testing.T) {
@@ -129,7 +179,9 @@ func TestParser_InInvalid(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '@in' applied to '(string, string)'", issues[0])
+	require.Equal(t, "found no matching overload for '@in' applied to '(string, string)'", issues[0].Message)
+	require.Equal(t, lexer.Position{Offset: 7, Line: 1, Column: 7}, issues[0].Pos)
+	require.Equal(t, lexer.Position{Offset: 9, Line: 1, Column: 9}, issues[0].EndPos)
 }
 
 func TestParser_InInvalidTypes(t *testing.T) {
@@ -161,7 +213,7 @@ func TestParser_UnknownVariable(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "undeclared reference to 'person' (in container '')", issues[0])
+	require.Equal(t, "undeclared reference to 'person' (in container '')", issues[0].Message)
 }
 
 func TestParser_UnknownField(t *testing.T) {
@@ -186,7 +238,7 @@ func TestParser_UnknownField(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "undefined field 'n'", issues[0])
+	require.Equal(t, "undefined field 'n'", issues[0].Message)
 }
 
 func TestParser_UnknownOperators(t *testing.T) {
@@ -198,7 +250,6 @@ func TestParser_UnknownOperators(t *testing.T) {
 		}`})
 
 	expression := `person.age == 1 + 1`
-
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
@@ -210,8 +261,8 @@ func TestParser_UnknownOperators(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 2)
-	require.Equal(t, "undeclared reference to '_==_' (in container '')", issues[0])
-	require.Equal(t, "undeclared reference to '_+_' (in container '')", issues[1])
+	require.Equal(t, "undeclared reference to '_==_' (in container '')", issues[0].Message)
+	require.Equal(t, "undeclared reference to '_+_' (in container '')", issues[1].Message)
 }
 
 func TestParser_TypeMismatch(t *testing.T) {
@@ -236,7 +287,7 @@ func TestParser_TypeMismatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '_==_' applied to '(string, int)'", issues[0])
+	require.Equal(t, "found no matching overload for '_==_' applied to '(string, int)'", issues[0].Message)
 }
 
 func TestParser_ReturnAssertion(t *testing.T) {
@@ -261,7 +312,7 @@ func TestParser_ReturnAssertion(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'bool' but it is 'string'", issues[0])
+	require.Equal(t, "expression expected to resolve to type 'bool' but it is 'string'", issues[0].Message)
 }
 
 func TestParser_EnumEquals(t *testing.T) {
@@ -347,7 +398,7 @@ func TestParser_EnumInvalidOperator(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '_>_' applied to '(Status, Status)'", issues[0])
+	require.Equal(t, "found no matching overload for '_>_' applied to '(Status, Status)'", issues[0].Message)
 }
 
 func TestParser_EnumInvalidValue(t *testing.T) {
@@ -443,7 +494,7 @@ func TestParser_EnumTypeMismatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '_==_' applied to '(Status, Employment)'", issues[0])
+	require.Equal(t, "found no matching overload for '_==_' applied to '(Status, Employment)'", issues[0].Message)
 }
 
 func TestParser_ArrayString(t *testing.T) {
@@ -560,7 +611,7 @@ func TestParser_ArrayTypeMismatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '_==_' applied to '(list(string), string)'", issues[0])
+	require.Equal(t, "found no matching overload for '_==_' applied to '(list(string), string)'", issues[0].Message)
 }
 
 func TestParser_ModelEquals(t *testing.T) {
@@ -649,7 +700,7 @@ func TestParser_ModelInNotToMany(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '@in' applied to '(Account, Account)'", issues[0])
+	require.Equal(t, "found no matching overload for '@in' applied to '(Account, Account)'", issues[0].Message)
 }
 
 func TestParser_ModelInWrongType(t *testing.T) {
@@ -686,7 +737,7 @@ func TestParser_ModelInWrongType(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '@in' applied to '(Account, Befriend[])'", issues[0])
+	require.Equal(t, "found no matching overload for '@in' applied to '(Account, Befriend[])'", issues[0].Message)
 }
 
 func TestParser_ToOneRelationship(t *testing.T) {

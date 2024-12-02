@@ -8,7 +8,7 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
-func ValidateWhereExpression(schema []*parser.AST, action *parser.ActionNode, expression string) ([]string, error) {
+func ValidateWhereExpression(schema []*parser.AST, action *parser.ActionNode, expression *parser.Expression) ([]expressions.ValidationError, error) {
 	model := query.ActionModel(schema, action.Name.Value)
 
 	opts := []expressions.Option{
@@ -26,5 +26,13 @@ func ValidateWhereExpression(schema []*parser.AST, action *parser.ActionNode, ex
 		return nil, err
 	}
 
-	return p.Validate(expression)
+	issues, err := p.Validate(expression.String())
+
+	// TODO: this is not working correctly yet when expressions span multiple lines
+	for i, _ := range issues {
+		issues[i].Pos = expression.Pos.Add(issues[i].Pos)
+		issues[i].EndPos = expression.Pos.Add(issues[i].EndPos)
+	}
+
+	return issues, err
 }

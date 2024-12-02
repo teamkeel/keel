@@ -165,6 +165,8 @@ func WithComparisonOperators() expressions.Option {
 		var err error
 
 		if p.Provider.Schema != nil {
+
+			// For each enum type, configure equals, not equals and 'in' operators
 			for _, enum := range query.Enums(p.Provider.Schema) {
 				enumType := types.NewOpaqueType(enum.Name.Value)
 				enumTypeArr := cel.ObjectType(enum.Name.Value + "[]")
@@ -172,6 +174,9 @@ func WithComparisonOperators() expressions.Option {
 				p.CelEnv, err = p.CelEnv.Extend(
 					cel.Function(operators.Equals,
 						cel.Overload(fmt.Sprintf("equals_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumType}, types.BoolType),
+					),
+					cel.Function(operators.NotEquals,
+						cel.Overload(fmt.Sprintf("notequals_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumType}, types.BoolType),
 					),
 					cel.Function(operators.In,
 						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumTypeArr}, types.BoolType),
@@ -202,9 +207,12 @@ func WithComparisonOperators() expressions.Option {
 			// Equals
 			cel.Function(operators.Equals,
 				cel.Overload("equals_string", []*types.Type{types.StringType, types.StringType}, types.BoolType),
+				cel.Overload("equals_nullable_string", []*types.Type{types.NewNullableType(types.StringType), types.NullType}, types.BoolType),
+
 				cel.Overload("equals_int", argTypes(types.IntType, types.IntType), types.BoolType),
 				cel.Overload("equals_double", argTypes(types.DoubleType, types.DoubleType), types.BoolType),
 				cel.Overload("equals_boolean", argTypes(types.BoolType, types.BoolType), types.BoolType),
+				cel.Overload("equals_datetime", argTypes(types.TimestampType, types.TimestampType), types.BoolType),
 				cel.Overload("equals_string_list", argTypes(types.NewListType(types.StringType), types.NewListType(types.StringType)), types.BoolType),
 				cel.Overload("equals_int_list", argTypes(types.NewListType(types.IntType), types.NewListType(types.IntType)), types.BoolType),
 				cel.Overload("equals_double_list", argTypes(types.NewListType(types.DoubleType), types.NewListType(types.DoubleType)), types.BoolType),

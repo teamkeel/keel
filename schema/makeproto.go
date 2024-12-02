@@ -1631,7 +1631,7 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_INT
 	case parserType == parser.FieldTypeDate:
 		return proto.Type_TYPE_DATE
-	case parserType == parser.FieldTypeDatetime:
+	case parserType == parser.FieldTypeTimestamp:
 		return proto.Type_TYPE_DATETIME
 	case parserType == parser.FieldTypeSecret:
 		return proto.Type_TYPE_SECRET

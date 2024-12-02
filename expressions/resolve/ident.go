@@ -6,6 +6,8 @@ import (
 	"github.com/teamkeel/keel/expressions/visitor"
 )
 
+var ErrExpressionNotValidIdent = errors.New("expression is not an ident")
+
 // AsIdent expects and retrieves a single ident operand in an expression
 func AsIdent(expression string) ([]string, error) {
 	ident, err := visitor.RunCelVisitor(expression, ident())
@@ -35,19 +37,19 @@ func (v *identGen) EndCondition(parenthesis bool) error {
 }
 
 func (v *identGen) VisitAnd() error {
-	return errors.New("expression with operators cannot be resolved to a single ident")
+	return ErrExpressionNotValidIdent
 }
 
 func (v *identGen) VisitOr() error {
-	return errors.New("expression with operators cannot be resolved to a single ident")
+	return ErrExpressionNotValidIdent
 }
 
 func (v *identGen) VisitOperator(op string) error {
-	return errors.New("expression with operators cannot be resolved to a single ident")
+	return ErrExpressionNotValidIdent
 }
 
 func (v *identGen) VisitLiteral(value any) error {
-	return errors.New("expression with literals cannot be resolved to a single ident")
+	return ErrExpressionNotValidIdent
 }
 
 func (v *identGen) VisitVariable(name string) error {
@@ -66,6 +68,10 @@ func (v *identGen) ModelName() string {
 	return ""
 }
 
-func (v *identGen) Result() []string {
-	return v.ident
+func (v *identGen) Result() ([]string, error) {
+	if v.ident == nil {
+		return nil, ErrExpressionNotValidIdent
+	}
+
+	return v.ident, nil
 }

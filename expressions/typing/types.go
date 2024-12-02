@@ -21,7 +21,7 @@ func MapType(schema []*parser.AST, typeName string) (*types.Type, error) {
 		return types.DoubleType, nil
 	case parser.FieldTypeBoolean:
 		return types.BoolType, nil
-	case parser.FieldTypeDatetime:
+	case parser.FieldTypeTimestamp:
 		return types.TimestampType, nil
 	case parser.FieldTypeDate:
 		return types.TimestampType, nil

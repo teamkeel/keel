@@ -11,7 +11,7 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
-func ValidateSetExpression(schema []*parser.AST, targetField []string, action *parser.ActionNode, expression string) ([]string, error) {
+func ValidateSetExpression(schema []*parser.AST, targetField []string, action *parser.ActionNode, expression string) ([]expressions.ValidationError, error) {
 	if len(targetField) < 2 {
 		return nil, fmt.Errorf("lhs operand incorrect")
 	}

@@ -4,10 +4,8 @@ import (
 	"strings"
 
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/checker/decls"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
-	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
@@ -49,7 +47,6 @@ func (p *TypeProvider) FindIdent(identName string) (ref.Val, bool) {
 
 func (p *TypeProvider) FindType(typeName string) (*expr.Type, bool) {
 	panic("not implemented")
-	return decls.NewTypeType(decls.NewObjectType(strcase.ToCamel(typeName))), true
 }
 
 func (p *TypeProvider) FindStructType(structType string) (*types.Type, bool) {

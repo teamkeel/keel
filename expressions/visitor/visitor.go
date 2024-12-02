@@ -11,6 +11,10 @@ import (
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
+var (
+	ErrExpressionNotParseable = errors.New("expression is invalid and cannot be parsed")
+)
+
 type Visitor[T any] interface {
 	StartCondition(nested bool) error
 	EndCondition(nested bool) error
@@ -20,7 +24,7 @@ type Visitor[T any] interface {
 	VisitVariable(name string) error
 	VisitField(fragments []string) error
 	VisitOperator(operator string) error
-	Result() T
+	Result() (T, error)
 	ModelName() string
 }
 
@@ -41,12 +45,12 @@ func (w *CelVisitor[T]) run(expression string) (T, error) {
 	var zero T
 	env, err := cel.NewEnv()
 	if err != nil {
-		return zero, fmt.Errorf("program setup err: %s", err)
+		return zero, fmt.Errorf("cel program setup err: %s", err)
 	}
 
 	ast, issues := env.Parse(expression)
 	if issues != nil && len(issues.Errors()) > 0 {
-		return zero, errors.New("unexpected ast parsing issues")
+		return zero, ErrExpressionNotParseable
 	}
 
 	checkedExpr, err := cel.AstToParsedExpr(ast)
@@ -60,7 +64,7 @@ func (w *CelVisitor[T]) run(expression string) (T, error) {
 		return zero, err
 	}
 
-	return w.visitor.Result(), nil
+	return w.visitor.Result()
 }
 
 func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinaryCondition bool) error {
@@ -248,7 +252,7 @@ func (w *CelVisitor[T]) listExpr(expr *exprpb.Expr) error {
 
 			return w.visitor.VisitLiteral(arr)
 		default:
-			return errors.New("unhandled expr kind")
+			return fmt.Errorf("no support for expr type: %v", expr.ExprKind)
 		}
 	}
 
@@ -303,7 +307,7 @@ func SelectToFragments(expr *exprpb.Expr) ([]string, error) {
 			fragments = append([]string{e.GetIdentExpr().Name}, fragments...)
 			break
 		} else {
-			return nil, errors.New("unhandled expression type")
+			return nil, fmt.Errorf("no support for expr kind in select: %v", expr.ExprKind)
 		}
 	}
 
@@ -385,6 +389,6 @@ func toNative(c *exprpb.Constant) (any, error) {
 	case *exprpb.Constant_NullValue:
 		return nil, nil
 	default:
-		return nil, fmt.Errorf("not implemented : %v", c)
+		return nil, fmt.Errorf("const kind not implemented: %v", c)
 	}
 }

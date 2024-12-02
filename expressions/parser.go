@@ -3,9 +3,11 @@ package expressions
 import (
 	"fmt"
 
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types"
 	"github.com/teamkeel/keel/expressions/typing"
+	"github.com/teamkeel/keel/schema/node"
 )
 
 type Parser struct {
@@ -45,19 +47,42 @@ func NewParser(options ...Option) (*Parser, error) {
 }
 
 // Validate parses and validates the expression
-func (p *Parser) Validate(expression string) ([]string, error) {
+func (p *Parser) Validate(expression string) ([]ValidationError, error) {
+
 	ast, issues := p.CelEnv.Compile(expression)
+
 	if issues != nil && issues.Err() != nil {
-		validationErrors := []string{}
+		validationErrors := []ValidationError{}
 		for _, e := range issues.Errors() {
-			validationErrors = append(validationErrors, e.Message)
+			parsed, _ := p.CelEnv.Parse(expression)
+			offsets := parsed.NativeRep().SourceInfo().OffsetRanges()[e.ExprID]
+			start := parsed.NativeRep().SourceInfo().GetStartLocation(e.ExprID)
+			end := parsed.NativeRep().SourceInfo().GetStopLocation(e.ExprID)
+
+			validationErrors = append(validationErrors, ValidationError{
+				Message: e.Message,
+				Node: node.Node{
+					Pos: lexer.Position{
+						Offset: int(offsets.Start),
+						Line:   start.Line(),
+						Column: start.Column() + 1,
+					},
+					EndPos: lexer.Position{
+						Offset: int(offsets.Stop),
+						Line:   end.Line(),
+						Column: end.Column() + 1,
+					},
+				},
+			})
 		}
 		return validationErrors, nil
 	}
 
 	if p.ExpectedReturnType != nil {
 		if !ast.OutputType().IsAssignableType(p.ExpectedReturnType) {
-			return []string{fmt.Sprintf("expression expected to resolve to type '%s' but it is '%s'", p.ExpectedReturnType.String(), ast.OutputType().String())}, nil
+			return []ValidationError{{
+				Message: fmt.Sprintf("expression expected to resolve to type '%s' but it is '%s'", p.ExpectedReturnType.String(), ast.OutputType().String()),
+			}}, nil
 		}
 	}
 
@@ -65,6 +90,13 @@ func (p *Parser) Validate(expression string) ([]string, error) {
 	return nil, nil
 }
 
+// func convertMessage(message string) string {
+// 	switch message {
+// 		case
+// 	}
+// }
+
 type ValidationError struct {
+	node.Node
 	Message string
 }

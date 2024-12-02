@@ -82,7 +82,7 @@ func (f *FieldNode) IsScalar() bool {
 		FieldTypeNumber,
 		FieldTypeDecimal,
 		FieldTypeText,
-		FieldTypeDatetime,
+		FieldTypeTimestamp,
 		FieldTypeDate,
 		FieldTypeSecret,
 		FieldTypeID,
@@ -177,11 +177,6 @@ type JobInputNode struct {
 	Optional bool     `| @( "?" ))?`
 }
 
-// type AttributeNode interface {
-// 	value()
-// 	Type() string
-// }
-
 // Attributes:
 // - @permission
 // - @set
@@ -191,7 +186,7 @@ type JobInputNode struct {
 // - @default
 // - @orderBy
 // - @sortable
-// // - @on
+// - @on
 type AttributeNode struct {
 	node.Node
 
@@ -210,201 +205,6 @@ type AttributeArgumentNode struct {
 	Label      *NameNode   `(@@ ":")?`
 	Expression *Expression `@@`
 }
-
-// type ExpressionNode struct {
-// 	node.Node
-
-// 	Value *string
-// }
-
-type Expression struct {
-	node.Node
-}
-
-func (e *Expression) Parse(lex *lexer.PeekingLexer) error {
-	parenCount := 0
-	for {
-		t := lex.Peek()
-
-		if t.Value == ")" {
-			parenCount--
-			if parenCount < 0 {
-				return nil
-			}
-		}
-
-		if t.Value == "(" {
-			parenCount++
-		}
-
-		t = lex.Next()
-		e.Tokens = append(e.Tokens, *t)
-	}
-}
-
-func (e *Expression) String() string {
-	v := ""
-	for i, t := range e.Tokens {
-		if i == 0 {
-			v += t.Value
-			continue
-		}
-		last := e.Tokens[i-1]
-		hasWhitespace := (last.Pos.Offset + len(last.Value)) < t.Pos.Offset
-		if hasWhitespace {
-			v += " "
-		}
-		v += t.Value
-	}
-	return v
-}
-
-// type Grouped struct {
-// 	node.Node
-
-// 	Exp *Expression `"(" @@ ")"`
-// }
-
-// type Expression struct {
-// 	node.Node
-
-// 	LHS      *Term       `@@`
-// 	Operator *Operator   `( @@`
-// 	RHS      *Expression `@@ )?`
-// }
-
-// type Term struct {
-// 	node.Node
-
-// 	Factor   *Factor   `@@`
-// 	Operator *Operator `( @@`
-// 	Term     *Term     `  @@ )?`
-// }
-
-// type Factor struct {
-// 	node.Node
-
-// 	Grouped  *Grouped  `  @@`
-// 	Function *Function `| @@`
-// 	Operand  *Operand  `| @@`
-// }
-
-// type Function struct {
-// 	node.Node
-
-// 	Name      *NameNode     `@@`
-// 	Arguments []*Expression `"(" (@@ ( "," @@ )* )? ")"`
-// }
-
-// type ExpressionPart interface {
-// 	String() string
-// 	Operands() []*Operand
-// 	AstNode() node.Node
-// }
-
-// func (e *Expression) String() string {
-// 	if e.Operator == nil || e.RHS == nil {
-// 		return e.LHS.String()
-// 	}
-// 	return fmt.Sprintf("%s %s %s", e.LHS.String(), e.Operator.ToString(), e.RHS.String())
-// }
-
-// func (t *Term) String() string {
-// 	if t.Operator == nil || t.Term == nil {
-// 		return t.Factor.String()
-// 	}
-// 	return fmt.Sprintf("%s %s %s", t.Factor.String(), t.Operator.ToString(), t.Term.String())
-// }
-
-// func (f *Factor) String() string {
-// 	switch {
-// 	case f.Grouped != nil:
-// 		return f.Grouped.String()
-// 	case f.Function != nil:
-// 		return f.Function.String()
-// 	case f.Operand != nil:
-// 		return f.Operand.ToString()
-// 	default:
-// 		return ""
-// 	}
-// }
-
-// func (g *Grouped) String() string {
-// 	if g.Exp == nil {
-// 		return "()"
-// 	}
-// 	return fmt.Sprintf("(%s)", g.Exp.String())
-// }
-
-// func (f *Function) String() string {
-// 	args := make([]string, len(f.Arguments))
-// 	for i, arg := range f.Arguments {
-// 		args[i] = arg.String()
-// 	}
-// 	return fmt.Sprintf("%s(%s)", f.Name.Value, strings.Join(args, ", "))
-// }
-
-// func (e *Expression) Operands() []*Operand {
-// 	if e.Operator == nil || e.RHS == nil {
-// 		return e.LHS.Operands()
-// 	}
-// 	return append(e.LHS.Operands(), e.RHS.Operands()...)
-// }
-
-// func (t *Term) Operands() []*Operand {
-// 	if t.Operator == nil || t.Term == nil {
-// 		return t.Factor.Operands()
-// 	}
-// 	return append(t.Factor.Operands(), t.Term.Operands()...)
-// }
-
-// func (f *Factor) Operands() []*Operand {
-// 	switch {
-// 	case f.Grouped != nil:
-// 		return f.Grouped.Operands()
-// 	case f.Function != nil:
-// 		return f.Function.Operands()
-// 	case f.Operand != nil:
-// 		return []*Operand{f.Operand}
-// 	default:
-// 		return []*Operand{}
-// 	}
-// }
-
-// func (g *Grouped) Operands() []*Operand {
-// 	if g.Exp == nil {
-// 		return []*Operand{}
-// 	}
-// 	return g.Exp.Operands()
-// }
-
-// func (f *Function) Operands() []*Operand {
-// 	args := make([]*Operand, len(f.Arguments))
-// 	for _, arg := range f.Arguments {
-// 		args = append(args, arg.Operands()...)
-// 	}
-// 	return args
-// }
-
-// func (e *Expression) AstNode() node.Node {
-// 	return e.Node
-// }
-
-// func (t *Term) AstNode() node.Node {
-// 	return t.Node
-// }
-
-// func (f *Factor) AstNode() node.Node {
-// 	return f.Node
-// }
-
-// func (g *Grouped) AstNode() node.Node {
-// 	return g.Node
-// }
-
-// func (f *Function) AstNode() node.Node {
-// 	return f.Node
-// }
 
 type ActionNode struct {
 	node.Node

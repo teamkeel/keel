@@ -280,7 +280,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				for _, issue := range issues {
 					errs.AppendError(makeSetExpressionError(
 						errorhandling.AttributeExpressionError,
-						issue,
+						issue.Message,
 						fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
 						attribute.Arguments[0].Expression,
 					))

@@ -5,67 +5,61 @@ import (
 	"strings"
 
 	"github.com/alecthomas/participle/v2"
-	"github.com/google/cel-go/cel"
+	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/teamkeel/keel/schema/node"
 )
 
-var (
-	AssignmentCondition = "assignment"
-	LogicalCondition    = "logical"
-	ValueCondition      = "value"
-	UnknownCondition    = "unknown"
-)
+type Expression struct {
+	node.Node
+}
 
-// type Operator struct {
-// 	node.Node
+func (e *Expression) Parse(lex *lexer.PeekingLexer) error {
+	parenCount := 0
+	for {
+		t := lex.Peek()
 
-// 	// Todo need to figure out how we can share with the consts below
-// 	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=" | "or" | "and" )`
-// }
+		if t.EOF() {
+			return nil
+		}
 
-// func (o *Operator) ToString() string {
-// 	if o == nil {
-// 		return ""
-// 	}
+		if t.Value == ")" {
+			parenCount--
+			if parenCount < 0 {
+				return nil
+			}
+		}
 
-// 	if o.Symbol == "and" {
-// 		return "&&"
-// 	}
+		if t.Value == "(" {
+			parenCount++
+		}
 
-// 	if o.Symbol == "or" {
-// 		return "||"
-// 	}
+		t = lex.Next()
+		e.Tokens = append(e.Tokens, *t)
 
-// 	return o.Symbol
-// }
+		if len(e.Tokens) == 1 {
+			e.Pos = t.Pos
+		}
 
-// var (
-// 	OperatorEquals               = "=="
-// 	OperatorAssignment           = "="
-// 	OperatorNotEquals            = "!="
-// 	OperatorGreaterThanOrEqualTo = ">="
-// 	OperatorLessThanOrEqualTo    = "<="
-// 	OperatorLessThan             = "<"
-// 	OperatorGreaterThan          = ">"
-// 	OperatorIn                   = "in"
-// 	OperatorNotIn                = "notin"
-// 	OperatorIncrement            = "+="
-// 	OperatorDecrement            = "-="
-// )
+		e.EndPos = t.Pos
+	}
+}
 
-// var AssignmentOperators = []string{
-// 	OperatorAssignment,
-// }
-
-// var LogicalOperators = []string{
-// 	OperatorEquals,
-// 	OperatorNotEquals,
-// 	OperatorGreaterThan,
-// 	OperatorGreaterThanOrEqualTo,
-// 	OperatorLessThan,
-// 	OperatorLessThanOrEqualTo,
-// 	OperatorIn,
-// 	OperatorNotIn,
-// }
+func (e *Expression) String() string {
+	v := ""
+	for i, t := range e.Tokens {
+		if i == 0 {
+			v += t.Value
+			continue
+		}
+		last := e.Tokens[i-1]
+		hasWhitespace := (last.Pos.Offset + len(last.Value)) < t.Pos.Offset
+		if hasWhitespace {
+			v += " "
+		}
+		v += t.Value
+	}
+	return v
+}
 
 func ParseExpression(source string) (*Expression, error) {
 	parser, err := participle.Build[Expression]()
@@ -79,35 +73,6 @@ func ParseExpression(source string) (*Expression, error) {
 	}
 
 	return expr, nil
-}
-
-var ErrNotValue = errors.New("expression is not a single value")
-
-//func (expr *Expression) ToValue() (any, error) {
-
-func (expr *Expression) ToValue() (any, error) {
-	env, err := cel.NewEnv()
-	if err != nil {
-		return nil, errors.New("failed to parse expression")
-	}
-
-	ast, issues := env.Parse(expr.String())
-	if issues != nil && len(issues.Errors()) > 0 {
-		return nil, errors.New("failed to parse expression")
-	}
-
-	prg, err := env.Program(ast)
-	if err != nil {
-		return nil, errors.New("failed to parse expression")
-	}
-
-	out, _, err := prg.Eval(nil)
-
-	if err != nil {
-		return nil, errors.New("failed to evaluate expression")
-	}
-
-	return out.Value(), nil
 }
 
 var ErrInvalidAssignmentExpression = errors.New("assignment expression is not valid")

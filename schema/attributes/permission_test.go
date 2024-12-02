@@ -26,7 +26,7 @@ func TestPermissionRole_Valid(t *testing.T) {
 
 	expression := where.Arguments[0].Expression
 
-	issues, err := attributes.ValidatePermissionRole(schema, expression.String())
+	issues, err := attributes.ValidatePermissionRoles(schema, expression.String())
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -48,7 +48,7 @@ func TestPermissionRole_InvalidNotArray(t *testing.T) {
 
 	expression := where.Arguments[0].Expression
 
-	issues, err := attributes.ValidatePermissionRole(schema, expression.String())
+	issues, err := attributes.ValidatePermissionRoles(schema, expression.String())
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
 	require.Equal(t, "expression expected to resolve to type 'list(_RoleDefinition)' but it is '_RoleDefinition'", issues[0])
@@ -71,7 +71,7 @@ func TestPermissionRole_UnknownRole(t *testing.T) {
 
 	expression := where.Arguments[0].Expression
 
-	issues, err := attributes.ValidatePermissionRole(schema, expression.String())
+	issues, err := attributes.ValidatePermissionRoles(schema, expression.String())
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
 	require.Equal(t, "undeclared reference to 'Unknown' (in container '')", issues[0])

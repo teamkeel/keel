@@ -6,6 +6,8 @@ import (
 	"github.com/teamkeel/keel/expressions/visitor"
 )
 
+var ErrExpressionNotValidIdentArray = errors.New("expression is not an ident array")
+
 // AsIdent expects and retrieves a single ident operand in an expression
 func AsIdentArray(expression string) ([][]string, error) {
 	ident, err := visitor.RunCelVisitor(expression, identArray())
@@ -66,6 +68,6 @@ func (v *identArrayGen) ModelName() string {
 	return ""
 }
 
-func (v *identArrayGen) Result() [][]string {
-	return v.ident
+func (v *identArrayGen) Result() ([][]string, error) {
+	return v.ident, nil
 }

@@ -145,7 +145,7 @@ func uniquePermitted(f *parser.FieldNode) (bool, string) {
 		return false, "@unique is not permitted on has many relationships or arrays"
 	}
 
-	if f.Type.Value == parser.FieldTypeDatetime {
+	if f.Type.Value == parser.FieldTypeTimestamp {
 		return false, "@unique is not permitted on Timestamp fields"
 	}
 

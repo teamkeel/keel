@@ -6,7 +6,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/expressions/resolve"
-	"github.com/teamkeel/keel/schema/attributes"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -73,52 +72,13 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 						))
 						continue
 					}
-
-					issues, err := attributes.ValidatePermissionActions(arg.Expression.String())
-					if err != nil {
-						panic(err.Error())
-					}
-
-					if len(issues) > 0 {
-						for _, issue := range issues {
-							errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-								errorhandling.AttributeNotAllowedError,
-								errorhandling.ErrorDetails{
-									Message: issue,
-									Hint:    "",
-								},
-								arg.Expression,
-							))
-						}
-						return
-					}
 				case "expression":
 					hasExpression = true
-
-					issues, err := attributes.ValidatePermissionExpression(asts, action, arg.Expression.String())
-					if err != nil {
-						panic(err.Error())
-					}
-
-					if len(issues) > 0 {
-						for _, issue := range issues {
-							errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-								errorhandling.AttributeNotAllowedError,
-								errorhandling.ErrorDetails{
-									Message: issue,
-									Hint:    "",
-								},
-								arg.Expression,
-							))
-						}
-						return
-					}
 
 					// Extra check for using row-based expression in a read/write function
 					// Ideally this would be done as part of the expression validation, but
 					// if we don't provide the model as context the error is not very helpful.
 					if action != nil && (action.Type.Value == "read" || action.Type.Value == "write") {
-
 						operands, err := resolve.IdentOperands(arg.Expression.String())
 						if err != nil {
 							return
@@ -142,28 +102,8 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 							}
 						}
 					}
-
 				case "roles":
 					hasRoles = true
-
-					issues, err := attributes.ValidatePermissionRole(asts, arg.Expression.String())
-					if err != nil {
-						panic(err.Error())
-					}
-
-					if len(issues) > 0 {
-						for _, issue := range issues {
-							errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-								errorhandling.AttributeNotAllowedError,
-								errorhandling.ErrorDetails{
-									Message: issue,
-									Hint:    "",
-								},
-								arg.Expression,
-							))
-						}
-						return
-					}
 				default:
 					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 						errorhandling.AttributeArgumentError,

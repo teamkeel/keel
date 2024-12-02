@@ -6,7 +6,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-func ValidateDefaultExpression(schema []*parser.AST, field *parser.FieldNode, expression string) ([]string, error) {
+func ValidateDefaultExpression(schema []*parser.AST, field *parser.FieldNode, expression string) ([]expressions.ValidationError, error) {
 	opts := []expressions.Option{
 		options.WithSchemaTypes(schema),
 		options.WithReturnTypeAssertion(field.Type.Value, field.Repeated),

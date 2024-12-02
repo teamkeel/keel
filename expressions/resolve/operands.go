@@ -64,6 +64,6 @@ func (v *operandsResolver) ModelName() string {
 	return ""
 }
 
-func (v *operandsResolver) Result() [][]string {
-	return v.idents
+func (v *operandsResolver) Result() ([][]string, error) {
+	return v.idents, nil
 }

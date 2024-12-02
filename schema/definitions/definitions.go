@@ -3,6 +3,7 @@ package definitions
 import (
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/reader"
