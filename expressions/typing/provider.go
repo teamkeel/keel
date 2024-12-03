@@ -32,8 +32,6 @@ func (p *TypeProvider) RegisterDescriptor(protoreflect.FileDescriptor) error {
 }
 
 func (p *TypeProvider) RegisterType(types ...ref.Type) error {
-
-	//panic("not implemented")
 	return nil
 }
 

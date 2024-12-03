@@ -2,6 +2,7 @@ package expressions
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/google/cel-go/cel"
@@ -48,11 +49,11 @@ func NewParser(options ...Option) (*Parser, error) {
 
 // Validate parses and validates the expression
 func (p *Parser) Validate(expression string) ([]ValidationError, error) {
-
 	ast, issues := p.CelEnv.Compile(expression)
 
 	if issues != nil && issues.Err() != nil {
 		validationErrors := []ValidationError{}
+
 		for _, e := range issues.Errors() {
 			parsed, _ := p.CelEnv.Parse(expression)
 			offsets := parsed.NativeRep().SourceInfo().OffsetRanges()[e.ExprID]
@@ -60,7 +61,7 @@ func (p *Parser) Validate(expression string) ([]ValidationError, error) {
 			end := parsed.NativeRep().SourceInfo().GetStopLocation(e.ExprID)
 
 			validationErrors = append(validationErrors, ValidationError{
-				Message: e.Message,
+				Message: convertMessage(e.Message),
 				Node: node.Node{
 					Pos: lexer.Position{
 						Offset: int(offsets.Start),
@@ -75,6 +76,7 @@ func (p *Parser) Validate(expression string) ([]ValidationError, error) {
 				},
 			})
 		}
+
 		return validationErrors, nil
 	}
 
@@ -87,14 +89,21 @@ func (p *Parser) Validate(expression string) ([]ValidationError, error) {
 	}
 
 	// Valid expression
+
 	return nil, nil
 }
 
-// func convertMessage(message string) string {
-// 	switch message {
-// 		case
-// 	}
-// }
+func convertMessage(message string) string {
+	pattern := regexp.MustCompile(`found no matching overload for '([^']+)' applied to '\(([^,]+),\s*([^)]+)\)'`)
+	if matches := pattern.FindStringSubmatch(message); matches != nil {
+		return fmt.Sprintf("cannot use operator %s between %s and %s", matches[1], matches[2], matches[3])
+	}
+
+	return message
+	// switch message {
+	// 	case
+	// }
+}
 
 type ValidationError struct {
 	node.Node

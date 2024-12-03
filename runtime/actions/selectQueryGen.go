@@ -85,6 +85,6 @@ func (v *setQueryGen) ModelName() string {
 	return v.query.Model.Name
 }
 
-func (v *setQueryGen) Result() *QueryOperand {
-	return v.operand
+func (v *setQueryGen) Result() (*QueryOperand, error) {
+	return v.operand, nil
 }

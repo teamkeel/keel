@@ -37,8 +37,8 @@ type whereQueryGen struct {
 	operands  *arraystack.Stack
 }
 
-func (v *whereQueryGen) Result() bool {
-	return true
+func (v *whereQueryGen) Result() (bool, error) {
+	return true, nil
 }
 
 func (v *whereQueryGen) StartCondition(parenthesis bool) error {

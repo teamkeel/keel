@@ -73,29 +73,6 @@ func TestParser_TextInequality(t *testing.T) {
 	require.Empty(t, issues)
 }
 
-func TestParser_DateTimeEquality(t *testing.T) {
-	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
-		model Person {
-			fields {
-				date Timestamp
-			}
-		}`})
-
-	expression := `person.date == ctx.now`
-
-	parser, err := expressions.NewParser(
-		options.WithCtx(),
-		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
-		options.WithComparisonOperators(),
-		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
-	require.NoError(t, err)
-
-	issues, err := parser.Validate(expression)
-	require.NoError(t, err)
-	require.Empty(t, issues)
-}
-
 func TestParser_CompareNullWithRequiredField(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 		model Post {
@@ -495,6 +472,29 @@ func TestParser_EnumTypeMismatch(t *testing.T) {
 
 	require.Len(t, issues, 1)
 	require.Equal(t, "found no matching overload for '_==_' applied to '(Status, Employment)'", issues[0].Message)
+}
+
+func TestParser_TimestampEquality(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				date Timestamp
+			}
+		}`})
+
+	expression := `person.date == ctx.now`
+
+	parser, err := expressions.NewParser(
+		options.WithCtx(),
+		options.WithSchemaTypes(schema),
+		options.WithVariable("person", "Person"),
+		options.WithComparisonOperators(),
+		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
 }
 
 func TestParser_ArrayString(t *testing.T) {
