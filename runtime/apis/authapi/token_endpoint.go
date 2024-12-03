@@ -294,7 +294,7 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 
 			if ident == nil {
 				if !createIfNotExists {
-					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the identity does not exist or the id token is invalid, has expired, or has insufficient claims", err)
+					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist", err)
 				}
 
 				ident, err = actions.CreateIdentityWithClaims(ctx, schema, idToken.Subject, idToken.Issuer, &standardClaims, customClaims)
