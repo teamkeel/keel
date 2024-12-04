@@ -66,16 +66,17 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 			var err error
 			switch n.Name.Value {
 			case parser.AttributeWhere:
-
 				operands, err = resolve.IdentOperands(n.Arguments[0].Expression.String())
 			case parser.AttributeSet:
-				operands, err = resolve.IdentOperands(n.Arguments[0].Expression.String())
-				// if expr.LHS != nil && expr.LHS.Factor != nil {
-				// 	operands = expr.LHS.Factor.Operands()
-				// }
+				lhs, _, err := n.Arguments[0].Expression.ToAssignmentExpression()
+				if err != nil {
+					return
+				} else {
+					operands, err = resolve.IdentOperands(lhs.String())
+				}
 			}
 			if err != nil {
-				panic("do something")
+				return
 			}
 
 			for _, operand := range operands {

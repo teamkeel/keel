@@ -24,9 +24,7 @@ func TestWhere_Valid(t *testing.T) {
 		}`})
 
 	action := query.Action(schema, "listPeople")
-	where := action.Attributes[0]
-
-	expression := where.Arguments[0].Expression
+	expression := action.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
@@ -48,14 +46,12 @@ func TestWhere_UnknownVariable(t *testing.T) {
 		}`})
 
 	action := query.Action(schema, "listPeople")
-	where := action.Attributes[0]
-
-	expression := where.Arguments[0].Expression
+	expression := action.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "undeclared reference to 'something' (in container '')", issues[0])
+	require.Equal(t, "unknown variable 'something'", issues[0].Message)
 }
 
 func TestWhere_ValidField(t *testing.T) {
@@ -73,9 +69,7 @@ func TestWhere_ValidField(t *testing.T) {
 		}`})
 
 	action := query.Action(schema, "listPeople")
-	where := action.Attributes[0]
-
-	expression := where.Arguments[0].Expression
+	expression := action.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
@@ -97,14 +91,12 @@ func TestWhere_UnknownField(t *testing.T) {
 		}`})
 
 	action := query.Action(schema, "listPeople")
-	where := action.Attributes[0]
-
-	expression := where.Arguments[0].Expression
+	expression := action.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "undefined field 'something'", issues[0])
+	require.Equal(t, "undefined field 'something'", issues[0].Message)
 }
 
 func TestWhere_NamedInput(t *testing.T) {
@@ -122,9 +114,7 @@ func TestWhere_NamedInput(t *testing.T) {
 		}`})
 
 	action := query.Action(schema, "listPeople")
-	where := action.Attributes[0]
-
-	expression := where.Arguments[0].Expression
+	expression := action.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
@@ -146,9 +136,7 @@ func TestWhere_FieldInput(t *testing.T) {
 		}`})
 
 	action := query.Action(schema, "listPeople")
-	where := action.Attributes[0]
-
-	expression := where.Arguments[0].Expression
+	expression := action.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
@@ -164,15 +152,13 @@ func TestWhere_MultiConditions(t *testing.T) {
 			}
 			actions {
 				list listPeople() {
-					@where(person.name == "Keel" and person.isActive)
+					@where(person.name == "Keel" && person.isActive)
 				}
 			}
 		}`})
 
 	action := query.Action(schema, "listPeople")
-	where := action.Attributes[0]
-
-	expression := where.Arguments[0].Expression
+	expression := action.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)

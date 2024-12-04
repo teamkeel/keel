@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/schema/attributes"
+	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/reader"
 )
@@ -22,11 +23,9 @@ func TestPermissionRole_Valid(t *testing.T) {
 		}`})
 
 	action := query.Action(schema, "listPeople")
-	where := action.Attributes[0]
+	expression := action.Attributes[0].Arguments[0].Expression
 
-	expression := where.Arguments[0].Expression
-
-	issues, err := attributes.ValidatePermissionRoles(schema, expression.String())
+	issues, err := attributes.ValidatePermissionRoles(schema, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -44,14 +43,12 @@ func TestPermissionRole_InvalidNotArray(t *testing.T) {
 		}`})
 
 	action := query.Action(schema, "listPeople")
-	where := action.Attributes[0]
+	expression := action.Attributes[0].Arguments[0].Expression
 
-	expression := where.Arguments[0].Expression
-
-	issues, err := attributes.ValidatePermissionRoles(schema, expression.String())
+	issues, err := attributes.ValidatePermissionRoles(schema, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'list(_RoleDefinition)' but it is '_RoleDefinition'", issues[0])
+	require.Equal(t, "expression expected to resolve to type Role[] but it is Role", issues[0].Message)
 }
 
 func TestPermissionRole_UnknownRole(t *testing.T) {
@@ -67,18 +64,17 @@ func TestPermissionRole_UnknownRole(t *testing.T) {
 		}`})
 
 	action := query.Action(schema, "listPeople")
-	where := action.Attributes[0]
+	expression := action.Attributes[0].Arguments[0].Expression
 
-	expression := where.Arguments[0].Expression
-
-	issues, err := attributes.ValidatePermissionRoles(schema, expression.String())
+	issues, err := attributes.ValidatePermissionRoles(schema, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "undeclared reference to 'Unknown' (in container '')", issues[0])
+	require.Equal(t, "unknown variable 'Unknown'", issues[0].Message)
 }
 
 func TestPermissionActions_Valid(t *testing.T) {
-	expression := "[get, list, create, update, delete]"
+	expression, err := parser.ParseExpression("[get, list, create, update, delete]")
+	require.NoError(t, err)
 
 	issues, err := attributes.ValidatePermissionActions(expression)
 	require.NoError(t, err)
@@ -86,19 +82,21 @@ func TestPermissionActions_Valid(t *testing.T) {
 }
 
 func TestPermissionActions_NotArray(t *testing.T) {
-	expression := "list"
+	expression, err := parser.ParseExpression("list")
+	require.NoError(t, err)
 
 	issues, err := attributes.ValidatePermissionActions(expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'list(_ActionTypeDefinition)' but it is '_ActionTypeDefinition'", issues[0])
+	require.Equal(t, "expression expected to resolve to type ActionType[] but it is ActionType", issues[0].Message)
 }
 
 func TestPermissionActions_UnknownValue(t *testing.T) {
-	expression := "[list,write]"
+	expression, err := parser.ParseExpression("[list,write]")
+	require.NoError(t, err)
 
 	issues, err := attributes.ValidatePermissionActions(expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "undeclared reference to 'write' (in container '')", issues[0])
+	require.Equal(t, "unknown variable 'write'", issues[0].Message)
 }

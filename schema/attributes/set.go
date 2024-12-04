@@ -7,11 +7,17 @@ import (
 
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/expressions/options"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 )
 
-func ValidateSetExpression(schema []*parser.AST, targetField []string, action *parser.ActionNode, expression string) ([]expressions.ValidationError, error) {
+func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, target *parser.Expression, expression *parser.Expression) ([]expressions.ValidationError, error) {
+	targetField, err := resolve.AsIdent(target.String())
+	if err != nil {
+		return nil, fmt.Errorf("lhs operand incorrect")
+	}
+
 	if len(targetField) < 2 {
 		return nil, fmt.Errorf("lhs operand incorrect")
 	}
@@ -37,6 +43,7 @@ func ValidateSetExpression(schema []*parser.AST, targetField []string, action *p
 	opts := []expressions.Option{
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
+		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
 		options.WithActionInputs(schema, action),
 		options.WithReturnTypeAssertion(field.Type.Value, field.Repeated),
 	}
@@ -46,5 +53,5 @@ func ValidateSetExpression(schema []*parser.AST, targetField []string, action *p
 		return nil, err
 	}
 
-	return p.Validate(expression)
+	return p.Validate(expression.String())
 }

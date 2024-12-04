@@ -27,10 +27,10 @@ func MapType(schema []*parser.AST, typeName string) (*types.Type, error) {
 		return types.TimestampType, nil
 	case parser.FieldTypeMarkdown:
 		return types.StringType, nil
-	case "_RoleDefinition":
-		return types.NewOpaqueType("_RoleDefinition"), nil
-	case "_ActionTypeDefinition":
-		return types.NewOpaqueType("_ActionTypeDefinition"), nil
+	case "_Role":
+		return types.NewOpaqueType("_Role"), nil
+	case "_ActionType":
+		return types.NewOpaqueType("_ActionType"), nil
 	}
 
 	switch {

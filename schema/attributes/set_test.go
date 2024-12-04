@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/attributes"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -30,10 +31,13 @@ func TestValid(t *testing.T) {
 	target, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
 	require.NoError(t, err)
 
-	require.Equal(t, "person", target[0])
-	require.Equal(t, "isActive", target[1])
+	lhs, err := resolve.AsIdent(target.String())
+	require.NoError(t, err)
 
-	issues, err := attributes.ValidateSetExpression(schema, target, action, expression)
+	require.Equal(t, "person", lhs[0])
+	require.Equal(t, "isActive", lhs[1])
+
+	issues, err := attributes.ValidateSetExpression(schema, action, target, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -66,11 +70,14 @@ func TestValidWithRelationship(t *testing.T) {
 	target, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
 	require.NoError(t, err)
 
-	require.Equal(t, "person", target[0])
-	require.Equal(t, "company", target[1])
-	require.Equal(t, "isActive", target[2])
+	lhs, err := resolve.AsIdent(target.String())
+	require.NoError(t, err)
 
-	issues, err := attributes.ValidateSetExpression(schema, target, action, expression)
+	require.Equal(t, "person", lhs[0])
+	require.Equal(t, "company", lhs[1])
+	require.Equal(t, "isActive", lhs[2])
+
+	issues, err := attributes.ValidateSetExpression(schema, action, target, expression)
 	require.NoError(t, err)
 	require.Empty(t, issues)
 }
@@ -95,13 +102,16 @@ func TestInvalidTypes(t *testing.T) {
 	target, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
 	require.NoError(t, err)
 
-	require.Equal(t, "person", target[0])
-	require.Equal(t, "isActive", target[1])
+	lhs, err := resolve.AsIdent(target.String())
+	require.NoError(t, err)
 
-	issues, err := attributes.ValidateSetExpression(schema, target, action, expression)
+	require.Equal(t, "person", lhs[0])
+	require.Equal(t, "isActive", lhs[1])
+
+	issues, err := attributes.ValidateSetExpression(schema, action, target, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'bool' but it is 'string'", issues[0])
+	require.Equal(t, "expression expected to resolve to type Boolean but it is Text", issues[0].Message)
 }
 
 func parse(t *testing.T, s *reader.SchemaFile) []*parser.AST {

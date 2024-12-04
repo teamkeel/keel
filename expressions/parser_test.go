@@ -126,7 +126,7 @@ func TestParser_ExpectedArray(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'int' but it is 'list(int)'", issues[0].Message)
+	require.Equal(t, "expression expected to resolve to type Number but it is Number[]", issues[0].Message)
 }
 
 func TestParser_In(t *testing.T) {
@@ -156,9 +156,9 @@ func TestParser_InInvalid(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '@in' applied to '(string, string)'", issues[0].Message)
-	require.Equal(t, lexer.Position{Offset: 7, Line: 1, Column: 7}, issues[0].Pos)
-	require.Equal(t, lexer.Position{Offset: 9, Line: 1, Column: 9}, issues[0].EndPos)
+	require.Equal(t, "cannot use operator 'in' with types Text and Text", issues[0].Message)
+	require.Equal(t, lexer.Position{Offset: 7, Line: 1, Column: 8}, issues[0].Pos)
+	require.Equal(t, lexer.Position{Offset: 9, Line: 1, Column: 10}, issues[0].EndPos)
 }
 
 func TestParser_InInvalidTypes(t *testing.T) {
@@ -174,7 +174,7 @@ func TestParser_InInvalidTypes(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '@in' applied to '(string, list(int))'", issues[0])
+	require.Equal(t, "cannot use operator 'in' with types Text and Number[]", issues[0].Message)
 }
 
 func TestParser_UnknownVariable(t *testing.T) {
@@ -190,7 +190,7 @@ func TestParser_UnknownVariable(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "undeclared reference to 'person' (in container '')", issues[0].Message)
+	require.Equal(t, "unknown variable 'person'", issues[0].Message)
 }
 
 func TestParser_UnknownField(t *testing.T) {
@@ -238,8 +238,8 @@ func TestParser_UnknownOperators(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 2)
-	require.Equal(t, "undeclared reference to '_==_' (in container '')", issues[0].Message)
-	require.Equal(t, "undeclared reference to '_+_' (in container '')", issues[1].Message)
+	require.Equal(t, "operator '==' not supported in this context", issues[0].Message)
+	require.Equal(t, "operator '+' not supported in this context", issues[1].Message)
 }
 
 func TestParser_TypeMismatch(t *testing.T) {
@@ -264,7 +264,7 @@ func TestParser_TypeMismatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '_==_' applied to '(string, int)'", issues[0].Message)
+	require.Equal(t, "cannot use operator '==' with types Text and Number", issues[0].Message)
 }
 
 func TestParser_ReturnAssertion(t *testing.T) {
@@ -289,7 +289,7 @@ func TestParser_ReturnAssertion(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'bool' but it is 'string'", issues[0].Message)
+	require.Equal(t, "expression expected to resolve to type Boolean but it is Text", issues[0].Message)
 }
 
 func TestParser_EnumEquals(t *testing.T) {
@@ -375,7 +375,7 @@ func TestParser_EnumInvalidOperator(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '_>_' applied to '(Status, Status)'", issues[0].Message)
+	require.Equal(t, "cannot use operator '>' with types Status and Status", issues[0].Message)
 }
 
 func TestParser_EnumInvalidValue(t *testing.T) {
@@ -405,7 +405,7 @@ func TestParser_EnumInvalidValue(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "undefined field 'NotExists'", issues[0])
+	require.Equal(t, "undefined field 'NotExists'", issues[0].Message)
 }
 
 func TestParser_EnumWithoutValue(t *testing.T) {
@@ -435,7 +435,7 @@ func TestParser_EnumWithoutValue(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '_==_' applied to '(Status, Status_EnumDefinition)'", issues[0])
+	require.Equal(t, "cannot use operator '==' with types Status and Status_Enum", issues[0].Message)
 }
 
 func TestParser_EnumTypeMismatch(t *testing.T) {
@@ -471,7 +471,7 @@ func TestParser_EnumTypeMismatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '_==_' applied to '(Status, Employment)'", issues[0].Message)
+	require.Equal(t, "cannot use operator '==' with types Status and Employment", issues[0].Message)
 }
 
 func TestParser_TimestampEquality(t *testing.T) {
@@ -611,7 +611,7 @@ func TestParser_ArrayTypeMismatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '_==_' applied to '(list(string), string)'", issues[0].Message)
+	require.Equal(t, "cannot use operator '==' with types Text[] and Text", issues[0].Message)
 }
 
 func TestParser_ModelEquals(t *testing.T) {
@@ -700,7 +700,7 @@ func TestParser_ModelInNotToMany(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '@in' applied to '(Account, Account)'", issues[0].Message)
+	require.Equal(t, "cannot use operator 'in' with types Account and Account", issues[0].Message)
 }
 
 func TestParser_ModelInWrongType(t *testing.T) {
@@ -737,7 +737,7 @@ func TestParser_ModelInWrongType(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "found no matching overload for '@in' applied to '(Account, Befriend[])'", issues[0].Message)
+	require.Equal(t, "cannot use operator 'in' with types Account and Befriend[]", issues[0].Message)
 }
 
 func TestParser_ToOneRelationship(t *testing.T) {

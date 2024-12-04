@@ -19,9 +19,7 @@ func TestDefault_ValidString(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "name")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
@@ -38,14 +36,12 @@ func TestDefault_InvalidString(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "name")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'string' but it is 'int'", issues[0])
+	require.Equal(t, "expression expected to resolve to type Text but it is Number", issues[0].Message)
 }
 
 func TestDefault_ValidStringArray(t *testing.T) {
@@ -58,9 +54,7 @@ func TestDefault_ValidStringArray(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "names")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
@@ -77,14 +71,12 @@ func TestDefault_InValidStringArray(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "names")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'list(string)' but it is 'string'", issues[0])
+	require.Equal(t, "expression expected to resolve to type Text[] but it is Text", issues[0].Message)
 }
 
 func TestDefault_ValidNumber(t *testing.T) {
@@ -97,9 +89,7 @@ func TestDefault_ValidNumber(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "age")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
@@ -116,14 +106,12 @@ func TestDefault_InvalidNumber(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "age")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'int' but it is 'double'", issues[0])
+	require.Equal(t, "expression expected to resolve to type Number but it is double", issues[0].Message)
 }
 
 func TestDefault_ValidID(t *testing.T) {
@@ -136,9 +124,7 @@ func TestDefault_ValidID(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "personId")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
@@ -155,14 +141,12 @@ func TestDefault_InvalidID(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "personId")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'string' but it is 'int'", issues[0])
+	require.Equal(t, "expression expected to resolve to type 'string' but it is 'int'", issues[0].Message)
 }
 
 func TestDefault_ValidBooleanb(t *testing.T) {
@@ -175,9 +159,7 @@ func TestDefault_ValidBooleanb(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "isEmployed")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
@@ -194,14 +176,12 @@ func TestDefault_InvalidBoolean(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "isEmployed")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'bool' but it is 'int'", issues[0])
+	require.Equal(t, "expression expected to resolve to type 'bool' but it is 'int'", issues[0].Message)
 }
 
 func TestDefault_InvalidWithOperators(t *testing.T) {
@@ -214,14 +194,12 @@ func TestDefault_InvalidWithOperators(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "isEmployed")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "undeclared reference to '_==_' (in container '')", issues[0])
+	require.Equal(t, "undeclared reference to '_==_' (in container '')", issues[0].Message)
 }
 
 func TestDefault_InvalidWithCtx(t *testing.T) {
@@ -234,14 +212,12 @@ func TestDefault_InvalidWithCtx(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "isEmployed")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "undeclared reference to 'ctx' (in container '')", issues[0])
+	require.Equal(t, "undeclared reference to 'ctx' (in container '')", issues[0].Message)
 }
 
 func TestDefault_InvalidArithmetic(t *testing.T) {
@@ -254,12 +230,10 @@ func TestDefault_InvalidArithmetic(t *testing.T) {
 
 	model := query.Model(schema, "Person")
 	field := query.Field(model, "num")
-	defaultAttr := field.Attributes[0]
-
-	expression := defaultAttr.Arguments[0].Expression.String()
+	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "undeclared reference to '_+_' (in container '')", issues[0])
+	require.Equal(t, "undeclared reference to '_+_' (in container '')", issues[0].Message)
 }

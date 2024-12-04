@@ -22,15 +22,19 @@ func (e *Expression) Parse(lex *lexer.PeekingLexer) error {
 			return nil
 		}
 
-		if t.Value == ")" {
+		if t.Value == ")" || t.Value == "]" {
 			parenCount--
 			if parenCount < 0 {
 				return nil
 			}
 		}
 
-		if t.Value == "(" {
+		if t.Value == "(" || t.Value == "[" {
 			parenCount++
+		}
+
+		if t.Value == "," && parenCount == 0 {
+			return nil
 		}
 
 		t = lex.Next()
@@ -75,15 +79,23 @@ func ParseExpression(source string) (*Expression, error) {
 	return expr, nil
 }
 
-var ErrInvalidAssignmentExpression = errors.New("assignment expression is not valid")
+var ErrInvalidAssignmentExpression = errors.New("expression is not a valid assignment")
 
-func (expr *Expression) ToAssignmentExpression() ([]string, string, error) {
-
+func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, error) {
 	parts := strings.Split(expr.String(), "=")
-
 	if len(parts) != 2 {
-		return nil, "", ErrInvalidAssignmentExpression
+		return nil, nil, ErrInvalidAssignmentExpression
 	}
 
-	return strings.Split(parts[0], "."), parts[1], nil
+	lhs, err := ParseExpression(parts[0])
+	if err != nil {
+		return nil, nil, err
+	}
+
+	rhs, err := ParseExpression(parts[1])
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return lhs, rhs, nil
 }

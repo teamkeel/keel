@@ -9,11 +9,19 @@ import (
 )
 
 func ExpressionRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
+	var model *parser.ModelNode
 	var action *parser.ActionNode
 	var field *parser.FieldNode
 	var attribute *parser.AttributeNode
+	var job *parser.JobNode
 
 	return Visitor{
+		EnterModel: func(m *parser.ModelNode) {
+			model = m
+		},
+		LeaveModel: func(*parser.ModelNode) {
+			model = nil
+		},
 		EnterAction: func(a *parser.ActionNode) {
 			action = a
 		},
@@ -32,6 +40,12 @@ func ExpressionRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 		LeaveAttribute: func(n *parser.AttributeNode) {
 			attribute = nil
 		},
+		EnterJob: func(j *parser.JobNode) {
+			job = j
+		},
+		LeaveJob: func(*parser.JobNode) {
+			job = nil
+		},
 		EnterAttributeArgument: func(arg *parser.AttributeArgumentNode) {
 			var err error
 			issues := []expressions.ValidationError{}
@@ -42,14 +56,21 @@ func ExpressionRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 			case parser.AttributePermission:
 				switch arg.Label.Value {
 				case "expression":
-					issues, err = attributes.ValidatePermissionExpression(asts, action, arg.Expression.String())
+					issues, err = attributes.ValidatePermissionExpression(asts, model, action, job, arg.Expression)
 				case "roles":
-					issues, err = attributes.ValidatePermissionRoles(asts, arg.Expression.String())
+					issues, err = attributes.ValidatePermissionRoles(asts, arg.Expression)
 				case "actions":
-					issues, err = attributes.ValidatePermissionActions(arg.Expression.String())
+					issues, err = attributes.ValidatePermissionActions(arg.Expression)
 				}
 			case parser.AttributeDefault:
-				issues, err = attributes.ValidateDefaultExpression(asts, field, arg.Expression.String())
+				issues, err = attributes.ValidateDefaultExpression(asts, field, arg.Expression)
+			case parser.AttributeSet:
+				l, r, err := arg.Expression.ToAssignmentExpression()
+				if err != nil {
+					panic(err.Error())
+				}
+
+				issues, err = attributes.ValidateSetExpression(asts, action, l, r)
 			}
 
 			if err != nil {

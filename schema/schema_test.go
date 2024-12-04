@@ -33,6 +33,10 @@ func TestProto(t *testing.T) {
 			continue
 		}
 
+		// if testCase.Name() != "array_fields_set" {
+		// 	continue
+		// }
+
 		testCaseDir := filepath.Join(testdataDir, testCase.Name())
 
 		t.Run(testCase.Name(), func(t *testing.T) {

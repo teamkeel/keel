@@ -293,37 +293,37 @@ func getDefaultValue(field *proto.Field) (string, error) {
 		return "", err
 	}
 
-	// switch {
-	// case value.Array != nil:
-	// 	if len(value.Array.Values) == 0 {
-	// 		return "'{}'", nil
-	// 	}
+	switch {
+	case field.Type.Repeated:
+		if len(value.Array.Values) == 0 {
+			return "'{}'", nil
+		}
 
-	// 	values := []string{}
-	// 	for _, el := range value.Array.Values {
-	// 		v, err := toSqlLiteral(el, field)
-	// 		if err != nil {
-	// 			return "", err
-	// 		}
-	// 		values = append(values, v)
-	// 	}
+		values := []string{}
+		for _, el := range value.Array.Values {
+			v, err := toSqlLiteral(el, field)
+			if err != nil {
+				return "", err
+			}
+			values = append(values, v)
+		}
 
-	// 	var cast string
-	// 	switch field.Type.Type {
-	// 	case proto.Type_TYPE_INT:
-	// 		cast = "::INTEGER[]"
-	// 	case proto.Type_TYPE_DECIMAL:
-	// 		cast = "::NUMERIC[]"
-	// 	case proto.Type_TYPE_BOOL:
-	// 		cast = "::BOOL[]"
-	// 	default:
-	// 		cast = "::TEXT[]"
-	// 	}
+		var cast string
+		switch field.Type.Type {
+		case proto.Type_TYPE_INT:
+			cast = "::INTEGER[]"
+		case proto.Type_TYPE_DECIMAL:
+			cast = "::NUMERIC[]"
+		case proto.Type_TYPE_BOOL:
+			cast = "::BOOL[]"
+		default:
+			cast = "::TEXT[]"
+		}
 
-	// 	return fmt.Sprintf("ARRAY[%s]%s", strings.Join(values, ","), cast), nil
-	// default:
-	// 	return toSqlLiteral(value, field)
-	// }
+		return fmt.Sprintf("ARRAY[%s]%s", strings.Join(values, ","), cast), nil
+	default:
+		return toSqlLiteral(value, field)
+	}
 	return "", nil
 }
 

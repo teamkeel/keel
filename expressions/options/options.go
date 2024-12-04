@@ -25,11 +25,11 @@ func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 
 		var options []cel.EnvOption
 		for _, enum := range query.Enums(schema) {
-			options = append(options, cel.Constant(enum.Name.Value, types.NewObjectType(fmt.Sprintf("%s_EnumDefinition", enum.Name.Value)), nil))
+			options = append(options, cel.Constant(enum.Name.Value, types.NewObjectType(fmt.Sprintf("%s_Enum", enum.Name.Value)), nil))
 		}
 
 		for _, role := range query.Roles(schema) {
-			options = append(options, cel.Constant(role.Name.Value, types.NewOpaqueType("_RoleDefinition"), nil))
+			options = append(options, cel.Constant(role.Name.Value, types.NewOpaqueType("_Role"), nil))
 		}
 
 		if options != nil {
@@ -61,9 +61,10 @@ func WithCtx() expressions.Option {
 		fields := map[string]*types.Type{
 			"identity":        types.NewObjectType("Identity"),
 			"isAuthenticated": types.BoolType,
-			"headers":         types.NewMapType(types.StringType, types.StringType),
 			"now":             types.TimestampType,
 			"secrets":         types.DynType,
+			"env":             types.DynType,
+			"headers":         types.DynType,
 		}
 
 		p.Provider.Objects["Context"] = fields
@@ -175,9 +176,9 @@ func WithComparisonOperators() expressions.Option {
 					cel.Function(operators.Equals,
 						cel.Overload(fmt.Sprintf("equals_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumType}, types.BoolType),
 					),
-					cel.Function(operators.NotEquals,
-						cel.Overload(fmt.Sprintf("notequals_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumType}, types.BoolType),
-					),
+					// cel.Function(operators.NotEquals,
+					// 	cel.Overload(fmt.Sprintf("notequals_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumType}, types.BoolType),
+					// ),
 					cel.Function(operators.In,
 						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumTypeArr}, types.BoolType),
 					))

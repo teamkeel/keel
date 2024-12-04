@@ -53,7 +53,7 @@ func (p *TypeProvider) FindStructType(structType string) (*types.Type, bool) {
 	switch {
 	case query.Model(p.Schema, obj) != nil:
 		return types.NewObjectType(structType), true
-	case strings.Contains(obj, "_EnumDefinition") && query.Enum(p.Schema, strings.TrimSuffix(obj, "_EnumDefinition")) != nil:
+	case strings.Contains(obj, "_Enum") && query.Enum(p.Schema, strings.TrimSuffix(obj, "_Enum")) != nil:
 		return types.NewObjectType(structType), true
 	case structType == "Context":
 		return types.NewObjectType(structType), true
@@ -99,8 +99,8 @@ func (p *TypeProvider) FindStructFieldType(structType, fieldName string) (*types
 		return &types.FieldType{Type: t}, true
 	}
 
-	if strings.Contains(structType, "_EnumDefinition") {
-		e := strings.TrimSuffix(structType, "_EnumDefinition")
+	if strings.Contains(structType, "_Enum") {
+		e := strings.TrimSuffix(structType, "_Enum")
 		if enum := query.Enum(p.Schema, e); enum != nil {
 			for _, v := range enum.Values {
 				if v.Name.Value == fieldName {

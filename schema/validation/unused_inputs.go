@@ -60,12 +60,21 @@ func UnusedInputRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 				return
 			}
 
-			expr := n.Arguments[0].Expression
-			if expr == nil {
-				return
+			var expression *parser.Expression
+			if n.Name.Value == parser.AttributeSet {
+				_, rhs, err := n.Arguments[0].Expression.ToAssignmentExpression()
+				if err != nil {
+					return
+				}
+				expression = rhs
+			} else {
+				expression = n.Arguments[0].Expression
+				if expression == nil {
+					return
+				}
 			}
 
-			operands, err := resolve.IdentOperands(expr.String())
+			operands, err := resolve.IdentOperands(expression.String())
 			if err != nil {
 				return
 			}

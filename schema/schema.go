@@ -388,7 +388,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 		},
 	}
 
-	expressionTrueLit, _ := parser.ParseExpression("true")
+	falseLiteral, _ := parser.ParseExpression("false")
 
 	identityFields := []*parser.FieldNode{
 		{
@@ -417,16 +417,7 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 					},
 					Arguments: []*parser.AttributeArgumentNode{
 						{
-							Expression: expressionTrueLit,
-							// &parser.Expression{
-							// 	LHS: &parser.Term{
-							// 		Factor: &parser.Factor{
-							// 			Operand: &parser.Operand{
-							// 				False: true,
-							// 			},
-							// 		},
-							// 	},
-							// },
+							Expression: falseLiteral,
 						},
 					},
 				},
