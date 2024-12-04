@@ -54,7 +54,6 @@ func generateClientSdkFile(schema *proto.Schema, api *proto.Api) codegen.Generat
 	client.Writeln("// API")
 	client.Writeln("")
 
-	writeClientApiInterface(client, schema, api)
 	writeClientApiClass(client, schema, api)
 
 	return []*codegen.GeneratedFile{
@@ -117,6 +116,8 @@ func generateClientSdkPackage(schema *proto.Schema, api *proto.Api) codegen.Gene
 }
 
 func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
+	writeClientApiInterface(w, schema, api)
+
 	w.Writeln("export class APIClient extends Core {")
 
 	w.Indent()
