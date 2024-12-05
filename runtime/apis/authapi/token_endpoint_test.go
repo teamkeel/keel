@@ -653,7 +653,7 @@ func TestTokenExchangeCreateIfNotExistsFalse_IdentityNotExists(t *testing.T) {
 
 	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
 	require.Equal(t, "invalid_client", errorResponse.Error)
-	require.Equal(t, "possible causes may be that the identity does not exist or the id token is invalid, has expired, or has insufficient claims", errorResponse.ErrorDescription)
+	require.Equal(t, "the identity does not exist", errorResponse.ErrorDescription)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
@@ -1021,7 +1021,7 @@ func TestTokenExchangeGrant_BadIdToken(t *testing.T) {
 
 	require.Equal(t, http.StatusUnauthorized, httpResponse.StatusCode)
 	require.Equal(t, "invalid_client", errorResponse.Error)
-	require.Equal(t, "possible causes may be that the identity does not exist or the id token is invalid, has expired, or has insufficient claims", errorResponse.ErrorDescription)
+	require.Equal(t, "access denied", errorResponse.ErrorDescription)
 	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
 }
 
