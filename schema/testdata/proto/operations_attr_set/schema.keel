@@ -6,14 +6,14 @@ model Foo {
     someId ID
   }
   actions {
-    create createPost() with (f2) {
+    create createPost() with (f2, f3, someId) {
       @set(foo.f1 = true)
     }
-    update updatePost1(id) with (f1) {
-      @set(foo.f3 = f1)
+    update updatePost1(id) with (f2) {
+      @set(foo.f3 = f2)
     }
     update updatePost2(id) {
-      @set(post.someId = id)
+      @set(foo.someId = id)
     }
   }
 }

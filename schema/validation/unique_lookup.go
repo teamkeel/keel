@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -108,7 +110,12 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 			}
 
 			var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
-			hasUniqueLookup, fieldsInComposite = fragmentsUnique(asts, model, input.Type.Fragments)
+
+			fragments := lo.Map(input.Type.Fragments, func(ident *parser.IdentFragment, _ int) string {
+				return ident.Fragment
+			})
+
+			hasUniqueLookup, fieldsInComposite = fragmentsUnique(asts, model, fragments)
 
 			for k, v := range fieldsInComposite {
 				fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
@@ -135,98 +142,43 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 				return
 			}
 
-			hasUniqueLookup = expressionHasUniqueLookup(asts, attr.Arguments[0].Expression, fieldsInCompositeUnique)
+			hasUniqueLookup = expressionHasUniqueLookup(asts, model, attr.Arguments[0].Expression, fieldsInCompositeUnique)
 		},
 	}
 }
 
 // expressionHasUniqueLookup will work through the logical expression syntax to determine if a unique lookup is possible
-func expressionHasUniqueLookup(asts []*parser.AST, expression *parser.Expression, fieldsInCompositeUnique map[*parser.ModelNode][]*parser.FieldNode) bool {
+func expressionHasUniqueLookup(asts []*parser.AST, model *parser.ModelNode, expression *parser.Expression, fieldsInCompositeUnique map[*parser.ModelNode][]*parser.FieldNode) bool {
 	hasUniqueLookup := false
-	// TODO: we'll need to rework this
-	// for _, or := range expression.Or {
-	// 	for _, and := range or.And {
-	// 		if and.Expression != nil {
-	// 			hasUniqueLookup = expressionHasUniqueLookup(asts, and.Expression, fieldsInCompositeUnique)
-	// 		}
 
-	// 		if and.Condition != nil {
-	// 			if and.Condition.Type() != parser.LogicalCondition {
-	// 				continue
-	// 			}
+	lookups, _ := resolve.FieldLookups(model, expression.String())
 
-	// 			operator := and.Condition.Operator.Symbol
+	for _, lookup := range lookups {
 
-	// 			// Only the equal operator can guarantee unique lookups
-	// 			if operator != parser.OperatorEquals {
-	// 				continue
-	// 			}
+		modelName := lookup[0]
+		model := query.Model(asts, casing.ToCamel(modelName))
 
-	// 			operands := []*parser.Operand{and.Condition.LHS}
+		var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
+		hasUnique, fieldsInComposite := fragmentsUnique(asts, model, lookup[1:])
 
-	// 			// If it's an equal operator we can check both sides
-	// 			if operator == parser.OperatorEquals {
-	// 				operands = append(operands, and.Condition.RHS)
-	// 			}
+		for k, v := range fieldsInComposite {
+			fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
+		}
 
-	// 			for _, op := range operands {
-	// 				if op.Null {
-	// 					hasUniqueLookup = false
-	// 					break
-	// 				}
-
-	// 				if op.Ident == nil {
-	// 					continue
-	// 				}
-
-	// 				modelName := op.Ident.Fragments[0].Fragment
-	// 				model := query.Model(asts, casing.ToCamel(modelName))
-
-	// 				if model == nil {
-	// 					// For example, ctx, or an explicit input
-	// 					continue
-	// 				}
-
-	// 				// If there is only a single fragment in the expression,
-	// 				// and we know it's the model, therefore this is a unique lookup
-	// 				if len(op.Ident.Fragments) == 1 {
-	// 					return true
-	// 				}
-
-	// 				var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
-	// 				hasUniqueLookup, fieldsInComposite = fragmentsUnique(asts, model, op.Ident.Fragments[1:])
-
-	// 				if len(expression.Or) == 1 {
-	// 					for k, v := range fieldsInComposite {
-	// 						fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-
-	// 		// Once we find a unique lookup between ANDs,
-	// 		// then we know the expression is a unique lookup
-	// 		if hasUniqueLookup {
-	// 			break
-	// 		}
-	// 	}
-
-	// 	// There is no point checking further conditions in this expression
-	// 	// because all ORed conditions need to be unique lookup
-	// 	if !hasUniqueLookup {
-	// 		return false
-	// 	}
-	// }
+		if hasUnique {
+			hasUniqueLookup = true
+		}
+	}
 
 	return hasUniqueLookup
 }
 
-func fragmentsUnique(asts []*parser.AST, model *parser.ModelNode, fragments []*parser.IdentFragment) (bool, map[*parser.ModelNode][]*parser.FieldNode) {
+func fragmentsUnique(asts []*parser.AST, model *parser.ModelNode, fragments []string) (bool, map[*parser.ModelNode][]*parser.FieldNode) {
 	fieldsInCompositeUnique := map[*parser.ModelNode][]*parser.FieldNode{}
 
 	hasUniqueLookup := true
 	for i, fragment := range fragments {
-		field := query.ModelField(model, fragment.Fragment)
+		field := query.ModelField(model, fragment)
 		if field == nil {
 			// Input field does not exist on the model
 			return false, nil

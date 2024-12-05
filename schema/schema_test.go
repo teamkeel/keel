@@ -33,7 +33,7 @@ func TestProto(t *testing.T) {
 			continue
 		}
 
-		// if testCase.Name() != "array_fields_set" {
+		// if testCase.Name() != "operations_attr_set" {
 		// 	continue
 		// }
 

@@ -29,6 +29,10 @@ type Visitor[T any] interface {
 }
 
 func RunCelVisitor[T any](expression string, visitor Visitor[T]) (T, error) {
+
+	expression = strings.ReplaceAll(expression, " and ", " && ")
+	expression = strings.ReplaceAll(expression, " or ", " || ")
+
 	resolver := &CelVisitor[T]{
 		visitor: visitor,
 	}

@@ -2,6 +2,7 @@ package expressions
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/google/cel-go/cel"
@@ -48,6 +49,10 @@ func NewParser(options ...Option) (*Parser, error) {
 
 // Validate parses and validates the expression
 func (p *Parser) Validate(expression string) ([]ValidationError, error) {
+
+	expression = strings.ReplaceAll(expression, " and ", " && ")
+	expression = strings.ReplaceAll(expression, " or ", " || ")
+
 	ast, issues := p.CelEnv.Compile(expression)
 
 	if issues != nil && issues.Err() != nil {
