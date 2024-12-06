@@ -466,7 +466,7 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sWhereConditions {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
-		if field.Type.Type == proto.Type_TYPE_FILE {
+		if field.Type.Type == proto.Type_TYPE_FILE || field.Type.Type == proto.Type_TYPE_SECRET {
 			continue
 		}
 
@@ -696,7 +696,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 			}
 
 			switch f.Type.Type {
-			case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
+			case proto.Type_TYPE_ID, proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN, proto.Type_TYPE_SECRET:
 				w.Write("''")
 			case proto.Type_TYPE_BOOL:
 				w.Write("false")
@@ -1770,9 +1770,7 @@ func toResponseTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClient
 
 func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
-	case proto.Type_TYPE_ID:
-		ret = "string"
-	case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
+	case proto.Type_TYPE_ID, proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN, proto.Type_TYPE_SECRET:
 		ret = "string"
 	case proto.Type_TYPE_BOOL:
 		ret = "boolean"
