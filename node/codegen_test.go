@@ -42,6 +42,7 @@ model Person {
 		height Decimal
 		bio Markdown
 		file File
+		secret Secret
 	}
 }`
 
@@ -59,6 +60,7 @@ export interface PersonTable {
 	height: number
 	bio: string
 	file: FileDbRecord
+	secret: string
 	id: Generated<string>
 	createdAt: Generated<Date>
 	updatedAt: Generated<Date>
@@ -106,6 +108,7 @@ export interface Person {
 	height: number
 	bio: string
 	file: runtime.File
+	secret: string
 	id: string
 	createdAt: Date
 	updatedAt: Date
@@ -131,6 +134,7 @@ export type PersonCreateValues = {
 	height: number
 	bio: string
 	file: runtime.InlineFile | runtime.File
+	secret: string
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
@@ -251,7 +255,8 @@ export type PersonAPI = {
 		tags: [''],
 		height: 0,
 		bio: '',
-		file: inputs.profilePhoto
+		file: inputs.profilePhoto,
+		secret: ''
 	});
 	%[1]s
 	*/
