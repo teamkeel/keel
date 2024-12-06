@@ -76,11 +76,8 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
-		if !strings.Contains(tc.Name(), "default") {
-			continue
-		}
 
-		if tc.Name() != "default_invalid_expression.keel" {
+		if tc.Name() != "attribute_unique.keel" {
 			continue
 		}
 

@@ -2,14 +2,21 @@ package resolve
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/teamkeel/keel/expressions/visitor"
 )
 
 var ErrExpressionNotValidIdent = errors.New("expression is not an ident")
 
+type Ident []string
+
+func (ident Ident) ToString() string {
+	return strings.Join(ident, ".")
+}
+
 // AsIdent expects and retrieves a single ident operand in an expression
-func AsIdent(expression string) ([]string, error) {
+func AsIdent(expression string) (Ident, error) {
 	ident, err := visitor.RunCelVisitor(expression, ident())
 	if err != nil {
 		return nil, err
@@ -18,14 +25,14 @@ func AsIdent(expression string) ([]string, error) {
 	return ident, nil
 }
 
-func ident() visitor.Visitor[[]string] {
+func ident() visitor.Visitor[Ident] {
 	return &identGen{}
 }
 
-var _ visitor.Visitor[[]string] = new(identGen)
+var _ visitor.Visitor[Ident] = new(identGen)
 
 type identGen struct {
-	ident []string
+	ident Ident
 }
 
 func (v *identGen) StartCondition(parenthesis bool) error {
@@ -68,7 +75,7 @@ func (v *identGen) ModelName() string {
 	return ""
 }
 
-func (v *identGen) Result() ([]string, error) {
+func (v *identGen) Result() (Ident, error) {
 	if v.ident == nil {
 		return nil, ErrExpressionNotValidIdent
 	}

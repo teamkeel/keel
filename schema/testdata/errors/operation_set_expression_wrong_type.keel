@@ -6,7 +6,7 @@ model Profile {
     actions {
         create createProfile() {
             //expect-error:18:18:AttributeExpressionError:expression expected to resolve to type Text but it is Number
-            @set(profile.username = context.identity)
+            @set(profile.username = 123)
         }
     }
 }

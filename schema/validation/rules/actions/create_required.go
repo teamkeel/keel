@@ -2,7 +2,6 @@ package actions
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
@@ -243,7 +242,7 @@ func satisfiedBySetExpr(rootModelName string, dotDelimPath string, action *parse
 		}
 
 		remainingFragments := lhs[1:]
-		remainingPath := strings.Join(remainingFragments, ".")
+		remainingPath := remainingFragments.ToString()
 		if remainingPath == dotDelimPath {
 			return true
 		}

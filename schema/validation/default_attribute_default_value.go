@@ -26,7 +26,7 @@ func DefaultAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Val
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "This default attribute requires an expression",
+						Message: "default requires an expression",
 						Hint:    "Try @default(MyDefaultValue) instead",
 					},
 					attribute,

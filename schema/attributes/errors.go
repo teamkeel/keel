@@ -1,4 +1,4 @@
-package expressions
+package attributes
 
 import (
 	"fmt"
@@ -15,6 +15,7 @@ type match struct {
 
 func ConvertMessage(message string) (string, error) {
 	var matches = []match{
+		unexpectedResolvedType,
 		noOperatorOverload,
 		undeclaredOperatorReference,
 		undeclaredVariableReference,
@@ -33,17 +34,18 @@ func ConvertMessage(message string) (string, error) {
 	return message, nil
 }
 
+// "expression expected to resolve to type list(_Role) but it is _Role
+var unexpectedResolvedType = match{
+	Regex: `expression expected to resolve to type (.+) but it is (.+)`,
+	Construct: func(values []string) string {
+		return fmt.Sprintf("expression expected to resolve to type %s but it is %s", mapType(values[0]), mapType(values[1]))
+	},
+}
+
 var noOperatorOverload = match{
 	Regex: `found no matching overload for '(.+)' applied to '\((.+),\s*(.+)\)'`,
 	Construct: func(values []string) string {
 		return fmt.Sprintf("cannot use operator '%s' with types %s and %s", mapOperator(values[0]), mapType(values[1]), mapType(values[2]))
-	},
-}
-
-var undeclaredVariableReference = match{
-	Regex: `undeclared reference to '(.+)' \(in container ''\)`,
-	Construct: func(values []string) string {
-		return fmt.Sprintf("unknown variable '%s'", values[0])
 	},
 }
 
@@ -54,13 +56,29 @@ var undeclaredOperatorReference = match{
 	},
 }
 
+var undeclaredVariableReference = match{
+	Regex: `undeclared reference to '(.+)' \(in container ''\)`,
+	Construct: func(values []string) string {
+		return fmt.Sprintf("unknown identifier '%s'", values[0])
+	},
+}
+
 func mapOperator(op string) string {
 	switch op {
 	case operators.In:
 		return "in"
 	default:
-		return strings.Trim(op, "_")
+		v := strings.Trim(op, "_")
+
+		if v == "&&" {
+			v = "and"
+		} else if v == "||" {
+			v = "or"
+		}
+
+		return v
 	}
+
 }
 
 func mapType(t string) string {

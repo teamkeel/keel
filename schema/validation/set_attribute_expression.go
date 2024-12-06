@@ -45,12 +45,6 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 			expr := attribute.Arguments[0].Expression
 			target, _, err := attribute.Arguments[0].Expression.ToAssignmentExpression()
 			if err != nil {
-				errs.AppendError(makeSetExpressionError(
-					errorhandling.AttributeExpressionError,
-					"the @set attribute must be an assignment expression",
-					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-					expr,
-				))
 				return
 			}
 
@@ -84,7 +78,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				if i == 0 && fragment != strcase.ToLowerCamel(model.Name.Value) {
 					errs.AppendError(makeSetExpressionError(
 						errorhandling.AttributeExpressionError,
-						fmt.Sprintf("The identifier '%s' does not exist or is not available to be set", strings.Join(lhs, ".")),
+						fmt.Sprintf("The identifier '%s' does not exist or is not available to be set", lhs.ToString()),
 						fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
 						attribute.Arguments[0].Expression,
 					))
@@ -96,12 +90,12 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 					currentField = query.ModelField(currentModel, fragment)
 
 					if currentField == nil {
-						errs.AppendError(makeSetExpressionError(
-							errorhandling.AttributeExpressionError,
-							fmt.Sprintf("The field '%s' does not exist", fragment),
-							fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-							attribute.Arguments[0].Expression,
-						))
+						// errs.AppendError(makeSetExpressionError(
+						// 	errorhandling.AttributeExpressionError,
+						// 	fmt.Sprintf("The field '%s' does not exist", fragment),
+						// 	fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+						// 	attribute.Arguments[0].Expression,
+						// ))
 						return
 					}
 

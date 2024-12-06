@@ -73,11 +73,10 @@ func GetDefinition(schemaFiles []*reader.SchemaFile, pos Position) *Definition {
 					if arg.Expression == nil {
 						continue
 					}
-					for _, op := range resolve.IdentOperands(arg.Expression) {
-						if op == nil || op.Ident == nil {
-							continue
-						}
-						if op.Ident.Fragments[0].Fragment != strcase.ToLowerCamel(model.Name.Value) {
+
+					operands, _ := resolve.IdentOperands(arg.Expression)
+					for _, op := range operands {
+						if op[0] != strcase.ToLowerCamel(model.Name.Value) {
 							continue
 						}
 						op.Ident.Fragments = op.Ident.Fragments[1:]

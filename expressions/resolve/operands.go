@@ -5,7 +5,7 @@ import (
 )
 
 // IdentOperands retrieves all the ident operands in an expression as a slice
-func IdentOperands(expression string) ([][]string, error) {
+func IdentOperands(expression string) ([]Ident, error) {
 	ident, err := visitor.RunCelVisitor(expression, operands())
 	if err != nil {
 		return nil, err
@@ -14,14 +14,14 @@ func IdentOperands(expression string) ([][]string, error) {
 	return ident, nil
 }
 
-func operands() visitor.Visitor[[][]string] {
+func operands() visitor.Visitor[[]Ident] {
 	return &operandsResolver{}
 }
 
-var _ visitor.Visitor[[]string] = new(identGen)
+var _ visitor.Visitor[[]Ident] = new(operandsResolver)
 
 type operandsResolver struct {
-	idents [][]string
+	idents []Ident
 }
 
 func (v *operandsResolver) StartCondition(parenthesis bool) error {
@@ -64,6 +64,6 @@ func (v *operandsResolver) ModelName() string {
 	return ""
 }
 
-func (v *operandsResolver) Result() ([][]string, error) {
+func (v *operandsResolver) Result() ([]Ident, error) {
 	return v.idents, nil
 }

@@ -100,23 +100,23 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 
 			// Rules for the second argument (the subscriber name)
 			if len(arguments) == 2 {
-				operand, err := resolve.AsIdent(arg.Expression.String())
+				ident, err := resolve.AsIdent(arg.Expression.String())
 				if err != nil {
 					errs.AppendError(subscriberNameInvalidError(arg))
 					return
 				}
 
-				if operand == nil {
+				if ident == nil {
 					errs.AppendError(subscriberNameInvalidError(arg))
 					return
 				}
 
-				if len(operand) != 1 {
+				if len(ident) != 1 {
 					errs.AppendError(subscriberNameInvalidError(arg))
 					return
 				}
 
-				name := operand[0]
+				name := ident.ToString()
 
 				if name != strcase.ToLowerCamel(name) {
 					errs.AppendError(errorhandling.NewValidationErrorWithDetails(

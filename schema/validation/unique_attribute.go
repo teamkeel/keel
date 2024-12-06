@@ -2,10 +2,10 @@ package validation
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/expressions/resolve"
+	"github.com/teamkeel/keel/schema/attributes"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -63,8 +63,8 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 						// TODO
 					}
 
-					fieldNames := lo.Map(operands, func(o []string, _ int) string {
-						return strings.Join(o, ".")
+					fieldNames := lo.Map(operands, func(o resolve.Ident, _ int) string {
+						return o.ToString()
 					})
 
 					// check there are no duplicate field names specified in the composite uniqueness
@@ -76,8 +76,8 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 						for _, dupe := range dupes {
 							// find the last occurrence of the duplicate in the composite uniqueness constraint values list
 							// so we can highlight that node in the validation error.
-							_, _, found := lo.FindLastIndexOf(operands, func(o []string) bool {
-								return strings.Join(o, ".") == dupe
+							_, _, found := lo.FindLastIndexOf(operands, func(o resolve.Ident) bool {
+								return o.ToString() == dupe
 							})
 
 							if found {
@@ -109,6 +109,40 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 					errs.AppendError(uniqueRestrictionError(attr.Node, reason))
 				}
 			}
+		},
+		EnterExpression: func(e *parser.Expression) {
+			if currentField != nil {
+				// There is no need to validate field-level @unique as there will be no expression present
+				return
+			}
+
+			issues, err := attributes.ValidateCompositeUnique(currentModel, e)
+			if err != nil {
+				panic(err.Error())
+			}
+
+			if len(issues) > 0 {
+				for _, issue := range issues {
+					errs.AppendError(makeWhereExpressionError(
+						errorhandling.AttributeExpressionError,
+						issue.Message,
+						"TODO", // TODO: hints
+						issue.Node,
+					))
+				}
+				return
+			}
+
+			idents, err := resolve.AsIdentArray(e.String())
+			if len(idents) < 2 || err != nil {
+				errs.Append(errorhandling.ErrorInvalidValue,
+					map[string]string{
+						"Expected": "at least two field names to be provided",
+					},
+					e,
+				)
+			}
+
 		},
 	}
 }

@@ -1,8 +1,8 @@
 model Post {
     fields {
-        //expect-error:36:49:E051:default expression doesn't support operators
+        //expect-error:41:43:AttributeExpressionError:operator '==' not supported in this context
         published Boolean @default(true == false)
-        //expect-error:35:54:AttributeExpressionError:undeclared reference to 'ctx' (in container '')
+        //expect-error:35:38:AttributeExpressionError:unknown identifier 'ctx'
         isAuthed Boolean @default(ctx.isAuthenticated)
     }
 }

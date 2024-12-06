@@ -51,7 +51,7 @@ func TestWhere_UnknownVariable(t *testing.T) {
 	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "unknown variable 'something'", issues[0].Message)
+	require.Equal(t, "unknown identifier 'something'", issues[0].Message)
 }
 
 func TestWhere_ValidField(t *testing.T) {

@@ -64,13 +64,8 @@ func (p *Parser) Validate(expression string) ([]ValidationError, error) {
 			start := parsed.NativeRep().SourceInfo().GetStartLocation(e.ExprID)
 			end := parsed.NativeRep().SourceInfo().GetStopLocation(e.ExprID)
 
-			message, err := ConvertMessage(e.Message)
-			if err != nil {
-				return nil, err
-			}
-
 			validationErrors = append(validationErrors, ValidationError{
-				Message: message,
+				Message: e.Message,
 				Node: node.Node{
 					Pos: lexer.Position{
 						Offset: int(offsets.Start),
@@ -90,14 +85,12 @@ func (p *Parser) Validate(expression string) ([]ValidationError, error) {
 	}
 
 	if p.ExpectedReturnType != nil {
-		if ast.OutputType() != types.NullType && !ast.OutputType().IsAssignableType(p.ExpectedReturnType) {
+		if ast.OutputType() != types.NullType && !ast.OutputType().IsExactType(p.ExpectedReturnType) {
 			return []ValidationError{{
-				Message: fmt.Sprintf("expression expected to resolve to type %s but it is %s", mapType(p.ExpectedReturnType.String()), mapType(ast.OutputType().String())),
+				Message: fmt.Sprintf("expression expected to resolve to type %s but it is %s", p.ExpectedReturnType.String(), ast.OutputType().String()),
 			}}, nil
 		}
 	}
-
-	// Valid expression
 
 	return nil, nil
 }

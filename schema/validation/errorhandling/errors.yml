@@ -29,18 +29,12 @@ en:
   E011:
     message: "{{ .DefinedOn }} '{{ .ParentName }}' has an unrecognised attribute @{{ .Name }}"
     hint: "{{ if .Suggestions }}Did you mean {{ .Suggestions }}?{{ end }}"
-  E012:
-    message: "You have a field name that is not lowerCamel {{ .Name }}"
-    hint: "Did you mean '{{ .Suggested }}'?"
   E013:
     message: "The {{ .AttributeName }} attribute doesn't accept the argument {{ .ArgumentName }}{{ if .Location }} when used inside an {{ .Location }}{{ end }}"
     hint: "{{ if .ValidArgumentNames }}Did you mean one of {{ .ValidArgumentNames }}?{{ else }}Maybe remove the {{ .ArgumentName }} argument?{{ end }}"
   E014:
     message: "{{ .AttributeName }} requires all arguments to be named, for example @permission(roles: [MyRole])"
     hint: "Valid argument names for {{ .AttributeName }} are {{ .ValidArgumentNames }}"
-  E015:
-    message: "The @{{ .AttributeName }} attribute is missing required argument {{ .ArgumentName }}"
-    hint: ""
   E016:
     message: "Invalid value{{ if .Expected }}, expected {{ .Expected }}{{ end }}"
     hint: ""
@@ -50,12 +44,6 @@ en:
   E018:
     message: "You have a duplicate definition for 'role {{ .Name }}'"
     hint: "Please remove one of the definitions"
-  E019:
-    message: "You have a duplicate definition for 'enum {{ .Name }}'"
-    hint: "Please remove one of the definitions"
-  E020:
-    message: "'{{ .Fragment }}' not found{{ if .Parent }} on '{{ .Parent }}'{{ end }}"
-    hint: "{{if .Suggestion}}{{ .Suggestion }}{{end}}"
   E022:
     message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
     hint: "{{ .Suggestion }}"
@@ -64,21 +52,6 @@ en:
     hint: '{{ if eq .Signature "()" }}@{{ .AttributeName }} doesn''t accept any arguments{{ else }}the signature of this attribute is @{{ .AttributeName }}{{ .Signature }}{{ end }}'
   E025:
     message: "{{ .Message }}"
-  E026:
-    message: "{{ .LHS }} is {{ .LHSType }} and {{ .RHS }} is {{ .RHSType }}"
-    hint: "Please make sure that you are evaluating entities of the same type"
-  E027:
-    message: "Cannot compare {{ .Type }} with operator '{{ .Operator }}'"
-    hint: "{{ .Suggestion }}"
-  E028:
-    message: "Cannot use '{{ .Value }}' as a single value in {{ .Attribute }}"
-    hint: "Only boolean literals are allowed e.g true or false"
-  E030:
-    message: "{{ .RHS }} is an array. Only 'in' or 'not in' can be used"
-    hint: "Change '{{ .Operator }}' to either 'in' or 'not in'."
-  E032:
-    message: "Cannot have mixed types in an array literal"
-    hint: "Expected {{ .Item }} to be of type {{ .Type }}"
   E033:
     message: "create actions cannot take read inputs"
     hint: "maybe add {{ .Input }} to the with() inputs"
@@ -91,50 +64,14 @@ en:
   E036:
     message: "{{ .Ident }} is not a unique field. {{ .ActionType }} actions can only filter on unique fields"
     hint: ""
-  E037:
-    message: "The {{ .Operator }} operator is not allowed in a {{ .ActionType }} action, only equality operators ('==' and 'in') are allowed"
-    hint: ""
-  E038:
-    message: "{{ .InputName }} is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute"
-    hint: ""
-  E039:
-    message: "{{ .ModelA }} and {{ .ModelB }} define a singular relationship with one another"
-    hint: "It is not clear which model owns the relationship. Define one of the fields with @unique to indicate this."
   E040:
     message: "{{ .Type }} is not a valid action type. Valid types are {{ .ValidTypes }}"
-  E041:
-    message: "{{ .Input }} refers to the model {{ .ModelName }} which can't be used as an input to a {{ .ActionType }} action"
-    hint: "did you mean {{ .Input }}.id?"
-  E043:
-    message: "You have overridden '{{ .ImplicitInputName }}' with an explicit input"
-    hint: "Try removing '{{ .ImplicitInputName }}' from the inputs list"
-  E044:
-    message: "The '{{ .ModelB }}' model does not include a field that references {{ .ModelA }}"
-    hint: "Try adding '{{ .Suggestion }}' to the fields definition of the {{ .ModelB }} model."
-  E045:
-    message: "The @relation attribute must be used as more than one field on the {{ .ModelA }} model references {{ .ModelB }}"
-    hint: "Define the @relation attribute on this field to indicate which field on {{ .ModelA }} it references"
   E047:
     message: "api '{{ .API }}' has an unrecognised model {{ .Model }}"
     hint: ""
-  E048:
-    message: "{{ .Exp }} is {{ .Type }} but field {{ .FieldName }} is {{ .FieldType }}"
-    hint: "Please make sure that you provide a value of the field type"
-  E049:
-    message: "expression should have a single value"
-    hint: ""
-  E051:
-    message: "default expression doesn't support operators"
-    hint: "Try removing '{{ .Op }}'"
   E052:
     message: "Cannot use '{{ .Name }}' as a field name as it is too long."
     hint: "Rename this field to a shorter name"
   E053:
     message: "Cannot use '{{ .Name }}' as a model name as it is too long."
     hint: "Rename this model to a shorter name"
-  E059:
-    message: "You cannot set values for both {{.IdPath}} and {{.ConflictingPath}} in this create action - because the first one indicates that you want to refer to an existing {{.ModelName}}"
-    hint: "Either 1) use the .id form, and none of the {{.ModelName}} fields, or 2) omit the .id form and specify all of the fields of {{.ModelName}} that are needed to create one."
-  E060:
-    message: "{{.OperandName}} cannot be null"
-    hint: "You cannot evaluate a field against null unless it is defined as optional"

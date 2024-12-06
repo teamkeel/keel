@@ -101,7 +101,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			operand, err := resolve.AsIdent(arg.Expression.String())
+			ident, err := resolve.AsIdent(arg.Expression.String())
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
@@ -114,7 +114,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			if len(operand) != 1 {
+			if len(ident) != 1 {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
@@ -126,7 +126,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			argumentValue := operand[0]
+			argumentValue := ident.ToString()
 			modelField := query.ModelField(currentModel, argumentValue)
 
 			if modelField == nil {

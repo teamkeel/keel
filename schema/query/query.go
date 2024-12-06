@@ -401,7 +401,7 @@ func ActionSortableFieldNames(action *parser.ActionNode) ([]string, error) {
 			if err != nil {
 				return nil, err
 			}
-			fields = append(fields, fieldName[0])
+			fields = append(fields, fieldName.ToString())
 		}
 	}
 
@@ -593,9 +593,9 @@ func SubscriberNames(asts []*parser.AST) (res []string) {
 						if len(attribute.Arguments) == 2 {
 							subscriberArg := attribute.Arguments[1]
 
-							fragments, err := resolve.AsIdent(subscriberArg.Expression.String())
-							if err == nil && fragments != nil && len(fragments) == 1 {
-								name := fragments[0]
+							ident, err := resolve.AsIdent(subscriberArg.Expression.String())
+							if err == nil && ident != nil && len(ident) == 1 {
+								name := ident.ToString()
 								if !lo.Contains(res, name) {
 									res = append(res, name)
 								}

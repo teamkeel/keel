@@ -19,12 +19,14 @@ func (e *Expression) Parse(lex *lexer.PeekingLexer) error {
 		t := lex.Peek()
 
 		if t.EOF() {
+			e.EndPos = t.Pos
 			return nil
 		}
 
 		if t.Value == ")" || t.Value == "]" {
 			parenCount--
 			if parenCount < 0 {
+				e.EndPos = t.Pos
 				return nil
 			}
 		}
@@ -34,6 +36,7 @@ func (e *Expression) Parse(lex *lexer.PeekingLexer) error {
 		}
 
 		if t.Value == "," && parenCount == 0 {
+			e.EndPos = t.Pos
 			return nil
 		}
 
@@ -43,8 +46,6 @@ func (e *Expression) Parse(lex *lexer.PeekingLexer) error {
 		if len(e.Tokens) == 1 {
 			e.Pos = t.Pos
 		}
-
-		e.EndPos = t.Pos
 	}
 }
 
@@ -81,21 +82,35 @@ func ParseExpression(source string) (*Expression, error) {
 
 var ErrInvalidAssignmentExpression = errors.New("expression is not a valid assignment")
 
+// ToAssignmentExpression splits an assignment expression into two seperate expressions split by the assignment operator.
+// E.g. the expression `post.age = 1 + 1` will become `post.age` and `1 + 1`
 func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, error) {
 	parts := strings.Split(expr.String(), "=")
 	if len(parts) != 2 {
 		return nil, nil, ErrInvalidAssignmentExpression
 	}
 
+	index := strings.Index(expr.String(), "=")
+
 	lhs, err := ParseExpression(parts[0])
 	if err != nil {
 		return nil, nil, err
 	}
 
+	// Set position for left-hand side using original expression's position
+	lhs.Pos = expr.Pos
+	lhs.EndPos = expr.Pos
+	lhs.EndPos.Offset += index
+
 	rhs, err := ParseExpression(parts[1])
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// Set position for right-hand side starting after the equals sign
+	rhs.Pos = expr.Pos
+	rhs.Pos.Offset += index + 1
+	rhs.EndPos = expr.EndPos
 
 	return lhs, rhs, nil
 }

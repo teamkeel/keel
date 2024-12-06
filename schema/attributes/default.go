@@ -17,5 +17,12 @@ func ValidateDefaultExpression(schema []*parser.AST, field *parser.FieldNode, ex
 		return nil, err
 	}
 
-	return p.Validate(expression.String())
+	issues, err := p.Validate(expression.String())
+	if err != nil {
+		return nil, err
+	}
+
+	projectIssuesToPosition(expression.Node, issues)
+
+	return issues, nil
 }

@@ -69,7 +69,7 @@ func TestPermissionRole_UnknownRole(t *testing.T) {
 	issues, err := attributes.ValidatePermissionRoles(schema, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "unknown variable 'Unknown'", issues[0].Message)
+	require.Equal(t, "unknown identifier 'Unknown'", issues[0].Message)
 }
 
 func TestPermissionActions_Valid(t *testing.T) {
@@ -98,5 +98,5 @@ func TestPermissionActions_UnknownValue(t *testing.T) {
 	issues, err := attributes.ValidatePermissionActions(expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "unknown variable 'write'", issues[0].Message)
+	require.Equal(t, "unknown identifier 'write'", issues[0].Message)
 }

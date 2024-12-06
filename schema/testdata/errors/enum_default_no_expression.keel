@@ -1,6 +1,6 @@
 model Post {
     fields {
-        //expect-error:23:31:E050:default requires an expression
+        //expect-error:23:31:AttributeArgumentError:default requires an expression
         type PostType @default
     }
 }

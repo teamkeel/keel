@@ -9,7 +9,7 @@ import (
 var ErrExpressionNotValidIdentArray = errors.New("expression is not an ident array")
 
 // AsIdent expects and retrieves a single ident operand in an expression
-func AsIdentArray(expression string) ([][]string, error) {
+func AsIdentArray(expression string) ([]Ident, error) {
 	ident, err := visitor.RunCelVisitor(expression, identArray())
 	if err != nil {
 		return nil, err
@@ -18,14 +18,14 @@ func AsIdentArray(expression string) ([][]string, error) {
 	return ident, nil
 }
 
-func identArray() visitor.Visitor[[][]string] {
+func identArray() visitor.Visitor[[]Ident] {
 	return &identArrayGen{}
 }
 
-var _ visitor.Visitor[[][]string] = new(identArrayGen)
+var _ visitor.Visitor[[]Ident] = new(identArrayGen)
 
 type identArrayGen struct {
-	ident [][]string
+	ident []Ident
 }
 
 func (v *identArrayGen) StartCondition(parenthesis bool) error {
@@ -68,6 +68,6 @@ func (v *identArrayGen) ModelName() string {
 	return ""
 }
 
-func (v *identArrayGen) Result() ([][]string, error) {
+func (v *identArrayGen) Result() ([]Ident, error) {
 	return v.ident, nil
 }

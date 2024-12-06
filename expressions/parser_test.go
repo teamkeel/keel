@@ -190,7 +190,7 @@ func TestParser_UnknownVariable(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "unknown variable 'person'", issues[0].Message)
+	require.Equal(t, "unknown identifier 'person'", issues[0].Message)
 }
 
 func TestParser_UnknownField(t *testing.T) {

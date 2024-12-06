@@ -1371,8 +1371,8 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 		}
 
 		idents, _ := resolve.AsIdentArray(attr.Arguments[0].Expression.String())
-		fieldNames := lo.Map(idents, func(v []string, i int) string {
-			return strings.Join(v, ".")
+		fieldNames := lo.Map(idents, func(v resolve.Ident, i int) string {
+			return v.ToString()
 		})
 
 		if !lo.Contains(fieldNames, parserField.Name.Value) {
@@ -1473,7 +1473,7 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 func attributeFirstArgAsIdentifier(attr *parser.AttributeNode) string {
 	expr := attr.Arguments[0].Expression
 	theString, _ := resolve.AsIdent(expr.String())
-	return strings.Join(theString, ".")
+	return theString.ToString()
 }
 
 func (scm *Builder) makeActions(actions []*parser.ActionNode, modelName string, builtIn bool) []*proto.Action {

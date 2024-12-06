@@ -2,7 +2,6 @@ package validation
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/expressions/resolve"
@@ -99,7 +98,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			// 	return
 			// }
 
-			operand, err := resolve.AsIdent(arg.Expression.String())
+			ident, err := resolve.AsIdent(arg.Expression.String())
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
@@ -127,7 +126,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 
 			// now we go through the identifier fragments and ensure that they are relationships
 			model := currentModel
-			for _, fragment := range operand {
+			for _, fragment := range ident {
 				// get the field in the relationship fragments
 				currentField := query.ModelField(model, fragment)
 				if currentField == nil {
@@ -159,18 +158,18 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				}
 			}
 
-			if lo.SomeBy(arguments, func(a string) bool { return a == strings.Join(operand, ".") }) {
+			if lo.SomeBy(arguments, func(a string) bool { return a == ident.ToString() }) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: fmt.Sprintf("@embed argument '%s' already defined within this action", strings.Join(operand, ".")),
+						Message: fmt.Sprintf("@embed argument '%s' already defined within this action", ident.ToString()),
 					},
 					arg.Expression,
 				))
 				return
 			}
 
-			arguments = append(arguments, strings.Join(operand, "."))
+			arguments = append(arguments, ident.ToString())
 		},
 	}
 }

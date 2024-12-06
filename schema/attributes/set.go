@@ -12,8 +12,30 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
-func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, target *parser.Expression, expression *parser.Expression) ([]expressions.ValidationError, error) {
-	targetField, err := resolve.AsIdent(target.String())
+func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, lhs *parser.Expression, rhs *parser.Expression) ([]expressions.ValidationError, error) {
+	model := query.ActionModel(schema, action.Name.Value)
+
+	lhsOpts := []expressions.Option{
+		options.WithSchemaTypes(schema),
+		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
+	}
+
+	lhsParser, err := expressions.NewParser(lhsOpts...)
+	if err != nil {
+		return nil, err
+	}
+
+	issues, err := lhsParser.Validate(lhs.String())
+	if err != nil {
+		return nil, err
+	}
+
+	if len(issues) > 0 {
+		projectIssuesToPosition(lhs.Node, issues)
+		return issues, nil
+	}
+
+	targetField, err := resolve.AsIdent(lhs.String())
 	if err != nil {
 		return nil, fmt.Errorf("lhs operand incorrect")
 	}
@@ -21,8 +43,6 @@ func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, targ
 	if len(targetField) < 2 {
 		return nil, fmt.Errorf("lhs operand incorrect")
 	}
-
-	model := query.ActionModel(schema, action.Name.Value)
 
 	if targetField[0] != strcase.ToLowerCamel(model.Name.Value) {
 		return nil, fmt.Errorf("wrong model")
@@ -40,7 +60,7 @@ func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, targ
 		}
 	}
 
-	opts := []expressions.Option{
+	rhsOpts := []expressions.Option{
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
 		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
@@ -48,10 +68,16 @@ func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, targ
 		options.WithReturnTypeAssertion(field.Type.Value, field.Repeated),
 	}
 
-	p, err := expressions.NewParser(opts...)
+	rhsParser, err := expressions.NewParser(rhsOpts...)
 	if err != nil {
 		return nil, err
 	}
 
-	return p.Validate(expression.String())
+	issues, err = rhsParser.Validate(rhs.String())
+	if err != nil {
+		return nil, err
+	}
+
+	projectIssuesToPosition(lhs.Node, issues)
+	return issues, nil
 }

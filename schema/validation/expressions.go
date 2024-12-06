@@ -1,6 +1,9 @@
 package validation
 
 import (
+	"fmt"
+
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/schema/attributes"
 	"github.com/teamkeel/keel/schema/node"
@@ -67,7 +70,13 @@ func ExpressionRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 			case parser.AttributeSet:
 				l, r, err := arg.Expression.ToAssignmentExpression()
 				if err != nil {
-					panic(err.Error())
+					errs.AppendError(makeSetExpressionError(
+						errorhandling.AttributeExpressionError,
+						"the @set attribute must be an assignment expression",
+						fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+						arg.Expression,
+					))
+					return
 				}
 
 				issues, err = attributes.ValidateSetExpression(asts, action, l, r)

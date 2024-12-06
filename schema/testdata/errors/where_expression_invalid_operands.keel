@@ -6,35 +6,32 @@ model Person {
 
     actions {
         list listPeople() {
-            //expect-error:32:39:AttributeExpressionError:undeclared reference to 'invalid' (in container '')
+            //expect-error:32:39:AttributeExpressionError:unknown identifier 'invalid'
             @where(expression: invalid)
         }
         list listPeople2() {
-            //expect-error:32:62:AttributeExpressionError:undeclared reference to 'ct' (in container '')
+            //expect-error:32:34:AttributeExpressionError:unknown identifier 'ct'
             @where(expression: ct.identity == person.identity)
         }
         list listPeople3() {
-            //expect-error:32:62:AttributeExpressionError:undefined field 'invalid'
+            //expect-error:35:36:AttributeExpressionError:undefined field 'invalid'
             @where(expression: ctx.invalid == person.identity)
         }
         list listPeople4() {
-            //expect-error:32:38:AttributeExpressionError:expression expected to resolve to type 'bool' but it is 'string'
+            //expect-error:32:38:AttributeExpressionError:expression expected to resolve to type Boolean but it is Text
             @where(expression: "true")
         }
         list listPeople5() {
-            //expect-error:32:75:AttributeExpressionError:undeclared reference to '@in' (in container '')
-            //expect-error:32:75:AttributeExpressionError:undefined field 'invalid'
+            //expect-error:67:68:AttributeExpressionError:undefined field 'invalid'
             @where(expression: ctx.identity in person.organisation.invalid)
         }
         list listPeople6() {
-            //expect-error:32:99:AttributeExpressionError:undeclared reference to '@in' (in container '')
-            //expect-error:32:99:AttributeExpressionError:undefined field 'invalid'
+            //expect-error:90:91:AttributeExpressionError:undefined field 'invalid'
             @where(expression: ctx.isAuthenticated and ctx.identity in person.organisation.invalid)
         }
         list listPeople7() {
-            //expect-error:32:107:AttributeExpressionError:undefined field 'invalid'
-            //expect-error:32:107:AttributeExpressionError:undeclared reference to '@in' (in container '')
-            //expect-error:32:107:AttributeExpressionError:type 'bool' does not support field selection
+            //expect-error:98:99:AttributeExpressionError:undefined field 'invalid'
+            //expect-error:51:52:AttributeExpressionError:type 'bool' does not support field selection
             @where(expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid)
         }
     }

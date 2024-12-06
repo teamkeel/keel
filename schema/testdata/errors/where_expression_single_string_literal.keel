@@ -6,7 +6,7 @@ model Post {
 
     actions {
         get posts(id) {
-            //expect-error:20:31:AttributeExpressionError:expression expected to resolve to type 'bool' but it is 'string'
+            //expect-error:20:31:AttributeExpressionError:expression expected to resolve to type Boolean but it is Text
             @where("something")
         }
     }

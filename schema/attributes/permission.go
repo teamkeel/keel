@@ -29,7 +29,22 @@ func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode,
 		return nil, err
 	}
 
-	return p.Validate(expression.String())
+	issues, err := p.Validate(expression.String())
+	if err != nil {
+		return nil, err
+	}
+
+	for i, issue := range issues {
+		msg, err := ConvertMessage(issue.Message)
+		if err != nil {
+			return nil, err
+		}
+		issues[i].Message = msg
+	}
+
+	projectIssuesToPosition(expression.Node, issues)
+
+	return issues, err
 }
 
 func ValidatePermissionRoles(schema []*parser.AST, expression *parser.Expression) ([]expressions.ValidationError, error) {
@@ -43,7 +58,22 @@ func ValidatePermissionRoles(schema []*parser.AST, expression *parser.Expression
 		return nil, err
 	}
 
-	return p.Validate(expression.String())
+	issues, err := p.Validate(expression.String())
+	if err != nil {
+		return nil, err
+	}
+
+	for i, issue := range issues {
+		msg, err := ConvertMessage(issue.Message)
+		if err != nil {
+			return nil, err
+		}
+		issues[i].Message = msg
+	}
+
+	projectIssuesToPosition(expression.Node, issues)
+
+	return issues, err
 }
 
 func ValidatePermissionActions(expression *parser.Expression) ([]expressions.ValidationError, error) {
@@ -61,5 +91,20 @@ func ValidatePermissionActions(expression *parser.Expression) ([]expressions.Val
 		return nil, err
 	}
 
-	return p.Validate(expression.String())
+	issues, err := p.Validate(expression.String())
+	if err != nil {
+		return nil, err
+	}
+
+	for i, issue := range issues {
+		msg, err := ConvertMessage(issue.Message)
+		if err != nil {
+			return nil, err
+		}
+		issues[i].Message = msg
+	}
+
+	projectIssuesToPosition(expression.Node, issues)
+
+	return issues, err
 }
