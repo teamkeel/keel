@@ -24,6 +24,8 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 
 	currentModelIsBuiltIn := false
 
+	attributeArgsErr := false
+
 	return Visitor{
 		EnterModel: func(m *parser.ModelNode) {
 			if m.BuiltIn {
@@ -46,6 +48,8 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 			currentField = nil
 		},
 		EnterAttribute: func(attr *parser.AttributeNode) {
+			attributeArgsErr = false
+
 			if currentModelIsBuiltIn {
 				return
 			}
@@ -57,7 +61,16 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 
 			switch {
 			case compositeUnique:
-				if len(attr.Arguments) > 0 {
+				if len(attr.Arguments) != 1 {
+					errs.AppendError(makeWhereExpressionError(
+						errorhandling.AttributeArgumentError,
+						fmt.Sprintf("%v argument(s) provided to @unique but expected 1", len(attr.Arguments)),
+						"",
+						attr.Name,
+					))
+
+					attributeArgsErr = true
+				} else {
 					operands, err := resolve.AsIdentArray(attr.Arguments[0].Expression.String())
 					if err != nil {
 						// TODO
@@ -69,7 +82,6 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 
 					// check there are no duplicate field names specified in the composite uniqueness
 					// constraint e.g @unique([fieldA, fieldA])
-
 					dupes := findDuplicateConstraints(fieldNames)
 
 					if len(dupes) > 0 {
@@ -100,19 +112,24 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 							errs.AppendError(uniqueRestrictionError(attr.Arguments[0].Expression.Node, reason))
 						}
 					}
-
 				}
+
 			default:
 				// in this case, we know we are dealing with a @unique attribute attached
 				// to a field
 				if permitted, reason := uniquePermitted(currentField); !permitted {
 					errs.AppendError(uniqueRestrictionError(attr.Node, reason))
 				}
+
 			}
 		},
 		EnterExpression: func(e *parser.Expression) {
 			if currentField != nil {
 				// There is no need to validate field-level @unique as there will be no expression present
+				return
+			}
+
+			if attributeArgsErr {
 				return
 			}
 
@@ -135,14 +152,13 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 
 			idents, err := resolve.AsIdentArray(e.String())
 			if len(idents) < 2 || err != nil {
-				errs.Append(errorhandling.ErrorInvalidValue,
-					map[string]string{
-						"Expected": "at least two field names to be provided",
-					},
+				errs.AppendError(makeWhereExpressionError(
+					errorhandling.AttributeArgumentError,
+					"at least two field names to be provided",
+					"",
 					e,
-				)
+				))
 			}
-
 		},
 	}
 }
