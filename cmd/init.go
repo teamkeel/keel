@@ -66,13 +66,22 @@ func panicHandler() {
 			return
 		}
 
+		err, ok := r.(error)
+		message := "Unknown error"
+		if ok {
+			message = err.Error()
+		}
+
 		errStyle := lipgloss.NewStyle().
 			Foreground(lipgloss.Color("15")).
 			Background(lipgloss.Color("1"))
 
 		fmt.Println("")
 		fmt.Println(errStyle.Render("======= Oh no =========="))
-		fmt.Println("Something seems to have gone wrong.")
+		fmt.Println("Something seems to have gone wrong:")
+		fmt.Println("")
+		fmt.Println("  >", message)
+		fmt.Println("")
 		fmt.Println("This is likely a bug with Keel - please let us know via:")
 		fmt.Println(" - Discord (https://discord.gg/HV8g38nBnm)")
 		fmt.Println(" - GitHub Issue (https://github.com/teamkeel/keel/issues/new)")
@@ -81,6 +90,8 @@ func panicHandler() {
 		fmt.Println(colors.Gray(string(debug.Stack())))
 		fmt.Println(errStyle.Render("========================"))
 		fmt.Println("")
+
+		os.Exit(1)
 	}
 }
 
