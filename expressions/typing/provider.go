@@ -9,7 +9,6 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
-	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 // TypeProvider supplies the CEL context with the relevant Keel types and identifiers
@@ -26,15 +25,6 @@ func NewTypeProvider() *TypeProvider {
 		Objects: map[string]map[string]*types.Type{},
 	}
 }
-
-func (p *TypeProvider) RegisterDescriptor(protoreflect.FileDescriptor) error {
-	panic("not implemented")
-}
-
-func (p *TypeProvider) RegisterType(types ...ref.Type) error {
-	return nil
-}
-
 func (p *TypeProvider) EnumValue(enumName string) ref.Val {
 	return types.NewErr("unknown enum name '%s'", enumName)
 }
@@ -84,7 +74,6 @@ func (p *TypeProvider) FindStructFieldType(structType, fieldName string) (*types
 		}
 
 		if field.Optional {
-			// only works with primitives
 			t = types.NewNullableType(t)
 		}
 
@@ -119,12 +108,8 @@ func (p *TypeProvider) FindStructFieldType(structType, fieldName string) (*types
 
 func (p *TypeProvider) FindFieldType(messageType string, fieldName string) (*types.FieldType, bool) {
 	panic("not implemented")
-	return &types.FieldType{
-		Type: types.StringType,
-	}, true
 }
 
 func (p *TypeProvider) NewValue(typeName string, fields map[string]ref.Val) ref.Val {
 	panic("not implemented")
-	return types.NewErr("unknown type '%s'", typeName)
 }

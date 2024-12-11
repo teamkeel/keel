@@ -19,21 +19,6 @@ const (
 	KeywordInput   = "inputs"
 )
 
-// Types are roughly analogous to field types but they are used to type expressions
-const (
-	TypeNumber  = "Number"
-	TypeText    = "Text"
-	TypeBoolean = "Boolean"
-	TypeDecimal = "Decimal"
-
-	// These are unique to expressions
-	TypeNull  = "Null"
-	TypeArray = "Array"
-	TypeIdent = "Ident"
-	TypeEnum  = "Enum"
-	TypeModel = "Model"
-)
-
 const (
 	DefaultApi = "Api"
 )

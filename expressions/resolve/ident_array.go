@@ -8,7 +8,7 @@ import (
 
 var ErrExpressionNotValidIdentArray = errors.New("expression is not an ident array")
 
-// AsIdent expects and retrieves a single ident operand in an expression
+// AsIdentArray expects and retrieves an array of idents
 func AsIdentArray(expression string) ([]Ident, error) {
 	ident, err := visitor.RunCelVisitor(expression, identArray())
 	if err != nil {
@@ -37,19 +37,19 @@ func (v *identArrayGen) EndCondition(parenthesis bool) error {
 }
 
 func (v *identArrayGen) VisitAnd() error {
-	return errors.New("expression with operators cannot be resolved to a single ident")
+	return ErrExpressionNotValidIdentArray
 }
 
 func (v *identArrayGen) VisitOr() error {
-	return errors.New("expression with operators cannot be resolved to a single ident")
+	return ErrExpressionNotValidIdentArray
 }
 
 func (v *identArrayGen) VisitOperator(op string) error {
-	return errors.New("expression with operators cannot be resolved to a single ident")
+	return ErrExpressionNotValidIdentArray
 }
 
 func (v *identArrayGen) VisitLiteral(value any) error {
-	return errors.New("expression with literals cannot be resolved to a single ident")
+	return ErrExpressionNotValidIdentArray
 }
 
 func (v *identArrayGen) VisitVariable(name string) error {

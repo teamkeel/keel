@@ -63,7 +63,7 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 
 		for _, e := range issues.Errors() {
 			msg := e.Message
-			for _, match := range matches {
+			for _, match := range converters {
 				pattern, err := regexp.Compile(match.Regex)
 				if err != nil {
 					return nil, err

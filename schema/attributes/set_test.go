@@ -11,7 +11,7 @@ import (
 	"github.com/teamkeel/keel/schema/reader"
 )
 
-func TestValid(t *testing.T) {
+func TestSet_Valid(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 	model Person {
 		fields {
@@ -42,7 +42,7 @@ func TestValid(t *testing.T) {
 	require.Empty(t, issues)
 }
 
-func TestValidWithRelationship(t *testing.T) {
+func TestSet_ValidWithRelationship(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 	model Person {
 		fields {
@@ -82,7 +82,7 @@ func TestValidWithRelationship(t *testing.T) {
 	require.Empty(t, issues)
 }
 
-func TestInvalidTypes(t *testing.T) {
+func TestSet_InvalidTypes(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 	model Person {
 		fields {
@@ -119,6 +119,66 @@ func TestInvalidTypes(t *testing.T) {
 	require.Equal(t, 1, issues[0].EndPos.Line)
 	require.Equal(t, 30, issues[0].EndPos.Column)
 	require.Equal(t, 84, issues[0].EndPos.Offset)
+}
+
+func TestSet_InvalidAssignmentExpression(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Person {
+		fields {
+			isActive Boolean
+		}
+		actions {
+			create createPerson(name) {
+				@set(person.isActive)
+			}
+		}
+	}`})
+
+	action := query.Action(schema, "createPerson")
+	set := action.Attributes[0]
+
+	_, _, err := set.Arguments[0].Expression.ToAssignmentExpression()
+	require.ErrorIs(t, err, parser.ErrInvalidAssignmentExpression)
+}
+
+func TestSet_InvalidAssignmentExpression2(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Person {
+		fields {
+			isActive Boolean
+		}
+		actions {
+			create createPerson(name) {
+				@set(123)
+			}
+		}
+	}`})
+
+	action := query.Action(schema, "createPerson")
+	set := action.Attributes[0]
+
+	_, _, err := set.Arguments[0].Expression.ToAssignmentExpression()
+	require.ErrorIs(t, err, parser.ErrInvalidAssignmentExpression)
+}
+
+func TestSet_InvalidAssignmentExpression3(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Person {
+		fields {
+			isActive Boolean
+		}
+		actions {
+			create createPerson(name) {
+				@set(post.isActive =)
+			}
+		}
+	}`})
+
+	action := query.Action(schema, "createPerson")
+	set := action.Attributes[0]
+
+	_, _, err := set.Arguments[0].Expression.ToAssignmentExpression()
+	require.ErrorIs(t, err, parser.ErrInvalidAssignmentExpression)
 }
 
 func parse(t *testing.T, s *reader.SchemaFile) []*parser.AST {

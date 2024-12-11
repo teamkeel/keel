@@ -40,14 +40,19 @@ func DefaultAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Val
 		LeaveAttribute: func(*parser.AttributeNode) {
 			attribute = nil
 		},
-		EnterExpression: func(e *parser.Expression) {
+		EnterExpression: func(expression *parser.Expression) {
 			if attribute.Name.Value != parser.AttributeDefault {
 				return
 			}
 
-			issues, err := attributes.ValidateDefaultExpression(asts, field, e)
+			issues, err := attributes.ValidateDefaultExpression(asts, field, expression)
 			if err != nil {
-				panic(err.Error())
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeExpressionError,
+					errorhandling.ErrorDetails{
+						Message: "expression could not be parsed",
+					},
+					expression))
 			}
 
 			if len(issues) > 0 {

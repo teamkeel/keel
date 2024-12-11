@@ -8,61 +8,40 @@ import (
 	"github.com/google/cel-go/common/operators"
 )
 
-var matches = []match{
+var converters = []errorConverter{
 	unexpectedResolvedType,
 	noOperatorOverload,
 	undeclaredOperatorReference,
 	undeclaredVariableReference,
 }
 
-type match struct {
+type errorConverter struct {
 	Regex     string
 	Construct func([]string) string
 }
 
-func ConvertMessage(message string) (string, error) {
-	var matches = []match{
-		unexpectedResolvedType,
-		noOperatorOverload,
-		undeclaredOperatorReference,
-		undeclaredVariableReference,
-	}
-
-	for _, match := range matches {
-		pattern, err := regexp.Compile(match.Regex)
-		if err != nil {
-			return "", err
-		}
-		if matches := pattern.FindStringSubmatch(message); matches != nil {
-			return match.Construct(matches[1:]), nil
-		}
-	}
-
-	return message, nil
-}
-
-var unexpectedResolvedType = match{
+var unexpectedResolvedType = errorConverter{
 	Regex: `expression expected to resolve to type (.+) but it is (.+)`,
 	Construct: func(values []string) string {
 		return fmt.Sprintf("expression expected to resolve to type %s but it is %s", mapType(values[0]), mapType(values[1]))
 	},
 }
 
-var noOperatorOverload = match{
+var noOperatorOverload = errorConverter{
 	Regex: `found no matching overload for '(.+)' applied to '\((.+),\s*(.+)\)'`,
 	Construct: func(values []string) string {
 		return fmt.Sprintf("cannot use operator '%s' with types %s and %s", mapOperator(values[0]), mapType(values[1]), mapType(values[2]))
 	},
 }
 
-var undeclaredOperatorReference = match{
+var undeclaredOperatorReference = errorConverter{
 	Regex: `undeclared reference to '_(.+)_' \(in container ''\)`,
 	Construct: func(values []string) string {
 		return fmt.Sprintf("operator '%s' not supported in this context", mapOperator(values[0]))
 	},
 }
 
-var undeclaredVariableReference = match{
+var undeclaredVariableReference = errorConverter{
 	Regex: `undeclared reference to '(.+)' \(in container ''\)`,
 	Construct: func(values []string) string {
 		return fmt.Sprintf("unknown identifier '%s'", values[0])
@@ -75,7 +54,6 @@ func mapOperator(op string) string {
 		return "in"
 	default:
 		v := strings.Trim(op, "_")
-
 		if v == "&&" {
 			v = "and"
 		} else if v == "||" {

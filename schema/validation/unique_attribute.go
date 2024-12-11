@@ -30,7 +30,6 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 			if m.BuiltIn {
 				currentModelIsBuiltIn = true
 			}
-
 			currentModel = m
 		},
 		LeaveModel: func(m *parser.ModelNode) {
@@ -124,7 +123,7 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 
 			}
 		},
-		EnterExpression: func(e *parser.Expression) {
+		EnterExpression: func(expression *parser.Expression) {
 			if currentField != nil {
 				// There is no need to validate field-level @unique as there will be no expression present
 				return
@@ -134,9 +133,14 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 				return
 			}
 
-			issues, err := attributes.ValidateCompositeUnique(currentModel, e)
+			issues, err := attributes.ValidateCompositeUnique(currentModel, expression)
 			if err != nil {
-				panic(err.Error())
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeExpressionError,
+					errorhandling.ErrorDetails{
+						Message: "expression could not be parsed",
+					},
+					expression))
 			}
 
 			if len(issues) > 0 {
@@ -146,7 +150,7 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 				return
 			}
 
-			idents, err := resolve.AsIdentArray(e.String())
+			idents, err := resolve.AsIdentArray(expression.String())
 			if len(idents) < 2 || err != nil {
 				errs.AppendError(
 					errorhandling.NewValidationErrorWithDetails(

@@ -23,14 +23,19 @@ func WhereAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 		LeaveAttribute: func(*parser.AttributeNode) {
 			attribute = nil
 		},
-		EnterExpression: func(e *parser.Expression) {
+		EnterExpression: func(expression *parser.Expression) {
 			if attribute.Name.Value != parser.AttributeWhere {
 				return
 			}
 
-			issues, err := attributes.ValidateWhereExpression(asts, action, e)
+			issues, err := attributes.ValidateWhereExpression(asts, action, expression)
 			if err != nil {
-				panic(err.Error())
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeExpressionError,
+					errorhandling.ErrorDetails{
+						Message: "expression could not be parsed",
+					},
+					expression))
 			}
 
 			if len(issues) > 0 {

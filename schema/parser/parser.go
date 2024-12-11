@@ -240,6 +240,31 @@ type ActionInputNode struct {
 	Optional bool      `@( "?" )?`
 }
 
+type Ident struct {
+	node.Node
+
+	Fragments []*IdentFragment `( @@ ( "." @@ )* )`
+}
+
+func (ident *Ident) ToString() string {
+	ret := ""
+	for i, fragment := range ident.Fragments {
+		if i == len(ident.Fragments)-1 {
+			ret += fragment.Fragment
+		} else {
+			ret += fmt.Sprintf("%s.", fragment.Fragment)
+		}
+	}
+
+	return ret
+}
+
+type IdentFragment struct {
+	node.Node
+
+	Fragment string `@Ident`
+}
+
 func (a *ActionInputNode) Name() string {
 	if a.Label != nil {
 		return a.Label.Value

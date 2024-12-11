@@ -38,19 +38,12 @@ var validatorFuncs = []validationFunc{
 	actions.ActionModelInputsRule,
 	actions.CreateOperationNoReadInputsRule,
 	actions.CreateOperationRequiredFieldsRule,
-
 	field.ValidFieldTypesRule,
 	field.UniqueFieldNamesRule,
 	field.FieldNamesMaxLengthRule,
-
 	model.ModelNamesMaxLengthRule,
-
 	attribute.AttributeLocationsRule,
-	attribute.SetWhereAttributeRule,
-	attribute.UniqueAttributeArgsRule,
-
 	role.UniqueRoleNamesRule,
-
 	api.UniqueAPINamesRule,
 	api.NamesCorrespondToModels,
 }

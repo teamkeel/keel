@@ -41,26 +41,32 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 		LeaveAttribute: func(*parser.AttributeNode) {
 			attribute = nil
 		},
-		EnterExpression: func(e *parser.Expression) {
+		EnterExpression: func(expression *parser.Expression) {
 			if attribute.Name.Value != parser.AttributeSet {
 				return
 			}
 
-			l, r, err := e.ToAssignmentExpression()
+			l, r, err := expression.ToAssignmentExpression()
 			if err != nil {
 				errs.AppendError(makeSetExpressionError(
 					errorhandling.AttributeExpressionError,
 					"the @set attribute must be an assignment expression",
 					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-					e,
+					expression,
 				))
 				return
 			}
 
 			issues, err := attributes.ValidateSetExpression(asts, action, l, r)
 			if err != nil {
-
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeExpressionError,
+					errorhandling.ErrorDetails{
+						Message: "expression could not be parsed",
+					},
+					expression))
 			}
+
 			if len(issues) > 0 {
 				for _, issue := range issues {
 					errs.AppendError(issue)

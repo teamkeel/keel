@@ -155,7 +155,7 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 		LeaveAttributeArgument: func(*parser.AttributeArgumentNode) {
 			arg = nil
 		},
-		EnterExpression: func(e *parser.Expression) {
+		EnterExpression: func(expression *parser.Expression) {
 			if attribute.Name.Value != parser.AttributePermission {
 				return
 			}
@@ -165,15 +165,20 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 
 			switch arg.Label.Value {
 			case "expression":
-				issues, err = attributes.ValidatePermissionExpression(asts, model, action, job, arg.Expression)
+				issues, err = attributes.ValidatePermissionExpression(asts, model, action, job, expression)
 			case "roles":
-				issues, err = attributes.ValidatePermissionRoles(asts, arg.Expression)
+				issues, err = attributes.ValidatePermissionRoles(asts, expression)
 			case "actions":
-				issues, err = attributes.ValidatePermissionActions(arg.Expression)
+				issues, err = attributes.ValidatePermissionActions(expression)
 			}
 
 			if err != nil {
-				panic(err.Error())
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeExpressionError,
+					errorhandling.ErrorDetails{
+						Message: "expression could not be parsed",
+					},
+					expression))
 			}
 
 			if len(issues) > 0 {
