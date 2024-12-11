@@ -10,9 +10,10 @@ import (
 	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, lhs *parser.Expression, rhs *parser.Expression) ([]expressions.ValidationError, error) {
+func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, lhs *parser.Expression, rhs *parser.Expression) ([]*errorhandling.ValidationError, error) {
 	model := query.ActionModel(schema, action.Name.Value)
 
 	lhsOpts := []expressions.Option{
@@ -25,14 +26,13 @@ func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, lhs 
 		return nil, err
 	}
 
-	issues, err := lhsParser.Validate(lhs.String())
+	issues, err := lhsParser.Validate(lhs)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(issues) > 0 {
-		projectIssuesToPosition(lhs.Node, issues)
-		return issues, nil
+		return issues, err
 	}
 
 	targetField, err := resolve.AsIdent(lhs.String())
@@ -73,11 +73,5 @@ func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, lhs 
 		return nil, err
 	}
 
-	issues, err = rhsParser.Validate(rhs.String())
-	if err != nil {
-		return nil, err
-	}
-
-	projectIssuesToPosition(lhs.Node, issues)
-	return issues, nil
+	return rhsParser.Validate(rhs)
 }

@@ -41,7 +41,14 @@ func TestDefault_InvalidString(t *testing.T) {
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
+
 	require.Equal(t, "expression expected to resolve to type Text but it is Number", issues[0].Message)
+	require.Equal(t, 4, issues[0].Pos.Line)
+	require.Equal(t, 23, issues[0].Pos.Column)
+	require.Equal(t, 50, issues[0].Pos.Offset)
+	require.Equal(t, 4, issues[0].EndPos.Line)
+	require.Equal(t, 24, issues[0].EndPos.Column)
+	require.Equal(t, 51, issues[0].EndPos.Offset)
 }
 
 func TestDefault_ValidStringArray(t *testing.T) {
@@ -111,7 +118,7 @@ func TestDefault_InvalidNumber(t *testing.T) {
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type Number but it is double", issues[0].Message)
+	require.Equal(t, "expression expected to resolve to type Number but it is Decimal", issues[0].Message)
 }
 
 func TestDefault_ValidID(t *testing.T) {
@@ -146,7 +153,7 @@ func TestDefault_InvalidID(t *testing.T) {
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'string' but it is 'int'", issues[0].Message)
+	require.Equal(t, "expression expected to resolve to type Text but it is Number", issues[0].Message)
 }
 
 func TestDefault_ValidBooleanb(t *testing.T) {
@@ -181,7 +188,7 @@ func TestDefault_InvalidBoolean(t *testing.T) {
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type 'bool' but it is 'int'", issues[0].Message)
+	require.Equal(t, "expression expected to resolve to type Boolean but it is Number", issues[0].Message)
 }
 
 func TestDefault_InvalidWithOperators(t *testing.T) {
@@ -199,7 +206,14 @@ func TestDefault_InvalidWithOperators(t *testing.T) {
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "undeclared reference to '_==_' (in container '')", issues[0].Message)
+	require.Equal(t, "operator '==' not supported in this context", issues[0].Message)
+
+	require.Equal(t, 4, issues[0].Pos.Line)
+	require.Equal(t, 32, issues[0].Pos.Column)
+	require.Equal(t, 64, issues[0].Pos.Offset)
+	require.Equal(t, 4, issues[0].EndPos.Line)
+	require.Equal(t, 44, issues[0].EndPos.Column)
+	require.Equal(t, 78, issues[0].EndPos.Offset)
 }
 
 func TestDefault_InvalidWithCtx(t *testing.T) {
@@ -217,7 +231,14 @@ func TestDefault_InvalidWithCtx(t *testing.T) {
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "undeclared reference to 'ctx' (in container '')", issues[0].Message)
+	require.Equal(t, "unknown identifier 'ctx'", issues[0].Message)
+
+	require.Equal(t, 4, issues[0].Pos.Line)
+	require.Equal(t, 32, issues[0].Pos.Column)
+	require.Equal(t, 59, issues[0].Pos.Offset)
+	require.Equal(t, 4, issues[0].EndPos.Line)
+	require.Equal(t, 51, issues[0].EndPos.Column)
+	require.Equal(t, 81, issues[0].EndPos.Offset)
 }
 
 func TestDefault_InvalidArithmetic(t *testing.T) {
@@ -235,5 +256,5 @@ func TestDefault_InvalidArithmetic(t *testing.T) {
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "undeclared reference to '_+_' (in container '')", issues[0].Message)
+	require.Equal(t, "operator '+' not supported in this context", issues[0].Message)
 }

@@ -74,12 +74,12 @@ func GetDefinition(schemaFiles []*reader.SchemaFile, pos Position) *Definition {
 						continue
 					}
 
-					operands, _ := resolve.IdentOperands(arg.Expression)
+					operands, _ := resolve.IdentOperands(arg.Expression.String())
 					for _, op := range operands {
 						if op[0] != strcase.ToLowerCamel(model.Name.Value) {
 							continue
 						}
-						op.Ident.Fragments = op.Ident.Fragments[1:]
+						op = op[1:]
 						def := definitionFromIdent(asts, model, op.Ident, pos)
 						if def != nil {
 							return def

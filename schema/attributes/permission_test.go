@@ -49,6 +49,13 @@ func TestPermissionRole_InvalidNotArray(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
 	require.Equal(t, "expression expected to resolve to type Role[] but it is Role", issues[0].Message)
+
+	require.Equal(t, 5, issues[0].Pos.Line)
+	require.Equal(t, 25, issues[0].Pos.Column)
+	require.Equal(t, 79, issues[0].Pos.Offset)
+	require.Equal(t, 5, issues[0].EndPos.Line)
+	require.Equal(t, 30, issues[0].EndPos.Column)
+	require.Equal(t, 84, issues[0].EndPos.Offset)
 }
 
 func TestPermissionRole_UnknownRole(t *testing.T) {
@@ -99,4 +106,11 @@ func TestPermissionActions_UnknownValue(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
 	require.Equal(t, "unknown identifier 'write'", issues[0].Message)
+
+	require.Equal(t, 1, issues[0].Pos.Line)
+	require.Equal(t, 6, issues[0].Pos.Column)
+	require.Equal(t, 6, issues[0].Pos.Offset)
+	require.Equal(t, 1, issues[0].EndPos.Line)
+	require.Equal(t, 11, issues[0].EndPos.Column)
+	require.Equal(t, 11, issues[0].EndPos.Offset)
 }

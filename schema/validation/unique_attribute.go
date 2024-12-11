@@ -23,7 +23,6 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 	var currentField *parser.FieldNode
 
 	currentModelIsBuiltIn := false
-
 	attributeArgsErr := false
 
 	return Visitor{
@@ -62,18 +61,20 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 			switch {
 			case compositeUnique:
 				if len(attr.Arguments) != 1 {
-					errs.AppendError(makeWhereExpressionError(
-						errorhandling.AttributeArgumentError,
-						fmt.Sprintf("%v argument(s) provided to @unique but expected 1", len(attr.Arguments)),
-						"",
-						attr.Name,
-					))
-
+					errs.AppendError(
+						errorhandling.NewValidationErrorWithDetails(
+							errorhandling.ActionInputError,
+							errorhandling.ErrorDetails{
+								Message: fmt.Sprintf("%v argument(s) provided to @unique but expected 1", len(attr.Arguments)),
+							},
+							attr.Name,
+						),
+					)
 					attributeArgsErr = true
 				} else {
 					operands, err := resolve.AsIdentArray(attr.Arguments[0].Expression.String())
 					if err != nil {
-						// TODO
+						return
 					}
 
 					fieldNames := lo.Map(operands, func(o resolve.Ident, _ int) string {
@@ -140,24 +141,22 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 
 			if len(issues) > 0 {
 				for _, issue := range issues {
-					errs.AppendError(makeWhereExpressionError(
-						errorhandling.AttributeExpressionError,
-						issue.Message,
-						"TODO", // TODO: hints
-						issue.Node,
-					))
+					errs.AppendError(issue)
 				}
 				return
 			}
 
 			idents, err := resolve.AsIdentArray(e.String())
 			if len(idents) < 2 || err != nil {
-				errs.AppendError(makeWhereExpressionError(
-					errorhandling.AttributeArgumentError,
-					"at least two field names to be provided",
-					"",
-					e,
-				))
+				errs.AppendError(
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.ActionInputError,
+						errorhandling.ErrorDetails{
+							Message: "at least two field names to be provided",
+						},
+						e,
+					),
+				)
 			}
 		},
 	}

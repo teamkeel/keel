@@ -2,10 +2,8 @@ package attribute
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -108,123 +106,6 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 			},
 			attr.Name,
 		)
-	}
-
-	return
-}
-
-func validateIdentArray(expr *parser.Expression, allowedIdents []string) (errs errorhandling.ValidationErrors) {
-	idents, err := resolve.AsIdentArray(expr.String())
-
-	if err != nil {
-		expected := ""
-		if len(allowedIdents) > 0 {
-			expected = "an array containing any of the following identifiers - " + formatting.HumanizeList(allowedIdents, formatting.DelimiterOr)
-		}
-		// Check expression is an array
-		errs.Append(errorhandling.ErrorInvalidValue,
-			map[string]string{
-				"Expected": expected,
-			},
-			expr,
-		)
-		return
-	}
-
-	for _, item := range idents {
-		// Each item should be a singular ident e.g. "foo" and not "foo.baz.bop"
-		// String literal idents e.g ["thisisinvalid"] are assumed not to be invalid
-		valid := false
-
-		if item != nil {
-			valid = len(item) == 1
-		}
-
-		if valid {
-			// If it is a single ident check it's an allowed value
-			name := item[0]
-			valid = lo.Contains(allowedIdents, name)
-		}
-
-		if !valid {
-			expected := ""
-			if len(allowedIdents) > 0 {
-				expected = "any of the following identifiers - " + formatting.HumanizeList(allowedIdents, formatting.DelimiterOr)
-			}
-			errs.Append(errorhandling.ErrorInvalidValue,
-				map[string]string{
-					"Expected": expected,
-				},
-				expr,
-			)
-		}
-	}
-
-	return
-}
-
-func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		// we dont want to validate built in models
-		if model.BuiltIn {
-			continue
-		}
-		// field level e.g. @unique
-		for _, field := range query.ModelFields(model) {
-			for _, attr := range field.Attributes {
-				if attr.Name.Value != parser.AttributeUnique {
-					continue
-				}
-
-				if len(attr.Arguments) > 0 {
-					errs.Append(errorhandling.ErrorIncorrectArguments,
-						map[string]string{
-							"AttributeName":     attr.Name.Value,
-							"ActualArgsCount":   strconv.FormatInt(int64(len(attr.Arguments)), 10),
-							"ExpectedArgsCount": "0",
-							"Signature":         "()",
-						},
-						attr,
-					)
-				}
-			}
-		}
-
-		// model level e.g. @unique([fieldOne, fieldTwo])
-		for _, attr := range query.ModelAttributes(model) {
-			if attr.Name.Value != parser.AttributeUnique {
-				continue
-			}
-
-			if len(attr.Arguments) != 1 {
-				errs.Append(errorhandling.ErrorIncorrectArguments,
-					map[string]string{
-						"AttributeName":     attr.Name.Value,
-						"ActualArgsCount":   strconv.FormatInt(int64(len(attr.Arguments)), 10),
-						"ExpectedArgsCount": "1",
-						"Signature":         "([fieldName, otherFieldName])",
-					},
-					attr.Name,
-				)
-				continue
-			}
-
-			e := validateIdentArray(attr.Arguments[0].Expression, query.ModelFieldNames(model))
-			errs.Concat(e)
-			if len(e.Errors) > 0 {
-				continue
-			}
-
-			idents, err := resolve.AsIdentArray(attr.Arguments[0].Expression.String())
-			if len(idents) < 2 || err != nil {
-				errs.Append(errorhandling.ErrorInvalidValue,
-					map[string]string{
-						"Expected": "at least two field names to be provided",
-					},
-					attr.Arguments[0].Expression,
-				)
-			}
-		}
 	}
 
 	return

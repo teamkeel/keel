@@ -1,4 +1,4 @@
-package attributes
+package expressions
 
 import (
 	"fmt"
@@ -7,6 +7,13 @@ import (
 
 	"github.com/google/cel-go/common/operators"
 )
+
+var matches = []match{
+	unexpectedResolvedType,
+	noOperatorOverload,
+	undeclaredOperatorReference,
+	undeclaredVariableReference,
+}
 
 type match struct {
 	Regex     string
@@ -34,7 +41,6 @@ func ConvertMessage(message string) (string, error) {
 	return message, nil
 }
 
-// "expression expected to resolve to type list(_Role) but it is _Role
 var unexpectedResolvedType = match{
 	Regex: `expression expected to resolve to type (.+) but it is (.+)`,
 	Construct: func(values []string) string {
@@ -111,3 +117,16 @@ func mapType(t string) string {
 
 	return keelType
 }
+
+// func projectIssuesToPosition(expressionPosition node.Node, issues []expressions.ValidationError) {
+// 	// TODO: this is not working correctly yet when expressions span multiple lines
+// 	for i, _ := range issues {
+// 		if issues[i].Pos != *new(lexer.Position) || issues[i].EndPos != *new(lexer.Position) {
+// 			issues[i].Pos = expressionPosition.Pos.Add(issues[i].Pos)
+// 			issues[i].EndPos = expressionPosition.Pos.Add(issues[i].EndPos)
+// 		} else {
+// 			issues[i].Pos = expressionPosition.Pos
+// 			issues[i].EndPos = expressionPosition.EndPos
+// 		}
+// 	}
+// }

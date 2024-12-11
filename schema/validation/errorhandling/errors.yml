@@ -35,9 +35,6 @@ en:
   E014:
     message: "{{ .AttributeName }} requires all arguments to be named, for example @permission(roles: [MyRole])"
     hint: "Valid argument names for {{ .AttributeName }} are {{ .ValidArgumentNames }}"
-  E016:
-    message: "Invalid value{{ if .Expected }}, expected {{ .Expected }}{{ end }}"
-    hint: ""
   E017:
     message: "You have a duplicate definition for 'api {{ .Name }}'"
     hint: "Please remove one of the definitions"
@@ -47,9 +44,6 @@ en:
   E022:
     message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
     hint: "{{ .Suggestion }}"
-  E024:
-    message: "{{ .ActualArgsCount }} argument(s) provided to @{{ .AttributeName }} but expected {{ .ExpectedArgsCount }}"
-    hint: '{{ if eq .Signature "()" }}@{{ .AttributeName }} doesn''t accept any arguments{{ else }}the signature of this attribute is @{{ .AttributeName }}{{ .Signature }}{{ end }}'
   E025:
     message: "{{ .Message }}"
   E033:

@@ -112,6 +112,13 @@ func TestInvalidTypes(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
 	require.Equal(t, "expression expected to resolve to type Boolean but it is Text", issues[0].Message)
+
+	require.Equal(t, 9, issues[0].Pos.Line)
+	require.Equal(t, 10, issues[0].Pos.Column)
+	require.Equal(t, 134, issues[0].Pos.Offset)
+	require.Equal(t, 1, issues[0].EndPos.Line)
+	require.Equal(t, 30, issues[0].EndPos.Column)
+	require.Equal(t, 84, issues[0].EndPos.Offset)
 }
 
 func parse(t *testing.T, s *reader.SchemaFile) []*parser.AST {

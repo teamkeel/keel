@@ -2,6 +2,7 @@ package expressions
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/alecthomas/participle/v2/lexer"
@@ -9,6 +10,8 @@ import (
 	"github.com/google/cel-go/common/types"
 	"github.com/teamkeel/keel/expressions/typing"
 	"github.com/teamkeel/keel/schema/node"
+	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 type Parser struct {
@@ -47,38 +50,59 @@ func NewParser(options ...Option) (*Parser, error) {
 	return parser, nil
 }
 
-// Validate parses and validates the expression
-func (p *Parser) Validate(expression string) ([]ValidationError, error) {
+func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
 
-	expression = strings.ReplaceAll(expression, " and ", " && ")
-	expression = strings.ReplaceAll(expression, " or ", " || ")
+	expr := expression.String()
+	expr = strings.ReplaceAll(expr, " and ", " && ")
+	expr = strings.ReplaceAll(expr, " or ", " || ")
 
-	ast, issues := p.CelEnv.Compile(expression)
+	ast, issues := p.CelEnv.Compile(expr)
 
 	if issues != nil && issues.Err() != nil {
-		validationErrors := []ValidationError{}
+		validationErrors := []*errorhandling.ValidationError{}
 
 		for _, e := range issues.Errors() {
-			parsed, _ := p.CelEnv.Parse(expression)
+			msg := e.Message
+			for _, match := range matches {
+				pattern, err := regexp.Compile(match.Regex)
+				if err != nil {
+					return nil, err
+				}
+				if matches := pattern.FindStringSubmatch(e.Message); matches != nil {
+					msg = match.Construct(matches[1:])
+					break
+				}
+			}
+
+			parsed, _ := p.CelEnv.Parse(expr)
 			offsets := parsed.NativeRep().SourceInfo().OffsetRanges()[e.ExprID]
 			start := parsed.NativeRep().SourceInfo().GetStartLocation(e.ExprID)
 			end := parsed.NativeRep().SourceInfo().GetStopLocation(e.ExprID)
 
-			validationErrors = append(validationErrors, ValidationError{
-				Message: e.Message,
-				Node: node.Node{
-					Pos: lexer.Position{
-						Offset: int(offsets.Start),
-						Line:   start.Line(),
-						Column: start.Column() + 1,
+			pos := lexer.Position{
+				Offset: int(offsets.Start),
+				Line:   start.Line(),
+				Column: start.Column(),
+			}
+			endPos := lexer.Position{
+				Offset: int(offsets.Stop),
+				Line:   end.Line(),
+				Column: end.Column(),
+			}
+
+			node := node.Node{
+				Pos:    pos.Add(expression.Pos),
+				EndPos: endPos.Add(expression.Pos),
+			}
+
+			validationErrors = append(validationErrors,
+				errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeExpressionError,
+					errorhandling.ErrorDetails{
+						Message: msg,
 					},
-					EndPos: lexer.Position{
-						Offset: int(offsets.Stop),
-						Line:   end.Line(),
-						Column: end.Column() + 1,
-					},
-				},
-			})
+					node,
+				))
 		}
 
 		return validationErrors, nil
@@ -86,17 +110,16 @@ func (p *Parser) Validate(expression string) ([]ValidationError, error) {
 
 	if p.ExpectedReturnType != nil {
 		if ast.OutputType() != types.NullType && !ast.OutputType().IsExactType(p.ExpectedReturnType) {
-			return []ValidationError{{
-				Message: fmt.Sprintf("expression expected to resolve to type %s but it is %s", p.ExpectedReturnType.String(), ast.OutputType().String()),
-			}}, nil
+			return []*errorhandling.ValidationError{
+				errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeExpressionError,
+					errorhandling.ErrorDetails{
+						Message: fmt.Sprintf("expression expected to resolve to type %s but it is %s", mapType(p.ExpectedReturnType.String()), mapType(ast.OutputType().String())),
+					},
+					expression),
+			}, nil
 		}
 	}
 
 	return nil, nil
-}
-
-type ValidationError struct {
-	node.Node
-	Message string
-	Hint    string
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/expressions/resolve"
+	"github.com/teamkeel/keel/schema/attributes"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -14,6 +15,8 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 	var model *parser.ModelNode
 	var action *parser.ActionNode
 	var job *parser.JobNode
+	var attribute *parser.AttributeNode
+	var arg *parser.AttributeArgumentNode
 
 	return Visitor{
 		EnterModel: func(m *parser.ModelNode) {
@@ -35,6 +38,8 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 			job = nil
 		},
 		EnterAttribute: func(attr *parser.AttributeNode) {
+			attribute = attr
+
 			if attr.Name.Value != parser.AttributePermission {
 				return
 			}
@@ -139,6 +144,42 @@ func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.Valid
 					},
 					attr.Name,
 				))
+			}
+		},
+		LeaveAttribute: func(*parser.AttributeNode) {
+			attribute = nil
+		},
+		EnterAttributeArgument: func(a *parser.AttributeArgumentNode) {
+			arg = a
+		},
+		LeaveAttributeArgument: func(*parser.AttributeArgumentNode) {
+			arg = nil
+		},
+		EnterExpression: func(e *parser.Expression) {
+			if attribute.Name.Value != parser.AttributePermission {
+				return
+			}
+
+			var err error
+			issues := []*errorhandling.ValidationError{}
+
+			switch arg.Label.Value {
+			case "expression":
+				issues, err = attributes.ValidatePermissionExpression(asts, model, action, job, arg.Expression)
+			case "roles":
+				issues, err = attributes.ValidatePermissionRoles(asts, arg.Expression)
+			case "actions":
+				issues, err = attributes.ValidatePermissionActions(arg.Expression)
+			}
+
+			if err != nil {
+				panic(err.Error())
+			}
+
+			if len(issues) > 0 {
+				for _, issue := range issues {
+					errs.AppendError(issue)
+				}
 			}
 		},
 	}

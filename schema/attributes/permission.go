@@ -5,9 +5,10 @@ import (
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/expressions/options"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode, action *parser.ActionNode, job *parser.JobNode, expression *parser.Expression) ([]expressions.ValidationError, error) {
+func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode, action *parser.ActionNode, job *parser.JobNode, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
 	opts := []expressions.Option{
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
@@ -29,25 +30,10 @@ func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode,
 		return nil, err
 	}
 
-	issues, err := p.Validate(expression.String())
-	if err != nil {
-		return nil, err
-	}
-
-	for i, issue := range issues {
-		msg, err := ConvertMessage(issue.Message)
-		if err != nil {
-			return nil, err
-		}
-		issues[i].Message = msg
-	}
-
-	projectIssuesToPosition(expression.Node, issues)
-
-	return issues, err
+	return p.Validate(expression)
 }
 
-func ValidatePermissionRoles(schema []*parser.AST, expression *parser.Expression) ([]expressions.ValidationError, error) {
+func ValidatePermissionRoles(schema []*parser.AST, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
 	opts := []expressions.Option{
 		options.WithSchemaTypes(schema),
 		options.WithReturnTypeAssertion("_Role", true),
@@ -58,25 +44,10 @@ func ValidatePermissionRoles(schema []*parser.AST, expression *parser.Expression
 		return nil, err
 	}
 
-	issues, err := p.Validate(expression.String())
-	if err != nil {
-		return nil, err
-	}
-
-	for i, issue := range issues {
-		msg, err := ConvertMessage(issue.Message)
-		if err != nil {
-			return nil, err
-		}
-		issues[i].Message = msg
-	}
-
-	projectIssuesToPosition(expression.Node, issues)
-
-	return issues, err
+	return p.Validate(expression)
 }
 
-func ValidatePermissionActions(expression *parser.Expression) ([]expressions.ValidationError, error) {
+func ValidatePermissionActions(expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
 	opts := []expressions.Option{
 		options.WithVariable(parser.ActionTypeGet, "_ActionType"),
 		options.WithVariable(parser.ActionTypeCreate, "_ActionType"),
@@ -91,20 +62,5 @@ func ValidatePermissionActions(expression *parser.Expression) ([]expressions.Val
 		return nil, err
 	}
 
-	issues, err := p.Validate(expression.String())
-	if err != nil {
-		return nil, err
-	}
-
-	for i, issue := range issues {
-		msg, err := ConvertMessage(issue.Message)
-		if err != nil {
-			return nil, err
-		}
-		issues[i].Message = msg
-	}
-
-	projectIssuesToPosition(expression.Node, issues)
-
-	return issues, err
+	return p.Validate(expression)
 }

@@ -75,33 +75,21 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 	var queryOperand *QueryOperand
 	switch {
 	case expressions.IsModelDbColumn(model, fragments):
-
-		// err = v.query.AddJoinFromFragments(v.schema, fragments)
-		// if err != nil {
-		// 	return err
-		// }
 		var err error
 		queryOperand, err = operandFromFragments(schema, fragments)
 		if err != nil {
 			return nil, err
 		}
-
 	case expressions.IsInput(schema, action, fragments):
 		value, ok := inputs[fragments[0]]
 		if !ok {
 			return nil, fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", fragments[0])
 		}
 		return Value(value), nil
-
 	case expressions.IsContextDbColumn(fragments):
 		// If this is a value from ctx that requires a database read (such as with identity backlinks),
 		// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
 		// from the current query builder.
-
-		// fragments, err := normalisedFragments(schema, fragments)
-		// if err != nil {
-		// 	return nil, err
-		// }
 
 		// Remove the ctx fragment
 		fragments = fragments[1:]
@@ -132,8 +120,6 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 		if err != nil {
 			return nil, err
 		}
-
-		//selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1], false)
 
 		// If there are no matches in the subquery then null will be returned, but null
 		// will cause IN and NOT IN filtering of this subquery result to always evaluate as false.
@@ -288,7 +274,6 @@ func normalisedFragments(schema *proto.Schema, fragments []string) ([]string, er
 // Constructs a QueryOperand from a splice of fragments, representing an expression operand or implicit input.
 // The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive
 func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOperand, error) {
-
 	fragments, err := normalisedFragments(schema, fragments)
 	if err != nil {
 		return nil, err

@@ -3,17 +3,18 @@ package expressions_test
 import (
 	"testing"
 
-	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/expressions/options"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 func TestParser_Variable(t *testing.T) {
-	expression := `myVar == "Keel"`
+	expression, err := parser.ParseExpression(`myVar == "Keel"`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -35,7 +36,8 @@ func TestParser_TextEquality(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.name == 'Keel'`
+	expression, err := parser.ParseExpression(`person.name == "Keel"`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -58,7 +60,8 @@ func TestParser_TextInequality(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.name != 'Keel'`
+	expression, err := parser.ParseExpression(`person.name != "Keel"`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -84,7 +87,8 @@ func TestParser_CompareNullWithRequiredField(t *testing.T) {
 			}
 		}`})
 
-	expression := `post.name == null`
+	expression, err := parser.ParseExpression(`post.name == null`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -100,7 +104,8 @@ func TestParser_CompareNullWithRequiredField(t *testing.T) {
 }
 
 func TestParser_Array(t *testing.T) {
-	expression := `[1,2,3]`
+	expression, err := parser.ParseExpression(`[1,2,3]`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -114,7 +119,8 @@ func TestParser_Array(t *testing.T) {
 }
 
 func TestParser_ExpectedArray(t *testing.T) {
-	expression := `[1,2,3]`
+	expression, err := parser.ParseExpression(`[1,2,3]`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -130,7 +136,8 @@ func TestParser_ExpectedArray(t *testing.T) {
 }
 
 func TestParser_In(t *testing.T) {
-	expression := `1 in [1,2,3]`
+	expression, err := parser.ParseExpression(`1 in [1,2,3]`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -144,7 +151,8 @@ func TestParser_In(t *testing.T) {
 }
 
 func TestParser_InInvalid(t *testing.T) {
-	expression := `"keel" in "keel"`
+	expression, err := parser.ParseExpression(`"keel" in "keel"`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -157,12 +165,13 @@ func TestParser_InInvalid(t *testing.T) {
 
 	require.Len(t, issues, 1)
 	require.Equal(t, "cannot use operator 'in' with types Text and Text", issues[0].Message)
-	require.Equal(t, lexer.Position{Offset: 7, Line: 1, Column: 8}, issues[0].Pos)
-	require.Equal(t, lexer.Position{Offset: 9, Line: 1, Column: 10}, issues[0].EndPos)
+	require.Equal(t, errorhandling.LexerPos{Offset: 7, Line: 1, Column: 8}, issues[0].Pos)
+	require.Equal(t, errorhandling.LexerPos{Offset: 9, Line: 1, Column: 10}, issues[0].EndPos)
 }
 
 func TestParser_InInvalidTypes(t *testing.T) {
-	expression := `"keel" in [1,2,3]`
+	expression, err := parser.ParseExpression(`"keel" in [1,2,3]`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -178,7 +187,8 @@ func TestParser_InInvalidTypes(t *testing.T) {
 }
 
 func TestParser_UnknownVariable(t *testing.T) {
-	expression := `person.name == 'Keel'`
+	expression, err := parser.ParseExpression(`person.name == "Keel"`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -201,7 +211,8 @@ func TestParser_UnknownField(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.n == 'Keel'`
+	expression, err := parser.ParseExpression(`person.n == "Keel"`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -226,7 +237,9 @@ func TestParser_UnknownOperators(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.age == 1 + 1`
+	expression, err := parser.ParseExpression(`person.age == 1 + 1`)
+	require.NoError(t, err)
+
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
@@ -250,7 +263,8 @@ func TestParser_TypeMismatch(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.name == 123`
+	expression, err := parser.ParseExpression(`person.name == 123`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -275,7 +289,8 @@ func TestParser_ReturnAssertion(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.name`
+	expression, err := parser.ParseExpression(`person.name`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -304,7 +319,8 @@ func TestParser_EnumEquals(t *testing.T) {
 			Single
 		}`})
 
-	expression := `person.status == Status.Married`
+	expression, err := parser.ParseExpression(`person.status == Status.Married`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -332,7 +348,8 @@ func TestParser_EnumNotEquals(t *testing.T) {
 			Single
 		}`})
 
-	expression := `person.status != Status.Married`
+	expression, err := parser.ParseExpression(`person.status != Status.Married`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -360,7 +377,8 @@ func TestParser_EnumInvalidOperator(t *testing.T) {
 			Single
 		}`})
 
-	expression := `person.status > Status.Married`
+	expression, err := parser.ParseExpression(`person.status > Status.Married`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -390,7 +408,8 @@ func TestParser_EnumInvalidValue(t *testing.T) {
 			Single
 		}`})
 
-	expression := `person.status == Status.NotExists`
+	expression, err := parser.ParseExpression(`person.status == Status.NotExists`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -420,7 +439,8 @@ func TestParser_EnumWithoutValue(t *testing.T) {
 			Single
 		}`})
 
-	expression := `person.status == Status`
+	expression, err := parser.ParseExpression(`person.status == Status`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -456,7 +476,8 @@ func TestParser_EnumTypeMismatch(t *testing.T) {
 			Unemployed
 		}`})
 
-	expression := `person.status == Employment.Permanent`
+	expression, err := parser.ParseExpression(`person.status == Employment.Permanent`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -482,7 +503,8 @@ func TestParser_TimestampEquality(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.date == ctx.now`
+	expression, err := parser.ParseExpression(`person.date == ctx.now`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -505,7 +527,8 @@ func TestParser_ArrayString(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.names == ["Keel","Weave"]`
+	expression, err := parser.ParseExpression(`person.names == ["Keel","Weave"]`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -528,7 +551,8 @@ func TestParser_ArrayInt(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.numbers == [-1,2,3]`
+	expression, err := parser.ParseExpression(`person.numbers == [-1,2,3]`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -551,7 +575,8 @@ func TestParser_ArrayDouble(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.numbers == [1.2, 2.1, 3.9]`
+	expression, err := parser.ParseExpression(`person.numbers == [1.2, 2.1, 3.9]`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -574,7 +599,8 @@ func TestParser_ArrayEmpty(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.names == []`
+	expression, err := parser.ParseExpression(`person.names == []`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -597,7 +623,8 @@ func TestParser_ArrayTypeMismatch(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.names == 'Keel'`
+	expression, err := parser.ParseExpression(`person.names == "Keel"`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -622,7 +649,8 @@ func TestParser_ModelEquals(t *testing.T) {
 			}
 		}`})
 
-	expression := `person == person.p`
+	expression, err := parser.ParseExpression(`person == person.p`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -657,7 +685,8 @@ func TestParser_ModelIn(t *testing.T) {
 				}
 			}`})
 
-	expression := `account in ctx.identity.account.friends.follower`
+	expression, err := parser.ParseExpression(`account in ctx.identity.account.friends.follower`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -686,7 +715,8 @@ func TestParser_ModelInNotToMany(t *testing.T) {
 				}
 			}`})
 
-	expression := `account in ctx.identity.account`
+	expression, err := parser.ParseExpression(`account in ctx.identity.account`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -723,7 +753,8 @@ func TestParser_ModelInWrongType(t *testing.T) {
 				}
 			}`})
 
-	expression := `account in ctx.identity.account.friends`
+	expression, err := parser.ParseExpression(`account in ctx.identity.account.friends`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -755,7 +786,8 @@ func TestParser_ToOneRelationship(t *testing.T) {
 			}
 		}`})
 
-	expression := `person.org.companyName == "Keel"`
+	expression, err := parser.ParseExpression(`person.org.companyName == "Keel"`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
@@ -785,7 +817,8 @@ func TestParser_ToManyRelationship(t *testing.T) {
 			}
 		}`})
 
-	expression := `organisation.people.name == "Keel"`
+	expression, err := parser.ParseExpression(`organisation.people.name == "Keel"`)
+	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
