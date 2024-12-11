@@ -1450,11 +1450,6 @@ func TestPermissionQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, tc := range authorisationTestCases {
 		testCase := tc
-
-		// if testCase.name != "early_evaluate_list_op" {
-		// 	continue
-		// }
-
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()

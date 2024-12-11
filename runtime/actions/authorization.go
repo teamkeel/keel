@@ -126,15 +126,13 @@ func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model 
 		return false, false
 	}
 
-	d := &OperandResolver{
+	out, _, err := prg.Eval(&OperandResolver{
 		context: ctx,
 		schema:  schema,
 		model:   model,
 		action:  action,
 		inputs:  inputs,
-	}
-	out, _, err := prg.Eval(d)
-
+	})
 	if err != nil {
 		return false, false
 	}

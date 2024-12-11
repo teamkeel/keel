@@ -2,7 +2,6 @@ package options
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/operators"
@@ -18,9 +17,9 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
+// WithSchemaTypes defines schema models, enums and roles as types in the CEL environment
 func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 	return func(p *expressions.Parser) error {
-
 		p.Provider.Schema = schema
 
 		var options []cel.EnvOption
@@ -44,10 +43,11 @@ func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 	}
 }
 
-func WithConstant(value string, typeName string) expressions.Option {
+// WithConstant defines a new constant in the CEL environment
+func WithConstant(identifier string, typeName string) expressions.Option {
 	return func(p *expressions.Parser) error {
 		var err error
-		p.CelEnv, err = p.CelEnv.Extend(cel.Constant(value, types.NewOpaqueType(typeName), nil))
+		p.CelEnv, err = p.CelEnv.Extend(cel.Constant(identifier, types.NewOpaqueType(typeName), nil))
 		if err != nil {
 			return err
 		}
@@ -56,6 +56,7 @@ func WithConstant(value string, typeName string) expressions.Option {
 	}
 }
 
+// WithCtx defines the ctx variable in the CEL environment
 func WithCtx() expressions.Option {
 	return func(p *expressions.Parser) error {
 		fields := map[string]*types.Type{
@@ -79,6 +80,7 @@ func WithCtx() expressions.Option {
 	}
 }
 
+// WithVariable defines a new variable in the CEL environment
 func WithVariable(identifier string, typeName string) expressions.Option {
 	return func(p *expressions.Parser) error {
 		t, err := typing.MapType(p.Provider.Schema, typeName)
@@ -97,6 +99,7 @@ func WithVariable(identifier string, typeName string) expressions.Option {
 	}
 }
 
+// WithActionInputs defines variables in the CEL environment for each action input
 func WithActionInputs(schema []*parser.AST, action *parser.ActionNode) expressions.Option {
 	return func(p *expressions.Parser) error {
 		model := query.ActionModel(schema, action.Name.Value)
@@ -137,6 +140,7 @@ func WithActionInputs(schema []*parser.AST, action *parser.ActionNode) expressio
 	}
 }
 
+// WithLogicalOperators enables support for the equals '==' and not equals '!=' operators for all types
 func WithLogicalOperators() expressions.Option {
 	return func(p *expressions.Parser) error {
 		var err error
@@ -156,6 +160,7 @@ func WithLogicalOperators() expressions.Option {
 	}
 }
 
+// WithComparisonOperators enables support for comparison operators for all types
 func WithComparisonOperators() expressions.Option {
 	return func(p *expressions.Parser) error {
 		paramA := types.NewTypeParamType("A")
@@ -358,93 +363,7 @@ func WithComparisonOperators() expressions.Option {
 	}
 }
 
-func WithArithmeticOperators() expressions.Option {
-	return func(p *expressions.Parser) error {
-		var err error
-
-		p.CelEnv, err = p.CelEnv.Extend(
-			// Addition operator
-			cel.Function(operators.Add,
-				cel.Overload(overloads.AddString,
-					argTypes(types.StringType, types.StringType), types.StringType),
-				cel.Overload(overloads.AddDouble,
-					argTypes(types.DoubleType, types.DoubleType), types.DoubleType),
-				cel.Overload(overloads.AddInt64,
-					argTypes(types.IntType, types.IntType), types.IntType),
-				cel.Overload(overloads.AddUint64,
-					argTypes(types.UintType, types.UintType), types.UintType),
-				cel.SingletonBinaryBinding(func(lhs, rhs ref.Val) ref.Val {
-					return lhs.(traits.Adder).Add(rhs)
-				}, traits.AdderType)),
-
-			// Subtraction operator
-			cel.Function(operators.Subtract,
-				cel.Overload(overloads.SubtractDouble,
-					argTypes(types.DoubleType, types.DoubleType), types.DoubleType),
-				cel.Overload(overloads.SubtractInt64,
-					argTypes(types.IntType, types.IntType), types.IntType),
-				cel.Overload(overloads.SubtractUint64,
-					argTypes(types.UintType, types.UintType), types.UintType),
-				cel.SingletonBinaryBinding(func(lhs, rhs ref.Val) ref.Val {
-					return lhs.(traits.Subtractor).Subtract(rhs)
-				}, traits.SubtractorType)),
-
-			// Multiplication
-			cel.Function(operators.Multiply,
-				cel.Overload(overloads.MultiplyDouble,
-					argTypes(types.DoubleType, types.DoubleType), types.DoubleType),
-				cel.Overload(overloads.MultiplyInt64,
-					argTypes(types.IntType, types.IntType), types.IntType),
-				cel.Overload(overloads.MultiplyUint64,
-					argTypes(types.UintType, types.UintType), types.UintType),
-				cel.SingletonBinaryBinding(func(lhs, rhs ref.Val) ref.Val {
-					return lhs.(traits.Multiplier).Multiply(rhs)
-				}, traits.MultiplierType)),
-
-			// Division
-			cel.Function(operators.Divide,
-				cel.Overload(overloads.DivideDouble,
-					argTypes(types.DoubleType, types.DoubleType), types.DoubleType),
-				cel.Overload(overloads.DivideInt64,
-					argTypes(types.IntType, types.IntType), types.IntType),
-				cel.Overload(overloads.DivideUint64,
-					argTypes(types.UintType, types.UintType), types.UintType),
-				cel.SingletonBinaryBinding(func(lhs, rhs ref.Val) ref.Val {
-					return lhs.(traits.Divider).Divide(rhs)
-				}, traits.DividerType)),
-		)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-}
-
-func WithFunctions() expressions.Option {
-	return func(p *expressions.Parser) error {
-		var err error
-
-		p.CelEnv, err = p.CelEnv.Extend(
-			// UPPER(string) custom global function
-			cel.Function("UPPER",
-				cel.Overload("upper_string",
-					[]*cel.Type{cel.StringType},
-					cel.StringType,
-					cel.UnaryBinding(func(lhs ref.Val) ref.Val {
-						return types.String(strings.ToUpper(fmt.Sprintf("%s", lhs)))
-					}),
-				),
-			),
-		)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-}
-
+// WithReturnTypeAssertion will check that the expression evaluates to a specific type
 func WithReturnTypeAssertion(returnType string, asArray bool) expressions.Option {
 	return func(p *expressions.Parser) error {
 		var err error

@@ -14,48 +14,48 @@ import (
 // By design, the ActionOperator has no knowledge (in of itself) of how these
 // might be expressed in schema's or in request inputs, or in expressions for
 // example.
-type ActionOperator string
+type ActionOperator int
 
 const (
-	Unknown ActionOperator = "Unknown"
+	Unknown ActionOperator = iota
 
-	Contains          = "Contains"
-	NotContains       = "NotContains"
-	Equals            = "Equals"
-	NotEquals         = "NotEquals"
-	StartsWith        = "StartsWith"
-	EndsWith          = "EndsWith"
-	GreaterThan       = "GreaterThan"
-	GreaterThanEquals = "GreaterThanEquals"
-	LessThan          = "LessThan"
-	LessThanEquals    = "LessThanEquals"
-	OneOf             = "OneOf"
-	NotOneOf          = "NotOneOf"
-	After             = "After"
-	Before            = "Before"
-	OnOrAfter         = "OnOrAfter"
-	OnOrBefore        = "OnOrBefore"
+	Contains
+	NotContains
+	Equals
+	NotEquals
+	StartsWith
+	EndsWith
+	GreaterThan
+	GreaterThanEquals
+	LessThan
+	LessThanEquals
+	OneOf
+	NotOneOf
+	After
+	Before
+	OnOrAfter
+	OnOrBefore
 
-	AllEquals            = "AllEquals"
-	AnyEquals            = "AnyEquals"
-	AllNotEquals         = "AllNotEquals"
-	AnyNotEquals         = "AnyNotEquals"
-	AllGreaterThan       = "AllGreaterThan"
-	AnyGreaterThan       = "AnyGreaterThan"
-	AllGreaterThanEquals = "AllGreaterThanEquals"
-	AnyGreaterThanEquals = "AnyGreaterThanEquals"
-	AllLessThan          = "AllLessThan"
-	AnyLessThan          = "AnyLessThan"
-	AllLessThanEquals    = "AllLessThanEquals"
-	AnyLessThanEquals    = "AnyLessThanEquals"
-	AllAfter             = "AllAfter"
-	AnyAfter             = "AnyAfter"
-	AllBefore            = "AllBefore"
-	AnyBefore            = "AnyBefore"
-	AllOnOrAfter         = "AllOnOrAfter"
-	AnyOnOrAfter         = "AnyOnOrAfter"
-	AllOnOrBefore        = "AllOnOrBefore"
-	AnyOnOrBefore        = "AnyOnOrBefore"
+	AllEquals
+	AnyEquals
+	AllNotEquals
+	AnyNotEquals
+	AllGreaterThan
+	AnyGreaterThan
+	AllGreaterThanEquals
+	AnyGreaterThanEquals
+	AllLessThan
+	AnyLessThan
+	AllLessThanEquals
+	AnyLessThanEquals
+	AllAfter
+	AnyAfter
+	AllBefore
+	AnyBefore
+	AllOnOrAfter
+	AnyOnOrAfter
+	AllOnOrBefore
+	AnyOnOrBefore
 )
 
 // queryOperatorToActionOperator converts the conditional operators that are used
@@ -149,33 +149,6 @@ func allQueryOperatorToActionOperator(in string) (out ActionOperator, err error)
 		return out, fmt.Errorf("unrecognized operator for all query: %s", in)
 	}
 }
-
-// expressionOperatorToActionOperator converts the conditional operators that are used
-// in Keel Expressions (such as ">=") to its symbolic constant,
-// machine-readable, ActionOperator value.
-// func expressionOperatorToActionOperator(in string) (out ActionOperator, err error) {
-// 	switch in {
-// 	case parser.OperatorEquals:
-// 		return Equals, nil
-// 	case parser.OperatorNotEquals:
-// 		return NotEquals, nil
-// 	case parser.OperatorGreaterThanOrEqualTo:
-// 		return GreaterThanEquals, nil
-// 	case parser.OperatorLessThanOrEqualTo:
-// 		return LessThanEquals, nil
-// 	case parser.OperatorLessThan:
-// 		return LessThan, nil
-// 	case parser.OperatorGreaterThan:
-// 		return GreaterThan, nil
-// 	case parser.OperatorIn:
-// 		return OneOf, nil
-// 	case parser.OperatorNotIn:
-// 		return NotOneOf, nil
-
-// 	default:
-// 		return Unknown, fmt.Errorf("this is not a recognized conditional operator: %s", in)
-// 	}
-// }
 
 func toSql(o proto.OrderDirection) (string, error) {
 	switch o {

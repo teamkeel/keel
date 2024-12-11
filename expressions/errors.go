@@ -117,16 +117,3 @@ func mapType(t string) string {
 
 	return keelType
 }
-
-// func projectIssuesToPosition(expressionPosition node.Node, issues []expressions.ValidationError) {
-// 	// TODO: this is not working correctly yet when expressions span multiple lines
-// 	for i, _ := range issues {
-// 		if issues[i].Pos != *new(lexer.Position) || issues[i].EndPos != *new(lexer.Position) {
-// 			issues[i].Pos = expressionPosition.Pos.Add(issues[i].Pos)
-// 			issues[i].EndPos = expressionPosition.Pos.Add(issues[i].EndPos)
-// 		} else {
-// 			issues[i].Pos = expressionPosition.Pos
-// 			issues[i].EndPos = expressionPosition.EndPos
-// 		}
-// 	}
-// }

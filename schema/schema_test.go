@@ -33,10 +33,6 @@ func TestProto(t *testing.T) {
 			continue
 		}
 
-		// if testCase.Name() != "operations_attr_set" {
-		// 	continue
-		// }
-
 		testCaseDir := filepath.Join(testdataDir, testCase.Name())
 
 		t.Run(testCase.Name(), func(t *testing.T) {
@@ -76,10 +72,6 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
-
-		if tc.Name() != "attribute_unique.keel" {
-			continue
-		}
 
 		testCase := tc
 		if testCase.IsDir() {

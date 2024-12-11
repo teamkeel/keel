@@ -2,12 +2,7 @@ package expressions
 
 import (
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/decls"
-	"github.com/google/cel-go/common/operators"
-	"github.com/google/cel-go/common/overloads"
 	"github.com/google/cel-go/common/types"
-	"github.com/google/cel-go/common/types/ref"
-	"github.com/google/cel-go/common/types/traits"
 )
 
 type standardKeelLib struct{}
@@ -23,20 +18,7 @@ func (*standardKeelLib) LibraryName() string {
 }
 
 func (l *standardKeelLib) CompileOptions() []cel.EnvOption {
-	paramA := types.NewTypeParamType("A")
-	paramB := types.NewTypeParamType("B")
-	listOfA := types.NewListType(paramA)
-	mapOfAB := types.NewMapType(paramA, paramB)
-
-	return []cel.EnvOption{
-		// Indexing
-		cel.Function(operators.Index,
-			decls.Overload(overloads.IndexMap, argTypes(mapOfAB, paramA), paramB),
-			decls.Overload(overloads.IndexList, argTypes(listOfA, types.IntType), paramA),
-			decls.SingletonBinaryBinding(func(lhs, rhs ref.Val) ref.Val {
-				return lhs.(traits.Indexer).Get(rhs)
-			}, traits.IndexerType)),
-	}
+	return []cel.EnvOption{}
 }
 
 func (*standardKeelLib) ProgramOptions() []cel.ProgramOption {

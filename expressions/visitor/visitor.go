@@ -16,20 +16,28 @@ var (
 )
 
 type Visitor[T any] interface {
+	// StartCondition is called when a new condition is visited
 	StartCondition(nested bool) error
+	// EndCondition is called when a condition is finished
 	EndCondition(nested bool) error
+	// VisitAnd is called when an 'and' operator is visited between conditions
 	VisitAnd() error
+	// VisitAnd is called when an 'or' operator is visited between conditions
 	VisitOr() error
+	// VisitLiteral is called when a literal operand is visited (e.g. "Keel")
 	VisitLiteral(value any) error
+	// VisitVariable is called when a variable operand is visited (e.g. name)
 	VisitVariable(name string) error
+	// VisitField is called when a field operand is visited (e.g. post.name)
 	VisitField(fragments []string) error
+	// VisitOperator is called when a condition's operator visited (e.g. ==)
 	VisitOperator(operator string) error
+	// Returns a value after the visitor has completed executing
 	Result() (T, error)
 	ModelName() string
 }
 
 func RunCelVisitor[T any](expression string, visitor Visitor[T]) (T, error) {
-
 	expression = strings.ReplaceAll(expression, " and ", " && ")
 	expression = strings.ReplaceAll(expression, " or ", " || ")
 

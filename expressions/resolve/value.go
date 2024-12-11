@@ -7,25 +7,24 @@ import (
 	"github.com/google/cel-go/cel"
 )
 
-// AsString expects and evaluates a string from the expression
+// ToValue expects and resolves to a specific type by evaluating the expression
 func ToValue[T any](expression string) (T, error) {
 	env, err := cel.NewEnv()
 	if err != nil {
-		return *new(T), errors.New("could not")
+		return *new(T), err
 	}
 
 	ast, issues := env.Parse(expression)
 	if issues != nil && len(issues.Errors()) > 0 {
-		return *new(T), errors.New("could not")
+		return *new(T), errors.New("expression has validation errors and cannot be evaluated")
 	}
 
 	prg, err := env.Program(ast)
 	if err != nil {
-		return *new(T), errors.New("could not")
+		return *new(T), err
 	}
 
 	out, _, err := prg.Eval(map[string]any{})
-
 	if err != nil {
 		return *new(T), err
 	}
