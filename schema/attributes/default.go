@@ -8,9 +8,14 @@ import (
 )
 
 func ValidateDefaultExpression(schema []*parser.AST, field *parser.FieldNode, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
+	returnType := field.Type.Value
+	if field.Type.Value == parser.FieldTypeID {
+		returnType = parser.FieldTypeText
+	}
+
 	opts := []expressions.Option{
 		options.WithSchemaTypes(schema),
-		options.WithReturnTypeAssertion(field.Type.Value, field.Repeated),
+		options.WithReturnTypeAssertion(returnType, field.Repeated),
 	}
 
 	p, err := expressions.NewParser(opts...)

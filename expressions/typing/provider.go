@@ -72,18 +72,6 @@ func (p *TypeProvider) FindStructFieldType(structType, fieldName string) (*types
 			return nil, false
 		}
 
-		// if field.Optional {
-		// 	t = types.NewNullableType(t)
-		// }
-
-		// if field.Repeated || parentIsArray {
-		// 	if query.Model(p.Schema, field.Type.Value) != nil {
-		// 		t = cel.ObjectType(field.Type.Value + "[]")
-		// 	} else {
-		// 		t = cel.ListType(t)
-		// 	}
-		// }
-
 		return &types.FieldType{Type: t}, true
 	}
 

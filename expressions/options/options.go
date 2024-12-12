@@ -58,7 +58,7 @@ func WithConstant(identifier string, typeName string) expressions.Option {
 func WithCtx() expressions.Option {
 	return func(p *expressions.Parser) error {
 		fields := map[string]*types.Type{
-			"identity":        types.NewObjectType("Identity"),
+			"identity":        types.NewObjectType(parser.IdentityModelName),
 			"isAuthenticated": types.BoolType,
 			"now":             typing.Timestamp,
 			"secrets":         types.DynType,
@@ -329,10 +329,6 @@ func WithComparisonOperators() expressions.Option {
 
 // WithReturnTypeAssertion will check that the expression evaluates to a specific type
 func WithReturnTypeAssertion(returnType string, asArray bool) expressions.Option {
-	if returnType == parser.FieldTypeID {
-		returnType = parser.FieldTypeText
-	}
-
 	return func(p *expressions.Parser) error {
 		var err error
 		p.ExpectedReturnType, err = typing.MapType(p.Provider.Schema, returnType, asArray)

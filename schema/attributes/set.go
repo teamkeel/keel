@@ -37,11 +37,11 @@ func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, lhs 
 
 	targetField, err := resolve.AsIdent(lhs.String())
 	if err != nil {
-		return nil, fmt.Errorf("lhs operand incorrect")
+		return nil, err
 	}
 
 	if len(targetField) < 2 {
-		return nil, fmt.Errorf("lhs operand incorrect")
+		return nil, fmt.Errorf("lhs operand is less than two fragments")
 	}
 
 	if targetField[0] != strcase.ToLowerCamel(model.Name.Value) {
