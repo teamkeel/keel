@@ -293,7 +293,11 @@
       "title": { "template": "Delete post" },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
-      "capabilities": {}
+      "capabilities": {},
+      "relatedActions": [
+        { "toolId": "listPosts", "displayOrder": 1 },
+        { "toolId": "listPostsEmbeds", "displayOrder": 2 }
+      ]
     },
     {
       "id": "getCategory",

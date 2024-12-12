@@ -262,11 +262,12 @@ type ActionConfig struct {
 	EntityPlural string `protobuf:"bytes,14,opt,name=entity_plural,json=entityPlural,proto3" json:"entity_plural,omitempty"`
 	// What features are enabled for this tool
 	Capabilities *Capabilities `protobuf:"bytes,15,opt,name=capabilities,proto3" json:"capabilities,omitempty"`
-	// Only for List actions; aka views.
+	// A list of ... list actions, aka views.
 	// E.g. For a listOrders action; these would be tabs that show filtered orders by status
 	// (Processed, Pending, Completed)
-	// For auto-generated configs, this is only populated for list actions, with links to other list
-	// actions for the same model.
+	// For auto-generated configs, this is only populated for:
+	// - list actions, with links to other list actions for the same model.
+	// - delete actions, with links to all list actions for the same model.
 	RelatedActions []*ActionLink `protobuf:"bytes,16,rep,name=related_actions,json=relatedActions,proto3" json:"related_actions,omitempty"`
 	// Only for List actions; Support offset and cursor
 	Pagination *CursorPaginationConfig `protobuf:"bytes,17,opt,name=pagination,proto3,oneof" json:"pagination,omitempty"`
