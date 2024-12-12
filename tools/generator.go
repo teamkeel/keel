@@ -197,10 +197,11 @@ func (g *Generator) decorateTools() error {
 
 // generateRelatedActionsLinks will traverse the tools and generate the RelatedActions links:
 //   - For LIST actions = other list actions for the same model
+//   - For DELETE actions = all list actions for the same model
 func (g *Generator) generateRelatedActionsLinks() {
 	for id, tool := range g.Tools {
 		displayOrder := 0
-		if !tool.Action.IsList() {
+		if !(tool.Action.IsList() || tool.Action.IsDelete()) {
 			continue
 		}
 
