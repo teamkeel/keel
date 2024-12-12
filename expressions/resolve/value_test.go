@@ -35,3 +35,10 @@ func TestToValue_Boolean(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, true, v)
 }
+
+func TestToValueArray_StringArray(t *testing.T) {
+	v, err := resolve.ToValueArray[string](`["keel", "weave"]`)
+	assert.NoError(t, err)
+	assert.Equal(t, "keel", v[0])
+	assert.Equal(t, "weave", v[1])
+}

@@ -10,8 +10,8 @@ import (
 	"github.com/teamkeel/keel/auditing"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema/parser"
 	"golang.org/x/exp/slices"
 )
 
@@ -264,92 +264,273 @@ func fieldDefinition(field *proto.Field) (string, error) {
 }
 
 func getDefaultValue(field *proto.Field) (string, error) {
+	// Handle zero values first
 	if field.DefaultValue.UseZeroValue {
-		if field.Type.Repeated {
-			return "{}", nil
-		}
-
-		switch field.Type.Type {
-		case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
-			return db.QuoteLiteral(""), nil
-		case proto.Type_TYPE_INT, proto.Type_TYPE_DECIMAL:
-			return "0", nil
-		case proto.Type_TYPE_BOOL:
-			return "false", nil
-		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-			return "now()", nil
-		case proto.Type_TYPE_ID:
-			return "ksuid()", nil
-		}
+		return getZeroValue(field)
 	}
 
-	expr, err := parser.ParseExpression(field.DefaultValue.Expression.Source)
-	if err != nil {
-		return "", err
-	}
-
-	_, err = expr.ToValue()
-	if err != nil {
-		return "", err
-	}
-
+	// Handle specific types
 	switch {
+	case field.Type.Type == proto.Type_TYPE_ENUM:
+		return getEnumDefault(field)
 	case field.Type.Repeated:
-		if len(value.Array.Values) == 0 {
+		return getRepeatedDefault(field)
+	default:
+		v, err := resolve.ToValue[any](field.DefaultValue.Expression.Source)
+		if err != nil {
+			return "", err
+		}
+		return toSqlLiteral(v, field)
+	}
+}
+
+// Helper functions to break down the logic
+func getZeroValue(field *proto.Field) (string, error) {
+	if field.Type.Repeated {
+		return "{}", nil
+	}
+
+	zeroValues := map[proto.Type]string{
+		proto.Type_TYPE_STRING:    db.QuoteLiteral(""),
+		proto.Type_TYPE_MARKDOWN:  db.QuoteLiteral(""),
+		proto.Type_TYPE_INT:       "0",
+		proto.Type_TYPE_DECIMAL:   "0",
+		proto.Type_TYPE_BOOL:      "false",
+		proto.Type_TYPE_DATE:      "now()",
+		proto.Type_TYPE_DATETIME:  "now()",
+		proto.Type_TYPE_TIMESTAMP: "now()",
+		proto.Type_TYPE_ID:        "ksuid()",
+	}
+
+	if value, ok := zeroValues[field.Type.Type]; ok {
+		return value, nil
+	}
+	return "", fmt.Errorf("no zero value defined for type %v", field.Type.Type)
+}
+
+func getEnumDefault(field *proto.Field) (string, error) {
+	if field.Type.Repeated {
+		enums, err := resolve.AsIdentArray(field.DefaultValue.Expression.Source)
+		if err != nil {
+			return "", err
+		}
+
+		if len(enums) == 0 {
 			return "'{}'", nil
 		}
 
 		values := []string{}
-		for _, el := range value.Array.Values {
-			v, err := toSqlLiteral(el, field)
-			if err != nil {
-				return "", err
-			}
-			values = append(values, v)
+		for _, el := range enums {
+			values = append(values, db.QuoteLiteral(el[1]))
 		}
 
-		var cast string
-		switch field.Type.Type {
-		case proto.Type_TYPE_INT:
-			cast = "::INTEGER[]"
-		case proto.Type_TYPE_DECIMAL:
-			cast = "::NUMERIC[]"
-		case proto.Type_TYPE_BOOL:
-			cast = "::BOOL[]"
-		default:
-			cast = "::TEXT[]"
-		}
-
-		return fmt.Sprintf("ARRAY[%s]%s", strings.Join(values, ","), cast), nil
-	default:
-		return toSqlLiteral(value, field)
+		return fmt.Sprintf("ARRAY[%s]::TEXT[]", strings.Join(values, ",")), nil
 	}
-	return "", nil
+
+	enum, err := resolve.AsIdent(field.DefaultValue.Expression.Source)
+	if err != nil {
+		return "", err
+	}
+	return db.QuoteLiteral(enum[1]), nil
 }
 
-func toSqlLiteral(operand *parser.Operand, field *proto.Field) (string, error) {
-	switch {
-	case operand.String != nil:
-		s := *operand.String
-		// Remove wrapping quotes
-		s = strings.TrimPrefix(s, `"`)
-		s = strings.TrimSuffix(s, `"`)
-		return db.QuoteLiteral(s), nil
-	case operand.Decimal != nil:
-		return fmt.Sprintf("%f", *operand.Decimal), nil
-	case operand.Number != nil:
-		return fmt.Sprintf("%d", *operand.Number), nil
-	case operand.True:
-		return "true", nil
-	case operand.False:
-		return "false", nil
-	case field.Type.Type == proto.Type_TYPE_ENUM && operand.Ident != nil:
-		if len(operand.Ident.Fragments) != 2 {
-			return "", fmt.Errorf("invalid default value %s for enum field %s", operand.Ident.ToString(), field.Name)
-		}
-		return db.QuoteLiteral(operand.Ident.Fragments[1].Fragment), nil
+func getRepeatedDefault(field *proto.Field) (string, error) {
+	var (
+		values []string
+		err    error
+	)
+
+	switch field.Type.Type {
+	case proto.Type_TYPE_INT:
+		values, err = getArrayValues[int64](field)
+	case proto.Type_TYPE_DECIMAL:
+		values, err = getArrayValues[float64](field)
+	case proto.Type_TYPE_BOOL:
+		values, err = getArrayValues[bool](field)
 	default:
-		return "", fmt.Errorf("field %s has unexpected default value %s", field.Name, operand.ToString())
+		values, err = getArrayValues[string](field)
+	}
+	if err != nil {
+		return "", err
+	}
+
+	if len(values) == 0 {
+		return "'{}'", nil
+	}
+
+	typeCasts := map[proto.Type]string{
+		proto.Type_TYPE_INT:     "INTEGER[]",
+		proto.Type_TYPE_DECIMAL: "NUMERIC[]",
+		proto.Type_TYPE_BOOL:    "BOOL[]",
+	}
+	cast := typeCasts[field.Type.Type]
+	if cast == "" {
+		cast = "TEXT[]"
+	}
+
+	return fmt.Sprintf("ARRAY[%s]::%s", strings.Join(values, ","), cast), nil
+}
+
+// Generic helper for array values
+func getArrayValues[T any](field *proto.Field) ([]string, error) {
+	v, err := resolve.ToValueArray[T](field.DefaultValue.Expression.Source)
+	if err != nil {
+		return nil, err
+	}
+
+	values := make([]string, len(v))
+	for i, el := range v {
+		val, err := toSqlLiteral(el, field)
+		if err != nil {
+			return nil, err
+		}
+		values[i] = val
+	}
+	return values, nil
+}
+
+// func getDefaultValue(field *proto.Field) (string, error) {
+// 	if field.DefaultValue.UseZeroValue {
+// 		if field.Type.Repeated {
+// 			return "{}", nil
+// 		}
+
+// 		switch field.Type.Type {
+// 		case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
+// 			return db.QuoteLiteral(""), nil
+// 		case proto.Type_TYPE_INT, proto.Type_TYPE_DECIMAL:
+// 			return "0", nil
+// 		case proto.Type_TYPE_BOOL:
+// 			return "false", nil
+// 		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+// 			return "now()", nil
+// 		case proto.Type_TYPE_ID:
+// 			return "ksuid()", nil
+// 		}
+// 	}
+
+// 	switch {
+// 	case field.Type.Type == proto.Type_TYPE_ENUM:
+// 		if field.Type.Repeated {
+// 			if field.DefaultValue.Expression.Source == "" || field.DefaultValue.Expression.Source == "[]" {
+// 				return "'{}'", nil
+// 			}
+
+// 			enums, err := resolve.AsIdentArray(field.DefaultValue.Expression.Source)
+// 			if err != nil {
+// 				return "", err
+// 			}
+
+// 			values := []string{}
+// 			for _, el := range enums {
+// 				values = append(values, db.QuoteLiteral(el[1]))
+// 			}
+
+// 			return fmt.Sprintf("ARRAY[%s]::TEXT[]", strings.Join(values, ",")), nil
+
+// 		} else {
+// 			enum, err := resolve.AsIdent(field.DefaultValue.Expression.Source)
+// 			if err != nil {
+// 				return "", err
+// 			}
+
+// 			return db.QuoteLiteral(enum[1]), nil
+// 		}
+
+// 	case field.Type.Repeated:
+
+// 		if field.DefaultValue.Expression.Source == "" || field.DefaultValue.Expression.Source == "[]" {
+// 			return "'{}'", nil
+// 		}
+
+// 		values := []string{}
+// 		switch field.Type.Type {
+// 		case proto.Type_TYPE_INT:
+// 			v, err := resolve.ToValueArray[int64](field.DefaultValue.Expression.Source)
+// 			if err != nil {
+// 				return "", err
+// 			}
+// 			for _, el := range v {
+// 				v, err := toSqlLiteral(el, field)
+// 				if err != nil {
+// 					return "", err
+// 				}
+// 				values = append(values, v)
+// 			}
+// 		case proto.Type_TYPE_DECIMAL:
+// 			v, err := resolve.ToValueArray[float64](field.DefaultValue.Expression.Source)
+// 			if err != nil {
+// 				return "", err
+// 			}
+// 			for _, el := range v {
+// 				v, err := toSqlLiteral(el, field)
+// 				if err != nil {
+// 					return "", err
+// 				}
+// 				values = append(values, v)
+// 			}
+// 		case proto.Type_TYPE_BOOL:
+// 			v, err := resolve.ToValueArray[bool](field.DefaultValue.Expression.Source)
+// 			if err != nil {
+// 				return "", err
+// 			}
+// 			for _, el := range v {
+// 				v, err := toSqlLiteral(el, field)
+// 				if err != nil {
+// 					return "", err
+// 				}
+// 				values = append(values, v)
+// 			}
+// 		default:
+// 			v, err := resolve.ToValueArray[string](field.DefaultValue.Expression.Source)
+// 			if err != nil {
+// 				return "", err
+// 			}
+// 			for _, el := range v {
+// 				v, err := toSqlLiteral(el, field)
+// 				if err != nil {
+// 					return "", err
+// 				}
+// 				values = append(values, v)
+// 			}
+// 		}
+
+// 		var cast string
+// 		switch field.Type.Type {
+// 		case proto.Type_TYPE_INT:
+// 			cast = "::INTEGER[]"
+// 		case proto.Type_TYPE_DECIMAL:
+// 			cast = "::NUMERIC[]"
+// 		case proto.Type_TYPE_BOOL:
+// 			cast = "::BOOL[]"
+// 		default:
+// 			cast = "::TEXT[]"
+// 		}
+
+// 		return fmt.Sprintf("ARRAY[%s]%s", strings.Join(values, ","), cast), nil
+// 	default:
+// 		v, err := resolve.ToValue[any](field.DefaultValue.Expression.Source)
+// 		if err != nil {
+// 			return "", err
+// 		}
+
+// 		return toSqlLiteral(v, field)
+// 	}
+// }
+
+func toSqlLiteral(value any, field *proto.Field) (string, error) {
+	switch {
+	case field.Type.Type == proto.Type_TYPE_STRING:
+		return db.QuoteLiteral(fmt.Sprintf("%s", value)), nil
+	case field.Type.Type == proto.Type_TYPE_DECIMAL:
+		return fmt.Sprintf("%f", value), nil
+	case field.Type.Type == proto.Type_TYPE_INT:
+		return fmt.Sprintf("%d", value), nil
+	case field.Type.Type == proto.Type_TYPE_BOOL:
+		return fmt.Sprintf("%v", value), nil
+
+	default:
+		return "", fmt.Errorf("field %s has unexpected default value %s", field.Name, value)
 	}
 }
 

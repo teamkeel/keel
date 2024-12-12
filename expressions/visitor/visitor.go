@@ -241,18 +241,28 @@ func (w *CelVisitor[T]) listExpr(expr *exprpb.Expr) error {
 	l := expr.GetListExpr()
 	elems := l.GetElements()
 	arr := make([]any, len(elems))
-	isIdent := false
+	notLiteral := false
 
 	for i, elem := range elems {
 		switch elem.ExprKind.(type) {
 		case *exprpb.Expr_IdentExpr:
-			isIdent = true
+			notLiteral = true
 			s := elem.GetIdentExpr()
-			w.visitor.VisitVariable(s.GetName())
+			err := w.visitor.VisitVariable(s.GetName())
+			if err != nil {
+				return err
+			}
 		case *exprpb.Expr_SelectExpr:
-			// Enum values
-			s := elem.GetSelectExpr()
-			arr[i] = s.GetField()
+			// Enum values or field selection
+			notLiteral = true
+			frags, err := SelectToFragments(elem)
+			if err != nil {
+				return err
+			}
+			err = w.visitor.VisitField(frags)
+			if err != nil {
+				return err
+			}
 		case *exprpb.Expr_ConstExpr:
 			// Literal values
 			c := elem.GetConstExpr()
@@ -268,8 +278,8 @@ func (w *CelVisitor[T]) listExpr(expr *exprpb.Expr) error {
 		}
 	}
 
-	if !isIdent {
-		w.visitor.VisitLiteral(arr)
+	if !notLiteral && len(arr) != 0 {
+		return w.visitor.VisitLiteral(arr)
 	}
 
 	return nil
@@ -278,14 +288,11 @@ func (w *CelVisitor[T]) listExpr(expr *exprpb.Expr) error {
 func (w *CelVisitor[T]) identExpr(expr *exprpb.Expr) error {
 	ident := expr.GetIdentExpr()
 
-	var err error
 	if ident.Name == strcase.ToLowerCamel(w.visitor.ModelName()) {
-		err = w.visitor.VisitField([]string{ident.Name, "id"})
+		return w.visitor.VisitField([]string{ident.Name, "id"})
 	} else {
-		err = w.visitor.VisitVariable(ident.Name)
+		return w.visitor.VisitVariable(ident.Name)
 	}
-
-	return err
 }
 
 func (w *CelVisitor[T]) SelectExpr(expr *exprpb.Expr) error {

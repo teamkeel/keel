@@ -111,7 +111,7 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 		if ast.OutputType() != types.NullType {
 			out := mapType(ast.OutputType().String())
 
-			if mapType(p.ExpectedReturnType.String()) != out {
+			if out != "dyn[]" && mapType(p.ExpectedReturnType.String()) != out {
 				return []*errorhandling.ValidationError{
 					errorhandling.NewValidationErrorWithDetails(
 						errorhandling.AttributeExpressionError,

@@ -21,6 +21,7 @@ import (
 func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var currentModel *parser.ModelNode
 	var currentField *parser.FieldNode
+	var attribute *parser.AttributeNode
 
 	currentModelIsBuiltIn := false
 	attributeArgsErr := false
@@ -46,6 +47,8 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 			currentField = nil
 		},
 		EnterAttribute: func(attr *parser.AttributeNode) {
+			attribute = attr
+
 			attributeArgsErr = false
 
 			if currentModelIsBuiltIn {
@@ -123,7 +126,14 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 
 			}
 		},
+		LeaveAttribute: func(n *parser.AttributeNode) {
+			attribute = nil
+		},
 		EnterExpression: func(expression *parser.Expression) {
+			if attribute.Name.Value != parser.AttributeUnique {
+				return
+			}
+
 			if currentField != nil {
 				// There is no need to validate field-level @unique as there will be no expression present
 				return
@@ -158,7 +168,7 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 						errorhandling.ErrorDetails{
 							Message: "at least two field names to be provided",
 						},
-						e,
+						expression,
 					),
 				)
 			}
