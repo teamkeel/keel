@@ -22,7 +22,7 @@ func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode,
 	}
 
 	if model != nil {
-		opts = append(opts, options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value))
+		opts = append(opts, options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false))
 	}
 
 	p, err := expressions.NewParser(opts...)
@@ -49,11 +49,11 @@ func ValidatePermissionRoles(schema []*parser.AST, expression *parser.Expression
 
 func ValidatePermissionActions(expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
 	opts := []expressions.Option{
-		options.WithVariable(parser.ActionTypeGet, "_ActionType"),
-		options.WithVariable(parser.ActionTypeCreate, "_ActionType"),
-		options.WithVariable(parser.ActionTypeUpdate, "_ActionType"),
-		options.WithVariable(parser.ActionTypeList, "_ActionType"),
-		options.WithVariable(parser.ActionTypeDelete, "_ActionType"),
+		options.WithVariable(parser.ActionTypeGet, "_ActionType", false),
+		options.WithVariable(parser.ActionTypeCreate, "_ActionType", false),
+		options.WithVariable(parser.ActionTypeUpdate, "_ActionType", false),
+		options.WithVariable(parser.ActionTypeList, "_ActionType", false),
+		options.WithVariable(parser.ActionTypeDelete, "_ActionType", false),
 		options.WithReturnTypeAssertion("_ActionType", true),
 	}
 

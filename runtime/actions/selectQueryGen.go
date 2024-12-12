@@ -9,7 +9,8 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-func SetQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) visitor.Visitor[*QueryOperand] {
+// SelectQueryGen visits the expression and adds select clauses to the provided query builder
+func SelectQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) visitor.Visitor[*QueryOperand] {
 	return &setQueryGen{
 		ctx:    ctx,
 		query:  query,

@@ -7,8 +7,6 @@ import (
 	"github.com/google/cel-go/common/operators"
 	"github.com/google/cel-go/common/overloads"
 	"github.com/google/cel-go/common/types"
-	"github.com/google/cel-go/common/types/ref"
-	"github.com/google/cel-go/common/types/traits"
 	"github.com/iancoleman/strcase"
 
 	"github.com/teamkeel/keel/expressions"
@@ -17,7 +15,7 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
-// WithSchemaTypes defines schema models, enums and roles as types in the CEL environment
+// WithSchemaTypes declares schema models, enums and roles as types in the CEL environment
 func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 	return func(p *expressions.Parser) error {
 		p.Provider.Schema = schema
@@ -43,7 +41,7 @@ func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 	}
 }
 
-// WithConstant defines a new constant in the CEL environment
+// WithConstant declares a new constant in the CEL environment
 func WithConstant(identifier string, typeName string) expressions.Option {
 	return func(p *expressions.Parser) error {
 		var err error
@@ -62,7 +60,7 @@ func WithCtx() expressions.Option {
 		fields := map[string]*types.Type{
 			"identity":        types.NewObjectType("Identity"),
 			"isAuthenticated": types.BoolType,
-			"now":             types.TimestampType,
+			"now":             typing.Timestamp,
 			"secrets":         types.DynType,
 			"env":             types.DynType,
 			"headers":         types.DynType,
@@ -80,10 +78,10 @@ func WithCtx() expressions.Option {
 	}
 }
 
-// WithVariable defines a new variable in the CEL environment
-func WithVariable(identifier string, typeName string) expressions.Option {
+// WithVariable declares a new variable in the CEL environment
+func WithVariable(identifier string, typeName string, isRepeated bool) expressions.Option {
 	return func(p *expressions.Parser) error {
-		t, err := typing.MapType(p.Provider.Schema, typeName)
+		t, err := typing.MapType(p.Provider.Schema, typeName, isRepeated)
 		if err != nil {
 			return err
 		}
@@ -99,7 +97,7 @@ func WithVariable(identifier string, typeName string) expressions.Option {
 	}
 }
 
-// WithActionInputs defines variables in the CEL environment for each action input
+// WithActionInputs declares variables in the CEL environment for each action input
 func WithActionInputs(schema []*parser.AST, action *parser.ActionNode) expressions.Option {
 	return func(p *expressions.Parser) error {
 		model := query.ActionModel(schema, action.Name.Value)
@@ -109,7 +107,12 @@ func WithActionInputs(schema []*parser.AST, action *parser.ActionNode) expressio
 		for _, f := range action.Inputs {
 			typeName := query.ResolveInputType(schema, f, model, action)
 
-			t, err := typing.MapType(p.Provider.Schema, typeName)
+			isRepeated := false
+			if field := query.ResolveInputField(schema, f, model); field != nil {
+				isRepeated = field.Repeated
+			}
+
+			t, err := typing.MapType(p.Provider.Schema, typeName, isRepeated)
 			if err != nil {
 				return err
 			}
@@ -121,7 +124,12 @@ func WithActionInputs(schema []*parser.AST, action *parser.ActionNode) expressio
 		for _, f := range action.With {
 			typeName := query.ResolveInputType(schema, f, model, action)
 
-			t, err := typing.MapType(p.Provider.Schema, typeName)
+			isRepeated := false
+			if field := query.ResolveInputField(schema, f, model); field != nil {
+				isRepeated = field.Repeated
+			}
+
+			t, err := typing.MapType(p.Provider.Schema, typeName, isRepeated)
 			if err != nil {
 				return err
 			}
@@ -147,9 +155,9 @@ func WithLogicalOperators() expressions.Option {
 
 		p.CelEnv, err = p.CelEnv.Extend(
 			cel.Function(operators.LogicalAnd,
-				cel.Overload(overloads.LogicalAnd, []*types.Type{types.BoolType, types.BoolType}, types.BoolType, cel.OverloadIsNonStrict())),
+				cel.Overload(overloads.LogicalAnd, []*types.Type{types.BoolType, types.BoolType}, types.BoolType)),
 			cel.Function(operators.LogicalOr,
-				cel.Overload(overloads.LogicalOr, []*types.Type{types.BoolType, types.BoolType}, types.BoolType, cel.OverloadIsNonStrict())),
+				cel.Overload(overloads.LogicalOr, []*types.Type{types.BoolType, types.BoolType}, types.BoolType)),
 			cel.Function(operators.LogicalNot,
 				cel.Overload(overloads.LogicalNot, []*types.Type{types.BoolType}, types.BoolType)))
 		if err != nil {
@@ -163,15 +171,8 @@ func WithLogicalOperators() expressions.Option {
 // WithComparisonOperators enables support for comparison operators for all types
 func WithComparisonOperators() expressions.Option {
 	return func(p *expressions.Parser) error {
-		paramA := types.NewTypeParamType("A")
-		//structA := types.NewObjectType("B")
-		//	listA := types.NewListType(paramA)
-		//statusEnum := types.NewOpaqueType("Status")
-		//s := decls.NewAbstractType("DATE")
 		var err error
-
 		if p.Provider.Schema != nil {
-
 			// For each enum type, configure equals, not equals and 'in' operators
 			for _, enum := range query.Enums(p.Provider.Schema) {
 				enumType := types.NewOpaqueType(enum.Name.Value)
@@ -181,9 +182,9 @@ func WithComparisonOperators() expressions.Option {
 					cel.Function(operators.Equals,
 						cel.Overload(fmt.Sprintf("equals_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumType}, types.BoolType),
 					),
-					// cel.Function(operators.NotEquals,
-					// 	cel.Overload(fmt.Sprintf("notequals_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumType}, types.BoolType),
-					// ),
+					cel.Function(operators.NotEquals,
+						cel.Overload(fmt.Sprintf("notequals_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumType}, types.BoolType),
+					),
 					cel.Function(operators.In,
 						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumTypeArr}, types.BoolType),
 					))
@@ -192,6 +193,7 @@ func WithComparisonOperators() expressions.Option {
 				}
 			}
 
+			// For each models, configure equals, not equals and 'in' operators
 			for _, model := range query.Models(p.Provider.Schema) {
 				modelType := types.NewObjectType(model.Name.Value)
 				modelTypeArr := cel.ObjectType(model.Name.Value + "[]")
@@ -199,6 +201,9 @@ func WithComparisonOperators() expressions.Option {
 				p.CelEnv, err = p.CelEnv.Extend(
 					cel.Function(operators.Equals,
 						cel.Overload(fmt.Sprintf("equals_%s", strcase.ToLowerCamel(model.Name.Value)), []*types.Type{modelType, modelType}, types.BoolType),
+					),
+					cel.Function(operators.NotEquals,
+						cel.Overload(fmt.Sprintf("notequals_%s", strcase.ToLowerCamel(model.Name.Value)), []*types.Type{modelType, modelType}, types.BoolType),
 					),
 					cel.Function(operators.In,
 						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(model.Name.Value)), []*types.Type{modelType, modelTypeArr}, types.BoolType),
@@ -209,155 +214,114 @@ func WithComparisonOperators() expressions.Option {
 			}
 		}
 
-		p.CelEnv, err = p.CelEnv.Extend(
-			// Equals
-			cel.Function(operators.Equals,
-				cel.Overload("equals_string", []*types.Type{types.StringType, types.StringType}, types.BoolType),
-				cel.Overload("equals_nullable_string", []*types.Type{types.NewNullableType(types.StringType), types.NullType}, types.BoolType),
+		// Defines which types are compatible with each other for each comparison operator
+		// This is used to generate all the necessary combinations of operator overloads
+		typeCompatibilityMapping := map[string][][]*types.Type{
+			operators.Equals: {
+				{types.StringType, typing.Text, typing.ID, typing.Markdown},
+				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+				{typing.Date, typing.Timestamp, types.TimestampType},
+				{typing.Boolean, types.BoolType},
+				{types.NewListType(types.StringType), typing.TextArray, typing.IDArray, typing.MarkdownArray},
+				{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.NumberArray, typing.DecimalArray},
+			},
+			operators.NotEquals: {
+				{types.StringType, typing.Text, typing.ID, typing.Markdown},
+				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+				{typing.Date, typing.Timestamp, types.TimestampType},
+				{typing.Boolean, types.BoolType},
+				{types.NewListType(types.StringType), typing.TextArray, typing.IDArray, typing.MarkdownArray},
+				{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.NumberArray, typing.DecimalArray},
+			},
+			operators.Greater: {
+				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+				{typing.Date, typing.Timestamp, types.TimestampType},
+			},
+			operators.GreaterEquals: {
+				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+				{typing.Date, typing.Timestamp, types.TimestampType},
+			},
+			operators.Less: {
+				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+				{typing.Date, typing.Timestamp, types.TimestampType},
+			},
+			operators.LessEquals: {
+				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+				{typing.Date, typing.Timestamp, types.TimestampType},
+			},
+		}
 
-				cel.Overload("equals_int", argTypes(types.IntType, types.IntType), types.BoolType),
-				cel.Overload("equals_double", argTypes(types.DoubleType, types.DoubleType), types.BoolType),
-				cel.Overload("equals_boolean", argTypes(types.BoolType, types.BoolType), types.BoolType),
-				cel.Overload("equals_datetime", argTypes(types.TimestampType, types.TimestampType), types.BoolType),
-				cel.Overload("equals_string_list", argTypes(types.NewListType(types.StringType), types.NewListType(types.StringType)), types.BoolType),
-				cel.Overload("equals_int_list", argTypes(types.NewListType(types.IntType), types.NewListType(types.IntType)), types.BoolType),
-				cel.Overload("equals_double_list", argTypes(types.NewListType(types.DoubleType), types.NewListType(types.DoubleType)), types.BoolType),
-				cel.Overload("equals_bool_list", argTypes(types.NewListType(types.BoolType), types.NewListType(types.BoolType)), types.BoolType),
-			),
-
-			//TODO:the rest
-			cel.Function(operators.NotEquals,
-				cel.Overload(overloads.NotEquals, argTypes(paramA, paramA), types.BoolType)),
-
-			// // In
-			// cel.Function(operators.In,
-			// 	cel.Overload("in_string", argTypes(types.StringType, types.NewListType(types.StringType)), types.BoolType),
-			// 	cel.Overload("in_int", argTypes(types.IntType, types.NewListType(types.IntType)), types.BoolType),
-			// 	cel.Overload("in_double", argTypes(types.DoubleType, types.NewListType(types.DoubleType)), types.BoolType),
-			// 	cel.Overload("in_boolean", argTypes(types.BoolType, types.BoolType), types.BoolType),
-			// ),
-
-			// In
-			cel.Function(operators.In,
-				cel.Overload("in", argTypes(paramA, types.NewListType(paramA)), types.BoolType),
-
-				//cel.Overload("in_string2", argTypes(structA, types.NewListType(structA)), types.BoolType),
-				// cel.Overload("in_int", argTypes(types.IntType, types.NewListType(types.IntType)), types.BoolType),
-				// cel.Overload("in_double", argTypes(types.DoubleType, types.NewListType(types.DoubleType)), types.BoolType),
-				// cel.Overload("in_boolean", argTypes(types.BoolType, types.BoolType), types.BoolType),
-			),
-
-			// Greater
-			cel.Function(operators.Greater,
-				cel.Overload(overloads.GreaterInt64, argTypes(types.IntType, types.IntType), types.BoolType),
-				cel.Overload(overloads.GreaterInt64Double, argTypes(types.IntType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.GreaterInt64Uint64, argTypes(types.IntType, types.UintType), types.BoolType),
-				cel.Overload(overloads.GreaterUint64, argTypes(types.UintType, types.UintType), types.BoolType),
-				cel.Overload(overloads.GreaterUint64Double, argTypes(types.UintType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.GreaterUint64Int64, argTypes(types.UintType, types.IntType), types.BoolType),
-				cel.Overload(overloads.GreaterDouble, argTypes(types.DoubleType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.GreaterDoubleInt64, argTypes(types.DoubleType, types.IntType), types.BoolType),
-				cel.Overload(overloads.GreaterDoubleUint64, argTypes(types.DoubleType, types.UintType), types.BoolType),
-				cel.SingletonBinaryBinding(func(lhs, rhs ref.Val) ref.Val {
-					cmp := lhs.(traits.Comparer).Compare(rhs)
-					if cmp == types.IntOne {
-						return types.True
+		// Add operator overloads for each compatible type combination
+		options := []cel.EnvOption{}
+		for k, v := range typeCompatibilityMapping {
+			for _, t := range v {
+				for _, arg1 := range t {
+					for _, arg2 := range t {
+						name := fmt.Sprintf("%s_%s_%s", k, arg1.String(), arg2.String())
+						opt := cel.Function(k, cel.Overload(name, argTypes(arg1, arg2), types.BoolType))
+						options = append(options, opt)
 					}
-					if cmp == types.IntNegOne || cmp == types.IntZero {
-						return types.False
-					}
-					return cmp
-				}, traits.ComparerType)),
+				}
+			}
+		}
 
-			// Greater or equals
-			cel.Function(operators.GreaterEquals,
-				cel.Overload(overloads.GreaterEqualsInt64, argTypes(types.IntType, types.IntType), types.BoolType),
-				cel.Overload(overloads.GreaterEqualsInt64Double, argTypes(types.IntType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.GreaterEqualsInt64Uint64, argTypes(types.IntType, types.UintType), types.BoolType),
-				cel.Overload(overloads.GreaterEqualsUint64, argTypes(types.UintType, types.UintType), types.BoolType),
-				cel.Overload(overloads.GreaterEqualsUint64Double, argTypes(types.UintType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.GreaterEqualsUint64Int64, argTypes(types.UintType, types.IntType), types.BoolType),
-				cel.Overload(overloads.GreaterEqualsDouble,
-					argTypes(types.DoubleType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.GreaterEqualsDoubleInt64,
-					argTypes(types.DoubleType, types.IntType), types.BoolType),
-				cel.Overload(overloads.GreaterEqualsDoubleUint64,
-					argTypes(types.DoubleType, types.UintType), types.BoolType),
-				cel.SingletonBinaryBinding(func(lhs, rhs ref.Val) ref.Val {
-					cmp := lhs.(traits.Comparer).Compare(rhs)
-					if cmp == types.IntOne || cmp == types.IntZero {
-						return types.True
-					}
-					if cmp == types.IntNegOne {
-						return types.False
-					}
-					return cmp
-				}, traits.ComparerType)),
-
-			// Less
-			cel.Function(operators.Less,
-				cel.Overload(overloads.LessInt64,
-					argTypes(types.IntType, types.IntType), types.BoolType),
-				cel.Overload(overloads.LessInt64Double,
-					argTypes(types.IntType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.LessInt64Uint64,
-					argTypes(types.IntType, types.UintType), types.BoolType),
-				cel.Overload(overloads.LessUint64,
-					argTypes(types.UintType, types.UintType), types.BoolType),
-				cel.Overload(overloads.LessUint64Double,
-					argTypes(types.UintType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.LessUint64Int64,
-					argTypes(types.UintType, types.IntType), types.BoolType),
-				cel.Overload(overloads.LessDouble,
-					argTypes(types.DoubleType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.LessDoubleInt64,
-					argTypes(types.DoubleType, types.IntType), types.BoolType),
-				cel.Overload(overloads.LessDoubleUint64,
-					argTypes(types.DoubleType, types.UintType), types.BoolType),
-				cel.SingletonBinaryBinding(func(lhs, rhs ref.Val) ref.Val {
-					cmp := lhs.(traits.Comparer).Compare(rhs)
-					if cmp == types.IntNegOne {
-						return types.True
-					}
-					if cmp == types.IntOne || cmp == types.IntZero {
-						return types.False
-					}
-					return cmp
-				}, traits.ComparerType)),
-
-			// Less or equals
-			cel.Function(operators.LessEquals,
-				cel.Overload(overloads.LessEqualsInt64,
-					argTypes(types.IntType, types.IntType), types.BoolType),
-				cel.Overload(overloads.LessEqualsInt64Double,
-					argTypes(types.IntType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.LessEqualsInt64Uint64,
-					argTypes(types.IntType, types.UintType), types.BoolType),
-				cel.Overload(overloads.LessEqualsUint64,
-					argTypes(types.UintType, types.UintType), types.BoolType),
-				cel.Overload(overloads.LessEqualsUint64Double,
-					argTypes(types.UintType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.LessEqualsUint64Int64,
-					argTypes(types.UintType, types.IntType), types.BoolType),
-				cel.Overload(overloads.LessEqualsDouble,
-					argTypes(types.DoubleType, types.DoubleType), types.BoolType),
-				cel.Overload(overloads.LessEqualsDoubleInt64,
-					argTypes(types.DoubleType, types.IntType), types.BoolType),
-				cel.Overload(overloads.LessEqualsDoubleUint64,
-					argTypes(types.DoubleType, types.UintType), types.BoolType),
-				cel.SingletonBinaryBinding(func(lhs, rhs ref.Val) ref.Val {
-					cmp := lhs.(traits.Comparer).Compare(rhs)
-					if cmp == types.IntNegOne || cmp == types.IntZero {
-						return types.True
-					}
-					if cmp == types.IntOne {
-						return types.False
-					}
-					return cmp
-				}, traits.ComparerType)))
+		p.CelEnv, err = p.CelEnv.Extend(options...)
 		if err != nil {
 			return err
 		}
+
+		// Explicitly defining the 'in' operator overloads
+		p.CelEnv, err = p.CelEnv.Extend(
+			cel.Function(operators.In,
+				cel.Overload("in_string_list(string)", argTypes(types.StringType, types.NewListType(types.StringType)), types.BoolType),
+				cel.Overload("in_string_Text[]", argTypes(types.StringType, typing.TextArray), types.BoolType),
+				cel.Overload("in_Text_Text[]", argTypes(typing.Text, typing.TextArray), types.BoolType),
+				cel.Overload("in_Text_list(string)", argTypes(typing.Text, types.NewListType(types.StringType)), types.BoolType),
+
+				cel.Overload("in_string_ID[]", argTypes(types.StringType, typing.IDArray), types.BoolType),
+				cel.Overload("in_ID_ID[]", argTypes(typing.ID, typing.IDArray), types.BoolType),
+				cel.Overload("in_ID_list(string)", argTypes(typing.ID, types.NewListType(types.StringType)), types.BoolType),
+
+				cel.Overload("in_int_list(int)", argTypes(types.IntType, types.NewListType(types.IntType)), types.BoolType),
+				cel.Overload("in_int_Number[]", argTypes(types.IntType, typing.NumberArray), types.BoolType),
+				cel.Overload("in_Number_Number[]", argTypes(typing.Number, typing.NumberArray), types.BoolType),
+				cel.Overload("in_Number_list(int)", argTypes(typing.Number, types.NewListType(types.IntType)), types.BoolType),
+
+				cel.Overload("in_double_list(double)", argTypes(types.DoubleType, types.NewListType(types.DoubleType)), types.BoolType),
+				cel.Overload("in_double_Decimal[]", argTypes(types.DoubleType, typing.DecimalArray), types.BoolType),
+				cel.Overload("in_Decimal_Decimal[]", argTypes(typing.Text, typing.DecimalArray), types.BoolType),
+				cel.Overload("in_Decimal_list(double)", argTypes(typing.Decimal, types.NewListType(types.DoubleType)), types.BoolType),
+
+				cel.Overload("in_bool_list(bool)", argTypes(types.BoolType, types.NewListType(types.DoubleType)), types.BoolType),
+				cel.Overload("in_bool_Boolean[]", argTypes(types.BoolType, typing.BooleanArray), types.BoolType),
+				cel.Overload("in_Boolean_Boolean[]", argTypes(typing.Boolean, typing.BooleanArray), types.BoolType),
+				cel.Overload("in_Boolean_list(bool)", argTypes(typing.Boolean, types.NewListType(types.BoolType)), types.BoolType),
+
+				cel.Overload("in_Timestamp_Timestamp[]", argTypes(typing.Timestamp, typing.TimestampArray), types.BoolType),
+				cel.Overload("in_Date_Date[]", argTypes(typing.Date, typing.DateArray), types.BoolType),
+			),
+		)
+
+		// Backwards compatibility for relationships expressions like `organisation.people.name == "Keel"` which is actually performing an "ANY" query
+		// To be deprecated in favour of functions
+		p.CelEnv, err = p.CelEnv.Extend(
+			cel.Function(operators.Equals,
+				cel.Overload("equals_Text[]_Text", argTypes(typing.TextArray, typing.Text), types.BoolType),
+				cel.Overload("equals_Text[]_string", argTypes(typing.TextArray, types.StringType), types.BoolType),
+				cel.Overload("equals_Text_Text[]", argTypes(typing.Text, typing.TextArray), types.BoolType),
+				cel.Overload("equals_string_Text[]", argTypes(types.StringType, typing.TextArray), types.BoolType),
+
+				cel.Overload("equals_ID[]_ID", argTypes(typing.IDArray, typing.ID), types.BoolType),
+				cel.Overload("equals_ID[]_string", argTypes(typing.IDArray, types.StringType), types.BoolType),
+				cel.Overload("equals_ID_ID[]", argTypes(typing.ID, typing.IDArray), types.BoolType),
+				cel.Overload("equals_string_ID[]", argTypes(types.StringType, typing.IDArray), types.BoolType),
+
+				cel.Overload("equals_Number[]_Number", argTypes(typing.NumberArray, typing.Number), types.BoolType),
+				cel.Overload("equals_Number[]_int", argTypes(typing.NumberArray, types.IntType), types.BoolType),
+				cel.Overload("equals_Number_Number[]", argTypes(typing.Number, typing.NumberArray), types.BoolType),
+				cel.Overload("equals_int_Number[]", argTypes(types.IntType, typing.NumberArray), types.BoolType),
+			),
+		)
 
 		return nil
 	}
@@ -365,13 +329,13 @@ func WithComparisonOperators() expressions.Option {
 
 // WithReturnTypeAssertion will check that the expression evaluates to a specific type
 func WithReturnTypeAssertion(returnType string, asArray bool) expressions.Option {
+	if returnType == parser.FieldTypeID {
+		returnType = parser.FieldTypeText
+	}
+
 	return func(p *expressions.Parser) error {
 		var err error
-		p.ExpectedReturnType, err = typing.MapType(p.Provider.Schema, returnType)
-
-		if asArray {
-			p.ExpectedReturnType = cel.ListType(p.ExpectedReturnType)
-		}
+		p.ExpectedReturnType, err = typing.MapType(p.Provider.Schema, returnType, asArray)
 		return err
 	}
 }

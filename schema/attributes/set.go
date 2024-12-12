@@ -18,7 +18,7 @@ func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, lhs 
 
 	lhsOpts := []expressions.Option{
 		options.WithSchemaTypes(schema),
-		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
+		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false),
 	}
 
 	lhsParser, err := expressions.NewParser(lhsOpts...)
@@ -63,7 +63,7 @@ func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, lhs 
 	rhsOpts := []expressions.Option{
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
+		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false),
 		options.WithActionInputs(schema, action),
 		options.WithReturnTypeAssertion(field.Type.Value, field.Repeated),
 	}

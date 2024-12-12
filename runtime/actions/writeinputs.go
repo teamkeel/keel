@@ -87,7 +87,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			currRows = nextRows
 		}
 
-		operand, err := visitor.RunCelVisitor(parts[1], SetQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
+		operand, err := visitor.RunCelVisitor(parts[1], SelectQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}

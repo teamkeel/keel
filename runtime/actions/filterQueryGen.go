@@ -11,6 +11,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
+// FilterQueryGen visits the expression and adds filter conditions to the provided query builder
 func FilterQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) visitor.Visitor[bool] {
 	return &whereQueryGen{
 		ctx:       ctx,

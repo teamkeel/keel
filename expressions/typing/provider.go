@@ -3,7 +3,6 @@ package typing
 import (
 	"strings"
 
-	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
 	"github.com/teamkeel/keel/schema/parser"
@@ -68,22 +67,22 @@ func (p *TypeProvider) FindStructFieldType(structType, fieldName string) (*types
 			return nil, false
 		}
 
-		t, err := MapType(p.Schema, field.Type.Value)
+		t, err := MapType(p.Schema, field.Type.Value, field.Repeated || parentIsArray)
 		if err != nil {
 			return nil, false
 		}
 
-		if field.Optional {
-			t = types.NewNullableType(t)
-		}
+		// if field.Optional {
+		// 	t = types.NewNullableType(t)
+		// }
 
-		if field.Repeated || parentIsArray {
-			if query.Model(p.Schema, field.Type.Value) != nil {
-				t = cel.ObjectType(field.Type.Value + "[]")
-			} else {
-				t = cel.ListType(t)
-			}
-		}
+		// if field.Repeated || parentIsArray {
+		// 	if query.Model(p.Schema, field.Type.Value) != nil {
+		// 		t = cel.ObjectType(field.Type.Value + "[]")
+		// 	} else {
+		// 		t = cel.ListType(t)
+		// 	}
+		// }
 
 		return &types.FieldType{Type: t}, true
 	}

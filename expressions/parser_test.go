@@ -17,8 +17,7 @@ func TestParser_Variable(t *testing.T) {
 	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
-		options.WithCtx(),
-		options.WithVariable("myVar", parser.FieldTypeText),
+		options.WithVariable("myVar", parser.FieldTypeText, false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -42,7 +41,7 @@ func TestParser_TextEquality(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -66,7 +65,82 @@ func TestParser_TextInequality(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
+		options.WithComparisonOperators(),
+		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
+func TestParser_DateTimeEquality(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				name Text
+				created Timestamp
+			}
+		}`})
+
+	expression, err := parser.ParseExpression(`person.created == ctx.now`)
+	require.NoError(t, err)
+
+	parser, err := expressions.NewParser(
+		options.WithCtx(),
+		options.WithSchemaTypes(schema),
+		options.WithVariable("person", "Person", false),
+		options.WithComparisonOperators(),
+		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
+func TestParser_DateTimeComparison(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				name Text
+				created Timestamp
+			}
+		}`})
+
+	expression, err := parser.ParseExpression(`person.created > ctx.now`)
+	require.NoError(t, err)
+
+	parser, err := expressions.NewParser(
+		options.WithCtx(),
+		options.WithSchemaTypes(schema),
+		options.WithVariable("person", "Person", false),
+		options.WithComparisonOperators(),
+		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
+func TestParser_NumberDecimalComparison(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				number Number
+				decimal Decimal
+			}
+		}`})
+
+	expression, err := parser.ParseExpression(`person.number > person.decimal`)
+	require.NoError(t, err)
+
+	parser, err := expressions.NewParser(
+		options.WithCtx(),
+		options.WithSchemaTypes(schema),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -91,9 +165,8 @@ func TestParser_CompareNullWithRequiredField(t *testing.T) {
 	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
-		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("post", "Post"),
+		options.WithVariable("post", "Post", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -108,8 +181,6 @@ func TestParser_Array(t *testing.T) {
 	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
-		options.WithCtx(),
-		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeNumber, true))
 	require.NoError(t, err)
 
@@ -118,13 +189,11 @@ func TestParser_Array(t *testing.T) {
 	require.Empty(t, issues)
 }
 
-func TestParser_ExpectedArray(t *testing.T) {
+func TestParser_NotExpectedArray(t *testing.T) {
 	expression, err := parser.ParseExpression(`[1,2,3]`)
 	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
-		options.WithCtx(),
-		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeNumber, false))
 	require.NoError(t, err)
 
@@ -140,7 +209,6 @@ func TestParser_In(t *testing.T) {
 	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
-		options.WithCtx(),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -155,7 +223,6 @@ func TestParser_InInvalid(t *testing.T) {
 	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
-		options.WithCtx(),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -165,8 +232,8 @@ func TestParser_InInvalid(t *testing.T) {
 
 	require.Len(t, issues, 1)
 	require.Equal(t, "cannot use operator 'in' with types Text and Text", issues[0].Message)
-	require.Equal(t, errorhandling.LexerPos{Offset: 7, Line: 1, Column: 8}, issues[0].Pos)
-	require.Equal(t, errorhandling.LexerPos{Offset: 9, Line: 1, Column: 10}, issues[0].EndPos)
+	require.Equal(t, errorhandling.LexerPos{Offset: 7, Line: 1, Column: 7}, issues[0].Pos)
+	require.Equal(t, errorhandling.LexerPos{Offset: 9, Line: 1, Column: 9}, issues[0].EndPos)
 }
 
 func TestParser_InInvalidTypes(t *testing.T) {
@@ -217,7 +284,7 @@ func TestParser_UnknownField(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -243,7 +310,7 @@ func TestParser_UnknownOperators(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
 
@@ -269,7 +336,7 @@ func TestParser_TypeMismatch(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -295,7 +362,7 @@ func TestParser_ReturnAssertion(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -325,7 +392,7 @@ func TestParser_EnumEquals(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	)
@@ -354,7 +421,7 @@ func TestParser_EnumNotEquals(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	)
@@ -383,7 +450,7 @@ func TestParser_EnumInvalidOperator(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	)
@@ -414,7 +481,7 @@ func TestParser_EnumInvalidValue(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	)
@@ -445,7 +512,7 @@ func TestParser_EnumWithoutValue(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	)
@@ -482,7 +549,7 @@ func TestParser_EnumTypeMismatch(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	)
@@ -509,7 +576,7 @@ func TestParser_TimestampEquality(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -533,7 +600,7 @@ func TestParser_ArrayString(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -557,7 +624,7 @@ func TestParser_ArrayInt(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -581,7 +648,7 @@ func TestParser_ArrayDouble(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -605,7 +672,7 @@ func TestParser_ArrayEmpty(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -629,7 +696,7 @@ func TestParser_ArrayTypeMismatch(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -655,7 +722,7 @@ func TestParser_ModelEquals(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -691,7 +758,7 @@ func TestParser_ModelIn(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("account", "Account"),
+		options.WithVariable("account", "Account", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -721,7 +788,7 @@ func TestParser_ModelInNotToMany(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("account", "Account"),
+		options.WithVariable("account", "Account", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -759,7 +826,7 @@ func TestParser_ModelInWrongType(t *testing.T) {
 	parser, err := expressions.NewParser(
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("account", "Account"),
+		options.WithVariable("account", "Account", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -790,9 +857,8 @@ func TestParser_ToOneRelationship(t *testing.T) {
 	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
-		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("person", "Person"),
+		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)
@@ -821,9 +887,8 @@ func TestParser_ToManyRelationship(t *testing.T) {
 	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
-		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithVariable("organisation", "Organisation"),
+		options.WithVariable("organisation", "Organisation", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false))
 	require.NoError(t, err)

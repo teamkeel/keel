@@ -84,6 +84,8 @@ func mapType(t string) string {
 		keelType = "Decimal"
 	case "bool":
 		keelType = "Boolean"
+	case "timestamp":
+		keelType = "Timestamp"
 	default:
 		// Enum or Model name
 		keelType = strings.TrimPrefix(t, "_")

@@ -152,7 +152,7 @@ func TestWhere_MultiConditions(t *testing.T) {
 			}
 			actions {
 				list listPeople() {
-					@where(person.name == "Keel" && person.isActive)
+					@where(person.name == "Keel" and person.isActive)
 				}
 			}
 		}`})

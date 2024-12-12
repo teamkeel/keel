@@ -51,7 +51,6 @@ func NewParser(options ...Option) (*Parser, error) {
 }
 
 func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
-
 	expr := expression.String()
 	expr = strings.ReplaceAll(expr, " and ", " && ")
 	expr = strings.ReplaceAll(expr, " or ", " || ")
@@ -109,15 +108,19 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 	}
 
 	if p.ExpectedReturnType != nil {
-		if ast.OutputType() != types.NullType && !ast.OutputType().IsExactType(p.ExpectedReturnType) {
-			return []*errorhandling.ValidationError{
-				errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeExpressionError,
-					errorhandling.ErrorDetails{
-						Message: fmt.Sprintf("expression expected to resolve to type %s but it is %s", mapType(p.ExpectedReturnType.String()), mapType(ast.OutputType().String())),
-					},
-					expression),
-			}, nil
+		if ast.OutputType() != types.NullType {
+			out := mapType(ast.OutputType().String())
+
+			if mapType(p.ExpectedReturnType.String()) != out {
+				return []*errorhandling.ValidationError{
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.AttributeExpressionError,
+						errorhandling.ErrorDetails{
+							Message: fmt.Sprintf("expression expected to resolve to type %s but it is %s", mapType(p.ExpectedReturnType.String()), mapType(ast.OutputType().String())),
+						},
+						expression),
+				}, nil
+			}
 		}
 	}
 
