@@ -23,24 +23,16 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 	var currentField *parser.FieldNode
 	var attribute *parser.AttributeNode
 
-	currentModelIsBuiltIn := false
 	attributeArgsErr := false
 
 	return Visitor{
 		EnterModel: func(m *parser.ModelNode) {
-			if m.BuiltIn {
-				currentModelIsBuiltIn = true
-			}
 			currentModel = m
 		},
 		LeaveModel: func(m *parser.ModelNode) {
 			currentModel = nil
-			currentModelIsBuiltIn = false
 		},
 		EnterField: func(f *parser.FieldNode) {
-			if f.BuiltIn {
-				return
-			}
 			currentField = f
 		},
 		LeaveField: func(f *parser.FieldNode) {
@@ -48,12 +40,8 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 		},
 		EnterAttribute: func(attr *parser.AttributeNode) {
 			attribute = attr
-
 			attributeArgsErr = false
 
-			if currentModelIsBuiltIn {
-				return
-			}
 			if attr.Name.Value != parser.AttributeUnique {
 				return
 			}

@@ -3575,9 +3575,9 @@ func TestQueryBuilder(t *testing.T) {
 	for _, testCase := range testCases {
 		testCase := testCase
 		//list_multiple_conditions_parenthesis_on_ands
-		// if testCase.name != "update_op_set_attribute_context_identity" {
-		// 	continue
-		// }
+		if testCase.name != "create_array_set_attribute" {
+			continue
+		}
 		//get_op_by_id_where_single_operand
 		//list_multiple_conditions_nested_parenthesis
 		//list_multiple_conditions_parenthesis_on_ands

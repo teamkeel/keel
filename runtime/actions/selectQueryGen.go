@@ -82,6 +82,17 @@ func (v *setQueryGen) VisitField(fragments []string) error {
 	return nil
 }
 
+func (v *setQueryGen) VisitIdentArray(fragments [][]string) error {
+	arr := []string{}
+	for _, e := range fragments {
+		arr = append(arr, e[1])
+	}
+
+	v.operand = Value(arr)
+
+	return nil
+}
+
 func (v *setQueryGen) ModelName() string {
 	return v.query.Model.Name
 }

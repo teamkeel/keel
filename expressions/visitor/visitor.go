@@ -30,6 +30,8 @@ type Visitor[T any] interface {
 	VisitVariable(name string) error
 	// VisitField is called when a field operand is visited (e.g. post.name)
 	VisitField(fragments []string) error
+	// VisitIdentArray is called when an ident array is visited (e.g. [Category.Sport, Category.Edu])
+	VisitIdentArray(idents [][]string) error
 	// VisitOperator is called when a condition's operator visited (e.g. ==)
 	VisitOperator(operator string) error
 	// Returns a value after the visitor has completed executing
@@ -238,51 +240,61 @@ func (w *CelVisitor[T]) constExpr(expr *exprpb.Expr) error {
 }
 
 func (w *CelVisitor[T]) listExpr(expr *exprpb.Expr) error {
-	l := expr.GetListExpr()
-	elems := l.GetElements()
-	arr := make([]any, len(elems))
-	notLiteral := false
+	elems := expr.GetListExpr().GetElements()
 
+	if len(elems) == 0 {
+		return nil
+	}
+
+	switch elems[0].ExprKind.(type) {
+	case *exprpb.Expr_IdentExpr:
+		return w.identArray(expr)
+	case *exprpb.Expr_SelectExpr:
+		return w.identArray(expr)
+	case *exprpb.Expr_ConstExpr:
+		return w.constArray(expr)
+	}
+
+	return fmt.Errorf("unexpected expr type: %s", expr.ExprKind)
+}
+
+func (w *CelVisitor[T]) constArray(expr *exprpb.Expr) error {
+	elems := expr.GetListExpr().GetElements()
+
+	arr := make([]any, len(elems))
+	for i, elem := range elems {
+		c := elem.GetConstExpr()
+		v, err := toNative(c)
+		if err != nil {
+			return err
+		}
+		arr[i] = v
+	}
+
+	return w.visitor.VisitLiteral(arr)
+}
+
+func (w *CelVisitor[T]) identArray(expr *exprpb.Expr) error {
+	elems := expr.GetListExpr().GetElements()
+
+	arr := make([][]string, len(elems))
 	for i, elem := range elems {
 		switch elem.ExprKind.(type) {
 		case *exprpb.Expr_IdentExpr:
-			notLiteral = true
 			s := elem.GetIdentExpr()
-			err := w.visitor.VisitVariable(s.GetName())
-			if err != nil {
-				return err
-			}
+			arr[i] = []string{s.GetName()}
 		case *exprpb.Expr_SelectExpr:
-			// Enum values or field selection
-			notLiteral = true
-			frags, err := SelectToFragments(elem)
+			var err error
+			arr[i], err = SelectToFragments(elem)
 			if err != nil {
 				return err
 			}
-			err = w.visitor.VisitField(frags)
-			if err != nil {
-				return err
-			}
-		case *exprpb.Expr_ConstExpr:
-			// Literal values
-			c := elem.GetConstExpr()
-			v, err := toNative(c)
-			if err != nil {
-				return err
-			}
-			arr[i] = v
-
-			return w.visitor.VisitLiteral(arr)
 		default:
-			return fmt.Errorf("no support for expr type: %v", expr.ExprKind)
+			return fmt.Errorf("not an ident or select: %v", expr.ExprKind)
 		}
 	}
 
-	if !notLiteral && len(arr) != 0 {
-		return w.visitor.VisitLiteral(arr)
-	}
-
-	return nil
+	return w.visitor.VisitIdentArray(arr)
 }
 
 func (w *CelVisitor[T]) identExpr(expr *exprpb.Expr) error {

@@ -2,8 +2,6 @@ package definitions
 
 import (
 	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/iancoleman/strcase"
-	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/reader"
@@ -68,25 +66,25 @@ func GetDefinition(schemaFiles []*reader.SchemaFile, pos Position) *Definition {
 				}
 			}
 
-			for _, attr := range action.Attributes {
-				for _, arg := range attr.Arguments {
-					if arg.Expression == nil {
-						continue
-					}
+			// for _, attr := range action.Attributes {
+			// 	for _, arg := range attr.Arguments {
+			// 		if arg.Expression == nil {
+			// 			continue
+			// 		}
 
-					operands, _ := resolve.IdentOperands(arg.Expression.String())
-					for _, op := range operands {
-						if op[0] != strcase.ToLowerCamel(model.Name.Value) {
-							continue
-						}
-						op = op[1:]
-						def := definitionFromIdent(asts, model, op.Ident, pos)
-						if def != nil {
-							return def
-						}
-					}
-				}
-			}
+			// 		operands, _ := resolve.IdentOperands(arg.Expression.String())
+			// 		for _, op := range operands {
+			// 			if op[0] != strcase.ToLowerCamel(model.Name.Value) {
+			// 				continue
+			// 			}
+			// 			op = op[1:]
+			// 			def := definitionFromIdent(asts, model, op.Ident, pos)
+			// 			if def != nil {
+			// 				return def
+			// 			}
+			// 		}
+			// 	}
+			// }
 		}
 	}
 

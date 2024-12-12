@@ -9,6 +9,8 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
+type Ident []string
+
 var (
 	ID        = cel.OpaqueType(parser.FieldTypeID)
 	Text      = cel.OpaqueType(parser.FieldTypeText)

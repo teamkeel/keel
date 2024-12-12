@@ -81,6 +81,10 @@ func (v *fieldLookupsGen) VisitField(fragments []string) error {
 	return nil
 }
 
+func (v *fieldLookupsGen) VisitIdentArray(fragments [][]string) error {
+	return nil
+}
+
 func (v *fieldLookupsGen) ModelName() string {
 	return v.modelName
 }

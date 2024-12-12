@@ -7,9 +7,9 @@ import (
 	"github.com/teamkeel/keel/expressions/visitor"
 )
 
-var ErrExpressionNotValidIdent = errors.New("expression is not an ident")
-
 type Ident []string
+
+var ErrExpressionNotValidIdent = errors.New("expression is not an ident")
 
 func (ident Ident) ToString() string {
 	return strings.Join(ident, ".")
@@ -68,6 +68,10 @@ func (v *identGen) VisitVariable(name string) error {
 func (v *identGen) VisitField(fragments []string) error {
 	v.ident = fragments
 
+	return nil
+}
+
+func (v *identGen) VisitIdentArray(fragments [][]string) error {
 	return nil
 }
 

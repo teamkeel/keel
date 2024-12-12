@@ -1,7 +1,6 @@
 package permissions
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -146,201 +145,201 @@ func handleExpression(s *proto.Schema, m *proto.Model, expr *parser.Expression, 
 	return nil
 }
 
-func handleOperand(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *statement) (err error) {
-	switch {
-	case o.True:
-		stmt.expression += "true"
-		return nil
-	case o.False:
-		stmt.expression += "false"
-		return nil
-	case o.String != nil:
-		stmt.expression += "?"
-		stmt.values = append(stmt.values, &Value{Type: ValueString, StringValue: *o.String})
-		return nil
-	case o.Number != nil:
-		stmt.expression += "?"
-		stmt.values = append(stmt.values, &Value{Type: ValueNumber, NumberValue: int(*o.Number)})
-		return nil
-	case o.Null:
-		stmt.expression += "null"
-		return nil
-	case o.Array != nil:
-		return errors.New("arrays in permission rules not yet supported")
-	case o.Ident != nil:
-		switch o.Ident.Fragments[0].Fragment {
-		case "ctx":
-			return handleContext(s, o, stmt)
-		case casing.ToLowerCamel(model.Name):
-			return handleModel(s, model, o.Ident, stmt)
-		default:
-			// If not context of model must be enum, but still worth checking to be sure
-			enum := proto.FindEnum(s.Enums, o.Ident.Fragments[0].Fragment)
-			if enum == nil {
-				return fmt.Errorf("unknown ident %s", o.Ident.Fragments[0].Fragment)
-			}
+// func handleOperand(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *statement) (err error) {
+// 	switch {
+// 	case o.True:
+// 		stmt.expression += "true"
+// 		return nil
+// 	case o.False:
+// 		stmt.expression += "false"
+// 		return nil
+// 	case o.String != nil:
+// 		stmt.expression += "?"
+// 		stmt.values = append(stmt.values, &Value{Type: ValueString, StringValue: *o.String})
+// 		return nil
+// 	case o.Number != nil:
+// 		stmt.expression += "?"
+// 		stmt.values = append(stmt.values, &Value{Type: ValueNumber, NumberValue: int(*o.Number)})
+// 		return nil
+// 	case o.Null:
+// 		stmt.expression += "null"
+// 		return nil
+// 	case o.Array != nil:
+// 		return errors.New("arrays in permission rules not yet supported")
+// 	case o.Ident != nil:
+// 		switch o.Ident.Fragments[0].Fragment {
+// 		case "ctx":
+// 			return handleContext(s, o, stmt)
+// 		case casing.ToLowerCamel(model.Name):
+// 			return handleModel(s, model, o.Ident, stmt)
+// 		default:
+// 			// If not context of model must be enum, but still worth checking to be sure
+// 			enum := proto.FindEnum(s.Enums, o.Ident.Fragments[0].Fragment)
+// 			if enum == nil {
+// 				return fmt.Errorf("unknown ident %s", o.Ident.Fragments[0].Fragment)
+// 			}
 
-			stmt.expression += "?"
-			stmt.values = append(stmt.values, &Value{Type: ValueString, StringValue: o.Ident.LastFragment()})
+// 			stmt.expression += "?"
+// 			stmt.values = append(stmt.values, &Value{Type: ValueString, StringValue: o.Ident.LastFragment()})
 
-			return nil
-		}
-	}
+// 			return nil
+// 		}
+// 	}
 
-	return fmt.Errorf("unsupported operand: %s", o.ToString())
-}
+// 	return fmt.Errorf("unsupported operand: %s", o.ToString())
+// }
 
-func handleContext(s *proto.Schema, o *parser.Operand, stmt *statement) error {
-	if len(o.Ident.Fragments) < 2 {
-		return errors.New("ctx used in expression with no properties")
-	}
+// func handleContext(s *proto.Schema, o *parser.Operand, stmt *statement) error {
+// 	if len(o.Ident.Fragments) < 2 {
+// 		return errors.New("ctx used in expression with no properties")
+// 	}
 
-	switch o.Ident.Fragments[1].Fragment {
-	case "identity":
-		// ctx.identity is the same as ctx.identity.id
-		if len(o.Ident.Fragments) == 2 {
-			stmt.expression += "?"
-			stmt.values = append(stmt.values, &Value{Type: ValueIdentityID})
-			return nil
-		}
-		switch o.Ident.Fragments[2].Fragment {
-		case "id":
-			stmt.expression += "?"
-			stmt.values = append(stmt.values, &Value{Type: ValueIdentityID})
-			return nil
-		case "email":
-			stmt.expression += "?"
-			stmt.values = append(stmt.values, &Value{Type: ValueIdentityEmail})
-			return nil
-		default:
-			inner := &statement{}
-			err := handleModel(
-				s,
-				s.FindModel("Identity"),
-				&parser.Ident{
-					// We can drop the first fragments, which is "ctx"
-					Fragments: o.Ident.Fragments[1:],
-				},
-				inner,
-			)
-			if err != nil {
-				return err
-			}
+// 	switch o.Ident.Fragments[1].Fragment {
+// 	case "identity":
+// 		// ctx.identity is the same as ctx.identity.id
+// 		if len(o.Ident.Fragments) == 2 {
+// 			stmt.expression += "?"
+// 			stmt.values = append(stmt.values, &Value{Type: ValueIdentityID})
+// 			return nil
+// 		}
+// 		switch o.Ident.Fragments[2].Fragment {
+// 		case "id":
+// 			stmt.expression += "?"
+// 			stmt.values = append(stmt.values, &Value{Type: ValueIdentityID})
+// 			return nil
+// 		case "email":
+// 			stmt.expression += "?"
+// 			stmt.values = append(stmt.values, &Value{Type: ValueIdentityEmail})
+// 			return nil
+// 		default:
+// 			inner := &statement{}
+// 			err := handleModel(
+// 				s,
+// 				s.FindModel("Identity"),
+// 				&parser.Ident{
+// 					// We can drop the first fragments, which is "ctx"
+// 					Fragments: o.Ident.Fragments[1:],
+// 				},
+// 				inner,
+// 			)
+// 			if err != nil {
+// 				return err
+// 			}
 
-			stmt.expression += fmt.Sprintf(
-				`(SELECT %s FROM "identity" %s WHERE "identity"."id" IS NOT DISTINCT FROM ?)`,
-				inner.expression, strings.Join(inner.joins, " "),
-			)
-			stmt.values = append(stmt.values, &Value{Type: ValueIdentityID})
-			return nil
-		}
-	case "isAuthenticated":
-		// Explicit cast to boolean as Kysely seems to send value as string
-		stmt.expression += "?::boolean"
-		stmt.values = append(stmt.values, &Value{Type: ValueIsAuthenticated})
-		return nil
-	case "now":
-		stmt.expression += "?"
-		stmt.values = append(stmt.values, &Value{Type: ValueNow})
-		return nil
-	case "headers":
-		stmt.expression += "?"
-		key := o.Ident.Fragments[2].Fragment
-		stmt.values = append(stmt.values, &Value{Type: ValueHeader, HeaderKey: key})
-		return nil
-	case "secrets":
-		stmt.expression += "?"
-		key := o.Ident.Fragments[2].Fragment
-		stmt.values = append(stmt.values, &Value{Type: ValueSecret, SecretKey: key})
-		return nil
-	default:
-		return fmt.Errorf("unknown property %s of ctx", o.Ident.Fragments[1].Fragment)
-	}
-}
+// 			stmt.expression += fmt.Sprintf(
+// 				`(SELECT %s FROM "identity" %s WHERE "identity"."id" IS NOT DISTINCT FROM ?)`,
+// 				inner.expression, strings.Join(inner.joins, " "),
+// 			)
+// 			stmt.values = append(stmt.values, &Value{Type: ValueIdentityID})
+// 			return nil
+// 		}
+// 	case "isAuthenticated":
+// 		// Explicit cast to boolean as Kysely seems to send value as string
+// 		stmt.expression += "?::boolean"
+// 		stmt.values = append(stmt.values, &Value{Type: ValueIsAuthenticated})
+// 		return nil
+// 	case "now":
+// 		stmt.expression += "?"
+// 		stmt.values = append(stmt.values, &Value{Type: ValueNow})
+// 		return nil
+// 	case "headers":
+// 		stmt.expression += "?"
+// 		key := o.Ident.Fragments[2].Fragment
+// 		stmt.values = append(stmt.values, &Value{Type: ValueHeader, HeaderKey: key})
+// 		return nil
+// 	case "secrets":
+// 		stmt.expression += "?"
+// 		key := o.Ident.Fragments[2].Fragment
+// 		stmt.values = append(stmt.values, &Value{Type: ValueSecret, SecretKey: key})
+// 		return nil
+// 	default:
+// 		return fmt.Errorf("unknown property %s of ctx", o.Ident.Fragments[1].Fragment)
+// 	}
+// }
 
-func handleModel(s *proto.Schema, model *proto.Model, ident *parser.Ident, stmt *statement) (err error) {
-	fieldName := ""
-	for i, f := range ident.Fragments {
-		switch {
-		// The first fragment
-		case i == 0:
-			fieldName += casing.ToSnake(f.Fragment)
+// func handleModel(s *proto.Schema, model *proto.Model, ident *parser.Ident, stmt *statement) (err error) {
+// 	fieldName := ""
+// 	for i, f := range ident.Fragments {
+// 		switch {
+// 		// The first fragment
+// 		case i == 0:
+// 			fieldName += casing.ToSnake(f.Fragment)
 
-		// Remaining fragments
-		default:
-			field := proto.FindField(s.Models, model.Name, f.Fragment)
-			if field == nil {
-				return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
-			}
+// 		// Remaining fragments
+// 		default:
+// 			field := proto.FindField(s.Models, model.Name, f.Fragment)
+// 			if field == nil {
+// 				return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
+// 			}
 
-			isLast := i == len(ident.Fragments)-1
-			isModel := field.Type.Type == proto.Type_TYPE_MODEL
-			hasFk := field.ForeignKeyFieldName != nil
+// 			isLast := i == len(ident.Fragments)-1
+// 			isModel := field.Type.Type == proto.Type_TYPE_MODEL
+// 			hasFk := field.ForeignKeyFieldName != nil
 
-			if isModel && (!isLast || !hasFk) {
-				// Left alias is the source table
-				leftAlias := fieldName
+// 			if isModel && (!isLast || !hasFk) {
+// 				// Left alias is the source table
+// 				leftAlias := fieldName
 
-				// Append fragment to identifier
-				fieldName += "$" + casing.ToSnake(f.Fragment)
+// 				// Append fragment to identifier
+// 				fieldName += "$" + casing.ToSnake(f.Fragment)
 
-				// Right alias is the join table
-				rightAlias := fieldName
+// 				// Right alias is the join table
+// 				rightAlias := fieldName
 
-				field := proto.FindField(s.Models, model.Name, f.Fragment)
-				if field == nil {
-					return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
-				}
+// 				field := proto.FindField(s.Models, model.Name, f.Fragment)
+// 				if field == nil {
+// 					return fmt.Errorf("model %s has no field %s", model.Name, f.Fragment)
+// 				}
 
-				joinModel := s.FindModel(field.Type.ModelName.Value)
-				if joinModel == nil {
-					return fmt.Errorf("model %s not found in schema", model.Name)
-				}
+// 				joinModel := s.FindModel(field.Type.ModelName.Value)
+// 				if joinModel == nil {
+// 					return fmt.Errorf("model %s not found in schema", model.Name)
+// 				}
 
-				leftFieldName := proto.GetForeignKeyFieldName(s.Models, field)
-				rightFieldName := joinModel.PrimaryKeyFieldName()
+// 				leftFieldName := proto.GetForeignKeyFieldName(s.Models, field)
+// 				rightFieldName := joinModel.PrimaryKeyFieldName()
 
-				// If not belongs to then swap foreign/primary key
-				if !field.IsBelongsTo() {
-					leftFieldName = model.PrimaryKeyFieldName()
-					rightFieldName = proto.GetForeignKeyFieldName(s.Models, field)
-				}
+// 				// If not belongs to then swap foreign/primary key
+// 				if !field.IsBelongsTo() {
+// 					leftFieldName = model.PrimaryKeyFieldName()
+// 					rightFieldName = proto.GetForeignKeyFieldName(s.Models, field)
+// 				}
 
-				stmt.joins = append(stmt.joins, fmt.Sprintf(
-					"LEFT JOIN %s AS %s ON %s.%s = %s.%s",
-					identifier(joinModel.Name),
-					identifier(rightAlias),
-					identifier(leftAlias),
-					identifier(leftFieldName),
-					identifier(rightAlias),
-					identifier(rightFieldName),
-				))
+// 				stmt.joins = append(stmt.joins, fmt.Sprintf(
+// 					"LEFT JOIN %s AS %s ON %s.%s = %s.%s",
+// 					identifier(joinModel.Name),
+// 					identifier(rightAlias),
+// 					identifier(leftAlias),
+// 					identifier(leftFieldName),
+// 					identifier(rightAlias),
+// 					identifier(rightFieldName),
+// 				))
 
-				model = joinModel
-			}
+// 				model = joinModel
+// 			}
 
-			if isLast {
-				// Turn the table into a quoted identifier
-				fieldName = identifier(fieldName)
+// 			if isLast {
+// 				// Turn the table into a quoted identifier
+// 				fieldName = identifier(fieldName)
 
-				// Then append the field name as a quoted identifier
-				if field.Type.Type == proto.Type_TYPE_MODEL {
-					if field.ForeignKeyFieldName != nil {
-						fieldName += "." + identifier(field.ForeignKeyFieldName.Value)
-					} else {
-						fieldName += "." + identifier("id")
-					}
-				} else {
-					fieldName += "." + identifier(f.Fragment)
-				}
-			}
-		}
-	}
+// 				// Then append the field name as a quoted identifier
+// 				if field.Type.Type == proto.Type_TYPE_MODEL {
+// 					if field.ForeignKeyFieldName != nil {
+// 						fieldName += "." + identifier(field.ForeignKeyFieldName.Value)
+// 					} else {
+// 						fieldName += "." + identifier("id")
+// 					}
+// 				} else {
+// 					fieldName += "." + identifier(f.Fragment)
+// 				}
+// 			}
+// 		}
+// 	}
 
-	sql := fieldName
-	stmt.expression += sql
-	return nil
-}
+// 	sql := fieldName
+// 	stmt.expression += sql
+// 	return nil
+// }
 
 // identifier converts s to snake cases and wraps it in double quotes
 func identifier(s string) string {

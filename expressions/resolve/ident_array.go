@@ -19,13 +19,15 @@ func AsIdentArray(expression string) ([]Ident, error) {
 }
 
 func identArray() visitor.Visitor[[]Ident] {
-	return &identArrayGen{}
+	return &identArrayGen{
+		idents: []Ident{},
+	}
 }
 
 var _ visitor.Visitor[[]Ident] = new(identArrayGen)
 
 type identArrayGen struct {
-	ident []Ident
+	idents []Ident
 }
 
 func (v *identArrayGen) StartCondition(parenthesis bool) error {
@@ -53,13 +55,22 @@ func (v *identArrayGen) VisitLiteral(value any) error {
 }
 
 func (v *identArrayGen) VisitVariable(name string) error {
-	v.ident = append(v.ident, []string{name})
+	v.idents = append(v.idents, []string{name})
 
 	return nil
 }
 
 func (v *identArrayGen) VisitField(fragments []string) error {
-	v.ident = append(v.ident, fragments)
+	v.idents = append(v.idents, fragments)
+
+	return nil
+}
+
+func (v *identArrayGen) VisitIdentArray(fragments [][]string) error {
+	v.idents = make([]Ident, len(fragments))
+	for i, value := range fragments {
+		v.idents[i] = value
+	}
 
 	return nil
 }
@@ -69,5 +80,5 @@ func (v *identArrayGen) ModelName() string {
 }
 
 func (v *identArrayGen) Result() ([]Ident, error) {
-	return v.ident, nil
+	return v.idents, nil
 }

@@ -74,6 +74,8 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 
 	var queryOperand *QueryOperand
 	switch {
+	case len(fragments) == 2 && proto.EnumExists(schema.Enums, fragments[0]):
+		return Value(fragments[1]), nil
 	case expressions.IsModelDbColumn(model, fragments):
 		var err error
 		queryOperand, err = operandFromFragments(schema, fragments)

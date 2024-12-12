@@ -60,6 +60,10 @@ func (v *operandsResolver) VisitField(fragments []string) error {
 	return nil
 }
 
+func (v *operandsResolver) VisitIdentArray(fragments [][]string) error {
+	return nil
+}
+
 func (v *operandsResolver) ModelName() string {
 	return ""
 }

@@ -167,6 +167,17 @@ func (v *whereQueryGen) VisitField(fragments []string) error {
 	return nil
 }
 
+func (v *whereQueryGen) VisitIdentArray(fragments [][]string) error {
+	arr := []string{}
+	for _, e := range fragments {
+		arr = append(arr, e[1])
+	}
+
+	v.operands.Push(Value(arr))
+
+	return nil
+}
+
 func (v *whereQueryGen) ModelName() string {
 	return v.query.Model.Name
 }
