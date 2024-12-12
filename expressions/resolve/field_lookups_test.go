@@ -1,7 +1,6 @@
 package resolve_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +15,8 @@ func TestFieldLookups_ByModel(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 1)
-	assert.Equal(t, "product.id", strings.Join(lookups[0], "."))
+	assert.Len(t, lookups[0], 1)
+	assert.Equal(t, "product.id", lookups[0][0].ToString())
 }
 
 func TestFieldLookups_ById(t *testing.T) {
@@ -24,7 +24,8 @@ func TestFieldLookups_ById(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 1)
-	assert.Equal(t, "product.id", strings.Join(lookups[0], "."))
+	assert.Len(t, lookups[0], 1)
+	assert.Equal(t, "product.id", lookups[0][0].ToString())
 }
 
 func TestFieldLookups_Comparison(t *testing.T) {
@@ -39,7 +40,8 @@ func TestFieldLookups_Variables(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 1)
-	assert.Equal(t, "product.sku", strings.Join(lookups[0], "."))
+	assert.Len(t, lookups[0], 1)
+	assert.Equal(t, "product.sku", lookups[0][0].ToString())
 }
 
 func TestFieldLookups_VariablesInverse(t *testing.T) {
@@ -47,7 +49,8 @@ func TestFieldLookups_VariablesInverse(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 1)
-	assert.Equal(t, "product.sku", strings.Join(lookups[0], "."))
+	assert.Len(t, lookups[0], 1)
+	assert.Equal(t, "product.sku", lookups[0][0].ToString())
 }
 
 func TestFieldLookups_NotEquals(t *testing.T) {
@@ -61,9 +64,10 @@ func TestFieldLookups_WithAnd(t *testing.T) {
 	lookups, err := resolve.FieldLookups(model, `product.sku == mySku && product.name == "test"`)
 	assert.NoError(t, err)
 
-	assert.Len(t, lookups, 2)
-	assert.Equal(t, "product.sku", strings.Join(lookups[0], "."))
-	assert.Equal(t, "product.name", strings.Join(lookups[1], "."))
+	assert.Len(t, lookups, 1)
+	assert.Len(t, lookups[0], 2)
+	assert.Equal(t, "product.sku", lookups[0][0].ToString())
+	assert.Equal(t, "product.name", lookups[0][1].ToString())
 }
 
 func TestFieldLookups_WithComparison(t *testing.T) {
@@ -71,12 +75,29 @@ func TestFieldLookups_WithComparison(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 1)
-	assert.Equal(t, "product.sku", strings.Join(lookups[0], "."))
+	assert.Len(t, lookups[0], 1)
+	assert.Equal(t, "product.sku", lookups[0][0].ToString())
 }
 
 func TestFieldLookups_WithOr(t *testing.T) {
 	lookups, err := resolve.FieldLookups(model, `product.sku == mySku || product.name == "test"`)
 	assert.NoError(t, err)
 
-	assert.Len(t, lookups, 0)
+	assert.Len(t, lookups, 2)
+	assert.Len(t, lookups[0], 1)
+	assert.Len(t, lookups[1], 1)
+	assert.Equal(t, "product.sku", lookups[0][0].ToString())
+	assert.Equal(t, "product.name", lookups[1][0].ToString())
+}
+
+func TestFieldLookups_Complex(t *testing.T) {
+	lookups, err := resolve.FieldLookups(model, `product.sku == mySku || product.name == "test" && product.id == "123"`)
+	assert.NoError(t, err)
+
+	assert.Len(t, lookups, 2)
+	assert.Len(t, lookups[0], 1)
+	assert.Len(t, lookups[1], 2)
+	assert.Equal(t, "product.sku", lookups[0][0].ToString())
+	assert.Equal(t, "product.name", lookups[1][0].ToString())
+	assert.Equal(t, "product.id", lookups[1][1].ToString())
 }

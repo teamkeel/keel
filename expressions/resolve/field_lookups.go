@@ -7,8 +7,8 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// FieldLookups retrieves all the ident lookups using equals comparison which are certain to apply as a filter
-func FieldLookups(model *parser.ModelNode, expression string) ([][]string, error) {
+// FieldLookups retrieves groups of ident lookups using equals comparison which could apply as a filter
+func FieldLookups(model *parser.ModelNode, expression string) ([][]Ident, error) {
 	ident, err := visitor.RunCelVisitor(expression, fieldLookups(model))
 	if err != nil {
 		return nil, err
@@ -17,21 +17,22 @@ func FieldLookups(model *parser.ModelNode, expression string) ([][]string, error
 	return ident, nil
 }
 
-func fieldLookups(model *parser.ModelNode) visitor.Visitor[[][]string] {
+func fieldLookups(model *parser.ModelNode) visitor.Visitor[[][]Ident] {
 	return &fieldLookupsGen{
-		hasOr:     false,
-		modelName: model.Name.Value,
+		uniqueLookupGroups: [][]Ident{},
+		current:            0,
+		modelName:          model.Name.Value,
 	}
 }
 
-var _ visitor.Visitor[[][]string] = new(fieldLookupsGen)
+var _ visitor.Visitor[[][]Ident] = new(fieldLookupsGen)
 
 type fieldLookupsGen struct {
-	idents    [][]string
-	operands  [][]string
-	operator  string
-	hasOr     bool
-	modelName string
+	uniqueLookupGroups [][]Ident
+	operands           []Ident
+	operator           string
+	current            int
+	modelName          string
 }
 
 func (v *fieldLookupsGen) StartCondition(parenthesis bool) error {
@@ -41,9 +42,12 @@ func (v *fieldLookupsGen) StartCondition(parenthesis bool) error {
 func (v *fieldLookupsGen) EndCondition(parenthesis bool) error {
 	if v.operator == operators.Equals {
 		if v.operands != nil {
-			v.idents = append(v.idents, v.operands...)
-		}
+			if len(v.uniqueLookupGroups) == 0 {
+				v.uniqueLookupGroups = make([][]Ident, 1)
+			}
 
+			v.uniqueLookupGroups[v.current] = append(v.uniqueLookupGroups[v.current], v.operands...)
+		}
 	}
 
 	v.operands = nil
@@ -51,13 +55,14 @@ func (v *fieldLookupsGen) EndCondition(parenthesis bool) error {
 
 	return nil
 }
-
 func (v *fieldLookupsGen) VisitAnd() error {
 	return nil
 }
 
 func (v *fieldLookupsGen) VisitOr() error {
-	v.hasOr = true
+	v.uniqueLookupGroups = append(v.uniqueLookupGroups, []Ident{})
+
+	v.current++
 	return nil
 }
 
@@ -89,9 +94,6 @@ func (v *fieldLookupsGen) ModelName() string {
 	return v.modelName
 }
 
-func (v *fieldLookupsGen) Result() ([][]string, error) {
-	if v.hasOr {
-		return nil, nil
-	}
-	return v.idents, nil
+func (v *fieldLookupsGen) Result() ([][]Ident, error) {
+	return v.uniqueLookupGroups, nil
 }

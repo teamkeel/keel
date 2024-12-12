@@ -31,11 +31,11 @@ model Collection {
             @permission(expression: true)
         }
 
-        list listNotInCollection(genre: Genre) {
-            @where(genre not in collection.books.genres)
-            @orderBy(name: asc)
-            @permission(expression: true)
-        }
+       // list listNotInCollection(genre: Genre) {
+       //     @where(genre not in collection.books.genres)
+       //     @orderBy(name: asc)
+       //     @permission(expression: true)
+       // }
 
         list suggestedCollections() {
             @where(ctx.identity.person.favouriteGenre in collection.books.genres)

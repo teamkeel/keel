@@ -147,30 +147,38 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 	}
 }
 
-// expressionHasUniqueLookup will work through the logical expression syntax to determine if a unique lookup is possible
 func expressionHasUniqueLookup(asts []*parser.AST, model *parser.ModelNode, expression *parser.Expression, fieldsInCompositeUnique map[*parser.ModelNode][]*parser.FieldNode) bool {
-	hasUniqueLookup := false
+	lookupGroups, _ := resolve.FieldLookups(model, expression.String())
 
-	lookups, _ := resolve.FieldLookups(model, expression.String())
+	// If any group of lookups provides a unique lookup, the whole expression is unique
+	for _, lookups := range lookupGroups {
+		groupHasUniqueLookup := true
 
-	for _, lookup := range lookups {
+		for _, lookup := range lookups {
+			modelName := lookup[0]
+			model := query.Model(asts, casing.ToCamel(modelName))
 
-		modelName := lookup[0]
-		model := query.Model(asts, casing.ToCamel(modelName))
+			var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
+			hasUnique, fieldsInComposite := fragmentsUnique(asts, model, lookup[1:])
 
-		var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
-		hasUnique, fieldsInComposite := fragmentsUnique(asts, model, lookup[1:])
+			for k, v := range fieldsInComposite {
+				fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
+			}
 
-		for k, v := range fieldsInComposite {
-			fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
+			if !hasUnique {
+				groupHasUniqueLookup = false
+			} else {
+				groupHasUniqueLookup = true
+				break
+			}
 		}
 
-		if hasUnique {
-			hasUniqueLookup = true
+		if groupHasUniqueLookup {
+			return true
 		}
 	}
 
-	return hasUniqueLookup
+	return false
 }
 
 func fragmentsUnique(asts []*parser.AST, model *parser.ModelNode, fragments []string) (bool, map[*parser.ModelNode][]*parser.FieldNode) {

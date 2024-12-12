@@ -82,7 +82,7 @@ func ParseExpression(source string) (*Expression, error) {
 
 var ErrInvalidAssignmentExpression = errors.New("expression is not a valid assignment")
 
-// ToAssignmentExpression splits an assignment expression into two seperate expressions.
+// ToAssignmentExpression splits an assignment expression into two separate expressions.
 // E.g. the expression `post.age = 1 + 1` will become `post.age` and `1 + 1`
 func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, error) {
 	parts := strings.Split(expr.String(), "=")
