@@ -6,7 +6,7 @@ model Thing {
     actions {
         update updateThing1(id) {
             //expect-error:18:37:AttributeExpressionError:undeclared reference to '_+_' (in container '')
-            @set(post.number = post.number + 1)
+            @set(thing.number = thing.number + 1)
         }
     }
 }

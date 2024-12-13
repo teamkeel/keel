@@ -7,17 +7,17 @@ model Thing {
 
     actions {
         list listThings1() {
-            //expect-error:20:44:E026:thing.texts is Text[] but "science" is Text
+            //expect-error:32:34:AttributeExpressionError:cannot use operator 'in' with types Text[] and Text
             @where(thing.texts in "science")
         }
 
         list listThings2() {
-            //expect-error:20:31:E027:left hand side operand cannot be an array for 'in' and 'not in'
+            //expect-error:32:34:AttributeExpressionError:cannot use operator 'in' with types Text[] and Text[]
             @where(thing.texts in ["science"])
         }
 
         list listThings3() {
-            //expect-error:20:31:E027:left hand side operand cannot be an array for 'in' and 'not in'
+            //expect-error:32:34:AttributeExpressionError:cannot use operator 'in' with types Text[] and Text[]
             @where(["science"] in thing.texts)
         }
 

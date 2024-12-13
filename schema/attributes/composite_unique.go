@@ -14,12 +14,6 @@ func ValidateCompositeUnique(model *parser.ModelNode, expression *parser.Express
 	}
 
 	for _, f := range query.ModelFields(model) {
-		if f.Repeated {
-			continue
-		}
-		if f.Type.Value == parser.FieldTypeTimestamp {
-			continue
-		}
 		opts = append(opts, options.WithConstant(f.Name.Value, "_FieldName"))
 	}
 

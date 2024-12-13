@@ -40,6 +40,7 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 					},
 					attribute.Name,
 				))
+				return
 			}
 		},
 		LeaveAttribute: func(n *parser.AttributeNode) {

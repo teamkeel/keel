@@ -10,32 +10,32 @@ model Thing {
 
     actions {
         create createThing() {
-            //expect-error:18:41:E026:thing.texts is Text[] but "science" is Text
+            //expect-error:18:11:AttributeExpressionError:expression expected to resolve to type Text[] but it is Text
             @set(thing.texts = "science")
-            //expect-error:18:42:E026:thing.enums is MyEnum[] but MyEnum.One is MyEnum
+            //expect-error:18:12:AttributeExpressionError:expression expected to resolve to type MyEnum[] but it is MyEnum
             @set(thing.enums = MyEnum.One)
-            //expect-error:18:37:E026:thing.numbers is Number[] but 123 is Number
+            //expect-error:18:5:AttributeExpressionError:expression expected to resolve to type Number[] but it is Number
             @set(thing.numbers = 123)
-            //expect-error:29:30:E030:["science"] is an array. Only 'in' or 'not in' can be used
+            //expect-error:18:13:AttributeExpressionError:expression expected to resolve to type Text but it is Text[]
             @set(thing.text = ["science"])
-            //expect-error:29:30:E030:[MyEnum.One, MyEnum.Two] is an array. Only 'in' or 'not in' can be used
+            //expect-error:18:26:AttributeExpressionError:expression expected to resolve to type MyEnum but it is MyEnum[]
             @set(thing.enum = [MyEnum.One, MyEnum.Two])
-            //expect-error:31:32:E030:[123, 456] is an array. Only 'in' or 'not in' can be used
+            //expect-error:18:11:AttributeExpressionError:expression expected to resolve to type Number but it is Number[]
             @set(thing.number = [123,456])
         }
 
         update updateThing(id) {
-            //expect-error:18:41:E026:thing.texts is Text[] but "science" is Text
+            //expect-error:18:11:AttributeExpressionError:expression expected to resolve to type Text[] but it is Text
             @set(thing.texts = "science")
-            //expect-error:18:42:E026:thing.enums is MyEnum[] but MyEnum.One is MyEnum
+            //expect-error:18:12:AttributeExpressionError:expression expected to resolve to type MyEnum[] but it is MyEnum
             @set(thing.enums = MyEnum.One)
-            //expect-error:18:37:E026:thing.numbers is Number[] but 123 is Number
+            //expect-error:18:5:AttributeExpressionError:expression expected to resolve to type Number[] but it is Number
             @set(thing.numbers = 123)
-            //expect-error:29:30:E030:["science"] is an array. Only 'in' or 'not in' can be used
+            //expect-error:18:13:AttributeExpressionError:expression expected to resolve to type Text but it is Text[]
             @set(thing.text = ["science"])
-            //expect-error:29:30:E030:[MyEnum.One, MyEnum.Two] is an array. Only 'in' or 'not in' can be used
+            //expect-error:18:26:AttributeExpressionError:expression expected to resolve to type MyEnum but it is MyEnum[]
             @set(thing.enum = [MyEnum.One, MyEnum.Two])
-            //expect-error:31:32:E030:[123, 456] is an array. Only 'in' or 'not in' can be used
+            //expect-error:18:11:AttributeExpressionError:expression expected to resolve to type Number but it is Number[]
             @set(thing.number = [123,456])
         }
 

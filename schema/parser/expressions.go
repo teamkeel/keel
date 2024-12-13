@@ -98,7 +98,7 @@ func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, erro
 		return nil, nil, ErrInvalidAssignmentExpression
 	}
 
-	index := strings.Index(expr.String(), "=")
+	//index := strings.Index(expr.String(), "=")
 
 	lhs, err := ParseExpression(parts[0])
 	if err != nil {
@@ -107,8 +107,8 @@ func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, erro
 
 	// Set position for left-hand side using original expression's position
 	lhs.Pos = expr.Pos
-	lhs.EndPos = expr.Pos
-	lhs.EndPos.Offset += index
+	lhs.EndPos = expr.EndPos
+	//lhs.EndPos.Offset += index
 
 	rhs, err := ParseExpression(parts[1])
 	if err != nil {
@@ -117,8 +117,11 @@ func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, erro
 
 	// Set position for right-hand side starting after the equals sign
 	rhs.Pos = expr.Pos
-	rhs.Pos.Offset += index + 1
 	rhs.EndPos = expr.EndPos
+
+	// rhs.Pos = lhs.EndPos
+	// rhs.Pos.Offset += expr.Pos.Offset + index + 1
+	// rhs.EndPos = expr.EndPos
 
 	return lhs, rhs, nil
 }

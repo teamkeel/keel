@@ -25,7 +25,7 @@ model Post {
             //expect-error:23:32:AttributeArgumentError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
             @set(post.updatedAt = ctx.now)
         }
-        update updatePost2(id) with (name, published) {
+        update updatePost2(id) with (name, publisher.name) {
             //expect-error:18:42:AttributeArgumentError:Cannot set a field which is beyond scope of the data being created or updated
             @set(post.publisher.createdAt = ctx.now)
             //expect-error:18:42:AttributeArgumentError:Cannot set a field which is beyond scope of the data being created or updated

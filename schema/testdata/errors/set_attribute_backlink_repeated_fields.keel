@@ -8,7 +8,7 @@ model Record {
 
     actions {
         create createRecordWithChildren() with (name, children.name) {
-            //expect-error:42:73:E026:cannot assign from a to-many relationship lookup
+            //expect-error:18:33:AttributeExpressionError:expression expected to resolve to type User but it is User[]
             @set(record.children.owner = ctx.identity.user.records.owner)
         }
     }

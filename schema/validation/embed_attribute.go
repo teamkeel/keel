@@ -103,7 +103,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "Ab @embed argument must reference a field",
+						Message: "The @embed attribute can only be used with valid model fields",
 						Hint:    "For example, use @embed(fieldName)",
 					},
 					arg,

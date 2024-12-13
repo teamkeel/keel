@@ -5,11 +5,11 @@ model UserExtension {
 
     actions {
         create createExt() {
-            //expect-error:42:62:AttributeExpressionError:type 'string' does not support field selection
+            //expect-error:30:31:AttributeExpressionError:undefined field 'unknown'
             @set(userExtension.unknown = ctx.identity.unknown)
         }
         update updateExt(id) {
-            //expect-error:42:62:AttributeExpressionError:type 'string' does not support field selection
+            //expect-error:30:31:AttributeExpressionError:undefined field 'unknown'
             @set(userExtension.unknown = ctx.identity.unknown)
         }
     }

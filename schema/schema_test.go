@@ -73,7 +73,7 @@ func TestValidation(t *testing.T) {
 
 	for _, tc := range testCases {
 
-		if tc.Name() != "request_headers_invalid_dot_notation.keel" {
+		if tc.Name() != "set_attribute_built_in_fields.keel" {
 			continue
 		}
 

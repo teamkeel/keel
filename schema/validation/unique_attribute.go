@@ -152,7 +152,7 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 			if len(idents) < 2 || err != nil {
 				errs.AppendError(
 					errorhandling.NewValidationErrorWithDetails(
-						errorhandling.ActionInputError,
+						errorhandling.AttributeArgumentError,
 						errorhandling.ErrorDetails{
 							Message: "at least two field names to be provided",
 						},
@@ -196,8 +196,8 @@ func uniquePermitted(f *parser.FieldNode) (bool, string) {
 		return false, "@unique is not permitted on has many relationships or arrays"
 	}
 
-	if f.Type.Value == parser.FieldTypeTimestamp {
-		return false, "@unique is not permitted on Timestamp fields"
+	if f.Type.Value == parser.FieldTypeTimestamp || f.Type.Value == parser.FieldTypeDate {
+		return false, "@unique is not permitted on Timestamp or Date fields"
 	}
 
 	return true, ""

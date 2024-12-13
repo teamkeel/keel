@@ -146,10 +146,10 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "@orderBy argument is not correctly formatted",
+						Message: "@orderBy argument value must either be asc or desc",
 						Hint:    "For example, @orderBy(surname: asc, firstName: asc)",
 					},
-					arg,
+					arg.Expression,
 				))
 				return
 			}

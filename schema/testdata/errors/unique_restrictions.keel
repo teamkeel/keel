@@ -10,23 +10,22 @@ model Author {
         name Text
         anotherField Text
         // timestamp cant be unique
-        //expect-error:30:37:TypeError:@unique is not permitted on Timestamp fields
+        //expect-error:30:37:TypeError:@unique is not permitted on Timestamp or Date fields
         joinedDate Timestamp @unique
         // has many cant be unique
-        //expect-error:9:14:RelationshipError:Cannot use @unique on a repeated model field
         //expect-error:22:29:TypeError:@unique is not permitted on has many relationships or arrays
         posts Post[] @unique
     }
 
     // this is invalid because posts is a has-many
-    //expect-error:20:25:TypeError:@unique is not permitted on has many relationships or arrays
+    //expect-error:13:26:TypeError:@unique is not permitted on has many relationships or arrays
     @unique([name, posts])
 
     // invalid because of duplicate field names
-    //expect-error:20:24:TypeError:Field 'name' has already been specified as a constraint
+    //expect-error:13:25:TypeError:Field 'name' has already been specified as a constraint
     @unique([name, name])
 
     // stress test
-    //expect-error:34:38:TypeError:Field 'name' has already been specified as a constraint
+    //expect-error:13:39:TypeError:Field 'name' has already been specified as a constraint
     @unique([name, anotherField, name])
 }

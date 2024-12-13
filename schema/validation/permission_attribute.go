@@ -161,6 +161,10 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 				return
 			}
 
+			if arg.Label == nil {
+				return
+			}
+
 			var err error
 			issues := []*errorhandling.ValidationError{}
 

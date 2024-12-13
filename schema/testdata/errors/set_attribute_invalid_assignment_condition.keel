@@ -7,28 +7,27 @@ model Post {
 
     actions {
         create ctxOnly() with (name, published) {
-            //expect-error:18:21:AttributeArgumentError:The @set attribute cannot be a value condition and must express an assignment
+            //expect-error:18:21:AttributeExpressionError:the @set attribute must be an assignment expression
             @set(ctx)
         }
         create literalOnly() with (name, published) {
-            //expect-error:18:25:AttributeArgumentError:The @set attribute cannot be a value condition and must express an assignment
+            //expect-error:18:25:AttributeExpressionError:the @set attribute must be an assignment expression
             @set("hello")
         }
         create trueOnly() with (name, published) {
-            //expect-error:18:22:AttributeArgumentError:The @set attribute cannot be a value condition and must express an assignment
+            //expect-error:18:22:AttributeExpressionError:the @set attribute must be an assignment expression
             @set(true)
         }
         create fieldOnly() with (name) {
-            //expect-error:18:32:AttributeArgumentError:The @set attribute cannot be a value condition and must express an assignment
+            //expect-error:18:32:AttributeExpressionError:the @set attribute must be an assignment expression
             @set(post.published)
         }
         create equality() with (name) {
-            //expect-error:33:35:E022:Operator '==' not permitted on @set
-            //expect-error:18:40:AttributeArgumentError:The @set attribute cannot be a logical condition and must express an assignment
+            //expect-error:18:40:AttributeExpressionError:the @set attribute must be an assignment expression
             @set(post.published == true)
         }
         create multipleConditions() {
-            //expect-error:18:63:AttributeArgumentError:A @set attribute can only consist of a single assignment expression
+            //expect-error:18:63:AttributeExpressionError:the @set attribute must be an assignment expression
             @set(post.published = true and post.name = "hello")
         }
     }

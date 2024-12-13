@@ -7,19 +7,19 @@ model Post {
 
     actions {
         create createPost1() {
-            //expect-error:28:30:AttributeExpressionError:Operator '==' not permitted on @set
+            //expect-error:18:37:AttributeExpressionError:the @set attribute must be an assignment expression
             @set(post.name == "Keel")
         }
         create createPost2() {
-            //expect-error:30:44:AttributeExpressionError:undeclared reference to '_+_' (in container '')
+            //expect-error:25:26:AttributeExpressionError:operator '+' not supported in this context
             @set(post.name = "Keel" + "son")
         }
         create createPost3() {
-            //expect-error:30:33:AttributeExpressionError:expression expected to resolve to type 'string'
+            //expect-error:18:5:AttributeExpressionError:expression expected to resolve to type Text but it is Number
             @set(post.name = 123)
         }
         create createPost4() {
-            //expect-error:18:27:AttributeExpressionError:The @set attribute cannot be a value condition and must express an assignment
+            //expect-error:18:29:AttributeExpressionError:the @set attribute must be an assignment expression
             @set(post.name =)
         }
     }
