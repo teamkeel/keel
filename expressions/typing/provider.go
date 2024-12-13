@@ -46,6 +46,12 @@ func (p *TypeProvider) FindStructType(structType string) (*types.Type, bool) {
 		return types.NewObjectType(structType), true
 	case structType == "Context":
 		return types.NewObjectType(structType), true
+	case structType == "_Headers":
+		return types.NewObjectType(structType), true
+	case structType == "_Secrets":
+		return types.NewObjectType(structType), true
+	case structType == "_EnvironmentVariables":
+		return types.NewObjectType(structType), true
 
 	}
 
@@ -88,6 +94,10 @@ func (p *TypeProvider) FindStructFieldType(structType, fieldName string) (*types
 
 	if field, has := p.Objects[structType][fieldName]; has {
 		return &types.FieldType{Type: field}, true
+	}
+
+	if structType == "_Headers" {
+		return &types.FieldType{Type: types.StringType}, true
 	}
 
 	return nil, false

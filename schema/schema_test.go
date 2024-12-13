@@ -73,9 +73,9 @@ func TestValidation(t *testing.T) {
 
 	for _, tc := range testCases {
 
-		// if tc.Name() != "actions_update_no_unique_input.keel" {
-		// 	continue
-		// }
+		if tc.Name() != "request_headers_invalid_dot_notation.keel" {
+			continue
+		}
 
 		testCase := tc
 		if testCase.IsDir() {

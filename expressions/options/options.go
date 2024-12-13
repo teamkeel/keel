@@ -29,6 +29,26 @@ func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 			options = append(options, cel.Constant(role.Name.Value, types.NewOpaqueType("_Role"), nil))
 		}
 
+		for _, ast := range schema {
+			for _, env := range ast.EnvironmentVariables {
+				if p.Provider.Objects["_EnvironmentVariables"] == nil {
+					p.Provider.Objects["_EnvironmentVariables"] = map[string]*types.Type{}
+				}
+
+				p.Provider.Objects["_EnvironmentVariables"][env] = types.StringType
+			}
+		}
+
+		for _, ast := range schema {
+			for _, env := range ast.Secrets {
+				if p.Provider.Objects["_Secrets"] == nil {
+					p.Provider.Objects["_Secrets"] = map[string]*types.Type{}
+				}
+
+				p.Provider.Objects["_Secrets"][env] = types.StringType
+			}
+		}
+
 		if options != nil {
 			var err error
 			p.CelEnv, err = p.CelEnv.Extend(options...)
@@ -57,16 +77,28 @@ func WithConstant(identifier string, typeName string) expressions.Option {
 // WithCtx defines the ctx variable in the CEL environment
 func WithCtx() expressions.Option {
 	return func(p *expressions.Parser) error {
-		fields := map[string]*types.Type{
+		ctxObject := map[string]*types.Type{
 			"identity":        types.NewObjectType(parser.IdentityModelName),
 			"isAuthenticated": types.BoolType,
 			"now":             typing.Timestamp,
-			"secrets":         types.DynType,
-			"env":             types.DynType,
-			"headers":         types.DynType,
+			"secrets":         types.NewObjectType("_Secrets"),
+			"env":             types.NewObjectType("_EnvironmentVariables"),
+			"headers":         types.NewObjectType("_Headers"),
 		}
 
-		p.Provider.Objects["Context"] = fields
+		p.Provider.Objects["Context"] = ctxObject
+
+		if p.Provider.Objects["_Secrets"] == nil {
+			p.Provider.Objects["_Secrets"] = map[string]*types.Type{}
+		}
+
+		if p.Provider.Objects["_EnvironmentVariables"] == nil {
+			p.Provider.Objects["_EnvironmentVariables"] = map[string]*types.Type{}
+		}
+
+		if p.Provider.Objects["_Headers"] == nil {
+			p.Provider.Objects["_Headers"] = map[string]*types.Type{}
+		}
 
 		var err error
 		p.CelEnv, err = p.CelEnv.Extend(cel.Variable("ctx", types.NewObjectType("Context")))

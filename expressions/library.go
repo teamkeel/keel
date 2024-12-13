@@ -2,7 +2,6 @@ package expressions
 
 import (
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/types"
 )
 
 type standardKeelLib struct{}
@@ -23,8 +22,4 @@ func (l *standardKeelLib) CompileOptions() []cel.EnvOption {
 
 func (*standardKeelLib) ProgramOptions() []cel.ProgramOption {
 	return []cel.ProgramOption{}
-}
-
-func argTypes(args ...*types.Type) []*types.Type {
-	return args
 }

@@ -145,6 +145,7 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 					attr.Name,
 				))
 			}
+
 		},
 		LeaveAttribute: func(*parser.AttributeNode) {
 			attribute = nil
@@ -186,6 +187,7 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 					errs.AppendError(issue)
 				}
 			}
+
 		},
 	}
 }
