@@ -11,7 +11,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func PermissionsAttributeArguments(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
+func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var model *parser.ModelNode
 	var action *parser.ActionNode
 	var job *parser.JobNode

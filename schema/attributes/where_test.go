@@ -31,6 +31,37 @@ func TestWhere_Valid(t *testing.T) {
 	require.Empty(t, issues)
 }
 
+func TestWhere_InvalidType(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				name Text
+				isActive Boolean
+			}
+			actions {
+				list listPeople(name) {
+					@where(person.name == 123)
+				}
+			}
+		}`})
+
+	action := query.Action(schema, "listPeople")
+	expression := action.Attributes[0].Arguments[0].Expression
+
+	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
+	require.NoError(t, err)
+
+	require.Len(t, issues, 1)
+	require.Equal(t, "cannot use operator '==' with types Text and Number", issues[0].Message)
+
+	require.Equal(t, 9, issues[0].Pos.Line)
+	require.Equal(t, 25, issues[0].Pos.Column)
+	require.Equal(t, 135, issues[0].Pos.Offset)
+	require.Equal(t, 9, issues[0].EndPos.Line)
+	require.Equal(t, 27, issues[0].EndPos.Column)
+	require.Equal(t, 137, issues[0].EndPos.Offset)
+}
+
 func TestWhere_UnknownVariable(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 		model Person {

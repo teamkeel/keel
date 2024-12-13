@@ -213,7 +213,7 @@ func TestDefault_InvalidWithOperators(t *testing.T) {
 	require.Equal(t, 64, issues[0].Pos.Offset)
 	require.Equal(t, 4, issues[0].EndPos.Line)
 	require.Equal(t, 44, issues[0].EndPos.Column)
-	require.Equal(t, 78, issues[0].EndPos.Offset)
+	require.Equal(t, 76, issues[0].EndPos.Offset)
 }
 
 func TestDefault_InvalidWithCtx(t *testing.T) {

@@ -90,8 +90,18 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 			}
 
 			node := node.Node{
-				Pos:    pos.Add(expression.Pos),
-				EndPos: endPos.Add(expression.Pos),
+				Pos: lexer.Position{
+					Filename: expression.Pos.Filename,
+					Line:     expression.Pos.Line + pos.Line - 1,
+					Column:   expression.Pos.Column + pos.Column,
+					Offset:   expression.Pos.Offset + pos.Offset,
+				},
+				EndPos: lexer.Position{
+					Filename: expression.Pos.Filename,
+					Line:     expression.Pos.Line + endPos.Line - 1,
+					Column:   expression.Pos.Column + endPos.Column,
+					Offset:   expression.Pos.Offset + endPos.Offset,
+				},
 			}
 
 			validationErrors = append(validationErrors,

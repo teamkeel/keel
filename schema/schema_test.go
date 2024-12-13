@@ -73,6 +73,10 @@ func TestValidation(t *testing.T) {
 
 	for _, tc := range testCases {
 
+		// if tc.Name() != "actions_update_no_unique_input.keel" {
+		// 	continue
+		// }
+
 		testCase := tc
 		if testCase.IsDir() {
 			t.Errorf("errors test data directory should only contain keel schema files - directory found: %s", testCase.Name())
