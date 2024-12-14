@@ -18,28 +18,6 @@ func parse(t *testing.T, s *reader.SchemaFile) *parser.AST {
 	return schema
 }
 
-func TestAttributeNoArgs(t *testing.T) {
-	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
-	model Author {
-		fields {
-		  code Text @unique
-		}
-	  }`})
-	attribute := schema.Declarations[0].Model.Sections[0].Fields[0].Attributes[0]
-	assert.Len(t, attribute.Arguments, 0)
-}
-
-func TestAttributeWithParenthesisNoArgs(t *testing.T) {
-	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
-	model Author {
-		fields {
-		  code Text @unique()
-		}
-	  }`})
-	attribute := schema.Declarations[0].Model.Sections[0].Fields[0].Attributes[0]
-	assert.Len(t, attribute.Arguments, 0)
-}
-
 func TestEmptyModel(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `model Person { }`})
 	assert.Equal(t, "Person", schema.Declarations[0].Model.Name.Value)
@@ -501,7 +479,7 @@ func TestAttributeArgsParsing(t *testing.T) {
 	assert.Equal(t, "permission", model.Sections[1].Attribute.Name.Value)
 	assert.Equal(t, "permission", model.Sections[2].Attribute.Name.Value)
 	assert.Len(t, model.Sections[0].Attribute.Arguments, 0)
-	assert.Len(t, model.Sections[1].Attribute.Arguments, 1)
+	assert.Len(t, model.Sections[1].Attribute.Arguments, 0)
 	assert.Len(t, model.Sections[2].Attribute.Arguments, 2)
 }
 
@@ -608,4 +586,26 @@ func TestOnAttributeArgsParsing(t *testing.T) {
 	on2subscriber, err := resolve.AsIdent(schema.Declarations[0].Model.Sections[1].Attribute.Arguments[1].Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, "verifyEmail", on2subscriber.ToString())
+}
+
+func TestAttributeNoArgs(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		fields {
+		  code Text @unique
+		}
+	  }`})
+	attribute := schema.Declarations[0].Model.Sections[0].Fields[0].Attributes[0]
+	assert.Len(t, attribute.Arguments, 0)
+}
+
+func TestAttributeWithParenthesisNoArgs(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		fields {
+		  code Text @unique()
+		}
+	  }`})
+	attribute := schema.Declarations[0].Model.Sections[0].Fields[0].Attributes[0]
+	assert.Len(t, attribute.Arguments, 0)
 }

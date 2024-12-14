@@ -196,7 +196,7 @@ type AttributeNode struct {
 	// - no parenthesis at all
 	// - empty parenthesis
 	// - parenthesis with args
-	Arguments []*AttributeArgumentNode `(( "(" @@ ( "," @@ )* ")" ) | ( "(" ")" ) )?`
+	Arguments []*AttributeArgumentNode `(( "(" ")" ) | ( "(" @@ ( "," @@ )* ")" ) )?`
 }
 
 type AttributeArgumentNode struct {
