@@ -5,7 +5,7 @@ model Person {
 
     @permission(
         expression: true,
-        //expect-error:19:28:AttributeArgumentError:getPerson is not a valid action type
+        //expect-error:19:28:AttributeExpressionError:unknown identifier 'getPerson'
         actions: [getPerson]
     )
 }

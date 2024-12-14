@@ -67,12 +67,18 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 			switch n.Name.Value {
 			case parser.AttributeWhere:
 				idents, err = resolve.IdentOperands(n.Arguments[0].Expression)
+				if err != nil {
+					return
+				}
 			case parser.AttributeSet:
 				lhs, _, err := n.Arguments[0].Expression.ToAssignmentExpression()
 				if err != nil {
 					return
 				} else {
 					idents, err = resolve.IdentOperands(lhs)
+					if err != nil {
+						return
+					}
 				}
 			}
 			if err != nil {
@@ -95,7 +101,7 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf("%s is already being used as an input so cannot also be used in an expression", in.Type.ToString()),
 							},
-							n.Arguments[0].Expression,
+							operand,
 						),
 					)
 				}

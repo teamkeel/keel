@@ -6,7 +6,7 @@ model Profile {
 
     actions {
         get getProfile(username) {
-            //expect-error:20:36:AttributeExpressionError:expression expected to resolve to type 'bool' but it is 'Identity'
+            //expect-error:20:36:AttributeExpressionError:expression expected to resolve to type Boolean but it is Identity
             @where(profile.identity)
         }
     }

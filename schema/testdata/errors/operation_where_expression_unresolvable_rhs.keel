@@ -6,8 +6,8 @@ model Profile {
 
     actions {
         get getProfile(username) {
-            //expect-error:20:56:AttributeExpressionError:undeclared reference to 'context' (in container '')
-            @where(profile.identity == context.identity)
+            //expect-error:40:47:AttributeExpressionError:unknown identifier 'context'
+            @where(profile.identity  == context.identity)
         }
     }
 }

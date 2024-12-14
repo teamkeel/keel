@@ -161,7 +161,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 						Message: "@orderBy argument value must either be asc or desc",
 						Hint:    "For example, @orderBy(surname: asc, firstName: asc)",
 					},
-					arg.Expression,
+					ident,
 				))
 				return
 			}

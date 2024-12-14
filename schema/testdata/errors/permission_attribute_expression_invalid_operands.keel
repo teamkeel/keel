@@ -5,50 +5,50 @@ model Person {
     }
 
     @permission(
-        //expect-error:21:28:E020:'invalid' not found
+        //expect-error:21:28:AttributeExpressionError:unknown identifier 'invalid'
         expression: invalid,
         actions: [get]
     )
 
     @permission(
-        //expect-error:21:23:E020:'ct' not found
+        //expect-error:21:23:AttributeExpressionError:unknown identifier 'ct'
         expression: ct.isAuthenticated,
         actions: [get]
     )
 
     @permission(
-        //expect-error:25:32:E020:'invalid' not found on 'Context'
+        //expect-error:24:25:AttributeExpressionError:undefined field 'invalid'
         expression: ctx.invalid,
         actions: [get]
     )
 
     @permission(
-        //expect-error:21:27:E061:Non-boolean single operand conditions such as '"true"' not permitted on @permission
+        //expect-error:21:27:AttributeExpressionError:expression expected to resolve to type Boolean but it is Text
         expression: "true",
         actions: [get]
     )
 
     @permission(
-        //expect-error:29:30:E020:'c' not found
+        //expect-error:29:30:AttributeExpressionError:unknown identifier 'c'
         expression: true or c.isAuthenticated,
         actions: [get]
     )
 
     @permission(
-        //expect-error:57:64:E020:'invalid' not found on 'Organisation'
+        //expect-error:56:57:AttributeExpressionError:undefined field 'invalid'
         expression: ctx.identity in person.organisation.invalid,
         actions: [get]
     )
 
     @permission(
-        //expect-error:81:88:E020:'invalid' not found on 'Organisation'
+        //expect-error:79:80:AttributeExpressionError:undefined field 'invalid'
         expression: ctx.isAuthenticated and ctx.identity in person.organisation.invalid,
         actions: [get]
     )
 
     @permission(
-        //expect-error:41:48:E020:'invalid' not found on 'Boolean'
-        //expect-error:89:96:E020:'invalid' not found on 'Organisation'
+        //expect-error:40:41:AttributeExpressionError:type 'bool' does not support field selection
+        //expect-error:87:88:AttributeExpressionError:undefined field 'invalid'
         expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid,
         actions: [get]
     )

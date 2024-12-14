@@ -65,12 +65,12 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 
 			issues, err := attributes.ValidateSetExpression(asts, action, lhs, r)
 			if err != nil {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeExpressionError,
-					errorhandling.ErrorDetails{
-						Message: "expression could not be parsed",
-					},
-					expression))
+				errs.AppendError(makeSetExpressionError(
+					"The @set attribute can only be used to set model fields",
+					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+					lhs,
+				))
+				return
 			}
 
 			if len(issues) > 0 {
@@ -82,12 +82,12 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 
 			ident, err := resolve.AsIdent(lhs)
 			if err != nil {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeExpressionError,
-					errorhandling.ErrorDetails{
-						Message: "expression could not be parsed",
-					},
-					expression))
+				errs.AppendError(makeSetExpressionError(
+					"The @set attribute can only be used to set model fields",
+					fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
+					lhs,
+				))
+				return
 			}
 
 			// Drop the 'id' at the end if it exists
@@ -176,10 +176,6 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				if i == len(fragments)-1 && currentModel != nil {
 					// We know this is setting (associating to an existing model) at this point
 					setFrags := ident
-					// lo.Map(fragments, func(f *parser.IdentFragment, _ int) string {
-					// 	return f.Fragment
-					// })
-
 					setFragsString := strings.Join(setFrags.Fragments[1:], ".")
 
 					for _, input := range action.With {

@@ -107,18 +107,12 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 					return
 				}
 
-				if ident == nil {
-					errs.AppendError(subscriberNameInvalidError(arg))
-					return
-				}
-
 				if len(ident.Fragments) != 1 {
-					errs.AppendError(subscriberNameInvalidError(arg))
+					errs.AppendError(subscriberNameInvalidError(ident))
 					return
 				}
 
 				name := ident.ToString()
-
 				if name != strcase.ToLowerCamel(name) {
 					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 						errorhandling.AttributeArgumentError,
@@ -126,7 +120,7 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 							Message: "a valid function name must be in lower camel case",
 							Hint:    fmt.Sprintf("Try use '%s'", strcase.ToLowerCamel(name)),
 						},
-						arg,
+						ident,
 					))
 					return
 				}

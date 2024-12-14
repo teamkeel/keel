@@ -4,7 +4,7 @@ model Order {
     }
 
     @permission(
-        //expect-error:155:162:E020:'postCod' not found on 'Address'
+        //expect-error:153:154:AttributeExpressionError:undefined field 'postCod'
         expression: order.customer.address.firstLine == "123 Fake Street" or (order.customer.address.secondLine == "Fake Town" and order.customer.address.postCod == "ABC123"),
         actions: [get]
     )

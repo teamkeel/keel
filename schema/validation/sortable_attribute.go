@@ -121,7 +121,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 						Message: "@sortable argument is not correct formatted",
 						Hint:    "For example, use @sortable(firstName, surname)",
 					},
-					arg.Expression,
+					ident,
 				))
 				return
 			}
@@ -135,7 +135,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 					errorhandling.ErrorDetails{
 						Message: fmt.Sprintf("@sortable argument '%s' must correspond to a field on this model", argumentValue),
 					},
-					arg.Expression,
+					ident,
 				))
 				return
 			}
@@ -146,7 +146,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 					errorhandling.ErrorDetails{
 						Message: "@sortable does not support ordering of relationships fields",
 					},
-					arg.Expression,
+					ident,
 				))
 				return
 			}
@@ -157,7 +157,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 					errorhandling.ErrorDetails{
 						Message: fmt.Sprintf("@sortable argument name '%s' already defined", argumentValue),
 					},
-					arg.Expression,
+					ident,
 				))
 				return
 			}

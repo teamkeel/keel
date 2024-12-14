@@ -73,9 +73,9 @@ func TestValidation(t *testing.T) {
 
 	for _, tc := range testCases {
 
-		if tc.Name() != "attribute_embed.keel" {
-			continue
-		}
+		// if tc.Name() != "clashing_explicit_implicit_inputs.keel" {
+		// 	continue
+		// }
 
 		testCase := tc
 		if testCase.IsDir() {
