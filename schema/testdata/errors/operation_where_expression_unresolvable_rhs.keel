@@ -7,7 +7,7 @@ model Profile {
     actions {
         get getProfile(username) {
             //expect-error:40:47:AttributeExpressionError:unknown identifier 'context'
-            @where(profile.identity  == context.identity)
+            @where(profile.identity == context.identity)
         }
     }
 }

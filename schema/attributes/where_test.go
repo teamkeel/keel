@@ -127,7 +127,7 @@ func TestWhere_UnknownField(t *testing.T) {
 	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
 	require.NoError(t, err)
 	require.Len(t, issues, 1)
-	require.Equal(t, "undefined field 'something'", issues[0].Message)
+	require.Equal(t, "field 'something' does not exist", issues[0].Message)
 }
 
 func TestWhere_NamedInput(t *testing.T) {

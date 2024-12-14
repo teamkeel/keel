@@ -53,7 +53,7 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 				if len(attr.Arguments) != 1 {
 					errs.AppendError(
 						errorhandling.NewValidationErrorWithDetails(
-							errorhandling.ActionInputError,
+							errorhandling.AttributeArgumentError,
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf("%v argument(s) provided to @unique but expected 1", len(attr.Arguments)),
 							},

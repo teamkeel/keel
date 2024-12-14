@@ -44,7 +44,7 @@ func ScheduleAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "argument must be 	a string",
+						Message: "argument must be a string",
 						Hint:    "e.g. @schedule(\"every 10 minutes\")",
 					},
 					arg.Expression,

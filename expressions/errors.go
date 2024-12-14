@@ -8,7 +8,9 @@ import (
 	"github.com/google/cel-go/common/operators"
 )
 
-var converters = []errorConverter{
+var messageConverters = []errorConverter{
+	undefinedField,
+	noFieldSelection,
 	unexpectedResolvedType,
 	noOperatorOverload,
 	undeclaredOperatorReference,
@@ -18,6 +20,20 @@ var converters = []errorConverter{
 type errorConverter struct {
 	Regex     string
 	Construct func([]string) string
+}
+
+var undefinedField = errorConverter{
+	Regex: `undefined field '(.+)'`,
+	Construct: func(values []string) string {
+		return fmt.Sprintf("field '%s' does not exist", values[0])
+	},
+}
+
+var noFieldSelection = errorConverter{
+	Regex: `type '(.+)' does not support field selection`,
+	Construct: func(values []string) string {
+		return fmt.Sprintf("type %s does not have any fields to select", mapType(values[0]))
+	},
 }
 
 var unexpectedResolvedType = errorConverter{

@@ -14,7 +14,7 @@ model Person {
             @where(expression: ct.identity == person.identity)
         }
         list listPeople3() {
-            //expect-error:35:36:AttributeExpressionError:undefined field 'invalid'
+            //expect-error:35:36:AttributeExpressionError:field 'invalid' does not exist
             @where(expression: ctx.invalid == person.identity)
         }
         list listPeople4() {
@@ -22,16 +22,16 @@ model Person {
             @where(expression: "true")
         }
         list listPeople5() {
-            //expect-error:67:68:AttributeExpressionError:undefined field 'invalid'
+            //expect-error:67:68:AttributeExpressionError:field 'invalid' does not exist
             @where(expression: ctx.identity in person.organisation.invalid)
         }
         list listPeople6() {
-            //expect-error:90:91:AttributeExpressionError:undefined field 'invalid'
+            //expect-error:90:91:AttributeExpressionError:field 'invalid' does not exist
             @where(expression: ctx.isAuthenticated and ctx.identity in person.organisation.invalid)
         }
         list listPeople7() {
-            //expect-error:98:99:AttributeExpressionError:undefined field 'invalid'
-            //expect-error:51:52:AttributeExpressionError:type 'bool' does not support field selection
+            //expect-error:98:99:AttributeExpressionError:field 'invalid' does not exist
+            //expect-error:51:52:AttributeExpressionError:type Boolean does not have any fields to select
             @where(expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid)
         }
     }

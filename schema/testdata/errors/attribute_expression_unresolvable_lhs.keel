@@ -4,7 +4,7 @@ model Post {
     }
 
     @permission(
-        //expect-error:25:26:AttributeExpressionError:undefined field 'autho'
+        //expect-error:25:26:AttributeExpressionError:field 'autho' does not exist
         expression: post.autho.name == "adam",
         actions: [get]
     )

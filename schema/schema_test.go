@@ -73,7 +73,7 @@ func TestValidation(t *testing.T) {
 
 	for _, tc := range testCases {
 
-		// if tc.Name() != "clashing_explicit_implicit_inputs.keel" {
+		// if tc.Name() != "permission_attribute_expression_invalid_operands.keel" {
 		// 	continue
 		// }
 

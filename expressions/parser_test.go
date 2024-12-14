@@ -293,7 +293,7 @@ func TestParser_UnknownField(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "undefined field 'n'", issues[0].Message)
+	require.Equal(t, "field 'n' does not exist", issues[0].Message)
 }
 
 func TestParser_UnknownOperators(t *testing.T) {
@@ -491,7 +491,7 @@ func TestParser_EnumInvalidValue(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, issues, 1)
-	require.Equal(t, "undefined field 'NotExists'", issues[0].Message)
+	require.Equal(t, "field 'NotExists' does not exist", issues[0].Message)
 }
 
 func TestParser_EnumWithoutValue(t *testing.T) {

@@ -5,7 +5,7 @@ model Profile {
 
     actions {
         update createProfile(id) with (username) {
-            //expect-error:25:26:AttributeExpressionError:undefined field 'identit'
+            //expect-error:25:26:AttributeExpressionError:field 'identit' does not exist
             @set(profile.identit = ctx.identity)
         }
     }

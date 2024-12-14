@@ -1,6 +1,6 @@
 model MyModel {
     @permission(
-        //expect-error:28:29:AttributeExpressionError:undefined field 'FOO'
+        //expect-error:28:29:AttributeExpressionError:field 'FOO' does not exist
         expression: ctx.env.FOO == "d",
         actions: [get]
     )

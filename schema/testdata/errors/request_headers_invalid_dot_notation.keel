@@ -5,7 +5,7 @@ model Something {
 
     actions {
         create createSomething() with (foo) {
-            //expect-error:75:76:AttributeExpressionError:type 'string' does not support field selection
+            //expect-error:75:76:AttributeExpressionError:type Text does not have any fields to select
             @permission(expression: something.createdAt == ctx.headers.KEY.KEY2)
         }
     }
