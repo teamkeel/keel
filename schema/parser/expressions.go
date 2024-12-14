@@ -47,23 +47,56 @@ func (e *Expression) Parse(lex *lexer.PeekingLexer) error {
 			e.Pos = t.Pos
 		}
 	}
+
 }
 
 func (e *Expression) String() string {
-	v := ""
-	for i, t := range e.Tokens {
-		if i == 0 {
-			v += t.Value
-			continue
-		}
-		last := e.Tokens[i-1]
-		hasWhitespace := (last.Pos.Offset + len(last.Value)) < t.Pos.Offset
-		if hasWhitespace {
-			v += " "
-		}
-		v += t.Value
+	if len(e.Tokens) == 0 {
+		return ""
 	}
-	return v
+
+	var result strings.Builder
+	firstToken := e.Tokens[0]
+	currentLine := e.Pos.Line
+	currentColumn := e.Pos.Column
+
+	// Handle first token
+	if firstToken.Pos.Line > currentLine {
+		// Add necessary newlines
+		result.WriteString(strings.Repeat("\n", firstToken.Pos.Line-currentLine))
+		// Reset column position for new line
+		currentColumn = 0
+	}
+	// Add spaces to reach the correct column position
+	if firstToken.Pos.Column > currentColumn {
+		result.WriteString(strings.Repeat(" ", firstToken.Pos.Column-currentColumn))
+	}
+	result.WriteString(firstToken.Value)
+	currentLine = firstToken.Pos.Line
+	currentColumn = firstToken.Pos.Column + len(firstToken.Value)
+
+	// Handle subsequent tokens
+	for i := 1; i < len(e.Tokens); i++ {
+		curr := e.Tokens[i]
+
+		if curr.Pos.Line > currentLine {
+			// Add necessary newlines
+			result.WriteString(strings.Repeat("\n", curr.Pos.Line-currentLine))
+			// Reset column position for new line
+			currentColumn = 0
+		}
+
+		// Add spaces to reach the correct column position
+		if curr.Pos.Column > currentColumn {
+			result.WriteString(strings.Repeat(" ", curr.Pos.Column-currentColumn))
+		}
+
+		result.WriteString(curr.Value)
+		currentLine = curr.Pos.Line
+		currentColumn = curr.Pos.Column + len(curr.Value)
+	}
+
+	return result.String()
 }
 
 func ParseExpression(source string) (*Expression, error) {

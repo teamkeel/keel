@@ -609,3 +609,26 @@ func TestAttributeWithParenthesisNoArgs(t *testing.T) {
 	attribute := schema.Declarations[0].Model.Sections[0].Fields[0].Attributes[0]
 	assert.Len(t, attribute.Arguments, 0)
 }
+
+func TestExpressionToStringPreserveWhitespaces(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		@permission(expression: ctx.isAuthenticated   ==  true)
+	  }`})
+	expression := schema.Declarations[0].Model.Sections[0].Attribute.Arguments[0].Expression
+
+	assert.Equal(t, "ctx.isAuthenticated   ==  true", expression.String())
+}
+
+func TestExpressionToStringPreserveNewLines(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		@permission(expression: ctx.isAuthenticated
+          == true)
+	  }`})
+	expression := schema.Declarations[0].Model.Sections[0].Attribute.Arguments[0].Expression
+
+	assert.Equal(t,
+		`ctx.isAuthenticated
+           == true`, expression.String())
+}
