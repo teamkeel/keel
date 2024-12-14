@@ -35,27 +35,27 @@ func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, lhs 
 		return issues, err
 	}
 
-	targetField, err := resolve.AsIdent(lhs.String())
+	targetField, err := resolve.AsIdent(lhs)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(targetField) < 2 {
+	if len(targetField.Fragments) < 2 {
 		return nil, fmt.Errorf("lhs operand is less than two fragments")
 	}
 
-	if targetField[0] != strcase.ToLowerCamel(model.Name.Value) {
+	if targetField.Fragments[0] != strcase.ToLowerCamel(model.Name.Value) {
 		return nil, fmt.Errorf("wrong model")
 	}
 
 	var field *parser.FieldNode
 	currModel := model
-	for i, fragment := range targetField {
+	for i, fragment := range targetField.Fragments {
 		if i == 0 {
 			continue
 		}
 		field = query.Field(currModel, fragment)
-		if i < len(targetField)-1 {
+		if i < len(targetField.Fragments)-1 {
 			currModel = query.Model(schema, field.Type.Value)
 		}
 	}

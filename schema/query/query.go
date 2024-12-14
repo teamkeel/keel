@@ -351,13 +351,13 @@ func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeN
 
 	if len(attribute.Arguments) > 0 {
 
-		operands, err := resolve.AsIdentArray(attribute.Arguments[0].Expression.String())
+		operands, err := resolve.AsIdentArray(attribute.Arguments[0].Expression)
 		if err != nil {
 			return fields
 		}
 
 		for _, f := range operands {
-			field := Field(model, strings.Join(f, "."))
+			field := Field(model, f.ToString())
 			if field != nil {
 				fields = append(fields, field)
 			}
@@ -397,7 +397,7 @@ func ActionSortableFieldNames(action *parser.ActionNode) ([]string, error) {
 
 	if attribute != nil {
 		for _, arg := range attribute.Arguments {
-			fieldName, err := resolve.AsIdent(arg.Expression.String())
+			fieldName, err := resolve.AsIdent(arg.Expression)
 			if err != nil {
 				return nil, err
 			}
@@ -593,8 +593,8 @@ func SubscriberNames(asts []*parser.AST) (res []string) {
 						if len(attribute.Arguments) == 2 {
 							subscriberArg := attribute.Arguments[1]
 
-							ident, err := resolve.AsIdent(subscriberArg.Expression.String())
-							if err == nil && ident != nil && len(ident) == 1 {
+							ident, err := resolve.AsIdent(subscriberArg.Expression)
+							if err == nil && ident != nil && len(ident.Fragments) == 1 {
 								name := ident.ToString()
 								if !lo.Contains(res, name) {
 									res = append(res, name)
@@ -782,7 +782,7 @@ func RelationAttributeValue(attr *parser.AttributeNode) (field string, ok bool) 
 		return "", false
 	}
 
-	operand, err := resolve.AsIdent(attr.Arguments[0].Expression.String())
+	operand, err := resolve.AsIdent(attr.Arguments[0].Expression)
 	if err != nil {
 		return "", false
 	}
@@ -791,5 +791,5 @@ func RelationAttributeValue(attr *parser.AttributeNode) (field string, ok bool) 
 		return "", false
 	}
 
-	return operand[0], true
+	return operand.Fragments[0], true
 }

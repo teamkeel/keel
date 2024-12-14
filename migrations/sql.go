@@ -12,6 +12,7 @@ import (
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/parser"
 	"golang.org/x/exp/slices"
 )
 
@@ -276,7 +277,12 @@ func getDefaultValue(field *proto.Field) (string, error) {
 	case field.Type.Repeated:
 		return getRepeatedDefault(field)
 	default:
-		v, err := resolve.ToValue[any](field.DefaultValue.Expression.Source)
+		expression, err := parser.ParseExpression(field.DefaultValue.Expression.Source)
+		if err != nil {
+			return "", err
+		}
+
+		v, err := resolve.ToValue[any](expression)
 		if err != nil {
 			return "", err
 		}
@@ -309,8 +315,14 @@ func getZeroValue(field *proto.Field) (string, error) {
 }
 
 func getEnumDefault(field *proto.Field) (string, error) {
+	expression, err := parser.ParseExpression(field.DefaultValue.Expression.Source)
+	if err != nil {
+		return "", err
+	}
+
 	if field.Type.Repeated {
-		enums, err := resolve.AsIdentArray(field.DefaultValue.Expression.Source)
+
+		enums, err := resolve.AsIdentArray(expression)
 		if err != nil {
 			return "", err
 		}
@@ -321,17 +333,18 @@ func getEnumDefault(field *proto.Field) (string, error) {
 
 		values := []string{}
 		for _, el := range enums {
-			values = append(values, db.QuoteLiteral(el[1]))
+			values = append(values, db.QuoteLiteral(el.Fragments[1]))
 		}
 
 		return fmt.Sprintf("ARRAY[%s]::TEXT[]", strings.Join(values, ",")), nil
 	}
 
-	enum, err := resolve.AsIdent(field.DefaultValue.Expression.Source)
+	enum, err := resolve.AsIdent(expression)
 	if err != nil {
 		return "", err
 	}
-	return db.QuoteLiteral(enum[1]), nil
+
+	return db.QuoteLiteral(enum.Fragments[1]), nil
 }
 
 func getRepeatedDefault(field *proto.Field) (string, error) {
@@ -373,7 +386,12 @@ func getRepeatedDefault(field *proto.Field) (string, error) {
 
 // Generic helper for array values
 func getArrayValues[T any](field *proto.Field) ([]string, error) {
-	v, err := resolve.ToValueArray[T](field.DefaultValue.Expression.Source)
+	expression, err := parser.ParseExpression(field.DefaultValue.Expression.Source)
+	if err != nil {
+		return nil, err
+	}
+
+	v, err := resolve.ToValueArray[T](expression)
 	if err != nil {
 		return nil, err
 	}
@@ -388,135 +406,6 @@ func getArrayValues[T any](field *proto.Field) ([]string, error) {
 	}
 	return values, nil
 }
-
-// func getDefaultValue(field *proto.Field) (string, error) {
-// 	if field.DefaultValue.UseZeroValue {
-// 		if field.Type.Repeated {
-// 			return "{}", nil
-// 		}
-
-// 		switch field.Type.Type {
-// 		case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
-// 			return db.QuoteLiteral(""), nil
-// 		case proto.Type_TYPE_INT, proto.Type_TYPE_DECIMAL:
-// 			return "0", nil
-// 		case proto.Type_TYPE_BOOL:
-// 			return "false", nil
-// 		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-// 			return "now()", nil
-// 		case proto.Type_TYPE_ID:
-// 			return "ksuid()", nil
-// 		}
-// 	}
-
-// 	switch {
-// 	case field.Type.Type == proto.Type_TYPE_ENUM:
-// 		if field.Type.Repeated {
-// 			if field.DefaultValue.Expression.Source == "" || field.DefaultValue.Expression.Source == "[]" {
-// 				return "'{}'", nil
-// 			}
-
-// 			enums, err := resolve.AsIdentArray(field.DefaultValue.Expression.Source)
-// 			if err != nil {
-// 				return "", err
-// 			}
-
-// 			values := []string{}
-// 			for _, el := range enums {
-// 				values = append(values, db.QuoteLiteral(el[1]))
-// 			}
-
-// 			return fmt.Sprintf("ARRAY[%s]::TEXT[]", strings.Join(values, ",")), nil
-
-// 		} else {
-// 			enum, err := resolve.AsIdent(field.DefaultValue.Expression.Source)
-// 			if err != nil {
-// 				return "", err
-// 			}
-
-// 			return db.QuoteLiteral(enum[1]), nil
-// 		}
-
-// 	case field.Type.Repeated:
-
-// 		if field.DefaultValue.Expression.Source == "" || field.DefaultValue.Expression.Source == "[]" {
-// 			return "'{}'", nil
-// 		}
-
-// 		values := []string{}
-// 		switch field.Type.Type {
-// 		case proto.Type_TYPE_INT:
-// 			v, err := resolve.ToValueArray[int64](field.DefaultValue.Expression.Source)
-// 			if err != nil {
-// 				return "", err
-// 			}
-// 			for _, el := range v {
-// 				v, err := toSqlLiteral(el, field)
-// 				if err != nil {
-// 					return "", err
-// 				}
-// 				values = append(values, v)
-// 			}
-// 		case proto.Type_TYPE_DECIMAL:
-// 			v, err := resolve.ToValueArray[float64](field.DefaultValue.Expression.Source)
-// 			if err != nil {
-// 				return "", err
-// 			}
-// 			for _, el := range v {
-// 				v, err := toSqlLiteral(el, field)
-// 				if err != nil {
-// 					return "", err
-// 				}
-// 				values = append(values, v)
-// 			}
-// 		case proto.Type_TYPE_BOOL:
-// 			v, err := resolve.ToValueArray[bool](field.DefaultValue.Expression.Source)
-// 			if err != nil {
-// 				return "", err
-// 			}
-// 			for _, el := range v {
-// 				v, err := toSqlLiteral(el, field)
-// 				if err != nil {
-// 					return "", err
-// 				}
-// 				values = append(values, v)
-// 			}
-// 		default:
-// 			v, err := resolve.ToValueArray[string](field.DefaultValue.Expression.Source)
-// 			if err != nil {
-// 				return "", err
-// 			}
-// 			for _, el := range v {
-// 				v, err := toSqlLiteral(el, field)
-// 				if err != nil {
-// 					return "", err
-// 				}
-// 				values = append(values, v)
-// 			}
-// 		}
-
-// 		var cast string
-// 		switch field.Type.Type {
-// 		case proto.Type_TYPE_INT:
-// 			cast = "::INTEGER[]"
-// 		case proto.Type_TYPE_DECIMAL:
-// 			cast = "::NUMERIC[]"
-// 		case proto.Type_TYPE_BOOL:
-// 			cast = "::BOOL[]"
-// 		default:
-// 			cast = "::TEXT[]"
-// 		}
-
-// 		return fmt.Sprintf("ARRAY[%s]%s", strings.Join(values, ","), cast), nil
-// 	default:
-// 		v, err := resolve.ToValue[any](field.DefaultValue.Expression.Source)
-// 		if err != nil {
-// 			return "", err
-// 		}
-
-// 		return toSqlLiteral(v, field)
-// 	}
-// }
 
 func toSqlLiteral(value any, field *proto.Field) (string, error) {
 	switch {

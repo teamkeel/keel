@@ -73,7 +73,7 @@ func TestValidation(t *testing.T) {
 
 	for _, tc := range testCases {
 
-		if tc.Name() != "set_attribute_built_in_fields.keel" {
+		if tc.Name() != "attribute_embed.keel" {
 			continue
 		}
 
@@ -84,7 +84,6 @@ func TestValidation(t *testing.T) {
 		}
 
 		testCaseDir := filepath.Join(dir, testCase.Name())
-
 		t.Run(testCase.Name(), func(t *testing.T) {
 			t.Parallel()
 			b, err := os.ReadFile(testCaseDir)

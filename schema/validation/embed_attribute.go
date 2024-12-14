@@ -85,20 +85,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				return
 			}
 
-			// TODO: to be covered by expression parser
-			// if !arg.Expression.IsValue() {
-			// 	errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-			// 		errorhandling.AttributeArgumentError,
-			// 		errorhandling.ErrorDetails{
-			// 			Message: "@embed argument is not correctly formatted",
-			// 			Hint:    "For example, use @embed(fieldName)",
-			// 		},
-			// 		arg,
-			// 	))
-			// 	return
-			// }
-
-			ident, err := resolve.AsIdent(arg.Expression.String())
+			ident, err := resolve.AsIdent(arg.Expression)
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
@@ -111,22 +98,9 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				return
 			}
 
-			// // check if the arg is an identifier
-			// if operand.Type() != parser.TypeIdent {
-			// 	errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-			// 		errorhandling.AttributeArgumentError,
-			// 		errorhandling.ErrorDetails{
-			// 			Message: "The @embed attribute can only be used with valid model fields",
-			// 			Hint:    "For example, use @embed(fieldName)",
-			// 		},
-			// 		arg,
-			// 	))
-			// 	return
-			// }
-
 			// now we go through the identifier fragments and ensure that they are relationships
 			model := currentModel
-			for _, fragment := range ident {
+			for _, fragment := range ident.Fragments {
 				// get the field in the relationship fragments
 				currentField := query.ModelField(model, fragment)
 				if currentField == nil {
@@ -136,7 +110,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 							Message: fmt.Sprintf("%s is not a field in the %s model", fragment, model.Name.Value),
 							Hint:    "The @embed attribute must reference an existing model field",
 						},
-						arg,
+						ident,
 					))
 
 					return
@@ -151,7 +125,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 							Message: fmt.Sprintf("%s is not a model field", currentField.Name.Value),
 							Hint:    "The @embed attribute must reference a related model field",
 						},
-						arg,
+						ident,
 					))
 
 					return
@@ -164,7 +138,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 					errorhandling.ErrorDetails{
 						Message: fmt.Sprintf("@embed argument '%s' already defined within this action", ident.ToString()),
 					},
-					arg.Expression,
+					ident,
 				))
 				return
 			}

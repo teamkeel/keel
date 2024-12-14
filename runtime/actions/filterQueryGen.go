@@ -9,6 +9,7 @@ import (
 	"github.com/google/cel-go/common/operators"
 	"github.com/teamkeel/keel/expressions/visitor"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 // FilterQueryGen visits the expression and adds filter conditions to the provided query builder
@@ -141,23 +142,13 @@ func (v *whereQueryGen) VisitLiteral(value any) error {
 	return nil
 }
 
-func (v *whereQueryGen) VisitVariable(name string) error {
-	operand, err := generateOperand(v.ctx, v.schema, v.model, v.action, v.inputs, []string{name})
+func (v *whereQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
+	operand, err := generateOperand(v.ctx, v.schema, v.model, v.action, v.inputs, ident.Fragments)
 	if err != nil {
 		return err
 	}
 
-	v.operands.Push(operand)
-	return nil
-}
-
-func (v *whereQueryGen) VisitField(fragments []string) error {
-	operand, err := generateOperand(v.ctx, v.schema, v.model, v.action, v.inputs, fragments)
-	if err != nil {
-		return err
-	}
-
-	err = v.query.AddJoinFromFragments(v.schema, fragments)
+	err = v.query.AddJoinFromFragments(v.schema, ident.Fragments)
 	if err != nil {
 		return err
 	}
@@ -167,17 +158,13 @@ func (v *whereQueryGen) VisitField(fragments []string) error {
 	return nil
 }
 
-func (v *whereQueryGen) VisitIdentArray(fragments [][]string) error {
+func (v *whereQueryGen) VisitIdentArray(idents []*parser.ExpressionIdent) error {
 	arr := []string{}
-	for _, e := range fragments {
-		arr = append(arr, e[1])
+	for _, e := range idents {
+		arr = append(arr, e.Fragments[1])
 	}
 
 	v.operands.Push(Value(arr))
 
 	return nil
-}
-
-func (v *whereQueryGen) ModelName() string {
-	return v.query.Model.Name
 }

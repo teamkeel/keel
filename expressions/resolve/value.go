@@ -6,16 +6,17 @@ import (
 
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types/ref"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 // ToValue expects and resolves to a specific type by evaluating the expression
-func ToValue[T any](expression string) (T, error) {
+func ToValue[T any](expression *parser.Expression) (T, error) {
 	env, err := cel.NewEnv()
 	if err != nil {
 		return *new(T), err
 	}
 
-	ast, issues := env.Parse(expression)
+	ast, issues := env.Parse(expression.String())
 	if issues != nil && len(issues.Errors()) > 0 {
 		return *new(T), errors.New("expression has validation errors and cannot be evaluated")
 	}
@@ -38,13 +39,13 @@ func ToValue[T any](expression string) (T, error) {
 }
 
 // ToValueArray expects and resolves to a specific array type by evaluating the expression
-func ToValueArray[T any](expression string) ([]T, error) {
+func ToValueArray[T any](expression *parser.Expression) ([]T, error) {
 	env, err := cel.NewEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	ast, issues := env.Parse(expression)
+	ast, issues := env.Parse(expression.String())
 	if issues != nil && len(issues.Errors()) > 0 {
 		return nil, errors.New("expression has validation errors and cannot be evaluated")
 	}

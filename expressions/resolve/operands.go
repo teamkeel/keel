@@ -2,10 +2,11 @@ package resolve
 
 import (
 	"github.com/teamkeel/keel/expressions/visitor"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 // IdentOperands retrieves all the ident operands in an expression as a slice
-func IdentOperands(expression string) ([]Ident, error) {
+func IdentOperands(expression *parser.Expression) ([]*parser.ExpressionIdent, error) {
 	ident, err := visitor.RunCelVisitor(expression, operands())
 	if err != nil {
 		return nil, err
@@ -14,14 +15,14 @@ func IdentOperands(expression string) ([]Ident, error) {
 	return ident, nil
 }
 
-func operands() visitor.Visitor[[]Ident] {
+func operands() visitor.Visitor[[]*parser.ExpressionIdent] {
 	return &operandsResolver{}
 }
 
-var _ visitor.Visitor[[]Ident] = new(operandsResolver)
+var _ visitor.Visitor[[]*parser.ExpressionIdent] = new(operandsResolver)
 
 type operandsResolver struct {
-	idents []Ident
+	idents []*parser.ExpressionIdent
 }
 
 func (v *operandsResolver) StartCondition(parenthesis bool) error {
@@ -48,26 +49,16 @@ func (v *operandsResolver) VisitLiteral(value any) error {
 	return nil
 }
 
-func (v *operandsResolver) VisitVariable(name string) error {
-	v.idents = append(v.idents, []string{name})
+func (v *operandsResolver) VisitIdent(ident *parser.ExpressionIdent) error {
+	v.idents = append(v.idents, ident)
 
 	return nil
 }
 
-func (v *operandsResolver) VisitField(fragments []string) error {
-	v.idents = append(v.idents, fragments)
-
+func (v *operandsResolver) VisitIdentArray(idents []*parser.ExpressionIdent) error {
 	return nil
 }
 
-func (v *operandsResolver) VisitIdentArray(fragments [][]string) error {
-	return nil
-}
-
-func (v *operandsResolver) ModelName() string {
-	return ""
-}
-
-func (v *operandsResolver) Result() ([]Ident, error) {
+func (v *operandsResolver) Result() ([]*parser.ExpressionIdent, error) {
 	return v.idents, nil
 }

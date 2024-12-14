@@ -1370,8 +1370,8 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 			continue
 		}
 
-		idents, _ := resolve.AsIdentArray(attr.Arguments[0].Expression.String())
-		fieldNames := lo.Map(idents, func(v resolve.Ident, i int) string {
+		idents, _ := resolve.AsIdentArray(attr.Arguments[0].Expression)
+		fieldNames := lo.Map(idents, func(v *parser.ExpressionIdent, i int) string {
 			return v.ToString()
 		})
 
@@ -1472,7 +1472,7 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 // you know that it is well formed for that.
 func attributeFirstArgAsIdentifier(attr *parser.AttributeNode) string {
 	expr := attr.Arguments[0].Expression
-	theString, _ := resolve.AsIdent(expr.String())
+	theString, _ := resolve.AsIdent(expr)
 	return theString.ToString()
 }
 
@@ -1715,14 +1715,14 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 		perm.ModelName = protoModel.Name
 		protoModel.Permissions = append(protoModel.Permissions, perm)
 	case parser.AttributeOn:
-		subscriberName, _ := resolve.AsIdent(attribute.Arguments[1].Expression.String())
+		subscriberName, _ := resolve.AsIdent(attribute.Arguments[1].Expression)
 
 		// Create the subscriber if it has not yet been created yet.
-		subscriber := proto.FindSubscriber(scm.proto.Subscribers, subscriberName[0])
+		subscriber := proto.FindSubscriber(scm.proto.Subscribers, subscriberName.Fragments[0])
 		if subscriber == nil {
 			subscriber = &proto.Subscriber{
-				Name:             subscriberName[0],
-				InputMessageName: makeSubscriberMessageName(subscriberName[0]),
+				Name:             subscriberName.Fragments[0],
+				InputMessageName: makeSubscriberMessageName(subscriberName.Fragments[0]),
 				EventNames:       []string{},
 			}
 			scm.proto.Subscribers = append(scm.proto.Subscribers, subscriber)
@@ -1730,9 +1730,9 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 
 		// For each event, add to the proto schema if it doesn't exist,
 		// and add it to the current subscriber's EventNames field.
-		actionTypesArg, _ := resolve.AsIdentArray(attribute.Arguments[0].Expression.String())
+		actionTypesArg, _ := resolve.AsIdentArray(attribute.Arguments[0].Expression)
 		for _, arg := range actionTypesArg {
-			actionType := scm.mapToActionType(arg[0])
+			actionType := scm.mapToActionType(arg.Fragments[0])
 			eventName := makeEventName(parserModel.Name.Value, mapToEventType(actionType))
 
 			event := proto.FindEvent(scm.proto.Events, eventName)
@@ -1939,14 +1939,14 @@ func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.AttributeN
 			expr := arg.Expression.String()
 			pr.Expression = &proto.Expression{Source: expr}
 		case "roles":
-			idents, _ := resolve.AsIdentArray(arg.Expression.String())
+			idents, _ := resolve.AsIdentArray(arg.Expression)
 			for _, item := range idents {
-				pr.RoleNames = append(pr.RoleNames, item[0])
+				pr.RoleNames = append(pr.RoleNames, item.Fragments[0])
 			}
 		case "actions":
-			idents, _ := resolve.AsIdentArray(arg.Expression.String())
+			idents, _ := resolve.AsIdentArray(arg.Expression)
 			for _, items := range idents {
-				pr.ActionTypes = append(pr.ActionTypes, scm.mapToActionType(items[0]))
+				pr.ActionTypes = append(pr.ActionTypes, scm.mapToActionType(items.Fragments[0]))
 			}
 		}
 	}
@@ -2003,7 +2003,7 @@ func (scm *Builder) applyJobAttribute(protoJob *proto.Job, attribute *parser.Att
 	case parser.AttributePermission:
 		protoJob.Permissions = append(protoJob.Permissions, scm.permissionAttributeToProtoPermission(attribute))
 	case parser.AttributeSchedule:
-		val, _ := resolve.ToValue[string](attribute.Arguments[0].Expression.String())
+		val, _ := resolve.ToValue[string](attribute.Arguments[0].Expression)
 		src := strings.TrimPrefix(val, `"`)
 		src = strings.TrimSuffix(src, `"`)
 

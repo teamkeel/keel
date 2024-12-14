@@ -8,7 +8,7 @@ import (
 )
 
 // FieldLookups retrieves groups of ident lookups using equals comparison which could apply as a filter
-func FieldLookups(model *parser.ModelNode, expression string) ([][]Ident, error) {
+func FieldLookups(model *parser.ModelNode, expression *parser.Expression) ([][]*parser.ExpressionIdent, error) {
 	ident, err := visitor.RunCelVisitor(expression, fieldLookups(model))
 	if err != nil {
 		return nil, err
@@ -17,19 +17,19 @@ func FieldLookups(model *parser.ModelNode, expression string) ([][]Ident, error)
 	return ident, nil
 }
 
-func fieldLookups(model *parser.ModelNode) visitor.Visitor[[][]Ident] {
+func fieldLookups(model *parser.ModelNode) visitor.Visitor[[][]*parser.ExpressionIdent] {
 	return &fieldLookupsGen{
-		uniqueLookupGroups: [][]Ident{},
+		uniqueLookupGroups: [][]*parser.ExpressionIdent{},
 		current:            0,
 		modelName:          model.Name.Value,
 	}
 }
 
-var _ visitor.Visitor[[][]Ident] = new(fieldLookupsGen)
+var _ visitor.Visitor[[][]*parser.ExpressionIdent] = new(fieldLookupsGen)
 
 type fieldLookupsGen struct {
-	uniqueLookupGroups [][]Ident
-	operands           []Ident
+	uniqueLookupGroups [][]*parser.ExpressionIdent
+	operands           []*parser.ExpressionIdent
 	operator           string
 	current            int
 	modelName          string
@@ -43,7 +43,7 @@ func (v *fieldLookupsGen) EndCondition(parenthesis bool) error {
 	if v.operator == operators.Equals {
 		if v.operands != nil {
 			if len(v.uniqueLookupGroups) == 0 {
-				v.uniqueLookupGroups = make([][]Ident, 1)
+				v.uniqueLookupGroups = make([][]*parser.ExpressionIdent, 1)
 			}
 
 			v.uniqueLookupGroups[v.current] = append(v.uniqueLookupGroups[v.current], v.operands...)
@@ -60,7 +60,7 @@ func (v *fieldLookupsGen) VisitAnd() error {
 }
 
 func (v *fieldLookupsGen) VisitOr() error {
-	v.uniqueLookupGroups = append(v.uniqueLookupGroups, []Ident{})
+	v.uniqueLookupGroups = append(v.uniqueLookupGroups, []*parser.ExpressionIdent{})
 
 	v.current++
 	return nil
@@ -75,18 +75,14 @@ func (v *fieldLookupsGen) VisitLiteral(value any) error {
 	return nil
 }
 
-func (v *fieldLookupsGen) VisitVariable(name string) error {
-	return nil
-}
-
-func (v *fieldLookupsGen) VisitField(fragments []string) error {
-	if fragments[0] == strcase.ToLowerCamel(v.modelName) {
-		v.operands = append(v.operands, fragments)
+func (v *fieldLookupsGen) VisitIdent(ident *parser.ExpressionIdent) error {
+	if ident.Fragments[0] == strcase.ToLowerCamel(v.modelName) {
+		v.operands = append(v.operands, ident)
 	}
 	return nil
 }
 
-func (v *fieldLookupsGen) VisitIdentArray(fragments [][]string) error {
+func (v *fieldLookupsGen) VisitIdentArray(idents []*parser.ExpressionIdent) error {
 	return nil
 }
 
@@ -94,6 +90,6 @@ func (v *fieldLookupsGen) ModelName() string {
 	return v.modelName
 }
 
-func (v *fieldLookupsGen) Result() ([][]Ident, error) {
+func (v *fieldLookupsGen) Result() ([][]*parser.ExpressionIdent, error) {
 	return v.uniqueLookupGroups, nil
 }

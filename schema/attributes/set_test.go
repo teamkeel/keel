@@ -31,11 +31,11 @@ func TestSet_Valid(t *testing.T) {
 	target, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
 	require.NoError(t, err)
 
-	lhs, err := resolve.AsIdent(target.String())
+	lhs, err := resolve.AsIdent(target)
 	require.NoError(t, err)
 
-	require.Equal(t, "person", lhs[0])
-	require.Equal(t, "isActive", lhs[1])
+	require.Equal(t, "person", lhs.Fragments[0])
+	require.Equal(t, "isActive", lhs.Fragments[1])
 
 	issues, err := attributes.ValidateSetExpression(schema, action, target, expression)
 	require.NoError(t, err)
@@ -70,12 +70,12 @@ func TestSet_ValidWithRelationship(t *testing.T) {
 	target, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
 	require.NoError(t, err)
 
-	lhs, err := resolve.AsIdent(target.String())
+	lhs, err := resolve.AsIdent(target)
 	require.NoError(t, err)
 
-	require.Equal(t, "person", lhs[0])
-	require.Equal(t, "company", lhs[1])
-	require.Equal(t, "isActive", lhs[2])
+	require.Equal(t, "person", lhs.Fragments[0])
+	require.Equal(t, "company", lhs.Fragments[1])
+	require.Equal(t, "isActive", lhs.Fragments[2])
 
 	issues, err := attributes.ValidateSetExpression(schema, action, target, expression)
 	require.NoError(t, err)
@@ -102,11 +102,11 @@ func TestSet_InvalidTypes(t *testing.T) {
 	target, expression, err := set.Arguments[0].Expression.ToAssignmentExpression()
 	require.NoError(t, err)
 
-	lhs, err := resolve.AsIdent(target.String())
+	lhs, err := resolve.AsIdent(target)
 	require.NoError(t, err)
 
-	require.Equal(t, "person", lhs[0])
-	require.Equal(t, "isActive", lhs[1])
+	require.Equal(t, "person", lhs.Fragments[0])
+	require.Equal(t, "isActive", lhs.Fragments[1])
 
 	issues, err := attributes.ValidateSetExpression(schema, action, target, expression)
 	require.NoError(t, err)

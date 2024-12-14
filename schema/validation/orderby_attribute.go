@@ -141,7 +141,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 
 			argumentLabels = append(argumentLabels, arg.Label.Value)
 
-			ident, err := resolve.AsIdent(arg.Expression.String())
+			ident, err := resolve.AsIdent(arg.Expression)
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
@@ -154,7 +154,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				return
 			}
 
-			if ident == nil || (ident[0] != parser.OrderByAscending && ident[0] != parser.OrderByDescending) {
+			if ident == nil || (ident.Fragments[0] != parser.OrderByAscending && ident.Fragments[0] != parser.OrderByDescending) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{

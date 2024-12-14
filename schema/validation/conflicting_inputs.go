@@ -2,6 +2,7 @@ package validation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/expressions/resolve"
@@ -61,17 +62,17 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 				inputs = writeInputs
 			}
 
-			idents := []resolve.Ident{}
+			idents := []*parser.ExpressionIdent{}
 			var err error
 			switch n.Name.Value {
 			case parser.AttributeWhere:
-				idents, err = resolve.IdentOperands(n.Arguments[0].Expression.String())
+				idents, err = resolve.IdentOperands(n.Arguments[0].Expression)
 			case parser.AttributeSet:
 				lhs, _, err := n.Arguments[0].Expression.ToAssignmentExpression()
 				if err != nil {
 					return
 				} else {
-					idents, err = resolve.IdentOperands(lhs.String())
+					idents, err = resolve.IdentOperands(lhs)
 				}
 			}
 			if err != nil {
@@ -82,9 +83,9 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 				for in := range inputs {
 					// in an expression the first ident fragment will be the model name
 					// we create an indent without the first fragment
-					identWithoutModelName := operand[1:]
+					identWithoutModelName := operand.Fragments[1:]
 
-					if in.Type.ToString() != identWithoutModelName.ToString() {
+					if in.Type.ToString() != strings.Join(identWithoutModelName, ".") {
 						continue
 					}
 

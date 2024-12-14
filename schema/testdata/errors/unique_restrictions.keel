@@ -18,14 +18,14 @@ model Author {
     }
 
     // this is invalid because posts is a has-many
-    //expect-error:13:26:TypeError:@unique is not permitted on has many relationships or arrays
+    //expect-error:20:25:TypeError:@unique is not permitted on has many relationships or arrays
     @unique([name, posts])
 
     // invalid because of duplicate field names
-    //expect-error:13:25:TypeError:Field 'name' has already been specified as a constraint
+    //expect-error:20:24:TypeError:Field 'name' has already been specified as a constraint
     @unique([name, name])
 
     // stress test
-    //expect-error:13:39:TypeError:Field 'name' has already been specified as a constraint
+    //expect-error:34:38:TypeError:Field 'name' has already been specified as a constraint
     @unique([name, anotherField, name])
 }

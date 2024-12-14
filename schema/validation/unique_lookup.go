@@ -148,18 +148,18 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 }
 
 func expressionHasUniqueLookup(asts []*parser.AST, model *parser.ModelNode, expression *parser.Expression, fieldsInCompositeUnique map[*parser.ModelNode][]*parser.FieldNode) bool {
-	lookupGroups, _ := resolve.FieldLookups(model, expression.String())
+	lookupGroups, _ := resolve.FieldLookups(model, expression)
 
 	// If any group of lookups provides a unique lookup, the whole expression is unique
 	for _, lookups := range lookupGroups {
 		groupHasUniqueLookup := true
 
 		for _, lookup := range lookups {
-			modelName := lookup[0]
+			modelName := lookup.Fragments[0]
 			model := query.Model(asts, casing.ToCamel(modelName))
 
 			var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
-			hasUnique, fieldsInComposite := fragmentsUnique(asts, model, lookup[1:])
+			hasUnique, fieldsInComposite := fragmentsUnique(asts, model, lookup.Fragments[1:])
 
 			for k, v := range fieldsInComposite {
 				fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)

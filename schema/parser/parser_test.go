@@ -1,7 +1,6 @@
 package parser_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,6 +16,28 @@ func parse(t *testing.T, s *reader.SchemaFile) *parser.AST {
 	}
 
 	return schema
+}
+
+func TestAttributeNoArgs(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		fields {
+		  code Text @unique
+		}
+	  }`})
+	attribute := schema.Declarations[0].Model.Sections[0].Fields[0].Attributes[0]
+	assert.Len(t, attribute.Arguments, 0)
+}
+
+func TestAttributeWithParenthesisNoArgs(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		fields {
+		  code Text @unique()
+		}
+	  }`})
+	attribute := schema.Declarations[0].Model.Sections[0].Fields[0].Attributes[0]
+	assert.Len(t, attribute.Arguments, 0)
 }
 
 func TestEmptyModel(t *testing.T) {
@@ -187,13 +208,13 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 	arg2 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
 	assert.Equal(t, "actions", arg2.Label.Value)
 
-	v1, err := resolve.ToValue[bool](arg1.Expression.String())
+	v1, err := resolve.ToValue[bool](arg1.Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, true, v1)
 
-	v2, err := resolve.AsIdentArray(arg2.Expression.String())
+	v2, err := resolve.AsIdentArray(arg2.Expression)
 	assert.NoError(t, err)
-	assert.Equal(t, "get", v2[0][0])
+	assert.Equal(t, "get", v2[0].Fragments[0])
 }
 
 func TestAttributeWithNamedArguments(t *testing.T) {
@@ -226,11 +247,11 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 	arg2 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
 	assert.Equal(t, "actions", arg2.Label.Value)
 
-	v1, err := resolve.AsIdent(arg1.Expression.String())
+	v1, err := resolve.AsIdent(arg1.Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, "Admin", v1.ToString())
 
-	v2, err := resolve.AsIdentArray(arg2.Expression.String())
+	v2, err := resolve.AsIdentArray(arg2.Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, "create", v2[0].ToString())
 }
@@ -260,11 +281,11 @@ model Author {
 	arg2 := attribute.Arguments[1]
 	assert.Equal(t, "surname", arg2.Label.Value)
 
-	v1, err := resolve.AsIdent(arg1.Expression.String())
+	v1, err := resolve.AsIdent(arg1.Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, "asc", v1.ToString())
 
-	v2, err := resolve.AsIdent(arg2.Expression.String())
+	v2, err := resolve.AsIdent(arg2.Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, "desc", v2.ToString())
 }
@@ -294,11 +315,11 @@ model Author {
 	arg2 := attribute.Arguments[1]
 	assert.Nil(t, arg2.Label)
 
-	v1, err := resolve.AsIdent(arg1.Expression.String())
+	v1, err := resolve.AsIdent(arg1.Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, "firstName", v1.ToString())
 
-	v2, err := resolve.AsIdent(arg2.Expression.String())
+	v2, err := resolve.AsIdent(arg2.Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, "surname", v2.ToString())
 }
@@ -350,20 +371,20 @@ model Genre {
 	arg2 := attribute.Arguments[1]
 	assert.Nil(t, arg2.Label)
 
-	v1, err := resolve.AsIdent(arg1.Expression.String())
+	v1, err := resolve.AsIdent(arg1.Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, "genre", v1.ToString())
 
-	v2, err := resolve.AsIdent(arg2.Expression.String())
+	v2, err := resolve.AsIdent(arg2.Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, "category", v2.ToString())
 
 	arg3 := attribute2.Arguments[0]
 	assert.Nil(t, arg3.Label)
 
-	v3, err := resolve.AsIdent(arg3.Expression.String())
+	v3, err := resolve.AsIdent(arg3.Expression)
 	assert.NoError(t, err)
-	assert.Equal(t, "author.category", strings.Join(v3, "."))
+	assert.Equal(t, "author.category", v3.ToString())
 }
 
 func TestAPI(t *testing.T) {
@@ -569,22 +590,22 @@ func TestOnAttributeArgsParsing(t *testing.T) {
 	assert.Len(t, model.Sections[0].Attribute.Arguments, 2)
 	assert.Len(t, model.Sections[1].Attribute.Arguments, 2)
 
-	on1actiontypes, err := resolve.AsIdentArray(schema.Declarations[0].Model.Sections[0].Attribute.Arguments[0].Expression.String())
+	on1actiontypes, err := resolve.AsIdentArray(schema.Declarations[0].Model.Sections[0].Attribute.Arguments[0].Expression)
 	assert.NoError(t, err)
 	assert.Len(t, on1actiontypes, 1)
 	assert.Equal(t, "create", on1actiontypes[0].ToString())
 
-	on1subscriber, err := resolve.AsIdent(schema.Declarations[0].Model.Sections[0].Attribute.Arguments[1].Expression.String())
+	on1subscriber, err := resolve.AsIdent(schema.Declarations[0].Model.Sections[0].Attribute.Arguments[1].Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, "sendWelcomeMail", on1subscriber.ToString())
 
-	on2actiontypes, err := resolve.AsIdentArray(schema.Declarations[0].Model.Sections[1].Attribute.Arguments[0].Expression.String())
+	on2actiontypes, err := resolve.AsIdentArray(schema.Declarations[0].Model.Sections[1].Attribute.Arguments[0].Expression)
 	assert.NoError(t, err)
 	assert.Len(t, on2actiontypes, 2)
 	assert.Equal(t, "create", on2actiontypes[0].ToString())
 	assert.Equal(t, "update", on2actiontypes[1].ToString())
 
-	on2subscriber, err := resolve.AsIdent(schema.Declarations[0].Model.Sections[1].Attribute.Arguments[1].Expression.String())
+	on2subscriber, err := resolve.AsIdent(schema.Declarations[0].Model.Sections[1].Attribute.Arguments[1].Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, "verifyEmail", on2subscriber.ToString())
 }

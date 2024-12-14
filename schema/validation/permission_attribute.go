@@ -84,14 +84,14 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 					// Ideally this would be done as part of the expression validation, but
 					// if we don't provide the model as context the error is not very helpful.
 					if action != nil && (action.Type.Value == "read" || action.Type.Value == "write") {
-						operands, err := resolve.IdentOperands(arg.Expression.String())
+						operands, err := resolve.IdentOperands(arg.Expression)
 						if err != nil {
 							return
 						}
 
 						for _, op := range operands {
 							// An ident must have at least one fragment - we only care about the first one
-							fragment := op[0]
+							fragment := op.Fragments[0]
 							if fragment == casing.ToLowerCamel(model.Name.Value) {
 								errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 									errorhandling.AttributeArgumentError,

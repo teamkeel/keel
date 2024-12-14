@@ -80,6 +80,21 @@ func ParseExpression(source string) (*Expression, error) {
 	return expr, nil
 }
 
+type ExpressionIdent struct {
+	node.Node
+
+	Fragments []string
+}
+
+func (ident ExpressionIdent) ToString() string {
+	idents := []string{}
+	for _, v := range ident.Fragments {
+		idents = append(idents, v)
+	}
+
+	return strings.Join(idents, ".")
+}
+
 var ErrInvalidAssignmentExpression = errors.New("expression is not a valid assignment")
 
 // ToAssignmentExpression splits an assignment expression into two separate expressions.
@@ -98,8 +113,6 @@ func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, erro
 		return nil, nil, ErrInvalidAssignmentExpression
 	}
 
-	//index := strings.Index(expr.String(), "=")
-
 	lhs, err := ParseExpression(parts[0])
 	if err != nil {
 		return nil, nil, err
@@ -108,7 +121,6 @@ func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, erro
 	// Set position for left-hand side using original expression's position
 	lhs.Pos = expr.Pos
 	lhs.EndPos = expr.EndPos
-	//lhs.EndPos.Offset += index
 
 	rhs, err := ParseExpression(parts[1])
 	if err != nil {
@@ -118,10 +130,6 @@ func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, erro
 	// Set position for right-hand side starting after the equals sign
 	rhs.Pos = expr.Pos
 	rhs.EndPos = expr.EndPos
-
-	// rhs.Pos = lhs.EndPos
-	// rhs.Pos.Offset += expr.Pos.Offset + index + 1
-	// rhs.EndPos = expr.EndPos
 
 	return lhs, rhs, nil
 }

@@ -73,7 +73,7 @@ func UnusedInputRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 				}
 			}
 
-			operands, err := resolve.IdentOperands(expression.String())
+			operands, err := resolve.IdentOperands(expression)
 			if err != nil {
 				return
 			}

@@ -50,7 +50,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				return
 			}
 
-			l, r, err := expression.ToAssignmentExpression()
+			lhs, r, err := expression.ToAssignmentExpression()
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeExpressionError,
@@ -63,7 +63,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				return
 			}
 
-			issues, err := attributes.ValidateSetExpression(asts, action, l, r)
+			issues, err := attributes.ValidateSetExpression(asts, action, lhs, r)
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeExpressionError,
@@ -80,7 +80,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				return
 			}
 
-			ident, err := resolve.AsIdent(l.String())
+			ident, err := resolve.AsIdent(lhs)
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeExpressionError,
@@ -90,19 +90,9 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 					expression))
 			}
 
-			// field := ident[len(ident)-1]
-			// if lo.Contains(fieldsNotMutable, field) {
-			// 	errs.AppendError(makeNotMutableInputError(
-			// 		fmt.Sprintf("Cannot set the field '%s' as it is a built-in field and can only be mutated internally", field),
-			// 		"Target another field on the model or remove the input entirely",
-			// 		l,
-			// 	))
-			// 	return
-			// }
-
 			// Drop the 'id' at the end if it exists
 			fragments := []string{}
-			for _, fragment := range ident {
+			for _, fragment := range ident.Fragments {
 				if fragment != "id" {
 					fragments = append(fragments, fragment)
 				}
@@ -120,7 +110,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 					errs.AppendError(makeSetExpressionError(
 						"The @set attribute can only be used to set model fields",
 						fmt.Sprintf("For example, assign a value to a field on this model with @set(%s.isActive = true)", strcase.ToLowerCamel(model.Name.Value)),
-						l,
+						lhs,
 					))
 					return
 				}
@@ -174,7 +164,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 						errs.AppendError(makeSetExpressionError(
 							"Cannot set a field which is beyond scope of the data being created or updated",
 							"Use a field which is part of a model being created or updated within this action's inputs",
-							l,
+							lhs,
 						))
 						return
 					}
@@ -190,7 +180,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 					// 	return f.Fragment
 					// })
 
-					setFragsString := strings.Join(setFrags[1:], ".")
+					setFragsString := strings.Join(setFrags.Fragments[1:], ".")
 
 					for _, input := range action.With {
 						inputFrags := lo.Map(input.Type.Fragments, func(f *parser.IdentFragment, _ int) string {
@@ -205,7 +195,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 								errs.AppendError(makeSetExpressionError(
 									fmt.Sprintf("Cannot associate to the %s model here as it is already provided as an action input.", currentModel.Name.Value),
 									"",
-									l,
+									ident,
 								))
 								return
 							}
@@ -218,7 +208,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 						errs.AppendError(makeSetExpressionError(
 							fmt.Sprintf("Cannot set the field '%s' as it is a built-in field and can only be mutated internally", currentField.Name.Value),
 							"Target another field on the model or remove the @set attribute entirely",
-							l,
+							ident,
 						))
 						return
 					}

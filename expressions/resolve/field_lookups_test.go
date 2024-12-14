@@ -11,16 +11,22 @@ import (
 var model = &parser.ModelNode{Name: parser.NameNode{Value: "Product"}}
 
 func TestFieldLookups_ByModel(t *testing.T) {
-	lookups, err := resolve.FieldLookups(model, "product == someProduct")
+	expression, err := parser.ParseExpression("product == someProduct")
+	assert.NoError(t, err)
+
+	lookups, err := resolve.FieldLookups(model, expression)
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 1)
 	assert.Len(t, lookups[0], 1)
-	assert.Equal(t, "product.id", lookups[0][0].ToString())
+	assert.Equal(t, "product", lookups[0][0].ToString())
 }
 
 func TestFieldLookups_ById(t *testing.T) {
-	lookups, err := resolve.FieldLookups(model, "product.id == someId")
+	expression, err := parser.ParseExpression("product.id == someId")
+	assert.NoError(t, err)
+
+	lookups, err := resolve.FieldLookups(model, expression)
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 1)
@@ -29,14 +35,20 @@ func TestFieldLookups_ById(t *testing.T) {
 }
 
 func TestFieldLookups_Comparison(t *testing.T) {
-	lookups, err := resolve.FieldLookups(model, "product.rating > 3")
+	expression, err := parser.ParseExpression("product.rating > 3")
+	assert.NoError(t, err)
+
+	lookups, err := resolve.FieldLookups(model, expression)
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 0)
 }
 
 func TestFieldLookups_Variables(t *testing.T) {
-	lookups, err := resolve.FieldLookups(model, "product.sku == mySku")
+	expression, err := parser.ParseExpression("product.sku == mySku")
+	assert.NoError(t, err)
+
+	lookups, err := resolve.FieldLookups(model, expression)
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 1)
@@ -45,7 +57,10 @@ func TestFieldLookups_Variables(t *testing.T) {
 }
 
 func TestFieldLookups_VariablesInverse(t *testing.T) {
-	lookups, err := resolve.FieldLookups(model, "mySku == product.sku")
+	expression, err := parser.ParseExpression("mySku == product.sku")
+	assert.NoError(t, err)
+
+	lookups, err := resolve.FieldLookups(model, expression)
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 1)
@@ -54,14 +69,20 @@ func TestFieldLookups_VariablesInverse(t *testing.T) {
 }
 
 func TestFieldLookups_NotEquals(t *testing.T) {
-	lookups, err := resolve.FieldLookups(model, "product.sku != mySku")
+	expression, err := parser.ParseExpression("product.sku != mySku")
+	assert.NoError(t, err)
+
+	lookups, err := resolve.FieldLookups(model, expression)
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 0)
 }
 
 func TestFieldLookups_WithAnd(t *testing.T) {
-	lookups, err := resolve.FieldLookups(model, `product.sku == mySku && product.name == "test"`)
+	expression, err := parser.ParseExpression(`product.sku == mySku && product.name == "test"`)
+	assert.NoError(t, err)
+
+	lookups, err := resolve.FieldLookups(model, expression)
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 1)
@@ -71,7 +92,10 @@ func TestFieldLookups_WithAnd(t *testing.T) {
 }
 
 func TestFieldLookups_WithComparison(t *testing.T) {
-	lookups, err := resolve.FieldLookups(model, `product.sku == mySku && product.rating > 3`)
+	expression, err := parser.ParseExpression(`product.sku == mySku && product.rating > 3`)
+	assert.NoError(t, err)
+
+	lookups, err := resolve.FieldLookups(model, expression)
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 1)
@@ -80,7 +104,10 @@ func TestFieldLookups_WithComparison(t *testing.T) {
 }
 
 func TestFieldLookups_WithOr(t *testing.T) {
-	lookups, err := resolve.FieldLookups(model, `product.sku == mySku || product.name == "test"`)
+	expression, err := parser.ParseExpression(`product.sku == mySku || product.name == "test"`)
+	assert.NoError(t, err)
+
+	lookups, err := resolve.FieldLookups(model, expression)
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 2)
@@ -91,7 +118,10 @@ func TestFieldLookups_WithOr(t *testing.T) {
 }
 
 func TestFieldLookups_Complex(t *testing.T) {
-	lookups, err := resolve.FieldLookups(model, `product.sku == mySku || product.name == "test" && product.id == "123"`)
+	expression, err := parser.ParseExpression(`product.sku == mySku || product.name == "test" && product.id == "123"`)
+	assert.NoError(t, err)
+
+	lookups, err := resolve.FieldLookups(model, expression)
 	assert.NoError(t, err)
 
 	assert.Len(t, lookups, 2)

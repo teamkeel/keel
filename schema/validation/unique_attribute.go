@@ -62,37 +62,37 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 					)
 					attributeArgsErr = true
 				} else {
-					operands, err := resolve.AsIdentArray(attr.Arguments[0].Expression.String())
+					operands, err := resolve.AsIdentArray(attr.Arguments[0].Expression)
 					if err != nil {
 						return
 					}
 
-					fieldNames := lo.Map(operands, func(o resolve.Ident, _ int) string {
-						return o.ToString()
-					})
+					// fieldNames := lo.Map(operands, func(o *parser.ExpressionIdent, _ int) string {
+					// 	return o.ToString()
+					// })
 
 					// check there are no duplicate field names specified in the composite uniqueness
 					// constraint e.g @unique([fieldA, fieldA])
-					dupes := findDuplicateConstraints(fieldNames)
+					dupes := findDuplicateConstraints(operands)
 
 					if len(dupes) > 0 {
 						for _, dupe := range dupes {
 							// find the last occurrence of the duplicate in the composite uniqueness constraint values list
 							// so we can highlight that node in the validation error.
-							_, _, found := lo.FindLastIndexOf(operands, func(o resolve.Ident) bool {
-								return o.ToString() == dupe
+							_, _, found := lo.FindLastIndexOf(operands, func(o *parser.ExpressionIdent) bool {
+								return o.ToString() == dupe.ToString()
 							})
 
 							if found {
-								errs.AppendError(uniqueRestrictionError(attr.Arguments[0].Expression.Node, fmt.Sprintf("Field '%s' has already been specified as a constraint", dupe)))
+								errs.AppendError(uniqueRestrictionError(dupe.Node, fmt.Sprintf("Field '%s' has already been specified as a constraint", dupe.ToString())))
 							}
 						}
 					}
 
 					// check every field specified in the unique constraint against the standard
 					// restrictions for @unique attribute usage
-					for _, uniqueField := range fieldNames {
-						field := query.ModelField(currentModel, uniqueField)
+					for _, uniqueField := range operands {
+						field := query.ModelField(currentModel, uniqueField.ToString())
 
 						if field == nil {
 							// the field isnt a recognised field on the model, so abort as this is covered
@@ -100,7 +100,7 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 							continue
 						}
 						if permitted, reason := uniquePermitted(field); !permitted {
-							errs.AppendError(uniqueRestrictionError(attr.Arguments[0].Expression.Node, reason))
+							errs.AppendError(uniqueRestrictionError(uniqueField.Node, reason))
 						}
 					}
 				}
@@ -148,7 +148,23 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 				return
 			}
 
-			idents, err := resolve.AsIdentArray(expression.String())
+			idents, err := resolve.AsIdentArray(expression)
+			if err != nil {
+				if err != nil {
+					errs.AppendError(
+						errorhandling.NewValidationErrorWithDetails(
+							errorhandling.ActionInputError,
+							errorhandling.ErrorDetails{
+								Message: "@unique argument must be an array of field names",
+								Hint:    "For example, @unique([sku, supplierCode])",
+							},
+							expression,
+						),
+					)
+					return
+				}
+			}
+
 			if len(idents) < 2 || err != nil {
 				errs.AppendError(
 					errorhandling.NewValidationErrorWithDetails(
@@ -174,17 +190,17 @@ func uniqueRestrictionError(node node.Node, reason string) *errorhandling.Valida
 	)
 }
 
-func findDuplicateConstraints(constraints []string) (dupes []string) {
+func findDuplicateConstraints(constraints []*parser.ExpressionIdent) (dupes []*parser.ExpressionIdent) {
 	seen := map[string]bool{}
 
 	for _, constraint := range constraints {
-		if _, found := seen[constraint]; found {
+		if _, found := seen[constraint.ToString()]; found {
 			dupes = append(dupes, constraint)
 
 			continue
 		}
 
-		seen[constraint] = true
+		seen[constraint.ToString()] = true
 	}
 
 	return dupes

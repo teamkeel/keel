@@ -4,12 +4,13 @@ import (
 	"errors"
 
 	"github.com/teamkeel/keel/expressions/visitor"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 var ErrExpressionNotValidIdentArray = errors.New("expression is not an ident array")
 
 // AsIdentArray expects and retrieves an array of idents
-func AsIdentArray(expression string) ([]Ident, error) {
+func AsIdentArray(expression *parser.Expression) ([]*parser.ExpressionIdent, error) {
 	ident, err := visitor.RunCelVisitor(expression, identArray())
 	if err != nil {
 		return nil, err
@@ -18,16 +19,14 @@ func AsIdentArray(expression string) ([]Ident, error) {
 	return ident, nil
 }
 
-func identArray() visitor.Visitor[[]Ident] {
-	return &identArrayGen{
-		idents: []Ident{},
-	}
+func identArray() visitor.Visitor[[]*parser.ExpressionIdent] {
+	return &identArrayGen{}
 }
 
-var _ visitor.Visitor[[]Ident] = new(identArrayGen)
+var _ visitor.Visitor[[]*parser.ExpressionIdent] = new(identArrayGen)
 
 type identArrayGen struct {
-	idents []Ident
+	idents []*parser.ExpressionIdent
 }
 
 func (v *identArrayGen) StartCondition(parenthesis bool) error {
@@ -54,31 +53,19 @@ func (v *identArrayGen) VisitLiteral(value any) error {
 	return ErrExpressionNotValidIdentArray
 }
 
-func (v *identArrayGen) VisitVariable(name string) error {
-	v.idents = append(v.idents, []string{name})
-
-	return nil
+func (v *identArrayGen) VisitIdent(ident *parser.ExpressionIdent) error {
+	return ErrExpressionNotValidIdentArray
 }
 
-func (v *identArrayGen) VisitField(fragments []string) error {
-	v.idents = append(v.idents, fragments)
-
-	return nil
-}
-
-func (v *identArrayGen) VisitIdentArray(fragments [][]string) error {
-	v.idents = make([]Ident, len(fragments))
-	for i, value := range fragments {
-		v.idents[i] = value
+func (v *identArrayGen) VisitIdentArray(idents []*parser.ExpressionIdent) error {
+	if v.idents != nil {
+		return ErrExpressionNotValidIdentArray
 	}
 
+	v.idents = idents
 	return nil
 }
 
-func (v *identArrayGen) ModelName() string {
-	return ""
-}
-
-func (v *identArrayGen) Result() ([]Ident, error) {
+func (v *identArrayGen) Result() ([]*parser.ExpressionIdent, error) {
 	return v.idents, nil
 }

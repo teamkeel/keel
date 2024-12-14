@@ -74,17 +74,17 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 			}
 
 			parsed, _ := p.CelEnv.Parse(expr)
-			offsets := parsed.NativeRep().SourceInfo().OffsetRanges()[e.ExprID]
+			offset := parsed.NativeRep().SourceInfo().OffsetRanges()[e.ExprID]
 			start := parsed.NativeRep().SourceInfo().GetStartLocation(e.ExprID)
 			end := parsed.NativeRep().SourceInfo().GetStopLocation(e.ExprID)
 
 			pos := lexer.Position{
-				Offset: int(offsets.Start),
+				Offset: int(offset.Start),
 				Line:   start.Line(),
 				Column: start.Column(),
 			}
 			endPos := lexer.Position{
-				Offset: int(offsets.Stop),
+				Offset: int(offset.Stop),
 				Line:   end.Line(),
 				Column: end.Column(),
 			}

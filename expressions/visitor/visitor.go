@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/operators"
-	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/schema/node"
+	"github.com/teamkeel/keel/schema/parser"
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
@@ -26,25 +28,20 @@ type Visitor[T any] interface {
 	VisitOr() error
 	// VisitLiteral is called when a literal operand is visited (e.g. "Keel")
 	VisitLiteral(value any) error
-	// VisitVariable is called when a variable operand is visited (e.g. name)
-	VisitVariable(name string) error
-	// VisitField is called when a field operand is visited (e.g. post.name)
-	VisitField(fragments []string) error
+	// VisitIdent is called when a field operand, variable or enum value is visited (e.g. post.name)
+	VisitIdent(ident *parser.ExpressionIdent) error
 	// VisitIdentArray is called when an ident array is visited (e.g. [Category.Sport, Category.Edu])
-	VisitIdentArray(idents [][]string) error
+	VisitIdentArray(idents []*parser.ExpressionIdent) error
 	// VisitOperator is called when a condition's operator visited (e.g. ==)
 	VisitOperator(operator string) error
 	// Returns a value after the visitor has completed executing
 	Result() (T, error)
-	ModelName() string
 }
 
-func RunCelVisitor[T any](expression string, visitor Visitor[T]) (T, error) {
-	expression = strings.ReplaceAll(expression, " and ", " && ")
-	expression = strings.ReplaceAll(expression, " or ", " || ")
-
+func RunCelVisitor[T any](expression *parser.Expression, visitor Visitor[T]) (T, error) {
 	resolver := &CelVisitor[T]{
-		visitor: visitor,
+		visitor:    visitor,
+		expression: expression,
 	}
 
 	return resolver.run(expression)
@@ -52,17 +49,22 @@ func RunCelVisitor[T any](expression string, visitor Visitor[T]) (T, error) {
 
 // CelVisitor steps through the CEL AST and calls out to the visitor
 type CelVisitor[T any] struct {
-	visitor Visitor[T]
+	visitor    Visitor[T]
+	expression *parser.Expression
+	ast        *cel.Ast
 }
 
-func (w *CelVisitor[T]) run(expression string) (T, error) {
+func (w *CelVisitor[T]) run(expression *parser.Expression) (T, error) {
 	var zero T
 	env, err := cel.NewEnv()
 	if err != nil {
 		return zero, fmt.Errorf("cel program setup err: %s", err)
 	}
 
-	ast, issues := env.Parse(expression)
+	expr := strings.ReplaceAll(expression.String(), " and ", " && ")
+	expr = strings.ReplaceAll(expr, " or ", " || ")
+
+	ast, issues := env.Parse(expr)
 	if issues != nil && len(issues.Errors()) > 0 {
 		return zero, ErrExpressionNotParseable
 	}
@@ -72,7 +74,9 @@ func (w *CelVisitor[T]) run(expression string) (T, error) {
 		return zero, err
 	}
 
-	nested := strings.Contains(expression, " && ") || strings.Contains(expression, " || ")
+	w.ast = ast
+
+	nested := strings.Contains(expression.String(), " && ") || strings.Contains(expression.String(), " || ")
 
 	if err := w.eval(checkedExpr.Expr, nested, false); err != nil {
 		return zero, err
@@ -174,7 +178,10 @@ func (w *CelVisitor[T]) binaryCall(expr *exprpb.Expr, nested bool) error {
 	args := c.GetArgs()
 	lhs := args[0]
 
-	w.visitor.StartCondition(nested)
+	err := w.visitor.StartCondition(nested)
+	if err != nil {
+		return err
+	}
 
 	inBinary := !(op == operators.LogicalAnd || op == operators.LogicalOr)
 
@@ -192,7 +199,6 @@ func (w *CelVisitor[T]) binaryCall(expr *exprpb.Expr, nested bool) error {
 		return err
 	}
 
-	var err error
 	switch op {
 	case operators.LogicalOr:
 		err = w.visitor.VisitOr()
@@ -277,15 +283,38 @@ func (w *CelVisitor[T]) constArray(expr *exprpb.Expr) error {
 func (w *CelVisitor[T]) identArray(expr *exprpb.Expr) error {
 	elems := expr.GetListExpr().GetElements()
 
-	arr := make([][]string, len(elems))
+	arr := make([]*parser.ExpressionIdent, len(elems))
 	for i, elem := range elems {
 		switch elem.ExprKind.(type) {
 		case *exprpb.Expr_IdentExpr:
 			s := elem.GetIdentExpr()
-			arr[i] = []string{s.GetName()}
+
+			offsets := w.ast.NativeRep().SourceInfo().OffsetRanges()[elem.GetId()]
+			start := w.ast.NativeRep().SourceInfo().GetStartLocation(elem.GetId())
+			end := w.ast.NativeRep().SourceInfo().GetStopLocation(elem.GetId())
+
+			exprIdent := parser.ExpressionIdent{
+				Fragments: []string{s.GetName()},
+				Node: node.Node{
+					Pos: lexer.Position{
+						Filename: w.expression.Pos.Filename,
+						Line:     w.expression.Pos.Line + start.Line() - 1,
+						Column:   w.expression.Pos.Column + start.Column(),
+						Offset:   w.expression.Pos.Offset + int(offsets.Start),
+					},
+					EndPos: lexer.Position{
+						Filename: w.expression.Pos.Filename,
+						Line:     w.expression.Pos.Line + end.Line() - 1,
+						Column:   w.expression.Pos.Column + end.Column(),
+						Offset:   w.expression.Pos.Offset + int(offsets.Stop),
+					},
+				},
+			}
+			arr[i] = &exprIdent
+
 		case *exprpb.Expr_SelectExpr:
 			var err error
-			arr[i], err = SelectToFragments(elem)
+			arr[i], err = w.selectToIdent(elem)
 			if err != nil {
 				return err
 			}
@@ -300,11 +329,29 @@ func (w *CelVisitor[T]) identArray(expr *exprpb.Expr) error {
 func (w *CelVisitor[T]) identExpr(expr *exprpb.Expr) error {
 	ident := expr.GetIdentExpr()
 
-	if ident.Name == strcase.ToLowerCamel(w.visitor.ModelName()) {
-		return w.visitor.VisitField([]string{ident.Name, "id"})
-	} else {
-		return w.visitor.VisitVariable(ident.Name)
+	offsets := w.ast.NativeRep().SourceInfo().OffsetRanges()[expr.GetId()]
+	start := w.ast.NativeRep().SourceInfo().GetStartLocation(expr.GetId())
+	end := w.ast.NativeRep().SourceInfo().GetStopLocation(expr.GetId())
+
+	exprIdent := &parser.ExpressionIdent{
+		Fragments: []string{ident.GetName()},
+		Node: node.Node{
+			Pos: lexer.Position{
+				Filename: w.expression.Pos.Filename,
+				Line:     w.expression.Pos.Line + start.Line() - 1,
+				Column:   w.expression.Pos.Column + start.Column(),
+				Offset:   w.expression.Pos.Offset + int(offsets.Start),
+			},
+			EndPos: lexer.Position{
+				Filename: w.expression.Pos.Filename,
+				Line:     w.expression.Pos.Line + end.Line() - 1,
+				Column:   w.expression.Pos.Column + end.Column(),
+				Offset:   w.expression.Pos.Offset + int(offsets.Stop),
+			},
+		},
 	}
+
+	return w.visitor.VisitIdent(exprIdent)
 }
 
 func (w *CelVisitor[T]) SelectExpr(expr *exprpb.Expr) error {
@@ -319,30 +366,53 @@ func (w *CelVisitor[T]) SelectExpr(expr *exprpb.Expr) error {
 		}
 	}
 
-	fragments, err := SelectToFragments(expr)
+	ident, err := w.selectToIdent(expr)
 	if err != nil {
 		return err
 	}
 
-	return w.visitor.VisitField(fragments)
+	return w.visitor.VisitIdent(ident)
 }
 
-func SelectToFragments(expr *exprpb.Expr) ([]string, error) {
-	fragments := []string{}
+func (w *CelVisitor[T]) selectToIdent(expr *exprpb.Expr) (*parser.ExpressionIdent, error) {
+	ident := parser.ExpressionIdent{}
 	e := expr
+
+	offset := 0
 	for {
 		if s, ok := e.ExprKind.(*exprpb.Expr_SelectExpr); ok {
-			fragments = append([]string{e.GetSelectExpr().GetField()}, fragments...)
+			offsets := w.ast.NativeRep().SourceInfo().OffsetRanges()[s.SelectExpr.Operand.Id]
+			start := w.ast.NativeRep().SourceInfo().GetStartLocation(s.SelectExpr.Operand.Id)
+
+			ident.Pos = lexer.Position{
+				Filename: w.expression.Pos.Filename,
+				Line:     w.expression.Pos.Line,
+				Column:   w.expression.Pos.Column + start.Column(),
+				Offset:   w.expression.Pos.Offset + int(offsets.Start),
+			}
+
+			offset += len(s.SelectExpr.GetField()) + 1
+
+			ident.Fragments = append([]string{s.SelectExpr.GetField()}, ident.Fragments...)
 			e = s.SelectExpr.Operand
 		} else if _, ok := e.ExprKind.(*exprpb.Expr_IdentExpr); ok {
-			fragments = append([]string{e.GetIdentExpr().Name}, fragments...)
+			offset += len(e.GetIdentExpr().Name)
+
+			ident.Fragments = append([]string{e.GetIdentExpr().Name}, ident.Fragments...)
 			break
 		} else {
 			return nil, fmt.Errorf("no support for expr kind in select: %v", expr.ExprKind)
 		}
 	}
 
-	return fragments, nil
+	ident.EndPos = lexer.Position{
+		Filename: w.expression.Pos.Filename,
+		Line:     w.expression.Pos.Line,
+		Column:   ident.Pos.Column + offset,
+		Offset:   ident.Pos.Offset + offset,
+	}
+
+	return &ident, nil
 }
 
 // isLeftRecursive indicates whether the parser resolves the call in a left-recursive manner as

@@ -62,7 +62,7 @@ func (scm *Builder) insertBackLinkField(
 	backlinkName := casing.ToLowerCamel(parentModel.Name.Value)
 	relation := query.FieldGetAttribute(forwardRelnField, parser.AttributeRelation)
 	if relation != nil {
-		relationValue, _ := resolve.AsIdent(relation.Arguments[0].Expression.String())
+		relationValue, _ := resolve.AsIdent(relation.Arguments[0].Expression)
 		backlinkName = relationValue.ToString()
 	}
 

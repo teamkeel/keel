@@ -67,36 +67,36 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 }
 
 func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any, fragments []string) (*QueryOperand, error) {
-	fragments, err := normalisedFragments(schema, fragments)
+	ident, err := normalisedFragments(schema, fragments)
 	if err != nil {
 		return nil, err
 	}
 
 	var queryOperand *QueryOperand
 	switch {
-	case len(fragments) == 2 && proto.EnumExists(schema.Enums, fragments[0]):
-		return Value(fragments[1]), nil
-	case expressions.IsModelDbColumn(model, fragments):
+	case len(ident) == 2 && proto.EnumExists(schema.Enums, ident[0]):
+		return Value(ident[1]), nil
+	case expressions.IsModelDbColumn(model, ident):
 		var err error
-		queryOperand, err = operandFromFragments(schema, fragments)
+		queryOperand, err = operandFromFragments(schema, ident)
 		if err != nil {
 			return nil, err
 		}
-	case expressions.IsInput(schema, action, fragments):
-		value, ok := inputs[fragments[0]]
+	case expressions.IsInput(schema, action, ident):
+		value, ok := inputs[ident[0]]
 		if !ok {
-			return nil, fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", fragments[0])
+			return nil, fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", ident[0])
 		}
 		return Value(value), nil
-	case expressions.IsContextDbColumn(fragments):
+	case expressions.IsContextDbColumn(ident):
 		// If this is a value from ctx that requires a database read (such as with identity backlinks),
 		// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
 		// from the current query builder.
 
 		// Remove the ctx fragment
-		fragments = fragments[1:]
+		ident = ident[1:]
 
-		identityModel := schema.FindModel(strcase.ToCamel(fragments[0]))
+		identityModel := schema.FindModel(strcase.ToCamel(ident[0]))
 
 		identityId := ""
 		if auth.IsAuthenticated(ctx) {
@@ -108,7 +108,7 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 		}
 
 		query := NewQuery(identityModel)
-		err := query.AddJoinFromFragments(schema, fragments)
+		err := query.AddJoinFromFragments(schema, ident)
 		if err != nil {
 			return nil, err
 		}
@@ -118,7 +118,7 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 			return nil, err
 		}
 
-		selectField, err := operandFromFragments(schema, fragments)
+		selectField, err := operandFromFragments(schema, ident)
 		if err != nil {
 			return nil, err
 		}
@@ -140,7 +140,7 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 
 		queryOperand = InlineQuery(query, selectField)
 
-	case expressions.IsContextIdentityId(fragments):
+	case expressions.IsContextIdentityId(ident):
 		isAuthenticated := auth.IsAuthenticated(ctx)
 		if !isAuthenticated {
 			queryOperand = Null()
@@ -151,22 +151,22 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 			}
 			queryOperand = Value(identity[parser.FieldNameId].(string))
 		}
-	case expressions.IsContextIsAuthenticatedField(fragments):
+	case expressions.IsContextIsAuthenticatedField(ident):
 		isAuthenticated := auth.IsAuthenticated(ctx)
 		queryOperand = Value(isAuthenticated)
-	case expressions.IsContextNowField(fragments):
+	case expressions.IsContextNowField(ident):
 		queryOperand = Value(runtimectx.GetNow())
-	case expressions.IsContextEnvField(fragments):
-		envVarName := fragments[2]
+	case expressions.IsContextEnvField(ident):
+		envVarName := ident[2]
 		queryOperand = Value(os.Getenv(envVarName))
-	case expressions.IsContextSecretField(fragments):
-		secret, err := runtimectx.GetSecret(ctx, fragments[2])
+	case expressions.IsContextSecretField(ident):
+		secret, err := runtimectx.GetSecret(ctx, ident[2])
 		if err != nil {
 			return nil, err
 		}
 		queryOperand = Value(secret)
-	case expressions.IsContextHeadersField(fragments):
-		headerName := fragments[2]
+	case expressions.IsContextHeadersField(ident):
+		headerName := ident[2]
 
 		// First we parse the header name to kebab. MyCustomHeader will become my-custom-header.
 		kebab := strcase.ToKebab(headerName)
@@ -185,7 +185,7 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 			queryOperand = Value("")
 		}
 	default:
-		return nil, fmt.Errorf("cannot handle fragments: %s", strings.Join(fragments, "."))
+		return nil, fmt.Errorf("cannot handle fragments: %s", strings.Join(ident, "."))
 	}
 
 	return queryOperand, nil

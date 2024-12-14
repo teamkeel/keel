@@ -67,33 +67,33 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 
 			// Rules for the first argument (the action types array)
 			if len(arguments) == 1 {
-				operands, err := resolve.AsIdentArray(arg.Expression.String())
+				operands, err := resolve.AsIdentArray(arg.Expression)
 				if err != nil {
 					errs.AppendError(actionTypesNonArrayError(arg))
 					return
 				}
 
 				for _, element := range operands {
-					if len(element) != 1 {
+					if len(element.Fragments) != 1 {
 						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 							errorhandling.AttributeArgumentError,
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf("@on only supports the following action types: %s", strings.Join(supportedActionTypes, ", ")),
 								Hint:    "For example, @on([create, update], verifyEmailAddress)",
 							},
-							arg.Expression,
+							element,
 						))
 						continue
 					}
 
-					if !lo.Contains(supportedActionTypes, element[0]) {
+					if !lo.Contains(supportedActionTypes, element.Fragments[0]) {
 						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 							errorhandling.AttributeArgumentError,
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf("@on only supports the following action types: %s", strings.Join(supportedActionTypes, ", ")),
 								Hint:    "For example, @on([create, update], verifyEmailAddress)",
 							},
-							arg.Expression,
+							element,
 						))
 					}
 				}
@@ -101,7 +101,7 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 
 			// Rules for the second argument (the subscriber name)
 			if len(arguments) == 2 {
-				ident, err := resolve.AsIdent(arg.Expression.String())
+				ident, err := resolve.AsIdent(arg.Expression)
 				if err != nil {
 					errs.AppendError(subscriberNameInvalidError(arg))
 					return
@@ -112,7 +112,7 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 					return
 				}
 
-				if len(ident) != 1 {
+				if len(ident.Fragments) != 1 {
 					errs.AppendError(subscriberNameInvalidError(arg))
 					return
 				}
@@ -150,7 +150,7 @@ func actionTypesNonArrayError(position node.ParserNode) *errorhandling.Validatio
 	return errorhandling.NewValidationErrorWithDetails(
 		errorhandling.AttributeArgumentError,
 		errorhandling.ErrorDetails{
-			Message: "@on action types argument must be an array",
+			Message: "@on argument must be an array of action types",
 			Hint:    "For example, @on([create, update], verifyEmailAddress)",
 		},
 		position)

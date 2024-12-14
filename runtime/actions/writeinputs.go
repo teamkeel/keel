@@ -3,62 +3,52 @@ package actions
 import (
 	"errors"
 	"fmt"
-	"strings"
 
-	"github.com/google/cel-go/cel"
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/expressions/visitor"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 // Updates the query with all set attributes defined on the action.
 func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
 	for _, setExpression := range scope.Action.SetExpressions {
-		parts := strings.Split(setExpression.Source, "=")
 
-		env, err := cel.NewEnv()
-		if err != nil {
-			return fmt.Errorf("program setup err: %s", err)
-		}
-
-		ast, issues := env.Parse(parts[0])
-		if issues != nil && len(issues.Errors()) > 0 {
-			return errors.New("unexpected ast parsing issues")
-		}
-		checkedLhsExpr, err := cel.AstToParsedExpr(ast)
+		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
 			return err
 		}
 
-		// TODO: put somewhere
-		fragments, err := visitor.SelectToFragments(checkedLhsExpr.Expr)
+		lhs, rhs, err := expression.ToAssignmentExpression()
 		if err != nil {
 			return err
 		}
 
-		fragments, err = normalisedFragments(scope.Schema, fragments)
+		target, err := resolve.AsIdent(lhs)
 		if err != nil {
 			return err
 		}
-		// fragments, err := lhsResolver.NormalisedFragments()
-		// if err != nil {
-		// 	return err
-		// }
+
+		ident, err := normalisedFragments(scope.Schema, target.Fragments)
+		if err != nil {
+			return err
+		}
 
 		currRows := []*Row{query.writeValues}
 
 		// The model field to update.
-		field := fragments[len(fragments)-1]
-		targetsLessField := fragments[:len(fragments)-1]
+		field := ident[len(ident)-1]
+		targetsLessField := ident[:len(target.Fragments)-1]
 
 		// If we are associating (as opposed to creating) then rather update the foreign key
 		// i.e. person.employerId and not person.employer.id
-		isAssoc := targetAssociating(scope, fragments)
+		isAssoc := targetAssociating(scope, ident)
 		if isAssoc {
-			field = fmt.Sprintf("%sId", fragments[len(fragments)-2])
-			targetsLessField = fragments[:len(fragments)-2]
+			field = fmt.Sprintf("%sId", ident[len(ident)-2])
+			targetsLessField = ident[:len(target.Fragments)-2]
 		}
 
 		// Iterate through the fragments in the @set expression AND traverse the graph until we have a set of rows to update.
@@ -87,7 +77,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			currRows = nextRows
 		}
 
-		operand, err := visitor.RunCelVisitor(parts[1], SelectQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
+		operand, err := visitor.RunCelVisitor(rhs, SelectQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}
