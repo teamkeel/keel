@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/google/cel-go/common/operators"
+	"github.com/google/cel-go/common/types"
 )
 
 var messageConverters = []errorConverter{
@@ -15,52 +16,75 @@ var messageConverters = []errorConverter{
 	noOperatorOverload,
 	undeclaredOperatorReference,
 	undeclaredVariableReference,
+	unrecognisedToken,
+	mismatchedInput,
 }
 
 type errorConverter struct {
 	Regex     string
-	Construct func([]string) string
+	Construct func(expectedReturnType *types.Type, values []string) string
 }
 
 var undefinedField = errorConverter{
 	Regex: `undefined field '(.+)'`,
-	Construct: func(values []string) string {
+	Construct: func(expectedReturnType *types.Type, values []string) string {
 		return fmt.Sprintf("field '%s' does not exist", values[0])
 	},
 }
 
 var noFieldSelection = errorConverter{
 	Regex: `type '(.+)' does not support field selection`,
-	Construct: func(values []string) string {
+	Construct: func(expectedReturnType *types.Type, values []string) string {
 		return fmt.Sprintf("type %s does not have any fields to select", mapType(values[0]))
 	},
 }
 
 var unexpectedResolvedType = errorConverter{
 	Regex: `expression expected to resolve to type (.+) but it is (.+)`,
-	Construct: func(values []string) string {
+	Construct: func(expectedReturnType *types.Type, values []string) string {
 		return fmt.Sprintf("expression expected to resolve to type %s but it is %s", mapType(values[0]), mapType(values[1]))
 	},
 }
 
 var noOperatorOverload = errorConverter{
 	Regex: `found no matching overload for '(.+)' applied to '\((.+),\s*(.+)\)'`,
-	Construct: func(values []string) string {
+	Construct: func(expectedReturnType *types.Type, values []string) string {
 		return fmt.Sprintf("cannot use operator '%s' with types %s and %s", mapOperator(values[0]), mapType(values[1]), mapType(values[2]))
 	},
 }
 
 var undeclaredOperatorReference = errorConverter{
 	Regex: `undeclared reference to '_(.+)_' \(in container ''\)`,
-	Construct: func(values []string) string {
+	Construct: func(expectedReturnType *types.Type, values []string) string {
 		return fmt.Sprintf("operator '%s' not supported in this context", mapOperator(values[0]))
 	},
 }
 
 var undeclaredVariableReference = errorConverter{
 	Regex: `undeclared reference to '(.+)' \(in container ''\)`,
-	Construct: func(values []string) string {
+	Construct: func(expectedReturnType *types.Type, values []string) string {
+		switch {
+		case expectedReturnType.String() == "_Role" || expectedReturnType.String() == "_Role[]":
+			return fmt.Sprintf("%s is not a role defined in your schema", values[0])
+		}
 		return fmt.Sprintf("unknown identifier '%s'", values[0])
+	},
+}
+
+var unrecognisedToken = errorConverter{
+	Regex: `Syntax error: token recognition error at: '(.+)'`,
+	Construct: func(expectedReturnType *types.Type, values []string) string {
+		if values[0] == "= " {
+			return "assignment operator '=' not valid - did you mean to use the comparison operator '=='?"
+		}
+		return fmt.Sprintf("invalid character(s) '%s' in expression", strings.Trim(values[0], " "))
+	},
+}
+
+var mismatchedInput = errorConverter{
+	Regex: `Syntax error: mismatched input '(.+)' expecting (.+)`,
+	Construct: func(expectedReturnType *types.Type, values []string) string {
+		return fmt.Sprintf("unknown or unsupported identifier or operator '%s' in expression", values[0])
 	},
 }
 

@@ -48,6 +48,19 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 
 			compositeUnique := currentField == nil
 
+			if !compositeUnique && len(attr.Arguments) != 0 {
+				errs.AppendError(
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.AttributeArgumentError,
+						errorhandling.ErrorDetails{
+							Message: fmt.Sprintf("%v argument(s) provided to @unique but expected 0", len(attr.Arguments)),
+						},
+						attr,
+					),
+				)
+				attributeArgsErr = true
+			}
+
 			switch {
 			case compositeUnique:
 				if len(attr.Arguments) != 1 {

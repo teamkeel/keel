@@ -4,7 +4,7 @@ model Person {
     }
 
     @permission(
-        //expect-error:17:29:AttributeExpressionError:unknown identifier 'NotValidRole'
+        //expect-error:17:29:AttributeExpressionError:NotValidRole is not a role defined in your schema
         roles: [NotValidRole],
         actions: [get]
     )

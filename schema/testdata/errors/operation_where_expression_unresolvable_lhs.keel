@@ -6,7 +6,7 @@ model Profile {
 
     actions {
         get getProfile(username) {
-            //expect-error:20:51:AttributeExpressionError:field 'identit' does not exist
+            //expect-error:27:28:AttributeExpressionError:field 'identit' does not exist
             @where(profile.identit == ctx.identity)
         }
     }

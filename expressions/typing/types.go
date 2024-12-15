@@ -33,6 +33,10 @@ var (
 	DateArray      = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeDate))
 )
 
+var (
+	Role = cel.OpaqueType("_Role")
+)
+
 func MapType(schema []*parser.AST, typeName string, isRepeated bool) (*types.Type, error) {
 	// An unfortunate case to get single operand conditions validating correctly
 	if typeName == parser.FieldTypeBoolean && !isRepeated {
@@ -53,12 +57,8 @@ func MapType(schema []*parser.AST, typeName string, isRepeated bool) (*types.Typ
 		} else {
 			return cel.OpaqueType(typeName), nil
 		}
-	case "_Role":
-		if isRepeated {
-			typeName = typeName + "[]"
-		}
-		return types.NewOpaqueType(typeName), nil
-	case "_ActionType", "_FieldName":
+
+	case Role.String(), "_ActionType", "_FieldName":
 		if isRepeated {
 			typeName = typeName + "[]"
 		}

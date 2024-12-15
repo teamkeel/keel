@@ -6,7 +6,7 @@ model Profile {
 
     actions {
         update updateProfile(id) with (username) {
-            //expect-error:20:51:AttributeExpressionError:Syntax error: token recognition error at: '= '
+            //expect-error:20:51:AttributeExpressionError:assignment operator '=' not valid - did you mean to use the comparison operator '=='?
             //expect-error:20:51:AttributeExpressionError:Syntax error: mismatched input 'ctx' expecting <EOF>
             @where(profile.identity = ctx.identity)
         }

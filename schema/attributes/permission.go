@@ -4,6 +4,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/expressions/options"
+	"github.com/teamkeel/keel/expressions/typing"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -36,7 +37,7 @@ func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode,
 func ValidatePermissionRoles(schema []*parser.AST, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
 	opts := []expressions.Option{
 		options.WithSchemaTypes(schema),
-		options.WithReturnTypeAssertion("_Role", true),
+		options.WithReturnTypeAssertion(typing.Role.String(), true),
 	}
 
 	p, err := expressions.NewParser(opts...)
@@ -49,11 +50,11 @@ func ValidatePermissionRoles(schema []*parser.AST, expression *parser.Expression
 
 func ValidatePermissionActions(expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
 	opts := []expressions.Option{
-		options.WithVariable(parser.ActionTypeGet, "_ActionType", false),
-		options.WithVariable(parser.ActionTypeCreate, "_ActionType", false),
-		options.WithVariable(parser.ActionTypeUpdate, "_ActionType", false),
-		options.WithVariable(parser.ActionTypeList, "_ActionType", false),
-		options.WithVariable(parser.ActionTypeDelete, "_ActionType", false),
+		options.WithConstant(parser.ActionTypeGet, "_ActionType"),
+		options.WithConstant(parser.ActionTypeCreate, "_ActionType"),
+		options.WithConstant(parser.ActionTypeUpdate, "_ActionType"),
+		options.WithConstant(parser.ActionTypeList, "_ActionType"),
+		options.WithConstant(parser.ActionTypeDelete, "_ActionType"),
 		options.WithReturnTypeAssertion("_ActionType", true),
 	}
 

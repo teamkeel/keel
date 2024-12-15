@@ -73,7 +73,7 @@ func TestValidation(t *testing.T) {
 
 	for _, tc := range testCases {
 
-		// if tc.Name() != "permission_attribute_expression_invalid_operands.keel" {
+		// if tc.Name() != "operation_where_too_many_arguments.keel" {
 		// 	continue
 		// }
 

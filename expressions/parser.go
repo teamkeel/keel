@@ -61,6 +61,15 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 		validationErrors := []*errorhandling.ValidationError{}
 
 		for _, e := range issues.Errors() {
+			if len(issues.Errors()) > 1 {
+				if matched, err := regexp.MatchString(`Syntax error: extraneous input '(.+)' expecting <EOF>`, e.Message); matched || err != nil {
+					if err != nil {
+						return nil, err
+					}
+					continue
+				}
+			}
+
 			msg := e.Message
 			for _, match := range messageConverters {
 				pattern, err := regexp.Compile(match.Regex)
@@ -68,40 +77,45 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 					return nil, err
 				}
 				if matches := pattern.FindStringSubmatch(e.Message); matches != nil {
-					msg = match.Construct(matches[1:])
+					msg = match.Construct(p.ExpectedReturnType, matches[1:])
 					break
 				}
 			}
 
-			parsed, _ := p.CelEnv.Parse(expr)
-			offset := parsed.NativeRep().SourceInfo().OffsetRanges()[e.ExprID]
-			start := parsed.NativeRep().SourceInfo().GetStartLocation(e.ExprID)
-			end := parsed.NativeRep().SourceInfo().GetStopLocation(e.ExprID)
+			var n node.Node
+			if e.ExprID == 0 {
+				n = expression.Node
+			} else {
+				parsed, _ := p.CelEnv.Parse(expr)
+				offset := parsed.NativeRep().SourceInfo().OffsetRanges()[e.ExprID]
+				start := parsed.NativeRep().SourceInfo().GetStartLocation(e.ExprID)
+				end := parsed.NativeRep().SourceInfo().GetStopLocation(e.ExprID)
 
-			pos := lexer.Position{
-				Offset: int(offset.Start),
-				Line:   start.Line(),
-				Column: start.Column(),
-			}
-			endPos := lexer.Position{
-				Offset: int(offset.Stop),
-				Line:   end.Line(),
-				Column: end.Column(),
-			}
+				pos := lexer.Position{
+					Offset: int(offset.Start),
+					Line:   start.Line(),
+					Column: start.Column(),
+				}
+				endPos := lexer.Position{
+					Offset: int(offset.Stop),
+					Line:   end.Line(),
+					Column: end.Column(),
+				}
 
-			node := node.Node{
-				Pos: lexer.Position{
-					Filename: expression.Pos.Filename,
-					Line:     expression.Pos.Line + pos.Line - 1,
-					Column:   expression.Pos.Column + pos.Column,
-					Offset:   expression.Pos.Offset + pos.Offset,
-				},
-				EndPos: lexer.Position{
-					Filename: expression.Pos.Filename,
-					Line:     expression.Pos.Line + endPos.Line - 1,
-					Column:   expression.Pos.Column + endPos.Column,
-					Offset:   expression.Pos.Offset + endPos.Offset,
-				},
+				n = node.Node{
+					Pos: lexer.Position{
+						Filename: expression.Pos.Filename,
+						Line:     expression.Pos.Line + pos.Line - 1,
+						Column:   expression.Pos.Column + pos.Column,
+						Offset:   expression.Pos.Offset + pos.Offset,
+					},
+					EndPos: lexer.Position{
+						Filename: expression.Pos.Filename,
+						Line:     expression.Pos.Line + endPos.Line - 1,
+						Column:   expression.Pos.Column + endPos.Column,
+						Offset:   expression.Pos.Offset + endPos.Offset,
+					},
+				}
 			}
 
 			validationErrors = append(validationErrors,
@@ -110,7 +124,7 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 					errorhandling.ErrorDetails{
 						Message: msg,
 					},
-					node,
+					n,
 				))
 		}
 

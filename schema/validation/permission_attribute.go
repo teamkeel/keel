@@ -102,7 +102,7 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 										),
 										Hint: "implement your permissions logic in your function code using the permissions API - https://docs.keel.so/functions#permissions",
 									},
-									arg.Expression,
+									op,
 								))
 							}
 						}

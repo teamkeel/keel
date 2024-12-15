@@ -22,6 +22,7 @@ func fieldLookups(model *parser.ModelNode) visitor.Visitor[[][]*parser.Expressio
 		uniqueLookupGroups: [][]*parser.ExpressionIdent{},
 		current:            0,
 		modelName:          model.Name.Value,
+		anyNull:            false,
 	}
 }
 
@@ -33,6 +34,7 @@ type fieldLookupsGen struct {
 	operator           string
 	current            int
 	modelName          string
+	anyNull            bool
 }
 
 func (v *fieldLookupsGen) StartCondition(parenthesis bool) error {
@@ -40,7 +42,8 @@ func (v *fieldLookupsGen) StartCondition(parenthesis bool) error {
 }
 
 func (v *fieldLookupsGen) EndCondition(parenthesis bool) error {
-	if v.operator == operators.Equals {
+
+	if v.operator == operators.Equals && !v.anyNull {
 		if v.operands != nil {
 			if len(v.uniqueLookupGroups) == 0 {
 				v.uniqueLookupGroups = make([][]*parser.ExpressionIdent, 1)
@@ -52,6 +55,7 @@ func (v *fieldLookupsGen) EndCondition(parenthesis bool) error {
 
 	v.operands = nil
 	v.operator = ""
+	v.anyNull = false
 
 	return nil
 }
@@ -72,6 +76,9 @@ func (v *fieldLookupsGen) VisitOperator(op string) error {
 }
 
 func (v *fieldLookupsGen) VisitLiteral(value any) error {
+	if value == nil {
+		v.anyNull = true
+	}
 	return nil
 }
 

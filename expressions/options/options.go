@@ -26,7 +26,7 @@ func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 		}
 
 		for _, role := range query.Roles(schema) {
-			options = append(options, cel.Constant(role.Name.Value, types.NewOpaqueType("_Role"), nil))
+			options = append(options, cel.Constant(role.Name.Value, typing.Role, nil))
 		}
 
 		for _, ast := range schema {
@@ -61,11 +61,34 @@ func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 	}
 }
 
+// WithVariable declares a new variable in the CEL environment
+func WithVariable(identifier string, typeName string, isRepeated bool) expressions.Option {
+	return func(p *expressions.Parser) error {
+		t, err := typing.MapType(p.Provider.Schema, typeName, isRepeated)
+		if err != nil {
+			return err
+		}
+
+		env, err := p.CelEnv.Extend(cel.Variable(identifier, t))
+		if err != nil {
+			return err
+		}
+
+		p.CelEnv = env
+
+		return nil
+	}
+}
+
 // WithConstant declares a new constant in the CEL environment
 func WithConstant(identifier string, typeName string) expressions.Option {
 	return func(p *expressions.Parser) error {
-		var err error
-		p.CelEnv, err = p.CelEnv.Extend(cel.Constant(identifier, types.NewOpaqueType(typeName), nil))
+		t, err := typing.MapType(p.Provider.Schema, typeName, false)
+		if err != nil {
+			return err
+		}
+
+		p.CelEnv, err = p.CelEnv.Extend(cel.Constant(identifier, t, nil))
 		if err != nil {
 			return err
 		}
@@ -110,25 +133,6 @@ func WithCtx() expressions.Option {
 	}
 }
 
-// WithVariable declares a new variable in the CEL environment
-func WithVariable(identifier string, typeName string, isRepeated bool) expressions.Option {
-	return func(p *expressions.Parser) error {
-		t, err := typing.MapType(p.Provider.Schema, typeName, isRepeated)
-		if err != nil {
-			return err
-		}
-
-		env, err := p.CelEnv.Extend(cel.Variable(identifier, t))
-		if err != nil {
-			return err
-		}
-
-		p.CelEnv = env
-
-		return nil
-	}
-}
-
 // WithActionInputs declares variables in the CEL environment for each action input
 func WithActionInputs(schema []*parser.AST, action *parser.ActionNode) expressions.Option {
 	return func(p *expressions.Parser) error {
@@ -137,6 +141,10 @@ func WithActionInputs(schema []*parser.AST, action *parser.ActionNode) expressio
 
 		// Add filter inputs as variables
 		for _, f := range action.Inputs {
+			if f.Type.Fragments[0].Fragment == parser.MessageFieldTypeAny {
+				continue
+			}
+
 			typeName := query.ResolveInputType(schema, f, model, action)
 
 			isRepeated := false
@@ -333,6 +341,9 @@ func WithComparisonOperators() expressions.Option {
 				cel.Overload("in_Date_Date[]", argTypes(typing.Date, typing.DateArray), types.BoolType),
 			),
 		)
+		if err != nil {
+			return err
+		}
 
 		// Backwards compatibility for relationships expressions like `organisation.people.name == "Keel"` which is actually performing an "ANY" query
 		// To be deprecated in favour of functions
@@ -354,6 +365,9 @@ func WithComparisonOperators() expressions.Option {
 				cel.Overload("equals_int_Number[]", argTypes(types.IntType, typing.NumberArray), types.BoolType),
 			),
 		)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	}
