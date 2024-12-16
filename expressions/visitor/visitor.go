@@ -76,7 +76,8 @@ func (w *CelVisitor[T]) run(expression *parser.Expression) (T, error) {
 
 	w.ast = ast
 
-	nested := strings.Contains(expression.String(), " && ") || strings.Contains(expression.String(), " || ")
+	//TODO: rather iterate through the tokens
+	nested := strings.Contains(expr, " && ") || strings.Contains(expr, " || ")
 
 	if err := w.eval(checkedExpr.Expr, nested, false); err != nil {
 		return zero, err
@@ -248,8 +249,9 @@ func (w *CelVisitor[T]) constExpr(expr *exprpb.Expr) error {
 func (w *CelVisitor[T]) listExpr(expr *exprpb.Expr) error {
 	elems := expr.GetListExpr().GetElements()
 
+	// If it is empty, assume it's a literal array
 	if len(elems) == 0 {
-		return nil
+		return w.constArray(expr)
 	}
 
 	switch elems[0].ExprKind.(type) {

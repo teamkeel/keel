@@ -146,13 +146,29 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 	return nil, nil
 }
 
-func typesAssignable(t1 *types.Type, t2 *types.Type) bool {
-	switch t1.String() {
-	case typing.Date.String():
-		return t2.String() == typing.Date.String() || t2.String() == typing.Timestamp.String()
-	case typing.Timestamp.String():
-		return t2.String() == typing.Date.String() || t2.String() == typing.Timestamp.String()
-	default:
-		return mapType(t1.String()) == mapType(t2.String())
+func typesAssignable(expected *types.Type, actual *types.Type) bool {
+	expectedMapped := mapType(expected.String())
+	actualMapped := mapType(actual.String())
+
+	// Define type compatibility rules
+	typeCompatibility := map[string][]string{
+		typing.Date.String():      {mapType(typing.Date.String()), mapType(typing.Timestamp.String())},
+		typing.Timestamp.String(): {mapType(typing.Date.String()), mapType(typing.Timestamp.String())},
+		typing.Markdown.String():  {mapType(typing.Text.String()), mapType(typing.Markdown.String())},
+		typing.ID.String():        {mapType(typing.Text.String()), mapType(typing.ID.String())},
+		typing.Text.String():      {mapType(typing.Text.String()), mapType(typing.Markdown.String()), mapType(typing.ID.String())},
 	}
+
+	// Check if there are specific compatibility rules for the expected type
+	if compatibleTypes, exists := typeCompatibility[expected.String()]; exists {
+		for _, compatibleType := range compatibleTypes {
+			if actualMapped == compatibleType {
+				return true
+			}
+		}
+		return false
+	}
+
+	// Default case: types must match exactly
+	return expectedMapped == actualMapped
 }

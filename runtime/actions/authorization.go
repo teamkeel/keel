@@ -152,7 +152,7 @@ func TryResolveAuthorisationEarly(scope *Scope, inputs map[string]any, permissio
 		case permission.Expression != nil:
 
 			// Try resolve the permission early.
-			canResolve, authorised = TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, permission.Expression.Source, map[string]any{})
+			canResolve, authorised = TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, permission.Expression.Source, inputs)
 
 			if !canResolve {
 				hasDatabaseCheck = true

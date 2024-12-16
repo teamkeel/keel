@@ -13,7 +13,7 @@ import (
 )
 
 // FilterQueryGen visits the expression and adds filter conditions to the provided query builder
-func FilterQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) visitor.Visitor[bool] {
+func FilterQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) visitor.Visitor[*QueryBuilder] {
 	return &whereQueryGen{
 		ctx:       ctx,
 		query:     query,
@@ -26,7 +26,7 @@ func FilterQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Sche
 	}
 }
 
-var _ visitor.Visitor[bool] = new(whereQueryGen)
+var _ visitor.Visitor[*QueryBuilder] = new(whereQueryGen)
 
 type whereQueryGen struct {
 	ctx       context.Context
@@ -39,8 +39,8 @@ type whereQueryGen struct {
 	operands  *arraystack.Stack
 }
 
-func (v *whereQueryGen) Result() (bool, error) {
-	return true, nil
+func (v *whereQueryGen) Result() (*QueryBuilder, error) {
+	return v.query, nil
 }
 
 func (v *whereQueryGen) StartCondition(parenthesis bool) error {
@@ -73,7 +73,7 @@ func (v *whereQueryGen) EndCondition(parenthesis bool) error {
 			return err
 		}
 	} else if _, ok := v.operators.Peek(); !ok {
-		// This handles single operand conditions, such is post.IsActive
+		// This handles single operand conditions, such is post.isActive
 		l, hasOperand := v.operands.Pop()
 		if hasOperand {
 			lhs := l.(*QueryOperand)
@@ -129,7 +129,7 @@ func toActionOperator(op string) (ActionOperator, error) {
 	case operators.In:
 		return OneOf, nil
 	default:
-		return Unknown, fmt.Errorf("not implemeneted: %s", op)
+		return Unknown, fmt.Errorf("not implemented: %s", op)
 	}
 }
 

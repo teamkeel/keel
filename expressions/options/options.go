@@ -100,7 +100,7 @@ func WithConstant(identifier string, typeName string) expressions.Option {
 // WithCtx defines the ctx variable in the CEL environment
 func WithCtx() expressions.Option {
 	return func(p *expressions.Parser) error {
-		ctxObject := map[string]*types.Type{
+		p.Provider.Objects["_Context"] = map[string]*types.Type{
 			"identity":        types.NewObjectType(parser.IdentityModelName),
 			"isAuthenticated": types.BoolType,
 			"now":             typing.Timestamp,
@@ -108,8 +108,6 @@ func WithCtx() expressions.Option {
 			"env":             types.NewObjectType("_EnvironmentVariables"),
 			"headers":         types.NewObjectType("_Headers"),
 		}
-
-		p.Provider.Objects["Context"] = ctxObject
 
 		if p.Provider.Objects["_Secrets"] == nil {
 			p.Provider.Objects["_Secrets"] = map[string]*types.Type{}
@@ -124,7 +122,7 @@ func WithCtx() expressions.Option {
 		}
 
 		var err error
-		p.CelEnv, err = p.CelEnv.Extend(cel.Variable("ctx", types.NewObjectType("Context")))
+		p.CelEnv, err = p.CelEnv.Extend(cel.Variable("ctx", types.NewObjectType("_Context")))
 		if err != nil {
 			return err
 		}
@@ -227,6 +225,9 @@ func WithComparisonOperators() expressions.Option {
 					),
 					cel.Function(operators.In,
 						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumTypeArr}, types.BoolType),
+					),
+					cel.Function(operators.In,
+						cel.Overload(fmt.Sprintf("in_%s_literal", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, types.NewListType(enumType)}, types.BoolType),
 					))
 				if err != nil {
 					return err

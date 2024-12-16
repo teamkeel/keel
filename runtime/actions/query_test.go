@@ -309,16 +309,16 @@ var testCases = []testCase{
 		input:      map[string]any{"name": "Dave"},
 		expectedTemplate: `
 			WITH
-				"select_identity" ("column_0") AS (
+				"select_identity_1" ("column_0") AS (
 					SELECT "identity$user"."id"
 					FROM "identity"
 					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."id" IS DISTINCT FROM NULL),
 				"new_1_record" AS (
 					INSERT INTO "record" ("name", "user_id")
 					VALUES (
 						?,
-						(SELECT "column_0" FROM "select_identity"))
+						(SELECT "column_0" FROM "select_identity_1"))
 					RETURNING *)
 			SELECT *, set_identity_id(?) AS __keel_identity_id FROM "new_1_record"`,
 		identity:     identity,
@@ -384,12 +384,12 @@ var testCases = []testCase{
 					SELECT "identity$user"."is_active"
 					FROM "identity"
 					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."is_active" IS DISTINCT FROM NULL),
 				"select_identity_2" ("column_0") AS (
 					SELECT "identity$user"."id"
 					FROM "identity"
 					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
+					WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."id" IS DISTINCT FROM NULL),
 				"new_1_record" AS (
 					INSERT INTO "record" ("is_active", "name", "user_id")
 					VALUES (
@@ -518,10 +518,10 @@ var testCases = []testCase{
 			UPDATE "person"
 			SET
 				"name" = ?,
-				"nick_name" = ?
+				"signed_in" = ?
 			WHERE "person"."id" IS NOT DISTINCT FROM ?
 			RETURNING "person".*`,
-		expectedArgs: []any{"Dave", "Dave", "xyz"},
+		expectedArgs: []any{"Dave", false, "xyz"},
 	},
 	{
 		name: "update_op_set_attribute_identity_user_backlink_field",
@@ -553,21 +553,18 @@ var testCases = []testCase{
 			},
 		},
 		expectedTemplate: `
-			WITH
-				"select_identity" ("column_0", "column_1") AS (
-					SELECT "identity$user"."id", "identity$user"."is_active"
-					FROM "identity"
-					LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id"
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?)
-			UPDATE "record"
-			SET
-				"is_active" = (SELECT "column_1" FROM "select_identity"),
-				"user_id" = (SELECT "column_0" FROM "select_identity")
-			WHERE
-				"record"."id" IS NOT DISTINCT FROM ?
+			WITH 
+				"select_identity_0" ("column_0") AS 
+					(SELECT "identity$user"."is_active" FROM "identity" LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."is_active" IS DISTINCT FROM NULL), 
+				"select_identity_1" ("column_0") AS 
+					(SELECT "identity$user"."id" FROM "identity" LEFT JOIN "company_user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."id" IS DISTINCT FROM NULL) 
+				UPDATE "record" SET 
+					"is_active" = (SELECT "column_0" FROM "select_identity_0"), 
+					"user_id" = (SELECT "column_0" FROM "select_identity_1") 
+				WHERE "record"."id" IS NOT DISTINCT FROM ? 
 			RETURNING "record".*, set_identity_id(?) AS __keel_identity_id`,
 		identity:     identity,
-		expectedArgs: []any{identity[parser.FieldNameId].(string), "xyz", identity[parser.FieldNameId].(string)},
+		expectedArgs: []any{identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string), "xyz", identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "create_op_optional_inputs",
@@ -2951,22 +2948,28 @@ var testCases = []testCase{
 		input:      map[string]any{},
 		identity:   identity,
 		expectedTemplate: `
-			WITH
-				"select_identity" ("column_0", "column_1", "column_2", "column_3", "column_4") AS (
-					SELECT "identity"."email", "identity"."created_at", "identity"."email_verified", "identity"."external_id", "identity"."issuer"
-					FROM "identity"
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?),
+			WITH 
+				"select_identity_0" ("column_0") AS 
+					(SELECT "identity"."created_at" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity"."created_at" IS DISTINCT FROM NULL), 
+				"select_identity_1" ("column_0") AS 
+					(SELECT "identity"."email" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity"."email" IS DISTINCT FROM NULL), 
+				"select_identity_2" ("column_0") AS 
+					(SELECT "identity"."email_verified" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity"."email_verified" IS DISTINCT FROM NULL), 
+				"select_identity_3" ("column_0") AS 
+					(SELECT "identity"."external_id" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity"."external_id" IS DISTINCT FROM NULL),
+				"select_identity_4" ("column_0") AS 
+					(SELECT "identity"."issuer" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity"."issuer" IS DISTINCT FROM NULL), 
 				"new_1_person" AS (
-					INSERT INTO "person" ("created", "email", "email_verified", "external_id", "issuer")
+					INSERT INTO "person" ("created", "email", "email_verified", "external_id", "issuer") 
 					VALUES (
-						(SELECT "column_1" FROM "select_identity"),
-						(SELECT "column_0" FROM "select_identity"),
-						(SELECT "column_2" FROM "select_identity"),
-						(SELECT "column_3" FROM "select_identity"),
-						(SELECT "column_4" FROM "select_identity"))
-					RETURNING *)
-			SELECT *, set_identity_id(?) AS __keel_identity_id FROM "new_1_person"`,
-		expectedArgs: []any{identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string)},
+						(SELECT "column_0" FROM "select_identity_0"), 
+						(SELECT "column_0" FROM "select_identity_1"), 
+						(SELECT "column_0" FROM "select_identity_2"), 
+						(SELECT "column_0" FROM "select_identity_3"), 
+						(SELECT "column_0" FROM "select_identity_4")) 
+					RETURNING *) 
+				SELECT *, set_identity_id(?) AS __keel_identity_id FROM "new_1_person"`,
+		expectedArgs: []any{identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "update_set_ctx_identity_fields",
@@ -2994,20 +2997,27 @@ var testCases = []testCase{
 		input:      map[string]any{"where": map[string]any{"id": "xyz"}},
 		identity:   identity,
 		expectedTemplate: `
-			WITH
-				"select_identity" ("column_0", "column_1", "column_2", "column_3", "column_4") AS (
-					SELECT "identity"."email", "identity"."created_at", "identity"."email_verified", "identity"."external_id", "identity"."issuer"
-					FROM "identity"
-					WHERE "identity"."id" IS NOT DISTINCT FROM ?)
-			UPDATE "person" SET
-				"created" = (SELECT "column_1" FROM "select_identity"),
-				"email" = (SELECT "column_0" FROM "select_identity"),
-				"email_verified" = (SELECT "column_2" FROM "select_identity"),
-				"external_id" = (SELECT "column_3" FROM "select_identity"),
-				"issuer" = (SELECT "column_4" FROM "select_identity")
-			WHERE "person"."id" IS NOT DISTINCT FROM ?
+			WITH 
+				"select_identity_0" ("column_0") AS 
+					(SELECT "identity"."created_at" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity"."created_at" IS DISTINCT FROM NULL), 
+				"select_identity_1" ("column_0") AS 
+					(SELECT "identity"."email" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity"."email" IS DISTINCT FROM NULL), 
+				"select_identity_2" ("column_0") AS 
+					(SELECT "identity"."email_verified" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity"."email_verified" IS DISTINCT FROM NULL), 
+				"select_identity_3" ("column_0") AS 
+					(SELECT "identity"."external_id" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity"."external_id" IS DISTINCT FROM NULL), 
+				"select_identity_4" ("column_0") AS 
+					(SELECT "identity"."issuer" FROM "identity" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity"."issuer" IS DISTINCT FROM NULL) 
+				UPDATE "person" 
+				SET 
+					"created" = (SELECT "column_0" FROM "select_identity_0"), 
+					"email" = (SELECT "column_0" FROM "select_identity_1"), 
+					"email_verified" = (SELECT "column_0" FROM "select_identity_2"), 
+					"external_id" = (SELECT "column_0" FROM "select_identity_3"), 
+					"issuer" = (SELECT "column_0" FROM "select_identity_4") 
+				WHERE "person"."id" IS NOT DISTINCT FROM ? 
 			RETURNING "person".*, set_identity_id(?) AS __keel_identity_id`,
-		expectedArgs: []any{identity[parser.FieldNameId].(string), "xyz", identity[parser.FieldNameId].(string)},
+		expectedArgs: []any{identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string), identity[parser.FieldNameId].(string), "xyz", identity[parser.FieldNameId].(string)},
 	},
 	{
 		name: "create_array",
@@ -3574,15 +3584,6 @@ func TestQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range testCases {
 		testCase := testCase
-		//list_multiple_conditions_parenthesis_on_ands
-		if testCase.name != "create_array_set_attribute" {
-			continue
-		}
-		//get_op_by_id_where_single_operand
-		//list_multiple_conditions_nested_parenthesis
-		//list_multiple_conditions_parenthesis_on_ands
-
-		//delete_by_unique_key
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()

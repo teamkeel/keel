@@ -77,10 +77,12 @@ func (query *QueryBuilder) applyExpressionFilters(scope *Scope, args map[string]
 			return err
 		}
 
+		//query.OpenParenthesis()
 		_, err = visitor.RunCelVisitor(expression, FilterQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}
+		//query.CloseParenthesis()
 
 		query.And()
 	}
