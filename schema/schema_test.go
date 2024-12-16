@@ -72,8 +72,7 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
-
-		// if tc.Name() != "operation_where_too_many_arguments.keel" {
+		// if tc.Name() != "unique_composite_lookup.keel" {
 		// 	continue
 		// }
 

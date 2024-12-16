@@ -58,7 +58,7 @@ func OnAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
 						Message: "@on does not support or require named arguments",
-						Hint:    "For example, @on([create, update], verifyEmailAddress)",
+						Hint:    "For example, use @on([create, update], verifyEmailAddress)",
 					},
 					arg,
 				))

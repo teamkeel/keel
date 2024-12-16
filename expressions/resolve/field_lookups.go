@@ -84,6 +84,9 @@ func (v *fieldLookupsGen) VisitLiteral(value any) error {
 
 func (v *fieldLookupsGen) VisitIdent(ident *parser.ExpressionIdent) error {
 	if ident.Fragments[0] == strcase.ToLowerCamel(v.modelName) {
+		if len(ident.Fragments) == 1 {
+			ident.Fragments = append(ident.Fragments, "id")
+		}
 		v.operands = append(v.operands, ident)
 	}
 	return nil

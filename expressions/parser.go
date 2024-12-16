@@ -61,15 +61,6 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 		validationErrors := []*errorhandling.ValidationError{}
 
 		for _, e := range issues.Errors() {
-			if len(issues.Errors()) > 1 {
-				if matched, err := regexp.MatchString(`Syntax error: extraneous input '(.+)' expecting <EOF>`, e.Message); matched || err != nil {
-					if err != nil {
-						return nil, err
-					}
-					continue
-				}
-			}
-
 			msg := e.Message
 			for _, match := range messageConverters {
 				pattern, err := regexp.Compile(match.Regex)
@@ -116,6 +107,7 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 						Offset:   expression.Pos.Offset + endPos.Offset,
 					},
 				}
+
 			}
 
 			validationErrors = append(validationErrors,
@@ -126,6 +118,12 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 					},
 					n,
 				))
+
+			// For syntax errors (i.e. unparseable expressions), we only need to show one error.
+			if strings.HasPrefix(e.Message, "Syntax error:") {
+				break
+			}
+
 		}
 
 		return validationErrors, nil

@@ -138,8 +138,12 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 			}
 
 			// Does not have an expression
-			if len(attr.Arguments) == 0 || attr.Arguments[0].Expression == nil {
+			if len(attr.Arguments) == 0 {
 				return
+			}
+
+			if action.Name.Value == "getBySupplierSkuExprAndCodeExpr" {
+				fmt.Print("getBySku")
 			}
 
 			hasUniqueLookup = expressionHasUniqueLookup(asts, model, attr.Arguments[0].Expression, fieldsInCompositeUnique)
@@ -150,35 +154,53 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 func expressionHasUniqueLookup(asts []*parser.AST, model *parser.ModelNode, expression *parser.Expression, fieldsInCompositeUnique map[*parser.ModelNode][]*parser.FieldNode) bool {
 	lookupGroups, _ := resolve.FieldLookups(model, expression)
 
+	if len(lookupGroups) == 0 {
+		return false
+	}
+
 	// If any group of lookups provides a unique lookup, the whole expression is unique
 	for _, lookups := range lookupGroups {
-		groupHasUniqueLookup := true
+		fieldsInComposite := map[*parser.ModelNode][]*parser.FieldNode{}
+		for m, fields := range fieldsInCompositeUnique {
+			fieldsInComposite[m] = append(fieldsInComposite[m], fields...)
+		}
 
+		groupHasUnique := false
 		for _, lookup := range lookups {
 			modelName := lookup.Fragments[0]
 			model := query.Model(asts, casing.ToCamel(modelName))
 
-			var fieldsInComposite map[*parser.ModelNode][]*parser.FieldNode
-			hasUnique, fieldsInComposite := fragmentsUnique(asts, model, lookup.Fragments[1:])
-
-			for k, v := range fieldsInComposite {
-				fieldsInCompositeUnique[k] = append(fieldsInCompositeUnique[k], v...)
+			hasUnique, f := fragmentsUnique(asts, model, lookup.Fragments[1:])
+			for m, fields := range f {
+				fieldsInComposite[m] = append(fieldsInComposite[m], fields...)
 			}
 
-			if !hasUnique {
-				groupHasUniqueLookup = false
-			} else {
-				groupHasUniqueLookup = true
-				break
+			if hasUnique {
+				groupHasUnique = true
 			}
 		}
 
-		if groupHasUniqueLookup {
-			return true
+		for m, fields := range fieldsInComposite {
+			for _, attribute := range query.ModelAttributes(m) {
+				uniqueFields := query.CompositeUniqueFields(m, attribute)
+				diff, _ := lo.Difference(uniqueFields, fields)
+				if len(diff) == 0 {
+					groupHasUnique = true
+				}
+			}
+
+			// If there is only one group, then we know it will always be used in the action's filter
+			if len(lookupGroups) == 1 {
+				fieldsInCompositeUnique[m] = append(fieldsInCompositeUnique[m], fields...)
+			}
+		}
+
+		if !groupHasUnique {
+			return false
 		}
 	}
 
-	return false
+	return true
 }
 
 func fragmentsUnique(asts []*parser.AST, model *parser.ModelNode, fragments []string) (bool, map[*parser.ModelNode][]*parser.FieldNode) {
