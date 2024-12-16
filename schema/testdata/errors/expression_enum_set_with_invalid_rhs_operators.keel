@@ -5,7 +5,7 @@ model Thing {
 
     actions {
         update updateThing1(id) {
-            //expect-error:31:32:AttributeExpressionError:operator '+' not supported in this context
+            //expect-error:46:47:AttributeExpressionError:operator '+' not supported in this context
             @set(thing.number = thing.number + 1)
         }
     }

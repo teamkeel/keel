@@ -5,11 +5,11 @@ model UserExtension {
 
     actions {
         create createExt() {
-            //expect-error:30:31:AttributeExpressionError:field 'unknown' does not exist
+            //expect-error:54:55:AttributeExpressionError:field 'unknown' does not exist
             @set(userExtension.unknown = ctx.identity.unknown)
         }
         update updateExt(id) {
-            //expect-error:30:31:AttributeExpressionError:field 'unknown' does not exist
+            //expect-error:54:55:AttributeExpressionError:field 'unknown' does not exist
             @set(userExtension.unknown = ctx.identity.unknown)
         }
     }

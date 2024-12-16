@@ -72,7 +72,7 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
-		// if tc.Name() != "unique_composite_lookup.keel" {
+		// if tc.Name() != "set_attribute_lhs_is_invalid.keel" {
 		// 	continue
 		// }
 

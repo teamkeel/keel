@@ -5,7 +5,7 @@ model Profile {
 
     actions {
         update createProfile(id) with (username) {
-            //expect-error:18:36:AttributeExpressionError:The @set attribute can only be used to set model fields
+            //expect-error:18:21:AttributeExpressionError:The @set attribute can only be used to set model fields
             @set(123 = ctx.identity)
         }
     }

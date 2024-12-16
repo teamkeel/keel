@@ -12,7 +12,7 @@ model Post {
             @set(post.title = title)
         }
         update updatePost2(id) with (title) {
-            //expect-error:18:44:AttributeExpressionError:unknown identifier 'thing'
+            //expect-error:34:39:AttributeExpressionError:unknown identifier 'thing'
             @set(post.subTitle = thing.title)
         }
     }

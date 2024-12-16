@@ -133,36 +133,49 @@ var ErrInvalidAssignmentExpression = errors.New("expression is not a valid assig
 // ToAssignmentExpression splits an assignment expression into two separate expressions.
 // E.g. the expression `post.age = 1 + 1` will become `post.age` and `1 + 1`
 func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, error) {
-	parts := strings.Split(expr.String(), "=")
-	if len(parts) != 2 {
-		return nil, nil, ErrInvalidAssignmentExpression
-	}
-
-	if strings.TrimSpace(parts[0]) == "" {
-		return nil, nil, ErrInvalidAssignmentExpression
-	}
-
-	if strings.TrimSpace(parts[1]) == "" {
-		return nil, nil, ErrInvalidAssignmentExpression
-	}
-
-	lhs, err := ParseExpression(parts[0])
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// Set position for left-hand side using original expression's position
+	lhs := Expression{}
 	lhs.Pos = expr.Pos
-	lhs.EndPos = expr.EndPos
+	lhs.Tokens = []lexer.Token{}
+	assignmentAt := 0
+	for i, token := range expr.Tokens {
+		if token.Value == "=" {
+			if i == 0 {
+				return nil, nil, ErrInvalidAssignmentExpression
+			}
 
-	rhs, err := ParseExpression(parts[1])
-	if err != nil {
-		return nil, nil, err
+			if i == len(expr.Tokens)-1 {
+				return nil, nil, ErrInvalidAssignmentExpression
+			}
+
+			if expr.Tokens[i-1].Type > 0 || (expr.Tokens[i+1].Type > 0 && expr.Tokens[i+1].Type != 91) {
+				return nil, nil, ErrInvalidAssignmentExpression
+			}
+
+			assignmentAt = i
+			lhs.EndPos = token.Pos
+			break
+		}
+		lhs.Tokens = append(lhs.Tokens, token)
 	}
 
-	// Set position for right-hand side starting after the equals sign
-	rhs.Pos = expr.Pos
-	rhs.EndPos = expr.EndPos
+	if assignmentAt == 0 {
+		return nil, nil, ErrInvalidAssignmentExpression
+	}
 
-	return lhs, rhs, nil
+	if len(expr.Tokens) == assignmentAt+1 {
+		return nil, nil, ErrInvalidAssignmentExpression
+	}
+
+	rhs := Expression{}
+	rhs.Pos = expr.Tokens[assignmentAt+1].Pos
+	rhs.EndPos = expr.EndPos
+	rhs.Tokens = []lexer.Token{}
+	for i, token := range expr.Tokens {
+		if i < assignmentAt+1 {
+			continue
+		}
+		rhs.Tokens = append(rhs.Tokens, token)
+	}
+
+	return &lhs, &rhs, nil
 }

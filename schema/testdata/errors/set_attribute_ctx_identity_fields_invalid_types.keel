@@ -9,28 +9,28 @@ model UserExtension {
 
     actions {
         create createExt() {
-            //expect-error:18:20:AttributeExpressionError:expression expected to resolve to type Number but it is Text
+            //expect-error:40:58:AttributeExpressionError:expression expected to resolve to type Number but it is Text
             @set(userExtension.email = ctx.identity.email)
-            //expect-error:18:28:AttributeExpressionError:expression expected to resolve to type Number but it is Boolean
+            //expect-error:45:71:AttributeExpressionError:expression expected to resolve to type Number but it is Boolean
             @set(userExtension.isVerified = ctx.identity.emailVerified)
-            //expect-error:18:24:AttributeExpressionError:expression expected to resolve to type Number but it is Timestamp
+            //expect-error:45:67:AttributeExpressionError:expression expected to resolve to type Number but it is Timestamp
             @set(userExtension.signedUpAt = ctx.identity.createdAt)
-            //expect-error:18:21:AttributeExpressionError:expression expected to resolve to type Number but it is Text
+            //expect-error:41:60:AttributeExpressionError:expression expected to resolve to type Number but it is Text
             @set(userExtension.issuer = ctx.identity.issuer)
-            //expect-error:18:25:AttributeExpressionError:expression expected to resolve to type Number but it is Text
+            //expect-error:45:68:AttributeExpressionError:expression expected to resolve to type Number but it is Text
             @set(userExtension.externalId = ctx.identity.externalId)
             @permission(expression: ctx.isAuthenticated)
         }
         update updateExt(id) {
-            //expect-error:18:20:AttributeExpressionError:expression expected to resolve to type Number but it is Text
+            //expect-error:40:58:AttributeExpressionError:expression expected to resolve to type Number but it is Text
             @set(userExtension.email = ctx.identity.email)
-            //expect-error:18:28:AttributeExpressionError:expression expected to resolve to type Number but it is Boolean
+            //expect-error:45:71:AttributeExpressionError:expression expected to resolve to type Number but it is Boolean
             @set(userExtension.isVerified = ctx.identity.emailVerified)
-            //expect-error:18:24:AttributeExpressionError:expression expected to resolve to type Number but it is Timestamp
+            //expect-error:45:67:AttributeExpressionError:expression expected to resolve to type Number but it is Timestamp
             @set(userExtension.signedUpAt = ctx.identity.createdAt)
-            //expect-error:18:21:AttributeExpressionError:expression expected to resolve to type Number but it is Text
+            //expect-error:41:60:AttributeExpressionError:expression expected to resolve to type Number but it is Text
             @set(userExtension.issuer = ctx.identity.issuer)
-            //expect-error:18:25:AttributeExpressionError:expression expected to resolve to type Number but it is Text
+            //expect-error:45:68:AttributeExpressionError:expression expected to resolve to type Number but it is Text
             @set(userExtension.externalId = ctx.identity.externalId)
             @permission(expression: ctx.isAuthenticated)
         }

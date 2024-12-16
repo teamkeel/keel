@@ -10,9 +10,9 @@ model Post {
             //expect-error:18:22:AttributeExpressionError:unknown identifier 'name'
             @set(name = "hello")
         }
+        //expect-error:35:36:ActionInputError:n is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute
         create namedInput() with (n: Text, published) {
             //expect-error:18:19:AttributeExpressionError:unknown identifier 'n'
-            //expect-error:35:36:ActionInputError:n is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute
             @set(n = post.name)
         }
         create literal() with (name, published) {

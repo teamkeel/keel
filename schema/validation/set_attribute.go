@@ -216,7 +216,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 
 func makeSetExpressionError(message string, hint string, node node.ParserNode) *errorhandling.ValidationError {
 	return errorhandling.NewValidationErrorWithDetails(
-		errorhandling.AttributeArgumentError,
+		errorhandling.AttributeExpressionError,
 		errorhandling.ErrorDetails{
 			Message: message,
 			Hint:    hint,

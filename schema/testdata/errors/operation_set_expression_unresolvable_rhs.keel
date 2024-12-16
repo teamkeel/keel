@@ -5,7 +5,7 @@ model Profile {
 
     actions {
         create createProfile() {
-            //expect-error:18:18:AttributeExpressionError:expression expected to resolve to type Text but it is Identity
+            //expect-error:37:49:AttributeExpressionError:expression expected to resolve to type Text but it is Identity
             @set(profile.username = ctx.identity)
         }
     }

@@ -3,6 +3,7 @@ package parser_test
 import (
 	"testing"
 
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/stretchr/testify/assert"
 	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
@@ -610,13 +611,93 @@ func TestAttributeWithParenthesisNoArgs(t *testing.T) {
 	assert.Len(t, attribute.Arguments, 0)
 }
 
+func TestExpressionToAssignmentValid(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		fields {
+			isActive Boolean
+		}
+		@set(expression: author.isActive = true)
+	  }`})
+	expression := schema.Declarations[0].Model.Sections[1].Attribute.Arguments[0].Expression
+	lhs, rhs, err := expression.ToAssignmentExpression()
+	assert.NoError(t, err)
+
+	assert.Equal(t, "author.isActive", lhs.String())
+	assert.Equal(t, expression.Pos, lhs.Pos)
+	assert.Equal(t, lexer.Position{Filename: "test.keel", Column: 36, Offset: 87, Line: 6}, lhs.EndPos)
+
+	assert.Equal(t, "true", rhs.String())
+	assert.Equal(t, lexer.Position{Filename: "test.keel", Column: 38, Offset: 89, Line: 6}, rhs.Pos)
+	assert.Equal(t, expression.EndPos, rhs.EndPos)
+}
+
+func TestExpressionToAssignmentEquality(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		fields {
+			isActive Boolean
+		}
+		@set(expression: author.isActive == true)
+	  }`})
+	expression := schema.Declarations[0].Model.Sections[1].Attribute.Arguments[0].Expression
+	lhs, rhs, err := expression.ToAssignmentExpression()
+	assert.ErrorIs(t, err, parser.ErrInvalidAssignmentExpression)
+	assert.Nil(t, lhs)
+	assert.Nil(t, rhs)
+}
+
+func TestExpressionToAssignmentNoLhs(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		fields {
+			isActive Boolean
+		}
+		@set(expression: = true)
+	  }`})
+	expression := schema.Declarations[0].Model.Sections[1].Attribute.Arguments[0].Expression
+	lhs, rhs, err := expression.ToAssignmentExpression()
+	assert.ErrorIs(t, err, parser.ErrInvalidAssignmentExpression)
+	assert.Nil(t, lhs)
+	assert.Nil(t, rhs)
+}
+
+func TestExpressionToAssignmentNoRhs(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		fields {
+			isActive Boolean
+		}
+		@set(expression: post.IsActive =)
+	  }`})
+	expression := schema.Declarations[0].Model.Sections[1].Attribute.Arguments[0].Expression
+	lhs, rhs, err := expression.ToAssignmentExpression()
+	assert.ErrorIs(t, err, parser.ErrInvalidAssignmentExpression)
+	assert.Nil(t, lhs)
+	assert.Nil(t, rhs)
+}
+
+func TestExpressionToAssignmentNoAssignment(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		fields {
+			isActive Boolean
+		}
+		@set(expression: post.IsActive)
+	  }`})
+	expression := schema.Declarations[0].Model.Sections[1].Attribute.Arguments[0].Expression
+	lhs, rhs, err := expression.ToAssignmentExpression()
+	assert.ErrorIs(t, err, parser.ErrInvalidAssignmentExpression)
+	assert.Nil(t, lhs)
+	assert.Nil(t, rhs)
+}
+
 func TestExpressionToStringPreserveWhitespaces(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 	model Author {
 		@permission(expression: ctx.isAuthenticated   ==  true)
 	  }`})
 	expression := schema.Declarations[0].Model.Sections[0].Attribute.Arguments[0].Expression
-
 	assert.Equal(t, "ctx.isAuthenticated   ==  true", expression.String())
 }
 
@@ -627,7 +708,6 @@ func TestExpressionToStringPreserveNewLines(t *testing.T) {
           == true)
 	  }`})
 	expression := schema.Declarations[0].Model.Sections[0].Attribute.Arguments[0].Expression
-
 	assert.Equal(t,
 		`ctx.isAuthenticated
            == true`, expression.String())

@@ -7,7 +7,7 @@ model Record {
 
     actions {
         create createRecordWithChildren() {
-            //expect-error:18:33:AttributeExpressionError:expression expected to resolve to type User but it is User[]
+            //expect-error:33:64:AttributeExpressionError:expression expected to resolve to type User but it is User[]
             @set(record.owner = ctx.identity.user.records.owner)
         }
     }

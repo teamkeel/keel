@@ -11,11 +11,11 @@ model Post {
             @set(post.name == "Keel")
         }
         create createPost2() {
-            //expect-error:25:26:AttributeExpressionError:operator '+' not supported in this context
+            //expect-error:37:38:AttributeExpressionError:operator '+' not supported in this context
             @set(post.name = "Keel" + "son")
         }
         create createPost3() {
-            //expect-error:18:5:AttributeExpressionError:expression expected to resolve to type Text but it is Number
+            //expect-error:30:33:AttributeExpressionError:expression expected to resolve to type Text but it is Number
             @set(post.name = 123)
         }
         create createPost4() {
