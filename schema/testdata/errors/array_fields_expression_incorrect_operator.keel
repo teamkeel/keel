@@ -21,13 +21,13 @@ model Thing {
             @where(["science"] in thing.texts)
         }
 
-        list listThings4() {
-            //expect-error:20:44:E026:thing.texts is Text[] but "science" is Text
-            @where(thing.texts == "science")
-        }
+        // This won't be validated against until we deprecate '==' acting as an ANY query for relationships
+        //list listThings4() {
+        //    @where(thing.texts == "science")
+        //}
 
         list listThings5() {
-            //expect-error:30:32:E030:thing.texts is an array. Only 'in' or 'not in' can be used
+            //expect-error:30:32:AttributeExpressionError:cannot use operator '==' with types Text and Text[]
             @where("science" == thing.texts)
         }
     }

@@ -12,7 +12,6 @@ import (
 var messageConverters = []errorConverter{
 	undefinedField,
 	noFieldSelection,
-	unexpectedResolvedType,
 	noOperatorOverload,
 	undeclaredOperatorReference,
 	undeclaredVariableReference,
@@ -36,13 +35,6 @@ var noFieldSelection = errorConverter{
 	Regex: `type '(.+)' does not support field selection`,
 	Construct: func(expectedReturnType *types.Type, values []string) string {
 		return fmt.Sprintf("type %s does not have any fields to select", mapType(values[0]))
-	},
-}
-
-var unexpectedResolvedType = errorConverter{
-	Regex: `expression expected to resolve to type (.+) but it is (.+)`,
-	Construct: func(expectedReturnType *types.Type, values []string) string {
-		return fmt.Sprintf("expression expected to resolve to type %s but it is %s", mapType(values[0]), mapType(values[1]))
 	},
 }
 

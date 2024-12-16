@@ -7,34 +7,39 @@ import (
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types/ref"
 	"github.com/teamkeel/keel/schema/parser"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // ToValue expects and resolves to a specific type by evaluating the expression
-func ToValue[T any](expression *parser.Expression) (T, error) {
+func ToValue[T any](expression *parser.Expression) (T, bool, error) {
 	env, err := cel.NewEnv()
 	if err != nil {
-		return *new(T), err
+		return *new(T), false, err
 	}
 
 	ast, issues := env.Parse(expression.String())
 	if issues != nil && len(issues.Errors()) > 0 {
-		return *new(T), errors.New("expression has validation errors and cannot be evaluated")
+		return *new(T), false, errors.New("expression has validation errors and cannot be evaluated")
 	}
 
 	prg, err := env.Program(ast)
 	if err != nil {
-		return *new(T), err
+		return *new(T), false, err
 	}
 
 	out, _, err := prg.Eval(map[string]any{})
 	if err != nil {
-		return *new(T), err
+		return *new(T), false, err
 	}
 
-	if value, ok := out.Value().(T); ok {
-		return value, nil
+	value := out.Value()
+
+	if _, ok := value.(structpb.NullValue); ok {
+		return *new(T), true, nil
+	} else if value, ok := value.(T); ok {
+		return value, false, nil
 	} else {
-		return *new(T), fmt.Errorf("value is of type '%T' and cannot assert type '%T'", out.Value(), *new(T))
+		return *new(T), false, fmt.Errorf("value is of type '%T' and cannot assert type '%T'", out.Value(), *new(T))
 	}
 }
 

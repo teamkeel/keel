@@ -352,17 +352,14 @@ func WithComparisonOperators() expressions.Option {
 				cel.Overload("equals_Text[]_Text", argTypes(typing.TextArray, typing.Text), types.BoolType),
 				cel.Overload("equals_Text[]_string", argTypes(typing.TextArray, types.StringType), types.BoolType),
 				cel.Overload("equals_Text_Text[]", argTypes(typing.Text, typing.TextArray), types.BoolType),
-				cel.Overload("equals_string_Text[]", argTypes(types.StringType, typing.TextArray), types.BoolType),
 
 				cel.Overload("equals_ID[]_ID", argTypes(typing.IDArray, typing.ID), types.BoolType),
 				cel.Overload("equals_ID[]_string", argTypes(typing.IDArray, types.StringType), types.BoolType),
 				cel.Overload("equals_ID_ID[]", argTypes(typing.ID, typing.IDArray), types.BoolType),
-				cel.Overload("equals_string_ID[]", argTypes(types.StringType, typing.IDArray), types.BoolType),
 
 				cel.Overload("equals_Number[]_Number", argTypes(typing.NumberArray, typing.Number), types.BoolType),
 				cel.Overload("equals_Number[]_int", argTypes(typing.NumberArray, types.IntType), types.BoolType),
 				cel.Overload("equals_Number_Number[]", argTypes(typing.Number, typing.NumberArray), types.BoolType),
-				cel.Overload("equals_int_Number[]", argTypes(types.IntType, typing.NumberArray), types.BoolType),
 			),
 		)
 		if err != nil {

@@ -142,10 +142,6 @@ func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 				return
 			}
 
-			if action.Name.Value == "getBySupplierSkuExprAndCodeExpr" {
-				fmt.Print("getBySku")
-			}
-
 			hasUniqueLookup = expressionHasUniqueLookup(asts, model, attr.Arguments[0].Expression, fieldsInCompositeUnique)
 		},
 	}

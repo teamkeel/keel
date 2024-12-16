@@ -72,10 +72,6 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
-		// if tc.Name() != "set_attribute_lhs_is_invalid.keel" {
-		// 	continue
-		// }
-
 		testCase := tc
 		if testCase.IsDir() {
 			t.Errorf("errors test data directory should only contain keel schema files - directory found: %s", testCase.Name())

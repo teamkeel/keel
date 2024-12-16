@@ -187,7 +187,7 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 	arg2 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
 	assert.Equal(t, "actions", arg2.Label.Value)
 
-	v1, err := resolve.ToValue[bool](arg1.Expression)
+	v1, _, err := resolve.ToValue[bool](arg1.Expression)
 	assert.NoError(t, err)
 	assert.Equal(t, true, v1)
 

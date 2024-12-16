@@ -129,22 +129,30 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 		return validationErrors, nil
 	}
 
-	if p.ExpectedReturnType != nil {
-		if ast.OutputType() != types.NullType {
-			out := mapType(ast.OutputType().String())
-
-			if out != "dyn[]" && mapType(p.ExpectedReturnType.String()) != out {
-				return []*errorhandling.ValidationError{
-					errorhandling.NewValidationErrorWithDetails(
-						errorhandling.AttributeExpressionError,
-						errorhandling.ErrorDetails{
-							Message: fmt.Sprintf("expression expected to resolve to type %s but it is %s", mapType(p.ExpectedReturnType.String()), mapType(ast.OutputType().String())),
-						},
-						expression),
-				}, nil
-			}
+	if p.ExpectedReturnType != nil && ast.OutputType() != types.NullType {
+		out := mapType(ast.OutputType().String())
+		if out != "dyn[]" && !typesAssignable(p.ExpectedReturnType, ast.OutputType()) {
+			return []*errorhandling.ValidationError{
+				errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeExpressionError,
+					errorhandling.ErrorDetails{
+						Message: fmt.Sprintf("expression expected to resolve to type %s but it is %s", mapType(p.ExpectedReturnType.String()), mapType(ast.OutputType().String())),
+					},
+					expression),
+			}, nil
 		}
 	}
 
 	return nil, nil
+}
+
+func typesAssignable(t1 *types.Type, t2 *types.Type) bool {
+	switch t1.String() {
+	case typing.Date.String():
+		return t2.String() == typing.Date.String() || t2.String() == typing.Timestamp.String()
+	case typing.Timestamp.String():
+		return t2.String() == typing.Date.String() || t2.String() == typing.Timestamp.String()
+	default:
+		return mapType(t1.String()) == mapType(t2.String())
+	}
 }

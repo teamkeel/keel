@@ -2003,7 +2003,7 @@ func (scm *Builder) applyJobAttribute(protoJob *proto.Job, attribute *parser.Att
 	case parser.AttributePermission:
 		protoJob.Permissions = append(protoJob.Permissions, scm.permissionAttributeToProtoPermission(attribute))
 	case parser.AttributeSchedule:
-		val, _ := resolve.ToValue[string](attribute.Arguments[0].Expression)
+		val, _, _ := resolve.ToValue[string](attribute.Arguments[0].Expression)
 		src := strings.TrimPrefix(val, `"`)
 		src = strings.TrimSuffix(src, `"`)
 

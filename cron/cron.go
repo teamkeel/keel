@@ -599,9 +599,7 @@ func toTokens(src string) *Tokens {
 				char == ',') // [4]
 
 		if isEndOfToken {
-			// +2 here because we want the end position to point to the character
-			// after the final character of this token
-			t.End = i + 2
+			t.End = i
 			t = nil
 		}
 	}

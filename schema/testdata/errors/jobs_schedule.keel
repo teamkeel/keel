@@ -26,6 +26,11 @@ job InvalidSchedule {
     @schedule("every 10 cats")
 }
 
+job InvalidScheduleValue {
+    //expect-error:22:25:AttributeArgumentError:invalid day 'bob' - expected day of week e.g. 'monday', 'day' for every day, or 'weekday' for monday-friday
+    @schedule("every BOB hours")
+}
+
 job InvalidCron {
     //expect-error:27:30:AttributeArgumentError:invalid value 'BOB' for day-of-week field
     @schedule("*/10 * * * BOB")

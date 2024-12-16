@@ -50,7 +50,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				return
 			}
 
-			lhs, r, err := expression.ToAssignmentExpression()
+			lhs, rhs, err := expression.ToAssignmentExpression()
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeExpressionError,
@@ -63,7 +63,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 				return
 			}
 
-			issues, err := attributes.ValidateSetExpression(asts, action, lhs, r)
+			issues, err := attributes.ValidateSetExpression(asts, action, lhs, rhs)
 			if err != nil {
 				errs.AppendError(makeSetExpressionError(
 					"The @set attribute can only be used to set model fields",
@@ -204,6 +204,16 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 						errs.AppendError(makeSetExpressionError(
 							fmt.Sprintf("Cannot set the field '%s' as it is a built-in field and can only be mutated internally", currentField.Name.Value),
 							"Target another field on the model or remove the @set attribute entirely",
+							ident,
+						))
+						return
+					}
+
+					_, isNull, _ := resolve.ToValue[any](rhs)
+					if !currentField.Optional && isNull {
+						errs.AppendError(makeSetExpressionError(
+							fmt.Sprintf("'%s' cannot be set to null", currentField.Name.Value),
+							"",
 							ident,
 						))
 						return

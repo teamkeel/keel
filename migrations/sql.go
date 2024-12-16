@@ -282,10 +282,15 @@ func getDefaultValue(field *proto.Field) (string, error) {
 			return "", err
 		}
 
-		v, err := resolve.ToValue[any](expression)
+		v, isNull, err := resolve.ToValue[any](expression)
 		if err != nil {
 			return "", err
 		}
+
+		if isNull {
+			return "NULL", nil
+		}
+
 		return toSqlLiteral(v, field)
 	}
 }

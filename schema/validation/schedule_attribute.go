@@ -39,7 +39,7 @@ func ScheduleAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			value, err := resolve.ToValue[string](attribute.Arguments[0].Expression)
+			value, _, err := resolve.ToValue[string](attribute.Arguments[0].Expression)
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
