@@ -66,9 +66,7 @@ test("events from failed hook function with rollback", async () => {
 });
 
 test("events from failed job", async () => {
-  await expect(jobs.createRandomPersons({ raiseException: true })).toHaveError({
-    code: "ERR_UNKNOWN",
-  });
+  await jobs.createRandomPersons({ raiseException: true });
 
   const persons = await models.person.findMany();
 

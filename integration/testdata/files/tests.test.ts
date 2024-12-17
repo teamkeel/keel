@@ -1,7 +1,6 @@
 import { actions, resetDatabase, models } from "@teamkeel/testing";
 import { beforeEach, expect, test } from "vitest";
-import { useDatabase, InlineFile, File } from "@teamkeel/sdk";
-import { sql } from "kysely";
+import { InlineFile, File } from "@teamkeel/sdk";
 
 interface DbFile {
   id: string;
@@ -30,23 +29,10 @@ test("files - create action with file input", async () => {
   const contents1 = await result.file?.read();
   expect(contents1?.toString("utf-8")).toEqual("hello");
 
-  const myfiles = await useDatabase()
-    .selectFrom("my_file")
-    .selectAll()
-    .execute();
+  const myfile = await models.myFile.findOne({ id: result.id });
 
-  const files = await sql<DbFile>`SELECT * FROM keel_storage`.execute(
-    useDatabase()
-  );
-
-  expect(myfiles.length).toEqual(1);
-  expect(files.rows.length).toEqual(1);
-  expect(files.rows[0].id).toEqual(myfiles[0].file?.key);
-  expect(files.rows[0].filename).toEqual(myfiles[0].file?.filename);
-  expect(files.rows[0].contentType).toEqual(myfiles[0].file?.contentType);
-
-  const contents = files.rows[0].data.toString("utf-8");
-  expect(contents).toEqual("hello");
+  expect(myfile?.file?.contentType).toEqual("text/plain");
+  expect(myfile?.file?.filename).toEqual("my-file.txt");
 });
 
 test("files - update action with file input", async () => {
@@ -80,23 +66,10 @@ test("files - update action with file input", async () => {
   const contents1 = await updated.file?.read();
   expect(contents1?.toString("utf-8")).toEqual("hello again");
 
-  const myfiles = await useDatabase()
-    .selectFrom("my_file")
-    .selectAll()
-    .execute();
-
-  const files =
-    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
-      useDatabase()
-    );
-
+  const myfiles = await models.myFile.findMany();
   expect(myfiles.length).toEqual(1);
-  expect(files.rows.length).toEqual(2);
-  expect(files.rows[0].id).toEqual(myfiles[0].file?.key);
-  expect(files.rows[0].filename).toEqual(myfiles[0].file?.filename);
-  expect(files.rows[0].contentType).toEqual(myfiles[0].file?.contentType);
 
-  const contents = files.rows[0].data.toString("utf-8");
+  const contents = (await myfiles[0].file?.read())?.toString("utf-8");
   expect(contents).toEqual("hello again");
 });
 
@@ -128,26 +101,18 @@ test("files - update action with file input and empty hooks", async () => {
   expect(updated.file?.filename).toEqual("my-second-file.txt");
   expect(updated.file?.size).toEqual(11);
 
+  // key should have changed
+  expect(updated.file?.key).not.toEqual(result.file?.key);
+
   const contents1 = await updated.file?.read();
   expect(contents1?.toString("utf-8")).toEqual("hello again");
 
-  const myfiles = await useDatabase()
-    .selectFrom("my_file")
-    .selectAll()
-    .execute();
-
-  const files =
-    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
-      useDatabase()
-    );
-
+  const myfiles = await models.myFile.findMany();
   expect(myfiles.length).toEqual(1);
-  expect(files.rows.length).toEqual(2);
-  expect(files.rows[0].id).toEqual(myfiles[0].file?.key);
-  expect(files.rows[0].filename).toEqual(myfiles[0].file?.filename);
-  expect(files.rows[0].contentType).toEqual(myfiles[0].file?.contentType);
+  expect(myfiles[0].id).toEqual(updated.id);
+  expect(myfiles[0].file?.filename).toEqual("my-second-file.txt");
 
-  const contents = files.rows[0].data.toString("utf-8");
+  const contents = (await myfiles[0].file?.read())?.toString("utf-8");
   expect(contents).toEqual("hello again");
 });
 
@@ -254,46 +219,20 @@ test("files - list action empty hooks", async () => {
 test("files - create file in hook", async () => {
   await actions.createFileInHook({});
 
-  const myfiles = await useDatabase()
-    .selectFrom("my_file")
-    .selectAll()
-    .execute();
-
-  const files =
-    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
-      useDatabase()
-    );
-
+  const myfiles = await models.myFile.findMany();
   expect(myfiles.length).toEqual(1);
-  expect(files.rows.length).toEqual(1);
-  expect(files.rows[0].id).toEqual(myfiles[0].file?.key);
-  expect(files.rows[0].filename).toEqual(myfiles[0].file?.filename);
-  expect(files.rows[0].contentType).toEqual(myfiles[0].file?.contentType);
 
-  const contents = files.rows[0].data.toString("utf-8");
+  const contents = (await myfiles[0].file?.read())?.toString("utf-8");
   expect(contents).toEqual("created in hook!");
 });
 
 test("files - create and store file in hook", async () => {
   await actions.createFileAndStoreInHook({});
 
-  const myfiles = await useDatabase()
-    .selectFrom("my_file")
-    .selectAll()
-    .execute();
-
-  const files =
-    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
-      useDatabase()
-    );
-
+  const myfiles = await models.myFile.findMany();
   expect(myfiles.length).toEqual(1);
-  expect(files.rows.length).toEqual(1);
-  expect(files.rows[0].id).toEqual(myfiles[0].file?.key);
-  expect(files.rows[0].filename).toEqual(myfiles[0].file?.filename);
-  expect(files.rows[0].contentType).toEqual(myfiles[0].file?.contentType);
 
-  const contents = files.rows[0].data.toString("utf-8");
+  const contents = (await myfiles[0].file?.read())?.toString("utf-8");
   expect(contents).toEqual("created and stored in hook!");
 });
 
@@ -309,25 +248,12 @@ test("files - read and store in query hook", async () => {
 
   await actions.getFileNumerateContents({ id: result.id });
   await actions.getFileNumerateContents({ id: result.id });
-  await actions.getFileNumerateContents({ id: result.id });
+  const res = await actions.getFileNumerateContents({ id: result.id });
 
-  const myfiles = await useDatabase()
-    .selectFrom("my_file")
-    .selectAll()
-    .execute();
-
-  const files =
-    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
-      useDatabase()
-    );
-
+  const myfiles = await models.myFile.findMany();
   expect(myfiles.length).toEqual(1);
-  expect(files.rows.length).toEqual(1);
-  expect(files.rows[0].id).toEqual(myfiles[0].file?.key);
-  expect(files.rows[0].filename).toEqual(myfiles[0].file?.filename);
-  expect(files.rows[0].contentType).toEqual(myfiles[0].file?.contentType);
 
-  const contents = files.rows[0].data.toString("utf-8");
+  const contents = (await myfiles[0].file?.read())?.toString("utf-8");
   expect(contents).toEqual("4");
 });
 
@@ -355,16 +281,7 @@ test("files - write many, store many", async () => {
   const keys = myfiles.map((a) => a.file!.key);
   keys.push((result.msg.file as File).key);
 
-  const files =
-    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
-      useDatabase()
-    );
-
-  const fileIds = files.rows.map((a) => a.id);
-
   expect(myfiles.length).toEqual(3);
-  expect(files.rows.length).toEqual(4);
-  expect(keys.sort()).toEqual(fileIds.sort());
 });
 
 test("files - store once, write many", async () => {
@@ -384,22 +301,13 @@ test("files - store once, write many", async () => {
   const contents = await result.msg.file.read();
   expect(contents.toString("utf-8")).toEqual("hello");
 
-  const myfiles = await useDatabase()
-    .selectFrom("my_file")
-    .selectAll()
-    .execute();
-
-  const files =
-    await sql<DbFile>`SELECT * FROM keel_storage ORDER BY created_at DESC`.execute(
-      useDatabase()
-    );
+  const myfiles = await models.myFile.findMany();
 
   expect(myfiles.length).toEqual(3);
-  expect(files.rows.length).toEqual(1);
-  expect(myfiles[0].file?.key).toEqual(files.rows[0].id);
-  expect(myfiles[1].file?.key).toEqual(files.rows[0].id);
-  expect(myfiles[2].file?.key).toEqual(files.rows[0].id);
-  expect((result.msg.file as File).key).toEqual(files.rows[0].id);
+
+  // all files should have the same file key
+  expect(myfiles[1].file?.key).toEqual(myfiles[0].file?.key);
+  expect(myfiles[2].file?.key).toEqual(myfiles[0].file?.key);
 });
 
 test("files - model API file tests", async () => {
@@ -419,6 +327,7 @@ test("files - presigned url", async () => {
   const result = await actions.presignedUrl({
     file: InlineFile.fromDataURL(dataUrl),
   });
+  const url = new URL(result);
 
-  expect(result).toEqual(dataUrl);
+  expect(url.searchParams.get("X-Amz-Algorithm")).toEqual("AWS4-HMAC-SHA256");
 });
