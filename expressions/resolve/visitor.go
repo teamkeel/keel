@@ -3,7 +3,6 @@ package resolve
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/google/cel-go/cel"
@@ -63,10 +62,7 @@ func (w *CelVisitor[T]) run(expression *parser.Expression) (T, error) {
 		return zero, fmt.Errorf("cel program setup err: %s", err)
 	}
 
-	expr := strings.ReplaceAll(expression.String(), " and ", " && ")
-	expr = strings.ReplaceAll(expr, " or ", " || ")
-
-	ast, issues := env.Parse(expr)
+	ast, issues := env.Parse(expression.String())
 	if issues != nil && len(issues.Errors()) > 0 {
 		return zero, ErrExpressionNotParseable
 	}
@@ -157,7 +153,7 @@ func (w *CelVisitor[T]) callExpr(expr *exprpb.Expr, nested bool) error {
 
 	var err error
 	switch fun {
-	case operators.LogicalNot, operators.Negate:
+	case operators.LogicalNot:
 		err = w.unaryCall(expr)
 	case operators.Add,
 		operators.Divide,
@@ -233,6 +229,12 @@ func (w *CelVisitor[T]) unaryCall(expr *exprpb.Expr) error {
 	fun := c.GetFunction()
 	args := c.GetArgs()
 
+	nested := isComplexOperator(args[0])
+	// err := w.visitor.StartCondition(nested)
+	// if err != nil {
+	// 	return err
+	// }
+
 	switch fun {
 	case operators.LogicalNot:
 		err := w.visitor.VisitNot()
@@ -243,8 +245,11 @@ func (w *CelVisitor[T]) unaryCall(expr *exprpb.Expr) error {
 		return fmt.Errorf("not implemented: %s", fun)
 	}
 
-	nested := isComplexOperator(args[0])
-	return w.eval(args[0], nested, false)
+	if err := w.eval(args[0], nested, false); err != nil {
+		return err
+	}
+
+	return nil //w.visitor.EndCondition(nested)
 }
 
 func (w *CelVisitor[T]) constExpr(expr *exprpb.Expr) error {

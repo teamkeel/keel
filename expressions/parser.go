@@ -52,9 +52,6 @@ func NewParser(options ...Option) (*Parser, error) {
 
 func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
 	expr := expression.String()
-	expr = strings.ReplaceAll(expr, " and ", " && ")
-	expr = strings.ReplaceAll(expr, " or ", " || ")
-
 	ast, issues := p.CelEnv.Compile(expr)
 
 	if issues != nil && issues.Err() != nil {
@@ -119,7 +116,7 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 					n,
 				))
 
-			// For syntax errors (i.e. unparseable expressions), we only need to show one error.
+			// For syntax errors (i.e. unparseable expressions), we only need to show the first error.
 			if strings.HasPrefix(e.Message, "Syntax error:") {
 				break
 			}
