@@ -23,6 +23,7 @@ const (
 	NotContains
 	Equals
 	NotEquals
+	Not
 	StartsWith
 	EndsWith
 	GreaterThan

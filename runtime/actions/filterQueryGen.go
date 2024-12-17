@@ -7,13 +7,13 @@ import (
 
 	"github.com/emirpasic/gods/stacks/arraystack"
 	"github.com/google/cel-go/common/operators"
-	"github.com/teamkeel/keel/expressions/visitor"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
 // FilterQueryGen visits the expression and adds filter conditions to the provided query builder
-func FilterQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) visitor.Visitor[*QueryBuilder] {
+func FilterQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) resolve.Visitor[*QueryBuilder] {
 	return &whereQueryGen{
 		ctx:       ctx,
 		query:     query,
@@ -26,7 +26,7 @@ func FilterQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Sche
 	}
 }
 
-var _ visitor.Visitor[*QueryBuilder] = new(whereQueryGen)
+var _ resolve.Visitor[*QueryBuilder] = new(whereQueryGen)
 
 type whereQueryGen struct {
 	ctx       context.Context
@@ -68,9 +68,17 @@ func (v *whereQueryGen) EndCondition(parenthesis bool) error {
 		lhs := l.(*QueryOperand)
 		rhs := r.(*QueryOperand)
 
-		err := v.query.Where(lhs, operator.(ActionOperator), rhs)
-		if err != nil {
-			return err
+		if n, ok := v.operators.Peek(); ok && n == Not {
+			_, _ = v.operators.Pop()
+			err := v.query.WhereNot(lhs, operator.(ActionOperator), rhs)
+			if err != nil {
+				return err
+			}
+		} else {
+			err := v.query.Where(lhs, operator.(ActionOperator), rhs)
+			if err != nil {
+				return err
+			}
 		}
 	} else if _, ok := v.operators.Peek(); !ok {
 		// This handles single operand conditions, such is post.isActive
@@ -98,6 +106,11 @@ func (v *whereQueryGen) VisitAnd() error {
 
 func (v *whereQueryGen) VisitOr() error {
 	v.query.Or()
+	return nil
+}
+
+func (v *whereQueryGen) VisitNot() error {
+	v.operators.Push(Not)
 	return nil
 }
 

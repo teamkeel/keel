@@ -3,13 +3,12 @@ package resolve
 import (
 	"github.com/google/cel-go/common/operators"
 	"github.com/iancoleman/strcase"
-	"github.com/teamkeel/keel/expressions/visitor"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
 // FieldLookups retrieves groups of ident lookups using equals comparison which could apply as a filter
 func FieldLookups(model *parser.ModelNode, expression *parser.Expression) ([][]*parser.ExpressionIdent, error) {
-	ident, err := visitor.RunCelVisitor(expression, fieldLookups(model))
+	ident, err := RunCelVisitor(expression, fieldLookups(model))
 	if err != nil {
 		return nil, err
 	}
@@ -17,7 +16,7 @@ func FieldLookups(model *parser.ModelNode, expression *parser.Expression) ([][]*
 	return ident, nil
 }
 
-func fieldLookups(model *parser.ModelNode) visitor.Visitor[[][]*parser.ExpressionIdent] {
+func fieldLookups(model *parser.ModelNode) Visitor[[][]*parser.ExpressionIdent] {
 	return &fieldLookupsGen{
 		uniqueLookupGroups: [][]*parser.ExpressionIdent{},
 		current:            0,
@@ -26,7 +25,7 @@ func fieldLookups(model *parser.ModelNode) visitor.Visitor[[][]*parser.Expressio
 	}
 }
 
-var _ visitor.Visitor[[][]*parser.ExpressionIdent] = new(fieldLookupsGen)
+var _ Visitor[[][]*parser.ExpressionIdent] = new(fieldLookupsGen)
 
 type fieldLookupsGen struct {
 	uniqueLookupGroups [][]*parser.ExpressionIdent
@@ -67,6 +66,10 @@ func (v *fieldLookupsGen) VisitOr() error {
 	v.uniqueLookupGroups = append(v.uniqueLookupGroups, []*parser.ExpressionIdent{})
 
 	v.current++
+	return nil
+}
+
+func (v *fieldLookupsGen) VisitNot() error {
 	return nil
 }
 

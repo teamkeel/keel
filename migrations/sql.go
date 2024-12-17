@@ -326,7 +326,6 @@ func getEnumDefault(field *proto.Field) (string, error) {
 	}
 
 	if field.Type.Repeated {
-
 		enums, err := resolve.AsIdentArray(expression)
 		if err != nil {
 			return "", err

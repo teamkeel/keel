@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/casing"
-	"github.com/teamkeel/keel/expressions/visitor"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -77,12 +77,10 @@ func (query *QueryBuilder) applyExpressionFilters(scope *Scope, args map[string]
 			return err
 		}
 
-		//query.OpenParenthesis()
-		_, err = visitor.RunCelVisitor(expression, FilterQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
+		_, err = resolve.RunCelVisitor(expression, FilterQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}
-		//query.CloseParenthesis()
 
 		query.And()
 	}

@@ -390,9 +390,37 @@ func TestParser_EnumEquals(t *testing.T) {
 	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
-		options.WithCtx(),
 		options.WithSchemaTypes(schema),
 		options.WithVariable("person", "Person", false),
+		options.WithComparisonOperators(),
+		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
+	)
+	require.NoError(t, err)
+
+	issues, err := parser.Validate(expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
+func TestParser_EnumArrayEquals(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Post {
+			fields {
+				tags Tag[]
+			}
+		}
+		enum Tag {
+			Sport
+			Education
+			Fiction
+		}`})
+
+	expression, err := parser.ParseExpression(`post.tags == [Tag.Sport, Tag.Education]`)
+	require.NoError(t, err)
+
+	parser, err := expressions.NewParser(
+		options.WithSchemaTypes(schema),
+		options.WithVariable("post", "Post", false),
 		options.WithComparisonOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	)
@@ -419,7 +447,6 @@ func TestParser_EnumNotEquals(t *testing.T) {
 	require.NoError(t, err)
 
 	parser, err := expressions.NewParser(
-		options.WithCtx(),
 		options.WithSchemaTypes(schema),
 		options.WithVariable("person", "Person", false),
 		options.WithComparisonOperators(),

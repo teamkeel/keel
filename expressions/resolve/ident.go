@@ -3,7 +3,6 @@ package resolve
 import (
 	"errors"
 
-	"github.com/teamkeel/keel/expressions/visitor"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -11,7 +10,7 @@ var ErrExpressionNotValidIdent = errors.New("expression is not an ident")
 
 // AsIdent expects and retrieves a single ident operand in an expression
 func AsIdent(expression *parser.Expression) (*parser.ExpressionIdent, error) {
-	ident, err := visitor.RunCelVisitor(expression, ident())
+	ident, err := RunCelVisitor(expression, ident())
 	if err != nil {
 		return nil, err
 	}
@@ -19,11 +18,11 @@ func AsIdent(expression *parser.Expression) (*parser.ExpressionIdent, error) {
 	return ident, nil
 }
 
-func ident() visitor.Visitor[*parser.ExpressionIdent] {
+func ident() Visitor[*parser.ExpressionIdent] {
 	return &identGen{}
 }
 
-var _ visitor.Visitor[*parser.ExpressionIdent] = new(identGen)
+var _ Visitor[*parser.ExpressionIdent] = new(identGen)
 
 type identGen struct {
 	ident *parser.ExpressionIdent
@@ -43,6 +42,10 @@ func (v *identGen) VisitAnd() error {
 
 func (v *identGen) VisitOr() error {
 	return ErrExpressionNotValidIdent
+}
+
+func (v *identGen) VisitNot() error {
+	return nil
 }
 
 func (v *identGen) VisitOperator(op string) error {

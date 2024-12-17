@@ -209,52 +209,6 @@ func WithLogicalOperators() expressions.Option {
 // WithComparisonOperators enables support for comparison operators for all types
 func WithComparisonOperators() expressions.Option {
 	return func(p *expressions.Parser) error {
-		var err error
-		if p.Provider.Schema != nil {
-			// For each enum type, configure equals, not equals and 'in' operators
-			for _, enum := range query.Enums(p.Provider.Schema) {
-				enumType := types.NewOpaqueType(enum.Name.Value)
-				enumTypeArr := cel.ObjectType(enum.Name.Value + "[]")
-
-				p.CelEnv, err = p.CelEnv.Extend(
-					cel.Function(operators.Equals,
-						cel.Overload(fmt.Sprintf("equals_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumType}, types.BoolType),
-					),
-					cel.Function(operators.NotEquals,
-						cel.Overload(fmt.Sprintf("notequals_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumType}, types.BoolType),
-					),
-					cel.Function(operators.In,
-						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumTypeArr}, types.BoolType),
-					),
-					cel.Function(operators.In,
-						cel.Overload(fmt.Sprintf("in_%s_literal", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, types.NewListType(enumType)}, types.BoolType),
-					))
-				if err != nil {
-					return err
-				}
-			}
-
-			// For each models, configure equals, not equals and 'in' operators
-			for _, model := range query.Models(p.Provider.Schema) {
-				modelType := types.NewObjectType(model.Name.Value)
-				modelTypeArr := cel.ObjectType(model.Name.Value + "[]")
-
-				p.CelEnv, err = p.CelEnv.Extend(
-					cel.Function(operators.Equals,
-						cel.Overload(fmt.Sprintf("equals_%s", strcase.ToLowerCamel(model.Name.Value)), []*types.Type{modelType, modelType}, types.BoolType),
-					),
-					cel.Function(operators.NotEquals,
-						cel.Overload(fmt.Sprintf("notequals_%s", strcase.ToLowerCamel(model.Name.Value)), []*types.Type{modelType, modelType}, types.BoolType),
-					),
-					cel.Function(operators.In,
-						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(model.Name.Value)), []*types.Type{modelType, modelTypeArr}, types.BoolType),
-					))
-				if err != nil {
-					return err
-				}
-			}
-		}
-
 		// Defines which types are compatible with each other for each comparison operator
 		// This is used to generate all the necessary combinations of operator overloads
 		typeCompatibilityMapping := map[string][][]*types.Type{
@@ -290,6 +244,62 @@ func WithComparisonOperators() expressions.Option {
 				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
 				{typing.Date, typing.Timestamp, types.TimestampType},
 			},
+		}
+
+		var err error
+		if p.Provider.Schema != nil {
+			// For each enum type, configure equals, not equals and 'in' operators
+			for _, enum := range query.Enums(p.Provider.Schema) {
+				enumType := types.NewOpaqueType(enum.Name.Value)
+				enumTypeArr := types.NewOpaqueType(enum.Name.Value + "[]")
+
+				typeCompatibilityMapping[operators.Equals] = append(typeCompatibilityMapping[operators.Equals],
+					[]*types.Type{enumType},
+					[]*types.Type{enumTypeArr, types.NewListType(enumType)},
+				)
+
+				typeCompatibilityMapping[operators.NotEquals] = append(typeCompatibilityMapping[operators.NotEquals],
+					[]*types.Type{enumType},
+					[]*types.Type{enumTypeArr, types.NewListType(enumType)},
+				)
+
+				p.CelEnv, err = p.CelEnv.Extend(
+					cel.Function(operators.In,
+						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, enumTypeArr}, types.BoolType),
+						cel.Overload(fmt.Sprintf("in_%s_literal", strcase.ToLowerCamel(enum.Name.Value)), []*types.Type{enumType, types.NewListType(enumType)}, types.BoolType),
+					),
+					cel.Function(operators.Equals,
+						cel.Overload(fmt.Sprintf("equals_%s[]_%s", strcase.ToLowerCamel(enum.Name.Value), strcase.ToLowerCamel(enum.Name.Value)), argTypes(enumTypeArr, enumType), types.BoolType),
+						cel.Overload(fmt.Sprintf("equals_%s_%s[]", strcase.ToLowerCamel(enum.Name.Value), strcase.ToLowerCamel(enum.Name.Value)), argTypes(enumType, enumTypeArr), types.BoolType),
+					))
+				if err != nil {
+					return err
+				}
+			}
+
+			// For each models, configure equals, not equals and 'in' operators
+			for _, model := range query.Models(p.Provider.Schema) {
+				modelType := types.NewObjectType(model.Name.Value)
+				modelTypeArr := types.NewObjectType(model.Name.Value + "[]")
+
+				typeCompatibilityMapping[operators.Equals] = append(typeCompatibilityMapping[operators.Equals],
+					[]*types.Type{modelType},
+					[]*types.Type{modelTypeArr},
+				)
+
+				typeCompatibilityMapping[operators.NotEquals] = append(typeCompatibilityMapping[operators.NotEquals],
+					[]*types.Type{modelType},
+					[]*types.Type{modelTypeArr},
+				)
+
+				p.CelEnv, err = p.CelEnv.Extend(
+					cel.Function(operators.In,
+						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(model.Name.Value)), []*types.Type{modelType, modelTypeArr}, types.BoolType),
+					))
+				if err != nil {
+					return err
+				}
+			}
 		}
 
 		// Add operator overloads for each compatible type combination

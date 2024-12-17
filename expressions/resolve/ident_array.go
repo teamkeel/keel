@@ -3,7 +3,6 @@ package resolve
 import (
 	"errors"
 
-	"github.com/teamkeel/keel/expressions/visitor"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -11,7 +10,7 @@ var ErrExpressionNotValidIdentArray = errors.New("expression is not an ident arr
 
 // AsIdentArray expects and retrieves an array of idents
 func AsIdentArray(expression *parser.Expression) ([]*parser.ExpressionIdent, error) {
-	ident, err := visitor.RunCelVisitor(expression, identArray())
+	ident, err := RunCelVisitor(expression, identArray())
 	if err != nil {
 		return nil, err
 	}
@@ -19,11 +18,11 @@ func AsIdentArray(expression *parser.Expression) ([]*parser.ExpressionIdent, err
 	return ident, nil
 }
 
-func identArray() visitor.Visitor[[]*parser.ExpressionIdent] {
+func identArray() Visitor[[]*parser.ExpressionIdent] {
 	return &identArrayGen{}
 }
 
-var _ visitor.Visitor[[]*parser.ExpressionIdent] = new(identArrayGen)
+var _ Visitor[[]*parser.ExpressionIdent] = new(identArrayGen)
 
 type identArrayGen struct {
 	idents []*parser.ExpressionIdent
@@ -43,6 +42,10 @@ func (v *identArrayGen) VisitAnd() error {
 
 func (v *identArrayGen) VisitOr() error {
 	return ErrExpressionNotValidIdentArray
+}
+
+func (v *identArrayGen) VisitNot() error {
+	return nil
 }
 
 func (v *identArrayGen) VisitOperator(op string) error {

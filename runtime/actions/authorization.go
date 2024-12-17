@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/cel-go/cel"
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/expressions/visitor"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/schema/parser"
@@ -240,7 +240,7 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 			return nil, err
 		}
 
-		_, err = visitor.RunCelVisitor(expression, FilterQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, input))
+		_, err = resolve.RunCelVisitor(expression, FilterQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, input))
 		if err != nil {
 			return nil, err
 		}

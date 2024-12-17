@@ -8,7 +8,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/expressions/resolve"
-	"github.com/teamkeel/keel/expressions/visitor"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -77,7 +76,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			currRows = nextRows
 		}
 
-		operand, err := visitor.RunCelVisitor(rhs, SelectQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
+		operand, err := resolve.RunCelVisitor(rhs, SelectQueryGen(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}

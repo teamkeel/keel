@@ -5,7 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/teamkeel/keel/expressions/resolve"
-	"github.com/teamkeel/keel/expressions/visitor"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -62,5 +61,5 @@ func TestIdent_Empty(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resolve.AsIdent(expression)
-	assert.ErrorIs(t, err, visitor.ErrExpressionNotParseable)
+	assert.ErrorIs(t, err, resolve.ErrExpressionNotParseable)
 }

@@ -5,13 +5,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/teamkeel/keel/expressions/visitor"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
 // SelectQueryGen visits the expression and adds select clauses to the provided query builder
-func SelectQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) visitor.Visitor[*QueryOperand] {
+func SelectQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) resolve.Visitor[*QueryOperand] {
 	return &setQueryGen{
 		ctx:    ctx,
 		query:  query,
@@ -22,7 +22,7 @@ func SelectQueryGen(ctx context.Context, query *QueryBuilder, schema *proto.Sche
 	}
 }
 
-var _ visitor.Visitor[*QueryOperand] = new(setQueryGen)
+var _ resolve.Visitor[*QueryOperand] = new(setQueryGen)
 
 type setQueryGen struct {
 	ctx     context.Context
@@ -48,6 +48,10 @@ func (v *setQueryGen) VisitAnd() error {
 
 func (v *setQueryGen) VisitOr() error {
 	return errors.New("or operator not supported with set")
+}
+
+func (v *setQueryGen) VisitNot() error {
+	return nil
 }
 
 func (v *setQueryGen) VisitOperator(op string) error {

@@ -1,4 +1,4 @@
-package visitor
+package resolve
 
 import (
 	"errors"
@@ -26,6 +26,8 @@ type Visitor[T any] interface {
 	VisitAnd() error
 	// VisitAnd is called when an 'or' operator is visited between conditions
 	VisitOr() error
+	// VisitNot is called when a logical not '!' is visited before a condition
+	VisitNot() error
 	// VisitLiteral is called when a literal operand is visited (e.g. "Keel")
 	VisitLiteral(value any) error
 	// VisitIdent is called when a field operand, variable or enum value is visited (e.g. post.name)
@@ -76,8 +78,15 @@ func (w *CelVisitor[T]) run(expression *parser.Expression) (T, error) {
 
 	w.ast = ast
 
-	//TODO: rather iterate through the tokens
-	nested := strings.Contains(expr, " && ") || strings.Contains(expr, " || ")
+	// Check if multiple conditions exist
+	nested := false
+	for i := 0; i < len(expression.Tokens)-1; i++ {
+		curr := expression.Tokens[i].Value
+		next := expression.Tokens[i+1].Value
+		if (curr == "|" && next == "|") || (curr == "&" && next == "&") {
+			nested = true
+		}
+	}
 
 	if err := w.eval(checkedExpr.Expr, nested, false); err != nil {
 		return zero, err
@@ -225,8 +234,11 @@ func (w *CelVisitor[T]) unaryCall(expr *exprpb.Expr) error {
 	args := c.GetArgs()
 
 	switch fun {
-	case "NOT":
-		//con.operators.Push(Not)
+	case operators.LogicalNot:
+		err := w.visitor.VisitNot()
+		if err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("not implemented: %s", fun)
 	}

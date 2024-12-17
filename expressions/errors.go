@@ -91,10 +91,8 @@ func mapOperator(op string) string {
 		} else if v == "||" {
 			v = "or"
 		}
-
 		return v
 	}
-
 }
 
 func mapType(t string) string {

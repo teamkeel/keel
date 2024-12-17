@@ -359,9 +359,7 @@ func Parse(s *reader.SchemaFile) (*AST, error) {
 				scanner.ScanComments
 	})
 
-	parser, err := participle.Build[AST](
-		participle.Lexer(lex),
-		participle.Elide("Comment"))
+	parser, err := participle.Build[AST](participle.Lexer(lex), participle.Elide("Comment"))
 	if err != nil {
 		return nil, err
 	}

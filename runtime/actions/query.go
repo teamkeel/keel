@@ -413,7 +413,19 @@ func (query *QueryBuilder) DistinctOn(operand *QueryOperand) {
 
 // Include a WHERE condition, ANDed to the existing filters (unless an OR has been specified)
 func (query *QueryBuilder) Where(left *QueryOperand, operator ActionOperator, right *QueryOperand) error {
-	template, args, err := query.generateConditionTemplate(left, operator, right)
+	template, args, err := query.generateConditionTemplate(false, left, operator, right)
+	if err != nil {
+		return err
+	}
+
+	query.filters = append(query.filters, template)
+	query.args = append(query.args, args...)
+
+	return nil
+}
+
+func (query *QueryBuilder) WhereNot(left *QueryOperand, operator ActionOperator, right *QueryOperand) error {
+	template, args, err := query.generateConditionTemplate(true, left, operator, right)
 	if err != nil {
 		return err
 	}
@@ -1319,7 +1331,7 @@ func ParsePostgresArray[T any](array string, parse func(string) (T, error)) ([]T
 }
 
 // Builds a condition SQL template using the ? placeholder for values.
-func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator ActionOperator, rhs *QueryOperand) (string, []any, error) {
+func (query *QueryBuilder) generateConditionTemplate(not bool, lhs *QueryOperand, operator ActionOperator, rhs *QueryOperand) (string, []any, error) {
 	var template string
 	var lhsSqlOperand, rhsSqlOperand any
 	args := []any{}
@@ -1356,26 +1368,41 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		return "", nil, errors.New("no handling for rhs QueryOperand type")
 	}
 
-	switch operator {
-	case Equals:
+	negate := func(tmpl string) string {
+		if not {
+			return fmt.Sprintf("NOT %s", tmpl)
+		}
+		return tmpl
+	}
+
+	// If the operand is not an array value nor an inline query,
+	// then we know it's a nested relationship lookup and
+	// so rather use Equals and NotEquals because we are joining.
+	if !rhs.IsArrayField() && !rhs.IsArrayValue() && !rhs.IsInlineQuery() {
+		if operator == OneOf {
+			operator = Equals
+		}
+		if operator == NotOneOf {
+			operator = NotEquals
+		}
+	}
+
+	switch {
+	case operator == Equals && !not || operator == NotEquals && not:
 		template = fmt.Sprintf("%s IS NOT DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
-	case NotEquals:
+	case operator == NotEquals && !not || operator == Equals && not:
 		template = fmt.Sprintf("%s IS DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
-	case StartsWith, EndsWith, Contains:
-		template = fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand)
-	case NotContains:
-		template = fmt.Sprintf("%s NOT LIKE %s", lhsSqlOperand, rhsSqlOperand)
-	case OneOf:
+	case operator == StartsWith, operator == EndsWith, operator == Contains:
+		template = negate(fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand))
+	case operator == NotContains:
+		template = negate(fmt.Sprintf("%s NOT LIKE %s", lhsSqlOperand, rhsSqlOperand))
+	case operator == OneOf && !not || operator == NotOneOf && not:
 		if rhs.IsInlineQuery() {
 			template = fmt.Sprintf("%s IN %s", lhsSqlOperand, rhsSqlOperand)
 		} else {
-			if rhs.IsArrayValue() || rhs.IsArrayField() {
-				template = fmt.Sprintf("%s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
-			} else {
-				template = fmt.Sprintf("%s IS NOT DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
-			}
+			template = fmt.Sprintf("%s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
 		}
-	case NotOneOf:
+	case operator == NotOneOf && !not || operator == OneOf && not:
 		if rhs.IsInlineQuery() {
 			template = fmt.Sprintf("%s NOT IN %s", lhsSqlOperand, rhsSqlOperand)
 		} else {
@@ -1385,43 +1412,42 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 				template = fmt.Sprintf("NOT %s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
 			}
 		}
-	case LessThan, Before:
-		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
-	case LessThanEquals, OnOrBefore:
-		template = fmt.Sprintf("%s <= %s", lhsSqlOperand, rhsSqlOperand)
-	case GreaterThan, After:
-		template = fmt.Sprintf("%s > %s", lhsSqlOperand, rhsSqlOperand)
-	case GreaterThanEquals, OnOrAfter:
-		template = fmt.Sprintf("%s >= %s", lhsSqlOperand, rhsSqlOperand)
+	case operator == LessThan, operator == Before:
+		template = negate(fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand))
+	case operator == LessThanEquals, operator == OnOrBefore:
+		template = negate(fmt.Sprintf("%s <= %s", lhsSqlOperand, rhsSqlOperand))
+	case operator == GreaterThan, operator == After:
+		template = negate(fmt.Sprintf("%s > %s", lhsSqlOperand, rhsSqlOperand))
+	case operator == GreaterThanEquals, operator == OnOrAfter:
+		template = negate(fmt.Sprintf("%s >= %s", lhsSqlOperand, rhsSqlOperand))
 
 	/* Any query operators */
-	case AnyEquals:
+	case operator == AnyEquals && !not || operator == AnyNotEquals && not:
 		template = fmt.Sprintf("%s = ANY(%s)", rhsSqlOperand, lhsSqlOperand)
-	case AnyNotEquals:
+	case operator == AnyNotEquals && !not || operator == AnyEquals && not:
 		template = fmt.Sprintf("(NOT %s = ANY(%s) OR %s IS NOT DISTINCT FROM NULL)", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
-	case AnyLessThan, AnyBefore:
-		template = fmt.Sprintf("%s > ANY(%s)", rhsSqlOperand, lhsSqlOperand)
-	case AnyLessThanEquals, AnyOnOrBefore:
-		template = fmt.Sprintf("%s >= ANY(%s)", rhsSqlOperand, lhsSqlOperand)
-	case AnyGreaterThan, AnyAfter:
-		template = fmt.Sprintf("%s < ANY(%s)", rhsSqlOperand, lhsSqlOperand)
-	case AnyGreaterThanEquals, AnyOnOrAfter:
-		template = fmt.Sprintf("%s <= ANY(%s)", rhsSqlOperand, lhsSqlOperand)
+	case operator == AnyLessThan, operator == AnyBefore:
+		template = negate(fmt.Sprintf("%s > ANY(%s)", rhsSqlOperand, lhsSqlOperand))
+	case operator == AnyLessThanEquals, operator == AnyOnOrBefore:
+		template = negate(fmt.Sprintf("%s >= ANY(%s)", rhsSqlOperand, lhsSqlOperand))
+	case operator == AnyGreaterThan, operator == AnyAfter:
+		template = negate(fmt.Sprintf("%s < ANY(%s)", rhsSqlOperand, lhsSqlOperand))
+	case operator == AnyGreaterThanEquals, operator == AnyOnOrAfter:
+		template = negate(fmt.Sprintf("%s <= ANY(%s)", rhsSqlOperand, lhsSqlOperand))
 
 	/* All query operators */
-	case AllEquals:
+	case operator == AllEquals && !not || operator == AllNotEquals && not:
 		template = fmt.Sprintf("(%s = ALL(%s) AND %s IS DISTINCT FROM '{}')", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
-	case AllNotEquals:
+	case operator == AllNotEquals && !not || operator == AllEquals && not:
 		template = fmt.Sprintf("(NOT %s = ALL(%s) OR %s IS NOT DISTINCT FROM '{}' OR %s IS NOT DISTINCT FROM NULL)", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
-	case AllLessThan, AllBefore:
-		template = fmt.Sprintf("%s > ALL(%s)", rhsSqlOperand, lhsSqlOperand)
-	case AllLessThanEquals, AllOnOrBefore:
-		template = fmt.Sprintf("%s >= ALL(%s)", rhsSqlOperand, lhsSqlOperand)
-	case AllGreaterThan, AllAfter:
-		template = fmt.Sprintf("%s < ALL(%s)", rhsSqlOperand, lhsSqlOperand)
-	case AllGreaterThanEquals, AllOnOrAfter:
-		template = fmt.Sprintf("%s <= ALL(%s)", rhsSqlOperand, lhsSqlOperand)
-
+	case operator == AllLessThan, operator == AllBefore:
+		template = negate(fmt.Sprintf("%s > ALL(%s)", rhsSqlOperand, lhsSqlOperand))
+	case operator == AllLessThanEquals, operator == AllOnOrBefore:
+		template = negate(fmt.Sprintf("%s >= ALL(%s)", rhsSqlOperand, lhsSqlOperand))
+	case operator == AllGreaterThan, operator == AllAfter:
+		template = negate(fmt.Sprintf("%s < ALL(%s)", rhsSqlOperand, lhsSqlOperand))
+	case operator == AllGreaterThanEquals, operator == AllOnOrAfter:
+		template = negate(fmt.Sprintf("%s <= ALL(%s)", rhsSqlOperand, lhsSqlOperand))
 	default:
 		return "", nil, fmt.Errorf("operator: %v is not yet supported", operator)
 	}

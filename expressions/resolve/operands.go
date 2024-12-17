@@ -1,13 +1,12 @@
 package resolve
 
 import (
-	"github.com/teamkeel/keel/expressions/visitor"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
 // IdentOperands retrieves all the ident operands in an expression as a slice
 func IdentOperands(expression *parser.Expression) ([]*parser.ExpressionIdent, error) {
-	ident, err := visitor.RunCelVisitor(expression, operands())
+	ident, err := RunCelVisitor(expression, operands())
 	if err != nil {
 		return nil, err
 	}
@@ -15,11 +14,11 @@ func IdentOperands(expression *parser.Expression) ([]*parser.ExpressionIdent, er
 	return ident, nil
 }
 
-func operands() visitor.Visitor[[]*parser.ExpressionIdent] {
+func operands() Visitor[[]*parser.ExpressionIdent] {
 	return &operandsResolver{}
 }
 
-var _ visitor.Visitor[[]*parser.ExpressionIdent] = new(operandsResolver)
+var _ Visitor[[]*parser.ExpressionIdent] = new(operandsResolver)
 
 type operandsResolver struct {
 	idents []*parser.ExpressionIdent
@@ -38,6 +37,10 @@ func (v *operandsResolver) VisitAnd() error {
 }
 
 func (v *operandsResolver) VisitOr() error {
+	return nil
+}
+
+func (v *operandsResolver) VisitNot() error {
 	return nil
 }
 
