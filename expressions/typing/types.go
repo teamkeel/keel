@@ -51,7 +51,11 @@ func MapType(schema []*parser.AST, typeName string, isRepeated bool) (*types.Typ
 		parser.FieldTypeBoolean,
 		parser.FieldTypeDecimal,
 		parser.FieldTypeTimestamp,
-		parser.FieldTypeDate:
+		parser.FieldTypeDate,
+		parser.FieldTypeFile,
+		parser.FieldTypeVector,
+		parser.FieldTypeSecret,
+		parser.FieldTypePassword:
 		if isRepeated {
 			return cel.OpaqueType(fmt.Sprintf("%s[]", typeName)), nil
 		} else {
