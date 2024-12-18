@@ -43,17 +43,21 @@ func (v *whereQueryGen) Result() (*QueryBuilder, error) {
 	return v.query, nil
 }
 
-func (v *whereQueryGen) StartCondition(parenthesis bool) error {
-	if parenthesis {
+func (v *whereQueryGen) StartCondition(nested bool) error {
+	if op, ok := v.operators.Peek(); ok && op == Not {
+		_, _ = v.operators.Pop()
+		v.query.Not()
+	}
+
+	// Only add parenthesis if we're in a nested condition
+	if nested {
 		v.query.OpenParenthesis()
 	}
 
 	return nil
 }
-
-func (v *whereQueryGen) EndCondition(parenthesis bool) error {
+func (v *whereQueryGen) EndCondition(nested bool) error {
 	if _, ok := v.operators.Peek(); ok && v.operands.Size() == 2 {
-		// This handles duel operand conditions, such is post.IsActive == true
 		operator, _ := v.operators.Pop()
 
 		r, ok := v.operands.Pop()
@@ -68,20 +72,11 @@ func (v *whereQueryGen) EndCondition(parenthesis bool) error {
 		lhs := l.(*QueryOperand)
 		rhs := r.(*QueryOperand)
 
-		if n, ok := v.operators.Peek(); ok && n == Not {
-			_, _ = v.operators.Pop()
-			err := v.query.WhereNot(lhs, operator.(ActionOperator), rhs)
-			if err != nil {
-				return err
-			}
-		} else {
-			err := v.query.Where(lhs, operator.(ActionOperator), rhs)
-			if err != nil {
-				return err
-			}
+		err := v.query.Where(lhs, operator.(ActionOperator), rhs)
+		if err != nil {
+			return err
 		}
 	} else if _, ok := v.operators.Peek(); !ok {
-		// This handles single operand conditions, such is post.isActive
 		l, hasOperand := v.operands.Pop()
 		if hasOperand {
 			lhs := l.(*QueryOperand)
@@ -92,7 +87,8 @@ func (v *whereQueryGen) EndCondition(parenthesis bool) error {
 		}
 	}
 
-	if parenthesis {
+	// Only close parenthesis if we're nested
+	if nested {
 		v.query.CloseParenthesis()
 	}
 

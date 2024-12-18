@@ -922,11 +922,11 @@ var testCases = []testCase{
 		expectedTemplate: `
             SELECT
                 DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE (NOT "thing"."category" = ANY(ARRAY[?, ?]::TEXT[]))) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE NOT ("thing"."category" = ANY(ARRAY[?, ?]::TEXT[]))) AS totalCount
             FROM 
                 "thing" 
             WHERE
-				(NOT "thing"."category" = ANY(ARRAY[?, ?]::TEXT[]))
+				NOT ("thing"."category" = ANY(ARRAY[?, ?]::TEXT[]))
             ORDER BY 
                 "thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"Technical", "Food", "Technical", "Food", 50},
@@ -1138,11 +1138,11 @@ var testCases = []testCase{
 					LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
 						"thing$repeated_things"."thing_id" = "thing"."id" 
 					WHERE 
-						("thing"."title" IS DISTINCT FROM "thing$repeated_things"."name")) AS totalCount FROM "thing"
+						NOT ("thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name")) AS totalCount FROM "thing"
 			LEFT JOIN "repeated_thing" AS "thing$repeated_things" ON 
 				"thing$repeated_things"."thing_id" = "thing"."id" 
 			WHERE 
-				("thing"."title" IS DISTINCT FROM "thing$repeated_things"."name") 
+				NOT ("thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name")
 			ORDER BY 
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{50},
@@ -1166,11 +1166,11 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE (NOT "thing"."title" = ANY(ARRAY[?, ?]::TEXT[]))) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE NOT ("thing"."title" = ANY(ARRAY[?, ?]::TEXT[]))) AS totalCount
 			FROM 
 				"thing" 
 			WHERE 
-				(NOT "thing"."title" = ANY(ARRAY[?, ?]::TEXT[]))
+				NOT ("thing"."title" = ANY(ARRAY[?, ?]::TEXT[]))
 			ORDER BY 
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"title1", "title2", "title1", "title2", 50},
@@ -1222,11 +1222,11 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE (NOT "thing"."age" = ANY(ARRAY[?, ?]::INTEGER[]))) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE NOT ("thing"."age" = ANY(ARRAY[?, ?]::INTEGER[]))) AS totalCount
 			FROM 
 				"thing" 
 			WHERE 
-				(NOT "thing"."age" = ANY(ARRAY[?, ?]::INTEGER[]))
+				NOT ("thing"."age" = ANY(ARRAY[?, ?]::INTEGER[]))
 			ORDER BY 
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{int64(10), int64(20), int64(10), int64(20), 50},
@@ -1264,7 +1264,7 @@ var testCases = []testCase{
 			SELECT
 				DISTINCT ON("account"."username", "account"."id") "account".*,
 				CASE WHEN LEAD("account"."id") OVER (ORDER BY "account"."username" ASC, "account"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."id" IN (SELECT "identity$account$following"."followee_id" FROM "identity" LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$account$following"."followee_id" IS DISTINCT FROM NULL )) AS totalCount
+				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."id" IN (SELECT "identity$account$following"."followee_id" FROM "identity" LEFT JOIN "account" AS "identity$account" ON "identity$account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$account$following"."followee_id" IS DISTINCT FROM NULL)) AS totalCount
 			FROM
 				"account"
 			WHERE "account"."id" IN
@@ -1274,7 +1274,7 @@ var testCases = []testCase{
 				LEFT JOIN "follow" AS "identity$account$following" ON "identity$account$following"."follower_id" = "identity$account"."id"
 				WHERE
 					"identity"."id" IS NOT DISTINCT FROM ? AND
-					"identity$account$following"."followee_id" IS DISTINCT FROM NULL )
+				 	"identity$account$following"."followee_id" IS DISTINCT FROM NULL)
 			ORDER BY "account"."username" ASC, "account"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"identityId", "identityId", 50},
 	},
@@ -1363,12 +1363,12 @@ var testCases = []testCase{
 			SELECT
 				DISTINCT ON("account"."username", "account"."id") "account".*,
 				CASE WHEN LEAD("account"."id") OVER (ORDER BY "account"."username" ASC, "account"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."identity_id" IS DISTINCT FROM ? AND ("account"."id" NOT IN (SELECT "identity$primary_account$following$followee"."id" FROM "identity" LEFT JOIN "account" AS "identity$primary_account" ON "identity$primary_account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$primary_account$following" ON "identity$primary_account$following"."follower_id" = "identity$primary_account"."id" LEFT JOIN "account" AS "identity$primary_account$following$followee" ON "identity$primary_account$following$followee"."id" = "identity$primary_account$following"."followee_id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$primary_account$following$followee"."id" IS DISTINCT FROM NULL))) AS totalCount
+				(SELECT COUNT(DISTINCT ("account"."username", "account"."id")) FROM "account" WHERE "account"."identity_id" IS DISTINCT FROM ? AND NOT ("account"."id" IN (SELECT "identity$primary_account$following$followee"."id" FROM "identity" LEFT JOIN "account" AS "identity$primary_account" ON "identity$primary_account"."identity_id" = "identity"."id" LEFT JOIN "follow" AS "identity$primary_account$following" ON "identity$primary_account$following"."follower_id" = "identity$primary_account"."id" LEFT JOIN "account" AS "identity$primary_account$following$followee" ON "identity$primary_account$following$followee"."id" = "identity$primary_account$following"."followee_id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$primary_account$following$followee"."id" IS DISTINCT FROM NULL))) AS totalCount
 			FROM
 				"account"
 			WHERE
 				"account"."identity_id" IS DISTINCT FROM ? AND
-				("account"."id" NOT IN
+				NOT ("account"."id" IN
 					(SELECT "identity$primary_account$following$followee"."id"
 					FROM "identity"
 					LEFT JOIN "account" AS "identity$primary_account" ON "identity$primary_account"."identity_id" = "identity"."id"
@@ -2143,13 +2143,13 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE (( "thing"."first" IS NOT DISTINCT FROM ? OR "thing"."second" IS NOT DISTINCT FROM ? ) AND ( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? ) )) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE ( "thing"."first" IS NOT DISTINCT FROM ? OR "thing"."second" IS NOT DISTINCT FROM ? ) AND ( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? ) ) AS totalCount
 			FROM
 				"thing"
 			WHERE
-				(( "thing"."first" IS NOT DISTINCT FROM ? OR "thing"."second" IS NOT DISTINCT FROM ? )
+				( "thing"."first" IS NOT DISTINCT FROM ? OR "thing"."second" IS NOT DISTINCT FROM ? )
 					AND
-				( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? ))
+				( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? )
 			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"first", int64(10), true, int64(100), "first", int64(10), true, int64(100), 50},
@@ -3382,9 +3382,9 @@ var testCases = []testCase{
 			SELECT
 				DISTINCT ON("post"."id") "post".*,
 				CASE WHEN LEAD("post"."id") OVER (ORDER BY "post"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE ((NOT ? = ANY("post"."tags") OR "post"."tags" IS NOT DISTINCT FROM NULL))) AS totalCount
+				(SELECT COUNT(DISTINCT "post"."id") FROM "post" WHERE NOT (? = ANY("post"."tags"))) AS totalCount
 			FROM "post"
-			WHERE ((NOT ? = ANY("post"."tags") OR "post"."tags" IS NOT DISTINCT FROM NULL))
+			WHERE NOT (? = ANY("post"."tags"))
 			ORDER BY "post"."id" ASC
 			LIMIT ?`,
 		expectedArgs: []any{"science", "science", 50},
@@ -3508,10 +3508,10 @@ var testCases = []testCase{
 				(SELECT COUNT(DISTINCT ("collection"."name", "collection"."id")) 
 					FROM "collection" 
 					LEFT JOIN "book" AS "collection$books" ON "collection$books"."col_id" = "collection"."id" 
-					WHERE ((NOT ? = ANY("collection$books"."genres") OR "collection$books"."genres" IS NOT DISTINCT FROM NULL))) AS totalCount 
+					WHERE NOT (? = ANY("collection$books"."genres"))) AS totalCount 
 			FROM "collection" 
 			LEFT JOIN "book" AS "collection$books" ON "collection$books"."col_id" = "collection"."id" 
-			WHERE ((NOT ? = ANY("collection$books"."genres") OR "collection$books"."genres" IS NOT DISTINCT FROM NULL)) 
+			WHERE NOT (? = ANY("collection$books"."genres"))
 			ORDER BY "collection"."name" ASC, "collection"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"fantasy", "fantasy", 50},
 	},
@@ -3638,8 +3638,34 @@ var testCases = []testCase{
 				"thing"
 			WHERE
 				"thing"."id" IS NOT DISTINCT FROM ? AND 
-				(NOT "thing"."number" < ?) AND (NOT "thing"."number" <= ?) AND (NOT "thing"."number" > ?) AND (NOT "thing"."number" >= ?)`,
+				NOT ("thing"."number" < ?) AND NOT ("thing"."number" <= ?) AND NOT ("thing"."number" > ?) AND NOT ("thing"."number" >= ?)`,
 		expectedArgs: []any{"123", int64(18), int64(18), int64(18), int64(18)},
+	},
+	{
+		name: "not_parenthesis",
+		keelSchema: `
+			model Thing {
+				fields {
+					number Number
+				}
+				actions {
+					get getThing(id) {
+						@where(!(thing.number < 18) || !(true == true && false))
+					}
+				}
+				@permission(expression: true, actions: [get])
+			}`,
+		actionName: "getThing",
+		input:      map[string]any{"id": "123"},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("thing"."id") "thing".*
+			FROM
+				"thing"
+			WHERE
+				"thing"."id" IS NOT DISTINCT FROM ? AND 
+				(NOT ("thing"."number" < ?) OR NOT (? IS NOT DISTINCT FROM ? AND ? IS NOT DISTINCT FROM ?))`,
+		expectedArgs: []any{"123", int64(18), true, true, false, true},
 	},
 	{
 		name: "not_multiple_conditions",
@@ -3665,17 +3691,14 @@ var testCases = []testCase{
 				"thing"
 			WHERE
 				"thing"."id" IS NOT DISTINCT FROM ? AND 
-				(NOT "thing"."number" < ?) AND (NOT "thing"."number" <= ?) AND (NOT "thing"."number" > ?) AND (NOT "thing"."number" >= ?)`,
-		expectedArgs: []any{"123", int64(18), int64(18), int64(18), int64(18)},
+				NOT (("thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."number" IS DISTINCT FROM ?))`,
+		expectedArgs: []any{"123", true, int64(0)},
 	},
 }
 
 func TestQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range testCases {
-		if testCase.name != "not_multiple_conditions" {
-			continue
-		}
 		testCase := testCase
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()

@@ -74,24 +74,16 @@ func (w *CelVisitor[T]) run(expression *parser.Expression) (T, error) {
 
 	w.ast = ast
 
-	// Check if multiple conditions exist
-	nested := false
-	for i := 0; i < len(expression.Tokens)-1; i++ {
-		curr := expression.Tokens[i].Value
-		next := expression.Tokens[i+1].Value
-		if (curr == "|" && next == "|") || (curr == "&" && next == "&") {
-			nested = true
-		}
-	}
+	//nested := isComplexOperatorWithRespectTo(operators.LogicalAnd, checkedExpr.Expr)
 
-	if err := w.eval(checkedExpr.Expr, nested, false); err != nil {
+	if err := w.eval(checkedExpr.Expr, false); err != nil {
 		return zero, err
 	}
 
 	return w.visitor.Result()
 }
 
-func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinaryCondition bool) error {
+func (w *CelVisitor[T]) eval(expr *exprpb.Expr, inBinaryCondition bool) error {
 	var err error
 
 	switch expr.ExprKind.(type) {
@@ -106,7 +98,7 @@ func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinaryCondition b
 
 	switch expr.ExprKind.(type) {
 	case *exprpb.Expr_CallExpr:
-		err := w.callExpr(expr, nested)
+		err := w.callExpr(expr)
 		if err != nil {
 			return err
 		}
@@ -147,7 +139,7 @@ func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinaryCondition b
 	return err
 }
 
-func (w *CelVisitor[T]) callExpr(expr *exprpb.Expr, nested bool) error {
+func (w *CelVisitor[T]) callExpr(expr *exprpb.Expr) error {
 	c := expr.GetCallExpr()
 	fun := c.GetFunction()
 
@@ -170,7 +162,7 @@ func (w *CelVisitor[T]) callExpr(expr *exprpb.Expr, nested bool) error {
 		operators.OldIn,
 		operators.Subtract:
 
-		err = w.binaryCall(expr, nested)
+		err = w.binaryCall(expr)
 	default:
 		return errors.New("function calls not supported yet")
 	}
@@ -178,13 +170,15 @@ func (w *CelVisitor[T]) callExpr(expr *exprpb.Expr, nested bool) error {
 	return err
 }
 
-func (w *CelVisitor[T]) binaryCall(expr *exprpb.Expr, nested bool) error {
+func (w *CelVisitor[T]) binaryCall(expr *exprpb.Expr) error {
 	c := expr.GetCallExpr()
 	op := c.GetFunction()
 	args := c.GetArgs()
 	lhs := args[0]
 
-	err := w.visitor.StartCondition(nested)
+	isComplex := isComplexOperatorWithRespectTo(operators.LogicalAnd, expr)
+
+	err := w.visitor.StartCondition(isComplex)
 	if err != nil {
 		return err
 	}
@@ -192,16 +186,9 @@ func (w *CelVisitor[T]) binaryCall(expr *exprpb.Expr, nested bool) error {
 	inBinary := !(op == operators.LogicalAnd || op == operators.LogicalOr)
 
 	// add parens if the current operator is lower precedence than the lhs expr operator.
-	lhsParen := isComplexOperatorWithRespectTo(op, lhs)
+	//	lhsParen := isComplexOperatorWithRespectTo(op, lhs)
 	rhs := args[1]
-	// add parens if the current operator is lower precedence than the rhs expr operator,
-	// or the same precedence and the operator is left recursive.
-	rhsParen := isComplexOperatorWithRespectTo(op, rhs)
-
-	if !rhsParen && isLeftRecursive(op) {
-		rhsParen = isSamePrecedence(op, rhs)
-	}
-	if err := w.eval(lhs, lhsParen, inBinary); err != nil {
+	if err := w.eval(lhs, inBinary); err != nil {
 		return err
 	}
 
@@ -217,11 +204,11 @@ func (w *CelVisitor[T]) binaryCall(expr *exprpb.Expr, nested bool) error {
 		return err
 	}
 
-	if err := w.eval(rhs, rhsParen, inBinary); err != nil {
+	if err := w.eval(rhs, inBinary); err != nil {
 		return err
 	}
 
-	return w.visitor.EndCondition(nested)
+	return w.visitor.EndCondition(isComplex)
 }
 
 func (w *CelVisitor[T]) unaryCall(expr *exprpb.Expr) error {
@@ -229,11 +216,7 @@ func (w *CelVisitor[T]) unaryCall(expr *exprpb.Expr) error {
 	fun := c.GetFunction()
 	args := c.GetArgs()
 
-	nested := isComplexOperator(args[0])
-	// err := w.visitor.StartCondition(nested)
-	// if err != nil {
-	// 	return err
-	// }
+	isComplex := isComplexOperator(args[0])
 
 	switch fun {
 	case operators.LogicalNot:
@@ -245,11 +228,16 @@ func (w *CelVisitor[T]) unaryCall(expr *exprpb.Expr) error {
 		return fmt.Errorf("not implemented: %s", fun)
 	}
 
-	if err := w.eval(args[0], nested, false); err != nil {
+	err := w.visitor.StartCondition(isComplex)
+	if err != nil {
 		return err
 	}
 
-	return nil //w.visitor.EndCondition(nested)
+	if err := w.eval(args[0], false); err != nil {
+		return err
+	}
+
+	return w.visitor.EndCondition(isComplex)
 }
 
 func (w *CelVisitor[T]) constExpr(expr *exprpb.Expr) error {
@@ -378,8 +366,7 @@ func (w *CelVisitor[T]) SelectExpr(expr *exprpb.Expr) error {
 
 	switch expr.ExprKind.(type) {
 	case *exprpb.Expr_CallExpr:
-		nested := isBinaryOrTernaryOperator(sel.GetOperand())
-		err := w.eval(sel.GetOperand(), nested, true)
+		err := w.eval(sel.GetOperand(), true)
 		if err != nil {
 			return err
 		}
@@ -434,25 +421,6 @@ func (w *CelVisitor[T]) selectToIdent(expr *exprpb.Expr) (*parser.ExpressionIden
 	return &ident, nil
 }
 
-// isLeftRecursive indicates whether the parser resolves the call in a left-recursive manner as
-// this can have an effect of how parentheses affect the order of operations in the AST.
-func isLeftRecursive(op string) bool {
-	return op != operators.LogicalAnd && op != operators.LogicalOr
-}
-
-// isSamePrecedence indicates whether the precedence of the input operator is the same as the
-// precedence of the (possible) operation represented in the input Expr.
-//
-// If the expr is not a Call, the result is false.
-func isSamePrecedence(op string, expr *exprpb.Expr) bool {
-	if expr.GetCallExpr() == nil {
-		return false
-	}
-	c := expr.GetCallExpr()
-	other := c.GetFunction()
-	return operators.Precedence(op) == operators.Precedence(other)
-}
-
 // isLowerPrecedence indicates whether the precedence of the input operator is lower precedence
 // than the (possible) operation represented in the input Expr.
 //
@@ -483,15 +451,6 @@ func isComplexOperatorWithRespectTo(op string, expr *exprpb.Expr) bool {
 		return false
 	}
 	return isLowerPrecedence(op, expr)
-}
-
-// Indicate whether this is a binary or ternary operator.
-func isBinaryOrTernaryOperator(expr *exprpb.Expr) bool {
-	if expr.GetCallExpr() == nil || len(expr.GetCallExpr().GetArgs()) < 2 {
-		return false
-	}
-	_, isBinaryOp := operators.FindReverseBinaryOperator(expr.GetCallExpr().GetFunction())
-	return isBinaryOp || isSamePrecedence(operators.Conditional, expr)
 }
 
 func toNative(c *exprpb.Constant) (any, error) {
