@@ -27,12 +27,12 @@ model Person {
         }
         list listPeople6() {
             //expect-error:90:91:AttributeExpressionError:field 'invalid' does not exist
-            @where(expression: ctx.isAuthenticated and ctx.identity in person.organisation.invalid)
+            @where(expression: ctx.isAuthenticated && ctx.identity in person.organisation.invalid)
         }
         list listPeople7() {
             //expect-error:98:99:AttributeExpressionError:field 'invalid' does not exist
             //expect-error:51:52:AttributeExpressionError:type Boolean does not have any fields to select
-            @where(expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid)
+            @where(expression: ctx.isAuthenticated.invalid && ctx.identity in person.organisation.invalid)
         }
     }
 }

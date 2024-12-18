@@ -33,7 +33,7 @@ job MyJob6 {
 job MyJob7 {
     //expect-error:48:49:AttributeExpressionError:type Boolean does not have any fields to select
     //expect-error:76:82:AttributeExpressionError:unknown identifier 'person'
-    @permission(expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid)
+    @permission(expression: ctx.isAuthenticated.invalid && ctx.identity in person.organisation.invalid)
 }
 
 role Admin {

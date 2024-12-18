@@ -15,7 +15,7 @@ model Product {
             @where(product.name == "Shampoo")
         }
         get getByBarcodeAndShampooExpr(barcode: Text) {
-            @where(product.stock.barcode == barcode and product.name == "Shampoo")
+            @where(product.stock.barcode == barcode && product.name == "Shampoo")
         }
         get getByStockIdExpr(stockId: ID) {
             @where(product.stock.id == stockId)

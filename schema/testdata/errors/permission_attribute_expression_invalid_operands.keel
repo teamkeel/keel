@@ -30,7 +30,7 @@ model Person {
 
     @permission(
         //expect-error:29:30:AttributeExpressionError:unknown identifier 'c'
-        expression: true or c.isAuthenticated,
+        expression: true || c.isAuthenticated,
         actions: [get]
     )
 
@@ -42,14 +42,14 @@ model Person {
 
     @permission(
         //expect-error:79:80:AttributeExpressionError:field 'invalid' does not exist
-        expression: ctx.isAuthenticated and ctx.identity in person.organisation.invalid,
+        expression: ctx.isAuthenticated && ctx.identity in person.organisation.invalid,
         actions: [get]
     )
 
     @permission(
         //expect-error:40:41:AttributeExpressionError:type Boolean does not have any fields to select
         //expect-error:87:88:AttributeExpressionError:field 'invalid' does not exist
-        expression: ctx.isAuthenticated.invalid and ctx.identity in person.organisation.invalid,
+        expression: ctx.isAuthenticated.invalid && ctx.identity in person.organisation.invalid,
         actions: [get]
     )
 }

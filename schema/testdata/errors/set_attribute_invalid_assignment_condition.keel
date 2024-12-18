@@ -27,8 +27,8 @@ model Post {
             @set(post.published == true)
         }
         create multipleConditions() {
-            //expect-error:35:63:AttributeExpressionError:assignment operator '=' not valid - did you mean to use the comparison operator '=='?
-            @set(post.published = true and post.name = "hello")
+            //expect-error:35:62:AttributeExpressionError:assignment operator '=' not valid - did you mean to use the comparison operator '=='?
+            @set(post.published = true && post.name = "hello")
         }
     }
 }
