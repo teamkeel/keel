@@ -8,6 +8,8 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
+// OperandResolver is used to resolve expressions without database access if possible
+// i.e. early evaluation
 type OperandResolver struct {
 	context context.Context
 	schema  *proto.Schema
@@ -36,8 +38,6 @@ func (a *OperandResolver) ResolveName(name string) (any, bool) {
 	return operand.value, true
 }
 
-// Parent returns the parent of the current activation, may be nil.
-// If non-nil, the parent will be searched during resolve calls.
 func (a *OperandResolver) Parent() interpreter.Activation {
 	return nil
 }

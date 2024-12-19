@@ -59,7 +59,6 @@ func (v *identArrayGen) VisitLiteral(value any) error {
 		v.idents = []*parser.ExpressionIdent{}
 	} else {
 		return ErrExpressionNotValidIdentArray
-
 	}
 	return nil
 }

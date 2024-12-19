@@ -41,7 +41,6 @@ func (v *fieldLookupsGen) StartCondition(parenthesis bool) error {
 }
 
 func (v *fieldLookupsGen) EndCondition(parenthesis bool) error {
-
 	if v.operator == operators.Equals && !v.anyNull {
 		if v.operands != nil {
 			if len(v.uniqueLookupGroups) == 0 {
@@ -58,6 +57,7 @@ func (v *fieldLookupsGen) EndCondition(parenthesis bool) error {
 
 	return nil
 }
+
 func (v *fieldLookupsGen) VisitAnd() error {
 	return nil
 }

@@ -55,7 +55,7 @@ func (v *setQueryGen) VisitNot() error {
 }
 
 func (v *setQueryGen) VisitOperator(op string) error {
-	return errors.New(fmt.Sprintf("%s operator not supported with set", op))
+	return fmt.Errorf("%s operator not supported with set", op)
 }
 
 func (v *setQueryGen) VisitLiteral(value any) error {

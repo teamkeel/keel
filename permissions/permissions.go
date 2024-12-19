@@ -85,13 +85,16 @@ func (v *permissionGen) VisitLiteral(value any) error {
 		return nil
 	}
 
-	switch value.(type) {
-	case int64, uint64:
+	switch value := value.(type) {
+	case int64:
 		v.stmt.expression += "?"
-		v.stmt.values = append(v.stmt.values, &Value{Type: ValueNumber, NumberValue: value.(int64)})
+		v.stmt.values = append(v.stmt.values, &Value{Type: ValueNumber, NumberValue: value})
+	case uint64:
+		v.stmt.expression += "?"
+		v.stmt.values = append(v.stmt.values, &Value{Type: ValueNumber, NumberValue: int64(value)})
 	case string:
 		v.stmt.expression += "?"
-		v.stmt.values = append(v.stmt.values, &Value{Type: ValueString, StringValue: fmt.Sprintf("\"%s\"", value.(string))})
+		v.stmt.values = append(v.stmt.values, &Value{Type: ValueString, StringValue: fmt.Sprintf("\"%s\"", value)})
 	case bool:
 		if value == true {
 			v.stmt.expression += "true"

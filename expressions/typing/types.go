@@ -38,7 +38,7 @@ var (
 )
 
 func MapType(schema []*parser.AST, typeName string, isRepeated bool) (*types.Type, error) {
-	// An unfortunate case to get single operand conditions validating correctly
+	// For single operand conditions
 	if typeName == parser.FieldTypeBoolean && !isRepeated {
 		return types.BoolType, nil
 	}

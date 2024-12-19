@@ -18,7 +18,6 @@ func IsModelDbColumn(model *proto.Model, fragments []string) bool {
 // such as: @permission(expression: ctx.identity.user.isActive)
 func IsContextDbColumn(fragments []string) bool {
 	return IsContextIdentity(fragments) && !IsContextIdentityId(fragments)
-
 }
 
 func IsContextIdentity(fragments []string) bool {

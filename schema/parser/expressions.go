@@ -158,12 +158,7 @@ type ExpressionIdent struct {
 }
 
 func (ident ExpressionIdent) String() string {
-	idents := []string{}
-	for _, v := range ident.Fragments {
-		idents = append(idents, v)
-	}
-
-	return strings.Join(idents, ".")
+	return strings.Join(ident.Fragments, ".")
 }
 
 var ErrInvalidAssignmentExpression = errors.New("expression is not a valid assignment")

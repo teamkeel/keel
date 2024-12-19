@@ -15,7 +15,6 @@ import (
 // Updates the query with all set attributes defined on the action.
 func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
 	for _, setExpression := range scope.Action.SetExpressions {
-
 		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
 			return err

@@ -359,7 +359,6 @@ func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeN
 	fields := []*parser.FieldNode{}
 
 	if len(attribute.Arguments) > 0 {
-
 		operands, err := resolve.AsIdentArray(attribute.Arguments[0].Expression)
 		if err != nil {
 			return fields
@@ -371,7 +370,6 @@ func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeN
 				fields = append(fields, field)
 			}
 		}
-
 	}
 
 	return fields
