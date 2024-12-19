@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -76,6 +77,40 @@ func Model(asts []*parser.AST, name string) *parser.ModelNode {
 		for _, decl := range ast.Declarations {
 			if decl.Model != nil && decl.Model.Name.Value == name {
 				return decl.Model
+			}
+		}
+	}
+	return nil
+}
+
+func Action(asts []*parser.AST, name string) *parser.ActionNode {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Model != nil {
+				for _, sec := range decl.Model.Sections {
+					for _, action := range sec.Actions {
+						if action.Name.Value == name {
+							return action
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func ActionModel(asts []*parser.AST, name string) *parser.ModelNode {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Model != nil {
+				for _, sec := range decl.Model.Sections {
+					for _, action := range sec.Actions {
+						if action.Name.Value == name {
+							return decl.Model
+						}
+					}
+				}
 			}
 		}
 	}
@@ -324,21 +359,15 @@ func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeN
 	fields := []*parser.FieldNode{}
 
 	if len(attribute.Arguments) > 0 {
-		value, err := attribute.Arguments[0].Expression.ToValue()
+		operands, err := resolve.AsIdentArray(attribute.Arguments[0].Expression)
 		if err != nil {
 			return fields
 		}
 
-		if value.Array != nil {
-			fieldNames := lo.Map(value.Array.Values, func(o *parser.Operand, _ int) string {
-				return o.Ident.ToString()
-			})
-
-			for _, f := range fieldNames {
-				field := Field(model, f)
-				if field != nil {
-					fields = append(fields, field)
-				}
+		for _, f := range operands {
+			field := Field(model, f.String())
+			if field != nil {
+				fields = append(fields, field)
 			}
 		}
 	}
@@ -375,11 +404,11 @@ func ActionSortableFieldNames(action *parser.ActionNode) ([]string, error) {
 
 	if attribute != nil {
 		for _, arg := range attribute.Arguments {
-			fieldName, err := arg.Expression.ToValue()
+			fieldName, err := resolve.AsIdent(arg.Expression)
 			if err != nil {
 				return nil, err
 			}
-			fields = append(fields, fieldName.Ident.Fragments[0].Fragment)
+			fields = append(fields, fieldName.String())
 		}
 	}
 
@@ -570,9 +599,10 @@ func SubscriberNames(asts []*parser.AST) (res []string) {
 
 						if len(attribute.Arguments) == 2 {
 							subscriberArg := attribute.Arguments[1]
-							operand, err := subscriberArg.Expression.ToValue()
-							if err == nil && operand.Ident != nil && len(operand.Ident.Fragments) == 1 {
-								name := operand.Ident.Fragments[0].Fragment
+
+							ident, err := resolve.AsIdent(subscriberArg.Expression)
+							if err == nil && ident != nil && len(ident.Fragments) == 1 {
+								name := ident.String()
 								if !lo.Contains(res, name) {
 									res = append(res, name)
 								}
@@ -759,15 +789,14 @@ func RelationAttributeValue(attr *parser.AttributeNode) (field string, ok bool) 
 		return "", false
 	}
 
-	expr := attr.Arguments[0].Expression
-	operand, err := expr.ToValue()
+	operand, err := resolve.AsIdent(attr.Arguments[0].Expression)
 	if err != nil {
 		return "", false
 	}
 
-	if operand.Ident == nil {
+	if operand == nil {
 		return "", false
 	}
 
-	return operand.Ident.Fragments[0].Fragment, true
+	return operand.Fragments[0], true
 }

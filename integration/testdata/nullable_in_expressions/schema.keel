@@ -18,7 +18,7 @@ model Person {
         }
 
         list uninitialesedPersons() {
-            @where(person.name == null or person.status == null)
+            @where(person.name == null || person.status == null)
 
         }
 

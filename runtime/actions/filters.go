@@ -3,12 +3,14 @@ package actions
 import (
 	"fmt"
 
+	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
 // Applies all implicit input filters to the query.
-func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]any) error {
+func (query *QueryBuilder) ApplyImplicitFilters(scope *Scope, args map[string]any) error {
 	message := proto.FindWhereInputMessage(scope.Schema, scope.Action.Name)
 	if message == nil {
 		return nil
@@ -38,6 +40,35 @@ func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]an
 	return nil
 }
 
+// Include a filter (where condition) on the query based on an implicit input filter.
+func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []string, operator ActionOperator, value any) error {
+	// Implicit inputs don't include the base model as the first fragment (unlike expressions), so we include it
+	fragments := append([]string{casing.ToLowerCamel(scope.Action.ModelName)}, targetField...)
+
+	// The lhs QueryOperand is determined from the fragments in the implicit input field
+	left, err := operandFromFragments(scope.Schema, fragments)
+	if err != nil {
+		return err
+	}
+
+	// The rhs QueryOperand is always a value in an implicit input
+	right := Value(value)
+
+	// Add join for the implicit input
+	err = query.AddJoinFromFragments(scope.Schema, fragments)
+	if err != nil {
+		return err
+	}
+
+	// Add where condition to the query for the implicit input
+	err = query.Where(left, operator, right)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Applies all exlicit where attribute filters to the query.
 func (query *QueryBuilder) applyExpressionFilters(scope *Scope, args map[string]any) error {
 	for _, where := range scope.Action.WhereExpressions {
@@ -46,13 +77,11 @@ func (query *QueryBuilder) applyExpressionFilters(scope *Scope, args map[string]
 			return err
 		}
 
-		// Resolve the database statement for this expression
-		err = query.whereByExpression(scope, expression, args)
+		_, err = resolve.RunCelVisitor(expression, GenerateFilterQuery(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}
 
-		// Where attributes are ANDed together
 		query.And()
 	}
 

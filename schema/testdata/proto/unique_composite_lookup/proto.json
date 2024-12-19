@@ -213,7 +213,7 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "whereExpressions": [
             {
-              "source": "product.supplierSku == supplierSku and product.supplier.supplierCode == supplierCode"
+              "source": "product.supplierSku == supplierSku && product.supplier.supplierCode == supplierCode"
             }
           ],
           "inputMessageName": "GetBySupplierSkuExprAndCodeExprInput"
@@ -225,7 +225,7 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "whereExpressions": [
             {
-              "source": "product.supplierSku == supplierSku and product.supplier.id == supplierId"
+              "source": "product.supplierSku == supplierSku && product.supplier.id == supplierId"
             }
           ],
           "inputMessageName": "GetBySupplierSkuExprAndIdExprInput"
@@ -252,7 +252,7 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "whereExpressions": [
             {
-              "source": "product.isActive == true and product.supplier.supplierCode == \"XYZ\""
+              "source": "product.isActive == true && product.supplier.supplierCode == \"XYZ\""
             }
           ],
           "inputMessageName": "GetBySupplierSkuForXyzInput"

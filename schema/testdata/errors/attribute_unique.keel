@@ -4,31 +4,33 @@ model Person {
         lastName Text
     }
 
-    //expect-error:13:24:E016:Invalid value, expected at least two field names to be provided
+    //expect-error:13:24:AttributeArgumentError:at least two field names to be provided
     @unique([firstName])
 
+    //expect-error:5:12:AttributeArgumentError:2 argument(s) provided to @unique but expected 1
     @unique(
         firstName,
         //expect-error:9:17:AttributeArgumentError:unexpected argument for @unique as only a single argument is expected
         lastName
     )
 
-    //expect-error:25:32:E016:Invalid value, expected any of the following identifiers - firstName, or lastName
+    //expect-error:25:32:AttributeExpressionError:unknown identifier 'surname'
     @unique([firstName, surname])
 
+    //expect-error:5:12:AttributeArgumentError:2 argument(s) provided to @unique but expected 1
     @unique(
         unknown1,
         //expect-error:9:17:AttributeArgumentError:unexpected argument for @unique as only a single argument is expected
         unknown2
     )
 
+    //expect-error:5:12:AttributeArgumentError:2 argument(s) provided to @unique but expected 1
     @unique(
         "first_name",
         //expect-error:9:20:AttributeArgumentError:unexpected argument for @unique as only a single argument is expected
         "last_name"
     )
 
-    //expect-error:14:26:E016:Invalid value, expected any of the following identifiers - firstName, or lastName
-    //expect-error:28:39:E016:Invalid value, expected any of the following identifiers - firstName, or lastName
+    //expect-error:13:40:AttributeExpressionError:expression expected to resolve to type FieldName[] but it is Text[]
     @unique(["first_name", "last_name"])
 }

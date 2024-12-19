@@ -15,7 +15,7 @@ model Contestant {
                 silver: desc,
                 bronze: desc
             )
-            @where(contestant.disqualified == false and contestant.team.disqualified == false)
+            @where(contestant.disqualified == false && contestant.team.disqualified == false)
             @permission(expression: true)
         }
     }

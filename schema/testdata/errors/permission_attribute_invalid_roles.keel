@@ -4,25 +4,25 @@ model Person {
     }
 
     @permission(
-        //expect-error:17:29:AttributeArgumentError:NotValidRole is not a role defined in your schema
+        //expect-error:17:29:AttributeExpressionError:NotValidRole is not a role defined in your schema
         roles: [NotValidRole],
         actions: [get]
     )
 
     @permission(
-        //expect-error:16:20:AttributeArgumentError:value should be a list e.g. [Admin]
+        //expect-error:16:20:AttributeExpressionError:expression expected to resolve to type Role[] but it is Number
         roles: 1234,
         actions: [get]
     )
 
     @permission(
-        //expect-error:16:22:AttributeArgumentError:value should be a list e.g. [Admin]
+        //expect-error:16:22:AttributeExpressionError:expression expected to resolve to type Role[] but it is Text
         roles: "1234",
         actions: [get]
     )
 
     @permission(
-        //expect-error:17:33:AttributeArgumentError:"thisisnotvalid" is not a role defined in your schema
+        //expect-error:16:34:AttributeExpressionError:expression expected to resolve to type Role[] but it is Text[]
         roles: ["thisisnotvalid"],
         actions: [get]
     )

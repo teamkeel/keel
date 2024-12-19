@@ -5,7 +5,7 @@ model Post {
 
     actions {
         update published(id) {
-            //expect-error:18:57:E026:post.status is PostStatus and OtherPostStatus.Something is OtherPostStatus
+            //expect-error:32:57:AttributeExpressionError:expression expected to resolve to type PostStatus but it is OtherPostStatus
             @set(post.status = OtherPostStatus.Something)
         }
     }

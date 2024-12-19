@@ -4,7 +4,7 @@ model Post {
     }
 
     @permission(
-        //expect-error:21:37:E026:post.title is Text and 12 is Number
+        //expect-error:32:34:AttributeExpressionError:cannot use operator '==' with types Text and Number
         expression: post.title == 12,
         actions: [get]
     )

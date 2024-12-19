@@ -7,35 +7,36 @@ model Post {
 
     actions {
         create unknownIdentifier() with (name, published) {
-            //expect-error:18:22:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:22:AttributeExpressionError:unknown identifier 'name'
             @set(name = "hello")
         }
+        //expect-error:35:36:ActionInputError:n is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute
         create namedInput() with (n: Text, published) {
-            //expect-error:18:19:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:19:AttributeExpressionError:unknown identifier 'n'
             @set(n = post.name)
         }
         create literal() with (name, published) {
-            //expect-error:18:25:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:25:AttributeExpressionError:The @set attribute can only be used to set model fields
             @set("hello" = post.name)
         }
         create null() with (name, published) {
-            //expect-error:18:22:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:22:AttributeExpressionError:The @set attribute can only be used to set model fields
             @set(null = post.name)
         }
         create ctx() with (name, published) {
-            //expect-error:18:37:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:21:AttributeExpressionError:unknown identifier 'ctx'
             @set(ctx.isAuthenticated = post.published)
         }
         create ctxIdentity() with (name, published) {
-            //expect-error:18:30:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:21:AttributeExpressionError:unknown identifier 'ctx'
             @set(ctx.identity = post.identity)
         }
         create ctxIdentityEmail() with (name, published) {
-            //expect-error:18:36:AttributeArgumentError:The @set attribute can only be used to set model fields
+            //expect-error:18:21:AttributeExpressionError:unknown identifier 'ctx'
             @set(ctx.identity.email = "email")
         }
         create anotherModel() {
-            //expect-error:18:27:E020:'publisher' not found
+            //expect-error:18:27:AttributeExpressionError:unknown identifier 'publisher'
             @set(publisher.name = "email")
         }
     }

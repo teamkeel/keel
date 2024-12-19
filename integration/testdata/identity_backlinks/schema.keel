@@ -38,7 +38,7 @@ model Film {
         }
         list listMembersFilms() {
             @where(ctx.identity.user.age >= film.ageRestriction)
-            @where(film.onlyMembers == false or ctx.identity.user.group.isActive == true)
+            @where(film.onlyMembers == false || ctx.identity.user.group.isActive == true)
             @orderBy(title: asc)
         }
     }

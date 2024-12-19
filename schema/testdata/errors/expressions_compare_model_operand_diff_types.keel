@@ -11,7 +11,7 @@ model BankAccount {
 
     actions {
         get getBankAccount(id) {
-            //expect-error:37:78:E026:ctx.identity.user is User and bankAccount.identity is Identity
+            //expect-error:55:57:AttributeExpressionError:cannot use operator '==' with types User and Identity
             @permission(expression: ctx.identity.user == bankAccount.identity)
         }
     }

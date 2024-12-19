@@ -11,7 +11,7 @@ import (
 func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 	// Attempt to resolve permissions early; i.e. before row-based database querying.
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
-	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, input, permissions)
 	if err != nil {
 		return nil, err
 	}
@@ -29,13 +29,12 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 	}
 
 	var row map[string]any
-
 	switch {
 	case canResolveEarly && !authorised:
 		return nil, common.NewPermissionError()
 	case !canResolveEarly:
 		authQuery := NewQuery(scope.Model)
-		err := authQuery.applyImplicitFilters(scope, input)
+		err := authQuery.ApplyImplicitFilters(scope, input)
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +84,7 @@ func Delete(scope *Scope, input map[string]any) (res *string, err error) {
 }
 
 func GenerateDeleteStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {
-	err := query.applyImplicitFilters(scope, input)
+	err := query.ApplyImplicitFilters(scope, input)
 	if err != nil {
 		return nil, err
 	}

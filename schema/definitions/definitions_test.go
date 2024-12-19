@@ -141,23 +141,24 @@ model Publisher {
 			},
 			ExpectSchemaDefinition: true,
 		},
+
 		{
 			Name: "go to field from @set expression",
 			Files: []*reader.SchemaFile{
 				{
 					FileName: "schema.keel",
 					Contents: `
-model Author {
-	fields {
-		<Def>identity Identity
-	}
-	actions {
-		create newAuthor() {
-			@set(author.i<Pos>dentity == ctx.identity)
+		model Author {
+			fields {
+				<Def>identity Identity
+			}
+			actions {
+				create newAuthor() {
+					@set(author.i<Pos>dentity == ctx.identity)
+				}
+			}
 		}
-	}
-}
-		`,
+				`,
 				},
 			},
 			ExpectSchemaDefinition: true,
@@ -168,17 +169,17 @@ model Author {
 				{
 					FileName: "schema.keel",
 					Contents: `
-model Book {
-	fields {
-		<Def>published Boolean
-	}
-	actions {
-		list books() {
-			@where(book.p<Pos>ublished == true)
+		model Book {
+			fields {
+				<Def>published Boolean
+			}
+			actions {
+				list books() {
+					@where(book.p<Pos>ublished == true)
+				}
+			}
 		}
-	}
-}
-		`,
+				`,
 				},
 			},
 			ExpectSchemaDefinition: true,
@@ -189,41 +190,42 @@ model Book {
 				{
 					FileName: "publisher.keel",
 					Contents: `
-model Publisher {
-	fields {
-		<Def>isActive Boolean
-	}
-}
-		`,
+		model Publisher {
+			fields {
+				<Def>isActive Boolean
+			}
+		}
+				`,
 				},
 				{
 					FileName: "author.keel",
 					Contents: `
-model Author {
-	fields {
-		publisher Publisher
-	}
-}
-		`,
+		model Author {
+			fields {
+				publisher Publisher
+			}
+		}
+				`,
 				},
 				{
 					FileName: "book.keel",
 					Contents: `
-model Book {
-	fields {
-		author Author
-	}
-	actions {
-		list books() {
-			@where(book.author.publisher.isActiv<Pos>e == true)
+		model Book {
+			fields {
+				author Author
+			}
+			actions {
+				list books() {
+					@where(book.author.publisher.isActiv<Pos>e == true)
+				}
+			}
 		}
-	}
-}
-		`,
+				`,
 				},
 			},
 			ExpectSchemaDefinition: true,
 		},
+
 		{
 			Name: "go to function",
 			Files: []*reader.SchemaFile{

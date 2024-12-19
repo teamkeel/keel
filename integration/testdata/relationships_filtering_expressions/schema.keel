@@ -28,7 +28,7 @@ model Post {
             @where(post.isActive == post.theAuthor.thePublisher.booleanValue)
         }
         list listActivePostsWithRhsField2() {
-            @where(post.theAuthor.thePublisher.isActive == post.theAuthor.thePublisher.booleanValue or post.theAuthor.isActive == post.theAuthor.thePublisher.booleanValue or post.isActive == post.theAuthor.thePublisher.booleanValue)
+            @where(post.theAuthor.thePublisher.isActive == post.theAuthor.thePublisher.booleanValue || post.theAuthor.isActive == post.theAuthor.thePublisher.booleanValue || post.isActive == post.theAuthor.thePublisher.booleanValue)
         }
         delete deleteActivePost(id) {
             @where(post.theAuthor.thePublisher.isActive == true)
