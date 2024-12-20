@@ -76,13 +76,13 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 	switch {
 	case len(ident) == 2 && proto.EnumExists(schema.Enums, ident[0]):
 		return Value(ident[1]), nil
-	case expressions.IsModelDbColumn(model, ident):
+	case model != nil && expressions.IsModelDbColumn(model, ident):
 		var err error
 		queryOperand, err = operandFromFragments(schema, ident)
 		if err != nil {
 			return nil, err
 		}
-	case expressions.IsInput(schema, action, ident):
+	case action != nil && expressions.IsInput(schema, action, ident):
 		value, ok := inputs[ident[0]]
 		if !ok {
 			return nil, fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", ident[0])

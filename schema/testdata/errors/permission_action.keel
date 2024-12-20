@@ -8,6 +8,7 @@ model Person {
             // Invalid to provide actions inside an action
             @permission(
                 //expect-error:17:24:AttributeArgumentError:unexpected argument 'actions' for @permission
+                //expect-error:17:24:AttributeArgumentError:cannot provide 'actions' arguments when using @permission in an action
                 actions: [create],
                 expression: true
             )
