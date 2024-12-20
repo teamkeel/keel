@@ -105,7 +105,6 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 						Offset:   expression.Pos.Offset + endPos.Offset,
 					},
 				}
-
 			}
 
 			validationErrors = append(validationErrors,
