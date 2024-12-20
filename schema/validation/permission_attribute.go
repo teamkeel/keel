@@ -50,13 +50,6 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 
 			for _, arg := range attr.Arguments {
 				if arg.Label == nil || arg.Label.Value == "" {
-					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-						errorhandling.AttributeArgumentError,
-						errorhandling.ErrorDetails{
-							Message: "@permission requires all arguments to be named, for example @permission(roles: [MyRole])",
-						},
-						arg,
-					))
 					continue
 				}
 

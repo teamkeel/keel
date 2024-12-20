@@ -1,5 +1,6 @@
 model Post {
     fields {
+        //expect-error:28:31:AttributeArgumentError:unexpected argument for @unique as no arguments are expected
         //expect-error:20:32:AttributeArgumentError:1 argument(s) provided to @unique but expected 0
         title Text @unique(arg)
     }
