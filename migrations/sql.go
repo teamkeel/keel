@@ -1,6 +1,7 @@
 package migrations
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"regexp"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/schema/parser"
 	"golang.org/x/exp/slices"
 )
@@ -90,6 +92,7 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 				PrimaryKeyConstraintName(model.Name, field.Name),
 				Identifier(field.Name)))
 		}
+
 		if field.Unique && !field.PrimaryKey {
 			uniqueStmt, err := addUniqueConstraintStmt(schema, model.Name, []string{field.Name})
 			if err != nil {
@@ -226,6 +229,74 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 	}
 
 	return strings.Join(stmts, "\n"), nil
+}
+
+// computedFieldFuncName generates the name of the a computed field's function
+func computedFieldFuncName(model *proto.Model, field *proto.Field) string {
+	// shortened alphanumeric hash from an expression
+	hash := fmt.Sprintf("%x", sha256.Sum256([]byte(field.ComputedExpression.Source)))[:8]
+	return fmt.Sprintf("%s__%s__%s__computed", strcase.ToSnake(model.Name), strcase.ToSnake(field.Name), hash)
+}
+
+// computedExecFuncName generates the name for the table function which executed all computed functions
+func computedExecFuncName(model *proto.Model) string {
+	return fmt.Sprintf("%s__exec_computed_fns", strcase.ToSnake(model.Name))
+}
+
+// computedTriggerName generates the name for the trigger which runs the function which executes computed functions
+func computedTriggerName(model *proto.Model) string {
+	return fmt.Sprintf("%s__computed_trigger", strcase.ToSnake(model.Name))
+}
+
+// fieldFromComputedFnName determines the field from computed function name
+func fieldFromComputedFnName(schema *proto.Schema, fn string) *proto.Field {
+	parts := strings.Split(fn, "__")
+	model := schema.FindModel(strcase.ToCamel(parts[0]))
+	for _, f := range model.Fields {
+		if f.Name == strcase.ToLowerCamel(parts[1]) {
+			return f
+		}
+	}
+	return nil
+}
+
+// addComputedFieldFuncStmt generates the function for a computed field
+func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *proto.Field) (string, string, error) {
+	var sqlType string
+	switch field.Type.Type {
+	case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT, proto.Type_TYPE_BOOL:
+		sqlType = PostgresFieldTypes[field.Type.Type]
+	default:
+		return "", "", fmt.Errorf("type not supported for computed fields: %s", field.Type.Type)
+	}
+
+	expression, err := parser.ParseExpression(field.ComputedExpression.Source)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Generate SQL from the computed attribute expression to set this field
+	stmt, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(schema, model, field))
+	if err != nil {
+		return "", "", err
+	}
+
+	fn := computedFieldFuncName(model, field)
+	sql := fmt.Sprintf("CREATE FUNCTION %s(r %s) RETURNS %s AS $$ BEGIN\n\tRETURN %s;\nEND; $$ LANGUAGE plpgsql;",
+		fn,
+		strcase.ToSnake(model.Name),
+		sqlType,
+		stmt)
+
+	return fn, sql, nil
+}
+
+func dropComputedExecFunctionStmt(model *proto.Model) string {
+	return fmt.Sprintf("DROP FUNCTION %s__exec_computed_fns;", strcase.ToSnake(model.Name))
+}
+
+func dropComputedTriggerStmt(model *proto.Model) string {
+	return fmt.Sprintf("DROP TRIGGER %s__computed_trigger ON %s;", strcase.ToSnake(model.Name), strcase.ToSnake(model.Name))
 }
 
 func fieldDefinition(field *proto.Field) (string, error) {

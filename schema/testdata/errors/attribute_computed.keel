@@ -2,6 +2,9 @@ model Item {
     fields {
         //expect-error:23:32:AttributeArgumentError:0 argument(s) provided to @computed but expected 1
         total Decimal @computed
+        //expect-error:26:47:AttributeNotAllowedError:@computed cannot be used on repeated fields
+        //expect-error:36:46:AttributeExpressionError:expression expected to resolve to type Decimal[] but it is Decimal
+        totals Decimal[] @computed(item.total)
         //expect-error:19:36:AttributeNotAllowedError:@computed cannot be used on field of type File
         file File @computed("file")
         //expect-error:23:42:AttributeNotAllowedError:@computed cannot be used on field of type Vector

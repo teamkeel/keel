@@ -1,0 +1,78 @@
+===
+
+model Item {
+    fields {
+        price Decimal
+        quantity Number
+        total Decimal @computed(item.quantity * item.price)
+    }
+}
+
+===
+
+CREATE TABLE "identity" (
+"email" TEXT,
+"email_verified" BOOL NOT NULL DEFAULT false,
+"password" TEXT,
+"external_id" TEXT,
+"issuer" TEXT,
+"name" TEXT,
+"given_name" TEXT,
+"family_name" TEXT,
+"middle_name" TEXT,
+"nick_name" TEXT,
+"profile" TEXT,
+"picture" TEXT,
+"website" TEXT,
+"gender" TEXT,
+"zone_info" TEXT,
+"locale" TEXT,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "identity" ADD CONSTRAINT identity_email_issuer_udx UNIQUE ("email", "issuer");
+CREATE TABLE "item" (
+"price" NUMERIC NOT NULL,
+"quantity" INTEGER NOT NULL,
+"total" NUMERIC NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "item" ADD CONSTRAINT item_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "keel_audit" (
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"table_name" TEXT NOT NULL,
+"op" TEXT NOT NULL,
+"data" jsonb NOT NULL,
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"identity_id" TEXT,
+"trace_id" TEXT,
+"event_processed_at" TIMESTAMPTZ
+);
+ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
+CREATE TRIGGER item_create AFTER INSERT ON "item" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER item_update AFTER UPDATE ON "item" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER item_delete AFTER DELETE ON "item" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER item_updated_at BEFORE UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_updated_at BEFORE UPDATE ON "identity" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE FUNCTION item__total__0614a79a__computed(r item) RETURNS NUMERIC AS $$ BEGIN
+	RETURN r."quantity" * r."price";
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION item__exec_computed_fns() RETURNS TRIGGER AS $$ BEGIN
+	NEW.total := item__total__0614a79a__computed(NEW);
+	RETURN NEW;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER item__computed_trigger BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE item__exec_computed_fns();
+===
+
+[
+    {"Model":"Identity","Field":"","Type":"ADDED"},
+    {"Model":"Item","Field":"","Type":"ADDED"},
+    {"Model":"KeelAudit","Field":"","Type":"ADDED"}
+]

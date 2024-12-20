@@ -3,8 +3,10 @@ package validation
 import (
 	"fmt"
 
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/attributes"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -32,13 +34,9 @@ func ComputedAttributeRules(asts []*parser.AST, errs *errorhandling.ValidationEr
 			}
 
 			switch field.Type.Value {
-			case parser.FieldTypeID,
-				parser.FieldTypeText,
-				parser.FieldTypeBoolean,
+			case parser.FieldTypeBoolean,
 				parser.FieldTypeNumber,
-				parser.FieldTypeDecimal,
-				parser.FieldTypeDate,
-				parser.FieldTypeTimestamp:
+				parser.FieldTypeDecimal:
 				attribute = attr
 			default:
 				errs.AppendError(
@@ -46,6 +44,18 @@ func ComputedAttributeRules(asts []*parser.AST, errs *errorhandling.ValidationEr
 						errorhandling.AttributeNotAllowedError,
 						errorhandling.ErrorDetails{
 							Message: fmt.Sprintf("@computed cannot be used on field of type %s", field.Type.Value),
+						},
+						attr,
+					),
+				)
+			}
+
+			if field.Repeated {
+				errs.AppendError(
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.AttributeNotAllowedError,
+						errorhandling.ErrorDetails{
+							Message: "@computed cannot be used on repeated fields",
 						},
 						attr,
 					),
@@ -80,11 +90,37 @@ func ComputedAttributeRules(asts []*parser.AST, errs *errorhandling.ValidationEr
 						Message: "expression could not be parsed",
 					},
 					expression))
+				return
 			}
 
 			if len(issues) > 0 {
 				for _, issue := range issues {
 					errs.AppendError(issue)
+				}
+			}
+
+			operands, err := resolve.IdentOperands(expression)
+			if err != nil {
+				return
+			}
+
+			for _, operand := range operands {
+				if len(operand.Fragments) < 2 {
+					continue
+				}
+
+				f := query.Field(model, operand.Fragments[1])
+
+				if f == field {
+					errs.AppendError(
+						errorhandling.NewValidationErrorWithDetails(
+							errorhandling.AttributeArgumentError,
+							errorhandling.ErrorDetails{
+								Message: "@computed expressions cannot reference itself",
+							},
+							operand,
+						),
+					)
 				}
 			}
 		},
