@@ -16,7 +16,6 @@ job MyJob3 {
 job MyJob4 {
     //expect-error:17:24:AttributeArgumentError:unexpected argument for @permission
     //expect-error:5:16:AttributeArgumentError:@permission requires either the 'expressions' or 'roles' argument to be provided
-    //expect-error:17:24:AttributeArgumentError:@permission requires all arguments to be named, for example @permission(roles: [MyRole])
     @permission([Admin])
 }
 

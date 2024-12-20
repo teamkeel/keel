@@ -124,7 +124,6 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 				if permitted, reason := uniquePermitted(currentField); !permitted {
 					errs.AppendError(uniqueRestrictionError(attr.Node, reason))
 				}
-
 			}
 		},
 		LeaveAttribute: func(n *parser.AttributeNode) {
