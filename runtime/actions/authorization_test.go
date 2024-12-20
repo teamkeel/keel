@@ -245,7 +245,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 				actions {
 					list listThings() {
-						@permission(expression: thing.isActive == true and thing.createdBy == ctx.identity)
+						@permission(expression: thing.isActive == true && thing.createdBy == ctx.identity)
 					}
 				}
 			}`,
@@ -256,7 +256,7 @@ var authorisationTestCases = []authorisationTestCase{
 			FROM
 				"thing"
 			WHERE
-				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )
+				("thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ?)
 				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{true, unverifiedIdentity[parser.FieldNameId].(string), "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
@@ -272,7 +272,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 				actions {
 					list listThings() {
-						@permission(expression: thing.isActive == true or thing.createdBy == ctx.identity)
+						@permission(expression: thing.isActive == true || thing.createdBy == ctx.identity)
 					}
 				}
 			}`,
@@ -335,7 +335,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 				actions {
 					list listThings() {
-						@permission(expression: thing.isActive == true and thing.createdBy == ctx.identity)
+						@permission(expression: thing.isActive == true && thing.createdBy == ctx.identity)
 						@permission(expression: thing.createdBy == thing.related.createdBy)
 					}
 				}
@@ -349,7 +349,7 @@ var authorisationTestCases = []authorisationTestCase{
 			LEFT JOIN "related" AS
 				"thing$related" ON "thing$related"."id" = "thing"."related_id"
 			WHERE
-				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) OR "thing"."created_by_id" IS NOT DISTINCT FROM "thing$related"."created_by_id" )
+				( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? OR "thing"."created_by_id" IS NOT DISTINCT FROM "thing$related"."created_by_id" )
 				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{true, unverifiedIdentity[parser.FieldNameId].(string), "idToAuthorise"},
 		earlyAuth:    CouldNotAuthoriseEarly(),
@@ -466,7 +466,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 				actions {
 					get getThing(id) {
-						@permission(expression: ctx.isAuthenticated and thing.createdBy.id == ctx.identity.id)
+						@permission(expression: ctx.isAuthenticated && thing.createdBy.id == ctx.identity.id)
 					}
 				}
 			}`,
@@ -481,7 +481,7 @@ var authorisationTestCases = []authorisationTestCase{
 			LEFT JOIN "identity" AS "thing$created_by" ON
 				"thing$created_by"."id" = "thing"."created_by_id"
 			WHERE
-				( ( ? IS NOT DISTINCT FROM ? AND "thing$created_by"."id" IS NOT DISTINCT FROM ? ) )
+				(? IS NOT DISTINCT FROM ? AND "thing$created_by"."id" IS NOT DISTINCT FROM ?)
 				AND "thing"."id" = ANY(ARRAY[?]::TEXT[])`,
 		expectedArgs: []any{true, true, unverifiedIdentity[parser.FieldNameId].(string), "idToAuthorise"},
 		identity:     unverifiedIdentity,
@@ -495,7 +495,7 @@ var authorisationTestCases = []authorisationTestCase{
 				}
 				actions {
 					get getThing(id) {
-						@permission(expression: ctx.isAuthenticated or thing.createdBy.id == ctx.identity.id)
+						@permission(expression: ctx.isAuthenticated || thing.createdBy.id == ctx.identity.id)
 					}
 				}
 			}`,
@@ -504,7 +504,7 @@ var authorisationTestCases = []authorisationTestCase{
 		identity:   unverifiedIdentity,
 	},
 	{
-		name: "early_evaluate_multiple_attributes_with_database",
+		name: "early_evaluate_multiple_attributes_with_database_multiple_attributes",
 		keelSchema: `
 			model Thing {
 				fields {
@@ -542,7 +542,7 @@ var authorisationTestCases = []authorisationTestCase{
 			model Thing {
 				actions {
 					get getThing(id) {
-						@permission(expression: ctx.isAuthenticated and ctx.isAuthenticated)
+						@permission(expression: ctx.isAuthenticated && ctx.isAuthenticated)
 					}
 				}
 			}`,
@@ -556,7 +556,7 @@ var authorisationTestCases = []authorisationTestCase{
 			model Thing {
 				actions {
 					get getThing(id) {
-						@permission(expression: ctx.isAuthenticated or ctx.isAuthenticated)
+						@permission(expression: ctx.isAuthenticated || ctx.isAuthenticated)
 					}
 				}
 			}`,
@@ -570,11 +570,41 @@ var authorisationTestCases = []authorisationTestCase{
 			model Thing {
 				actions {
 					get getThing(id) {
-						@permission(expression: ctx.isAuthenticated and false)
+						@permission(expression: ctx.isAuthenticated && false)
 					}
 				}
 			}`,
 		actionName: "getThing",
+		earlyAuth:  AuthorisationDeniedEarly(),
+		identity:   unverifiedIdentity,
+	},
+	{
+		name: "early_evaluate_inputs_authorised",
+		keelSchema: `
+			model Thing {
+				actions {
+					get getThing(id, bool: Boolean) {
+						@permission(expression: bool == true)
+					}
+				}
+			}`,
+		actionName: "getThing",
+		input:      map[string]any{"id": "123", "bool": true},
+		earlyAuth:  AuthorisationGrantedEarly(),
+		identity:   unverifiedIdentity,
+	},
+	{
+		name: "early_evaluate_inputs_not_authorised",
+		keelSchema: `
+			model Thing {
+				actions {
+					get getThing(id, bool: Boolean) {
+						@permission(expression: bool == true)
+					}
+				}
+			}`,
+		actionName: "getThing",
+		input:      map[string]any{"id": "123", "bool": false},
 		earlyAuth:  AuthorisationDeniedEarly(),
 		identity:   unverifiedIdentity,
 	},
@@ -1437,7 +1467,7 @@ func TestPermissionQueryBuilder(t *testing.T) {
 
 			permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
-			canResolveEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, permissions)
+			canResolveEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, testCase.input, permissions)
 			if err != nil {
 				require.NoError(t, err)
 			}
@@ -1452,7 +1482,7 @@ func TestPermissionQueryBuilder(t *testing.T) {
 					}
 				}
 			} else {
-				require.Nil(t, testCase.earlyAuth, "earlyAuth should be CouldNotAuthoriseEarly() because authorised could not be determined given early.")
+				require.Nil(t, testCase.earlyAuth, "earlyAuth should be CouldNotAuthoriseEarly() because authorised could not be determined early.")
 			}
 
 			if !canResolveEarly {

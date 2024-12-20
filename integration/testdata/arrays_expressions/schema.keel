@@ -35,7 +35,7 @@ model ThingText {
         }
 
         list listLiteralNotInArrayField() {
-            @where("Weave" not in thingText.array1)
+            @where(!("Weave" in thingText.array1))
             @orderBy(createdAt: asc)
             @permission(expression: true)
         }
@@ -85,7 +85,7 @@ model ThingEnum {
         }
 
         list listEnumLiteralNotInArrayField() {
-            @where(MyEnum.Two not in thingEnum.array1)
+            @where(!(MyEnum.Two in thingEnum.array1))
             @orderBy(createdAt: asc)
             @permission(expression: true)
         }

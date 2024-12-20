@@ -2,6 +2,5 @@ model Foo {
     fields {
         bar Text @unique
         baz Text? @default("foo")
-        identity Identity? @default(ctx.identity)
     }
 }

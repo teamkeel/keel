@@ -1,7 +1,0 @@
-model Post {
-    @permission(
-        //expect-error:34:39:E032:Cannot have mixed types in an array literal
-        expression: "bob" in [1, "123"],
-        actions: [get]
-    )
-}

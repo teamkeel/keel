@@ -32,7 +32,7 @@ model Collection {
         }
 
         list listNotInCollection(genre: Genre) {
-            @where(genre not in collection.books.genres)
+            @where(!(genre in collection.books.genres))
             @orderBy(name: asc)
             @permission(expression: true)
         }

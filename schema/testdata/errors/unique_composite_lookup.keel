@@ -37,22 +37,22 @@ model Product {
         }
         //expect-error:13:33:ActionInputError:The action 'getBySupplierSkuOrId' can only get a single record and therefore must be filtered by unique fields
         get getBySupplierSkuOrId(supplierSku: Text, supplierId: ID) {
-            @where(product.supplierSku == supplierSku or product.supplier.id == supplierId)
+            @where(product.supplierSku == supplierSku || product.supplier.id == supplierId)
         }
         //expect-error:13:45:ActionInputError:The action 'getBySupplierSkuAndCodeOrShampoo' can only get a single record and therefore must be filtered by unique fields
         get getBySupplierSkuAndCodeOrShampoo(supplierSku: Text, supplierCode: Text) {
-            @where(product.supplierSku == supplierSku and product.supplier.supplierCode == supplierCode or product.name == "Shampoo")
+            @where(product.supplierSku == supplierSku && product.supplier.supplierCode == supplierCode || product.name == "Shampoo")
         }
         //expect-error:13:43:ActionInputError:The action 'getBySupplierSkuAndIdOrShampoo' can only get a single record and therefore must be filtered by unique fields
         get getBySupplierSkuAndIdOrShampoo(supplierSku: Text, supplierId: ID) {
-            @where(product.supplierSku == supplierSku and (product.supplier.id == supplierId or product.name == "Shampoo"))
+            @where(product.supplierSku == supplierSku && (product.supplier.id == supplierId || product.name == "Shampoo"))
         }
         //expect-error:13:56:ActionInputError:The action 'getBySupplierSkuAndCodeOrShampooParenthesis' can only get a single record and therefore must be filtered by unique fields
         get getBySupplierSkuAndCodeOrShampooParenthesis(
             supplierSku: Text,
             supplierCode: Text,
         ) {
-            @where(product.supplierSku == supplierSku and (product.supplier.supplierCode == supplierCode or product.name == "Shampoo"))
+            @where(product.supplierSku == supplierSku && (product.supplier.supplierCode == supplierCode || product.name == "Shampoo"))
         }
     }
 

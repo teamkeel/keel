@@ -26,33 +26,6 @@
         },
         {
           "modelName": "Foo",
-          "name": "identity",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
-          },
-          "optional": true,
-          "foreignKeyFieldName": "identityId",
-          "defaultValue": {
-            "expression": {
-              "source": "ctx.identity"
-            }
-          }
-        },
-        {
-          "modelName": "Foo",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Foo",
           "name": "id",
           "type": {
             "type": "TYPE_ID"

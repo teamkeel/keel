@@ -1,15 +1,15 @@
 job MyJob1 {
-    //expect-error:25:35:AttributeArgumentError:NoRoleName is not a role defined in your schema
+    //expect-error:25:35:AttributeExpressionError:NoRoleName is not a role defined in your schema
     @permission(roles: [NoRoleName])
 }
 
 job MyJob2 {
-    //expect-error:32:42:AttributeArgumentError:NoRoleName is not a role defined in your schema
+    //expect-error:32:42:AttributeExpressionError:NoRoleName is not a role defined in your schema
     @permission(roles: [Admin, NoRoleName])
 }
 
 job MyJob3 {
-    //expect-error:24:29:AttributeArgumentError:value should be a list e.g. [Admin]
+    //expect-error:24:29:AttributeExpressionError:expression expected to resolve to type Role[] but it is Role
     @permission(roles: Admin)
 }
 
