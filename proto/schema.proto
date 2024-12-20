@@ -78,6 +78,14 @@ message Field {
     // and then Author has posts which is of type Post, on the Post.author field this
     // value will be "posts" and on the Author.posts field this value will be "author".
     google.protobuf.StringValue inverse_field_name = 12;
+
+    // If true then this is a computed field which means its value is derived from an expression
+    // and cannot be mutated directly. It is, however, still a database column.
+    bool computed = 13;
+
+    // If computed then this field will contain the expression that will be evaluated to
+    // determine the value of the field.
+    Expression computed_expression = 14;
 }
 
 message ForeignKeyInfo {

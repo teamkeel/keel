@@ -15,6 +15,55 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
+// Defines which types are compatible with each other for each comparison operator
+// This is used to generate all the necessary combinations of operator overloads
+var typeCompatibilityMapping = map[string][][]*types.Type{
+	operators.Equals: {
+		{types.StringType, typing.Text, typing.ID, typing.Markdown},
+		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+		{typing.Date, typing.Timestamp, types.TimestampType},
+		{typing.Boolean, types.BoolType},
+		{types.NewListType(types.StringType), typing.TextArray, typing.IDArray, typing.MarkdownArray},
+		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.NumberArray, typing.DecimalArray},
+	},
+	operators.NotEquals: {
+		{types.StringType, typing.Text, typing.ID, typing.Markdown},
+		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+		{typing.Date, typing.Timestamp, types.TimestampType},
+		{typing.Boolean, types.BoolType},
+		{types.NewListType(types.StringType), typing.TextArray, typing.IDArray, typing.MarkdownArray},
+		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.NumberArray, typing.DecimalArray},
+	},
+	operators.Greater: {
+		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+		{typing.Date, typing.Timestamp, types.TimestampType},
+	},
+	operators.GreaterEquals: {
+		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+		{typing.Date, typing.Timestamp, types.TimestampType},
+	},
+	operators.Less: {
+		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+		{typing.Date, typing.Timestamp, types.TimestampType},
+	},
+	operators.LessEquals: {
+		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+		{typing.Date, typing.Timestamp, types.TimestampType},
+	},
+	operators.Add: {
+		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.Number, typing.Decimal},
+	},
+	operators.Subtract: {
+		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.Number, typing.Decimal},
+	},
+	operators.Multiply: {
+		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.Number, typing.Decimal},
+	},
+	operators.Divide: {
+		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.Number, typing.Decimal},
+	},
+}
+
 // WithSchemaTypes declares schema models, enums and roles as types in the CEL environment
 func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 	return func(p *expressions.Parser) error {
@@ -213,43 +262,6 @@ func WithLogicalOperators() expressions.Option {
 // WithComparisonOperators enables support for comparison operators for all types
 func WithComparisonOperators() expressions.Option {
 	return func(p *expressions.Parser) error {
-		// Defines which types are compatible with each other for each comparison operator
-		// This is used to generate all the necessary combinations of operator overloads
-		typeCompatibilityMapping := map[string][][]*types.Type{
-			operators.Equals: {
-				{types.StringType, typing.Text, typing.ID, typing.Markdown},
-				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-				{typing.Date, typing.Timestamp, types.TimestampType},
-				{typing.Boolean, types.BoolType},
-				{types.NewListType(types.StringType), typing.TextArray, typing.IDArray, typing.MarkdownArray},
-				{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.NumberArray, typing.DecimalArray},
-			},
-			operators.NotEquals: {
-				{types.StringType, typing.Text, typing.ID, typing.Markdown},
-				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-				{typing.Date, typing.Timestamp, types.TimestampType},
-				{typing.Boolean, types.BoolType},
-				{types.NewListType(types.StringType), typing.TextArray, typing.IDArray, typing.MarkdownArray},
-				{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.NumberArray, typing.DecimalArray},
-			},
-			operators.Greater: {
-				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-				{typing.Date, typing.Timestamp, types.TimestampType},
-			},
-			operators.GreaterEquals: {
-				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-				{typing.Date, typing.Timestamp, types.TimestampType},
-			},
-			operators.Less: {
-				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-				{typing.Date, typing.Timestamp, types.TimestampType},
-			},
-			operators.LessEquals: {
-				{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-				{typing.Date, typing.Timestamp, types.TimestampType},
-			},
-		}
-
 		var err error
 		if p.Provider.Schema != nil {
 			// For each enum type, configure equals, not equals and 'in' operators
@@ -309,12 +321,14 @@ func WithComparisonOperators() expressions.Option {
 		// Add operator overloads for each compatible type combination
 		options := []cel.EnvOption{}
 		for k, v := range typeCompatibilityMapping {
-			for _, t := range v {
-				for _, arg1 := range t {
-					for _, arg2 := range t {
-						name := fmt.Sprintf("%s_%s_%s", k, arg1.String(), arg2.String())
-						opt := cel.Function(k, cel.Overload(name, argTypes(arg1, arg2), types.BoolType))
-						options = append(options, opt)
+			switch k {
+			case operators.Equals, operators.NotEquals, operators.Greater, operators.GreaterEquals, operators.Less, operators.LessEquals:
+				for _, t := range v {
+					for _, arg1 := range t {
+						for _, arg2 := range t {
+							opt := cel.Function(k, cel.Overload(overloadName(k, arg1, arg2), argTypes(arg1, arg2), types.BoolType))
+							options = append(options, opt)
+						}
 					}
 				}
 			}
@@ -385,6 +399,35 @@ func WithComparisonOperators() expressions.Option {
 	}
 }
 
+// WithArithmeticOperators enables support for arithmetic operators
+func WithArithmeticOperators() expressions.Option {
+	return func(p *expressions.Parser) error {
+		// Add operator overloads for each compatible type combination
+		options := []cel.EnvOption{}
+		for k, v := range typeCompatibilityMapping {
+			switch k {
+			case operators.Add, operators.Subtract, operators.Multiply, operators.Divide:
+				for _, t := range v {
+					for _, arg1 := range t {
+						for _, arg2 := range t {
+							opt := cel.Function(k, cel.Overload(overloadName(k, arg1, arg2), argTypes(arg1, arg2), typing.Decimal))
+							options = append(options, opt)
+						}
+					}
+				}
+			}
+		}
+
+		var err error
+		p.CelEnv, err = p.CelEnv.Extend(options...)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
 // WithReturnTypeAssertion will check that the expression evaluates to a specific type
 func WithReturnTypeAssertion(returnType string, asArray bool) expressions.Option {
 	return func(p *expressions.Parser) error {
@@ -396,4 +439,8 @@ func WithReturnTypeAssertion(returnType string, asArray bool) expressions.Option
 
 func argTypes(args ...*types.Type) []*types.Type {
 	return args
+}
+
+func overloadName(op string, t1 *types.Type, t2 *types.Type) string {
+	return fmt.Sprintf("%s_%s_%s", op, t1.String(), t2.String())
 }

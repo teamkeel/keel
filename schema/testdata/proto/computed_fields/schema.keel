@@ -1,0 +1,15 @@
+model Invoice {
+    fields {
+        items Item[]
+    }
+}
+
+model Item {
+    fields {
+        invoice Invoice
+        description Text
+        price Decimal
+        quantity Number
+        total Decimal @computed(item.price * item.quantity)
+    }
+}
