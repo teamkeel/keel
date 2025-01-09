@@ -1,6 +1,6 @@
 model Item {
     fields {
-        //expect-error:23:32:AttributeArgumentError:0 argument(s) provided to @unique but expected 1
+        //expect-error:23:32:AttributeArgumentError:0 argument(s) provided to @computed but expected 1
         total Decimal @computed
         //expect-error:19:36:AttributeNotAllowedError:@computed cannot be used on field of type File
         file File @computed("file")

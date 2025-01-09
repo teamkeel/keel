@@ -2004,7 +2004,6 @@ func (scm *Builder) applyFieldAttributes(parserField *parser.FieldNode, protoFie
 			}
 			protoField.DefaultValue = defaultValue
 		case parser.AttributeComputed:
-			protoField.Computed = true
 			protoField.ComputedExpression = &proto.Expression{
 				Source: fieldAttribute.Arguments[0].Expression.String(),
 			}
