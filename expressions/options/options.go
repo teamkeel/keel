@@ -262,6 +262,8 @@ func WithLogicalOperators() expressions.Option {
 // WithComparisonOperators enables support for comparison operators for all types
 func WithComparisonOperators() expressions.Option {
 	return func(p *expressions.Parser) error {
+		mapping := map[string][][]*types.Type{}
+
 		var err error
 		if p.Provider.Schema != nil {
 			// For each enum type, configure equals, not equals and 'in' operators
@@ -269,12 +271,12 @@ func WithComparisonOperators() expressions.Option {
 				enumType := types.NewOpaqueType(enum.Name.Value)
 				enumTypeArr := types.NewOpaqueType(enum.Name.Value + "[]")
 
-				typeCompatibilityMapping[operators.Equals] = append(typeCompatibilityMapping[operators.Equals],
+				mapping[operators.Equals] = append(mapping[operators.Equals],
 					[]*types.Type{enumType},
 					[]*types.Type{enumTypeArr, types.NewListType(enumType)},
 				)
 
-				typeCompatibilityMapping[operators.NotEquals] = append(typeCompatibilityMapping[operators.NotEquals],
+				mapping[operators.NotEquals] = append(mapping[operators.NotEquals],
 					[]*types.Type{enumType},
 					[]*types.Type{enumTypeArr, types.NewListType(enumType)},
 				)
@@ -298,12 +300,12 @@ func WithComparisonOperators() expressions.Option {
 				modelType := types.NewObjectType(model.Name.Value)
 				modelTypeArr := types.NewObjectType(model.Name.Value + "[]")
 
-				typeCompatibilityMapping[operators.Equals] = append(typeCompatibilityMapping[operators.Equals],
+				mapping[operators.Equals] = append(mapping[operators.Equals],
 					[]*types.Type{modelType},
 					[]*types.Type{modelTypeArr},
 				)
 
-				typeCompatibilityMapping[operators.NotEquals] = append(typeCompatibilityMapping[operators.NotEquals],
+				mapping[operators.NotEquals] = append(mapping[operators.NotEquals],
 					[]*types.Type{modelType},
 					[]*types.Type{modelTypeArr},
 				)
@@ -318,9 +320,13 @@ func WithComparisonOperators() expressions.Option {
 			}
 		}
 
+		for k, v := range typeCompatibilityMapping {
+			mapping[k] = append(mapping[k], v...)
+		}
+
 		// Add operator overloads for each compatible type combination
 		options := []cel.EnvOption{}
-		for k, v := range typeCompatibilityMapping {
+		for k, v := range mapping {
 			switch k {
 			case operators.Equals, operators.NotEquals, operators.Greater, operators.GreaterEquals, operators.Less, operators.LessEquals:
 				for _, t := range v {
