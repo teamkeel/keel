@@ -98,7 +98,6 @@
           "type": {
             "type": "TYPE_DECIMAL"
           },
-          "computed": true,
           "computedExpression": {
             "source": "item.price * item.quantity"
           }
