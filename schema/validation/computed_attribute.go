@@ -57,7 +57,7 @@ func ComputedAttributeRules(asts []*parser.AST, errs *errorhandling.ValidationEr
 					errorhandling.NewValidationErrorWithDetails(
 						errorhandling.AttributeArgumentError,
 						errorhandling.ErrorDetails{
-							Message: fmt.Sprintf("%v argument(s) provided to @unique but expected 1", len(attr.Arguments)),
+							Message: fmt.Sprintf("%v argument(s) provided to @computed but expected 1", len(attr.Arguments)),
 						},
 						attr,
 					),
