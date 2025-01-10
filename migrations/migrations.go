@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -12,7 +13,9 @@ import (
 	"github.com/teamkeel/keel/auditing"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -174,7 +177,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 		return nil, err
 	}
 
-	triggers, err := getTriggers(database)
+	existingTriggers, err := getTriggers(database)
 	if err != nil {
 		return nil, err
 	}
@@ -251,10 +254,10 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	// Add audit log triggers all model tables excluding the audit table itself.
 	for _, model := range schema.Models {
 		if model.Name != strcase.ToCamel(auditing.TableName) {
-			stmt := createAuditTriggerStmts(triggers, model)
+			stmt := createAuditTriggerStmts(existingTriggers, model)
 			statements = append(statements, stmt)
 
-			stmt = createUpdatedAtTriggerStmts(triggers, model)
+			stmt = createUpdatedAtTriggerStmts(existingTriggers, model)
 			statements = append(statements, stmt)
 		}
 	}
@@ -361,6 +364,38 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 		}
 	}
 
+	// Fetch all computed functions in the database
+	existingComputedFns, err := getComputedFunctions(database)
+	if err != nil {
+		return nil, err
+	}
+
+	// Computed fields functions and triggers
+	computedChanges, stmts, err := computedFieldsStmts(schema, existingComputedFns)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, change := range computedChanges {
+		// Dont add the db change if the field was already modified elsewhere
+		if lo.ContainsBy(changes, func(c *DatabaseChange) bool {
+			return c.Model == change.Model && c.Field == change.Field
+		}) {
+			continue
+		}
+
+		// Dont add the db change if the model is new
+		if lo.ContainsBy(changes, func(c *DatabaseChange) bool {
+			return c.Model == change.Model && c.Field == "" && c.Type == ChangeTypeAdded
+		}) {
+			continue
+		}
+
+		changes = append(changes, computedChanges...)
+	}
+
+	statements = append(statements, stmts...)
+
 	stringChanges := lo.Map(changes, func(c *DatabaseChange, _ int) string { return c.String() })
 	span.SetAttributes(attribute.StringSlice("migration", stringChanges))
 
@@ -415,6 +450,187 @@ func compositeUniqueConstraints(schema *proto.Schema, model *proto.Model, constr
 	}
 
 	return statements, nil
+}
+
+// computedFieldDependencies returns a map of computed fields and every field it depends on
+func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*proto.Field, error) {
+	dependencies := map[*proto.Field][]*proto.Field{}
+
+	for _, model := range schema.Models {
+		for _, field := range model.Fields {
+			if field.ComputedExpression == nil {
+				continue
+			}
+
+			expr, err := parser.ParseExpression(field.ComputedExpression.Source)
+			if err != nil {
+				return nil, err
+			}
+
+			idents, err := resolve.IdentOperands(expr)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, ident := range idents {
+				for _, f := range schema.FindModel(strcase.ToCamel(ident.Fragments[0])).Fields {
+					if f.Name == ident.Fragments[1] {
+						dependencies[field] = append(dependencies[field], f)
+						break
+					}
+				}
+			}
+		}
+	}
+
+	return dependencies, nil
+}
+
+// computedFieldsStmts generates SQL statements for dropping or creating functions and triggers for computed fields
+func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRow) (changes []*DatabaseChange, statements []string, err error) {
+	existingComputedFnNames := lo.Map(existingComputedFns, func(f *FunctionRow, _ int) string {
+		return f.RoutineName
+	})
+
+	fns := map[string]string{}
+	fieldsFns := map[*proto.Field]string{}
+	changedFields := map[*proto.Field]bool{}
+
+	// Adding computed field triggers and functions
+	for _, model := range schema.Models {
+		modelFns := map[string]string{}
+
+		for _, field := range model.GetComputedFields() {
+			changedFields[field] = false
+			fnName, computedFuncStmt, err := addComputedFieldFuncStmt(schema, model, field)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			fieldsFns[field] = fnName
+			modelFns[fnName] = computedFuncStmt
+		}
+
+		// Get all the preexisting computed functions for computed fields on this model
+		existingComputedFnNamesForModel := lo.Filter(existingComputedFnNames, func(f string, _ int) bool {
+			return strings.HasPrefix(f, fmt.Sprintf("%s__", strcase.ToSnake(model.Name))) &&
+				strings.HasSuffix(f, "_computed")
+		})
+
+		newFns, retiredFns := lo.Difference(lo.Keys(modelFns), existingComputedFnNamesForModel)
+		slices.Sort(newFns)
+		slices.Sort(retiredFns)
+
+		// Functions to be created
+		for _, fn := range newFns {
+			statements = append(statements, modelFns[fn])
+
+			f := fieldFromComputedFnName(schema, fn)
+			changes = append(changes, &DatabaseChange{
+				Model: f.ModelName,
+				Field: f.Name,
+				Type:  ChangeTypeModified,
+			})
+			changedFields[f] = true
+		}
+
+		// Functions to be dropped
+		for _, fn := range retiredFns {
+			statements = append(statements, fmt.Sprintf("DROP FUNCTION %s;", fn))
+
+			f := fieldFromComputedFnName(schema, fn)
+			if f != nil {
+				change := &DatabaseChange{
+					Model: f.ModelName,
+					Field: f.Name,
+					Type:  ChangeTypeModified,
+				}
+				if !lo.ContainsBy(changes, func(c *DatabaseChange) bool {
+					return c.Model == change.Model && c.Field == change.Field
+				}) {
+					changes = append(changes, change)
+				}
+				changedFields[f] = true
+			}
+		}
+
+		// When there all computed fields have been removed
+		if len(modelFns) == 0 && len(retiredFns) > 0 {
+			dropExecFn := dropComputedExecFunctionStmt(model)
+			dropTrigger := dropComputedTriggerStmt(model)
+			statements = append(statements, dropTrigger, dropExecFn)
+		}
+
+		for k, v := range modelFns {
+			fns[k] = v
+		}
+	}
+
+	dependencies, err := computedFieldDependencies(schema)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, model := range schema.Models {
+		modelhasChanged := false
+		for k, v := range changedFields {
+			if k.ModelName == model.Name && v {
+				modelhasChanged = true
+			}
+		}
+		if !modelhasChanged {
+			continue
+		}
+
+		computedFields := model.GetComputedFields()
+		if len(computedFields) == 0 {
+			continue
+		}
+
+		// Sort fields based on dependencies
+		sorted := []*proto.Field{}
+		visited := map[*proto.Field]bool{}
+		var visit func(*proto.Field)
+		visit = func(field *proto.Field) {
+			if visited[field] || field.ComputedExpression == nil {
+				return
+			}
+			visited[field] = true
+
+			// Process dependencies first
+			for _, dep := range dependencies[field] {
+				if dep.ModelName == field.ModelName {
+					visit(dep)
+				}
+			}
+			sorted = append(sorted, field)
+		}
+
+		// Visit all fields to build sorted order
+		for _, field := range computedFields {
+			visit(field)
+		}
+
+		// Generate SQL statements in dependency order
+		stmts := []string{}
+		for _, field := range sorted {
+			s := fmt.Sprintf("\tNEW.%s := %s(%s);\n", strcase.ToSnake(field.Name), fieldsFns[field], "NEW")
+			stmts = append(stmts, s)
+		}
+
+		execFnName := computedExecFuncName(model)
+		triggerName := computedTriggerName(model)
+
+		// Generate the trigger function which executes all the computed field functions for the model.
+		sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$ BEGIN\n%s\tRETURN NEW;\nEND; $$ LANGUAGE plpgsql;", execFnName, strings.Join(stmts, ""))
+
+		// Genrate the table trigger which executed the trigger function.
+		trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER %s BEFORE INSERT OR UPDATE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(model.Name), execFnName)
+
+		statements = append(statements, sql, trigger)
+	}
+
+	return
 }
 
 func keelSchemaTableExists(ctx context.Context, database db.Database) (bool, error) {

@@ -43,6 +43,7 @@ model Person {
 		bio Markdown
 		file File
 		canHoldBreath Duration
+		heightInMetres Decimal @computed(person.height * 0.3048)
 	}
 }`
 
@@ -60,6 +61,7 @@ export interface PersonTable {
 	height: number
 	bio: string
 	file: FileDbRecord
+	heightInMetres: number
 	canHoldBreath: runtime.Duration
 	id: Generated<string>
 	createdAt: Generated<Date>
@@ -109,6 +111,7 @@ export interface Person {
 	bio: string
 	file: runtime.File
 	canHoldBreath: runtime.Duration
+	heightInMetres: number
 	id: string
 	createdAt: Date
 	updatedAt: Date
@@ -135,6 +138,7 @@ export type PersonCreateValues = {
 	bio: string
 	file: runtime.InlineFile | runtime.File
 	canHoldBreath: runtime.Duration
+	heightInMetres?: number
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
@@ -185,6 +189,7 @@ export interface PersonWhereConditions {
 	height?: number | runtime.NumberWhereCondition;
 	bio?: string | runtime.StringWhereCondition;
 	canHoldBreath?: runtime.Duration | runtime.DurationWhereCondition;
+	heightInMetres?: number | runtime.NumberWhereCondition;
 	id?: string | runtime.IDWhereCondition;
 	createdAt?: Date | runtime.DateWhereCondition;
 	updatedAt?: Date | runtime.DateWhereCondition;
@@ -320,6 +325,8 @@ export type PersonOrderBy = {
 	dateOfBirth?: runtime.SortDirection,
 	gender?: runtime.SortDirection,
 	hasChildren?: runtime.SortDirection,
+	height?: runtime.SortDirection,
+	heightInMetres?: runtime.SortDirection,
 	id?: runtime.SortDirection,
 	createdAt?: runtime.SortDirection,
 	updatedAt?: runtime.SortDirection
