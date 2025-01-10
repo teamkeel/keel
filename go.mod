@@ -43,6 +43,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/teamkeel/graphql v0.8.2-0.20230531102419-995b8ab035b6
+	github.com/test-go/testify v1.1.4
 	github.com/twitchtv/twirp v8.1.3+incompatible
 	github.com/vincent-petithory/dataurl v1.0.0
 	github.com/xeipuuv/gojsonschema v1.2.0

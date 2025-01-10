@@ -1474,7 +1474,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case AllGreaterThanEquals, AllOnOrAfter:
 		template = fmt.Sprintf("%s <= ALL(%s)", rhsSqlOperand, lhsSqlOperand)
 
-	/* All relative date operators */
+	/* Relative date operators */
 	case BeforeRelative:
 		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
 	case AfterRelative:
@@ -1498,6 +1498,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		}
 
 		template = fmt.Sprintf("%s >= %s AND %s < %s", lhsSqlOperand, rhsSqlOperand, lhsSqlOperand, end)
+
 	default:
 		return "", nil, fmt.Errorf("operator: %v is not yet supported", operator)
 	}
