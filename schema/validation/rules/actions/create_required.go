@@ -65,13 +65,15 @@ func checkField(
 // - relationship repeated fields
 // - fields which have a default
 // - built-in fields like CreatedAt, Id etc.
+// - computed fields
 func isNotNeeded(asts []*parser.AST, model *parser.ModelNode, f *parser.FieldNode) bool {
 	switch {
 	case f.Optional,
 		(f.Repeated && !f.IsScalar()),
 		query.FieldHasAttribute(f, parser.AttributeDefault),
 		query.IsBelongsToModelField(asts, model, f),
-		f.BuiltIn:
+		f.BuiltIn,
+		query.FieldIsComputed(f):
 		return true
 	default:
 		return false

@@ -42,6 +42,7 @@ model Person {
 		height Decimal
 		bio Markdown
 		file File
+		heightInMetres Decimal @computed(person.height * 0.3048)
 	}
 }`
 
@@ -59,6 +60,7 @@ export interface PersonTable {
 	height: number
 	bio: string
 	file: FileDbRecord
+	heightInMetres: number
 	id: Generated<string>
 	createdAt: Generated<Date>
 	updatedAt: Generated<Date>
@@ -106,6 +108,7 @@ export interface Person {
 	height: number
 	bio: string
 	file: runtime.File
+	heightInMetres: number
 	id: string
 	createdAt: Date
 	updatedAt: Date
@@ -131,6 +134,7 @@ export type PersonCreateValues = {
 	height: number
 	bio: string
 	file: runtime.InlineFile | runtime.File
+	heightInMetres?: number
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
@@ -180,6 +184,7 @@ export interface PersonWhereConditions {
 	tags?: string[] | runtime.StringArrayWhereCondition;
 	height?: number | runtime.NumberWhereCondition;
 	bio?: string | runtime.StringWhereCondition;
+	heightInMetres?: number | runtime.NumberWhereCondition;
 	id?: string | runtime.IDWhereCondition;
 	createdAt?: Date | runtime.DateWhereCondition;
 	updatedAt?: Date | runtime.DateWhereCondition;
@@ -314,6 +319,8 @@ export type PersonOrderBy = {
 	dateOfBirth?: runtime.SortDirection,
 	gender?: runtime.SortDirection,
 	hasChildren?: runtime.SortDirection,
+	height?: runtime.SortDirection,
+	heightInMetres?: runtime.SortDirection,
 	id?: runtime.SortDirection,
 	createdAt?: runtime.SortDirection,
 	updatedAt?: runtime.SortDirection

@@ -1,0 +1,35 @@
+model Item {
+    fields {
+        price Decimal
+        quantity Number
+        total Decimal @computed(item.quantity * item.price)
+    }
+}
+
+===
+
+model Item {
+    fields {
+        price Decimal
+        quantity Number
+        total Decimal @computed(item.price + 5)
+    }
+}
+
+===
+
+CREATE FUNCTION item__total__863346d0__computed(r item) RETURNS NUMERIC AS $$ BEGIN
+	RETURN r."price" + 5;
+END; $$ LANGUAGE plpgsql;
+DROP FUNCTION item__total__0614a79a__computed;
+CREATE OR REPLACE FUNCTION item__exec_computed_fns() RETURNS TRIGGER AS $$ BEGIN
+	NEW.total := item__total__863346d0__computed(NEW);
+	RETURN NEW;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER item__computed_trigger BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE item__exec_computed_fns();
+
+===
+
+[
+    {"Model":"Item","Field":"total","Type":"MODIFIED"}
+]

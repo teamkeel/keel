@@ -1996,15 +1996,17 @@ func (scm *Builder) applyFieldAttributes(parserField *parser.FieldNode, protoFie
 		case parser.AttributeDefault:
 			defaultValue := &proto.DefaultValue{}
 			if len(fieldAttribute.Arguments) == 1 {
-				expr := fieldAttribute.Arguments[0].Expression
-				source := expr.String()
 				defaultValue.Expression = &proto.Expression{
-					Source: source,
+					Source: fieldAttribute.Arguments[0].Expression.String(),
 				}
 			} else {
 				defaultValue.UseZeroValue = true
 			}
 			protoField.DefaultValue = defaultValue
+		case parser.AttributeComputed:
+			protoField.ComputedExpression = &proto.Expression{
+				Source: fieldAttribute.Arguments[0].Expression.String(),
+			}
 		case parser.AttributeRelation:
 			// We cannot process this field attribute here. But here is an explanation
 			// of why that is so - for future readers.
