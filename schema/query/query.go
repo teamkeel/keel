@@ -350,6 +350,10 @@ func FieldIsUnique(field *parser.FieldNode) bool {
 	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
 }
 
+func FieldIsComputed(field *parser.FieldNode) bool {
+	return FieldHasAttribute(field, parser.AttributeComputed)
+}
+
 // CompositeUniqueFields returns the model's fields that make up a composite unique attribute
 func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeNode) []*parser.FieldNode {
 	if attribute.Name.Value != parser.AttributeUnique {

@@ -64,9 +64,6 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 			return nil, common.NewPermissionError()
 		}
 	}
-	if err != nil {
-		return nil, err
-	}
 
 	// Execute database request, expecting a single result
 	res, err = statement.ExecuteToSingle(scope.Context)

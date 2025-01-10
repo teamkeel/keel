@@ -140,6 +140,7 @@ const (
 	AttributeFunction   = "function"
 	AttributeOn         = "on"
 	AttributeEmbed      = "embed"
+	AttributeComputed   = "computed"
 )
 
 const (
