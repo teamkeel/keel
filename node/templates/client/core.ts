@@ -150,7 +150,9 @@ export class Core {
     /**
      * A promise that resolves when the session is refreshed.
      */
-    refreshingPromise: undefined as Promise<APIResult<AuthenticationResponse>> | undefined,
+    refreshingPromise: undefined as
+      | Promise<APIResult<AuthenticationResponse>>
+      | undefined,
 
     /**
      * Returns data field set to the list of supported authentication providers and their SSO login URLs.
@@ -324,10 +326,10 @@ export class Core {
 
       // If refreshing already, wait for the existing refreshing promisee
       if (!this.auth.refreshingPromise) {
-          this.auth.refreshingPromise = this.auth.requestToken({
-            grant_type: "refresh_token",
-            refresh_token: refreshToken,
-          });
+        this.auth.refreshingPromise = this.auth.requestToken({
+          grant_type: "refresh_token",
+          refresh_token: refreshToken,
+        });
       }
 
       const authResponse = await this.auth.refreshingPromise;

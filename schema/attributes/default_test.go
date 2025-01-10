@@ -97,7 +97,7 @@ func TestDefault_ValidNumber(t *testing.T) {
 	require.Empty(t, issues)
 }
 
-func TestDefault_InvalidNumber(t *testing.T) {
+func TestDefault_ValidNumberFromDecimal(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 	model Person {
 		fields {
@@ -111,8 +111,24 @@ func TestDefault_InvalidNumber(t *testing.T) {
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
 	require.NoError(t, err)
-	require.Len(t, issues, 1)
-	require.Equal(t, "expression expected to resolve to type Number but it is Decimal", issues[0].Message)
+	require.Len(t, issues, 0)
+}
+
+func TestDefault_ValidDecimalFromNumber(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Person {
+		fields {
+			age Decimal @default(1)
+		}
+	}`})
+
+	model := query.Model(schema, "Person")
+	field := query.Field(model, "age")
+	expression := field.Attributes[0].Arguments[0].Expression
+
+	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
+	require.NoError(t, err)
+	require.Len(t, issues, 0)
 }
 
 func TestDefault_ValidID(t *testing.T) {

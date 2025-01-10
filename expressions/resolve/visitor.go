@@ -74,19 +74,19 @@ func (w *CelVisitor[T]) run(expression *parser.Expression) (T, error) {
 
 	w.ast = ast
 
-	if err := w.eval(checkedExpr.Expr, false); err != nil {
+	if err := w.eval(checkedExpr.Expr, isComplexOperatorWithRespectTo(operators.LogicalAnd, checkedExpr.Expr), false); err != nil {
 		return zero, err
 	}
 
 	return w.visitor.Result()
 }
 
-func (w *CelVisitor[T]) eval(expr *exprpb.Expr, inBinaryCondition bool) error {
+func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinary bool) error {
 	var err error
 
 	switch expr.ExprKind.(type) {
 	case *exprpb.Expr_ConstExpr, *exprpb.Expr_ListExpr, *exprpb.Expr_SelectExpr, *exprpb.Expr_IdentExpr:
-		if !inBinaryCondition {
+		if !inBinary {
 			err := w.visitor.StartCondition(false)
 			if err != nil {
 				return err
@@ -96,7 +96,17 @@ func (w *CelVisitor[T]) eval(expr *exprpb.Expr, inBinaryCondition bool) error {
 
 	switch expr.ExprKind.(type) {
 	case *exprpb.Expr_CallExpr:
+		err = w.visitor.StartCondition(nested)
+		if err != nil {
+			return err
+		}
+
 		err := w.callExpr(expr)
+		if err != nil {
+			return err
+		}
+
+		err = w.visitor.EndCondition(nested)
 		if err != nil {
 			return err
 		}
@@ -126,7 +136,7 @@ func (w *CelVisitor[T]) eval(expr *exprpb.Expr, inBinaryCondition bool) error {
 
 	switch expr.ExprKind.(type) {
 	case *exprpb.Expr_ConstExpr, *exprpb.Expr_ListExpr, *exprpb.Expr_SelectExpr, *exprpb.Expr_IdentExpr:
-		if !inBinaryCondition {
+		if !inBinary {
 			err := w.visitor.EndCondition(false)
 			if err != nil {
 				return err
@@ -173,18 +183,12 @@ func (w *CelVisitor[T]) binaryCall(expr *exprpb.Expr) error {
 	op := c.GetFunction()
 	args := c.GetArgs()
 	lhs := args[0]
-
-	isComplex := isComplexOperatorWithRespectTo(operators.LogicalAnd, expr)
-
-	err := w.visitor.StartCondition(isComplex)
-	if err != nil {
-		return err
-	}
+	lhsParen := isComplexOperatorWithRespectTo(op, lhs)
+	var err error
 
 	inBinary := !(op == operators.LogicalAnd || op == operators.LogicalOr)
 
-	rhs := args[1]
-	if err := w.eval(lhs, inBinary); err != nil {
+	if err := w.eval(lhs, lhsParen, inBinary); err != nil {
 		return err
 	}
 
@@ -200,11 +204,17 @@ func (w *CelVisitor[T]) binaryCall(expr *exprpb.Expr) error {
 		return err
 	}
 
-	if err := w.eval(rhs, inBinary); err != nil {
+	rhs := args[1]
+	rhsParen := isComplexOperatorWithRespectTo(op, rhs)
+	if !rhsParen && isLeftRecursive(op) {
+		rhsParen = isSamePrecedence(op, rhs)
+	}
+
+	if err := w.eval(rhs, rhsParen, inBinary); err != nil {
 		return err
 	}
 
-	return w.visitor.EndCondition(isComplex)
+	return nil
 }
 
 func (w *CelVisitor[T]) unaryCall(expr *exprpb.Expr) error {
@@ -224,16 +234,11 @@ func (w *CelVisitor[T]) unaryCall(expr *exprpb.Expr) error {
 		return fmt.Errorf("not implemented: %s", fun)
 	}
 
-	err := w.visitor.StartCondition(isComplex)
-	if err != nil {
+	if err := w.eval(args[0], isComplex, false); err != nil {
 		return err
 	}
 
-	if err := w.eval(args[0], false); err != nil {
-		return err
-	}
-
-	return w.visitor.EndCondition(isComplex)
+	return nil
 }
 
 func (w *CelVisitor[T]) constExpr(expr *exprpb.Expr) error {
@@ -362,7 +367,7 @@ func (w *CelVisitor[T]) SelectExpr(expr *exprpb.Expr) error {
 
 	switch expr.ExprKind.(type) {
 	case *exprpb.Expr_CallExpr:
-		err := w.eval(sel.GetOperand(), true)
+		err := w.eval(sel.GetOperand(), true, true)
 		if err != nil {
 			return err
 		}
@@ -447,6 +452,25 @@ func isComplexOperatorWithRespectTo(op string, expr *exprpb.Expr) bool {
 		return false
 	}
 	return isLowerPrecedence(op, expr)
+}
+
+// isLeftRecursive indicates whether the parser resolves the call in a left-recursive manner as
+// this can have an effect of how parentheses affect the order of operations in the AST.
+func isLeftRecursive(op string) bool {
+	return op != operators.LogicalAnd && op != operators.LogicalOr
+}
+
+// isSamePrecedence indicates whether the precedence of the input operator is the same as the
+// precedence of the (possible) operation represented in the input Expr.
+//
+// If the expr is not a Call, the result is false.
+func isSamePrecedence(op string, expr *exprpb.Expr) bool {
+	if expr.GetCallExpr() == nil {
+		return false
+	}
+	c := expr.GetCallExpr()
+	other := c.GetFunction()
+	return operators.Precedence(op) == operators.Precedence(other)
 }
 
 func toNative(c *exprpb.Constant) (any, error) {

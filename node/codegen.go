@@ -342,7 +342,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 		}
 
 		w.Write(field.Name)
-		if field.Optional || field.DefaultValue != nil || field.IsHasMany() {
+		if field.Optional || field.DefaultValue != nil || field.IsHasMany() || field.ComputedExpression != nil {
 			w.Write("?")
 		}
 
@@ -431,7 +431,7 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 
 		switch f.Type.Type {
 		// scalar types are only permitted to sort by
-		case proto.Type_TYPE_BOOL, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_INT, proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_ID:
+		case proto.Type_TYPE_BOOL, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_INT, proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_ID, proto.Type_TYPE_DECIMAL:
 			return true
 		default:
 			// includes types such as password, secret, model etc
@@ -678,7 +678,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 	w.Indent()
 
 	nonOptionalFields := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
-		return !f.Optional && f.DefaultValue == nil
+		return !f.Optional && f.DefaultValue == nil && f.ComputedExpression == nil
 	})
 
 	tsDocComment(w, func(w *codegen.Writer) {

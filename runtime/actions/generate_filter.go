@@ -52,6 +52,7 @@ func (v *whereQueryGen) StartCondition(nested bool) error {
 
 	return nil
 }
+
 func (v *whereQueryGen) EndCondition(nested bool) error {
 	if _, ok := v.operators.Peek(); ok && v.operands.Size() == 2 {
 		operator, _ := v.operators.Pop()

@@ -1,83 +1,8 @@
 {
   "models": [
     {
-      "name": "Invoice",
-      "fields": [
-        {
-          "modelName": "Invoice",
-          "name": "items",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Item",
-            "repeated": true
-          },
-          "inverseFieldName": "invoice"
-        },
-        {
-          "modelName": "Invoice",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Invoice",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Invoice",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        }
-      ]
-    },
-    {
       "name": "Item",
       "fields": [
-        {
-          "modelName": "Item",
-          "name": "invoice",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Invoice"
-          },
-          "foreignKeyFieldName": "invoiceId",
-          "inverseFieldName": "items"
-        },
-        {
-          "modelName": "Item",
-          "name": "invoiceId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Invoice",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "Item",
-          "name": "description",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
         {
           "modelName": "Item",
           "name": "price",
@@ -87,9 +12,9 @@
         },
         {
           "modelName": "Item",
-          "name": "quantity",
+          "name": "units",
           "type": {
-            "type": "TYPE_INT"
+            "type": "TYPE_DECIMAL"
           }
         },
         {
@@ -99,7 +24,7 @@
             "type": "TYPE_DECIMAL"
           },
           "computedExpression": {
-            "source": "item.price * item.quantity"
+            "source": "item.price * item.units"
           }
         },
         {
@@ -133,6 +58,15 @@
           "defaultValue": {
             "useZeroValue": true
           }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Item",
+          "name": "createItem",
+          "type": "ACTION_TYPE_CREATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "CreateItemInput"
         }
       ]
     },
@@ -331,10 +265,12 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Invoice"
-        },
-        {
-          "modelName": "Item"
+          "modelName": "Item",
+          "modelActions": [
+            {
+              "actionName": "createItem"
+            }
+          ]
         },
         {
           "modelName": "Identity",
@@ -397,6 +333,31 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CreateItemInput",
+      "fields": [
+        {
+          "messageName": "CreateItemInput",
+          "name": "price",
+          "type": {
+            "type": "TYPE_DECIMAL",
+            "modelName": "Item",
+            "fieldName": "price"
+          },
+          "target": ["price"]
+        },
+        {
+          "messageName": "CreateItemInput",
+          "name": "units",
+          "type": {
+            "type": "TYPE_DECIMAL",
+            "modelName": "Item",
+            "fieldName": "units"
+          },
+          "target": ["units"]
+        }
+      ]
     }
   ]
 }

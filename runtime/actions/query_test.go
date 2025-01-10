@@ -3778,7 +3778,7 @@ var testCases = []testCase{
 				"thing"
 			WHERE
 				"thing"."id" IS NOT DISTINCT FROM ? AND 
-				NOT (("thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."number" IS DISTINCT FROM ?))`,
+				NOT ("thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."number" IS DISTINCT FROM ?)`,
 		expectedArgs: []any{"123", true, int64(0)},
 	},
 }
@@ -3787,6 +3787,7 @@ func TestQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range testCases {
 		testCase := testCase
+
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()

@@ -49,27 +49,6 @@ func (e *Expression) Parse(lex *lexer.PeekingLexer) error {
 	}
 }
 
-// func (e *Expression) String() string {
-// 	if len(e.Tokens) == 0 {
-// 		return ""
-// 	}
-
-// 	var result strings.Builder
-// 	currentColumn := e.Pos.Column
-
-// 	// Handle tokens without preserving line breaks
-// 	for _, token := range e.Tokens {
-// 		// Add spaces to reach the correct column position
-// 		if token.Pos.Column > currentColumn {
-// 			result.WriteString(strings.Repeat(" ", token.Pos.Column-currentColumn))
-// 		}
-// 		result.WriteString(token.Value)
-// 		currentColumn = token.Pos.Column + len(token.Value)
-// 	}
-
-// 	return result.String()
-// }
-
 func (e *Expression) String() string {
 	if len(e.Tokens) == 0 {
 		return ""

@@ -1,0 +1,46 @@
+model ComputedDecimal {
+    fields {
+        price Decimal
+        quantity Number
+        total Decimal @computed(computedDecimal.quantity * computedDecimal.price)
+        totalWithShipping Decimal @computed(5 + computedDecimal.quantity * computedDecimal.price)
+        totalWithDiscount Decimal @computed(computedDecimal.quantity * (computedDecimal.price - (computedDecimal.price / 100 * 10)))
+    }
+}
+
+model ComputedNumber {
+    fields {
+        price Decimal
+        quantity Number
+        total Number @computed(computedNumber.quantity * computedNumber.price)
+        totalWithShipping Number @computed(5 + computedNumber.quantity * computedNumber.price)
+        totalWithDiscount Number @computed(computedNumber.quantity * (computedNumber.price - (computedNumber.price / 100 * 10)))
+    }
+}
+
+model ComputedBool {
+    fields {
+        price Decimal?
+        isActive Boolean
+        isExpensive Boolean @computed(computedBool.price > 100 && computedBool.isActive)
+        isCheap Boolean @computed(!computedBool.isExpensive)
+    }
+}
+
+model ComputedNulls {
+    fields {
+        price Decimal?
+        quantity Number?
+        total Decimal? @computed(computedNulls.quantity * computedNulls.price)
+    }
+}
+
+model ComputedDepends {
+    fields {
+        price Decimal
+        quantity Number
+        totalWithDiscount Decimal? @computed(computedDepends.totalWithShipping - (computedDepends.totalWithShipping / 100 * 10))
+        totalWithShipping Decimal? @computed(computedDepends.total + 5)
+        total Decimal? @computed(computedDepends.quantity * computedDepends.price)
+    }
+}

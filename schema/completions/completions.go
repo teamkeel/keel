@@ -254,6 +254,7 @@ func getBlockCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, keywo
 			parser.AttributeUnique,
 			parser.AttributeDefault,
 			parser.AttributeRelation,
+			parser.AttributeComputed,
 		})
 	}
 
@@ -323,6 +324,7 @@ func getBlockCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, keywo
 				parser.AttributeUnique,
 				parser.AttributeDefault,
 				parser.AttributeRelation,
+				parser.AttributeComputed,
 			})
 		}
 
@@ -644,7 +646,7 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 	enclosingBlock := getTypeOfEnclosingBlock(t)
 
 	switch attrName {
-	case parser.AttributeSet, parser.AttributeWhere, parser.AttributeValidate:
+	case parser.AttributeSet, parser.AttributeWhere, parser.AttributeValidate, parser.AttributeComputed:
 		return getExpressionCompletions(asts, t, cfg)
 	case parser.AttributePermission:
 		return getPermissionArgCompletions(asts, t, cfg)
