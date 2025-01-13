@@ -16,6 +16,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	dockerContainer "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	dockerVolume "github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
@@ -159,7 +160,7 @@ func fetchPostgresImageIfNecessary(dockerClient *client.Client) error {
 
 	if postgresImage == nil {
 		fmt.Println("Pulling postgres Docker image...")
-		reader, err := dockerClient.ImagePull(context.Background(), postgresImageName+":"+postgresTag, types.ImagePullOptions{})
+		reader, err := dockerClient.ImagePull(context.Background(), postgresImageName+":"+postgresTag, image.PullOptions{})
 		if err != nil {
 			return err
 		}
@@ -187,7 +188,7 @@ func removeContainer(dockerClient *client.Client) error {
 	if err := dockerClient.ContainerRemove(
 		context.Background(),
 		containerMetadata.ID,
-		types.ContainerRemoveOptions{
+		dockerContainer.RemoveOptions{
 			RemoveVolumes: false,
 			Force:         true,
 		}); err != nil {
@@ -256,7 +257,7 @@ func startContainer(dockerClient *client.Client, containerID string) error {
 	if err := dockerClient.ContainerStart(
 		context.Background(),
 		containerID,
-		types.ContainerStartOptions{}); err != nil {
+		dockerContainer.StartOptions{}); err != nil {
 		return err
 	}
 	return nil
@@ -265,8 +266,8 @@ func startContainer(dockerClient *client.Client, containerID string) error {
 // findImage looks up the Postgres Docker Image we require in the local
 // Docker Image Resistry and returns its metadata. It it is not registered,
 // it signals this by returning nil metadata.
-func findImage(dockerClient *client.Client) (*types.ImageSummary, error) {
-	images, err := dockerClient.ImageList(context.Background(), types.ImageListOptions{})
+func findImage(dockerClient *client.Client) (*image.Summary, error) {
+	images, err := dockerClient.ImageList(context.Background(), image.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -283,7 +284,7 @@ func findImage(dockerClient *client.Client) (*types.ImageSummary, error) {
 // findContainer obtains a reference to the Postgres container we make, if one exists.
 // If it cannot find it it returns container as nil.
 func findContainer(dockerClient *client.Client) (container *types.Container, err error) {
-	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
+	containers, err := dockerClient.ContainerList(context.Background(), dockerContainer.ListOptions{
 		All: true,
 	})
 	if err != nil {
