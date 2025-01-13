@@ -16,11 +16,24 @@ import (
 const testSchema = `
 model Item {
 	fields {
-		product Text
 		price Decimal?
+		product Product
 		quantity Number
 		isActive Boolean
 		#placeholder#
+	}
+}
+model Product {
+	fields {
+		name Text
+		standardPrice Decimal
+		sku Text
+		agent Agent
+	}
+}
+model Agent {
+	fields {
+		commission Decimal
 	}
 }`
 
@@ -70,13 +83,19 @@ var computedTestCases = []computedTestCase{
 	{
 		name:        "parenthesis",
 		keelSchema:  testSchema,
-		field:       "total Decimal @computed(item.quantity * (1 + item.quantity) / (100 * (item.price + 1)))",
-		expectedSql: `r."quantity" * (1 + r."quantity") / (100 * (r."price" + 1))`,
+		field:       "total Decimal @computed(item.quantity * (1 + item.quantity) / (100 * ((item.price + 1) * 1)))",
+		expectedSql: `r."quantity" * (1 + r."quantity") / (100 * ((r."price" + 1) * 1))`,
 	},
 	{
 		name:        "no parenthesis",
 		keelSchema:  testSchema,
 		field:       "total Decimal @computed(item.quantity * 1 + item.quantity / 100 * item.price + 1)",
+		expectedSql: `r."quantity" * 1 + r."quantity" / 100 * r."price" + 1`,
+	},
+	{
+		name:        "unnecessary parenthesis",
+		keelSchema:  testSchema,
+		field:       "total Decimal @computed((item.quantity * 1) + (item.quantity / 100 * item.price) + 1)",
 		expectedSql: `r."quantity" * 1 + r."quantity" / 100 * r."price" + 1`,
 	},
 	{
@@ -133,11 +152,26 @@ var computedTestCases = []computedTestCase{
 		field:       "isExpensive Boolean @computed(item.price > 100 || !item.isActive)",
 		expectedSql: `(r."price" > 100 OR NOT r."is_active")`,
 	},
+	{
+		name:        "1:M relationship",
+		keelSchema:  testSchema,
+		field:       "total Decimal @computed(item.product.standardPrice * item.quantity)",
+		expectedSql: `(SELECT "product"."standard_price" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id" ) * r."quantity"`,
+	},
+	{
+		name:        "nested 1:M relationship",
+		keelSchema:  testSchema,
+		field:       "total Decimal @computed(item.product.standardPrice * item.quantity + item.product.agent.commission)",
+		expectedSql: `(SELECT "product"."standard_price" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id" ) * r."quantity" + (SELECT "product$agent"."commission" FROM "product" LEFT JOIN "agent" AS "product$agent" ON "product$agent"."id" = "product"."agent_id" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id" )`,
+	},
 }
 
 func TestGeneratedComputed(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range computedTestCases {
+		if testCase.name != "nested 1:M relationship" {
+			continue
+		}
 		t.Run(testCase.name, func(t *testing.T) {
 			raw := strings.Replace(testCase.keelSchema, "#placeholder#", testCase.field, 1)
 

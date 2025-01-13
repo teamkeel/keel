@@ -28,11 +28,11 @@ type identGen struct {
 	ident *parser.ExpressionIdent
 }
 
-func (v *identGen) StartCondition(parenthesis bool) error {
+func (v *identGen) StartTerm(parenthesis bool) error {
 	return nil
 }
 
-func (v *identGen) EndCondition(parenthesis bool) error {
+func (v *identGen) EndTerm(parenthesis bool) error {
 	return nil
 }
 

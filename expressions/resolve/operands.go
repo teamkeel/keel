@@ -24,11 +24,11 @@ type operandsResolver struct {
 	idents []*parser.ExpressionIdent
 }
 
-func (v *operandsResolver) StartCondition(parenthesis bool) error {
+func (v *operandsResolver) StartTerm(parenthesis bool) error {
 	return nil
 }
 
-func (v *operandsResolver) EndCondition(parenthesis bool) error {
+func (v *operandsResolver) EndTerm(parenthesis bool) error {
 	return nil
 }
 
