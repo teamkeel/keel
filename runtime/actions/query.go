@@ -79,12 +79,6 @@ func Null() *QueryOperand {
 	return &QueryOperand{}
 }
 
-func RuntimeEvaluated(identifier string) *QueryOperand {
-	return &QueryOperand{
-		runtimeIdentifier: identifier,
-	}
-}
-
 func ValueOrNullIfEmpty(value any) *QueryOperand {
 	if value == nil || reflect.ValueOf(value).IsZero() {
 		return Null()
@@ -93,13 +87,12 @@ func ValueOrNullIfEmpty(value any) *QueryOperand {
 }
 
 type QueryOperand struct {
-	query             *QueryBuilder
-	raw               string
-	table             string
-	column            string
-	arrayField        bool
-	value             any
-	runtimeIdentifier string
+	query      *QueryBuilder
+	raw        string
+	table      string
+	column     string
+	arrayField bool
+	value      any
 }
 
 // A query builder to be evaluated and injected as an operand.
@@ -155,6 +148,7 @@ func (o *QueryOperand) IsNull() bool {
 	return o.query == nil && o.table == "" && o.column == "" && o.value == nil && o.raw == ""
 }
 
+// Generates the string operand that will be used in the actual SQL statement
 func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	switch {
 	case o.IsValue() && !o.IsArrayValue():
@@ -175,8 +169,30 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 			return sql
 		}
 
+		if !query.valuesAsArgs {
+			value := o.toSqlArgs()
+			switch val := value[0].(type) {
+			case int64, int:
+				return fmt.Sprintf("%v", val)
+			case float64:
+				return fmt.Sprintf("%v", val)
+			case string:
+				return fmt.Sprintf("\"%v\"", val)
+			case bool:
+				return fmt.Sprintf("%t", val)
+			case nil:
+				return "NULL"
+			default:
+				panic(fmt.Errorf("unsupported literal type with valuesAsArgs=false: %T", value))
+			}
+		}
+
 		return "?"
 	case o.IsValue() && o.IsArrayValue():
+		if !query.valuesAsArgs {
+			panic("unsupported array type with valuesAsArgs=false")
+		}
+
 		operands := []string{}
 		for i := 0; i < reflect.ValueOf(o.value).Len(); i++ {
 			operands = append(operands, "?")
@@ -223,6 +239,7 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	}
 }
 
+// Generates the value that will be used as an argument for a SQL template
 func (o *QueryOperand) toSqlArgs() []any {
 	switch {
 	case o.IsTimePeriodValue():
@@ -290,6 +307,8 @@ type QueryBuilder struct {
 	writeValues *Row
 	// The type of SQL join to use.
 	joinType JoinType
+	// If true, literal values are arguments to a SQL template.
+	valuesAsArgs bool
 	// The timezone to be used if we're dealing with relative dates (e.g. DATE_TRUNC("day", NOW()))
 	timezone string
 }
@@ -345,6 +364,12 @@ func WithJoinType(joinType JoinType) QueryBuilderOption {
 	}
 }
 
+func WithValuesAsArgs(asArgs bool) QueryBuilderOption {
+	return func(qb *QueryBuilder) {
+		qb.valuesAsArgs = asArgs
+	}
+}
+
 // WithTimezone sets the time zone for the query
 func WithTimezone(tz string) QueryBuilderOption {
 	return func(qb *QueryBuilder) {
@@ -371,7 +396,8 @@ func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 			referencedBy: []*Relationship{},
 			references:   []*Relationship{},
 		},
-		joinType: JoinTypeLeft,
+		joinType:     JoinTypeLeft,
+		valuesAsArgs: true,
 	}
 
 	if len(opts) > 0 {

@@ -243,6 +243,11 @@ func computedExecFuncName(model *proto.Model) string {
 	return fmt.Sprintf("%s__exec_computed_fns", strcase.ToSnake(model.Name))
 }
 
+// computedExecUpdateFuncName generates the name for the table function which executes an update to cause table triggers to run
+func computedExecUpdateFuncName(model *proto.Model) string {
+	return fmt.Sprintf("%s__exec_update_fn", strcase.ToSnake(model.Name))
+}
+
 // computedTriggerName generates the name for the trigger which runs the function which executes computed functions
 func computedTriggerName(model *proto.Model) string {
 	return fmt.Sprintf("%s__computed_trigger", strcase.ToSnake(model.Name))

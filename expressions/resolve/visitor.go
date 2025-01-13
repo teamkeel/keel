@@ -17,10 +17,10 @@ var (
 )
 
 type Visitor[T any] interface {
-	// StartCondition is called when a new condition is visited
-	StartCondition(nested bool) error
-	// EndCondition is called when a condition is finished
-	EndCondition(nested bool) error
+	// StartTerm is called when a new term is visited
+	StartTerm(nested bool) error
+	// EndTerm is called when a term is finished
+	EndTerm(nested bool) error
 	// VisitAnd is called when an 'and' operator is visited between conditions
 	VisitAnd() error
 	// VisitAnd is called when an 'or' operator is visited between conditions
@@ -87,7 +87,7 @@ func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinary bool) erro
 	switch expr.ExprKind.(type) {
 	case *exprpb.Expr_ConstExpr, *exprpb.Expr_ListExpr, *exprpb.Expr_SelectExpr, *exprpb.Expr_IdentExpr:
 		if !inBinary {
-			err := w.visitor.StartCondition(false)
+			err := w.visitor.StartTerm(false)
 			if err != nil {
 				return err
 			}
@@ -96,7 +96,7 @@ func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinary bool) erro
 
 	switch expr.ExprKind.(type) {
 	case *exprpb.Expr_CallExpr:
-		err = w.visitor.StartCondition(nested)
+		err = w.visitor.StartTerm(nested)
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinary bool) erro
 			return err
 		}
 
-		err = w.visitor.EndCondition(nested)
+		err = w.visitor.EndTerm(nested)
 		if err != nil {
 			return err
 		}
@@ -137,7 +137,7 @@ func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinary bool) erro
 	switch expr.ExprKind.(type) {
 	case *exprpb.Expr_ConstExpr, *exprpb.Expr_ListExpr, *exprpb.Expr_SelectExpr, *exprpb.Expr_IdentExpr:
 		if !inBinary {
-			err := w.visitor.EndCondition(false)
+			err := w.visitor.EndTerm(false)
 			if err != nil {
 				return err
 			}

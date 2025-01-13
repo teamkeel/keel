@@ -33,14 +33,14 @@ type computedQueryGen struct {
 	sql    string
 }
 
-func (v *computedQueryGen) StartCondition(nested bool) error {
+func (v *computedQueryGen) StartTerm(nested bool) error {
 	if nested {
 		v.sql += "("
 	}
 	return nil
 }
 
-func (v *computedQueryGen) EndCondition(nested bool) error {
+func (v *computedQueryGen) EndTerm(nested bool) error {
 	if nested {
 		v.sql += ")"
 	}
@@ -104,7 +104,37 @@ func (v *computedQueryGen) VisitLiteral(value any) error {
 }
 
 func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
-	v.sql += "r." + sqlQuote(strcase.ToSnake(ident.Fragments[len(ident.Fragments)-1]))
+	model := v.schema.FindModel(strcase.ToCamel(ident.Fragments[0]))
+	field := proto.FindField(v.schema.Models, model.Name, ident.Fragments[1])
+
+	if len(ident.Fragments) == 2 {
+		v.sql += "r." + sqlQuote(strcase.ToSnake(field.Name))
+	} else if len(ident.Fragments) > 2 {
+		model = v.schema.FindModel(field.Type.ModelName.Value)
+
+		// v.sql = `(SELECT "product"."standard_price" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id" ) * r."quantity"`
+		// return nil
+		fieldName := ident.Fragments[len(ident.Fragments)-1]
+
+		query := NewQuery(model, WithValuesAsArgs(false))
+
+		//	fg := ident.Fragments[1:]
+		err := query.AddJoinFromFragments(v.schema, ident.Fragments[1:])
+		if err != nil {
+			return err
+		}
+		m := ident.Fragments[1 : len(ident.Fragments)-1]
+		query.Select(ExpressionField(m, fieldName, false))
+
+		err = query.Where(IdField(), Equals, Raw("r.\"product_id\""))
+		if err != nil {
+			return err
+		}
+
+		stmt := query.SelectStatement()
+
+		v.sql += fmt.Sprintf("(%s)", stmt.SqlTemplate())
+	}
 	return nil
 }
 

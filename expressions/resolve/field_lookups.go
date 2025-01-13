@@ -36,11 +36,11 @@ type fieldLookupsGen struct {
 	anyNull            bool
 }
 
-func (v *fieldLookupsGen) StartCondition(parenthesis bool) error {
+func (v *fieldLookupsGen) StartTerm(parenthesis bool) error {
 	return nil
 }
 
-func (v *fieldLookupsGen) EndCondition(parenthesis bool) error {
+func (v *fieldLookupsGen) EndTerm(parenthesis bool) error {
 	if v.operator == operators.Equals && !v.anyNull {
 		if v.operands != nil {
 			if len(v.uniqueLookupGroups) == 0 {

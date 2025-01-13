@@ -15,6 +15,7 @@ import (
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -452,9 +453,14 @@ func compositeUniqueConstraints(schema *proto.Schema, model *proto.Model, constr
 	return statements, nil
 }
 
+type pair struct {
+	ident *parser.ExpressionIdent
+	field *proto.Field
+}
+
 // computedFieldDependencies returns a map of computed fields and every field it depends on
-func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*proto.Field, error) {
-	dependencies := map[*proto.Field][]*proto.Field{}
+func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*pair, error) {
+	dependencies := map[*proto.Field][]*pair{}
 
 	for _, model := range schema.Models {
 		for _, field := range model.Fields {
@@ -473,11 +479,23 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*proto.
 			}
 
 			for _, ident := range idents {
-				for _, f := range schema.FindModel(strcase.ToCamel(ident.Fragments[0])).Fields {
-					if f.Name == ident.Fragments[1] {
-						dependencies[field] = append(dependencies[field], f)
-						break
+				currModel := schema.FindModel(strcase.ToCamel(ident.Fragments[0]))
+
+				for i, f := range ident.Fragments[1:] {
+					currField := currModel.FindField(f)
+
+					if i < len(ident.Fragments)-2 {
+						currModel = schema.FindModel(currField.Type.ModelName.Value)
+
+						continue
 					}
+
+					p := pair{
+						ident: ident, //&parser.ExpressionIdent{Fragments: ident.Fragments[1:]},
+						field: currField,
+					}
+
+					dependencies[field] = append(dependencies[field], &p)
 				}
 			}
 		}
@@ -554,7 +572,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 			}
 		}
 
-		// When there all computed fields have been removed
+		// When all computed fields have been removed
 		if len(modelFns) == 0 && len(retiredFns) > 0 {
 			dropExecFn := dropComputedExecFunctionStmt(model)
 			dropTrigger := dropComputedTriggerStmt(model)
@@ -599,8 +617,8 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 			// Process dependencies first
 			for _, dep := range dependencies[field] {
-				if dep.ModelName == field.ModelName {
-					visit(dep)
+				if dep.field.ModelName == field.ModelName {
+					visit(dep.field)
 				}
 			}
 			sorted = append(sorted, field)
@@ -618,16 +636,52 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 			stmts = append(stmts, s)
 		}
 
-		execFnName := computedExecFuncName(model)
-		triggerName := computedTriggerName(model)
-
 		// Generate the trigger function which executes all the computed field functions for the model.
+		execFnName := computedExecFuncName(model)
 		sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$ BEGIN\n%s\tRETURN NEW;\nEND; $$ LANGUAGE plpgsql;", execFnName, strings.Join(stmts, ""))
 
-		// Genrate the table trigger which executed the trigger function.
+		// Generate the table trigger which executed the trigger function.
+		triggerName := computedTriggerName(model)
 		trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER %s BEFORE INSERT OR UPDATE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(model.Name), execFnName)
 
-		statements = append(statements, sql, trigger)
+		statements = append(statements, sql)
+		statements = append(statements, trigger)
+	}
+
+	for field, deps := range dependencies {
+		for _, dep := range deps {
+			// Skip this because the triggers call on the exec functions themselves
+			if field.ModelName == dep.field.ModelName {
+				continue
+			}
+
+			f := dep.ident.Fragments[1:]
+			f[len(f)-1] = "id"
+
+			query := actions.NewQuery(schema.FindModel(field.ModelName))
+			query.AddWriteValue(actions.IdField(), actions.IdField())
+
+			subQuery := actions.NewQuery(schema.FindModel(dep.field.ModelName))
+			subQuery.Select(actions.IdField())
+			subQuery.Where(actions.ExpressionField(f[:len(f)-1], f[len(f)-1], false), actions.Equals, actions.Raw("NEW.id"))
+			subQuery.AddJoinFromFragments(schema, f)
+
+			query.Where(actions.Field("productId"), actions.OneOf, actions.InlineQuery(subQuery, actions.ExpressionField(f, "id", false)))
+			stmt := query.UpdateStatement(context.Background()).SqlTemplate() + ";"
+			fmt.Println(stmt)
+			// stmt := "UPDATE item SET id = id WHERE product_id IS NOT DISTINCT FROM NEW.id;"
+			// stmt += "UPDATE item SET id = id WHERE product_id IS NOT DISTINCT FROM (SELECT id FROM product WHERE agent_id = NEW.id);"
+
+			cascadeFnName := dep.field.ModelName + "__" + dep.field.Name + "__computed_cascade_update"
+			sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$ BEGIN\n%s\tRETURN NULL;\nEND; $$ LANGUAGE plpgsql;", cascadeFnName, stmt)
+
+			triggerName := dep.field.ModelName + "_compute_cascade_trigger"
+			trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER %s AFTER UPDATE OF \"%s\" ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(dep.field.Name), strcase.ToSnake(dep.field.ModelName), cascadeFnName)
+
+			statements = append(statements, sql)
+			statements = append(statements, trigger)
+		}
+
 	}
 
 	return

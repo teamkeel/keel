@@ -18,7 +18,7 @@ func TestWhere_Valid(t *testing.T) {
 			}
 			actions {
 				list listPeople(name) {
-					@where(person.name == "Keel")
+					@where(_.name == "Keel")
 				}
 			}
 		}`})
