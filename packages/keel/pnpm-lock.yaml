@@ -6,13 +6,13 @@ settings:
 
 dependencies:
   follow-redirects:
-    specifier: ^1.15.5
-    version: 1.15.6
+    specifier: ^1.15.9
+    version: 1.15.9
   mkdirp:
     specifier: ^3.0.1
     version: 3.0.1
   tar:
-    specifier: ^6.2.0
+    specifier: ^6.2.1
     version: 6.2.1
 
 packages:
@@ -22,8 +22,8 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
-  /follow-redirects@1.15.6:
-    resolution: {integrity: sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA==}
+  /follow-redirects@1.15.9:
+    resolution: {integrity: sha512-gew4GsXizNgdoRyqmyfMHyAmXsZDk6mHkSxZFCzW9gwlbtOW44CDtYavM+y+72qD/Vq2l550kMF52DT8fOLJqQ==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'
