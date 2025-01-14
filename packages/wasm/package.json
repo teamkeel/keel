@@ -11,7 +11,7 @@
   "author": "Keel (www.keel.so)",
   "license": "ASL (Apache 2.0)",
   "devDependencies": {
-    "prettier": "^3.1.1",
+    "prettier": "^3.4.2",
     "vitest": "^0.34.6"
   },
   "publishConfig": {
