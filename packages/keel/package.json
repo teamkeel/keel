@@ -37,8 +37,8 @@
     "url": "https://github.com/teamkeel/keel/releases/download/v{{version}}/keel_{{version}}_{{platform}}_{{arch}}.tar.gz"
   },
   "dependencies": {
-    "follow-redirects": "^1.15.5",
+    "follow-redirects": "^1.15.9",
     "mkdirp": "^3.0.1",
-    "tar": "^6.2.0"
+    "tar": "^6.2.1"
   }
 }
