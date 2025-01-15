@@ -95,6 +95,22 @@
           }
         ]
       },
+      "DurationQueryInput": {
+        "type": "object",
+        "properties": {
+          "equals": { "type": ["string", "null"], "format": "duration" },
+          "greaterThan": { "type": "string", "format": "duration" },
+          "greaterThanOrEquals": { "type": "string", "format": "duration" },
+          "lessThan": { "type": "string", "format": "duration" },
+          "lessThanOrEquals": { "type": "string", "format": "duration" },
+          "notEquals": { "type": ["string", "null"], "format": "duration" },
+          "oneOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "duration" }
+          }
+        },
+        "unevaluatedProperties": false
+      },
       "HobbyQueryInput": {
         "unevaluatedProperties": false,
         "oneOf": [
@@ -262,6 +278,9 @@
         "type": "object",
         "properties": {
           "birthday": { "$ref": "#/components/schemas/DateQueryInput" },
+          "canHoldBreath": {
+            "$ref": "#/components/schemas/DurationQueryInput"
+          },
           "currentCity": {
             "$ref": "#/components/schemas/TestActionCurrentCityInput"
           },
@@ -283,6 +302,7 @@
           "name",
           "preferredName",
           "favouriteNumber",
+          "canHoldBreath",
           "birthday",
           "hobby",
           "secondHobby",
