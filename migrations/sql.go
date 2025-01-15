@@ -30,6 +30,7 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 	proto.Type_TYPE_MARKDOWN:  "TEXT",
 	proto.Type_TYPE_VECTOR:    "VECTOR",
 	proto.Type_TYPE_FILE:      "JSONB",
+	proto.Type_TYPE_DURATION:  "INTERVAL",
 }
 
 // Matches the type cast on a Postgrs value eg. on "'foo'::text" matches "::text"

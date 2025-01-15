@@ -13,6 +13,7 @@ model Person {
         magicDecimal Decimal
         optionalFlag Boolean?
         magicImage File
+        magicDuration Duration
     }
 }
 
@@ -23,6 +24,7 @@ ALTER TABLE "person" ADD CONSTRAINT person_magic_number_udx UNIQUE ("magic_numbe
 ALTER TABLE "person" ADD COLUMN "magic_decimal" NUMERIC NOT NULL;
 ALTER TABLE "person" ADD COLUMN "optional_flag" BOOL;
 ALTER TABLE "person" ADD COLUMN "magic_image" JSONB NOT NULL;
+ALTER TABLE "person" ADD COLUMN "magic_duration" INTERVAL NOT NULL;
 
 === 
 
@@ -30,5 +32,6 @@ ALTER TABLE "person" ADD COLUMN "magic_image" JSONB NOT NULL;
   { "Model": "Person", "Field": "magicNumber", "Type": "ADDED" },
   { "Model": "Person", "Field": "magicDecimal", "Type": "ADDED" },
   { "Model": "Person", "Field": "optionalFlag", "Type": "ADDED" },
-  { "Model": "Person", "Field": "magicImage", "Type": "ADDED" }
+  { "Model": "Person", "Field": "magicImage", "Type": "ADDED" },
+  { "Model": "Person", "Field": "magicDuration", "Type": "ADDED" }
 ]
