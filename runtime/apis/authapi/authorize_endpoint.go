@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/coreos/go-oidc"
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/dchest/uniuri"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/functions"
