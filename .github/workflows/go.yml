@@ -41,7 +41,7 @@ jobs:
           go-version: "1.23"
       - uses: actions/setup-node@v3
         with:
-          node-version: 22.11
+          node-version: 22.13
       - uses: pnpm/action-setup@v4
         with:
           version: 9.12.3
