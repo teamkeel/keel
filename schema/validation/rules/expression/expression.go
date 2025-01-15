@@ -395,6 +395,7 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 	comparable := [][]string{
 		{parser.FieldTypeDate, parser.FieldTypeDatetime},
 		{parser.FieldTypeMarkdown, parser.FieldTypeText},
+		{parser.FieldTypeDuration, parser.FieldTypeText},
 		{parser.FieldTypeDecimal, parser.FieldTypeNumber},
 	}
 	for _, c := range comparable {
