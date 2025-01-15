@@ -377,6 +377,8 @@ enum Type {
     TYPE_FILE = 24;
     // A relative period expression string; e.g. `today/next year`
     TYPE_RELATIVE_PERIOD = 25;
+    // A time duration
+    TYPE_DURATION = 26;
 }
 
 enum OrderDirection {

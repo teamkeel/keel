@@ -1749,6 +1749,8 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_VECTOR
 	case parserType == parser.FieldTypeFile:
 		return proto.Type_TYPE_FILE
+	case parserType == parser.FieldTypeDuration:
+		return proto.Type_TYPE_DURATION
 	default:
 		return proto.Type_TYPE_UNKNOWN
 	}

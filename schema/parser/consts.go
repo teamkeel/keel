@@ -53,6 +53,7 @@ const (
 	FieldTypeMarkdown = "Markdown"  // a markdown rich text
 	FieldTypeVector   = "Vector"    // a vector
 	FieldTypeFile     = "File"      // a inline file supplied as a data-url
+	FieldTypeDuration = "Duration"  // a time duration
 )
 
 // Types for Message fields
@@ -73,6 +74,7 @@ var BuiltInTypes = map[string]bool{
 	FieldTypeMarkdown: true,
 	FieldTypeVector:   true,
 	FieldTypeFile:     true,
+	FieldTypeDuration: true,
 }
 
 func IsBuiltInFieldType(s string) bool {
