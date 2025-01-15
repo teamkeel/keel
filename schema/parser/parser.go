@@ -88,6 +88,7 @@ func (f *FieldNode) IsScalar() bool {
 		FieldTypeID,
 		FieldTypePassword,
 		FieldTypeMarkdown,
+		FieldTypeDuration,
 		FieldTypeVector:
 		return true
 	default:

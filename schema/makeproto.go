@@ -796,15 +796,6 @@ func makeDurationQueryInputMessage(name string) *proto.Message {
 				Type: proto.Type_TYPE_DURATION,
 			},
 		},
-		{
-			MessageName: name,
-			Name:        "oneOf",
-			Optional:    true,
-			Type: &proto.TypeInfo{
-				Type:     proto.Type_TYPE_DURATION,
-				Repeated: true,
-			},
-		},
 	}}
 }
 
