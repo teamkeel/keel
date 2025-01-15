@@ -141,6 +141,39 @@ test("boolean set attribute from implicit input - set to true - is true", async 
 });
 
 /* 
+  Duration Type 
+*/
+test("duration set attribute on optional field - set to P1D - is P1D", async () => {
+  const thing = await actions.createDurationOnOptional({});
+  expect(thing.optionalDuration).toEqual("P1D");
+});
+
+test("duration set attribute on optional field - set to null - is null", async () => {
+  const thing = await actions.createNullDurationOnOptional({});
+  expect(thing.optionalDuration).toEqual(null);
+});
+
+test("duration set attribute on required field - set to P1D - is P1D", async () => {
+  const thing = await actions.createDurationOnRequired({});
+  expect(thing.requiredDuration).toEqual("P1D");
+});
+
+test("duration set attribute from explicit input - set to P2D - is P2D", async () => {
+  const thing = await actions.createDurationFromExplicitInput({
+    explDuration: "P2D",
+  });
+  expect(thing.requiredDuration).toEqual("P2D");
+});
+
+test("duration set attribute from implicit input - set to P2D - is P2D", async () => {
+  const thing = await actions.createDurationFromImplicitInput({
+    requiredDuration: "P2D",
+  });
+  expect(thing.optionalDuration).toEqual("P2D");
+  expect(thing.requiredDuration).toEqual("P2D");
+});
+
+/* 
   Enum Type 
   Use enum type: https://linear.app/keel/issue/DEV-204/export-enum-types-from-teamkeeltesting
 */
