@@ -103,11 +103,7 @@
           "greaterThanOrEquals": { "type": "string", "format": "duration" },
           "lessThan": { "type": "string", "format": "duration" },
           "lessThanOrEquals": { "type": "string", "format": "duration" },
-          "notEquals": { "type": ["string", "null"], "format": "duration" },
-          "oneOf": {
-            "type": "array",
-            "items": { "type": "string", "format": "duration" }
-          }
+          "notEquals": { "type": ["string", "null"], "format": "duration" }
         },
         "unevaluatedProperties": false
       },
