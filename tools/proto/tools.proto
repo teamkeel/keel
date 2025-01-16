@@ -322,6 +322,7 @@ message DisplayLayoutConfig {
 		UNKNOWN = 0;
 		INBOX = 1;
 		BOARD = 2;
+		GRID = 3;
 	}
 
 	// The type of the view: e.g. Inbox, Board, List, Calendar, Table, Data Grid
@@ -329,6 +330,7 @@ message DisplayLayoutConfig {
 
 	optional InboxViewConfig inbox_config = 2;
 	optional BoardViewConfig board_config = 3;
+	optional GridViewConfig grid_config = 4;
 }
 
 // An email inbox style display for list views. Each item in a list will be displayed as a row with
@@ -373,4 +375,9 @@ message BoardViewConfig {
 
 	// An optional update action that will be used when an item will move between swimlanes
 	optional ActionLink update_action = 9;
+}
+
+// A data-grid view, similar to a table view but providing rich editing and data manipulation features.
+message GridViewConfig {
+	// TBD
 }
