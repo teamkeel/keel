@@ -24,6 +24,7 @@ func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode,
 
 	if model != nil {
 		opts = append(opts, options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false))
+		opts = append(opts, options.WithVariable(parser.ThisVariable, model.Name.Value, false))
 	}
 
 	p, err := expressions.NewParser(opts...)
