@@ -1,0 +1,12 @@
+model Thing {
+    fields {
+        number1 Number
+        number2 Number @computed(this.number1 + 1)
+    }
+    actions {
+        list listThings() {
+            @where(this.number1 == 1)
+            @permission(expression: this.number1 == 1)
+        }
+    }
+}

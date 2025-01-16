@@ -144,6 +144,10 @@ const (
 )
 
 const (
+	ThisVariable = "this"
+)
+
+const (
 	OrderByAscending  = "asc"
 	OrderByDescending = "desc"
 )

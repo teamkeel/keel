@@ -12,6 +12,7 @@ func ValidateComputedExpression(schema []*parser.AST, model *parser.ModelNode, f
 	opts := []expressions.Option{
 		options.WithSchemaTypes(schema),
 		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false),
+		options.WithVariable(parser.ThisVariable, model.Name.Value, false),
 		options.WithComparisonOperators(),
 		options.WithLogicalOperators(),
 		options.WithArithmeticOperators(),

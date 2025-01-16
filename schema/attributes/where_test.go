@@ -31,6 +31,28 @@ func TestWhere_Valid(t *testing.T) {
 	require.Empty(t, issues)
 }
 
+func TestWhere_This(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+		model Person {
+			fields {
+				name Text
+				isActive Boolean
+			}
+			actions {
+				list listPeople(name) {
+					@where(this.name == "Keel")
+				}
+			}
+		}`})
+
+	action := query.Action(schema, "listPeople")
+	expression := action.Attributes[0].Arguments[0].Expression
+
+	issues, err := attributes.ValidateWhereExpression(schema, action, expression)
+	require.NoError(t, err)
+	require.Empty(t, issues)
+}
+
 func TestWhere_InvalidType(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 		model Person {
