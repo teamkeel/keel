@@ -160,7 +160,7 @@ test("duration set attribute on required field - set to P1D - is P1D", async () 
 
 test("duration set attribute from explicit input - set to P2D - is P2D", async () => {
   const thing = await actions.createDurationFromExplicitInput({
-    explDuration: Duration.fromISOString("P2D")
+    explDuration: Duration.fromISOString("P2D"),
   });
   expect(thing.requiredDuration).toEqual("P2D");
 });

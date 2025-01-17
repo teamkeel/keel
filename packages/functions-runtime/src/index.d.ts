@@ -209,7 +209,7 @@ export type FileDbRecord = {
 export declare class Duration {
   constructor(postgresString: string);
   static fromISOString(iso: DurationString): Duration;
-  
+
   toISOString(): DurationString;
   toPostgres(): string;
 }
