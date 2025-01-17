@@ -1,3 +1,4 @@
+const { Duration } = require("./Duration");
 const { InlineFile, File } = require("./File");
 
 // parseInputs takes a set of inputs and creates objects for the ones that are of a complex type.
@@ -12,6 +13,9 @@ function parseInputs(inputs) {
           switch (inputs[k].__typename) {
             case "InlineFile":
               inputs[k] = InlineFile.fromDataURL(inputs[k].dataURL);
+              break;
+            case "Duration":
+              inputs[k] = Duration.fromISOString(inputs[k].interval);
               break;
             default:
               break;
@@ -36,6 +40,8 @@ async function parseOutputs(inputs) {
         if (inputs[k] instanceof InlineFile) {
           const stored = await inputs[k].store();
           inputs[k] = stored;
+        } else if (inputs[k] instanceof Duration) {
+          inputs[k] = inputs[k].toISOString();
         } else {
           inputs[k] = await parseOutputs(inputs[k]);
         }
@@ -54,7 +60,14 @@ function transformRichDataTypes(data) {
   for (const key of keys) {
     const value = data[key];
     if (isPlainObject(value)) {
-      if (value.key && value.size && value.filename && value.contentType) {
+      if (value._Typename == "Duration" && value.pgInterval) {
+        row[key] = new Duration(value.pgInterval);
+      } else if (
+        value.key &&
+        value.size &&
+        value.filename &&
+        value.contentType
+      ) {
         row[key] = File.fromDbRecord(value);
       } else {
         row[key] = value;

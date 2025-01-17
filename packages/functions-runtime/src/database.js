@@ -6,6 +6,7 @@ const pg = require("pg");
 const { withSpan } = require("./tracing");
 const ws = require("ws");
 const fs = require("node:fs");
+const { Duration } = require("./Duration");
 
 // withDatabase is responsible for setting the correct database client in our AsyncLocalStorage
 // so that the the code in a custom function uses the correct client.
@@ -149,6 +150,14 @@ function getDialect(connString) {
       pg.types.setTypeParser(1700, function (val) {
         return parseFloat(val);
       });
+      // Adding a custom type parser for interval fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
+      // 1186 = type for INTERVAL
+      pg.types.setTypeParser(1186, function (val) {
+        return {
+          _Typename: "Duration",
+          pgInterval: val,
+        };
+      });
 
       return new PostgresDialect({
         pool: new InstrumentedPool({
@@ -181,6 +190,14 @@ function getDialect(connString) {
       // 1700 = type for NUMERIC
       neonserverless.types.setTypeParser(1700, function (val) {
         return parseFloat(val);
+      });
+      // Adding a custom type parser for interval fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
+      // 1186 = type for INTERVAL
+      neonserverless.types.setTypeParser(1186, function (val) {
+        return {
+          _Typename: "Duration",
+          pgInterval: val,
+        };
       });
 
       neonserverless.neonConfig.webSocketConstructor = ws;

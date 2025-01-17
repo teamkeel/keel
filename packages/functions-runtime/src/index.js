@@ -12,6 +12,7 @@ const {
 } = require("./permissions");
 const tracing = require("./tracing");
 const { InlineFile, File } = require("./File");
+const { Duration } = require("./Duration");
 const { ErrorPresets } = require("./errors");
 
 module.exports = {
@@ -21,6 +22,7 @@ module.exports = {
   handleJob,
   handleSubscriber,
   useDatabase,
+  Duration,
   InlineFile,
   File,
   Permissions,

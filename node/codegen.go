@@ -64,7 +64,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
-	sdkTypes.Writeln(`export { InlineFile, File } from "@teamkeel/functions-runtime"`)
+	sdkTypes.Writeln(`export { InlineFile, File, Duration } from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln("")
 
 	writePermissions(sdk, schema)
@@ -1078,6 +1078,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln(`const models = createModelAPI();`)
 	w.Writeln(`module.exports.InlineFile = runtime.InlineFile;`)
 	w.Writeln(`module.exports.File = runtime.File;`)
+	w.Writeln(`module.exports.Duration = runtime.Duration;`)
 	w.Writeln(`module.exports.models = models;`)
 	w.Writeln(`module.exports.permissions = createPermissionApi();`)
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
@@ -1741,7 +1742,11 @@ func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_DURATION:
-		return "DurationString"
+		if isClientPackage {
+			return "DurationString"
+		} else {
+			return "runtime.Duration"
+		}
 	case proto.Type_TYPE_RELATIVE_PERIOD:
 		return "RelativeDateString"
 	case proto.Type_TYPE_FILE:
@@ -1758,7 +1763,11 @@ func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPac
 func toResponseTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_DURATION:
-		return "DurationString"
+		if isClientPackage {
+			return "DurationString"
+		} else {
+			return "runtime.Duration"
+		}
 	case proto.Type_TYPE_RELATIVE_PERIOD:
 		return "RelativeDateString"
 	case proto.Type_TYPE_FILE:
@@ -1787,7 +1796,11 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		ret = "Date"
 	case proto.Type_TYPE_DURATION:
-		return "DurationString"
+		if isClientPackage {
+			ret = "DurationString"
+		} else {
+			ret = "runtime.Duration"
+		}
 	case proto.Type_TYPE_ENUM:
 		ret = t.EnumName.Value
 	case proto.Type_TYPE_MESSAGE:

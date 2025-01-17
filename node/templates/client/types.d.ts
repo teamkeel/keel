@@ -188,14 +188,19 @@ type dateDuration =
   | `${number}Y${number}M${number}D` // Example: 1Y2M10D
   | `${number}Y${number}M` // Example: 1Y2M
   | `${number}Y${number}D` // Example: 1Y10D
-  | `${number}M${number}D`; // Example: 10M2D
+  | `${number}M${number}D` // Example: 10M2D
+  | `${number}Y` // Example: 1Y
+  | `${number}M` // Example: 1M
+  | `${number}D`; // Example: 2D
 
 type timeDuration =
-  | `${number}H${number}M${number}S` // Example: T2H30M
-  | `${number}H${number}M` // Example: T2H30M
-  | `${number}H${number}S` // Example: T2H30S
-  | `${number}M` // Example: T30M
-  | `${number}S`; // Example: T30S
+  | `${number}H${number}M${number}S` // Example: 2H30M
+  | `${number}H${number}M` // Example: 2H30M
+  | `${number}M${number}S` // Example: 2M30S
+  | `${number}H${number}S` // Example: 2H30S
+  | `${number}H` // Example: 2H
+  | `${number}M` // Example: 30M
+  | `${number}S`; // Example: 30S
 
 export type DurationString =
   | `P${dateDuration}T${timeDuration}`
