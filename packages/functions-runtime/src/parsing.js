@@ -60,7 +60,7 @@ function transformRichDataTypes(data) {
   for (const key of keys) {
     const value = data[key];
     if (isPlainObject(value)) {
-      if (value._Typename == "Duration" && value.pgInterval) {
+      if (value._typename == "Duration" && value.pgInterval) {
         row[key] = new Duration(value.pgInterval);
       } else if (
         value.key &&

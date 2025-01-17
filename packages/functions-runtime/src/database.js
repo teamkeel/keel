@@ -78,7 +78,9 @@ function createDatabaseClient({ connString } = {}) {
       // https://kysely-org.github.io/kysely/classes/CamelCasePlugin.html
       // If they don't, then we can create a custom implementation of the plugin where we control
       // the casing behaviour (see url above for example)
-      new CamelCasePlugin(),
+      new CamelCasePlugin({
+        maintainNestedObjectKeys: true,
+      }),
     ],
     log(event) {
       if ("DEBUG" in process.env) {
@@ -153,10 +155,7 @@ function getDialect(connString) {
       // Adding a custom type parser for interval fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
       // 1186 = type for INTERVAL
       pg.types.setTypeParser(1186, function (val) {
-        return {
-          _Typename: "Duration",
-          pgInterval: val,
-        };
+        return new Duration(val);
       });
 
       return new PostgresDialect({
@@ -194,10 +193,7 @@ function getDialect(connString) {
       // Adding a custom type parser for interval fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
       // 1186 = type for INTERVAL
       neonserverless.types.setTypeParser(1186, function (val) {
-        return {
-          _Typename: "Duration",
-          pgInterval: val,
-        };
+        return new Duration(val);
       });
 
       neonserverless.neonConfig.webSocketConstructor = ws;
