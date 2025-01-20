@@ -1,5 +1,6 @@
 const { CamelCasePlugin } = require("kysely");
-const { isPlainObject, isRichType } = require("./parsing");
+const { isPlainObject, isRichType } = require("./type-utils");
+
 // KeelCamelCasePlugin is a wrapper around kysely's camel case plugin.
 class KeelCamelCasePlugin {
   constructor(opt) {

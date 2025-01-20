@@ -2,9 +2,9 @@ const { sql } = require("kysely");
 const { useDatabase } = require("./database");
 const {
   transformRichDataTypes,
-  isPlainObject,
   isReferencingExistingRecord,
 } = require("./parsing");
+const { isPlainObject } = require("./type-utils");
 const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
