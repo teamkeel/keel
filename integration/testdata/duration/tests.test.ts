@@ -47,7 +47,7 @@ test("duration - write custom function", async () => {
   expect(mydurs[0].dur?.toISOString()).toEqual("PT1H2M3S");
 });
 
-test("durs - create and store duration in hook", async () => {
+test("duration - create and store duration in hook", async () => {
   await actions.createDurationInHook({});
 
   const mydurs = await useDatabase()
@@ -57,4 +57,25 @@ test("durs - create and store duration in hook", async () => {
 
   expect(mydurs.length).toEqual(1);
   expect(mydurs[0].dur?.toISOString()).toEqual("PT1H");
+});
+
+test("duration - write two in custom function", async () => {
+  // write and duplicate will create two models, one with the input and one with PT1H
+  const result = await actions.writeAndDuplicate({
+    dur: Duration.fromISOString("PT1H2M3S"),
+  });
+
+  expect(result.model.dur).toEqual("PT1H2M3S");
+  expect(result.duplicate.dur).toEqual("PT1H");
+
+  const mydurs = await useDatabase()
+    .selectFrom("my_duration")
+    .selectAll()
+    .execute();
+
+  expect(mydurs.length).toEqual(2);
+  expect(mydurs[0].id).toEqual(result.model.id);
+  expect(mydurs[0].dur?.toISOString()).toEqual("PT1H2M3S");
+  expect(mydurs[1].id).toEqual(result.duplicate.id);
+  expect(mydurs[1].dur?.toISOString()).toEqual("PT1H");
 });

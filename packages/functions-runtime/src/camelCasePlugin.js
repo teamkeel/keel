@@ -1,7 +1,9 @@
 const { CamelCasePlugin } = require("kysely");
 const { isPlainObject, isRichType } = require("./type-utils");
 
-// KeelCamelCasePlugin is a wrapper around kysely's camel case plugin.
+// KeelCamelCasePlugin is a wrapper around kysely's CamelCasePlugin. The behaviour is the same apart from the fact that
+// nested objects that are of a rich keel data type, such as Duration, are skipped so that they continue to be
+// implementations of the rich data classes defined by Keel.
 class KeelCamelCasePlugin {
   constructor(opt) {
     this.opt = opt;

@@ -76,9 +76,8 @@ function createDatabaseClient({ connString } = {}) {
       new AuditContextPlugin(),
       // allows users to query using camelCased versions of the database column names, which
       // should match the names we use in our schema.
-      // https://kysely-org.github.io/kysely/classes/CamelCasePlugin.html
-      // If they don't, then we can create a custom implementation of the plugin where we control
-      // the casing behaviour (see url above for example)
+      // We're using an extended version of Kysely's CamelCasePlugin which avoids changing keys of objects that represent
+      // rich data formats, specific to Keel (e.g. Duration)
       new KeelCamelCasePlugin(),
     ],
     log(event) {
