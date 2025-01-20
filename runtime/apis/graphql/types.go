@@ -313,6 +313,20 @@ var dateType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
+var durationType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Duration",
+	Fields: graphql.Fields{
+		"iso8601": &graphql.Field{
+			Name:        "iso8601",
+			Description: "ISO8601 representation of the duration",
+			Type:        graphql.NewNonNull(graphql.String),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				return p.Source, nil
+			},
+		},
+	},
+})
+
 var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_ID:              graphql.ID,
 	proto.Type_TYPE_STRING:          graphql.String,
@@ -327,6 +341,7 @@ var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_ANY:             anyType,
 	proto.Type_TYPE_VECTOR:          graphql.NewList(graphql.Float),
 	proto.Type_TYPE_RELATIVE_PERIOD: graphql.String,
+	proto.Type_TYPE_DURATION:        durationType,
 }
 
 var timestampInputType = iso8601Type
@@ -350,6 +365,7 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_VECTOR:          graphql.NewList(graphql.Float),
 	proto.Type_TYPE_FILE:            graphql.String,
 	proto.Type_TYPE_RELATIVE_PERIOD: graphql.String,
+	proto.Type_TYPE_DURATION:        graphql.String,
 }
 
 // for fields where the underlying source is a date/datetime
