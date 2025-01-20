@@ -1,7 +1,8 @@
-const { Kysely, PostgresDialect, CamelCasePlugin } = require("kysely");
+const { Kysely, PostgresDialect } = require("kysely");
 const neonserverless = require("@neondatabase/serverless");
 const { AsyncLocalStorage } = require("async_hooks");
 const { AuditContextPlugin } = require("./auditing");
+const { KeelCamelCasePlugin } = require("./camelCasePlugin");
 const pg = require("pg");
 const { withSpan } = require("./tracing");
 const ws = require("ws");
@@ -78,9 +79,7 @@ function createDatabaseClient({ connString } = {}) {
       // https://kysely-org.github.io/kysely/classes/CamelCasePlugin.html
       // If they don't, then we can create a custom implementation of the plugin where we control
       // the casing behaviour (see url above for example)
-      new CamelCasePlugin({
-        maintainNestedObjectKeys: true,
-      }),
+      new KeelCamelCasePlugin(),
     ],
     log(event) {
       if ("DEBUG" in process.env) {

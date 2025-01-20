@@ -37,7 +37,7 @@ test("duration - write custom function", async () => {
 
   expect(result.model.dur).toEqual("PT1H2M3S");
 
-   const mydurs = await useDatabase()
+  const mydurs = await useDatabase()
     .selectFrom("my_duration")
     .selectAll()
     .execute();
