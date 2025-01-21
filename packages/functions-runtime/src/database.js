@@ -147,12 +147,12 @@ function getDialect(connString) {
     case "pg":
       // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
       // 1700 = type for NUMERIC
-      pg.types.setTypeParser(1700, function (val) {
+      pg.types.setTypeParser(pg.types.builtins.NUMERIC, function (val) {
         return parseFloat(val);
       });
       // Adding a custom type parser for interval fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
       // 1186 = type for INTERVAL
-      pg.types.setTypeParser(1186, function (val) {
+      pg.types.setTypeParser(pg.types.builtins.INTERVAL, function (val) {
         return new Duration(val);
       });
 
@@ -185,14 +185,20 @@ function getDialect(connString) {
     case "neon":
       // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
       // 1700 = type for NUMERIC
-      neonserverless.types.setTypeParser(1700, function (val) {
-        return parseFloat(val);
-      });
+      neonserverless.types.setTypeParser(
+        pg.types.builtins.NUMERIC,
+        function (val) {
+          return parseFloat(val);
+        }
+      );
       // Adding a custom type parser for interval fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
       // 1186 = type for INTERVAL
-      neonserverless.types.setTypeParser(1186, function (val) {
-        return new Duration(val);
-      });
+      neonserverless.types.setTypeParser(
+        pg.types.builtins.INTERVAL,
+        function (val) {
+          return new Duration(val);
+        }
+      );
 
       neonserverless.neonConfig.webSocketConstructor = ws;
 
