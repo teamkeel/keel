@@ -2,14 +2,15 @@ const { sql } = require("kysely");
 const { useDatabase } = require("./database");
 const {
   transformRichDataTypes,
-  isPlainObject,
   isReferencingExistingRecord,
 } = require("./parsing");
+const { isPlainObject } = require("./type-utils");
 const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
 const { InlineFile, File } = require("./File");
+const { Duration } = require("./Duration");
 
 const {
   applyLimit,
@@ -163,6 +164,9 @@ class ModelAPI {
 
       for (const key of keys) {
         const value = values[key];
+        if (value instanceof Duration) {
+          row[key] = value.toPostgres();
+        }
         // handle files that need uploading
         if (value instanceof InlineFile) {
           const storedFile = await value.store();
@@ -249,6 +253,9 @@ async function create(conn, tableName, tableConfigs, values) {
         const columnConfig = tableConfig[key];
 
         if (!columnConfig) {
+          if (value instanceof Duration) {
+            row[key] = value.toPostgres();
+          }
           if (value instanceof InlineFile) {
             const storedFile = await value.store();
             row[key] = storedFile.toDbRecord();

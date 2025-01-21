@@ -12,6 +12,7 @@
         "type": "object",
         "properties": {
           "birthday": { "type": "string", "format": "date" },
+          "canHoldBreath": { "type": "string", "format": "duration" },
           "hobby": { "enum": ["Tennis", "Chess"] },
           "name": { "type": "string" },
           "picture": { "type": "string", "format": "data-url" }

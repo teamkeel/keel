@@ -5,6 +5,7 @@ model Person {
         someText Text
         someMarkdown Markdown
         someDecimal Decimal
+        someDuration Duration
     }
 
     actions {

@@ -7,11 +7,16 @@ input GetPersonInput {
   id: ID!
 }
 
+type Duration {
+  iso8601: String!
+}
+
 type Person {
   createdAt: Timestamp!
   id: ID!
   someBoolean: Boolean!
   someDecimal: Float!
+  someDuration: Duration!
   someMarkdown: String!
   someNumber: Int!
   someText: String!

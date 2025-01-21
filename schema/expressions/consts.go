@@ -70,6 +70,15 @@ var operatorsForType = map[string][]string{
 		parser.OperatorLessThanOrEqualTo,
 		parser.OperatorAssignment,
 	},
+	parser.FieldTypeDuration: {
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
+		parser.OperatorGreaterThan,
+		parser.OperatorGreaterThanOrEqualTo,
+		parser.OperatorLessThan,
+		parser.OperatorLessThanOrEqualTo,
+		parser.OperatorAssignment,
+	},
 	parser.TypeEnum: {
 		parser.OperatorEquals,
 		parser.OperatorNotEquals,

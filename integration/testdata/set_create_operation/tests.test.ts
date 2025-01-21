@@ -1,6 +1,6 @@
 import { actions, resetDatabase, models } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
-import { ThingType } from "@teamkeel/sdk";
+import { ThingType, Duration } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
@@ -138,6 +138,39 @@ test("boolean set attribute from implicit input - set to true - is true", async 
   });
   expect(thing.optionalBoolean).toEqual(true);
   expect(thing.requiredBoolean).toEqual(true);
+});
+
+/* 
+  Duration Type 
+*/
+test("duration set attribute on optional field - set to P1D - is P1D", async () => {
+  const thing = await actions.createDurationOnOptional({});
+  expect(thing.optionalDuration).toEqual("P1D");
+});
+
+test("duration set attribute on optional field - set to null - is null", async () => {
+  const thing = await actions.createNullDurationOnOptional({});
+  expect(thing.optionalDuration).toEqual(null);
+});
+
+test("duration set attribute on required field - set to P1D - is P1D", async () => {
+  const thing = await actions.createDurationOnRequired({});
+  expect(thing.requiredDuration).toEqual("P1D");
+});
+
+test("duration set attribute from explicit input - set to P2D - is P2D", async () => {
+  const thing = await actions.createDurationFromExplicitInput({
+    explDuration: Duration.fromISOString("P2D"),
+  });
+  expect(thing.requiredDuration).toEqual("P2D");
+});
+
+test("duration set attribute from implicit input - set to P2D - is P2D", async () => {
+  const thing = await actions.createDurationFromImplicitInput({
+    requiredDuration: Duration.fromISOString("P2D"),
+  });
+  expect(thing.optionalDuration).toEqual("P2D");
+  expect(thing.requiredDuration).toEqual("P2D");
 });
 
 /* 

@@ -480,6 +480,9 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 	case proto.Type_TYPE_MARKDOWN:
 		prop.Type = "string"
 		prop.Format = "markdown"
+	case proto.Type_TYPE_DURATION:
+		prop.Type = "string"
+		prop.Format = "duration"
 	case proto.Type_TYPE_BOOL:
 		prop.Type = "boolean"
 	case proto.Type_TYPE_INT:

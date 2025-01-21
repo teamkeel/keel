@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { InlineFile, File } from "@teamkeel/functions-runtime";
+import { InlineFile, File, Duration } from "@teamkeel/functions-runtime";
 
 export class Executor {
   constructor(props) {
@@ -128,7 +128,9 @@ async function parseInputs(inputs) {
   if (inputs != null && typeof inputs === "object") {
     for (const keys of Object.keys(inputs)) {
       if (inputs[keys] !== null && typeof inputs[keys] === "object") {
-        if (isInlineFileOrFile(inputs[keys])) {
+        if (isDuration(inputs[keys])) {
+          inputs[keys] = inputs[keys].toISOString();
+        } else if (isInlineFileOrFile(inputs[keys])) {
           const contents = await inputs[keys].read();
           inputs[keys] = `data:${inputs[keys].contentType};name=${
             inputs[keys].filename
@@ -148,6 +150,10 @@ function isInlineFileOrFile(obj) {
     typeof obj === "object" &&
     (obj.constructor.name === "InlineFile" || obj.constructor.name === "File")
   );
+}
+
+function isDuration(obj) {
+  return obj && typeof obj === "object" && obj.constructor.name === "Duration";
 }
 
 function parseOutputs(data) {

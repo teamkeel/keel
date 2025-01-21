@@ -744,6 +744,114 @@ func makeTimestampArrayQueryInputMessage(name string) *proto.Message {
 	}}
 }
 
+func makeDurationQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Nullable:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+	}}
+}
+
+func makeDurationArrayQueryInputMessage(name string) *proto.Message {
+	return &proto.Message{Name: name, Fields: []*proto.MessageField{
+		{
+			MessageName: name,
+			Name:        "equals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "notEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "lessThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThan",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+		{
+			MessageName: name,
+			Name:        "greaterThanOrEquals",
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_DURATION,
+			},
+		},
+	}}
+}
+
 func makeEnumQueryInputMessage(name string, enumName string) *proto.Message {
 	return &proto.Message{Name: name, Fields: []*proto.MessageField{
 		{
@@ -819,6 +927,8 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 		prefix = "Date"
 	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		prefix = "Timestamp"
+	case proto.Type_TYPE_DURATION:
+		prefix = "Duration"
 	case proto.Type_TYPE_ENUM:
 		prefix = typeInfo.EnumName.Value
 	}
@@ -858,6 +968,9 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 		case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 			allQueryMsg = makeTimestampArrayQueryInputMessage(allQueryMsgName)
 			anyQueryMsg = makeTimestampArrayQueryInputMessage(anyQueryMsgName)
+		case proto.Type_TYPE_DURATION:
+			allQueryMsg = makeDurationArrayQueryInputMessage(allQueryMsgName)
+			anyQueryMsg = makeDurationArrayQueryInputMessage(anyQueryMsgName)
 		case proto.Type_TYPE_ENUM:
 			allQueryMsg = makeEnumArrayQueryInputMessage(allQueryMsgName, typeInfo.EnumName.Value)
 			anyQueryMsg = makeEnumArrayQueryInputMessage(anyQueryMsgName, typeInfo.EnumName.Value)
@@ -929,6 +1042,8 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 		return makeDateQueryInputMessage(msgName), nil
 	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		return makeTimestampQueryInputMessage(msgName), nil
+	case proto.Type_TYPE_DURATION:
+		return makeDurationQueryInputMessage(msgName), nil
 	case proto.Type_TYPE_ENUM:
 		return makeEnumQueryInputMessage(msgName, typeInfo.EnumName.Value), nil
 	default:
@@ -1749,6 +1864,8 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_VECTOR
 	case parserType == parser.FieldTypeFile:
 		return proto.Type_TYPE_FILE
+	case parserType == parser.FieldTypeDuration:
+		return proto.Type_TYPE_DURATION
 	default:
 		return proto.Type_TYPE_UNKNOWN
 	}

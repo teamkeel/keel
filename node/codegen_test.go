@@ -42,6 +42,7 @@ model Person {
 		height Decimal
 		bio Markdown
 		file File
+		canHoldBreath Duration
 	}
 }`
 
@@ -59,6 +60,7 @@ export interface PersonTable {
 	height: number
 	bio: string
 	file: FileDbRecord
+	canHoldBreath: runtime.Duration
 	id: Generated<string>
 	createdAt: Generated<Date>
 	updatedAt: Generated<Date>
@@ -106,6 +108,7 @@ export interface Person {
 	height: number
 	bio: string
 	file: runtime.File
+	canHoldBreath: runtime.Duration
 	id: string
 	createdAt: Date
 	updatedAt: Date
@@ -131,6 +134,7 @@ export type PersonCreateValues = {
 	height: number
 	bio: string
 	file: runtime.InlineFile | runtime.File
+	canHoldBreath: runtime.Duration
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
@@ -180,6 +184,7 @@ export interface PersonWhereConditions {
 	tags?: string[] | runtime.StringArrayWhereCondition;
 	height?: number | runtime.NumberWhereCondition;
 	bio?: string | runtime.StringWhereCondition;
+	canHoldBreath?: runtime.Duration | runtime.DurationWhereCondition;
 	id?: string | runtime.IDWhereCondition;
 	createdAt?: Date | runtime.DateWhereCondition;
 	updatedAt?: Date | runtime.DateWhereCondition;
@@ -251,7 +256,8 @@ export type PersonAPI = {
 		tags: [''],
 		height: 0,
 		bio: '',
-		file: inputs.profilePhoto
+		file: inputs.profilePhoto,
+		canHoldBreath: undefined
 	});
 	%[1]s
 	*/
@@ -477,6 +483,7 @@ function createPermissionApi() {
 const models = createModelAPI();
 module.exports.InlineFile = runtime.InlineFile;
 module.exports.File = runtime.File;
+module.exports.Duration = runtime.Duration;
 module.exports.models = models;
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;

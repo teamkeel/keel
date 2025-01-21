@@ -8,6 +8,8 @@ model Thing {
         requiredDecimal Decimal @default(1.0)
         optionalBoolean Boolean?
         requiredBoolean Boolean @default(false)
+        optionalDuration Duration?
+        requiredDuration Duration @default("P1D")
         optionalEnum ThingType?
         requiredEnum ThingType @default(ThingType.TypeOne)
         optionalParent Parent?
@@ -73,6 +75,21 @@ model Thing {
         }
         create createBooleanFromImplicitInput() with (requiredBoolean) {
             @set(thing.optionalBoolean = requiredBoolean)
+        }
+        create createDurationOnOptional() {
+            @set(thing.optionalDuration = "P1D")
+        }
+        create createNullDurationOnOptional() {
+            @set(thing.optionalDuration = null)
+        }
+        create createDurationOnRequired() {
+            @set(thing.requiredDuration = "P1D")
+        }
+        create createDurationFromExplicitInput() with (explDuration: Duration) {
+            @set(thing.requiredDuration = explDuration)
+        }
+        create createDurationFromImplicitInput() with (requiredDuration) {
+            @set(thing.optionalDuration = requiredDuration)
         }
         create createEnumOnOptional() {
             @set(thing.optionalEnum = ThingType.TypeTwo)

@@ -1,11 +1,13 @@
-const { Kysely, PostgresDialect, CamelCasePlugin } = require("kysely");
+const { Kysely, PostgresDialect } = require("kysely");
 const neonserverless = require("@neondatabase/serverless");
 const { AsyncLocalStorage } = require("async_hooks");
 const { AuditContextPlugin } = require("./auditing");
+const { KeelCamelCasePlugin } = require("./camelCasePlugin");
 const pg = require("pg");
 const { withSpan } = require("./tracing");
 const ws = require("ws");
 const fs = require("node:fs");
+const { Duration } = require("./Duration");
 
 // withDatabase is responsible for setting the correct database client in our AsyncLocalStorage
 // so that the the code in a custom function uses the correct client.
@@ -74,10 +76,9 @@ function createDatabaseClient({ connString } = {}) {
       new AuditContextPlugin(),
       // allows users to query using camelCased versions of the database column names, which
       // should match the names we use in our schema.
-      // https://kysely-org.github.io/kysely/classes/CamelCasePlugin.html
-      // If they don't, then we can create a custom implementation of the plugin where we control
-      // the casing behaviour (see url above for example)
-      new CamelCasePlugin(),
+      // We're using an extended version of Kysely's CamelCasePlugin which avoids changing keys of objects that represent
+      // rich data formats, specific to Keel (e.g. Duration)
+      new KeelCamelCasePlugin(),
     ],
     log(event) {
       if ("DEBUG" in process.env) {
@@ -146,8 +147,13 @@ function getDialect(connString) {
     case "pg":
       // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
       // 1700 = type for NUMERIC
-      pg.types.setTypeParser(1700, function (val) {
+      pg.types.setTypeParser(pg.types.builtins.NUMERIC, function (val) {
         return parseFloat(val);
+      });
+      // Adding a custom type parser for interval fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
+      // 1186 = type for INTERVAL
+      pg.types.setTypeParser(pg.types.builtins.INTERVAL, function (val) {
+        return new Duration(val);
       });
 
       return new PostgresDialect({
@@ -179,9 +185,20 @@ function getDialect(connString) {
     case "neon":
       // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
       // 1700 = type for NUMERIC
-      neonserverless.types.setTypeParser(1700, function (val) {
-        return parseFloat(val);
-      });
+      neonserverless.types.setTypeParser(
+        pg.types.builtins.NUMERIC,
+        function (val) {
+          return parseFloat(val);
+        }
+      );
+      // Adding a custom type parser for interval fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
+      // 1186 = type for INTERVAL
+      neonserverless.types.setTypeParser(
+        pg.types.builtins.INTERVAL,
+        function (val) {
+          return new Duration(val);
+        }
+      );
 
       neonserverless.neonConfig.webSocketConstructor = ws;
 

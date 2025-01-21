@@ -1,0 +1,38 @@
+model MyDuration {
+    fields {
+        dur Duration?
+    }
+    actions {
+        create createDuration() with (dur)
+        update updateDuration(id) with (dur)
+        get getDuration(id)
+        list listDurations() {
+            @orderBy(createdAt: asc)
+        }
+        create createDurationInHook() @function 
+        write writeCustomFunction(DurationMessage) returns (ModelMessage) {
+            @permission(expression: true)
+        }
+        write writeAndDuplicate(DurationMessage) returns (DuplicateModelMessage) {
+            @permission(expression: true)
+        }
+    }
+
+    @permission(expression: true, actions: [get, list, create, update])
+}
+
+message NestedDurationMessage {
+    msg DurationMessage
+}
+
+message DurationMessage {
+    dur Duration
+}
+
+message ModelMessage {
+    model MyDuration
+}
+message DuplicateModelMessage {
+    model MyDuration
+    duplicate MyDuration
+}
