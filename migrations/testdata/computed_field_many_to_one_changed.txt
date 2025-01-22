@@ -1,0 +1,63 @@
+model Item {
+    fields {
+        product Product
+        quantity Number
+        total Decimal @computed(item.quantity * item.product.price + item.product.agent.commission)
+    }
+}
+
+model Product {
+    fields {
+        price Decimal
+        agent Agent?
+    }
+}
+
+model Agent {
+    fields {
+        commission Decimal
+    }
+}
+
+===
+
+model Item {
+    fields {
+        product Product
+        quantity Number
+        total Decimal @computed(item.quantity * item.product.price)
+    }
+}
+
+model Product {
+    fields {
+        price Decimal
+        agent Agent?
+    }
+}
+
+model Agent {
+    fields {
+        commission Decimal
+    }
+}
+
+===
+
+CREATE FUNCTION item__total__5474c2e0__computed(r item) RETURNS NUMERIC AS $$ BEGIN
+	RETURN r."quantity" * (SELECT "product"."price" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id");
+END; $$ LANGUAGE plpgsql;
+DROP FUNCTION item__total__8f543d38__computed;
+CREATE OR REPLACE FUNCTION item__exec_computed_fns() RETURNS TRIGGER AS $$ BEGIN
+	NEW.total := item__total__5474c2e0__computed(NEW);
+	RETURN NEW;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER item__computed_trigger BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE item__exec_computed_fns();
+DROP TRIGGER agent__to__item__26590ccb__computed_dependency_trigger ON agent;
+DROP FUNCTION agent__to__item__26590ccb__computed_dependency;
+
+===
+
+[
+    {"Model":"Item","Field":"total","Type":"MODIFIED"}
+]

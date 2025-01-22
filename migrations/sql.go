@@ -231,11 +231,15 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 	return strings.Join(stmts, "\n"), nil
 }
 
+func hashOfExpression(expression string) string {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(expression)))[:8]
+}
+
 // computedFieldFuncName generates the name of the a computed field's function
-func computedFieldFuncName(model *proto.Model, field *proto.Field) string {
+func computedFieldFuncName(field *proto.Field) string {
 	// shortened alphanumeric hash from an expression
-	hash := fmt.Sprintf("%x", sha256.Sum256([]byte(field.ComputedExpression.Source)))[:8]
-	return fmt.Sprintf("%s__%s__%s__computed", strcase.ToSnake(model.Name), strcase.ToSnake(field.Name), hash)
+	hash := hashOfExpression(field.ComputedExpression.Source)
+	return fmt.Sprintf("%s__%s__%s__computed", strcase.ToSnake(field.ModelName), strcase.ToSnake(field.Name), hash)
 }
 
 // computedExecFuncName generates the name for the table function which executed all computed functions
@@ -243,14 +247,15 @@ func computedExecFuncName(model *proto.Model) string {
 	return fmt.Sprintf("%s__exec_computed_fns", strcase.ToSnake(model.Name))
 }
 
-// computedExecUpdateFuncName generates the name for the table function which executes an update to cause table triggers to run
-func computedExecUpdateFuncName(model *proto.Model) string {
-	return fmt.Sprintf("%s__exec_update_fn", strcase.ToSnake(model.Name))
-}
-
 // computedTriggerName generates the name for the trigger which runs the function which executes computed functions
 func computedTriggerName(model *proto.Model) string {
 	return fmt.Sprintf("%s__computed_trigger", strcase.ToSnake(model.Name))
+}
+
+func computedDependencyFuncName(model *proto.Model, dependentModel *proto.Model, fragments []string) string {
+	// shortened alphanumeric hash from the operand idents
+	hash := hashOfExpression(strings.Join(fragments, "."))
+	return fmt.Sprintf("%s__to__%s__%s__computed_dependency", strcase.ToSnake(dependentModel.Name), strcase.ToSnake(model.Name), hash)
 }
 
 // fieldFromComputedFnName determines the field from computed function name
@@ -286,7 +291,7 @@ func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *p
 		return "", "", err
 	}
 
-	fn := computedFieldFuncName(model, field)
+	fn := computedFieldFuncName(field)
 	sql := fmt.Sprintf("CREATE FUNCTION %s(r %s) RETURNS %s AS $$ BEGIN\n\tRETURN %s;\nEND; $$ LANGUAGE plpgsql;",
 		fn,
 		strcase.ToSnake(model.Name),

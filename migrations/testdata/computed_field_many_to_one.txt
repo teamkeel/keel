@@ -1,0 +1,128 @@
+===
+
+model Item {
+    fields {
+        product Product
+        quantity Number
+        total Decimal @computed(item.quantity * item.product.price + item.product.agent.commission)
+    }
+}
+
+model Product {
+    fields {
+        price Decimal
+        agent Agent?
+    }
+}
+
+model Agent {
+    fields {
+        commission Decimal
+    }
+}
+
+===
+CREATE TABLE "agent" (
+"commission" NUMERIC NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "agent" ADD CONSTRAINT agent_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "identity" (
+"email" TEXT,
+"email_verified" BOOL NOT NULL DEFAULT false,
+"password" TEXT,
+"external_id" TEXT,
+"issuer" TEXT,
+"name" TEXT,
+"given_name" TEXT,
+"family_name" TEXT,
+"middle_name" TEXT,
+"nick_name" TEXT,
+"profile" TEXT,
+"picture" TEXT,
+"website" TEXT,
+"gender" TEXT,
+"zone_info" TEXT,
+"locale" TEXT,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "identity" ADD CONSTRAINT identity_email_issuer_udx UNIQUE ("email", "issuer");
+CREATE TABLE "item" (
+"product_id" TEXT NOT NULL,
+"quantity" INTEGER NOT NULL,
+"total" NUMERIC NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "item" ADD CONSTRAINT item_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "keel_audit" (
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"table_name" TEXT NOT NULL,
+"op" TEXT NOT NULL,
+"data" jsonb NOT NULL,
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"identity_id" TEXT,
+"trace_id" TEXT,
+"event_processed_at" TIMESTAMPTZ
+);
+ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "product" (
+"price" NUMERIC NOT NULL,
+"agent_id" TEXT,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "product" ADD CONSTRAINT product_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "item" ADD FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE CASCADE;
+ALTER TABLE "product" ADD FOREIGN KEY ("agent_id") REFERENCES "agent"("id") ON DELETE SET NULL;
+CREATE TRIGGER item_create AFTER INSERT ON "item" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER item_update AFTER UPDATE ON "item" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER item_delete AFTER DELETE ON "item" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER item_updated_at BEFORE UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER product_create AFTER INSERT ON "product" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER product_update AFTER UPDATE ON "product" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER product_delete AFTER DELETE ON "product" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER product_updated_at BEFORE UPDATE ON "product" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER agent_create AFTER INSERT ON "agent" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER agent_update AFTER UPDATE ON "agent" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER agent_delete AFTER DELETE ON "agent" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER agent_updated_at BEFORE UPDATE ON "agent" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_updated_at BEFORE UPDATE ON "identity" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE FUNCTION item__total__8f543d38__computed(r item) RETURNS NUMERIC AS $$ BEGIN
+	RETURN r."quantity" * (SELECT "product"."price" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id") + (SELECT "product$agent"."commission" FROM "product" LEFT JOIN "agent" AS "product$agent" ON "product$agent"."id" = "product"."agent_id" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id");
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION item__exec_computed_fns() RETURNS TRIGGER AS $$ BEGIN
+	NEW.total := item__total__8f543d38__computed(NEW);
+	RETURN NEW;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER item__computed_trigger BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE item__exec_computed_fns();
+CREATE OR REPLACE FUNCTION agent__to__item__26590ccb__computed_dependency() RETURNS TRIGGER AS $$ BEGIN
+	UPDATE "item" SET "id" = "item"."id" WHERE "item"."id" IN (SELECT "item"."id" FROM "item" JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" JOIN "agent" AS "item$product$agent" ON "item$product$agent"."id" = "item$product"."agent_id" WHERE "item$product$agent"."id" IS NOT DISTINCT FROM NEW.id);
+	RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER agent__to__item__26590ccb__computed_dependency_trigger AFTER INSERT OR DELETE OR UPDATE ON "agent" FOR EACH ROW EXECUTE PROCEDURE agent__to__item__26590ccb__computed_dependency();
+CREATE OR REPLACE FUNCTION product__to__item__9454cd1f__computed_dependency() RETURNS TRIGGER AS $$ BEGIN
+	UPDATE "item" SET "id" = "item"."id" WHERE "item"."id" IN (SELECT "item"."id" FROM "item" JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item$product"."id" IS NOT DISTINCT FROM NEW.id);
+	RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER product__to__item__9454cd1f__computed_dependency_trigger AFTER INSERT OR DELETE OR UPDATE ON "product" FOR EACH ROW EXECUTE PROCEDURE product__to__item__9454cd1f__computed_dependency();
+
+===
+
+[
+    {"Model":"Agent","Field":"","Type":"ADDED"},
+    {"Model":"Identity","Field":"","Type":"ADDED"},
+    {"Model":"Item","Field":"","Type":"ADDED"},
+    {"Model":"KeelAudit","Field":"","Type":"ADDED"},
+    {"Model":"Product","Field":"","Type":"ADDED"}
+]

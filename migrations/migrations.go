@@ -491,7 +491,7 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*pair, 
 					}
 
 					p := pair{
-						ident: ident, //&parser.ExpressionIdent{Fragments: ident.Fragments[1:]},
+						ident: ident,
 						field: currField,
 					}
 
@@ -532,7 +532,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		// Get all the preexisting computed functions for computed fields on this model
 		existingComputedFnNamesForModel := lo.Filter(existingComputedFnNames, func(f string, _ int) bool {
 			return strings.HasPrefix(f, fmt.Sprintf("%s__", strcase.ToSnake(model.Name))) &&
-				strings.HasSuffix(f, "_computed")
+				strings.HasSuffix(f, "__computed")
 		})
 
 		newFns, retiredFns := lo.Difference(lo.Keys(modelFns), existingComputedFnNamesForModel)
@@ -648,6 +648,9 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		statements = append(statements, trigger)
 	}
 
+	depFns := map[string]string{}
+
+	// For computed fields which depend on fields in other models, we perform a fake update in order to trigger the computed fns.
 	for field, deps := range dependencies {
 		for _, dep := range deps {
 			// Skip this because the triggers call on the exec functions themselves
@@ -655,33 +658,88 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 				continue
 			}
 
-			f := dep.ident.Fragments[1:]
-			f[len(f)-1] = "id"
+			fieldModel := schema.FindModel(field.ModelName)
 
-			query := actions.NewQuery(schema.FindModel(field.ModelName))
-			query.AddWriteValue(actions.IdField(), actions.IdField())
+			fragments, err := actions.NormalisedFragments(schema, dep.ident.Fragments)
+			if err != nil {
+				return nil, nil, err
+			}
 
-			subQuery := actions.NewQuery(schema.FindModel(dep.field.ModelName))
-			subQuery.Select(actions.IdField())
-			subQuery.Where(actions.ExpressionField(f[:len(f)-1], f[len(f)-1], false), actions.Equals, actions.Raw("NEW.id"))
-			subQuery.AddJoinFromFragments(schema, f)
+			baseQuery := actions.NewQuery(schema.FindModel(field.ModelName))
+			baseQuery.Select(actions.IdField())
 
-			query.Where(actions.Field("productId"), actions.OneOf, actions.InlineQuery(subQuery, actions.ExpressionField(f, "id", false)))
-			stmt := query.UpdateStatement(context.Background()).SqlTemplate() + ";"
-			fmt.Println(stmt)
-			// stmt := "UPDATE item SET id = id WHERE product_id IS NOT DISTINCT FROM NEW.id;"
-			// stmt += "UPDATE item SET id = id WHERE product_id IS NOT DISTINCT FROM (SELECT id FROM product WHERE agent_id = NEW.id);"
+			model := casing.ToCamel(fragments[0])
+			for i := 1; i < len(fragments)-1; i++ {
+				currentFragment := fragments[i]
 
-			cascadeFnName := dep.field.ModelName + "__" + dep.field.Name + "__computed_cascade_update"
-			sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$ BEGIN\n%s\tRETURN NULL;\nEND; $$ LANGUAGE plpgsql;", cascadeFnName, stmt)
+				if !proto.ModelHasField(schema, model, currentFragment) {
+					return nil, nil, fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
+				}
 
-			triggerName := dep.field.ModelName + "_compute_cascade_trigger"
-			trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER %s AFTER UPDATE OF \"%s\" ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(dep.field.Name), strcase.ToSnake(dep.field.ModelName), cascadeFnName)
+				// We know that the current fragment is a related model because it's not the last fragment
+				relatedModelField := proto.FindField(schema.Models, model, currentFragment)
+				relatedModel := relatedModelField.Type.ModelName.Value
+				foreignKeyField := proto.GetForeignKeyFieldName(schema.Models, relatedModelField)
+				primaryKey := "id"
 
-			statements = append(statements, sql)
-			statements = append(statements, trigger)
+				var leftOperand *actions.QueryOperand
+				var rightOperand *actions.QueryOperand
+
+				switch {
+				case relatedModelField.IsBelongsTo():
+					// In a "belongs to" the foreign key is on _this_ model
+					leftOperand = actions.ExpressionField(fragments[:i+1], primaryKey, false)
+					rightOperand = actions.ExpressionField(fragments[:i], foreignKeyField, false)
+				default:
+					// In all others the foreign key is on the _other_ model
+					leftOperand = actions.ExpressionField(fragments[:i+1], foreignKeyField, false)
+					rightOperand = actions.ExpressionField(fragments[:i], primaryKey, false)
+				}
+
+				model = relatedModelField.Type.ModelName.Value
+				baseQuery.Join(relatedModel, leftOperand, rightOperand)
+				subQuery := baseQuery.Copy()
+				err := subQuery.Where(leftOperand, actions.Equals, actions.Raw("NEW.id"))
+				if err != nil {
+					return nil, nil, err
+				}
+
+				query := actions.NewQuery(schema.FindModel(field.ModelName))
+				query.AddWriteValue(actions.IdField(), actions.IdField())
+				err = query.Where(actions.IdField(), actions.OneOf, actions.InlineQuery(subQuery, actions.ExpressionField(fragments[:i+1], "id", false)))
+				if err != nil {
+					return nil, nil, err
+				}
+				stmt := query.UpdateStatement(context.Background()).SqlTemplate()
+
+				dependencyFnName := computedDependencyFuncName(fieldModel, schema.FindModel(model), fragments[:i+1])
+				sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$ BEGIN\n\t%s;\n\tRETURN NULL;\nEND; $$ LANGUAGE plpgsql;", dependencyFnName, stmt)
+
+				triggerName := dependencyFnName + "_trigger"
+				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER %s AFTER INSERT OR DELETE OR UPDATE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(model), dependencyFnName)
+
+				depFns[dependencyFnName] = sql
+			}
 		}
+	}
 
+	existingDependencyFnNames := lo.FilterMap(existingComputedFns, func(f *FunctionRow, _ int) (string, bool) {
+		return f.RoutineName, strings.HasSuffix(f.RoutineName, "__computed_dependency")
+	})
+
+	newFns, retiredFns := lo.Difference(lo.Keys(depFns), existingDependencyFnNames)
+	slices.Sort(newFns)
+	slices.Sort(retiredFns)
+
+	// Dependency functions and triggers to be created
+	for _, fn := range newFns {
+		statements = append(statements, depFns[fn])
+	}
+
+	// Dependency functions and triggers to be dropped
+	for _, fn := range retiredFns {
+		statements = append(statements, fmt.Sprintf("DROP TRIGGER %s ON %s;", fn+"_trigger", strings.Split(fn, "__")[0]))
+		statements = append(statements, fmt.Sprintf("DROP FUNCTION %s;", fn))
 	}
 
 	return
