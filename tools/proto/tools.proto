@@ -98,6 +98,14 @@ message ActionConfig {
 	// board. Each view will require specific configuration, these are supplied as part of the
 	// DisplayLayoutConfig message.
 	DisplayLayoutConfig display_layout = 24;
+
+	// An optional array of sections. These act as groups of response/request fields depending of the type of the action:
+	//   * create/update/write actions - sections can be used to split the forms in multiple subforms
+	//   * list actions - sections can be used to combine multiple fields in one column/grid
+	//   * get/ read actions - sections can be used to group response fields
+	//
+	// Fields are added to sections by having their `section_name` field referencing a section's... name. 
+	repeated Section sections = 25;
 }
 
 message RequestFieldConfig {
@@ -149,6 +157,14 @@ message RequestFieldConfig {
 	// The scope of the request(input) field. Not to be confused with field_type which gives us the data
 	// type, this type tells us if the input controls pagination, filters or it's a generic input field
 	ScopeType scope = 17;
+
+	// The section field allows the grouping of inputs into sections for a leaner and better UI/UX.
+	// References a Section's name.
+	optional string section_name = 18;
+
+	// A CEL expression used to control the visibility of the field.
+	// e.g. if expression is not true then the field will be hidden. 
+	optional string visible_condition = 19;
 }
 
 message ResponseFieldConfig {
@@ -195,6 +211,33 @@ message ResponseFieldConfig {
 	// type, this type tells us if the response is part of the pagination info or a generic api result 
 	// field
 	ScopeType scope = 15;
+
+	// The section field allows the grouping of responses into sections for a leaner and better UI/UX.
+	// References a Section's name.
+	optional string section_name = 16;
+
+	// A CEL expression used to control the visibility of the field.
+	// e.g. if expression is not true then the field will be hidden. 
+	optional string visible_condition = 17;
+}
+
+// A section represents a grouping of fields.
+message Section {
+	// A name that's referenced by response/request fields. Acts as an ID.
+	string name = 1;
+
+	// A title that will be displayed with this section
+	optional StringTemplate title = 2;
+
+	// A description for this section. Can be used to display user help text or any other copy
+	optional StringTemplate description = 3;
+
+	// Ordering of sections within a tool
+	int32 display_order = 4;
+
+	// A CEL expression used to control the visibility of the whole section.
+	// e.g. if expression != true then the section will be hidden
+	optional string visible_condition = 5;
 }
 
 message ScalarValue {
