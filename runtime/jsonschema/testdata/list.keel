@@ -14,6 +14,7 @@ model Person {
         name Text
         preferredName Text?
         favouriteNumber Number
+        canHoldBreath Duration
         birthday Date
         hobby Hobby
         secondHobby Hobby?
@@ -24,6 +25,6 @@ model Person {
     }
 
     actions {
-        list testAction(id, name, preferredName, favouriteNumber, birthday, hobby, secondHobby, isAdmin, lastSeenAt, currentCity.name, previousCity.name)
+        list testAction(id, name, preferredName, favouriteNumber, canHoldBreath, birthday, hobby, secondHobby, isAdmin, lastSeenAt, currentCity.name, previousCity.name)
     }
 }

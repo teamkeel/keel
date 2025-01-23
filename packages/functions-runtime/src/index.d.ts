@@ -27,6 +27,15 @@ export type NumberWhereCondition = {
   notEquals?: number | null;
 };
 
+export type DurationWhereCondition = {
+  greaterThan?: DurationString | null;
+  greaterThanOrEquals?: DurationString | null;
+  lessThan?: DurationString | null;
+  lessThanOrEquals?: DurationString | null;
+  equals?: DurationString | null;
+  notEquals?: DurationString | null;
+};
+
 export type DateWhereCondition = {
   equals?: Date | string | null;
   equalsRelative?: RelativeDateString | null;
@@ -197,6 +206,14 @@ export type FileDbRecord = {
   size: number;
 };
 
+export declare class Duration {
+  constructor(postgresString: string);
+  static fromISOString(iso: DurationString): Duration;
+
+  toISOString(): DurationString;
+  toPostgres(): string;
+}
+
 export type SortDirection = "asc" | "desc" | "ASC" | "DESC";
 
 // Request headers cannot be mutated, so remove any methods that mutate
@@ -272,3 +289,26 @@ export type RelativeDateString =
   | `${direction} ${unit}`
   | `${direction} ${value} ${unit}`
   | `${direction} ${value} ${completed} ${unit}`;
+
+type dateDuration =
+  | `${number}Y${number}M${number}D` // Example: 1Y2M10D
+  | `${number}Y${number}M` // Example: 1Y2M
+  | `${number}Y${number}D` // Example: 1Y10D
+  | `${number}M${number}D` // Example: 10M2D
+  | `${number}Y` // Example: 1Y
+  | `${number}M` // Example: 1M
+  | `${number}D`; // Example: 2D
+
+type timeDuration =
+  | `${number}H${number}M${number}S` // Example: 2H30M
+  | `${number}H${number}M` // Example: 2H30M
+  | `${number}M${number}S` // Example: 2M30S
+  | `${number}H${number}S` // Example: 2H30S
+  | `${number}H` // Example: 2H
+  | `${number}M` // Example: 30M
+  | `${number}S`; // Example: 30S
+
+export type DurationString =
+  | `P${dateDuration}T${timeDuration}`
+  | `P${dateDuration}`
+  | `PT${timeDuration}`;

@@ -71,6 +71,12 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 				} else {
 					input[f.Name], err = parseItem(v, f.Type.Repeated, toString)
 				}
+			case proto.Type_TYPE_DURATION:
+				if forFunctions {
+					input[f.Name], err = parseItem(v, f.Type.Repeated, toDurationForFunctions)
+				} else {
+					input[f.Name], err = parseItem(v, f.Type.Repeated, toString)
+				}
 			default:
 				input[f.Name], err = parseItem(v, f.Type.Repeated, toString)
 			}
@@ -188,5 +194,17 @@ var toInlineFileForFunctions = func(value any) (map[string]any, error) {
 		}, nil
 	default:
 		return nil, fmt.Errorf("incompatible type %T parsing to inline file for functions", t)
+	}
+}
+
+var toDurationForFunctions = func(value any) (map[string]any, error) {
+	switch t := value.(type) {
+	case string:
+		return map[string]any{
+			"__typename": "Duration",
+			"interval":   t,
+		}, nil
+	default:
+		return nil, fmt.Errorf("incompatible type %T parsing to duration for functions", t)
 	}
 }

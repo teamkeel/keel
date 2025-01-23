@@ -140,6 +140,12 @@ func ValueTypechecksRule(asts []*parser.AST, expression *parser.Expression, cont
 		}
 	}
 
+	for _, c := range parser.ComparableTypes {
+		if lo.Contains(c, expectedType) && lo.Contains(c, resolvedType) {
+			return errors
+		}
+	}
+
 	if expectedType != resolvedType {
 		errors = append(errors,
 			errorhandling.NewValidationError(
@@ -390,14 +396,7 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 		}
 	}
 
-	// Case: LHS and RHS are of _compatible_ types
-	// Possibly this only applies to Date and Timestamp
-	comparable := [][]string{
-		{parser.FieldTypeDate, parser.FieldTypeDatetime},
-		{parser.FieldTypeMarkdown, parser.FieldTypeText},
-		{parser.FieldTypeDecimal, parser.FieldTypeNumber},
-	}
-	for _, c := range comparable {
+	for _, c := range parser.ComparableTypes {
 		if lo.Contains(c, resolvedLHS.GetType()) && lo.Contains(c, resolvedRHS.GetType()) {
 			return nil
 		}

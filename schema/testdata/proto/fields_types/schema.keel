@@ -9,6 +9,7 @@ model Foo {
         g Beatles
         h Decimal
         i File
+        j Duration
     }
 }
 

@@ -33,6 +33,7 @@
     "ksuid": "^3.0.0",
     "kysely": "~0.25.0",
     "pg": "^8.13.1",
+    "postgres-interval": "^4.0.2",
     "traceparent": "^1.0.0",
     "ws": "^8.18.0"
   },

@@ -4,6 +4,7 @@ model Post {
         published Boolean?
         publisher Publisher?
         identity Identity? @unique
+        timeToRead Duration?
     }
 
     actions {
@@ -12,6 +13,8 @@ model Post {
             @set(post.createdAt = ctx.now)
             //expect-error:23:32:AttributeArgumentError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
             @set(post.updatedAt = ctx.now)
+            //expect-error:18:39:E026:post.timeToRead is Duration and 123 is Number
+            @set(post.timeToRead = 123)
         }
         create createPost2() with (name, published, publisher.name) {
             //expect-error:33:42:AttributeArgumentError:Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally
