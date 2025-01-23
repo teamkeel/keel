@@ -453,14 +453,14 @@ func compositeUniqueConstraints(schema *proto.Schema, model *proto.Model, constr
 	return statements, nil
 }
 
-type pair struct {
-	ident *parser.ExpressionIdent
+type depPair struct {
 	field *proto.Field
+	ident *parser.ExpressionIdent
 }
 
 // computedFieldDependencies returns a map of computed fields and every field it depends on
-func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*pair, error) {
-	dependencies := map[*proto.Field][]*pair{}
+func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPair, error) {
+	dependencies := map[*proto.Field][]*depPair{}
 
 	for _, model := range schema.Models {
 		for _, field := range model.Fields {
@@ -490,12 +490,12 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*pair, 
 						continue
 					}
 
-					p := pair{
+					dep := depPair{
 						ident: ident,
 						field: currField,
 					}
 
-					dependencies[field] = append(dependencies[field], &p)
+					dependencies[field] = append(dependencies[field], &dep)
 				}
 			}
 		}

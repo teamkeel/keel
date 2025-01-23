@@ -169,30 +169,8 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 			return sql
 		}
 
-		if !query.valuesAsArgs {
-			value := o.toSqlArgs()
-			switch val := value[0].(type) {
-			case int64, int:
-				return fmt.Sprintf("%v", val)
-			case float64:
-				return fmt.Sprintf("%v", val)
-			case string:
-				return fmt.Sprintf("\"%v\"", val)
-			case bool:
-				return fmt.Sprintf("%t", val)
-			case nil:
-				return "NULL"
-			default:
-				panic(fmt.Errorf("unsupported literal type with valuesAsArgs=false: %T", value))
-			}
-		}
-
 		return "?"
 	case o.IsValue() && o.IsArrayValue():
-		if !query.valuesAsArgs {
-			panic("unsupported array type with valuesAsArgs=false")
-		}
-
 		operands := []string{}
 		for i := 0; i < reflect.ValueOf(o.value).Len(); i++ {
 			operands = append(operands, "?")
@@ -307,8 +285,6 @@ type QueryBuilder struct {
 	writeValues *Row
 	// The type of SQL join to use.
 	joinType JoinType
-	// If true, literal values are arguments to a SQL template.
-	valuesAsArgs bool
 	// The timezone to be used if we're dealing with relative dates (e.g. DATE_TRUNC("day", NOW()))
 	timezone string
 }
@@ -364,12 +340,6 @@ func WithJoinType(joinType JoinType) QueryBuilderOption {
 	}
 }
 
-func WithValuesAsArgs(asArgs bool) QueryBuilderOption {
-	return func(qb *QueryBuilder) {
-		qb.valuesAsArgs = asArgs
-	}
-}
-
 // WithTimezone sets the time zone for the query
 func WithTimezone(tz string) QueryBuilderOption {
 	return func(qb *QueryBuilder) {
@@ -396,8 +366,7 @@ func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 			referencedBy: []*Relationship{},
 			references:   []*Relationship{},
 		},
-		joinType:     JoinTypeLeft,
-		valuesAsArgs: true,
+		joinType: JoinTypeLeft,
 	}
 
 	if len(opts) > 0 {

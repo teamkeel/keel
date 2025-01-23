@@ -17,8 +17,6 @@ func ValidateWhereExpression(schema []*parser.AST, action *parser.ActionNode, ex
 		options.WithSchemaTypes(schema),
 		options.WithActionInputs(schema, action),
 		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false),
-		options.WithVariable("_", model.Name.Value, false),
-		options.WithConstant("$", model.Name.Value),
 		options.WithComparisonOperators(),
 		options.WithLogicalOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),

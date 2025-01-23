@@ -110,7 +110,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 	} else if len(ident.Fragments) > 2 {
 		// Join together all the tables based on the ident fragments
 		model = v.schema.FindModel(field.Type.ModelName.Value)
-		query := NewQuery(model, WithValuesAsArgs(false))
+		query := NewQuery(model)
 		err := query.AddJoinFromFragments(v.schema, ident.Fragments[1:])
 		if err != nil {
 			return err
