@@ -366,6 +366,7 @@ message DisplayLayoutConfig {
 		INBOX = 1;
 		BOARD = 2;
 		GRID = 3;
+		RECORD = 4;
 	}
 
 	// The type of the view: e.g. Inbox, Board, List, Calendar, Table, Data Grid
@@ -374,6 +375,7 @@ message DisplayLayoutConfig {
 	optional InboxViewConfig inbox_config = 2;
 	optional BoardViewConfig board_config = 3;
 	optional GridViewConfig grid_config = 4;
+	optional RecordViewConfig record_config = 5;
 }
 
 // An email inbox style display for list views. Each item in a list will be displayed as a row with
@@ -423,4 +425,30 @@ message BoardViewConfig {
 // A data-grid view, similar to a table view but providing rich editing and data manipulation features.
 message GridViewConfig {
 	// TBD
+}
+
+// A display layouts for viewing db records (i.e. a get tool)
+message RecordViewConfig {
+	message Step {
+		// Order of the step
+		int32 display_order = 1;
+
+		// Displayable title; If not set, value will be used
+		optional StringTemplate title = 2;
+
+		// The values of the field which give the current state of the stepper. This is a repeated 
+		// field to allow multiple values to map to the same step: e.g. For an order status
+		// * New => New
+		// * Awaiting packing || Items Picked || Packed => Processing
+		// * Handed to courier || In Transit => Shipped
+		// * Received => Completed
+		repeated string value = 3;
+	}
+
+	// Path to the response field that gives us the stepper status. The field should be an ENUM state; though 
+	// the stepper could work with any other type
+	optional JsonPath stepper_field = 1;
+
+	// Array of steps that should be displayed
+	repeated Step steps = 2;
 }
