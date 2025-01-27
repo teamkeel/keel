@@ -25,12 +25,25 @@ func DefaultAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Val
 				return
 			}
 
+			for _, attr := range field.Attributes {
+				if attr.Name.Value == parser.AttributeComputed {
+					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+						errorhandling.AttributeExpressionError,
+						errorhandling.ErrorDetails{
+							Message: "@default cannot be used with computed fields",
+							Hint:    "Either remove the @default attribute or remove the @computed attribute",
+						},
+						a,
+					))
+				}
+			}
+
 			typesWithZeroValue := []string{"Text", "Number", "Boolean", "ID", "Timestamp"}
 			if len(a.Arguments) == 0 && !lo.Contains(typesWithZeroValue, field.Type.Value) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "default requires an expression",
+						Message: "@default requires an expression",
 						Hint:    "Try @default(MyDefaultValue) instead",
 					},
 					a,
