@@ -55,6 +55,7 @@ END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER item__comp BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE item__exec_comp_fns();
 DROP TRIGGER agent__to__item__26590ccb__comp_dep ON agent;
 DROP FUNCTION agent__to__item__26590ccb__comp_dep;
+UPDATE item SET id = id;
 
 ===
 

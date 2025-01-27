@@ -513,6 +513,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 	fns := map[string]string{}
 	fieldsFns := map[*proto.Field]string{}
 	changedFields := map[*proto.Field]bool{}
+	recompute := []*proto.Model{}
 
 	// Adding computed field triggers and functions
 	for _, model := range schema.Models {
@@ -550,6 +551,10 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 				Type:  ChangeTypeModified,
 			})
 			changedFields[f] = true
+
+			if !lo.Contains(recompute, model) {
+				recompute = append(recompute, model)
+			}
 		}
 
 		// Functions to be dropped
@@ -740,6 +745,13 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 	for _, fn := range retiredFns {
 		statements = append(statements, fmt.Sprintf("DROP TRIGGER %s ON %s;", fn, strings.Split(fn, "__")[0]))
 		statements = append(statements, fmt.Sprintf("DROP FUNCTION %s;", fn))
+	}
+
+	// If a computed field has been added or changed, we need to recompute all existing data.
+	// This is done by fake updating each row on the table which will cause the triggers to run.
+	for _, model := range recompute {
+		sql := fmt.Sprintf("UPDATE %s SET id = id;", strcase.ToSnake(model.Name))
+		statements = append(statements, sql)
 	}
 
 	return
