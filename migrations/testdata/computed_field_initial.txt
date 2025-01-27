@@ -69,6 +69,8 @@ CREATE OR REPLACE FUNCTION item__exec_comp_fns() RETURNS TRIGGER AS $$ BEGIN
 	RETURN NEW;
 END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER item__comp BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE item__exec_comp_fns();
+UPDATE item SET id = id;
+
 ===
 
 [
