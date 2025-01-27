@@ -51,13 +51,13 @@ func gen(schema *proto.Schema, model *proto.Model, action *proto.Action, stmt *s
 	}
 }
 
-func (v *permissionGen) StartCondition(nested bool) error {
+func (v *permissionGen) StartTerm(nested bool) error {
 	if nested {
 		v.stmt.expression += "("
 	}
 	return nil
 }
-func (v *permissionGen) EndCondition(nested bool) error {
+func (v *permissionGen) EndTerm(nested bool) error {
 	if nested {
 		v.stmt.expression += ")"
 	}

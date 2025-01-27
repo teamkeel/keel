@@ -34,11 +34,11 @@ type setQueryGen struct {
 	inputs  map[string]any
 }
 
-func (v *setQueryGen) StartCondition(parenthesis bool) error {
+func (v *setQueryGen) StartTerm(parenthesis bool) error {
 	return nil
 }
 
-func (v *setQueryGen) EndCondition(parenthesis bool) error {
+func (v *setQueryGen) EndTerm(parenthesis bool) error {
 	return nil
 }
 

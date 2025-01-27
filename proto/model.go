@@ -57,3 +57,13 @@ func (m *Model) GetComputedFields() []*Field {
 	}
 	return fields
 }
+
+// GetComputedFields returns all the computed fields on the given model.
+func (m *Model) FindField(name string) *Field {
+	for _, f := range m.Fields {
+		if f.Name == name {
+			return f
+		}
+	}
+	return nil
+}

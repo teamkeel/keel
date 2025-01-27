@@ -23,7 +23,7 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 		return nil
 	}
 
-	fragments, err := normalisedFragments(schema, fragments)
+	fragments, err := NormalisedFragments(schema, fragments)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 }
 
 func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any, fragments []string) (*QueryOperand, error) {
-	ident, err := normalisedFragments(schema, fragments)
+	ident, err := NormalisedFragments(schema, fragments)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +191,7 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 	return queryOperand, nil
 }
 
-func normalisedFragments(schema *proto.Schema, fragments []string) ([]string, error) {
+func NormalisedFragments(schema *proto.Schema, fragments []string) ([]string, error) {
 	isModelField := false
 	isCtx := fragments[0] == "ctx"
 
@@ -210,7 +210,6 @@ func normalisedFragments(schema *proto.Schema, fragments []string) ([]string, er
 	if modelTarget == nil {
 		// If it's not the model, then it could be an input
 		return fragments, nil
-		//return nil, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[0]))
 	}
 
 	var fieldTarget *proto.Field
@@ -276,7 +275,7 @@ func normalisedFragments(schema *proto.Schema, fragments []string) ([]string, er
 // Constructs a QueryOperand from a splice of fragments, representing an expression operand or implicit input.
 // The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive
 func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOperand, error) {
-	fragments, err := normalisedFragments(schema, fragments)
+	fragments, err := NormalisedFragments(schema, fragments)
 	if err != nil {
 		return nil, err
 	}

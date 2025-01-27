@@ -29,11 +29,11 @@ type identArrayGen struct {
 	idents []*parser.ExpressionIdent
 }
 
-func (v *identArrayGen) StartCondition(parenthesis bool) error {
+func (v *identArrayGen) StartTerm(parenthesis bool) error {
 	return nil
 }
 
-func (v *identArrayGen) EndCondition(parenthesis bool) error {
+func (v *identArrayGen) EndTerm(parenthesis bool) error {
 	return nil
 }
 
