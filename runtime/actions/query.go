@@ -79,12 +79,6 @@ func Null() *QueryOperand {
 	return &QueryOperand{}
 }
 
-func RuntimeEvaluated(identifier string) *QueryOperand {
-	return &QueryOperand{
-		runtimeIdentifier: identifier,
-	}
-}
-
 func ValueOrNullIfEmpty(value any) *QueryOperand {
 	if value == nil || reflect.ValueOf(value).IsZero() {
 		return Null()
@@ -93,13 +87,12 @@ func ValueOrNullIfEmpty(value any) *QueryOperand {
 }
 
 type QueryOperand struct {
-	query             *QueryBuilder
-	raw               string
-	table             string
-	column            string
-	arrayField        bool
-	value             any
-	runtimeIdentifier string
+	query      *QueryBuilder
+	raw        string
+	table      string
+	column     string
+	arrayField bool
+	value      any
 }
 
 // A query builder to be evaluated and injected as an operand.
@@ -155,6 +148,7 @@ func (o *QueryOperand) IsNull() bool {
 	return o.query == nil && o.table == "" && o.column == "" && o.value == nil && o.raw == ""
 }
 
+// Generates the string operand that will be used in the actual SQL statement
 func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	switch {
 	case o.IsValue() && !o.IsArrayValue():
@@ -223,6 +217,7 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	}
 }
 
+// Generates the value that will be used as an argument for a SQL template
 func (o *QueryOperand) toSqlArgs() []any {
 	switch {
 	case o.IsTimePeriodValue():
@@ -755,7 +750,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		limit)
 
 	return &Statement{
-		template: sql,
+		template: cleanSql(sql),
 		args:     query.args,
 		model:    query.Model,
 	}
@@ -787,7 +782,7 @@ func (query *QueryBuilder) InsertStatement(ctx context.Context) *Statement {
 
 	return &Statement{
 		model:    query.Model,
-		template: statement,
+		template: cleanSql(statement),
 		args:     args,
 	}
 }
@@ -1079,7 +1074,7 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 	}
 
 	return &Statement{
-		template: template,
+		template: cleanSql(template),
 		args:     args,
 		model:    query.Model,
 	}
@@ -1132,7 +1127,7 @@ func (query *QueryBuilder) DeleteStatement(ctx context.Context) *Statement {
 		returning)
 
 	return &Statement{
-		template: template,
+		template: cleanSql(template),
 		args:     query.args,
 		model:    query.Model,
 	}
@@ -1583,4 +1578,17 @@ func setIdentityIdClause() string {
 
 func setTraceIdClause() string {
 	return fmt.Sprintf("set_trace_id(?) AS %s", setTraceIdAlias)
+}
+
+// cleanSql removes redundant whitespace from SQL statements while preserving
+// required spaces between keywords and identifiers
+func cleanSql(sql string) string {
+	// Replace multiple spaces with single space
+	sql = strings.Join(strings.Fields(sql), " ")
+
+	// Remove spaces around parentheses
+	sql = strings.ReplaceAll(sql, "( ", "(")
+	sql = strings.ReplaceAll(sql, " )", ")")
+
+	return sql
 }

@@ -3,8 +3,6 @@ package actions
 import (
 	"errors"
 	"fmt"
-	"regexp"
-	"strings"
 
 	"github.com/google/cel-go/common/operators"
 	"github.com/iancoleman/strcase"
@@ -33,14 +31,14 @@ type computedQueryGen struct {
 	sql    string
 }
 
-func (v *computedQueryGen) StartCondition(nested bool) error {
+func (v *computedQueryGen) StartTerm(nested bool) error {
 	if nested {
 		v.sql += "("
 	}
 	return nil
 }
 
-func (v *computedQueryGen) EndCondition(nested bool) error {
+func (v *computedQueryGen) EndTerm(nested bool) error {
 	if nested {
 		v.sql += ")"
 	}
@@ -104,7 +102,37 @@ func (v *computedQueryGen) VisitLiteral(value any) error {
 }
 
 func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
-	v.sql += "r." + sqlQuote(strcase.ToSnake(ident.Fragments[len(ident.Fragments)-1]))
+	model := v.schema.FindModel(strcase.ToCamel(ident.Fragments[0]))
+	field := proto.FindField(v.schema.Models, model.Name, ident.Fragments[1])
+
+	if len(ident.Fragments) == 2 {
+		v.sql += "r." + sqlQuote(strcase.ToSnake(field.Name))
+	} else if len(ident.Fragments) > 2 {
+		// Join together all the tables based on the ident fragments
+		model = v.schema.FindModel(field.Type.ModelName.Value)
+		query := NewQuery(model)
+		err := query.AddJoinFromFragments(v.schema, ident.Fragments[1:])
+		if err != nil {
+			return err
+		}
+
+		// Select the column as specified in the last ident fragment
+		fieldName := ident.Fragments[len(ident.Fragments)-1]
+		fragments := ident.Fragments[1 : len(ident.Fragments)-1]
+		query.Select(ExpressionField(fragments, fieldName, false))
+
+		// Filter by this model's row's ID
+		relatedModelField := proto.FindField(v.schema.Models, v.model.Name, ident.Fragments[1])
+		foreignKeyField := proto.GetForeignKeyFieldName(v.schema.Models, relatedModelField)
+		fk := fmt.Sprintf("r.\"%s\"", strcase.ToSnake(foreignKeyField))
+		err = query.Where(IdField(), Equals, Raw(fk))
+		if err != nil {
+			return err
+		}
+
+		stmt := query.SelectStatement()
+		v.sql += fmt.Sprintf("(%s)", stmt.SqlTemplate())
+	}
 	return nil
 }
 
@@ -113,7 +141,5 @@ func (v *computedQueryGen) VisitIdentArray(idents []*parser.ExpressionIdent) err
 }
 
 func (v *computedQueryGen) Result() (string, error) {
-	// Remove multiple whitespaces and trim
-	re := regexp.MustCompile(`\s+`)
-	return re.ReplaceAllString(strings.TrimSpace(v.sql), " "), nil
+	return cleanSql(v.sql), nil
 }

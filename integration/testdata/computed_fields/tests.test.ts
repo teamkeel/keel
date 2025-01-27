@@ -119,21 +119,21 @@ test("computed fields - with dependencies", async () => {
   const item = await models.computedDepends.create({ price: 5, quantity: 2 });
   expect(item.total).toEqual(10);
   expect(item.totalWithShipping).toEqual(15);
-  expect(item.totalWithDiscount).toEqual(13.5);
+  expect(item.totalWithDiscount).toEqual(14);
 
   const updatedQty = await models.computedDepends.update(
     { id: item.id },
-    { quantity: 10 }
+    { quantity: 11 }
   );
-  expect(updatedQty.total).toEqual(50);
-  expect(updatedQty.totalWithShipping).toEqual(55);
-  expect(updatedQty.totalWithDiscount).toEqual(49.5);
+  expect(updatedQty.total).toEqual(55);
+  expect(updatedQty.totalWithShipping).toEqual(60);
+  expect(updatedQty.totalWithDiscount).toEqual(54.5);
 
   const updatePrice = await models.computedDepends.update(
     { id: item.id },
     { price: 8 }
   );
-  expect(updatePrice.total).toEqual(80);
-  expect(updatePrice.totalWithShipping).toEqual(85);
-  expect(updatePrice.totalWithDiscount).toEqual(76.5);
+  expect(updatePrice.total).toEqual(88);
+  expect(updatePrice.totalWithShipping).toEqual(93);
+  expect(updatePrice.totalWithDiscount).toEqual(84.2);
 });
