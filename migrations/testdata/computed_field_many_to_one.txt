@@ -116,6 +116,7 @@ CREATE OR REPLACE FUNCTION product__to__item__9454cd1f__comp_dep() RETURNS TRIGG
 	RETURN NULL;
 END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER product__to__item__9454cd1f__comp_dep AFTER INSERT OR DELETE OR UPDATE ON "product" FOR EACH ROW EXECUTE PROCEDURE product__to__item__9454cd1f__comp_dep();
+UPDATE item SET id = id;
 
 ===
 
