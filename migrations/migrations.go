@@ -594,6 +594,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		return nil, nil, err
 	}
 
+	// Generate the function and trigger which executes all the computed field functions for the model.
 	for _, model := range schema.Models {
 		modelhasChanged := false
 		for k, v := range changedFields {
@@ -605,6 +606,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 			continue
 		}
 
+		// Dont generate if there are no computed fields
 		computedFields := model.GetComputedFields()
 		if len(computedFields) == 0 {
 			continue
