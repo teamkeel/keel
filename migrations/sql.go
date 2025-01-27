@@ -239,23 +239,23 @@ func hashOfExpression(expression string) string {
 func computedFieldFuncName(field *proto.Field) string {
 	// shortened alphanumeric hash from an expression
 	hash := hashOfExpression(field.ComputedExpression.Source)
-	return fmt.Sprintf("%s__%s__%s__computed", strcase.ToSnake(field.ModelName), strcase.ToSnake(field.Name), hash)
+	return fmt.Sprintf("%s__%s__%s__comp", strcase.ToSnake(field.ModelName), strcase.ToSnake(field.Name), hash)
 }
 
 // computedExecFuncName generates the name for the table function which executed all computed functions
 func computedExecFuncName(model *proto.Model) string {
-	return fmt.Sprintf("%s__exec_computed_fns", strcase.ToSnake(model.Name))
+	return fmt.Sprintf("%s__exec_comp_fns", strcase.ToSnake(model.Name))
 }
 
 // computedTriggerName generates the name for the trigger which runs the function which executes computed functions
 func computedTriggerName(model *proto.Model) string {
-	return fmt.Sprintf("%s__computed_trigger", strcase.ToSnake(model.Name))
+	return fmt.Sprintf("%s__comp", strcase.ToSnake(model.Name))
 }
 
 func computedDependencyFuncName(model *proto.Model, dependentModel *proto.Model, fragments []string) string {
 	// shortened alphanumeric hash from the operand idents
 	hash := hashOfExpression(strings.Join(fragments, "."))
-	return fmt.Sprintf("%s__to__%s__%s__computed_dependency", strcase.ToSnake(dependentModel.Name), strcase.ToSnake(model.Name), hash)
+	return fmt.Sprintf("%s__to__%s__%s__comp_dep", strcase.ToSnake(dependentModel.Name), strcase.ToSnake(model.Name), hash)
 }
 
 // fieldFromComputedFnName determines the field from computed function name
@@ -302,11 +302,11 @@ func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *p
 }
 
 func dropComputedExecFunctionStmt(model *proto.Model) string {
-	return fmt.Sprintf("DROP FUNCTION %s__exec_computed_fns;", strcase.ToSnake(model.Name))
+	return fmt.Sprintf("DROP FUNCTION %s__exec_comp_fns;", strcase.ToSnake(model.Name))
 }
 
 func dropComputedTriggerStmt(model *proto.Model) string {
-	return fmt.Sprintf("DROP TRIGGER %s__computed_trigger ON %s;", strcase.ToSnake(model.Name), strcase.ToSnake(model.Name))
+	return fmt.Sprintf("DROP TRIGGER %s__comp ON %s;", strcase.ToSnake(model.Name), strcase.ToSnake(model.Name))
 }
 
 func fieldDefinition(field *proto.Field) (string, error) {

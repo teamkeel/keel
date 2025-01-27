@@ -98,24 +98,24 @@ CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE 
 CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_updated_at BEFORE UPDATE ON "identity" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
-CREATE FUNCTION item__total__8f543d38__computed(r item) RETURNS NUMERIC AS $$ BEGIN
+CREATE FUNCTION item__total__8f543d38__comp(r item) RETURNS NUMERIC AS $$ BEGIN
 	RETURN r."quantity" * (SELECT "product"."price" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id") + (SELECT "product$agent"."commission" FROM "product" LEFT JOIN "agent" AS "product$agent" ON "product$agent"."id" = "product"."agent_id" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id");
 END; $$ LANGUAGE plpgsql;
-CREATE OR REPLACE FUNCTION item__exec_computed_fns() RETURNS TRIGGER AS $$ BEGIN
-	NEW.total := item__total__8f543d38__computed(NEW);
+CREATE OR REPLACE FUNCTION item__exec_comp_fns() RETURNS TRIGGER AS $$ BEGIN
+	NEW.total := item__total__8f543d38__comp(NEW);
 	RETURN NEW;
 END; $$ LANGUAGE plpgsql;
-CREATE OR REPLACE TRIGGER item__computed_trigger BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE item__exec_computed_fns();
-CREATE OR REPLACE FUNCTION agent__to__item__26590ccb__computed_dependency() RETURNS TRIGGER AS $$ BEGIN
+CREATE OR REPLACE TRIGGER item__comp BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE item__exec_comp_fns();
+CREATE OR REPLACE FUNCTION agent__to__item__26590ccb__comp_dep() RETURNS TRIGGER AS $$ BEGIN
 	UPDATE "item" SET "id" = "item"."id" WHERE "item"."id" IN (SELECT "item"."id" FROM "item" JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" JOIN "agent" AS "item$product$agent" ON "item$product$agent"."id" = "item$product"."agent_id" WHERE "item$product$agent"."id" IS NOT DISTINCT FROM NEW.id);
 	RETURN NULL;
 END; $$ LANGUAGE plpgsql;
-CREATE OR REPLACE TRIGGER agent__to__item__26590ccb__computed_dependency_trigger AFTER INSERT OR DELETE OR UPDATE ON "agent" FOR EACH ROW EXECUTE PROCEDURE agent__to__item__26590ccb__computed_dependency();
-CREATE OR REPLACE FUNCTION product__to__item__9454cd1f__computed_dependency() RETURNS TRIGGER AS $$ BEGIN
+CREATE OR REPLACE TRIGGER agent__to__item__26590ccb__comp_dep AFTER INSERT OR DELETE OR UPDATE ON "agent" FOR EACH ROW EXECUTE PROCEDURE agent__to__item__26590ccb__comp_dep();
+CREATE OR REPLACE FUNCTION product__to__item__9454cd1f__comp_dep() RETURNS TRIGGER AS $$ BEGIN
 	UPDATE "item" SET "id" = "item"."id" WHERE "item"."id" IN (SELECT "item"."id" FROM "item" JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item$product"."id" IS NOT DISTINCT FROM NEW.id);
 	RETURN NULL;
 END; $$ LANGUAGE plpgsql;
-CREATE OR REPLACE TRIGGER product__to__item__9454cd1f__computed_dependency_trigger AFTER INSERT OR DELETE OR UPDATE ON "product" FOR EACH ROW EXECUTE PROCEDURE product__to__item__9454cd1f__computed_dependency();
+CREATE OR REPLACE TRIGGER product__to__item__9454cd1f__comp_dep AFTER INSERT OR DELETE OR UPDATE ON "product" FOR EACH ROW EXECUTE PROCEDURE product__to__item__9454cd1f__comp_dep();
 
 ===
 

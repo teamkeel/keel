@@ -532,7 +532,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		// Get all the preexisting computed functions for computed fields on this model
 		existingComputedFnNamesForModel := lo.Filter(existingComputedFnNames, func(f string, _ int) bool {
 			return strings.HasPrefix(f, fmt.Sprintf("%s__", strcase.ToSnake(model.Name))) &&
-				strings.HasSuffix(f, "__computed")
+				strings.HasSuffix(f, "__comp")
 		})
 
 		newFns, retiredFns := lo.Difference(lo.Keys(modelFns), existingComputedFnNamesForModel)
@@ -632,7 +632,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		// Generate SQL statements in dependency order
 		stmts := []string{}
 		for _, field := range sorted {
-			s := fmt.Sprintf("\tNEW.%s := %s(%s);\n", strcase.ToSnake(field.Name), fieldsFns[field], "NEW")
+			s := fmt.Sprintf("\tNEW.%s := %s(NEW);\n", strcase.ToSnake(field.Name), fieldsFns[field])
 			stmts = append(stmts, s)
 		}
 
@@ -715,7 +715,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 				dependencyFnName := computedDependencyFuncName(fieldModel, schema.FindModel(model), fragments[:i+1])
 				sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$ BEGIN\n\t%s;\n\tRETURN NULL;\nEND; $$ LANGUAGE plpgsql;", dependencyFnName, stmt)
 
-				triggerName := dependencyFnName + "_trigger"
+				triggerName := dependencyFnName
 				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER %s AFTER INSERT OR DELETE OR UPDATE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(model), dependencyFnName)
 
 				depFns[dependencyFnName] = sql
@@ -724,7 +724,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 	}
 
 	existingDependencyFnNames := lo.FilterMap(existingComputedFns, func(f *FunctionRow, _ int) (string, bool) {
-		return f.RoutineName, strings.HasSuffix(f.RoutineName, "__computed_dependency")
+		return f.RoutineName, strings.HasSuffix(f.RoutineName, "__comp_dep")
 	})
 
 	newFns, retiredFns := lo.Difference(lo.Keys(depFns), existingDependencyFnNames)
@@ -738,7 +738,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 	// Dependency functions and triggers to be dropped
 	for _, fn := range retiredFns {
-		statements = append(statements, fmt.Sprintf("DROP TRIGGER %s ON %s;", fn+"_trigger", strings.Split(fn, "__")[0]))
+		statements = append(statements, fmt.Sprintf("DROP TRIGGER %s ON %s;", fn, strings.Split(fn, "__")[0]))
 		statements = append(statements, fmt.Sprintf("DROP FUNCTION %s;", fn))
 	}
 
