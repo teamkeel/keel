@@ -39,7 +39,7 @@ model ComputedDepends {
     fields {
         price Decimal
         quantity Number
-        totalWithDiscount Decimal? @computed(computedDepends.totalWithShipping - (computedDepends.totalWithShipping / 100 * 10))
+        totalWithDiscount Decimal? @computed(computedDepends.totalWithShipping - (computedDepends.total / 100 * 10))
         totalWithShipping Decimal? @computed(computedDepends.total + 5)
         total Decimal? @computed(computedDepends.quantity * computedDepends.price)
     }

@@ -39,7 +39,7 @@ type whereQueryGen struct {
 	operands  *arraystack.Stack
 }
 
-func (v *whereQueryGen) StartCondition(nested bool) error {
+func (v *whereQueryGen) StartTerm(nested bool) error {
 	if op, ok := v.operators.Peek(); ok && op == Not {
 		_, _ = v.operators.Pop()
 		v.query.Not()
@@ -53,7 +53,7 @@ func (v *whereQueryGen) StartCondition(nested bool) error {
 	return nil
 }
 
-func (v *whereQueryGen) EndCondition(nested bool) error {
+func (v *whereQueryGen) EndTerm(nested bool) error {
 	if _, ok := v.operators.Peek(); ok && v.operands.Size() == 2 {
 		operator, _ := v.operators.Pop()
 
