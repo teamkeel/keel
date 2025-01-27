@@ -13,6 +13,8 @@ model Item {
         password Password @computed("password")
         //expect-error:23:42:AttributeNotAllowedError:@computed cannot be used on field of type Secret
         secret Secret @computed("secret")
+        //expect-error:28:39:AttributeExpressionError:@default cannot be used with computed fields
+        withDefault Number @default(1) @computed(1 + 1)
     }
     actions {
         get getItem(id) {
