@@ -296,6 +296,10 @@ message ActionLink {
 
 	// If this link should be opened up as a dialog/modal.
 	optional bool as_dialog = 7;
+
+	// A CEL expression used to control the visibility of the action link.
+	// e.g. if expression is not true then the link will be hidden. 
+	optional string visible_condition = 8;
 }
 
 message ToolGroup {
