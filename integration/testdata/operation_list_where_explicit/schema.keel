@@ -16,7 +16,7 @@ model Post {
             @where(whereArg == post.title)
         }
         list listPostsNotEqualString(whereArg: Text) {
-            @where(post.title != whereArg)
+            @where(this.title != whereArg)
         }
         list listPostsEqualDate(whereArg: Date) {
             @where(post.aDate == whereArg)

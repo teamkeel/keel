@@ -21,7 +21,7 @@ model Post {
             @set(post.identity = ctx.identity)
         }
         list listWithTextPermissionLiteral(isActive) {
-            @permission(expression: post.title == "hello")
+            @permission(expression: this.title == "hello")
         }
         list listWithNumberPermissionLiteral(isActive) {
             @permission(expression: post.views == 1)
