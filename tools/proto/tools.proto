@@ -269,6 +269,10 @@ message ExternalLink {
 	StringTemplate href = 2;
 	optional string icon = 3;
 	int32 display_order = 4;
+
+	// A CEL expression used to control the visibility of the link.
+	// e.g. if expression is not true then the link will be hidden. 
+	optional string visible_condition = 5;
 }
 
 message ActionLink {
