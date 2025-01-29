@@ -45,6 +45,16 @@ func (v *computedQueryGen) EndTerm(nested bool) error {
 	return nil
 }
 
+func (v *computedQueryGen) StartFunction(name string) error {
+	//v.sql += fmt.Sprintf(" %s(", name)
+	return nil
+}
+
+func (v *computedQueryGen) EndFunction() error {
+	//v.sql += ")"
+	return nil
+}
+
 func (v *computedQueryGen) VisitAnd() error {
 	v.sql += " AND "
 	return nil
@@ -107,7 +117,8 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 
 	if len(ident.Fragments) == 2 {
 		v.sql += "r." + sqlQuote(strcase.ToSnake(field.Name))
-	} else if len(ident.Fragments) > 2 {
+	} else if len(ident.Fragments) > 2 && !v.isToManyLookup(ident) {
+
 		// Join together all the tables based on the ident fragments
 		model = v.schema.FindModel(field.Type.ModelName.Value)
 		query := NewQuery(model)
@@ -132,8 +143,55 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 
 		stmt := query.SelectStatement()
 		v.sql += fmt.Sprintf("(%s)", stmt.SqlTemplate())
+	} else if len(ident.Fragments) > 2 && v.isToManyLookup(ident) {
+		fmt.Println(ident.Fragments)
+		model = v.schema.FindModel(field.Type.ModelName.Value)
+		query := NewQuery(model)
+		err := query.AddJoinFromFragments(v.schema, ident.Fragments[1:])
+		if err != nil {
+			return err
+		}
+
+		// Select the column as specified in the last ident fragment
+		// fieldName := ident.Fragments[len(ident.Fragments)-1]
+		// fragments := ident.Fragments[1 : len(ident.Fragments)-1]
+		//query.Select(ExpressionField(fragments, fieldName, false))
+		query.Select(Raw(`COALESCE(SUM("item$product"."price"), 0)`))
+		// Filter by this model's row's ID
+		relatedModelField := proto.FindField(v.schema.Models, v.model.Name, ident.Fragments[1])
+		foreignKeyField := proto.GetForeignKeyFieldName(v.schema.Models, relatedModelField)
+		fk := fmt.Sprintf("r.\"%s\"", "id")
+		err = query.Where(Field(foreignKeyField), Equals, Raw(fk))
+		if err != nil {
+			return err
+		}
+
+		stmt := query.SelectStatement()
+		v.sql += fmt.Sprintf("(%s)", stmt.SqlTemplate())
 	}
+
 	return nil
+}
+
+func (v *computedQueryGen) isToManyLookup(idents *parser.ExpressionIdent) bool {
+	model := v.schema.FindModel(strcase.ToCamel(idents.Fragments[0]))
+
+	fragments, err := NormalisedFragments(v.schema, idents.Fragments)
+	if err != nil {
+		//	return err
+		panic(err)
+	}
+
+	for i := 1; i < len(fragments)-1; i++ {
+		currentFragment := fragments[i]
+		field := proto.FindField(v.schema.Models, model.Name, currentFragment)
+		if field.Type.Type == proto.Type_TYPE_MODEL && field.Type.Repeated {
+			return true
+		}
+		model = v.schema.FindModel(field.Type.ModelName.Value)
+
+	}
+	return false
 }
 
 func (v *computedQueryGen) VisitIdentArray(idents []*parser.ExpressionIdent) error {

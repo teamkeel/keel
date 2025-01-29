@@ -95,6 +95,10 @@ type QueryOperand struct {
 	value      any
 }
 
+func (o *QueryOperand) Col() string {
+	return o.column
+}
+
 // A query builder to be evaluated and injected as an operand.
 func (o *QueryOperand) IsInlineQuery() bool {
 	return o.query != nil
@@ -779,6 +783,16 @@ func (query *QueryBuilder) InsertStatement(ctx context.Context) *Statement {
 		strings.Join(ctes, ", "),
 		strings.Join(selection, ", "),
 		sqlQuote(alias))
+
+	// Add a barrier CTE that forces the triggers to complete
+	// barrierCte := fmt.Sprintf("barrier AS (SELECT pg_notify('trigger_complete', ''))")
+
+	// statement := fmt.Sprintf("WITH %s, %s SELECT d.%s FROM %s n, barrier, LATERAL (SELECT * FROM %s WHERE id = n.id) d;",
+	// 	strings.Join(ctes, ", "),
+	// 	barrierCte,
+	// 	strings.Join(selection, ", "),
+	// 	sqlQuote(alias),
+	// 	strcase.ToSnake(query.Model.Name))
 
 	return &Statement{
 		model:    query.Model,

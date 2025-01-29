@@ -297,6 +297,7 @@ func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *p
 		strcase.ToSnake(model.Name),
 		sqlType,
 		stmt)
+	fmt.Println(sql)
 
 	return fn, sql, nil
 }

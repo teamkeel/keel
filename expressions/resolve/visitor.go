@@ -21,6 +21,10 @@ type Visitor[T any] interface {
 	StartTerm(nested bool) error
 	// EndTerm is called when a term is finished
 	EndTerm(nested bool) error
+	// StartFunction is called when a function is started
+	StartFunction(name string) error
+	// EndFunction is called when a function is finished
+	EndFunction() error
 	// VisitAnd is called when an 'and' operator is visited between conditions
 	VisitAnd() error
 	// VisitAnd is called when an 'or' operator is visited between conditions
@@ -172,10 +176,47 @@ func (w *CelVisitor[T]) callExpr(expr *exprpb.Expr) error {
 
 		err = w.binaryCall(expr)
 	default:
-		return errors.New("function calls not supported yet")
+		err = w.functionCall(expr)
 	}
 
 	return err
+}
+
+func (w *CelVisitor[T]) functionCall(expr *exprpb.Expr) error {
+	c := expr.GetCallExpr()
+	fun := c.GetFunction()
+	target := c.GetTarget()
+	args := c.GetArgs()
+
+	err := w.visitor.StartFunction(fun)
+	if err != nil {
+		return err
+	}
+
+	if target != nil {
+		//nested := isBinaryOrTernaryOperator(target)
+		err := w.eval(target, false, false)
+		if err != nil {
+			return err
+		}
+		//con.str.WriteString(", ")
+	}
+	for _, arg := range args {
+		err := w.eval(arg, false, false)
+		if err != nil {
+			return err
+		}
+		// if i < len(args)-1 {
+		// 	con.str.WriteString(", ")
+		// }
+	}
+
+	err = w.visitor.EndFunction()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (w *CelVisitor[T]) binaryCall(expr *exprpb.Expr) error {

@@ -434,6 +434,18 @@ func WithArithmeticOperators() expressions.Option {
 	}
 }
 
+func WithFunctions() expressions.Option {
+	return func(p *expressions.Parser) error {
+		var err error
+		p.CelEnv, err = p.CelEnv.Extend(cel.Function("SUM", cel.Overload("SUM", []*types.Type{typing.DecimalArray}, typing.Decimal)))
+		if err != nil {
+			return err
+		}
+
+		return err
+	}
+}
+
 // WithReturnTypeAssertion will check that the expression evaluates to a specific type
 func WithReturnTypeAssertion(returnType string, asArray bool) expressions.Option {
 	return func(p *expressions.Parser) error {
