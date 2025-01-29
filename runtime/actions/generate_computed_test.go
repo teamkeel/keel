@@ -192,7 +192,7 @@ var computedTestCases = []computedTestCase{
 				}
 			}`,
 		field:       "total Decimal @computed(SUM(invoice.item.product.price))",
-		expectedSql: `SELECT SUM("SUM(item$product"."price") FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id")`,
+		expectedSql: `(SELECT COALESCE(SUM("item$product"."price"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id")`,
 	},
 }
 

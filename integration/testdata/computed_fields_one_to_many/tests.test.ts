@@ -12,8 +12,8 @@ test("computed fields - one to many", async () => {
     price: 200
   });
 
-  const invoiceA = await actions.createInvoice({});
-  expect(invoiceA.total).toBe(0);
+  const invoiceA = await actions.createInvoice({shipping: 5});
+  expect(invoiceA.total).toBe(5);
 
   const item1 = await models.item.create({
     invoiceId: invoiceA.id,
@@ -25,8 +25,8 @@ test("computed fields - one to many", async () => {
     productId: product2.id
   });
 
-  const invoiceB = await actions.createInvoice({});
-  expect(invoiceB.total).toBe(0);
+  const invoiceB = await actions.createInvoice({shipping: 5});
+  expect(invoiceB.total).toBe(5);
 
   const item3 = await models.item.create({
     invoiceId: invoiceB.id,
@@ -34,26 +34,26 @@ test("computed fields - one to many", async () => {
   });
 
   const inv1A = await models.invoice.findOne({id: invoiceA.id});
-  expect(inv1A?.total).toBe(300);
+  expect(inv1A?.total).toBe(305);
 
   const inv1B= await models.invoice.findOne({id: invoiceB.id});
-  expect(inv1B?.total).toBe(200);
+  expect(inv1B?.total).toBe(205);
 
   await models.product.update({id: product1.id}, { price: 150 });
 
   const inv2A = await models.invoice.findOne({id: invoiceA.id});
-  expect(inv2A?.total).toBe(350);
+  expect(inv2A?.total).toBe(355);
 
   const inv2B = await models.invoice.findOne({id: invoiceB.id});
-  expect(inv2B?.total).toBe(200);
+  expect(inv2B?.total).toBe(205);
 
   await models.item.delete({id: item2.id});
 
   const inv3A = await models.invoice.findOne({id: invoiceA.id});
-  expect(inv3A?.total).toBe(150);
+  expect(inv3A?.total).toBe(155);
 
   const inv3B = await models.invoice.findOne({id: invoiceB.id});
-  expect(inv3B?.total).toBe(200);
+  expect(inv3B?.total).toBe(205);
 
   const item4 = await models.item.create({
     invoiceId: invoiceA.id,
@@ -61,26 +61,31 @@ test("computed fields - one to many", async () => {
   });
 
   const inv4A = await models.invoice.findOne({id: invoiceA.id});
-  expect(inv4A?.total).toBe(350);
+  expect(inv4A?.total).toBe(355);
 
   const inv4B = await models.invoice.findOne({id: invoiceB.id});
-  expect(inv4B?.total).toBe(200);
+  expect(inv4B?.total).toBe(205);
 
   await models.item.update({id: item4.id}, { invoiceId: invoiceB.id });
 
   const inv5A = await models.invoice.findOne({id: invoiceA.id});
-  expect(inv5A?.total).toBe(150);
+  expect(inv5A?.total).toBe(155);
 
   const inv5B = await models.invoice.findOne({id: invoiceB.id});
-  expect(inv5B?.total).toBe(400);
+  expect(inv5B?.total).toBe(405);
 
   await models.product.delete({id: product2.id});
 
   const inv6A = await models.invoice.findOne({id: invoiceA.id});
-  expect(inv6A?.total).toBe(150);
+  expect(inv6A?.total).toBe(155);
 
   const inv6B = await models.invoice.findOne({id: invoiceB.id});
-  expect(inv6B?.total).toBe(0);
+  expect(inv6B?.total).toBe(5);
+
+  await models.invoice.update({id: invoiceA.id}, {shipping: 10});
+
+  const inv7A = await models.invoice.findOne({id: invoiceA.id});
+  expect(inv7A?.total).toBe(160);
 });
 
 test("computed fields - one to many - nested create", async () => {
@@ -93,7 +98,8 @@ test("computed fields - one to many - nested create", async () => {
   });
 
   const invoice = await actions.createInvoice({
-    item: [{
+    shipping: 5,
+    items: [{
       product: { id: product1.id }
     },
     {
@@ -101,5 +107,5 @@ test("computed fields - one to many - nested create", async () => {
     }]
   });
 
-  expect(invoice.total).toBe(300);
+  expect(invoice.total).toBe(305);
 });

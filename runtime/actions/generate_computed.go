@@ -3,9 +3,12 @@ package actions
 import (
 	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/emirpasic/gods/stacks/arraystack"
 	"github.com/google/cel-go/common/operators"
 	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
 
@@ -15,20 +18,22 @@ import (
 // GenerateComputedFunction visits the expression and generates a SQL expression
 func GenerateComputedFunction(schema *proto.Schema, model *proto.Model, field *proto.Field) resolve.Visitor[string] {
 	return &computedQueryGen{
-		schema: schema,
-		model:  model,
-		field:  field,
-		sql:    "",
+		schema:    schema,
+		model:     model,
+		field:     field,
+		sql:       "",
+		functions: arraystack.New(),
 	}
 }
 
 var _ resolve.Visitor[string] = new(computedQueryGen)
 
 type computedQueryGen struct {
-	schema *proto.Schema
-	model  *proto.Model
-	field  *proto.Field
-	sql    string
+	schema    *proto.Schema
+	model     *proto.Model
+	field     *proto.Field
+	sql       string
+	functions *arraystack.Stack
 }
 
 func (v *computedQueryGen) StartTerm(nested bool) error {
@@ -46,12 +51,17 @@ func (v *computedQueryGen) EndTerm(nested bool) error {
 }
 
 func (v *computedQueryGen) StartFunction(name string) error {
-	//v.sql += fmt.Sprintf(" %s(", name)
+	switch name {
+	case "SUM":
+		v.functions.Push(name)
+	default:
+		return fmt.Errorf("unsupported function: %s", name)
+	}
 	return nil
 }
 
 func (v *computedQueryGen) EndFunction() error {
-	//v.sql += ")"
+	//v.sql += ", 0))"
 	return nil
 }
 
@@ -147,19 +157,42 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 		fmt.Println(ident.Fragments)
 		model = v.schema.FindModel(field.Type.ModelName.Value)
 		query := NewQuery(model)
-		err := query.AddJoinFromFragments(v.schema, ident.Fragments[1:])
+
+		relatedModelField := proto.FindField(v.schema.Models, v.model.Name, ident.Fragments[1])
+		foreignKeyField := proto.GetForeignKeyFieldName(v.schema.Models, relatedModelField)
+
+		fmt.Println(ident.Fragments)
+
+		r := proto.FindField(v.schema.Models, v.model.Name, ident.Fragments[1])
+		f := ident.Fragments[1:]
+		f[0] = strcase.ToLowerCamel(r.Type.ModelName.Value)
+
+		err := query.AddJoinFromFragments(v.schema, f)
 		if err != nil {
 			return err
+		}
+
+		funcBegin, has := v.functions.Pop()
+		if !has {
+			return errors.New("no function found for 1:M lookup")
+		}
+
+		fieldName := ident.Fragments[len(ident.Fragments)-1]
+		fragments := ident.Fragments[1 : len(ident.Fragments)-1]
+
+		raw := ""
+		switch funcBegin {
+		case "SUM":
+			raw += fmt.Sprintf("COALESCE(SUM(%s), 0)", sqlQuote(casing.ToSnake(strings.Join(fragments, "$")))+"."+sqlQuote(casing.ToSnake(fieldName)))
 		}
 
 		// Select the column as specified in the last ident fragment
 		// fieldName := ident.Fragments[len(ident.Fragments)-1]
 		// fragments := ident.Fragments[1 : len(ident.Fragments)-1]
 		//query.Select(ExpressionField(fragments, fieldName, false))
-		query.Select(Raw(`COALESCE(SUM("item$product"."price"), 0)`))
+		query.Select(Raw(raw))
 		// Filter by this model's row's ID
-		relatedModelField := proto.FindField(v.schema.Models, v.model.Name, ident.Fragments[1])
-		foreignKeyField := proto.GetForeignKeyFieldName(v.schema.Models, relatedModelField)
+
 		fk := fmt.Sprintf("r.\"%s\"", "id")
 		err = query.Where(Field(foreignKeyField), Equals, Raw(fk))
 		if err != nil {

@@ -881,7 +881,6 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 		// Generate the trigger function which executes all the computed field functions for the model.
 		execFnName := computedExecFuncName(model)
-		//
 		sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$ BEGIN\n%s\tINSERT INTO debug_log(message) VALUES ('%s' || ' ' || NEW.id);RETURN NEW;\nEND; $$ LANGUAGE plpgsql;", execFnName, strings.Join(stmts, ""), execFnName)
 
 		// Generate the table trigger which executed the trigger function.
@@ -895,77 +894,87 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 	depFns := map[string]string{}
 
-	// For computed fields which depend on fields in other models, we perform a fake update in order to trigger the computed fns.
+	// For computed fields which depend on fields in other models, we need to create triggers which start from the source model and cascades
+	// down through the relationship until it reaches the target model (where the computed field is defined). We then perform a fake update on the
+	// specific rows in the target model which will then trigger the computed fns.
 	for field, deps := range dependencies {
 		for _, dep := range deps {
 			// Skip this because the triggers call on the exec functions themselves
+			//TODO OR NOT FOR SELF REFERENCING RELATIONSHIPS?
 			if field.ModelName == dep.field.ModelName {
 				continue
 			}
-
-			//	fieldModel := schema.FindModel(field.ModelName)
 
 			fragments, err := actions.NormalisedFragments(schema, dep.ident.Fragments)
 			if err != nil {
 				return nil, nil, err
 			}
 
-			model := casing.ToCamel(fragments[0])
+			currentModel := casing.ToCamel(fragments[0])
 			for i := 1; i < len(fragments)-1; i++ {
-				currentFragment := fragments[i]
-
-				baseQuery := actions.NewQuery(schema.FindModel(strcase.ToCamel(fragments[i-1])))
+				baseQuery := actions.NewQuery(schema.FindModel(currentModel))
 				baseQuery.Select(actions.IdField())
 
-				if !proto.ModelHasField(schema, model, currentFragment) {
-					return nil, nil, fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
+				// Get the fragment pair from the previous model to the current model
+				// We need to reset the first fragment to the model name and not the previous model's field name
+				subFragments := slices.Clone(fragments[i-1 : i+1])
+				subFragments[0] = strcase.ToLowerCamel(currentModel)
+
+				if !proto.ModelHasField(schema, currentModel, fragments[i]) {
+					return nil, nil, fmt.Errorf("this model: %s, does not have a field of name: %s", currentModel, subFragments[0])
 				}
 
 				// We know that the current fragment is a related model because it's not the last fragment
-				relatedModelField := proto.FindField(schema.Models, model, currentFragment)
+				relatedModelField := proto.FindField(schema.Models, currentModel, fragments[i])
 				relatedModel := relatedModelField.Type.ModelName.Value
 				foreignKeyField := proto.GetForeignKeyFieldName(schema.Models, relatedModelField)
-				primaryKey := "id"
 
 				var leftOperand *actions.QueryOperand
 				var rightOperand *actions.QueryOperand
 
+				var f string
 				switch {
 				case relatedModelField.IsBelongsTo():
 					// In a "belongs to" the foreign key is on _this_ model
-					leftOperand = actions.ExpressionField(fragments[i-1:i+1], primaryKey, false)
-					rightOperand = actions.ExpressionField(fragments[i-1:i], foreignKeyField, false)
+					leftOperand = actions.ExpressionField(subFragments, parser.FieldNameId, false)
+					rightOperand = actions.ExpressionField(subFragments[i:i], foreignKeyField, false)
+					f = parser.FieldNameId
 				default:
 					// In all others the foreign key is on the _other_ model
-					leftOperand = actions.ExpressionField(fragments[i-1:i+1], foreignKeyField, false)
-					rightOperand = actions.ExpressionField(fragments[i-1:i], primaryKey, false)
+					leftOperand = actions.ExpressionField(subFragments, foreignKeyField, false)
+					rightOperand = actions.ExpressionField(subFragments[i:i], parser.FieldNameId, false)
+					f = strcase.ToSnake(foreignKeyField)
 				}
 
-				model = relatedModelField.Type.ModelName.Value
 				baseQuery.Join(relatedModel, leftOperand, rightOperand)
-				err := baseQuery.Where(leftOperand, actions.Equals, actions.Raw("NEW."+leftOperand.Col()))
+				err := baseQuery.Where(leftOperand, actions.Equals, actions.Raw(fmt.Sprintf("NEW.%s", f)))
 				if err != nil {
 					return nil, nil, err
 				}
 				baseQuery.Or()
-				err = baseQuery.Where(leftOperand, actions.Equals, actions.Raw("OLD."+leftOperand.Col()))
+				err = baseQuery.Where(leftOperand, actions.Equals, actions.Raw(fmt.Sprintf("OLD.%s", f)))
 				if err != nil {
 					return nil, nil, err
 				}
 
-				query := actions.NewQuery(schema.FindModel(strcase.ToCamel(fragments[i-1])))
+				previousModel := currentModel
+				currentModel = relatedModelField.Type.ModelName.Value
+
+				query := actions.NewQuery(schema.FindModel(strcase.ToCamel(previousModel)))
 				query.AddWriteValue(actions.IdField(), actions.IdField())
-				err = query.Where(actions.IdField(), actions.OneOf, actions.InlineQuery(baseQuery, actions.ExpressionField(fragments[i-1:i+1], "id", false)))
+				err = query.Where(actions.IdField(), actions.OneOf, actions.InlineQuery(baseQuery, actions.ExpressionField(subFragments, "id", false)))
 				if err != nil {
 					return nil, nil, err
 				}
 				stmt := query.UpdateStatement(context.Background()).SqlTemplate()
 
-				dependencyFnName := computedDependencyFuncName(schema.FindModel(strcase.ToCamel(fragments[i-1])), schema.FindModel(model), fragments[:i+1])
+				// Trigger function which will perform a fake update on the earlier model in the expression chain
+				dependencyFnName := computedDependencyFuncName(schema.FindModel(strcase.ToCamel(previousModel)), schema.FindModel(currentModel), subFragments)
 				sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$\nBEGIN\n\t%s;\nINSERT INTO debug_log(message) VALUES ('%s' || ' ' || NEW.id);\nRETURN NULL;\nEND; $$ LANGUAGE plpgsql;", dependencyFnName, stmt, dependencyFnName)
 
+				// Must be an AFTER trigger as we need the data to be written in order to perform the joins and for the computation to take into account the updated data
 				triggerName := dependencyFnName
-				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER %s_aft AFTER INSERT OR UPDATE OR DELETE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(model), dependencyFnName)
+				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER %s AFTER INSERT OR UPDATE OR DELETE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(currentModel), dependencyFnName)
 
 				depFns[dependencyFnName] = sql
 			}
@@ -998,9 +1007,6 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		statements = append(statements, sql)
 	}
 
-	for _, s := range statements {
-		fmt.Println(s)
-	}
 	return
 }
 
