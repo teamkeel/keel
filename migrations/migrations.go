@@ -113,7 +113,6 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 	sql.WriteString(setUpdatedAt)
 	sql.WriteString("\n")
 
-	// Create the schema table
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema (schema TEXT NOT NULL);\n")
 	sql.WriteString("DELETE FROM keel_schema;\n")
 
@@ -711,7 +710,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 				// Trigger function which will perform a fake update on the earlier model in the expression chain
 				fnName := computedDependencyFuncName(schema.FindModel(strcase.ToCamel(previousModel)), schema.FindModel(currentModel), strings.Split(expr, "."))
-				sql := fmt.Sprintf("-- %s\nCREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$\nBEGIN\n\t%s\nEND; $$ LANGUAGE plpgsql;\n", strings.Join(subFragments, ".")+" in "+strings.Join(fragments, "."), fnName, stmt)
+				sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$\nBEGIN\n\t%s\nEND; $$ LANGUAGE plpgsql;\n", fnName, stmt)
 
 				// For the comp_dep function on the target field's model, we include a filter on the UPDATE trigger to only trigger if the target field has changed
 				whenCondition := "TRUE"

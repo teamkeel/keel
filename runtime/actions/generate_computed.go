@@ -141,10 +141,10 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			foreignKeyField := proto.GetForeignKeyFieldName(v.schema.Models, relatedModelField)
 
 			r := proto.FindField(v.schema.Models, v.model.Name, normalised[1])
-			f := normalised[1:]
-			f[0] = strcase.ToLowerCamel(r.Type.ModelName.Value)
+			subFragments := normalised[1:]
+			subFragments[0] = strcase.ToLowerCamel(r.Type.ModelName.Value)
 
-			err := query.AddJoinFromFragments(v.schema, f)
+			err := query.AddJoinFromFragments(v.schema, subFragments)
 			if err != nil {
 				return err
 			}

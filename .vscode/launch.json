@@ -44,7 +44,6 @@
             "${input:directory}",
             "--pattern",
             "${input:pattern}",
-          
         ]
     },
     {
@@ -61,7 +60,6 @@
             "${input:directory}",
             "--node-packages-path",
             "${workspaceFolder}/packages",
-           //"--reset"
         ]
     },
     {
@@ -143,7 +141,7 @@
         {
             "type": "promptString",
             "id": "directory",
-            "default": "integration/testdata/computed_fields_one_to_many",
+            "default": "integration/testdata/files",
             "description": "Path to directory containing keel schema file."
         },
         {
