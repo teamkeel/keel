@@ -112,9 +112,6 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema (schema TEXT NOT NULL);\n")
 	sql.WriteString("DELETE FROM keel_schema;\n")
 
-	// Interval output format
-	sql.WriteString("SET intervalstyle = \"iso_8601\";\n")
-
 	b, err := protojson.Marshal(m.Schema)
 	if err != nil {
 		return err
