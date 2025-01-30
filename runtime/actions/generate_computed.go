@@ -202,6 +202,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			// Filter by this model's row's ID
 			relatedModelField := proto.FindField(v.schema.Models, v.model.Name, normalised[1])
 			foreignKeyField := proto.GetForeignKeyFieldName(v.schema.Models, relatedModelField)
+
 			fk := fmt.Sprintf("r.\"%s\"", strcase.ToSnake(foreignKeyField))
 			err = query.Where(IdField(), Equals, Raw(fk))
 			if err != nil {

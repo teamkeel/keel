@@ -87,6 +87,8 @@ test("check customer statistics before order", async () => {
     expect(johnDoe?.totalOrders).toBe(0);
     expect(johnDoe?.totalSpent).toBe(0);
     expect(johnDoe?.averageOrderValue).toBe(0);
+    expect(johnDoe?.smallestOrder).toBe(0);
+    expect(johnDoe?.largestOrder).toBe(0);
 });
 
 test("create order for new products", async () => {
@@ -120,8 +122,10 @@ test("check stock levels after order", async () => {
 test("check customer statistics after order", async () => {
     johnDoe = await actions.getCustomer({id: johnDoe!.id});
     expect(johnDoe?.totalOrders).toBe(1);
-    expect(johnDoe?.totalSpent).toBe(240 + 33.6 + 25.2 + 10);
+    expect(johnDoe?.totalSpent).toBe(308.8);
     expect(johnDoe?.averageOrderValue).toBe(308.8);
+    expect(johnDoe?.smallestOrder).toBe(308.8);
+    expect(johnDoe?.largestOrder).toBe(308.8);
 });
 
 test("adjust quantity in order", async () => {
@@ -147,6 +151,8 @@ test("check customer statistics after adjusting quantity", async () => {
     expect(johnDoe?.totalSpent).toBe(290);
     expect(johnDoe?.totalOrders).toBe(1);
     expect(johnDoe?.averageOrderValue).toBe(290);
+    expect(johnDoe?.smallestOrder).toBe(290);
+    expect(johnDoe?.largestOrder).toBe(290);
 });
 
 test("check stock levels after adjusting quantity", async () => {
@@ -201,6 +207,8 @@ test("check customer statistics after adjusting product", async () => {
     expect(johnDoe?.totalSpent).toBe(343.2);
     expect(johnDoe?.totalOrders).toBe(1);
     expect(johnDoe?.averageOrderValue).toBe(343.2);
+    expect(johnDoe?.smallestOrder).toBe(343.2);
+    expect(johnDoe?.largestOrder).toBe(343.2);
 });
 
 test("create another order", async () => {
@@ -220,6 +228,8 @@ test("check customer statistics after adjusting product", async () => {
     expect(johnDoe?.totalSpent).toBe(418.4);
     expect(johnDoe?.totalOrders).toBe(2);
     expect(johnDoe?.averageOrderValue).toBe(209.2);
+    expect(johnDoe?.smallestOrder).toBe(75.2);
+    expect(johnDoe?.largestOrder).toBe(343.2);
 });
 
 test("check stock levels after adjusting quantity", async () => {
@@ -297,4 +307,165 @@ test("check customer statistics after fixing product markup", async () => {
     expect(pamSmith?.totalSpent).toBe(75.2);
     expect(pamSmith?.totalOrders).toBe(1);
     expect(pamSmith?.averageOrderValue).toBe(75.2);
+});
+
+test("delete order item", async () => {
+    const items = await actions.listOrderItems({ where: { order: { id: { equals: order?.id }}}});
+    console.log(items.results);
+    for (const item of items.results) {
+        if (item.productId === productMouse!.id) {
+            await actions.deleteOrderItem({id: item!.id});
+
+        }
+    }
+
+    order = await actions.getOrder({id: order!.id});
+
+    expect(order?.shipping).toBe(0);
+    expect(order?.total).toBe(0);
+});
+
+test("check customer statistics after fixing product markup", async () => {
+    johnDoe = await actions.getCustomer({id: johnDoe!.id});
+    expect(johnDoe?.totalSpent).toBe(383.2);
+    expect(johnDoe?.totalOrders).toBe(1);
+    expect(johnDoe?.averageOrderValue).toBe(383.2);
+
+    pamSmith = await actions.getCustomer({id: pamSmith!.id});
+    expect(pamSmith?.totalSpent).toBe(0);
+    expect(pamSmith?.totalOrders).toBe(1);
+    expect(pamSmith?.averageOrderValue).toBe(0);
+});
+
+test("check that stock levels have increased", async () => {
+    productLaptop = await actions.getProduct({id: productLaptop!.id});
+    expect(productLaptop?.stockQuantity).toBe(8);
+
+    productMouse = await actions.getProduct({id: productMouse!.id});
+    expect(productMouse?.stockQuantity).toBe(20);
+
+    productKeyboard = await actions.getProduct({id: productKeyboard!.id});
+    expect(productKeyboard?.stockQuantity).toBe(24);
+
+    productMonitor = await actions.getProduct({id: productMonitor!.id});
+    expect(productMonitor?.stockQuantity).toBe(9);
+});
+
+test("readd order item", async () => {
+    await actions.addOrderItem({
+        order: {id: order!.id},
+        product: {id: productMouse!.id},
+        quantity: 4
+    });
+});
+
+test("check customer statistics after readding order item", async () => {
+    johnDoe = await actions.getCustomer({id: johnDoe!.id});
+    expect(johnDoe?.totalSpent).toBe(383.2);
+    expect(johnDoe?.totalOrders).toBe(1);
+    expect(johnDoe?.averageOrderValue).toBe(383.2);
+
+    pamSmith = await actions.getCustomer({id: pamSmith!.id});
+    expect(pamSmith?.totalSpent).toBe(75.2);
+    expect(pamSmith?.totalOrders).toBe(1);
+    expect(pamSmith?.averageOrderValue).toBe(75.2);
+});
+
+test("check that stock levels after readding order item", async () => {
+    productLaptop = await actions.getProduct({id: productLaptop!.id});
+    expect(productLaptop?.stockQuantity).toBe(8);
+
+    productMouse = await actions.getProduct({id: productMouse!.id});
+    expect(productMouse?.stockQuantity).toBe(16);
+
+    productKeyboard = await actions.getProduct({id: productKeyboard!.id});
+    expect(productKeyboard?.stockQuantity).toBe(24);
+
+    productMonitor = await actions.getProduct({id: productMonitor!.id});
+    expect(productMonitor?.stockQuantity).toBe(9);
+});
+
+test("delete order", async () => {
+    await actions.deleteOrder({id: order!.id});
+});
+
+test("check customer statistics after deleting order", async () => {
+    johnDoe = await actions.getCustomer({id: johnDoe!.id});
+    expect(johnDoe?.totalSpent).toBe(383.2);
+    expect(johnDoe?.totalOrders).toBe(1);
+    expect(johnDoe?.averageOrderValue).toBe(383.2);
+
+    pamSmith = await actions.getCustomer({id: pamSmith!.id});
+    expect(pamSmith?.totalSpent).toBe(0);
+    expect(pamSmith?.totalOrders).toBe(0);
+    expect(pamSmith?.averageOrderValue).toBe(0);
+    expect(pamSmith?.smallestOrder).toBe(0);
+    expect(pamSmith?.largestOrder).toBe(0);
+});
+
+test("check that stock levels after deleting order", async () => {
+    productLaptop = await actions.getProduct({id: productLaptop!.id});
+    expect(productLaptop?.stockQuantity).toBe(8);
+
+    productMouse = await actions.getProduct({id: productMouse!.id});
+    expect(productMouse?.stockQuantity).toBe(20);
+
+    productKeyboard = await actions.getProduct({id: productKeyboard!.id});
+    expect(productKeyboard?.stockQuantity).toBe(24);
+
+    productMonitor = await actions.getProduct({id: productMonitor!.id});
+    expect(productMonitor?.stockQuantity).toBe(9);
+});
+
+test("delete product", async () => {
+    await actions.deleteProduct({id: productLaptop!.id});
+});
+
+test("check customer statistics after deleting product", async () => {
+    johnDoe = await actions.getCustomer({id: johnDoe!.id});
+    expect(johnDoe?.totalSpent).toBe(99.2);
+    expect(johnDoe?.totalOrders).toBe(1);
+    expect(johnDoe?.averageOrderValue).toBe(99.2);
+    expect(pamSmith?.smallestOrder).toBe(0); // this is because the order actually still exists
+    expect(pamSmith?.largestOrder).toBe(0); //TODO?
+
+    pamSmith = await actions.getCustomer({id: pamSmith!.id});
+    expect(pamSmith?.totalSpent).toBe(0);
+    expect(pamSmith?.totalOrders).toBe(0);
+    expect(pamSmith?.averageOrderValue).toBe(0);
+});
+
+test("delete customers", async () => {
+    await actions.deleteCustomer({id: johnDoe!.id});
+    await actions.deleteCustomer({id: pamSmith!.id});
+});
+
+test("check that stock levels after deleting customers", async () => {
+    productMouse = await actions.getProduct({id: productMouse!.id});
+    expect(productMouse?.stockQuantity).toBe(20);
+
+    productKeyboard = await actions.getProduct({id: productKeyboard!.id});
+    expect(productKeyboard?.stockQuantity).toBe(25);
+
+    productMonitor = await actions.getProduct({id: productMonitor!.id});
+    expect(productMonitor?.stockQuantity).toBe(10);
+});
+
+test("delete purchase orders", async () => {
+    const result = await actions.listPurchaseOrders();
+
+    for (const purchaseOrder of result.results) {
+        await actions.deletePurchaseOrder({id: purchaseOrder!.id}); 
+    }
+});
+
+test("check that stock levels after deleting purchase orders", async () => {
+    productMouse = await actions.getProduct({id: productMouse!.id});
+    expect(productMouse?.stockQuantity).toBe(0);
+
+    productKeyboard = await actions.getProduct({id: productKeyboard!.id});
+    expect(productKeyboard?.stockQuantity).toBe(0);
+
+    productMonitor = await actions.getProduct({id: productMonitor!.id});
+    expect(productMonitor?.stockQuantity).toBe(0);
 });
