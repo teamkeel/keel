@@ -15,6 +15,7 @@ func ValidateComputedExpression(schema []*parser.AST, model *parser.ModelNode, f
 		options.WithComparisonOperators(),
 		options.WithLogicalOperators(),
 		options.WithArithmeticOperators(),
+		options.WithFunctions(),
 		options.WithReturnTypeAssertion(field.Type.Value, field.Repeated),
 	}
 

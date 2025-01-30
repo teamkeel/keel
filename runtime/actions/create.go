@@ -76,6 +76,19 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		return nil, err
 	}
 
+	// Because of computed fields and nested creates, we need to fetch the row again to get the computed fields
+	query = NewQuery(scope.Model, opts...)
+	err = query.Where(IdField(), Equals, Value(res["id"]))
+	if err != nil {
+		return nil, err
+	}
+	query.Select(AllFields())
+	statement = query.SelectStatement()
+	res, err = statement.ExecuteToSingle(scope.Context)
+	if err != nil {
+		return nil, err
+	}
+
 	// if we have any files in our results we need to transform them to the object structure required
 	if scope.Model.HasFiles() {
 		res, err = transformModelFileResponses(scope.Context, scope.Model, res)

@@ -32,6 +32,14 @@ func (v *operandsResolver) EndTerm(parenthesis bool) error {
 	return nil
 }
 
+func (v *operandsResolver) StartFunction(name string) error {
+	return nil
+}
+
+func (v *operandsResolver) EndFunction() error {
+	return nil
+}
+
 func (v *operandsResolver) VisitAnd() error {
 	return nil
 }

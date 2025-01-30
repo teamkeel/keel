@@ -92,6 +92,14 @@ func (v *whereQueryGen) EndTerm(nested bool) error {
 	return nil
 }
 
+func (v *whereQueryGen) StartFunction(name string) error {
+	return nil
+}
+
+func (v *whereQueryGen) EndFunction() error {
+	return nil
+}
+
 func (v *whereQueryGen) VisitAnd() error {
 	v.query.And()
 	return nil

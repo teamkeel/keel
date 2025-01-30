@@ -36,6 +36,14 @@ func (v *identGen) EndTerm(parenthesis bool) error {
 	return nil
 }
 
+func (v *identGen) StartFunction(name string) error {
+	return nil
+}
+
+func (v *identGen) EndFunction() error {
+	return nil
+}
+
 func (v *identGen) VisitAnd() error {
 	return ErrExpressionNotValidIdent
 }

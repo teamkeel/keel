@@ -43,7 +43,7 @@
             "-d",
             "${input:directory}",
             "--pattern",
-            "${input:pattern}"
+            "${input:pattern}",
         ]
     },
     {

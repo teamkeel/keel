@@ -58,6 +58,14 @@ func (v *fieldLookupsGen) EndTerm(parenthesis bool) error {
 	return nil
 }
 
+func (v *fieldLookupsGen) StartFunction(name string) error {
+	return nil
+}
+
+func (v *fieldLookupsGen) EndFunction() error {
+	return nil
+}
+
 func (v *fieldLookupsGen) VisitAnd() error {
 	return nil
 }
