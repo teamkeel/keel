@@ -165,6 +165,7 @@ func typesAssignable(expected *types.Type, actual *types.Type) bool {
 		typing.Text.String():      {mapType(typing.Text.String()), mapType(typing.Markdown.String()), mapType(typing.ID.String())},
 		typing.Number.String():    {mapType(typing.Number.String()), mapType(typing.Decimal.String())},
 		typing.Decimal.String():   {mapType(typing.Number.String()), mapType(typing.Decimal.String())},
+		typing.Duration.String():  {mapType(typing.Duration.String()), mapType(typing.Text.String())},
 	}
 
 	// Check if there are specific compatibility rules for the expected type

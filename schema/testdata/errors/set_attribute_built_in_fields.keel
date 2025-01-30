@@ -13,7 +13,7 @@ model Post {
             @set(post.createdAt = ctx.now)
             //expect-error:18:32:AttributeExpressionError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
             @set(post.updatedAt = ctx.now)
-            //expect-error:18:39:E026:post.timeToRead is Duration and 123 is Number
+            //expect-error:36:39:AttributeExpressionError:expression expected to resolve to type Duration but it is Number
             @set(post.timeToRead = 123)
         }
         create createPost2() with (name, published, publisher.name) {

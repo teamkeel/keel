@@ -20,8 +20,8 @@ var (
 	Boolean   = cel.OpaqueType(parser.FieldTypeBoolean)
 	Timestamp = cel.OpaqueType(parser.FieldTypeTimestamp)
 	Date      = cel.OpaqueType(parser.FieldTypeDate)
+	Duration  = cel.OpaqueType(parser.FieldTypeDuration)
 )
-
 var (
 	IDArray        = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeID))
 	TextArray      = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeText))
@@ -31,6 +31,7 @@ var (
 	BooleanArray   = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeBoolean))
 	TimestampArray = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeTimestamp))
 	DateArray      = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeDate))
+	DurationArray  = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeDuration))
 )
 
 var (
@@ -64,7 +65,8 @@ func MapType(schema []*parser.AST, typeName string, isRepeated bool) (*types.Typ
 		parser.FieldTypeFile,
 		parser.FieldTypeVector,
 		parser.FieldTypeSecret,
-		parser.FieldTypePassword:
+		parser.FieldTypePassword,
+		parser.FieldTypeDuration:
 		if isRepeated {
 			return cel.OpaqueType(fmt.Sprintf("%s[]", typeName)), nil
 		} else {
