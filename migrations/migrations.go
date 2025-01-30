@@ -137,12 +137,6 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 	sql.WriteString(m.SQL)
 	sql.WriteString("\n")
 
-	sql.WriteString(`CREATE TABLE IF NOT EXISTS debug_log (
-		id SERIAL PRIMARY KEY,
-		timestamp TIMESTAMP DEFAULT NOW(),
-		message TEXT
-	);`)
-
 	// For now, we do this here but this could belong in our proto once we start on the database indexing work.
 	sql.WriteString("CREATE INDEX IF NOT EXISTS idx_keel_audit_trace_id ON keel_audit USING HASH(trace_id);\n")
 	sql.WriteString("CREATE INDEX IF NOT EXISTS idx_keel_audit_table_name_data_id_created_at ON keel_audit (table_name, (data->>'id'), created_at);\n")
@@ -609,7 +603,6 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 	// For each model, we need to create a function which calls all the computed functions for fields on this model
 	// Order is important because computed fields can depend on each other - this is catered for
 	for _, model := range schema.Models {
-		computedFields := model.GetComputedFields()
 		modelhasChanged := false
 		for k, v := range changedFields {
 			if k.ModelName == model.Name && v {
@@ -617,6 +610,11 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 			}
 		}
 		if !modelhasChanged {
+			continue
+		}
+
+		computedFields := model.GetComputedFields()
+		if len(computedFields) == 0 {
 			continue
 		}
 
@@ -647,18 +645,18 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		// Generate SQL statements in dependency order
 		stmts := []string{}
 		for _, field := range sorted {
-			s := fmt.Sprintf("\tNEW.%s := %s(NEW);\n", strcase.ToSnake(field.Name), fieldsFns[field])
+			s := fmt.Sprintf("NEW.%s := %s(NEW);\n", strcase.ToSnake(field.Name), fieldsFns[field])
 			stmts = append(stmts, s)
 		}
 
 		// Generate the trigger function which executes all the computed field functions for the model.
 		execFnName := computedExecFuncName(model)
-		sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$ BEGIN\n%s\tINSERT INTO debug_log(message) VALUES ('%s' || ' ' || NEW.id);RETURN NEW;\nEND; $$ LANGUAGE plpgsql;", execFnName, strings.Join(stmts, ""), execFnName)
+		sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$ BEGIN\n\t%s\tRETURN NEW;\nEND; $$ LANGUAGE plpgsql;", execFnName, strings.Join(stmts, ""))
 
 		// Generate the table trigger which executed the trigger function.
 		// This must be a BEFORE trigger because we want to return the row with its computed fields being computed.
 		triggerName := computedTriggerName(model)
-		trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER %s BEFORE INSERT OR UPDATE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(model.Name), execFnName)
+		trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" BEFORE INSERT OR UPDATE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, strcase.ToSnake(model.Name), execFnName)
 
 		statements = append(statements, sql)
 		statements = append(statements, trigger)
@@ -671,16 +669,8 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 	for field, deps := range dependencies {
 		for _, dep := range deps {
 			// Skip this because the triggers call on the exec functions themselves
-			//TODO OR NOT FOR SELF REFERENCING RELATIONSHIPS?
 			if field.ModelName == dep.field.ModelName {
 				continue
-			}
-
-			if field.ModelName == "Order" && field.Name == "total" {
-				fmt.Println("!!! " + dep.ident.String())
-			}
-			if field.ModelName == "Order" && field.Name == "shipping" {
-				fmt.Println("!!! " + dep.ident.String())
 			}
 
 			fragments, err := actions.NormalisedFragments(schema, dep.ident.Fragments)
@@ -721,7 +711,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 				// Trigger function which will perform a fake update on the earlier model in the expression chain
 				fnName := computedDependencyFuncName(schema.FindModel(strcase.ToCamel(previousModel)), schema.FindModel(currentModel), strings.Split(expr, "."))
-				sql := fmt.Sprintf("-- %s\nCREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$\nBEGIN\n\t%s\nINSERT INTO debug_log(message) VALUES ('%s' || ' ' || NEW.id);RETURN NULL;\nEND; $$ LANGUAGE plpgsql;\n", strings.Join(subFragments, ".")+" in "+strings.Join(fragments, "."), fnName, stmt, fnName)
+				sql := fmt.Sprintf("-- %s\nCREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$\nBEGIN\n\t%s\nEND; $$ LANGUAGE plpgsql;\n", strings.Join(subFragments, ".")+" in "+strings.Join(fragments, "."), fnName, stmt)
 
 				// For the comp_dep function on the target field's model, we include a filter on the UPDATE trigger to only trigger if the target field has changed
 				whenCondition := "TRUE"
@@ -737,8 +727,8 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 				// Must be an AFTER trigger as we need the data to be written in order to perform the joins and for the computation to take into account the updated data
 				triggerName := fnName
-				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER %s AFTER INSERT OR DELETE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(currentModel), fnName)
-				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER %s_update AFTER UPDATE ON \"%s\" FOR EACH ROW WHEN(%s) EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(currentModel), whenCondition, fnName)
+				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER \"%s\" AFTER INSERT OR DELETE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, strcase.ToSnake(currentModel), fnName)
+				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER \"%s_update\" AFTER UPDATE ON \"%s\" FOR EACH ROW WHEN(%s) EXECUTE PROCEDURE \"%s\"();", triggerName, strcase.ToSnake(currentModel), whenCondition, fnName)
 
 				depFns[fnName] = sql
 			}

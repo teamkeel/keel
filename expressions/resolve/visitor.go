@@ -194,21 +194,16 @@ func (w *CelVisitor[T]) functionCall(expr *exprpb.Expr) error {
 	}
 
 	if target != nil {
-		//nested := isBinaryOrTernaryOperator(target)
 		err := w.eval(target, false, false)
 		if err != nil {
 			return err
 		}
-		//con.str.WriteString(", ")
 	}
 	for _, arg := range args {
 		err := w.eval(arg, false, false)
 		if err != nil {
 			return err
 		}
-		// if i < len(args)-1 {
-		// 	con.str.WriteString(", ")
-		// }
 	}
 
 	err = w.visitor.EndFunction()

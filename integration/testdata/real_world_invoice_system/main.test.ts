@@ -429,7 +429,7 @@ test("check customer statistics after deleting product", async () => {
   expect(johnDoe?.totalOrders).toBe(1);
   expect(johnDoe?.averageOrderValue).toBe(99.2);
   expect(pamSmith?.smallestOrder).toBe(0); // this is because the order actually still exists
-  expect(pamSmith?.largestOrder).toBe(0); //TODO?
+  expect(pamSmith?.largestOrder).toBe(0); 
 
   pamSmith = await actions.getCustomer({ id: pamSmith!.id });
   expect(pamSmith?.totalSpent).toBe(0);

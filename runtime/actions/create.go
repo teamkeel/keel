@@ -76,6 +76,7 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		return nil, err
 	}
 
+	// Because of computed fields and nested creates, we need to fetch the row again to get the computed fields
 	query = NewQuery(scope.Model, opts...)
 	err = query.Where(IdField(), Equals, Value(res["id"]))
 	if err != nil {

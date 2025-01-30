@@ -199,9 +199,6 @@ var computedTestCases = []computedTestCase{
 func TestGeneratedComputed(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range computedTestCases {
-		if testCase.name != "sum function" {
-			continue
-		}
 		t.Run(testCase.name, func(t *testing.T) {
 			raw := strings.Replace(testCase.keelSchema, "#placeholder#", testCase.field, 1)
 

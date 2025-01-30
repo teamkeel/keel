@@ -291,7 +291,7 @@ func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *p
 	}
 
 	fn := computedFieldFuncName(field)
-	sql := fmt.Sprintf("CREATE FUNCTION %s(r \"%s\") RETURNS %s AS $$ BEGIN\n\tRETURN %s;\nEND; $$ LANGUAGE plpgsql;",
+	sql := fmt.Sprintf("CREATE FUNCTION \"%s\"(r \"%s\") RETURNS %s AS $$ BEGIN\n\tRETURN %s;\nEND; $$ LANGUAGE plpgsql;",
 		fn,
 		strcase.ToSnake(model.Name),
 		sqlType,

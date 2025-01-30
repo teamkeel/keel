@@ -22,6 +22,7 @@ model Agent {
 }
 
 ===
+
 CREATE TABLE "agent" (
 "commission" NUMERIC NOT NULL,
 "id" TEXT NOT NULL DEFAULT ksuid(),
@@ -98,25 +99,39 @@ CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE 
 CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_updated_at BEFORE UPDATE ON "identity" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
-CREATE FUNCTION item__total__8f543d38__comp(r item) RETURNS NUMERIC AS $$ BEGIN
+CREATE FUNCTION "item__total__8f543d38__comp"(r "item") RETURNS NUMERIC AS $$ BEGIN
 	RETURN r."quantity" * (SELECT "product"."price" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id") + (SELECT "product$agent"."commission" FROM "product" LEFT JOIN "agent" AS "product$agent" ON "product$agent"."id" = "product"."agent_id" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id");
 END; $$ LANGUAGE plpgsql;
-CREATE OR REPLACE FUNCTION item__exec_comp_fns() RETURNS TRIGGER AS $$ BEGIN
+CREATE OR REPLACE FUNCTION "item__exec_comp_fns"() RETURNS TRIGGER AS $$ BEGIN
 	NEW.total := item__total__8f543d38__comp(NEW);
 	RETURN NEW;
 END; $$ LANGUAGE plpgsql;
-CREATE OR REPLACE TRIGGER item__comp BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE item__exec_comp_fns();
-CREATE OR REPLACE FUNCTION agent__to__item__26590ccb__comp_dep() RETURNS TRIGGER AS $$ BEGIN
-	UPDATE "item" SET "id" = "item"."id" WHERE "item"."id" IN (SELECT "item"."id" FROM "item" JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" JOIN "agent" AS "item$product$agent" ON "item$product$agent"."id" = "item$product"."agent_id" WHERE "item$product$agent"."id" IS NOT DISTINCT FROM NEW.id);
-	RETURN NULL;
+CREATE OR REPLACE TRIGGER "item__comp" BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE "item__exec_comp_fns"();
+-- product.agent in item.product.agent.commission
+CREATE OR REPLACE FUNCTION "agent__to__product__2eb4dbe9__comp_dep"() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "product" SET id = id WHERE agent_id IN (NEW.id, OLD.id);
 END; $$ LANGUAGE plpgsql;
-CREATE OR REPLACE TRIGGER agent__to__item__26590ccb__comp_dep AFTER INSERT OR DELETE OR UPDATE ON "agent" FOR EACH ROW EXECUTE PROCEDURE agent__to__item__26590ccb__comp_dep();
-CREATE OR REPLACE FUNCTION product__to__item__9454cd1f__comp_dep() RETURNS TRIGGER AS $$ BEGIN
-	UPDATE "item" SET "id" = "item"."id" WHERE "item"."id" IN (SELECT "item"."id" FROM "item" JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item$product"."id" IS NOT DISTINCT FROM NEW.id);
-	RETURN NULL;
+
+CREATE OR REPLACE TRIGGER "agent__to__product__2eb4dbe9__comp_dep" AFTER INSERT OR DELETE ON "agent" FOR EACH ROW EXECUTE PROCEDURE "agent__to__product__2eb4dbe9__comp_dep"();
+CREATE OR REPLACE TRIGGER "agent__to__product__2eb4dbe9__comp_dep_update" AFTER UPDATE ON "agent" FOR EACH ROW WHEN(NEW.commission <> OLD.commission) EXECUTE PROCEDURE "agent__to__product__2eb4dbe9__comp_dep"();
+-- item.product in item.product.price
+CREATE OR REPLACE FUNCTION "product__to__item__037dbf3a__comp_dep"() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "item" SET id = id WHERE product_id IN (NEW.id, OLD.id);
 END; $$ LANGUAGE plpgsql;
-CREATE OR REPLACE TRIGGER product__to__item__9454cd1f__comp_dep AFTER INSERT OR DELETE OR UPDATE ON "product" FOR EACH ROW EXECUTE PROCEDURE product__to__item__9454cd1f__comp_dep();
-UPDATE item SET id = id;
+
+CREATE OR REPLACE TRIGGER "product__to__item__037dbf3a__comp_dep" AFTER INSERT OR DELETE ON "product" FOR EACH ROW EXECUTE PROCEDURE "product__to__item__037dbf3a__comp_dep"();
+CREATE OR REPLACE TRIGGER "product__to__item__037dbf3a__comp_dep_update" AFTER UPDATE ON "product" FOR EACH ROW WHEN(NEW.price <> OLD.price) EXECUTE PROCEDURE "product__to__item__037dbf3a__comp_dep"();
+-- item.product in item.product.agent.commission
+CREATE OR REPLACE FUNCTION "product__to__item__2eb4dbe9__comp_dep"() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "item" SET id = id WHERE product_id IN (NEW.id, OLD.id);
+END; $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER "product__to__item__2eb4dbe9__comp_dep" AFTER INSERT OR DELETE ON "product" FOR EACH ROW EXECUTE PROCEDURE "product__to__item__2eb4dbe9__comp_dep"();
+CREATE OR REPLACE TRIGGER "product__to__item__2eb4dbe9__comp_dep_update" AFTER UPDATE ON "product" FOR EACH ROW WHEN(TRUE) EXECUTE PROCEDURE "product__to__item__2eb4dbe9__comp_dep"();
+UPDATE "item" SET id = id;
 
 ===
 
