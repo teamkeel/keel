@@ -41,13 +41,6 @@ const (
 	FieldTypeDuration  = "Duration"  // a time duration
 )
 
-var ComparableTypes = [][]string{
-	{FieldTypeDate, FieldTypeTimestamp},
-	{FieldTypeMarkdown, FieldTypeText},
-	{FieldTypeDuration, FieldTypeText},
-	{FieldTypeDecimal, FieldTypeNumber},
-}
-
 // Types for Message fields
 const (
 	MessageFieldTypeAny = "Any"

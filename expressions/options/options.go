@@ -25,6 +25,7 @@ var typeCompatibilityMapping = map[string][][]*types.Type{
 		{typing.Boolean, types.BoolType},
 		{types.NewListType(types.StringType), typing.TextArray, typing.IDArray, typing.MarkdownArray},
 		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.NumberArray, typing.DecimalArray},
+		{typing.Duration},
 	},
 	operators.NotEquals: {
 		{types.StringType, typing.Text, typing.ID, typing.Markdown},
@@ -33,28 +34,35 @@ var typeCompatibilityMapping = map[string][][]*types.Type{
 		{typing.Boolean, types.BoolType},
 		{types.NewListType(types.StringType), typing.TextArray, typing.IDArray, typing.MarkdownArray},
 		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.NumberArray, typing.DecimalArray},
+		{typing.Duration},
 	},
 	operators.Greater: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
 		{typing.Date, typing.Timestamp, types.TimestampType},
+		{typing.Duration},
 	},
 	operators.GreaterEquals: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
 		{typing.Date, typing.Timestamp, types.TimestampType},
+		{typing.Duration},
 	},
 	operators.Less: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
 		{typing.Date, typing.Timestamp, types.TimestampType},
+		{typing.Duration},
 	},
 	operators.LessEquals: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
 		{typing.Date, typing.Timestamp, types.TimestampType},
+		{typing.Duration},
 	},
 	operators.Add: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+		{typing.Duration},
 	},
 	operators.Subtract: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+		{typing.Duration},
 	},
 	operators.Multiply: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},

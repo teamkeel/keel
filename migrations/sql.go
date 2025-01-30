@@ -502,7 +502,8 @@ func toSqlLiteral(value any, field *proto.Field) (string, error) {
 		return fmt.Sprintf("%d", value), nil
 	case field.Type.Type == proto.Type_TYPE_BOOL:
 		return fmt.Sprintf("%v", value), nil
-
+	case field.Type.Type == proto.Type_TYPE_DURATION:
+		return db.QuoteLiteral(fmt.Sprintf("%s", value)), nil
 	default:
 		return "", fmt.Errorf("field %s has unexpected default value %s", field.Name, value)
 	}
