@@ -42,7 +42,7 @@ const (
 )
 
 var ComparableTypes = [][]string{
-	{FieldTypeDate, FieldTypeDatetime},
+	{FieldTypeDate, FieldTypeTimestamp},
 	{FieldTypeMarkdown, FieldTypeText},
 	{FieldTypeDuration, FieldTypeText},
 	{FieldTypeDecimal, FieldTypeNumber},
