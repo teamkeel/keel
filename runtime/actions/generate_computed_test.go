@@ -170,6 +170,30 @@ var computedTestCases = []computedTestCase{
 		field:       "total Decimal @computed(item.product.standardPrice * item.quantity + item.product.agent.commission)",
 		expectedSql: `(SELECT "product"."standard_price" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id") * r."quantity" + (SELECT "product$agent"."commission" FROM "product" LEFT JOIN "agent" AS "product$agent" ON "product$agent"."id" = "product"."agent_id" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id")`,
 	},
+	{
+		name: "sum function",
+		keelSchema: `
+			model Invoice {
+				fields {
+					item Item[]
+					#placeholder#
+				}
+			}
+			model Item {
+				fields {
+					invoice Invoice
+					product Product
+				}
+			}
+			model Product {
+				fields {
+					name Text
+					price Decimal
+				}
+			}`,
+		field:       "total Decimal @computed(SUM(invoice.item.product.price))",
+		expectedSql: `(SELECT COALESCE(SUM("item$product"."price"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id")`,
+	},
 }
 
 func TestGeneratedComputed(t *testing.T) {

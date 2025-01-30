@@ -34,6 +34,15 @@ var (
 )
 
 var (
+	FunctionSum    = "SUM"
+	FunctionCount  = "COUNT"
+	FunctionAvg    = "AVG"
+	FunctionMedian = "MEDIAN"
+	FunctionMin    = "MIN"
+	FunctionMax    = "MAX"
+)
+
+var (
 	Role = cel.OpaqueType("_Role")
 )
 

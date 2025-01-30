@@ -254,7 +254,6 @@ func computedTriggerName(model *proto.Model) string {
 }
 
 func computedDependencyFuncName(model *proto.Model, dependentModel *proto.Model, fragments []string) string {
-	// shortened alphanumeric hash from the operand idents
 	hash := hashOfExpression(strings.Join(fragments, "."))
 	return fmt.Sprintf("%s__to__%s__%s__comp_dep", strcase.ToSnake(dependentModel.Name), strcase.ToSnake(model.Name), hash)
 }
@@ -293,7 +292,7 @@ func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *p
 	}
 
 	fn := computedFieldFuncName(field)
-	sql := fmt.Sprintf("CREATE FUNCTION %s(r %s) RETURNS %s AS $$ BEGIN\n\tRETURN %s;\nEND; $$ LANGUAGE plpgsql;",
+	sql := fmt.Sprintf("CREATE FUNCTION \"%s\"(r \"%s\") RETURNS %s AS $$ BEGIN\n\tRETURN %s;\nEND; $$ LANGUAGE plpgsql;",
 		fn,
 		strcase.ToSnake(model.Name),
 		sqlType,
@@ -303,11 +302,11 @@ func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *p
 }
 
 func dropComputedExecFunctionStmt(model *proto.Model) string {
-	return fmt.Sprintf("DROP FUNCTION %s__exec_comp_fns;", strcase.ToSnake(model.Name))
+	return fmt.Sprintf("DROP FUNCTION \"%s__exec_comp_fns\";", strcase.ToSnake(model.Name))
 }
 
 func dropComputedTriggerStmt(model *proto.Model) string {
-	return fmt.Sprintf("DROP TRIGGER %s__comp ON %s;", strcase.ToSnake(model.Name), strcase.ToSnake(model.Name))
+	return fmt.Sprintf("DROP TRIGGER \"%s__comp\" ON \"%s\";", strcase.ToSnake(model.Name), strcase.ToSnake(model.Name))
 }
 
 func fieldDefinition(field *proto.Field) (string, error) {
@@ -511,7 +510,7 @@ func toSqlLiteral(value any, field *proto.Field) (string, error) {
 
 func dropColumnStmt(modelName string, fieldName string) string {
 	output := fmt.Sprintf("ALTER TABLE %s ", Identifier(modelName))
-	output += fmt.Sprintf("DROP COLUMN %s;", Identifier(fieldName))
+	output += fmt.Sprintf("DROP COLUMN %s CASCADE;", Identifier(fieldName))
 	return output
 }
 

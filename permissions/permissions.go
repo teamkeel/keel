@@ -64,6 +64,15 @@ func (v *permissionGen) EndTerm(nested bool) error {
 
 	return nil
 }
+
+func (v *permissionGen) StartFunction(name string) error {
+	return nil
+}
+
+func (v *permissionGen) EndFunction() error {
+	return nil
+}
+
 func (v *permissionGen) VisitAnd() error {
 	v.stmt.expression += " and "
 	return nil

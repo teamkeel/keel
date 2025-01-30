@@ -42,6 +42,14 @@ func (v *setQueryGen) EndTerm(parenthesis bool) error {
 	return nil
 }
 
+func (v *setQueryGen) StartFunction(name string) error {
+	return nil
+}
+
+func (v *setQueryGen) EndFunction() error {
+	return nil
+}
+
 func (v *setQueryGen) VisitAnd() error {
 	return errors.New("and operator not supported with set")
 }

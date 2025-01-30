@@ -1,0 +1,40 @@
+model Account {
+    fields {
+        balance Decimal @computed(SUM(account.transactions.total))
+        transactions Transaction[]
+        standardTransactionFee Decimal
+    }
+    actions {
+        create createAccount() with (standardTransactionFee) {
+            @permission(expression: true)
+        }
+        list listAccounts() {
+            @permission(expression: true)
+        }
+        get getAccount(id) {
+            @permission(expression: true)
+        }
+    }
+}
+
+model Transaction {
+    fields {
+        account Account
+        amount Decimal
+        fee Decimal? @computed(transaction.account.standardTransactionFee)
+        total Decimal? @computed(transaction.amount + transaction.fee)
+    }
+    actions {
+        create createTransaction() with (account.id, amount) {
+            @permission(expression: true)
+        }
+        get getTransaction(id) {
+            @permission(expression: true)
+        }
+        list listTransactions() {
+            @permission(expression: true)
+        }
+    }
+}
+
+

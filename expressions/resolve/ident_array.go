@@ -37,6 +37,14 @@ func (v *identArrayGen) EndTerm(parenthesis bool) error {
 	return nil
 }
 
+func (v *identArrayGen) StartFunction(name string) error {
+	return nil
+}
+
+func (v *identArrayGen) EndFunction() error {
+	return nil
+}
+
 func (v *identArrayGen) VisitAnd() error {
 	return ErrExpressionNotValidIdentArray
 }

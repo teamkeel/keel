@@ -61,15 +61,15 @@ CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE 
 CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_updated_at BEFORE UPDATE ON "identity" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
-CREATE FUNCTION item__total__0614a79a__comp(r item) RETURNS NUMERIC AS $$ BEGIN
+CREATE FUNCTION "item__total__0614a79a__comp"(r "item") RETURNS NUMERIC AS $$ BEGIN
 	RETURN r."quantity" * r."price";
 END; $$ LANGUAGE plpgsql;
-CREATE OR REPLACE FUNCTION item__exec_comp_fns() RETURNS TRIGGER AS $$ BEGIN
+CREATE OR REPLACE FUNCTION "item__exec_comp_fns"() RETURNS TRIGGER AS $$ BEGIN
 	NEW.total := item__total__0614a79a__comp(NEW);
 	RETURN NEW;
 END; $$ LANGUAGE plpgsql;
-CREATE OR REPLACE TRIGGER item__comp BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE item__exec_comp_fns();
-UPDATE item SET id = id;
+CREATE OR REPLACE TRIGGER "item__comp" BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE "item__exec_comp_fns"();
+UPDATE "item" SET id = id;
 
 ===
 
