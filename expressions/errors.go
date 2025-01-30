@@ -18,6 +18,7 @@ var messageConverters = []errorConverter{
 	undeclaredVariableReference,
 	unrecognisedToken,
 	mismatchedInput,
+	noFunctionOverload,
 }
 
 type errorConverter struct {
@@ -78,6 +79,14 @@ var mismatchedInput = errorConverter{
 	Regex: `Syntax error: mismatched input '(.+)' expecting (.+)`,
 	Construct: func(expectedReturnType *types.Type, values []string) string {
 		return fmt.Sprintf("unknown or unsupported identifier or operator '%s' in expression", values[0])
+	},
+}
+
+var noFunctionOverload = errorConverter{
+	Regex: `found no matching overload for '(.+)' applied to '\((.+)\)'`,
+	Construct: func(expectedReturnType *types.Type, values []string) string {
+		// We should provide more context here for each function (i.e. arguments and supported types)
+		return fmt.Sprintf("%s not supported as an argument for the function '%s'", mapOperator(values[1]), values[0])
 	},
 }
 
