@@ -1,0 +1,89 @@
+model Customer {
+    fields {
+        name Text
+        orders Order[]
+        totalOrders Number @computed(COUNT(customer.orders))
+        totalSpent Decimal? @computed(SUM(customer.orders.total))
+        averageOrderValue Decimal? @computed(AVG(customer.orders.total))
+    }
+    actions {
+        create createCustomer() with (name)
+        get getCustomer(id)
+        list listCustomers()
+    }
+    @permission(expression: true, actions: [get, list, update, delete, create])
+
+}
+
+model Order {
+    fields {
+        customer Customer
+        orderItems OrderItem[]
+        shipping Decimal @computed(SUM(order.orderItems.quantity) * 2)
+        total Decimal @computed(SUM(order.orderItems.price) - (SUM(order.orderItems.price) / 100 * order.discountPercentage) + order.shipping)
+        totalExcludingVat Decimal @computed(order.total - order.vat)
+        vat Decimal @computed(order.total * 0.2)
+        discountPercentage Number @default(0)
+    }
+    actions {
+        create createOrder() with (customer.id, orderItems.product.id, orderItems.quantity)
+        update updateOrder(id) with (customer.id?, discountPercentage?)
+        get getOrder(id)
+        list listOrders(customer.id?)
+        delete deleteOrder(id)
+    }
+    @permission(expression: true, actions: [get, list, update, delete, create])
+
+}
+
+model OrderItem {
+    fields {
+        order Order
+        product Product
+        quantity Number
+        price Decimal @computed(orderItem.product.price * orderItem.quantity)
+    }
+    actions {
+        create addOrderItem() with (order.id, product.id, quantity) 
+        list listOrderItems(order.id?)
+        update updateOrderItem(id) with (product.id?, quantity?)
+    }
+    @permission(expression: true, actions: [get, list, update, delete, create])
+}
+
+model Product {
+    fields {
+        name Text
+        price Decimal @computed(product.costPrice + product.costPrice * product.markup)
+        costPrice Decimal
+        markup Decimal
+        purchases PurchaseOrder[]
+        orderItems OrderItem[]
+        stockQuantity Number? @computed(SUM(product.purchases.quantity) - SUM(product.orderItems.quantity))
+    }
+
+    actions {
+        create createProduct() with (name, costPrice, markup) 
+        update updateProduct(id) with (name?, costPrice?, markup?)
+        get getProduct(id)
+        list listProducts()
+    }
+    @permission(expression: true, actions: [get, list, update, delete, create])
+    
+}
+
+model PurchaseOrder {
+    fields {
+        product Product
+        quantity Number
+    }
+    actions {
+        create createPurchaseOrder() with (product.id, quantity)
+        get getPurchaseOrder(id)
+        list listPurchaseOrders(product.id?)
+    }
+    @permission(expression: true, actions: [get, list, update, delete, create])
+
+}
+
+

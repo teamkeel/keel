@@ -493,7 +493,6 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPai
 
 					if i < len(ident.Fragments)-2 {
 						currModel = schema.FindModel(currField.Type.ModelName.Value)
-
 						continue
 					}
 
@@ -502,7 +501,13 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPai
 						field: currField,
 					}
 
-					dependencies[field] = append(dependencies[field], &dep)
+					hasDep := lo.ContainsBy(dependencies[field], func(d *depPair) bool {
+						return d.field.Name == currField.Name && d.ident.String() == ident.String()
+					})
+
+					if !hasDep {
+						dependencies[field] = append(dependencies[field], &dep)
+					}
 				}
 			}
 		}
@@ -510,237 +515,6 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPai
 
 	return dependencies, nil
 }
-
-// // computedFieldsStmts generates SQL statements for dropping or creating functions and triggers for computed fields
-// func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRow) (changes []*DatabaseChange, statements []string, err error) {
-// 	existingComputedFnNames := lo.Map(existingComputedFns, func(f *FunctionRow, _ int) string {
-// 		return f.RoutineName
-// 	})
-
-// 	fns := map[string]string{}
-// 	fieldsFns := map[*proto.Field]string{}
-// 	changedFields := map[*proto.Field]bool{}
-// 	recompute := []*proto.Model{}
-
-// 	// Adding computed field triggers and functions
-// 	for _, model := range schema.Models {
-// 		modelFns := map[string]string{}
-
-// 		for _, field := range model.GetComputedFields() {
-// 			changedFields[field] = false
-// 			fnName, computedFuncStmt, err := addComputedFieldFuncStmt(schema, model, field)
-// 			if err != nil {
-// 				return nil, nil, err
-// 			}
-
-// 			fieldsFns[field] = fnName
-// 			modelFns[fnName] = computedFuncStmt
-// 		}
-
-// 		// Get all the preexisting computed functions for computed fields on this model
-// 		existingComputedFnNamesForModel := lo.Filter(existingComputedFnNames, func(f string, _ int) bool {
-// 			return strings.HasPrefix(f, fmt.Sprintf("%s__", strcase.ToSnake(model.Name))) &&
-// 				strings.HasSuffix(f, "__comp")
-// 		})
-
-// 		newFns, retiredFns := lo.Difference(lo.Keys(modelFns), existingComputedFnNamesForModel)
-// 		slices.Sort(newFns)
-// 		slices.Sort(retiredFns)
-
-// 		// Functions to be created
-// 		for _, fn := range newFns {
-// 			statements = append(statements, modelFns[fn])
-
-// 			f := fieldFromComputedFnName(schema, fn)
-// 			changes = append(changes, &DatabaseChange{
-// 				Model: f.ModelName,
-// 				Field: f.Name,
-// 				Type:  ChangeTypeModified,
-// 			})
-// 			changedFields[f] = true
-
-// 			if !lo.Contains(recompute, model) {
-// 				recompute = append(recompute, model)
-// 			}
-// 		}
-
-// 		// Functions to be dropped
-// 		for _, fn := range retiredFns {
-// 			statements = append(statements, fmt.Sprintf("DROP FUNCTION %s;", fn))
-
-// 			f := fieldFromComputedFnName(schema, fn)
-// 			if f != nil {
-// 				change := &DatabaseChange{
-// 					Model: f.ModelName,
-// 					Field: f.Name,
-// 					Type:  ChangeTypeModified,
-// 				}
-// 				if !lo.ContainsBy(changes, func(c *DatabaseChange) bool {
-// 					return c.Model == change.Model && c.Field == change.Field
-// 				}) {
-// 					changes = append(changes, change)
-// 				}
-// 				changedFields[f] = true
-// 			}
-// 		}
-
-// 		// When all computed fields have been removed
-// 		if len(modelFns) == 0 && len(retiredFns) > 0 {
-// 			dropExecFn := dropComputedExecFunctionStmt(model)
-// 			dropTrigger := dropComputedTriggerStmt(model)
-// 			statements = append(statements, dropTrigger, dropExecFn)
-// 		}
-
-// 		for k, v := range modelFns {
-// 			fns[k] = v
-// 		}
-// 	}
-
-// 	dependencies, err := computedFieldDependencies(schema)
-// 	if err != nil {
-// 		return nil, nil, err
-// 	}
-
-// 	depFns := map[string]string{}
-
-// 	// For computed fields which depend on fields in other models, we create triggers to recalculate
-// 	for field, deps := range dependencies {
-// 		for _, dep := range deps {
-// 			// Skip this because the triggers call on the exec functions themselves
-// 			if field.ModelName == dep.field.ModelName {
-// 				continue
-// 			}
-
-// 			fieldModel := schema.FindModel(field.ModelName)
-
-// 			fragments, err := actions.NormalisedFragments(schema, dep.ident.Fragments)
-// 			if err != nil {
-// 				return nil, nil, err
-// 			}
-
-// 			baseQuery := actions.NewQuery(schema.FindModel(field.ModelName))
-// 			baseQuery.Select(actions.IdField())
-
-// 			model := casing.ToCamel(fragments[0])
-// 			for i := 1; i < len(fragments)-1; i++ {
-// 				currentFragment := fragments[i]
-
-// 				if !proto.ModelHasField(schema, model, currentFragment) {
-// 					return nil, nil, fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
-// 				}
-
-// 				relatedModelField := proto.FindField(schema.Models, model, currentFragment)
-// 				relatedModel := relatedModelField.Type.ModelName.Value
-// 				foreignKeyField := proto.GetForeignKeyFieldName(schema.Models, relatedModelField)
-// 				primaryKey := "id"
-
-// 				var leftOperand *actions.QueryOperand
-// 				var rightOperand *actions.QueryOperand
-
-// 				switch {
-// 				case relatedModelField.IsBelongsTo():
-// 					leftOperand = actions.ExpressionField(fragments[:i+1], primaryKey, false)
-// 					rightOperand = actions.ExpressionField(fragments[:i], foreignKeyField, false)
-// 				default:
-// 					leftOperand = actions.ExpressionField(fragments[:i+1], foreignKeyField, false)
-// 					rightOperand = actions.ExpressionField(fragments[:i], primaryKey, false)
-// 				}
-
-// 				model = relatedModelField.Type.ModelName.Value
-// 				baseQuery.Join(relatedModel, leftOperand, rightOperand)
-// 				subQuery := baseQuery.Copy()
-// 				err := subQuery.Where(leftOperand, actions.Equals, actions.Raw("NEW."+leftOperand.Col()))
-// 				if err != nil {
-// 					return nil, nil, err
-// 				}
-// 				subQuery.Or()
-// 				err = subQuery.Where(leftOperand, actions.Equals, actions.Raw("OLD."+leftOperand.Col()))
-// 				if err != nil {
-// 					return nil, nil, err
-// 				}
-
-// 				query := actions.NewQuery(schema.FindModel(field.ModelName))
-// 				//query.AddWriteValue(actions.IdField(), actions.IdField())
-// 				query.Select(actions.IdField())
-// 				err = query.Where(actions.IdField(), actions.OneOf, actions.InlineQuery(subQuery, actions.ExpressionField(fragments[:i+1], "id", false)))
-// 				if err != nil {
-// 					return nil, nil, err
-// 				}
-
-// 				dependencyFnName := computedDependencyFuncName(fieldModel, schema.FindModel(model), fragments[:i+1])
-// 				sql := fmt.Sprintf(`
-// 					CREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$
-// 					DECLARE
-// 						d %s;
-// 					BEGIN
-// 						IF (TG_OP = 'DELETE') THEN
-// 							d := OLD;
-// 						ELSE
-// 							d := NEW;
-// 						END IF;
-
-// 						INSERT INTO debug_log(message)
-// 						VALUES (d.id);
-
-// 						UPDATE %s
-// 						SET %s = %s(%s)
-// 						WHERE id IN (
-// 							%s
-// 						);
-// 						RETURN d;
-// 					END; $$ LANGUAGE plpgsql;`,
-// 					dependencyFnName,
-// 					strcase.ToSnake(model),
-// 					Identifier(field.ModelName),
-// 					Identifier(field.Name),
-// 					fieldsFns[field],
-// 					strcase.ToSnake(field.ModelName),
-// 					query.SelectStatement().SqlTemplate(),
-// 				)
-
-// 				triggerName := dependencyFnName
-// 				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER %s BEFORE INSERT OR DELETE OR UPDATE ON %s FOR EACH ROW EXECUTE PROCEDURE %s();",
-// 					triggerName,
-// 					Identifier(model),
-// 					dependencyFnName,
-// 				)
-
-// 				depFns[dependencyFnName] = sql
-// 			}
-// 		}
-// 	}
-
-// 	existingDependencyFnNames := lo.FilterMap(existingComputedFns, func(f *FunctionRow, _ int) (string, bool) {
-// 		return f.RoutineName, strings.HasSuffix(f.RoutineName, "__comp_dep")
-// 	})
-
-// 	newFns, retiredFns := lo.Difference(lo.Keys(depFns), existingDependencyFnNames)
-// 	slices.Sort(newFns)
-// 	slices.Sort(retiredFns)
-
-// 	// Dependency functions and triggers to be created
-// 	for _, fn := range newFns {
-// 		statements = append(statements, depFns[fn])
-// 	}
-
-// 	// Dependency functions and triggers to be dropped
-// 	for _, fn := range retiredFns {
-// 		statements = append(statements, fmt.Sprintf("DROP TRIGGER %s ON %s;", fn, strings.Split(fn, "__")[0]))
-// 		statements = append(statements, fmt.Sprintf("DROP FUNCTION %s;", fn))
-// 	}
-
-// 	// If a computed field has been added or changed, we need to recompute all existing data.
-// 	// This is done by fake updating each row on the table which will cause the triggers to run.
-// 	for _, model := range recompute {
-// 		sql := fmt.Sprintf("UPDATE %s SET id = id;", strcase.ToSnake(model.Name))
-// 		statements = append(statements, sql)
-// 	}
-
-// 	for _, s := range statements {
-// 		fmt.Println(s)
-// 	}
-// 	return
-// }
 
 // computedFieldsStmts generates SQL statements for dropping or creating functions and triggers for computed fields
 func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRow) (changes []*DatabaseChange, statements []string, err error) {
@@ -778,7 +552,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		slices.Sort(newFns)
 		slices.Sort(retiredFns)
 
-		// Functions to be created
+		// Computed functions to be created for each computed field
 		for _, fn := range newFns {
 			statements = append(statements, modelFns[fn])
 
@@ -797,7 +571,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 		// Functions to be dropped
 		for _, fn := range retiredFns {
-			statements = append(statements, fmt.Sprintf("DROP FUNCTION %s;", fn))
+			statements = append(statements, fmt.Sprintf("DROP FUNCTION \"%s\";", fn))
 
 			f := fieldFromComputedFnName(schema, fn)
 			if f != nil {
@@ -832,6 +606,8 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		return nil, nil, err
 	}
 
+	// For each model, we need to create a function which calls all the computed functions for fields on this model
+	// Order is important because computed fields can depend on each other - this is catered for
 	for _, model := range schema.Models {
 		modelhasChanged := false
 		for k, v := range changedFields {
@@ -892,17 +668,23 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		statements = append(statements, trigger)
 	}
 
-	depFns := map[string]string{}
-
 	// For computed fields which depend on fields in other models, we need to create triggers which start from the source model and cascades
 	// down through the relationship until it reaches the target model (where the computed field is defined). We then perform a fake update on the
 	// specific rows in the target model which will then trigger the computed fns.
+	depFns := map[string]string{}
 	for field, deps := range dependencies {
 		for _, dep := range deps {
 			// Skip this because the triggers call on the exec functions themselves
 			//TODO OR NOT FOR SELF REFERENCING RELATIONSHIPS?
 			if field.ModelName == dep.field.ModelName {
 				continue
+			}
+
+			if field.ModelName == "Order" && field.Name == "total" {
+				fmt.Println("!!! " + dep.ident.String())
+			}
+			if field.ModelName == "Order" && field.Name == "shipping" {
+				fmt.Println("!!! " + dep.ident.String())
 			}
 
 			fragments, err := actions.NormalisedFragments(schema, dep.ident.Fragments)
@@ -915,6 +697,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 				baseQuery := actions.NewQuery(schema.FindModel(currentModel))
 				baseQuery.Select(actions.IdField())
 
+				expr := strings.Join(fragments, ".")
 				// Get the fragment pair from the previous model to the current model
 				// We need to reset the first fragment to the model name and not the previous model's field name
 				subFragments := slices.Clone(fragments[i-1 : i+1])
@@ -926,57 +709,99 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 				// We know that the current fragment is a related model because it's not the last fragment
 				relatedModelField := proto.FindField(schema.Models, currentModel, fragments[i])
-				relatedModel := relatedModelField.Type.ModelName.Value
+				//relatedModel := relatedModelField.Type.ModelName.Value
 				foreignKeyField := proto.GetForeignKeyFieldName(schema.Models, relatedModelField)
 
-				var leftOperand *actions.QueryOperand
-				var rightOperand *actions.QueryOperand
+				// var leftOperand *actions.QueryOperand
+				// var rightOperand *actions.QueryOperand
 
-				var f string
-				switch {
-				case relatedModelField.IsBelongsTo():
-					// In a "belongs to" the foreign key is on _this_ model
-					leftOperand = actions.ExpressionField(subFragments, parser.FieldNameId, false)
-					rightOperand = actions.ExpressionField(subFragments[i:i], foreignKeyField, false)
-					f = parser.FieldNameId
-				default:
-					// In all others the foreign key is on the _other_ model
-					leftOperand = actions.ExpressionField(subFragments, foreignKeyField, false)
-					rightOperand = actions.ExpressionField(subFragments[i:i], parser.FieldNameId, false)
-					f = strcase.ToSnake(foreignKeyField)
-				}
+				// var f string
+				// switch {
+				// case relatedModelField.IsBelongsTo():
+				// 	// In a "belongs to" the foreign key is on _this_ model
+				// 	leftOperand = actions.ExpressionField(subFragments, parser.FieldNameId, false)
+				// 	rightOperand = actions.ExpressionField(subFragments[i:i], foreignKeyField, false)
+				// 	f = parser.FieldNameId
+				// default:
+				// 	// In all others the foreign key is on the _other_ model
+				// 	leftOperand = actions.ExpressionField(subFragments, foreignKeyField, false)
+				// 	rightOperand = actions.ExpressionField(subFragments[i:i], parser.FieldNameId, false)
+				// 	f = strcase.ToSnake(foreignKeyField)
+				// }
 
-				baseQuery.Join(relatedModel, leftOperand, rightOperand)
-				err := baseQuery.Where(leftOperand, actions.Equals, actions.Raw(fmt.Sprintf("NEW.%s", f)))
-				if err != nil {
-					return nil, nil, err
-				}
-				baseQuery.Or()
-				err = baseQuery.Where(leftOperand, actions.Equals, actions.Raw(fmt.Sprintf("OLD.%s", f)))
-				if err != nil {
-					return nil, nil, err
-				}
+				// baseQuery.Join(relatedModel, leftOperand, rightOperand)
+				// err := baseQuery.Where(leftOperand, actions.Equals, actions.Raw(fmt.Sprintf("NEW.%s", f)))
+				// if err != nil {
+				// 	return nil, nil, err
+				// }
+				// baseQuery.Or()
+				// err = baseQuery.Where(leftOperand, actions.Equals, actions.Raw(fmt.Sprintf("OLD.%s", f)))
+				// if err != nil {
+				// 	return nil, nil, err
+				// }
+
+				// query := actions.NewQuery(schema.FindModel(strcase.ToCamel(previousModel)))
+				// query.AddWriteValue(actions.IdField(), actions.IdField())
+				// err = query.Where(actions.IdField(), actions.OneOf, actions.InlineQuery(baseQuery, actions.ExpressionField(subFragments, "id", false)))
+				// if err != nil {
+				// 	return nil, nil, err
+				// }
+				// stmt := query.UpdateStatement(context.Background()).SqlTemplate()
 
 				previousModel := currentModel
 				currentModel = relatedModelField.Type.ModelName.Value
+				stmt := ""
 
-				query := actions.NewQuery(schema.FindModel(strcase.ToCamel(previousModel)))
-				query.AddWriteValue(actions.IdField(), actions.IdField())
-				err = query.Where(actions.IdField(), actions.OneOf, actions.InlineQuery(baseQuery, actions.ExpressionField(subFragments, "id", false)))
-				if err != nil {
-					return nil, nil, err
+				// If the relationship is a belongs to or has many, we need to update the id field on the previous modelswitch {
+				//switch {
+				if relatedModelField.IsBelongsTo() {
+					stmt += "-- IsBelongsTo\n"
 				}
-				stmt := query.UpdateStatement(context.Background()).SqlTemplate()
+				if relatedModelField.IsHasMany() {
+					stmt += "-- IsHasMany\n"
+				}
+				if relatedModelField.IsHasOne() {
+					stmt += "-- IsHasOne\n"
+				}
+				switch {
+				case relatedModelField.IsBelongsTo():
+					stmt += "UPDATE \"" + strcase.ToSnake(previousModel) + "\" SET id=id WHERE " + strcase.ToSnake(foreignKeyField) + " IN (NEW.id, OLD.id);"
+				case relatedModelField.IsHasMany():
+					stmt += "UPDATE \"" + strcase.ToSnake(previousModel) + "\" SET id=id WHERE id IN (NEW." + strcase.ToSnake(foreignKeyField) + ", OLD." + strcase.ToSnake(foreignKeyField) + ");"
+				case relatedModelField.IsHasOne():
+					panic("IsHasOne not supported")
+				}
 
 				// Trigger function which will perform a fake update on the earlier model in the expression chain
-				dependencyFnName := computedDependencyFuncName(schema.FindModel(strcase.ToCamel(previousModel)), schema.FindModel(currentModel), subFragments)
-				sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$\nBEGIN\n\t%s;\nINSERT INTO debug_log(message) VALUES ('%s' || ' ' || NEW.id);\nRETURN NULL;\nEND; $$ LANGUAGE plpgsql;", dependencyFnName, stmt, dependencyFnName)
+				fnName := computedDependencyFuncName(schema.FindModel(strcase.ToCamel(previousModel)), schema.FindModel(currentModel), strings.Split(expr, "."))
+				sql := fmt.Sprintf("-- %s\nCREATE OR REPLACE FUNCTION %s() RETURNS TRIGGER AS $$\nBEGIN\n\t%s\nRETURN NULL;\nEND; $$ LANGUAGE plpgsql;\n", strings.Join(subFragments, ".")+" in "+strings.Join(fragments, "."), fnName, stmt)
+				//\nINSERT INTO debug_log(message) VALUES ('%s' || ' ' || NEW.id);
+
+				// For the comp_dep function on the target field's model, we include a filter on the UPDATE trigger to only trigger if the target field has changed
+				whenCondition := "TRUE"
+				if i == len(fragments)-2 {
+					ff := strcase.ToSnake(fragments[len(fragments)-1])
+					whenCondition = fmt.Sprintf("NEW.%s <> OLD.%s", ff, ff)
+
+					if !relatedModelField.IsBelongsTo() { //f != "id" {
+						updatingField := strcase.ToSnake(foreignKeyField) //strcase.ToSnake(f) //subFragments[len(subFragments)-1])
+						whenCondition += fmt.Sprintf(" OR NEW.%s <> OLD.%s", updatingField, updatingField)
+						//whenCondition += fmt.Sprintf(" OR NEW.%s IS NOT NULL AND OLD.%s IS NULL", updatingField, updatingField)
+						//whenCondition += fmt.Sprintf(" OR NEW.%s IS NULL AND OLD.%s IS NOT NULL", updatingField, updatingField)
+					}
+					// else {
+					// 	updatingField := strcase.ToSnake(foreignKeyField) //subFragments[len(subFragments)-1])
+					// 	whenCondition += fmt.Sprintf(" OR NEW.%s <> OLD.%s", updatingField, updatingField)
+					// }
+				}
 
 				// Must be an AFTER trigger as we need the data to be written in order to perform the joins and for the computation to take into account the updated data
-				triggerName := dependencyFnName
-				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER %s AFTER INSERT OR UPDATE OR DELETE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(currentModel), dependencyFnName)
+				triggerName := fnName
+				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER %s AFTER INSERT OR DELETE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE %s();", triggerName, strcase.ToSnake(currentModel), fnName)
+				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER %s_update AFTER UPDATE ON \"%s\" FOR EACH ROW WHEN(%s) EXECUTE PROCEDURE %s();",
+					triggerName, strcase.ToSnake(currentModel), whenCondition, fnName)
 
-				depFns[dependencyFnName] = sql
+				depFns[fnName] = sql
 			}
 		}
 	}
@@ -996,15 +821,19 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 	// Dependency functions and triggers to be dropped
 	for _, fn := range retiredFns {
-		statements = append(statements, fmt.Sprintf("DROP TRIGGER %s ON %s;", fn, strings.Split(fn, "__")[0]))
-		statements = append(statements, fmt.Sprintf("DROP FUNCTION %s;", fn))
+		statements = append(statements, fmt.Sprintf("DROP TRIGGER \"%s\" ON \"%s\";", fn, strings.Split(fn, "__")[0]))
+		statements = append(statements, fmt.Sprintf("DROP FUNCTION \"%s\";", fn))
 	}
 
 	// If a computed field has been added or changed, we need to recompute all existing data.
 	// This is done by fake updating each row on the table which will cause the triggers to run.
 	for _, model := range recompute {
-		sql := fmt.Sprintf("UPDATE %s SET id = id;", strcase.ToSnake(model.Name))
+		sql := fmt.Sprintf("UPDATE \"%s\" SET id = id;", strcase.ToSnake(model.Name))
 		statements = append(statements, sql)
+	}
+
+	for _, stmt := range statements {
+		fmt.Println(stmt)
 	}
 
 	return

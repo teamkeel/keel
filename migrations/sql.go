@@ -253,7 +253,6 @@ func computedTriggerName(model *proto.Model) string {
 }
 
 func computedDependencyFuncName(model *proto.Model, dependentModel *proto.Model, fragments []string) string {
-	// shortened alphanumeric hash from the operand idents
 	hash := hashOfExpression(strings.Join(fragments, "."))
 	return fmt.Sprintf("%s__to__%s__%s__comp_dep", strcase.ToSnake(dependentModel.Name), strcase.ToSnake(model.Name), hash)
 }
@@ -292,12 +291,11 @@ func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *p
 	}
 
 	fn := computedFieldFuncName(field)
-	sql := fmt.Sprintf("CREATE FUNCTION %s(r %s) RETURNS %s AS $$ BEGIN\n\tRETURN %s;\nEND; $$ LANGUAGE plpgsql;",
+	sql := fmt.Sprintf("CREATE FUNCTION %s(r \"%s\") RETURNS %s AS $$ BEGIN\n\tRETURN %s;\nEND; $$ LANGUAGE plpgsql;",
 		fn,
 		strcase.ToSnake(model.Name),
 		sqlType,
 		stmt)
-	fmt.Println(sql)
 
 	return fn, sql, nil
 }

@@ -436,8 +436,20 @@ func WithArithmeticOperators() expressions.Option {
 
 func WithFunctions() expressions.Option {
 	return func(p *expressions.Parser) error {
+		typeParamA := cel.TypeParamType("A")
 		var err error
-		p.CelEnv, err = p.CelEnv.Extend(cel.Function("SUM", cel.Overload("SUM", []*types.Type{typing.DecimalArray}, typing.Decimal)))
+		p.CelEnv, err = p.CelEnv.Extend(
+			cel.Function(typing.FunctionCount, cel.Overload("count", []*types.Type{typeParamA}, typing.Number)),
+			cel.Function(typing.FunctionSum, cel.Overload("sum_decimal", []*types.Type{typing.DecimalArray}, typing.Decimal)),
+			cel.Function(typing.FunctionSum, cel.Overload("sum_number", []*types.Type{typing.NumberArray}, typing.Number)),
+			cel.Function(typing.FunctionAvg, cel.Overload("avg_decimal", []*types.Type{typing.DecimalArray}, typing.Decimal)),
+			cel.Function(typing.FunctionAvg, cel.Overload("avg_number", []*types.Type{typing.NumberArray}, typing.Number)),
+			cel.Function(typing.FunctionMin, cel.Overload("min_decimal", []*types.Type{typing.DecimalArray}, typing.Decimal)),
+			cel.Function(typing.FunctionMin, cel.Overload("min_number", []*types.Type{typing.NumberArray}, typing.Number)),
+			cel.Function(typing.FunctionMax, cel.Overload("max_decimal", []*types.Type{typing.DecimalArray}, typing.Decimal)),
+			cel.Function(typing.FunctionMax, cel.Overload("max_number", []*types.Type{typing.NumberArray}, typing.Number)),
+			cel.Function(typing.FunctionMedian, cel.Overload("median_decimal", []*types.Type{typing.DecimalArray}, typing.Decimal)),
+			cel.Function(typing.FunctionMedian, cel.Overload("median_number", []*types.Type{typing.NumberArray}, typing.Number)))
 		if err != nil {
 			return err
 		}
