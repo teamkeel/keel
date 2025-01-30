@@ -710,7 +710,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 				// Trigger function which will perform a fake update on the earlier model in the expression chain
 				fnName := computedDependencyFuncName(schema.FindModel(strcase.ToCamel(previousModel)), schema.FindModel(currentModel), strings.Split(expr, "."))
-				sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$\nBEGIN\n\t%s\nEND; $$ LANGUAGE plpgsql;\n", fnName, stmt)
+				sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$\nBEGIN\n\t%s\n\tRETURN NULL;\nEND; $$ LANGUAGE plpgsql;\n", fnName, stmt)
 
 				// For the comp_dep function on the target field's model, we include a filter on the UPDATE trigger to only trigger if the target field has changed
 				whenCondition := "TRUE"
@@ -726,7 +726,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 				// Must be an AFTER trigger as we need the data to be written in order to perform the joins and for the computation to take into account the updated data
 				triggerName := fnName
-				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER \"%s\" AFTER INSERT OR DELETE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, strcase.ToSnake(currentModel), fnName)
+				sql += fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" AFTER INSERT OR DELETE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, strcase.ToSnake(currentModel), fnName)
 				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER \"%s_update\" AFTER UPDATE ON \"%s\" FOR EACH ROW WHEN(%s) EXECUTE PROCEDURE \"%s\"();", triggerName, strcase.ToSnake(currentModel), whenCondition, fnName)
 
 				depFns[fnName] = sql

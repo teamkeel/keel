@@ -102,7 +102,7 @@ test("create order for new products", async () => {
   });
 
   expect(order.shipping).toBe(10);
-  expect(order.total).toBe(240 + 33.6 + 25.2 + order.shipping);
+  expect(order.total).toBe(240 + 33.6 + 25.2 + order.shipping!);
 });
 
 test("check stock levels after order", async () => {
@@ -145,7 +145,7 @@ test("adjust quantity in order", async () => {
   order = await actions.getOrder({ id: order!.id });
 
   expect(order?.shipping).toBe(8);
-  expect(order?.total).toBe(240 + 16.8 + 25.2 + order!.shipping);
+  expect(order?.total).toBe(240 + 16.8 + 25.2 + order!.shipping!);
 });
 
 test("check customer statistics after adjusting quantity", async () => {
@@ -188,7 +188,7 @@ test("change product in order item", async () => {
   order = await actions.getOrder({ id: order!.id });
 
   expect(order?.shipping).toBe(8);
-  expect(order?.total).toBe(240 + 70 + 25.2 + order!.shipping);
+  expect(order?.total).toBe(240 + 70 + 25.2 + order!.shipping!);
 });
 
 test("check stock levels after adjusting product", async () => {
@@ -221,7 +221,7 @@ test("create another order", async () => {
   });
 
   expect(order.shipping).toBe(8);
-  expect(order.total).toBe(67.2 + order.shipping);
+  expect(order.total).toBe(67.2 + order.shipping!);
 });
 
 test("check customer statistics after adjusting product", async () => {
@@ -260,7 +260,7 @@ test("change order's customer", async () => {
   });
 
   expect(order.shipping).toBe(8);
-  expect(order.total).toBe(67.2 + order.shipping);
+  expect(order.total).toBe(67.2 + order.shipping!);
 });
 
 test("check that stock levels are the same", async () => {
