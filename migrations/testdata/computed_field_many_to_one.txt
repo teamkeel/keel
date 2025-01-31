@@ -11,7 +11,7 @@ model Item {
 model Product {
     fields {
         price Decimal
-        agent Agent?
+        agent Agent
     }
 }
 
@@ -75,14 +75,14 @@ CREATE TABLE "keel_audit" (
 ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "product" (
 "price" NUMERIC NOT NULL,
-"agent_id" TEXT,
+"agent_id" TEXT NOT NULL,
 "id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE "product" ADD CONSTRAINT product_id_pkey PRIMARY KEY ("id");
 ALTER TABLE "item" ADD FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE CASCADE;
-ALTER TABLE "product" ADD FOREIGN KEY ("agent_id") REFERENCES "agent"("id") ON DELETE SET NULL;
+ALTER TABLE "product" ADD FOREIGN KEY ("agent_id") REFERENCES "agent"("id") ON DELETE CASCADE;
 CREATE TRIGGER item_create AFTER INSERT ON "item" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER item_update AFTER UPDATE ON "item" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER item_delete AFTER DELETE ON "item" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();

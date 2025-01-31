@@ -3,7 +3,7 @@ model Company {
         companyProfile CompanyProfile @unique
         activeEmployees Number @computed(company.companyProfile.employeeCount - company.retrenchments)
         retrenchments Number @default(0)
-        taxNumber Number @computed(company.companyProfile.taxProfile.taxNumber)
+        taxNumber Number? @computed(company.companyProfile.taxProfile.taxNumber)
     }
     actions {
         create createCompany() with (companyProfile.id, retrenchments) {
@@ -19,7 +19,7 @@ model CompanyProfile {
         company Company
     }
     actions {
-        create createCompanyProfile() with (employeeCount,taxProfile.id) {
+        create createCompanyProfile() with (employeeCount, taxProfile.id) {
             @permission(expression: true)
         }
     }
