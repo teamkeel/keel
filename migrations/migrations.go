@@ -761,10 +761,6 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		statements = append(statements, sql)
 	}
 
-	for _, s := range statements {
-		fmt.Println(s)
-	}
-
 	return
 }
 

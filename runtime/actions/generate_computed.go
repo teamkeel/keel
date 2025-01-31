@@ -205,7 +205,6 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			query.Select(ExpressionField(fragments, fieldName, false))
 
 			// Filter by this model's row's ID
-			//relatedModelField := proto.FindField(v.schema.Models, v.model.Name, r.Name)
 			foreignKeyField := proto.GetForeignKeyFieldName(v.schema.Models, relatedModelField)
 
 			fk := fmt.Sprintf("r.\"%s\"", strcase.ToSnake(foreignKeyField))
