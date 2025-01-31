@@ -5,7 +5,7 @@ model Post {
 
     actions {
         list getPublishedPosts() {
-            //expect-error:20:60:E026:post.status is PostStatus and OtherPostStatus.Something is OtherPostStatus
+            //expect-error:32:34:AttributeExpressionError:cannot use operator '==' with types PostStatus and OtherPostStatus
             @where(post.status == OtherPostStatus.Something)
         }
     }

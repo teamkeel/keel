@@ -5,8 +5,8 @@ model Profile {
 
     actions {
         create createProfile() {
-            //expect-error:37:44:E020:'context' not found
-            @set(profile.username = context.identity)
+            //expect-error:37:49:AttributeExpressionError:expression expected to resolve to type Text but it is Identity
+            @set(profile.username = ctx.identity)
         }
     }
 }

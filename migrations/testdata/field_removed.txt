@@ -15,7 +15,7 @@ model Person {
 
 ===
 
-ALTER TABLE "person" DROP COLUMN "age";
+ALTER TABLE "person" DROP COLUMN "age" CASCADE;
 
 === 
 

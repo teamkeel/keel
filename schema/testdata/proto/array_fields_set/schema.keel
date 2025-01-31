@@ -9,7 +9,7 @@ model Thing {
         create createThing() {
            @set(thing.texts = ["science"])
            @set(thing.enums = [MyEnum.One, MyEnum.Two])
-           @set(thing.numbers = [123,456])
+           @set(thing.numbers = [123, 456])
         }
 
         create createEmptyThing() {

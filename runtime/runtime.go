@@ -195,7 +195,7 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, input map[
 
 	if trigger == functions.ManualTrigger {
 		// Check if authorisation can be achieved early.
-		canAuthoriseEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, job.Permissions)
+		canAuthoriseEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, input, job.Permissions)
 		if err != nil {
 			return err
 		}

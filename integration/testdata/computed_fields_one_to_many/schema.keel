@@ -1,0 +1,50 @@
+model Invoice {
+    fields {
+        items Item[]
+        shipping Number 
+        total Decimal @computed(SUM(invoice.items.product.price) + invoice.shipping)
+    }
+    actions {
+        get getInvoice(id) {
+            @permission(expression: true)
+        }
+        create createInvoice() with (shipping, items.product.id?) {
+            @permission(expression: true)
+        }
+        list listInvoices() {
+            @permission(expression: true)
+        }
+    }
+}
+
+model Item {
+    fields {
+        invoice Invoice
+        product Product
+    }
+    actions {
+        get getItem(id) {
+            @permission(expression: true)
+        }
+        create createItem() with (product.id, invoice.id) {
+            @permission(expression: true)
+        }
+    }
+}
+
+model Product {
+    fields {
+        price Decimal
+    }
+    actions {
+        get getProduct(id) {
+            @permission(expression: true)
+        }
+        create createProduct() with (price) {
+            @permission(expression: true)
+        }
+        list listProducts() {
+            @permission(expression: true)
+        }
+    }
+}

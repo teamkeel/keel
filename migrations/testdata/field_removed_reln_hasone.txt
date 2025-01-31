@@ -29,7 +29,7 @@ model Thing {
 
 ===
 
-ALTER TABLE "person" DROP COLUMN "favourite_thing_id";
+ALTER TABLE "person" DROP COLUMN "favourite_thing_id" CASCADE;
 
 === 
 

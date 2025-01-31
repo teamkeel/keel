@@ -84,12 +84,10 @@ test("array expressions - text", async () => {
   expect(things4.results[4].id).toEqual(thing8.id);
 
   const things5 = await actions.listLiteralNotInArrayField();
-  expect(things5.results).toHaveLength(5);
-  expect(things5.results[0].id).toEqual(thing4.id);
-  expect(things5.results[1].id).toEqual(thing6.id);
-  expect(things5.results[2].id).toEqual(thing7.id);
-  expect(things5.results[3].id).toEqual(thing9.id);
-  expect(things5.results[4].id).toEqual(thing10.id);
+  expect(things5.results).toHaveLength(3);
+  expect(things5.results[0].id).toEqual(thing7.id);
+  expect(things5.results[1].id).toEqual(thing9.id);
+  expect(things5.results[2].id).toEqual(thing10.id);
 
   const things6 = await actions.listFieldInArrayField();
   expect(things6.results).toHaveLength(2);
@@ -177,12 +175,10 @@ test("array expressions - enums", async () => {
   expect(things4.results[4].id).toEqual(thing8.id);
 
   const things5 = await actions.listEnumLiteralNotInArrayField();
-  expect(things5.results).toHaveLength(5);
-  expect(things5.results[0].id).toEqual(thing4.id);
-  expect(things5.results[1].id).toEqual(thing6.id);
-  expect(things5.results[2].id).toEqual(thing7.id);
-  expect(things5.results[3].id).toEqual(thing9.id);
-  expect(things5.results[4].id).toEqual(thing10.id);
+  expect(things5.results).toHaveLength(3);
+  expect(things5.results[0].id).toEqual(thing7.id);
+  expect(things5.results[1].id).toEqual(thing9.id);
+  expect(things5.results[2].id).toEqual(thing10.id);
 
   const things6 = await actions.listEnumFieldInArrayField();
   expect(things6.results).toHaveLength(2);

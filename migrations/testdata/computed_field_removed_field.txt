@@ -1,0 +1,29 @@
+model Item {
+    fields {
+        price Decimal
+        quantity Number
+        total Decimal @computed(item.quantity * item.price)
+    }
+}
+
+===
+
+model Item {
+    fields {
+        price Decimal
+        quantity Number
+    }
+}
+
+===
+
+ALTER TABLE "item" DROP COLUMN "total" CASCADE;
+DROP FUNCTION "item__total__0614a79a__comp";
+DROP TRIGGER "item__comp" ON "item";
+DROP FUNCTION "item__exec_comp_fns";
+
+===
+
+[
+  {"Model":"Item","Field":"total","Type":"REMOVED"}
+]

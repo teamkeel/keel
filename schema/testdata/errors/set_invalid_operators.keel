@@ -5,16 +5,15 @@ model Post {
 
     actions {
         update incrementViews(id) {
-            //expect-error:29:31:E022:Operator '+=' not permitted on @set
+            //expect-error:18:33:AttributeExpressionError:the @set attribute must be an assignment expression
             @set(post.views += 1)
         }
         update decrementViews(id) {
-            //expect-error:29:31:E022:Operator '-=' not permitted on @set
+            //expect-error:18:33:AttributeExpressionError:the @set attribute must be an assignment expression
             @set(post.views -= 1)
         }
         update compareViews(id) {
-            //expect-error:29:31:E022:Operator '==' not permitted on @set
-            //expect-error:18:33:AttributeArgumentError:The @set attribute cannot be a logical condition and must express an assignment
+            //expect-error:18:33:AttributeExpressionError:the @set attribute must be an assignment expression
             @set(post.views == 1)
         }
     }

@@ -434,7 +434,7 @@ func TestFieldCompletions(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []string{"@unique", "@default", "@relation"},
+			expected: []string{"@unique", "@default", "@relation", "@computed"},
 		},
 		{
 			name: "field-attributes-bare-at",
@@ -443,7 +443,7 @@ func TestFieldCompletions(t *testing.T) {
 					name Text @<Cursor>
 				}
 			}`,
-			expected: []string{"@unique", "@default", "@relation"},
+			expected: []string{"@unique", "@default", "@relation", "@computed"},
 		},
 		{
 			name: "field-attributes-whitespace",
@@ -453,7 +453,7 @@ func TestFieldCompletions(t *testing.T) {
 					name Text <Cursor>
 				}
 			}`,
-			expected: []string{"@unique", "@default", "@relation"},
+			expected: []string{"@unique", "@default", "@relation", "@computed"},
 		},
 	}
 
@@ -1083,6 +1083,37 @@ func TestSetAttributeCompletions(t *testing.T) {
 				}
 			}`,
 			expected: []string{"createdAt", "email", "emailVerified", "externalId", "familyName", "gender", "givenName", "id", "issuer", "locale", "middleName", "name", "nickName", "password", "picture", "profile", "updatedAt", "user", "website", "zoneInfo"},
+		},
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestComputedAttributeCompletions(t *testing.T) {
+	cases := []testCase{
+		{
+			name: "computed-attribute-operands",
+			schema: `
+			model Item {
+				fields {
+					price Decimal
+					quantity Decimal
+					total Decimal @computed(<Cursor>)
+				}
+			}`,
+			expected: []string{"ctx", "item"},
+		},
+		{
+			name: "computed-attribute-model-fields",
+			schema: `
+			model Item {
+				fields {
+					price Decimal
+					quantity Decimal
+					total Decimal @computed(item.<Cursor>)
+				}
+			}`,
+			expected: []string{"createdAt", "id", "price", "quantity", "total", "updatedAt"},
 		},
 	}
 

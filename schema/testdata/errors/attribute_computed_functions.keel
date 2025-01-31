@@ -1,0 +1,26 @@
+model Invoice {
+    fields {
+        price Decimal
+        items Item[]
+        //expect-error:37:38:AttributeExpressionError:Text[] not supported as an argument for the function 'SUM'
+        total1 Decimal @computed(SUM(invoice.items.product.price))
+        //expect-error:37:38:AttributeExpressionError:Product[] not supported as an argument for the function 'SUM'
+        total2 Decimal @computed(SUM(invoice.items.product))
+        //expect-error:37:38:AttributeExpressionError:Decimal not supported as an argument for the function 'SUM'
+        total3 Decimal @computed(SUM(invoice.price))
+    }
+}
+
+model Item {
+    fields {
+        invoice Invoice
+        product Product
+    }
+}
+
+model Product {
+    fields {
+        name Text
+        price Text
+    }
+}

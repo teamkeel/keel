@@ -22,6 +22,11 @@ func getColumns(database db.Database) ([]*ColumnRow, error) {
 	return rows, database.GetDB().Raw(columnsQuery).Scan(&rows).Error
 }
 
+func getComputedFunctions(database db.Database) ([]*FunctionRow, error) {
+	rows := []*FunctionRow{}
+	return rows, database.GetDB().Raw(computedFunctionsQuery).Scan(&rows).Error
+}
+
 var (
 	//go:embed columns.sql
 	columnsQuery string
@@ -31,6 +36,9 @@ var (
 
 	//go:embed triggers.sql
 	triggersQuery string
+
+	//go:embed computed_functions.sql
+	computedFunctionsQuery string
 )
 
 type ColumnRow struct {
@@ -79,4 +87,8 @@ type TriggerRow struct {
 	ActionStatement string `json:"action_statement"`
 	// e.g. AFTER
 	ActionTiming string `json:"action_timing"`
+}
+
+type FunctionRow struct {
+	RoutineName string `json:"routine_name"`
 }

@@ -1,0 +1,10 @@
+model Item {
+    fields {
+        price Decimal
+        units Decimal
+        total Decimal @computed(item.price * item.units)
+    }
+    actions {
+        create createItem() with (price, units) 
+    }
+}

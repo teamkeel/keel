@@ -2,6 +2,7 @@ package schema
 
 import (
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -61,8 +62,8 @@ func (scm *Builder) insertBackLinkField(
 	backlinkName := casing.ToLowerCamel(parentModel.Name.Value)
 	relation := query.FieldGetAttribute(forwardRelnField, parser.AttributeRelation)
 	if relation != nil {
-		relationValue, _ := relation.Arguments[0].Expression.ToValue()
-		backlinkName = relationValue.ToString()
+		relationValue, _ := resolve.AsIdent(relation.Arguments[0].Expression)
+		backlinkName = relationValue.String()
 	}
 
 	// If the field already exists don't add another one as this will just create a

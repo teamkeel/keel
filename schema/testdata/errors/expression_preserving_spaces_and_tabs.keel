@@ -1,0 +1,7 @@
+model Person {
+    @permission(
+        //expect-error:62:63:AttributeExpressionError:field 'unknown' does not exist
+        expression:    ctx.isAuthenticated          ==    ctx.unknown,
+        actions: [get]
+    )
+}

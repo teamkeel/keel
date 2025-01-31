@@ -1,0 +1,24 @@
+model Item {
+    fields {
+        price Decimal
+        quantity Number
+        total Decimal @computed(item.quantity * item.price)
+    }
+}
+
+===
+
+model Item {
+    fields {
+        price Decimal
+        quantity Number
+        total Decimal @computed(item.quantity * item.price)
+    }
+}
+
+===
+
+===
+
+[]
+

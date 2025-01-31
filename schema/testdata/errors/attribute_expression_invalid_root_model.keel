@@ -4,7 +4,7 @@ model Post {
     }
 
     @permission(
-        //expect-error:21:24:E020:'pos' not found
+        //expect-error:21:24:AttributeExpressionError:unknown identifier 'pos'
         expression: pos.title != "",
         actions: [get]
     )

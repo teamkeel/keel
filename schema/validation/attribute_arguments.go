@@ -174,7 +174,7 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 						errorhandling.AttributeArgumentError,
 						errorhandling.ErrorDetails{
 							Message: message,
-							//Hint:    hint,
+							Hint:    hint,
 						},
 						node,
 					))

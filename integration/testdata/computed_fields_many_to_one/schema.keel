@@ -1,0 +1,39 @@
+model Item {
+    fields {
+        product Product
+        quantity Number
+        total Decimal @computed(item.quantity * item.product.standardPrice + item.product.agent.commission)
+        totalWithShipping Decimal @computed(item.total + 5)
+        totalWithDiscount Decimal @computed(item.totalWithShipping - (item.total / 100 * 10))
+    }
+    actions {
+        create createItem() with (quantity, product.standardPrice, product.agent.commission) {
+            @permission(expression: true)
+        }
+    }
+}
+
+model Product {
+    fields {
+        standardPrice Decimal
+        items Item[]
+        agent Agent
+    }
+    actions {
+        create createProduct() with (standardPrice, items.quantity, agent.commission) {
+            @permission(expression: true)
+        }
+    }
+}
+
+model Agent {
+    fields {
+        commission Decimal
+        products Product[]
+    }
+    actions {
+        create createAgent() with (commission, products.standardPrice, products.items.quantity){
+            @permission(expression: true)
+        }
+    }
+}

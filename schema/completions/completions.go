@@ -254,6 +254,7 @@ func getBlockCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, keywo
 			parser.AttributeUnique,
 			parser.AttributeDefault,
 			parser.AttributeRelation,
+			parser.AttributeComputed,
 		})
 	}
 
@@ -323,6 +324,7 @@ func getBlockCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, keywo
 				parser.AttributeUnique,
 				parser.AttributeDefault,
 				parser.AttributeRelation,
+				parser.AttributeComputed,
 			})
 		}
 
@@ -644,7 +646,7 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 	enclosingBlock := getTypeOfEnclosingBlock(t)
 
 	switch attrName {
-	case parser.AttributeSet, parser.AttributeWhere, parser.AttributeValidate:
+	case parser.AttributeSet, parser.AttributeWhere, parser.AttributeValidate, parser.AttributeComputed:
 		return getExpressionCompletions(asts, t, cfg)
 	case parser.AttributePermission:
 		return getPermissionArgCompletions(asts, t, cfg)
@@ -670,7 +672,7 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 
 			fields := query.ModelFields(model, func(f *parser.FieldNode) bool {
 				return f.IsScalar() &&
-					f.Type.Value != parser.FieldTypeDatetime &&
+					f.Type.Value != parser.FieldTypeTimestamp &&
 					f.Type.Value != parser.FieldTypeSecret &&
 					f.Type.Value != parser.FieldTypePassword &&
 					f.Type.Value != parser.FieldTypeID

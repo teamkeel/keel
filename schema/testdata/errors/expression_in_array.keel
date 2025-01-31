@@ -4,7 +4,7 @@ model Post {
     }
 
     @permission(
-        //expect-error:21:47:E026:"bob" is Text and post.authors.name is an array of Number
+        //expect-error:27:29:AttributeExpressionError:cannot use operator 'in' with types Text and Number[]
         expression: "bob" in post.authors.name,
         actions: [get]
     )

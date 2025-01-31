@@ -57,7 +57,7 @@ model Admission {
 
     // Critics can always watch films, unless they work for the Daily Mail
     @permission(
-        expression: ctx.identity.audience.isCritic and ctx.identity.audience.publication.name != "Daily Mail",
+        expression: ctx.identity.audience.isCritic && ctx.identity.audience.publication.name != "Daily Mail",
         actions: [create]
     )
 

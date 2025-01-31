@@ -1,0 +1,28 @@
+model Car {
+    fields {
+        logs Mileage[]
+    }
+    actions {
+        create createCar() {
+            @permission(expression: true)
+        }
+        get getCar(id) {
+            @permission(expression: true)
+        }
+    }
+}
+
+model Mileage {
+    fields {
+        car Car
+        miles Number
+        date Date
+        previous Mileage?
+        diffFromPrevious Number? @computed(mileage.miles - mileage.previous.miles)
+    }
+    actions {
+        create createMileage() with (car.id, miles, date, previous.id) {
+            @permission(expression: true)
+        }
+    }
+}
