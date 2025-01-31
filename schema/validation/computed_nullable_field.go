@@ -9,6 +9,8 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
+// ComputedNullableFieldRules checks that computed fields which are required cannot reference nullable fields in their expression.
+// The exception is with 1:M lookups with aggregate functions, where the nullable values are not a concern because the aggregate functions will always coalesce to a default value.
 func ComputedNullableFieldRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var model *parser.ModelNode
 	var field *parser.FieldNode
@@ -52,14 +54,12 @@ func ComputedNullableFieldRules(asts []*parser.AST, errs *errorhandling.Validati
 			}
 
 			for _, operand := range operands {
-
 				currModel := model
-				currField := field
 				for i, ident := range operand.Fragments {
 					if i == 0 {
 						continue
 					}
-					currField = query.Field(currModel, ident)
+					currField := query.Field(currModel, ident)
 					if currField == nil {
 						return
 					}
@@ -85,15 +85,6 @@ func ComputedNullableFieldRules(asts []*parser.AST, errs *errorhandling.Validati
 					}
 					currModel = query.Model(asts, currField.Type.Value)
 				}
-				// for i := 1; i < len(fragments)-1; i++ {
-				// 	currentFragment := fragments[i]
-				// 	field := proto.FindField(v.schema.Models, model.Name, currentFragment)
-				// 	if field.Type.Type == proto.Type_TYPE_MODEL && field.Type.Repeated {
-				// 		return true, nil
-				// 	}
-				// 	model = v.schema.FindModel(field.Type.ModelName.Value)
-				// }
-
 			}
 		},
 	}

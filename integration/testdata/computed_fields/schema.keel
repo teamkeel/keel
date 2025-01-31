@@ -44,10 +44,3 @@ model ComputedDepends {
         total Decimal? @computed(computedDepends.quantity * computedDepends.price)
     }
 }
-
-model ComputedDuration {
-    fields {
-        duration Duration
-        total Duration @computed(computedDuration.duration + 10)
-    }
-}
