@@ -189,18 +189,23 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			// Join together all the tables based on the ident fragments
 			model = v.schema.FindModel(field.Type.ModelName.Value)
 			query := NewQuery(model)
-			err := query.AddJoinFromFragments(v.schema, normalised[1:])
+
+			relatedModelField := proto.FindField(v.schema.Models, v.model.Name, normalised[1])
+			subFragments := normalised[1:]
+			subFragments[0] = strcase.ToLowerCamel(relatedModelField.Type.ModelName.Value)
+
+			err := query.AddJoinFromFragments(v.schema, subFragments)
 			if err != nil {
 				return err
 			}
 
 			// Select the column as specified in the last ident fragment
 			fieldName := normalised[len(normalised)-1]
-			fragments := normalised[1 : len(normalised)-1]
+			fragments := subFragments[:len(subFragments)-1]
 			query.Select(ExpressionField(fragments, fieldName, false))
 
 			// Filter by this model's row's ID
-			relatedModelField := proto.FindField(v.schema.Models, v.model.Name, normalised[1])
+			//relatedModelField := proto.FindField(v.schema.Models, v.model.Name, r.Name)
 			foreignKeyField := proto.GetForeignKeyFieldName(v.schema.Models, relatedModelField)
 
 			fk := fmt.Sprintf("r.\"%s\"", strcase.ToSnake(foreignKeyField))

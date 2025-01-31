@@ -1,12 +1,12 @@
 model Company {
     fields {
-        companyProfile CompanyProfile @unique
-        activeEmployees Number @computed(company.companyProfile.employeeCount - company.retrenchments)
+        companyProf CompanyProfile @unique
+        activeEmployees Number @computed(company.companyProf.employeeCount - company.retrenchments)
         retrenchments Number @default(0)
-        taxNumber Number? @computed(company.companyProfile.taxProfile.taxNumber)
+        taxNumber Number? @computed(company.companyProf.taxProf.taxNumber)
     }
     actions {
-        create createCompany() with (companyProfile.id, retrenchments) {
+        create createCompany() with (companyProf.id, retrenchments) {
             @permission(expression: true)
         }
     }
@@ -15,11 +15,11 @@ model Company {
 model CompanyProfile {
     fields {
         employeeCount Number
-        taxProfile TaxProfile? @unique
+        taxProf TaxProfile? @unique
         company Company
     }
     actions {
-        create createCompanyProfile() with (employeeCount, taxProfile.id) {
+        create createCompanyProfile() with (employeeCount, taxProf.id) {
             @permission(expression: true)
         }
     }
