@@ -16,7 +16,7 @@ import (
 const testSchema = `
 model Item {
 	fields {
-		price Decimal?
+		price Decimal
 		product Product
 		quantity Number
 		isActive Boolean

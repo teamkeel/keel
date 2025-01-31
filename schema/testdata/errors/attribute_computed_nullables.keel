@@ -1,0 +1,43 @@
+model Account {
+    fields {
+        totalAmount Number @computed(SUM(account.transactions.amount))
+        amount Number
+        fee Number?
+        fee2 Number
+        //expect-error:61:72:AttributeExpressionError:this @computed field is required and cannot perform a lookup to the nullable field 'fee'
+        totalWithFee Number @computed(account.totalAmount + account.fee)
+        transactions Transaction[]
+    }
+}
+
+model Transaction {
+    fields {
+        account Account
+        amount Number?
+        //expect-error:30:53:AttributeExpressionError:this @computed field is required and cannot perform a lookup to the nullable field 'fee'
+        fee Number @computed(transaction.account.fee)
+    }
+}
+
+model Transaction2 {
+    fields {
+        account Account?
+        //expect-error:30:55:AttributeExpressionError:this @computed field is required and cannot perform a lookup to the nullable field 'account'
+        fee Number @computed(transaction2.account.fee2)
+    }
+}
+
+model Transaction3 {
+    fields {
+        account Account
+        details Details
+    }
+}
+
+model Details {
+    fields {
+        transaction Transaction3
+        //expect-error:30:61:AttributeExpressionError:this @computed field is required and cannot perform a lookup to the nullable field 'fee'
+        fee Number @computed(details.transaction.account.fee)
+    }
+}
