@@ -20,7 +20,7 @@ model ComputedNumber {
 
 model ComputedBool {
     fields {
-        price Decimal?
+        price Decimal
         isActive Boolean
         isExpensive Boolean @computed(computedBool.price > 100 && computedBool.isActive)
         isCheap Boolean @computed(!computedBool.isExpensive)
@@ -39,8 +39,8 @@ model ComputedDepends {
     fields {
         price Decimal
         quantity Number
-        totalWithDiscount Decimal? @computed(computedDepends.totalWithShipping - (computedDepends.total / 100 * 10))
-        totalWithShipping Decimal? @computed(computedDepends.total + 5)
-        total Decimal? @computed(computedDepends.quantity * computedDepends.price)
+        totalWithDiscount Decimal @computed(computedDepends.totalWithShipping - (computedDepends.total / 100 * 10))
+        totalWithShipping Decimal @computed(computedDepends.total + 5)
+        total Decimal @computed(computedDepends.quantity * computedDepends.price)
     }
 }
