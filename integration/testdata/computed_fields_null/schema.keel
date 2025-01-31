@@ -1,0 +1,19 @@
+model Account {
+    fields {
+        transactions Transaction[]
+
+        totalAmount Number @computed(SUM(account.transactions.amount))
+        smallestAmount Number @computed(MIN(account.transactions.amount))
+        largestAmount Number @computed(MAX(account.transactions.amount))
+
+        fee Number?
+        totalWithFee Number? @computed(account.totalAmount + account.fee)
+    }
+}
+
+model Transaction {
+    fields {
+        account Account
+        amount Number?
+    }
+}
