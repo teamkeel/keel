@@ -16,7 +16,7 @@ model CompanyProfile {
     fields {
         employeeCount Number
         taxProfile TaxProfile? @unique
-        company Company?
+        company Company
     }
     actions {
         create createCompanyProfile() with (employeeCount,taxProfile.id) {
