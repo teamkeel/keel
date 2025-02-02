@@ -207,14 +207,20 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 		}
 	}
 
-	// these two flags are opposites of each other, so if they are both true
-	// or both false then there is a change to be applied
+	// if field.ComputedExpression != nil {
+	// 	stmts = append(stmts, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s DROP NOT NULL;", Identifier(modelName), Identifier(column.ColumnName)))
 	if field.Optional == column.NotNull {
+		// these two flags are opposites of each other, so if they are both true
+		// or both false then there is a change to be applied
 		var change string
 		if field.Optional && column.NotNull {
 			change = "DROP NOT NULL"
 		} else {
-			change = "SET NOT NULL"
+			// If computed, then we don't set the NOT NULL constraint yet
+			// This is because we may still need to populate existing rows
+			if field.ComputedExpression == nil {
+				change = "SET NOT NULL"
+			}
 
 			// Update all existing rows to the default value if they are null
 			if field.DefaultValue != nil {
@@ -226,7 +232,9 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 				stmts = append(stmts, update)
 			}
 		}
-		stmts = append(stmts, fmt.Sprintf("%s %s;", alterColumnStmtPrefix, change))
+		if change != "" {
+			stmts = append(stmts, fmt.Sprintf("%s %s;", alterColumnStmtPrefix, change))
+		}
 	}
 
 	return strings.Join(stmts, "\n"), nil
@@ -329,7 +337,9 @@ func fieldDefinition(field *proto.Field) (string, error) {
 
 	output := fmt.Sprintf("%s %s", columnName, fieldType)
 
-	if !field.Optional {
+	// If computed, then we don't set the NOT NULL constraint yet
+	// This is because we may still need to populate existing rows
+	if !field.Optional && field.ComputedExpression == nil {
 		output += " NOT NULL"
 	}
 

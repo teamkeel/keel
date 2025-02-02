@@ -18,6 +18,7 @@ model Item {
 
 ===
 
+ALTER TABLE "item" ALTER COLUMN "total" SET NOT NULL;
 CREATE FUNCTION "item__total__863346d0__comp"(r "item") RETURNS NUMERIC AS $$ BEGIN
 	RETURN r."price" + 5;
 END; $$ LANGUAGE plpgsql;

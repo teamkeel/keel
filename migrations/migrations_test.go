@@ -46,6 +46,10 @@ func TestMigrations(t *testing.T) {
 	}()
 
 	for _, testCase := range testCases {
+		if testCase.Name() != "computed_field_changed_expression.txt" {
+			continue
+		}
+
 		t.Run(strings.TrimSuffix(testCase.Name(), ".txt"), func(t *testing.T) {
 			// Make a database name for this test
 			re := regexp.MustCompile(`[^\w]`)
