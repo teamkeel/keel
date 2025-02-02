@@ -297,10 +297,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 					statements = append(statements, fkConstraint(field, model))
 				}
 				continue
-			} //else if column.NotNull && field.Optional && !field.Optional {
-
-			//statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s DROP NOT NULL;", Identifier(model.Name), Identifier(field.Name)))
-			//}
+			}
 
 			// Column already exists - see if any changes need to be applied
 			hasChanged := false
@@ -401,15 +398,11 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 		changes = append(changes, computedChanges...)
 	}
 
-	// Add any new models
+	// For required computed fields, we need to set the NOT NULL constraint as this was deferred
+	// to the end of the migration because we may have needed to populate existing rows first.
 	for _, modelName := range modelNames {
 		model := schema.FindModel(modelName)
 		for _, field := range model.Fields {
-			// Add any new models
-			// col, exists := lo.Find(columns, func(c *ColumnRow) bool {
-			// 	return c.TableName == casing.ToSnake(model.Name) && c.ColumnName == casing.ToSnake(field.Name)
-			// })
-
 			column, has := lo.Find(columns, func(c *ColumnRow) bool {
 				return c.TableName == casing.ToSnake(model.Name) && c.ColumnName == casing.ToSnake(field.Name)
 			})
@@ -420,12 +413,6 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 			if !has {
 				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(model.Name), Identifier(field.Name)))
-
-				// changes = append(changes, &DatabaseChange{
-				// 	Model: model.Name,
-				// 	Field: field.Name,
-				// 	Type:  ChangeTypeModified,
-				// })
 				continue
 			}
 
@@ -442,30 +429,9 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 					Field: field.Name,
 					Type:  ChangeTypeModified,
 				})
-
 			}
 		}
 	}
-
-	// // For required computed fields in new models, we need to set the NOT NULL constraint which has been deferred
-	// for _, m := range modelsAdded {
-	// 	for _, f := range m.Fields {
-	// 		if f.ComputedExpression != nil && !f.Optional {
-	// 			statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(m.Name), Identifier(f.Name)))
-	// 		}
-	// 	}
-	// }
-
-	// // For required computed fields added to existing models, we need to set the NOT NULL constraint which has been deferred
-	// for _, change := range computedChanges {
-	// 	if (change.Type == ChangeTypeAdded || change.Type == ChangeTypeModified) && change.Model != "" && change.Field != "" {
-	// 		f := proto.FindField(schema.Models, change.Model, change.Field)
-	// 		if !f.Optional && f.ComputedExpression != nil {
-	// 			setNotNullStmt := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(change.Model), Identifier(change.Field))
-	// 			statements = append(statements, setNotNullStmt)
-	// 		}
-	// 	}
-	// }
 
 	stringChanges := lo.Map(changes, func(c *DatabaseChange, _ int) string { return c.String() })
 	span.SetAttributes(attribute.StringSlice("migration", stringChanges))
@@ -588,7 +554,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 	fns := map[string]string{}
 	fieldsFns := map[*proto.Field]string{}
 	changedFields := map[*proto.Field]bool{}
-	recompute := map[*proto.Model][]*proto.Field{}
+	recompute := []*proto.Model{}
 
 	// Adding computed field triggers and functions
 	for _, model := range schema.Models {
@@ -627,8 +593,8 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 			})
 			changedFields[f] = true
 
-			if !lo.Contains(recompute[model], f) {
-				recompute[model] = append(recompute[model], f)
+			if !lo.Contains(recompute, model) {
+				recompute = append(recompute, model)
 			}
 		}
 
@@ -826,26 +792,10 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 	// If a computed field has been added or modified, we need to recompute all existing data.
 	// This is done by fake updating each row on the table which will cause the triggers to run.
-	for m, _ := range recompute {
-
-		sql := fmt.Sprintf("UPDATE \"%s\" SET id = id;", strcase.ToSnake(m.Name))
+	for _, model := range recompute {
+		sql := fmt.Sprintf("UPDATE \"%s\" SET id = id;", strcase.ToSnake(model.Name))
 		statements = append(statements, sql)
-
-		// First, set
-		// for _, f := range fields {
-		// 	if !f.Optional {
-		// 		setNotNullStmt := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s DROP NOT NULL;", Identifier(m.Name), Identifier(f.Name))
-		// 		statements = append(statements, setNotNullStmt)
-		// 	}
-		// }
 	}
-	// 	for _, f := range fields {
-	// 		if !f.Optional {
-	// 			setNotNullStmt := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(m.Name), Identifier(f.Name))
-	// 			statements = append(statements, setNotNullStmt)
-	// 		}
-	// 	}
-	// }
 
 	return
 }
