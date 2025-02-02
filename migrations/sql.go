@@ -207,11 +207,9 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 		}
 	}
 
-	// if field.ComputedExpression != nil {
-	// 	stmts = append(stmts, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s DROP NOT NULL;", Identifier(modelName), Identifier(column.ColumnName)))
+	// these two flags are opposites of each other, so if they are both true
+	// or both false then there is a change to be applied
 	if field.Optional == column.NotNull {
-		// these two flags are opposites of each other, so if they are both true
-		// or both false then there is a change to be applied
 		var change string
 		if field.Optional && column.NotNull {
 			change = "DROP NOT NULL"

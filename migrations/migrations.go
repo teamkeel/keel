@@ -680,18 +680,18 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		// Generate SQL statements in dependency order
 		stmts := []string{}
 		for _, field := range sorted {
-			s := fmt.Sprintf("NEW.%s := %s(NEW);\n", strcase.ToSnake(field.Name), fieldsFns[field])
+			s := fmt.Sprintf("NEW.%s := %s(NEW);\n\t", Identifier(field.Name), fieldsFns[field])
 			stmts = append(stmts, s)
 		}
 
 		// Generate the trigger function which executes all the computed field functions for the model.
 		execFnName := computedExecFuncName(model)
-		sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$ BEGIN\n\t%s\tRETURN NEW;\nEND; $$ LANGUAGE plpgsql;", execFnName, strings.Join(stmts, ""))
+		sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$ BEGIN\n\t%sRETURN NEW;\nEND; $$ LANGUAGE plpgsql;", execFnName, strings.Join(stmts, ""))
 
 		// Generate the table trigger which executed the trigger function.
 		// This must be a BEFORE trigger because we want to return the row with its computed fields being computed.
 		triggerName := computedTriggerName(model)
-		trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" BEFORE INSERT OR UPDATE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, strcase.ToSnake(model.Name), execFnName)
+		trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" BEFORE INSERT OR UPDATE ON %s FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, Identifier(model.Name), execFnName)
 
 		statements = append(statements, sql)
 		statements = append(statements, trigger)
@@ -739,9 +739,9 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 				// If the relationship is a belongs to or has many, we need to update the id field on the previous model
 				switch {
 				case relatedModelField.IsBelongsTo():
-					stmt += "UPDATE \"" + strcase.ToSnake(previousModel) + "\" SET id = id WHERE " + strcase.ToSnake(foreignKeyField) + " IN (NEW.id, OLD.id);"
+					stmt += fmt.Sprintf("UPDATE %s SET id = id WHERE %s IN (NEW.id, OLD.id);", Identifier(previousModel), Identifier(foreignKeyField))
 				default:
-					stmt += "UPDATE \"" + strcase.ToSnake(previousModel) + "\" SET id = id WHERE id IN (NEW." + strcase.ToSnake(foreignKeyField) + ", OLD." + strcase.ToSnake(foreignKeyField) + ");"
+					stmt += fmt.Sprintf("UPDATE %s SET id = id WHERE id IN (NEW.%s, OLD.%s);", Identifier(previousModel), Identifier(foreignKeyField), Identifier(foreignKeyField))
 				}
 
 				// Trigger function which will perform a fake update on the earlier model in the expression chain
@@ -751,19 +751,19 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 				// For the comp_dep function on the target field's model, we include a filter on the UPDATE trigger to only trigger if the target field has changed
 				whenCondition := "TRUE"
 				if i == len(fragments)-2 {
-					f := strcase.ToSnake(fragments[len(fragments)-1])
-					whenCondition = fmt.Sprintf("NEW.%s IS DISTINCT FROM OLD.%s", f, f)
+					f := fragments[len(fragments)-1]
+					whenCondition = fmt.Sprintf("NEW.%s IS DISTINCT FROM OLD.%s", Identifier(f), Identifier(f))
 
 					if !relatedModelField.IsBelongsTo() {
-						updatingField := strcase.ToSnake(foreignKeyField)
-						whenCondition += fmt.Sprintf(" OR NEW.%s IS DISTINCT FROM OLD.%s", updatingField, updatingField)
+						updatingField := foreignKeyField
+						whenCondition += fmt.Sprintf(" OR NEW.%s IS DISTINCT FROM OLD.%s", Identifier(updatingField), Identifier(updatingField))
 					}
 				}
 
 				// Must be an AFTER trigger as we need the data to be written in order to perform the joins and for the computation to take into account the updated data
 				triggerName := fnName
-				sql += fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" AFTER INSERT OR DELETE ON \"%s\" FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, strcase.ToSnake(currentModel), fnName)
-				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER \"%s_update\" AFTER UPDATE ON \"%s\" FOR EACH ROW WHEN(%s) EXECUTE PROCEDURE \"%s\"();", triggerName, strcase.ToSnake(currentModel), whenCondition, fnName)
+				sql += fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" AFTER INSERT OR DELETE ON %s FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, Identifier(currentModel), fnName)
+				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER \"%s_update\" AFTER UPDATE ON %s FOR EACH ROW WHEN(%s) EXECUTE PROCEDURE \"%s\"();", triggerName, Identifier(currentModel), whenCondition, fnName)
 
 				depFns[fnName] = sql
 			}
@@ -785,15 +785,15 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 	// Dependency functions and triggers to be dropped
 	for _, fn := range retiredFns {
-		statements = append(statements, fmt.Sprintf("DROP TRIGGER IF EXISTS \"%s\" ON \"%s\";", fn, strings.Split(fn, "__")[0]))
-		statements = append(statements, fmt.Sprintf("DROP TRIGGER IF EXISTS \"%s_update\" ON \"%s\";", fn, strings.Split(fn, "__")[0]))
+		statements = append(statements, fmt.Sprintf("DROP TRIGGER IF EXISTS \"%s\" ON %s;", fn, Identifier(strings.Split(fn, "__")[0])))
+		statements = append(statements, fmt.Sprintf("DROP TRIGGER IF EXISTS \"%s\" ON %s;", fn+"_update", Identifier(strings.Split(fn, "__")[0])))
 		statements = append(statements, fmt.Sprintf("DROP FUNCTION IF EXISTS \"%s\";", fn))
 	}
 
 	// If a computed field has been added or modified, we need to recompute all existing data.
 	// This is done by fake updating each row on the table which will cause the triggers to run.
 	for _, model := range recompute {
-		sql := fmt.Sprintf("UPDATE \"%s\" SET id = id;", strcase.ToSnake(model.Name))
+		sql := fmt.Sprintf("UPDATE %s SET id = id;", Identifier(model.Name))
 		statements = append(statements, sql)
 	}
 

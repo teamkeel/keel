@@ -23,7 +23,7 @@ CREATE FUNCTION "item__total__863346d0__comp"(r "item") RETURNS NUMERIC AS $$ BE
 END; $$ LANGUAGE plpgsql;
 DROP FUNCTION "item__total__0614a79a__comp";
 CREATE OR REPLACE FUNCTION "item__exec_comp_fns"() RETURNS TRIGGER AS $$ BEGIN
-	NEW.total := item__total__863346d0__comp(NEW);
+	NEW."total" := item__total__863346d0__comp(NEW);
 	RETURN NEW;
 END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER "item__comp" BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE "item__exec_comp_fns"();
