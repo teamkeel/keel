@@ -56,7 +56,7 @@ ALTER TABLE "identity" ADD CONSTRAINT identity_email_issuer_udx UNIQUE ("email",
 CREATE TABLE "item" (
 "product_id" TEXT NOT NULL,
 "quantity" INTEGER NOT NULL,
-"total" NUMERIC NOT NULL,
+"total" NUMERIC,
 "id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -103,32 +103,33 @@ CREATE FUNCTION "item__total__8f543d38__comp"(r "item") RETURNS NUMERIC AS $$ BE
 	RETURN r."quantity" * (SELECT "product"."price" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id") + (SELECT "product$agent"."commission" FROM "product" LEFT JOIN "agent" AS "product$agent" ON "product$agent"."id" = "product"."agent_id" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id");
 END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION "item__exec_comp_fns"() RETURNS TRIGGER AS $$ BEGIN
-	NEW.total := item__total__8f543d38__comp(NEW);
+	NEW."total" := item__total__8f543d38__comp(NEW);
 	RETURN NEW;
 END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER "item__comp" BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE "item__exec_comp_fns"();
 CREATE OR REPLACE FUNCTION "agent__to__product__2eb4dbe9__comp_dep"() RETURNS TRIGGER AS $$
 BEGIN
-	UPDATE "product" SET id = id WHERE agent_id IN (NEW.id, OLD.id);
+	UPDATE "product" SET id = id WHERE "agent_id" IN (NEW.id, OLD.id);
 	RETURN NULL;
 END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER "agent__to__product__2eb4dbe9__comp_dep" AFTER INSERT OR DELETE ON "agent" FOR EACH ROW EXECUTE PROCEDURE "agent__to__product__2eb4dbe9__comp_dep"();
-CREATE OR REPLACE TRIGGER "agent__to__product__2eb4dbe9__comp_dep_update" AFTER UPDATE ON "agent" FOR EACH ROW WHEN(NEW.commission <> OLD.commission) EXECUTE PROCEDURE "agent__to__product__2eb4dbe9__comp_dep"();
+CREATE OR REPLACE TRIGGER "agent__to__product__2eb4dbe9__comp_dep_update" AFTER UPDATE ON "agent" FOR EACH ROW WHEN(NEW."commission" IS DISTINCT FROM OLD."commission") EXECUTE PROCEDURE "agent__to__product__2eb4dbe9__comp_dep"();
 CREATE OR REPLACE FUNCTION "product__to__item__037dbf3a__comp_dep"() RETURNS TRIGGER AS $$
 BEGIN
-	UPDATE "item" SET id = id WHERE product_id IN (NEW.id, OLD.id);
+	UPDATE "item" SET id = id WHERE "product_id" IN (NEW.id, OLD.id);
 	RETURN NULL;
 END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER "product__to__item__037dbf3a__comp_dep" AFTER INSERT OR DELETE ON "product" FOR EACH ROW EXECUTE PROCEDURE "product__to__item__037dbf3a__comp_dep"();
-CREATE OR REPLACE TRIGGER "product__to__item__037dbf3a__comp_dep_update" AFTER UPDATE ON "product" FOR EACH ROW WHEN(NEW.price <> OLD.price) EXECUTE PROCEDURE "product__to__item__037dbf3a__comp_dep"();
+CREATE OR REPLACE TRIGGER "product__to__item__037dbf3a__comp_dep_update" AFTER UPDATE ON "product" FOR EACH ROW WHEN(NEW."price" IS DISTINCT FROM OLD."price") EXECUTE PROCEDURE "product__to__item__037dbf3a__comp_dep"();
 CREATE OR REPLACE FUNCTION "product__to__item__2eb4dbe9__comp_dep"() RETURNS TRIGGER AS $$
 BEGIN
-	UPDATE "item" SET id = id WHERE product_id IN (NEW.id, OLD.id);
+	UPDATE "item" SET id = id WHERE "product_id" IN (NEW.id, OLD.id);
 	RETURN NULL;
 END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER "product__to__item__2eb4dbe9__comp_dep" AFTER INSERT OR DELETE ON "product" FOR EACH ROW EXECUTE PROCEDURE "product__to__item__2eb4dbe9__comp_dep"();
 CREATE OR REPLACE TRIGGER "product__to__item__2eb4dbe9__comp_dep_update" AFTER UPDATE ON "product" FOR EACH ROW WHEN(TRUE) EXECUTE PROCEDURE "product__to__item__2eb4dbe9__comp_dep"();
 UPDATE "item" SET id = id;
+ALTER TABLE "item" ALTER COLUMN "total" SET NOT NULL;
 
 ===
 

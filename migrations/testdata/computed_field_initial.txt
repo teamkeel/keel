@@ -36,7 +36,7 @@ ALTER TABLE "identity" ADD CONSTRAINT identity_email_issuer_udx UNIQUE ("email",
 CREATE TABLE "item" (
 "price" NUMERIC NOT NULL,
 "quantity" INTEGER NOT NULL,
-"total" NUMERIC NOT NULL,
+"total" NUMERIC,
 "id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -65,11 +65,12 @@ CREATE FUNCTION "item__total__0614a79a__comp"(r "item") RETURNS NUMERIC AS $$ BE
 	RETURN r."quantity" * r."price";
 END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION "item__exec_comp_fns"() RETURNS TRIGGER AS $$ BEGIN
-	NEW.total := item__total__0614a79a__comp(NEW);
+	NEW."total" := item__total__0614a79a__comp(NEW);
 	RETURN NEW;
 END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER "item__comp" BEFORE INSERT OR UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE "item__exec_comp_fns"();
 UPDATE "item" SET id = id;
+ALTER TABLE "item" ALTER COLUMN "total" SET NOT NULL;
 
 ===
 
