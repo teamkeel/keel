@@ -234,6 +234,10 @@ func writeUpdateValuesType(w *codegen.Writer, model *proto.Model) {
 			continue
 		}
 
+		if field.ComputedExpression != nil {
+			continue
+		}
+
 		w.Write(field.Name)
 		w.Write(": ")
 		t := toTypeScriptType(field.Type, true, false, false)
@@ -339,6 +343,10 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 		}
 		if field.ForeignKeyInfo != nil {
 			w.Writef("// if providing a value for this field do not also set %s\n", strings.TrimSuffix(field.Name, "Id"))
+		}
+
+		if field.ComputedExpression != nil {
+			continue
 		}
 
 		w.Write(field.Name)

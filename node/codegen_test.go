@@ -138,7 +138,6 @@ export type PersonCreateValues = {
 	bio: string
 	file: runtime.InlineFile | runtime.File
 	canHoldBreath: runtime.Duration
-	heightInMetres?: number
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
@@ -146,6 +145,31 @@ export type PersonCreateValues = {
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := s.FindModel("Person")
 		writeCreateValuesType(w, s, m)
+	})
+}
+
+func TestWriteUpdateValuesInterface(t *testing.T) {
+	t.Parallel()
+	expected := `
+export type PersonUpdateValues = {
+	firstName: string
+	lastName: string | null
+	age: number
+	dateOfBirth: Date
+	gender: Gender
+	hasChildren: boolean
+	tags: string[]
+	height: number
+	bio: string
+	file: runtime.InlineFile | runtime.File
+	canHoldBreath: runtime.Duration
+	id: string
+	createdAt: Date
+	updatedAt: Date
+}`
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		m := s.FindModel("Person")
+		writeUpdateValuesType(w, m)
 	})
 }
 
