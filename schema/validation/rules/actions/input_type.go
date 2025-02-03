@@ -86,6 +86,17 @@ func validateInputType(
 		if query.ResolveInputType(asts, input, model, action) == "" {
 			return unresolvedTypeError(asts, input, model)
 		}
+
+		field := query.ResolveInputField(asts, input, model)
+		if field != nil && query.FieldHasAttribute(field, parser.AttributeComputed) {
+			return errorhandling.NewValidationErrorWithDetails(
+				errorhandling.ActionInputError,
+				errorhandling.ErrorDetails{
+					Message: "computed fields cannot be used as inputs as they are automatically generated",
+				},
+				input,
+			)
+		}
 	}
 	return nil
 }

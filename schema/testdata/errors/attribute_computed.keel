@@ -25,3 +25,13 @@ model Item {
     //expect-error:5:14:E011:model 'Item' has an unrecognised attribute @computed
     @computed(price * quantity)
 }
+
+model Thing {
+    fields {
+        total Decimal @computed(1 + 1)
+    }
+    actions {
+        //expect-error:35:40:ActionInputError:computed fields cannot be used as inputs as they are automatically generated
+        create createItem() with (total) 
+    }
+}
