@@ -254,9 +254,14 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 	query.DistinctOn(IdField())
 	query.Select(AllFields())
 
+	err = query.ApplyFaceting(scope.Model.Fields)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	err = query.ApplyPaging(page)
 	if err != nil {
-		return nil, &page, err
+		return nil, nil, err
 	}
 
 	return query.SelectStatement(), &page, nil

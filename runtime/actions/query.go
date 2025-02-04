@@ -537,6 +537,42 @@ func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 	}
 }
 
+func (query *QueryBuilder) ApplyFaceting(fields []*proto.Field) error {
+
+	sql := `
+	WITH category_counts AS (
+      SELECT 
+        category,
+        COUNT(*) as count,
+        COUNT(DISTINCT s.id) as total_count,
+        MIN(s.quantity) as min_qty,
+        MAX(s.quantity) as max_qty,
+        ROUND(AVG(s.quantity)::numeric, 2) as avg_qty
+      FROM "sale" s
+      GROUP BY category
+    )
+    SELECT json_build_object(
+      'totalCount', SUM(total_count),
+      'categoryFacets', jsonb_agg(
+        json_build_object(
+          'category', category,
+          'count', count
+        )
+      ),
+      'quantityStats', json_build_object(
+        'min', MIN(min_qty),
+        'max', MAX(max_qty),
+        'avg', ROUND(AVG(avg_qty), 2)
+      )
+    )
+    FROM category_counts
+	`
+
+	query.Select(Raw(sql))
+
+	return nil
+}
+
 // Apply pagination filters to the query.
 func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// Paging condition is ANDed to any existing conditions
@@ -1148,7 +1184,9 @@ func (statement *Statement) Execute(ctx context.Context) (int, error) {
 	return int(result.RowsAffected), nil
 }
 
-type Rows = []map[string]interface{}
+type Rows = []map[string]any
+
+type FacetInfo map[string]map[string]any
 
 type PageInfo struct {
 	// Count returns the number of rows returned for the current page
