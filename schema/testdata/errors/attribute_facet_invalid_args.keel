@@ -1,0 +1,40 @@
+model Publisher {
+}
+
+model Author {
+    fields {
+        firstName Text
+        surname Text
+    publisher Publisher
+    }
+
+    actions {
+        list listAuthors() {
+            //expect-error:13:19:AttributeArgumentError:@facet requires at least once argument
+            @facet
+        }
+        list listAuthors2() {
+            @facet(firstName)
+            //expect-error:13:19:AttributeNotAllowedError:@facet can only be defined once per action
+            @facet(surname)
+        }
+        list listAuthors3() {
+            @facet(
+                firstName,
+                //expect-error:17:26:AttributeArgumentError:@facet is not supported on relationship fields
+                publisher
+            )
+        }
+        list listAuthors4() {
+            @facet(
+                firstName,
+                //expect-error:17:26:AttributeArgumentError:@facet argument name 'firstName' already defined
+                firstName
+            )
+        }
+        list listAuthors5() {
+            //expect-error:20:23:AttributeArgumentError:@facet argument is not correctly formatted
+            @facet(123)
+        }
+    }
+}

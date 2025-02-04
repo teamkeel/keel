@@ -85,6 +85,7 @@ var visitorFuncs = []VisitorFunc{
 	ApiModelActionsRule,
 	ApiDuplicateModelNamesRule,
 	StudioFeatures,
+	FacetAttributeRules,
 }
 
 // RunAllValidators will run all the validators available. If withWarnings is true, it will return the errors even if
