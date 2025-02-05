@@ -8,6 +8,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -76,61 +77,89 @@ func (v *setQueryGen) VisitLiteral(value any) error {
 
 func (v *setQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 	model := v.schema.FindModel(strcase.ToCamel(ident.Fragments[0]))
-	field := proto.FindField(v.schema.Models, model.Name, ident.Fragments[1])
 
 	normalised, err := NormalisedFragments(v.schema, ident.Fragments)
 	if err != nil {
 		return err
 	}
 
-	if len(normalised) == 3 {
+	if model != nil && expressions.IsModelDbColumn(model, normalised) && len(normalised) > 2 {
+		switch v.action.Type {
+		case proto.ActionType_ACTION_TYPE_CREATE:
+			// This section performs a field lookup on a to-be related model as an inline query
+
+			field := proto.FindField(v.schema.Models, model.Name, ident.Fragments[1])
+			model = v.schema.FindModel(field.Type.ModelName.Value)
+			query := NewQuery(model)
+
+			relatedModelField := proto.FindField(v.schema.Models, v.model.Name, normalised[1])
+
+			subFragments := normalised[1:]
+			subFragments[0] = strcase.ToLowerCamel(relatedModelField.Type.ModelName.Value)
+
+			err := query.AddJoinFromFragments(v.schema, subFragments)
+			if err != nil {
+				return err
+			}
+
+			id := v.inputs[subFragments[0]].(map[string]any)[parser.FieldNameId]
+			err = query.Where(IdField(), Equals, Value(id))
+			if err != nil {
+				return err
+			}
+
+			selectField, err := operandFromFragments(v.schema, ident.Fragments[1:])
+			if err != nil {
+				return err
+			}
+
+			if selectField.IsArrayField() {
+				query.SelectUnnested(selectField)
+			} else {
+				query.Select(selectField)
+			}
+
+			v.operand = InlineQuery(query, selectField)
+		case proto.ActionType_ACTION_TYPE_UPDATE:
+			// This section performs a field lookup on a related model as an inline query
+
+			query := NewQuery(v.model)
+			err = query.AddJoinFromFragments(v.schema, normalised)
+			if err != nil {
+				return err
+			}
+
+			// This takes into consideration unique and composite lookups
+			for k, v := range v.inputs["where"].(map[string]any) {
+				err = query.Where(Field(k), Equals, Value(v))
+				if err != nil {
+					return err
+				}
+			}
+
+			selectField, err := operandFromFragments(v.schema, ident.Fragments)
+			if err != nil {
+				return err
+			}
+
+			if selectField.IsArrayField() {
+				query.SelectUnnested(selectField)
+			} else {
+				query.Select(selectField)
+			}
+
+			v.operand = InlineQuery(query, selectField)
+		}
+	} else {
+		if v.action.Type == proto.ActionType_ACTION_TYPE_UPDATE && v.inputs["values"] != nil {
+			v.inputs = v.inputs["values"].(map[string]any)
+		}
+
 		operand, err := generateOperand(v.ctx, v.schema, v.model, v.action, v.inputs, ident.Fragments)
 		if err != nil {
 			return err
 		}
 		v.operand = operand
-	} else {
-		// Join together all the tables based on the ident fragments
-		model = v.schema.FindModel(field.Type.ModelName.Value)
-		query := NewQuery(model)
-
-		relatedModelField := proto.FindField(v.schema.Models, v.model.Name, normalised[1])
-		subFragments := normalised[1:]
-		subFragments[0] = strcase.ToLowerCamel(relatedModelField.Type.ModelName.Value)
-
-		err := query.AddJoinFromFragments(v.schema, subFragments)
-		if err != nil {
-			return err
-		}
-
-		// Select the column as specified in the last ident fragment
-		//fieldName := normalised[len(normalised)-1]
-		//fragments := subFragments[:len(subFragments)-1]
-		//query.Select(ExpressionField(fragments, fieldName, false))
-
-		// Filter by this model's row's ID
-		//foreignKeyField := proto.GetForeignKeyFieldName(v.schema.Models, relatedModelField)
-
-		id := v.inputs[subFragments[0]].(map[string]any)["id"]
-
-		//fk := fmt.Sprintf("r.\"%s\"", strcase.ToSnake(foreignKeyField))
-		err = query.Where(IdField(), Equals, Value(id))
-		if err != nil {
-			return err
-		}
-
-		selectField, err := operandFromFragments(v.schema, ident.Fragments[1:])
-		if err != nil {
-			return err
-		}
-
-		if selectField.IsArrayField() {
-			query.SelectUnnested(selectField)
-		} else {
-			query.Select(selectField)
-		}
-
-		v.operand = InlineQuery(query, selectField)
 	}
 
 	return nil

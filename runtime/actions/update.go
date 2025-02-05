@@ -94,7 +94,7 @@ func GenerateUpdateStatement(query *QueryBuilder, scope *Scope, input map[string
 		return nil, err
 	}
 
-	err = query.captureSetValues(scope, values)
+	err = query.captureSetValues(scope, input)
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,47 @@
+model Order {
+	fields {
+		price Decimal
+		quantity Number
+		product Product
+        discountPercentage Decimal
+        discount Decimal @computed((order.price * order.quantity) / 100 * order.discountPercentage)
+        total Decimal @computed(order.price * order.quantity - order.discount)
+        customer Customer?
+	}
+	actions {
+		create createOrder() with (product.id, quantity, customer.id) {
+			@set(order.price = order.product.standardPrice)
+            @set(order.discountPercentage = order.customer.discountProfile.discountPercentage)
+            @permission(expression: true)
+		}
+        update resetTotal(id) {
+            @set(order.price = order.product.standardPrice)
+            @set(order.discountPercentage = order.customer.discountProfile.discountPercentage)
+            @permission(expression: true)
+        }
+	}
+}
+
+model Product {
+	fields {
+		standardPrice Decimal
+	}
+}
+
+model Customer {
+    fields {
+        discountProfile CustomerDiscount
+    }
+    actions {
+        create createCustomer() with (discountProfile.discountPercentage) {
+            @permission(expression: true)
+        }
+    }
+}
+
+model CustomerDiscount {
+    fields {
+        discountPercentage Decimal
+        customer Customer @unique
+    }
+}

@@ -3782,7 +3782,7 @@ var testCases = []testCase{
 		expectedArgs: []any{"123", true, int64(0)},
 	},
 	{
-		name: "set_lookup_many_to_one",
+		name: "set_lookup_relationships_create",
 		keelSchema: `
 			model Item {
 				fields {
@@ -3819,15 +3819,56 @@ var testCases = []testCase{
 			SELECT * FROM "new_1_item"`,
 		expectedArgs: []any{"123", "123", 5},
 	},
+	{
+		name: "set_lookup_relationships_update",
+		keelSchema: `
+			model Item {
+				fields {
+					price Decimal
+					product Product
+					quantity Number
+				}
+				actions {
+					update resetItem(id) with (quantity) {
+						@set(item.price = item.product.standardPrice)
+					}
+				}
+			}
+			model Product {
+				fields {
+					standardPrice Decimal
+				}
+			}`,
+		actionName: "resetItem",
+		input: map[string]any{
+			"where": map[string]any{
+				"id": "123",
+			},
+			"values": map[string]any{
+				"quantity": 4,
+			},
+		},
+		expectedTemplate: `
+			WITH 
+				"select_item_0" ("column_0") AS (
+					SELECT "item$product"."standard_price" 
+					FROM "item" 
+					LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" 
+					WHERE "item"."id" IS NOT DISTINCT FROM ?) 
+			UPDATE "item" SET 
+				"price" = (SELECT "column_0" FROM "select_item_0"), 
+				"quantity" = ? 
+			WHERE "item"."id" IS NOT DISTINCT FROM ? 
+			RETURNING "item".*`,
+		expectedArgs: []any{"123", 4, "123"},
+	},
 }
 
 func TestQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range testCases {
 		testCase := testCase
-		if testCase.name != "set_lookup_many_to_one" {
-			continue
-		}
+
 		t.Run(testCase.name, func(t *testing.T) {
 
 			t.Parallel()
