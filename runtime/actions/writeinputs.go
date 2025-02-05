@@ -75,34 +75,15 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			currRows = nextRows
 		}
 
-		// Set the field on all rows.
-		for _, row := range currRows {
-			// if ident[0] == strcase.ToLowerCamel(query.Model.Name) && !isAssoc {
-			// 	rhsIdent, err := resolve.AsIdent(rhs)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// 	row.values[field] = ExpressionField(rhsIdent.Fragments, field, false)
-
-			// } else {
-			operand, err := resolve.RunCelVisitor(rhs, GenerateSelectQuery(scope.Context, scope.Schema, scope.Model, scope.Action, args))
-			if err != nil {
-				return err
-			}
-
-			row.values[field] = operand
-			//}
+		operand, err := resolve.RunCelVisitor(rhs, GenerateSelectQuery(scope.Context, scope.Schema, scope.Model, scope.Action, args))
+		if err != nil {
+			return err
 		}
 
-		// operand, err := resolve.RunCelVisitor(rhs, GenerateSelectQuery(scope.Context, scope.Schema, scope.Model, scope.Action, args))
-		// if err != nil {
-		// 	return err
-		// }
-
 		// Set the field on all rows.
-		// for _, row := range currRows {
-		// 	row.values[field] = operand
-		// }
+		for _, row := range currRows {
+			row.values[field] = operand
+		}
 	}
 	return nil
 }
