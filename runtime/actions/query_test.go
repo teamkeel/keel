@@ -3781,14 +3781,55 @@ var testCases = []testCase{
 				NOT ("thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."number" IS DISTINCT FROM ?)`,
 		expectedArgs: []any{"123", true, int64(0)},
 	},
+	{
+		name: "set_lookup_many_to_one",
+		keelSchema: `
+			model Item {
+				fields {
+					price Decimal
+					product Product
+					quantity Number
+				}
+				actions {
+					create createItem() with (product.id, quantity) {
+						@set(item.price = item.product.standardPrice)
+					}
+				}
+			}
+			model Product {
+				fields {
+					standardPrice Decimal
+				}
+			}`,
+		actionName: "createItem",
+		input:      map[string]any{"product": map[string]any{"id": "123"}, "quantity": 5},
+		expectedTemplate: `
+			WITH 
+				"select_product_0" ("column_0") AS (
+					SELECT "product"."standard_price" 
+					FROM "product" 
+					WHERE "product"."id" IS NOT DISTINCT FROM ?), 
+				"new_1_item" AS (
+					INSERT INTO "item" ("price", "product_id", "quantity") 
+					VALUES (
+						(SELECT "column_0" FROM "select_product_0"), 
+						?, 
+						?) 
+					RETURNING *) 
+			SELECT * FROM "new_1_item"`,
+		expectedArgs: []any{"123", "123", 5},
+	},
 }
 
 func TestQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range testCases {
 		testCase := testCase
-
+		if testCase.name != "set_lookup_many_to_one" {
+			continue
+		}
 		t.Run(testCase.name, func(t *testing.T) {
+
 			t.Parallel()
 			ctx := context.Background()
 

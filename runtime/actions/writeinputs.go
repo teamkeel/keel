@@ -75,10 +75,19 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			currRows = nextRows
 		}
 
-		operand, err := resolve.RunCelVisitor(rhs, GenerateSelectQuery(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
+		// var operand *QueryOperand
+		// if !isAssoc {
+		// 	//operand =  Value(args[field])
+		// 	operand, err = generateOperand(scope.Context, scope.Schema, scope.Model, scope.Action, args, ident)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// } else {
+		operand, err := resolve.RunCelVisitor(rhs, GenerateSelectQuery(scope.Context, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}
+		//}
 
 		// Set the field on all rows.
 		for _, row := range currRows {
