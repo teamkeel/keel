@@ -75,7 +75,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			currRows = nextRows
 		}
 
-		operand, err := resolve.RunCelVisitor(rhs, GenerateSelectQuery(scope.Context, query, scope.Schema, scope.Model, scope.Action, args))
+		operand, err := resolve.RunCelVisitor(rhs, GenerateSelectQuery(scope.Context, scope.Schema, scope.Model, scope.Action, args))
 		if err != nil {
 			return err
 		}
