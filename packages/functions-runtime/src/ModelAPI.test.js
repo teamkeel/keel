@@ -974,7 +974,7 @@ describe("QueryBuilder", () => {
 
     // because we've offset by 1, adam should not appear in the results even though
     // the query constraints match adam
-    expect(results).toEqual([ four]);
+    expect(results).toEqual([four]);
   });
 
   test("ModelAPI.findMany - complex query", async () => {
