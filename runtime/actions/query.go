@@ -537,22 +537,51 @@ func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 	}
 }
 
-func (query *QueryBuilder) ApplyFaceting(fields []*proto.Field) error {
+func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) error {
+	return nil
+	facetQuery := NewQuery(scope.Model)
+
+	where, ok := input["where"].(map[string]any)
+	if !ok {
+		where = map[string]any{}
+	}
+
+	var facetFields []*proto.Field
+	for _, name := range scope.Action.Facets {
+		for _, field := range scope.Model.Fields {
+			if where[field.Name] == nil && field.Name == name {
+				facetFields = append(facetFields, field)
+			}
+		}
+	}
+
+	err := facetQuery.applyImplicitFiltersForList(scope, where)
+	if err != nil {
+		return err
+	}
+
+	err = facetQuery.applyExpressionFilters(scope, where)
+	if err != nil {
+		return err
+	}
+
+	// facetSelects := []string{}
+	// for _, field := range facetFields {
+	// 	var sql string
+	// 	switch field.Type {
+	// 	case proto.Type_TYPE_STRING:
+	// 		sql = fmt.Sprintf("json_build_object(
+	// 			%s, jsonb_agg(
+	// 			'%s', category,
+	// 			'count', count
+	// 		)", field.Name)
+	// 	}
+	// 	facetSelects = append(facetSelects, sql)
+	// }
 
 	sql := `
-	WITH category_counts AS (
-      SELECT 
-        category,
-        COUNT(*) as count,
-        COUNT(DISTINCT s.id) as total_count,
-        MIN(s.quantity) as min_qty,
-        MAX(s.quantity) as max_qty,
-        ROUND(AVG(s.quantity)::numeric, 2) as avg_qty
-      FROM "sale" s
-      GROUP BY category
-    )
+
     SELECT json_build_object(
-      'totalCount', SUM(total_count),
       'categoryFacets', jsonb_agg(
         json_build_object(
           'category', category,
@@ -564,9 +593,7 @@ func (query *QueryBuilder) ApplyFaceting(fields []*proto.Field) error {
         'max', MAX(max_qty),
         'avg', ROUND(AVG(avg_qty), 2)
       )
-    )
-    FROM category_counts
-	`
+    )`
 
 	query.Select(Raw(sql))
 

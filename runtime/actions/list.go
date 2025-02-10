@@ -254,7 +254,7 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 	query.DistinctOn(IdField())
 	query.Select(AllFields())
 
-	err = query.ApplyFaceting(scope.Model.Fields)
+	err = query.SelectFacets(scope, input)
 	if err != nil {
 		return nil, nil, err
 	}

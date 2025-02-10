@@ -1,0 +1,19 @@
+model Product {
+    fields {
+        name Text
+        category Category
+        colour Text
+        inStock Boolean
+    }
+
+    actions {
+        list listProducts(category?, colour?) {
+            @facet(category, colour)
+        }
+    }
+}
+
+enum Category {
+    Food
+    Drink
+}
