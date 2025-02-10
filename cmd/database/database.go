@@ -246,7 +246,7 @@ func createContainer(dockerClient *client.Client) (
 	connInfo = &db.ConnectionInfo{
 		Username: "postgres",
 		Password: "postgres",
-		Host:     "0.0.0.0",
+		Host:     "127.0.0.1",
 		Port:     port,
 	}
 	return createdInfo.ID, connInfo, nil
