@@ -132,7 +132,7 @@ func (p *Page) GetLimit() int {
 
 // PageNumber returns the number of the current; it is only applicable for OffsetPagination
 func (p *Page) PageNumber() *int {
-	if !p.OffsetPagination() {
+	if p == nil || !p.OffsetPagination() {
 		return nil
 	}
 
