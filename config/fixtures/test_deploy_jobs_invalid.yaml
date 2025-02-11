@@ -1,0 +1,9 @@
+# deploy.jobs: Additional property foo is not allowed
+# deploy.jobs.webhookUrl: Does not match format 'uri'
+
+deploy:
+  projectName: my-project
+  region: eu-west-2
+  jobs:
+    foo: bar
+    webhookUrl: this-is-not-a-url

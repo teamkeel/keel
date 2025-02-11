@@ -7,6 +7,10 @@ export default SubscriberEnvvars(async (ctx, _) => {
   }
 
   const tracker = (await models.trackSubscriber.findMany())[0];
+  if (!tracker) {
+    return;
+  }
+
   await models.trackSubscriber.update(
     { id: tracker.id },
     { didSubscriberRun: true }

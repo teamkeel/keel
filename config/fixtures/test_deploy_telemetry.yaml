@@ -1,0 +1,5 @@
+deploy:
+  projectName: my-project
+  region: eu-west-2
+  telemetry:
+    collector: ./path/to/my/collector.yaml
