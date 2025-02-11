@@ -605,6 +605,22 @@
           "displayOrder": 4,
           "visible": true,
           "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": { "path": "$.limit" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Limit",
+          "displayOrder": 5,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": { "path": "$.offset" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Offset",
+          "displayOrder": 6,
+          "visible": true,
+          "scope": "PAGINATION"
         }
       ],
       "response": [
@@ -642,6 +658,12 @@
           "fieldLocation": { "path": "$.pageInfo.endCursor" },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": { "path": "$.pageInfo.pageNumber" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Page Number",
           "scope": "PAGINATION"
         },
         {
@@ -813,6 +835,22 @@
           "displayOrder": 4,
           "visible": true,
           "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": { "path": "$.limit" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Limit",
+          "displayOrder": 5,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": { "path": "$.offset" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Offset",
+          "displayOrder": 6,
+          "visible": true,
+          "scope": "PAGINATION"
         }
       ],
       "response": [
@@ -850,6 +888,12 @@
           "fieldLocation": { "path": "$.pageInfo.endCursor" },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": { "path": "$.pageInfo.pageNumber" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Page Number",
           "scope": "PAGINATION"
         },
         {
@@ -990,11 +1034,27 @@
           "scope": "PAGINATION"
         },
         {
+          "fieldLocation": { "path": "$.limit" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Limit",
+          "displayOrder": 5,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": { "path": "$.offset" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Offset",
+          "displayOrder": 6,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
           "fieldLocation": { "path": "$.orderBy" },
           "fieldType": "TYPE_UNION",
           "repeated": true,
           "displayName": "Order by",
-          "displayOrder": 5,
+          "displayOrder": 7,
           "visible": true,
           "scope": "SORTING"
         }
@@ -1034,6 +1094,12 @@
           "fieldLocation": { "path": "$.pageInfo.endCursor" },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": { "path": "$.pageInfo.pageNumber" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Page Number",
           "scope": "PAGINATION"
         },
         {
@@ -1274,6 +1340,22 @@
           "displayOrder": 4,
           "visible": true,
           "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": { "path": "$.limit" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Limit",
+          "displayOrder": 5,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": { "path": "$.offset" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Offset",
+          "displayOrder": 6,
+          "visible": true,
+          "scope": "PAGINATION"
         }
       ],
       "response": [
@@ -1311,6 +1393,12 @@
           "fieldLocation": { "path": "$.pageInfo.endCursor" },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": { "path": "$.pageInfo.pageNumber" },
+          "fieldType": "TYPE_INT",
+          "displayName": "Page Number",
           "scope": "PAGINATION"
         },
         {

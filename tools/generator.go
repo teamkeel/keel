@@ -945,6 +945,13 @@ func getPageInfoResponses() []*toolsproto.ResponseFieldConfig {
 			Visible:       false,
 			Scope:         toolsproto.ResponseFieldConfig_PAGINATION,
 		},
+		{
+			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.pageNumber"},
+			FieldType:     proto.Type_TYPE_INT,
+			DisplayName:   "Page Number",
+			Visible:       false,
+			Scope:         toolsproto.ResponseFieldConfig_PAGINATION,
+		},
 	}
 }
 
@@ -965,7 +972,7 @@ func inferInputType(actionType proto.ActionType, fieldName string) toolsproto.Re
 			return toolsproto.RequestFieldConfig_FILTERS
 		case "orderBy":
 			return toolsproto.RequestFieldConfig_SORTING
-		case "first", "after", "last", "before":
+		case "first", "after", "last", "before", "limit", "offset":
 			return toolsproto.RequestFieldConfig_PAGINATION
 		}
 	case proto.ActionType_ACTION_TYPE_UPDATE:
