@@ -279,6 +279,8 @@ type QueryBuilder struct {
 	returning []string
 	// The value for LIMIT.
 	limit *int
+	// The value for OFFSET.
+	offset *int
 	// The ordered slice of arguments for the SQL statement template.
 	args []any
 	// The graph of rows to be written during an INSERT or UPDATE.
@@ -528,6 +530,11 @@ func (query *QueryBuilder) Limit(limit int) {
 	query.limit = &limit
 }
 
+// Set the OFFSET to a number.
+func (query *QueryBuilder) Offset(offset int) {
+	query.offset = &offset
+}
+
 // Include a column in RETURNING.
 func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 	c := operand.toSqlOperandString(query)
@@ -543,11 +550,8 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	query.And()
 
 	// Add where condition to implement the page size
-	switch {
-	case page.First != 0:
-		query.Limit(page.First)
-	case page.Last != 0:
-		query.Limit(page.Last)
+	if page.GetLimit() > 0 {
+		query.Limit(page.GetLimit())
 	}
 
 	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
@@ -570,21 +574,27 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// Because we are essentially performing the same query again within the subquery, we need to duplicate the query parameters again as they will be used twice in the course of the whole query
 	query.args = append(query.args, query.args...)
 
-	// Add where condition to implement the after/before paging request
-	if page.Cursor() != "" {
-		err := query.applyCursorFilter(page.Cursor(), page.IsBackwards())
-		if err != nil {
-			return err
+	// if we have offset pagination..
+	if page.OffsetPagination() {
+		query.Offset(page.Offset)
+	} else {
+		// otherwise default to cursor pagination
+		// Add where condition to implement the after/before paging request
+		if page.Cursor() != "" {
+			err := query.applyCursorFilter(page.Cursor(), page.IsBackwards())
+			if err != nil {
+				return err
+			}
 		}
-	}
 
-	// if the page has backwards pagination, we will be reversing the order fields. The results will be reversed after retrieval in .ExecuteToMany()
-	if page.IsBackwards() {
-		for _, ob := range query.orderBy {
-			if strings.EqualFold(ob.direction, "ASC") {
-				ob.direction = "DESC"
-			} else {
-				ob.direction = "ASC"
+		// if the page has backwards pagination, we will be reversing the order fields. The results will be reversed after retrieval in .ExecuteToMany()
+		if page.IsBackwards() {
+			for _, ob := range query.orderBy {
+				if strings.EqualFold(ob.direction, "ASC") {
+					ob.direction = "DESC"
+				} else {
+					ob.direction = "ASC"
+				}
 			}
 		}
 	}
@@ -704,6 +714,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	filters := ""
 	orderBy := ""
 	limit := ""
+	offset := ""
 
 	if len(query.distinctOn) > 0 {
 		distinctOn = fmt.Sprintf("DISTINCT ON(%s)", strings.Join(query.distinctOn, ", "))
@@ -740,14 +751,20 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		query.args = append(query.args, *query.limit)
 	}
 
-	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s",
+	if query.offset != nil {
+		offset = "OFFSET ?"
+		query.args = append(query.args, *query.offset)
+	}
+
+	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s %s",
 		distinctOn,
 		selection,
 		sqlQuote(query.table),
 		joins,
 		filters,
 		orderBy,
-		limit)
+		limit,
+		offset)
 
 	return &Statement{
 		template: cleanSql(sql),
@@ -1165,16 +1182,25 @@ type PageInfo struct {
 
 	// EndCursor is the identifier representing the last row in the set
 	EndCursor string
+
+	// PageNumber is the number of the page returned; set only for offset pagination
+	PageNumber *int
 }
 
 func (pi *PageInfo) ToMap() map[string]any {
-	return map[string]any{
+	r := map[string]any{
 		"count":       pi.Count,
 		"totalCount":  pi.TotalCount,
 		"startCursor": pi.StartCursor,
 		"endCursor":   pi.EndCursor,
 		"hasNextPage": pi.HasNextPage,
 	}
+
+	if pi.PageNumber != nil {
+		r["pageNumber"] = *pi.PageNumber
+	}
+
+	return r
 }
 
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
@@ -1235,6 +1261,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		HasNextPage: hasNextPage,
 		StartCursor: startCursor,
 		EndCursor:   endCursor,
+		PageNumber:  page.PageNumber(),
 	}
 
 	// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
