@@ -229,6 +229,8 @@
                   "before": { "type": "string" },
                   "first": { "type": "number" },
                   "last": { "type": "number" },
+                  "limit": { "type": "number" },
+                  "offset": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/SearchBooksWhere" }
                 },
                 "unevaluatedProperties": false

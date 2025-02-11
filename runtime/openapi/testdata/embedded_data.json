@@ -393,6 +393,8 @@
                   "before": { "type": "string" },
                   "first": { "type": "number" },
                   "last": { "type": "number" },
+                  "limit": { "type": "number" },
+                  "offset": { "type": "number" },
                   "orderBy": {
                     "type": "array",
                     "items": {
@@ -480,6 +482,8 @@
                   "before": { "type": "string" },
                   "first": { "type": "number" },
                   "last": { "type": "number" },
+                  "limit": { "type": "number" },
+                  "offset": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/ListBooksWhere" }
                 },
                 "unevaluatedProperties": false
@@ -554,6 +558,8 @@
                   "before": { "type": "string" },
                   "first": { "type": "number" },
                   "last": { "type": "number" },
+                  "limit": { "type": "number" },
+                  "offset": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/ListReviewsWhere" }
                 },
                 "unevaluatedProperties": false
