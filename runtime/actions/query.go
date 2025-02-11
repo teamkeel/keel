@@ -1223,12 +1223,14 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 	var totalCount int64
 	var startCursor string
 	var endCursor string
+	var pageNumber *int
 
 	if page != nil && page.IsBackwards() {
 		rows = lo.Reverse(rows)
 	}
 	if returnedCount > 0 {
 		last := rows[returnedCount-1]
+		pageNumber = page.PageNumber()
 		var hasPagination bool
 		hasNextPage, hasPagination = last["hasnext"].(bool)
 
@@ -1261,7 +1263,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		HasNextPage: hasNextPage,
 		StartCursor: startCursor,
 		EndCursor:   endCursor,
-		PageNumber:  page.PageNumber(),
+		PageNumber:  pageNumber,
 	}
 
 	// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and

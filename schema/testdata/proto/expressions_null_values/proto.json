@@ -424,6 +424,22 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        },
+        {
+          "messageName": "ListPostsWithNoTitleInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListPostsWithNoTitleInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
         }
       ]
     }

@@ -388,6 +388,22 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        },
+        {
+          "messageName": "OpAInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "OpAInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
         }
       ]
     }

@@ -554,6 +554,22 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        },
+        {
+          "messageName": "ListPersonInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListPersonInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
         }
       ]
     }

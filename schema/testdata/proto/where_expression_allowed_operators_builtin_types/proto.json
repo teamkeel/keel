@@ -626,6 +626,22 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        },
+        {
+          "messageName": "ListWithLiteralsInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListWithLiteralsInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
         }
       ]
     },
@@ -673,6 +689,22 @@
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListWithFieldsInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListWithFieldsInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
           },
           "optional": true
         }

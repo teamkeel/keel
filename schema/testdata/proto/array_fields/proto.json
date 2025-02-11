@@ -1161,6 +1161,22 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        },
+        {
+          "messageName": "ListThingsInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListThingsInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
         }
       ]
     }
