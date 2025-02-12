@@ -253,7 +253,8 @@
           "displayOrder": 5
         }
       ],
-      "createEntryAction": { "toolId": "createBlogPost" }
+      "createEntryAction": { "toolId": "createBlogPost" },
+      "displayLayout": { "type": "RECORD", "recordConfig": {} }
     },
     {
       "id": "listBlogPosts",

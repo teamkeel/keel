@@ -94,7 +94,8 @@
           "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
           "displayOrder": 1
         }
-      ]
+      ],
+      "displayLayout": { "type": "RECORD", "recordConfig": {} }
     },
     {
       "id": "listCategories",

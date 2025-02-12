@@ -88,7 +88,8 @@
           ],
           "visible": true
         }
-      ]
+      ],
+      "displayLayout": { "type": "RECORD", "recordConfig": {} }
     },
     {
       "id": "listLineItems",

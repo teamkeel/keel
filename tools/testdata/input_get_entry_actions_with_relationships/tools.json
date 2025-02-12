@@ -132,7 +132,8 @@
       "title": { "template": "{{$.name}}" },
       "entitySingle": "product",
       "entityPlural": "products",
-      "capabilities": { "comments": true, "audit": true }
+      "capabilities": { "comments": true, "audit": true },
+      "displayLayout": { "type": "RECORD", "recordConfig": {} }
     },
     {
       "id": "listSales",
