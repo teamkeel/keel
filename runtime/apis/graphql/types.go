@@ -169,6 +169,10 @@ var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
 			Type:        graphql.NewNonNull(graphql.Int),
 			Description: "Total count of nodes across all pages.",
 		},
+		"pageNumber": &graphql.Field{
+			Type:        graphql.Int,
+			Description: "Total count of nodes across all pages.",
+		},
 		"count": &graphql.Field{
 			Type:        graphql.NewNonNull(graphql.Int),
 			Description: "Count of nodes on the current page.",
