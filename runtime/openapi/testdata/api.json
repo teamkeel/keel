@@ -250,6 +250,7 @@
                         "count": { "type": "number" },
                         "endCursor": { "type": "string" },
                         "hasNextPage": { "type": "boolean" },
+                        "pageNumber": { "type": "number" },
                         "startCursor": { "type": "string" },
                         "totalCount": { "type": "number" }
                       }
