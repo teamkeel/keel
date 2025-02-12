@@ -137,6 +137,7 @@ export type PageInfo = {
   totalCount: number;
   hasNextPage: boolean;
   count: number;
+  pageNumber?: number;
 };
 
 type MimeType =

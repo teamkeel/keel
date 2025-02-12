@@ -27,6 +27,34 @@ test("pagination - first", async () => {
   expect(results.map((r) => r.id)).toEqual(posts.map((p) => p.id).slice(0, 2));
 });
 
+test("pagination - with limit", async () => {
+  const posts = await setupPosts({ count: 6 });
+
+  const { results, pageInfo } = await actions.listPosts({
+    limit: 2,
+  });
+
+  expect(results.length).toEqual(2);
+  expect(results.map((r) => r.id)).toEqual(posts.map((p) => p.id).slice(0, 2));
+  expect(pageInfo.pageNumber).toEqual(1);
+  expect(pageInfo.hasNextPage).toEqual(true);
+});
+
+test("pagination - with limit and offset", async () => {
+  const posts = await setupPosts({ count: 6 });
+
+  const { results, pageInfo } = await actions.listPosts({
+    limit: 2,
+    offset: 4,
+  });
+
+  expect(results.length).toEqual(2);
+  expect(results.map((r) => r.id)).toEqual(posts.map((p) => p.id).slice(4, 6));
+  expect(pageInfo.pageNumber).toEqual(3);
+  expect(pageInfo.hasNextPage).toEqual(false);
+});
+
+
 test("pagination - first with after", async () => {
   const posts = await setupPosts({ count: 6 });
   const {
