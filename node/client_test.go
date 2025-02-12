@@ -482,6 +482,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }
 export interface Person {
 	name: string
