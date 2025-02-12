@@ -86,7 +86,6 @@ test("orderby - get first - top 3 winners", async () => {
   expect(winners.results[2].name).toEqual("Bongani");
 });
 
-
 test("orderby - get top 3 - with offset pagination", async () => {
   const winners = await actions.listRankings({
     limit: 3,

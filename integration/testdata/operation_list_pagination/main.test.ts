@@ -54,7 +54,6 @@ test("pagination - with limit and offset", async () => {
   expect(pageInfo.hasNextPage).toEqual(false);
 });
 
-
 test("pagination - first with after", async () => {
   const posts = await setupPosts({ count: 6 });
   const {
