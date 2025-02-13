@@ -3,6 +3,7 @@ model Post {
         name Text
         another Text
         votes Vote[]
+        category Category?
     }
 
     actions {
@@ -12,6 +13,9 @@ model Post {
         //expect-error:38:49:ActionInputError:Update actions cannot perform field updates on nested models.
         update updatePost1(id) with (votes.score)
         update updatePost2(id) with (votes.id)
+        update updatePost3(id) with (category.id)
+        //expect-error:38:51:ActionInputError:Update actions cannot perform field updates on nested models.
+        update updatePost4(id) with (category.name)
     }
 }
 
@@ -36,4 +40,17 @@ model Vote {
         update updateVote6(id) with (score, post.id)
     }
 }
-            
+
+model Category {
+    fields {
+        name Text
+        posts Post[]
+    }
+
+    actions {
+        update updateCategory1(id) with (name)
+        update updateCategory2(id) with (posts.id)
+        //expect-error:42:52:ActionInputError:Update actions cannot perform field updates on nested models.
+        update updateCategory3(id) with (posts.name)
+    }
+}
