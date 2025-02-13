@@ -28,6 +28,7 @@ model Post {
             //expect-error:18:32:AttributeExpressionError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
             @set(post.updatedAt = ctx.now)
         }
+        //expect-error:44:58:ActionInputError:Update actions cannot perform field updates on nested models.
         update updatePost2(id) with (name, publisher.name) {
             //expect-error:18:42:AttributeExpressionError:Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally
             @set(post.publisher.createdAt = ctx.now)

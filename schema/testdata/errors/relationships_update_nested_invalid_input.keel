@@ -1,0 +1,39 @@
+model Post {
+    fields {
+        name Text
+        another Text
+        votes Vote[]
+    }
+
+    actions {
+        create createPost1() with (name, another, votes.score)
+        //expect-error:51:59:ActionInputError:Cannot provide the id of nested records which do not exist yet
+        create createPost2() with (name, another, votes.id)
+        //expect-error:38:49:ActionInputError:Update actions cannot perform field updates on nested models.
+        update updatePost1(id) with (votes.score)
+        update updatePost2(id) with (votes.id)
+    }
+}
+
+model Vote {
+    fields {
+        score Number
+        post Post?
+    }
+
+    actions {
+        create createVote1() with (score, post.id)
+        create createVote2() with (score, post.name, post.another)
+        update updateVote1(id) with (score)
+        update updateVote2(id) with (post.id)
+        //expect-error:47:57:ActionInputError:Update actions cannot perform field updates on nested models.
+        update updateVote3(id) with (post.id, post.name?)
+        //expect-error:38:48:ActionInputError:Update actions cannot perform field updates on nested models.
+        update updateVote4(id) with (post.name?)
+        //expect-error:38:47:ActionInputError:Update actions cannot perform field updates on nested models.
+        //expect-error:49:61:ActionInputError:Update actions cannot perform field updates on nested models.
+        update updateVote5(id) with (post.name, post.another)
+        update updateVote6(id) with (score, post.id)
+    }
+}
+            
