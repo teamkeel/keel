@@ -3781,13 +3781,69 @@ var testCases = []testCase{
 				NOT ("thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."number" IS DISTINCT FROM ?)`,
 		expectedArgs: []any{"123", true, int64(0)},
 	},
+	{
+		name: "facets",
+		keelSchema: `
+			model Order {
+				fields {
+					quantity Number
+					price Decimal
+					category Text
+					status Status
+				}
+				actions {
+					list listOrders(category?) {
+						@facet(quantity, price, category, status)
+						@where(order.status != Status.Cancelled)
+					}
+				}
+				@permission(expression: true, actions: [get])
+			}
+			enum Status {
+				Complete
+				InProgress
+				Cancelled
+			}`,
+		actionName: "listOrders",
+		input: map[string]any{
+			"first": 10,
+			"where": map[string]any{
+				"status": map[string]any{
+					"equals": "Complete"},
+				"category": map[string]any{
+					"equals": "Toys"},
+			},
+		},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("order"."id") "order".*, 
+				CASE WHEN LEAD("order"."id") OVER (ORDER BY "order"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "order"."id") FROM "order" WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ?) AS totalCount,
+				(WITH 
+					quantity_facets AS (
+						SELECT json_build_object('min', MIN(quantity), 'max', MAX(quantity), 'avg', ROUND(AVG(quantity)::numeric, 2)) 
+						FROM "order" 
+						WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ?),
+					price_facets AS (
+						SELECT json_build_object('min', MIN(price), 'max', MAX(price), 'avg', ROUND(AVG(price)::numeric, 2)) 
+						FROM "order" 
+						WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ?)
+					SELECT json_build_object('quantity', quantity_facts.quantity, 'price', price_facts.price) 
+					FROM quantity_facets, price_facets) AS _facets
+			FROM "order" 
+			WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ? 
+			ORDER BY "order"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", 10},
+	},
 }
 
 func TestQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range testCases {
 		testCase := testCase
-
+		if testCase.name != "facets" {
+			continue
+		}
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()

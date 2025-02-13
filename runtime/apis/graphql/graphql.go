@@ -414,7 +414,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						return nil, err
 					}
 
-					results, pageInfo, err := query.
+					results, resultInfo, pageInfo, err := query.
 						SelectStatement().
 						ExecuteToMany(ctx, &page)
 					if err != nil {
@@ -435,8 +435,9 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 					}
 
 					res, err := connectionResponse(map[string]any{
-						"results":  results,
-						"pageInfo": pageInfo.ToMap(),
+						"results":    results,
+						"resultInfo": resultInfo,
+						"pageInfo":   pageInfo.ToMap(),
 					})
 					if err != nil {
 						span.RecordError(err, trace.WithStackTrace(true))

@@ -90,7 +90,7 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, inputs map[str
 	}
 
 	// Execute permission query against the database.
-	permissionResults, _, err := stmt.ExecuteToMany(scope.Context, nil)
+	permissionResults, _, _, err := stmt.ExecuteToMany(scope.Context, nil)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())

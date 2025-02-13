@@ -1369,7 +1369,7 @@ func toActionReturnType(model *proto.Model, op *proto.Action) string {
 		if len(op.GetResponseEmbeds()) > 0 {
 			className = toResponseType(op.Name)
 		}
-		returnType += "{results: " + sdkPrefix + className + "[], pageInfo: runtime.PageInfo}"
+		returnType += "{results: " + sdkPrefix + className + "[], resultInfo: runtime.ResultInfo, pageInfo: runtime.PageInfo}"
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		// todo: create ID type
 		returnType += "string"

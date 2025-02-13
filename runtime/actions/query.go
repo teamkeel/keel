@@ -3,6 +3,7 @@ package actions
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -279,6 +280,8 @@ type QueryBuilder struct {
 	returning []string
 	// The value for LIMIT.
 	limit *int
+	// The columns and clauses in GROUP BY.
+	groupBy []string
 	// The ordered slice of arguments for the SQL statement template.
 	args []any
 	// The graph of rows to be written during an INSERT or UPDATE.
@@ -357,6 +360,7 @@ func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 		filters:    []string{},
 		orderBy:    []*orderClause{},
 		limit:      nil,
+		groupBy:    []string{},
 		returning:  []string{},
 		args:       []any{},
 		writeValues: &Row{
@@ -528,6 +532,14 @@ func (query *QueryBuilder) Limit(limit int) {
 	query.limit = &limit
 }
 
+func (query *QueryBuilder) GroupBy(operand *QueryOperand) {
+	c := operand.toSqlOperandString(query)
+
+	if !lo.Contains(query.groupBy, c) {
+		query.groupBy = append(query.groupBy, c)
+	}
+}
+
 // Include a column in RETURNING.
 func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 	c := operand.toSqlOperandString(query)
@@ -538,64 +550,111 @@ func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 }
 
 func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) error {
-	return nil
-	facetQuery := NewQuery(scope.Model)
-
 	where, ok := input["where"].(map[string]any)
 	if !ok {
 		where = map[string]any{}
 	}
 
+	var sql string
+
 	var facetFields []*proto.Field
 	for _, name := range scope.Action.Facets {
 		for _, field := range scope.Model.Fields {
-			if where[field.Name] == nil && field.Name == name {
+			if field.Name == name {
 				facetFields = append(facetFields, field)
+				continue
 			}
 		}
 	}
+	ctes := []string{}
+	for i, field := range facetFields {
 
-	err := facetQuery.applyImplicitFiltersForList(scope, where)
-	if err != nil {
-		return err
+		subWhere := map[string]any{}
+		for k, v := range where {
+			if k != field.Name {
+				subWhere[k] = v
+			}
+		}
+
+		var statement *Statement
+		var sel string
+		switch field.Type.Type {
+		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
+			facetQuery := NewQuery(scope.Model)
+
+			err := facetQuery.applyImplicitFiltersForList(scope, subWhere)
+			if err != nil {
+				return err
+			}
+
+			err = facetQuery.applyExpressionFilters(scope, where)
+			if err != nil {
+				return err
+			}
+
+			sel = fmt.Sprintf(`json_build_object(
+				'min', COALESCE(MIN(%s), 0),
+				'max', COALESCE(MAX(%s), 0),
+				'avg', COALESCE(ROUND(AVG(%s)::numeric, 2), 0)
+			) AS %s`, sqlQuote(field.Name), sqlQuote(field.Name), sqlQuote(field.Name), sqlQuote(field.Name))
+
+			facetQuery.SelectClause(sel)
+
+			statement = facetQuery.SelectStatement()
+		case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM:
+			facetQuery := NewQuery(scope.Model)
+
+			err := facetQuery.applyImplicitFiltersForList(scope, subWhere)
+			if err != nil {
+				return err
+			}
+
+			err = facetQuery.applyExpressionFilters(scope, where)
+			if err != nil {
+				return err
+			}
+
+			facetQuery.Select(Field(field.Name))
+			facetQuery.SelectClause("COUNT(*) as \"count\"")
+			facetQuery.AppendOrderBy(Field(field.Name), "DESC")
+			facetQuery.GroupBy(Field(field.Name))
+			subStatement := facetQuery.SelectStatement()
+
+			sel = fmt.Sprintf(`SELECT
+				jsonb_object_agg(
+					%s,
+					"count"
+				) as %s
+				FROM (
+					%s
+				)`, sqlQuote(field.Name), sqlQuote(field.Name), subStatement.template)
+
+			statement = &Statement{
+				template: sel,
+				args:     subStatement.args,
+			}
+		}
+
+		sql += fmt.Sprintf("%s AS (%s)", sqlQuote(fmt.Sprintf("%s_facets", field.Name)), statement.template)
+		if i < len(facetFields)-1 {
+			sql += ", "
+		} else {
+			sql += " "
+		}
+
+		ctes = append(ctes, sqlQuote(fmt.Sprintf("%s_facets", field.Name)))
+		//TODO add args too
+		query.args = append(query.args, statement.args...)
 	}
 
-	err = facetQuery.applyExpressionFilters(scope, where)
-	if err != nil {
-		return err
+	selects := []string{}
+	for _, field := range facetFields {
+		selects = append(selects, fmt.Sprintf("'%s', %s.%s", field.Name, sqlQuote(fmt.Sprintf("%s_facets", field.Name)), sqlQuote(field.Name)))
 	}
 
-	// facetSelects := []string{}
-	// for _, field := range facetFields {
-	// 	var sql string
-	// 	switch field.Type {
-	// 	case proto.Type_TYPE_STRING:
-	// 		sql = fmt.Sprintf("json_build_object(
-	// 			%s, jsonb_agg(
-	// 			'%s', category,
-	// 			'count', count
-	// 		)", field.Name)
-	// 	}
-	// 	facetSelects = append(facetSelects, sql)
-	// }
+	sql += fmt.Sprintf("SELECT json_build_object(%s) FROM %s", strings.Join(selects, ", "), strings.Join(ctes, ", "))
 
-	sql := `
-
-    SELECT json_build_object(
-      'categoryFacets', jsonb_agg(
-        json_build_object(
-          'category', category,
-          'count', count
-        )
-      ),
-      'quantityStats', json_build_object(
-        'min', MIN(min_qty),
-        'max', MAX(max_qty),
-        'avg', ROUND(AVG(avg_qty), 2)
-      )
-    )`
-
-	query.Select(Raw(sql))
+	query.SelectClause(fmt.Sprintf("(WITH %s) AS \"_facets\"", sql))
 
 	return nil
 }
@@ -628,10 +687,12 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// We add a subquery to the select list that fetches the total count of records
 	// matching the constraints specified by the main query without the offset/limit applied
 	// This is actually more performant than COUNT(*) OVER() [window function]
-	totalResults := fmt.Sprintf("(%s) AS totalCount", query.countQuery())
+	countQuery, args := query.countQuery()
+	totalResults := fmt.Sprintf("(%s) AS totalCount", countQuery)
 	query.SelectClause(totalResults)
+
 	// Because we are essentially performing the same query again within the subquery, we need to duplicate the query parameters again as they will be used twice in the course of the whole query
-	query.args = append(query.args, query.args...)
+	query.args = append(query.args, args...)
 
 	// Add where condition to implement the after/before paging request
 	if page.Cursor() != "" {
@@ -725,10 +786,11 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 	return nil
 }
 
-func (query *QueryBuilder) countQuery() string {
+func (query *QueryBuilder) countQuery() (string, []any) {
 	selection := "COUNT("
 	joins := ""
 	filters := ""
+
 	if len(query.distinctOn) > 0 {
 		distinctFields := strings.Join(query.distinctOn, ", ")
 		if len(query.distinctOn) > 1 {
@@ -751,13 +813,17 @@ func (query *QueryBuilder) countQuery() string {
 		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
 	}
 
+	// This is a bit gross as we are assuming the previous X args are the ones used in the where condition
+	argCount := strings.Count(filters, "?")
+	args := query.args[len(query.args)-argCount:]
+
 	sql := fmt.Sprintf("SELECT %s FROM %s %s %s",
 		selection,
 		sqlQuote(query.table),
 		joins,
 		filters)
 
-	return sql
+	return sql, args
 }
 
 // Generates an executable SELECT statement with the list of arguments.
@@ -767,6 +833,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	filters := ""
 	orderBy := ""
 	limit := ""
+	groupBy := ""
 
 	if len(query.distinctOn) > 0 {
 		distinctOn = fmt.Sprintf("DISTINCT ON(%s)", strings.Join(query.distinctOn, ", "))
@@ -803,12 +870,17 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		query.args = append(query.args, *query.limit)
 	}
 
-	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s",
+	if len(query.groupBy) > 0 {
+		groupBy = fmt.Sprintf("GROUP BY %s", strings.Join(query.groupBy, ", "))
+	}
+
+	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s %s",
 		distinctOn,
 		selection,
 		sqlQuote(query.table),
 		joins,
 		filters,
+		groupBy,
 		orderBy,
 		limit)
 
@@ -1213,7 +1285,7 @@ func (statement *Statement) Execute(ctx context.Context) (int, error) {
 
 type Rows = []map[string]any
 
-type FacetInfo map[string]map[string]any
+type ResultInfo map[string]map[string]any
 
 type PageInfo struct {
 	// Count returns the number of rows returned for the current page
@@ -1243,19 +1315,22 @@ func (pi *PageInfo) ToMap() map[string]any {
 }
 
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
-func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows, *PageInfo, error) {
+func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows, *ResultInfo, *PageInfo, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	result, err := database.ExecuteQuery(ctx, statement.template, statement.args...)
 	if err != nil {
-		return nil, nil, toRuntimeError(err)
+		return nil, nil, nil, toRuntimeError(err)
 	}
 
 	rows := result.Rows
-	returnedCount := len(result.Rows)
+
+	resultInfo := &ResultInfo{}
+
+	returnedCount := len(rows)
 
 	// Sort out the hasNextPage value, and clean up the response.
 	hasNextPage := false
@@ -1266,6 +1341,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 	if page != nil && page.IsBackwards() {
 		rows = lo.Reverse(rows)
 	}
+
 	if returnedCount > 0 {
 		last := rows[returnedCount-1]
 		var hasPagination bool
@@ -1275,9 +1351,6 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 			totalCount = last["totalcount"].(int64)
 
 			for i, row := range rows {
-				delete(row, "hasnext")
-				delete(row, "totalcount")
-
 				if i == 0 {
 					startCursor, _ = row["id"].(string)
 				}
@@ -1287,8 +1360,17 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 			}
 		}
 
-		// TODO: only do this if we know auditing was added
+		facets := rows[0]["_facets"]
+		if facets != nil {
+			if err := json.Unmarshal([]byte(facets.(string)), &resultInfo); err != nil {
+				return nil, nil, nil, fmt.Errorf("failed to parse facets data: %w", err)
+			}
+		}
+
 		for _, row := range rows {
+			delete(row, "hasnext")
+			delete(row, "totalcount")
+			delete(row, "_facets")
 			delete(row, setIdentityIdAlias)
 			delete(row, setTraceIdAlias)
 		}
@@ -1336,22 +1418,22 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 							return time.Parse("2006-01-02 15:04:05.999999999-07", s)
 						})
 					default:
-						return nil, nil, fmt.Errorf("missing parsing implementation for type %s", f.Type.Type)
+						return nil, nil, nil, fmt.Errorf("missing parsing implementation for type %s", f.Type.Type)
 					}
 					if err != nil {
-						return nil, nil, err
+						return nil, nil, nil, err
 					}
 				}
 			}
 		}
 	}
 
-	return toLowerCamelMaps(rows), pageInfo, nil
+	return toLowerCamelMaps(rows), resultInfo, pageInfo, nil
 }
 
 // Execute the SQL statement against the database and expects a single row, returns the single row or nil if no data is found.
 func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any, error) {
-	results, pageInfo, err := statement.ExecuteToMany(ctx, nil)
+	results, _, pageInfo, err := statement.ExecuteToMany(ctx, nil)
 	if err != nil {
 		return nil, err
 	}

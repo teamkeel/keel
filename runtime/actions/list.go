@@ -166,7 +166,7 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Execute database request with results
-	results, pageInfo, err := statement.ExecuteToMany(scope.Context, page)
+	results, resultInfo, pageInfo, err := statement.ExecuteToMany(scope.Context, page)
 	if err != nil {
 		return nil, err
 	}
@@ -212,8 +212,9 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	return map[string]any{
-		"results":  results,
-		"pageInfo": pageInfo.ToMap(),
+		"results":    results,
+		"resultInfo": resultInfo,
+		"pageInfo":   pageInfo.ToMap(),
 	}, nil
 }
 
@@ -228,7 +229,16 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 		orderBy = []any{}
 	}
 
-	err := query.applyImplicitFiltersForList(scope, where)
+	// Select all columns from this table and distinct on id
+	query.DistinctOn(IdField())
+	query.Select(AllFields())
+
+	err := query.SelectFacets(scope, input)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = query.applyImplicitFiltersForList(scope, where)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -246,15 +256,6 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 	query.applyRequestOrdering(orderBy)
 
 	page, err := ParsePage(input)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// Select all columns from this table and distinct on id
-	query.DistinctOn(IdField())
-	query.Select(AllFields())
-
-	err = query.SelectFacets(scope, input)
 	if err != nil {
 		return nil, nil, err
 	}
