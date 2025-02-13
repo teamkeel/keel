@@ -69,8 +69,6 @@ func UpdateActionNestedInputsRule(asts []*parser.AST, errs *errorhandling.Valida
 					relationField = true
 				}
 			}
-
-			return
 		},
 	}
 }
