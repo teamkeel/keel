@@ -202,7 +202,8 @@
       "entitySingle": "comment",
       "entityPlural": "comments",
       "capabilities": { "comments": true, "audit": true },
-      "createEntryAction": { "toolId": "createComment" }
+      "createEntryAction": { "toolId": "createComment" },
+      "displayLayout": { "type": "RECORD", "recordConfig": {} }
     },
     {
       "id": "getPost",
@@ -375,7 +376,8 @@
           ],
           "visible": true
         }
-      ]
+      ],
+      "displayLayout": { "type": "RECORD", "recordConfig": {} }
     },
     {
       "id": "listCategories",

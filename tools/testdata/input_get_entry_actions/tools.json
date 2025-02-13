@@ -99,7 +99,8 @@
           "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
           "displayOrder": 4
         }
-      ]
+      ],
+      "displayLayout": { "type": "RECORD", "recordConfig": {} }
     },
     {
       "id": "getProductBySku",
@@ -205,7 +206,8 @@
           "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
           "displayOrder": 5
         }
-      ]
+      ],
+      "displayLayout": { "type": "RECORD", "recordConfig": {} }
     },
     {
       "id": "getProductWithSupplier",
@@ -333,7 +335,8 @@
           "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
           "displayOrder": 4
         }
-      ]
+      ],
+      "displayLayout": { "type": "RECORD", "recordConfig": {} }
     },
     {
       "id": "listProducts",

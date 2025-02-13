@@ -140,6 +140,14 @@ func (g *Generator) scaffoldTools() {
 				}
 			}
 
+			// get actions have a display layout of RecordView
+			if action.IsGet() {
+				t.Config.DisplayLayout = &toolsproto.DisplayLayoutConfig{
+					Type:         toolsproto.DisplayLayoutConfig_RECORD,
+					RecordConfig: &toolsproto.RecordViewConfig{},
+				}
+			}
+
 			g.Tools[t.Config.ActionName] = &t
 		}
 	}
