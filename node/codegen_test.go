@@ -953,6 +953,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1001,6 +1003,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1059,6 +1063,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1098,6 +1104,8 @@ export interface ListPersonsInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1137,6 +1145,8 @@ export interface ListPersonsInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1196,6 +1206,8 @@ export interface ListBooksInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1255,6 +1267,8 @@ export interface ListBooksInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1326,6 +1340,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1382,6 +1398,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 	orderBy?: (ListPeopleOrderByName | ListPeopleOrderByFavouriteSport)[];
 }`
 
@@ -2019,6 +2037,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
@@ -2258,6 +2278,8 @@ export interface PeopleByHobbyInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;

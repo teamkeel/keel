@@ -16,6 +16,8 @@
                   "before": { "type": "string" },
                   "first": { "type": "number" },
                   "last": { "type": "number" },
+                  "limit": { "type": "number" },
+                  "offset": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/ThingsWhere" }
                 },
                 "unevaluatedProperties": false,
@@ -36,6 +38,7 @@
                         "count": { "type": "number" },
                         "endCursor": { "type": "string" },
                         "hasNextPage": { "type": "boolean" },
+                        "pageNumber": { "type": "number" },
                         "startCursor": { "type": "string" },
                         "totalCount": { "type": "number" }
                       }

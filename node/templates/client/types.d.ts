@@ -148,6 +148,7 @@ type PageInfo = {
   hasNextPage: boolean;
   startCursor: string;
   totalCount: number;
+  pageNumber?: number;
 };
 
 type FileResponseObject = {

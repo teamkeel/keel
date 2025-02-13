@@ -14,6 +14,8 @@ input ListPeopleInput {
   before: String
   first: Int
   last: Int
+  limit: Int
+  offset: Int
   where: ListPeopleWhere!
 }
 
@@ -22,6 +24,8 @@ input ListPeopleOptionalFieldsInput {
   before: String
   first: Int
   last: Int
+  limit: Int
+  offset: Int
   where: ListPeopleOptionalFieldsWhere!
 }
 
@@ -43,6 +47,8 @@ input ListPeopleOptionalInputsInput {
   before: String
   first: Int
   last: Int
+  limit: Int
+  offset: Int
   where: ListPeopleOptionalInputsWhere
 }
 
@@ -77,6 +83,7 @@ type PageInfo {
   count: Int!
   endCursor: String!
   hasNextPage: Boolean!
+  pageNumber: Int
   startCursor: String!
   totalCount: Int!
 }
