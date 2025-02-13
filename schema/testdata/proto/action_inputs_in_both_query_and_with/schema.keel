@@ -16,6 +16,6 @@ model Account {
 
         update updateAccount4(identity.email, identity.issuer) with (email)
 
-        update updateAccount5(identity.email, identity.issuer) with (identity.email)
+        update updateAccount5(identity.email, identity.issuer) with (name)
     }
 }

@@ -162,22 +162,20 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 
 			idents, err := resolve.AsIdentArray(expression)
 			if err != nil {
-				if err != nil {
-					errs.AppendError(
-						errorhandling.NewValidationErrorWithDetails(
-							errorhandling.ActionInputError,
-							errorhandling.ErrorDetails{
-								Message: "@unique argument must be an array of field names",
-								Hint:    "For example, @unique([sku, supplierCode])",
-							},
-							expression,
-						),
-					)
-					return
-				}
+				errs.AppendError(
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.ActionInputError,
+						errorhandling.ErrorDetails{
+							Message: "@unique argument must be an array of field names",
+							Hint:    "For example, @unique([sku, supplierCode])",
+						},
+						expression,
+					),
+				)
+				return
 			}
 
-			if len(idents) < 2 || err != nil {
+			if len(idents) < 2 {
 				errs.AppendError(
 					errorhandling.NewValidationErrorWithDetails(
 						errorhandling.AttributeArgumentError,
