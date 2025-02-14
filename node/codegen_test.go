@@ -2228,22 +2228,6 @@ model Person {
 }
 	`
 	expected := `
-import * as sdk from "@teamkeel/sdk";
-import * as runtime from "@teamkeel/functions-runtime";
-import "@teamkeel/testing-runtime";
-
-export interface RequestPasswordResetInput {
-	email: string;
-	redirectUrl: string;
-}
-export interface RequestPasswordResetResponse {
-}
-export interface ResetPasswordInput {
-	token: string;
-	password: string;
-}
-export interface ResetPasswordResponse {
-}
 export interface HobbyQueryInput {
 	equals?: Hobby | null;
 	notEquals?: Hobby | null;
@@ -2266,10 +2250,54 @@ declare class ActionExecutor {
 	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeTestingTypes(w, s)
+	})
 }
-export declare const actions: ActionExecutor;
-export declare const models: sdk.ModelsAPI;
-export declare function resetDatabase(): Promise<void>;`
+
+func TestWriteTestingTypesFacets(t *testing.T) {
+	t.Parallel()
+	schema := `
+enum Hobby {
+	Tennis
+	Chess
+}
+model Person {
+	fields {
+		city Text
+		hobby Hobby
+		age Number
+		dob Date
+		timeStamp Timestamp
+		duration Duration
+	}
+	actions {
+		list peopleByHobby(hobby) {
+			@facet(id, city, hobby, age, dob, duration, timeStamp)
+		}
+	}
+}
+	`
+	expected := `
+declare class ActionExecutor {
+	withIdentity(identity: sdk.Identity): ActionExecutor;
+	withAuthToken(token: string): ActionExecutor;
+	withTimezone(timezone: string): this;
+	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], resultInfo: PeopleByHobbyResultInfo, pageInfo: runtime.PageInfo}>;
+	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
+	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
+}
+export interface PeopleByHobbyResultInfo {
+	id: [ { value: string, count: number } ];
+	city: [ { value: string, count: number } ];
+	hobby: [ { value: string, count: number } ];
+	age: { min?: number, max?: number, avg?: number };
+	dob: { min?: Date, max?: Date };
+	duration: { min?: runtime.Duration, max?: runtime.Duration, avg?: runtime.Duration };
+	timeStamp: { min?: Date, max?: Date };
+}`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeTestingTypes(w, s)

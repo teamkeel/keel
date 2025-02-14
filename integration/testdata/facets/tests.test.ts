@@ -87,6 +87,8 @@ test("facets - no input filters with paging", async () => {
     first: 2,
   });
 
+console.log(result.resultInfo);
+
   expect(result.resultInfo.quantity.min).toEqual(1);
   expect(result.resultInfo.quantity.max).toEqual(10);
   expect(result.resultInfo.quantity.avg).toEqual(5.6);

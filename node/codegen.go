@@ -167,6 +167,43 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	}
 }
 
+func writeResultInfoInterface(w *codegen.Writer, schema *proto.Schema, action *proto.Action) {
+	model := schema.FindModel(action.ModelName)
+	var facetFields []*proto.Field
+	for _, name := range action.Facets {
+		for _, field := range model.Fields {
+			if field.Name == name {
+				facetFields = append(facetFields, field)
+				continue
+			}
+		}
+	}
+
+	if len(facetFields) == 0 {
+		return
+	}
+
+	w.Writef("export interface %sResultInfo {\n", strcase.ToCamel(action.Name))
+	w.Indent()
+
+	for _, field := range facetFields {
+		switch field.Type.Type {
+		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
+			w.Writef("%s: { min?: number, max?: number, avg?: number };\n", field.Name)
+		case proto.Type_TYPE_ID, proto.Type_TYPE_ENUM, proto.Type_TYPE_STRING:
+			w.Writef("%s: [ { value: string, count: number } ];\n", field.Name)
+		case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME:
+			w.Writef("%s: { min?: Date, max?: Date };\n", field.Name)
+		case proto.Type_TYPE_DURATION:
+			w.Writef("%s: { min?: runtime.Duration, max?: runtime.Duration, avg?: runtime.Duration };\n", field.Name)
+		}
+	}
+
+	w.Dedent()
+	w.Write("}")
+	w.Writeln("")
+}
+
 func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sTable {\n", model.Name)
 	w.Indent()
@@ -1349,32 +1386,38 @@ func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Sub
 	w.Writeln("}>;")
 }
 
-func toActionReturnType(model *proto.Model, op *proto.Action) string {
+func toActionReturnType(model *proto.Model, action *proto.Action) string {
 	returnType := "Promise<"
 	sdkPrefix := "sdk."
 
-	switch op.Type {
+	switch action.Type {
 	case proto.ActionType_ACTION_TYPE_CREATE:
 		returnType += sdkPrefix + model.Name
 	case proto.ActionType_ACTION_TYPE_UPDATE:
 		returnType += sdkPrefix + model.Name
 	case proto.ActionType_ACTION_TYPE_GET:
 		className := model.Name
-		if len(op.GetResponseEmbeds()) > 0 {
-			className = toResponseType(op.Name)
+		if len(action.GetResponseEmbeds()) > 0 {
+			className = toResponseType(action.Name)
 		}
 		returnType += sdkPrefix + className + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
+
 		className := model.Name
-		if len(op.GetResponseEmbeds()) > 0 {
-			className = toResponseType(op.Name)
+		if len(action.GetResponseEmbeds()) > 0 {
+			className = toResponseType(action.Name)
 		}
-		returnType += "{results: " + sdkPrefix + className + "[], resultInfo: runtime.ResultInfo, pageInfo: runtime.PageInfo}"
+
+		if len(action.Facets) > 0 {
+			returnType += "{results: " + sdkPrefix + className + "[], resultInfo: " + strcase.ToCamel(action.Name) + "ResultInfo, pageInfo: runtime.PageInfo}"
+		} else {
+			returnType += "{results: " + sdkPrefix + className + "[], pageInfo: runtime.PageInfo}"
+		}
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		// todo: create ID type
 		returnType += "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
-		returnType += op.ResponseMessageName
+		returnType += action.ResponseMessageName
 	}
 
 	returnType += ">"
@@ -1678,8 +1721,10 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 			w.Writeln(";")
 		}
 	}
+
 	w.Dedent()
 	w.Writeln("}")
+
 	if len(schema.Jobs) > 0 {
 		w.Writeln("type JobOptions = { scheduled?: boolean } | null")
 		w.Writeln("declare class JobExecutor {")
@@ -1731,6 +1776,14 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		w.Dedent()
 		w.Writeln("}")
 		w.Writeln("export declare const subscribers: SubscriberExecutor;")
+	}
+
+	for _, model := range schema.Models {
+		for _, action := range model.Actions {
+			if action.Type == proto.ActionType_ACTION_TYPE_LIST {
+				writeResultInfoInterface(w, schema, action)
+			}
+		}
 	}
 
 	w.Writeln("export declare const actions: ActionExecutor;")

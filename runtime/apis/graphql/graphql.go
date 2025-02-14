@@ -571,46 +571,9 @@ func (mk *graphqlSchemaBuilder) makeResultInfoType(action *proto.Action) graphql
 
 	fields := graphql.Fields{}
 	for _, field := range facetFields {
-
 		fields[field.Name] = &graphql.Field{
 			Type: protoTypeToFacetType[field.Type.Type],
 		}
-
-		// switch field.Type.Type {
-		// case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
-		// 	fields[field.Name] = &graphql.Field{
-		// 		Type: graphql.NewObject(graphql.ObjectConfig{
-		// 			Name: fmt.Sprintf("%s%sFacet", action.ModelName, strcase.ToCamel(field.Name)),
-		// 			Fields: graphql.Fields{
-		// 				"min": &graphql.Field{Type: graphql.Float},
-		// 				"max": &graphql.Field{Type: graphql.Float},
-		// 				"avg": &graphql.Field{Type: graphql.Float},
-		// 			},
-		// 		}),
-		// 	}
-		// case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		// 	fields[field.Name] = &graphql.Field{
-		// 		Type: graphql.NewObject(graphql.ObjectConfig{
-		// 			Name: fmt.Sprintf("%s%sFacet", action.ModelName, strcase.ToCamel(field.Name)),
-		// 			Fields: graphql.Fields{
-		// 				"min": &graphql.Field{Type: graphql.Float},
-		// 				"max": &graphql.Field{Type: graphql.Float},
-		// 			},
-		// 		}),
-		// 	}
-		// case proto.Type_TYPE_ENUM, proto.Type_TYPE_STRING:
-		// 	fields[field.Name] = &graphql.Field{
-		// 		Type: graphql.NewList(
-		// 			graphql.NewObject(graphql.ObjectConfig{
-		// 				Name: "TextFacet", // fmt.Sprintf("TextFacet", action.ModelName, strcase.ToCamel(field.Name)),
-		// 				Fields: graphql.Fields{
-		// 					"value": &graphql.Field{Type: graphql.String},
-		// 					"count": &graphql.Field{Type: graphql.Float},
-		// 				},
-		// 			}),
-		// 		),
-		// 	}
-		// }
 	}
 
 	return graphql.NewObject(graphql.ObjectConfig{
