@@ -330,24 +330,24 @@ var durationType = graphql.NewObject(graphql.ObjectConfig{
 var idFacetType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "IDFacet",
 	Fields: graphql.Fields{
-		"value": &graphql.Field{Type: graphql.String},
-		"count": &graphql.Field{Type: graphql.Int},
+		"value": &graphql.Field{Type: graphql.NewNonNull(graphql.String)},
+		"count": &graphql.Field{Type: graphql.NewNonNull(graphql.Int)},
 	},
 })
 
 var textFacetType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "TextFacet",
 	Fields: graphql.Fields{
-		"value": &graphql.Field{Type: graphql.String},
-		"count": &graphql.Field{Type: graphql.Int},
+		"value": &graphql.Field{Type: graphql.NewNonNull(graphql.String)},
+		"count": &graphql.Field{Type: graphql.NewNonNull(graphql.Int)},
 	},
 })
 
 var enumFacetType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "EnumFacet",
 	Fields: graphql.Fields{
-		"value": &graphql.Field{Type: graphql.String},
-		"count": &graphql.Field{Type: graphql.Int},
+		"value": &graphql.Field{Type: graphql.NewNonNull(graphql.String)},
+		"count": &graphql.Field{Type: graphql.NewNonNull(graphql.Int)},
 	},
 })
 
@@ -395,9 +395,9 @@ var durationFacetType = graphql.NewObject(graphql.ObjectConfig{
 })
 
 var protoTypeToFacetType = map[proto.Type]graphql.Output{
-	proto.Type_TYPE_ID:        idFacetType,
-	proto.Type_TYPE_STRING:    textFacetType,
-	proto.Type_TYPE_ENUM:      enumFacetType,
+	proto.Type_TYPE_ID:        graphql.NewList(idFacetType),
+	proto.Type_TYPE_STRING:    graphql.NewList(textFacetType),
+	proto.Type_TYPE_ENUM:      graphql.NewList(enumFacetType),
 	proto.Type_TYPE_INT:       numberFacetType,
 	proto.Type_TYPE_DECIMAL:   decimalFacetType,
 	proto.Type_TYPE_TIMESTAMP: timestampFacetType,

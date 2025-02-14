@@ -9,7 +9,9 @@ type Mutation {
 
 input CreateOrderInput {
   category: String!
+  durationToPurchase: String
   orderDate: ISO8601
+  orderTime: ISO8601
   price: Float!
   quantity: Int!
   status: Status!
@@ -47,15 +49,40 @@ input StringQueryInput {
   startsWith: String
 }
 
+type Date {
+  formatted(format: String!): String!
+  iso8601: String!
+}
+
+type DateFacet {
+  max: Date
+  min: Date
+}
+
 type DecimalFacet {
   avg: Float
   max: Float
   min: Float
 }
 
+type Duration {
+  iso8601: String!
+}
+
+type DurationFacet {
+  avg: Duration
+  max: Duration
+  min: Duration
+}
+
 type EnumFacet {
-  count: Int
-  value: String
+  count: Int!
+  value: String!
+}
+
+type IDFacet {
+  count: Int!
+  value: String!
 }
 
 type NumberFacet {
@@ -67,8 +94,10 @@ type NumberFacet {
 type Order {
   category: String!
   createdAt: Timestamp!
+  durationToPurchase: Duration
   id: ID!
-  orderDate: Timestamp
+  orderDate: Date
+  orderTime: Timestamp
   price: Float!
   quantity: Int!
   status: Status!
@@ -86,11 +115,14 @@ type OrderEdge {
 }
 
 type OrderResultInfo {
-  category: TextFacet
-  orderDate: Timestamp
+  category: [TextFacet]
+  durationToPurchase: DurationFacet
+  id: [IDFacet]
+  orderDate: DateFacet
+  orderTime: Timestamp
   price: DecimalFacet
   quantity: NumberFacet
-  status: EnumFacet
+  status: [EnumFacet]
 }
 
 type PageInfo {
@@ -102,8 +134,8 @@ type PageInfo {
 }
 
 type TextFacet {
-  count: Int
-  value: String
+  count: Int!
+  value: String!
 }
 
 type Timestamp {
