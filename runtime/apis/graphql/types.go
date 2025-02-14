@@ -327,6 +327,85 @@ var durationType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
+var idFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "IDFacet",
+	Fields: graphql.Fields{
+		"value": &graphql.Field{Type: graphql.String},
+		"count": &graphql.Field{Type: graphql.Int},
+	},
+})
+
+var textFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "TextFacet",
+	Fields: graphql.Fields{
+		"value": &graphql.Field{Type: graphql.String},
+		"count": &graphql.Field{Type: graphql.Int},
+	},
+})
+
+var enumFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "EnumFacet",
+	Fields: graphql.Fields{
+		"value": &graphql.Field{Type: graphql.String},
+		"count": &graphql.Field{Type: graphql.Int},
+	},
+})
+
+var numberFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "NumberFacet",
+	Fields: graphql.Fields{
+		"min": &graphql.Field{Type: graphql.Int},
+		"max": &graphql.Field{Type: graphql.Int},
+		"avg": &graphql.Field{Type: graphql.Float},
+	},
+})
+
+var decimalFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "DecimalFacet",
+	Fields: graphql.Fields{
+		"min": &graphql.Field{Type: graphql.Float},
+		"max": &graphql.Field{Type: graphql.Float},
+		"avg": &graphql.Field{Type: graphql.Float},
+	},
+})
+
+var timestampFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "TimestampFacet",
+	Fields: graphql.Fields{
+		"min": &graphql.Field{Type: timestampType},
+		"max": &graphql.Field{Type: timestampType},
+	},
+})
+
+var dateFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "DateFacet",
+	Fields: graphql.Fields{
+		"min": &graphql.Field{Type: dateType},
+		"max": &graphql.Field{Type: dateType},
+	},
+})
+
+var durationFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "DurationFacet",
+	Fields: graphql.Fields{
+		"min": &graphql.Field{Type: durationType},
+		"max": &graphql.Field{Type: durationType},
+		"avg": &graphql.Field{Type: durationType},
+	},
+})
+
+var protoTypeToFacetType = map[proto.Type]graphql.Output{
+	proto.Type_TYPE_ID:        idFacetType,
+	proto.Type_TYPE_STRING:    textFacetType,
+	proto.Type_TYPE_ENUM:      enumFacetType,
+	proto.Type_TYPE_INT:       numberFacetType,
+	proto.Type_TYPE_DECIMAL:   decimalFacetType,
+	proto.Type_TYPE_TIMESTAMP: timestampFacetType,
+	proto.Type_TYPE_DATE:      dateFacetType,
+	proto.Type_TYPE_DATETIME:  timestampType,
+	proto.Type_TYPE_DURATION:  durationFacetType,
+}
+
 var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_ID:              graphql.ID,
 	proto.Type_TYPE_STRING:          graphql.String,

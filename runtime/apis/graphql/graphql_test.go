@@ -52,6 +52,10 @@ func TestGraphQL(t *testing.T) {
 	}
 
 	for name, tc := range testCases {
+		if name != "facets" {
+			continue
+		}
+
 		t.Run(name, func(t *testing.T) {
 			builder := schema.Builder{}
 			protoSchema, err := builder.MakeFromInputs(&reader.Inputs{

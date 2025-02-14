@@ -72,10 +72,7 @@
           "type": "ACTION_TYPE_LIST",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "ListProductsInput",
-          "facets": [
-            "category",
-            "colour"
-          ]
+          "facets": ["category", "colour"]
         }
       ]
     },
@@ -89,9 +86,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -128,9 +123,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -462,9 +455,7 @@
             "messageName": "CategoryQueryInput"
           },
           "optional": true,
-          "target": [
-            "category"
-          ]
+          "target": ["category"]
         },
         {
           "messageName": "ListProductsWhere",
@@ -474,9 +465,7 @@
             "messageName": "StringQueryInput"
           },
           "optional": true,
-          "target": [
-            "colour"
-          ]
+          "target": ["colour"]
         }
       ]
     },

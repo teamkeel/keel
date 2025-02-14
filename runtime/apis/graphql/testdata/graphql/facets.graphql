@@ -1,0 +1,124 @@
+type Query {
+  _health: Boolean
+  listOrders(input: ListOrdersInput): OrderConnection!
+}
+
+type Mutation {
+  createOrder(input: CreateOrderInput!): Order!
+}
+
+input CreateOrderInput {
+  category: String!
+  orderDate: ISO8601
+  price: Float!
+  quantity: Int!
+  status: Status!
+}
+
+input DecimalQueryInput {
+  equals: Float
+  greaterThan: Float
+  greaterThanOrEquals: Float
+  lessThan: Float
+  lessThanOrEquals: Float
+  notEquals: Float
+  oneOf: [Float]
+}
+
+input ListOrdersInput {
+  after: String
+  before: String
+  first: Int
+  last: Int
+  where: ListOrdersWhere
+}
+
+input ListOrdersWhere {
+  category: StringQueryInput
+  price: DecimalQueryInput
+}
+
+input StringQueryInput {
+  contains: String
+  endsWith: String
+  equals: String
+  notEquals: String
+  oneOf: [String]
+  startsWith: String
+}
+
+type DecimalFacet {
+  avg: Float
+  max: Float
+  min: Float
+}
+
+type EnumFacet {
+  count: Int
+  value: String
+}
+
+type NumberFacet {
+  avg: Float
+  max: Int
+  min: Int
+}
+
+type Order {
+  category: String!
+  createdAt: Timestamp!
+  id: ID!
+  orderDate: Timestamp
+  price: Float!
+  quantity: Int!
+  status: Status!
+  updatedAt: Timestamp!
+}
+
+type OrderConnection {
+  edges: [OrderEdge!]!
+  pageInfo: PageInfo!
+  resultInfo: OrderResultInfo
+}
+
+type OrderEdge {
+  node: Order!
+}
+
+type OrderResultInfo {
+  category: TextFacet
+  orderDate: Timestamp
+  price: DecimalFacet
+  quantity: NumberFacet
+  status: EnumFacet
+}
+
+type PageInfo {
+  count: Int!
+  endCursor: String!
+  hasNextPage: Boolean!
+  startCursor: String!
+  totalCount: Int!
+}
+
+type TextFacet {
+  count: Int
+  value: String
+}
+
+type Timestamp {
+  formatted(format: String!): String!
+  fromNow: String!
+  iso8601: String!
+  seconds: Int!
+}
+
+enum Status {
+  Cancelled
+  Complete
+  InProgress
+}
+
+scalar Any
+
+scalar ISO8601

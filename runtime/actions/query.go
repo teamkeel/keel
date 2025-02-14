@@ -566,9 +566,10 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 			}
 		}
 	}
+
+	selects := []string{}
 	ctes := []string{}
 	for i, field := range facetFields {
-
 		subWhere := map[string]any{}
 		for k, v := range where {
 			if k != field.Name {
@@ -576,80 +577,79 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 			}
 		}
 
+		column := strcase.ToSnake(field.Name)
+
+		facetQuery := NewQuery(scope.Model)
+
+		err := facetQuery.applyImplicitFiltersForList(scope, subWhere)
+		if err != nil {
+			return err
+		}
+
+		err = facetQuery.applyExpressionFilters(scope, where)
+		if err != nil {
+			return err
+		}
+
 		var statement *Statement
 		var sel string
 		switch field.Type.Type {
-		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
-			facetQuery := NewQuery(scope.Model)
-
-			err := facetQuery.applyImplicitFiltersForList(scope, subWhere)
-			if err != nil {
-				return err
-			}
-
-			err = facetQuery.applyExpressionFilters(scope, where)
-			if err != nil {
-				return err
-			}
-
+		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT, proto.Type_TYPE_DURATION:
 			sel = fmt.Sprintf(`json_build_object(
-				'min', COALESCE(MIN(%s), 0),
-				'max', COALESCE(MAX(%s), 0),
-				'avg', COALESCE(ROUND(AVG(%s)::numeric, 2), 0)
-			) AS %s`, sqlQuote(field.Name), sqlQuote(field.Name), sqlQuote(field.Name), sqlQuote(field.Name))
+				'min', MIN(%s),
+				'max', MAX(%s),
+				'avg', AVG(%s)
+			) AS %s`, sqlQuote(column), sqlQuote(column), sqlQuote(column), sqlQuote(column))
 
 			facetQuery.SelectClause(sel)
+			statement = facetQuery.SelectStatement()
+		case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME:
+			sel = fmt.Sprintf(`json_build_object(
+				'min', MIN(%s),
+				'max', MAX(%s)
+			) AS %s`, sqlQuote(column), sqlQuote(column), sqlQuote(column))
 
+			facetQuery.SelectClause(sel)
 			statement = facetQuery.SelectStatement()
 		case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM:
-			facetQuery := NewQuery(scope.Model)
-
-			err := facetQuery.applyImplicitFiltersForList(scope, subWhere)
-			if err != nil {
-				return err
-			}
-
-			err = facetQuery.applyExpressionFilters(scope, where)
-			if err != nil {
-				return err
-			}
-
 			facetQuery.Select(Field(field.Name))
 			facetQuery.SelectClause("COUNT(*) as \"count\"")
-			facetQuery.AppendOrderBy(Field(field.Name), "DESC")
+			facetQuery.AppendOrderBy(Field(field.Name), "ASC")
 			facetQuery.GroupBy(Field(field.Name))
 			subStatement := facetQuery.SelectStatement()
 
 			sel = fmt.Sprintf(`SELECT
-				jsonb_object_agg(
-					%s,
-					"count"
+				jsonb_agg(
+					jsonb_build_object(
+						'value', %s,
+						'count', "count"
+					)
 				) as %s
 				FROM (
 					%s
-				)`, sqlQuote(field.Name), sqlQuote(field.Name), subStatement.template)
+				)`, sqlQuote(column), sqlQuote(column), subStatement.template)
 
 			statement = &Statement{
 				template: sel,
 				args:     subStatement.args,
 			}
+		default:
+			return fmt.Errorf("unsupported facet field type: %s", field.Type.Type)
 		}
 
-		sql += fmt.Sprintf("%s AS (%s)", sqlQuote(fmt.Sprintf("%s_facets", field.Name)), statement.template)
+		sql += fmt.Sprintf("%s AS (%s)", sqlQuote(fmt.Sprintf("%s_facets", column)), statement.template)
 		if i < len(facetFields)-1 {
 			sql += ", "
 		} else {
 			sql += " "
 		}
 
-		ctes = append(ctes, sqlQuote(fmt.Sprintf("%s_facets", field.Name)))
+		ctes = append(ctes, sqlQuote(fmt.Sprintf("%s_facets", column)))
 		//TODO add args too
 		query.args = append(query.args, statement.args...)
-	}
 
-	selects := []string{}
-	for _, field := range facetFields {
-		selects = append(selects, fmt.Sprintf("'%s', %s.%s", field.Name, sqlQuote(fmt.Sprintf("%s_facets", field.Name)), sqlQuote(field.Name)))
+		selects = append(selects, fmt.Sprintf("'%s', %s.%s", column, sqlQuote(fmt.Sprintf("%s_facets", column)), sqlQuote(column)))
+
 	}
 
 	sql += fmt.Sprintf("SELECT json_build_object(%s) FROM %s", strings.Join(selects, ", "), strings.Join(ctes, ", "))
@@ -1285,7 +1285,7 @@ func (statement *Statement) Execute(ctx context.Context) (int, error) {
 
 type Rows = []map[string]any
 
-type ResultInfo map[string]map[string]any
+type ResultInfo map[string]any
 
 type PageInfo struct {
 	// Count returns the number of rows returned for the current page
@@ -1326,11 +1326,8 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		return nil, nil, nil, toRuntimeError(err)
 	}
 
+	var resultInfo ResultInfo
 	rows := result.Rows
-
-	resultInfo := &ResultInfo{}
-
-	returnedCount := len(rows)
 
 	// Sort out the hasNextPage value, and clean up the response.
 	hasNextPage := false
@@ -1342,6 +1339,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		rows = lo.Reverse(rows)
 	}
 
+	returnedCount := len(rows)
 	if returnedCount > 0 {
 		last := rows[returnedCount-1]
 		var hasPagination bool
@@ -1360,12 +1358,23 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 			}
 		}
 
+		//res := map[string]map[string]any{}
 		facets := rows[0]["_facets"]
 		if facets != nil {
 			if err := json.Unmarshal([]byte(facets.(string)), &resultInfo); err != nil {
 				return nil, nil, nil, fmt.Errorf("failed to parse facets data: %w", err)
+			} else {
+				for k, v := range resultInfo {
+					if strcase.ToLowerCamel(k) != k {
+						resultInfo[strcase.ToLowerCamel(k)] = v
+						delete(resultInfo, k)
+					}
+				}
 			}
 		}
+
+		// resultInfo = ResultInfo(res)
+		// resultInfo["sd"] = map[string]any{}
 
 		for _, row := range rows {
 			delete(row, "hasnext")
@@ -1428,7 +1437,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		}
 	}
 
-	return toLowerCamelMaps(rows), resultInfo, pageInfo, nil
+	return toLowerCamelMaps(rows), &resultInfo, pageInfo, nil
 }
 
 // Execute the SQL statement against the database and expects a single row, returns the single row or nil if no data is found.

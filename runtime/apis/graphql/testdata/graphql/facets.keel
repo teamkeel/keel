@@ -15,11 +15,16 @@ model Order {
             @permission(expression: true)
         }
     }
-    @permission(expression: true, actions: [get,list])
 }
 
 enum Status {
     Complete
     InProgress
     Cancelled
+}
+
+api Test {
+    models {
+        Order
+    }
 }

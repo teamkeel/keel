@@ -515,7 +515,8 @@ func (mk *graphqlSchemaBuilder) addAction(
 	case proto.ActionType_ACTION_TYPE_LIST:
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
-		field.Type = mk.makeConnectionType(modelType)
+		resultInfo := mk.makeResultInfoType(action)
+		field.Type = mk.makeConnectionType(modelType, resultInfo)
 		mk.query.AddFieldConfig(action.Name, field)
 	case proto.ActionType_ACTION_TYPE_READ:
 		responseMessage := schema.FindMessage(action.ResponseMessageName)
@@ -552,7 +553,73 @@ func (mk *graphqlSchemaBuilder) addAction(
 	return nil
 }
 
-func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) graphql.Output {
+func (mk *graphqlSchemaBuilder) makeResultInfoType(action *proto.Action) graphql.Output {
+	model := mk.proto.FindModel(action.ModelName)
+	var facetFields []*proto.Field
+	for _, name := range action.Facets {
+		for _, field := range model.Fields {
+			if field.Name == name {
+				facetFields = append(facetFields, field)
+				continue
+			}
+		}
+	}
+
+	if len(facetFields) == 0 {
+		return nil
+	}
+
+	fields := graphql.Fields{}
+	for _, field := range facetFields {
+
+		fields[field.Name] = &graphql.Field{
+			Type: protoTypeToFacetType[field.Type.Type],
+		}
+
+		// switch field.Type.Type {
+		// case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
+		// 	fields[field.Name] = &graphql.Field{
+		// 		Type: graphql.NewObject(graphql.ObjectConfig{
+		// 			Name: fmt.Sprintf("%s%sFacet", action.ModelName, strcase.ToCamel(field.Name)),
+		// 			Fields: graphql.Fields{
+		// 				"min": &graphql.Field{Type: graphql.Float},
+		// 				"max": &graphql.Field{Type: graphql.Float},
+		// 				"avg": &graphql.Field{Type: graphql.Float},
+		// 			},
+		// 		}),
+		// 	}
+		// case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+		// 	fields[field.Name] = &graphql.Field{
+		// 		Type: graphql.NewObject(graphql.ObjectConfig{
+		// 			Name: fmt.Sprintf("%s%sFacet", action.ModelName, strcase.ToCamel(field.Name)),
+		// 			Fields: graphql.Fields{
+		// 				"min": &graphql.Field{Type: graphql.Float},
+		// 				"max": &graphql.Field{Type: graphql.Float},
+		// 			},
+		// 		}),
+		// 	}
+		// case proto.Type_TYPE_ENUM, proto.Type_TYPE_STRING:
+		// 	fields[field.Name] = &graphql.Field{
+		// 		Type: graphql.NewList(
+		// 			graphql.NewObject(graphql.ObjectConfig{
+		// 				Name: "TextFacet", // fmt.Sprintf("TextFacet", action.ModelName, strcase.ToCamel(field.Name)),
+		// 				Fields: graphql.Fields{
+		// 					"value": &graphql.Field{Type: graphql.String},
+		// 					"count": &graphql.Field{Type: graphql.Float},
+		// 				},
+		// 			}),
+		// 		),
+		// 	}
+		// }
+	}
+
+	return graphql.NewObject(graphql.ObjectConfig{
+		Name:   fmt.Sprintf("%sResultInfo", action.ModelName),
+		Fields: fields,
+	})
+}
+
+func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output, resultInfo graphql.Output) graphql.Output {
 	if out, found := mk.types[fmt.Sprintf("connection-%s", itemType.Name())]; found {
 		return graphql.NewNonNull(out)
 	}
@@ -583,6 +650,12 @@ func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) grap
 			},
 		},
 	})
+
+	if resultInfo != nil {
+		connection.AddFieldConfig("resultInfo", &graphql.Field{
+			Type: resultInfo,
+		})
+	}
 
 	mk.types[fmt.Sprintf("connection-%s", itemType.Name())] = connection
 
@@ -732,7 +805,7 @@ func (mk *graphqlSchemaBuilder) inputTypeForModelField(field *proto.Field) (in g
 
 	if field.Type.Repeated {
 		if field.Type.Type == proto.Type_TYPE_MODEL {
-			in = mk.makeConnectionType(in)
+			in = mk.makeConnectionType(in, nil)
 		} else {
 			in = graphql.NewList(in)
 			in = graphql.NewNonNull(in)
@@ -767,7 +840,7 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 
 	if field.Type.Repeated {
 		if field.Type.Type == proto.Type_TYPE_MODEL {
-			out = mk.makeConnectionType(out)
+			out = mk.makeConnectionType(out, nil)
 		} else {
 			out = graphql.NewList(out)
 		}

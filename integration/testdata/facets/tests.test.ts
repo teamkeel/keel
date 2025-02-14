@@ -2,13 +2,13 @@ import { actions, resetDatabase, models } from "@teamkeel/testing";
 import { beforeAll, expect, test } from "vitest";
 import { Status } from "@teamkeel/sdk";
 
-
 beforeAll(async () => {
   await models.order.create({
     quantity: 10,
     price: 100,
     category: "Toys",
     status: Status.Complete,
+    orderDate: new Date("2024-01-01"),
   });
 
   await models.order.create({
@@ -16,6 +16,7 @@ beforeAll(async () => {
     price: 100,
     category: "Toys",
     status: Status.InProgress,
+    orderDate: new Date("2024-01-02"),
   });
 
   await models.order.create({
@@ -23,6 +24,7 @@ beforeAll(async () => {
     price: 4100,
     category: "Computers",
     status: Status.Complete,
+    orderDate: new Date("2024-01-03"),
   });
 
   await models.order.create({
@@ -30,6 +32,7 @@ beforeAll(async () => {
     price: 80,
     category: "Toys",
     status: Status.Cancelled,
+    orderDate: new Date("2024-01-04"),
   });
 
   await models.order.create({
@@ -37,6 +40,7 @@ beforeAll(async () => {
     price: 75,
     category: "Pet Care 101",
     status: Status.InProgress,
+    orderDate: new Date("2024-01-05"),
   });
 
   await models.order.create({
@@ -44,6 +48,7 @@ beforeAll(async () => {
     price: 155,
     category: "Pet Care 101",
     status: Status.Complete,
+    orderDate: new Date("2024-01-06"),
   });
 });
 
@@ -58,13 +63,23 @@ test("facets - no input filters", async () => {
   expect(result.resultInfo.price.max).toEqual(4100);
   expect(result.resultInfo.price.avg).toEqual(906);
 
-  expect(result.resultInfo.status["InProgress"]).toEqual(2);
-  expect(result.resultInfo.status["Complete"]).toEqual(3);
-  expect(result.resultInfo.status["Cancelled"]).toBeUndefined();
+  expect(result.resultInfo.status).toEqual([
+    { value: "Complete", count: 3 },
+    { value: "InProgress", count: 2 },
+  ]);
 
-  expect(result.resultInfo.category["Toys"]).toEqual(2);
-  expect(result.resultInfo.category["Computers"]).toEqual(1);
-  expect(result.resultInfo.category["Pet Care 101"]).toEqual(2);
+  expect(result.resultInfo.category).toEqual([
+    { value: "Computers", count: 1 },
+    { value: "Pet Care 101", count: 2 },
+    { value: "Toys", count: 2 },
+  ]);
+
+  expect(result.resultInfo.orderDate.min).toEqual(
+    new Date("2024-01-01 00:00:00Z")
+  );
+  expect(result.resultInfo.orderDate.max).toEqual(
+    new Date("2024-01-06T00:00:00Z")
+  );
 });
 
 test("facets - no input filters with paging", async () => {
@@ -80,13 +95,23 @@ test("facets - no input filters with paging", async () => {
   expect(result.resultInfo.price.max).toEqual(4100);
   expect(result.resultInfo.price.avg).toEqual(906);
 
-  expect(result.resultInfo.status["InProgress"]).toEqual(2);
-  expect(result.resultInfo.status["Complete"]).toEqual(3);
-  expect(result.resultInfo.status["Cancelled"]).toBeUndefined();
+  expect(result.resultInfo.status).toEqual([
+    { value: "Complete", count: 3 },
+    { value: "InProgress", count: 2 },
+  ]);
 
-  expect(result.resultInfo.category["Toys"]).toEqual(2);
-  expect(result.resultInfo.category["Computers"]).toEqual(1);
-  expect(result.resultInfo.category["Pet Care 101"]).toEqual(2);
+  expect(result.resultInfo.category).toEqual([
+    { value: "Computers", count: 1 },
+    { value: "Pet Care 101", count: 2 },
+    { value: "Toys", count: 2 },
+  ]);
+
+  expect(result.resultInfo.orderDate.min).toEqual(
+    new Date("2024-01-01 00:00:00Z")
+  );
+  expect(result.resultInfo.orderDate.max).toEqual(
+    new Date("2024-01-06T00:00:00Z")
+  );
 });
 
 test("facets - price filter", async () => {
@@ -106,11 +131,17 @@ test("facets - price filter", async () => {
   expect(result.resultInfo.price.max).toEqual(4100);
   expect(result.resultInfo.price.avg).toEqual(906);
 
-  expect(result.resultInfo.status["InProgress"]).toEqual(0);
-  expect(result.resultInfo.status["Complete"]).toEqual(2);
-  expect(result.resultInfo.status["Cancelled"]).toBeUndefined();
+  expect(result.resultInfo.status).toEqual([{ value: "Complete", count: 2 }]);
 
-  expect(result.resultInfo.category["Toys"]).toEqual(0);
-  expect(result.resultInfo.category["Computers"]).toEqual(1);
-  expect(result.resultInfo.category["Pet Care 101"]).toEqual(1);
+  expect(result.resultInfo.category).toEqual([
+    { value: "Computers", count: 1 },
+    { value: "Pet Care 101", count: 1 },
+  ]);
+
+  expect(result.resultInfo.orderDate.min).toEqual(
+    new Date("2024-01-03 00:00:00Z")
+  );
+  expect(result.resultInfo.orderDate.max).toEqual(
+    new Date("2024-01-06T00:00:00Z")
+  );
 });
