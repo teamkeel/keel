@@ -1,4 +1,4 @@
-import { actions, resetDatabase, models } from "@teamkeel/testing";
+import { actions, models } from "@teamkeel/testing";
 import { beforeAll, expect, test } from "vitest";
 import { Status } from "@teamkeel/sdk";
 
@@ -9,6 +9,7 @@ beforeAll(async () => {
     category: "Toys",
     status: Status.Complete,
     orderDate: new Date("2024-01-01"),
+    orderTime: new Date("2024-01-01T12:00:00Z"),
   });
 
   await models.order.create({
@@ -17,6 +18,7 @@ beforeAll(async () => {
     category: "Toys",
     status: Status.InProgress,
     orderDate: new Date("2024-01-02"),
+    orderTime: new Date("2024-01-02T12:00:00Z"),
   });
 
   await models.order.create({
@@ -25,6 +27,7 @@ beforeAll(async () => {
     category: "Computers",
     status: Status.Complete,
     orderDate: new Date("2024-01-03"),
+    orderTime: new Date("2024-01-03T12:00:00Z"),
   });
 
   await models.order.create({
@@ -80,14 +83,19 @@ test("facets - no input filters", async () => {
   expect(result.resultInfo.orderDate.max).toEqual(
     new Date("2024-01-06T00:00:00Z")
   );
+
+  expect(result.resultInfo.orderTime.min).toEqual(
+    new Date("2024-01-01T12:00:00Z")
+  );
+  expect(result.resultInfo.orderTime.max).toEqual(
+    new Date("2024-01-03T12:00:00Z")
+  );
 });
 
 test("facets - no input filters with paging", async () => {
   const result = await actions.listOrders({
     first: 2,
   });
-
-console.log(result.resultInfo);
 
   expect(result.resultInfo.quantity.min).toEqual(1);
   expect(result.resultInfo.quantity.max).toEqual(10);
@@ -113,6 +121,13 @@ console.log(result.resultInfo);
   );
   expect(result.resultInfo.orderDate.max).toEqual(
     new Date("2024-01-06T00:00:00Z")
+  );
+
+  expect(result.resultInfo.orderTime.min).toEqual(
+    new Date("2024-01-01T12:00:00Z")
+  );
+  expect(result.resultInfo.orderTime.max).toEqual(
+    new Date("2024-01-03T12:00:00Z")
   );
 });
 
@@ -145,5 +160,12 @@ test("facets - price filter", async () => {
   );
   expect(result.resultInfo.orderDate.max).toEqual(
     new Date("2024-01-06T00:00:00Z")
+  );
+
+  expect(result.resultInfo.orderTime.min).toEqual(
+    new Date("2024-01-03T12:00:00Z")
+  );
+  expect(result.resultInfo.orderTime.max).toEqual(
+    new Date("2024-01-03T12:00:00Z")
   );
 });

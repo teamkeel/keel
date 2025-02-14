@@ -555,8 +555,6 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 		where = map[string]any{}
 	}
 
-	var sql string
-
 	var facetFields []*proto.Field
 	for _, name := range scope.Action.Facets {
 		for _, field := range scope.Model.Fields {
@@ -567,6 +565,7 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 		}
 	}
 
+	var sql string
 	selects := []string{}
 	ctes := []string{}
 	for i, field := range facetFields {
@@ -600,7 +599,6 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 				'max', MAX(%s),
 				'avg', AVG(%s)
 			) AS %s`, sqlQuote(column), sqlQuote(column), sqlQuote(column), sqlQuote(column))
-
 			facetQuery.SelectClause(sel)
 			statement = facetQuery.SelectStatement()
 		case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME:
@@ -608,10 +606,9 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 				'min', MIN(%s),
 				'max', MAX(%s)
 			) AS %s`, sqlQuote(column), sqlQuote(column), sqlQuote(column))
-
 			facetQuery.SelectClause(sel)
 			statement = facetQuery.SelectStatement()
-		case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM:
+		case proto.Type_TYPE_ID, proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM:
 			facetQuery.Select(Field(field.Name))
 			facetQuery.SelectClause("COUNT(*) as \"count\"")
 			facetQuery.AppendOrderBy(Field(field.Name), "ASC")
@@ -645,11 +642,10 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 		}
 
 		ctes = append(ctes, sqlQuote(fmt.Sprintf("%s_facets", column)))
-		//TODO add args too
+
 		query.args = append(query.args, statement.args...)
 
 		selects = append(selects, fmt.Sprintf("'%s', %s.%s", column, sqlQuote(fmt.Sprintf("%s_facets", column)), sqlQuote(column)))
-
 	}
 
 	sql += fmt.Sprintf("SELECT json_build_object(%s) FROM %s", strings.Join(selects, ", "), strings.Join(ctes, ", "))

@@ -5,10 +5,12 @@ model Order {
         category Text
         status Status
         orderDate Timestamp?
+        orderTime Timestamp?
+        durationToPurchase Duration?
     }
     actions {
         list listOrders(category?, price?) {
-            @facet(quantity, price, status, category, orderDate)
+            @facet(id, quantity, price, status, category, orderDate, orderTime, durationToPurchase)
             @where(order.status != Status.Cancelled)
         }
         create createOrder() with (quantity, price, category, status, orderDate) {
