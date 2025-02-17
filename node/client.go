@@ -242,7 +242,7 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 
 	for _, a := range proto.GetActionNamesForApi(schema, api) {
 		action := schema.FindAction(a)
-		writeResultInfoInterface(w, schema, action)
+		writeResultInfoInterface(w, schema, action, true)
 	}
 
 	// writing embedded response types
@@ -278,7 +278,7 @@ func toClientActionReturnType(model *proto.Model, action *proto.Action) string {
 
 		if len(action.Facets) > 0 {
 			resultInfo := fmt.Sprintf("%sResultInfo", strcase.ToCamel(action.Name))
-			return "{ results: " + respName + "[], " + resultInfo + ": " + resultInfo + ", pageInfo: PageInfo }"
+			return "{ results: " + respName + "[], resultInfo: " + resultInfo + ", pageInfo: PageInfo }"
 		} else {
 			return "{ results: " + respName + "[], pageInfo: PageInfo }"
 		}

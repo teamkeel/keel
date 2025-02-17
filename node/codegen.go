@@ -167,7 +167,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	}
 }
 
-func writeResultInfoInterface(w *codegen.Writer, schema *proto.Schema, action *proto.Action) {
+func writeResultInfoInterface(w *codegen.Writer, schema *proto.Schema, action *proto.Action, isClientPackage bool) {
 	facetFields := proto.FacetFields(schema, action)
 	if len(facetFields) == 0 {
 		return
@@ -185,7 +185,11 @@ func writeResultInfoInterface(w *codegen.Writer, schema *proto.Schema, action *p
 		case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME:
 			w.Writef("%s: { min: Date, max: Date };\n", field.Name)
 		case proto.Type_TYPE_DURATION:
-			w.Writef("%s: { min: runtime.Duration, max: runtime.Duration, avg: runtime.Duration };\n", field.Name)
+			if isClientPackage {
+				w.Writef("%s: { min: DurationString, max: DurationString, avg: DurationString };\n", field.Name)
+			} else {
+				w.Writef("%s: { min: runtime.Duration, max: runtime.Duration, avg: runtime.Duration };\n", field.Name)
+			}
 		}
 	}
 
@@ -1770,7 +1774,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	for _, model := range schema.Models {
 		for _, action := range model.Actions {
 			if action.Type == proto.ActionType_ACTION_TYPE_LIST {
-				writeResultInfoInterface(w, schema, action)
+				writeResultInfoInterface(w, schema, action, false)
 			}
 		}
 	}
