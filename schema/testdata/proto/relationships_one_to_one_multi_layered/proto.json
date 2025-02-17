@@ -671,6 +671,22 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        },
+        {
+          "messageName": "FindCompanyProfileInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "FindCompanyProfileInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
         }
       ]
     },
@@ -754,6 +770,22 @@
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "FindTaxProfileInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "FindTaxProfileInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
           },
           "optional": true
         }

@@ -19,6 +19,8 @@ input ListOrderItemsInput {
   before: String
   first: Int
   last: Int
+  limit: Int
+  offset: Int
   where: ListOrderItemsWhere!
 }
 
@@ -59,6 +61,7 @@ type PageInfo {
   count: Int!
   endCursor: String!
   hasNextPage: Boolean!
+  pageNumber: Int
   startCursor: String!
   totalCount: Int!
 }

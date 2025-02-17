@@ -1365,6 +1365,22 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 						Type: proto.Type_TYPE_STRING,
 					},
 				},
+				{
+					Name:        "limit",
+					MessageName: makeInputMessageName(action.Name.Value),
+					Optional:    true,
+					Type: &proto.TypeInfo{
+						Type: proto.Type_TYPE_INT,
+					},
+				},
+				{
+					Name:        "offset",
+					MessageName: makeInputMessageName(action.Name.Value),
+					Optional:    true,
+					Type: &proto.TypeInfo{
+						Type: proto.Type_TYPE_INT,
+					},
+				},
 			},
 		}
 

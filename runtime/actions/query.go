@@ -282,6 +282,8 @@ type QueryBuilder struct {
 	limit *int
 	// The columns and clauses in GROUP BY.
 	groupBy []string
+	// The value for OFFSET.
+	offset *int
 	// The ordered slice of arguments for the SQL statement template.
 	args []any
 	// The graph of rows to be written during an INSERT or UPDATE.
@@ -538,6 +540,10 @@ func (query *QueryBuilder) GroupBy(operand *QueryOperand) {
 	if !lo.Contains(query.groupBy, c) {
 		query.groupBy = append(query.groupBy, c)
 	}
+
+// Set the OFFSET to a number.
+func (query *QueryBuilder) Offset(offset int) {
+	query.offset = &offset
 }
 
 // Include a column in RETURNING.
@@ -656,11 +662,8 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	query.And()
 
 	// Add where condition to implement the page size
-	switch {
-	case page.First != 0:
-		query.Limit(page.First)
-	case page.Last != 0:
-		query.Limit(page.Last)
+	if page.GetLimit() > 0 {
+		query.Limit(page.GetLimit())
 	}
 
 	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
@@ -685,21 +688,27 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// Because we are essentially performing the same query again within the subquery, we need to duplicate the query parameters again as they will be used twice in the course of the whole query
 	query.args = append(query.args, args...)
 
-	// Add where condition to implement the after/before paging request
-	if page.Cursor() != "" {
-		err := query.applyCursorFilter(page.Cursor(), page.IsBackwards())
-		if err != nil {
-			return err
+	// if we have offset pagination..
+	if page.OffsetPagination() {
+		query.Offset(page.Offset)
+	} else {
+		// otherwise default to cursor pagination
+		// Add where condition to implement the after/before paging request
+		if page.Cursor() != "" {
+			err := query.applyCursorFilter(page.Cursor(), page.IsBackwards())
+			if err != nil {
+				return err
+			}
 		}
-	}
 
-	// if the page has backwards pagination, we will be reversing the order fields. The results will be reversed after retrieval in .ExecuteToMany()
-	if page.IsBackwards() {
-		for _, ob := range query.orderBy {
-			if strings.EqualFold(ob.direction, "ASC") {
-				ob.direction = "DESC"
-			} else {
-				ob.direction = "ASC"
+		// if the page has backwards pagination, we will be reversing the order fields. The results will be reversed after retrieval in .ExecuteToMany()
+		if page.IsBackwards() {
+			for _, ob := range query.orderBy {
+				if strings.EqualFold(ob.direction, "ASC") {
+					ob.direction = "DESC"
+				} else {
+					ob.direction = "ASC"
+				}
 			}
 		}
 	}
@@ -825,6 +834,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	orderBy := ""
 	limit := ""
 	groupBy := ""
+	offset := ""
 
 	if len(query.distinctOn) > 0 {
 		distinctOn = fmt.Sprintf("DISTINCT ON(%s)", strings.Join(query.distinctOn, ", "))
@@ -856,13 +866,18 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		orderBy = fmt.Sprintf("ORDER BY %s", strings.Join(orderByClausesAsSql, ", "))
 	}
 
+	if len(query.groupBy) > 0 {
+		groupBy = fmt.Sprintf("GROUP BY %s", strings.Join(query.groupBy, ", "))
+  }
+  
 	if query.limit != nil {
 		limit = "LIMIT ?"
 		query.args = append(query.args, *query.limit)
 	}
 
-	if len(query.groupBy) > 0 {
-		groupBy = fmt.Sprintf("GROUP BY %s", strings.Join(query.groupBy, ", "))
+	if query.offset != nil {
+		offset = "OFFSET ?"
+		query.args = append(query.args, *query.offset)
 	}
 
 	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s %s",
@@ -873,7 +888,8 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		filters,
 		groupBy,
 		orderBy,
-		limit)
+		limit,
+		offset)
 
 	return &Statement{
 		template: cleanSql(sql),
@@ -1293,16 +1309,25 @@ type PageInfo struct {
 
 	// EndCursor is the identifier representing the last row in the set
 	EndCursor string
+
+	// PageNumber is the number of the page returned; set only for offset pagination
+	PageNumber *int
 }
 
 func (pi *PageInfo) ToMap() map[string]any {
-	return map[string]any{
+	r := map[string]any{
 		"count":       pi.Count,
 		"totalCount":  pi.TotalCount,
 		"startCursor": pi.StartCursor,
 		"endCursor":   pi.EndCursor,
 		"hasNextPage": pi.HasNextPage,
 	}
+
+	if pi.PageNumber != nil {
+		r["pageNumber"] = *pi.PageNumber
+	}
+
+	return r
 }
 
 func (ri *ResultInfo) ToMap() map[string]any {
@@ -1335,6 +1360,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 	var totalCount int64
 	var startCursor string
 	var endCursor string
+	var pageNumber *int
 
 	if page != nil && page.IsBackwards() {
 		rows = lo.Reverse(rows)
@@ -1343,6 +1369,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 	returnedCount := len(rows)
 	if returnedCount > 0 {
 		last := rows[returnedCount-1]
+		pageNumber = page.PageNumber()
 		var hasPagination bool
 		hasNextPage, hasPagination = last["hasnext"].(bool)
 
@@ -1388,6 +1415,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		HasNextPage: hasNextPage,
 		StartCursor: startCursor,
 		EndCursor:   endCursor,
+		PageNumber:  pageNumber,
 	}
 
 	// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and

@@ -3924,6 +3924,87 @@ var testCases = []testCase{
 				LIMIT ?
 			`,
 		expectedArgs: []any{"Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", 10},
+  },
+  {
+		name: "set_lookup_relationships_create",
+		keelSchema: `
+			model Item {
+				fields {
+					price Decimal
+					product Product
+					quantity Number
+				}
+				actions {
+					create createItem() with (product.id, quantity) {
+						@set(item.price = item.product.standardPrice)
+					}
+				}
+			}
+			model Product {
+				fields {
+					standardPrice Decimal
+				}
+			}`,
+		actionName: "createItem",
+		input:      map[string]any{"product": map[string]any{"id": "123"}, "quantity": 5},
+		expectedTemplate: `
+			WITH 
+				"select_product_0" ("column_0") AS (
+					SELECT "product"."standard_price" 
+					FROM "product" 
+					WHERE "product"."id" IS NOT DISTINCT FROM ?), 
+				"new_1_item" AS (
+					INSERT INTO "item" ("price", "product_id", "quantity") 
+					VALUES (
+						(SELECT "column_0" FROM "select_product_0"), 
+						?, 
+						?) 
+					RETURNING *) 
+			SELECT * FROM "new_1_item"`,
+		expectedArgs: []any{"123", "123", 5},
+	},
+	{
+		name: "set_lookup_relationships_update",
+		keelSchema: `
+			model Item {
+				fields {
+					price Decimal
+					product Product
+					quantity Number
+				}
+				actions {
+					update resetItem(id) with (quantity) {
+						@set(item.price = item.product.standardPrice)
+					}
+				}
+			}
+			model Product {
+				fields {
+					standardPrice Decimal
+				}
+			}`,
+		actionName: "resetItem",
+		input: map[string]any{
+			"where": map[string]any{
+				"id": "123",
+			},
+			"values": map[string]any{
+				"quantity": 4,
+			},
+		},
+		expectedTemplate: `
+			WITH 
+				"select_item_0" ("column_0") AS (
+					SELECT "item$product"."standard_price" 
+					FROM "item" 
+					LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" 
+					WHERE "item"."id" IS NOT DISTINCT FROM ?) 
+			UPDATE "item" SET 
+				"price" = (SELECT "column_0" FROM "select_item_0"), 
+				"quantity" = ? 
+			WHERE "item"."id" IS NOT DISTINCT FROM ? 
+			RETURNING "item".*`,
+		expectedArgs: []any{"123", 4, "123"},
 	},
 }
 

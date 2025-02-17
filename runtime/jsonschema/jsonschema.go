@@ -34,6 +34,9 @@ var (
 			"hasNextPage": {
 				Type: "boolean",
 			},
+			"pageNumber": {
+				Type: "number",
+			},
 		},
 	}
 )

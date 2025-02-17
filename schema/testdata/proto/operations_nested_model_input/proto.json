@@ -702,6 +702,22 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        },
+        {
+          "messageName": "SearchFeesInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "SearchFeesInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
         }
       ]
     },
@@ -798,6 +814,22 @@
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "SearchFumsInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "SearchFumsInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
           },
           "optional": true
         }
