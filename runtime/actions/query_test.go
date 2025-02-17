@@ -3924,8 +3924,8 @@ var testCases = []testCase{
 				LIMIT ?
 			`,
 		expectedArgs: []any{"Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", 10},
-  },
-  {
+	},
+	{
 		name: "set_lookup_relationships_create",
 		keelSchema: `
 			model Item {
@@ -4012,9 +4012,6 @@ func TestQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range testCases {
 		testCase := testCase
-		if testCase.name != "facets" {
-			continue
-		}
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()

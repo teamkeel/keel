@@ -217,7 +217,7 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	if resultInfo != nil {
-		res["resultInfo"] = resultInfo.ToMap()
+		res["resultInfo"] = resultInfo
 	}
 
 	return res, nil

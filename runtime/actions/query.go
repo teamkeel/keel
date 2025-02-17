@@ -1331,16 +1331,6 @@ func (pi *PageInfo) ToMap() map[string]any {
 	return r
 }
 
-func (ri *ResultInfo) ToMap() map[string]any {
-	res := map[string]any{}
-
-	for k, v := range *ri {
-		res[k] = v
-	}
-
-	return res
-}
-
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
 func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows, *ResultInfo, *PageInfo, error) {
 	database, err := db.GetDatabase(ctx)

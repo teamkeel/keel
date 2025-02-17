@@ -468,7 +468,7 @@ func TestActionCompletions(t *testing.T) {
 			schema: `
 			model A {
 				actions {
-					<Cursor>
+				<Cursor>
 				}
 			}`,
 			expected: parser.ActionTypes,
@@ -671,7 +671,7 @@ func TestActionCompletions(t *testing.T) {
 				}
 			  }
 		    }`,
-			expected: []string{"@embed", "@function", "@orderBy", "@permission", "@set", "@sortable", "@validate", "@where"},
+			expected: []string{"@embed", "@facet", "@function", "@orderBy", "@permission", "@set", "@sortable", "@validate", "@where"},
 		},
 	}
 
