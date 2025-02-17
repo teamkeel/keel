@@ -84,8 +84,8 @@ var visitorFuncs = []VisitorFunc{
 	RelationshipsRules,
 	ApiModelActionsRule,
 	ApiDuplicateModelNamesRule,
-	StudioFeatures,
 	UpdateActionNestedInputsRule,
+	//StudioFeatures, disabled temporarily as it's causing noise on non-studio builds
 }
 
 // RunAllValidators will run all the validators available. If withWarnings is true, it will return the errors even if
