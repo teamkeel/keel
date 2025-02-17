@@ -84,6 +84,7 @@ var visitorFuncs = []VisitorFunc{
 	RelationshipsRules,
 	ApiModelActionsRule,
 	ApiDuplicateModelNamesRule,
+	UpdateActionNestedInputsRule,
 	//StudioFeatures, disabled temporarily as it's causing noise on non-studio builds
 }
 
