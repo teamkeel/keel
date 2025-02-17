@@ -145,7 +145,7 @@ test("validate - multi file", async () => {
 
 // test("validate - warnings", async () => {
 //   const schema = `model Person {
-//     fields { 
+//     fields {
 //         name Text
 //     }
 
