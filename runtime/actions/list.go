@@ -234,10 +234,6 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 		orderBy = []any{}
 	}
 
-	// Select all columns from this table and distinct on id
-	query.DistinctOn(IdField())
-	query.Select(AllFields())
-
 	err := query.SelectFacets(scope, input)
 	if err != nil {
 		return nil, nil, err
@@ -264,6 +260,10 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// Select all columns from this table and distinct on id
+	query.DistinctOn(IdField())
+	query.Select(AllFields())
 
 	err = query.ApplyPaging(page)
 	if err != nil {

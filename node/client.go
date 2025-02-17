@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
@@ -248,6 +249,7 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 		}
 		model := schema.FindModel(action.ModelName)
 		writeEmbeddedModelInterface(w, schema, model, toResponseType(action.Name), embeds)
+		writeResultInfoInterface(w, schema, action)
 	}
 
 	w.Writeln("")
@@ -271,7 +273,8 @@ func toClientActionReturnType(model *proto.Model, action *proto.Action) string {
 		}
 
 		if len(action.Facets) > 0 {
-			return "{ results: " + respName + "[], resultInfo: ResultInfo, pageInfo: PageInfo }"
+			resultInfo := fmt.Sprintf("%sResultInfo", strcase.ToCamel(action.Name))
+			return "{ results: " + respName + "[], " + resultInfo + ": " + resultInfo + ", pageInfo: PageInfo }"
 		} else {
 			return "{ results: " + respName + "[], pageInfo: PageInfo }"
 		}

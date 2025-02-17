@@ -3817,7 +3817,6 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			SELECT DISTINCT ON("order"."id") 
-				"order".*, 
 				(
 					WITH "id_facets" AS (
 					SELECT jsonb_agg(jsonb_build_object('value', "id", 'count', "count")) AS "id" 
@@ -3912,6 +3911,7 @@ var testCases = []testCase{
 						"order_time_facets", 
 						"duration_to_purchase_facets"
 				) AS "_facets",
+				"order".*, 
 				CASE WHEN LEAD("order"."id") OVER (ORDER BY "order"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(
 					SELECT COUNT(DISTINCT "order"."id") 
