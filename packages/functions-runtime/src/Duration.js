@@ -7,9 +7,7 @@ class Duration {
   constructor(postgresString) {
     this._typename = "Duration";
     this.pgInterval = postgresString;
-    if (!this.pgInterval) {
-      this._interval = parseInterval(postgresString);
-    }
+    this._interval = parseInterval(postgresString);
   }
 
   static fromISOString(isoString) {

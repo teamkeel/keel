@@ -468,7 +468,7 @@ func TestActionCompletions(t *testing.T) {
 			schema: `
 			model A {
 				actions {
-				<Cursor>
+					<Cursor>
 				}
 			}`,
 			expected: parser.ActionTypes,

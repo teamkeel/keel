@@ -89,15 +89,9 @@ test("facets - no input filters", async () => {
     new Date("2024-01-03T12:00:00Z")
   );
 
-  expect(result.resultInfo.durationToPurchase.min).toEqual(
-    Duration.fromISOString("PT3M")
-  );
-  expect(result.resultInfo.durationToPurchase.max).toEqual(
-    Duration.fromISOString("PT10M")
-  );
-  expect(result.resultInfo.durationToPurchase.avg).toEqual(
-    Duration.fromISOString("PT6M30S")
-  );
+  expect(result.resultInfo.durationToPurchase.min).toEqual("PT3M");
+  expect(result.resultInfo.durationToPurchase.max).toEqual("PT10M");
+  expect(result.resultInfo.durationToPurchase.avg).toEqual("PT6M30S");
 });
 
 test("facets - no input filters with paging", async () => {
@@ -133,6 +127,10 @@ test("facets - no input filters with paging", async () => {
   expect(result.resultInfo.orderTime.max).toEqual(
     new Date("2024-01-03T12:00:00Z")
   );
+
+  expect(result.resultInfo.durationToPurchase.min).toEqual("PT3M");
+  expect(result.resultInfo.durationToPurchase.max).toEqual("PT10M");
+  expect(result.resultInfo.durationToPurchase.avg).toEqual("PT6M30S");
 });
 
 test("facets - price filter", async () => {
@@ -168,4 +166,8 @@ test("facets - price filter", async () => {
   expect(result.resultInfo.orderTime.max).toEqual(
     new Date("2024-01-03T12:00:00Z")
   );
+
+  expect(result.resultInfo.durationToPurchase.min).toBeNull();
+  expect(result.resultInfo.durationToPurchase.max).toBeNull();
+  expect(result.resultInfo.durationToPurchase.avg).toBeNull();
 });
