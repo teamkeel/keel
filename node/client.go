@@ -240,6 +240,11 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 		writeModelInterface(w, model, true)
 	}
 
+	for _, a := range proto.GetActionNamesForApi(schema, api) {
+		action := schema.FindAction(a)
+		writeResultInfoInterface(w, schema, action)
+	}
+
 	// writing embedded response types
 	for _, a := range proto.GetActionNamesForApi(schema, api) {
 		action := schema.FindAction(a)
@@ -249,7 +254,6 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 		}
 		model := schema.FindModel(action.ModelName)
 		writeEmbeddedModelInterface(w, schema, model, toResponseType(action.Name), embeds)
-		writeResultInfoInterface(w, schema, action)
 	}
 
 	w.Writeln("")
