@@ -2293,10 +2293,10 @@ export interface PeopleByHobbyResultInfo {
 	id: [ { value: string, count: number } ];
 	city: [ { value: string, count: number } ];
 	hobby: [ { value: string, count: number } ];
-	age: { min?: number, max?: number, avg?: number };
-	dob: { min?: Date, max?: Date };
-	duration: { min?: runtime.Duration, max?: runtime.Duration, avg?: runtime.Duration };
-	timeStamp: { min?: Date, max?: Date };
+	age: { min: number, max: number, avg: number };
+	dob: { min: Date, max: Date };
+	duration: { min: runtime.Duration, max: runtime.Duration, avg: runtime.Duration };
+	timeStamp: { min: Date, max: Date };
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {

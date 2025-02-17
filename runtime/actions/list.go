@@ -211,11 +211,16 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 		}
 	}
 
-	return map[string]any{
-		"results":    results,
-		"resultInfo": resultInfo,
-		"pageInfo":   pageInfo.ToMap(),
-	}, nil
+	res := map[string]any{
+		"results":  results,
+		"pageInfo": pageInfo.ToMap(),
+	}
+
+	if resultInfo != nil {
+		res["resultInfo"] = resultInfo.ToMap()
+	}
+
+	return res, nil
 }
 
 func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, *Page, error) {

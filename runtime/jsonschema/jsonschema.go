@@ -154,7 +154,7 @@ func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, acti
 			Components: &components,
 		}
 
-		resultInfoSchema := jsonSchemaForFacets(ctx, schema, action)
+		resultInfoSchema := jsonSchemaForFacets(schema, action)
 		if resultInfoSchema != nil {
 			wrapperSchema.Properties["resultInfo"] = *resultInfoSchema
 		}
@@ -171,18 +171,8 @@ func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, acti
 	}
 }
 
-func jsonSchemaForFacets(ctx context.Context, schema *proto.Schema, action *proto.Action) *JSONSchema {
-	model := schema.FindModel(action.ModelName)
-	var facetFields []*proto.Field
-	for _, name := range action.Facets {
-		for _, field := range model.Fields {
-			if field.Name == name {
-				facetFields = append(facetFields, field)
-				continue
-			}
-		}
-	}
-
+func jsonSchemaForFacets(schema *proto.Schema, action *proto.Action) *JSONSchema {
+	facetFields := proto.FacetFields(schema, action)
 	if len(facetFields) == 0 {
 		return nil
 	}

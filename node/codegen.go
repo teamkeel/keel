@@ -168,17 +168,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 }
 
 func writeResultInfoInterface(w *codegen.Writer, schema *proto.Schema, action *proto.Action) {
-	model := schema.FindModel(action.ModelName)
-	var facetFields []*proto.Field
-	for _, name := range action.Facets {
-		for _, field := range model.Fields {
-			if field.Name == name {
-				facetFields = append(facetFields, field)
-				continue
-			}
-		}
-	}
-
+	facetFields := proto.FacetFields(schema, action)
 	if len(facetFields) == 0 {
 		return
 	}
@@ -189,13 +179,13 @@ func writeResultInfoInterface(w *codegen.Writer, schema *proto.Schema, action *p
 	for _, field := range facetFields {
 		switch field.Type.Type {
 		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
-			w.Writef("%s: { min?: number, max?: number, avg?: number };\n", field.Name)
+			w.Writef("%s: { min: number, max: number, avg: number };\n", field.Name)
 		case proto.Type_TYPE_ID, proto.Type_TYPE_ENUM, proto.Type_TYPE_STRING:
 			w.Writef("%s: [ { value: string, count: number } ];\n", field.Name)
 		case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME:
-			w.Writef("%s: { min?: Date, max?: Date };\n", field.Name)
+			w.Writef("%s: { min: Date, max: Date };\n", field.Name)
 		case proto.Type_TYPE_DURATION:
-			w.Writef("%s: { min?: runtime.Duration, max?: runtime.Duration, avg?: runtime.Duration };\n", field.Name)
+			w.Writef("%s: { min: runtime.Duration, max: runtime.Duration, avg: runtime.Duration };\n", field.Name)
 		}
 	}
 
@@ -1402,7 +1392,6 @@ func toActionReturnType(model *proto.Model, action *proto.Action) string {
 		}
 		returnType += sdkPrefix + className + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
-
 		className := model.Name
 		if len(action.GetResponseEmbeds()) > 0 {
 			className = toResponseType(action.Name)

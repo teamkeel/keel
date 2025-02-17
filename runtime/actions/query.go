@@ -555,20 +555,17 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 		where = map[string]any{}
 	}
 
-	var facetFields []*proto.Field
-	for _, name := range scope.Action.Facets {
-		for _, field := range scope.Model.Fields {
-			if field.Name == name {
-				facetFields = append(facetFields, field)
-				continue
-			}
-		}
+	facetFields := proto.FacetFields(scope.Schema, scope.Action)
+	if len(facetFields) == 0 {
+		return nil
 	}
 
 	var sql string
 	selects := []string{}
 	ctes := []string{}
 	for i, field := range facetFields {
+		// Exclude this field from the where clause because
+		// when calculating the facet data
 		subWhere := map[string]any{}
 		for k, v := range where {
 			if k != field.Name {
@@ -621,7 +618,7 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 						'value', %s,
 						'count', "count"
 					)
-				) as %s
+				) AS %s
 				FROM (
 					%s
 				)`, sqlQuote(column), sqlQuote(column), subStatement.template)
@@ -648,9 +645,7 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 		selects = append(selects, fmt.Sprintf("'%s', %s.%s", column, sqlQuote(fmt.Sprintf("%s_facets", column)), sqlQuote(column)))
 	}
 
-	sql += fmt.Sprintf("SELECT json_build_object(%s) FROM %s", strings.Join(selects, ", "), strings.Join(ctes, ", "))
-
-	query.SelectClause(fmt.Sprintf("(WITH %s) AS \"_facets\"", sql))
+	query.SelectClause(fmt.Sprintf("(WITH %s SELECT json_build_object(%s) FROM %s) AS \"_facets\"", sql, strings.Join(selects, ", "), strings.Join(ctes, ", ")))
 
 	return nil
 }
@@ -1310,6 +1305,16 @@ func (pi *PageInfo) ToMap() map[string]any {
 	}
 }
 
+func (ri *ResultInfo) ToMap() map[string]any {
+	res := map[string]any{}
+
+	for k, v := range *ri {
+		res[k] = v
+	}
+
+	return res
+}
+
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
 func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows, *ResultInfo, *PageInfo, error) {
 	database, err := db.GetDatabase(ctx)
@@ -1354,7 +1359,6 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 			}
 		}
 
-		//res := map[string]map[string]any{}
 		facets := rows[0]["_facets"]
 		if facets != nil {
 			if err := json.Unmarshal([]byte(facets.(string)), &resultInfo); err != nil {
@@ -1368,9 +1372,6 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 				}
 			}
 		}
-
-		// resultInfo = ResultInfo(res)
-		// resultInfo["sd"] = map[string]any{}
 
 		for _, row := range rows {
 			delete(row, "hasnext")

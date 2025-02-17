@@ -4,11 +4,13 @@ model Order {
         price Decimal
         category Text
         status Status
-        orderDate Timestamp
+        orderDate Date?
+        orderTime Timestamp?
+        durationToPurchase Duration?
     }
     actions {
         list listOrders() {
-            @facet(quantity, price, status, category, orderDate)
+            @facet(id, quantity, price, status, category, orderTime, orderDate, durationToPurchase)
         }
     }
 }

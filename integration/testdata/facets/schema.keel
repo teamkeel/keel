@@ -4,7 +4,7 @@ model Order {
         price Decimal
         category Text
         status Status
-        orderDate Timestamp?
+        orderDate Date?
         orderTime Timestamp?
         durationToPurchase Duration?
     }
@@ -13,7 +13,7 @@ model Order {
             @facet(id, quantity, price, status, category, orderDate, orderTime, durationToPurchase)
             @where(order.status != Status.Cancelled)
         }
-        create createOrder() with (quantity, price, category, status, orderDate) {
+        create createOrder() with (quantity, price, category, status, orderDate, orderTime, durationToPurchase) {
             @permission(expression: true)
         }
     }

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/iancoleman/strcase"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -414,7 +415,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						return nil, err
 					}
 
-					results, resultInfo, pageInfo, err := query.
+					results, _, pageInfo, err := query.
 						SelectStatement().
 						ExecuteToMany(ctx, &page)
 					if err != nil {
@@ -435,9 +436,8 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 					}
 
 					res, err := connectionResponse(map[string]any{
-						"results":    results,
-						"resultInfo": resultInfo,
-						"pageInfo":   pageInfo.ToMap(),
+						"results":  results,
+						"pageInfo": pageInfo.ToMap(),
 					})
 					if err != nil {
 						span.RecordError(err, trace.WithStackTrace(true))
@@ -554,17 +554,7 @@ func (mk *graphqlSchemaBuilder) addAction(
 }
 
 func (mk *graphqlSchemaBuilder) makeResultInfoType(action *proto.Action) graphql.Output {
-	model := mk.proto.FindModel(action.ModelName)
-	var facetFields []*proto.Field
-	for _, name := range action.Facets {
-		for _, field := range model.Fields {
-			if field.Name == name {
-				facetFields = append(facetFields, field)
-				continue
-			}
-		}
-	}
-
+	facetFields := proto.FacetFields(mk.proto, action)
 	if len(facetFields) == 0 {
 		return nil
 	}
@@ -577,7 +567,7 @@ func (mk *graphqlSchemaBuilder) makeResultInfoType(action *proto.Action) graphql
 	}
 
 	return graphql.NewObject(graphql.ObjectConfig{
-		Name:   fmt.Sprintf("%sResultInfo", action.ModelName),
+		Name:   fmt.Sprintf("%sResultInfo", strcase.ToCamel(action.Name)),
 		Fields: fields,
 	})
 }

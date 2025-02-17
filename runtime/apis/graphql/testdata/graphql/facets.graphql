@@ -55,14 +55,14 @@ type Date {
 }
 
 type DateFacet {
-  max: Date
-  min: Date
+  max: Date!
+  min: Date!
 }
 
 type DecimalFacet {
-  avg: Float
-  max: Float
-  min: Float
+  avg: Float!
+  max: Float!
+  min: Float!
 }
 
 type Duration {
@@ -70,9 +70,9 @@ type Duration {
 }
 
 type DurationFacet {
-  avg: Duration
-  max: Duration
-  min: Duration
+  avg: Duration!
+  max: Duration!
+  min: Duration!
 }
 
 type EnumFacet {
@@ -85,10 +85,21 @@ type IDFacet {
   value: String!
 }
 
+type ListOrdersResultInfo {
+  category: [TextFacet]
+  durationToPurchase: DurationFacet
+  id: [IDFacet]
+  orderDate: DateFacet
+  orderTime: TimestampFacet
+  price: DecimalFacet
+  quantity: NumberFacet
+  status: [EnumFacet]
+}
+
 type NumberFacet {
-  avg: Float
-  max: Int
-  min: Int
+  avg: Float!
+  max: Int!
+  min: Int!
 }
 
 type Order {
@@ -107,22 +118,11 @@ type Order {
 type OrderConnection {
   edges: [OrderEdge!]!
   pageInfo: PageInfo!
-  resultInfo: OrderResultInfo
+  resultInfo: ListOrdersResultInfo
 }
 
 type OrderEdge {
   node: Order!
-}
-
-type OrderResultInfo {
-  category: [TextFacet]
-  durationToPurchase: DurationFacet
-  id: [IDFacet]
-  orderDate: DateFacet
-  orderTime: Timestamp
-  price: DecimalFacet
-  quantity: NumberFacet
-  status: [EnumFacet]
 }
 
 type PageInfo {
@@ -143,6 +143,11 @@ type Timestamp {
   fromNow: String!
   iso8601: String!
   seconds: Int!
+}
+
+type TimestampFacet {
+  max: Timestamp!
+  min: Timestamp!
 }
 
 enum Status {

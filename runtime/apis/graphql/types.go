@@ -354,43 +354,43 @@ var enumFacetType = graphql.NewObject(graphql.ObjectConfig{
 var numberFacetType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "NumberFacet",
 	Fields: graphql.Fields{
-		"min": &graphql.Field{Type: graphql.Int},
-		"max": &graphql.Field{Type: graphql.Int},
-		"avg": &graphql.Field{Type: graphql.Float},
+		"min": &graphql.Field{Type: graphql.NewNonNull(graphql.Int)},
+		"max": &graphql.Field{Type: graphql.NewNonNull(graphql.Int)},
+		"avg": &graphql.Field{Type: graphql.NewNonNull(graphql.Float)},
 	},
 })
 
 var decimalFacetType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "DecimalFacet",
 	Fields: graphql.Fields{
-		"min": &graphql.Field{Type: graphql.Float},
-		"max": &graphql.Field{Type: graphql.Float},
-		"avg": &graphql.Field{Type: graphql.Float},
+		"min": &graphql.Field{Type: graphql.NewNonNull(graphql.Float)},
+		"max": &graphql.Field{Type: graphql.NewNonNull(graphql.Float)},
+		"avg": &graphql.Field{Type: graphql.NewNonNull(graphql.Float)},
 	},
 })
 
 var timestampFacetType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "TimestampFacet",
 	Fields: graphql.Fields{
-		"min": &graphql.Field{Type: timestampType},
-		"max": &graphql.Field{Type: timestampType},
+		"min": &graphql.Field{Type: graphql.NewNonNull(timestampType)},
+		"max": &graphql.Field{Type: graphql.NewNonNull(timestampType)},
 	},
 })
 
 var dateFacetType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "DateFacet",
 	Fields: graphql.Fields{
-		"min": &graphql.Field{Type: dateType},
-		"max": &graphql.Field{Type: dateType},
+		"min": &graphql.Field{Type: graphql.NewNonNull(dateType)},
+		"max": &graphql.Field{Type: graphql.NewNonNull(dateType)},
 	},
 })
 
 var durationFacetType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "DurationFacet",
 	Fields: graphql.Fields{
-		"min": &graphql.Field{Type: durationType},
-		"max": &graphql.Field{Type: durationType},
-		"avg": &graphql.Field{Type: durationType},
+		"min": &graphql.Field{Type: graphql.NewNonNull(durationType)},
+		"max": &graphql.Field{Type: graphql.NewNonNull(durationType)},
+		"avg": &graphql.Field{Type: graphql.NewNonNull(durationType)},
 	},
 })
 
@@ -402,7 +402,7 @@ var protoTypeToFacetType = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_DECIMAL:   decimalFacetType,
 	proto.Type_TYPE_TIMESTAMP: timestampFacetType,
 	proto.Type_TYPE_DATE:      dateFacetType,
-	proto.Type_TYPE_DATETIME:  timestampType,
+	proto.Type_TYPE_DATETIME:  timestampFacetType,
 	proto.Type_TYPE_DURATION:  durationFacetType,
 }
 
