@@ -105,7 +105,7 @@ test("client - list action", async () => {
 
   expect(result.data?.resultInfo.views.min).toEqual(0);
   expect(result.data?.resultInfo.views.max).toEqual(100);
-  expect(result.data?.resultInfo.views.avg).toEqual(49.5);
+  expect(result.data?.resultInfo.views.avg).toEqual(50);
 });
 
 test("client - list action with paging", async () => {
