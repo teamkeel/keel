@@ -540,6 +540,7 @@ func (query *QueryBuilder) GroupBy(operand *QueryOperand) {
 	if !lo.Contains(query.groupBy, c) {
 		query.groupBy = append(query.groupBy, c)
 	}
+}
 
 // Set the OFFSET to a number.
 func (query *QueryBuilder) Offset(offset int) {
@@ -868,8 +869,8 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 
 	if len(query.groupBy) > 0 {
 		groupBy = fmt.Sprintf("GROUP BY %s", strings.Join(query.groupBy, ", "))
-  }
-  
+	}
+
 	if query.limit != nil {
 		limit = "LIMIT ?"
 		query.args = append(query.args, *query.limit)
@@ -880,7 +881,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		query.args = append(query.args, *query.offset)
 	}
 
-	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s %s",
+	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s %s %s",
 		distinctOn,
 		selection,
 		sqlQuote(query.table),
