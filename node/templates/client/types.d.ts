@@ -142,8 +142,6 @@ export type TokenRequest =
 
 export type SortDirection = "asc" | "desc" | "ASC" | "DESC";
 
-type ResultInfo = any;
-
 type PageInfo = {
   count: number;
   endCursor: string;
