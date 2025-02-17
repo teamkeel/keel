@@ -169,8 +169,8 @@ test("duration set attribute from implicit input - set to P2D - is P2D", async (
   const thing = await actions.createDurationFromImplicitInput({
     requiredDuration: Duration.fromISOString("P2D"),
   });
-  expect(thing.optionalDuration).toEqual("P2D");
-  expect(thing.requiredDuration).toEqual("P2D");
+  expect(thing.optionalDuration?.toISOString()).toEqual("P2D");
+  expect(thing.requiredDuration?.toISOString()).toEqual("P2D");
 });
 
 /* 

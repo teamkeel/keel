@@ -200,17 +200,11 @@ function isPlainObject(obj) {
 const dateFormat =
   /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
 
-const durationFormat =
-  /^P(?:\d+Y)?(?:\d+M)?(?:\d+W)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$/;
-
 function reviver(key, value) {
   // Handle date strings
   if (typeof value === "string") {
     if (dateFormat.test(value)) {
       return new Date(value);
-    }
-    if (durationFormat.test(value)) {
-      return Duration.fromISOString(value);
     }
   }
 
@@ -223,9 +217,6 @@ function reviver(key, value) {
           if (dateFormat.test(item)) {
             return new Date(item);
           }
-          if (durationFormat.test(item)) {
-            return Duration.fromISOString(item);
-          }
         }
         return item;
       });
@@ -236,8 +227,6 @@ function reviver(key, value) {
       if (typeof value[k] === "string") {
         if (dateFormat.test(value[k])) {
           value[k] = new Date(value[k]);
-        } else if (durationFormat.test(value[k])) {
-          value[k] = Duration.fromISOString(value[k]);
         }
       }
     }
