@@ -84,7 +84,7 @@ test("client - list action", async () => {
   for (let i = 0; i < 101; i++) {
     await client.api.mutations.createPost({
       title: "Post " + i,
-      category: "Toys",
+      category: Category.Food,
       views: i,
     });
   }
@@ -100,7 +100,7 @@ test("client - list action", async () => {
   expect(result.data?.pageInfo.endCursor).not.toBeNull();
 
   expect(result.data?.resultInfo.category).toEqual([
-    { value: "Toys", count: 101 },
+    { value: "Food", count: 101 },
   ]);
 
   expect(result.data?.resultInfo.views.min).toEqual(0);
