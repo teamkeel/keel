@@ -1,1 +1,273 @@
-{"openapi":"3.1.0","info":{"title":"Api","version":"1"},"paths":{"/api/json/listOrders":{"post":{"operationId":"listOrders","requestBody":{"description":"listOrders Request","content":{"application/json":{"schema":{"type":"object","properties":{"after":{"type":"string"},"before":{"type":"string"},"first":{"type":"number"},"last":{"type":"number"},"where":{"$ref":"#/components/schemas/ListOrdersWhere"}},"unevaluatedProperties":false}}}},"responses":{"200":{"description":"listOrders Response","content":{"application/json":{"schema":{"properties":{"pageInfo":{"properties":{"count":{"type":"number"},"endCursor":{"type":"string"},"hasNextPage":{"type":"boolean"},"startCursor":{"type":"string"},"totalCount":{"type":"number"}}},"resultInfo":{"properties":{"category":{"type":"array","items":{"type":"object","properties":{"count":{"type":"number"},"value":{"type":"string"}}}},"orderDate":{"properties":{"max":{"type":"number"},"min":{"type":"number"}}},"orderTime":{"properties":{"max":{"type":"number"},"min":{"type":"number"}}},"price":{"properties":{"avg":{"type":"number"},"max":{"type":"number"},"min":{"type":"number"}}},"quantity":{"properties":{"avg":{"type":"number"},"max":{"type":"number"},"min":{"type":"number"}}},"status":{"type":"array","items":{"type":"object","properties":{"count":{"type":"number"},"value":{"type":"string"}}}}}},"results":{"type":"array","items":{"$ref":"#/components/schemas/Order"}}}}}}},"400":{"description":"listOrders Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}}},"/api/json/requestPasswordReset":{"post":{"operationId":"requestPasswordReset","requestBody":{"description":"requestPasswordReset Request","content":{"application/json":{"schema":{"type":"object","properties":{"email":{"type":"string"},"redirectUrl":{"type":"string"}},"unevaluatedProperties":false,"required":["email","redirectUrl"]}}}},"responses":{"200":{"description":"requestPasswordReset Response","content":{"application/json":{"schema":{"type":"object","unevaluatedProperties":false}}}},"400":{"description":"requestPasswordReset Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}}},"/api/json/resetPassword":{"post":{"operationId":"resetPassword","requestBody":{"description":"resetPassword Request","content":{"application/json":{"schema":{"type":"object","properties":{"password":{"type":"string"},"token":{"type":"string"}},"unevaluatedProperties":false,"required":["token","password"]}}}},"responses":{"200":{"description":"resetPassword Response","content":{"application/json":{"schema":{"type":"object","unevaluatedProperties":false}}}},"400":{"description":"resetPassword Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}}}},"components":{"schemas":{"ListOrdersWhere":{"type":"object","unevaluatedProperties":false},"Order":{"properties":{"category":{"type":"string"},"createdAt":{"type":"string","format":"date-time"},"durationToPurchase":{"type":["string","null"],"format":"duration"},"id":{"type":"string"},"orderDate":{"type":["string","null"],"format":"date"},"orderTime":{"type":["string","null"],"format":"date-time"},"price":{"type":"number","format":"float"},"quantity":{"type":"number"},"status":{"enum":["Complete","InProgress","Cancelled"]},"updatedAt":{"type":"string","format":"date-time"}},"required":["quantity","price","category","status","id","createdAt","updatedAt"]}}}}
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Api", "version": "1" },
+  "paths": {
+    "/api/json/listOrders": {
+      "post": {
+        "operationId": "listOrders",
+        "requestBody": {
+          "description": "listOrders Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "after": { "type": "string" },
+                  "before": { "type": "string" },
+                  "first": { "type": "number" },
+                  "last": { "type": "number" },
+                  "where": { "$ref": "#/components/schemas/ListOrdersWhere" }
+                },
+                "unevaluatedProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "listOrders Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "pageInfo": {
+                      "properties": {
+                        "count": { "type": "number" },
+                        "endCursor": { "type": "string" },
+                        "hasNextPage": { "type": "boolean" },
+                        "startCursor": { "type": "string" },
+                        "totalCount": { "type": "number" }
+                      }
+                    },
+                    "resultInfo": {
+                      "properties": {
+                        "category": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "count": { "type": "number" },
+                              "value": { "type": "string" }
+                            }
+                          }
+                        },
+                        "orderDate": {
+                          "properties": {
+                            "max": { "type": "number" },
+                            "min": { "type": "number" }
+                          }
+                        },
+                        "orderTime": {
+                          "properties": {
+                            "max": { "type": "number" },
+                            "min": { "type": "number" }
+                          }
+                        },
+                        "price": {
+                          "properties": {
+                            "avg": { "type": "number" },
+                            "max": { "type": "number" },
+                            "min": { "type": "number" }
+                          }
+                        },
+                        "quantity": {
+                          "properties": {
+                            "avg": { "type": "number" },
+                            "max": { "type": "number" },
+                            "min": { "type": "number" }
+                          }
+                        },
+                        "status": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "count": { "type": "number" },
+                              "value": { "type": "string" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Order" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "listOrders Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/json/requestPasswordReset": {
+      "post": {
+        "operationId": "requestPasswordReset",
+        "requestBody": {
+          "description": "requestPasswordReset Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "redirectUrl": { "type": "string" }
+                },
+                "unevaluatedProperties": false,
+                "required": ["email", "redirectUrl"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "requestPasswordReset Response",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "unevaluatedProperties": false }
+              }
+            }
+          },
+          "400": {
+            "description": "requestPasswordReset Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/json/resetPassword": {
+      "post": {
+        "operationId": "resetPassword",
+        "requestBody": {
+          "description": "resetPassword Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": { "type": "string" },
+                  "token": { "type": "string" }
+                },
+                "unevaluatedProperties": false,
+                "required": ["token", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "resetPassword Response",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "unevaluatedProperties": false }
+              }
+            }
+          },
+          "400": {
+            "description": "resetPassword Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ListOrdersWhere": { "type": "object", "unevaluatedProperties": false },
+      "Order": {
+        "properties": {
+          "category": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "durationToPurchase": {
+            "type": ["string", "null"],
+            "format": "duration"
+          },
+          "id": { "type": "string" },
+          "orderDate": { "type": ["string", "null"], "format": "date" },
+          "orderTime": { "type": ["string", "null"], "format": "date-time" },
+          "price": { "type": "number", "format": "float" },
+          "quantity": { "type": "number" },
+          "status": { "enum": ["Complete", "InProgress", "Cancelled"] },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "quantity",
+          "price",
+          "category",
+          "status",
+          "id",
+          "createdAt",
+          "updatedAt"
+        ]
+      }
+    }
+  }
+}

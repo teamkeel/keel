@@ -79,12 +79,8 @@ test("facets - no input filters", async () => {
     { value: "Toys", count: 2 },
   ]);
 
-  expect(result.resultInfo.orderDate.min).toEqual(
-    new Date("2024-01-01")
-  );
-  expect(result.resultInfo.orderDate.max).toEqual(
-    new Date("2024-01-06")
-  );
+  expect(result.resultInfo.orderDate.min).toEqual(new Date("2024-01-01"));
+  expect(result.resultInfo.orderDate.max).toEqual(new Date("2024-01-06"));
 
   expect(result.resultInfo.orderTime.min).toEqual(
     new Date("2024-01-01T12:00:00Z")
@@ -128,12 +124,8 @@ test("facets - no input filters with paging", async () => {
     { value: "Toys", count: 2 },
   ]);
 
-  expect(result.resultInfo.orderDate.min).toEqual(
-    new Date("2024-01-01")
-  );
-  expect(result.resultInfo.orderDate.max).toEqual(
-    new Date("2024-01-06")
-  );
+  expect(result.resultInfo.orderDate.min).toEqual(new Date("2024-01-01"));
+  expect(result.resultInfo.orderDate.max).toEqual(new Date("2024-01-06"));
 
   expect(result.resultInfo.orderTime.min).toEqual(
     new Date("2024-01-01T12:00:00Z")
@@ -167,12 +159,8 @@ test("facets - price filter", async () => {
     { value: "Pet Care 101", count: 1 },
   ]);
 
-  expect(result.resultInfo.orderDate.min).toEqual(
-    new Date("2024-01-03")
-  );
-  expect(result.resultInfo.orderDate.max).toEqual(
-    new Date("2024-01-06")
-  );
+  expect(result.resultInfo.orderDate.min).toEqual(new Date("2024-01-03"));
+  expect(result.resultInfo.orderDate.max).toEqual(new Date("2024-01-06"));
 
   expect(result.resultInfo.orderTime.min).toEqual(
     new Date("2024-01-03T12:00:00Z")
