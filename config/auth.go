@@ -135,6 +135,10 @@ func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId str
 		return err
 	}
 
+	if err == nil {
+		return nil
+	}
+
 	newProviderIndex := len(c.Providers) - 1
 	for _, err := range ToConfigErrors(err).Errors {
 		if strings.HasPrefix(err.Message, fmt.Sprintf("auth.providers.%d.name", newProviderIndex)) {
