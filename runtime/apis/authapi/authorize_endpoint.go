@@ -70,8 +70,13 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, err.Error(), err)
 		}
 
+		issuer, hasIssuer := provider.GetIssuerUrl()
+		if !hasIssuer {
+			return common.InternalServerErrorResponse(ctx, err)
+		}
+
 		// Establishes new OIDC provider. This will call the providers discovery endpoint
-		oidcProvider, err := oidc.NewProvider(ctx, provider.IssuerUrl)
+		oidcProvider, err := oidc.NewProvider(ctx, issuer)
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
