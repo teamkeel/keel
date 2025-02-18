@@ -24,13 +24,11 @@ func defaultComputed(schema []*parser.AST) (*expressions.Parser, error) {
 	}
 
 	opts := []expressions.Option{
-		options.WithCtx(),
 		options.WithSchemaTypes(schema),
 		options.WithComparisonOperators(),
 		options.WithLogicalOperators(),
 		options.WithArithmeticOperators(),
 		options.WithFunctions(),
-		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	}
 
 	parser, err := expressions.NewParser(opts...)

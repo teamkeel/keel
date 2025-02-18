@@ -52,17 +52,15 @@ func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode,
 
 	opts := []expressions.Option{}
 
-	operands, err := resolve.IdentOperands(expression)
-	if err != nil {
-		return nil, err
-	}
+	operands, _ := resolve.IdentOperands(expression)
 
-	if action != nil {
+	if action != nil && operands != nil {
+	out:
 		for _, operand := range operands {
 			for _, input := range action.Inputs {
 				if operand.Fragments[0] == input.Name() {
 					opts = append(opts, options.WithActionInputs(schema, action))
-					break
+					break out
 				}
 			}
 		}
