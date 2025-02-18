@@ -83,36 +83,46 @@ test("authentication - get providers", async () => {
   expect(provs.data?.[0]).toEqual({
     name: "myOidcProvider",
     type: "oidc",
-    authorizeUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/myoidcprovider",
-    callbackUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/callback/myoidcprovider",
+    authorizeUrl:
+      process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/myoidcprovider",
+    callbackUrl:
+      process.env.KEEL_TESTING_AUTH_API_URL + "/callback/myoidcprovider",
   });
-  
+
   expect(provs.data?.[1]).toEqual({
     name: "googleProvider",
     type: "google",
-    authorizeUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/googleprovider",
-    callbackUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/callback/googleprovider",
+    authorizeUrl:
+      process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/googleprovider",
+    callbackUrl:
+      process.env.KEEL_TESTING_AUTH_API_URL + "/callback/googleprovider",
   });
 
   expect(provs.data?.[2]).toEqual({
     name: "slackProvider",
     type: "slack",
-    authorizeUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/slackprovider",
-    callbackUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/callback/slackprovider",
+    authorizeUrl:
+      process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/slackprovider",
+    callbackUrl:
+      process.env.KEEL_TESTING_AUTH_API_URL + "/callback/slackprovider",
   });
-  
+
   expect(provs.data?.[3]).toEqual({
     name: "facebookProvider",
     type: "facebook",
-    authorizeUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/facebookprovider",
-    callbackUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/callback/facebookprovider",
+    authorizeUrl:
+      process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/facebookprovider",
+    callbackUrl:
+      process.env.KEEL_TESTING_AUTH_API_URL + "/callback/facebookprovider",
   });
 
   expect(provs.data?.[4]).toEqual({
     name: "Gitlab_Provider",
     type: "gitlab",
-    authorizeUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/gitlab_provider",
-    callbackUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/callback/gitlab_provider",
+    authorizeUrl:
+      process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/gitlab_provider",
+    callbackUrl:
+      process.env.KEEL_TESTING_AUTH_API_URL + "/callback/gitlab_provider",
   });
 
   expect(provs.data?.length).toEqual(5);
