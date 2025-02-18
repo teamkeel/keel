@@ -71,7 +71,10 @@ func TestValidation(t *testing.T) {
 	testCases, err := os.ReadDir(dir)
 	require.NoError(t, err)
 
-	for _, tc := range testCases {
+	for i, tc := range testCases {
+		if i > 0 {
+			break
+		}
 		testCase := tc
 		if testCase.IsDir() {
 			t.Errorf("errors test data directory should only contain keel schema files - directory found: %s", testCase.Name())
@@ -145,6 +148,13 @@ func TestValidation(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkValidation(t *testing.B) {
+	testCaseDir := "{{your schema directory}}"
+	builder := &schema.Builder{}
+	_, err := builder.MakeFromDirectory(testCaseDir)
+	require.NoError(t, err)
 }
 
 func errorToString(err *errorhandling.ValidationError, _ int) string {

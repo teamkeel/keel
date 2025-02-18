@@ -1,15 +1,31 @@
 package attributes
 
 import (
+	"encoding/hex"
+
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/expressions/options"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/expressions/typing"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode, action *parser.ActionNode, job *parser.JobNode, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
+var permissions = make(map[string]*expressions.Parser)
+
+// defaultPermission will cache the base CEL environment for a schema
+func defaultPermission(schema []*parser.AST) (*expressions.Parser, error) {
+	var contents string
+	for _, s := range schema {
+		contents += s.Raw + "\n"
+	}
+	key := hex.EncodeToString([]byte(contents))
+
+	if parser, exists := permissions[key]; exists {
+		return parser, nil
+	}
+
 	opts := []expressions.Option{
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
@@ -18,15 +34,56 @@ func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode,
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	}
 
+	parser, err := expressions.NewParser(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	permissions[key] = parser
+
+	return parser, nil
+}
+
+func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode, action *parser.ActionNode, job *parser.JobNode, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
+	parser, err := defaultPermission(schema)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := []expressions.Option{}
+
+	operands, err := resolve.IdentOperands(expression)
+	if err != nil {
+		return nil, err
+	}
+
 	if action != nil {
-		opts = append(opts, options.WithActionInputs(schema, action))
+		for _, operand := range operands {
+			for _, input := range action.Inputs {
+				if operand.Fragments[0] == input.Name() {
+					opts = append(opts, options.WithActionInputs(schema, action))
+					break
+				}
+			}
+		}
 	}
 
 	if model != nil {
-		opts = append(opts, options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false))
+		for _, operand := range operands {
+			if operand.Fragments[0] == strcase.ToLowerCamel(model.Name.Value) {
+				opts = append(opts, options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false))
+				break
+			}
+		}
 	}
 
-	p, err := expressions.NewParser(opts...)
+	// If there are no options to add, we can just validate without extending the parser
+	// This is a performance optimization
+	if len(opts) == 0 {
+		return parser.Validate(expression)
+	}
+
+	p, err := parser.Extend(opts...)
 	if err != nil {
 		return nil, err
 	}
