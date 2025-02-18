@@ -75,3 +75,45 @@ test("authentication - not authenticated and no permissions", async () => {
   expect(response.data?.results).toHaveLength(1);
   expect(response.error).toBeUndefined();
 });
+
+test("authentication - get providers", async () => {
+  const provs = await client.auth.providers();
+  console.log(provs);
+
+  expect(provs.data?.[0]).toEqual({
+    name: "myOidcProvider",
+    type: "oidc",
+    authorizeUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/myoidcprovider",
+    callbackUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/callback/myoidcprovider",
+  });
+  
+  expect(provs.data?.[1]).toEqual({
+    name: "googleProvider",
+    type: "google",
+    authorizeUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/googleprovider",
+    callbackUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/callback/googleprovider",
+  });
+
+  expect(provs.data?.[2]).toEqual({
+    name: "slackProvider",
+    type: "slack",
+    authorizeUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/slackprovider",
+    callbackUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/callback/slackprovider",
+  });
+  
+  expect(provs.data?.[3]).toEqual({
+    name: "facebookProvider",
+    type: "facebook",
+    authorizeUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/facebookprovider",
+    callbackUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/callback/facebookprovider",
+  });
+
+  expect(provs.data?.[4]).toEqual({
+    name: "Gitlab_Provider",
+    type: "gitlab",
+    authorizeUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/authorize/gitlab_provider",
+    callbackUrl: process.env.KEEL_TESTING_AUTH_API_URL + "/callback/gitlab_provider",
+  });
+
+  expect(provs.data?.length).toEqual(5);
+});

@@ -1,7 +1,6 @@
 package authapi
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -25,8 +24,6 @@ func ProvidersHandler(schema *proto.Schema) common.HandlerFunc {
 
 		config, err := runtimectx.GetOAuthConfig(ctx)
 		if err != nil {
-			fmt.Println(err)
-
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
