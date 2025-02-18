@@ -64,7 +64,7 @@ type Provider struct {
 	Type      string `yaml:"type"`
 	Name      string `yaml:"name"`
 	ClientId  string `yaml:"clientId"`
-	IssuerUrl string `yaml:"issuerUrl"`
+	IssuerUrl string `yaml:"issuerUrl,omitempty"`
 }
 
 type IdentityClaim struct {
@@ -133,6 +133,10 @@ func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId str
 	_, err = LoadFromBytes(b, "")
 	if err != nil && ToConfigErrors(err) == nil {
 		return err
+	}
+
+	if err == nil {
+		return nil
 	}
 
 	newProviderIndex := len(c.Providers) - 1
