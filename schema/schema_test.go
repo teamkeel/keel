@@ -71,10 +71,7 @@ func TestValidation(t *testing.T) {
 	testCases, err := os.ReadDir(dir)
 	require.NoError(t, err)
 
-	for i, tc := range testCases {
-		if i > 0 {
-			break
-		}
+	for _, tc := range testCases {
 		testCase := tc
 		if testCase.IsDir() {
 			t.Errorf("errors test data directory should only contain keel schema files - directory found: %s", testCase.Name())
