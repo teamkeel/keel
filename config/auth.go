@@ -64,7 +64,7 @@ type Provider struct {
 	Type      string `yaml:"type"`
 	Name      string `yaml:"name"`
 	ClientId  string `yaml:"clientId"`
-	IssuerUrl string `yaml:"issuerUrl"`
+	IssuerUrl string `yaml:"issuerUrl,omitempty"`
 }
 
 type IdentityClaim struct {
