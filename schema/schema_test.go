@@ -147,6 +147,13 @@ func TestValidation(t *testing.T) {
 	}
 }
 
+func BenchmarkValidation(t *testing.B) {
+	testCaseDir := "{{your schema directory}}"
+	builder := &schema.Builder{}
+	_, err := builder.MakeFromDirectory(testCaseDir)
+	require.NoError(t, err)
+}
+
 func errorToString(err *errorhandling.ValidationError, _ int) string {
 	return fmt.Sprintf("%d:%d:%d:%s:%s", err.Pos.Line, err.Pos.Column, err.EndPos.Column, err.Code, err.Message)
 }
