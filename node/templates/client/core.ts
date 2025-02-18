@@ -169,7 +169,7 @@ export class Core {
       });
 
       if (result.ok) {
-        return await result.json();
+        return { data: await result.json() };
       } else {
         return {
           error: {

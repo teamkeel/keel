@@ -1,0 +1,18 @@
+auth:
+  providers:
+    - type: oidc
+      name: myOidcProvider
+      issuerUrl: "https://auth.example.com/"
+      clientId: foo_1
+    - type: google
+      name: googleProvider
+      clientId: foo_3
+    - type: slack
+      name: slackProvider
+      clientId: foo_4
+    - type: facebook
+      name: facebookProvider
+      clientId: foo_5
+    - type: gitlab
+      name: Gitlab_Provider
+      clientId: foo_6
