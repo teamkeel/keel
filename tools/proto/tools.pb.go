@@ -2039,11 +2039,7 @@ type RecordViewConfig struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Path to the response field that gives us the stepper status. The field should be an ENUM state; though
-	// the stepper could work with any other type
-	StepperField *JsonPath `protobuf:"bytes,1,opt,name=stepper_field,json=stepperField,proto3,oneof" json:"stepper_field,omitempty"`
-	// Array of steps that should be displayed
-	Steps []*RecordViewConfig_Step `protobuf:"bytes,2,rep,name=steps,proto3" json:"steps,omitempty"`
+	ProgressIndicator *ProgressIndicatorConfig `protobuf:"bytes,1,opt,name=progress_indicator,json=progressIndicator,proto3" json:"progress_indicator,omitempty"`
 }
 
 func (x *RecordViewConfig) Reset() {
@@ -2076,18 +2072,77 @@ func (*RecordViewConfig) Descriptor() ([]byte, []int) {
 	return file_tools_proto_rawDescGZIP(), []int{18}
 }
 
-func (x *RecordViewConfig) GetStepperField() *JsonPath {
+func (x *RecordViewConfig) GetProgressIndicator() *ProgressIndicatorConfig {
+	if x != nil {
+		return x.ProgressIndicator
+	}
+	return nil
+}
+
+// ProgressIndicatorConfig specifies configuration for a Stepper like field
+type ProgressIndicatorConfig struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Path to the response field that gives us the stepper status. The field should be an ENUM state; though
+	// the stepper could work with any other type
+	StepperField *JsonPath `protobuf:"bytes,1,opt,name=stepper_field,json=stepperField,proto3,oneof" json:"stepper_field,omitempty"`
+	// Array of steps that should be displayed
+	Steps []*ProgressIndicatorConfig_Step `protobuf:"bytes,2,rep,name=steps,proto3" json:"steps,omitempty"`
+	// If this progress indicator should be enabled or not
+	Enabled bool `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
+}
+
+func (x *ProgressIndicatorConfig) Reset() {
+	*x = ProgressIndicatorConfig{}
+	mi := &file_tools_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProgressIndicatorConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProgressIndicatorConfig) ProtoMessage() {}
+
+func (x *ProgressIndicatorConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProgressIndicatorConfig.ProtoReflect.Descriptor instead.
+func (*ProgressIndicatorConfig) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ProgressIndicatorConfig) GetStepperField() *JsonPath {
 	if x != nil {
 		return x.StepperField
 	}
 	return nil
 }
 
-func (x *RecordViewConfig) GetSteps() []*RecordViewConfig_Step {
+func (x *ProgressIndicatorConfig) GetSteps() []*ProgressIndicatorConfig_Step {
 	if x != nil {
 		return x.Steps
 	}
 	return nil
+}
+
+func (x *ProgressIndicatorConfig) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
 }
 
 // When embedding ActionLinks, we need to provide extra-configuration that will override the
@@ -2105,7 +2160,7 @@ type ToolGroup_GroupActionLink struct {
 
 func (x *ToolGroup_GroupActionLink) Reset() {
 	*x = ToolGroup_GroupActionLink{}
-	mi := &file_tools_proto_msgTypes[19]
+	mi := &file_tools_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2117,7 +2172,7 @@ func (x *ToolGroup_GroupActionLink) String() string {
 func (*ToolGroup_GroupActionLink) ProtoMessage() {}
 
 func (x *ToolGroup_GroupActionLink) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[19]
+	mi := &file_tools_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2159,7 +2214,7 @@ type CursorPaginationConfig_FieldConfig struct {
 
 func (x *CursorPaginationConfig_FieldConfig) Reset() {
 	*x = CursorPaginationConfig_FieldConfig{}
-	mi := &file_tools_proto_msgTypes[20]
+	mi := &file_tools_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2171,7 +2226,7 @@ func (x *CursorPaginationConfig_FieldConfig) String() string {
 func (*CursorPaginationConfig_FieldConfig) ProtoMessage() {}
 
 func (x *CursorPaginationConfig_FieldConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[20]
+	mi := &file_tools_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2213,7 +2268,7 @@ type CursorPaginationConfig_PageSizeConfig struct {
 
 func (x *CursorPaginationConfig_PageSizeConfig) Reset() {
 	*x = CursorPaginationConfig_PageSizeConfig{}
-	mi := &file_tools_proto_msgTypes[21]
+	mi := &file_tools_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2225,7 +2280,7 @@ func (x *CursorPaginationConfig_PageSizeConfig) String() string {
 func (*CursorPaginationConfig_PageSizeConfig) ProtoMessage() {}
 
 func (x *CursorPaginationConfig_PageSizeConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[21]
+	mi := &file_tools_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2262,7 +2317,7 @@ func (x *CursorPaginationConfig_PageSizeConfig) GetDefaultValue() int32 {
 	return 0
 }
 
-type RecordViewConfig_Step struct {
+type ProgressIndicatorConfig_Step struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -2280,21 +2335,21 @@ type RecordViewConfig_Step struct {
 	Value []string `protobuf:"bytes,3,rep,name=value,proto3" json:"value,omitempty"`
 }
 
-func (x *RecordViewConfig_Step) Reset() {
-	*x = RecordViewConfig_Step{}
-	mi := &file_tools_proto_msgTypes[22]
+func (x *ProgressIndicatorConfig_Step) Reset() {
+	*x = ProgressIndicatorConfig_Step{}
+	mi := &file_tools_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RecordViewConfig_Step) String() string {
+func (x *ProgressIndicatorConfig_Step) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RecordViewConfig_Step) ProtoMessage() {}
+func (*ProgressIndicatorConfig_Step) ProtoMessage() {}
 
-func (x *RecordViewConfig_Step) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[22]
+func (x *ProgressIndicatorConfig_Step) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2305,26 +2360,26 @@ func (x *RecordViewConfig_Step) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RecordViewConfig_Step.ProtoReflect.Descriptor instead.
-func (*RecordViewConfig_Step) Descriptor() ([]byte, []int) {
-	return file_tools_proto_rawDescGZIP(), []int{18, 0}
+// Deprecated: Use ProgressIndicatorConfig_Step.ProtoReflect.Descriptor instead.
+func (*ProgressIndicatorConfig_Step) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{19, 0}
 }
 
-func (x *RecordViewConfig_Step) GetDisplayOrder() int32 {
+func (x *ProgressIndicatorConfig_Step) GetDisplayOrder() int32 {
 	if x != nil {
 		return x.DisplayOrder
 	}
 	return 0
 }
 
-func (x *RecordViewConfig_Step) GetTitle() *StringTemplate {
+func (x *ProgressIndicatorConfig_Step) GetTitle() *StringTemplate {
 	if x != nil {
 		return x.Title
 	}
 	return nil
 }
 
-func (x *RecordViewConfig_Step) GetValue() []string {
+func (x *ProgressIndicatorConfig_Step) GetValue() []string {
 	if x != nil {
 		return x.Value
 	}
@@ -2788,27 +2843,36 @@ var file_tools_proto_rawDesc = []byte{
 	0x10, 0x5f, 0x61, 0x76, 0x61, 0x74, 0x61, 0x72, 0x5f, 0x66, 0x61, 0x6c, 0x6c, 0x62, 0x61, 0x63,
 	0x6b, 0x42, 0x10, 0x0a, 0x0e, 0x5f, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x5f, 0x61, 0x63, 0x74,
 	0x69, 0x6f, 0x6e, 0x22, 0x10, 0x0a, 0x0e, 0x47, 0x72, 0x69, 0x64, 0x56, 0x69, 0x65, 0x77, 0x43,
-	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x22, 0x92, 0x02, 0x0a, 0x10, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64,
-	0x56, 0x69, 0x65, 0x77, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x39, 0x0a, 0x0d, 0x73, 0x74,
-	0x65, 0x70, 0x70, 0x65, 0x72, 0x5f, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x0f, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x4a, 0x73, 0x6f, 0x6e, 0x50, 0x61,
-	0x74, 0x68, 0x48, 0x00, 0x52, 0x0c, 0x73, 0x74, 0x65, 0x70, 0x70, 0x65, 0x72, 0x46, 0x69, 0x65,
-	0x6c, 0x64, 0x88, 0x01, 0x01, 0x12, 0x32, 0x0a, 0x05, 0x73, 0x74, 0x65, 0x70, 0x73, 0x18, 0x02,
-	0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x52, 0x65, 0x63,
-	0x6f, 0x72, 0x64, 0x56, 0x69, 0x65, 0x77, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x53, 0x74,
-	0x65, 0x70, 0x52, 0x05, 0x73, 0x74, 0x65, 0x70, 0x73, 0x1a, 0x7d, 0x0a, 0x04, 0x53, 0x74, 0x65,
-	0x70, 0x12, 0x23, 0x0a, 0x0d, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x5f, 0x6f, 0x72, 0x64,
-	0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61,
-	0x79, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x30, 0x0a, 0x05, 0x74, 0x69, 0x74, 0x6c, 0x65, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x74,
-	0x72, 0x69, 0x6e, 0x67, 0x54, 0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x48, 0x00, 0x52, 0x05,
-	0x74, 0x69, 0x74, 0x6c, 0x65, 0x88, 0x01, 0x01, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75,
-	0x65, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x42, 0x08,
-	0x0a, 0x06, 0x5f, 0x74, 0x69, 0x74, 0x6c, 0x65, 0x42, 0x10, 0x0a, 0x0e, 0x5f, 0x73, 0x74, 0x65,
-	0x70, 0x70, 0x65, 0x72, 0x5f, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x42, 0x26, 0x5a, 0x24, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x65, 0x61, 0x6d, 0x6b, 0x65, 0x65,
-	0x6c, 0x2f, 0x6b, 0x65, 0x65, 0x6c, 0x2f, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x22, 0x61, 0x0a, 0x10, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x56,
+	0x69, 0x65, 0x77, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x4d, 0x0a, 0x12, 0x70, 0x72, 0x6f,
+	0x67, 0x72, 0x65, 0x73, 0x73, 0x5f, 0x69, 0x6e, 0x64, 0x69, 0x63, 0x61, 0x74, 0x6f, 0x72, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x50, 0x72,
+	0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x49, 0x6e, 0x64, 0x69, 0x63, 0x61, 0x74, 0x6f, 0x72, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x11, 0x70, 0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x49,
+	0x6e, 0x64, 0x69, 0x63, 0x61, 0x74, 0x6f, 0x72, 0x22, 0xba, 0x02, 0x0a, 0x17, 0x50, 0x72, 0x6f,
+	0x67, 0x72, 0x65, 0x73, 0x73, 0x49, 0x6e, 0x64, 0x69, 0x63, 0x61, 0x74, 0x6f, 0x72, 0x43, 0x6f,
+	0x6e, 0x66, 0x69, 0x67, 0x12, 0x39, 0x0a, 0x0d, 0x73, 0x74, 0x65, 0x70, 0x70, 0x65, 0x72, 0x5f,
+	0x66, 0x69, 0x65, 0x6c, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x74, 0x6f,
+	0x6f, 0x6c, 0x73, 0x2e, 0x4a, 0x73, 0x6f, 0x6e, 0x50, 0x61, 0x74, 0x68, 0x48, 0x00, 0x52, 0x0c,
+	0x73, 0x74, 0x65, 0x70, 0x70, 0x65, 0x72, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x88, 0x01, 0x01, 0x12,
+	0x39, 0x0a, 0x05, 0x73, 0x74, 0x65, 0x70, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x23,
+	0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x50, 0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x49,
+	0x6e, 0x64, 0x69, 0x63, 0x61, 0x74, 0x6f, 0x72, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x53,
+	0x74, 0x65, 0x70, 0x52, 0x05, 0x73, 0x74, 0x65, 0x70, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x6e,
+	0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x65, 0x6e, 0x61,
+	0x62, 0x6c, 0x65, 0x64, 0x1a, 0x7d, 0x0a, 0x04, 0x53, 0x74, 0x65, 0x70, 0x12, 0x23, 0x0a, 0x0d,
+	0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x05, 0x52, 0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64, 0x65,
+	0x72, 0x12, 0x30, 0x0a, 0x05, 0x74, 0x69, 0x74, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x15, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54,
+	0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x48, 0x00, 0x52, 0x05, 0x74, 0x69, 0x74, 0x6c, 0x65,
+	0x88, 0x01, 0x01, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x03, 0x20, 0x03,
+	0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x42, 0x08, 0x0a, 0x06, 0x5f, 0x74, 0x69,
+	0x74, 0x6c, 0x65, 0x42, 0x10, 0x0a, 0x0e, 0x5f, 0x73, 0x74, 0x65, 0x70, 0x70, 0x65, 0x72, 0x5f,
+	0x66, 0x69, 0x65, 0x6c, 0x64, 0x42, 0x26, 0x5a, 0x24, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x65, 0x61, 0x6d, 0x6b, 0x65, 0x65, 0x6c, 0x2f, 0x6b, 0x65, 0x65,
+	0x6c, 0x2f, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2824,7 +2888,7 @@ func file_tools_proto_rawDescGZIP() []byte {
 }
 
 var file_tools_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_tools_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_tools_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_tools_proto_goTypes = []any{
 	(RequestFieldConfig_ScopeType)(0),             // 0: tools.RequestFieldConfig.ScopeType
 	(ResponseFieldConfig_ScopeType)(0),            // 1: tools.ResponseFieldConfig.ScopeType
@@ -2848,17 +2912,18 @@ var file_tools_proto_goTypes = []any{
 	(*BoardViewConfig)(nil),                       // 19: tools.BoardViewConfig
 	(*GridViewConfig)(nil),                        // 20: tools.GridViewConfig
 	(*RecordViewConfig)(nil),                      // 21: tools.RecordViewConfig
-	(*ToolGroup_GroupActionLink)(nil),             // 22: tools.ToolGroup.GroupActionLink
-	(*CursorPaginationConfig_FieldConfig)(nil),    // 23: tools.CursorPaginationConfig.FieldConfig
-	(*CursorPaginationConfig_PageSizeConfig)(nil), // 24: tools.CursorPaginationConfig.PageSizeConfig
-	(*RecordViewConfig_Step)(nil),                 // 25: tools.RecordViewConfig.Step
-	(proto.ActionType)(0),                         // 26: proto.ActionType
-	(proto.ActionImplementation)(0),               // 27: proto.ActionImplementation
-	(proto.Type)(0),                               // 28: proto.Type
+	(*ProgressIndicatorConfig)(nil),               // 22: tools.ProgressIndicatorConfig
+	(*ToolGroup_GroupActionLink)(nil),             // 23: tools.ToolGroup.GroupActionLink
+	(*CursorPaginationConfig_FieldConfig)(nil),    // 24: tools.CursorPaginationConfig.FieldConfig
+	(*CursorPaginationConfig_PageSizeConfig)(nil), // 25: tools.CursorPaginationConfig.PageSizeConfig
+	(*ProgressIndicatorConfig_Step)(nil),          // 26: tools.ProgressIndicatorConfig.Step
+	(proto.ActionType)(0),                         // 27: proto.ActionType
+	(proto.ActionImplementation)(0),               // 28: proto.ActionImplementation
+	(proto.Type)(0),                               // 29: proto.Type
 }
 var file_tools_proto_depIdxs = []int32{
-	26, // 0: tools.ActionConfig.action_type:type_name -> proto.ActionType
-	27, // 1: tools.ActionConfig.implementation:type_name -> proto.ActionImplementation
+	27, // 0: tools.ActionConfig.action_type:type_name -> proto.ActionType
+	28, // 1: tools.ActionConfig.implementation:type_name -> proto.ActionImplementation
 	5,  // 2: tools.ActionConfig.inputs:type_name -> tools.RequestFieldConfig
 	6,  // 3: tools.ActionConfig.response:type_name -> tools.ResponseFieldConfig
 	9,  // 4: tools.ActionConfig.title:type_name -> tools.StringTemplate
@@ -2874,7 +2939,7 @@ var file_tools_proto_depIdxs = []int32{
 	17, // 14: tools.ActionConfig.display_layout:type_name -> tools.DisplayLayoutConfig
 	7,  // 15: tools.ActionConfig.sections:type_name -> tools.Section
 	10, // 16: tools.RequestFieldConfig.field_location:type_name -> tools.JsonPath
-	28, // 17: tools.RequestFieldConfig.field_type:type_name -> proto.Type
+	29, // 17: tools.RequestFieldConfig.field_type:type_name -> proto.Type
 	9,  // 18: tools.RequestFieldConfig.help_text:type_name -> tools.StringTemplate
 	12, // 19: tools.RequestFieldConfig.lookup_action:type_name -> tools.ActionLink
 	12, // 20: tools.RequestFieldConfig.get_entry_action:type_name -> tools.ActionLink
@@ -2882,7 +2947,7 @@ var file_tools_proto_depIdxs = []int32{
 	9,  // 22: tools.RequestFieldConfig.placeholder:type_name -> tools.StringTemplate
 	0,  // 23: tools.RequestFieldConfig.scope:type_name -> tools.RequestFieldConfig.ScopeType
 	10, // 24: tools.ResponseFieldConfig.field_location:type_name -> tools.JsonPath
-	28, // 25: tools.ResponseFieldConfig.field_type:type_name -> proto.Type
+	29, // 25: tools.ResponseFieldConfig.field_type:type_name -> proto.Type
 	9,  // 26: tools.ResponseFieldConfig.help_text:type_name -> tools.StringTemplate
 	12, // 27: tools.ResponseFieldConfig.link:type_name -> tools.ActionLink
 	1,  // 28: tools.ResponseFieldConfig.scope:type_name -> tools.ResponseFieldConfig.ScopeType
@@ -2894,11 +2959,11 @@ var file_tools_proto_depIdxs = []int32{
 	9,  // 34: tools.ActionLink.title:type_name -> tools.StringTemplate
 	9,  // 35: tools.ActionLink.description:type_name -> tools.StringTemplate
 	9,  // 36: tools.ToolGroup.title:type_name -> tools.StringTemplate
-	22, // 37: tools.ToolGroup.tools:type_name -> tools.ToolGroup.GroupActionLink
+	23, // 37: tools.ToolGroup.tools:type_name -> tools.ToolGroup.GroupActionLink
 	10, // 38: tools.ResponseOverrides.field_location:type_name -> tools.JsonPath
-	23, // 39: tools.CursorPaginationConfig.start:type_name -> tools.CursorPaginationConfig.FieldConfig
-	23, // 40: tools.CursorPaginationConfig.end:type_name -> tools.CursorPaginationConfig.FieldConfig
-	24, // 41: tools.CursorPaginationConfig.page_size:type_name -> tools.CursorPaginationConfig.PageSizeConfig
+	24, // 39: tools.CursorPaginationConfig.start:type_name -> tools.CursorPaginationConfig.FieldConfig
+	24, // 40: tools.CursorPaginationConfig.end:type_name -> tools.CursorPaginationConfig.FieldConfig
+	25, // 41: tools.CursorPaginationConfig.page_size:type_name -> tools.CursorPaginationConfig.PageSizeConfig
 	10, // 42: tools.CursorPaginationConfig.next_page:type_name -> tools.JsonPath
 	10, // 43: tools.CursorPaginationConfig.total_count:type_name -> tools.JsonPath
 	10, // 44: tools.DataMapping.path:type_name -> tools.JsonPath
@@ -2923,18 +2988,19 @@ var file_tools_proto_depIdxs = []int32{
 	9,  // 63: tools.BoardViewConfig.avatar_fallback:type_name -> tools.StringTemplate
 	10, // 64: tools.BoardViewConfig.group_by_field:type_name -> tools.JsonPath
 	12, // 65: tools.BoardViewConfig.update_action:type_name -> tools.ActionLink
-	10, // 66: tools.RecordViewConfig.stepper_field:type_name -> tools.JsonPath
-	25, // 67: tools.RecordViewConfig.steps:type_name -> tools.RecordViewConfig.Step
-	12, // 68: tools.ToolGroup.GroupActionLink.action_link:type_name -> tools.ActionLink
-	14, // 69: tools.ToolGroup.GroupActionLink.response_overrides:type_name -> tools.ResponseOverrides
-	10, // 70: tools.CursorPaginationConfig.FieldConfig.response_field:type_name -> tools.JsonPath
-	10, // 71: tools.CursorPaginationConfig.PageSizeConfig.response_field:type_name -> tools.JsonPath
-	9,  // 72: tools.RecordViewConfig.Step.title:type_name -> tools.StringTemplate
-	73, // [73:73] is the sub-list for method output_type
-	73, // [73:73] is the sub-list for method input_type
-	73, // [73:73] is the sub-list for extension type_name
-	73, // [73:73] is the sub-list for extension extendee
-	0,  // [0:73] is the sub-list for field type_name
+	22, // 66: tools.RecordViewConfig.progress_indicator:type_name -> tools.ProgressIndicatorConfig
+	10, // 67: tools.ProgressIndicatorConfig.stepper_field:type_name -> tools.JsonPath
+	26, // 68: tools.ProgressIndicatorConfig.steps:type_name -> tools.ProgressIndicatorConfig.Step
+	12, // 69: tools.ToolGroup.GroupActionLink.action_link:type_name -> tools.ActionLink
+	14, // 70: tools.ToolGroup.GroupActionLink.response_overrides:type_name -> tools.ResponseOverrides
+	10, // 71: tools.CursorPaginationConfig.FieldConfig.response_field:type_name -> tools.JsonPath
+	10, // 72: tools.CursorPaginationConfig.PageSizeConfig.response_field:type_name -> tools.JsonPath
+	9,  // 73: tools.ProgressIndicatorConfig.Step.title:type_name -> tools.StringTemplate
+	74, // [74:74] is the sub-list for method output_type
+	74, // [74:74] is the sub-list for method input_type
+	74, // [74:74] is the sub-list for extension type_name
+	74, // [74:74] is the sub-list for extension extendee
+	0,  // [0:74] is the sub-list for field type_name
 }
 
 func init() { file_tools_proto_init() }
@@ -2959,15 +3025,15 @@ func file_tools_proto_init() {
 	file_tools_proto_msgTypes[14].OneofWrappers = []any{}
 	file_tools_proto_msgTypes[15].OneofWrappers = []any{}
 	file_tools_proto_msgTypes[16].OneofWrappers = []any{}
-	file_tools_proto_msgTypes[18].OneofWrappers = []any{}
-	file_tools_proto_msgTypes[22].OneofWrappers = []any{}
+	file_tools_proto_msgTypes[19].OneofWrappers = []any{}
+	file_tools_proto_msgTypes[23].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_tools_proto_rawDesc,
 			NumEnums:      3,
-			NumMessages:   23,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
