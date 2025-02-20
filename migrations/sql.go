@@ -570,18 +570,28 @@ func createIndexStmts(schema *proto.Schema, existingIndexes []*IndexRow) []strin
 	indexedFields := []*proto.Field{}
 	for _, model := range schema.Models {
 		for _, action := range model.Actions {
+			if action.Type != proto.ActionType_ACTION_TYPE_LIST {
+				continue
+			}
+
 			message := proto.FindWhereInputMessage(schema, action.Name)
 			if message == nil {
 				continue
 			}
 
 			// Find fields used as required inputs
-			indexedFields = append(indexedFields, findIndexableInputFields(schema, model, message)...)
+			fieldsToIndex := findIndexableInputFields(schema, model, message)
+			for _, field := range fieldsToIndex {
+				// They could have been added already if used as another action's input
+				if !lo.Contains(indexedFields, field) {
+					indexedFields = append(indexedFields, field)
+				}
+			}
 
 			// Find fields used as facets
 			for _, facet := range action.Facets {
 				field := model.FindField(facet)
-
+				// They could have been added already as an input
 				if !lo.Contains(indexedFields, field) {
 					indexedFields = append(indexedFields, field)
 				}
@@ -636,35 +646,31 @@ func indexName(modelName string, fieldName string) string {
 func findIndexableInputFields(schema *proto.Schema, model *proto.Model, message *proto.Message) []*proto.Field {
 	indexedFields := []*proto.Field{}
 
-	for _, msgField := range message.Fields {
-		m := model
+	for _, input := range message.Fields {
+		field := proto.FindField(schema.Models, model.Name, input.Name)
 
 		// Skip optional inputs
-		if msgField.Optional {
+		if input.Optional {
 			continue
 		}
 
-		if msgField.Type.Type == proto.Type_TYPE_MESSAGE {
-			nestedMsg := schema.FindMessage(msgField.Type.MessageName.Value)
-			indexedFields = append(indexedFields, findIndexableInputFields(schema, model, nestedMsg)...)
+		if !input.IsModelField() && input.Type.Type == proto.Type_TYPE_MESSAGE {
+			messageModel := schema.FindModel(field.Type.ModelName.Value)
+			nestedMsg := schema.FindMessage(input.Type.MessageName.Value)
+			indexedFields = append(indexedFields, findIndexableInputFields(schema, messageModel, nestedMsg)...)
 		}
 
 		// Skip indexing on optional fields
-		if msgField.Optional {
+		if input.Optional {
 			continue
 		}
 
 		// Skip inputs which don't correlate to a model field
-		if len(msgField.Target) == 0 {
+		if len(input.Target) == 0 {
 			continue
 		}
 
-		// If this is a nested relationship query input, then we need to find the model in targets
-		if len(msgField.Target) > 1 {
-			m = schema.FindModel(strcase.ToCamel(msgField.Target[len(msgField.Target)-2]))
-		}
-
-		f := m.FindField(msgField.Target[len(msgField.Target)-1])
+		f := model.FindField(input.Target[len(input.Target)-1])
 
 		indexedFields = append(indexedFields, f)
 	}
