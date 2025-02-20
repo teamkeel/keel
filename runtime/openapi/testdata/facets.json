@@ -1,74 +1,19 @@
 {
-  "components": {
-    "schemas": {
-      "ListOrdersWhere": {
-        "type": "object",
-        "unevaluatedProperties": false
-      },
-      "Order": {
-        "properties": {
-          "category": {
-            "type": "string"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "durationToPurchase": {
-            "format": "duration",
-            "type": ["string", "null"]
-          },
-          "id": {
-            "type": "string"
-          },
-          "orderDate": {
-            "format": "date",
-            "type": ["string", "null"]
-          },
-          "orderTime": {
-            "format": "date-time",
-            "type": ["string", "null"]
-          },
-          "price": {
-            "format": "float",
-            "type": "number"
-          },
-          "quantity": {
-            "type": "number"
-          },
-          "status": {
-            "enum": ["Complete", "InProgress", "Cancelled"]
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "quantity",
-          "price",
-          "category",
-          "status",
-          "id",
-          "createdAt",
-          "updatedAt"
-        ]
-      }
-    }
-  },
+  "openapi": "3.1.0",
   "info": {
     "title": "Api",
     "version": "1"
   },
-  "openapi": "3.1.0",
   "paths": {
     "/api/json/listOrders": {
       "post": {
         "operationId": "listOrders",
         "requestBody": {
+          "description": "listOrders Request",
           "content": {
             "application/json": {
               "schema": {
+                "type": "object",
                 "properties": {
                   "after": {
                     "type": "string"
@@ -92,15 +37,14 @@
                     "$ref": "#/components/schemas/ListOrdersWhere"
                   }
                 },
-                "type": "object",
                 "unevaluatedProperties": false
               }
             }
-          },
-          "description": "listOrders Request"
+          }
         },
         "responses": {
           "200": {
+            "description": "listOrders Response",
             "content": {
               "application/json": {
                 "schema": {
@@ -130,7 +74,9 @@
                     "resultInfo": {
                       "properties": {
                         "category": {
+                          "type": "array",
                           "items": {
+                            "type": "object",
                             "properties": {
                               "count": {
                                 "type": "number"
@@ -138,28 +84,42 @@
                               "value": {
                                 "type": "string"
                               }
+                            }
+                          }
+                        },
+                        "durationToPurchase": {
+                          "properties": {
+                            "max": {
+                              "type": "string",
+                              "format": "duration"
                             },
-                            "type": "object"
-                          },
-                          "type": "array"
+                            "min": {
+                              "type": "string",
+                              "format": "duration"
+                            }
+                          }
                         },
                         "orderDate": {
                           "properties": {
                             "max": {
-                              "type": "number"
+                              "type": "string",
+                              "format": "date"
                             },
                             "min": {
-                              "type": "number"
+                              "type": "string",
+                              "format": "date"
                             }
                           }
                         },
                         "orderTime": {
                           "properties": {
                             "max": {
-                              "type": "number"
+                              "type": "string",
+                              "format": "date-time"
                             },
                             "min": {
-                              "type": "number"
+                              "type": "string",
+                              "format": "date-time"
                             }
                           }
                         },
@@ -190,7 +150,9 @@
                           }
                         },
                         "status": {
+                          "type": "array",
                           "items": {
+                            "type": "object",
                             "properties": {
                               "count": {
                                 "type": "number"
@@ -198,26 +160,24 @@
                               "value": {
                                 "type": "string"
                               }
-                            },
-                            "type": "object"
-                          },
-                          "type": "array"
+                            }
+                          }
                         }
                       }
                     },
                     "results": {
+                      "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/Order"
-                      },
-                      "type": "array"
+                      }
                     }
                   }
                 }
               }
-            },
-            "description": "listOrders Response"
+            }
           },
           "400": {
+            "description": "listOrders Response Errors",
             "content": {
               "application/json": {
                 "schema": {
@@ -226,8 +186,10 @@
                       "type": "string"
                     },
                     "data": {
+                      "type": ["object", "null"],
                       "properties": {
                         "errors": {
+                          "type": "array",
                           "properties": {
                             "error": {
                               "type": "string"
@@ -235,11 +197,9 @@
                             "field": {
                               "type": "string"
                             }
-                          },
-                          "type": "array"
+                          }
                         }
-                      },
-                      "type": ["object", "null"]
+                      }
                     },
                     "message": {
                       "type": "string"
@@ -247,8 +207,7 @@
                   }
                 }
               }
-            },
-            "description": "listOrders Response Errors"
+            }
           }
         }
       }
@@ -257,9 +216,11 @@
       "post": {
         "operationId": "requestPasswordReset",
         "requestBody": {
+          "description": "requestPasswordReset Request",
           "content": {
             "application/json": {
               "schema": {
+                "type": "object",
                 "properties": {
                   "email": {
                     "type": "string"
@@ -268,16 +229,15 @@
                     "type": "string"
                   }
                 },
-                "required": ["email", "redirectUrl"],
-                "type": "object",
-                "unevaluatedProperties": false
+                "unevaluatedProperties": false,
+                "required": ["email", "redirectUrl"]
               }
             }
-          },
-          "description": "requestPasswordReset Request"
+          }
         },
         "responses": {
           "200": {
+            "description": "requestPasswordReset Response",
             "content": {
               "application/json": {
                 "schema": {
@@ -285,10 +245,10 @@
                   "unevaluatedProperties": false
                 }
               }
-            },
-            "description": "requestPasswordReset Response"
+            }
           },
           "400": {
+            "description": "requestPasswordReset Response Errors",
             "content": {
               "application/json": {
                 "schema": {
@@ -297,8 +257,10 @@
                       "type": "string"
                     },
                     "data": {
+                      "type": ["object", "null"],
                       "properties": {
                         "errors": {
+                          "type": "array",
                           "properties": {
                             "error": {
                               "type": "string"
@@ -306,11 +268,9 @@
                             "field": {
                               "type": "string"
                             }
-                          },
-                          "type": "array"
+                          }
                         }
-                      },
-                      "type": ["object", "null"]
+                      }
                     },
                     "message": {
                       "type": "string"
@@ -318,8 +278,7 @@
                   }
                 }
               }
-            },
-            "description": "requestPasswordReset Response Errors"
+            }
           }
         }
       }
@@ -328,9 +287,11 @@
       "post": {
         "operationId": "resetPassword",
         "requestBody": {
+          "description": "resetPassword Request",
           "content": {
             "application/json": {
               "schema": {
+                "type": "object",
                 "properties": {
                   "password": {
                     "type": "string"
@@ -339,16 +300,15 @@
                     "type": "string"
                   }
                 },
-                "required": ["token", "password"],
-                "type": "object",
-                "unevaluatedProperties": false
+                "unevaluatedProperties": false,
+                "required": ["token", "password"]
               }
             }
-          },
-          "description": "resetPassword Request"
+          }
         },
         "responses": {
           "200": {
+            "description": "resetPassword Response",
             "content": {
               "application/json": {
                 "schema": {
@@ -356,10 +316,10 @@
                   "unevaluatedProperties": false
                 }
               }
-            },
-            "description": "resetPassword Response"
+            }
           },
           "400": {
+            "description": "resetPassword Response Errors",
             "content": {
               "application/json": {
                 "schema": {
@@ -368,8 +328,10 @@
                       "type": "string"
                     },
                     "data": {
+                      "type": ["object", "null"],
                       "properties": {
                         "errors": {
+                          "type": "array",
                           "properties": {
                             "error": {
                               "type": "string"
@@ -377,11 +339,9 @@
                             "field": {
                               "type": "string"
                             }
-                          },
-                          "type": "array"
+                          }
                         }
-                      },
-                      "type": ["object", "null"]
+                      }
                     },
                     "message": {
                       "type": "string"
@@ -389,10 +349,66 @@
                   }
                 }
               }
-            },
-            "description": "resetPassword Response Errors"
+            }
           }
         }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ListOrdersWhere": {
+        "type": "object",
+        "unevaluatedProperties": false
+      },
+      "Order": {
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "durationToPurchase": {
+            "type": ["string", "null"],
+            "format": "duration"
+          },
+          "id": {
+            "type": "string"
+          },
+          "orderDate": {
+            "type": ["string", "null"],
+            "format": "date"
+          },
+          "orderTime": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "price": {
+            "type": "number",
+            "format": "float"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "status": {
+            "enum": ["Complete", "InProgress", "Cancelled"]
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "quantity",
+          "price",
+          "category",
+          "status",
+          "id",
+          "createdAt",
+          "updatedAt"
+        ]
       }
     }
   }
