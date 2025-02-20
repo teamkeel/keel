@@ -1,4 +1,3 @@
-
 model Order {
     fields {
         price Decimal

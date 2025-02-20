@@ -575,6 +575,7 @@ func createIndexStmts(schema *proto.Schema, existingIndexes []*IndexRow) []strin
 				continue
 			}
 
+			// Find fields used as required inputs
 			indexedFields = append(indexedFields, findIndexableInputFields(schema, model, message)...)
 
 			// Find fields used as facets
@@ -594,11 +595,6 @@ func createIndexStmts(schema *proto.Schema, existingIndexes []*IndexRow) []strin
 	for _, field := range indexedFields {
 		// Skip fields which are unique as these will already have an index
 		if field.Unique {
-			continue
-		}
-
-		// Skip relationship FK fields as these will are already indexed by the FK constraint
-		if field.Type.Type == proto.Type_TYPE_MODEL {
 			continue
 		}
 
