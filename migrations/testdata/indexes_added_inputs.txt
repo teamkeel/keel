@@ -1,0 +1,62 @@
+model Order {
+    fields {
+        price Decimal
+        quantity Number
+        customer Customer
+        category Category?
+        tag Text
+    }
+}
+
+model Customer {
+    fields {
+        name Text
+    }
+}
+
+enum Category {
+    Food
+    Electronics
+    Books
+}
+
+===
+
+model Order {
+    fields {
+        price Decimal
+        quantity Number
+        customer Customer
+        category Category?
+        tag Text
+    }
+
+    actions {
+        list listOrders(customer.id, customer.name, category, tag?) {
+            @facet(price, quantity, category)
+        }
+    }
+}
+
+model Customer {
+    fields {
+        name Text
+    }
+}
+
+enum Category {
+    Food
+    Electronics
+    Books
+}
+
+===
+
+CREATE INDEX "customer__name__idx" ON "customer" ("name");
+CREATE INDEX "order__category__idx" ON "order" ("category");
+CREATE INDEX "order__price__idx" ON "order" ("price");
+CREATE INDEX "order__quantity__idx" ON "order" ("quantity");
+
+===
+
+[]
