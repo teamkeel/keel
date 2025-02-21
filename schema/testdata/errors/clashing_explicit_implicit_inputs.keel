@@ -5,12 +5,8 @@ model Post {
 
     actions {
         create createPost() with (title, coolTitle: Text) {
-            //expect-error:18:28:ActionInputError:title is already being used as an input so cannot also be used in an expression
+            //expect-error:18:28:ActionInputError:title is already being used as a value input so cannot also be used in @set
             @set(post.title = coolTitle)
-        }
-        list listPost(id, coolId: ID) {
-            //expect-error:20:27:ActionInputError:id is already being used as an input so cannot also be used in an expression
-            @where(post.id == coolId)
         }
     }
 }

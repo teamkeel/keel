@@ -7,10 +7,6 @@ model Post {
     }
 
     actions {
-        update updatePost(id) with (title) {
-            //expect-error:18:28:ActionInputError:title is already being used as an input so cannot also be used in an expression
-            @set(post.title = title)
-        }
         update updatePost2(id) with (title) {
             //expect-error:34:39:AttributeExpressionError:unknown identifier 'thing'
             @set(post.subTitle = thing.title)
