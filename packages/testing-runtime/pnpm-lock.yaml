@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@teamkeel/functions-runtime':
-    specifier: 0.400.0
-    version: 0.400.0(@aws-sdk/client-sso-oidc@3.726.0)
+    specifier: 0.401.5
+    version: 0.401.5(@aws-sdk/client-sso-oidc@3.726.0)
   jsonwebtoken:
     specifier: ^9.0.2
     version: 9.0.2
@@ -2674,8 +2674,8 @@ packages:
       tslib: 2.8.1
     dev: false
 
-  /@teamkeel/functions-runtime@0.400.0(@aws-sdk/client-sso-oidc@3.726.0):
-    resolution: {integrity: sha512-sA6JWPwvZWTS36Dd1DUji5FsuHRXzAE1ANhEUvJ0ae0AdG6QZqLIAWEBFeXSTYxmH6ReRcGsPRz5+qqvM5RRsw==}
+  /@teamkeel/functions-runtime@0.401.5(@aws-sdk/client-sso-oidc@3.726.0):
+    resolution: {integrity: sha512-uEgmQ1zt3jTvE28ZQ3QvFZi7f7nmGZobjZAahkDOFwcMc0rod8lk1fMI7Ar5WsizF9i4M7XywP62JNWrNw+DGQ==}
     dependencies:
       '@aws-sdk/client-s3': 3.722.0
       '@aws-sdk/credential-providers': 3.721.0(@aws-sdk/client-sso-oidc@3.726.0)
