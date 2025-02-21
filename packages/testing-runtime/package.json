@@ -20,7 +20,7 @@
   "dependencies": {
     "@teamkeel/functions-runtime": "0.401.5",
     "jsonwebtoken": "^9.0.2",
-    "kysely": "^0.26.3",
+    "kysely": "~0.27.5",
     "lodash.ismatch": "^4.4.0",
     "vite": "^5.4.11",
     "vitest": "^0.34.6"
