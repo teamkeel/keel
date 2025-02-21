@@ -327,7 +327,7 @@ export type PersonAPI = {
 	* Creates a new query builder with the given conditions applied
 	* @example
 	%[1]stypescript
-	const records = await models.person.where({ createdAt: { after: new Date(2020, 1, 1) } }).orWhere({ updatedAt: { after: new Date(2020, 1, 1) } }).findMany();
+	const records = await models.person.where({ createdAt: { after: new Date(2020, 1, 1) } }).findMany();
 	%[1]s
 	*/
 	where(where: PersonWhereConditions): PersonQueryBuilder;

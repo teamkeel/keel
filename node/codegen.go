@@ -784,7 +784,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 		w.Writeln("* Creates a new query builder with the given conditions applied")
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
-		w.Writef("const records = await models.%s.where({ createdAt: { after: new Date(2020, 1, 1) } }).orWhere({ updatedAt: { after: new Date(2020, 1, 1) } }).findMany();\n", casing.ToLowerCamel(model.Name))
+		w.Writef("const records = await models.%s.where({ createdAt: { after: new Date(2020, 1, 1) } }).findMany();\n", casing.ToLowerCamel(model.Name))
 		w.Writeln("```")
 	})
 	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
@@ -806,7 +806,6 @@ func writeModelQueryBuilderDeclaration(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export type %sQueryBuilder = {\n", model.Name)
 	w.Indent()
 	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
-	w.Writef("orWhere(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
 	w.Writef("findMany(params?: %sQueryBuilderParams): Promise<%s[]>;\n", model.Name, model.Name)
 	w.Writef("findOne(params?: %sQueryBuilderParams): Promise<%s>;\n", model.Name, model.Name)
 
