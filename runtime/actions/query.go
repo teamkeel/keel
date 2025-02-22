@@ -3,6 +3,7 @@ package actions
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -20,6 +21,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/types"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/storage"
 	"github.com/teamkeel/keel/timeperiod"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -191,6 +193,8 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 				cast = "::TIMESTAMPTZ[]"
 			case bool:
 				cast = "::BOOL[]"
+			case storage.FileInfo:
+				cast = "::JSONB[]"
 			default:
 				cast = "::TEXT[]"
 			}
@@ -1298,6 +1302,14 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 					case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATETIME:
 						row[col], err = ParsePostgresArray[time.Time](arr, func(s string) (time.Time, error) {
 							return time.Parse("2006-01-02 15:04:05.999999999-07", s)
+						})
+					case proto.Type_TYPE_FILE:
+						row[col], err = ParsePostgresArray[storage.FileInfo](arr, func(s string) (storage.FileInfo, error) {
+							fi := storage.FileInfo{}
+							if err := json.Unmarshal([]byte(s), &fi); err != nil {
+								return storage.FileInfo{}, fmt.Errorf("failed to unmarshal file data: %w", err)
+							}
+							return fi, nil
 						})
 					default:
 						return nil, nil, fmt.Errorf("missing parsing implementation for type %s", f.Type.Type)
