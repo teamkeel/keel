@@ -6,69 +6,6 @@ const { isPlainObject } = require("./type-utils");
 //
 // inputs that are objects and contain a "__typename" field are resolved to instances of the complex type
 // they represent.
-// function parseInputs(inputs) {
-//   if (inputs != null  ) {
-//     for (const k of Object.keys(inputs)) {
-//       if (Array.isArray(inputs[k])) {
-//         inputs[k] = inputs[k].map((item) => {console.log("arrrrrr"); return parseInputs(item);});
-//       } else if (inputs[k] !== null) {
-//         if (typeof inputs[k] === "object" && "__typename" in inputs[k]) {
-//           switch (inputs[k].__typename) {
-//             case "InlineFile":
-//               console.log("inline file");
-
-//               inputs[k] = InlineFile.fromDataURL(inputs[k].dataURL);
-//               break;
-//             case "Duration":
-//               console.log("duration");
-//               inputs[k] = Duration.fromISOString(inputs[k].interval);
-//               break;
-//             default:
-//               console.log("no match");
-//           }
-//         } else {
-//           console.log("else");
-//           inputs[k] = parseInputs(inputs[k]);
-//         }
-//       } else {
-//         console.log("else2");
-//       }
-//     }
-//   }
-
-//   return inputs;
-// }
-
-// function parseInputs(inputs) {
-//   console.log("parseInputs");
-//   console.log(inputs);
-//   if (inputs != null && typeof inputs === "object") {
-//     for (const k of Object.keys(inputs)) {
-//       if (inputs[k] !== null && typeof inputs[k] === "object") {
-//         if (Array.isArray(inputs[k])) {
-//           console.log("got array");
-//           inputs[k] = inputs[k].map(item => parseInputs(item));
-//         } else if ("__typename" in inputs[k]) {
-//           switch (inputs[k].__typename) {
-//             case "InlineFile":
-//               inputs[k] = InlineFile.fromDataURL(inputs[k].dataURL);
-//               break;
-//             case "Duration":
-//               inputs[k] = Duration.fromISOString(inputs[k].interval);
-//               break;
-//             default:
-//               break;
-//           }
-//         } else {
-//           inputs[k] = parseInputs(inputs[k]);
-//         }
-//       }
-//     }
-//   }
-
-//   return inputs;
-// }
-
 function parseInputs(inputs) {
   if (inputs != null && typeof inputs === "object") {
     for (const k of Object.keys(inputs)) {
