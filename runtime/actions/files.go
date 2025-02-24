@@ -67,7 +67,6 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 
 					inputs[field.Name] = fi
 				}
-
 			}
 		}
 	}

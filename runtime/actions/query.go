@@ -1270,8 +1270,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		PageNumber:  pageNumber,
 	}
 
-	// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
-	// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
+	// For certain types, we need to parse them into a format the runtime understands.
 	for _, f := range statement.model.Fields {
 		if f.Type.Type == proto.Type_TYPE_MODEL {
 			continue
@@ -1280,7 +1279,11 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		col := strcase.ToSnake(f.Name)
 		for _, row := range rows {
 			if val, ok := row[col]; ok && val != nil {
+
 				if f.Type.Repeated {
+					// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
+					// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
+
 					arr := val.(string)
 					switch f.Type.Type {
 					case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_ID, proto.Type_TYPE_MARKDOWN:
@@ -1337,7 +1340,6 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 						return nil, nil, err
 					}
 				}
-
 			}
 		}
 	}

@@ -18,7 +18,7 @@ model MyFile {
         write storeAndWriteMany(file: File) returns (FileMessage) {
             @permission(expression: true)
         }
-        write writeMany(FileMessage) returns (FileMessage) {
+        write writeMany(FileInputMessage) returns (FileMessage) {
             @permission(expression: true)
         }
         write modelApiTests(Any) returns (Any) {
@@ -33,6 +33,14 @@ model MyFile {
     }
 
     @permission(expression: true, actions: [get, list, create, update])
+}
+
+message FileInputMessage {
+    msg NestedFileInputMessage
+}
+
+message NestedFileInputMessage {
+    file File
 }
 
 message FileMessage {
