@@ -1,5 +1,5 @@
 import { actions, resetDatabase } from "@teamkeel/testing";
-import { MyEnum, InlineFile } from "@teamkeel/sdk";
+import { MyEnum, InlineFile, Duration } from "@teamkeel/sdk";
 import { test, expect, beforeEach } from "vitest";
 
 beforeEach(resetDatabase);
@@ -24,6 +24,10 @@ test("array fields - create action", async () => {
     files: [
       InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
       InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
+    ],
+    durations: [
+      Duration.fromISOString("PT2H3M4S"),
+      Duration.fromISOString("PT1H2M3S"),
     ],
   });
 
@@ -74,6 +78,10 @@ test("array fields - create action", async () => {
   expect(thing.files![1].size).toEqual(3);
   const contents2 = await thing.files![1].read();
   expect(contents2?.toString("utf-8")).toEqual("two");
+
+  expect(thing.durations).toHaveLength(2);
+  expect(thing.durations![0]).toEqual("PT2H3M4S");
+  expect(thing.durations![1]).toEqual("PT1H2M3S");
 });
 
 test("array fields - empty arrays", async () => {
@@ -86,6 +94,7 @@ test("array fields - empty arrays", async () => {
     enums: [],
     decimals: [],
     files: [],
+    durations: [],
   });
 
   expect(thing.texts).not.toBeNull();
@@ -111,6 +120,9 @@ test("array fields - empty arrays", async () => {
 
   expect(thing.files).not.toBeNull();
   expect(thing.files).toHaveLength(0);
+
+  expect(thing.durations).not.toBeNull();
+  expect(thing.durations).toHaveLength(0);
 });
 
 test("array fields - null arrays", async () => {
@@ -122,6 +134,8 @@ test("array fields - null arrays", async () => {
     timestamps: null,
     enums: null,
     decimals: null,
+    files: null,
+    durations: null,
   });
 
   expect(thing.texts).toBeNull();
@@ -132,6 +146,7 @@ test("array fields - null arrays", async () => {
   expect(thing.enums).toBeNull();
   expect(thing.decimals).toBeNull();
   expect(thing.files).toBeNull();
+  expect(thing.durations).toBeNull();
 });
 
 test("array fields - update action", async () => {
@@ -145,6 +160,10 @@ test("array fields - update action", async () => {
     decimals: [101.123],
     files: [
       InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+    ],
+    durations: [
+      Duration.fromISOString("PT2H3M4S"),
+      Duration.fromISOString("PT1H2M3S"),
     ],
   });
 
@@ -172,6 +191,7 @@ test("array fields - update action", async () => {
           "data:text/plain;name=three.txt;base64,dGhyZWU="
         ),
       ],
+      durations: [Duration.fromISOString("PT1H3M4S")],
     },
   });
 
@@ -222,6 +242,9 @@ test("array fields - update action", async () => {
   expect(thing.files![1].size).toEqual(5);
   const contents2 = await thing.files![1].read();
   expect(contents2?.toString("utf-8")).toEqual("three");
+
+  expect(thing.durations).toHaveLength(1);
+  expect(thing.durations![0]).toEqual("PT1H3M4S");
 });
 
 test("array fields - get action", async () => {
@@ -245,6 +268,7 @@ test("array fields - get action", async () => {
       InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
       InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
     ],
+    durations: [Duration.fromISOString("PT2H3M4S")],
   });
 
   const thing = await actions.getThing({
@@ -298,6 +322,9 @@ test("array fields - get action", async () => {
   expect(thing?.files![1].size).toEqual(3);
   const contents2 = await thing?.files![1].read();
   expect(contents2?.toString("utf-8")).toEqual("two");
+
+  expect(thing?.durations).toHaveLength(1);
+  expect(thing?.durations![0]).toEqual("PT2H3M4S");
 });
 
 test("array fields - list action", async () => {
@@ -320,6 +347,10 @@ test("array fields - list action", async () => {
     files: [
       InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
       InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
+    ],
+    durations: [
+      Duration.fromISOString("PT2H3M4S"),
+      Duration.fromISOString("PT1H2M3S"),
     ],
   });
 
@@ -376,6 +407,10 @@ test("array fields - list action", async () => {
   expect(thing.files![1].size).toEqual(3);
   const contents2 = await thing.files![1].read();
   expect(contents2?.toString("utf-8")).toEqual("two");
+
+  expect(thing.durations).toHaveLength(2);
+  expect(thing.durations![0]).toEqual("PT2H3M4S");
+  expect(thing.durations![1]).toEqual("PT1H2M3S");
 });
 
 test("array fields - list action implicit querying - text", async () => {

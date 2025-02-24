@@ -1,5 +1,5 @@
 import { models, resetDatabase } from "@teamkeel/testing";
-import { MyEnum, InlineFile } from "@teamkeel/sdk";
+import { MyEnum, InlineFile, Duration } from "@teamkeel/sdk";
 import { test, expect, beforeEach } from "vitest";
 
 beforeEach(resetDatabase);
@@ -23,6 +23,10 @@ test("array functions - modelapi - create", async () => {
     files: [
       InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
       InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
+    ],
+    durations: [
+      Duration.fromISOString("PT2H3M4S"),
+      Duration.fromISOString("PT1H2M3S"),
     ],
   });
 
@@ -55,6 +59,19 @@ test("array functions - modelapi - create", async () => {
   expect(thing?.files?.[1].size).toEqual(3);
   const contents2 = await thing?.files?.[1].read();
   expect(contents2?.toString("utf-8")).toEqual("two");
+
+  expect(thing?.durations).toEqual([
+    {
+      hours: 2,
+      minutes: 3,
+      seconds: 4,
+    },
+    {
+      hours: 1,
+      minutes: 2,
+      seconds: 3,
+    },
+  ]);
 });
 
 test("array functions - modelapi - empty arrays", async () => {
@@ -66,6 +83,7 @@ test("array functions - modelapi - empty arrays", async () => {
     timestamps: [],
     enums: [],
     files: [],
+    durations: [],
   });
 
   expect(thing.texts).not.toBeNull();
@@ -88,6 +106,9 @@ test("array functions - modelapi - empty arrays", async () => {
 
   expect(thing.files).not.toBeNull();
   expect(thing.files).toHaveLength(0);
+
+  expect(thing.durations).not.toBeNull();
+  expect(thing.durations).toHaveLength(0);
 });
 
 test("array functions - null arrays", async () => {
@@ -99,6 +120,7 @@ test("array functions - null arrays", async () => {
     timestamps: null,
     enums: null,
     files: null,
+    durations: null,
   });
 
   expect(thing.texts).toBeNull();
@@ -108,6 +130,7 @@ test("array functions - null arrays", async () => {
   expect(thing.timestamps).toBeNull();
   expect(thing.enums).toBeNull();
   expect(thing.files).toBeNull();
+  expect(thing.durations).toBeNull();
 });
 
 test("array fields - update action", async () => {
@@ -128,6 +151,10 @@ test("array fields - update action", async () => {
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
     files: [
       InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+    ],
+    durations: [
+      Duration.fromISOString("PT2H3M4S"),
+      Duration.fromISOString("PT1H2M3S"),
     ],
   });
 
@@ -154,6 +181,7 @@ test("array fields - update action", async () => {
           "data:text/plain;name=three.txt;base64,dGhyZWU="
         ),
       ],
+      durations: [Duration.fromISOString("PT3H3M4S")],
     }
   );
 
@@ -199,6 +227,13 @@ test("array fields - update action", async () => {
   expect(thing.files![1].size).toEqual(5);
   const contents2 = await thing.files![1].read();
   expect(contents2?.toString("utf-8")).toEqual("three");
+
+  expect(thing.durations).toHaveLength(1);
+  expect(thing.durations![0]).toEqual({
+    hours: 3,
+    minutes: 3,
+    seconds: 4,
+  });
 });
 
 test("array functions - modelapi - text query", async () => {

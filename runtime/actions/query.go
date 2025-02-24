@@ -195,6 +195,8 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 				cast = "::BOOL[]"
 			case storage.FileInfo:
 				cast = "::JSONB[]"
+			case types.Duration:
+				cast = "::INTERVAL[]"
 			default:
 				cast = "::TEXT[]"
 			}
@@ -1279,14 +1281,13 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		col := strcase.ToSnake(f.Name)
 		for _, row := range rows {
 			if val, ok := row[col]; ok && val != nil {
-
 				if f.Type.Repeated {
 					// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
 					// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
 
 					arr := val.(string)
 					switch f.Type.Type {
-					case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_ID, proto.Type_TYPE_MARKDOWN:
+					case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_ID, proto.Type_TYPE_MARKDOWN, proto.Type_TYPE_DURATION:
 						row[col], err = ParsePostgresArray[string](arr, func(s string) (string, error) {
 							return s, nil
 						})

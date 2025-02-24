@@ -30,4 +30,5 @@ test("array fields - create action with defaults", async () => {
   expect(thing.dates).toHaveLength(0);
   expect(thing.timestamps).toHaveLength(0);
   expect(thing.files).toHaveLength(0);
+  expect(thing.durations).toHaveLength(0);
 });
