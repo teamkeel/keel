@@ -22,12 +22,8 @@ test("array fields - create action", async () => {
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
     decimals: [1.1, 1.2, 1.3],
     files: [
-      InlineFile.fromDataURL(
-        "data:text/plain;name=one.txt;base64,b25l=="
-      ),
-      InlineFile.fromDataURL(
-        "data:text/plain;name=two.txt;base64,dHdv=="
-      ),
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+      InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
     ],
   });
 
@@ -76,7 +72,7 @@ test("array fields - create action", async () => {
   expect(thing.files![1].contentType).toEqual("text/plain");
   expect(thing.files![1].filename).toEqual("two.txt");
   expect(thing.files![1].size).toEqual(3);
-  const contents2= await thing.files![1].read();
+  const contents2 = await thing.files![1].read();
   expect(contents2?.toString("utf-8")).toEqual("two");
 });
 
@@ -148,9 +144,7 @@ test("array fields - update action", async () => {
     enums: [MyEnum.Three],
     decimals: [101.123],
     files: [
-      InlineFile.fromDataURL(
-        "data:text/plain;name=one.txt;base64,b25l=="
-      )
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
     ],
   });
 
@@ -173,9 +167,7 @@ test("array fields - update action", async () => {
       enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
       decimals: [1.1, 1.2, 1.3],
       files: [
-        InlineFile.fromDataURL(
-          "data:text/plain;name=two.txt;base64,dHdv=="
-        ),
+        InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
         InlineFile.fromDataURL(
           "data:text/plain;name=three.txt;base64,dGhyZWU="
         ),
@@ -228,7 +220,7 @@ test("array fields - update action", async () => {
   expect(thing.files![1].contentType).toEqual("text/plain");
   expect(thing.files![1].filename).toEqual("three.txt");
   expect(thing.files![1].size).toEqual(5);
-  const contents2= await thing.files![1].read();
+  const contents2 = await thing.files![1].read();
   expect(contents2?.toString("utf-8")).toEqual("three");
 });
 
@@ -250,12 +242,8 @@ test("array fields - get action", async () => {
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
     decimals: [1.1, 1.2, 1.3],
     files: [
-      InlineFile.fromDataURL(
-        "data:text/plain;name=one.txt;base64,b25l=="
-      ),
-      InlineFile.fromDataURL(
-        "data:text/plain;name=two.txt;base64,dHdv=="
-      ),
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+      InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
     ],
   });
 
@@ -308,7 +296,7 @@ test("array fields - get action", async () => {
   expect(thing?.files![1].contentType).toEqual("text/plain");
   expect(thing?.files![1].filename).toEqual("two.txt");
   expect(thing?.files![1].size).toEqual(3);
-  const contents2= await thing?.files![1].read();
+  const contents2 = await thing?.files![1].read();
   expect(contents2?.toString("utf-8")).toEqual("two");
 });
 
@@ -330,12 +318,8 @@ test("array fields - list action", async () => {
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
     decimals: [1.1, 1.2, 1.3],
     files: [
-      InlineFile.fromDataURL(
-        "data:text/plain;name=one.txt;base64,b25l=="
-      ),
-      InlineFile.fromDataURL(
-        "data:text/plain;name=two.txt;base64,dHdv=="
-      ),
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+      InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
     ],
   });
 
@@ -390,7 +374,7 @@ test("array fields - list action", async () => {
   expect(thing.files![1].contentType).toEqual("text/plain");
   expect(thing.files![1].filename).toEqual("two.txt");
   expect(thing.files![1].size).toEqual(3);
-  const contents2= await thing.files![1].read();
+  const contents2 = await thing.files![1].read();
   expect(contents2?.toString("utf-8")).toEqual("two");
 });
 
@@ -815,9 +799,7 @@ test("arrays - set attribute with empty arrays", async () => {
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
     files: [
-      InlineFile.fromDataURL(
-        "data:text/plain;name=one.txt;base64,b25l=="
-      ),
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
     ],
   });
 
@@ -849,9 +831,7 @@ test("arrays - set attribute with null", async () => {
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
     files: [
-      InlineFile.fromDataURL(
-        "data:text/plain;name=one.txt;base64,b25l=="
-      ),
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
     ],
   });
 

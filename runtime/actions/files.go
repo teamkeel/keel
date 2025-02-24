@@ -46,7 +46,6 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 
 					fileInfos := []any{}
 					for _, d := range data {
-						// .. we store the fi
 						fi, err := storer.Store(d)
 						if err != nil {
 							return inputs, fmt.Errorf("storing file: %w", err)
@@ -61,7 +60,6 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 						return inputs, fmt.Errorf("invalid input for field: %s", field.Name)
 					}
 
-					// .. we store the fi
 					fi, err := storer.Store(data)
 					if err != nil {
 						return inputs, fmt.Errorf("storing file: %w", err)

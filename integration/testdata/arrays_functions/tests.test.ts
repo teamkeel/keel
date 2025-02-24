@@ -21,12 +21,8 @@ test("array functions - modelapi - create", async () => {
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
     files: [
-      InlineFile.fromDataURL(
-        "data:text/plain;name=one.txt;base64,b25l=="
-      ),
-      InlineFile.fromDataURL(
-        "data:text/plain;name=two.txt;base64,dHdv=="
-      ),
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+      InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
     ],
   });
 
@@ -69,7 +65,7 @@ test("array functions - modelapi - empty arrays", async () => {
     dates: [],
     timestamps: [],
     enums: [],
-    files: []
+    files: [],
   });
 
   expect(thing.texts).not.toBeNull();
@@ -130,11 +126,9 @@ test("array fields - update action", async () => {
       new Date("2024-02-01 23:00:30"),
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
-     files: [
-      InlineFile.fromDataURL(
-        "data:text/plain;name=one.txt;base64,b25l=="
-      ),
-    ]
+    files: [
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+    ],
   });
 
   const thing = await models.thing.update(
@@ -155,9 +149,7 @@ test("array fields - update action", async () => {
       ],
       enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
       files: [
-        InlineFile.fromDataURL(
-          "data:text/plain;name=two.txt;base64,dHdv=="
-        ),
+        InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
         InlineFile.fromDataURL(
           "data:text/plain;name=three.txt;base64,dGhyZWU="
         ),
@@ -205,7 +197,7 @@ test("array fields - update action", async () => {
   expect(thing.files![1].contentType).toEqual("text/plain");
   expect(thing.files![1].filename).toEqual("three.txt");
   expect(thing.files![1].size).toEqual(5);
-  const contents2= await thing.files![1].read();
+  const contents2 = await thing.files![1].read();
   expect(contents2?.toString("utf-8")).toEqual("three");
 });
 

@@ -5,16 +5,14 @@ const { isPlainObject } = require("./type-utils");
 // parseInputs takes a set of inputs and creates objects for the ones that are of a complex type.
 //
 // inputs that are objects and contain a "__typename" field are resolved to instances of the complex type
-// they represent. 
+// they represent.
 function parseInputs(inputs) {
   if (inputs != null && typeof inputs === "object") {
     for (const k of Object.keys(inputs)) {
       if (inputs[k] !== null && typeof inputs[k] === "object") {
         if (Array.isArray(inputs[k])) {
-          // Handle arrays by mapping over each element
-          inputs[k] = inputs[k].map(item => parseInputs(item));
+          inputs[k] = inputs[k].map((item) => parseInputs(item));
         } else if ("__typename" in inputs[k]) {
-          // ... existing code ...
           switch (inputs[k].__typename) {
             case "InlineFile":
               inputs[k] = InlineFile.fromDataURL(inputs[k].dataURL);
@@ -43,7 +41,9 @@ async function parseOutputs(inputs) {
     for (const k of Object.keys(inputs)) {
       if (inputs[k] !== null && typeof inputs[k] === "object") {
         if (Array.isArray(inputs[k])) {
-          inputs[k] = await Promise.all(inputs.map(item => parseOutputs(item)));
+          inputs[k] = await Promise.all(
+            inputs.map((item) => parseOutputs(item))
+          );
         } else if (inputs[k] instanceof InlineFile) {
           const stored = await inputs[k].store();
           inputs[k] = stored;
@@ -67,8 +67,7 @@ function transformRichDataTypes(data) {
   for (const key of keys) {
     const value = data[key];
     if (Array.isArray(value)) {
-      // Handle arrays by mapping over each element
-      row[key] = value.map(item => transformRichDataTypes({ item }).item);
+      row[key] = value.map((item) => transformRichDataTypes({ item }).item);
     } else if (isPlainObject(value)) {
       if (value._typename == "Duration" && value.pgInterval) {
         row[key] = new Duration(value.pgInterval);
@@ -77,7 +76,7 @@ function transformRichDataTypes(data) {
         value.size &&
         value.filename &&
         value.contentType
-      ) {        
+      ) {
         row[key] = File.fromDbRecord(value);
       } else {
         row[key] = value;

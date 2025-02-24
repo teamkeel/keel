@@ -1826,10 +1826,14 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
 
 	case proto.Type_TYPE_FILE:
-		if includeCompatibleTypes {
-			ret = "FileWriteTypes"
+		if isClientPackage {
+			ret = "FileResponseObject"
 		} else {
-			ret = "runtime.File"
+			if includeCompatibleTypes {
+				ret = "FileWriteTypes"
+			} else {
+				ret = "runtime.File"
+			}
 		}
 	default:
 		ret = "any"

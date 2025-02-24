@@ -165,19 +165,21 @@ class ModelAPI {
       for (const key of keys) {
         const value = values[key];
         if (Array.isArray(value)) {
-          row[key] = await Promise.all(value.map(async (item) => {
-            if (item instanceof Duration) {
-              return item.toPostgres();
-            }
-            if (item instanceof InlineFile) {
-              const storedFile = await item.store();
-              return storedFile.toDbRecord();
-            }
-            if (item instanceof File) {
-              return item.toDbRecord();
-            }
-            return item;
-          }));
+          row[key] = await Promise.all(
+            value.map(async (item) => {
+              if (item instanceof Duration) {
+                return item.toPostgres();
+              }
+              if (item instanceof InlineFile) {
+                const storedFile = await item.store();
+                return storedFile.toDbRecord();
+              }
+              if (item instanceof File) {
+                return item.toDbRecord();
+              }
+              return item;
+            })
+          );
         } else if (value instanceof Duration) {
           row[key] = value.toPostgres();
         } else if (value instanceof InlineFile) {
@@ -188,18 +190,6 @@ class ModelAPI {
         } else {
           row[key] = value;
         }
-        // if (value instanceof Duration) {
-        //   row[key] = value.toPostgres();
-        // }
-        // if (value instanceof InlineFile) {
-        //   const storedFile = await value.store();
-        //   row[key] = storedFile.toDbRecord();
-        // } else if (value instanceof File) {
-        //   row[key] = value.toDbRecord();
-        // } else {
-        //   row[key] = value;
-        // }
-      
       }
 
       builder = builder.set(snakeCaseObject(row));
@@ -278,19 +268,21 @@ async function create(conn, tableName, tableConfigs, values) {
 
         if (!columnConfig) {
           if (Array.isArray(value)) {
-            row[key] = await Promise.all(value.map(async (item) => {
-              if (item instanceof Duration) {
-                return item.toPostgres();
-              }
-              if (item instanceof InlineFile) {
-                const storedFile = await item.store();
-                return storedFile.toDbRecord();
-              }
-              if (item instanceof File) {
-                return item.toDbRecord();
-              }
-              return item;
-            }));
+            row[key] = await Promise.all(
+              value.map(async (item) => {
+                if (item instanceof Duration) {
+                  return item.toPostgres();
+                }
+                if (item instanceof InlineFile) {
+                  const storedFile = await item.store();
+                  return storedFile.toDbRecord();
+                }
+                if (item instanceof File) {
+                  return item.toDbRecord();
+                }
+                return item;
+              })
+            );
           } else if (value instanceof Duration) {
             row[key] = value.toPostgres();
           } else if (value instanceof InlineFile) {
@@ -301,17 +293,6 @@ async function create(conn, tableName, tableConfigs, values) {
           } else {
             row[key] = value;
           }
-          // if (value instanceof Duration) {
-          //   row[key] = value.toPostgres();
-          // }
-          // if (value instanceof InlineFile) {
-          //   const storedFile = await value.store();
-          //   row[key] = storedFile.toDbRecord();
-          // } else if (value instanceof File) {
-          //   row[key] = value.toDbRecord();
-          // } else {
-          //   row[key] = value;
-          // }
           continue;
         }
 
