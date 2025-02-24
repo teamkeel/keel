@@ -9,6 +9,12 @@ model Thing {
         files File[]?
         durations Duration[]?
     }
+    actions {
+        create createThing() with (texts?, numbers?, dates?, booleans?, timestamps?, enums?, files?, durations?) {
+            @function
+            @permission(expression: true)
+        }
+    }
 }
 
 enum MyEnum {
