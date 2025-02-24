@@ -365,6 +365,14 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 		}
 	}
 
+	// Amend indexes for fields which are used as required action inputs or as facets
+	existingIndexes, err := getIndexes(database)
+	if err != nil {
+		return nil, err
+	}
+	indexStmts := createIndexStmts(schema, existingIndexes)
+	statements = append(statements, indexStmts...)
+
 	// Fetch all computed functions in the database
 	existingComputedFns, err := getComputedFunctions(database)
 	if err != nil {
