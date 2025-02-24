@@ -87,6 +87,7 @@ var visitorFuncs = []VisitorFunc{
 	StudioFeatures,
 	FacetAttributeRules,
 	UpdateActionNestedInputsRule,
+	RouteFunctions,
 	//StudioFeatures, disabled temporarily as it's causing noise on non-studio builds
 }
 
