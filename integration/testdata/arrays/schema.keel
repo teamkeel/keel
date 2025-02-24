@@ -45,6 +45,7 @@ model Thing {
             @set(thing.timestamps = [])
             @set(thing.dates = [])
             @set(thing.decimals = [])
+            @set(thing.files = [])
             @permission(expression: true)
         }
 
@@ -56,6 +57,7 @@ model Thing {
             @set(thing.timestamps = null)
             @set(thing.dates = null)
             @set(thing.decimals = null)
+            @set(thing.files = null)
             @permission(expression: true)
         }
     }

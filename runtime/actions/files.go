@@ -89,38 +89,38 @@ func transformModelFileResponses(ctx context.Context, model *proto.Model, result
 	}
 
 	for _, field := range model.FileFields() {
-		if fileJSON, found := results[field.Name]; found && fileJSON != nil {
+		if data, found := results[field.Name]; found && data != nil {
 			if field.Type.Repeated {
-				data, ok := fileJSON.([]storage.FileInfo)
+				fis, ok := data.([]storage.FileInfo)
 				if !ok {
 					return results, fmt.Errorf("invalid response for field: %s", field.Name)
 				}
 
-				files := []storage.FileResponse{}
-				for _, fi := range data {
+				resp := []storage.FileResponse{}
+				for _, fi := range fis {
 					// now we're hydrating the db file info with data from our storage service
 					// e.g. injecting signed URLs for direct file downloads
 					hydrated, err := store.GenerateFileResponse(&fi)
 					if err != nil {
-						return results, fmt.Errorf("failed retrieve hydrated file data: %w", err)
+						return results, fmt.Errorf("failed hydrating file data: %w", err)
 					}
 
-					files = append(files, hydrated)
+					resp = append(resp, hydrated)
 				}
-				results[field.Name] = files
+				results[field.Name] = resp
 			} else {
-				data, ok := fileJSON.(storage.FileInfo)
+				fi, ok := data.(storage.FileInfo)
 				if !ok {
 					return results, fmt.Errorf("invalid response for field: %s", field.Name)
 				}
 
 				// now we're hydrating the db file info with data from our storage service
 				// e.g. injecting signed URLs for direct file downloads
-				hydrated, err := store.GenerateFileResponse(&data)
+				resp, err := store.GenerateFileResponse(&fi)
 				if err != nil {
-					return results, fmt.Errorf("failed retrieve hydrated file data: %w", err)
+					return results, fmt.Errorf("failed hydrating file data: %w", err)
 				}
-				results[field.Name] = hydrated
+				results[field.Name] = resp
 			}
 		}
 	}

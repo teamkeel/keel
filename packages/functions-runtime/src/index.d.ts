@@ -313,3 +313,5 @@ export type DurationString =
   | `P${dateDuration}T${timeDuration}`
   | `P${dateDuration}`
   | `PT${timeDuration}`;
+
+export type FileWriteTypes = InlineFile | File;

@@ -1,4 +1,4 @@
-import { actions, models, resetDatabase } from "@teamkeel/testing";
+import { actions, resetDatabase } from "@teamkeel/testing";
 import { MyEnum, InlineFile } from "@teamkeel/sdk";
 import { test, expect, beforeEach } from "vitest";
 
@@ -30,8 +30,6 @@ test("array fields - create action", async () => {
       ),
     ],
   });
-
-  console.log(thing);
 
   expect(thing.texts).toHaveLength(2);
   expect(thing.texts![0]).toEqual("Keel");
@@ -218,6 +216,8 @@ test("array fields - update action", async () => {
   expect(thing.decimals![0]).toEqual(1.1);
   expect(thing.decimals![1]).toEqual(1.2);
   expect(thing.decimals![2]).toEqual(1.3);
+
+  expect(thing.files).toHaveLength(2);
 
   expect(thing.files![0].contentType).toEqual("text/plain");
   expect(thing.files![0].filename).toEqual("two.txt");
@@ -814,6 +814,11 @@ test("arrays - set attribute with empty arrays", async () => {
       new Date("2024-02-01 23:00:30"),
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
+    files: [
+      InlineFile.fromDataURL(
+        "data:text/plain;name=one.txt;base64,b25l=="
+      ),
+    ],
   });
 
   const created = await actions.updateSetToEmpty({ where: { id: thing.id } });
@@ -824,6 +829,7 @@ test("arrays - set attribute with empty arrays", async () => {
   expect(created.dates).toHaveLength(0);
   expect(created.timestamps).toHaveLength(0);
   expect(created.enums).toHaveLength(0);
+  expect(created.files).toHaveLength(0);
 });
 
 test("arrays - set attribute with null", async () => {
@@ -842,6 +848,11 @@ test("arrays - set attribute with null", async () => {
       new Date("2024-02-01 23:00:30"),
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
+    files: [
+      InlineFile.fromDataURL(
+        "data:text/plain;name=one.txt;base64,b25l=="
+      ),
+    ],
   });
 
   const created = await actions.updateSetToNull({ where: { id: thing.id } });
@@ -852,4 +863,5 @@ test("arrays - set attribute with null", async () => {
   expect(created.dates).toBeNull();
   expect(created.timestamps).toBeNull();
   expect(created.enums).toBeNull();
+  expect(created.files).toBeNull();
 });

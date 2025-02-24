@@ -7,8 +7,8 @@ model Thing {
         enumsEmpty MyEnum[] @default([])
         dates Date[] @default([])
         timestamps Timestamp[] @default([])
+        files File[] @default([])
     }
-
     actions {
         create createThing() with () {
             @permission(expression: true)

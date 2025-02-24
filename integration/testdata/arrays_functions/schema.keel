@@ -6,6 +6,7 @@ model Thing {
         booleans Boolean[]?
         timestamps Timestamp[]?
         enums MyEnum[]?
+        files File[]?
     }
 }
 

@@ -1,10 +1,10 @@
 import { models, resetDatabase } from "@teamkeel/testing";
-import { MyEnum } from "@teamkeel/sdk";
+import { MyEnum, InlineFile } from "@teamkeel/sdk";
 import { test, expect, beforeEach } from "vitest";
 
 beforeEach(resetDatabase);
 
-test("array fields - model api - create", async () => {
+test("array functions - modelapi - create", async () => {
   const created = await models.thing.create({
     texts: ["Keel", "Weave"],
     numbers: [1, 2, 3],
@@ -20,6 +20,14 @@ test("array fields - model api - create", async () => {
       new Date("2024-02-01 23:00:30"),
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
+    files: [
+      InlineFile.fromDataURL(
+        "data:text/plain;name=one.txt;base64,b25l=="
+      ),
+      InlineFile.fromDataURL(
+        "data:text/plain;name=two.txt;base64,dHdv=="
+      ),
+    ],
   });
 
   const thing = await models.thing.findOne({ id: created.id });
@@ -37,9 +45,23 @@ test("array fields - model api - create", async () => {
     new Date("2024-02-01 23:00:30"),
   ]);
   expect(thing?.enums).toEqual([MyEnum.One, MyEnum.Two, MyEnum.Three]);
+
+  expect(thing?.files).toHaveLength(2);
+
+  expect(thing?.files?.[0].contentType).toEqual("text/plain");
+  expect(thing?.files?.[0].filename).toEqual("one.txt");
+  expect(thing?.files?.[0].size).toEqual(3);
+  const contents1 = await thing?.files?.[0].read();
+  expect(contents1?.toString("utf-8")).toEqual("one");
+
+  expect(thing?.files?.[1].contentType).toEqual("text/plain");
+  expect(thing?.files?.[1].filename).toEqual("two.txt");
+  expect(thing?.files?.[1].size).toEqual(3);
+  const contents2 = await thing?.files?.[1].read();
+  expect(contents2?.toString("utf-8")).toEqual("two");
 });
 
-test("array fields - modelapi - empty arrays", async () => {
+test("array functions - modelapi - empty arrays", async () => {
   const thing = await models.thing.create({
     texts: [],
     numbers: [],
@@ -47,6 +69,7 @@ test("array fields - modelapi - empty arrays", async () => {
     dates: [],
     timestamps: [],
     enums: [],
+    files: []
   });
 
   expect(thing.texts).not.toBeNull();
@@ -66,9 +89,12 @@ test("array fields - modelapi - empty arrays", async () => {
 
   expect(thing.enums).not.toBeNull();
   expect(thing.enums).toHaveLength(0);
+
+  expect(thing.files).not.toBeNull();
+  expect(thing.files).toHaveLength(0);
 });
 
-test("array fields - null arrays", async () => {
+test("array functions - null arrays", async () => {
   const thing = await models.thing.create({
     texts: null,
     numbers: null,
@@ -76,6 +102,7 @@ test("array fields - null arrays", async () => {
     dates: null,
     timestamps: null,
     enums: null,
+    files: null,
   });
 
   expect(thing.texts).toBeNull();
@@ -84,6 +111,7 @@ test("array fields - null arrays", async () => {
   expect(thing.dates).toBeNull();
   expect(thing.timestamps).toBeNull();
   expect(thing.enums).toBeNull();
+  expect(thing.files).toBeNull();
 });
 
 test("array fields - update action", async () => {
@@ -102,6 +130,11 @@ test("array fields - update action", async () => {
       new Date("2024-02-01 23:00:30"),
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
+     files: [
+      InlineFile.fromDataURL(
+        "data:text/plain;name=one.txt;base64,b25l=="
+      ),
+    ]
   });
 
   const thing = await models.thing.update(
@@ -121,6 +154,14 @@ test("array fields - update action", async () => {
         new Date("2024-02-01 23:00:30"),
       ],
       enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
+      files: [
+        InlineFile.fromDataURL(
+          "data:text/plain;name=two.txt;base64,dHdv=="
+        ),
+        InlineFile.fromDataURL(
+          "data:text/plain;name=three.txt;base64,dGhyZWU="
+        ),
+      ],
     }
   );
 
@@ -152,9 +193,23 @@ test("array fields - update action", async () => {
   expect(thing.enums![0]).toEqual(MyEnum.One);
   expect(thing.enums![1]).toEqual(MyEnum.Two);
   expect(thing.enums![2]).toEqual(MyEnum.Three);
+
+  expect(thing.files).toHaveLength(2);
+
+  expect(thing.files![0].contentType).toEqual("text/plain");
+  expect(thing.files![0].filename).toEqual("two.txt");
+  expect(thing.files![0].size).toEqual(3);
+  const contents1 = await thing.files![0].read();
+  expect(contents1?.toString("utf-8")).toEqual("two");
+
+  expect(thing.files![1].contentType).toEqual("text/plain");
+  expect(thing.files![1].filename).toEqual("three.txt");
+  expect(thing.files![1].size).toEqual(5);
+  const contents2= await thing.files![1].read();
+  expect(contents2?.toString("utf-8")).toEqual("three");
 });
 
-test("array fields - modelapi - text query", async () => {
+test("array functions - modelapi - text query", async () => {
   const t1 = await models.thing.create({
     texts: ["Keel", "Weave"],
   });
@@ -320,7 +375,7 @@ test("array fields - modelapi - text query", async () => {
   expect(things11).toEqual(expect.arrayContaining([t1, t2, t3, t6]));
 });
 
-test("array fields - list action implicit querying - number", async () => {
+test("array functions - list action implicit querying - number", async () => {
   const t1 = await models.thing.create({
     numbers: [1, 2],
   });
@@ -357,7 +412,7 @@ test("array fields - list action implicit querying - number", async () => {
   expect(things).toEqual(expect.arrayContaining([t1, t3]));
 });
 
-test("array fields - list action implicit querying - date", async () => {
+test("array functions - list action implicit querying - date", async () => {
   const t1 = await models.thing.create({
     dates: [new Date(2024, 1, 1, 0, 0, 0, 0), new Date(2024, 1, 2, 0, 0, 0, 0)],
   });
@@ -401,7 +456,7 @@ test("array fields - list action implicit querying - date", async () => {
   expect(things).toEqual(expect.arrayContaining([t1, t3]));
 });
 
-test("array fields - list action implicit querying - timestamp", async () => {
+test("array functions - list action implicit querying - timestamp", async () => {
   const t1 = await models.thing.create({
     timestamps: [
       new Date(2024, 1, 1, 30, 45, 50, 0),
@@ -454,7 +509,7 @@ test("array fields - list action implicit querying - timestamp", async () => {
   expect(things).toEqual(expect.arrayContaining([t1, t3]));
 });
 
-test("array fields - list action implicit querying - enums", async () => {
+test("array functions - list action implicit querying - enums", async () => {
   const t1 = await models.thing.create({
     enums: [MyEnum.One, MyEnum.Two],
   });

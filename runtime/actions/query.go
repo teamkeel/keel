@@ -1273,10 +1273,14 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 	// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
 	// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
 	for _, f := range statement.model.Fields {
-		if f.Type.Type != proto.Type_TYPE_MODEL && (f.Type.Repeated || f.Type.Type == proto.Type_TYPE_VECTOR) {
-			for _, row := range rows {
-				col := strcase.ToSnake(f.Name)
-				if val, ok := row[col]; ok && val != nil {
+		if f.Type.Type == proto.Type_TYPE_MODEL {
+			continue
+		}
+
+		col := strcase.ToSnake(f.Name)
+		for _, row := range rows {
+			if val, ok := row[col]; ok && val != nil {
+				if f.Type.Repeated {
 					arr := val.(string)
 					switch f.Type.Type {
 					case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_ID, proto.Type_TYPE_MARKDOWN:
@@ -1312,12 +1316,28 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 							return fi, nil
 						})
 					default:
-						return nil, nil, fmt.Errorf("missing parsing implementation for type %s", f.Type.Type)
+						return nil, nil, fmt.Errorf("missing parsing implementation for array type %s", f.Type.Type)
+					}
+					if err != nil {
+						return nil, nil, err
+					}
+				} else {
+					switch f.Type.Type {
+					case proto.Type_TYPE_VECTOR:
+						row[col], err = ParsePostgresArray[float64](val.(string), func(s string) (float64, error) {
+							return strconv.ParseFloat(s, 64)
+						})
+					case proto.Type_TYPE_FILE:
+						fi := storage.FileInfo{}
+						if err = json.Unmarshal([]byte(val.(string)), &fi); err == nil {
+							row[col] = fi
+						}
 					}
 					if err != nil {
 						return nil, nil, err
 					}
 				}
+
 			}
 		}
 	}
