@@ -35,6 +35,8 @@ function parseInputs(inputs) {
             default:
               break;
           }
+        } else {
+          inputs[k] = parseInputs(inputs[k]);
         }
       }
     }
@@ -46,27 +48,27 @@ function parseInputs(inputs) {
 // parseOutputs will take a response from the custom function and perform operations on any fields if necessary.
 //
 // For example, InlineFiles need to be stored before returning the response.
-async function parseOutputs(inputs) {
-  if (inputs != null && typeof inputs === "object") {
-    for (const k of Object.keys(inputs)) {
-      if (inputs[k] !== null && typeof inputs[k] === "object") {
-        if (Array.isArray(inputs[k])) {
-          inputs[k] = await Promise.all(
-            inputs[k].map((item) => parseOutputs(item))
+async function parseOutputs(outputs) {
+  if (outputs != null && typeof outputs === "object") {
+    for (const k of Object.keys(outputs)) {
+      if (outputs[k] !== null && typeof outputs[k] === "object") {
+        if (Array.isArray(outputs[k])) {
+          outputs[k] = await Promise.all(
+            outputs[k].map((item) => parseOutputs(item))
           );
-        } else if (inputs[k] instanceof InlineFile) {
-          const stored = await inputs[k].store();
-          inputs[k] = stored;
-        } else if (inputs[k] instanceof Duration) {
-          inputs[k] = inputs[k].toISOString();
+        } else if (outputs[k] instanceof InlineFile) {
+          const stored = await outputs[k].store();
+          outputs[k] = stored;
+        } else if (outputs[k] instanceof Duration) {
+          outputs[k] = outputs[k].toISOString();
         } else {
-          inputs[k] = await parseOutputs(inputs[k]);
+          outputs[k] = await parseOutputs(outputs[k]);
         }
       }
     }
   }
 
-  return inputs;
+  return outputs;
 }
 
 // transformRichDataTypes iterates through the given object's keys and if any of the values are a rich data type, instantiate their respective class

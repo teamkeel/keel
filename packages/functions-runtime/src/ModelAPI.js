@@ -270,8 +270,6 @@ async function create(conn, tableName, tableConfigs, values) {
           if (Array.isArray(value)) {
             row[key] = await Promise.all(
               value.map(async (item) => {
-                // console.log(typeof item);
-                // console.log(item);
                 if (item instanceof Duration) {
                   return item.toPostgres();
                 }

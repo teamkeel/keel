@@ -11,7 +11,7 @@ model MyFile {
         }
         create createFileInHook() @function 
         create createFileAndStoreInHook() @function 
-        update updateFileEmptyHooks(id) with (file) @function 
+        update updateFileEmptyHooks(id) with (file) { @function }
         list listFilesEmptyHooks() @function
         get getFileEmptyHooks(id) @function
         get getFileNumerateContents(id) @function

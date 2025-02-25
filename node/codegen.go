@@ -384,7 +384,6 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 			}
 		} else {
 			t := toTypeScriptType(field.Type, true, false, false)
-
 			if field.Type.Repeated {
 				t = fmt.Sprintf("%s[]", t)
 			}
@@ -1760,7 +1759,11 @@ func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPac
 		if isClientPackage {
 			return "string"
 		} else {
-			return "FileWriteTypes"
+			if isTestingPackage {
+				return "FileWriteTypes"
+			} else {
+				return "runtime.File"
+			}
 		}
 	default:
 		return toTypeScriptType(t, false, isTestingPackage, isClientPackage)
