@@ -564,3 +564,116 @@ func createUpdatedAtTriggerStmts(triggers []*TriggerRow, model *proto.Model) str
 
 	return strings.Join(statements, "\n")
 }
+
+// createIndexStmts generates index changes for input fields and faceted fields
+func createIndexStmts(schema *proto.Schema, existingIndexes []*IndexRow) []string {
+	indexedFields := []*proto.Field{}
+	for _, model := range schema.Models {
+		for _, action := range model.Actions {
+			if action.Type != proto.ActionType_ACTION_TYPE_LIST {
+				continue
+			}
+
+			message := proto.FindWhereInputMessage(schema, action.Name)
+			if message == nil {
+				continue
+			}
+
+			// Find fields used as required inputs
+			fieldsToIndex := findIndexableInputFields(schema, model, message)
+			for _, field := range fieldsToIndex {
+				// They could have been added already if used as another action's input
+				if !lo.Contains(indexedFields, field) {
+					indexedFields = append(indexedFields, field)
+				}
+			}
+
+			// Find fields used as facets
+			for _, facet := range action.Facets {
+				field := model.FindField(facet)
+				// They could have been added already as an input
+				if !lo.Contains(indexedFields, field) {
+					indexedFields = append(indexedFields, field)
+				}
+			}
+		}
+	}
+
+	statements := []string{}
+
+	// Add indexes which don't exist yet
+	for _, field := range indexedFields {
+		// Skip fields which are unique as these will already have an index
+		if field.Unique {
+			continue
+		}
+
+		// Skip fields which already have an index
+		if lo.ContainsBy(existingIndexes, func(i *IndexRow) bool {
+			return indexName(field.ModelName, field.Name) == i.IndexName
+		}) {
+			continue
+		}
+
+		stmt := fmt.Sprintf("CREATE INDEX \"%s\" ON %s (%s);", indexName(field.ModelName, field.Name), Identifier(field.ModelName), Identifier(field.Name))
+		statements = append(statements, stmt)
+	}
+
+	// Drop existing indexes which don't exist anymore
+	for _, index := range existingIndexes {
+		if lo.ContainsBy(indexedFields, func(f *proto.Field) bool {
+			return indexName(f.ModelName, f.Name) == index.IndexName
+		}) {
+			continue
+		}
+
+		// Skip dropping primary key and unique indexes as we are not concerned with these here
+		if index.IsPrimary || index.IsUnique {
+			continue
+		}
+
+		stmt := fmt.Sprintf("DROP INDEX IF EXISTS \"%s\";", index.IndexName)
+		statements = append(statements, stmt)
+	}
+
+	return statements
+}
+
+func indexName(modelName string, fieldName string) string {
+	return fmt.Sprintf("%s__%s__idx", casing.ToSnake(modelName), casing.ToSnake(fieldName))
+}
+
+func findIndexableInputFields(schema *proto.Schema, model *proto.Model, message *proto.Message) []*proto.Field {
+	indexedFields := []*proto.Field{}
+
+	for _, input := range message.Fields {
+		field := proto.FindField(schema.Models, model.Name, input.Name)
+
+		// Skip optional inputs
+		if input.Optional {
+			continue
+		}
+
+		if !input.IsModelField() && input.Type.Type == proto.Type_TYPE_MESSAGE {
+			messageModel := schema.FindModel(field.Type.ModelName.Value)
+			nestedMsg := schema.FindMessage(input.Type.MessageName.Value)
+			indexedFields = append(indexedFields, findIndexableInputFields(schema, messageModel, nestedMsg)...)
+		}
+
+		// Skip indexing on optional fields
+		if input.Optional {
+			continue
+		}
+
+		// Skip inputs which don't correlate to a model field
+		if len(input.Target) == 0 {
+			continue
+		}
+
+		f := model.FindField(input.Target[len(input.Target)-1])
+
+		indexedFields = append(indexedFields, f)
+	}
+
+	return indexedFields
+}

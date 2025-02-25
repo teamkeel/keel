@@ -200,14 +200,42 @@ func jsonSchemaForFacets(schema *proto.Schema, action *proto.Action) *JSONSchema
 					},
 				},
 			}
-		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+		case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 			facetSchema.Properties[field.Name] = JSONSchema{
 				Properties: map[string]JSONSchema{
 					"min": {
-						Type: "number",
+						Type:   "string",
+						Format: "date-time",
 					},
 					"max": {
-						Type: "number",
+						Type:   "string",
+						Format: "date-time",
+					},
+				},
+			}
+		case proto.Type_TYPE_DATE:
+			facetSchema.Properties[field.Name] = JSONSchema{
+				Properties: map[string]JSONSchema{
+					"min": {
+						Type:   "string",
+						Format: "date",
+					},
+					"max": {
+						Type:   "string",
+						Format: "date",
+					},
+				},
+			}
+		case proto.Type_TYPE_DURATION:
+			facetSchema.Properties[field.Name] = JSONSchema{
+				Properties: map[string]JSONSchema{
+					"min": {
+						Type:   "string",
+						Format: "duration",
+					},
+					"max": {
+						Type:   "string",
+						Format: "duration",
 					},
 				},
 			}

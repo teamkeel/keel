@@ -1,0 +1,20 @@
+model Order {
+    fields {
+        price Decimal
+        quantity Number
+        category Category
+        durationToOrder Duration
+    }
+    actions {
+        list listOrders() {
+            @facet(price, quantity, category, durationToOrder, createdAt)
+        }
+    }
+}
+
+enum Category {
+    Electronics
+    Books
+    Clothing
+}
+
