@@ -12,29 +12,17 @@ function parseInputs(inputs) {
       if (inputs[k] !== null && typeof inputs[k] === "object") {
         if (Array.isArray(inputs[k])) {
           inputs[k] = inputs[k].map((item) => {
-            if (item && typeof item === "object" && "__typename" in item) {
-              switch (item.__typename) {
-                case "InlineFile":
-                  return InlineFile.fromDataURL(item.dataURL);
-                case "Duration":
-                  return Duration.fromISOString(item.interval);
-                default:
-                  return item;
+            if (item && typeof item === "object") {
+              if ("__typename" in item) {
+                return parseComplexInputType(item);
               }
+              // Recursively parse nested objects in arrays
+              return parseInputs(item);
             }
             return item;
           });
         } else if ("__typename" in inputs[k]) {
-          switch (inputs[k].__typename) {
-            case "InlineFile":
-              inputs[k] = InlineFile.fromDataURL(inputs[k].dataURL);
-              break;
-            case "Duration":
-              inputs[k] = Duration.fromISOString(inputs[k].interval);
-              break;
-            default:
-              break;
-          }
+          inputs[k] = parseComplexInputType(inputs[k]);
         } else {
           inputs[k] = parseInputs(inputs[k]);
         }
@@ -43,6 +31,18 @@ function parseInputs(inputs) {
   }
 
   return inputs;
+}
+
+// parseComplexInputType will parse out complex types such as InlineFile and Duration
+function parseComplexInputType(value) {
+  switch (value.__typename) {
+    case "InlineFile":
+      return InlineFile.fromDataURL(value.dataURL);
+    case "Duration":
+      return Duration.fromISOString(value.interval);
+    default:
+      throw new Error("complex type not handled: " + value.__typename);
+  }
 }
 
 // parseOutputs will take a response from the custom function and perform operations on any fields if necessary.
