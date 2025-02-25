@@ -78,7 +78,6 @@ test("authentication - not authenticated and no permissions", async () => {
 
 test("authentication - get providers", async () => {
   const provs = await client.auth.providers();
-  console.log(provs);
 
   expect(provs.data?.[0]).toEqual({
     name: "myOidcProvider",

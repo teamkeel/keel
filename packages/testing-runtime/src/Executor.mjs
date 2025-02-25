@@ -183,7 +183,11 @@ function parseOutputs(data) {
     ) {
       const arr = [];
       for (let item of value) {
-        arr.push(parseOutputs(item));
+        if (item.key && item.size && item.filename && item.contentType) {
+          arr.push(File.fromDbRecord(item));
+        } else {
+          arr.push(parseOutputs(item));
+        }
       }
       row[key] = arr;
     } else {

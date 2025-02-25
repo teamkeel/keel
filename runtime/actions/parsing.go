@@ -75,7 +75,7 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 				if forFunctions {
 					input[f.Name], err = parseItem(v, f.Type.Repeated, toDurationForFunctions)
 				} else {
-					input[f.Name], err = parseItem(v, f.Type.Repeated, toString)
+					input[f.Name], err = parseItem(v, f.Type.Repeated, toDuration)
 				}
 			default:
 				input[f.Name], err = parseItem(v, f.Type.Repeated, toString)
@@ -182,6 +182,15 @@ var toDate = func(value any) (types.Date, error) {
 		return types.Date{Time: t}, nil
 	default:
 		return types.Date{}, fmt.Errorf("incompatible type %T parsing to Date", t)
+	}
+}
+
+var toDuration = func(value any) (types.Duration, error) {
+	switch t := value.(type) {
+	case string:
+		return types.Duration{Duration: t}, nil
+	default:
+		return types.Duration{}, fmt.Errorf("incompatible type %T parsing to Duration", t)
 	}
 }
 

@@ -7,6 +7,8 @@ model Thing {
         timestamps Timestamp[]?
         enums MyEnum[]?
         decimals Decimal[]?
+        files File[]?
+        durations Duration[]?
     }
 
     actions {
@@ -14,11 +16,11 @@ model Thing {
             @permission(expression: true)
         }
 
-        create createThing() with (texts?, numbers?, dates?, booleans?, timestamps?, enums?, decimals?) {
+        create createThing() with (texts?, numbers?, dates?, booleans?, timestamps?, enums?, decimals?, files?, durations?) {
             @permission(expression: true)
         }
 
-        update updateThing(id) with (texts?, numbers?, dates?, booleans?, timestamps?, enums?, decimals?) {
+        update updateThing(id) with (texts?, numbers?, dates?, booleans?, timestamps?, enums?, decimals?, files?, durations?) {
             @permission(expression: true)
         }
 
@@ -44,6 +46,8 @@ model Thing {
             @set(thing.timestamps = [])
             @set(thing.dates = [])
             @set(thing.decimals = [])
+            @set(thing.files = [])
+            @set(thing.durations = [])
             @permission(expression: true)
         }
 
@@ -55,6 +59,8 @@ model Thing {
             @set(thing.timestamps = null)
             @set(thing.dates = null)
             @set(thing.decimals = null)
+            @set(thing.files = null)
+            @set(thing.durations = null)
             @permission(expression: true)
         }
     }

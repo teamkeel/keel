@@ -136,7 +136,7 @@ export type PersonCreateValues = {
 	tags: string[]
 	height: number
 	bio: string
-	file: runtime.InlineFile | runtime.File
+	file: FileWriteTypes
 	canHoldBreath: runtime.Duration
 	id?: string
 	createdAt?: Date
@@ -161,7 +161,7 @@ export type PersonUpdateValues = {
 	tags: string[]
 	height: number
 	bio: string
-	file: runtime.InlineFile | runtime.File
+	file: FileWriteTypes
 	canHoldBreath: runtime.Duration
 	id: string
 	createdAt: Date
@@ -343,17 +343,17 @@ func TestModelAPIFindManyDeclaration(t *testing.T) {
 	t.Parallel()
 	expected := `
 export type PersonOrderBy = {
-	firstName?: runtime.SortDirection,
-	lastName?: runtime.SortDirection,
-	age?: runtime.SortDirection,
-	dateOfBirth?: runtime.SortDirection,
-	gender?: runtime.SortDirection,
-	hasChildren?: runtime.SortDirection,
-	height?: runtime.SortDirection,
-	heightInMetres?: runtime.SortDirection,
-	id?: runtime.SortDirection,
-	createdAt?: runtime.SortDirection,
-	updatedAt?: runtime.SortDirection
+	firstName?: SortDirection,
+	lastName?: SortDirection,
+	age?: SortDirection,
+	dateOfBirth?: SortDirection,
+	gender?: SortDirection,
+	hasChildren?: SortDirection,
+	height?: SortDirection,
+	heightInMetres?: SortDirection,
+	id?: SortDirection,
+	createdAt?: SortDirection,
+	updatedAt?: SortDirection
 }
 
 export interface PersonFindManyParams {
@@ -1387,10 +1387,10 @@ export interface ListPeopleWhere {
 	favouriteSport: SportQueryInput;
 }
 export interface ListPeopleOrderByName {
-	name: runtime.SortDirection;
+	name: SortDirection;
 }
 export interface ListPeopleOrderByFavouriteSport {
-	favouriteSport: runtime.SortDirection;
+	favouriteSport: SortDirection;
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhere;

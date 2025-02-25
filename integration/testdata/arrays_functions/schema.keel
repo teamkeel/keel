@@ -6,7 +6,34 @@ model Thing {
         booleans Boolean[]?
         timestamps Timestamp[]?
         enums MyEnum[]?
+        files File[]?
+        durations Duration[]?
     }
+    actions {
+        get getThing(id) {
+            @function
+            @permission(expression: true)
+        }
+        create createThingEmpty() with (texts?, numbers?, dates?, booleans?, timestamps?, enums?, files?, durations?) {
+            @function
+            @permission(expression: true)
+        }
+        update updateThingEmpty(id) with (texts?, numbers?, dates?, booleans?, timestamps?, enums?, files?, durations?) {
+            @function
+            @permission(expression: true)
+        }
+        create createThing() with (texts?, numbers?, dates?, booleans?, timestamps?, enums?, files?, durations?) {
+            @function
+            @permission(expression: true)
+        }
+        write writeThing(texts?, numbers?, dates?, booleans?, timestamps?, enums?, files?, durations?) returns (ThingMessage) {
+            @permission(expression: true)
+        }
+    }
+}
+
+message ThingMessage {
+    thing Thing
 }
 
 enum MyEnum {

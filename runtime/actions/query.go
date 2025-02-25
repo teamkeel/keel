@@ -3,6 +3,7 @@ package actions
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -20,6 +21,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/types"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/storage"
 	"github.com/teamkeel/keel/timeperiod"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -191,6 +193,10 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 				cast = "::TIMESTAMPTZ[]"
 			case bool:
 				cast = "::BOOL[]"
+			case storage.FileInfo:
+				cast = "::JSONB[]"
+			case types.Duration:
+				cast = "::INTERVAL[]"
 			default:
 				cast = "::TEXT[]"
 			}
@@ -1266,16 +1272,22 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		PageNumber:  pageNumber,
 	}
 
-	// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
-	// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
+	// For certain types, we need to parse them into a format the runtime understands.
 	for _, f := range statement.model.Fields {
-		if f.Type.Type != proto.Type_TYPE_MODEL && (f.Type.Repeated || f.Type.Type == proto.Type_TYPE_VECTOR) {
-			for _, row := range rows {
-				col := strcase.ToSnake(f.Name)
-				if val, ok := row[col]; ok && val != nil {
+		if f.Type.Type == proto.Type_TYPE_MODEL {
+			continue
+		}
+
+		col := strcase.ToSnake(f.Name)
+		for _, row := range rows {
+			if val, ok := row[col]; ok && val != nil {
+				if f.Type.Repeated {
+					// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
+					// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
+
 					arr := val.(string)
 					switch f.Type.Type {
-					case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_ID, proto.Type_TYPE_MARKDOWN:
+					case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_ID, proto.Type_TYPE_MARKDOWN, proto.Type_TYPE_DURATION:
 						row[col], err = ParsePostgresArray[string](arr, func(s string) (string, error) {
 							return s, nil
 						})
@@ -1299,8 +1311,31 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 						row[col], err = ParsePostgresArray[time.Time](arr, func(s string) (time.Time, error) {
 							return time.Parse("2006-01-02 15:04:05.999999999-07", s)
 						})
+					case proto.Type_TYPE_FILE:
+						row[col], err = ParsePostgresArray[storage.FileInfo](arr, func(s string) (storage.FileInfo, error) {
+							fi := storage.FileInfo{}
+							if err := json.Unmarshal([]byte(s), &fi); err != nil {
+								return storage.FileInfo{}, fmt.Errorf("failed to unmarshal file data: %w", err)
+							}
+							return fi, nil
+						})
 					default:
-						return nil, nil, fmt.Errorf("missing parsing implementation for type %s", f.Type.Type)
+						return nil, nil, fmt.Errorf("missing parsing implementation for array type %s", f.Type.Type)
+					}
+					if err != nil {
+						return nil, nil, err
+					}
+				} else {
+					switch f.Type.Type {
+					case proto.Type_TYPE_VECTOR:
+						row[col], err = ParsePostgresArray[float64](val.(string), func(s string) (float64, error) {
+							return strconv.ParseFloat(s, 64)
+						})
+					case proto.Type_TYPE_FILE:
+						fi := storage.FileInfo{}
+						if err = json.Unmarshal([]byte(val.(string)), &fi); err == nil {
+							row[col] = fi
+						}
 					}
 					if err != nil {
 						return nil, nil, err

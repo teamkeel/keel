@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 )
@@ -29,6 +30,15 @@ type FileInfo struct {
 	Filename    string `json:"filename"`
 	ContentType string `json:"contentType"`
 	Size        int    `json:"size"`
+}
+
+func (t FileInfo) Value() (driver.Value, error) {
+	json, err := json.Marshal(t)
+	if err != nil {
+		return "", fmt.Errorf("marshalling to json: %w", err)
+	}
+
+	return string(json), nil
 }
 
 // FileResponse is what is returned from our APIs
