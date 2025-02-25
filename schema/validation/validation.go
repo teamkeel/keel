@@ -61,7 +61,7 @@ var visitorFuncs = []VisitorFunc{
 	UnusedInputRule,
 	NotMutableInputs,
 	CreateNestedInputIsMany,
-	ConflictingInputsRule,
+	ConflictingValueInputsRule,
 	UniqueLookup,
 	InvalidWithUsage,
 	AttributeArgumentsRules,
