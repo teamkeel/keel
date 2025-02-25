@@ -238,6 +238,9 @@ message Section {
 	// A CEL expression used to control the visibility of the whole section.
 	// e.g. if expression != true then the section will be hidden
 	optional string visible_condition = 5;
+
+	// If this section should be displayed or not; this superseeds the visibility condition.
+	bool visible = 6;	
 }
 
 message ScalarValue {
