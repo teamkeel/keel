@@ -116,6 +116,8 @@ func generateClientSdkPackage(schema *proto.Schema, api *proto.Api) codegen.Gene
 }
 
 func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
+	writeClientApiInterface(w, schema, api)
+
 	w.Writeln("export class APIClient extends Core {")
 
 	w.Indent()
@@ -126,22 +128,20 @@ func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 	w.Writeln("}")
 	w.Writeln("")
 
-	w.Writeln("private actions = {")
-	w.Indent()
-
-	writeClientActions(w, schema, api)
-
-	w.Dedent()
-	w.Writeln("};")
-	w.Writeln("")
-
 	w.Writeln("api = {")
 	w.Indent()
-
-	writeClientApiDefinition(w, schema, api)
-
+	w.Writeln("queries: new Proxy({}, {")
+	w.Indent()
+	w.Writeln("get: (_, fn: string) => (i: any) => this.client.rawRequest(fn, i),")
 	w.Dedent()
-	w.Writeln("};")
+	w.Writeln("}),")
+	w.Writeln("mutations: new Proxy({}, {")
+	w.Indent()
+	w.Writeln("get: (_, fn: string) => (i: any) => this.client.rawRequest(fn, i),")
+	w.Dedent()
+	w.Writeln("})")
+	w.Dedent()
+	w.Writeln("} as KeelAPI;")
 
 	w.Dedent()
 	w.Writeln("}")
@@ -151,75 +151,69 @@ func writeClientApiClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 	writeClientTypes(w, schema, api)
 }
 
-func writeClientActions(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
-	for _, a := range proto.GetActionNamesForApi(schema, api) {
-		action := schema.FindAction(a)
-		msg := schema.FindMessage(action.InputMessageName)
-
-		w.Writef("%s: (i", action.Name)
-
-		// Check that all of the top level fields in the matching message are optional
-		// If so, then we can make it so you don't even need to specify the key
-		// example, this allows for:
-		// await actions.listActivePublishersWithActivePosts();
-		// instead of:
-		// const { results: publishers } =
-		// await actions.listActivePublishersWithActivePosts({ where: {} });
-		if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
-			return f.Optional
-		}) {
-			w.Write("?")
-		}
-
-		inputType := action.InputMessageName
-		if inputType == parser.MessageFieldTypeAny {
-			inputType = "any"
-		}
-
-		w.Writef(`: %s) `, inputType)
-		w.Writeln("=> {")
-
-		w.Indent()
-
-		model := schema.FindModel(action.ModelName)
-		w.Writef(`return this.client.rawRequest<%s>("%s", i)`, toClientActionReturnType(model, action), action.Name)
-
-		w.Writeln(";")
-		w.Dedent()
-		w.Writeln("},")
-	}
-}
-
-func writeClientApiDefinition(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
-	queries := []string{}
-	mutations := []string{}
+func writeClientApiInterface(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
+	queries := []*proto.Action{}
+	mutations := []*proto.Action{}
 
 	for _, a := range proto.GetActionNamesForApi(schema, api) {
 		action := schema.FindAction(a)
 		if action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_READ {
-			queries = append(queries, action.Name)
+			queries = append(queries, action)
 		} else {
-			mutations = append(mutations, action.Name)
+			mutations = append(mutations, action)
 		}
 	}
 
+	w.Writeln("interface KeelAPI {")
+	w.Indent()
 	w.Writeln("queries: {")
 	w.Indent()
+
 	for _, fn := range queries {
-		w.Writef(`%s: this.actions.%s`, fn, fn)
-		w.Writeln(",")
+		writeClientActionType(w, schema, fn)
 	}
+
 	w.Dedent()
 	w.Writeln("},")
 
 	w.Writeln("mutations: {")
 	w.Indent()
+
 	for _, fn := range mutations {
-		w.Writef(`%s: this.actions.%s`, fn, fn)
-		w.Writeln(",")
+		writeClientActionType(w, schema, fn)
 	}
+
 	w.Dedent()
 	w.Writeln("}")
+
+	w.Dedent()
+	w.Writeln("}")
+	w.Writeln("")
+}
+
+func writeClientActionType(w *codegen.Writer, schema *proto.Schema, action *proto.Action) {
+	msg := schema.FindMessage(action.InputMessageName)
+
+	w.Writef("%s: (i", action.Name)
+
+	// Check that all of the top level fields in the matching message are optional
+	if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+		return f.Optional
+	}) {
+		w.Write("?")
+	}
+
+	inputType := action.InputMessageName
+	if inputType == parser.MessageFieldTypeAny {
+		inputType = "any"
+	}
+
+	w.Writef(`: %s) => `, inputType)
+
+	model := schema.FindModel(action.ModelName)
+	w.Writef(`Promise<APIResult<%s>>`, toClientActionReturnType(model, action))
+
+	w.Writeln(";")
 }
 
 func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
