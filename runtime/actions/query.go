@@ -1475,7 +1475,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 						return nil, nil, nil, fmt.Errorf("missing parsing implementation for array type %s", f.Type.Type)
 					}
 					if err != nil {
-						return nil, nil, err
+						return nil, nil, nil, err
 					}
 				} else {
 					switch f.Type.Type {
