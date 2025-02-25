@@ -2,6 +2,85 @@
   "openapi": "3.1.0",
   "info": { "title": "Admin", "version": "1" },
   "paths": {
+    "/admin/json/createThing": {
+      "post": {
+        "operationId": "createThing",
+        "requestBody": {
+          "description": "createThing Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dates": {
+                    "type": "array",
+                    "items": { "type": "string", "format": "date" }
+                  },
+                  "durations": {
+                    "type": "array",
+                    "items": { "type": "string", "format": "duration" }
+                  },
+                  "enums": {
+                    "type": "array",
+                    "items": { "enum": ["One", "Two", "Three"] }
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": { "type": "string", "format": "data-url" }
+                  },
+                  "numbers": { "type": "array", "items": { "type": "number" } },
+                  "texts": { "type": "array", "items": { "type": "string" } }
+                },
+                "unevaluatedProperties": false,
+                "required": [
+                  "texts",
+                  "numbers",
+                  "enums",
+                  "dates",
+                  "files",
+                  "durations"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "createThing Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Thing" }
+              }
+            }
+          },
+          "400": {
+            "description": "createThing Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/json/things": {
       "post": {
         "operationId": "things",
@@ -240,9 +319,25 @@
             "type": "array",
             "items": { "type": "string", "format": "date" }
           },
+          "durations": {
+            "type": "array",
+            "items": { "type": "string", "format": "duration" }
+          },
           "enums": {
             "type": "array",
             "items": { "enum": ["One", "Two", "Three"] }
+          },
+          "files": {
+            "type": "array",
+            "properties": {
+              "contentType": { "type": "string" },
+              "filename": { "type": "string" },
+              "key": { "type": "string" },
+              "size": { "type": "number" },
+              "url": { "type": "string" }
+            },
+            "required": ["key", "filename", "contentType", "size", "url"],
+            "items": { "type": "object" }
           },
           "id": { "type": "string" },
           "numbers": { "type": "array", "items": { "type": "number" } },
@@ -254,6 +349,8 @@
           "numbers",
           "enums",
           "dates",
+          "files",
+          "durations",
           "id",
           "createdAt",
           "updatedAt"

@@ -124,8 +124,6 @@ test("files - update action with file input and empty hooks", async () => {
     },
   });
 
-  console.log(updated);
-
   expect(updated.file?.contentType).toEqual("text/plain");
   expect(updated.file?.filename).toEqual("my-second-file.txt");
   expect(updated.file?.size).toEqual(11);

@@ -4,8 +4,11 @@ model Thing {
         numbers Number[]
         enums MyEnum[]
         dates Date[]
+        files File[]
+        durations Duration[]
     }
     actions {
+        create createThing() with (texts, numbers, enums, dates, files, durations)
         list things(texts, numbers, enums, dates)
     }
 }
