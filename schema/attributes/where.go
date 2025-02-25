@@ -1,6 +1,8 @@
 package attributes
 
 import (
+	"encoding/hex"
+
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/expressions/options"
@@ -9,20 +11,52 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func ValidateWhereExpression(schema []*parser.AST, action *parser.ActionNode, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
-	model := query.ActionModel(schema, action.Name.Value)
+var wheres = make(map[string]*expressions.Parser)
+
+// defaultWhere will cache the base CEL environment for a schema
+func defaultWhere(schema []*parser.AST) (*expressions.Parser, error) {
+	var contents string
+	for _, s := range schema {
+		contents += s.Raw + "\n"
+	}
+	key := hex.EncodeToString([]byte(contents))
+
+	if parser, exists := wheres[key]; exists {
+		return parser, nil
+	}
 
 	opts := []expressions.Option{
 		options.WithCtx(),
 		options.WithSchemaTypes(schema),
-		options.WithActionInputs(schema, action),
-		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false),
 		options.WithComparisonOperators(),
 		options.WithLogicalOperators(),
 		options.WithReturnTypeAssertion(parser.FieldTypeBoolean, false),
 	}
 
-	p, err := expressions.NewParser(opts...)
+	parser, err := expressions.NewParser(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	wheres[key] = parser
+
+	return parser, nil
+}
+
+func ValidateWhereExpression(schema []*parser.AST, action *parser.ActionNode, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
+	parser, err := defaultWhere(schema)
+	if err != nil {
+		return nil, err
+	}
+
+	model := query.ActionModel(schema, action.Name.Value)
+
+	opts := []expressions.Option{
+		options.WithActionInputs(schema, action),
+		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false),
+	}
+
+	p, err := parser.Extend(opts...)
 	if err != nil {
 		return nil, err
 	}

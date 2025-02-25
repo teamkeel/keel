@@ -64,7 +64,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
-	sdkTypes.Writeln(`export { InlineFile, File, Duration } from "@teamkeel/functions-runtime"`)
+	sdkTypes.Writeln(`export { InlineFile, File, Duration, FileWriteTypes, SortDirection } from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln("")
 
 	writePermissions(sdk, schema)
@@ -415,7 +415,6 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 			}
 		} else {
 			t := toTypeScriptType(field.Type, true, false, false)
-
 			if field.Type.Repeated {
 				t = fmt.Sprintf("%s[]", t)
 			}
@@ -479,7 +478,7 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 	})
 
 	for i, f := range relevantFields {
-		w.Writef("%s?: runtime.SortDirection", f.Name)
+		w.Writef("%s?: SortDirection", f.Name)
 
 		if i < len(relevantFields)-1 {
 			w.Write(",")
@@ -815,7 +814,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 		w.Writeln("* Creates a new query builder with the given conditions applied")
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
-		w.Writef("const records = await models.%s.where({ createdAt: { after: new Date(2020, 1, 1) } }).orWhere({ updatedAt: { after: new Date(2020, 1, 1) } }).findMany();\n", casing.ToLowerCamel(model.Name))
+		w.Writef("const records = await models.%s.where({ createdAt: { after: new Date(2020, 1, 1) } }).findMany();\n", casing.ToLowerCamel(model.Name))
 		w.Writeln("```")
 	})
 	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
@@ -837,7 +836,6 @@ func writeModelQueryBuilderDeclaration(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export type %sQueryBuilder = {\n", model.Name)
 	w.Indent()
 	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
-	w.Writef("orWhere(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
 	w.Writef("findMany(params?: %sQueryBuilderParams): Promise<%s[]>;\n", model.Name, model.Name)
 	w.Writef("findOne(params?: %sQueryBuilderParams): Promise<%s>;\n", model.Name, model.Name)
 
@@ -1807,7 +1805,11 @@ func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPac
 		if isClientPackage {
 			return "string"
 		} else {
-			return "runtime.InlineFile"
+			if isTestingPackage {
+				return "FileWriteTypes"
+			} else {
+				return "runtime.File"
+			}
 		}
 	default:
 		return toTypeScriptType(t, false, isTestingPackage, isClientPackage)
@@ -1816,19 +1818,13 @@ func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPac
 
 func toResponseTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
-	case proto.Type_TYPE_DURATION:
-		if isClientPackage {
-			return "DurationString"
-		} else {
-			return "runtime.Duration"
-		}
 	case proto.Type_TYPE_RELATIVE_PERIOD:
 		return "RelativeDateString"
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
 			return "FileResponseObject"
 		} else {
-			return "runtime.File | runtime.InlineFile"
+			return "runtime.File"
 		}
 	default:
 		return toTypeScriptType(t, false, isTestingPackage, isClientPackage)
@@ -1867,11 +1863,7 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 			ret = t.ModelName.Value
 		}
 	case proto.Type_TYPE_SORT_DIRECTION:
-		if isClientPackage {
-			ret = "SortDirection"
-		} else {
-			ret = "runtime.SortDirection"
-		}
+		ret = "SortDirection"
 	case proto.Type_TYPE_UNION:
 		// Retrieve all the types that can satisfy this union field.
 		messageNames := lo.Map(t.UnionNames, func(s *wrapperspb.StringValue, _ int) string {
@@ -1881,12 +1873,13 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 	case proto.Type_TYPE_STRING_LITERAL:
 		// Use string literal type for discriminating.
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
+
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
 			ret = "FileResponseObject"
 		} else {
 			if includeCompatibleTypes {
-				ret = "runtime.InlineFile | runtime.File"
+				ret = "FileWriteTypes"
 			} else {
 				ret = "runtime.File"
 			}

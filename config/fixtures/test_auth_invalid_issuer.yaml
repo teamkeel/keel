@@ -4,6 +4,8 @@
 # auth.providers.2.issuerUrl: Does not match format 'uri'
 # auth.providers.3.issuerUrl: Does not match pattern '^https://'
 # auth.providers.3.issuerUrl: Does not match format 'uri'
+# auth.providers.4.issuerUrl: Does not match pattern '^https://'
+# auth.providers.4.issuerUrl: Does not match format 'uri'
 
 auth:
   providers:
@@ -24,4 +26,13 @@ auth:
     - type: oidc
       name: invalid_url
       issuerUrl: "whoops"
+      clientId: "kasj28fnq09ak"
+
+    - type: slack
+      name: slack
+      issuerUrl: ""
+      clientId: "kasj28fnq09ak"
+
+    - type: slack
+      name: slack2
       clientId: "kasj28fnq09ak"

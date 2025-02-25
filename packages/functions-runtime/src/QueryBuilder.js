@@ -38,18 +38,6 @@ class QueryBuilder {
     return new QueryBuilder(this._tableName, context, builder);
   }
 
-  orWhere(where) {
-    const context = this._context.clone();
-
-    let builder = applyJoins(context, this._db, where);
-
-    builder = builder.orWhere((qb) => {
-      return applyWhereConditions(context, qb, where);
-    });
-
-    return new QueryBuilder(this._tableName, context, builder);
-  }
-
   sql() {
     return this._db.compile().sql;
   }
@@ -143,33 +131,6 @@ class QueryBuilder {
       return transformRichDataTypes(camelCaseObject(row));
     });
   }
-
-  // orderBy(conditions) {
-  //   const context = this._context.clone();
-
-  //   const builder = applyOrderBy(
-  //     context,
-  //     this._db,
-  //     this._tableName,
-  //     conditions
-  //   );
-
-  //   return new QueryBuilder(this._tableName, context, builder);
-  // }
-
-  // limit(limit) {
-  //   const context = this._context.clone();
-  //   const builder = applyLimit(context, this._db, limit);
-
-  //   return new QueryBuilder(this._tableName, context, builder);
-  // }
-
-  // offset(offset) {
-  //   const context = this._context.clone();
-  //   const builder = applyOffset(context, builder, offset);
-
-  //   return new QueryBuilder(this._tableName, context, builder);
-  // }
 
   async findMany(params) {
     const name = tracing.spanNameForModelAPI(this._modelName, "findMany");

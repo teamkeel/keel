@@ -50,6 +50,29 @@ func NewParser(options ...Option) (*Parser, error) {
 	return parser, nil
 }
 
+// Extend creates a new parser with the same environment configuration but extended with additional options
+func (p *Parser) Extend(options ...Option) (*Parser, error) {
+	env, err := p.CelEnv.Extend([]cel.EnvOption{}...)
+	if err != nil {
+		return nil, err
+	}
+
+	newParser := &Parser{
+		CelEnv:             env,
+		Provider:           p.Provider,
+		ExpectedReturnType: p.ExpectedReturnType,
+	}
+
+	for _, opt := range options {
+		if err := opt(newParser); err != nil {
+			return nil, err
+		}
+	}
+
+	return newParser, nil
+}
+
+// Validate validates an expression and returns a list of validation errors
 func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
 	expr := expression.String()
 	ast, issues := p.CelEnv.Compile(expr)

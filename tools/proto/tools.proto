@@ -240,6 +240,9 @@ message Section {
 	// A CEL expression used to control the visibility of the whole section.
 	// e.g. if expression != true then the section will be hidden
 	optional string visible_condition = 5;
+
+	// If this section should be displayed or not; this superseeds the visibility condition.
+	bool visible = 6;	
 }
 
 message ScalarValue {
@@ -439,6 +442,11 @@ message GridViewConfig {
 
 // A display layouts for viewing db records (i.e. a get tool)
 message RecordViewConfig {
+	ProgressIndicatorConfig progress_indicator = 1;
+}
+
+// ProgressIndicatorConfig specifies configuration for a Stepper like field
+message ProgressIndicatorConfig {
 	message Step {
 		// Order of the step
 		int32 display_order = 1;
@@ -461,4 +469,7 @@ message RecordViewConfig {
 
 	// Array of steps that should be displayed
 	repeated Step steps = 2;
+
+	// If this progress indicator should be enabled or not
+	bool enabled = 3;
 }

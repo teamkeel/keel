@@ -27,13 +27,17 @@ api Api {
 }`
 
 	expected := `
-getPerson: (i: GetPersonInput) => {
-	return this.client.rawRequest<Person | null>("getPerson", i);
+interface KeelAPI {
+	queries: {
+		getPerson: (i: GetPersonInput) => Promise<APIResult<Person | null>>;
+	},
+	mutations: {
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -54,7 +58,7 @@ model Company {
 
 api Api {
 	models {
-		Person 
+		Person
 		Company {
 			actions {
 				getCompany
@@ -64,16 +68,18 @@ api Api {
 }`
 
 	expected := `
-getPerson: (i: GetPersonInput) => {
-	return this.client.rawRequest<Person | null>("getPerson", i);
-},
-getCompany: (i: GetCompanyInput) => {
-	return this.client.rawRequest<Company | null>("getCompany", i);
-},`
+interface KeelAPI {
+	queries: {
+		getPerson: (i: GetPersonInput) => Promise<APIResult<Person | null>>;
+		getCompany: (i: GetCompanyInput) => Promise<APIResult<Company | null>>;
+	},
+	mutations: {
+	}
+}`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -93,13 +99,17 @@ api Web {
 }`
 
 	expected := `
-getPerson: (i: GetPersonInput) => {
-	return this.client.rawRequest<Person | null>("getPerson", i);
+interface KeelAPI {
+	queries: {
+		getPerson: (i: GetPersonInput) => Promise<APIResult<Person | null>>;
+	},
+	mutations: {
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Web")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -116,13 +126,19 @@ model Person {
 }`
 
 	expected := `
-getPerson: (i: GetPersonInput) => {
-	return this.client.rawRequest<Person | null>("getPerson", i);
+interface KeelAPI {
+	queries: {
+		getPerson: (i: GetPersonInput) => Promise<APIResult<Person | null>>;
+	},
+	mutations: {
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -139,13 +155,19 @@ model Person {
 }`
 
 	expected := `
-createPerson: (i: CreatePersonInput) => {
-	return this.client.rawRequest<Person>("createPerson", i);
+interface KeelAPI {
+	queries: {
+	},
+	mutations: {
+		createPerson: (i: CreatePersonInput) => Promise<APIResult<Person>>;
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -162,13 +184,19 @@ model Person {
 }`
 
 	expected := `
-updatePerson: (i: UpdatePersonInput) => {
-	return this.client.rawRequest<Person>("updatePerson", i);
+interface KeelAPI {
+	queries: {
+	},
+	mutations: {
+		updatePerson: (i: UpdatePersonInput) => Promise<APIResult<Person>>;
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -185,13 +213,19 @@ model Person {
 }`
 
 	expected := `
-deletePerson: (i: DeletePersonInput) => {
-	return this.client.rawRequest<string>("deletePerson", i);
+interface KeelAPI {
+	queries: {
+	},
+	mutations: {
+		deletePerson: (i: DeletePersonInput) => Promise<APIResult<string>>;
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -208,13 +242,19 @@ model Person {
 }`
 
 	expected := `
-listPeople: (i: ListPeopleInput) => {
-	return this.client.rawRequest<{ results: Person[], pageInfo: PageInfo }>("listPeople", i);
-},`
+interface KeelAPI {
+	queries: {
+		listPeople: (i: ListPeopleInput) => Promise<APIResult<{ results: Person[], pageInfo: PageInfo }>>;
+	},
+	mutations: {
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
+}`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -232,16 +272,20 @@ model Person {
 }`
 
 	expected := `
-createPerson: (i?: CreatePersonInput) => {
-	return this.client.rawRequest<Person>("createPerson", i);
-},
-listPeople: (i?: ListPeopleInput) => {
-	return this.client.rawRequest<{ results: Person[], pageInfo: PageInfo }>("listPeople", i);
+interface KeelAPI {
+	queries: {
+		listPeople: (i?: ListPeopleInput) => Promise<APIResult<{ results: Person[], pageInfo: PageInfo }>>;
+	},
+	mutations: {
+		createPerson: (i?: CreatePersonInput) => Promise<APIResult<Person>>;
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -259,13 +303,19 @@ model Person {
 }`
 
 	expected := `
-listPeople: (i?: ListPeopleInput) => {
-	return this.client.rawRequest<{ results: Person[], pageInfo: PageInfo }>("listPeople", i);
+interface KeelAPI {
+	queries: {
+		listPeople: (i?: ListPeopleInput) => Promise<APIResult<{ results: Person[], pageInfo: PageInfo }>>;
+	},
+	mutations: {
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -283,13 +333,19 @@ model Person {
 }`
 
 	expected := `
-listPeople: (i: ListPeopleInput) => {
-	return this.client.rawRequest<{ results: Person[], pageInfo: PageInfo }>("listPeople", i);
-},`
+interface KeelAPI {
+	queries: {
+		listPeople: (i: ListPeopleInput) => Promise<APIResult<{ results: Person[], pageInfo: PageInfo }>>;
+	},
+	mutations: {
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
+}`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -311,13 +367,19 @@ message People {
 }`
 
 	expected := `
-readPeople: (i: ReadPeopleInput) => {
-	return this.client.rawRequest<People>("readPeople", i);
+interface KeelAPI {
+	queries: {
+		readPeople: (i: ReadPeopleInput) => Promise<APIResult<People>>;
+	},
+	mutations: {
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -339,13 +401,19 @@ message People {
 }`
 
 	expected := `
-writePeople: (i: WritePeopleInput) => {
-	return this.client.rawRequest<People>("writePeople", i);
+interface KeelAPI {
+	queries: {
+	},
+	mutations: {
+		writePeople: (i: WritePeopleInput) => Promise<APIResult<People>>;
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -367,13 +435,19 @@ message People {
 }`
 
 	expected := `
-readPeople: (i: SearchParams) => {
-	return this.client.rawRequest<People>("readPeople", i);
+interface KeelAPI {
+	queries: {
+		readPeople: (i: SearchParams) => Promise<APIResult<People>>;
+	},
+	mutations: {
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -387,13 +461,19 @@ model Person {
 }`
 
 	expected := `
-readPeople: (i?: any) => {
-	return this.client.rawRequest<any>("readPeople", i);
+interface KeelAPI {
+	queries: {
+		readPeople: (i?: any) => Promise<APIResult<any>>;
+	},
+	mutations: {
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientActions(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -415,22 +495,24 @@ model Person {
 }`
 
 	expected := `
-queries: {
-	getPerson: this.actions.getPerson,
-	listPeople: this.actions.listPeople,
-	readPeople: this.actions.readPeople,
-},
-mutations: {
-	createPerson: this.actions.createPerson,
-	updatePerson: this.actions.updatePerson,
-	deletePerson: this.actions.deletePerson,
-	requestPasswordReset: this.actions.requestPasswordReset,
-	resetPassword: this.actions.resetPassword,
+interface KeelAPI {
+	queries: {
+		getPerson: (i: GetPersonInput) => Promise<APIResult<Person | null>>;
+		listPeople: (i: ListPeopleInput) => Promise<APIResult<{ results: Person[], pageInfo: PageInfo }>>;
+		readPeople: (i?: any) => Promise<APIResult<any>>;
+	},
+	mutations: {
+		createPerson: (i: CreatePersonInput) => Promise<APIResult<Person>>;
+		updatePerson: (i: UpdatePersonInput) => Promise<APIResult<Person>>;
+		deletePerson: (i: DeletePersonInput) => Promise<APIResult<string>>;
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		api := proto.FindApi(s, "Api")
-		writeClientApiDefinition(w, s, api)
+		writeClientApiInterface(w, s, api)
 	})
 }
 
@@ -534,32 +616,29 @@ model Person {
 }`
 
 	expected := `
+interface KeelAPI {
+	queries: {
+		getPerson: (i: GetPersonInput) => Promise<APIResult<Person | null>>;
+	},
+	mutations: {
+		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
+		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
+	}
+}
+
 export class APIClient extends Core {
 	constructor(config: Config) {
 		super(config);
 	}
 
-	private actions = {
-		getPerson: (i: GetPersonInput) => {
-			return this.client.rawRequest<Person | null>("getPerson", i);
-		},
-		requestPasswordReset: (i: RequestPasswordResetInput) => {
-			return this.client.rawRequest<RequestPasswordResetResponse>("requestPasswordReset", i);
-		},
-		resetPassword: (i: ResetPasswordInput) => {
-			return this.client.rawRequest<ResetPasswordResponse>("resetPassword", i);
-		},
-	};
-
 	api = {
-		queries: {
-			getPerson: this.actions.getPerson,
-		},
-		mutations: {
-			requestPasswordReset: this.actions.requestPasswordReset,
-			resetPassword: this.actions.resetPassword,
-		}
-	};
+		queries: new Proxy({}, {
+			get: (_, fn: string) => (i: any) => this.client.rawRequest(fn, i),
+		}),
+		mutations: new Proxy({}, {
+			get: (_, fn: string) => (i: any) => this.client.rawRequest(fn, i),
+		})
+	} as KeelAPI;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {

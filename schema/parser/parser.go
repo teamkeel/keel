@@ -16,6 +16,7 @@ import (
 type AST struct {
 	node.Node
 
+	Raw                  string
 	Declarations         []*DeclarationNode `@@*`
 	EnvironmentVariables []string
 	Secrets              []string
@@ -378,6 +379,8 @@ func Parse(s *reader.SchemaFile) (*AST, error) {
 
 		return schema, err
 	}
+
+	schema.Raw = s.Contents
 
 	return schema, nil
 }

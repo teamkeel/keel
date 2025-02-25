@@ -11,14 +11,14 @@ model MyFile {
         }
         create createFileInHook() @function 
         create createFileAndStoreInHook() @function 
-        update updateFileEmptyHooks(id) with (file) @function 
+        update updateFileEmptyHooks(id) with (file) { @function }
         list listFilesEmptyHooks() @function
         get getFileEmptyHooks(id) @function
         get getFileNumerateContents(id) @function
         write storeAndWriteMany(file: File) returns (FileMessage) {
             @permission(expression: true)
         }
-        write writeMany(FileMessage) returns (FileMessage) {
+        write writeMany(FileInputMessage) returns (FileMessage) {
             @permission(expression: true)
         }
         write modelApiTests(Any) returns (Any) {
@@ -33,6 +33,14 @@ model MyFile {
     }
 
     @permission(expression: true, actions: [get, list, create, update])
+}
+
+message FileInputMessage {
+    msg NestedFileInputMessage
+}
+
+message NestedFileInputMessage {
+    file File
 }
 
 message FileMessage {

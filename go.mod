@@ -20,7 +20,7 @@ require (
 	github.com/fatih/camelcase v1.0.0
 	github.com/goccy/go-yaml v1.15.13
 	github.com/golang-jwt/jwt/v4 v4.5.1
-	github.com/google/cel-go v0.21.0
+	github.com/google/cel-go v0.23.2
 	github.com/hashicorp/go-version v1.7.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.7.2
@@ -64,6 +64,7 @@ require (
 )
 
 require (
+	cel.dev/expr v0.19.1 // indirect
 	github.com/PaesslerAG/gval v1.2.4 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
