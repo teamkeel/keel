@@ -12,6 +12,6 @@ export default CreateBookWithAuthor({
       throw new Error("expected values.author.id to be a string");
     }
 
-    return values;
+    return { ...values };
   },
 });
