@@ -2,6 +2,7 @@ package schema
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/samber/lo"
@@ -45,6 +46,8 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 				scm.makeJob(decl)
 			case decl.Message != nil:
 				// noop
+			case decl.Routes != nil:
+				scm.makeRoutes(decl)
 			default:
 				panic("Case not recognized")
 			}
@@ -1569,6 +1572,29 @@ func (scm *Builder) makeJob(decl *parser.DeclarationNode) {
 	}
 
 	scm.proto.Jobs = append(scm.proto.Jobs, job)
+}
+
+func (scm *Builder) makeRoutes(decl *parser.DeclarationNode) {
+	for _, route := range decl.Routes.Routes {
+		var method proto.HttpMethod
+		switch strings.ToUpper(route.Method.Value) {
+		case http.MethodGet:
+			method = proto.HttpMethod_HTTP_METHOD_GET
+		case http.MethodPost:
+			method = proto.HttpMethod_HTTP_METHOD_POST
+		case http.MethodPut:
+			method = proto.HttpMethod_HTTP_METHOD_PUT
+		case http.MethodDelete:
+			method = proto.HttpMethod_HTTP_METHOD_DELETE
+		case "ALL":
+			method = proto.HttpMethod_HTTP_METHOD_ALL
+		}
+		scm.proto.Routes = append(scm.proto.Routes, &proto.Route{
+			Method:  method,
+			Pattern: route.Pattern,
+			Handler: route.Handler.Value,
+		})
+	}
 }
 
 func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName string) []*proto.Field {

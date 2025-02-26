@@ -30,7 +30,8 @@ type DeclarationNode struct {
 	API     *APINode     `| "api" @@`
 	Enum    *EnumNode    `| "enum" @@`
 	Message *MessageNode `| "message" @@`
-	Job     *JobNode     `| "job" @@)`
+	Job     *JobNode     `| "job" @@`
+	Routes  *RoutesNode  `| "routes" @@)`
 }
 
 type ModelNode struct {
@@ -177,6 +178,20 @@ type JobInputNode struct {
 	Type     NameNode `@@`
 	Repeated bool     `( @( "[" "]" )`
 	Optional bool     `| @( "?" ))?`
+}
+
+type RoutesNode struct {
+	node.Node
+
+	Routes []*RouteNode `"{" @@* "}"`
+}
+
+type RouteNode struct {
+	node.Node
+
+	Method  NameNode `@@`
+	Pattern string   `"(" @String`
+	Handler NameNode `"," @@ ")"`
 }
 
 // Attributes:

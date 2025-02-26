@@ -1,0 +1,4 @@
+routes {
+    //expect-error:5:8:TypeError:foo is not a valid route type. Valid types are get, post, put, delete and all
+    foo("some/route", myHandler)
+}
