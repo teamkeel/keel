@@ -398,6 +398,7 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (
 	functions := map[string]string{}
 	jobs := []string{}
 	subscribers := []string{}
+	routes := []string{}
 	actionTypes := map[string]string{}
 
 	for _, model := range schema.Models {
@@ -426,6 +427,10 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (
 		subscribers = append(subscribers, subscriberName)
 	}
 
+	for _, route := range schema.Routes {
+		routes = append(routes, route.Handler)
+	}
+
 	var tmpl = template.Must(template.New("handler.js").Parse(functionsHandlerTemplate))
 
 	b := bytes.Buffer{}
@@ -433,6 +438,7 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (
 		"Functions":   functions,
 		"Subscribers": subscribers,
 		"Jobs":        jobs,
+		"Routes":      routes,
 		"ActionTypes": actionTypes,
 	})
 	if err != nil {

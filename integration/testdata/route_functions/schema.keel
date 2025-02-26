@@ -1,0 +1,15 @@
+routes {
+    get("/get/route", getHandler)
+    get("/path/param/route/:foo", pathParamHandler)
+    post("/post/route", postHandler)
+    post("/raw/body/route", rawBodyHandler)
+    post("/headers/route", headersHandler)
+    post("/database/route", databaseHandler)
+    put("/status/route", statusHandler)
+}
+
+model Person {
+    fields {
+        name Text
+    }
+}
