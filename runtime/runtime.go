@@ -3,11 +3,13 @@ package runtime
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
@@ -40,9 +42,11 @@ func GetVersion() string {
 func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	var apiHandler common.HandlerFunc
 	var authHandler func(http.ResponseWriter, *http.Request) common.Response
+	var router *httprouter.Router
 	if currSchema != nil {
 		apiHandler = NewApiHandler(currSchema)
 		authHandler = NewAuthHandler(currSchema)
+		router = NewRouter(currSchema)
 	}
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +72,16 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			response = authHandler(w, r)
 		default:
 			response = apiHandler(r)
+		}
+
+		// TODO: this is a bit of a hack - what we want to do is only use the routes router if no API or auth
+		// route matched, but we can't just check for a 404 because that happens for "record not found".
+		// So we check for both a 404 status and a non-JSON body.
+		// Probably the right thing to do is refactor this whole thing to just use a single httprouter but that
+		// is a bigger change.
+		if response.Status == http.StatusNotFound && (len(response.Body) == 0 || response.Body[0] != '{') {
+			router.ServeHTTP(w, r)
+			return
 		}
 
 		// Add any custom headers to response, and join
@@ -274,6 +288,72 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 	}
 
 	return err
+}
+
+func NewRouter(s *proto.Schema) *httprouter.Router {
+	router := httprouter.New()
+
+	for _, route := range s.Routes {
+		route := route
+		var method string
+
+		switch route.Method {
+		case proto.HttpMethod_HTTP_METHOD_GET:
+			method = http.MethodGet
+		case proto.HttpMethod_HTTP_METHOD_POST:
+			method = http.MethodPost
+		case proto.HttpMethod_HTTP_METHOD_PUT:
+			method = http.MethodPut
+		case proto.HttpMethod_HTTP_METHOD_DELETE:
+			method = http.MethodDelete
+		}
+
+		router.Handle(method, route.Pattern, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte("cannot read body"))
+				return
+			}
+
+			paramsMap := map[string]string{}
+			for _, p := range params {
+				paramsMap[p.Key] = p.Value
+			}
+
+			headers := map[string][]string{}
+			for k := range r.Header {
+				headers[k] = r.Header.Values(k)
+			}
+			ctx := runtimectx.WithRequestHeaders(r.Context(), headers)
+
+			resp, _, err := functions.CallRoute(ctx, route.Handler, &functions.RouteRequest{
+				Body:   string(body),
+				Method: r.Method,
+				Path:   r.URL.Path,
+				Params: paramsMap,
+				Query:  r.URL.RawQuery,
+			})
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte("error calling handler"))
+				return
+			}
+
+			for k, v := range resp.Headers {
+				w.Header().Add(k, v)
+			}
+
+			if resp.StatusCode != 0 {
+				w.WriteHeader(resp.StatusCode)
+			} else {
+				w.WriteHeader(http.StatusOK)
+			}
+			_, _ = w.Write([]byte(resp.Body))
+		})
+	}
+
+	return router
 }
 
 func withRequestResponseLogging(handler common.HandlerFunc) common.HandlerFunc {

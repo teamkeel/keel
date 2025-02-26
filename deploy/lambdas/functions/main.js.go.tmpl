@@ -3,6 +3,7 @@ const {
   handleRequest,
   handleJob,
   handleSubscriber,
+  handleRoute,
   tracing,
 } = require("@teamkeel/functions-runtime");
 const {
@@ -27,6 +28,12 @@ const subscribers = {
 const jobs = {
 {{ range .Jobs }}
   {{ . }}: require("../../jobs/{{ . }}").default,
+{{ end }}
+};
+
+const routes = {
+{{ range .Routes }}
+  {{ . }}: require("../../routes/{{ . }}").default,
 {{ end }}
 };
 
@@ -66,6 +73,12 @@ export async function handler(event) {
         rpcResponse = await handleSubscriber(event, {
           subscribers,
           createSubscriberContextAPI,
+        });
+        break;
+      case "route":
+        rpcResponse = await handleRoute(event, {
+          functions: routes,
+          createContextAPI,
         });
         break;
     }
