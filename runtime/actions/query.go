@@ -1497,7 +1497,15 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		}
 	}
 
-	return toLowerCamelMaps(rows), &resultInfo, pageInfo, nil
+	// if we have any facets, we will return a pointer to the map storing the result info, otherwise, we return nil
+	var ri *ResultInfo
+	if resultInfo == nil {
+		ri = nil
+	} else {
+		ri = &resultInfo
+	}
+
+	return toLowerCamelMaps(rows), ri, pageInfo, nil
 }
 
 // Execute the SQL statement against the database and expects a single row, returns the single row or nil if no data is found.
