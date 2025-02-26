@@ -1,0 +1,535 @@
+{
+  "models": [
+    {
+      "name": "Product",
+      "fields": [
+        {
+          "modelName": "Product",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "category",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Category"
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "colour",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "inStock",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Product",
+          "name": "listProducts",
+          "type": "ACTION_TYPE_LIST",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "ListProductsInput",
+          "facets": ["category", "colour"]
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": ["issuer"]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": ["email"]
+        },
+        {
+          "modelName": "Identity",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "givenName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "familyName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "middleName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "nickName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "profile",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "picture",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "website",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "gender",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "zoneInfo",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "locale",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Product",
+          "modelActions": [
+            {
+              "actionName": "listProducts"
+            }
+          ]
+        },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "name": "Category",
+      "values": [
+        {
+          "name": "Food"
+        },
+        {
+          "name": "Drink"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "CategoryQueryInput",
+      "fields": [
+        {
+          "messageName": "CategoryQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Category"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "CategoryQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Category"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "CategoryQueryInput",
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Category",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "StringQueryInput",
+      "fields": [
+        {
+          "messageName": "StringQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "StringQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "StringQueryInput",
+          "name": "startsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "StringQueryInput",
+          "name": "endsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "StringQueryInput",
+          "name": "contains",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "StringQueryInput",
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "ListProductsWhere",
+      "fields": [
+        {
+          "messageName": "ListProductsWhere",
+          "name": "category",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CategoryQueryInput"
+          },
+          "optional": true,
+          "target": ["category"]
+        },
+        {
+          "messageName": "ListProductsWhere",
+          "name": "colour",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringQueryInput"
+          },
+          "optional": true,
+          "target": ["colour"]
+        }
+      ]
+    },
+    {
+      "name": "ListProductsInput",
+      "fields": [
+        {
+          "messageName": "ListProductsInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListProductsWhere"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListProductsInput",
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListProductsInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListProductsInput",
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListProductsInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListProductsInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListProductsInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        }
+      ]
+    }
+  ]
+}

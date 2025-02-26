@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
@@ -233,6 +234,11 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 		writeModelInterface(w, model, true)
 	}
 
+	for _, a := range proto.GetActionNamesForApi(schema, api) {
+		action := schema.FindAction(a)
+		writeResultInfoInterface(w, schema, action, true)
+	}
+
 	// writing embedded response types
 	for _, a := range proto.GetActionNamesForApi(schema, api) {
 		action := schema.FindAction(a)
@@ -247,32 +253,38 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 	w.Writeln("")
 }
 
-func toClientActionReturnType(model *proto.Model, op *proto.Action) string {
-	switch op.Type {
+func toClientActionReturnType(model *proto.Model, action *proto.Action) string {
+	switch action.Type {
 	case proto.ActionType_ACTION_TYPE_CREATE:
 		return model.Name
 	case proto.ActionType_ACTION_TYPE_UPDATE:
 		return model.Name
 	case proto.ActionType_ACTION_TYPE_GET:
-		if len(op.GetResponseEmbeds()) > 0 {
-			return toResponseType(op.Name) + " | null"
+		if len(action.GetResponseEmbeds()) > 0 {
+			return toResponseType(action.Name) + " | null"
 		}
 		return model.Name + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
 		respName := model.Name
-		if len(op.GetResponseEmbeds()) > 0 {
-			respName = toResponseType(op.Name)
+		if len(action.GetResponseEmbeds()) > 0 {
+			respName = toResponseType(action.Name)
 		}
-		return "{ results: " + respName + "[], pageInfo: PageInfo }"
+
+		if len(action.Facets) > 0 {
+			resultInfo := fmt.Sprintf("%sResultInfo", strcase.ToCamel(action.Name))
+			return "{ results: " + respName + "[], resultInfo: " + resultInfo + ", pageInfo: PageInfo }"
+		} else {
+			return "{ results: " + respName + "[], pageInfo: PageInfo }"
+		}
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		return "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
-		if op.ResponseMessageName == parser.MessageFieldTypeAny {
+		if action.ResponseMessageName == parser.MessageFieldTypeAny {
 			return "any"
 		}
 
-		return op.ResponseMessageName
+		return action.ResponseMessageName
 	default:
-		panic(fmt.Sprintf("unexpected action type: %s", op.Type.String()))
+		panic(fmt.Sprintf("unexpected action type: %s", action.Type.String()))
 	}
 }

@@ -145,6 +145,9 @@ message Action {
 
     // Embedded data can be attached to the response message of built in actions (get, list).
     repeated string response_embeds = 13;
+
+    // Field names to facet on as defined with @facet in the schema.
+    repeated string facets = 14;
 }
 
 message Role {

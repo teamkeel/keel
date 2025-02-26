@@ -156,6 +156,12 @@ func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, acti
 			},
 			Components: &components,
 		}
+
+		resultInfoSchema := jsonSchemaForFacets(schema, action)
+		if resultInfoSchema != nil {
+			wrapperSchema.Properties["resultInfo"] = *resultInfoSchema
+		}
+
 		return wrapperSchema
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		// string id of deleted record
@@ -166,6 +172,92 @@ func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, acti
 	default:
 		return JSONSchema{}
 	}
+}
+
+func jsonSchemaForFacets(schema *proto.Schema, action *proto.Action) *JSONSchema {
+	facetFields := proto.FacetFields(schema, action)
+	if len(facetFields) == 0 {
+		return nil
+	}
+
+	facetSchema := JSONSchema{
+		Properties: map[string]JSONSchema{},
+	}
+
+	for _, field := range facetFields {
+		switch field.Type.Type {
+		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
+			facetSchema.Properties[field.Name] = JSONSchema{
+				Properties: map[string]JSONSchema{
+					"min": {
+						Type: "number",
+					},
+					"max": {
+						Type: "number",
+					},
+					"avg": {
+						Type: "number",
+					},
+				},
+			}
+		case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+			facetSchema.Properties[field.Name] = JSONSchema{
+				Properties: map[string]JSONSchema{
+					"min": {
+						Type:   "string",
+						Format: "date-time",
+					},
+					"max": {
+						Type:   "string",
+						Format: "date-time",
+					},
+				},
+			}
+		case proto.Type_TYPE_DATE:
+			facetSchema.Properties[field.Name] = JSONSchema{
+				Properties: map[string]JSONSchema{
+					"min": {
+						Type:   "string",
+						Format: "date",
+					},
+					"max": {
+						Type:   "string",
+						Format: "date",
+					},
+				},
+			}
+		case proto.Type_TYPE_DURATION:
+			facetSchema.Properties[field.Name] = JSONSchema{
+				Properties: map[string]JSONSchema{
+					"min": {
+						Type:   "string",
+						Format: "duration",
+					},
+					"max": {
+						Type:   "string",
+						Format: "duration",
+					},
+				},
+			}
+		case proto.Type_TYPE_ENUM, proto.Type_TYPE_STRING:
+			facetSchema.Properties[field.Name] = JSONSchema{
+				Type: "array",
+				Items: &JSONSchema{
+					Type: "object",
+					Properties: map[string]JSONSchema{
+						"value": {
+							Type: "string",
+						},
+						"count": {
+							Type: "number",
+						},
+					},
+				},
+			}
+		}
+	}
+
+	return &facetSchema
 }
 
 func contains(s []*proto.MessageField, e string) bool {

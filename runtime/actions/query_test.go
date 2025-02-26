@@ -3782,6 +3782,150 @@ var testCases = []testCase{
 		expectedArgs: []any{"123", true, int64(0)},
 	},
 	{
+		name: "facets",
+		keelSchema: `
+			model Order {
+				fields {
+					quantity Number
+					price Decimal
+					category Text
+					status Status
+					orderDate Date?
+					orderTime Timestamp?
+					durationToPurchase Duration?
+				}
+				actions {
+					list listOrders(category?) {
+						@facet(id, quantity, price, status, category, orderDate, orderTime, durationToPurchase)
+						@where(order.status != Status.Cancelled)
+					}
+				}
+				@permission(expression: true, actions: [get])
+			}
+			enum Status {
+				Complete
+				InProgress
+				Cancelled
+			}`,
+		actionName: "listOrders",
+		input: map[string]any{
+			"first": 10,
+			"where": map[string]any{
+				"category": map[string]any{
+					"equals": "Toys"},
+			},
+		},
+		expectedTemplate: `
+			SELECT DISTINCT ON("order"."id") 
+				(
+					WITH "id_facets" AS (
+					SELECT jsonb_agg(jsonb_build_object('value', "id", 'count', "count")) AS "id" 
+					FROM (
+						SELECT DISTINCT ON("order"."id") "order"."id", COUNT(*) as "count" 
+						FROM "order" 
+						WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ? 
+						GROUP BY "order"."id" 
+						ORDER BY "order"."id" ASC
+					)
+					),
+					"quantity_facets" AS (
+					SELECT json_build_object(
+						'min', MIN("quantity"),
+						'max', MAX("quantity"), 
+						'avg', AVG("quantity")
+					) AS "quantity"
+					FROM "order"
+					WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ?
+					),
+					"price_facets" AS (
+					SELECT json_build_object(
+						'min', MIN("price"),
+						'max', MAX("price"),
+						'avg', AVG("price")
+					) AS "price"
+					FROM "order"
+					WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ?
+					),
+					"status_facets" AS (
+					SELECT jsonb_agg(jsonb_build_object('value', "status", 'count', "count")) AS "status"
+					FROM (
+						SELECT DISTINCT ON("order"."status") "order"."status", COUNT(*) as "count"
+						FROM "order"
+						WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ?
+						GROUP BY "order"."status"
+						ORDER BY "order"."status" ASC
+					)
+					),
+					"category_facets" AS (
+					SELECT jsonb_agg(jsonb_build_object('value', "category", 'count', "count")) AS "category"
+					FROM (
+						SELECT DISTINCT ON("order"."category") "order"."category", COUNT(*) as "count"
+						FROM "order"
+						WHERE "order"."status" IS DISTINCT FROM ?
+						GROUP BY "order"."category"
+						ORDER BY "order"."category" ASC
+					)
+					),
+					"order_date_facets" AS (
+					SELECT json_build_object(
+						'min', MIN("order_date"),
+						'max', MAX("order_date")
+					) AS "order_date"
+					FROM "order"
+					WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ?
+					),
+					"order_time_facets" AS (
+					SELECT json_build_object(
+						'min', MIN("order_time"),
+						'max', MAX("order_time")
+					) AS "order_time"
+					FROM "order"
+					WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ?
+					),
+					"duration_to_purchase_facets" AS (
+					SELECT json_build_object(
+						'min', MIN("duration_to_purchase"),
+						'max', MAX("duration_to_purchase"),
+						'avg', AVG("duration_to_purchase")
+					) AS "duration_to_purchase"
+					FROM "order"
+					WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ?
+					)
+					SELECT json_build_object(
+					'id', "id_facets"."id",
+					'quantity', "quantity_facets"."quantity",
+					'price', "price_facets"."price", 
+					'status', "status_facets"."status",
+					'category', "category_facets"."category",
+					'order_date', "order_date_facets"."order_date",
+					'order_time', "order_time_facets"."order_time",
+					'duration_to_purchase', "duration_to_purchase_facets"."duration_to_purchase"
+					)
+					FROM 
+						"id_facets", 
+						"quantity_facets", 
+						"price_facets", 
+						"status_facets", 
+						"category_facets", 
+						"order_date_facets", 
+						"order_time_facets", 
+						"duration_to_purchase_facets"
+				) AS "_facets",
+				"order".*, 
+				CASE WHEN LEAD("order"."id") OVER (ORDER BY "order"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(
+					SELECT COUNT(DISTINCT "order"."id") 
+					FROM "order" 
+					WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ?
+				) AS totalCount
+				FROM "order"
+				WHERE "order"."category" IS NOT DISTINCT FROM ? AND "order"."status" IS DISTINCT FROM ?
+				ORDER BY "order"."id" ASC
+				LIMIT ?
+			`,
+		expectedArgs: []any{"Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", "Toys", "Cancelled", 10},
+	},
+	{
 		name: "set_lookup_relationships_create",
 		keelSchema: `
 			model Item {
@@ -3868,7 +4012,6 @@ func TestQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range testCases {
 		testCase := testCase
-
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()

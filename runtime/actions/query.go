@@ -285,6 +285,8 @@ type QueryBuilder struct {
 	returning []string
 	// The value for LIMIT.
 	limit *int
+	// The columns and clauses in GROUP BY.
+	groupBy []string
 	// The value for OFFSET.
 	offset *int
 	// The ordered slice of arguments for the SQL statement template.
@@ -365,6 +367,7 @@ func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 		filters:    []string{},
 		orderBy:    []*orderClause{},
 		limit:      nil,
+		groupBy:    []string{},
 		returning:  []string{},
 		args:       []any{},
 		writeValues: &Row{
@@ -536,6 +539,14 @@ func (query *QueryBuilder) Limit(limit int) {
 	query.limit = &limit
 }
 
+func (query *QueryBuilder) GroupBy(operand *QueryOperand) {
+	c := operand.toSqlOperandString(query)
+
+	if !lo.Contains(query.groupBy, c) {
+		query.groupBy = append(query.groupBy, c)
+	}
+}
+
 // Set the OFFSET to a number.
 func (query *QueryBuilder) Offset(offset int) {
 	query.offset = &offset
@@ -548,6 +559,107 @@ func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 	if !lo.Contains(query.returning, c) {
 		query.returning = append(query.returning, c)
 	}
+}
+
+func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) error {
+	where, ok := input["where"].(map[string]any)
+	if !ok {
+		where = map[string]any{}
+	}
+
+	facetFields := proto.FacetFields(scope.Schema, scope.Action)
+	if len(facetFields) == 0 {
+		return nil
+	}
+
+	var sql string
+	selects := []string{}
+	ctes := []string{}
+	for i, field := range facetFields {
+		// Exclude this field from the where clause because
+		// when calculating the facet data
+		subWhere := map[string]any{}
+		for k, v := range where {
+			if k != field.Name {
+				subWhere[k] = v
+			}
+		}
+
+		column := strcase.ToSnake(field.Name)
+
+		facetQuery := NewQuery(scope.Model)
+
+		err := facetQuery.applyImplicitFiltersForList(scope, subWhere)
+		if err != nil {
+			return err
+		}
+
+		err = facetQuery.applyExpressionFilters(scope, where)
+		if err != nil {
+			return err
+		}
+
+		var statement *Statement
+		var sel string
+		switch field.Type.Type {
+		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT, proto.Type_TYPE_DURATION:
+			sel = fmt.Sprintf(`json_build_object(
+				'min', MIN(%s),
+				'max', MAX(%s),
+				'avg', AVG(%s)
+			) AS %s`, sqlQuote(column), sqlQuote(column), sqlQuote(column), sqlQuote(column))
+			facetQuery.SelectClause(sel)
+			statement = facetQuery.SelectStatement()
+		case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME:
+			sel = fmt.Sprintf(`json_build_object(
+				'min', MIN(%s),
+				'max', MAX(%s)
+			) AS %s`, sqlQuote(column), sqlQuote(column), sqlQuote(column))
+			facetQuery.SelectClause(sel)
+			statement = facetQuery.SelectStatement()
+		case proto.Type_TYPE_ID, proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM:
+			facetQuery.Select(Field(field.Name))
+			facetQuery.SelectClause("COUNT(*) as \"count\"")
+			facetQuery.AppendOrderBy(Field(field.Name), "ASC")
+			facetQuery.GroupBy(Field(field.Name))
+			subStatement := facetQuery.SelectStatement()
+
+			sel = fmt.Sprintf(`SELECT
+				jsonb_agg(
+					jsonb_build_object(
+						'value', %s,
+						'count', "count"
+					)
+				) AS %s
+				FROM (
+					%s
+				)`, sqlQuote(column), sqlQuote(column), subStatement.template)
+
+			statement = &Statement{
+				template: sel,
+				args:     subStatement.args,
+			}
+		default:
+			return fmt.Errorf("unsupported facet field type: %s", field.Type.Type)
+		}
+
+		sql += fmt.Sprintf("%s AS (%s)", sqlQuote(fmt.Sprintf("%s_facets", column)), statement.template)
+		if i < len(facetFields)-1 {
+			sql += ", "
+		} else {
+			sql += " "
+		}
+
+		ctes = append(ctes, sqlQuote(fmt.Sprintf("%s_facets", column)))
+
+		query.args = append(query.args, statement.args...)
+
+		selects = append(selects, fmt.Sprintf("'%s', %s.%s", column, sqlQuote(fmt.Sprintf("%s_facets", column)), sqlQuote(column)))
+	}
+
+	query.SelectClause(fmt.Sprintf("(WITH %s SELECT json_build_object(%s) FROM %s) AS \"_facets\"", sql, strings.Join(selects, ", "), strings.Join(ctes, ", ")))
+
+	return nil
 }
 
 // Apply pagination filters to the query.
@@ -575,10 +687,12 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// We add a subquery to the select list that fetches the total count of records
 	// matching the constraints specified by the main query without the offset/limit applied
 	// This is actually more performant than COUNT(*) OVER() [window function]
-	totalResults := fmt.Sprintf("(%s) AS totalCount", query.countQuery())
+	countQuery, args := query.countQuery()
+	totalResults := fmt.Sprintf("(%s) AS totalCount", countQuery)
 	query.SelectClause(totalResults)
+
 	// Because we are essentially performing the same query again within the subquery, we need to duplicate the query parameters again as they will be used twice in the course of the whole query
-	query.args = append(query.args, query.args...)
+	query.args = append(query.args, args...)
 
 	// if we have offset pagination..
 	if page.OffsetPagination() {
@@ -678,10 +792,11 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 	return nil
 }
 
-func (query *QueryBuilder) countQuery() string {
+func (query *QueryBuilder) countQuery() (string, []any) {
 	selection := "COUNT("
 	joins := ""
 	filters := ""
+
 	if len(query.distinctOn) > 0 {
 		distinctFields := strings.Join(query.distinctOn, ", ")
 		if len(query.distinctOn) > 1 {
@@ -704,13 +819,17 @@ func (query *QueryBuilder) countQuery() string {
 		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
 	}
 
+	// This is a bit gross as we are assuming the previous X args are the ones used in the where condition
+	argCount := strings.Count(filters, "?")
+	args := query.args[len(query.args)-argCount:]
+
 	sql := fmt.Sprintf("SELECT %s FROM %s %s %s",
 		selection,
 		sqlQuote(query.table),
 		joins,
 		filters)
 
-	return sql
+	return sql, args
 }
 
 // Generates an executable SELECT statement with the list of arguments.
@@ -720,6 +839,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	filters := ""
 	orderBy := ""
 	limit := ""
+	groupBy := ""
 	offset := ""
 
 	if len(query.distinctOn) > 0 {
@@ -752,6 +872,10 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		orderBy = fmt.Sprintf("ORDER BY %s", strings.Join(orderByClausesAsSql, ", "))
 	}
 
+	if len(query.groupBy) > 0 {
+		groupBy = fmt.Sprintf("GROUP BY %s", strings.Join(query.groupBy, ", "))
+	}
+
 	if query.limit != nil {
 		limit = "LIMIT ?"
 		query.args = append(query.args, *query.limit)
@@ -762,12 +886,13 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		query.args = append(query.args, *query.offset)
 	}
 
-	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s %s",
+	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s %s %s",
 		distinctOn,
 		selection,
 		sqlQuote(query.table),
 		joins,
 		filters,
+		groupBy,
 		orderBy,
 		limit,
 		offset)
@@ -1171,7 +1296,9 @@ func (statement *Statement) Execute(ctx context.Context) (int, error) {
 	return int(result.RowsAffected), nil
 }
 
-type Rows = []map[string]interface{}
+type Rows = []map[string]any
+
+type ResultInfo map[string]any
 
 type PageInfo struct {
 	// Count returns the number of rows returned for the current page
@@ -1209,20 +1336,30 @@ func (pi *PageInfo) ToMap() map[string]any {
 	return r
 }
 
+func (ri *ResultInfo) ToMap() map[string]any {
+	res := map[string]any{}
+
+	for k, v := range *ri {
+		res[k] = v
+	}
+
+	return res
+}
+
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
-func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows, *PageInfo, error) {
+func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows, *ResultInfo, *PageInfo, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	result, err := database.ExecuteQuery(ctx, statement.template, statement.args...)
 	if err != nil {
-		return nil, nil, toRuntimeError(err)
+		return nil, nil, nil, toRuntimeError(err)
 	}
 
+	var resultInfo ResultInfo
 	rows := result.Rows
-	returnedCount := len(result.Rows)
 
 	// Sort out the hasNextPage value, and clean up the response.
 	hasNextPage := false
@@ -1234,6 +1371,8 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 	if page != nil && page.IsBackwards() {
 		rows = lo.Reverse(rows)
 	}
+
+	returnedCount := len(rows)
 	if returnedCount > 0 {
 		last := rows[returnedCount-1]
 		pageNumber = page.PageNumber()
@@ -1244,9 +1383,6 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 			totalCount = last["totalcount"].(int64)
 
 			for i, row := range rows {
-				delete(row, "hasnext")
-				delete(row, "totalcount")
-
 				if i == 0 {
 					startCursor, _ = row["id"].(string)
 				}
@@ -1256,8 +1392,24 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 			}
 		}
 
-		// TODO: only do this if we know auditing was added
+		facets := rows[0]["_facets"]
+		if facets != nil {
+			if err := json.Unmarshal([]byte(facets.(string)), &resultInfo); err != nil {
+				return nil, nil, nil, fmt.Errorf("failed to parse facets data: %w", err)
+			} else {
+				for k, v := range resultInfo {
+					if strcase.ToLowerCamel(k) != k {
+						resultInfo[strcase.ToLowerCamel(k)] = v
+						delete(resultInfo, k)
+					}
+				}
+			}
+		}
+
 		for _, row := range rows {
+			delete(row, "hasnext")
+			delete(row, "totalcount")
+			delete(row, "_facets")
 			delete(row, setIdentityIdAlias)
 			delete(row, setTraceIdAlias)
 		}
@@ -1320,10 +1472,10 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 							return fi, nil
 						})
 					default:
-						return nil, nil, fmt.Errorf("missing parsing implementation for array type %s", f.Type.Type)
+						return nil, nil, nil, fmt.Errorf("missing parsing implementation for array type %s", f.Type.Type)
 					}
 					if err != nil {
-						return nil, nil, err
+						return nil, nil, nil, err
 					}
 				} else {
 					switch f.Type.Type {
@@ -1338,19 +1490,19 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 						}
 					}
 					if err != nil {
-						return nil, nil, err
+						return nil, nil, nil, err
 					}
 				}
 			}
 		}
 	}
 
-	return toLowerCamelMaps(rows), pageInfo, nil
+	return toLowerCamelMaps(rows), &resultInfo, pageInfo, nil
 }
 
 // Execute the SQL statement against the database and expects a single row, returns the single row or nil if no data is found.
 func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any, error) {
-	results, pageInfo, err := statement.ExecuteToMany(ctx, nil)
+	results, _, pageInfo, err := statement.ExecuteToMany(ctx, nil)
 	if err != nil {
 		return nil, err
 	}

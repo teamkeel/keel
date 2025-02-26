@@ -143,6 +143,7 @@ const (
 	AttributeOn         = "on"
 	AttributeEmbed      = "embed"
 	AttributeComputed   = "computed"
+	AttributeFacet      = "facet"
 )
 
 const (

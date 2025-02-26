@@ -27,6 +27,11 @@ func getComputedFunctions(database db.Database) ([]*FunctionRow, error) {
 	return rows, database.GetDB().Raw(computedFunctionsQuery).Scan(&rows).Error
 }
 
+func getIndexes(database db.Database) ([]*IndexRow, error) {
+	rows := []*IndexRow{}
+	return rows, database.GetDB().Raw(indexesQuery).Scan(&rows).Error
+}
+
 var (
 	//go:embed columns.sql
 	columnsQuery string
@@ -39,6 +44,9 @@ var (
 
 	//go:embed computed_functions.sql
 	computedFunctionsQuery string
+
+	//go:embed indexes.sql
+	indexesQuery string
 )
 
 type ColumnRow struct {
@@ -77,7 +85,7 @@ type ConstraintRow struct {
 }
 
 type TriggerRow struct {
-	// company_employee_delete
+	// e.g. company_employee_delete
 	TriggerName string `json:"trigger_name"`
 	// e.g. company_employee
 	TableName string `json:"table_name"`
@@ -91,4 +99,17 @@ type TriggerRow struct {
 
 type FunctionRow struct {
 	RoutineName string `json:"routine_name"`
+}
+
+type IndexRow struct {
+	// e.g. company_employee
+	TableName string `json:"table_name"`
+	// e.g. name
+	ColumnName string `json:"column_name"`
+	// e.g. idx_company_employee__name
+	IndexName string `json:"index_name"`
+	// e.g. false
+	IsUnique bool `json:"is_unique"`
+	// e.g. false
+	IsPrimary bool `json:"is_primary"`
 }

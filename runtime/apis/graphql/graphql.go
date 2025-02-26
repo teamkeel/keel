@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/iancoleman/strcase"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -414,7 +415,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						return nil, err
 					}
 
-					results, pageInfo, err := query.
+					results, _, pageInfo, err := query.
 						SelectStatement().
 						ExecuteToMany(ctx, &page)
 					if err != nil {
@@ -514,7 +515,8 @@ func (mk *graphqlSchemaBuilder) addAction(
 	case proto.ActionType_ACTION_TYPE_LIST:
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
-		field.Type = mk.makeConnectionType(modelType)
+		resultInfo := mk.makeResultInfoType(action)
+		field.Type = mk.makeConnectionType(modelType, resultInfo)
 		mk.query.AddFieldConfig(action.Name, field)
 	case proto.ActionType_ACTION_TYPE_READ:
 		responseMessage := schema.FindMessage(action.ResponseMessageName)
@@ -551,7 +553,26 @@ func (mk *graphqlSchemaBuilder) addAction(
 	return nil
 }
 
-func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) graphql.Output {
+func (mk *graphqlSchemaBuilder) makeResultInfoType(action *proto.Action) graphql.Output {
+	facetFields := proto.FacetFields(mk.proto, action)
+	if len(facetFields) == 0 {
+		return nil
+	}
+
+	fields := graphql.Fields{}
+	for _, field := range facetFields {
+		fields[field.Name] = &graphql.Field{
+			Type: protoTypeToFacetType[field.Type.Type],
+		}
+	}
+
+	return graphql.NewObject(graphql.ObjectConfig{
+		Name:   fmt.Sprintf("%sResultInfo", strcase.ToCamel(action.Name)),
+		Fields: fields,
+	})
+}
+
+func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output, resultInfo graphql.Output) graphql.Output {
 	if out, found := mk.types[fmt.Sprintf("connection-%s", itemType.Name())]; found {
 		return graphql.NewNonNull(out)
 	}
@@ -582,6 +603,12 @@ func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) grap
 			},
 		},
 	})
+
+	if resultInfo != nil {
+		connection.AddFieldConfig("resultInfo", &graphql.Field{
+			Type: resultInfo,
+		})
+	}
 
 	mk.types[fmt.Sprintf("connection-%s", itemType.Name())] = connection
 
@@ -731,7 +758,7 @@ func (mk *graphqlSchemaBuilder) inputTypeForModelField(field *proto.Field) (in g
 
 	if field.Type.Repeated {
 		if field.Type.Type == proto.Type_TYPE_MODEL {
-			in = mk.makeConnectionType(in)
+			in = mk.makeConnectionType(in, nil)
 		} else {
 			in = graphql.NewList(in)
 			in = graphql.NewNonNull(in)
@@ -766,7 +793,7 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 
 	if field.Type.Repeated {
 		if field.Type.Type == proto.Type_TYPE_MODEL {
-			out = mk.makeConnectionType(out)
+			out = mk.makeConnectionType(out, nil)
 		} else {
 			out = graphql.NewList(out)
 		}

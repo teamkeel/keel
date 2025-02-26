@@ -1,0 +1,66 @@
+model Order {
+    fields {
+        price Decimal
+        quantity Number
+        customer Customer
+        category Category
+    }
+
+    actions {
+        list listOrders(customer.id, customer.name, category) {
+            @facet(price, quantity, category)
+        }
+    }
+}
+
+model Customer {
+    fields {
+        name Text
+    }
+}
+
+enum Category {
+    Food
+    Electronics
+    Books
+}
+
+
+===
+
+model Order {
+    fields {
+        price Decimal
+        quantity Number
+        customer Customer
+        category Category
+    }
+
+    actions {
+        list listOrders() {
+            @facet(price)
+        }
+    }
+}
+
+model Customer {
+    fields {
+        name Text
+    }
+}
+
+enum Category {
+    Food
+    Electronics
+    Books
+}
+
+===
+
+DROP INDEX IF EXISTS "customer__name__idx";
+DROP INDEX IF EXISTS "order__category__idx";
+DROP INDEX IF EXISTS "order__quantity__idx";
+
+===
+
+[]

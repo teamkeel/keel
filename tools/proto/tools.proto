@@ -173,6 +173,8 @@ message ResponseFieldConfig {
 		DEFAULT = 0;
 		// Fields giving pagination info (e.g. cursor, pageSize, etc)
 		PAGINATION = 1;
+		// Fields with aggregated facet data
+		FACETS = 2;
 	}
 	
 	string id = 1;

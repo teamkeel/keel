@@ -82,7 +82,11 @@ test("client - delete action", async () => {
 
 test("client - list action", async () => {
   for (let i = 0; i < 101; i++) {
-    await client.api.mutations.createPost({ title: "Post " + i });
+    await client.api.mutations.createPost({
+      title: "Post " + i,
+      category: Category.Food,
+      views: i,
+    });
   }
 
   const result = await client.api.queries.listPosts({
@@ -94,6 +98,14 @@ test("client - list action", async () => {
   expect(result.data?.pageInfo.hasNextPage).toBeTruthy();
   expect(result.data?.pageInfo.startCursor).not.toBeNull();
   expect(result.data?.pageInfo.endCursor).not.toBeNull();
+
+  expect(result.data?.resultInfo.category).toEqual([
+    { value: "Food", count: 101 },
+  ]);
+
+  expect(result.data?.resultInfo.views.min).toEqual(0);
+  expect(result.data?.resultInfo.views.max).toEqual(100);
+  expect(result.data?.resultInfo.views.avg).toEqual(50);
 });
 
 test("client - list action with paging", async () => {

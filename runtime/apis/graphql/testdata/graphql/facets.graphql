@@ -1,0 +1,164 @@
+type Query {
+  _health: Boolean
+  listOrders(input: ListOrdersInput): OrderConnection!
+}
+
+type Mutation {
+  createOrder(input: CreateOrderInput!): Order!
+}
+
+input CreateOrderInput {
+  category: String!
+  durationToPurchase: String
+  orderDate: ISO8601
+  orderTime: ISO8601
+  price: Float!
+  quantity: Int!
+  status: Status!
+}
+
+input DecimalQueryInput {
+  equals: Float
+  greaterThan: Float
+  greaterThanOrEquals: Float
+  lessThan: Float
+  lessThanOrEquals: Float
+  notEquals: Float
+  oneOf: [Float]
+}
+
+input ListOrdersInput {
+  after: String
+  before: String
+  first: Int
+  last: Int
+  limit: Int
+  offset: Int
+  where: ListOrdersWhere
+}
+
+input ListOrdersWhere {
+  category: StringQueryInput
+  price: DecimalQueryInput
+}
+
+input StringQueryInput {
+  contains: String
+  endsWith: String
+  equals: String
+  notEquals: String
+  oneOf: [String]
+  startsWith: String
+}
+
+type Date {
+  formatted(format: String!): String!
+  iso8601: String!
+}
+
+type DateFacet {
+  max: Date!
+  min: Date!
+}
+
+type DecimalFacet {
+  avg: Float!
+  max: Float!
+  min: Float!
+}
+
+type Duration {
+  iso8601: String!
+}
+
+type DurationFacet {
+  avg: Duration!
+  max: Duration!
+  min: Duration!
+}
+
+type EnumFacet {
+  count: Int!
+  value: String!
+}
+
+type IDFacet {
+  count: Int!
+  value: String!
+}
+
+type ListOrdersResultInfo {
+  category: [TextFacet]
+  durationToPurchase: DurationFacet
+  id: [IDFacet]
+  orderDate: DateFacet
+  orderTime: TimestampFacet
+  price: DecimalFacet
+  quantity: NumberFacet
+  status: [EnumFacet]
+}
+
+type NumberFacet {
+  avg: Float!
+  max: Int!
+  min: Int!
+}
+
+type Order {
+  category: String!
+  createdAt: Timestamp!
+  durationToPurchase: Duration
+  id: ID!
+  orderDate: Date
+  orderTime: Timestamp
+  price: Float!
+  quantity: Int!
+  status: Status!
+  updatedAt: Timestamp!
+}
+
+type OrderConnection {
+  edges: [OrderEdge!]!
+  pageInfo: PageInfo!
+  resultInfo: ListOrdersResultInfo
+}
+
+type OrderEdge {
+  node: Order!
+}
+
+type PageInfo {
+  count: Int!
+  endCursor: String!
+  hasNextPage: Boolean!
+  pageNumber: Int
+  startCursor: String!
+  totalCount: Int!
+}
+
+type TextFacet {
+  count: Int!
+  value: String!
+}
+
+type Timestamp {
+  formatted(format: String!): String!
+  fromNow: String!
+  iso8601: String!
+  seconds: Int!
+}
+
+type TimestampFacet {
+  max: Timestamp!
+  min: Timestamp!
+}
+
+enum Status {
+  Cancelled
+  Complete
+  InProgress
+}
+
+scalar Any
+
+scalar ISO8601

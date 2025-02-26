@@ -395,6 +395,7 @@ func getActionCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) []*C
 			parser.AttributeSortable,
 			parser.AttributeFunction,
 			parser.AttributeEmbed,
+			parser.AttributeFacet,
 		})
 	}
 

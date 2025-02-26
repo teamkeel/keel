@@ -95,7 +95,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 				column: casing.ToSnake(foreignKeyField),
 			})
 		stmt := dbQuery.SelectStatement()
-		result, _, err := stmt.ExecuteToMany(ctx, nil)
+		result, _, _, err := stmt.ExecuteToMany(ctx, nil)
 		if err != nil {
 			return nil, fmt.Errorf("executing query to many: %w", err)
 		}

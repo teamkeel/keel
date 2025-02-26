@@ -74,6 +74,7 @@ var attributeLocations = map[string][]string{
 		parser.AttributeSortable,
 		parser.AttributeFunction,
 		parser.AttributeEmbed,
+		parser.AttributeFacet,
 	},
 	parser.KeywordJob: {
 		parser.AttributePermission,

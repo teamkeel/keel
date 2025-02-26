@@ -2114,6 +2114,11 @@ func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoAction
 				}
 				protoAction.OrderBy = append(protoAction.OrderBy, orderBy)
 			}
+		case parser.AttributeFacet:
+			for _, arg := range attribute.Arguments {
+				expr := arg.Expression.String()
+				protoAction.Facets = append(protoAction.Facets, expr)
+			}
 		}
 	}
 }
