@@ -1,0 +1,3 @@
+routes {
+    get("/my/route", myRouteHandler)
+}
