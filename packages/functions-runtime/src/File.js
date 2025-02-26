@@ -34,7 +34,7 @@ const s3Client = (() => {
     // By impleenting a full resolver we can force it to be the endpoint we want.
     endpointProvider: () => {
       return {
-        url: URL.parse(endpoint),
+        url: new URL(endpoint),
       };
     },
   });
