@@ -2193,7 +2193,8 @@ model Author {
 }
 model Book {
 	fields {
-		author Author
+		author Author @relation(books)
+		coAuthor Author?
 	}
 }`
 	expected := `
@@ -2213,6 +2214,11 @@ const tableConfigMap = {
 	"book": {
 		"author": {
 			"foreignKey": "author_id",
+			"referencesTable": "author",
+			"relationshipType": "belongsTo"
+		},
+		"co_author": {
+			"foreignKey": "co_author_id",
 			"referencesTable": "author",
 			"relationshipType": "belongsTo"
 		}

@@ -1157,7 +1157,7 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 				tableConfigMap[casing.ToSnake(model.Name)] = tableConfig
 			}
 
-			tableConfig[field.Name] = relationshipConfig
+			tableConfig[casing.ToSnake(field.Name)] = relationshipConfig
 		}
 	}
 

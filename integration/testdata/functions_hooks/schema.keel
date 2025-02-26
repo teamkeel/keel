@@ -1,6 +1,7 @@
 model Book {
     fields {
-        author Author?
+        author Author? @relation(books)
+        coAuthor Author?
         title Text
         published Boolean @default(false)
         cover File?
@@ -11,7 +12,7 @@ model Book {
         create createBookBeforeWriteSync() with (title) @function
         create createBookAfterWrite() with (title, review: Text) @function
         create createBookAfterWriteErrorRollback() with (title) @function
-        create createBookWithAuthor() with (author.id, title) @function
+        create createBookWithAuthor() with (author.id, coAuthor.id, title) @function
         create createBookAndAuthor() with (author.name, title) @function
         create createBookBeforeWriteWithCover() with (title, cover) @function
         get getBookBeforeQueryFirstOrNull(title: Text) @function
