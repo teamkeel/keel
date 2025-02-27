@@ -1,8 +1,9 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "environment": {
-      "type": [ "array", "null" ],
+      "type": ["array", "null"],
       "items": {
         "type": "object",
         "properties": {
@@ -20,7 +21,7 @@
       }
     },
     "secrets": {
-      "type": [ "array", "null" ],
+      "type": ["array", "null"],
       "items": {
         "type": "object",
         "properties": {
@@ -38,7 +39,7 @@
       "type": "boolean"
     },
     "auth": {
-      "type": [ "object", "null" ],
+      "type": ["object", "null"],
       "properties": {
         "redirectUrl": {
           "type": "string",
@@ -128,7 +129,7 @@
       "additionalProperties": false
     },
     "console": {
-      "type": [ "object", "null" ],
+      "type": ["object", "null"],
       "properties": {
         "api": {
           "type": "string"
@@ -138,6 +139,71 @@
     },
     "disableKeelAuth": {
       "type": "boolean"
+    },
+    "deploy": {
+      "type": "object",
+      "properties": {
+        "projectName": {
+          "type": "string",
+          "pattern": "^[a-z][a-z-]+$",
+          "description": "Project name in slug format. Only lower-case letters and dashes are allowed."
+        },
+        "region": {
+          "type": "string",
+          "pattern": "^[a-z]{2}-[a-z]+-\\d{1}$",
+          "description": "The AWS region to deploy to"
+        },
+        "database": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["rds", "external"]
+            },
+            "rds": {
+              "type": "object",
+              "properties": {
+                "instance": {
+                  "type": "string",
+                  "format": "rds-instance-type"
+                },
+                "multiAz": {
+                  "type": "boolean"
+                },
+                "storage": {
+                  "type": "number",
+                  "minimum": 20,
+                  "maximum": 65536
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["provider"],
+          "additionalProperties": false
+        },
+        "jobs": {
+          "type": "object",
+          "properties": {
+            "webhookUrl": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "additionalProperties": false
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "collector": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["projectName", "region"],
+      "additionalProperties": false
     }
   },
 

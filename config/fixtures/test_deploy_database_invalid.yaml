@@ -1,0 +1,15 @@
+# deploy.database.provider: deploy.database.provider must be one of the following: "rds", "external"
+# deploy.database.rds: can only be provided if deploy.database.provider is 'rds'
+# deploy.database.rds.instance: Does not match format 'rds-instance-type'
+# deploy.database.rds.storage: Must be greater than or equal to 20
+# deploy.database.rds: Additional property username is not allowed
+
+deploy:
+  projectName: my-project
+  region: us-east-2
+  database:
+    provider: sqlite
+    rds:
+      instance: big
+      storage: 15
+      username: foo

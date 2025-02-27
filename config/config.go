@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -38,6 +37,7 @@ type ProjectConfig struct {
 	Secrets       []Secret              `yaml:"secrets"`
 	Auth          AuthConfig            `yaml:"auth"`
 	Console       ConsoleConfig         `yaml:"console"`
+	Deploy        *DeployConfig         `yaml:"deploy,omitempty"`
 }
 
 func (p *ProjectConfig) GetEnvVars() map[string]string {
@@ -243,7 +243,7 @@ func parseAndValidate(data []byte, filename string) (*ProjectConfig, error) {
 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
-		log.Fatalf("Error validating JSON: %v", err)
+		return nil, err
 	}
 
 	errors := &ConfigErrors{}
@@ -283,6 +283,7 @@ var validators = []ValidationFunc{
 	validateUniqueNames,
 	validateReservedPrefixes,
 	validateAuthProviders,
+	validateDatabase,
 }
 
 func validateReservedPrefixes(c *ProjectConfig) []*ConfigError {

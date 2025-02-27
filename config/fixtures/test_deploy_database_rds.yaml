@@ -1,0 +1,9 @@
+deploy:
+  projectName: my-project
+  region: us-east-2
+  database:
+    provider: rds
+    rds:
+      storage: 50
+      multiAz: true
+      instance: db.t4g.medium

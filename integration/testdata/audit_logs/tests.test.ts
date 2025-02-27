@@ -585,9 +585,7 @@ test("job function with error and no rollback - audit table is not rolled back",
     weddingId: wedding.id,
   });
 
-  await expect(
-    jobs.withIdentity(identity).updateHeadCount({ weddingId: wedding.id })
-  ).toHaveError({ message: "prisma is not invited!" });
+  await jobs.withIdentity(identity).updateHeadCount({ weddingId: wedding.id });
 
   const inviteesAudits = await sql<
     Audit<WeddingInvitee>

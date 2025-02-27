@@ -1,0 +1,5 @@
+# deploy.region: Does not match pattern '^[a-z]{2}-[a-z]+-\d{1}$'
+
+deploy:
+  projectName: my-project
+  region: Frankfurt
