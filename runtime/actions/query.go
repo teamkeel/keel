@@ -633,7 +633,7 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 				) AS %s
 				FROM (
 					%s
-				)`, sqlQuote(column), sqlQuote(column), subStatement.template)
+				) AS %s`, sqlQuote(column), sqlQuote(column), subStatement.template, sqlQuote(fmt.Sprintf("%s_facets_base", column)))
 
 			statement = &Statement{
 				template: sel,
