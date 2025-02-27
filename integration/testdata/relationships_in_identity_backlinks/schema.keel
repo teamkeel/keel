@@ -24,7 +24,7 @@ model Account {
         // Accounts which I am not following yet
         list accountsNotFollowed() {
             @where(account.identity != ctx.identity)
-            @where(account.identity not in ctx.identity.primaryAccount.following.followee.identity)
+            @where(!(account.identity in ctx.identity.primaryAccount.following.followee.identity))
             @orderBy(username: asc)
         }
         // Accounts which are following me
@@ -35,7 +35,7 @@ model Account {
         // Accounts which are not following me yet
         list accountsNotFollowingMe() {
             @where(account.identity.id != ctx.identity.id)
-            @where(account.id not in ctx.identity.primaryAccount.followers.follower.id)
+            @where(!(account.id in ctx.identity.primaryAccount.followers.follower.id))
             @orderBy(username: asc)
         }
     }

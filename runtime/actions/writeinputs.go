@@ -7,51 +7,30 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
 // Updates the query with all set attributes defined on the action.
 func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
-	model := scope.Schema.FindModel(strcase.ToCamel("identity"))
-	ctxScope := NewModelScope(scope.Context, model, scope.Schema)
-	identityQuery := NewQuery(model)
-
-	identityId := ""
-	if auth.IsAuthenticated(scope.Context) {
-		identity, err := auth.GetIdentity(scope.Context)
-		if err != nil {
-			return err
-		}
-		identityId = identity[parser.FieldNameId].(string)
-	}
-
-	err := identityQuery.Where(IdField(), Equals, Value(identityId))
-	if err != nil {
-		return err
-	}
-
 	for _, setExpression := range scope.Action.SetExpressions {
 		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
 			return err
 		}
 
-		assignment, err := expression.ToAssignmentCondition()
+		lhs, rhs, err := expression.ToAssignmentExpression()
 		if err != nil {
 			return err
 		}
 
-		lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, assignment.LHS)
-		rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Action, assignment.RHS)
-
-		if !lhsResolver.IsModelDbColumn() {
-			return errors.New("lhs operand of assignment expression must be a model field")
+		target, err := resolve.AsIdent(lhs)
+		if err != nil {
+			return err
 		}
 
-		fragments, err := lhsResolver.NormalisedFragments()
+		ident, err := NormalisedFragments(scope.Schema, target.Fragments)
 		if err != nil {
 			return err
 		}
@@ -59,15 +38,15 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 		currRows := []*Row{query.writeValues}
 
 		// The model field to update.
-		field := fragments[len(fragments)-1]
-		targetsLessField := fragments[:len(fragments)-1]
+		field := ident[len(ident)-1]
+		targetsLessField := ident[:len(target.Fragments)-1]
 
 		// If we are associating (as opposed to creating) then rather update the foreign key
 		// i.e. person.employerId and not person.employer.id
-		isAssoc := targetAssociating(scope, fragments)
+		isAssoc := targetAssociating(scope, ident)
 		if isAssoc {
-			field = fmt.Sprintf("%sId", fragments[len(fragments)-2])
-			targetsLessField = fragments[:len(fragments)-2]
+			field = fmt.Sprintf("%sId", ident[len(ident)-2])
+			targetsLessField = ident[:len(target.Fragments)-2]
 		}
 
 		// Iterate through the fragments in the @set expression AND traverse the graph until we have a set of rows to update.
@@ -96,46 +75,14 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			currRows = nextRows
 		}
 
+		operand, err := resolve.RunCelVisitor(rhs, GenerateSelectQuery(scope.Context, scope.Schema, scope.Model, scope.Action, args))
+		if err != nil {
+			return err
+		}
+
 		// Set the field on all rows.
 		for _, row := range currRows {
-			if rhsResolver.IsModelDbColumn() {
-				rhsFragments, err := rhsResolver.NormalisedFragments()
-				if err != nil {
-					return err
-				}
-
-				row.values[field] = ExpressionField(rhsFragments, field)
-			} else if rhsResolver.IsContextDbColumn() {
-				// If this is a value from ctx that requires a database read (such as with identity backlinks),
-				// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
-				// from the current query builder.
-
-				fragments, err := rhsResolver.NormalisedFragments()
-				if err != nil {
-					return err
-				}
-
-				// Remove the ctx fragment
-				fragments = fragments[1:]
-
-				err = identityQuery.addJoinFromFragments(ctxScope, fragments)
-				if err != nil {
-					return err
-				}
-
-				selectField := ExpressionField(fragments[:len(fragments)-1], fragments[len(fragments)-1])
-
-				identityQuery.Select(selectField)
-
-				row.values[field] = InlineQuery(identityQuery, selectField)
-			} else if rhsResolver.IsContextField() || rhsResolver.IsLiteral() || rhsResolver.IsExplicitInput() || rhsResolver.IsImplicitInput() {
-				value, err := rhsResolver.ResolveValue(args)
-				if err != nil {
-					return err
-				}
-
-				row.values[field] = Value(value)
-			}
+			row.values[field] = operand
 		}
 	}
 	return nil

@@ -2,145 +2,118 @@ package parser
 
 import (
 	"errors"
-	"fmt"
+	"strings"
 
 	"github.com/alecthomas/participle/v2"
-	"github.com/samber/lo"
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/schema/node"
 )
 
 type Expression struct {
 	node.Node
-
-	Or []*OrExpression `@@ ("or" @@)*`
 }
 
-func (e *Expression) Conditions() []*Condition {
-	conds := []*Condition{}
+func (e *Expression) Parse(lex *lexer.PeekingLexer) error {
+	parenCount := 0
+	for {
+		t := lex.Peek()
 
-	for _, or := range e.Or {
-		for _, and := range or.And {
-			conds = append(conds, and.Condition)
+		if t.EOF() {
+			e.EndPos = t.Pos
+			return nil
+		}
 
-			if and.Expression != nil {
-				conds = append(conds, and.Expression.Conditions()...)
+		if t.Value == ")" || t.Value == "]" {
+			parenCount--
+			if parenCount < 0 {
+				e.EndPos = t.Pos
+				return nil
 			}
 		}
-	}
 
-	ret := []*Condition{}
-	for _, cond := range conds {
-		if cond != nil {
-			ret = append(ret, cond)
+		if t.Value == "(" || t.Value == "[" {
+			parenCount++
+		}
+
+		if t.Value == "," && parenCount == 0 {
+			e.EndPos = t.Pos
+			return nil
+		}
+
+		t = lex.Next()
+		e.Tokens = append(e.Tokens, *t)
+
+		if len(e.Tokens) == 1 {
+			e.Pos = t.Pos
 		}
 	}
-	return ret
 }
 
-type OrExpression struct {
-	node.Node
-
-	And []*ConditionWrap `@@ ("and" @@)*`
-}
-
-type ConditionWrap struct {
-	node.Node
-
-	Expression *Expression `( "(" @@ ")"`
-	Condition  *Condition  `| @@ )`
-}
-
-type Condition struct {
-	node.Node
-
-	LHS      *Operand  `@@`
-	Operator *Operator `(@@`
-	RHS      *Operand  `@@ )?`
-}
-
-var (
-	AssignmentCondition = "assignment"
-	LogicalCondition    = "logical"
-	ValueCondition      = "value"
-	UnknownCondition    = "unknown"
-)
-
-func (c *Condition) Type() string {
-	if c.Operator == nil && c.RHS == nil && c.LHS != nil {
-		return ValueCondition
-	}
-
-	if lo.Contains(AssignmentOperators, c.Operator.Symbol) {
-		return AssignmentCondition
-	}
-
-	if lo.Contains(LogicalOperators, c.Operator.Symbol) {
-		return LogicalCondition
-	}
-
-	return UnknownCondition
-}
-
-type Operator struct {
-	node.Node
-
-	// Todo need to figure out how we can share with the consts below
-	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=")`
-}
-
-func (o *Operator) ToString() string {
-	if o == nil {
+func (e *Expression) String() string {
+	if len(e.Tokens) == 0 {
 		return ""
 	}
 
-	return o.Symbol
-}
+	var result strings.Builder
+	firstToken := e.Tokens[0]
+	currentLine := e.Pos.Line
+	currentColumn := e.Pos.Column
 
-var (
-	OperatorEquals               = "=="
-	OperatorAssignment           = "="
-	OperatorNotEquals            = "!="
-	OperatorGreaterThanOrEqualTo = ">="
-	OperatorLessThanOrEqualTo    = "<="
-	OperatorLessThan             = "<"
-	OperatorGreaterThan          = ">"
-	OperatorIn                   = "in"
-	OperatorNotIn                = "notin"
-	OperatorIncrement            = "+="
-	OperatorDecrement            = "-="
-)
-
-var AssignmentOperators = []string{
-	OperatorAssignment,
-}
-
-var LogicalOperators = []string{
-	OperatorEquals,
-	OperatorNotEquals,
-	OperatorGreaterThan,
-	OperatorGreaterThanOrEqualTo,
-	OperatorLessThan,
-	OperatorLessThanOrEqualTo,
-	OperatorIn,
-	OperatorNotIn,
-}
-
-func (condition *Condition) ToString() string {
-	result := ""
-
-	if condition == nil {
-		panic("condition is nil")
+	// Handle first token
+	if firstToken.Pos.Line > currentLine {
+		// Add necessary newlines
+		result.WriteString(strings.Repeat("\n", firstToken.Pos.Line-currentLine))
+		// Reset column position for new line
+		currentColumn = 0
 	}
-	if condition.LHS != nil {
-		result += condition.LHS.ToString()
+	// Add spaces to reach the correct column position
+	if firstToken.Pos.Column > currentColumn {
+		result.WriteString(strings.Repeat(" ", firstToken.Pos.Column-currentColumn))
 	}
+	result.WriteString(firstToken.Value)
+	currentLine = firstToken.Pos.Line
+	currentColumn = firstToken.Pos.Column + len(firstToken.Value)
 
-	if condition.Operator != nil && condition.RHS != nil {
-		result += fmt.Sprintf(" %s ", condition.Operator.Symbol)
-		result += condition.RHS.ToString()
+	// Handle subsequent tokens
+	for i := 1; i < len(e.Tokens); i++ {
+		curr := e.Tokens[i]
+
+		if curr.Pos.Line > currentLine {
+			// Add necessary newlines
+			result.WriteString(strings.Repeat("\n", curr.Pos.Line-currentLine))
+			// Reset column position for new line
+			currentColumn = 0
+		}
+
+		// Add spaces to reach the correct column position
+		if curr.Pos.Column > currentColumn {
+			result.WriteString(strings.Repeat(" ", curr.Pos.Column-currentColumn))
+		}
+
+		result.WriteString(curr.Value)
+		currentLine = curr.Pos.Line
+		currentColumn = curr.Pos.Column + len(curr.Value)
 	}
 
-	return result
+	return result.String()
+}
+
+// CleanString removes new lines and unnecessary whitespaces, preserving single spaces between tokens
+func (e *Expression) CleanString() string {
+	v := ""
+	for i, t := range e.Tokens {
+		if i == 0 {
+			v += t.Value
+			continue
+		}
+		last := e.Tokens[i-1]
+		hasWhitespace := (last.Pos.Offset + len(last.Value)) < t.Pos.Offset
+		if hasWhitespace {
+			v += " "
+		}
+		v += t.Value
+	}
+	return v
 }
 
 func ParseExpression(source string) (*Expression, error) {
@@ -157,110 +130,64 @@ func ParseExpression(source string) (*Expression, error) {
 	return expr, nil
 }
 
-func (expr *Expression) ToString() (string, error) {
-	result := ""
+type ExpressionIdent struct {
+	node.Node
 
-	for i, orExpr := range expr.Or {
-		if i > 0 {
-			result += " or "
+	Fragments []string
+}
+
+func (ident ExpressionIdent) String() string {
+	return strings.Join(ident.Fragments, ".")
+}
+
+var ErrInvalidAssignmentExpression = errors.New("expression is not a valid assignment")
+
+// ToAssignmentExpression splits an assignment expression into two separate expressions.
+// E.g. the expression `post.age = 1 + 1` will become `post.age` and `1 + 1`
+func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, error) {
+	lhs := Expression{}
+	lhs.Pos = expr.Pos
+	lhs.Tokens = []lexer.Token{}
+	assignmentAt := 0
+	for i, token := range expr.Tokens {
+		if token.Value == "=" {
+			if i == 0 {
+				return nil, nil, ErrInvalidAssignmentExpression
+			}
+
+			if i == len(expr.Tokens)-1 {
+				return nil, nil, ErrInvalidAssignmentExpression
+			}
+
+			if expr.Tokens[i-1].Type > 0 || (expr.Tokens[i+1].Type > 0 && expr.Tokens[i+1].Type != 91) {
+				return nil, nil, ErrInvalidAssignmentExpression
+			}
+
+			assignmentAt = i
+			lhs.EndPos = token.Pos
+			break
 		}
+		lhs.Tokens = append(lhs.Tokens, token)
+	}
 
-		for j, andExpr := range orExpr.And {
-			if j > 0 {
-				result += " and "
-			}
+	if assignmentAt == 0 {
+		return nil, nil, ErrInvalidAssignmentExpression
+	}
 
-			if andExpr.Expression != nil {
-				r, err := andExpr.Expression.ToString()
-				if err != nil {
-					return result, err
-				}
-				result += "(" + r + ")"
-				continue
-			}
+	if len(expr.Tokens) == assignmentAt+1 {
+		return nil, nil, ErrInvalidAssignmentExpression
+	}
 
-			result += andExpr.Condition.LHS.ToString()
-
-			op := andExpr.Condition.Operator
-
-			if op != nil && op.Symbol == "" {
-				continue
-			}
-
-			// special case for "not in"
-			if op != nil && op.Symbol == "notin" {
-				result += " not in "
-			} else if op != nil {
-				result += fmt.Sprintf(" %s ", op.Symbol)
-			}
-
-			if andExpr.Condition.RHS != nil {
-				result += andExpr.Condition.RHS.ToString()
-			}
+	rhs := Expression{}
+	rhs.Pos = expr.Tokens[assignmentAt+1].Pos
+	rhs.EndPos = expr.EndPos
+	rhs.Tokens = []lexer.Token{}
+	for i, token := range expr.Tokens {
+		if i < assignmentAt+1 {
+			continue
 		}
+		rhs.Tokens = append(rhs.Tokens, token)
 	}
 
-	return result, nil
-}
-
-func (expr *Expression) IsValue() bool {
-	v, _ := expr.ToValue()
-	return v != nil
-}
-
-var ErrNotValue = errors.New("expression is not a single value")
-
-func (expr *Expression) ToValue() (*Operand, error) {
-	if len(expr.Or) > 1 {
-		return nil, ErrNotValue
-	}
-
-	or := expr.Or[0]
-	if len(or.And) > 1 {
-		return nil, ErrNotValue
-	}
-	and := or.And[0]
-
-	if and.Expression != nil {
-		return nil, ErrNotValue
-	}
-
-	cond := and.Condition
-
-	if cond.Operator != nil && cond.Operator.Symbol != "" {
-		return nil, ErrNotValue
-	}
-
-	return cond.LHS, nil
-}
-
-var ErrNotAssignment = errors.New("expression is not using an assignment, e.g. a = b")
-
-func (expr *Expression) IsAssignment() bool {
-	v, _ := expr.ToAssignmentCondition()
-	return v != nil
-}
-
-func (expr *Expression) ToAssignmentCondition() (*Condition, error) {
-	if len(expr.Or) > 1 {
-		return nil, ErrNotAssignment
-	}
-
-	or := expr.Or[0]
-	if len(or.And) > 1 {
-		return nil, ErrNotAssignment
-	}
-
-	and := or.And[0]
-
-	if and.Expression != nil {
-		return nil, ErrNotAssignment
-	}
-	cond := and.Condition
-
-	if cond.Operator == nil || !lo.Contains(AssignmentOperators, cond.Operator.Symbol) {
-		return nil, ErrNotAssignment
-	}
-
-	return cond, nil
+	return &lhs, &rhs, nil
 }

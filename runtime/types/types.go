@@ -20,3 +20,11 @@ type Timestamp struct {
 func (t Timestamp) Value() (driver.Value, error) {
 	return t.Time, nil
 }
+
+type Duration struct {
+	Duration string
+}
+
+func (t Duration) Value() (driver.Value, error) {
+	return t.Duration, nil
+}

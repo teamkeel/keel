@@ -795,6 +795,22 @@
         },
         {
           "messageName": "ListAuthorsInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListAuthorsInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListAuthorsInput",
           "name": "orderBy",
           "type": {
             "type": "TYPE_UNION",
@@ -953,6 +969,22 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        },
+        {
+          "messageName": "ListReviewsInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListReviewsInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
         }
       ]
     },
@@ -1015,6 +1047,22 @@
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListBooksInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListBooksInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
           },
           "optional": true
         }

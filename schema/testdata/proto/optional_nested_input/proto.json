@@ -568,6 +568,22 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        },
+        {
+          "messageName": "ListByCompanyInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListByCompanyInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
         }
       ]
     },
@@ -647,6 +663,22 @@
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListByPreviousCompanyInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListByPreviousCompanyInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
           },
           "optional": true
         }
@@ -732,6 +764,22 @@
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListByCompanyOptionalInputsInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListByCompanyOptionalInputsInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
           },
           "optional": true
         }

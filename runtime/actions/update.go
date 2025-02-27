@@ -11,7 +11,7 @@ import (
 func Update(scope *Scope, input map[string]any) (res map[string]any, err error) {
 	// Attempt to resolve permissions early; i.e. before row-based database querying.
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
-	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, input, permissions)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func GenerateUpdateStatement(query *QueryBuilder, scope *Scope, input map[string
 		return nil, err
 	}
 
-	err = query.captureSetValues(scope, values)
+	err = query.captureSetValues(scope, input)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func GenerateUpdateStatement(query *QueryBuilder, scope *Scope, input map[string
 		where = map[string]any{}
 	}
 
-	err = query.applyImplicitFilters(scope, where)
+	err = query.ApplyImplicitFilters(scope, where)
 	if err != nil {
 		return nil, err
 	}

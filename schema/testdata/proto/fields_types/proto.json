@@ -82,6 +82,13 @@
         },
         {
           "modelName": "Foo",
+          "name": "j",
+          "type": {
+            "type": "TYPE_DURATION"
+          }
+        },
+        {
+          "modelName": "Foo",
           "name": "id",
           "type": {
             "type": "TYPE_ID"

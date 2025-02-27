@@ -17,6 +17,7 @@ message Schema {
     repeated Job jobs = 8;
     repeated Subscriber subscribers = 9;
     repeated Event events = 10;
+    repeated Route routes = 11;
 }
 
 message Model {
@@ -78,6 +79,10 @@ message Field {
     // and then Author has posts which is of type Post, on the Post.author field this
     // value will be "posts" and on the Author.posts field this value will be "author".
     google.protobuf.StringValue inverse_field_name = 12;
+
+    // If computed then this field will contain the expression that will be evaluated to
+    // determine the value of the field at runtime.
+    Expression computed_expression = 13;
 }
 
 message ForeignKeyInfo {
@@ -141,6 +146,9 @@ message Action {
 
     // Embedded data can be attached to the response message of built in actions (get, list).
     repeated string response_embeds = 13;
+
+    // Field names to facet on as defined with @facet in the schema.
+    repeated string facets = 14;
 }
 
 message Role {
@@ -377,6 +385,8 @@ enum Type {
     TYPE_FILE = 24;
     // A relative period expression string; e.g. `today/next year`
     TYPE_RELATIVE_PERIOD = 25;
+    // A time duration
+    TYPE_DURATION = 26;
 }
 
 enum OrderDirection {
@@ -427,4 +437,19 @@ message Event {
 
     // Action type (create, update or delete).
     ActionType action_type = 3;
+}
+
+enum HttpMethod {
+    HTTP_METHOD_UNKNOWN = 0;
+    HTTP_METHOD_GET = 1;
+    HTTP_METHOD_POST = 2;
+    HTTP_METHOD_PUT = 3;
+    HTTP_METHOD_DELETE = 4;
+    HTTP_METHOD_ALL = 5;
+}
+
+message Route {
+    HttpMethod method = 1;
+    string pattern = 2;
+    string handler = 3;
 }

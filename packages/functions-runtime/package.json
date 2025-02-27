@@ -19,22 +19,23 @@
     "vitest": "^0.34.6"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.637.0",
-    "@aws-sdk/credential-providers": "^3.637.0",
-    "@aws-sdk/s3-request-presigner": "^3.637.0",
-    "@neondatabase/serverless": "^0.9.4",
-    "@opentelemetry/api": "^1.7.0",
+    "@aws-sdk/client-s3": "~3.722.0",
+    "@aws-sdk/credential-providers": "~3.721.0",
+    "@aws-sdk/s3-request-presigner": "~3.722.0",
+    "@neondatabase/serverless": "^0.9.5",
+    "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.46.0",
-    "@opentelemetry/resources": "^1.19.0",
-    "@opentelemetry/sdk-trace-base": "^1.19.0",
-    "@opentelemetry/sdk-trace-node": "^1.19.0",
+    "@opentelemetry/resources": "^1.30.0",
+    "@opentelemetry/sdk-trace-base": "^1.30.0",
+    "@opentelemetry/sdk-trace-node": "^1.30.0",
     "change-case": "^4.1.2",
     "json-rpc-2.0": "^1.7.0",
     "ksuid": "^3.0.0",
-    "kysely": "^0.25.0",
-    "pg": "^8.11.3",
+    "kysely": "~0.27.5",
+    "pg": "^8.13.1",
+    "postgres-interval": "^4.0.2",
     "traceparent": "^1.0.0",
-    "ws": "^8.17.1"
+    "ws": "^8.18.0"
   },
   "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee"
 }

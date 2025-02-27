@@ -148,6 +148,13 @@ export class Core {
     refreshToken: this.config?.refreshTokenStore || new InMemoryStore(),
 
     /**
+     * A promise that resolves when the session is refreshed.
+     */
+    refreshingPromise: undefined as
+      | Promise<APIResult<AuthenticationResponse>>
+      | undefined,
+
+    /**
      * Returns data field set to the list of supported authentication providers and their SSO login URLs.
      * Returns error field if an unexpected error occurred.
      */
@@ -162,7 +169,7 @@ export class Core {
       });
 
       if (result.ok) {
-        return await result.json();
+        return { data: await result.json() };
       } else {
         return {
           error: {
@@ -317,10 +324,17 @@ export class Core {
         };
       }
 
-      const authResponse = await this.auth.requestToken({
-        grant_type: "refresh_token",
-        refresh_token: refreshToken,
-      });
+      // If refreshing already, wait for the existing refreshing promisee
+      if (!this.auth.refreshingPromise) {
+        this.auth.refreshingPromise = this.auth.requestToken({
+          grant_type: "refresh_token",
+          refresh_token: refreshToken,
+        });
+      }
+
+      const authResponse = await this.auth.refreshingPromise;
+
+      this.auth.refreshingPromise = undefined;
 
       if (authResponse.error) {
         return { error: authResponse.error };

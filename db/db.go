@@ -68,6 +68,11 @@ func New(ctx context.Context, connString string) (Database, error) {
 		return nil, err
 	}
 
+	// setting default intervalstyle to ISO_8601 for this connection.
+	if err := db.Exec(`SET "intervalstyle" = "iso_8601";`).Error; err != nil {
+		return nil, err
+	}
+
 	return &GormDB{db: db}, nil
 }
 

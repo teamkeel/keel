@@ -1,0 +1,34 @@
+model Author {
+    fields {
+        //expect-error:24:30:E011:field 'firstName' has an unrecognised attribute @facet
+        firstName Text @facet
+        surname Text
+    }
+
+    actions {
+        create createAuthor() with (firstName, surname) {
+            //expect-error:13:19:AttributeNotAllowedError:@facet can only be used on list actions
+            @facet(
+                firstName,
+                surname
+            )
+        }
+        list listAuthors() {
+            @facet(firstName)
+            //expect-error:13:19:AttributeNotAllowedError:@facet can only be defined once per action
+            @facet(surname)
+        }
+    }
+
+    actions {
+        list listAuthorsFn() {
+            @facet(
+                firstName,
+                surname
+            )
+        }
+    }
+
+    //expect-error:5:11:E011:model 'Author' has an unrecognised attribute @facet
+    @facet(surname)
+}

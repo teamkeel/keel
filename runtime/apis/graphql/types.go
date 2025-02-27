@@ -169,6 +169,10 @@ var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
 			Type:        graphql.NewNonNull(graphql.Int),
 			Description: "Total count of nodes across all pages.",
 		},
+		"pageNumber": &graphql.Field{
+			Type:        graphql.Int,
+			Description: "Total count of nodes across all pages.",
+		},
 		"count": &graphql.Field{
 			Type:        graphql.NewNonNull(graphql.Int),
 			Description: "Count of nodes on the current page.",
@@ -313,6 +317,99 @@ var dateType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
+var durationType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Duration",
+	Fields: graphql.Fields{
+		"iso8601": &graphql.Field{
+			Name:        "iso8601",
+			Description: "ISO8601 representation of the duration",
+			Type:        graphql.NewNonNull(graphql.String),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				return p.Source, nil
+			},
+		},
+	},
+})
+
+var idFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "IDFacet",
+	Fields: graphql.Fields{
+		"value": &graphql.Field{Type: graphql.NewNonNull(graphql.String)},
+		"count": &graphql.Field{Type: graphql.NewNonNull(graphql.Int)},
+	},
+})
+
+var textFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "TextFacet",
+	Fields: graphql.Fields{
+		"value": &graphql.Field{Type: graphql.NewNonNull(graphql.String)},
+		"count": &graphql.Field{Type: graphql.NewNonNull(graphql.Int)},
+	},
+})
+
+var enumFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "EnumFacet",
+	Fields: graphql.Fields{
+		"value": &graphql.Field{Type: graphql.NewNonNull(graphql.String)},
+		"count": &graphql.Field{Type: graphql.NewNonNull(graphql.Int)},
+	},
+})
+
+var numberFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "NumberFacet",
+	Fields: graphql.Fields{
+		"min": &graphql.Field{Type: graphql.NewNonNull(graphql.Int)},
+		"max": &graphql.Field{Type: graphql.NewNonNull(graphql.Int)},
+		"avg": &graphql.Field{Type: graphql.NewNonNull(graphql.Float)},
+	},
+})
+
+var decimalFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "DecimalFacet",
+	Fields: graphql.Fields{
+		"min": &graphql.Field{Type: graphql.NewNonNull(graphql.Float)},
+		"max": &graphql.Field{Type: graphql.NewNonNull(graphql.Float)},
+		"avg": &graphql.Field{Type: graphql.NewNonNull(graphql.Float)},
+	},
+})
+
+var timestampFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "TimestampFacet",
+	Fields: graphql.Fields{
+		"min": &graphql.Field{Type: graphql.NewNonNull(timestampType)},
+		"max": &graphql.Field{Type: graphql.NewNonNull(timestampType)},
+	},
+})
+
+var dateFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "DateFacet",
+	Fields: graphql.Fields{
+		"min": &graphql.Field{Type: graphql.NewNonNull(dateType)},
+		"max": &graphql.Field{Type: graphql.NewNonNull(dateType)},
+	},
+})
+
+var durationFacetType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "DurationFacet",
+	Fields: graphql.Fields{
+		"min": &graphql.Field{Type: graphql.NewNonNull(durationType)},
+		"max": &graphql.Field{Type: graphql.NewNonNull(durationType)},
+		"avg": &graphql.Field{Type: graphql.NewNonNull(durationType)},
+	},
+})
+
+var protoTypeToFacetType = map[proto.Type]graphql.Output{
+	proto.Type_TYPE_ID:        graphql.NewList(idFacetType),
+	proto.Type_TYPE_STRING:    graphql.NewList(textFacetType),
+	proto.Type_TYPE_ENUM:      graphql.NewList(enumFacetType),
+	proto.Type_TYPE_INT:       numberFacetType,
+	proto.Type_TYPE_DECIMAL:   decimalFacetType,
+	proto.Type_TYPE_TIMESTAMP: timestampFacetType,
+	proto.Type_TYPE_DATE:      dateFacetType,
+	proto.Type_TYPE_DATETIME:  timestampFacetType,
+	proto.Type_TYPE_DURATION:  durationFacetType,
+}
+
 var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_ID:              graphql.ID,
 	proto.Type_TYPE_STRING:          graphql.String,
@@ -327,6 +424,7 @@ var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_ANY:             anyType,
 	proto.Type_TYPE_VECTOR:          graphql.NewList(graphql.Float),
 	proto.Type_TYPE_RELATIVE_PERIOD: graphql.String,
+	proto.Type_TYPE_DURATION:        durationType,
 }
 
 var timestampInputType = iso8601Type
@@ -350,6 +448,7 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_VECTOR:          graphql.NewList(graphql.Float),
 	proto.Type_TYPE_FILE:            graphql.String,
 	proto.Type_TYPE_RELATIVE_PERIOD: graphql.String,
+	proto.Type_TYPE_DURATION:        graphql.String,
 }
 
 // for fields where the underlying source is a date/datetime

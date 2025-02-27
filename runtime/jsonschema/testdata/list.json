@@ -5,6 +5,8 @@
     "before": { "type": "string" },
     "first": { "type": "number" },
     "last": { "type": "number" },
+    "limit": { "type": "number" },
+    "offset": { "type": "number" },
     "where": { "$ref": "#/components/schemas/TestActionWhere" }
   },
   "unevaluatedProperties": false,
@@ -94,6 +96,18 @@
             "title": "equalsRelative"
           }
         ]
+      },
+      "DurationQueryInput": {
+        "type": "object",
+        "properties": {
+          "equals": { "type": ["string", "null"], "format": "duration" },
+          "greaterThan": { "type": "string", "format": "duration" },
+          "greaterThanOrEquals": { "type": "string", "format": "duration" },
+          "lessThan": { "type": "string", "format": "duration" },
+          "lessThanOrEquals": { "type": "string", "format": "duration" },
+          "notEquals": { "type": ["string", "null"], "format": "duration" }
+        },
+        "unevaluatedProperties": false
       },
       "HobbyQueryInput": {
         "unevaluatedProperties": false,
@@ -262,6 +276,9 @@
         "type": "object",
         "properties": {
           "birthday": { "$ref": "#/components/schemas/DateQueryInput" },
+          "canHoldBreath": {
+            "$ref": "#/components/schemas/DurationQueryInput"
+          },
           "currentCity": {
             "$ref": "#/components/schemas/TestActionCurrentCityInput"
           },
@@ -283,6 +300,7 @@
           "name",
           "preferredName",
           "favouriteNumber",
+          "canHoldBreath",
           "birthday",
           "hobby",
           "secondHobby",

@@ -1,21 +1,28 @@
+const { Duration } = require("./Duration");
 const { InlineFile, File } = require("./File");
+const { isPlainObject } = require("./type-utils");
 
 // parseInputs takes a set of inputs and creates objects for the ones that are of a complex type.
 //
 // inputs that are objects and contain a "__typename" field are resolved to instances of the complex type
-// they represent. At the moment, the only supported type is `InlineFile`
+// they represent.
 function parseInputs(inputs) {
   if (inputs != null && typeof inputs === "object") {
     for (const k of Object.keys(inputs)) {
       if (inputs[k] !== null && typeof inputs[k] === "object") {
-        if ("__typename" in inputs[k]) {
-          switch (inputs[k].__typename) {
-            case "InlineFile":
-              inputs[k] = InlineFile.fromDataURL(inputs[k].dataURL);
-              break;
-            default:
-              break;
-          }
+        if (Array.isArray(inputs[k])) {
+          inputs[k] = inputs[k].map((item) => {
+            if (item && typeof item === "object") {
+              if ("__typename" in item) {
+                return parseComplexInputType(item);
+              }
+              // Recursively parse nested objects in arrays
+              return parseInputs(item);
+            }
+            return item;
+          });
+        } else if ("__typename" in inputs[k]) {
+          inputs[k] = parseComplexInputType(inputs[k]);
         } else {
           inputs[k] = parseInputs(inputs[k]);
         }
@@ -26,24 +33,42 @@ function parseInputs(inputs) {
   return inputs;
 }
 
+// parseComplexInputType will parse out complex types such as InlineFile and Duration
+function parseComplexInputType(value) {
+  switch (value.__typename) {
+    case "InlineFile":
+      return InlineFile.fromDataURL(value.dataURL);
+    case "Duration":
+      return Duration.fromISOString(value.interval);
+    default:
+      throw new Error("complex type not handled: " + value.__typename);
+  }
+}
+
 // parseOutputs will take a response from the custom function and perform operations on any fields if necessary.
 //
 // For example, InlineFiles need to be stored before returning the response.
-async function parseOutputs(inputs) {
-  if (inputs != null && typeof inputs === "object") {
-    for (const k of Object.keys(inputs)) {
-      if (inputs[k] !== null && typeof inputs[k] === "object") {
-        if (inputs[k] instanceof InlineFile) {
-          const stored = await inputs[k].store();
-          inputs[k] = stored;
+async function parseOutputs(outputs) {
+  if (outputs != null && typeof outputs === "object") {
+    for (const k of Object.keys(outputs)) {
+      if (outputs[k] !== null && typeof outputs[k] === "object") {
+        if (Array.isArray(outputs[k])) {
+          outputs[k] = await Promise.all(
+            outputs[k].map((item) => parseOutputs(item))
+          );
+        } else if (outputs[k] instanceof InlineFile) {
+          const stored = await outputs[k].store();
+          outputs[k] = stored;
+        } else if (outputs[k] instanceof Duration) {
+          outputs[k] = outputs[k].toISOString();
         } else {
-          inputs[k] = await parseOutputs(inputs[k]);
+          outputs[k] = await parseOutputs(outputs[k]);
         }
       }
     }
   }
 
-  return inputs;
+  return outputs;
 }
 
 // transformRichDataTypes iterates through the given object's keys and if any of the values are a rich data type, instantiate their respective class
@@ -53,23 +78,27 @@ function transformRichDataTypes(data) {
 
   for (const key of keys) {
     const value = data[key];
-    if (isPlainObject(value)) {
-      if (value.key && value.size && value.filename && value.contentType) {
+    if (Array.isArray(value)) {
+      row[key] = value.map((item) => transformRichDataTypes({ item }).item);
+    } else if (isPlainObject(value)) {
+      if (value._typename == "Duration" && value.pgInterval) {
+        row[key] = new Duration(value.pgInterval);
+      } else if (
+        value.key &&
+        value.size &&
+        value.filename &&
+        value.contentType
+      ) {
         row[key] = File.fromDbRecord(value);
       } else {
         row[key] = value;
       }
-      continue;
+    } else {
+      row[key] = value;
     }
-
-    row[key] = value;
   }
 
   return row;
-}
-
-function isPlainObject(obj) {
-  return Object.prototype.toString.call(obj) === "[object Object]";
 }
 
 function isReferencingExistingRecord(value) {
@@ -80,6 +109,5 @@ module.exports = {
   parseInputs,
   parseOutputs,
   transformRichDataTypes,
-  isPlainObject,
   isReferencingExistingRecord,
 };

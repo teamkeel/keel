@@ -1,0 +1,37 @@
+model Company {
+    fields {
+        companyProf CompanyProfile @unique
+        activeEmployees Number @computed(company.companyProf.employeeCount - company.retrenchments)
+        retrenchments Number @default(0)
+        taxNumber Number? @computed(company.companyProf.taxProf.taxNumber)
+    }
+    actions {
+        create createCompany() with (companyProf.id, retrenchments) {
+            @permission(expression: true)
+        }
+    }
+}
+
+model CompanyProfile {
+    fields {
+        employeeCount Number
+        taxProf TaxProfile? @unique
+        company Company
+    }
+    actions {
+        create createCompanyProfile() with (employeeCount, taxProf.id) {
+            @permission(expression: true)
+        }
+    }
+}
+
+model TaxProfile {
+    fields {
+        taxNumber Number @unique
+    }
+    actions {
+        create createTaxProfile() with (taxNumber) {
+            @permission(expression: true)
+        }
+    }
+}

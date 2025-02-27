@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/coreos/go-oidc"
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/dchest/uniuri"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/functions"
@@ -70,8 +70,13 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 			return jsonErrResponse(ctx, http.StatusBadRequest, AuthorizationErrInvalidRequest, err.Error(), err)
 		}
 
+		issuer, hasIssuer := provider.GetIssuerUrl()
+		if !hasIssuer {
+			return common.InternalServerErrorResponse(ctx, err)
+		}
+
 		// Establishes new OIDC provider. This will call the providers discovery endpoint
-		oidcProvider, err := oidc.NewProvider(ctx, provider.IssuerUrl)
+		oidcProvider, err := oidc.NewProvider(ctx, issuer)
 		if err != nil {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
@@ -159,19 +164,13 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
-		// Establishes new OIDC provider. This will call the providers discovery endpoint
-		oidcProvider, err := oidc.NewProvider(ctx, provider.IssuerUrl)
-		if err != nil {
-			return common.InternalServerErrorResponse(ctx, err)
-		}
-
 		// ClientSecret is required for token exchange
 		oauthConfig := &oauth2.Config{
 			ClientID:     provider.ClientId,
 			ClientSecret: secret,
 			Endpoint: oauth2.Endpoint{
-				AuthURL:  oidcProvider.Endpoint().AuthURL,
-				TokenURL: oidcProvider.Endpoint().TokenURL,
+				AuthURL:  oidcProv.Endpoint().AuthURL,
+				TokenURL: oidcProv.Endpoint().TokenURL,
 			},
 			RedirectURL: callbackUrl.String(),
 		}

@@ -11,6 +11,7 @@ export default ListBooksBeforeQueryReturnValues({
         updatedAt: new Date("2001-01-01"),
         title: "Dreamcatcher",
         authorId: null,
+        coAuthorId: null,
         published: true,
         cover: null,
       },

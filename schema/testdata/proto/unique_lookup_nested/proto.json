@@ -122,7 +122,7 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "whereExpressions": [
             {
-              "source": "product.stock.barcode == barcode and product.name == \"Shampoo\""
+              "source": "product.stock.barcode == barcode && product.name == \"Shampoo\""
             }
           ],
           "inputMessageName": "GetByBarcodeAndShampooExprInput"

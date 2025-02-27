@@ -89,9 +89,15 @@ test("create - with linked record", async () => {
   const author = await models.author.create({
     name: "Bob",
   });
+  const coAuthor = await models.author.create({
+    name: "Alice",
+  });
   const book = await actions.createBookWithAuthor({
     author: {
       id: author.id,
+    },
+    coAuthor: {
+      id: coAuthor.id,
     },
     title: "Great Gatsby",
   });
@@ -103,6 +109,7 @@ test("create - with linked record", async () => {
   });
   expect(dbBook).not.toBeNull();
   expect(dbBook!.authorId).toEqual(author.id);
+  expect(dbBook!.coAuthorId).toEqual(coAuthor.id);
 });
 
 test("create - with nested create", async () => {
@@ -274,6 +281,7 @@ test("list beforeQuery - return values", async () => {
     createdAt: new Date("2001-01-01"),
     updatedAt: new Date("2001-01-01"),
     authorId: null,
+    coAuthorId: null,
     title: "Dreamcatcher",
     published: true,
     cover: null,

@@ -8,7 +8,7 @@ import (
 // and wraps them into a Node+Edges structure that is good for the connections pattern
 // return type and is expected by the GraphQL schema for the List action.
 // See https://relay.dev/graphql/connections.htm
-func connectionResponse(data map[string]any) (resp any, err error) {
+func connectionResponse(data map[string]any) (resp map[string]any, err error) {
 	results := []map[string]any{}
 
 	// From custom functions.
@@ -41,5 +41,10 @@ func connectionResponse(data map[string]any) (resp any, err error) {
 		"pageInfo": pageInfo,
 		"edges":    edges,
 	}
+
+	if data["resultInfo"] != nil {
+		resp["resultInfo"] = data["resultInfo"]
+	}
+
 	return resp, nil
 }

@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { InlineFile, File } from "@teamkeel/functions-runtime";
+import { InlineFile, File, Duration } from "@teamkeel/functions-runtime";
 
 export class Executor {
   constructor(props) {
@@ -128,7 +128,9 @@ async function parseInputs(inputs) {
   if (inputs != null && typeof inputs === "object") {
     for (const keys of Object.keys(inputs)) {
       if (inputs[keys] !== null && typeof inputs[keys] === "object") {
-        if (isInlineFileOrFile(inputs[keys])) {
+        if (isDuration(inputs[keys])) {
+          inputs[keys] = inputs[keys].toISOString();
+        } else if (isInlineFileOrFile(inputs[keys])) {
           const contents = await inputs[keys].read();
           inputs[keys] = `data:${inputs[keys].contentType};name=${
             inputs[keys].filename
@@ -148,6 +150,10 @@ function isInlineFileOrFile(obj) {
     typeof obj === "object" &&
     (obj.constructor.name === "InlineFile" || obj.constructor.name === "File")
   );
+}
+
+function isDuration(obj) {
+  return obj && typeof obj === "object" && obj.constructor.name === "Duration";
 }
 
 function parseOutputs(data) {
@@ -177,7 +183,11 @@ function parseOutputs(data) {
     ) {
       const arr = [];
       for (let item of value) {
-        arr.push(parseOutputs(item));
+        if (item.key && item.size && item.filename && item.contentType) {
+          arr.push(File.fromDbRecord(item));
+        } else {
+          arr.push(parseOutputs(item));
+        }
       }
       row[key] = arr;
     } else {
@@ -191,11 +201,40 @@ function isPlainObject(obj) {
   return Object.prototype.toString.call(obj) === "[object Object]";
 }
 
-const dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:(\d{2}(?:\.\d*)?)Z$/;
+const dateFormat =
+  /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
 
 function reviver(key, value) {
-  if (typeof value === "string" && dateFormat.test(value)) {
-    return new Date(value);
+  // Handle date strings
+  if (typeof value === "string") {
+    if (dateFormat.test(value)) {
+      return new Date(value);
+    }
   }
+
+  // Handle nested objects
+  if (value !== null && typeof value === "object") {
+    // Handle arrays
+    if (Array.isArray(value)) {
+      return value.map((item) => {
+        if (typeof item === "string") {
+          if (dateFormat.test(item)) {
+            return new Date(item);
+          }
+        }
+        return item;
+      });
+    }
+
+    // Handle plain objects
+    for (const k in value) {
+      if (typeof value[k] === "string") {
+        if (dateFormat.test(value[k])) {
+          value[k] = new Date(value[k]);
+        }
+      }
+    }
+  }
+
   return value;
 }

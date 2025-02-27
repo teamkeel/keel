@@ -11,7 +11,7 @@ model Contestant {
     actions {
         list listRankings(name?, team.name?) {
             @sortable(gold, silver, bronze, name)
-            @where(contestant.disqualified == false and contestant.team.disqualified == false)
+            @where(contestant.disqualified == false && contestant.team.disqualified == false)
             @permission(expression: true)
         }
     }

@@ -4,31 +4,35 @@ model Post {
         published Boolean?
         publisher Publisher?
         identity Identity? @unique
+        timeToRead Duration?
     }
 
     actions {
         create createPost() with (name, published) {
-            //expect-error:23:32:AttributeArgumentError:Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally
+            //expect-error:18:32:AttributeExpressionError:Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally
             @set(post.createdAt = ctx.now)
-            //expect-error:23:32:AttributeArgumentError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
+            //expect-error:18:32:AttributeExpressionError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
             @set(post.updatedAt = ctx.now)
+            //expect-error:36:39:AttributeExpressionError:expression expected to resolve to type Duration but it is Number
+            @set(post.timeToRead = 123)
         }
         create createPost2() with (name, published, publisher.name) {
-            //expect-error:33:42:AttributeArgumentError:Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally
+            //expect-error:18:42:AttributeExpressionError:Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally
             @set(post.publisher.createdAt = ctx.now)
-            //expect-error:33:42:AttributeArgumentError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
+            //expect-error:18:42:AttributeExpressionError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
             @set(post.publisher.updatedAt = ctx.now)
         }
         update updatePost(id) with (name, published) {
-            //expect-error:23:32:AttributeArgumentError:Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally
+            //expect-error:18:32:AttributeExpressionError:Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally
             @set(post.createdAt = ctx.now)
-            //expect-error:23:32:AttributeArgumentError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
+            //expect-error:18:32:AttributeExpressionError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
             @set(post.updatedAt = ctx.now)
         }
-        update updatePost2(id) with (name, published) {
-            //expect-error:18:42:AttributeArgumentError:Cannot set a field which is beyond scope of the data being created or updated
+        //expect-error:44:58:ActionInputError:Update actions cannot perform field updates on nested models.
+        update updatePost2(id) with (name, publisher.name) {
+            //expect-error:18:42:AttributeExpressionError:Cannot set the field 'createdAt' as it is a built-in field and can only be mutated internally
             @set(post.publisher.createdAt = ctx.now)
-            //expect-error:18:42:AttributeArgumentError:Cannot set a field which is beyond scope of the data being created or updated
+            //expect-error:18:42:AttributeExpressionError:Cannot set the field 'updatedAt' as it is a built-in field and can only be mutated internally
             @set(post.publisher.updatedAt = ctx.now)
         }
     }

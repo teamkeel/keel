@@ -374,12 +374,14 @@ describe("ModelAPI error handling", () => {
       jsonrpc: "2.0",
       error: {
         code: RuntimeErrors.NotNullConstraintError,
-        message: 'null value in column "title" violates not-null constraint',
+        message:
+          'null value in column "title" of relation "post" violates not-null constraint',
         data: {
           code: "23502",
           column: "title",
           detail: expect.stringContaining("Failing row contains"),
           table: "post",
+          value: undefined,
         },
       },
     });
@@ -423,12 +425,13 @@ describe("ModelAPI error handling", () => {
       error: {
         code: RuntimeErrors.NotNullConstraintError,
         message:
-          'null value in column "author_id" violates not-null constraint',
+          'null value in column "author_id" of relation "post" violates not-null constraint',
         data: {
           code: "23502",
           column: "author_id",
           detail: expect.stringContaining("Failing row contains"),
           table: "post",
+          value: undefined,
         },
       },
     });

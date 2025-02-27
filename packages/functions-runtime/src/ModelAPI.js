@@ -2,14 +2,15 @@ const { sql } = require("kysely");
 const { useDatabase } = require("./database");
 const {
   transformRichDataTypes,
-  isPlainObject,
   isReferencingExistingRecord,
 } = require("./parsing");
+const { isPlainObject } = require("./type-utils");
 const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
 const { InlineFile, File } = require("./File");
+const { Duration } = require("./Duration");
 
 const {
   applyLimit,
@@ -163,8 +164,25 @@ class ModelAPI {
 
       for (const key of keys) {
         const value = values[key];
-        // handle files that need uploading
-        if (value instanceof InlineFile) {
+        if (Array.isArray(value)) {
+          row[key] = await Promise.all(
+            value.map(async (item) => {
+              if (item instanceof Duration) {
+                return item.toPostgres();
+              }
+              if (item instanceof InlineFile) {
+                const storedFile = await item.store();
+                return storedFile.toDbRecord();
+              }
+              if (item instanceof File) {
+                return item.toDbRecord();
+              }
+              return item;
+            })
+          );
+        } else if (value instanceof Duration) {
+          row[key] = value.toPostgres();
+        } else if (value instanceof InlineFile) {
           const storedFile = await value.store();
           row[key] = storedFile.toDbRecord();
         } else if (value instanceof File) {
@@ -249,7 +267,25 @@ async function create(conn, tableName, tableConfigs, values) {
         const columnConfig = tableConfig[key];
 
         if (!columnConfig) {
-          if (value instanceof InlineFile) {
+          if (Array.isArray(value)) {
+            row[key] = await Promise.all(
+              value.map(async (item) => {
+                if (item instanceof Duration) {
+                  return item.toPostgres();
+                }
+                if (item instanceof InlineFile) {
+                  const storedFile = await item.store();
+                  return storedFile.toDbRecord();
+                }
+                if (item instanceof File) {
+                  return item.toDbRecord();
+                }
+                return item;
+              })
+            );
+          } else if (value instanceof Duration) {
+            row[key] = value.toPostgres();
+          } else if (value instanceof InlineFile) {
             const storedFile = await value.store();
             row[key] = storedFile.toDbRecord();
           } else if (value instanceof File) {

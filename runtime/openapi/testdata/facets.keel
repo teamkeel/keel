@@ -1,0 +1,22 @@
+model Order {
+    fields {
+        quantity Number
+        price Decimal
+        category Text
+        status Status
+        orderDate Date?
+        orderTime Timestamp?
+        durationToPurchase Duration?
+    }
+    actions {
+        list listOrders() {
+            @facet(id, quantity, price, status, category, orderTime, orderDate, durationToPurchase)
+        }
+    }
+}
+
+enum Status {
+    Complete
+    InProgress
+    Cancelled
+}

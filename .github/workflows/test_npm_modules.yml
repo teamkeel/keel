@@ -7,7 +7,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:11.13-alpine
+        image: pgvector/pgvector:pg15
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: 22.11
+          node-version: 22.13
       - uses: pnpm/action-setup@v4
         with:
           version: 9.12.3
@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: 22.11
+          node-version: 22.13
       - uses: pnpm/action-setup@v4
         with:
           version: 9.12.3

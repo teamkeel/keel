@@ -79,7 +79,6 @@ func TestValidation(t *testing.T) {
 		}
 
 		testCaseDir := filepath.Join(dir, testCase.Name())
-
 		t.Run(testCase.Name(), func(t *testing.T) {
 			t.Parallel()
 			b, err := os.ReadFile(testCaseDir)
@@ -90,7 +89,7 @@ func TestValidation(t *testing.T) {
 
 			verrs := &errorhandling.ValidationErrors{}
 			if !errors.As(err, &verrs) {
-				t.Errorf("no validation errors returned: %v", err)
+				t.Errorf("no validation errors returned in %s: %v", testCase.Name(), err)
 			}
 
 			expectedErrors := []*errorhandling.ValidationError{}
@@ -146,6 +145,13 @@ func TestValidation(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkValidation(t *testing.B) {
+	testCaseDir := "{{your schema directory}}"
+	builder := &schema.Builder{}
+	_, err := builder.MakeFromDirectory(testCaseDir)
+	require.NoError(t, err)
 }
 
 func errorToString(err *errorhandling.ValidationError, _ int) string {

@@ -46,3 +46,24 @@ func (m *Model) PrimaryKeyFieldName() string {
 	}
 	return ""
 }
+
+// GetComputedFields returns all the computed fields on the given model.
+func (m *Model) GetComputedFields() []*Field {
+	fields := []*Field{}
+	for _, f := range m.Fields {
+		if f.ComputedExpression != nil {
+			fields = append(fields, f)
+		}
+	}
+	return fields
+}
+
+// GetComputedFields returns all the computed fields on the given model.
+func (m *Model) FindField(name string) *Field {
+	for _, f := range m.Fields {
+		if f.Name == name {
+			return f
+		}
+	}
+	return nil
+}

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/coreos/go-oidc"
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
@@ -56,8 +56,8 @@ func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error
 	if issuer == "" {
 		return nil, errors.New("iss claim cannot be an empty string")
 	}
-	span.AddEvent("Issuer extracted from ID Token")
 
+	span.AddEvent("Issuer extracted from ID Token")
 	span.SetAttributes(attribute.String("issuer", issuer))
 
 	authConfig, err := runtimectx.GetOAuthConfig(ctx)
@@ -79,11 +79,11 @@ func VerifyIdToken(ctx context.Context, idTokenRaw string) (*oidc.IDToken, error
 	if err != nil {
 		return nil, err
 	}
+
 	span.AddEvent("Provider's ODIC config fetched")
 
-	var verificationErrs error
-
 	// Verify against each configured provider with this issuer
+	var verificationErrs error
 	for _, p := range providers {
 		// Checking the clientId during verification ensures that the ID token was intended for this client,
 		// because it could have been stolen from any other application with an ID token from this same issuer.

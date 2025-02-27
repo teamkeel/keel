@@ -11,7 +11,9 @@ model Post {
         get getPost(id)
         update updatePost(id) with (title, category?, views?, field1?)
         delete deletePost(id)
-        list listPosts(title, category?, views?) 
+        list listPosts(title, category?, views?) {
+            @facet(category, views)
+        }
     }
 
     @permission(

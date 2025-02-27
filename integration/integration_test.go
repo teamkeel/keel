@@ -80,9 +80,9 @@ func TestIntegration(t *gotest.T) {
 
 			// Copy test files to temp dir
 			require.NoError(t, cp.Copy(testDir, tmpDir, cp.Options{
-				Skip: func(s string) (bool, error) {
+				Skip: func(srcinfo os.FileInfo, s, d string) (bool, error) {
 					for _, v := range skipEntries {
-						if strings.HasSuffix(s, v) {
+						if strings.HasSuffix(d, v) {
 							return true, nil
 						}
 					}

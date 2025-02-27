@@ -65,8 +65,14 @@ type Visitor struct {
 	EnterJob func(n *parser.JobNode)
 	LeaveJob func(n *parser.JobNode)
 
+	EnterRoutes func(n *parser.RoutesNode)
+	LeaveRoutes func(n *parser.RoutesNode)
+
 	EnterJobInput func(n *parser.JobInputNode)
 	LeaveJobInput func(n *parser.JobInputNode)
+
+	EnterExpression func(e *parser.Expression)
+	LeaveExpression func(e *parser.Expression)
 }
 
 type VisitorFunc func([]*parser.AST, *errorhandling.ValidationErrors) Visitor

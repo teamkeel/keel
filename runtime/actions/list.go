@@ -145,7 +145,7 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Action)
 
 	// Attempt to resolve permissions early; i.e. before row-based database querying.
-	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, input, permissions)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Execute database request with results
-	results, pageInfo, err := statement.ExecuteToMany(scope.Context, page)
+	results, resultInfo, pageInfo, err := statement.ExecuteToMany(scope.Context, page)
 	if err != nil {
 		return nil, err
 	}
@@ -211,10 +211,16 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 		}
 	}
 
-	return map[string]any{
+	res := map[string]any{
 		"results":  results,
 		"pageInfo": pageInfo.ToMap(),
-	}, nil
+	}
+
+	if resultInfo != nil {
+		res["resultInfo"] = resultInfo
+	}
+
+	return res, nil
 }
 
 func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, *Page, error) {
@@ -228,7 +234,12 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 		orderBy = []any{}
 	}
 
-	err := query.applyImplicitFiltersForList(scope, where)
+	err := query.SelectFacets(scope, input)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = query.applyImplicitFiltersForList(scope, where)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -256,7 +267,7 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 
 	err = query.ApplyPaging(page)
 	if err != nil {
-		return nil, &page, err
+		return nil, nil, err
 	}
 
 	return query.SelectStatement(), &page, nil

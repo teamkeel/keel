@@ -140,6 +140,14 @@ func (g *Generator) scaffoldTools() {
 				}
 			}
 
+			// get actions have a display layout of RecordView
+			if action.IsGet() {
+				t.Config.DisplayLayout = &toolsproto.DisplayLayoutConfig{
+					Type:         toolsproto.DisplayLayoutConfig_RECORD,
+					RecordConfig: &toolsproto.RecordViewConfig{},
+				}
+			}
+
 			g.Tools[t.Config.ActionName] = &t
 		}
 	}
@@ -197,10 +205,11 @@ func (g *Generator) decorateTools() error {
 
 // generateRelatedActionsLinks will traverse the tools and generate the RelatedActions links:
 //   - For LIST actions = other list actions for the same model
+//   - For DELETE actions = all list actions for the same model
 func (g *Generator) generateRelatedActionsLinks() {
 	for id, tool := range g.Tools {
 		displayOrder := 0
-		if !tool.Action.IsList() {
+		if !(tool.Action.IsList() || tool.Action.IsDelete()) {
 			continue
 		}
 
@@ -419,10 +428,19 @@ func (g *Generator) generateResponses() error {
 
 		// we don't have a response message, therefore the response will be the model...
 		pathPrefix := ""
-		// if the action is a list action, we also need to include the pageInfo responses and prefix the results
+		// if the action is a list action, we also need to include the pageInfo responses, resultInfo responses and prefix the results
 		if tool.Action.IsList() {
 			pathPrefix = ".results[*]"
 			tool.Config.Response = append(tool.Config.Response, getPageInfoResponses()...)
+
+			if len(tool.Action.Facets) > 0 {
+				resultInfo, err := getResultInfoResponses(g.Schema, tool.Action)
+				if err != nil {
+					return err
+				}
+				tool.Config.Response = append(tool.Config.Response, resultInfo...)
+			}
+
 			// appent wrapper response for the results
 			tool.Config.Response = append(tool.Config.Response, &toolsproto.ResponseFieldConfig{
 				FieldLocation: &toolsproto.JsonPath{Path: "$.results"},
@@ -944,7 +962,105 @@ func getPageInfoResponses() []*toolsproto.ResponseFieldConfig {
 			Visible:       false,
 			Scope:         toolsproto.ResponseFieldConfig_PAGINATION,
 		},
+		{
+			FieldLocation: &toolsproto.JsonPath{Path: "$.pageInfo.pageNumber"},
+			FieldType:     proto.Type_TYPE_INT,
+			DisplayName:   "Page Number",
+			Visible:       false,
+			Scope:         toolsproto.ResponseFieldConfig_PAGINATION,
+		},
 	}
+}
+
+// getPageInfoResponses will return the responses for resultInfo if applicable
+func getResultInfoResponses(schema *proto.Schema, action *proto.Action) ([]*toolsproto.ResponseFieldConfig, error) {
+	config := []*toolsproto.ResponseFieldConfig{
+		{
+			FieldLocation: &toolsproto.JsonPath{Path: "$.resultInfo"},
+			FieldType:     proto.Type_TYPE_OBJECT,
+			DisplayName:   "ResultInfo",
+			Visible:       false,
+			Scope:         toolsproto.ResponseFieldConfig_FACETS,
+		},
+	}
+
+	facetFields := proto.FacetFields(schema, action)
+	for _, field := range facetFields {
+		config = append(config,
+			&toolsproto.ResponseFieldConfig{
+				FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s", field.Name)},
+				FieldType:     proto.Type_TYPE_OBJECT,
+				DisplayName:   fmt.Sprintf("%s facets", field.Name),
+				Visible:       false,
+				Scope:         toolsproto.ResponseFieldConfig_FACETS,
+			},
+		)
+
+		switch field.Type.Type {
+		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
+			config = append(config,
+				&toolsproto.ResponseFieldConfig{
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.min", field.Name)},
+					FieldType:     field.Type.Type,
+					DisplayName:   "Minimum",
+					Visible:       false,
+					Scope:         toolsproto.ResponseFieldConfig_FACETS,
+				},
+				&toolsproto.ResponseFieldConfig{
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.max", field.Name)},
+					FieldType:     field.Type.Type,
+					DisplayName:   "Maximum",
+					Visible:       false,
+					Scope:         toolsproto.ResponseFieldConfig_FACETS,
+				},
+				&toolsproto.ResponseFieldConfig{
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.avg", field.Name)},
+					FieldType:     proto.Type_TYPE_DECIMAL,
+					DisplayName:   "Average",
+					Visible:       false,
+					Scope:         toolsproto.ResponseFieldConfig_FACETS,
+				},
+			)
+		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DURATION:
+			config = append(config,
+				&toolsproto.ResponseFieldConfig{
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.min", field.Name)},
+					FieldType:     field.Type.Type,
+					DisplayName:   "Minimum",
+					Visible:       false,
+					Scope:         toolsproto.ResponseFieldConfig_FACETS,
+				},
+				&toolsproto.ResponseFieldConfig{
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.max", field.Name)},
+					FieldType:     field.Type.Type,
+					DisplayName:   "Maximum",
+					Visible:       false,
+					Scope:         toolsproto.ResponseFieldConfig_FACETS,
+				},
+			)
+		case proto.Type_TYPE_ENUM, proto.Type_TYPE_STRING:
+			config = append(config,
+				&toolsproto.ResponseFieldConfig{
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s[*].value", field.Name)},
+					FieldType:     proto.Type_TYPE_STRING,
+					DisplayName:   "Value",
+					Visible:       false,
+					Scope:         toolsproto.ResponseFieldConfig_FACETS,
+				},
+				&toolsproto.ResponseFieldConfig{
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s[*].count", field.Name)},
+					FieldType:     proto.Type_TYPE_INT,
+					DisplayName:   "Count",
+					Visible:       false,
+					Scope:         toolsproto.ResponseFieldConfig_FACETS,
+				},
+			)
+		default:
+			return nil, fmt.Errorf("unsupported facet field type: %s", field.Type.Type)
+		}
+	}
+
+	return config, nil
 }
 
 // inferInputType will infer the request field type based on the field name and path prefix. InputMessages are generated
@@ -964,7 +1080,7 @@ func inferInputType(actionType proto.ActionType, fieldName string) toolsproto.Re
 			return toolsproto.RequestFieldConfig_FILTERS
 		case "orderBy":
 			return toolsproto.RequestFieldConfig_SORTING
-		case "first", "after", "last", "before":
+		case "first", "after", "last", "before", "limit", "offset":
 			return toolsproto.RequestFieldConfig_PAGINATION
 		}
 	case proto.ActionType_ACTION_TYPE_UPDATE:

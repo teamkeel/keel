@@ -3,6 +3,7 @@ package actions
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -20,6 +21,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/types"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/storage"
 	"github.com/teamkeel/keel/timeperiod"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -46,10 +48,11 @@ func AllFields() *QueryOperand {
 }
 
 // Some field from the fragments of an expression or input.
-func ExpressionField(fragments []string, field string) *QueryOperand {
+func ExpressionField(fragments []string, field string, arrayField bool) *QueryOperand {
 	return &QueryOperand{
-		table:  casing.ToSnake(strings.Join(fragments, "$")),
-		column: casing.ToSnake(field),
+		table:      casing.ToSnake(strings.Join(fragments, "$")),
+		column:     casing.ToSnake(field),
+		arrayField: arrayField,
 	}
 }
 
@@ -86,11 +89,12 @@ func ValueOrNullIfEmpty(value any) *QueryOperand {
 }
 
 type QueryOperand struct {
-	query  *QueryBuilder
-	raw    string
-	table  string
-	column string
-	value  any
+	query      *QueryBuilder
+	raw        string
+	table      string
+	column     string
+	arrayField bool
+	value      any
 }
 
 // A query builder to be evaluated and injected as an operand.
@@ -138,10 +142,15 @@ func (o *QueryOperand) IsArrayValue() bool {
 	return true
 }
 
+func (o *QueryOperand) IsArrayField() bool {
+	return o.arrayField
+}
+
 func (o *QueryOperand) IsNull() bool {
 	return o.query == nil && o.table == "" && o.column == "" && o.value == nil && o.raw == ""
 }
 
+// Generates the string operand that will be used in the actual SQL statement
 func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	switch {
 	case o.IsValue() && !o.IsArrayValue():
@@ -184,6 +193,10 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 				cast = "::TIMESTAMPTZ[]"
 			case bool:
 				cast = "::BOOL[]"
+			case storage.FileInfo:
+				cast = "::JSONB[]"
+			case types.Duration:
+				cast = "::INTERVAL[]"
 			default:
 				cast = "::TEXT[]"
 			}
@@ -210,6 +223,7 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	}
 }
 
+// Generates the value that will be used as an argument for a SQL template
 func (o *QueryOperand) toSqlArgs() []any {
 	switch {
 	case o.IsTimePeriodValue():
@@ -271,6 +285,10 @@ type QueryBuilder struct {
 	returning []string
 	// The value for LIMIT.
 	limit *int
+	// The columns and clauses in GROUP BY.
+	groupBy []string
+	// The value for OFFSET.
+	offset *int
 	// The ordered slice of arguments for the SQL statement template.
 	args []any
 	// The graph of rows to be written during an INSERT or UPDATE.
@@ -349,6 +367,7 @@ func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 		filters:    []string{},
 		orderBy:    []*orderClause{},
 		limit:      nil,
+		groupBy:    []string{},
 		returning:  []string{},
 		args:       []any{},
 		writeValues: &Row{
@@ -464,6 +483,11 @@ func (query *QueryBuilder) Or() {
 }
 
 // Opens a new conditional scope in the where expression (i.e. open parethesis).
+func (query *QueryBuilder) Not() {
+	query.filters = append(query.filters, "NOT")
+}
+
+// Opens a new conditional scope in the where expression (i.e. open parethesis).
 func (query *QueryBuilder) OpenParenthesis() {
 	query.filters = append(query.filters, "(")
 }
@@ -515,6 +539,19 @@ func (query *QueryBuilder) Limit(limit int) {
 	query.limit = &limit
 }
 
+func (query *QueryBuilder) GroupBy(operand *QueryOperand) {
+	c := operand.toSqlOperandString(query)
+
+	if !lo.Contains(query.groupBy, c) {
+		query.groupBy = append(query.groupBy, c)
+	}
+}
+
+// Set the OFFSET to a number.
+func (query *QueryBuilder) Offset(offset int) {
+	query.offset = &offset
+}
+
 // Include a column in RETURNING.
 func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 	c := operand.toSqlOperandString(query)
@@ -524,17 +561,115 @@ func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 	}
 }
 
+func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) error {
+	where, ok := input["where"].(map[string]any)
+	if !ok {
+		where = map[string]any{}
+	}
+
+	facetFields := proto.FacetFields(scope.Schema, scope.Action)
+	if len(facetFields) == 0 {
+		return nil
+	}
+
+	var sql string
+	selects := []string{}
+	ctes := []string{}
+	for i, field := range facetFields {
+		// Exclude this field from the where clause because
+		// when calculating the facet data
+		subWhere := map[string]any{}
+		for k, v := range where {
+			if k != field.Name {
+				subWhere[k] = v
+			}
+		}
+
+		column := strcase.ToSnake(field.Name)
+
+		facetQuery := NewQuery(scope.Model)
+
+		err := facetQuery.applyImplicitFiltersForList(scope, subWhere)
+		if err != nil {
+			return err
+		}
+
+		err = facetQuery.applyExpressionFilters(scope, where)
+		if err != nil {
+			return err
+		}
+
+		var statement *Statement
+		var sel string
+		switch field.Type.Type {
+		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT, proto.Type_TYPE_DURATION:
+			sel = fmt.Sprintf(`json_build_object(
+				'min', MIN(%s),
+				'max', MAX(%s),
+				'avg', AVG(%s)
+			) AS %s`, sqlQuote(column), sqlQuote(column), sqlQuote(column), sqlQuote(column))
+			facetQuery.SelectClause(sel)
+			statement = facetQuery.SelectStatement()
+		case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME:
+			sel = fmt.Sprintf(`json_build_object(
+				'min', MIN(%s),
+				'max', MAX(%s)
+			) AS %s`, sqlQuote(column), sqlQuote(column), sqlQuote(column))
+			facetQuery.SelectClause(sel)
+			statement = facetQuery.SelectStatement()
+		case proto.Type_TYPE_ID, proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM:
+			facetQuery.Select(Field(field.Name))
+			facetQuery.SelectClause("COUNT(*) as \"count\"")
+			facetQuery.AppendOrderBy(Field(field.Name), "ASC")
+			facetQuery.GroupBy(Field(field.Name))
+			subStatement := facetQuery.SelectStatement()
+
+			sel = fmt.Sprintf(`SELECT
+				jsonb_agg(
+					jsonb_build_object(
+						'value', %s,
+						'count', "count"
+					)
+				) AS %s
+				FROM (
+					%s
+				) AS %s`, sqlQuote(column), sqlQuote(column), subStatement.template, sqlQuote(fmt.Sprintf("%s_facets_base", column)))
+
+			statement = &Statement{
+				template: sel,
+				args:     subStatement.args,
+			}
+		default:
+			return fmt.Errorf("unsupported facet field type: %s", field.Type.Type)
+		}
+
+		sql += fmt.Sprintf("%s AS (%s)", sqlQuote(fmt.Sprintf("%s_facets", column)), statement.template)
+		if i < len(facetFields)-1 {
+			sql += ", "
+		} else {
+			sql += " "
+		}
+
+		ctes = append(ctes, sqlQuote(fmt.Sprintf("%s_facets", column)))
+
+		query.args = append(query.args, statement.args...)
+
+		selects = append(selects, fmt.Sprintf("'%s', %s.%s", column, sqlQuote(fmt.Sprintf("%s_facets", column)), sqlQuote(column)))
+	}
+
+	query.SelectClause(fmt.Sprintf("(WITH %s SELECT json_build_object(%s) FROM %s) AS \"_facets\"", sql, strings.Join(selects, ", "), strings.Join(ctes, ", ")))
+
+	return nil
+}
+
 // Apply pagination filters to the query.
 func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// Paging condition is ANDed to any existing conditions
 	query.And()
 
 	// Add where condition to implement the page size
-	switch {
-	case page.First != 0:
-		query.Limit(page.First)
-	case page.Last != 0:
-		query.Limit(page.Last)
+	if page.GetLimit() > 0 {
+		query.Limit(page.GetLimit())
 	}
 
 	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
@@ -552,26 +687,34 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// We add a subquery to the select list that fetches the total count of records
 	// matching the constraints specified by the main query without the offset/limit applied
 	// This is actually more performant than COUNT(*) OVER() [window function]
-	totalResults := fmt.Sprintf("(%s) AS totalCount", query.countQuery())
+	countQuery, args := query.countQuery()
+	totalResults := fmt.Sprintf("(%s) AS totalCount", countQuery)
 	query.SelectClause(totalResults)
+
 	// Because we are essentially performing the same query again within the subquery, we need to duplicate the query parameters again as they will be used twice in the course of the whole query
-	query.args = append(query.args, query.args...)
+	query.args = append(query.args, args...)
 
-	// Add where condition to implement the after/before paging request
-	if page.Cursor() != "" {
-		err := query.applyCursorFilter(page.Cursor(), page.IsBackwards())
-		if err != nil {
-			return err
+	// if we have offset pagination..
+	if page.OffsetPagination() {
+		query.Offset(page.Offset)
+	} else {
+		// otherwise default to cursor pagination
+		// Add where condition to implement the after/before paging request
+		if page.Cursor() != "" {
+			err := query.applyCursorFilter(page.Cursor(), page.IsBackwards())
+			if err != nil {
+				return err
+			}
 		}
-	}
 
-	// if the page has backwards pagination, we will be reversing the order fields. The results will be reversed after retrieval in .ExecuteToMany()
-	if page.IsBackwards() {
-		for _, ob := range query.orderBy {
-			if strings.EqualFold(ob.direction, "ASC") {
-				ob.direction = "DESC"
-			} else {
-				ob.direction = "ASC"
+		// if the page has backwards pagination, we will be reversing the order fields. The results will be reversed after retrieval in .ExecuteToMany()
+		if page.IsBackwards() {
+			for _, ob := range query.orderBy {
+				if strings.EqualFold(ob.direction, "ASC") {
+					ob.direction = "DESC"
+				} else {
+					ob.direction = "ASC"
+				}
 			}
 		}
 	}
@@ -649,10 +792,11 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 	return nil
 }
 
-func (query *QueryBuilder) countQuery() string {
+func (query *QueryBuilder) countQuery() (string, []any) {
 	selection := "COUNT("
 	joins := ""
 	filters := ""
+
 	if len(query.distinctOn) > 0 {
 		distinctFields := strings.Join(query.distinctOn, ", ")
 		if len(query.distinctOn) > 1 {
@@ -675,13 +819,17 @@ func (query *QueryBuilder) countQuery() string {
 		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
 	}
 
+	// This is a bit gross as we are assuming the previous X args are the ones used in the where condition
+	argCount := strings.Count(filters, "?")
+	args := query.args[len(query.args)-argCount:]
+
 	sql := fmt.Sprintf("SELECT %s FROM %s %s %s",
 		selection,
 		sqlQuote(query.table),
 		joins,
 		filters)
 
-	return sql
+	return sql, args
 }
 
 // Generates an executable SELECT statement with the list of arguments.
@@ -691,6 +839,8 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	filters := ""
 	orderBy := ""
 	limit := ""
+	groupBy := ""
+	offset := ""
 
 	if len(query.distinctOn) > 0 {
 		distinctOn = fmt.Sprintf("DISTINCT ON(%s)", strings.Join(query.distinctOn, ", "))
@@ -722,22 +872,33 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		orderBy = fmt.Sprintf("ORDER BY %s", strings.Join(orderByClausesAsSql, ", "))
 	}
 
+	if len(query.groupBy) > 0 {
+		groupBy = fmt.Sprintf("GROUP BY %s", strings.Join(query.groupBy, ", "))
+	}
+
 	if query.limit != nil {
 		limit = "LIMIT ?"
 		query.args = append(query.args, *query.limit)
 	}
 
-	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s",
+	if query.offset != nil {
+		offset = "OFFSET ?"
+		query.args = append(query.args, *query.offset)
+	}
+
+	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s %s %s",
 		distinctOn,
 		selection,
 		sqlQuote(query.table),
 		joins,
 		filters,
+		groupBy,
 		orderBy,
-		limit)
+		limit,
+		offset)
 
 	return &Statement{
-		template: sql,
+		template: cleanSql(sql),
 		args:     query.args,
 		model:    query.Model,
 	}
@@ -769,7 +930,7 @@ func (query *QueryBuilder) InsertStatement(ctx context.Context) *Statement {
 
 	return &Statement{
 		model:    query.Model,
-		template: statement,
+		template: cleanSql(statement),
 		args:     args,
 	}
 }
@@ -810,13 +971,13 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 	// we want to create the common table expressions first,
 	// and ensure we only create the CTE once (as there may be more
 	// than once reference by other fields).
-	for _, col := range orderedKeys {
+	for i, col := range orderedKeys {
 		operand := row.values[col]
 		if !operand.IsInlineQuery() {
 			continue
 		}
 
-		cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+		cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 		cteExists := false
 		for _, c := range ctes {
 			if strings.HasPrefix(c, sqlQuote(cteAlias)) {
@@ -841,7 +1002,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 		}
 	}
 
-	for _, col := range orderedKeys {
+	for i, col := range orderedKeys {
 		colName := casing.ToSnake(col)
 		columnNames = append(columnNames, sqlQuote(colName))
 		operand := row.values[col]
@@ -854,7 +1015,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 			columnValues = append(columnValues, sql)
 			args = append(args, opArgs...)
 		case operand.IsInlineQuery():
-			cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+			cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 			columnAlias := ""
 
 			for i, s := range operand.query.selection {
@@ -950,13 +1111,13 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 	}
 	sort.Strings(orderedKeys)
 
-	for _, v := range orderedKeys {
+	for i, v := range orderedKeys {
 		operand := query.writeValues.values[v]
 		if !operand.IsInlineQuery() {
 			continue
 		}
 
-		cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+		cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 		cteExists := false
 		for _, c := range ctes {
 			if strings.HasPrefix(c, sqlQuote(cteAlias)) {
@@ -981,11 +1142,11 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 		}
 	}
 
-	for _, v := range orderedKeys {
+	for i, v := range orderedKeys {
 		operand := query.writeValues.values[v]
 
 		if operand.IsInlineQuery() {
-			cteAlias := fmt.Sprintf("select_%s", operand.query.table)
+			cteAlias := fmt.Sprintf("select_%s_%v", operand.query.table, i)
 			columnAlias := ""
 
 			for i, s := range operand.query.selection {
@@ -1061,7 +1222,7 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 	}
 
 	return &Statement{
-		template: template,
+		template: cleanSql(template),
 		args:     args,
 		model:    query.Model,
 	}
@@ -1114,7 +1275,7 @@ func (query *QueryBuilder) DeleteStatement(ctx context.Context) *Statement {
 		returning)
 
 	return &Statement{
-		template: template,
+		template: cleanSql(template),
 		args:     query.args,
 		model:    query.Model,
 	}
@@ -1135,7 +1296,9 @@ func (statement *Statement) Execute(ctx context.Context) (int, error) {
 	return int(result.RowsAffected), nil
 }
 
-type Rows = []map[string]interface{}
+type Rows = []map[string]any
+
+type ResultInfo map[string]any
 
 type PageInfo struct {
 	// Count returns the number of rows returned for the current page
@@ -1152,44 +1315,67 @@ type PageInfo struct {
 
 	// EndCursor is the identifier representing the last row in the set
 	EndCursor string
+
+	// PageNumber is the number of the page returned; set only for offset pagination
+	PageNumber *int
 }
 
 func (pi *PageInfo) ToMap() map[string]any {
-	return map[string]any{
+	r := map[string]any{
 		"count":       pi.Count,
 		"totalCount":  pi.TotalCount,
 		"startCursor": pi.StartCursor,
 		"endCursor":   pi.EndCursor,
 		"hasNextPage": pi.HasNextPage,
 	}
+
+	if pi.PageNumber != nil {
+		r["pageNumber"] = *pi.PageNumber
+	}
+
+	return r
+}
+
+func (ri *ResultInfo) ToMap() map[string]any {
+	res := map[string]any{}
+
+	for k, v := range *ri {
+		res[k] = v
+	}
+
+	return res
 }
 
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
-func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows, *PageInfo, error) {
+func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows, *ResultInfo, *PageInfo, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	result, err := database.ExecuteQuery(ctx, statement.template, statement.args...)
 	if err != nil {
-		return nil, nil, toRuntimeError(err)
+		return nil, nil, nil, toRuntimeError(err)
 	}
 
+	var resultInfo ResultInfo
 	rows := result.Rows
-	returnedCount := len(result.Rows)
 
 	// Sort out the hasNextPage value, and clean up the response.
 	hasNextPage := false
 	var totalCount int64
 	var startCursor string
 	var endCursor string
+	var pageNumber *int
 
 	if page != nil && page.IsBackwards() {
 		rows = lo.Reverse(rows)
 	}
+
+	returnedCount := len(rows)
 	if returnedCount > 0 {
 		last := rows[returnedCount-1]
+		pageNumber = page.PageNumber()
 		var hasPagination bool
 		hasNextPage, hasPagination = last["hasnext"].(bool)
 
@@ -1197,9 +1383,6 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 			totalCount = last["totalcount"].(int64)
 
 			for i, row := range rows {
-				delete(row, "hasnext")
-				delete(row, "totalcount")
-
 				if i == 0 {
 					startCursor, _ = row["id"].(string)
 				}
@@ -1209,8 +1392,24 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 			}
 		}
 
-		// TODO: only do this if we know auditing was added
+		facets := rows[0]["_facets"]
+		if facets != nil {
+			if err := json.Unmarshal([]byte(facets.(string)), &resultInfo); err != nil {
+				return nil, nil, nil, fmt.Errorf("failed to parse facets data: %w", err)
+			} else {
+				for k, v := range resultInfo {
+					if strcase.ToLowerCamel(k) != k {
+						resultInfo[strcase.ToLowerCamel(k)] = v
+						delete(resultInfo, k)
+					}
+				}
+			}
+		}
+
 		for _, row := range rows {
+			delete(row, "hasnext")
+			delete(row, "totalcount")
+			delete(row, "_facets")
 			delete(row, setIdentityIdAlias)
 			delete(row, setTraceIdAlias)
 		}
@@ -1222,18 +1421,25 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		HasNextPage: hasNextPage,
 		StartCursor: startCursor,
 		EndCursor:   endCursor,
+		PageNumber:  pageNumber,
 	}
 
-	// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
-	// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
+	// For certain types, we need to parse them into a format the runtime understands.
 	for _, f := range statement.model.Fields {
-		if f.Type.Type != proto.Type_TYPE_MODEL && (f.Type.Repeated || f.Type.Type == proto.Type_TYPE_VECTOR) {
-			for _, row := range rows {
-				col := strcase.ToSnake(f.Name)
-				if val, ok := row[col]; ok && val != nil {
+		if f.Type.Type == proto.Type_TYPE_MODEL {
+			continue
+		}
+
+		col := strcase.ToSnake(f.Name)
+		for _, row := range rows {
+			if val, ok := row[col]; ok && val != nil {
+				if f.Type.Repeated {
+					// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
+					// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
+
 					arr := val.(string)
 					switch f.Type.Type {
-					case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_ID, proto.Type_TYPE_MARKDOWN:
+					case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_ID, proto.Type_TYPE_MARKDOWN, proto.Type_TYPE_DURATION:
 						row[col], err = ParsePostgresArray[string](arr, func(s string) (string, error) {
 							return s, nil
 						})
@@ -1257,23 +1463,54 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 						row[col], err = ParsePostgresArray[time.Time](arr, func(s string) (time.Time, error) {
 							return time.Parse("2006-01-02 15:04:05.999999999-07", s)
 						})
+					case proto.Type_TYPE_FILE:
+						row[col], err = ParsePostgresArray[storage.FileInfo](arr, func(s string) (storage.FileInfo, error) {
+							fi := storage.FileInfo{}
+							if err := json.Unmarshal([]byte(s), &fi); err != nil {
+								return storage.FileInfo{}, fmt.Errorf("failed to unmarshal file data: %w", err)
+							}
+							return fi, nil
+						})
 					default:
-						return nil, nil, fmt.Errorf("missing parsing implementation for type %s", f.Type.Type)
+						return nil, nil, nil, fmt.Errorf("missing parsing implementation for array type %s", f.Type.Type)
 					}
 					if err != nil {
-						return nil, nil, err
+						return nil, nil, nil, err
+					}
+				} else {
+					switch f.Type.Type {
+					case proto.Type_TYPE_VECTOR:
+						row[col], err = ParsePostgresArray[float64](val.(string), func(s string) (float64, error) {
+							return strconv.ParseFloat(s, 64)
+						})
+					case proto.Type_TYPE_FILE:
+						fi := storage.FileInfo{}
+						if err = json.Unmarshal([]byte(val.(string)), &fi); err == nil {
+							row[col] = fi
+						}
+					}
+					if err != nil {
+						return nil, nil, nil, err
 					}
 				}
 			}
 		}
 	}
 
-	return toLowerCamelMaps(rows), pageInfo, nil
+	// if we have any facets, we will return a pointer to the map storing the result info, otherwise, we return nil
+	var ri *ResultInfo
+	if resultInfo == nil {
+		ri = nil
+	} else {
+		ri = &resultInfo
+	}
+
+	return toLowerCamelMaps(rows), ri, pageInfo, nil
 }
 
 // Execute the SQL statement against the database and expects a single row, returns the single row or nil if no data is found.
 func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any, error) {
-	results, pageInfo, err := statement.ExecuteToMany(ctx, nil)
+	results, _, pageInfo, err := statement.ExecuteToMany(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1386,6 +1623,18 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		return "", nil, errors.New("no handling for rhs QueryOperand type")
 	}
 
+	// If the operand is not an array value nor an inline query,
+	// then we know it's a nested relationship lookup and
+	// so rather use Equals and NotEquals because we are joining.
+	if !rhs.IsArrayField() && !rhs.IsArrayValue() && !rhs.IsInlineQuery() {
+		if operator == OneOf {
+			operator = Equals
+		}
+		if operator == NotOneOf {
+			operator = NotEquals
+		}
+	}
+
 	switch operator {
 	case Equals:
 		template = fmt.Sprintf("%s IS NOT DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
@@ -1405,11 +1654,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		if rhs.IsInlineQuery() {
 			template = fmt.Sprintf("%s NOT IN %s", lhsSqlOperand, rhsSqlOperand)
 		} else {
-			if rhs.IsField() {
-				template = fmt.Sprintf("(NOT %s = ANY(%s) OR %s IS NOT DISTINCT FROM NULL)", lhsSqlOperand, rhsSqlOperand, rhsSqlOperand)
-			} else {
-				template = fmt.Sprintf("NOT %s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
-			}
+			template = fmt.Sprintf("NOT %s = ANY(%s)", lhsSqlOperand, rhsSqlOperand)
 		}
 	case LessThan, Before:
 		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
@@ -1424,7 +1669,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case AnyEquals:
 		template = fmt.Sprintf("%s = ANY(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AnyNotEquals:
-		template = fmt.Sprintf("(NOT %s = ANY(%s) OR %s IS NOT DISTINCT FROM NULL)", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
+		template = fmt.Sprintf("NOT %s = ANY(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AnyLessThan, AnyBefore:
 		template = fmt.Sprintf("%s > ANY(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AnyLessThanEquals, AnyOnOrBefore:
@@ -1438,7 +1683,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case AllEquals:
 		template = fmt.Sprintf("(%s = ALL(%s) AND %s IS DISTINCT FROM '{}')", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
 	case AllNotEquals:
-		template = fmt.Sprintf("(NOT %s = ALL(%s) OR %s IS NOT DISTINCT FROM '{}' OR %s IS NOT DISTINCT FROM NULL)", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
+		template = fmt.Sprintf("(NOT %s = ALL(%s) OR %s IS NOT DISTINCT FROM '{}')", rhsSqlOperand, lhsSqlOperand, lhsSqlOperand)
 	case AllLessThan, AllBefore:
 		template = fmt.Sprintf("%s > ALL(%s)", rhsSqlOperand, lhsSqlOperand)
 	case AllLessThanEquals, AllOnOrBefore:
@@ -1448,7 +1693,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case AllGreaterThanEquals, AllOnOrAfter:
 		template = fmt.Sprintf("%s <= ALL(%s)", rhsSqlOperand, lhsSqlOperand)
 
-	/* All relative date operators */
+	/* Relative date operators */
 	case BeforeRelative:
 		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
 	case AfterRelative:
@@ -1472,6 +1717,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		}
 
 		template = fmt.Sprintf("%s >= %s AND %s < %s", lhsSqlOperand, rhsSqlOperand, lhsSqlOperand, end)
+
 	default:
 		return "", nil, fmt.Errorf("operator: %v is not yet supported", operator)
 	}
@@ -1556,4 +1802,17 @@ func setIdentityIdClause() string {
 
 func setTraceIdClause() string {
 	return fmt.Sprintf("set_trace_id(?) AS %s", setTraceIdAlias)
+}
+
+// cleanSql removes redundant whitespace from SQL statements while preserving
+// required spaces between keywords and identifiers
+func cleanSql(sql string) string {
+	// Replace multiple spaces with single space
+	sql = strings.Join(strings.Fields(sql), " ")
+
+	// Remove spaces around parentheses
+	sql = strings.ReplaceAll(sql, "( ", "(")
+	sql = strings.ReplaceAll(sql, " )", ")")
+
+	return sql
 }

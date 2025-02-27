@@ -393,6 +393,8 @@
                   "before": { "type": "string" },
                   "first": { "type": "number" },
                   "last": { "type": "number" },
+                  "limit": { "type": "number" },
+                  "offset": { "type": "number" },
                   "orderBy": {
                     "type": "array",
                     "items": {
@@ -425,6 +427,7 @@
                         "count": { "type": "number" },
                         "endCursor": { "type": "string" },
                         "hasNextPage": { "type": "boolean" },
+                        "pageNumber": { "type": "number" },
                         "startCursor": { "type": "string" },
                         "totalCount": { "type": "number" }
                       }
@@ -480,6 +483,8 @@
                   "before": { "type": "string" },
                   "first": { "type": "number" },
                   "last": { "type": "number" },
+                  "limit": { "type": "number" },
+                  "offset": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/ListBooksWhere" }
                 },
                 "unevaluatedProperties": false
@@ -499,6 +504,7 @@
                         "count": { "type": "number" },
                         "endCursor": { "type": "string" },
                         "hasNextPage": { "type": "boolean" },
+                        "pageNumber": { "type": "number" },
                         "startCursor": { "type": "string" },
                         "totalCount": { "type": "number" }
                       }
@@ -554,6 +560,8 @@
                   "before": { "type": "string" },
                   "first": { "type": "number" },
                   "last": { "type": "number" },
+                  "limit": { "type": "number" },
+                  "offset": { "type": "number" },
                   "where": { "$ref": "#/components/schemas/ListReviewsWhere" }
                 },
                 "unevaluatedProperties": false
@@ -573,6 +581,7 @@
                         "count": { "type": "number" },
                         "endCursor": { "type": "string" },
                         "hasNextPage": { "type": "boolean" },
+                        "pageNumber": { "type": "number" },
                         "startCursor": { "type": "string" },
                         "totalCount": { "type": "number" }
                       }

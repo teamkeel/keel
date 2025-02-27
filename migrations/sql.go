@@ -1,6 +1,7 @@
 package migrations
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"regexp"
 	"strings"
@@ -10,7 +11,9 @@ import (
 	"github.com/teamkeel/keel/auditing"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/expressions/resolve"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/schema/parser"
 	"golang.org/x/exp/slices"
 )
@@ -30,6 +33,7 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 	proto.Type_TYPE_MARKDOWN:  "TEXT",
 	proto.Type_TYPE_VECTOR:    "VECTOR",
 	proto.Type_TYPE_FILE:      "JSONB",
+	proto.Type_TYPE_DURATION:  "INTERVAL",
 }
 
 // Matches the type cast on a Postgrs value eg. on "'foo'::text" matches "::text"
@@ -89,6 +93,7 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 				PrimaryKeyConstraintName(model.Name, field.Name),
 				Identifier(field.Name)))
 		}
+
 		if field.Unique && !field.PrimaryKey {
 			uniqueStmt, err := addUniqueConstraintStmt(schema, model.Name, []string{field.Name})
 			if err != nil {
@@ -209,7 +214,11 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 		if field.Optional && column.NotNull {
 			change = "DROP NOT NULL"
 		} else {
-			change = "SET NOT NULL"
+			// If computed, then we don't set the NOT NULL constraint yet
+			// This is because we may still need to populate existing rows
+			if field.ComputedExpression == nil {
+				change = "SET NOT NULL"
+			}
 
 			// Update all existing rows to the default value if they are null
 			if field.DefaultValue != nil {
@@ -221,10 +230,89 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 				stmts = append(stmts, update)
 			}
 		}
-		stmts = append(stmts, fmt.Sprintf("%s %s;", alterColumnStmtPrefix, change))
+		if change != "" {
+			stmts = append(stmts, fmt.Sprintf("%s %s;", alterColumnStmtPrefix, change))
+		}
 	}
 
 	return strings.Join(stmts, "\n"), nil
+}
+
+func hashOfExpression(expression string) string {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(expression)))[:8]
+}
+
+// computedFieldFuncName generates the name of the a computed field's function
+func computedFieldFuncName(field *proto.Field) string {
+	// shortened alphanumeric hash from an expression
+	hash := hashOfExpression(field.ComputedExpression.Source)
+	return fmt.Sprintf("%s__%s__%s__comp", strcase.ToSnake(field.ModelName), strcase.ToSnake(field.Name), hash)
+}
+
+// computedExecFuncName generates the name for the table function which executed all computed functions
+func computedExecFuncName(model *proto.Model) string {
+	return fmt.Sprintf("%s__exec_comp_fns", strcase.ToSnake(model.Name))
+}
+
+// computedTriggerName generates the name for the trigger which runs the function which executes computed functions
+func computedTriggerName(model *proto.Model) string {
+	return fmt.Sprintf("%s__comp", strcase.ToSnake(model.Name))
+}
+
+func computedDependencyFuncName(model *proto.Model, dependentModel *proto.Model, fragments []string) string {
+	hash := hashOfExpression(strings.Join(fragments, "."))
+	return fmt.Sprintf("%s__to__%s__%s__comp_dep", strcase.ToSnake(dependentModel.Name), strcase.ToSnake(model.Name), hash)
+}
+
+// fieldFromComputedFnName determines the field from computed function name
+func fieldFromComputedFnName(schema *proto.Schema, fn string) *proto.Field {
+	parts := strings.Split(fn, "__")
+	model := schema.FindModel(strcase.ToCamel(parts[0]))
+	for _, f := range model.Fields {
+		if f.Name == strcase.ToLowerCamel(parts[1]) {
+			return f
+		}
+	}
+	return nil
+}
+
+// addComputedFieldFuncStmt generates the function for a computed field
+func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *proto.Field) (string, string, error) {
+	var sqlType string
+	switch field.Type.Type {
+	case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT, proto.Type_TYPE_BOOL:
+		sqlType = PostgresFieldTypes[field.Type.Type]
+	default:
+		return "", "", fmt.Errorf("type not supported for computed fields: %s", field.Type.Type)
+	}
+
+	expression, err := parser.ParseExpression(field.ComputedExpression.Source)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Generate SQL from the computed attribute expression to set this field
+	stmt, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(schema, model, field))
+	if err != nil {
+		return "", "", err
+	}
+
+	fn := computedFieldFuncName(field)
+	sql := fmt.Sprintf("CREATE FUNCTION \"%s\"(r \"%s\") RETURNS %s AS $$ BEGIN\n\tRETURN %s;\nEND; $$ LANGUAGE plpgsql;",
+		fn,
+		strcase.ToSnake(model.Name),
+		sqlType,
+		stmt)
+
+	return fn, sql, nil
+}
+
+func dropComputedExecFunctionStmt(model *proto.Model) string {
+	return fmt.Sprintf("DROP FUNCTION \"%s__exec_comp_fns\";", strcase.ToSnake(model.Name))
+}
+
+func dropComputedTriggerStmt(model *proto.Model) string {
+	return fmt.Sprintf("DROP TRIGGER \"%s__comp\" ON \"%s\";", strcase.ToSnake(model.Name), strcase.ToSnake(model.Name))
 }
 
 func fieldDefinition(field *proto.Field) (string, error) {
@@ -247,7 +335,9 @@ func fieldDefinition(field *proto.Field) (string, error) {
 
 	output := fmt.Sprintf("%s %s", columnName, fieldType)
 
-	if !field.Optional {
+	// If computed, then we don't set the NOT NULL constraint yet
+	// This is because we may still need to populate existing rows
+	if !field.Optional && field.ComputedExpression == nil {
 		output += " NOT NULL"
 	}
 
@@ -264,97 +354,172 @@ func fieldDefinition(field *proto.Field) (string, error) {
 }
 
 func getDefaultValue(field *proto.Field) (string, error) {
+	// Handle zero values first
 	if field.DefaultValue.UseZeroValue {
-		if field.Type.Repeated {
-			return "{}", nil
-		}
-
-		switch field.Type.Type {
-		case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
-			return db.QuoteLiteral(""), nil
-		case proto.Type_TYPE_INT, proto.Type_TYPE_DECIMAL:
-			return "0", nil
-		case proto.Type_TYPE_BOOL:
-			return "false", nil
-		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-			return "now()", nil
-		case proto.Type_TYPE_ID:
-			return "ksuid()", nil
-		}
+		return getZeroValue(field)
 	}
 
-	expr, err := parser.ParseExpression(field.DefaultValue.Expression.Source)
-	if err != nil {
-		return "", err
-	}
-
-	value, err := expr.ToValue()
-	if err != nil {
-		return "", err
-	}
-
+	// Handle specific types
 	switch {
-	case value.Array != nil:
-		if len(value.Array.Values) == 0 {
+	case field.Type.Type == proto.Type_TYPE_ENUM:
+		return getEnumDefault(field)
+	case field.Type.Repeated:
+		return getRepeatedDefault(field)
+	default:
+		expression, err := parser.ParseExpression(field.DefaultValue.Expression.Source)
+		if err != nil {
+			return "", err
+		}
+
+		v, isNull, err := resolve.ToValue[any](expression)
+		if err != nil {
+			return "", err
+		}
+
+		if isNull {
+			return "NULL", nil
+		}
+
+		return toSqlLiteral(v, field)
+	}
+}
+
+// Helper functions to break down the logic
+func getZeroValue(field *proto.Field) (string, error) {
+	if field.Type.Repeated {
+		return "{}", nil
+	}
+
+	zeroValues := map[proto.Type]string{
+		proto.Type_TYPE_STRING:    db.QuoteLiteral(""),
+		proto.Type_TYPE_MARKDOWN:  db.QuoteLiteral(""),
+		proto.Type_TYPE_INT:       "0",
+		proto.Type_TYPE_DECIMAL:   "0",
+		proto.Type_TYPE_BOOL:      "false",
+		proto.Type_TYPE_DATE:      "now()",
+		proto.Type_TYPE_DATETIME:  "now()",
+		proto.Type_TYPE_TIMESTAMP: "now()",
+		proto.Type_TYPE_ID:        "ksuid()",
+	}
+
+	if value, ok := zeroValues[field.Type.Type]; ok {
+		return value, nil
+	}
+	return "", fmt.Errorf("no zero value defined for type %v", field.Type.Type)
+}
+
+func getEnumDefault(field *proto.Field) (string, error) {
+	expression, err := parser.ParseExpression(field.DefaultValue.Expression.Source)
+	if err != nil {
+		return "", err
+	}
+
+	if field.Type.Repeated {
+		enums, err := resolve.AsIdentArray(expression)
+		if err != nil {
+			return "", err
+		}
+
+		if len(enums) == 0 {
 			return "'{}'", nil
 		}
 
 		values := []string{}
-		for _, el := range value.Array.Values {
-			v, err := toSqlLiteral(el, field)
-			if err != nil {
-				return "", err
-			}
-			values = append(values, v)
+		for _, el := range enums {
+			values = append(values, db.QuoteLiteral(el.Fragments[1]))
 		}
 
-		var cast string
-		switch field.Type.Type {
-		case proto.Type_TYPE_INT:
-			cast = "::INTEGER[]"
-		case proto.Type_TYPE_DECIMAL:
-			cast = "::NUMERIC[]"
-		case proto.Type_TYPE_BOOL:
-			cast = "::BOOL[]"
-		default:
-			cast = "::TEXT[]"
-		}
-
-		return fmt.Sprintf("ARRAY[%s]%s", strings.Join(values, ","), cast), nil
-	default:
-		return toSqlLiteral(value, field)
+		return fmt.Sprintf("ARRAY[%s]::TEXT[]", strings.Join(values, ",")), nil
 	}
+
+	enum, err := resolve.AsIdent(expression)
+	if err != nil {
+		return "", err
+	}
+
+	return db.QuoteLiteral(enum.Fragments[1]), nil
 }
 
-func toSqlLiteral(operand *parser.Operand, field *proto.Field) (string, error) {
-	switch {
-	case operand.String != nil:
-		s := *operand.String
-		// Remove wrapping quotes
-		s = strings.TrimPrefix(s, `"`)
-		s = strings.TrimSuffix(s, `"`)
-		return db.QuoteLiteral(s), nil
-	case operand.Decimal != nil:
-		return fmt.Sprintf("%f", *operand.Decimal), nil
-	case operand.Number != nil:
-		return fmt.Sprintf("%d", *operand.Number), nil
-	case operand.True:
-		return "true", nil
-	case operand.False:
-		return "false", nil
-	case field.Type.Type == proto.Type_TYPE_ENUM && operand.Ident != nil:
-		if len(operand.Ident.Fragments) != 2 {
-			return "", fmt.Errorf("invalid default value %s for enum field %s", operand.Ident.ToString(), field.Name)
-		}
-		return db.QuoteLiteral(operand.Ident.Fragments[1].Fragment), nil
+func getRepeatedDefault(field *proto.Field) (string, error) {
+	var (
+		values []string
+		err    error
+	)
+
+	switch field.Type.Type {
+	case proto.Type_TYPE_INT:
+		values, err = getArrayValues[int64](field)
+	case proto.Type_TYPE_DECIMAL:
+		values, err = getArrayValues[float64](field)
+	case proto.Type_TYPE_BOOL:
+		values, err = getArrayValues[bool](field)
 	default:
-		return "", fmt.Errorf("field %s has unexpected default value %s", field.Name, operand.ToString())
+		values, err = getArrayValues[string](field)
+	}
+	if err != nil {
+		return "", err
+	}
+
+	if len(values) == 0 {
+		return "'{}'", nil
+	}
+
+	typeCasts := map[proto.Type]string{
+		proto.Type_TYPE_INT:     "INTEGER[]",
+		proto.Type_TYPE_DECIMAL: "NUMERIC[]",
+		proto.Type_TYPE_BOOL:    "BOOL[]",
+	}
+	cast := typeCasts[field.Type.Type]
+	if cast == "" {
+		cast = "TEXT[]"
+	}
+
+	return fmt.Sprintf("ARRAY[%s]::%s", strings.Join(values, ","), cast), nil
+}
+
+// Generic helper for array values
+func getArrayValues[T any](field *proto.Field) ([]string, error) {
+	expression, err := parser.ParseExpression(field.DefaultValue.Expression.Source)
+	if err != nil {
+		return nil, err
+	}
+
+	v, err := resolve.ToValueArray[T](expression)
+	if err != nil {
+		return nil, err
+	}
+
+	values := make([]string, len(v))
+	for i, el := range v {
+		val, err := toSqlLiteral(el, field)
+		if err != nil {
+			return nil, err
+		}
+		values[i] = val
+	}
+	return values, nil
+}
+
+func toSqlLiteral(value any, field *proto.Field) (string, error) {
+	switch {
+	case field.Type.Type == proto.Type_TYPE_STRING:
+		return db.QuoteLiteral(fmt.Sprintf("%s", value)), nil
+	case field.Type.Type == proto.Type_TYPE_DECIMAL:
+		return fmt.Sprintf("%f", value), nil
+	case field.Type.Type == proto.Type_TYPE_INT:
+		return fmt.Sprintf("%d", value), nil
+	case field.Type.Type == proto.Type_TYPE_BOOL:
+		return fmt.Sprintf("%v", value), nil
+	case field.Type.Type == proto.Type_TYPE_DURATION:
+		return db.QuoteLiteral(fmt.Sprintf("%s", value)), nil
+	default:
+		return "", fmt.Errorf("field %s has unexpected default value %s", field.Name, value)
 	}
 }
 
 func dropColumnStmt(modelName string, fieldName string) string {
 	output := fmt.Sprintf("ALTER TABLE %s ", Identifier(modelName))
-	output += fmt.Sprintf("DROP COLUMN %s;", Identifier(fieldName))
+	output += fmt.Sprintf("DROP COLUMN %s CASCADE;", Identifier(fieldName))
 	return output
 }
 
@@ -398,4 +563,117 @@ func createUpdatedAtTriggerStmts(triggers []*TriggerRow, model *proto.Model) str
 	}
 
 	return strings.Join(statements, "\n")
+}
+
+// createIndexStmts generates index changes for input fields and faceted fields
+func createIndexStmts(schema *proto.Schema, existingIndexes []*IndexRow) []string {
+	indexedFields := []*proto.Field{}
+	for _, model := range schema.Models {
+		for _, action := range model.Actions {
+			if action.Type != proto.ActionType_ACTION_TYPE_LIST {
+				continue
+			}
+
+			message := proto.FindWhereInputMessage(schema, action.Name)
+			if message == nil {
+				continue
+			}
+
+			// Find fields used as required inputs
+			fieldsToIndex := findIndexableInputFields(schema, model, message)
+			for _, field := range fieldsToIndex {
+				// They could have been added already if used as another action's input
+				if !lo.Contains(indexedFields, field) {
+					indexedFields = append(indexedFields, field)
+				}
+			}
+
+			// Find fields used as facets
+			for _, facet := range action.Facets {
+				field := model.FindField(facet)
+				// They could have been added already as an input
+				if !lo.Contains(indexedFields, field) {
+					indexedFields = append(indexedFields, field)
+				}
+			}
+		}
+	}
+
+	statements := []string{}
+
+	// Add indexes which don't exist yet
+	for _, field := range indexedFields {
+		// Skip fields which are unique as these will already have an index
+		if field.Unique {
+			continue
+		}
+
+		// Skip fields which already have an index
+		if lo.ContainsBy(existingIndexes, func(i *IndexRow) bool {
+			return indexName(field.ModelName, field.Name) == i.IndexName
+		}) {
+			continue
+		}
+
+		stmt := fmt.Sprintf("CREATE INDEX \"%s\" ON %s (%s);", indexName(field.ModelName, field.Name), Identifier(field.ModelName), Identifier(field.Name))
+		statements = append(statements, stmt)
+	}
+
+	// Drop existing indexes which don't exist anymore
+	for _, index := range existingIndexes {
+		if lo.ContainsBy(indexedFields, func(f *proto.Field) bool {
+			return indexName(f.ModelName, f.Name) == index.IndexName
+		}) {
+			continue
+		}
+
+		// Skip dropping primary key and unique indexes as we are not concerned with these here
+		if index.IsPrimary || index.IsUnique {
+			continue
+		}
+
+		stmt := fmt.Sprintf("DROP INDEX IF EXISTS \"%s\";", index.IndexName)
+		statements = append(statements, stmt)
+	}
+
+	return statements
+}
+
+func indexName(modelName string, fieldName string) string {
+	return fmt.Sprintf("%s__%s__idx", casing.ToSnake(modelName), casing.ToSnake(fieldName))
+}
+
+func findIndexableInputFields(schema *proto.Schema, model *proto.Model, message *proto.Message) []*proto.Field {
+	indexedFields := []*proto.Field{}
+
+	for _, input := range message.Fields {
+		field := proto.FindField(schema.Models, model.Name, input.Name)
+
+		// Skip optional inputs
+		if input.Optional {
+			continue
+		}
+
+		if !input.IsModelField() && input.Type.Type == proto.Type_TYPE_MESSAGE {
+			messageModel := schema.FindModel(field.Type.ModelName.Value)
+			nestedMsg := schema.FindMessage(input.Type.MessageName.Value)
+			indexedFields = append(indexedFields, findIndexableInputFields(schema, messageModel, nestedMsg)...)
+		}
+
+		// Skip indexing on optional fields
+		if input.Optional {
+			continue
+		}
+
+		// Skip inputs which don't correlate to a model field
+		if len(input.Target) == 0 {
+			continue
+		}
+
+		f := model.FindField(input.Target[len(input.Target)-1])
+
+		indexedFields = append(indexedFields, f)
+	}
+
+	return indexedFields
 }

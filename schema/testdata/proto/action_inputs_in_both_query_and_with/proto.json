@@ -723,27 +723,13 @@
       "fields": [
         {
           "messageName": "UpdateAccount5Values",
-          "name": "identity",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateAccount5IdentityInput"
-          }
-        }
-      ]
-    },
-    {
-      "name": "UpdateAccount5IdentityInput",
-      "fields": [
-        {
-          "messageName": "UpdateAccount5IdentityInput",
-          "name": "email",
+          "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Identity",
-            "fieldName": "email"
+            "modelName": "Account",
+            "fieldName": "name"
           },
-          "nullable": true,
-          "target": ["identity", "email"]
+          "target": ["name"]
         }
       ]
     },

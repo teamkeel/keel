@@ -86,6 +86,33 @@ test("orderby - get first - top 3 winners", async () => {
   expect(winners.results[2].name).toEqual("Bongani");
 });
 
+test("orderby - get top 3 - with offset pagination", async () => {
+  const winners = await actions.listRankings({
+    limit: 3,
+  });
+
+  expect(winners.pageInfo.count).toEqual(3);
+  expect(winners.pageInfo.pageNumber).toEqual(1);
+  expect(winners.pageInfo.totalCount).toEqual(5);
+  expect(winners.pageInfo.hasNextPage).toEqual(true);
+  expect(winners.results[0].name).toEqual("Mary");
+  expect(winners.results[1].name).toEqual("Stoffel");
+  expect(winners.results[2].name).toEqual("Bongani");
+});
+
+test("orderby - get second - with offset pagination", async () => {
+  const winners = await actions.listRankings({
+    limit: 1,
+    offset: 1,
+  });
+
+  expect(winners.pageInfo.count).toEqual(1);
+  expect(winners.pageInfo.pageNumber).toEqual(2);
+  expect(winners.pageInfo.totalCount).toEqual(5);
+  expect(winners.pageInfo.hasNextPage).toEqual(true);
+  expect(winners.results[0].name).toEqual("Stoffel");
+});
+
 test("orderby - with filter - saffer rankings", async () => {
   const saffers = await actions.listRankings({
     where: {

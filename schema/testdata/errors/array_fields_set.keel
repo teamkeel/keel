@@ -10,41 +10,41 @@ model Thing {
 
     actions {
         create createThing() {
-            //expect-error:18:41:E026:thing.texts is Text[] but "science" is Text
+            //expect-error:32:41:AttributeExpressionError:expression expected to resolve to type Text[] but it is Text
             @set(thing.texts = "science")
-            //expect-error:18:42:E026:thing.enums is MyEnum[] but MyEnum.One is MyEnum
+            //expect-error:32:42:AttributeExpressionError:expression expected to resolve to type MyEnum[] but it is MyEnum
             @set(thing.enums = MyEnum.One)
-            //expect-error:18:37:E026:thing.numbers is Number[] but 123 is Number
+            //expect-error:34:37:AttributeExpressionError:expression expected to resolve to type Number[] but it is Number
             @set(thing.numbers = 123)
-            //expect-error:29:30:E030:["science"] is an array. Only 'in' or 'not in' can be used
+            //expect-error:31:42:AttributeExpressionError:expression expected to resolve to type Text but it is Text[]
             @set(thing.text = ["science"])
-            //expect-error:29:30:E030:[MyEnum.One, MyEnum.Two] is an array. Only 'in' or 'not in' can be used
+            //expect-error:31:55:AttributeExpressionError:expression expected to resolve to type MyEnum but it is MyEnum[]
             @set(thing.enum = [MyEnum.One, MyEnum.Two])
-            //expect-error:31:32:E030:[123, 456] is an array. Only 'in' or 'not in' can be used
+            //expect-error:33:42:AttributeExpressionError:expression expected to resolve to type Number but it is Number[]
             @set(thing.number = [123,456])
         }
 
         update updateThing(id) {
-            //expect-error:18:41:E026:thing.texts is Text[] but "science" is Text
+            //expect-error:32:41:AttributeExpressionError:expression expected to resolve to type Text[] but it is Text
             @set(thing.texts = "science")
-            //expect-error:18:42:E026:thing.enums is MyEnum[] but MyEnum.One is MyEnum
+            //expect-error:32:42:AttributeExpressionError:expression expected to resolve to type MyEnum[] but it is MyEnum
             @set(thing.enums = MyEnum.One)
-            //expect-error:18:37:E026:thing.numbers is Number[] but 123 is Number
+            //expect-error:34:37:AttributeExpressionError:expression expected to resolve to type Number[] but it is Number
             @set(thing.numbers = 123)
-            //expect-error:29:30:E030:["science"] is an array. Only 'in' or 'not in' can be used
+            //expect-error:31:42:AttributeExpressionError:expression expected to resolve to type Text but it is Text[]
             @set(thing.text = ["science"])
-            //expect-error:29:30:E030:[MyEnum.One, MyEnum.Two] is an array. Only 'in' or 'not in' can be used
+            //expect-error:31:55:AttributeExpressionError:expression expected to resolve to type MyEnum but it is MyEnum[]
             @set(thing.enum = [MyEnum.One, MyEnum.Two])
-            //expect-error:31:32:E030:[123, 456] is an array. Only 'in' or 'not in' can be used
+            //expect-error:33:42:AttributeExpressionError:expression expected to resolve to type Number but it is Number[]
             @set(thing.number = [123,456])
         }
 
         create createNulls() {
-            //expect-error:18:36:E060:texts cannot be null
+            //expect-error:18:29:AttributeExpressionError:'texts' cannot be set to null
             @set(thing.texts = null)
-            //expect-error:18:36:E060:enums cannot be null
+            //expect-error:18:29:AttributeExpressionError:'enums' cannot be set to null
             @set(thing.enums = null)
-            //expect-error:18:38:E060:numbers cannot be null
+            //expect-error:18:31:AttributeExpressionError:'numbers' cannot be set to null
             @set(thing.numbers = null)
 
             @set(thing.text = "")
@@ -53,11 +53,11 @@ model Thing {
         }
 
          update updateNulls(id) {
-            //expect-error:18:36:E060:texts cannot be null
+            //expect-error:18:29:AttributeExpressionError:'texts' cannot be set to null
             @set(thing.texts = null)
-            //expect-error:18:36:E060:enums cannot be null
+            //expect-error:18:29:AttributeExpressionError:'enums' cannot be set to null
             @set(thing.enums = null)
-            //expect-error:18:38:E060:numbers cannot be null
+            //expect-error:18:31:AttributeExpressionError:'numbers' cannot be set to null
             @set(thing.numbers = null)
 
             @set(thing.text = "")

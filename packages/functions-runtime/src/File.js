@@ -9,6 +9,45 @@ const { useDatabase } = require("./database");
 const { DatabaseError } = require("./errors");
 const KSUID = require("ksuid");
 
+const s3Client = (() => {
+  if (!process.env.KEEL_FILES_BUCKET_NAME) {
+    return null;
+  }
+
+  if (!process.env.TEST_AWS_ENDPOINT) {
+    // If no test endpoint is provided then use the env's configuration
+    return new S3Client({
+      region: process.env.KEEL_REGION,
+      credentials: fromEnv(),
+    });
+  }
+
+  // Set in integration tests to send all AWS API calls to a test server
+  // for mocking
+  const endpoint = process.env.TEST_AWS_ENDPOINT;
+
+  return new S3Client({
+    region: process.env.KEEL_REGION,
+
+    // If a test endpoint is provided then use some test credentials rather than fromEnv()
+    credentials: endpoint
+      ? {
+          accessKeyId: "test",
+          secretAccessKey: "test",
+        }
+      : fromEnv(),
+
+    // If a custom endpoint is set we need to use a custom resolver. Just setting the base endpoint isn't enough for S3 as it
+    // as the default resolver uses the bucket name as a sub-domain, which likely won't work with the custom endpoint.
+    // By implementing a full resolver we can force it to be the endpoint we want.
+    endpointProvider: () => {
+      return {
+        url: new URL(endpoint),
+      };
+    },
+  });
+})();
+
 class InlineFile {
   constructor({ filename, contentType }) {
     this._filename = filename;
@@ -109,12 +148,7 @@ class File extends InlineFile {
       return Buffer.from(arrayBuffer);
     }
 
-    if (isS3Storage()) {
-      const s3Client = new S3Client({
-        credentials: fromEnv(),
-        region: process.env.KEEL_REGION,
-      });
-
+    if (s3Client) {
       const params = {
         Bucket: process.env.KEEL_FILES_BUCKET_NAME,
         Key: "files/" + this.key,
@@ -157,18 +191,11 @@ class File extends InlineFile {
   }
 
   async getPresignedUrl() {
-    if (isS3Storage()) {
-      const s3Client = new S3Client({
-        credentials: fromEnv(),
-        region: process.env.KEEL_REGION,
-      });
-
+    if (s3Client) {
       const command = new GetObjectCommand({
         Bucket: process.env.KEEL_FILES_BUCKET_NAME,
         Key: "files/" + this.key,
-        ResponseContentDisposition: `attachment; filename="${encodeURIComponent(
-          this.filename
-        )}"`,
+        ResponseContentDisposition: "inline",
       });
 
       const url = await getSignedUrl(s3Client, command, { expiresIn: 60 * 60 });
@@ -203,22 +230,17 @@ class File extends InlineFile {
 }
 
 async function storeFile(contents, key, filename, contentType, expires) {
-  if (isS3Storage()) {
-    const s3Client = new S3Client({
-      credentials: fromEnv(),
-      region: process.env.KEEL_REGION,
-    });
-
+  if (s3Client) {
     const params = {
       Bucket: process.env.KEEL_FILES_BUCKET_NAME,
       Key: "files/" + key,
       Body: contents,
       ContentType: contentType,
       ContentDisposition: `attachment; filename="${encodeURIComponent(
-        this.filename
+        filename
       )}"`,
       Metadata: {
-        filename: this.filename,
+        filename: filename,
       },
       ACL: "private",
     };
@@ -267,10 +289,6 @@ async function storeFile(contents, key, filename, contentType, expires) {
       throw new DatabaseError(e);
     }
   }
-}
-
-function isS3Storage() {
-  return "KEEL_FILES_BUCKET_NAME" in process.env;
 }
 
 module.exports = {

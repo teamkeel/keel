@@ -43,6 +43,8 @@ model Person {
 		bio Markdown
 		file File
 		secret Secret
+		canHoldBreath Duration
+		heightInMetres Decimal @computed(person.height * 0.3048)
 	}
 }`
 
@@ -61,6 +63,8 @@ export interface PersonTable {
 	bio: string
 	file: FileDbRecord
 	secret: string
+	canHoldBreath: runtime.Duration
+	heightInMetres: number
 	id: Generated<string>
 	createdAt: Generated<Date>
 	updatedAt: Generated<Date>
@@ -109,6 +113,8 @@ export interface Person {
 	bio: string
 	file: runtime.File
 	secret: string
+	canHoldBreath: runtime.Duration
+	heightInMetres: number
 	id: string
 	createdAt: Date
 	updatedAt: Date
@@ -135,6 +141,8 @@ export type PersonCreateValues = {
 	bio: string
 	file: runtime.InlineFile | runtime.File
 	secret: string
+	file: FileWriteTypes
+	canHoldBreath: runtime.Duration
 	id?: string
 	createdAt?: Date
 	updatedAt?: Date
@@ -142,6 +150,31 @@ export type PersonCreateValues = {
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := s.FindModel("Person")
 		writeCreateValuesType(w, s, m)
+	})
+}
+
+func TestWriteUpdateValuesInterface(t *testing.T) {
+	t.Parallel()
+	expected := `
+export type PersonUpdateValues = {
+	firstName: string
+	lastName: string | null
+	age: number
+	dateOfBirth: Date
+	gender: Gender
+	hasChildren: boolean
+	tags: string[]
+	height: number
+	bio: string
+	file: FileWriteTypes
+	canHoldBreath: runtime.Duration
+	id: string
+	createdAt: Date
+	updatedAt: Date
+}`
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		m := s.FindModel("Person")
+		writeUpdateValuesType(w, m)
 	})
 }
 
@@ -184,6 +217,8 @@ export interface PersonWhereConditions {
 	tags?: string[] | runtime.StringArrayWhereCondition;
 	height?: number | runtime.NumberWhereCondition;
 	bio?: string | runtime.StringWhereCondition;
+	canHoldBreath?: runtime.Duration | runtime.DurationWhereCondition;
+	heightInMetres?: number | runtime.NumberWhereCondition;
 	id?: string | runtime.IDWhereCondition;
 	createdAt?: Date | runtime.DateWhereCondition;
 	updatedAt?: Date | runtime.DateWhereCondition;
@@ -257,6 +292,7 @@ export type PersonAPI = {
 		bio: '',
 		file: inputs.profilePhoto,
 		secret: ''
+		canHoldBreath: undefined
 	});
 	%[1]s
 	*/
@@ -297,7 +333,7 @@ export type PersonAPI = {
 	* Creates a new query builder with the given conditions applied
 	* @example
 	%[1]stypescript
-	const records = await models.person.where({ createdAt: { after: new Date(2020, 1, 1) } }).orWhere({ updatedAt: { after: new Date(2020, 1, 1) } }).findMany();
+	const records = await models.person.where({ createdAt: { after: new Date(2020, 1, 1) } }).findMany();
 	%[1]s
 	*/
 	where(where: PersonWhereConditions): PersonQueryBuilder;
@@ -313,15 +349,17 @@ func TestModelAPIFindManyDeclaration(t *testing.T) {
 	t.Parallel()
 	expected := `
 export type PersonOrderBy = {
-	firstName?: runtime.SortDirection,
-	lastName?: runtime.SortDirection,
-	age?: runtime.SortDirection,
-	dateOfBirth?: runtime.SortDirection,
-	gender?: runtime.SortDirection,
-	hasChildren?: runtime.SortDirection,
-	id?: runtime.SortDirection,
-	createdAt?: runtime.SortDirection,
-	updatedAt?: runtime.SortDirection
+	firstName?: SortDirection,
+	lastName?: SortDirection,
+	age?: SortDirection,
+	dateOfBirth?: SortDirection,
+	gender?: SortDirection,
+	hasChildren?: SortDirection,
+	height?: SortDirection,
+	heightInMetres?: SortDirection,
+	id?: SortDirection,
+	createdAt?: SortDirection,
+	updatedAt?: SortDirection
 }
 
 export interface PersonFindManyParams {
@@ -482,6 +520,7 @@ function createPermissionApi() {
 const models = createModelAPI();
 module.exports.InlineFile = runtime.InlineFile;
 module.exports.File = runtime.File;
+module.exports.Duration = runtime.Duration;
 module.exports.models = models;
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;
@@ -920,6 +959,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -968,6 +1009,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1026,6 +1069,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1065,6 +1110,8 @@ export interface ListPersonsInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1104,6 +1151,8 @@ export interface ListPersonsInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1163,6 +1212,8 @@ export interface ListBooksInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1222,6 +1273,8 @@ export interface ListBooksInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1293,6 +1346,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1338,10 +1393,10 @@ export interface ListPeopleWhere {
 	favouriteSport: SportQueryInput;
 }
 export interface ListPeopleOrderByName {
-	name: runtime.SortDirection;
+	name: SortDirection;
 }
 export interface ListPeopleOrderByFavouriteSport {
-	favouriteSport: runtime.SortDirection;
+	favouriteSport: SortDirection;
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhere;
@@ -1349,6 +1404,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 	orderBy?: (ListPeopleOrderByName | ListPeopleOrderByFavouriteSport)[];
 }`
 
@@ -1986,6 +2043,8 @@ export interface ListPeopleInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
@@ -2140,7 +2199,8 @@ model Author {
 }
 model Book {
 	fields {
-		author Author
+		author Author @relation(books)
+		coAuthor Author?
 	}
 }`
 	expected := `
@@ -2160,6 +2220,11 @@ const tableConfigMap = {
 	"book": {
 		"author": {
 			"foreignKey": "author_id",
+			"referencesTable": "author",
+			"relationshipType": "belongsTo"
+		},
+		"co_author": {
+			"foreignKey": "co_author_id",
 			"referencesTable": "author",
 			"relationshipType": "belongsTo"
 		}
@@ -2195,22 +2260,6 @@ model Person {
 }
 	`
 	expected := `
-import * as sdk from "@teamkeel/sdk";
-import * as runtime from "@teamkeel/functions-runtime";
-import "@teamkeel/testing-runtime";
-
-export interface RequestPasswordResetInput {
-	email: string;
-	redirectUrl: string;
-}
-export interface RequestPasswordResetResponse {
-}
-export interface ResetPasswordInput {
-	token: string;
-	password: string;
-}
-export interface ResetPasswordResponse {
-}
 export interface HobbyQueryInput {
 	equals?: Hobby | null;
 	notEquals?: Hobby | null;
@@ -2225,6 +2274,8 @@ export interface PeopleByHobbyInput {
 	after?: string;
 	last?: number;
 	before?: string;
+	limit?: number;
+	offset?: number;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
@@ -2233,10 +2284,54 @@ declare class ActionExecutor {
 	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeTestingTypes(w, s)
+	})
 }
-export declare const actions: ActionExecutor;
-export declare const models: sdk.ModelsAPI;
-export declare function resetDatabase(): Promise<void>;`
+
+func TestWriteTestingTypesFacets(t *testing.T) {
+	t.Parallel()
+	schema := `
+enum Hobby {
+	Tennis
+	Chess
+}
+model Person {
+	fields {
+		city Text
+		hobby Hobby
+		age Number
+		dob Date
+		timeStamp Timestamp
+		duration Duration
+	}
+	actions {
+		list peopleByHobby(hobby) {
+			@facet(id, city, hobby, age, dob, duration, timeStamp)
+		}
+	}
+}
+	`
+	expected := `
+declare class ActionExecutor {
+	withIdentity(identity: sdk.Identity): ActionExecutor;
+	withAuthToken(token: string): ActionExecutor;
+	withTimezone(timezone: string): this;
+	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], resultInfo: PeopleByHobbyResultInfo, pageInfo: runtime.PageInfo}>;
+	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
+	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
+}
+export interface PeopleByHobbyResultInfo {
+	id: [ { value: string, count: number } ];
+	city: [ { value: string, count: number } ];
+	hobby: [ { value: string, count: number } ];
+	age: { min: number, max: number, avg: number };
+	dob: { min: Date, max: Date };
+	duration: { min: runtime.Duration, max: runtime.Duration, avg: runtime.Duration };
+	timeStamp: { min: Date, max: Date };
+}`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeTestingTypes(w, s)

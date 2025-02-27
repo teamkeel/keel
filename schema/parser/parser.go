@@ -16,6 +16,7 @@ import (
 type AST struct {
 	node.Node
 
+	Raw                  string
 	Declarations         []*DeclarationNode `@@*`
 	EnvironmentVariables []string
 	Secrets              []string
@@ -29,7 +30,8 @@ type DeclarationNode struct {
 	API     *APINode     `| "api" @@`
 	Enum    *EnumNode    `| "enum" @@`
 	Message *MessageNode `| "message" @@`
-	Job     *JobNode     `| "job" @@)`
+	Job     *JobNode     `| "job" @@`
+	Routes  *RoutesNode  `| "routes" @@)`
 }
 
 type ModelNode struct {
@@ -43,9 +45,9 @@ type ModelNode struct {
 type ModelSectionNode struct {
 	node.Node
 
-	Fields    []*FieldNode   `( "fields" "{" @@* "}"`
-	Actions   []*ActionNode  `| "actions" "{" @@* "}"`
-	Attribute *AttributeNode `| @@)`
+	Fields    []*FieldNode   `( ("fields" "{" @@* "}")`
+	Actions   []*ActionNode  `| ("actions" "{" @@* "}")`
+	Attribute *AttributeNode `| @@ )`
 }
 
 type NameNode struct {
@@ -82,12 +84,13 @@ func (f *FieldNode) IsScalar() bool {
 		FieldTypeNumber,
 		FieldTypeDecimal,
 		FieldTypeText,
-		FieldTypeDatetime,
+		FieldTypeTimestamp,
 		FieldTypeDate,
 		FieldTypeSecret,
 		FieldTypeID,
 		FieldTypePassword,
 		FieldTypeMarkdown,
+		FieldTypeDuration,
 		FieldTypeVector:
 		return true
 	default:
@@ -105,8 +108,8 @@ type APINode struct {
 type APISectionNode struct {
 	node.Node
 
-	Models    []*APIModelNode `("models" "{" @@* "}"`
-	Attribute *AttributeNode  `| @@)`
+	Models    []*APIModelNode `( "models" "{" @@* "}"`
+	Attribute *AttributeNode  `| @@ )`
 }
 
 type APIModelNode struct {
@@ -165,7 +168,7 @@ type JobSectionNode struct {
 	node.Node
 
 	Inputs    []*JobInputNode `( "inputs" "{" @@* "}"`
-	Attribute *AttributeNode  `| @@)`
+	Attribute *AttributeNode  `| @@ )`
 }
 
 type JobInputNode struct {
@@ -175,6 +178,20 @@ type JobInputNode struct {
 	Type     NameNode `@@`
 	Repeated bool     `( @( "[" "]" )`
 	Optional bool     `| @( "?" ))?`
+}
+
+type RoutesNode struct {
+	node.Node
+
+	Routes []*RouteNode `"{" @@* "}"`
+}
+
+type RouteNode struct {
+	node.Node
+
+	Method  NameNode `@@`
+	Pattern string   `"(" @String`
+	Handler NameNode `"," @@ ")"`
 }
 
 // Attributes:
@@ -196,7 +213,7 @@ type AttributeNode struct {
 	// - no parenthesis at all
 	// - empty parenthesis
 	// - parenthesis with args
-	Arguments []*AttributeArgumentNode `(( "(" @@ ( "," @@ )* ")" ) | ( "(" ")" ) )?`
+	Arguments []*AttributeArgumentNode `(( "(" ")" ) | ( "(" @@ ( "," @@ )* ")" ) )?`
 }
 
 type AttributeArgumentNode struct {
@@ -238,6 +255,31 @@ type ActionInputNode struct {
 	Label    *NameNode `(@@ ":")?`
 	Type     Ident     `@@`
 	Optional bool      `@( "?" )?`
+}
+
+type Ident struct {
+	node.Node
+
+	Fragments []*IdentFragment `( @@ ( "." @@ )* )`
+}
+
+func (ident *Ident) ToString() string {
+	ret := ""
+	for i, fragment := range ident.Fragments {
+		if i == len(ident.Fragments)-1 {
+			ret += fragment.Fragment
+		} else {
+			ret += fmt.Sprintf("%s.", fragment.Fragment)
+		}
+	}
+
+	return ret
+}
+
+type IdentFragment struct {
+	node.Node
+
+	Fragment string `@Ident`
 }
 
 func (a *ActionInputNode) Name() string {
@@ -352,6 +394,8 @@ func Parse(s *reader.SchemaFile) (*AST, error) {
 
 		return schema, err
 	}
+
+	schema.Raw = s.Contents
 
 	return schema, nil
 }

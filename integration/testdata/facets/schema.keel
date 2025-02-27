@@ -1,0 +1,27 @@
+model Order {
+    fields {
+        quantity Number
+        price Decimal
+        category Text
+        status Status
+        orderDate Date?
+        orderTime Timestamp?
+        durationToPurchase Duration?
+    }
+    actions {
+        list listOrders(category?, price?) {
+            @facet(id, quantity, price, status, category, orderDate, orderTime, durationToPurchase)
+            @where(order.status != Status.Cancelled)
+        }
+        create createOrder() with (quantity, price, category, status, orderDate, orderTime, durationToPurchase) {
+            @permission(expression: true)
+        }
+    }
+    @permission(expression: true, actions: [get,list])
+}
+
+enum Status {
+    Complete
+    InProgress
+    Cancelled
+}

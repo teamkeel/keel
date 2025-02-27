@@ -2,7 +2,6 @@ package actions
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
@@ -39,22 +38,35 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 					continue
 				}
 
-				data, ok := in.(string)
-				if !ok {
-					return inputs, fmt.Errorf("invalid input for field: %s", field.Name)
-				}
-				// .. we store the fi
-				fi, err := storer.Store(data)
-				if err != nil {
-					return inputs, fmt.Errorf("storing file: %w", err)
-				}
+				if field.Type.Repeated {
+					data, ok := in.([]string)
+					if !ok {
+						return inputs, fmt.Errorf("invalid input for field: %s", field.Name)
+					}
 
-				// ... and then change the input with the file data that should be saved in the db
-				fileInfo, err := fi.ToDbRecord()
-				if err != nil {
-					return inputs, err
+					fileInfos := []any{}
+					for _, d := range data {
+						fi, err := storer.Store(d)
+						if err != nil {
+							return inputs, fmt.Errorf("storing file: %w", err)
+						}
+
+						fileInfos = append(fileInfos, fi)
+					}
+					inputs[field.Name] = fileInfos
+				} else {
+					data, ok := in.(string)
+					if !ok {
+						return inputs, fmt.Errorf("invalid input for field: %s", field.Name)
+					}
+
+					fi, err := storer.Store(data)
+					if err != nil {
+						return inputs, fmt.Errorf("storing file: %w", err)
+					}
+
+					inputs[field.Name] = fi
 				}
-				inputs[field.Name] = fileInfo
 			}
 		}
 	}
@@ -68,32 +80,48 @@ func transformModelFileResponses(ctx context.Context, model *proto.Model, result
 		return results, nil
 	}
 
+	store, err := runtimectx.GetStorage(ctx)
+	if err != nil {
+		return results, fmt.Errorf("no file storage implementation: %w", err)
+	}
+
 	for _, field := range model.FileFields() {
-		if fileJSON, found := results[field.Name]; found && fileJSON != nil {
-			data, ok := fileJSON.(string)
-			if !ok {
-				return results, fmt.Errorf("invalid response for field: %s", field.Name)
-			}
-
-			fi := storage.FileInfo{}
-			if err := json.Unmarshal([]byte(data), &fi); err != nil {
-				return results, fmt.Errorf("failed to unmarshal file data: %w", err)
-			}
-
-			// now we're hydrating the db file info with data from our storage service if we have one
-			// e.g. injecting signed URLs for direct file downloads
-			if store, err := runtimectx.GetStorage(ctx); err == nil {
-				hydrated, err := store.GenerateFileResponse(&fi)
-				if err != nil {
-					return results, fmt.Errorf("failed retrieve hydrated file data: %w", err)
+		if data, found := results[field.Name]; found && data != nil {
+			if field.Type.Repeated {
+				fis, ok := data.([]storage.FileInfo)
+				if !ok {
+					return results, fmt.Errorf("invalid response for field: %s", field.Name)
 				}
-				results[field.Name] = hydrated
+
+				resp := []storage.FileResponse{}
+				for _, fi := range fis {
+					// now we're hydrating the db file info with data from our storage service
+					// e.g. injecting signed URLs for direct file downloads
+					hydrated, err := store.GenerateFileResponse(&fi)
+					if err != nil {
+						return results, fmt.Errorf("failed hydrating file data: %w", err)
+					}
+
+					resp = append(resp, hydrated)
+				}
+				results[field.Name] = resp
 			} else {
-				// or, we don't have a storage service so we can just return the data saved in the db
-				results[field.Name] = fi
+				fi, ok := data.(storage.FileInfo)
+				if !ok {
+					return results, fmt.Errorf("invalid response for field: %s", field.Name)
+				}
+
+				// now we're hydrating the db file info with data from our storage service
+				// e.g. injecting signed URLs for direct file downloads
+				resp, err := store.GenerateFileResponse(&fi)
+				if err != nil {
+					return results, fmt.Errorf("failed hydrating file data: %w", err)
+				}
+				results[field.Name] = resp
 			}
 		}
 	}
+
 	return results, nil
 }
 

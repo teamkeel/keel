@@ -1,5 +1,5 @@
-import { actions, models, resetDatabase } from "@teamkeel/testing";
-import { MyEnum } from "@teamkeel/sdk";
+import { actions, resetDatabase } from "@teamkeel/testing";
+import { MyEnum, InlineFile, Duration } from "@teamkeel/sdk";
 import { test, expect, beforeEach } from "vitest";
 
 beforeEach(resetDatabase);
@@ -21,6 +21,14 @@ test("array fields - create action", async () => {
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
     decimals: [1.1, 1.2, 1.3],
+    files: [
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+      InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
+    ],
+    durations: [
+      Duration.fromISOString("PT2H3M4S"),
+      Duration.fromISOString("PT1H2M3S"),
+    ],
   });
 
   expect(thing.texts).toHaveLength(2);
@@ -56,6 +64,24 @@ test("array fields - create action", async () => {
   expect(thing.decimals![0]).toEqual(1.1);
   expect(thing.decimals![1]).toEqual(1.2);
   expect(thing.decimals![2]).toEqual(1.3);
+
+  expect(thing.files).toHaveLength(2);
+
+  expect(thing.files![0].contentType).toEqual("text/plain");
+  expect(thing.files![0].filename).toEqual("one.txt");
+  expect(thing.files![0].size).toEqual(3);
+  const contents1 = await thing.files![0].read();
+  expect(contents1?.toString("utf-8")).toEqual("one");
+
+  expect(thing.files![1].contentType).toEqual("text/plain");
+  expect(thing.files![1].filename).toEqual("two.txt");
+  expect(thing.files![1].size).toEqual(3);
+  const contents2 = await thing.files![1].read();
+  expect(contents2?.toString("utf-8")).toEqual("two");
+
+  expect(thing.durations).toHaveLength(2);
+  expect(thing.durations![0]).toEqual("PT2H3M4S");
+  expect(thing.durations![1]).toEqual("PT1H2M3S");
 });
 
 test("array fields - empty arrays", async () => {
@@ -67,6 +93,8 @@ test("array fields - empty arrays", async () => {
     timestamps: [],
     enums: [],
     decimals: [],
+    files: [],
+    durations: [],
   });
 
   expect(thing.texts).not.toBeNull();
@@ -89,6 +117,12 @@ test("array fields - empty arrays", async () => {
 
   expect(thing.decimals).not.toBeNull();
   expect(thing.decimals).toHaveLength(0);
+
+  expect(thing.files).not.toBeNull();
+  expect(thing.files).toHaveLength(0);
+
+  expect(thing.durations).not.toBeNull();
+  expect(thing.durations).toHaveLength(0);
 });
 
 test("array fields - null arrays", async () => {
@@ -100,6 +134,8 @@ test("array fields - null arrays", async () => {
     timestamps: null,
     enums: null,
     decimals: null,
+    files: null,
+    durations: null,
   });
 
   expect(thing.texts).toBeNull();
@@ -109,6 +145,8 @@ test("array fields - null arrays", async () => {
   expect(thing.timestamps).toBeNull();
   expect(thing.enums).toBeNull();
   expect(thing.decimals).toBeNull();
+  expect(thing.files).toBeNull();
+  expect(thing.durations).toBeNull();
 });
 
 test("array fields - update action", async () => {
@@ -120,6 +158,13 @@ test("array fields - update action", async () => {
     timestamps: [new Date("2023-01-02 23:00:30")],
     enums: [MyEnum.Three],
     decimals: [101.123],
+    files: [
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+    ],
+    durations: [
+      Duration.fromISOString("PT2H3M4S"),
+      Duration.fromISOString("PT1H2M3S"),
+    ],
   });
 
   const thing = await actions.updateThing({
@@ -140,6 +185,13 @@ test("array fields - update action", async () => {
       ],
       enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
       decimals: [1.1, 1.2, 1.3],
+      files: [
+        InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
+        InlineFile.fromDataURL(
+          "data:text/plain;name=three.txt;base64,dGhyZWU="
+        ),
+      ],
+      durations: [Duration.fromISOString("PT1H3M4S")],
     },
   });
 
@@ -176,6 +228,23 @@ test("array fields - update action", async () => {
   expect(thing.decimals![0]).toEqual(1.1);
   expect(thing.decimals![1]).toEqual(1.2);
   expect(thing.decimals![2]).toEqual(1.3);
+
+  expect(thing.files).toHaveLength(2);
+
+  expect(thing.files![0].contentType).toEqual("text/plain");
+  expect(thing.files![0].filename).toEqual("two.txt");
+  expect(thing.files![0].size).toEqual(3);
+  const contents1 = await thing.files![0].read();
+  expect(contents1?.toString("utf-8")).toEqual("two");
+
+  expect(thing.files![1].contentType).toEqual("text/plain");
+  expect(thing.files![1].filename).toEqual("three.txt");
+  expect(thing.files![1].size).toEqual(5);
+  const contents2 = await thing.files![1].read();
+  expect(contents2?.toString("utf-8")).toEqual("three");
+
+  expect(thing.durations).toHaveLength(1);
+  expect(thing.durations![0]).toEqual("PT1H3M4S");
 });
 
 test("array fields - get action", async () => {
@@ -195,6 +264,11 @@ test("array fields - get action", async () => {
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
     decimals: [1.1, 1.2, 1.3],
+    files: [
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+      InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
+    ],
+    durations: [Duration.fromISOString("PT2H3M4S")],
   });
 
   const thing = await actions.getThing({
@@ -234,6 +308,23 @@ test("array fields - get action", async () => {
   expect(thing?.decimals![0]).toEqual(1.1);
   expect(thing?.decimals![1]).toEqual(1.2);
   expect(thing?.decimals![2]).toEqual(1.3);
+
+  expect(thing?.files).toHaveLength(2);
+
+  expect(thing?.files![0].contentType).toEqual("text/plain");
+  expect(thing?.files![0].filename).toEqual("one.txt");
+  expect(thing?.files![0].size).toEqual(3);
+  const contents1 = await thing?.files![0].read();
+  expect(contents1?.toString("utf-8")).toEqual("one");
+
+  expect(thing?.files![1].contentType).toEqual("text/plain");
+  expect(thing?.files![1].filename).toEqual("two.txt");
+  expect(thing?.files![1].size).toEqual(3);
+  const contents2 = await thing?.files![1].read();
+  expect(contents2?.toString("utf-8")).toEqual("two");
+
+  expect(thing?.durations).toHaveLength(1);
+  expect(thing?.durations![0]).toEqual("PT2H3M4S");
 });
 
 test("array fields - list action", async () => {
@@ -253,6 +344,14 @@ test("array fields - list action", async () => {
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
     decimals: [1.1, 1.2, 1.3],
+    files: [
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+      InlineFile.fromDataURL("data:text/plain;name=two.txt;base64,dHdv=="),
+    ],
+    durations: [
+      Duration.fromISOString("PT2H3M4S"),
+      Duration.fromISOString("PT1H2M3S"),
+    ],
   });
 
   const things = await actions.listThings();
@@ -294,6 +393,24 @@ test("array fields - list action", async () => {
   expect(thing.decimals![0]).toEqual(1.1);
   expect(thing.decimals![1]).toEqual(1.2);
   expect(thing.decimals![2]).toEqual(1.3);
+
+  expect(thing.files).toHaveLength(2);
+
+  expect(thing.files![0].contentType).toEqual("text/plain");
+  expect(thing.files![0].filename).toEqual("one.txt");
+  expect(thing.files![0].size).toEqual(3);
+  const contents1 = await thing.files![0].read();
+  expect(contents1?.toString("utf-8")).toEqual("one");
+
+  expect(thing.files![1].contentType).toEqual("text/plain");
+  expect(thing.files![1].filename).toEqual("two.txt");
+  expect(thing.files![1].size).toEqual(3);
+  const contents2 = await thing.files![1].read();
+  expect(contents2?.toString("utf-8")).toEqual("two");
+
+  expect(thing.durations).toHaveLength(2);
+  expect(thing.durations![0]).toEqual("PT2H3M4S");
+  expect(thing.durations![1]).toEqual("PT1H2M3S");
 });
 
 test("array fields - list action implicit querying - text", async () => {
@@ -459,10 +576,9 @@ test("array fields - list action implicit querying - text", async () => {
     },
   });
 
-  expect(things10.results).toHaveLength(3);
-  expect(things10.results[0].id).toEqual(t4.id);
-  expect(things10.results[1].id).toEqual(t5.id);
-  expect(things10.results[2].id).toEqual(t7.id);
+  expect(things10.results).toHaveLength(2);
+  expect(things10.results[0].id).toEqual(t5.id);
+  expect(things10.results[1].id).toEqual(t7.id);
 
   const things11 = await actions.listThings({
     where: {
@@ -474,13 +590,12 @@ test("array fields - list action implicit querying - text", async () => {
     },
   });
 
-  expect(things11.results).toHaveLength(6);
+  expect(things11.results).toHaveLength(5);
   expect(things11.results[0].id).toEqual(t1.id);
   expect(things11.results[1].id).toEqual(t2.id);
   expect(things11.results[2].id).toEqual(t3.id);
-  expect(things11.results[3].id).toEqual(t4.id);
-  expect(things11.results[4].id).toEqual(t5.id);
-  expect(things11.results[5].id).toEqual(t6.id);
+  expect(things11.results[3].id).toEqual(t5.id);
+  expect(things11.results[4].id).toEqual(t6.id);
 });
 
 test("array fields - list action implicit querying - number", async () => {
@@ -718,6 +833,9 @@ test("arrays - set attribute with empty arrays", async () => {
       new Date("2024-02-01 23:00:30"),
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
+    files: [
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+    ],
   });
 
   const created = await actions.updateSetToEmpty({ where: { id: thing.id } });
@@ -728,6 +846,7 @@ test("arrays - set attribute with empty arrays", async () => {
   expect(created.dates).toHaveLength(0);
   expect(created.timestamps).toHaveLength(0);
   expect(created.enums).toHaveLength(0);
+  expect(created.files).toHaveLength(0);
 });
 
 test("arrays - set attribute with null", async () => {
@@ -746,6 +865,9 @@ test("arrays - set attribute with null", async () => {
       new Date("2024-02-01 23:00:30"),
     ],
     enums: [MyEnum.One, MyEnum.Two, MyEnum.Three],
+    files: [
+      InlineFile.fromDataURL("data:text/plain;name=one.txt;base64,b25l=="),
+    ],
   });
 
   const created = await actions.updateSetToNull({ where: { id: thing.id } });
@@ -756,4 +878,5 @@ test("arrays - set attribute with null", async () => {
   expect(created.dates).toBeNull();
   expect(created.timestamps).toBeNull();
   expect(created.enums).toBeNull();
+  expect(created.files).toBeNull();
 });

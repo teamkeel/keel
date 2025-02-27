@@ -174,6 +174,8 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		os.Setenv(key, value)
 	}
 
+	os.Setenv("KEEL_API_URL", fmt.Sprintf("http://localhost:%s", runtimePort))
+
 	// Server to handle receiving HTTP requests from the ActionExecutor, JobExecutor and SubscriberExecutor.
 	runtimeServer := http.Server{
 		Addr: fmt.Sprintf(":%s", runtimePort),

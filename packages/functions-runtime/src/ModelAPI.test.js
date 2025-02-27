@@ -107,7 +107,9 @@ test("ModelAPI.create - throws if not not null constraint violation", async () =
       id: KSUID.randomSync().string,
       name: null,
     })
-  ).rejects.toThrow('null value in column "name" violates not-null constraint');
+  ).rejects.toThrow(
+    'null value in column "name" of relation "author" violates not-null constraint'
+  );
 });
 
 test("ModelAPI.create - throws if database constraint fails", async () => {
@@ -863,15 +865,10 @@ test("ModelAPI.findMany - relationships - duplicate joins handled", async () => 
         name: "Jim",
       },
     })
-    .orWhere({
-      author: {
-        name: "Bob",
-      },
-    })
     .findMany();
 
-  expect(posts.length).toEqual(2);
-  expect(posts.map((x) => x.id).sort()).toEqual([post1.id, post2.id].sort());
+  expect(posts.length).toEqual(1);
+  expect(posts.map((x) => x.id).sort()).toEqual([post1.id].sort());
 });
 
 test("ModelAPI.update", async () => {
@@ -930,7 +927,7 @@ test("ModelAPI.update - throws if not not null constraint violation", async () =
   );
 
   await expect(result).rejects.toThrow(
-    'null value in column "name" violates not-null constraint'
+    'null value in column "name" of relation "author" violates not-null constraint'
   );
 });
 
@@ -968,12 +965,9 @@ describe("QueryBuilder", () => {
     });
 
     const results = await postAPI
-      .where({ title: { equals: "adam" } })
-      .orWhere({
-        title: { startsWith: "jon" },
-      })
+      .where({ title: { startsWith: "jon" } })
       .findMany({
-        limit: 3,
+        limit: 1,
         offset: 1,
         orderBy: {
           title: "asc",
@@ -982,7 +976,7 @@ describe("QueryBuilder", () => {
 
     // because we've offset by 1, adam should not appear in the results even though
     // the query constraints match adam
-    expect(results).toEqual([three, four]);
+    expect(results).toEqual([four]);
   });
 
   test("ModelAPI.findMany - complex query", async () => {
@@ -1006,7 +1000,7 @@ describe("QueryBuilder", () => {
     });
 
     const rows = await personAPI
-      // Will match Jake
+      // Will match Jane
       .where({
         name: {
           startsWith: "J",
@@ -1016,16 +1010,9 @@ describe("QueryBuilder", () => {
           lessThan: 10,
         },
       })
-      // Will match Billy
-      .orWhere({
-        date: {
-          after: new Date("2022-01-01"),
-          before: new Date("2022-01-10"),
-        },
-      })
       .findMany();
-    expect(rows.length).toEqual(2);
-    expect(rows.map((x) => x.id).sort()).toEqual([p.id, p2.id].sort());
+    expect(rows.length).toEqual(1);
+    expect(rows.map((x) => x.id).sort()).toEqual([p.id].sort());
   });
 
   test("ModelAPI chained delete", async () => {
@@ -1064,34 +1051,6 @@ describe("QueryBuilder", () => {
 
     expect(jake).toEqual(p);
   });
-
-  // test("Model API chained order by", async () => {
-  //   const p1 = await postAPI.create({
-  //     id: KSUID.randomSync().string,
-  //     title: "adam",
-  //   });
-  //   const p2 = await postAPI.create({
-  //     id: KSUID.randomSync().string,
-  //     title: "dave",
-  //   });
-  //   const p3 = await postAPI.create({
-  //     id: KSUID.randomSync().string,
-  //     title: "jon",
-  //   });
-  //   const p4 = await postAPI.create({
-  //     id: KSUID.randomSync().string,
-  //     title: "jon bretman",
-  //   });
-
-  //   const query = postAPI
-  //     .where({ title: "adam" })
-  //     .orWhere({ title: "dave" })
-  //     .orderBy({ title: "desc" });
-
-  //   const results = await query.findMany();
-
-  //   expect(results[0].id).toEqual(p2);
-  // });
 
   test("ModelAPI chained update", async () => {
     const p1 = await postAPI.create({

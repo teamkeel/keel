@@ -13,6 +13,8 @@ input ListUsersInput {
   before: String
   first: Int
   last: Int
+  limit: Int
+  offset: Int
 }
 
 input SetIdentityInput {
@@ -52,6 +54,7 @@ type PageInfo {
   count: Int!
   endCursor: String!
   hasNextPage: Boolean!
+  pageNumber: Int
   startCursor: String!
   totalCount: Int!
 }

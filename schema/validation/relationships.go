@@ -137,11 +137,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 
 			// This field is not @unique and relation field on other model is not repeated
 			if query.FieldIsUnique(currentField) && currentField.Repeated {
-				errs.AppendError(makeRelationshipError(
-					"Cannot use @unique on a repeated model field",
-					fmt.Sprintf("In a one to one relationship, there are no repeated fields. %s", learnMore),
-					currentField.Name,
-				))
+				// This is handled elsewhere
 				return
 			}
 

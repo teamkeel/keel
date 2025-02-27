@@ -64,7 +64,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
-	sdkTypes.Writeln(`export { InlineFile, File } from "@teamkeel/functions-runtime"`)
+	sdkTypes.Writeln(`export { InlineFile, File, Duration, FileWriteTypes, SortDirection } from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln("")
 
 	writePermissions(sdk, schema)
@@ -167,6 +167,37 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	}
 }
 
+func writeResultInfoInterface(w *codegen.Writer, schema *proto.Schema, action *proto.Action, isClientPackage bool) {
+	facetFields := proto.FacetFields(schema, action)
+	if len(facetFields) == 0 {
+		return
+	}
+
+	w.Writef("export interface %sResultInfo {\n", strcase.ToCamel(action.Name))
+	w.Indent()
+
+	for _, field := range facetFields {
+		switch field.Type.Type {
+		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
+			w.Writef("%s: { min: number, max: number, avg: number };\n", field.Name)
+		case proto.Type_TYPE_ID, proto.Type_TYPE_ENUM, proto.Type_TYPE_STRING:
+			w.Writef("%s: [ { value: string, count: number } ];\n", field.Name)
+		case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME:
+			w.Writef("%s: { min: Date, max: Date };\n", field.Name)
+		case proto.Type_TYPE_DURATION:
+			if isClientPackage {
+				w.Writef("%s: { min: DurationString, max: DurationString, avg: DurationString };\n", field.Name)
+			} else {
+				w.Writef("%s: { min: runtime.Duration, max: runtime.Duration, avg: runtime.Duration };\n", field.Name)
+			}
+		}
+	}
+
+	w.Dedent()
+	w.Write("}")
+	w.Writeln("")
+}
+
 func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sTable {\n", model.Name)
 	w.Indent()
@@ -231,6 +262,10 @@ func writeUpdateValuesType(w *codegen.Writer, model *proto.Model) {
 	w.Indent()
 	for _, field := range model.Fields {
 		if field.Type.Type == proto.Type_TYPE_MODEL {
+			continue
+		}
+
+		if field.ComputedExpression != nil {
 			continue
 		}
 
@@ -341,8 +376,12 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 			w.Writef("// if providing a value for this field do not also set %s\n", strings.TrimSuffix(field.Name, "Id"))
 		}
 
+		if field.ComputedExpression != nil {
+			continue
+		}
+
 		w.Write(field.Name)
-		if field.Optional || field.DefaultValue != nil || field.IsHasMany() {
+		if field.Optional || field.DefaultValue != nil || field.IsHasMany() || field.ComputedExpression != nil {
 			w.Write("?")
 		}
 
@@ -376,7 +415,6 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 			}
 		} else {
 			t := toTypeScriptType(field.Type, true, false, false)
-
 			if field.Type.Repeated {
 				t = fmt.Sprintf("%s[]", t)
 			}
@@ -431,7 +469,7 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 
 		switch f.Type.Type {
 		// scalar types are only permitted to sort by
-		case proto.Type_TYPE_BOOL, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_INT, proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_ID:
+		case proto.Type_TYPE_BOOL, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_INT, proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_ID, proto.Type_TYPE_DECIMAL:
 			return true
 		default:
 			// includes types such as password, secret, model etc
@@ -440,7 +478,7 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 	})
 
 	for i, f := range relevantFields {
-		w.Writef("%s?: runtime.SortDirection", f.Name)
+		w.Writef("%s?: SortDirection", f.Name)
 
 		if i < len(relevantFields)-1 {
 			w.Write(",")
@@ -678,7 +716,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 	w.Indent()
 
 	nonOptionalFields := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
-		return !f.Optional && f.DefaultValue == nil
+		return !f.Optional && f.DefaultValue == nil && f.ComputedExpression == nil
 	})
 
 	tsDocComment(w, func(w *codegen.Writer) {
@@ -776,7 +814,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 		w.Writeln("* Creates a new query builder with the given conditions applied")
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
-		w.Writef("const records = await models.%s.where({ createdAt: { after: new Date(2020, 1, 1) } }).orWhere({ updatedAt: { after: new Date(2020, 1, 1) } }).findMany();\n", casing.ToLowerCamel(model.Name))
+		w.Writef("const records = await models.%s.where({ createdAt: { after: new Date(2020, 1, 1) } }).findMany();\n", casing.ToLowerCamel(model.Name))
 		w.Writeln("```")
 	})
 	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
@@ -798,7 +836,6 @@ func writeModelQueryBuilderDeclaration(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export type %sQueryBuilder = {\n", model.Name)
 	w.Indent()
 	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
-	w.Writef("orWhere(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
 	w.Writef("findMany(params?: %sQueryBuilderParams): Promise<%s[]>;\n", model.Name, model.Name)
 	w.Writef("findOne(params?: %sQueryBuilderParams): Promise<%s>;\n", model.Name, model.Name)
 
@@ -1078,6 +1115,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln(`const models = createModelAPI();`)
 	w.Writeln(`module.exports.InlineFile = runtime.InlineFile;`)
 	w.Writeln(`module.exports.File = runtime.File;`)
+	w.Writeln(`module.exports.Duration = runtime.Duration;`)
 	w.Writeln(`module.exports.models = models;`)
 	w.Writeln(`module.exports.permissions = createPermissionApi();`)
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
@@ -1119,7 +1157,7 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 				tableConfigMap[casing.ToSnake(model.Name)] = tableConfig
 			}
 
-			tableConfig[field.Name] = relationshipConfig
+			tableConfig[casing.ToSnake(field.Name)] = relationshipConfig
 		}
 	}
 
@@ -1340,32 +1378,37 @@ func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Sub
 	w.Writeln("}>;")
 }
 
-func toActionReturnType(model *proto.Model, op *proto.Action) string {
+func toActionReturnType(model *proto.Model, action *proto.Action) string {
 	returnType := "Promise<"
 	sdkPrefix := "sdk."
 
-	switch op.Type {
+	switch action.Type {
 	case proto.ActionType_ACTION_TYPE_CREATE:
 		returnType += sdkPrefix + model.Name
 	case proto.ActionType_ACTION_TYPE_UPDATE:
 		returnType += sdkPrefix + model.Name
 	case proto.ActionType_ACTION_TYPE_GET:
 		className := model.Name
-		if len(op.GetResponseEmbeds()) > 0 {
-			className = toResponseType(op.Name)
+		if len(action.GetResponseEmbeds()) > 0 {
+			className = toResponseType(action.Name)
 		}
 		returnType += sdkPrefix + className + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
 		className := model.Name
-		if len(op.GetResponseEmbeds()) > 0 {
-			className = toResponseType(op.Name)
+		if len(action.GetResponseEmbeds()) > 0 {
+			className = toResponseType(action.Name)
 		}
-		returnType += "{results: " + sdkPrefix + className + "[], pageInfo: runtime.PageInfo}"
+
+		if len(action.Facets) > 0 {
+			returnType += "{results: " + sdkPrefix + className + "[], resultInfo: " + strcase.ToCamel(action.Name) + "ResultInfo, pageInfo: runtime.PageInfo}"
+		} else {
+			returnType += "{results: " + sdkPrefix + className + "[], pageInfo: runtime.PageInfo}"
+		}
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		// todo: create ID type
 		returnType += "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
-		returnType += op.ResponseMessageName
+		returnType += action.ResponseMessageName
 	}
 
 	returnType += ">"
@@ -1669,8 +1712,10 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 			w.Writeln(";")
 		}
 	}
+
 	w.Dedent()
 	w.Writeln("}")
+
 	if len(schema.Jobs) > 0 {
 		w.Writeln("type JobOptions = { scheduled?: boolean } | null")
 		w.Writeln("declare class JobExecutor {")
@@ -1724,6 +1769,14 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		w.Writeln("export declare const subscribers: SubscriberExecutor;")
 	}
 
+	for _, model := range schema.Models {
+		for _, action := range model.Actions {
+			if action.Type == proto.ActionType_ACTION_TYPE_LIST {
+				writeResultInfoInterface(w, schema, action, false)
+			}
+		}
+	}
+
 	w.Writeln("export declare const actions: ActionExecutor;")
 	w.Writeln("export declare const models: sdk.ModelsAPI;")
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
@@ -1740,13 +1793,23 @@ func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 
 func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
 	switch t.Type {
+	case proto.Type_TYPE_DURATION:
+		if isClientPackage {
+			return "DurationString"
+		} else {
+			return "runtime.Duration"
+		}
 	case proto.Type_TYPE_RELATIVE_PERIOD:
 		return "RelativeDateString"
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
 			return "string"
 		} else {
-			return "runtime.InlineFile"
+			if isTestingPackage {
+				return "FileWriteTypes"
+			} else {
+				return "runtime.File"
+			}
 		}
 	default:
 		return toTypeScriptType(t, false, isTestingPackage, isClientPackage)
@@ -1761,7 +1824,7 @@ func toResponseTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClient
 		if isClientPackage {
 			return "FileResponseObject"
 		} else {
-			return "runtime.File | runtime.InlineFile"
+			return "runtime.File"
 		}
 	default:
 		return toTypeScriptType(t, false, isTestingPackage, isClientPackage)
@@ -1780,6 +1843,12 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 		ret = "number[]"
 	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		ret = "Date"
+	case proto.Type_TYPE_DURATION:
+		if isClientPackage {
+			ret = "DurationString"
+		} else {
+			ret = "runtime.Duration"
+		}
 	case proto.Type_TYPE_ENUM:
 		ret = t.EnumName.Value
 	case proto.Type_TYPE_MESSAGE:
@@ -1792,11 +1861,7 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 			ret = t.ModelName.Value
 		}
 	case proto.Type_TYPE_SORT_DIRECTION:
-		if isClientPackage {
-			ret = "SortDirection"
-		} else {
-			ret = "runtime.SortDirection"
-		}
+		ret = "SortDirection"
 	case proto.Type_TYPE_UNION:
 		// Retrieve all the types that can satisfy this union field.
 		messageNames := lo.Map(t.UnionNames, func(s *wrapperspb.StringValue, _ int) string {
@@ -1806,12 +1871,13 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 	case proto.Type_TYPE_STRING_LITERAL:
 		// Use string literal type for discriminating.
 		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
+
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
 			ret = "FileResponseObject"
 		} else {
 			if includeCompatibleTypes {
-				ret = "runtime.InlineFile | runtime.File"
+				ret = "FileWriteTypes"
 			} else {
 				ret = "runtime.File"
 			}
@@ -1850,6 +1916,8 @@ func toWhereConditionType(f *proto.Field) string {
 		return "runtime.NumberWhereCondition"
 	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		return "runtime.DateWhereCondition"
+	case proto.Type_TYPE_DURATION:
+		return "runtime.DurationWhereCondition"
 	case proto.Type_TYPE_ENUM:
 		return fmt.Sprintf("%sWhereCondition", f.Type.EnumName.Value)
 	default:

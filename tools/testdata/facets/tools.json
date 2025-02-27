@@ -1,0 +1,473 @@
+{
+  "tools": [
+    {
+      "id": "listOrders",
+      "name": "List orders",
+      "actionName": "listOrders",
+      "apiNames": ["Api"],
+      "modelName": "Order",
+      "actionType": "ACTION_TYPE_LIST",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.where"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Where",
+          "visible": true,
+          "scope": "FILTERS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.first"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "First",
+          "displayOrder": 1,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.after"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "After",
+          "displayOrder": 2,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.last"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Last",
+          "displayOrder": 3,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.before"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Before",
+          "displayOrder": 4,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.limit"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Limit",
+          "displayOrder": 5,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.offset"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Offset",
+          "displayOrder": 6,
+          "visible": true,
+          "scope": "PAGINATION"
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.count"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Count",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.totalCount"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Total count",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.hasNextPage"
+          },
+          "fieldType": "TYPE_BOOL",
+          "displayName": "Has next page",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.startCursor"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Start cursor",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.endCursor"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "End cursor",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.pageNumber"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Page Number",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "ResultInfo",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.price"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "price facets",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.price.min"
+          },
+          "fieldType": "TYPE_DECIMAL",
+          "displayName": "Minimum",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.price.max"
+          },
+          "fieldType": "TYPE_DECIMAL",
+          "displayName": "Maximum",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.price.avg"
+          },
+          "fieldType": "TYPE_DECIMAL",
+          "displayName": "Average",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.quantity"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "quantity facets",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.quantity.min"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Minimum",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.quantity.max"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Maximum",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.quantity.avg"
+          },
+          "fieldType": "TYPE_DECIMAL",
+          "displayName": "Average",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.category"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "category facets",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.category[*].value"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Value",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.category[*].count"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Count",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.durationToOrder"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "durationToOrder facets",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.durationToOrder.min"
+          },
+          "fieldType": "TYPE_DURATION",
+          "displayName": "Minimum",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.durationToOrder.max"
+          },
+          "fieldType": "TYPE_DURATION",
+          "displayName": "Maximum",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.createdAt"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "createdAt facets",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.createdAt.min"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Minimum",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.resultInfo.createdAt.max"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Maximum",
+          "scope": "FACETS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "repeated": true,
+          "displayName": "Results",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].price"
+          },
+          "fieldType": "TYPE_DECIMAL",
+          "displayName": "Price",
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "price"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].quantity"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Quantity",
+          "displayOrder": 1,
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "quantity"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].category"
+          },
+          "fieldType": "TYPE_ENUM",
+          "displayName": "Category",
+          "displayOrder": 2,
+          "visible": true,
+          "enumName": "Category",
+          "modelName": "Order",
+          "fieldName": "category"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].durationToOrder"
+          },
+          "fieldType": "TYPE_DURATION",
+          "displayName": "Duration to order",
+          "displayOrder": 3,
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "durationToOrder"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 5,
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 6,
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 7,
+          "visible": true,
+          "modelName": "Order",
+          "fieldName": "updatedAt"
+        }
+      ],
+      "title": {
+        "template": "Orders"
+      },
+      "entitySingle": "order",
+      "entityPlural": "orders",
+      "capabilities": {},
+      "pagination": {
+        "start": {
+          "requestInput": "after",
+          "responseField": {
+            "path": "$.pageInfo.startCursor"
+          }
+        },
+        "end": {
+          "requestInput": "before",
+          "responseField": {
+            "path": "$.pageInfo.endCursor"
+          }
+        },
+        "pageSize": {
+          "requestInput": "first",
+          "responseField": {
+            "path": "$.pageInfo.count"
+          },
+          "defaultValue": 50
+        },
+        "nextPage": {
+          "path": "$.pageInfo.hasNextPage"
+        },
+        "totalCount": {
+          "path": "$.pageInfo.totalCount"
+        }
+      }
+    },
+    {
+      "id": "requestPasswordReset",
+      "name": "Request password reset",
+      "actionName": "requestPasswordReset",
+      "apiNames": ["Api"],
+      "modelName": "Identity",
+      "actionType": "ACTION_TYPE_WRITE",
+      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.email"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Email",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.redirectUrl"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Redirect url",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "title": {
+        "template": "Request password reset"
+      },
+      "entitySingle": "identity",
+      "entityPlural": "identities",
+      "capabilities": {}
+    },
+    {
+      "id": "resetPassword",
+      "name": "Reset password",
+      "actionName": "resetPassword",
+      "apiNames": ["Api"],
+      "modelName": "Identity",
+      "actionType": "ACTION_TYPE_WRITE",
+      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.token"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Token",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.password"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Password",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "title": {
+        "template": "Reset password"
+      },
+      "entitySingle": "identity",
+      "entityPlural": "identities",
+      "capabilities": {}
+    }
+  ]
+}

@@ -10,18 +10,11 @@ import (
 
 // AttributeArgumentsRules tests for the very basic rules around required arguments for attributes
 func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
-	//var model *parser.ModelNode
 	var field *parser.FieldNode
 	var action *parser.ActionNode
 	var job *parser.JobNode
 
 	return Visitor{
-		// EnterModel: func(m *parser.ModelNode) {
-		// 	model = m
-		// },
-		// LeaveModel: func(*parser.ModelNode) {
-		// 	model = nil
-		// },
 		EnterAction: func(a *parser.ActionNode) {
 			action = a
 		},
@@ -174,7 +167,7 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 						errorhandling.AttributeArgumentError,
 						errorhandling.ErrorDetails{
 							Message: message,
-							//Hint:    hint,
+							Hint:    hint,
 						},
 						node,
 					))
