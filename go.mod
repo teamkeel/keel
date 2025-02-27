@@ -44,6 +44,7 @@ require (
 	github.com/karlseguin/typed v1.1.8
 	github.com/lib/pq v1.10.9
 	github.com/manifoldco/promptui v0.9.0
+	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/nleeper/goment v1.4.4
 	github.com/nsf/jsondiff v0.0.0-20230430225905-43f6cf3098c1
 	github.com/otiai10/copy v1.14.1

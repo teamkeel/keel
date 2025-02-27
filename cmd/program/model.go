@@ -532,6 +532,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ctx = db.WithDatabase(ctx, m.Database)
 		ctx = rpcApi.WithSchema(ctx, m.Schema)
 		ctx = rpcApi.WithConfig(ctx, m.Config)
+		ctx = rpcApi.WithProjectDir(ctx, m.ProjectDir)
 		r := msg.r.WithContext(ctx)
 		w := msg.w
 
