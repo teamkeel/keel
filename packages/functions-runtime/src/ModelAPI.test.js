@@ -107,7 +107,9 @@ test("ModelAPI.create - throws if not not null constraint violation", async () =
       id: KSUID.randomSync().string,
       name: null,
     })
-  ).rejects.toThrow('null value in column "name" violates not-null constraint');
+  ).rejects.toThrow(
+    'null value in column "name" of relation "author" violates not-null constraint'
+  );
 });
 
 test("ModelAPI.create - throws if database constraint fails", async () => {
@@ -925,7 +927,7 @@ test("ModelAPI.update - throws if not not null constraint violation", async () =
   );
 
   await expect(result).rejects.toThrow(
-    'null value in column "name" violates not-null constraint'
+    'null value in column "name" of relation "author" violates not-null constraint'
   );
 });
 
