@@ -30,6 +30,10 @@ func syncTool(tool, gen *toolsproto.ActionConfig) {
 	tool.Response = newResponses
 
 	syncToolLinks(tool, gen)
+
+	if tool.DisplayLayout == nil && gen.DisplayLayout != nil {
+		tool.DisplayLayout = gen.DisplayLayout
+	}
 }
 
 func syncInput(input, gen *toolsproto.RequestFieldConfig) {
