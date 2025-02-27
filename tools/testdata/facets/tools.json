@@ -1,10 +1,12 @@
 {
   "tools": [
     {
-      "id": "listOrders",
+      "id": "list-orders",
       "name": "List orders",
       "actionName": "listOrders",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Order",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -402,10 +404,12 @@
       }
     },
     {
-      "id": "requestPasswordReset",
+      "id": "request-password-reset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -436,10 +440,12 @@
       "capabilities": {}
     },
     {
-      "id": "resetPassword",
+      "id": "reset-password",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
