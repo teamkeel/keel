@@ -83,10 +83,31 @@ service API {
 
 	// Return a list of default generated tools config for interacting with the API
 	rpc ListTools(ListToolsRequest) returns (ListToolsResponse);
+	// Delete all existing tools configuration (if any) and regenerate default tools.
+	rpc ResetTools(ResetToolsRequest) returns (ResetToolsResponse);
+	// Updates a tool by providing the complete action config
+	rpc ConfigureTool(ConfigureToolRequest) returns (tools.ActionConfig);
+	// Duplicates the given tool (given by reference) and returns the new tool
+	rpc DuplicateTool(DuplicateToolRequest) returns (tools.ActionConfig);
 }
 
 message ListToolsRequest {}
 
 message ListToolsResponse {
 	repeated tools.ActionConfig tools = 1;
+}
+
+message ResetToolsRequest {}
+
+message ResetToolsResponse {
+	repeated tools.ActionConfig tools = 1;
+}
+
+message ConfigureToolRequest {
+	tools.ActionConfig configured_tool = 2;	
+}
+
+message DuplicateToolRequest {
+	// A tool reference, e.g. `list-categories-1`
+	string tool_id = 2;	
 }
