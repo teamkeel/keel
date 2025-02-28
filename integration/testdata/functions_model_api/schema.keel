@@ -35,13 +35,15 @@ model Author {
     fields {
         name Text
         books Book[]
+        coAuthored Book[]
     }
 }
 
 model Book {
     fields {
         title Text
-        author Author
+        author Author @relation(books)
+        coAuthor Author? @relation(coAuthored)
     }
 }
 

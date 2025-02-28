@@ -169,12 +169,16 @@ test("findOne - compound unique with relationships", async () => {
 });
 
 test("findOne - has-many", async () => {
-  const dickens = await models.author.create({
-    name: "Charles Dickens",
+  const pratchett = await models.author.create({
+    name: "Terry Pratchett",
+  });
+  const gaiman = await models.author.create({
+    name: "Neil Gaiman",
   });
   const book = await models.book.create({
-    authorId: dickens.id,
-    title: "Oliver Twist",
+    authorId: pratchett.id,
+    coAuthorId: gaiman.id,
+    title: "Good Omens",
   });
 
   const dbAuthor = await models.author.findOne({
@@ -183,7 +187,31 @@ test("findOne - has-many", async () => {
     },
   });
 
-  expect(dbAuthor).not.toBeNull();
+  expect(dbAuthor?.id).toEqual(pratchett.id);
+
+  const dbCoAuthor = await models.author.findOne({
+    coAuthored: {
+      id: book.id,
+    },
+  });
+
+  expect(dbCoAuthor?.id).toEqual(gaiman.id);
+
+  const dbBooks = await models.book.findMany({
+    where: {
+      authorId: pratchett.id,
+    },
+  });
+
+  expect(dbBooks.length).toEqual(1);
+
+  const dbCoAuthoredBooks = await models.book.findMany({
+    where: {
+      coAuthorId: gaiman.id,
+    },
+  });
+
+  expect(dbCoAuthoredBooks.length).toEqual(1);
 });
 
 test("findOne - one-to-one", async () => {
@@ -339,6 +367,26 @@ test("create - nested has-many two-levels", async () => {
     },
   });
   expect(dbReadings.length).toBe(4);
+});
+
+test("findMany - notEquals", async () => {
+  const dickens = await models.author.create({
+    name: "Charles Dickens",
+  });
+  const tolkien = await models.author.create({
+    name: "J.R.R. Tolkien",
+  });
+
+  const authors = await models.author.findMany({
+    where: {
+      id: {
+        notEquals: dickens.id,
+      },
+    },
+  });
+
+  expect(authors.length).toBe(1);
+  expect(authors[0].id).equals(tolkien.id);
 });
 
 test("findMany - notEquals", async () => {
