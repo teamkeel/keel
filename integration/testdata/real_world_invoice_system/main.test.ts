@@ -314,7 +314,7 @@ test("delete order item", async () => {
   const items = await actions.listOrderItems({
     where: { order: { id: { equals: order?.id } } },
   });
-  console.log(items.results);
+
   for (const item of items.results) {
     if (item.productId === productMouse!.id) {
       await actions.deleteOrderItem({ id: item!.id });

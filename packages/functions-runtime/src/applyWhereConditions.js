@@ -71,13 +71,12 @@ const opMapping = {
  */
 function applyWhereConditions(context, qb, where = {}) {
   const conf = context.tableConfig();
-
   for (const key of Object.keys(where)) {
     const v = where[key];
 
     // Handle nested where conditions e.g. using a join table
-    if (conf && conf[key]) {
-      const rel = conf[key];
+    if (conf && conf[snakeCase(key)]) {
+      const rel = conf[snakeCase(key)];
       context.withJoin(rel.referencesTable, () => {
         qb = applyWhereConditions(context, qb, v);
       });

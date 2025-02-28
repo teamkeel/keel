@@ -1,3 +1,5 @@
+const { snakeCase } = require("./casing");
+
 /**
  * Adds the joins required by the where conditions to the given
  * Kysely instance and returns the resulting new Kysely instance.
@@ -15,7 +17,7 @@ function applyJoins(context, qb, where) {
   const srcTable = context.tableAlias();
 
   for (const key of Object.keys(where)) {
-    const rel = conf[key];
+    const rel = conf[snakeCase(key)];
     if (!rel) {
       continue;
     }
