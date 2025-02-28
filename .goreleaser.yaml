@@ -29,9 +29,11 @@ archives:
   - id: keel
     builds:
       - keel
+    name_template: "keel_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
   - id: runtime-lambda
     builds:
       - runtime-lambda
+    name_template: "runtime-lambda_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 release:
   github:
     owner: teamkeel
