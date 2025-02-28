@@ -4,7 +4,7 @@
   "description": "Internal package used by @teamkeel/sdk",
   "main": "src/index.js",
   "scripts": {
-    "test": "vitest run --reporter verbose --threads false",
+    "test": "vitest run --reporter verbose --pool=threads --poolOptions.threads.singleThread",
     "format": "npx prettier --write src/**/*.js"
   },
   "keywords": [],
@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "prettier": "3.1.1",
-    "vitest": "^0.34.6"
+    "vitest": "^3.0.7"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "~3.722.0",

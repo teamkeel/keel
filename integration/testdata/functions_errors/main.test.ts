@@ -3,14 +3,6 @@ import { test, beforeEach, expect } from "vitest";
 
 beforeEach(resetDatabase);
 
-class CustomError extends Error {
-  code: string;
-  constructor(code: string, message: string) {
-    super(message);
-    this.code = code;
-  }
-}
-
 test("Not found errors", async () => {
   await expect(
     (async () => {
@@ -18,9 +10,10 @@ test("Not found errors", async () => {
         id: "123",
       });
     })()
-  ).rejects.toThrowError(
-    new CustomError("ERR_RECORD_NOT_FOUND", "record not found")
-  );
+  ).rejects.toEqual({
+    code: "ERR_RECORD_NOT_FOUND",
+    message: "record not found",
+  });
 
   await expect(
     (async () => {
@@ -28,9 +21,10 @@ test("Not found errors", async () => {
         id: "123",
       });
     })()
-  ).rejects.toThrowError(
-    new CustomError("ERR_RECORD_NOT_FOUND", "nothing here")
-  );
+  ).rejects.toEqual({
+    code: "ERR_RECORD_NOT_FOUND",
+    message: "nothing here",
+  });
 });
 
 test("Bad request errors", async () => {
@@ -40,7 +34,8 @@ test("Bad request errors", async () => {
         id: "123",
       });
     })()
-  ).rejects.toThrowError(
-    new CustomError("ERR_INVALID_INPUT", "invalid inputs")
-  );
+  ).rejects.toEqual({
+    code: "ERR_INVALID_INPUT",
+    message: "invalid inputs",
+  });
 });
