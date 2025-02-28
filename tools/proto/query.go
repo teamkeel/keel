@@ -2,6 +2,10 @@ package proto
 
 // FindByID finds a tool in the given tools message by id
 func (tools *Tools) FindByID(id string) *ActionConfig {
+	if tools == nil {
+		return nil
+	}
+
 	for _, t := range tools.Tools {
 		if t.Id == id {
 			return t
@@ -9,6 +13,10 @@ func (tools *Tools) FindByID(id string) *ActionConfig {
 	}
 
 	return nil
+}
+
+func (tools *Tools) HasTools() bool {
+	return len(tools.Tools) > 0
 }
 
 // HasIDs checks that the tools wrapper contains all the tools with the given ids
@@ -20,6 +28,20 @@ func (tools *Tools) HasIDs(ids ...string) bool {
 	}
 
 	return true
+}
+
+// IntersectIDs returns the common tool ids from the given two tool wrappers
+func (tools *Tools) IntersectIDs(others *Tools) []string {
+	common := []string{}
+	for _, t := range tools.Tools {
+		for _, o := range others.Tools {
+			if t.Id == o.Id {
+				common = append(common, t.Id)
+			}
+		}
+	}
+
+	return common
 }
 
 // Diff will return a subset of the given tools which do not exist in our current tools wrapper
