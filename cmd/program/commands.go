@@ -575,15 +575,21 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 		w.FilterOps(watcher.Write, watcher.Remove)
 
 		ignored := []string{
-			"node_modules/",
-			".build/",
-			".git/",
+			"node_modules",
 		}
 
 		w.AddFilterHook(func(info os.FileInfo, fullPath string) error {
-			for _, v := range ignored {
-				if strings.Contains(fullPath, v) {
+			// Skip if any directory component is hidden or is in the ignored list
+			pathParts := strings.Split(filepath.Clean(fullPath), string(filepath.Separator))
+			for _, part := range pathParts {
+				if strings.HasPrefix(part, ".") {
 					return watcher.ErrSkip
+				}
+
+				for _, v := range ignored {
+					if strings.Contains(part, v) {
+						return watcher.ErrSkip
+					}
 				}
 			}
 
