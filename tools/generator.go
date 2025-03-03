@@ -103,7 +103,7 @@ func (g *Generator) scaffoldTools() {
 
 			t := Tool{
 				Config: &toolsproto.ActionConfig{
-					Id:             action.GetName(),
+					Id:             casing.ToKebab(action.GetName()),
 					ApiNames:       g.Schema.FindApiNames(model.Name, action.Name),
 					Name:           casing.ToSentenceCase(action.Name),
 					ActionName:     action.GetName(),
@@ -148,7 +148,7 @@ func (g *Generator) scaffoldTools() {
 				}
 			}
 
-			g.Tools[t.Config.ActionName] = &t
+			g.Tools[t.Config.Id] = &t
 		}
 	}
 }

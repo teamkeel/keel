@@ -578,6 +578,7 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 			"node_modules/",
 			".build/",
 			".git/",
+			"tools.json",
 		}
 
 		w.AddFilterHook(func(info os.FileInfo, fullPath string) error {
