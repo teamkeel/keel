@@ -15,7 +15,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-const toolsFile = "tools.json"
+const toolsDir = "tools"
 
 const (
 	// Alphabet for unique nanoids to be used for tool ids
@@ -72,27 +72,41 @@ func WithConfig(cfg *config.ProjectConfig) ServiceOpt {
 	}
 }
 
+func (s *Service) initToolsFolder() error {
+	path := filepath.Join(s.ProjectDir, toolsDir)
+	_, err := os.Stat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(path, os.ModePerm)
+		if err != nil {
+			return fmt.Errorf("initialising tools dir: %w", err)
+		}
+	}
+	if err != nil {
+		return fmt.Errorf("initialising tools dir: %w", err)
+	}
+	return nil
+}
+
 // loadFromProject will read from the tools.json file the tools configuration.
 // When a config fiel doesn't exist, a nil nil response will be returned
 func (s *Service) loadFromProject() (*toolsproto.Tools, error) {
-	path := filepath.Join(s.ProjectDir, toolsFile)
-
-	if _, err := os.Stat(path); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return &toolsproto.Tools{}, nil
-		}
-
-		return nil, err
-	}
-
-	fileBytes, err := os.ReadFile(path)
+	configFiles, err := filepath.Glob(filepath.Join(s.ProjectDir, toolsDir, "*.json"))
 	if err != nil {
 		return nil, err
 	}
 
-	var tools toolsproto.Tools
-	if err := protojson.Unmarshal(fileBytes, &tools); err != nil {
-		return nil, err
+	tools := toolsproto.Tools{}
+
+	for _, fName := range configFiles {
+		fileBytes, err := os.ReadFile(fName)
+		if err != nil {
+			return nil, err
+		}
+		var cfg toolsproto.ActionConfig
+		if err := protojson.Unmarshal(fileBytes, &cfg); err != nil {
+			return nil, err
+		}
+		tools.Tools = append(tools.Tools, &cfg)
 	}
 
 	return &tools, nil
@@ -100,9 +114,9 @@ func (s *Service) loadFromProject() (*toolsproto.Tools, error) {
 
 // clearProject will remove all the saved tool configs from the project.
 func (s *Service) clearProject() error {
-	path := filepath.Join(s.ProjectDir, toolsFile)
+	path := filepath.Join(s.ProjectDir, toolsDir)
 
-	err := os.Remove(path)
+	err := os.RemoveAll(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil
@@ -115,17 +129,20 @@ func (s *Service) clearProject() error {
 
 // storeToProject will save the given tools configuration to the tools.json file in the project.
 func (s *Service) storeToProject(tools *toolsproto.Tools) error {
-	path := filepath.Join(s.ProjectDir, toolsFile)
-
-	opts := protojson.MarshalOptions{Indent: "  "}
-	b, err := opts.Marshal(tools)
-	if err != nil {
-		return err
+	if err := s.initToolsFolder(); err != nil {
+		return fmt.Errorf("initialising tools folder: %w", err)
 	}
 
-	err = os.WriteFile(path, b, 0666)
-	if err != nil {
-		return err
+	opts := protojson.MarshalOptions{Indent: "  "}
+	for _, cfg := range tools.Tools {
+		b, err := opts.Marshal(cfg)
+		if err != nil {
+			return err
+		}
+		err = os.WriteFile(filepath.Join(s.ProjectDir, toolsDir, cfg.Id+".json"), b, 0666)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -190,7 +207,7 @@ func (s *Service) syncToProject(generated []*toolsproto.ActionConfig) error {
 		return fmt.Errorf("loading tools from config file: %w", err)
 	}
 
-	// if we don't have anu configured tools, return
+	// if we don't have any configured tools, return
 	if !currentTools.HasTools() {
 		return nil
 	}
@@ -241,8 +258,8 @@ func (s *Service) DuplicateTool(ctx context.Context, toolID string) (*toolsproto
 	return duplicate, nil
 }
 
-// GetTools will
-// TODO: explain
+// GetTools generates tools based on the schema, reads the configured tools from the project and applies them to the
+// generated ones, returning a complete list of tool configs
 func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 	// if we don't have a schema, return nil
 	if s.Schema == nil {
