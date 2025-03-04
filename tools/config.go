@@ -1,7 +1,10 @@
 package tools
 
 import (
+	"encoding/json"
+
 	toolsproto "github.com/teamkeel/keel/tools/proto"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type ToolConfigs []*ToolConfig
@@ -335,7 +338,28 @@ func (cfg LinkConfig) hasChanges() bool {
 		cfg.Description != nil ||
 		cfg.AsDialog != nil ||
 		cfg.DisplayOrder != nil ||
-		cfg.VisibleCondition != nil
+		cfg.VisibleCondition != nil ||
+		cfg.DataMapping != nil
+}
+
+func (cfg *LinkConfig) getDataMapping() []*toolsproto.DataMapping {
+	if cfg.DataMapping == nil {
+		return nil
+	}
+	dataMappings := []*toolsproto.DataMapping{}
+	for _, d := range cfg.DataMapping {
+		jsonStr, err := json.Marshal(d)
+		if err != nil {
+			return nil
+		}
+
+		var dm toolsproto.DataMapping
+		if err := protojson.Unmarshal(jsonStr, &dm); err != nil {
+			return nil
+		}
+		dataMappings = append(dataMappings, &dm)
+	}
+	return dataMappings
 }
 
 // isDeleted tells us if the link has been ... deleted
@@ -385,7 +409,7 @@ func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLi
 			}(),
 			AsDialog:         cfg.AsDialog,
 			VisibleCondition: cfg.VisibleCondition,
-			//TODO: Datamapping
+			Data:             cfg.getDataMapping(),
 		}
 	}
 
@@ -668,6 +692,7 @@ func extractLinkConfig(generated, updated *toolsproto.ActionLink) *LinkConfig {
 			}(),
 			DisplayOrder:     &updated.DisplayOrder,
 			VisibleCondition: updated.VisibleCondition,
+			DataMapping:      updated.GetObjDataMapping(),
 		}
 	}
 
@@ -690,6 +715,9 @@ func extractLinkConfig(generated, updated *toolsproto.ActionLink) *LinkConfig {
 	}
 	if generated.DisplayOrder != updated.DisplayOrder {
 		cfg.DisplayOrder = &updated.DisplayOrder
+	}
+	if generated.GetJSONDataMapping() != updated.GetJSONDataMapping() {
+		cfg.DataMapping = updated.GetObjDataMapping()
 	}
 
 	if !cfg.hasChanges() {
