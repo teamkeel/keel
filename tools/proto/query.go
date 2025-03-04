@@ -79,6 +79,16 @@ func (t *ActionConfig) FindResponse(location *JsonPath) *ResponseFieldConfig {
 	return nil
 }
 
+func (t *ActionConfig) FindResponseByPath(location string) *ResponseFieldConfig {
+	for _, f := range t.GetResponse() {
+		if f.GetFieldLocation().GetPath() == location {
+			return f
+		}
+	}
+
+	return nil
+}
+
 func (s *StringTemplate) Diff(other *StringTemplate) string {
 	if other != nil {
 		if s != nil && other.Template == s.Template {
