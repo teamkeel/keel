@@ -1,28 +1,41 @@
 {
   "tools": [
     {
-      "id": "createSale",
+      "id": "create-sale",
       "name": "Create sale",
       "actionName": "createSale",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Sale",
       "actionType": "ACTION_TYPE_CREATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.product" },
+          "fieldLocation": {
+            "path": "$.product"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Product",
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.product.id" },
+          "fieldLocation": {
+            "path": "$.product.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
           "getEntryAction": {
-            "toolId": "getProduct",
-            "data": [{ "key": "$.id", "path": { "path": "$.product.id" } }]
+            "toolId": "get-product",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.product.id"
+                }
+              }
+            ]
           },
           "modelName": "Product",
           "fieldName": "id"
@@ -30,19 +43,30 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.productId" },
+          "fieldLocation": {
+            "path": "$.productId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Product",
           "visible": true,
           "link": {
-            "toolId": "getProduct",
-            "data": [{ "key": "$.id", "path": { "path": "$.productId" } }]
+            "toolId": "get-product",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.productId"
+                }
+              }
+            ]
           },
           "modelName": "Sale",
           "fieldName": "productId"
         },
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 3,
@@ -51,7 +75,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.createdAt" },
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 4,
@@ -60,7 +86,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.updatedAt" },
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 5,
@@ -69,22 +97,28 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Create sale" },
+      "title": {
+        "template": "Create sale"
+      },
       "entitySingle": "sale",
       "entityPlural": "sales",
       "capabilities": {}
     },
     {
-      "id": "getProduct",
+      "id": "get-product",
       "name": "Get product",
       "actionName": "getProduct",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Product",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
@@ -94,7 +128,9 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.name" },
+          "fieldLocation": {
+            "path": "$.name"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
           "visible": true,
@@ -102,7 +138,9 @@
           "fieldName": "name"
         },
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
@@ -111,7 +149,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.createdAt" },
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
@@ -120,7 +160,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.updatedAt" },
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
@@ -129,44 +171,62 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "{{$.name}}" },
+      "title": {
+        "template": "{{$.name}}"
+      },
       "entitySingle": "product",
       "entityPlural": "products",
-      "capabilities": { "comments": true, "audit": true },
-      "displayLayout": { "type": "RECORD", "recordConfig": {} }
+      "capabilities": {
+        "comments": true,
+        "audit": true
+      },
+      "displayLayout": {
+        "type": "RECORD",
+        "recordConfig": {}
+      }
     },
     {
-      "id": "listSales",
+      "id": "list-sales",
       "name": "List sales",
       "actionName": "listSales",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Sale",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.where" },
+          "fieldLocation": {
+            "path": "$.where"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.product" },
+          "fieldLocation": {
+            "path": "$.where.product"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Product",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.product.id" },
+          "fieldLocation": {
+            "path": "$.where.product.id"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Id",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.product.id.equals" },
+          "fieldLocation": {
+            "path": "$.where.product.id.equals"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Equals",
           "visible": true,
@@ -174,7 +234,9 @@
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.product.id.oneOf" },
+          "fieldLocation": {
+            "path": "$.where.product.id.oneOf"
+          },
           "fieldType": "TYPE_ID",
           "repeated": true,
           "displayName": "One of",
@@ -184,7 +246,9 @@
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.product.id.notEquals" },
+          "fieldLocation": {
+            "path": "$.where.product.id.notEquals"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Not equals",
           "displayOrder": 2,
@@ -193,7 +257,9 @@
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.first" },
+          "fieldLocation": {
+            "path": "$.first"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "First",
           "displayOrder": 1,
@@ -201,7 +267,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.after" },
+          "fieldLocation": {
+            "path": "$.after"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "After",
           "displayOrder": 2,
@@ -209,7 +277,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.last" },
+          "fieldLocation": {
+            "path": "$.last"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Last",
           "displayOrder": 3,
@@ -217,7 +287,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.before" },
+          "fieldLocation": {
+            "path": "$.before"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Before",
           "displayOrder": 4,
@@ -225,7 +297,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.limit" },
+          "fieldLocation": {
+            "path": "$.limit"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Limit",
           "displayOrder": 5,
@@ -233,7 +307,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.offset" },
+          "fieldLocation": {
+            "path": "$.offset"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Offset",
           "displayOrder": 6,
@@ -243,70 +319,95 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldLocation": {
+            "path": "$.pageInfo"
+          },
           "fieldType": "TYPE_OBJECT",
           "displayName": "PageInfo",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.count" },
+          "fieldLocation": {
+            "path": "$.pageInfo.count"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.totalCount" },
+          "fieldLocation": {
+            "path": "$.pageInfo.totalCount"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Total count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.hasNextPage" },
+          "fieldLocation": {
+            "path": "$.pageInfo.hasNextPage"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Has next page",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.startCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.startCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Start cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.endCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.endCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.pageNumber" },
+          "fieldLocation": {
+            "path": "$.pageInfo.pageNumber"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Page Number",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.results" },
+          "fieldLocation": {
+            "path": "$.results"
+          },
           "fieldType": "TYPE_OBJECT",
           "repeated": true,
           "displayName": "Results",
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.results[*].productId" },
+          "fieldLocation": {
+            "path": "$.results[*].productId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Product",
           "visible": true,
           "link": {
-            "toolId": "getProduct",
+            "toolId": "get-product",
             "data": [
-              { "key": "$.id", "path": { "path": "$.results[*].productId" } }
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].productId"
+                }
+              }
             ]
           },
           "modelName": "Sale",
           "fieldName": "productId"
         },
         {
-          "fieldLocation": { "path": "$.results[*].id" },
+          "fieldLocation": {
+            "path": "$.results[*].id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 3,
@@ -315,7 +416,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.results[*].createdAt" },
+          "fieldLocation": {
+            "path": "$.results[*].createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 4,
@@ -324,7 +427,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].updatedAt" },
+          "fieldLocation": {
+            "path": "$.results[*].updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 5,
@@ -333,81 +438,111 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Sales" },
+      "title": {
+        "template": "Sales"
+      },
       "entitySingle": "sale",
       "entityPlural": "sales",
       "capabilities": {},
       "pagination": {
         "start": {
           "requestInput": "after",
-          "responseField": { "path": "$.pageInfo.startCursor" }
+          "responseField": {
+            "path": "$.pageInfo.startCursor"
+          }
         },
         "end": {
           "requestInput": "before",
-          "responseField": { "path": "$.pageInfo.endCursor" }
+          "responseField": {
+            "path": "$.pageInfo.endCursor"
+          }
         },
         "pageSize": {
           "requestInput": "first",
-          "responseField": { "path": "$.pageInfo.count" },
+          "responseField": {
+            "path": "$.pageInfo.count"
+          },
           "defaultValue": 50
         },
-        "nextPage": { "path": "$.pageInfo.hasNextPage" },
-        "totalCount": { "path": "$.pageInfo.totalCount" }
+        "nextPage": {
+          "path": "$.pageInfo.hasNextPage"
+        },
+        "totalCount": {
+          "path": "$.pageInfo.totalCount"
+        }
       },
-      "createEntryAction": { "toolId": "createSale" }
+      "createEntryAction": {
+        "toolId": "create-sale"
+      }
     },
     {
-      "id": "requestPasswordReset",
+      "id": "request-password-reset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.email" },
+          "fieldLocation": {
+            "path": "$.email"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Email",
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.redirectUrl" },
+          "fieldLocation": {
+            "path": "$.redirectUrl"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Redirect url",
           "displayOrder": 1,
           "visible": true
         }
       ],
-      "title": { "template": "Request password reset" },
+      "title": {
+        "template": "Request password reset"
+      },
       "entitySingle": "identity",
       "entityPlural": "identities",
       "capabilities": {}
     },
     {
-      "id": "resetPassword",
+      "id": "reset-password",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.token" },
+          "fieldLocation": {
+            "path": "$.token"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Token",
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.password" },
+          "fieldLocation": {
+            "path": "$.password"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Password",
           "displayOrder": 1,
           "visible": true
         }
       ],
-      "title": { "template": "Reset password" },
+      "title": {
+        "template": "Reset password"
+      },
       "entitySingle": "identity",
       "entityPlural": "identities",
       "capabilities": {}

@@ -11,6 +11,11 @@ message Capabilities {
 	// TBC more options
 }
 
+// Tools is a wrapper for a collection of action configs/tools
+message Tools {
+	repeated ActionConfig tools = 1;
+}
+
 message ActionConfig {
 	// A slug identifier for this tool used to reference it regardless of the build/environment; 
 	// E.g. get-order, or get-order-2

@@ -12,6 +12,7 @@ type contextKey string
 
 var schemaKey contextKey = "schema"
 var configKey contextKey = "config"
+var projectDirKey contextKey = "projectDir"
 var traceVerbosityKey contextKey = "verboseTraces"
 
 func GetSchema(ctx context.Context) (*proto.Schema, error) {
@@ -19,7 +20,7 @@ func GetSchema(ctx context.Context) (*proto.Schema, error) {
 	schema, ok := v.(*proto.Schema)
 
 	if !ok {
-		return nil, errors.New("database in the context has wrong value type")
+		return nil, errors.New("schema in the context has wrong value type")
 	}
 	return schema, nil
 }
@@ -33,13 +34,27 @@ func GetConfig(ctx context.Context) (*config.ProjectConfig, error) {
 	schema, ok := v.(*config.ProjectConfig)
 
 	if !ok {
-		return nil, errors.New("database in the context has wrong value type")
+		return nil, errors.New("config in the context has wrong value type")
 	}
 	return schema, nil
 }
 
 func WithConfig(ctx context.Context, schema *config.ProjectConfig) context.Context {
 	return context.WithValue(ctx, configKey, schema)
+}
+
+func GetProjectDir(ctx context.Context) (string, error) {
+	v := ctx.Value(projectDirKey)
+	dir, ok := v.(string)
+
+	if !ok {
+		return "", errors.New("project dir in the context has wrong value type")
+	}
+	return dir, nil
+}
+
+func WithProjectDir(ctx context.Context, dir string) context.Context {
+	return context.WithValue(ctx, projectDirKey, dir)
 }
 
 func WithTraceVerbosity(ctx context.Context, verbose bool) context.Context {

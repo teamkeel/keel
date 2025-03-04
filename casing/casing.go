@@ -26,6 +26,10 @@ func ToScreamingSnake(str string) string {
 	return strcase.ToScreamingSnake(str)
 }
 
+func ToKebab(str string) string {
+	return strcase.ToKebab(str)
+}
+
 // ToSentenceCase will return a given string as "Sentence case"; splitting all components into words and capitalising
 // just the first char. e.g. `listOrder` becomes "List order"
 func ToSentenceCase(str string) string {

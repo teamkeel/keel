@@ -16,6 +16,8 @@ import proto1 "google.golang.org/protobuf/proto"
 import twirp "github.com/twitchtv/twirp"
 import ctxsetters "github.com/twitchtv/twirp/ctxsetters"
 
+import tools "github.com/teamkeel/keel/tools/proto"
+
 import bytes "bytes"
 import errors "errors"
 import path "path"
@@ -42,6 +44,15 @@ type API interface {
 
 	// Return a list of default generated tools config for interacting with the API
 	ListTools(context.Context, *ListToolsRequest) (*ListToolsResponse, error)
+
+	// Delete all existing tools configuration (if any) and regenerate default tools.
+	ResetTools(context.Context, *ResetToolsRequest) (*ResetToolsResponse, error)
+
+	// Updates a tool by providing the complete action config
+	ConfigureTool(context.Context, *ConfigureToolRequest) (*tools.ActionConfig, error)
+
+	// Duplicates the given tool (given by reference) and returns the new tool
+	DuplicateTool(context.Context, *DuplicateToolRequest) (*tools.ActionConfig, error)
 }
 
 // ===================
@@ -50,7 +61,7 @@ type API interface {
 
 type aPIProtobufClient struct {
 	client      HTTPClient
-	urls        [5]string
+	urls        [8]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -78,12 +89,15 @@ func NewAPIProtobufClient(baseURL string, client HTTPClient, opts ...twirp.Clien
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "rpc", "API")
-	urls := [5]string{
+	urls := [8]string{
 		serviceURL + "GetActiveSchema",
 		serviceURL + "RunSQLQuery",
 		serviceURL + "GetTrace",
 		serviceURL + "ListTraces",
 		serviceURL + "ListTools",
+		serviceURL + "ResetTools",
+		serviceURL + "ConfigureTool",
+		serviceURL + "DuplicateTool",
 	}
 
 	return &aPIProtobufClient{
@@ -324,13 +338,151 @@ func (c *aPIProtobufClient) callListTools(ctx context.Context, in *ListToolsRequ
 	return out, nil
 }
 
+func (c *aPIProtobufClient) ResetTools(ctx context.Context, in *ResetToolsRequest) (*ResetToolsResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "ResetTools")
+	caller := c.callResetTools
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ResetToolsRequest) (*ResetToolsResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ResetToolsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ResetToolsRequest) when calling interceptor")
+					}
+					return c.callResetTools(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ResetToolsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ResetToolsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callResetTools(ctx context.Context, in *ResetToolsRequest) (*ResetToolsResponse, error) {
+	out := new(ResetToolsResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[5], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIProtobufClient) ConfigureTool(ctx context.Context, in *ConfigureToolRequest) (*tools.ActionConfig, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "ConfigureTool")
+	caller := c.callConfigureTool
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ConfigureToolRequest) (*tools.ActionConfig, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ConfigureToolRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ConfigureToolRequest) when calling interceptor")
+					}
+					return c.callConfigureTool(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*tools.ActionConfig)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*tools.ActionConfig) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callConfigureTool(ctx context.Context, in *ConfigureToolRequest) (*tools.ActionConfig, error) {
+	out := new(tools.ActionConfig)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[6], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIProtobufClient) DuplicateTool(ctx context.Context, in *DuplicateToolRequest) (*tools.ActionConfig, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "DuplicateTool")
+	caller := c.callDuplicateTool
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *DuplicateToolRequest) (*tools.ActionConfig, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*DuplicateToolRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*DuplicateToolRequest) when calling interceptor")
+					}
+					return c.callDuplicateTool(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*tools.ActionConfig)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*tools.ActionConfig) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callDuplicateTool(ctx context.Context, in *DuplicateToolRequest) (*tools.ActionConfig, error) {
+	out := new(tools.ActionConfig)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[7], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
 // ===============
 // API JSON Client
 // ===============
 
 type aPIJSONClient struct {
 	client      HTTPClient
-	urls        [5]string
+	urls        [8]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -358,12 +510,15 @@ func NewAPIJSONClient(baseURL string, client HTTPClient, opts ...twirp.ClientOpt
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "rpc", "API")
-	urls := [5]string{
+	urls := [8]string{
 		serviceURL + "GetActiveSchema",
 		serviceURL + "RunSQLQuery",
 		serviceURL + "GetTrace",
 		serviceURL + "ListTraces",
 		serviceURL + "ListTools",
+		serviceURL + "ResetTools",
+		serviceURL + "ConfigureTool",
+		serviceURL + "DuplicateTool",
 	}
 
 	return &aPIJSONClient{
@@ -604,6 +759,144 @@ func (c *aPIJSONClient) callListTools(ctx context.Context, in *ListToolsRequest)
 	return out, nil
 }
 
+func (c *aPIJSONClient) ResetTools(ctx context.Context, in *ResetToolsRequest) (*ResetToolsResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "ResetTools")
+	caller := c.callResetTools
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ResetToolsRequest) (*ResetToolsResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ResetToolsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ResetToolsRequest) when calling interceptor")
+					}
+					return c.callResetTools(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ResetToolsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ResetToolsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callResetTools(ctx context.Context, in *ResetToolsRequest) (*ResetToolsResponse, error) {
+	out := new(ResetToolsResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[5], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIJSONClient) ConfigureTool(ctx context.Context, in *ConfigureToolRequest) (*tools.ActionConfig, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "ConfigureTool")
+	caller := c.callConfigureTool
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ConfigureToolRequest) (*tools.ActionConfig, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ConfigureToolRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ConfigureToolRequest) when calling interceptor")
+					}
+					return c.callConfigureTool(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*tools.ActionConfig)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*tools.ActionConfig) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callConfigureTool(ctx context.Context, in *ConfigureToolRequest) (*tools.ActionConfig, error) {
+	out := new(tools.ActionConfig)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[6], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIJSONClient) DuplicateTool(ctx context.Context, in *DuplicateToolRequest) (*tools.ActionConfig, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "DuplicateTool")
+	caller := c.callDuplicateTool
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *DuplicateToolRequest) (*tools.ActionConfig, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*DuplicateToolRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*DuplicateToolRequest) when calling interceptor")
+					}
+					return c.callDuplicateTool(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*tools.ActionConfig)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*tools.ActionConfig) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callDuplicateTool(ctx context.Context, in *DuplicateToolRequest) (*tools.ActionConfig, error) {
+	out := new(tools.ActionConfig)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[7], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
 // ==================
 // API Server Handler
 // ==================
@@ -715,6 +1008,15 @@ func (s *aPIServer) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		return
 	case "ListTools":
 		s.serveListTools(ctx, resp, req)
+		return
+	case "ResetTools":
+		s.serveResetTools(ctx, resp, req)
+		return
+	case "ConfigureTool":
+		s.serveConfigureTool(ctx, resp, req)
+		return
+	case "DuplicateTool":
+		s.serveDuplicateTool(ctx, resp, req)
 		return
 	default:
 		msg := fmt.Sprintf("no handler for path %q", req.URL.Path)
@@ -1623,6 +1925,546 @@ func (s *aPIServer) serveListToolsProtobuf(ctx context.Context, resp http.Respon
 	callResponseSent(ctx, s.hooks)
 }
 
+func (s *aPIServer) serveResetTools(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveResetToolsJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveResetToolsProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveResetToolsJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ResetTools")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(ResetToolsRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.ResetTools
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ResetToolsRequest) (*ResetToolsResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ResetToolsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ResetToolsRequest) when calling interceptor")
+					}
+					return s.API.ResetTools(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ResetToolsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ResetToolsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ResetToolsResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ResetToolsResponse and nil error while calling ResetTools. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveResetToolsProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ResetTools")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(ResetToolsRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.ResetTools
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ResetToolsRequest) (*ResetToolsResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ResetToolsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ResetToolsRequest) when calling interceptor")
+					}
+					return s.API.ResetTools(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ResetToolsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ResetToolsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ResetToolsResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ResetToolsResponse and nil error while calling ResetTools. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveConfigureTool(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveConfigureToolJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveConfigureToolProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveConfigureToolJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ConfigureTool")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(ConfigureToolRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.ConfigureTool
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ConfigureToolRequest) (*tools.ActionConfig, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ConfigureToolRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ConfigureToolRequest) when calling interceptor")
+					}
+					return s.API.ConfigureTool(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*tools.ActionConfig)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*tools.ActionConfig) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *tools.ActionConfig
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *tools.ActionConfig and nil error while calling ConfigureTool. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveConfigureToolProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ConfigureTool")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(ConfigureToolRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.ConfigureTool
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ConfigureToolRequest) (*tools.ActionConfig, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ConfigureToolRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ConfigureToolRequest) when calling interceptor")
+					}
+					return s.API.ConfigureTool(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*tools.ActionConfig)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*tools.ActionConfig) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *tools.ActionConfig
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *tools.ActionConfig and nil error while calling ConfigureTool. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveDuplicateTool(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveDuplicateToolJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveDuplicateToolProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveDuplicateToolJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "DuplicateTool")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(DuplicateToolRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.DuplicateTool
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *DuplicateToolRequest) (*tools.ActionConfig, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*DuplicateToolRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*DuplicateToolRequest) when calling interceptor")
+					}
+					return s.API.DuplicateTool(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*tools.ActionConfig)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*tools.ActionConfig) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *tools.ActionConfig
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *tools.ActionConfig and nil error while calling DuplicateTool. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveDuplicateToolProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "DuplicateTool")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(DuplicateToolRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.DuplicateTool
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *DuplicateToolRequest) (*tools.ActionConfig, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*DuplicateToolRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*DuplicateToolRequest) when calling interceptor")
+					}
+					return s.API.DuplicateTool(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*tools.ActionConfig)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*tools.ActionConfig) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *tools.ActionConfig
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *tools.ActionConfig and nil error while calling DuplicateTool. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
 func (s *aPIServer) ServiceDescriptor() ([]byte, int) {
 	return twirpFileDescriptor0, 0
 }
@@ -2204,60 +3046,66 @@ func callClientError(ctx context.Context, h *twirp.ClientHooks, err twirp.Error)
 }
 
 var twirpFileDescriptor0 = []byte{
-	// 875 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0xdd, 0x72, 0xdb, 0x44,
-	0x14, 0xae, 0xe2, 0xfa, 0x47, 0xc7, 0x89, 0xe3, 0x6c, 0x93, 0x60, 0x0c, 0x4c, 0x83, 0xa0, 0xe0,
-	0x42, 0x47, 0xa1, 0x66, 0x18, 0x68, 0x87, 0x76, 0x28, 0x78, 0x28, 0x66, 0xda, 0x42, 0xe5, 0x0e,
-	0xb7, 0x1e, 0x45, 0x3a, 0x0a, 0x62, 0x24, 0xad, 0xba, 0xbb, 0x72, 0xc9, 0x1d, 0x97, 0x3c, 0x03,
-	0xef, 0xc1, 0x13, 0xf0, 0x5e, 0x0c, 0xb3, 0x67, 0x57, 0xfe, 0x4b, 0x27, 0xc0, 0x95, 0x7d, 0xbe,
-	0xfd, 0xce, 0xee, 0xf9, 0xf9, 0xf4, 0x81, 0x2b, 0xca, 0xc8, 0x2f, 0x05, 0x57, 0x9c, 0x35, 0x44,
-	0x19, 0x0d, 0x77, 0x65, 0xf4, 0x33, 0xe6, 0xa1, 0x81, 0x86, 0x5d, 0xc5, 0x79, 0x26, 0x6d, 0x30,
-	0xe2, 0x25, 0x16, 0x0a, 0x33, 0xcc, 0x51, 0x89, 0x8b, 0x53, 0x02, 0x4f, 0x95, 0x08, 0x23, 0x3c,
-	0x5d, 0xdc, 0x35, 0x7f, 0x2c, 0xf3, 0xe6, 0x39, 0xe7, 0xe7, 0x19, 0x1a, 0xca, 0x59, 0x95, 0x9c,
-	0xaa, 0x34, 0x47, 0xa9, 0xc2, 0xbc, 0x34, 0x04, 0xef, 0x1e, 0xf4, 0x1f, 0xa3, 0x9a, 0xd1, 0x53,
-	0x01, 0xbe, 0xac, 0x50, 0x2a, 0x76, 0x0b, 0x7a, 0x58, 0x2c, 0x52, 0xc1, 0x8b, 0x1c, 0x0b, 0x35,
-	0x4f, 0xe3, 0x81, 0x73, 0xe2, 0x8c, 0xdc, 0x60, 0x6f, 0x0d, 0x9d, 0xc6, 0xde, 0x7d, 0x38, 0x58,
-	0x4b, 0x95, 0x25, 0x2f, 0x24, 0xb2, 0x5b, 0xd0, 0x32, 0x75, 0x53, 0x4e, 0x77, 0xbc, 0x67, 0xde,
-	0xf1, 0x2d, 0xcd, 0x1e, 0x7a, 0x7f, 0x38, 0xb0, 0x37, 0x7b, 0xfe, 0xe4, 0x79, 0x85, 0xe2, 0x62,
-	0x5a, 0x94, 0x95, 0x62, 0x6f, 0x83, 0x5b, 0x0a, 0xfe, 0x0b, 0x46, 0x6a, 0x3a, 0xb1, 0xef, 0xad,
-	0x00, 0xf6, 0x3e, 0x6c, 0x3c, 0x3e, 0x19, 0xec, 0x5c, 0xae, 0x68, 0xc2, 0x0e, 0xa1, 0xf9, 0x52,
-	0xdf, 0x38, 0x68, 0xd0, 0xa9, 0x09, 0xd8, 0xbb, 0xe0, 0xbe, 0x12, 0xa9, 0xc2, 0xa7, 0x3c, 0xc6,
-	0xc1, 0xf5, 0x13, 0x67, 0xd4, 0xf9, 0xee, 0x5a, 0xb0, 0x82, 0x7e, 0x77, 0x9c, 0xaf, 0x77, 0x01,
-	0xe6, 0x4b, 0xc0, 0xfb, 0xcb, 0x81, 0x7e, 0x5d, 0xdc, 0xb2, 0xb1, 0x8f, 0xa1, 0x25, 0x55, 0xa8,
-	0x2a, 0x49, 0xc5, 0xf5, 0xc6, 0x37, 0x7c, 0xbd, 0xaf, 0x9a, 0x36, 0xa3, 0xa3, 0xc0, 0x52, 0xd8,
-	0x1d, 0x38, 0xc0, 0x5f, 0x31, 0xaa, 0x54, 0xca, 0x8b, 0x49, 0x25, 0x42, 0xfd, 0x4b, 0x25, 0x37,
-	0x83, 0xcb, 0x07, 0xec, 0x04, 0xba, 0x02, 0x65, 0x95, 0x29, 0xf9, 0xfd, 0xec, 0x87, 0x67, 0xb6,
-	0xf8, 0x75, 0x48, 0x0f, 0x47, 0x71, 0x15, 0x66, 0x01, 0x7f, 0x25, 0xa9, 0x85, 0x66, 0xb0, 0x02,
-	0x74, 0xdb, 0x28, 0x04, 0x17, 0x83, 0xa6, 0x69, 0x9b, 0x02, 0xef, 0x0e, 0xec, 0x3f, 0x46, 0xf5,
-	0x42, 0x8b, 0xa1, 0x5e, 0xec, 0x9b, 0xd0, 0x21, 0x71, 0xac, 0x56, 0xda, 0xa6, 0x78, 0x1a, 0x7b,
-	0x01, 0xe9, 0xc0, 0xb2, 0x6d, 0xcb, 0x0f, 0xa1, 0x49, 0xc7, 0x76, 0x95, 0x23, 0x7f, 0x43, 0x76,
-	0x76, 0xb1, 0x46, 0x6d, 0x8b, 0xbb, 0x3e, 0xe5, 0xca, 0x49, 0xa8, 0xc2, 0xc0, 0xa4, 0x79, 0x7f,
-	0x3b, 0x70, 0xf0, 0x24, 0x95, 0xe6, 0x56, 0xf9, 0xff, 0xd4, 0xc5, 0xc6, 0xd0, 0x3a, 0xc3, 0x84,
-	0x0b, 0xa4, 0xb9, 0x75, 0xc7, 0x43, 0xdf, 0x48, 0xd9, 0xaf, 0xa5, 0xec, 0xbf, 0xa8, 0xa5, 0x1c,
-	0x58, 0x26, 0xfb, 0x04, 0x9a, 0x61, 0xa2, 0x50, 0xd0, 0x08, 0xaf, 0x4e, 0x31, 0x44, 0xe6, 0x43,
-	0x3b, 0x49, 0x33, 0x85, 0x42, 0x8f, 0xb5, 0x31, 0xea, 0x8e, 0x0f, 0x69, 0xad, 0xcb, 0xaa, 0xbf,
-	0xa5, 0xc3, 0xa0, 0x26, 0xe9, 0x51, 0x67, 0x69, 0x9e, 0x2a, 0x1a, 0x75, 0x33, 0x30, 0x01, 0x3b,
-	0x86, 0x16, 0x4f, 0x12, 0x89, 0x6a, 0xd0, 0x22, 0xd8, 0x46, 0xde, 0x03, 0xd8, 0xdf, 0xba, 0x49,
-	0x5f, 0x90, 0xa4, 0x98, 0xd5, 0x4d, 0x9b, 0x40, 0xa3, 0x8b, 0x30, 0xab, 0xd0, 0xca, 0xda, 0x04,
-	0xde, 0x97, 0xc0, 0xd6, 0xc7, 0x67, 0xb7, 0xf2, 0x01, 0xb4, 0x68, 0xbc, 0x5a, 0x88, 0xba, 0xe2,
-	0x1e, 0x55, 0x4c, 0xa4, 0xa9, 0xc2, 0x3c, 0xb0, 0xa7, 0xde, 0x6f, 0x0d, 0x70, 0x97, 0xe8, 0x15,
-	0xab, 0x7f, 0xcd, 0x42, 0x76, 0x5e, 0xb7, 0x90, 0x7b, 0x00, 0x52, 0x85, 0x42, 0xcd, 0xb5, 0x85,
-	0xfc, 0x87, 0x09, 0xbb, 0xc4, 0xd6, 0x31, 0xfb, 0x0c, 0x3a, 0x58, 0xc4, 0x26, 0xf1, 0xfa, 0xbf,
-	0x26, 0xb6, 0xb1, 0x88, 0x29, 0x6d, 0x43, 0xd7, 0x1d, 0xab, 0x6b, 0x76, 0x13, 0xba, 0xb1, 0xfd,
-	0x72, 0xe6, 0xb9, 0xa4, 0x89, 0xef, 0x04, 0x50, 0x43, 0x4f, 0x25, 0x7b, 0x0b, 0x5c, 0xc1, 0xb9,
-	0x9a, 0x17, 0x61, 0x8e, 0x83, 0x36, 0xb5, 0xd2, 0xd1, 0xc0, 0xb3, 0x30, 0x47, 0xf6, 0x0e, 0x80,
-	0x75, 0x15, 0xdd, 0x68, 0x67, 0xd3, 0x67, 0x62, 0xf6, 0x1e, 0xec, 0xc5, 0x58, 0x66, 0xfc, 0xa2,
-	0x1e, 0x85, 0x4b, 0x8c, 0xdd, 0x15, 0x38, 0x8d, 0xd9, 0x87, 0xb0, 0x2f, 0xaa, 0x42, 0x77, 0x33,
-	0x5f, 0xa0, 0x90, 0xfa, 0xdb, 0x06, 0xa2, 0xf5, 0x2c, 0xfc, 0x93, 0x41, 0x3d, 0x06, 0x7d, 0x5a,
-	0xa0, 0xb6, 0x6e, 0x2b, 0x7f, 0xef, 0xa1, 0xfd, 0x26, 0x0c, 0x66, 0x77, 0x7a, 0x1b, 0x9a, 0xe4,
-	0xef, 0x76, 0xa5, 0x37, 0x7c, 0xe3, 0xf6, 0x8f, 0x22, 0xdd, 0xd2, 0x37, 0xbc, 0x48, 0xd2, 0xf3,
-	0xc0, 0x30, 0x3e, 0xba, 0x0d, 0xbd, 0x4d, 0xd3, 0x61, 0x5d, 0x68, 0xcb, 0x2a, 0x8a, 0x50, 0xca,
-	0xfe, 0x35, 0x06, 0xd0, 0x4a, 0xc2, 0x34, 0xc3, 0xb8, 0xef, 0x8c, 0xff, 0xdc, 0x81, 0xc6, 0xa3,
-	0x1f, 0xa7, 0xec, 0x2b, 0x72, 0x02, 0x7d, 0xd9, 0x02, 0x8d, 0x0f, 0xb3, 0x23, 0x12, 0xcd, 0xb6,
-	0xf3, 0x0f, 0x8f, 0xb7, 0x61, 0x5b, 0xdf, 0x17, 0xd0, 0x0d, 0xaa, 0xa2, 0x7e, 0x97, 0xb1, 0x0d,
-	0xef, 0x23, 0xff, 0x1e, 0x1e, 0x6d, 0x60, 0xcb, 0xcc, 0xcf, 0xa1, 0x53, 0xfb, 0x0a, 0x3b, 0xac,
-	0x6f, 0x5f, 0x37, 0xa5, 0xe1, 0xd1, 0x16, 0x6a, 0x13, 0x1f, 0x00, 0xac, 0xc4, 0xcf, 0x8e, 0x37,
-	0x3f, 0xcb, 0x7a, 0x9a, 0xc3, 0x37, 0x2e, 0xe1, 0x36, 0xfd, 0x3e, 0xb8, 0xcb, 0x31, 0xdb, 0x6e,
-	0xb7, 0x57, 0x31, 0x3c, 0xde, 0x86, 0x4d, 0xee, 0x59, 0x8b, 0x44, 0xf9, 0xe9, 0x3f, 0x01, 0x00,
-	0x00, 0xff, 0xff, 0x39, 0xb4, 0xfe, 0x52, 0x92, 0x07, 0x00, 0x00,
+	// 975 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x55, 0x5b, 0x73, 0xdb, 0x44,
+	0x14, 0xae, 0xe3, 0xfa, 0x76, 0x1c, 0x3b, 0xce, 0xc6, 0x49, 0x5d, 0x01, 0xd3, 0x20, 0x28, 0xb8,
+	0xd0, 0x91, 0xa9, 0x19, 0x06, 0xda, 0xe9, 0x85, 0x82, 0x87, 0x62, 0xa6, 0x2d, 0x54, 0xc9, 0xf0,
+	0xea, 0x51, 0xa4, 0xa3, 0x20, 0x46, 0xd2, 0xaa, 0xbb, 0x2b, 0x97, 0xbc, 0xf1, 0xc8, 0x6f, 0xe0,
+	0xef, 0xf0, 0x9f, 0x78, 0x64, 0x98, 0xbd, 0xc8, 0xb2, 0x1c, 0x4f, 0x21, 0x4f, 0xf6, 0xf9, 0xf6,
+	0x3b, 0x67, 0xcf, 0xe5, 0xdb, 0x23, 0xe8, 0xb0, 0xcc, 0x77, 0x32, 0x46, 0x05, 0x25, 0x75, 0x96,
+	0xf9, 0xd6, 0x2e, 0xf7, 0x7f, 0xc1, 0xc4, 0xd3, 0x90, 0xd5, 0x15, 0x94, 0xc6, 0xdc, 0x18, 0x63,
+	0x9a, 0x61, 0x2a, 0x30, 0xc6, 0x04, 0x05, 0xbb, 0x98, 0x28, 0x70, 0x22, 0x98, 0xe7, 0xe3, 0x64,
+	0x79, 0x4f, 0xff, 0x31, 0xcc, 0x5b, 0xe7, 0x94, 0x9e, 0xc7, 0xa8, 0x29, 0x67, 0x79, 0x38, 0x11,
+	0x51, 0x82, 0x5c, 0x78, 0x49, 0xa6, 0x09, 0xf6, 0x7d, 0x18, 0x3c, 0x43, 0x71, 0xa2, 0xae, 0x72,
+	0xf1, 0x75, 0x8e, 0x5c, 0x90, 0xdb, 0xd0, 0xc7, 0x74, 0x19, 0x31, 0x9a, 0x26, 0x98, 0x8a, 0x45,
+	0x14, 0x8c, 0x6a, 0xc7, 0xb5, 0x71, 0xc7, 0xed, 0xad, 0xa1, 0xf3, 0xc0, 0x7e, 0x00, 0xfb, 0x6b,
+	0xae, 0x3c, 0xa3, 0x29, 0x47, 0x72, 0x1b, 0x9a, 0x3a, 0x6f, 0xe5, 0xd3, 0x9d, 0xf6, 0xf4, 0x3d,
+	0x8e, 0xa1, 0x99, 0x43, 0xfb, 0xcf, 0x1a, 0xf4, 0x4e, 0x5e, 0x3d, 0x7f, 0x95, 0x23, 0xbb, 0x98,
+	0xa7, 0x59, 0x2e, 0xc8, 0xbb, 0xd0, 0xc9, 0x18, 0xfd, 0x15, 0x7d, 0x31, 0x9f, 0x99, 0xfb, 0x4a,
+	0x80, 0x7c, 0x08, 0x95, 0xcb, 0x67, 0xa3, 0x9d, 0xcb, 0x19, 0xcd, 0xc8, 0x10, 0x1a, 0xaf, 0x65,
+	0xc4, 0x51, 0x5d, 0x9d, 0x6a, 0x83, 0xbc, 0x0f, 0x9d, 0x37, 0x2c, 0x12, 0xf8, 0x82, 0x06, 0x38,
+	0xba, 0x7e, 0x5c, 0x1b, 0xb7, 0xbf, 0xbf, 0xe6, 0x96, 0xd0, 0x1f, 0xb5, 0xda, 0x37, 0xbb, 0x00,
+	0x8b, 0x15, 0x60, 0xff, 0x55, 0x83, 0x41, 0x91, 0xdc, 0xaa, 0xb0, 0x4f, 0xa1, 0xc9, 0x85, 0x27,
+	0x72, 0xae, 0x92, 0xeb, 0x4f, 0x0f, 0x1c, 0x39, 0xaf, 0x82, 0x76, 0xa2, 0x8e, 0x5c, 0x43, 0x21,
+	0x77, 0x61, 0x1f, 0x7f, 0x43, 0x3f, 0x17, 0x11, 0x4d, 0x67, 0x39, 0xf3, 0xe4, 0xaf, 0x4a, 0xb9,
+	0xe1, 0x5e, 0x3e, 0x20, 0xc7, 0xd0, 0x65, 0xc8, 0xf3, 0x58, 0xf0, 0x1f, 0x4e, 0x7e, 0x7c, 0x69,
+	0x92, 0x5f, 0x87, 0x64, 0x73, 0x04, 0x15, 0x5e, 0xec, 0xd2, 0x37, 0x5c, 0x95, 0xd0, 0x70, 0x4b,
+	0x40, 0x96, 0x8d, 0x8c, 0x51, 0x36, 0x6a, 0xe8, 0xb2, 0x95, 0x61, 0xdf, 0x85, 0xbd, 0x67, 0x28,
+	0x4e, 0xa5, 0x18, 0x8a, 0xc1, 0xde, 0x84, 0xb6, 0x12, 0x47, 0x39, 0xd2, 0x96, 0xb2, 0xe7, 0x81,
+	0xed, 0x2a, 0x1d, 0x18, 0xb6, 0x29, 0xf9, 0x31, 0x34, 0xd4, 0xb1, 0x19, 0xe5, 0xd8, 0xa9, 0xc8,
+	0xce, 0x0c, 0x56, 0xab, 0x6d, 0x79, 0xcf, 0x51, 0xbe, 0x7c, 0xe6, 0x09, 0xcf, 0xd5, 0x6e, 0xf6,
+	0x3f, 0x35, 0xd8, 0x7f, 0x1e, 0x71, 0x1d, 0x95, 0x5f, 0x4d, 0x5d, 0x64, 0x0a, 0xcd, 0x33, 0x0c,
+	0x29, 0x43, 0xd5, 0xb7, 0xee, 0xd4, 0x72, 0xb4, 0x94, 0x9d, 0x42, 0xca, 0xce, 0x69, 0x21, 0x65,
+	0xd7, 0x30, 0xc9, 0x67, 0xd0, 0xf0, 0x42, 0x81, 0x4c, 0xb5, 0xf0, 0xed, 0x2e, 0x9a, 0x48, 0x1c,
+	0x68, 0x85, 0x51, 0x2c, 0x90, 0xc9, 0xb6, 0xd6, 0xc7, 0xdd, 0xe9, 0x50, 0x8d, 0x75, 0x95, 0xf5,
+	0x77, 0xea, 0xd0, 0x2d, 0x48, 0xb2, 0xd5, 0x71, 0x94, 0x44, 0x42, 0xb5, 0xba, 0xe1, 0x6a, 0x83,
+	0x1c, 0x41, 0x93, 0x86, 0x21, 0x47, 0x31, 0x6a, 0x2a, 0xd8, 0x58, 0xf6, 0x23, 0xd8, 0xdb, 0x88,
+	0x24, 0x03, 0x84, 0x11, 0xc6, 0x45, 0xd1, 0xda, 0x90, 0xe8, 0xd2, 0x8b, 0x73, 0x34, 0xb2, 0xd6,
+	0x86, 0xfd, 0x10, 0xc8, 0x7a, 0xfb, 0xcc, 0x54, 0x3e, 0x82, 0xa6, 0x6a, 0xaf, 0x14, 0xa2, 0xcc,
+	0xb8, 0xaf, 0x32, 0x56, 0xa4, 0xb9, 0xc0, 0xc4, 0x35, 0xa7, 0xf6, 0xef, 0x75, 0xe8, 0xac, 0xd0,
+	0xb7, 0x8c, 0x7e, 0xcb, 0x40, 0x76, 0xb6, 0x0d, 0xe4, 0x3e, 0x00, 0x17, 0x1e, 0x13, 0x0b, 0xb9,
+	0x42, 0xfe, 0x47, 0x87, 0x3b, 0x8a, 0x2d, 0x6d, 0xf2, 0x05, 0xb4, 0x31, 0x0d, 0xb4, 0xe3, 0xf5,
+	0xff, 0x74, 0x6c, 0x61, 0x1a, 0x28, 0xb7, 0x8a, 0xae, 0xdb, 0x46, 0xd7, 0xe4, 0x16, 0x74, 0x03,
+	0xf3, 0x72, 0x16, 0x09, 0x57, 0x1d, 0xdf, 0x71, 0xa1, 0x80, 0x5e, 0x70, 0xf2, 0x0e, 0x74, 0x18,
+	0xa5, 0x62, 0x91, 0x7a, 0x09, 0x8e, 0x5a, 0xaa, 0x94, 0xb6, 0x04, 0x5e, 0x7a, 0x09, 0x92, 0xf7,
+	0x00, 0xcc, 0x56, 0x91, 0x85, 0xb6, 0xab, 0x7b, 0x26, 0x20, 0x1f, 0x40, 0x2f, 0xc0, 0x2c, 0xa6,
+	0x17, 0x45, 0x2b, 0x3a, 0x8a, 0xb1, 0x5b, 0x82, 0xf3, 0x80, 0x7c, 0x0c, 0x7b, 0x2c, 0x4f, 0x65,
+	0x35, 0x8b, 0x25, 0x32, 0x2e, 0xdf, 0x36, 0x28, 0x5a, 0xdf, 0xc0, 0x3f, 0x6b, 0xd4, 0x26, 0x30,
+	0x50, 0x03, 0x94, 0xab, 0xdb, 0xc8, 0xdf, 0x7e, 0x6c, 0xde, 0x84, 0xc6, 0xcc, 0x4c, 0xef, 0x40,
+	0x43, 0xed, 0x77, 0x33, 0xd2, 0x03, 0x47, 0x6f, 0xfb, 0xa7, 0xbe, 0x2c, 0xe9, 0x5b, 0x9a, 0x86,
+	0xd1, 0xb9, 0xab, 0x19, 0xf6, 0x01, 0xec, 0xbb, 0xc8, 0xb1, 0x1a, 0xf4, 0x09, 0x90, 0x75, 0xf0,
+	0xea, 0x51, 0x4f, 0x61, 0xa8, 0x81, 0x9c, 0xa1, 0x0c, 0x52, 0x3c, 0xd6, 0x87, 0xb0, 0xe7, 0x17,
+	0x78, 0xb0, 0x90, 0x5c, 0xf3, 0x1c, 0xb7, 0x06, 0xeb, 0x97, 0x5c, 0x19, 0xc4, 0x9e, 0xc0, 0x70,
+	0x96, 0x67, 0x71, 0xe4, 0x7b, 0xa2, 0x12, 0xf5, 0x06, 0xb4, 0xa4, 0x77, 0x29, 0xb5, 0xa6, 0x34,
+	0xe7, 0xc1, 0x27, 0x77, 0xa0, 0x5f, 0xdd, 0xa8, 0xa4, 0x0b, 0x2d, 0x9e, 0xfb, 0x3e, 0x72, 0x3e,
+	0xb8, 0x46, 0x00, 0x9a, 0xa1, 0x17, 0xc5, 0x18, 0x0c, 0x6a, 0xd3, 0xbf, 0xeb, 0x50, 0x7f, 0xfa,
+	0xd3, 0x9c, 0x7c, 0xad, 0xd6, 0x9c, 0x4c, 0x63, 0x89, 0xfa, 0x23, 0x43, 0x0e, 0xd5, 0x8b, 0xd8,
+	0xfc, 0xac, 0x59, 0x47, 0x9b, 0xb0, 0x69, 0xd3, 0x57, 0xd0, 0x75, 0xf3, 0xb4, 0xb8, 0x97, 0x90,
+	0xca, 0x62, 0x57, 0x1f, 0x27, 0xeb, 0xb0, 0x82, 0xad, 0x3c, 0xbf, 0x84, 0x76, 0xb1, 0x34, 0xc9,
+	0xb0, 0x88, 0xbe, 0xbe, 0x71, 0xad, 0xc3, 0x0d, 0xd4, 0x38, 0x3e, 0x02, 0x28, 0x5f, 0x36, 0x39,
+	0xaa, 0xee, 0x9c, 0x62, 0xaa, 0xd6, 0x8d, 0x4b, 0xb8, 0x71, 0x7f, 0x00, 0x9d, 0x95, 0x86, 0x4c,
+	0xb5, 0x9b, 0x3a, 0xb3, 0x8e, 0x36, 0xe1, 0xf2, 0xea, 0x52, 0x2a, 0xe6, 0xea, 0x4b, 0x82, 0x32,
+	0x57, 0x6f, 0xd1, 0xd4, 0x13, 0xe8, 0x55, 0x84, 0x42, 0x6e, 0x2a, 0xe6, 0x36, 0xf1, 0x58, 0xdb,
+	0x34, 0x22, 0x03, 0x54, 0x34, 0x61, 0x02, 0x6c, 0xd3, 0xc9, 0xd6, 0x00, 0x67, 0x4d, 0xb5, 0x32,
+	0x3e, 0xff, 0x37, 0x00, 0x00, 0xff, 0xff, 0x76, 0x0f, 0x9b, 0xe1, 0x30, 0x09, 0x00, 0x00,
 }
