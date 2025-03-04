@@ -32,23 +32,23 @@ func (cfgs ToolConfigs) getIDs() []string {
 }
 
 type ToolConfig struct {
-	ID            string          `json:"id,omitempty"`
-	ActionName    string          `json:"action_name,omitempty"`
-	Name          *string         `json:"name,omitempty"`
-	Icon          *string         `json:"icon,omitempty"`
-	Title         *string         `json:"title,omitempty"`
-	HelpText      *string         `json:"help_text,omitempty"`
-	Capabilities  Capabilities    `json:"capabilities,omitempty"`
-	EntitySingle  *string         `json:"entity_single,omitempty"`
-	EntityPlural  *string         `json:"entity_plural,omitempty"`
-	Inputs        InputConfigs    `json:"inputs,omitempty"`
-	Response      ResponseConfigs `json:"response,omitempty"`
-	ExternalLinks ExternalLinks   `json:"external_links,omitempty"`
-	Sections      Sections        `json:"sections,omitempty"`
+	ID                string          `json:"id,omitempty"`
+	ActionName        string          `json:"action_name,omitempty"`
+	Name              *string         `json:"name,omitempty"`
+	Icon              *string         `json:"icon,omitempty"`
+	Title             *string         `json:"title,omitempty"`
+	HelpText          *string         `json:"help_text,omitempty"`
+	Capabilities      Capabilities    `json:"capabilities,omitempty"`
+	EntitySingle      *string         `json:"entity_single,omitempty"`
+	EntityPlural      *string         `json:"entity_plural,omitempty"`
+	Inputs            InputConfigs    `json:"inputs,omitempty"`
+	Response          ResponseConfigs `json:"response,omitempty"`
+	ExternalLinks     ExternalLinks   `json:"external_links,omitempty"`
+	Sections          Sections        `json:"sections,omitempty"`
+	GetEntryAction    *LinkConfig     `json:"get_entry_action,omitempty"`
+	CreateEntryAction *LinkConfig     `json:"create_entry_action,omitempty"`
 	// TODO: RelatedActions       []*ToolLink
 	// TODO: EntryActivityActions []*ToolLink
-	// TODO: GetEntryAction       *ToolLink
-	// TODO: CreateEntryAction    *ToolLink
 	// TODO: EmbeddedTools        ToolGroups
 	// TODO: DisplayLayout        *DisplayLayout
 }
@@ -108,6 +108,12 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 			Visible:          s.Visible,
 		})
 	}
+	if cfg.CreateEntryAction != nil {
+		tool.CreateEntryAction = cfg.CreateEntryAction.applyOn(tool.CreateEntryAction)
+	}
+	if cfg.GetEntryAction != nil {
+		tool.GetEntryAction = cfg.GetEntryAction.applyOn(tool.GetEntryAction)
+	}
 }
 
 type InputConfigs map[string]InputConfig
@@ -121,11 +127,11 @@ type InputConfig struct {
 	VisibleCondition *string      `json:"visible_condition,omitempty"`
 	SectionName      *string      `json:"section_name,omitempty"`
 	DefaultValue     *ScalarValue `json:"default_value,omitempty"`
-	// TODO Lookup Link
-	// TODO GetEntry Link
+	LookupAction     *LinkConfig  `json:"lookup_action,omitempty"`
+	GetEntryAction   *LinkConfig  `json:"get_entry_action,omitempty"`
 }
 
-func (cfg InputConfig) applyOn(input *toolsproto.RequestFieldConfig) {
+func (cfg *InputConfig) applyOn(input *toolsproto.RequestFieldConfig) {
 	if cfg.DisplayName != nil {
 		input.DisplayName = *cfg.DisplayName
 	}
@@ -153,9 +159,15 @@ func (cfg InputConfig) applyOn(input *toolsproto.RequestFieldConfig) {
 	if cfg.DefaultValue != nil {
 		input.DefaultValue = cfg.DefaultValue.toProto()
 	}
+	if cfg.LookupAction != nil {
+		input.LookupAction = cfg.LookupAction.applyOn(input.LookupAction)
+	}
+	if cfg.GetEntryAction != nil {
+		input.GetEntryAction = cfg.GetEntryAction.applyOn(input.GetEntryAction)
+	}
 }
 
-func (cfg InputConfig) hasChanges() bool {
+func (cfg *InputConfig) hasChanges() bool {
 	return cfg.DisplayName != nil ||
 		cfg.DisplayOrder != nil ||
 		cfg.Visible != nil ||
@@ -164,19 +176,21 @@ func (cfg InputConfig) hasChanges() bool {
 		cfg.Placeholder != nil ||
 		cfg.VisibleCondition != nil ||
 		cfg.SectionName != nil ||
-		cfg.DefaultValue != nil
+		cfg.DefaultValue != nil ||
+		cfg.LookupAction != nil ||
+		cfg.GetEntryAction != nil
 }
 
 type ResponseConfigs map[string]ResponseConfig
 type ResponseConfig struct {
-	DisplayName      *string `json:"display_name,omitempty"`
-	DisplayOrder     *int32  `json:"display_order,omitempty"`
-	Visible          *bool   `json:"visible,omitempty"`
-	HelpText         *string `json:"help_text,omitempty"`
-	ImagePreview     *bool   `json:"image_preview,omitempty"`
-	VisibleCondition *string `json:"visible_condition,omitempty"`
-	SectionName      *string `json:"section_name,omitempty"`
-	// TODO  Link
+	DisplayName      *string     `json:"display_name,omitempty"`
+	DisplayOrder     *int32      `json:"display_order,omitempty"`
+	Visible          *bool       `json:"visible,omitempty"`
+	HelpText         *string     `json:"help_text,omitempty"`
+	ImagePreview     *bool       `json:"image_preview,omitempty"`
+	VisibleCondition *string     `json:"visible_condition,omitempty"`
+	SectionName      *string     `json:"section_name,omitempty"`
+	Link             *LinkConfig `json:"link,omitempty"`
 }
 
 func (cfg ResponseConfig) applyOn(response *toolsproto.ResponseFieldConfig) {
@@ -201,6 +215,9 @@ func (cfg ResponseConfig) applyOn(response *toolsproto.ResponseFieldConfig) {
 	if cfg.SectionName != nil {
 		response.SectionName = cfg.SectionName
 	}
+	if cfg.Link != nil {
+		response.Link = cfg.Link.applyOn(response.Link)
+	}
 }
 
 func (cfg ResponseConfig) hasChanges() bool {
@@ -210,7 +227,8 @@ func (cfg ResponseConfig) hasChanges() bool {
 		cfg.HelpText != nil ||
 		cfg.ImagePreview != nil ||
 		cfg.VisibleCondition != nil ||
-		cfg.SectionName != nil
+		cfg.SectionName != nil ||
+		cfg.Link != nil
 }
 
 type Capability string
@@ -281,6 +299,87 @@ func (v *ScalarValue) toProto() *toolsproto.ScalarValue {
 	}
 
 	return nil
+}
+
+type LinkConfig struct {
+	ToolID           string  `json:"tool_id"`
+	Deleted          *bool   `json:"deleted,omitempty"` // if the generated link has been deleted
+	Title            *string `json:"title,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	AsDialog         *bool   `json:"as_dialog,omitempty"`
+	DisplayOrder     *int32  `json:"display_order,omitempty"`
+	VisibleCondition *string `json:"visible_condition,omitempty"`
+}
+
+type LinkConfigs []*LinkConfig
+
+// func (cfgs LinkConfigs) find(toolID string) *LinkConfig {
+// 	for _, tl := range cfgs {
+// 		if tl.ToolID == toolID {
+// 			return tl
+// 		}
+// 	}
+
+// 	return nil
+// }
+
+func (cfg LinkConfig) hasChanges() bool {
+	return cfg.Deleted != nil ||
+		cfg.Title != nil ||
+		cfg.Description != nil ||
+		cfg.AsDialog != nil ||
+		cfg.DisplayOrder != nil ||
+		cfg.VisibleCondition != nil
+}
+
+// isDeleted tells us if the link has been ... deleted
+func (cfg *LinkConfig) isDeleted() bool {
+	if cfg != nil && cfg.Deleted != nil {
+		return *cfg.Deleted
+	}
+
+	return false
+}
+
+func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLink {
+	if cfg.isDeleted() {
+		return nil
+	}
+	// we've added a link
+	if link == nil {
+		return &toolsproto.ActionLink{
+			ToolId:      cfg.ToolID,
+			Description: makeStringTemplate(cfg.Description),
+			Title:       makeStringTemplate(cfg.Title),
+			DisplayOrder: func() int32 {
+				if cfg.DisplayOrder != nil {
+					return *cfg.DisplayOrder
+				}
+				return 0
+			}(),
+			AsDialog:         cfg.AsDialog,
+			VisibleCondition: cfg.VisibleCondition,
+			//TODO: datamapping
+		}
+	}
+
+	if cfg.Title != nil {
+		link.Title = makeStringTemplate(cfg.Title)
+	}
+	if cfg.Description != nil {
+		link.Title = makeStringTemplate(cfg.Description)
+	}
+	if cfg.DisplayOrder != nil {
+		link.DisplayOrder = *cfg.DisplayOrder
+	}
+	if cfg.AsDialog != nil {
+		link.AsDialog = cfg.AsDialog
+	}
+	if cfg.VisibleCondition != nil {
+		link.VisibleCondition = cfg.VisibleCondition
+	}
+
+	return link
 }
 
 func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
@@ -366,6 +465,13 @@ func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 		})
 	}
 
+	if linkCfg := extractLinkConfig(generated.CreateEntryAction, updated.CreateEntryAction); linkCfg != nil {
+		cfg.CreateEntryAction = linkCfg
+	}
+	if linkCfg := extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction); linkCfg != nil {
+		cfg.GetEntryAction = linkCfg
+	}
+
 	return cfg
 }
 
@@ -412,6 +518,13 @@ func extractInputConfig(generated, updated *toolsproto.RequestFieldConfig) *Inpu
 		}
 	}
 
+	if linkCfg := extractLinkConfig(generated.LookupAction, updated.LookupAction); linkCfg != nil {
+		cfg.LookupAction = linkCfg
+	}
+	if linkCfg := extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction); linkCfg != nil {
+		cfg.GetEntryAction = linkCfg
+	}
+
 	if !cfg.hasChanges() {
 		return nil
 	}
@@ -442,10 +555,87 @@ func extractResponseConfig(generated, updated *toolsproto.ResponseFieldConfig) *
 	if generated.GetSectionName() != updated.GetSectionName() {
 		cfg.SectionName = updated.SectionName
 	}
+	if linkCfg := extractLinkConfig(generated.Link, updated.Link); linkCfg != nil {
+		cfg.Link = linkCfg
+	}
 
 	if !cfg.hasChanges() {
 		return nil
 	}
 
 	return &cfg
+}
+
+func extractLinkConfig(generated, updated *toolsproto.ActionLink) *LinkConfig {
+	// we don't have a link and we didn't add a link
+	if generated == nil && updated == nil {
+		return nil
+	}
+	// we have a link and we've removed it
+	if generated != nil && updated == nil {
+		return &LinkConfig{
+			ToolID:  generated.ToolId,
+			Deleted: boolPointer(true),
+		}
+	}
+
+	// we didn't have a link, and now we've added it
+	if generated == nil && updated != nil {
+		return &LinkConfig{
+			ToolID:   updated.ToolId,
+			AsDialog: updated.AsDialog,
+			Title: func() *string {
+				if updated.GetTitle() != nil {
+					return &updated.GetTitle().Template
+				}
+				return nil
+			}(),
+			Description: func() *string {
+				if updated.GetDescription() != nil {
+					return &updated.GetDescription().Template
+				}
+				return nil
+			}(),
+			DisplayOrder:     &updated.DisplayOrder,
+			VisibleCondition: updated.VisibleCondition,
+		}
+	}
+
+	// we may have updated the link config
+	cfg := LinkConfig{
+		ToolID: generated.ToolId,
+	}
+	if generated.GetAsDialog() != updated.GetAsDialog() {
+		cfg.AsDialog = updated.AsDialog
+	}
+
+	if change := generated.GetTitle().Diff(updated.GetTitle()); change != "" {
+		cfg.Title = &change
+	}
+	if change := generated.GetDescription().Diff(updated.GetDescription()); change != "" {
+		cfg.Description = &change
+	}
+	if generated.GetVisibleCondition() != updated.GetVisibleCondition() {
+		cfg.VisibleCondition = updated.VisibleCondition
+	}
+	if generated.DisplayOrder != updated.DisplayOrder {
+		cfg.DisplayOrder = &updated.DisplayOrder
+	}
+
+	if !cfg.hasChanges() {
+		return nil
+	}
+
+	return &cfg
+}
+
+func boolPointer(v bool) *bool {
+	return &v
+}
+
+func makeStringTemplate(tmpl *string) *toolsproto.StringTemplate {
+	if tmpl == nil {
+		return nil
+	}
+	return &toolsproto.StringTemplate{Template: *tmpl}
 }
