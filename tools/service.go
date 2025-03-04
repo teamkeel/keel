@@ -10,6 +10,7 @@ import (
 
 	gonanoid "github.com/matoous/go-nanoid/v2"
 
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	toolsproto "github.com/teamkeel/keel/tools/proto"
@@ -212,7 +213,7 @@ func (s *Service) DuplicateTool(ctx context.Context, toolID string) (*toolsproto
 		return nil, fmt.Errorf("generating unique id: %w", err)
 	}
 
-	duplicate.Id += "-" + uid
+	duplicate.Id = casing.ToKebab(duplicate.ActionName) + "-" + uid
 	duplicate.Name += " (copy)"
 	generated, err := s.getGeneratedTool(ctx, duplicate.ActionName)
 	if err != nil {
