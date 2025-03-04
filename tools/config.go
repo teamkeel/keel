@@ -112,15 +112,15 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 
 type InputConfigs map[string]InputConfig
 type InputConfig struct {
-	DisplayName      *string `json:"display_name,omitempty"`
-	DisplayOrder     *int32  `json:"display_order,omitempty"`
-	Visible          *bool   `json:"visible,omitempty"`
-	HelpText         *string `json:"help_text,omitempty"`
-	Locked           *bool   `json:"locked,omitempty"`
-	Placeholder      *string `json:"placeholder,omitempty"`
-	VisibleCondition *string `json:"visible_condition,omitempty"`
-	SectionName      *string `json:"section_name,omitempty"`
-	// TODO: DefaultValue
+	DisplayName      *string      `json:"display_name,omitempty"`
+	DisplayOrder     *int32       `json:"display_order,omitempty"`
+	Visible          *bool        `json:"visible,omitempty"`
+	HelpText         *string      `json:"help_text,omitempty"`
+	Locked           *bool        `json:"locked,omitempty"`
+	Placeholder      *string      `json:"placeholder,omitempty"`
+	VisibleCondition *string      `json:"visible_condition,omitempty"`
+	SectionName      *string      `json:"section_name,omitempty"`
+	DefaultValue     *ScalarValue `json:"default_value,omitempty"`
 	// TODO Lookup Link
 	// TODO GetEntry Link
 }
@@ -150,6 +150,9 @@ func (cfg InputConfig) applyOn(input *toolsproto.RequestFieldConfig) {
 	if cfg.SectionName != nil {
 		input.SectionName = cfg.SectionName
 	}
+	if cfg.DefaultValue != nil {
+		input.DefaultValue = cfg.DefaultValue.toProto()
+	}
 }
 
 func (cfg InputConfig) hasChanges() bool {
@@ -160,7 +163,8 @@ func (cfg InputConfig) hasChanges() bool {
 		cfg.Locked != nil ||
 		cfg.Placeholder != nil ||
 		cfg.VisibleCondition != nil ||
-		cfg.SectionName != nil
+		cfg.SectionName != nil ||
+		cfg.DefaultValue != nil
 }
 
 type ResponseConfigs map[string]ResponseConfig
@@ -250,6 +254,34 @@ type Section struct {
 }
 
 type Sections []*Section
+
+type ScalarValue struct {
+	StringValue *string  `json:"string_value,omitempty"`
+	IntValue    *int32   `json:"int_value,omitempty"`
+	FloatValue  *float32 `json:"float_value,omitempty"`
+	BoolValue   *bool    `json:"bool_value,omitempty"`
+	NullValue   *bool    `json:"null_value,omitempty"`
+}
+
+func (v *ScalarValue) toProto() *toolsproto.ScalarValue {
+	if v.StringValue != nil {
+		return &toolsproto.ScalarValue{Value: &toolsproto.ScalarValue_String_{String_: *v.StringValue}}
+	}
+	if v.IntValue != nil {
+		return &toolsproto.ScalarValue{Value: &toolsproto.ScalarValue_Integer{Integer: *v.IntValue}}
+	}
+	if v.StringValue != nil {
+		return &toolsproto.ScalarValue{Value: &toolsproto.ScalarValue_Float{Float: *v.FloatValue}}
+	}
+	if v.StringValue != nil {
+		return &toolsproto.ScalarValue{Value: &toolsproto.ScalarValue_Bool{Bool: *v.BoolValue}}
+	}
+	if v.StringValue != nil {
+		return &toolsproto.ScalarValue{Value: &toolsproto.ScalarValue_Null{Null: *v.NullValue}}
+	}
+
+	return nil
+}
 
 func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 	cfg := &ToolConfig{
@@ -362,6 +394,22 @@ func extractInputConfig(generated, updated *toolsproto.RequestFieldConfig) *Inpu
 	}
 	if generated.GetSectionName() != updated.GetSectionName() {
 		cfg.SectionName = updated.SectionName
+	}
+	if updated.DefaultValue != nil {
+		switch updated.DefaultValue.Value.(type) {
+		case *toolsproto.ScalarValue_Bool:
+			val := updated.DefaultValue.GetBool()
+			cfg.DefaultValue = &ScalarValue{BoolValue: &val}
+		case *toolsproto.ScalarValue_Float:
+			val := updated.DefaultValue.GetFloat()
+			cfg.DefaultValue = &ScalarValue{FloatValue: &val}
+		case *toolsproto.ScalarValue_String_:
+			val := updated.DefaultValue.GetString_()
+			cfg.DefaultValue = &ScalarValue{StringValue: &val}
+		case *toolsproto.ScalarValue_Integer:
+			val := updated.DefaultValue.GetInteger()
+			cfg.DefaultValue = &ScalarValue{IntValue: &val}
+		}
 	}
 
 	if !cfg.hasChanges() {
