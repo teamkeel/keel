@@ -74,15 +74,12 @@ func WithConfig(cfg *config.ProjectConfig) ServiceOpt {
 
 func (s *Service) initToolsFolder() error {
 	path := filepath.Join(s.ProjectDir, toolsDir)
-	_, err := os.Stat(path)
-	if errors.Is(err, os.ErrNotExist) {
+
+	if _, err := os.Stat(path); err != nil {
 		err := os.Mkdir(path, os.ModePerm)
 		if err != nil {
 			return fmt.Errorf("initialising tools dir: %w", err)
 		}
-	}
-	if err != nil {
-		return fmt.Errorf("initialising tools dir: %w", err)
 	}
 	return nil
 }
@@ -90,6 +87,10 @@ func (s *Service) initToolsFolder() error {
 // loadFromProject will read from the tools.json file the tools configuration.
 // When a config fiel doesn't exist, a nil nil response will be returned
 func (s *Service) loadFromProject() (*toolsproto.Tools, error) {
+	if err := s.initToolsFolder(); err != nil {
+		return nil, fmt.Errorf("initialising tools folder: %w", err)
+	}
+
 	configFiles, err := filepath.Glob(filepath.Join(s.ProjectDir, toolsDir, "*.json"))
 	if err != nil {
 		return nil, err
