@@ -109,3 +109,12 @@ func (c *Capabilities) Diff(other *Capabilities) map[string]bool {
 	}
 	return diffs
 }
+
+func FindLinkByToolID(links []*ActionLink, toolID string) *ActionLink {
+	for _, l := range links {
+		if l.ToolId == toolID {
+			return l
+		}
+	}
+	return nil
+}

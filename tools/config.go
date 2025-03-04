@@ -32,23 +32,23 @@ func (cfgs ToolConfigs) getIDs() []string {
 }
 
 type ToolConfig struct {
-	ID                string          `json:"id,omitempty"`
-	ActionName        string          `json:"action_name,omitempty"`
-	Name              *string         `json:"name,omitempty"`
-	Icon              *string         `json:"icon,omitempty"`
-	Title             *string         `json:"title,omitempty"`
-	HelpText          *string         `json:"help_text,omitempty"`
-	Capabilities      Capabilities    `json:"capabilities,omitempty"`
-	EntitySingle      *string         `json:"entity_single,omitempty"`
-	EntityPlural      *string         `json:"entity_plural,omitempty"`
-	Inputs            InputConfigs    `json:"inputs,omitempty"`
-	Response          ResponseConfigs `json:"response,omitempty"`
-	ExternalLinks     ExternalLinks   `json:"external_links,omitempty"`
-	Sections          Sections        `json:"sections,omitempty"`
-	GetEntryAction    *LinkConfig     `json:"get_entry_action,omitempty"`
-	CreateEntryAction *LinkConfig     `json:"create_entry_action,omitempty"`
-	// TODO: RelatedActions       []*ToolLink
-	// TODO: EntryActivityActions []*ToolLink
+	ID                   string          `json:"id,omitempty"`
+	ActionName           string          `json:"action_name,omitempty"`
+	Name                 *string         `json:"name,omitempty"`
+	Icon                 *string         `json:"icon,omitempty"`
+	Title                *string         `json:"title,omitempty"`
+	HelpText             *string         `json:"help_text,omitempty"`
+	Capabilities         Capabilities    `json:"capabilities,omitempty"`
+	EntitySingle         *string         `json:"entity_single,omitempty"`
+	EntityPlural         *string         `json:"entity_plural,omitempty"`
+	Inputs               InputConfigs    `json:"inputs,omitempty"`
+	Response             ResponseConfigs `json:"response,omitempty"`
+	ExternalLinks        ExternalLinks   `json:"external_links,omitempty"`
+	Sections             Sections        `json:"sections,omitempty"`
+	GetEntryAction       *LinkConfig     `json:"get_entry_action,omitempty"`
+	CreateEntryAction    *LinkConfig     `json:"create_entry_action,omitempty"`
+	RelatedActions       LinkConfigs     `json:"related_actions,omitempty"`
+	EntryActivityActions LinkConfigs     `json:"entry_activity_actions,omitempty"`
 	// TODO: EmbeddedTools        ToolGroups
 	// TODO: DisplayLayout        *DisplayLayout
 }
@@ -113,6 +113,12 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	}
 	if cfg.GetEntryAction != nil {
 		tool.GetEntryAction = cfg.GetEntryAction.applyOn(tool.GetEntryAction)
+	}
+	if cfg.EntryActivityActions != nil && len(cfg.EntryActivityActions) > 0 {
+		tool.EntryActivityActions = cfg.EntryActivityActions.applyOn(tool.EntryActivityActions)
+	}
+	if cfg.RelatedActions != nil && len(cfg.RelatedActions) > 0 {
+		tool.RelatedActions = cfg.RelatedActions.applyOn(tool.RelatedActions)
 	}
 }
 
@@ -313,15 +319,15 @@ type LinkConfig struct {
 
 type LinkConfigs []*LinkConfig
 
-// func (cfgs LinkConfigs) find(toolID string) *LinkConfig {
-// 	for _, tl := range cfgs {
-// 		if tl.ToolID == toolID {
-// 			return tl
-// 		}
-// 	}
+func (cfgs LinkConfigs) find(toolID string) *LinkConfig {
+	for _, tl := range cfgs {
+		if tl.ToolID == toolID {
+			return tl
+		}
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
 func (cfg LinkConfig) hasChanges() bool {
 	return cfg.Deleted != nil ||
@@ -339,6 +345,26 @@ func (cfg *LinkConfig) isDeleted() bool {
 	}
 
 	return false
+}
+
+func (cfgs LinkConfigs) applyOn(links []*toolsproto.ActionLink) []*toolsproto.ActionLink {
+	newLinks := []*toolsproto.ActionLink{}
+
+	// add all configured links and new links. If links are deleted, they are skipped
+	for _, cfg := range cfgs {
+		if configured := cfg.applyOn(toolsproto.FindLinkByToolID(links, cfg.ToolID)); configured != nil {
+			newLinks = append(newLinks, configured)
+		}
+	}
+
+	// carry over links that haven't been configured/deleted
+	for _, l := range links {
+		if cfg := cfgs.find(l.ToolId); cfg == nil {
+			newLinks = append(newLinks, l)
+		}
+	}
+
+	return newLinks
 }
 
 func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLink {
@@ -359,7 +385,7 @@ func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLi
 			}(),
 			AsDialog:         cfg.AsDialog,
 			VisibleCondition: cfg.VisibleCondition,
-			//TODO: datamapping
+			//TODO: Datamapping
 		}
 	}
 
@@ -471,6 +497,12 @@ func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 	if linkCfg := extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction); linkCfg != nil {
 		cfg.GetEntryAction = linkCfg
 	}
+	if linkCfgs := extractLinkConfigs(generated.EntryActivityActions, updated.EntryActivityActions); len(linkCfgs) > 0 {
+		cfg.EntryActivityActions = linkCfgs
+	}
+	if linkCfgs := extractLinkConfigs(generated.RelatedActions, updated.RelatedActions); len(linkCfgs) > 0 {
+		cfg.RelatedActions = linkCfgs
+	}
 
 	return cfg
 }
@@ -564,6 +596,44 @@ func extractResponseConfig(generated, updated *toolsproto.ResponseFieldConfig) *
 	}
 
 	return &cfg
+}
+
+func extractLinkConfigs(generated, updated []*toolsproto.ActionLink) LinkConfigs {
+	cfgs := LinkConfigs{}
+	// we will use a map to keep track of the generated links that have already been configured
+	availableLinks := map[string]bool{}
+	for _, l := range generated {
+		availableLinks[l.ToolId] = true
+	}
+
+	for _, l := range updated {
+		if available, ok := availableLinks[l.ToolId]; ok && available {
+			// if we have a generated link that hasn't been configured yet (still available), let's use that and diff it with our updated link
+			if cfg := extractLinkConfig(toolsproto.FindLinkByToolID(generated, l.ToolId), l); cfg != nil {
+				cfgs = append(cfgs, cfg)
+			}
+			// mark it as used
+			availableLinks[l.ToolId] = false
+
+			continue
+		}
+
+		// we don't have an available link, so we will add new ones
+		cfgs = append(cfgs, extractLinkConfig(nil, l))
+	}
+
+	// if there are any generated links that are still available, it means we've removed them, so let's add config for that as well
+	for id, available := range availableLinks {
+		if available == true {
+			cfgs = append(cfgs, extractLinkConfig(toolsproto.FindLinkByToolID(generated, id), nil))
+		}
+	}
+
+	if len(cfgs) > 0 {
+		return cfgs
+	}
+
+	return nil
 }
 
 func extractLinkConfig(generated, updated *toolsproto.ActionLink) *LinkConfig {
