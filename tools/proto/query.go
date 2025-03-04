@@ -1,5 +1,11 @@
 package proto
 
+import (
+	"encoding/json"
+
+	"google.golang.org/protobuf/encoding/protojson"
+)
+
 // FindByID finds a tool in the given tools message by id
 func (tools *Tools) FindByID(id string) *ActionConfig {
 	if tools == nil {
@@ -117,4 +123,29 @@ func FindLinkByToolID(links []*ActionLink, toolID string) *ActionLink {
 		}
 	}
 	return nil
+}
+
+func (l *ActionLink) GetJSONDataMapping() string {
+	dm := l.GetObjDataMapping()
+	str, err := json.Marshal(dm)
+	if err != nil {
+		return ""
+	}
+	return string(str)
+}
+
+func (l *ActionLink) GetObjDataMapping() []any {
+	ret := []any{}
+	for _, d := range l.GetData() {
+		jsData, err := protojson.Marshal(d)
+		if err != nil {
+			continue
+		}
+		var datum any
+		if err = json.Unmarshal(jsData, &datum); err != nil {
+			continue
+		}
+		ret = append(ret, datum)
+	}
+	return ret
 }
