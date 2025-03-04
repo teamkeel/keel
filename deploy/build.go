@@ -1,10 +1,13 @@
 package deploy
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"context"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -194,6 +197,11 @@ func buildRuntime(args *BuildRuntimeArgs) (*BuildRuntimeResult, error) {
 			b, err = io.ReadAll(res.Body)
 			if err != nil {
 				log("%s Error reading response from %s: %s", IconCross, args.RuntimeBinaryURL, err.Error())
+				return nil, err
+			}
+			b, err = extractRuntimeBinary(b)
+			if err != nil {
+				log("%s Error extracting runtime binary from archive %s: %s", IconCross, args.RuntimeBinaryURL, err.Error())
 				return nil, err
 			}
 			log("%s Fetched runtime binary from %s %s", IconTick, orange(args.RuntimeBinaryURL), t.Since())
@@ -447,4 +455,38 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (
 
 func isLocalBuild(env string) bool {
 	return env == "development" || env == "test"
+}
+
+func extractRuntimeBinary(b []byte) ([]byte, error) {
+	gzr, err := gzip.NewReader(bytes.NewBuffer(b))
+	if err != nil {
+		return nil, err
+	}
+	defer gzr.Close()
+
+	tr := tar.NewReader(gzr)
+
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		if header.Name != "runtime-lambda" {
+			continue
+		}
+
+		var out bytes.Buffer
+		_, err = io.Copy(&out, tr)
+		if err != nil {
+			return nil, err
+		}
+
+		return out.Bytes(), nil
+	}
+
+	return nil, errors.New("runtime-lambda binary not found in archive")
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/colors"
 	"github.com/teamkeel/keel/deploy"
+	"github.com/teamkeel/keel/runtime"
 )
 
 var flagDeployRuntimeBinary string
@@ -40,7 +41,7 @@ type ValidateDeployFlagsResult struct {
 
 var envRegexp = regexp.MustCompile(`^[a-z\-0-9]+$`)
 
-func validateDeployFlags(runtimeBinaryRequired bool) *ValidateDeployFlagsResult {
+func validateDeployFlags() *ValidateDeployFlagsResult {
 	// ensure environment is set and valid
 	if flagEnvironment == "" {
 		fmt.Println("You must specify an environment using the --env flag")
@@ -61,17 +62,16 @@ func validateDeployFlags(runtimeBinaryRequired bool) *ValidateDeployFlagsResult 
 		panic(err)
 	}
 
-	// ensure rntime binary is set and absolute (if not url)
-	// TODO: update this to default to use pull the binary from the Github release by deefault
-	if runtimeBinaryRequired && flagDeployRuntimeBinary == "" {
-		fmt.Println("--runtime-binary must currently be set, either to a URL or a local path - in the future this will default to fetching from the GitHub release assets for the current version")
-		return nil
-	}
-	runtimeBinary := flagDeployRuntimeBinary
-	if runtimeBinary != "" && !strings.HasPrefix(runtimeBinary, "http") {
-		runtimeBinary, err = filepath.Abs(runtimeBinary)
-		if err != nil {
-			panic(err)
+	v := runtime.GetVersion()
+	runtimeBinary := fmt.Sprintf("https://github.com/teamkeel/keel/releases/download/v%s/runtime-lambda_%s_linux_amd64.tar.gz", v, v)
+
+	if flagDeployRuntimeBinary != "" {
+		runtimeBinary = flagDeployRuntimeBinary
+		if !strings.HasPrefix(flagDeployRuntimeBinary, "http") {
+			runtimeBinary, err = filepath.Abs(runtimeBinary)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 
@@ -89,7 +89,7 @@ var deployBuildCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer panicHandler()
 
-		validated := validateDeployFlags(true)
+		validated := validateDeployFlags()
 		if validated == nil {
 			os.Exit(1)
 		}
@@ -112,7 +112,7 @@ var deployUpCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer panicHandler()
 
-		validated := validateDeployFlags(true)
+		validated := validateDeployFlags()
 		if validated == nil {
 			os.Exit(1)
 		}
@@ -136,7 +136,7 @@ var deployRemoveCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer panicHandler()
 
-		validated := validateDeployFlags(true)
+		validated := validateDeployFlags()
 		if validated == nil {
 			os.Exit(1)
 		}
@@ -174,7 +174,7 @@ var deployLogsCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer panicHandler()
 
-		validated := validateDeployFlags(false)
+		validated := validateDeployFlags()
 		if validated == nil {
 			os.Exit(1)
 		}
@@ -223,7 +223,7 @@ var deploySecretsSetCommand = &cobra.Command{
 	Args:  cobra.ExactArgs(2),
 	Short: "Set a secret in your AWS account for the given environment",
 	Run: func(cmd *cobra.Command, args []string) {
-		validated := validateDeployFlags(false)
+		validated := validateDeployFlags()
 		if validated == nil {
 			os.Exit(1)
 		}
@@ -247,7 +247,7 @@ var deploySecretsGetCommand = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Short: "Get a secret from your AWS account for the given environment",
 	Run: func(cmd *cobra.Command, args []string) {
-		validated := validateDeployFlags(false)
+		validated := validateDeployFlags()
 		if validated == nil {
 			os.Exit(1)
 		}
@@ -270,7 +270,7 @@ var deploySecretsListCommand = &cobra.Command{
 	Args:  cobra.NoArgs,
 	Short: "List the secrets set in your AWS account for the given environment",
 	Run: func(cmd *cobra.Command, args []string) {
-		validated := validateDeployFlags(false)
+		validated := validateDeployFlags()
 		if validated == nil {
 			os.Exit(1)
 		}
@@ -336,7 +336,7 @@ var deploySecretsDeleteCommand = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Short: "Delete a secret set in your AWS account for the given environment",
 	Run: func(cmd *cobra.Command, args []string) {
-		validated := validateDeployFlags(false)
+		validated := validateDeployFlags()
 		if validated == nil {
 			os.Exit(1)
 		}
