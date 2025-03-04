@@ -32,18 +32,18 @@ func (cfgs ToolConfigs) getIDs() []string {
 }
 
 type ToolConfig struct {
-	ID           string          `json:"id,omitempty"`
-	ActionName   string          `json:"action_name,omitempty"`
-	Name         string          `json:"name,omitempty"`
-	Icon         *string         `json:"icon,omitempty"`
-	Title        *string         `json:"title,omitempty"`
-	HelpText     *string         `json:"help_text,omitempty"`
-	Capabilities Capabilities    `json:"capabilities,omitempty"`
-	EntitySingle *string         `json:"entity_single,omitempty"`
-	EntityPlural *string         `json:"entity_plural,omitempty"`
-	Inputs       InputConfigs    `json:"inputs,omitempty"`
-	Response     ResponseConfigs `json:"response,omitempty"`
-	// TODO: ExternalLinks        ExternalLinks
+	ID            string          `json:"id,omitempty"`
+	ActionName    string          `json:"action_name,omitempty"`
+	Name          *string         `json:"name,omitempty"`
+	Icon          *string         `json:"icon,omitempty"`
+	Title         *string         `json:"title,omitempty"`
+	HelpText      *string         `json:"help_text,omitempty"`
+	Capabilities  Capabilities    `json:"capabilities,omitempty"`
+	EntitySingle  *string         `json:"entity_single,omitempty"`
+	EntityPlural  *string         `json:"entity_plural,omitempty"`
+	Inputs        InputConfigs    `json:"inputs,omitempty"`
+	Response      ResponseConfigs `json:"response,omitempty"`
+	ExternalLinks ExternalLinks   `json:"external_links,omitempty"`
 	// TODO: RelatedActions       []*ToolLink
 	// TODO: EntryActivityActions []*ToolLink
 	// TODO: GetEntryAction       *ToolLink
@@ -54,8 +54,8 @@ type ToolConfig struct {
 }
 
 func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
-	if cfg.Name != "" {
-		tool.Name = cfg.Name
+	if cfg.Name != nil {
+		tool.Name = *cfg.Name
 	}
 	if cfg.Title != nil {
 		tool.Title = &toolsproto.StringTemplate{Template: *cfg.Title}
@@ -83,6 +83,15 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 		if toolResponse := tool.FindResponseByPath(path); toolResponse != nil {
 			responseCfg.applyOn(toolResponse)
 		}
+	}
+	for _, el := range cfg.ExternalLinks {
+		tool.ExternalLinks = append(tool.ExternalLinks, &toolsproto.ExternalLink{
+			Label:            &toolsproto.StringTemplate{Template: el.Label},
+			Href:             &toolsproto.StringTemplate{Template: el.Href},
+			Icon:             el.Icon,
+			DisplayOrder:     el.DisplayOrder,
+			VisibleCondition: el.VisibleCondition,
+		})
 	}
 }
 
@@ -206,13 +215,23 @@ func (caps Capabilities) applyOn(tool *toolsproto.ActionConfig) {
 	}
 }
 
+type ExternalLink struct {
+	Label            string  `json:"label,omitempty"`
+	Href             string  `json:"href,omitempty"`
+	Icon             *string `json:"icon,omitempty"`
+	DisplayOrder     int32   `json:"display_order,omitempty"`
+	VisibleCondition *string `json:"visible_condition,omitempty"`
+}
+
+type ExternalLinks []*ExternalLink
+
 func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 	cfg := &ToolConfig{
 		ID:         updated.Id,
 		ActionName: updated.ActionName,
 	}
 	if updated.GetName() != generated.GetName() {
-		cfg.Name = updated.GetName()
+		cfg.Name = &updated.Name
 	}
 	if updated.GetIcon() != generated.GetIcon() {
 		cfg.Icon = updated.Icon
@@ -260,6 +279,16 @@ func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 		if respCfg := extractResponseConfig(genResponse, updatedResponse); respCfg != nil {
 			cfg.Response[updatedResponse.GetFieldLocation().GetPath()] = *respCfg
 		}
+	}
+	cfg.ExternalLinks = ExternalLinks{}
+	for _, el := range updated.GetExternalLinks() {
+		cfg.ExternalLinks = append(cfg.ExternalLinks, &ExternalLink{
+			Label:            el.GetLabel().Template,
+			Href:             el.GetHref().Template,
+			Icon:             el.Icon,
+			DisplayOrder:     el.DisplayOrder,
+			VisibleCondition: el.VisibleCondition,
+		})
 	}
 
 	return cfg
