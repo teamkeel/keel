@@ -44,13 +44,13 @@ type ToolConfig struct {
 	Inputs        InputConfigs    `json:"inputs,omitempty"`
 	Response      ResponseConfigs `json:"response,omitempty"`
 	ExternalLinks ExternalLinks   `json:"external_links,omitempty"`
+	Sections      Sections        `json:"sections,omitempty"`
 	// TODO: RelatedActions       []*ToolLink
 	// TODO: EntryActivityActions []*ToolLink
 	// TODO: GetEntryAction       *ToolLink
 	// TODO: CreateEntryAction    *ToolLink
 	// TODO: EmbeddedTools        ToolGroups
 	// TODO: DisplayLayout        *DisplayLayout
-	// TODO: Sections             Sections
 }
 
 func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
@@ -91,6 +91,21 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 			Icon:             el.Icon,
 			DisplayOrder:     el.DisplayOrder,
 			VisibleCondition: el.VisibleCondition,
+		})
+	}
+	for _, s := range cfg.Sections {
+		tool.Sections = append(tool.Sections, &toolsproto.Section{
+			Name:  s.Name,
+			Title: &toolsproto.StringTemplate{Template: s.Title},
+			Description: func() *toolsproto.StringTemplate {
+				if s.Description != nil {
+					return &toolsproto.StringTemplate{Template: *s.Description}
+				}
+				return nil
+			}(),
+			DisplayOrder:     s.DisplayOrder,
+			VisibleCondition: s.VisibleCondition,
+			Visible:          s.Visible,
 		})
 	}
 }
@@ -225,6 +240,17 @@ type ExternalLink struct {
 
 type ExternalLinks []*ExternalLink
 
+type Section struct {
+	Name             string  `json:"name,omitempty"`
+	Title            string  `json:"title,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	VisibleCondition *string `json:"visible_condition,omitempty"`
+	DisplayOrder     int32   `json:"display_order,omitempty"`
+	Visible          bool    `json:"visible,omitempty"`
+}
+
+type Sections []*Section
+
 func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 	cfg := &ToolConfig{
 		ID:         updated.Id,
@@ -288,6 +314,23 @@ func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 			Icon:             el.Icon,
 			DisplayOrder:     el.DisplayOrder,
 			VisibleCondition: el.VisibleCondition,
+		})
+	}
+	cfg.Sections = Sections{}
+	for _, s := range updated.GetSections() {
+		cfg.Sections = append(cfg.Sections, &Section{
+			Name:  s.GetName(),
+			Title: s.GetTitle().Template,
+			Description: func() *string {
+				if s.GetDescription() != nil {
+					return &s.GetDescription().Template
+				}
+
+				return nil
+			}(),
+			VisibleCondition: s.VisibleCondition,
+			DisplayOrder:     s.DisplayOrder,
+			Visible:          s.Visible,
 		})
 	}
 
