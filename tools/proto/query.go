@@ -15,10 +15,6 @@ func (tools *Tools) FindByID(id string) *ActionConfig {
 	return nil
 }
 
-func (tools *Tools) HasTools() bool {
-	return len(tools.Tools) > 0
-}
-
 // HasIDs checks that the tools wrapper contains all the tools with the given ids
 func (tools *Tools) HasIDs(ids ...string) bool {
 	for _, id := range ids {
@@ -30,26 +26,12 @@ func (tools *Tools) HasIDs(ids ...string) bool {
 	return true
 }
 
-// IntersectIDs returns the common tool ids from the given two tool wrappers
-func (tools *Tools) IntersectIDs(others *Tools) []string {
-	common := []string{}
-	for _, t := range tools.Tools {
-		for _, o := range others.Tools {
-			if t.Id == o.Id {
-				common = append(common, t.Id)
-			}
-		}
-	}
-
-	return common
-}
-
 // Diff will return a subset of the given tools which do not exist in our current tools wrapper
-func (tools *Tools) Diff(others []*ActionConfig) []*ActionConfig {
-	diffs := []*ActionConfig{}
-	for _, t := range others {
-		if tools.FindByID(t.Id) == nil {
-			diffs = append(diffs, t)
+func (tools *Tools) DiffIDs(ids []string) []string {
+	diffs := []string{}
+	for _, id := range ids {
+		if tools.FindByID(id) == nil {
+			diffs = append(diffs, id)
 		}
 	}
 
@@ -67,7 +49,7 @@ func FindByAction(tools []*ActionConfig, actionName string) *ActionConfig {
 	return nil
 }
 
-func (t *ActionConfig) HasInput(location *JsonPath) *RequestFieldConfig {
+func (t *ActionConfig) FindInput(location *JsonPath) *RequestFieldConfig {
 	for _, f := range t.GetInputs() {
 		if f.GetFieldLocation().GetPath() == location.GetPath() {
 			return f
@@ -77,7 +59,17 @@ func (t *ActionConfig) HasInput(location *JsonPath) *RequestFieldConfig {
 	return nil
 }
 
-func (t *ActionConfig) HasResponse(location *JsonPath) *ResponseFieldConfig {
+func (t *ActionConfig) FindInputByPath(location string) *RequestFieldConfig {
+	for _, f := range t.GetInputs() {
+		if f.GetFieldLocation().GetPath() == location {
+			return f
+		}
+	}
+
+	return nil
+}
+
+func (t *ActionConfig) FindResponse(location *JsonPath) *ResponseFieldConfig {
 	for _, f := range t.GetResponse() {
 		if f.GetFieldLocation().GetPath() == location.GetPath() {
 			return f
@@ -87,28 +79,23 @@ func (t *ActionConfig) HasResponse(location *JsonPath) *ResponseFieldConfig {
 	return nil
 }
 
-// DiffInputs will return a list of request field configs that exist in the given updated config but not in our receiver.
-func (t *ActionConfig) DiffInputs(updated *ActionConfig) []*RequestFieldConfig {
-	diff := []*RequestFieldConfig{}
-
-	for _, i := range updated.GetInputs() {
-		if exists := t.HasInput(i.GetFieldLocation()); exists == nil {
-			diff = append(diff, i)
+func (s *StringTemplate) Diff(other *StringTemplate) string {
+	if other != nil {
+		if s != nil && other.Template == s.Template {
+			return ""
 		}
+		return other.Template
 	}
-
-	return diff
+	return ""
 }
 
-// DiffResponse will return a list of response field configs that exist in the given updated config but not in our receiver.
-func (t *ActionConfig) DiffResponse(updated *ActionConfig) []*ResponseFieldConfig {
-	diff := []*ResponseFieldConfig{}
-
-	for _, i := range updated.GetResponse() {
-		if exists := t.HasResponse(i.GetFieldLocation()); exists == nil {
-			diff = append(diff, i)
-		}
+func (c *Capabilities) Diff(other *Capabilities) map[string]bool {
+	diffs := map[string]bool{}
+	if c.GetAudit() != other.GetAudit() {
+		diffs["audit"] = other.GetAudit()
 	}
-
-	return diff
+	if c.GetComments() != other.GetComments() {
+		diffs["comments"] = other.GetComments()
+	}
+	return diffs
 }

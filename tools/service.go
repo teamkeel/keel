@@ -2,6 +2,7 @@ package tools
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -12,7 +13,6 @@ import (
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	toolsproto "github.com/teamkeel/keel/tools/proto"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 const toolsDir = "tools"
@@ -84,9 +84,8 @@ func (s *Service) initToolsFolder() error {
 	return nil
 }
 
-// loadFromProject will read from the tools.json file the tools configuration.
-// When a config fiel doesn't exist, a nil nil response will be returned
-func (s *Service) loadFromProject() (*toolsproto.Tools, error) {
+// loadFromProject will read  the tools configurations from storage.
+func (s *Service) loadFromProject() (ToolConfigs, error) {
 	if err := s.initToolsFolder(); err != nil {
 		return nil, fmt.Errorf("initialising tools folder: %w", err)
 	}
@@ -96,21 +95,21 @@ func (s *Service) loadFromProject() (*toolsproto.Tools, error) {
 		return nil, err
 	}
 
-	tools := toolsproto.Tools{}
+	cfgs := ToolConfigs{}
 
 	for _, fName := range configFiles {
 		fileBytes, err := os.ReadFile(fName)
 		if err != nil {
 			return nil, err
 		}
-		var cfg toolsproto.ActionConfig
-		if err := protojson.Unmarshal(fileBytes, &cfg); err != nil {
+		var cfg ToolConfig
+		if err := json.Unmarshal(fileBytes, &cfg); err != nil {
 			return nil, err
 		}
-		tools.Tools = append(tools.Tools, &cfg)
+		cfgs = append(cfgs, &cfg)
 	}
 
-	return &tools, nil
+	return cfgs, nil
 }
 
 // clearProject will remove all the saved tool configs from the project.
@@ -129,18 +128,17 @@ func (s *Service) clearProject() error {
 }
 
 // storeToProject will save the given tools configuration to the tools.json file in the project.
-func (s *Service) storeToProject(tools *toolsproto.Tools) error {
+func (s *Service) storeToProject(cfgs ToolConfigs) error {
 	if err := s.initToolsFolder(); err != nil {
 		return fmt.Errorf("initialising tools folder: %w", err)
 	}
 
-	opts := protojson.MarshalOptions{Indent: "  "}
-	for _, cfg := range tools.Tools {
-		b, err := opts.Marshal(cfg)
+	for _, cfg := range cfgs {
+		b, err := json.Marshal(cfg)
 		if err != nil {
 			return err
 		}
-		err = os.WriteFile(filepath.Join(s.ProjectDir, toolsDir, cfg.Id+".json"), b, 0666)
+		err = os.WriteFile(filepath.Join(s.ProjectDir, toolsDir, cfg.ID+".json"), b, 0666)
 		if err != nil {
 			return err
 		}
@@ -150,81 +148,46 @@ func (s *Service) storeToProject(tools *toolsproto.Tools) error {
 }
 
 // addToProject will add the given tools to the existing project tools config and store them.
-func (s *Service) addToProject(tools ...*toolsproto.ActionConfig) error {
-	currentTools, err := s.loadFromProject()
+func (s *Service) addToProject(cfgs ...*ToolConfig) error {
+	currentConfigs, err := s.loadFromProject()
 	if err != nil {
-		return fmt.Errorf("loading tools from config file: %w", err)
+		return fmt.Errorf("loading tool configs: %w", err)
 	}
 
-	for _, toolConfig := range tools {
-		if exists := currentTools.FindByID(toolConfig.Id); exists != nil {
-			return fmt.Errorf("tool already exists: %s", toolConfig.Id)
+	for _, toolConfig := range cfgs {
+		if exists := currentConfigs.findByID(toolConfig.ID); exists != nil {
+			return fmt.Errorf("tool config exists: %s", toolConfig.ID)
 		}
-		currentTools.Tools = append(currentTools.Tools, toolConfig)
+		currentConfigs = append(currentConfigs, toolConfig)
 	}
 
-	if err := s.storeToProject(currentTools); err != nil {
-		return fmt.Errorf("storing tools to project: %w", err)
+	if err := s.storeToProject(currentConfigs); err != nil {
+		return fmt.Errorf("storing tool config to project: %w", err)
 	}
 
 	return nil
 }
 
 // updateToProject will replace the given tools in the stored config.
-func (s *Service) updateToProject(tools ...*toolsproto.ActionConfig) error {
-	currentTools, err := s.loadFromProject()
+func (s *Service) updateToProject(cfgs ...*ToolConfig) error {
+	currentConfigs, err := s.loadFromProject()
 	if err != nil {
 		return fmt.Errorf("loading tools from config file: %w", err)
 	}
 
-	for _, updated := range tools {
-		if currentTools.HasIDs(updated.Id) {
-			for i := range currentTools.Tools {
-				if currentTools.Tools[i].Id == updated.Id {
-					currentTools.Tools[i] = updated
+	for _, updated := range cfgs {
+		if currentConfigs.hasID(updated.ID) {
+			for i := range currentConfigs {
+				if currentConfigs[i].ID == updated.ID {
+					currentConfigs[i] = updated
 				}
 			}
 		} else {
-			currentTools.Tools = append(currentTools.Tools, updated)
+			currentConfigs = append(currentConfigs, updated)
 		}
 	}
 
-	if err := s.storeToProject(currentTools); err != nil {
-		return fmt.Errorf("storing tools to project: %w", err)
-	}
-
-	return nil
-}
-
-// syncToProject will ensure that the existing tool config is synced with the generated configs. Changes will be
-// persisted in the project tool config. These changes include:
-// - adding new inputs
-// - adding new responses
-// - adding new tool links
-// TODO: more syncing
-func (s *Service) syncToProject(generated []*toolsproto.ActionConfig) error {
-	currentTools, err := s.loadFromProject()
-	if err != nil {
-		return fmt.Errorf("loading tools from config file: %w", err)
-	}
-
-	// if we don't have any configured tools, return
-	if !currentTools.HasTools() {
-		return nil
-	}
-
-	for _, t := range currentTools.Tools {
-		// for each tool, we find the generated one for the same action
-		gen := toolsproto.FindByAction(generated, t.ActionName)
-		if gen == nil {
-			// this tool is no longer valid as the underlying action was removed, skip
-			continue
-		}
-
-		syncTool(t, gen)
-	}
-
-	if err := s.storeToProject(currentTools); err != nil {
+	if err := s.storeToProject(currentConfigs); err != nil {
 		return fmt.Errorf("storing tools to project: %w", err)
 	}
 
@@ -251,8 +214,14 @@ func (s *Service) DuplicateTool(ctx context.Context, toolID string) (*toolsproto
 
 	duplicate.Id += "-" + uid
 	duplicate.Name += " (copy)"
+	generated, err := s.getGeneratedTool(ctx, duplicate.ActionName)
+	if err != nil {
+		return nil, fmt.Errorf("generating tool %s: %w", duplicate.ActionName, err)
+	}
 
-	if err := s.addToProject(duplicate); err != nil {
+	cfg := extractConfig(generated, duplicate)
+
+	if err := s.addToProject(cfg); err != nil {
 		return nil, fmt.Errorf("duplicating tool: %w", err)
 	}
 
@@ -276,30 +245,43 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 		Tools: genTools,
 	}
 
-	// now we need to ensure that we sync new changes from the generated tools (e.g. add new inputs/responses/tool links, etc)
-	if err := s.syncToProject(genTools); err != nil {
-		return nil, fmt.Errorf("syncing tools configs: %w", err)
-	}
-
 	// load existing configured tools
-	existing, err := s.loadFromProject()
+	configs, err := s.loadFromProject()
 	if err != nil {
-		return nil, fmt.Errorf("loading tools from config file: %w", err)
+		return nil, fmt.Errorf("loading tool configs from file: %w", err)
 	}
 
 	// if we have user added or configured tools...
-	if existing.HasTools() {
-		// append the user added ones
-		tools.Tools = append(tools.Tools, tools.Diff(existing.Tools)...)
+	if len(configs) > 0 {
+		// let's see get the user added tools
+		addedIds := tools.DiffIDs(configs.getIDs())
+		// for all the added ones, we generate a new tool and add it to our set
+		for _, id := range addedIds {
+			cfg := configs.findByID(id)
+			if cfg == nil {
+				continue
+			}
 
-		for _, id := range tools.IntersectIDs(existing) {
-			configured := existing.FindByID(id)
-
-			for i := range tools.Tools {
-				if tools.Tools[i].Id == id {
-					tools.Tools[i] = configured
+			gen, err := s.getGeneratedTool(ctx, cfg.ActionName)
+			if err != nil {
+				// cannot generate tool for config, add a blank tool
+				gen = &toolsproto.ActionConfig{
+					ActionName: cfg.ActionName,
 				}
 			}
+			gen.Id = cfg.ID
+			tools.Tools = append(tools.Tools, gen)
+		}
+
+		// now we apply all the configs
+		for _, cfg := range configs {
+			tool := tools.FindByID(cfg.ID)
+			if tool == nil {
+				continue
+			}
+
+			// apply config on the given tool
+			cfg.applyOn(tool)
 		}
 	}
 
@@ -317,8 +299,17 @@ func (s *Service) ResetTools(ctx context.Context) (*toolsproto.Tools, error) {
 
 // ConfigureTool will take the given updated tool config and update the existing project config with it
 func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.ActionConfig) (*toolsproto.ActionConfig, error) {
+	// get the generated version for the given updated tool
+	gen, err := s.getGeneratedTool(ctx, updated.ActionName)
+	if err != nil {
+		return nil, fmt.Errorf("retrievving generated tool: %w", err)
+	}
+
+	// we now extract the config from the given tool
+	cfg := extractConfig(gen, updated)
+
 	// update the tool saved in project
-	err := s.updateToProject(updated)
+	err = s.updateToProject(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("updating tool %s: %w", updated.GetId(), err)
 	}
@@ -330,4 +321,24 @@ func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.ActionC
 	}
 
 	return tools.FindByID(updated.Id), nil
+}
+
+func (s *Service) getGeneratedTool(ctx context.Context, actionName string) (*toolsproto.ActionConfig, error) {
+	// if we don't have a schema, return nil
+	if s.Schema == nil {
+		return nil, nil
+	}
+
+	// generate tools
+	genTools, err := GenerateTools(ctx, s.Schema, s.Config)
+	if err != nil {
+		return nil, fmt.Errorf("generating tools from schema: %w", err)
+	}
+
+	for _, c := range genTools {
+		if c.ActionName == actionName {
+			return c, nil
+		}
+	}
+	return nil, fmt.Errorf("tool not found")
 }
