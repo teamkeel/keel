@@ -34,13 +34,20 @@ type Page struct {
 // ParsePage extracts page mandate information from the given map and uses it to
 // compose a Page.
 func ParsePage(args map[string]any) (Page, error) {
-	page := Page{}
+	page := Page{
+		// Default page size
+		First: 50,
+	}
 
 	if arg, ok := extractIntArg(args, "first"); ok {
-		page.First = arg
+		if arg >= 0 {
+			page.First = arg
+		}
 	}
 	if arg, ok := extractIntArg(args, "last"); ok {
-		page.Last = arg
+		if arg >= 0 {
+			page.Last = arg
+		}
 	}
 	if arg, ok := extractIntArg(args, "offset"); ok {
 		if arg > 0 {
@@ -49,11 +56,6 @@ func ParsePage(args map[string]any) (Page, error) {
 	}
 	if arg, ok := extractIntArg(args, "limit"); ok {
 		page.Limit = arg
-	}
-
-	// If none specified - use a sensible default for cursor pagination
-	if !page.OffsetPagination() && page.First == 0 && page.Last == 0 {
-		page.First = 50
 	}
 
 	if after, ok := args["after"]; ok {
