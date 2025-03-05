@@ -668,7 +668,7 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	query.And()
 
 	// Add where condition to implement the page size
-	if page.GetLimit() > 0 {
+	if page.GetLimit() >= 0 {
 		query.Limit(page.GetLimit())
 	}
 

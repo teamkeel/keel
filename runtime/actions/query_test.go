@@ -2148,6 +2148,30 @@ var testCases = []testCase{
 		expectedArgs: []any{"123", 2},
 	},
 	{
+		name: "list_op_zero_page_size",
+		keelSchema: `
+			model Thing {
+				actions {
+					list listThings()
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		actionName: "listThings",
+		input: map[string]any{
+			"first": 0,
+		},
+		expectedTemplate: `
+			SELECT
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount
+			FROM
+				"thing"
+			ORDER BY
+				"thing"."id" ASC
+			LIMIT ?`,
+		expectedArgs: []any{0},
+	},
+	{
 		name: "list_multiple_conditions_no_parenthesis",
 		keelSchema: `
 			model Thing {
