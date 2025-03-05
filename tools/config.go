@@ -117,16 +117,16 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	if cfg.GetEntryAction != nil {
 		tool.GetEntryAction = cfg.GetEntryAction.applyOn(tool.GetEntryAction)
 	}
-	if cfg.EntryActivityActions != nil && len(cfg.EntryActivityActions) > 0 {
+	if len(cfg.EntryActivityActions) > 0 {
 		tool.EntryActivityActions = cfg.EntryActivityActions.applyOn(tool.EntryActivityActions)
 	}
-	if cfg.RelatedActions != nil && len(cfg.RelatedActions) > 0 {
+	if len(cfg.RelatedActions) > 0 {
 		tool.RelatedActions = cfg.RelatedActions.applyOn(tool.RelatedActions)
 	}
 	if cfg.DisplayLayout != nil {
 		tool.DisplayLayout = cfg.DisplayLayout.toProto()
 	}
-	if cfg.EmbeddedTools != nil && len(cfg.EmbeddedTools) > 0 {
+	if len(cfg.EmbeddedTools) > 0 {
 		tool.EmbeddedTools = cfg.EmbeddedTools.applyOn(tool.EmbeddedTools)
 	}
 }
@@ -276,14 +276,12 @@ const (
 )
 
 func (caps Capabilities) applyOn(tool *toolsproto.ActionConfig) {
-	if caps != nil {
-		for cap, set := range caps {
-			switch cap {
-			case CapabilityAudit:
-				tool.Capabilities.Audit = set
-			case CapabilityComments:
-				tool.Capabilities.Comments = set
-			}
+	for cap, set := range caps {
+		switch cap {
+		case CapabilityAudit:
+			tool.Capabilities.Audit = set
+		case CapabilityComments:
+			tool.Capabilities.Comments = set
 		}
 	}
 }
