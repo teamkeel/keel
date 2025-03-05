@@ -149,3 +149,28 @@ func (l *ActionLink) GetObjDataMapping() []any {
 	}
 	return ret
 }
+
+func (dl *DisplayLayoutConfig) JSON() string {
+	if dl == nil {
+		return ""
+	}
+
+	str, err := json.Marshal(dl)
+	if err != nil {
+		return ""
+	}
+	return string(str)
+}
+
+func (dl *DisplayLayoutConfig) AsObj() any {
+	if dl == nil {
+		return nil
+	}
+	str := dl.JSON()
+	var d any
+	if err := json.Unmarshal([]byte(str), &d); err != nil {
+		return nil
+	}
+
+	return d
+}

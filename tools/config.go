@@ -35,25 +35,25 @@ func (cfgs ToolConfigs) getIDs() []string {
 }
 
 type ToolConfig struct {
-	ID                   string          `json:"id,omitempty"`
-	ActionName           string          `json:"action_name,omitempty"`
-	Name                 *string         `json:"name,omitempty"`
-	Icon                 *string         `json:"icon,omitempty"`
-	Title                *string         `json:"title,omitempty"`
-	HelpText             *string         `json:"help_text,omitempty"`
-	Capabilities         Capabilities    `json:"capabilities,omitempty"`
-	EntitySingle         *string         `json:"entity_single,omitempty"`
-	EntityPlural         *string         `json:"entity_plural,omitempty"`
-	Inputs               InputConfigs    `json:"inputs,omitempty"`
-	Response             ResponseConfigs `json:"response,omitempty"`
-	ExternalLinks        ExternalLinks   `json:"external_links,omitempty"`
-	Sections             Sections        `json:"sections,omitempty"`
-	GetEntryAction       *LinkConfig     `json:"get_entry_action,omitempty"`
-	CreateEntryAction    *LinkConfig     `json:"create_entry_action,omitempty"`
-	RelatedActions       LinkConfigs     `json:"related_actions,omitempty"`
-	EntryActivityActions LinkConfigs     `json:"entry_activity_actions,omitempty"`
+	ID                   string               `json:"id,omitempty"`
+	ActionName           string               `json:"action_name,omitempty"`
+	Name                 *string              `json:"name,omitempty"`
+	Icon                 *string              `json:"icon,omitempty"`
+	Title                *string              `json:"title,omitempty"`
+	HelpText             *string              `json:"help_text,omitempty"`
+	Capabilities         Capabilities         `json:"capabilities,omitempty"`
+	EntitySingle         *string              `json:"entity_single,omitempty"`
+	EntityPlural         *string              `json:"entity_plural,omitempty"`
+	Inputs               InputConfigs         `json:"inputs,omitempty"`
+	Response             ResponseConfigs      `json:"response,omitempty"`
+	ExternalLinks        ExternalLinks        `json:"external_links,omitempty"`
+	Sections             Sections             `json:"sections,omitempty"`
+	GetEntryAction       *LinkConfig          `json:"get_entry_action,omitempty"`
+	CreateEntryAction    *LinkConfig          `json:"create_entry_action,omitempty"`
+	RelatedActions       LinkConfigs          `json:"related_actions,omitempty"`
+	EntryActivityActions LinkConfigs          `json:"entry_activity_actions,omitempty"`
+	DisplayLayout        *DisplayLayoutConfig `json:"display_layout,omitempty"`
 	// TODO: EmbeddedTools        ToolGroups
-	// TODO: DisplayLayout        *DisplayLayout
 }
 
 func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
@@ -123,6 +123,30 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	if cfg.RelatedActions != nil && len(cfg.RelatedActions) > 0 {
 		tool.RelatedActions = cfg.RelatedActions.applyOn(tool.RelatedActions)
 	}
+	if cfg.DisplayLayout != nil {
+		tool.DisplayLayout = cfg.DisplayLayout.toProto()
+	}
+}
+
+type DisplayLayoutConfig struct {
+	Config any `json:"config,omitempty"`
+}
+
+func (dl *DisplayLayoutConfig) toJSON() []byte {
+	if d, err := json.Marshal(dl.Config); err == nil {
+		return d
+	}
+
+	return nil
+}
+
+func (dl *DisplayLayoutConfig) toProto() *toolsproto.DisplayLayoutConfig {
+	var protoDL toolsproto.DisplayLayoutConfig
+	if err := protojson.Unmarshal(dl.toJSON(), &protoDL); err != nil {
+		return nil
+	}
+
+	return &protoDL
 }
 
 type InputConfigs map[string]InputConfig
@@ -318,6 +342,7 @@ type LinkConfig struct {
 	AsDialog         *bool   `json:"as_dialog,omitempty"`
 	DisplayOrder     *int32  `json:"display_order,omitempty"`
 	VisibleCondition *string `json:"visible_condition,omitempty"`
+	DataMapping      []any   `json:"data_mapping,omitempty"`
 }
 
 type LinkConfigs []*LinkConfig
@@ -528,6 +553,11 @@ func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 		cfg.RelatedActions = linkCfgs
 	}
 
+	if generated.DisplayLayout.JSON() != updated.DisplayLayout.JSON() {
+		cfg.DisplayLayout = &DisplayLayoutConfig{
+			Config: updated.DisplayLayout.AsObj(),
+		}
+	}
 	return cfg
 }
 
