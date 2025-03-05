@@ -558,7 +558,7 @@ func (cfg *ToolGroupConfig) applyOn(group *toolsproto.ToolGroup) *toolsproto.Too
 		group.Visible = *cfg.Visible
 	}
 
-	if cfg.Tools != nil && len(cfg.Tools) > 0 {
+	if len(cfg.Tools) > 0 {
 		genLinks := []*toolsproto.ActionLink{}
 		for _, t := range group.GetTools() {
 			genLinks = append(genLinks, t.GetActionLink())
