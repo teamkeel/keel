@@ -49,7 +49,6 @@ type computedTestCase struct {
 }
 
 var computedTestCases = []computedTestCase{
-
 	{
 		name:        "adding field with literal",
 		keelSchema:  testSchema,
@@ -193,6 +192,12 @@ var computedTestCases = []computedTestCase{
 			}`,
 		field:       "total Decimal @computed(SUM(invoice.item.product.price))",
 		expectedSql: `(SELECT COALESCE(SUM("item$product"."price"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id")`,
+	},
+	{
+		name:        "concating strings",
+		keelSchema:  testSchema,
+		field:       "name Text @computed(\"Product: \" + item.product.name)",
+		expectedSql: `"Product: " || (SELECT "product"."name" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id")`,
 	},
 }
 

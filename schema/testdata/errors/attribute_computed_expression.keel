@@ -23,6 +23,10 @@ model Item {
         identity Identity @computed(ctx.identity)
         //expect-error:33:43:AttributeArgumentError:@computed expressions cannot reference itself
         total Decimal @computed(item.total * 5)
+        //expect-error:54:55:AttributeExpressionError:cannot use operator '-' with types Text and Text
+        invalidStringOp Text @computed("Description" - item.description)
+        //expect-error:60:61:AttributeExpressionError:cannot use operator '+' with types Text and Number
+        invalidStringValue Text @computed(item.description + 1)
     }
     actions {
         get getItem(id) 

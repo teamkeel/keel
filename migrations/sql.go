@@ -280,7 +280,7 @@ func fieldFromComputedFnName(schema *proto.Schema, fn string) *proto.Field {
 func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *proto.Field) (string, string, error) {
 	var sqlType string
 	switch field.Type.Type {
-	case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT, proto.Type_TYPE_BOOL:
+	case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT, proto.Type_TYPE_BOOL, proto.Type_TYPE_STRING:
 		sqlType = PostgresFieldTypes[field.Type.Type]
 	default:
 		return "", "", fmt.Errorf("type not supported for computed fields: %s", field.Type.Type)

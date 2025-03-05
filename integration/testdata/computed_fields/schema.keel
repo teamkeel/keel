@@ -27,6 +27,15 @@ model ComputedBool {
     }
 }
 
+model ComputedText {
+    fields {
+        firstName Text
+        lastName Text
+        displayName Text @computed(computedText.firstName + " " + computedText.lastName)
+        fullDisplayName Text @computed("Product:" + " " + computedText.displayName)
+    }
+}
+
 model ComputedNulls {
     fields {
         price Decimal?

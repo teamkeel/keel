@@ -36,7 +36,8 @@ func ComputedAttributeRules(asts []*parser.AST, errs *errorhandling.ValidationEr
 			switch field.Type.Value {
 			case parser.FieldTypeBoolean,
 				parser.FieldTypeNumber,
-				parser.FieldTypeDecimal:
+				parser.FieldTypeDecimal,
+				parser.FieldTypeText:
 				attribute = attr
 			default:
 				errs.AppendError(

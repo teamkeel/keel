@@ -59,6 +59,7 @@ var typeCompatibilityMapping = map[string][][]*types.Type{
 	operators.Add: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
 		{typing.Duration},
+		{types.StringType, typing.Text},
 	},
 	operators.Subtract: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
@@ -424,7 +425,7 @@ func WithArithmeticOperators() expressions.Option {
 				for _, t := range v {
 					for _, arg1 := range t {
 						for _, arg2 := range t {
-							opt := cel.Function(k, cel.Overload(overloadName(k, arg1, arg2), argTypes(arg1, arg2), typing.Decimal))
+							opt := cel.Function(k, cel.Overload(overloadName(k, arg1, arg2), argTypes(arg1, arg2), arg1))
 							options = append(options, opt)
 						}
 					}

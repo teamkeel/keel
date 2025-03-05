@@ -98,6 +98,15 @@ test("computed fields - boolean", async () => {
   expect(notActive.isCheap).toBeTruthy();
 });
 
+test("computed fields - text", async () => {
+  const john = await models.computedText.create({
+    firstName: "John",
+    lastName: "Doe",
+  });
+  expect(john.displayName).toBe("John Doe");
+  expect(john.fullDisplayName).toBe("Product: John Doe");
+});
+
 test("computed fields - with nulls", async () => {
   const item = await models.computedNulls.create({ price: 5 });
   expect(item.total).toBeNull();
