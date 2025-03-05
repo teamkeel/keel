@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -139,7 +140,13 @@ func (s *Service) storeToProject(cfgs ToolConfigs) error {
 		if err != nil {
 			return err
 		}
-		err = os.WriteFile(filepath.Join(s.ProjectDir, toolsDir, cfg.ID+".json"), b, 0666)
+
+		var dest bytes.Buffer
+		if err := json.Indent(&dest, b, "", "  "); err != nil {
+			return fmt.Errorf("formatting tools config: %w", err)
+		}
+
+		err = os.WriteFile(filepath.Join(s.ProjectDir, toolsDir, cfg.ID+".json"), dest.Bytes(), 0666)
 		if err != nil {
 			return err
 		}
