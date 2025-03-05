@@ -136,6 +136,10 @@ func (s *Service) storeToProject(cfgs ToolConfigs) error {
 	}
 
 	for _, cfg := range cfgs {
+		if !cfg.hasChanges() {
+			continue
+		}
+
 		b, err := json.Marshal(cfg)
 		if err != nil {
 			return err

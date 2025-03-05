@@ -3,6 +3,7 @@ package tools
 import (
 	"encoding/json"
 
+	"github.com/teamkeel/keel/casing"
 	toolsproto "github.com/teamkeel/keel/tools/proto"
 	"google.golang.org/protobuf/encoding/protojson"
 )
@@ -54,6 +55,31 @@ type ToolConfig struct {
 	EntryActivityActions LinkConfigs          `json:"entry_activity_actions,omitempty"`
 	DisplayLayout        *DisplayLayoutConfig `json:"display_layout,omitempty"`
 	EmbeddedTools        ToolGroupConfigs     `json:"embedded_tools,omitempty"`
+}
+
+func (cfg *ToolConfig) isDuplicated() bool {
+	return cfg.ID != casing.ToKebab(cfg.ActionName)
+}
+
+func (cfg *ToolConfig) hasChanges() bool {
+	return cfg.isDuplicated() ||
+		cfg.Name != nil ||
+		cfg.Icon != nil ||
+		cfg.Title != nil ||
+		cfg.HelpText != nil ||
+		cfg.Capabilities != nil ||
+		cfg.EntitySingle != nil ||
+		cfg.EntityPlural != nil ||
+		cfg.Inputs != nil ||
+		cfg.Response != nil ||
+		cfg.ExternalLinks != nil ||
+		cfg.Sections != nil ||
+		cfg.GetEntryAction != nil ||
+		cfg.CreateEntryAction != nil ||
+		cfg.RelatedActions != nil ||
+		cfg.EntryActivityActions != nil ||
+		cfg.DisplayLayout != nil ||
+		cfg.EmbeddedTools != nil
 }
 
 func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
