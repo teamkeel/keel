@@ -125,6 +125,15 @@ func FindLinkByToolID(links []*ActionLink, toolID string) *ActionLink {
 	return nil
 }
 
+func FindToolGroupByID(groups []*ToolGroup, id string) *ToolGroup {
+	for _, g := range groups {
+		if g.Id == id {
+			return g
+		}
+	}
+	return nil
+}
+
 func (l *ActionLink) GetJSONDataMapping() string {
 	dm := l.GetObjDataMapping()
 	str, err := json.Marshal(dm)

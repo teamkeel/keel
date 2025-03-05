@@ -53,7 +53,7 @@ type ToolConfig struct {
 	RelatedActions       LinkConfigs          `json:"related_actions,omitempty"`
 	EntryActivityActions LinkConfigs          `json:"entry_activity_actions,omitempty"`
 	DisplayLayout        *DisplayLayoutConfig `json:"display_layout,omitempty"`
-	// TODO: EmbeddedTools        ToolGroups
+	EmbeddedTools        ToolGroupConfigs     `json:"embedded_tools,omitempty"`
 }
 
 func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
@@ -125,6 +125,9 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	}
 	if cfg.DisplayLayout != nil {
 		tool.DisplayLayout = cfg.DisplayLayout.toProto()
+	}
+	if cfg.EmbeddedTools != nil && len(cfg.EmbeddedTools) > 0 {
+		tool.EmbeddedTools = cfg.EmbeddedTools.applyOn(tool.EmbeddedTools)
 	}
 }
 
@@ -457,6 +460,125 @@ func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLi
 	return link
 }
 
+type ToolGroupConfig struct {
+	ID           string      `json:"id,omitempty"`
+	Deleted      *bool       `json:"deleted,omitempty"` // if the generated toolgroup has been deleted
+	Title        *string     `json:"title,omitempty"`
+	DisplayOrder *int32      `json:"display_order,omitempty"`
+	Visible      *bool       `json:"visible,omitempty"`
+	Tools        LinkConfigs `json:"tools,omitempty"`
+	// TODO: ResponseOverrides
+}
+type ToolGroupConfigs []*ToolGroupConfig
+
+func (cfg *ToolGroupConfig) hasChanges() bool {
+	return cfg.Deleted != nil ||
+		cfg.Title != nil ||
+		cfg.DisplayOrder != nil ||
+		cfg.Visible != nil ||
+		cfg.Tools != nil
+}
+
+func (cfgs ToolGroupConfigs) find(id string) *ToolGroupConfig {
+	for _, tg := range cfgs {
+		if tg.ID == id {
+			return tg
+		}
+	}
+
+	return nil
+}
+
+func (cfg *ToolGroupConfig) isDeleted() bool {
+	if cfg != nil && cfg.Deleted != nil {
+		return *cfg.Deleted
+	}
+
+	return false
+}
+
+func (cfgs ToolGroupConfigs) applyOn(groups []*toolsproto.ToolGroup) []*toolsproto.ToolGroup {
+	newTools := []*toolsproto.ToolGroup{}
+
+	// add all configured tool groups and new groups. If groups are deleted, they are skipped
+	for _, cfg := range cfgs {
+		if configured := cfg.applyOn(toolsproto.FindToolGroupByID(groups, cfg.ID)); configured != nil {
+			newTools = append(newTools, configured)
+		}
+	}
+
+	// carry over groups that haven't been configured/deleted
+	for _, g := range groups {
+		if cfg := cfgs.find(g.Id); cfg == nil {
+			newTools = append(newTools, g)
+		}
+	}
+
+	return newTools
+}
+
+func (cfg *ToolGroupConfig) applyOn(group *toolsproto.ToolGroup) *toolsproto.ToolGroup {
+	if cfg.isDeleted() {
+		return nil
+	}
+	// we've added a link
+	if group == nil {
+		return &toolsproto.ToolGroup{
+			Id:    cfg.ID,
+			Title: makeStringTemplate(cfg.Title),
+			DisplayOrder: func() int32 {
+				if cfg.DisplayOrder != nil {
+					return *cfg.DisplayOrder
+				}
+				return 0
+			}(),
+			Visible: func() bool {
+				if cfg.Visible != nil {
+					return *cfg.Visible
+				}
+				return false
+			}(),
+			Tools: func() []*toolsproto.ToolGroup_GroupActionLink {
+				tools := []*toolsproto.ToolGroup_GroupActionLink{}
+				for _, linkCfg := range cfg.Tools {
+					tools = append(tools, &toolsproto.ToolGroup_GroupActionLink{
+						ActionLink: linkCfg.applyOn(nil),
+					})
+				}
+				return tools
+			}(),
+		}
+	}
+
+	if cfg.Title != nil {
+		group.Title = makeStringTemplate(cfg.Title)
+	}
+	if cfg.DisplayOrder != nil {
+		group.DisplayOrder = *cfg.DisplayOrder
+	}
+	if cfg.Visible != nil {
+		group.Visible = *cfg.Visible
+	}
+
+	if cfg.Tools != nil && len(cfg.Tools) > 0 {
+		genLinks := []*toolsproto.ActionLink{}
+		for _, t := range group.GetTools() {
+			genLinks = append(genLinks, t.GetActionLink())
+		}
+
+		newLinks := cfg.Tools.applyOn(genLinks)
+		group.Tools = []*toolsproto.ToolGroup_GroupActionLink{}
+		for _, l := range newLinks {
+			group.Tools = append(group.Tools, &toolsproto.ToolGroup_GroupActionLink{
+				ActionLink: l,
+				// TODO: ResponseOverrides
+			})
+		}
+	}
+
+	return group
+}
+
 func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 	cfg := &ToolConfig{
 		ID:         updated.Id,
@@ -558,6 +680,11 @@ func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 			Config: updated.DisplayLayout.AsObj(),
 		}
 	}
+
+	if toolGroupConfigs := extractToolGroupConfigs(generated.EmbeddedTools, updated.EmbeddedTools); len(toolGroupConfigs) > 0 {
+		cfg.EmbeddedTools = toolGroupConfigs
+	}
+
 	return cfg
 }
 
@@ -678,7 +805,7 @@ func extractLinkConfigs(generated, updated []*toolsproto.ActionLink) LinkConfigs
 
 	// if there are any generated links that are still available, it means we've removed them, so let's add config for that as well
 	for id, available := range availableLinks {
-		if available == true {
+		if available {
 			cfgs = append(cfgs, extractLinkConfig(toolsproto.FindLinkByToolID(generated, id), nil))
 		}
 	}
@@ -748,6 +875,108 @@ func extractLinkConfig(generated, updated *toolsproto.ActionLink) *LinkConfig {
 	}
 	if generated.GetJSONDataMapping() != updated.GetJSONDataMapping() {
 		cfg.DataMapping = updated.GetObjDataMapping()
+	}
+
+	if !cfg.hasChanges() {
+		return nil
+	}
+
+	return &cfg
+}
+
+func extractToolGroupConfigs(generated, updated []*toolsproto.ToolGroup) ToolGroupConfigs {
+	cfgs := ToolGroupConfigs{}
+
+	// we will use a map to keep track of the generated tool groups that have already been configured
+	availableGroups := map[string]bool{}
+	for _, l := range generated {
+		availableGroups[l.GetId()] = true
+	}
+
+	for _, g := range updated {
+		if available, ok := availableGroups[g.GetId()]; ok && available {
+			// if we have a generated group that hasn't been configured yet (still available), let's use that and diff it with our updated group
+			if cfg := extractToolGroupConfig(toolsproto.FindToolGroupByID(generated, g.Id), g); cfg != nil {
+				cfgs = append(cfgs, cfg)
+			}
+			// mark it as used
+			availableGroups[g.Id] = false
+
+			continue
+		}
+
+		// we don't have an available generated group, so we will add a new one
+		cfgs = append(cfgs, extractToolGroupConfig(nil, g))
+	}
+
+	// if there are any generated groups that are still available, it means we've removed them, so let's add config for that as well
+	for id, available := range availableGroups {
+		if available {
+			cfgs = append(cfgs, extractToolGroupConfig(toolsproto.FindToolGroupByID(generated, id), nil))
+		}
+	}
+
+	if len(cfgs) > 0 {
+		return cfgs
+	}
+
+	return nil
+}
+
+func extractToolGroupConfig(generated, updated *toolsproto.ToolGroup) *ToolGroupConfig {
+	// we don't have a group and we didn't add a group
+	if generated == nil && updated == nil {
+		return nil
+	}
+	// we have a group and we've removed it
+	if generated != nil && updated == nil {
+		return &ToolGroupConfig{
+			ID:      generated.GetId(),
+			Deleted: boolPointer(true),
+		}
+	}
+
+	updatedToolLinks := []*toolsproto.ActionLink{}
+	for _, groupLink := range updated.Tools {
+		updatedToolLinks = append(updatedToolLinks, groupLink.GetActionLink())
+	}
+
+	// we didn't have a group, and now we've added it
+	if generated == nil && updated != nil {
+		return &ToolGroupConfig{
+			ID:           updated.Id,
+			Visible:      &updated.Visible,
+			Tools:        extractLinkConfigs(nil, updatedToolLinks),
+			DisplayOrder: &updated.DisplayOrder,
+			Title: func() *string {
+				if updated.GetTitle() != nil {
+					return &updated.GetTitle().Template
+				}
+				return nil
+			}(),
+		}
+	}
+
+	// we may have updated the tool group config
+	generatedToolLinks := []*toolsproto.ActionLink{}
+	for _, groupLink := range generated.Tools {
+		generatedToolLinks = append(generatedToolLinks, groupLink.GetActionLink())
+	}
+
+	cfg := ToolGroupConfig{
+		ID: generated.Id,
+	}
+	if change := generated.GetTitle().Diff(updated.GetTitle()); change != "" {
+		cfg.Title = &change
+	}
+	if generated.DisplayOrder != updated.DisplayOrder {
+		cfg.DisplayOrder = &updated.DisplayOrder
+	}
+	if linkConfigs := extractLinkConfigs(generatedToolLinks, updatedToolLinks); len(linkConfigs) > 0 {
+		cfg.Tools = linkConfigs
+	}
+	if generated.Visible != updated.Visible {
+		cfg.Visible = &updated.Visible
 	}
 
 	if !cfg.hasChanges() {
