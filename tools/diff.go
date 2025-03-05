@@ -4,28 +4,21 @@ import toolsproto "github.com/teamkeel/keel/tools/proto"
 
 func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 	cfg := &ToolConfig{
-		ID:         updated.Id,
-		ActionName: updated.ActionName,
-	}
-	if updated.GetName() != generated.GetName() {
-		cfg.Name = &updated.Name
-	}
-	if updated.GetIcon() != generated.GetIcon() {
-		cfg.Icon = updated.Icon
-	}
-	if change := generated.GetTitle().Diff(updated.GetTitle()); change != "" {
-		cfg.Title = &change
-	}
-	if change := generated.GetHelpText().Diff(updated.GetHelpText()); change != "" {
-		cfg.HelpText = &change
+		ID:                   updated.Id,
+		ActionName:           updated.ActionName,
+		Name:                 diffString(generated.GetName(), updated.GetName()),
+		Icon:                 diffString(generated.GetIcon(), updated.GetIcon()),
+		Title:                diffStringTemplate(generated.GetTitle(), updated.GetTitle()),
+		HelpText:             diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
+		EntitySingle:         diffString(generated.GetEntitySingle(), updated.GetEntitySingle()),
+		EntityPlural:         diffString(generated.GetEntityPlural(), updated.GetEntityPlural()),
+		CreateEntryAction:    extractLinkConfig(generated.CreateEntryAction, updated.CreateEntryAction),
+		GetEntryAction:       extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction),
+		EntryActivityActions: extractLinkConfigs(generated.EntryActivityActions, updated.EntryActivityActions),
+		RelatedActions:       extractLinkConfigs(generated.RelatedActions, updated.RelatedActions),
+		EmbeddedTools:        extractToolGroupConfigs(generated.EmbeddedTools, updated.EmbeddedTools),
 	}
 
-	if updated.GetEntitySingle() != generated.GetEntitySingle() {
-		cfg.EntitySingle = &updated.EntitySingle
-	}
-	if updated.GetEntityPlural() != generated.GetEntityPlural() {
-		cfg.EntityPlural = &updated.EntityPlural
-	}
 	if caps := generated.GetCapabilities().Diff(updated.GetCapabilities()); len(caps) > 0 {
 		cfg.Capabilities = Capabilities{}
 		for cap, set := range caps {
@@ -70,32 +63,13 @@ func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 	cfg.Sections = Sections{}
 	for _, s := range updated.GetSections() {
 		cfg.Sections = append(cfg.Sections, &Section{
-			Name:  s.GetName(),
-			Title: s.GetTitle().Template,
-			Description: func() *string {
-				if s.GetDescription() != nil {
-					return &s.GetDescription().Template
-				}
-
-				return nil
-			}(),
+			Name:             s.GetName(),
+			Title:            s.GetTitle().Template,
+			Description:      diffStringTemplate(nil, s.GetDescription()),
 			VisibleCondition: s.VisibleCondition,
 			DisplayOrder:     s.DisplayOrder,
 			Visible:          s.Visible,
 		})
-	}
-
-	if linkCfg := extractLinkConfig(generated.CreateEntryAction, updated.CreateEntryAction); linkCfg != nil {
-		cfg.CreateEntryAction = linkCfg
-	}
-	if linkCfg := extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction); linkCfg != nil {
-		cfg.GetEntryAction = linkCfg
-	}
-	if linkCfgs := extractLinkConfigs(generated.EntryActivityActions, updated.EntryActivityActions); len(linkCfgs) > 0 {
-		cfg.EntryActivityActions = linkCfgs
-	}
-	if linkCfgs := extractLinkConfigs(generated.RelatedActions, updated.RelatedActions); len(linkCfgs) > 0 {
-		cfg.RelatedActions = linkCfgs
 	}
 
 	if generated.DisplayLayout.JSON() != updated.DisplayLayout.JSON() {
@@ -104,39 +78,23 @@ func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 		}
 	}
 
-	if toolGroupConfigs := extractToolGroupConfigs(generated.EmbeddedTools, updated.EmbeddedTools); len(toolGroupConfigs) > 0 {
-		cfg.EmbeddedTools = toolGroupConfigs
-	}
-
 	return cfg
 }
 
 func extractInputConfig(generated, updated *toolsproto.RequestFieldConfig) *InputConfig {
-	cfg := InputConfig{}
-	if generated.DisplayName != updated.DisplayName {
-		cfg.DisplayName = &updated.DisplayName
+	cfg := InputConfig{
+		DisplayName:      diffString(generated.GetDisplayName(), updated.GetDisplayName()),
+		DisplayOrder:     diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
+		Visible:          diffBool(generated.GetVisible(), updated.GetVisible()),
+		Locked:           diffBool(generated.GetLocked(), updated.GetLocked()),
+		HelpText:         diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
+		Placeholder:      diffStringTemplate(generated.GetPlaceholder(), updated.GetPlaceholder()),
+		VisibleCondition: diffString(generated.GetVisibleCondition(), updated.GetVisibleCondition()),
+		SectionName:      diffString(generated.GetSectionName(), updated.GetSectionName()),
+		LookupAction:     extractLinkConfig(generated.LookupAction, updated.LookupAction),
+		GetEntryAction:   extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction),
 	}
-	if generated.DisplayOrder != updated.DisplayOrder {
-		cfg.DisplayOrder = &updated.DisplayOrder
-	}
-	if generated.Visible != updated.Visible {
-		cfg.Visible = &updated.Visible
-	}
-	if generated.Locked != updated.Locked {
-		cfg.Locked = &updated.Locked
-	}
-	if change := generated.GetHelpText().Diff(updated.GetHelpText()); change != "" {
-		cfg.HelpText = &change
-	}
-	if change := generated.GetPlaceholder().Diff(updated.GetPlaceholder()); change != "" {
-		cfg.Placeholder = &change
-	}
-	if generated.GetVisibleCondition() != updated.GetVisibleCondition() {
-		cfg.VisibleCondition = updated.VisibleCondition
-	}
-	if generated.GetSectionName() != updated.GetSectionName() {
-		cfg.SectionName = updated.SectionName
-	}
+
 	if updated.DefaultValue != nil {
 		switch updated.DefaultValue.Value.(type) {
 		case *toolsproto.ScalarValue_Bool:
@@ -154,13 +112,6 @@ func extractInputConfig(generated, updated *toolsproto.RequestFieldConfig) *Inpu
 		}
 	}
 
-	if linkCfg := extractLinkConfig(generated.LookupAction, updated.LookupAction); linkCfg != nil {
-		cfg.LookupAction = linkCfg
-	}
-	if linkCfg := extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction); linkCfg != nil {
-		cfg.GetEntryAction = linkCfg
-	}
-
 	if !cfg.hasChanges() {
 		return nil
 	}
@@ -169,30 +120,15 @@ func extractInputConfig(generated, updated *toolsproto.RequestFieldConfig) *Inpu
 }
 
 func extractResponseConfig(generated, updated *toolsproto.ResponseFieldConfig) *ResponseConfig {
-	cfg := ResponseConfig{}
-	if generated.DisplayName != updated.DisplayName {
-		cfg.DisplayName = &updated.DisplayName
-	}
-	if generated.DisplayOrder != updated.DisplayOrder {
-		cfg.DisplayOrder = &updated.DisplayOrder
-	}
-	if generated.Visible != updated.Visible {
-		cfg.Visible = &updated.Visible
-	}
-	if generated.ImagePreview != updated.ImagePreview {
-		cfg.ImagePreview = &updated.ImagePreview
-	}
-	if change := generated.GetHelpText().Diff(updated.GetHelpText()); change != "" {
-		cfg.HelpText = &change
-	}
-	if generated.GetVisibleCondition() != updated.GetVisibleCondition() {
-		cfg.VisibleCondition = updated.VisibleCondition
-	}
-	if generated.GetSectionName() != updated.GetSectionName() {
-		cfg.SectionName = updated.SectionName
-	}
-	if linkCfg := extractLinkConfig(generated.Link, updated.Link); linkCfg != nil {
-		cfg.Link = linkCfg
+	cfg := ResponseConfig{
+		DisplayName:      diffString(generated.GetDisplayName(), updated.GetDisplayName()),
+		DisplayOrder:     diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
+		Visible:          diffBool(generated.GetVisible(), updated.GetVisible()),
+		ImagePreview:     diffBool(generated.GetImagePreview(), updated.GetImagePreview()),
+		HelpText:         diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
+		VisibleCondition: diffString(generated.GetVisibleCondition(), updated.GetVisibleCondition()),
+		SectionName:      diffString(generated.GetSectionName(), updated.GetSectionName()),
+		Link:             extractLinkConfig(generated.Link, updated.Link),
 	}
 
 	if !cfg.hasChanges() {
@@ -249,27 +185,17 @@ func extractLinkConfig(generated, updated *toolsproto.ActionLink) *LinkConfig {
 	if generated != nil && updated == nil {
 		return &LinkConfig{
 			ToolID:  generated.ToolId,
-			Deleted: boolPointer(true),
+			Deleted: diffBool(false, true),
 		}
 	}
 
 	// we didn't have a link, and now we've added it
 	if generated == nil && updated != nil {
 		return &LinkConfig{
-			ToolID:   updated.ToolId,
-			AsDialog: updated.AsDialog,
-			Title: func() *string {
-				if updated.GetTitle() != nil {
-					return &updated.GetTitle().Template
-				}
-				return nil
-			}(),
-			Description: func() *string {
-				if updated.GetDescription() != nil {
-					return &updated.GetDescription().Template
-				}
-				return nil
-			}(),
+			ToolID:           updated.ToolId,
+			AsDialog:         updated.AsDialog,
+			Title:            diffStringTemplate(nil, updated.GetTitle()),
+			Description:      diffStringTemplate(nil, updated.GetDescription()),
 			DisplayOrder:     &updated.DisplayOrder,
 			VisibleCondition: updated.VisibleCondition,
 			DataMapping:      updated.GetObjDataMapping(),
@@ -278,23 +204,12 @@ func extractLinkConfig(generated, updated *toolsproto.ActionLink) *LinkConfig {
 
 	// we may have updated the link config
 	cfg := LinkConfig{
-		ToolID: generated.ToolId,
-	}
-	if generated.GetAsDialog() != updated.GetAsDialog() {
-		cfg.AsDialog = updated.AsDialog
-	}
-
-	if change := generated.GetTitle().Diff(updated.GetTitle()); change != "" {
-		cfg.Title = &change
-	}
-	if change := generated.GetDescription().Diff(updated.GetDescription()); change != "" {
-		cfg.Description = &change
-	}
-	if generated.GetVisibleCondition() != updated.GetVisibleCondition() {
-		cfg.VisibleCondition = updated.VisibleCondition
-	}
-	if generated.DisplayOrder != updated.DisplayOrder {
-		cfg.DisplayOrder = &updated.DisplayOrder
+		ToolID:           generated.ToolId,
+		AsDialog:         diffBool(generated.GetAsDialog(), updated.GetAsDialog()),
+		Title:            diffStringTemplate(generated.GetTitle(), updated.GetTitle()),
+		Description:      diffStringTemplate(generated.GetDescription(), updated.GetDescription()),
+		DisplayOrder:     diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
+		VisibleCondition: diffString(generated.GetVisibleCondition(), updated.GetVisibleCondition()),
 	}
 	if generated.GetJSONDataMapping() != updated.GetJSONDataMapping() {
 		cfg.DataMapping = updated.GetObjDataMapping()
@@ -355,7 +270,7 @@ func extractToolGroupConfig(generated, updated *toolsproto.ToolGroup) *ToolGroup
 	if generated != nil && updated == nil {
 		return &ToolGroupConfig{
 			ID:      generated.GetId(),
-			Deleted: boolPointer(true),
+			Deleted: diffBool(false, true),
 		}
 	}
 
@@ -371,12 +286,7 @@ func extractToolGroupConfig(generated, updated *toolsproto.ToolGroup) *ToolGroup
 			Visible:      &updated.Visible,
 			Tools:        extractLinkConfigs(nil, updatedToolLinks),
 			DisplayOrder: &updated.DisplayOrder,
-			Title: func() *string {
-				if updated.GetTitle() != nil {
-					return &updated.GetTitle().Template
-				}
-				return nil
-			}(),
+			Title:        diffStringTemplate(nil, updated.GetTitle()),
 		}
 	}
 
@@ -387,19 +297,11 @@ func extractToolGroupConfig(generated, updated *toolsproto.ToolGroup) *ToolGroup
 	}
 
 	cfg := ToolGroupConfig{
-		ID: generated.Id,
-	}
-	if change := generated.GetTitle().Diff(updated.GetTitle()); change != "" {
-		cfg.Title = &change
-	}
-	if generated.DisplayOrder != updated.DisplayOrder {
-		cfg.DisplayOrder = &updated.DisplayOrder
-	}
-	if linkConfigs := extractLinkConfigs(generatedToolLinks, updatedToolLinks); len(linkConfigs) > 0 {
-		cfg.Tools = linkConfigs
-	}
-	if generated.Visible != updated.Visible {
-		cfg.Visible = &updated.Visible
+		ID:           generated.Id,
+		Title:        diffStringTemplate(generated.GetTitle(), updated.GetTitle()),
+		DisplayOrder: diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
+		Tools:        extractLinkConfigs(generatedToolLinks, updatedToolLinks),
+		Visible:      diffBool(generated.GetVisible(), updated.GetVisible()),
 	}
 
 	if !cfg.hasChanges() {
@@ -407,4 +309,38 @@ func extractToolGroupConfig(generated, updated *toolsproto.ToolGroup) *ToolGroup
 	}
 
 	return &cfg
+}
+
+func diffString(old, new string) *string {
+	if old != new {
+		return &new
+	}
+
+	return nil
+}
+
+func diffInt(old, new int32) *int32 {
+	if old != new {
+		return &new
+	}
+
+	return nil
+}
+
+func diffBool(old, new bool) *bool {
+	if old != new {
+		return &new
+	}
+
+	return nil
+}
+
+func diffStringTemplate(old, new *toolsproto.StringTemplate) *string {
+	if new != nil {
+		if old != nil && old.Template == new.Template {
+			return nil
+		}
+		return &new.Template
+	}
+	return nil
 }

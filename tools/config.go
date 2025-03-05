@@ -577,10 +577,6 @@ func (cfg *ToolGroupConfig) applyOn(group *toolsproto.ToolGroup) *toolsproto.Too
 	return group
 }
 
-func boolPointer(v bool) *bool {
-	return &v
-}
-
 func makeStringTemplate(tmpl *string) *toolsproto.StringTemplate {
 	if tmpl == nil {
 		return nil

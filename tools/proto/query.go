@@ -95,16 +95,6 @@ func (t *ActionConfig) FindResponseByPath(location string) *ResponseFieldConfig 
 	return nil
 }
 
-func (s *StringTemplate) Diff(other *StringTemplate) string {
-	if other != nil {
-		if s != nil && other.Template == s.Template {
-			return ""
-		}
-		return other.Template
-	}
-	return ""
-}
-
 func (c *Capabilities) Diff(other *Capabilities) map[string]bool {
 	diffs := map[string]bool{}
 	if c.GetAudit() != other.GetAudit() {
