@@ -54,6 +54,11 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, common.NewPermissionError()
 	}
 
+	// if result not found, return early
+	if res == nil {
+		return nil, err
+	}
+
 	// if we have any files in our results we need to transform them to the object structure required
 	if scope.Model.HasFiles() {
 		res, err = transformModelFileResponses(scope.Context, scope.Model, res)
