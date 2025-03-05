@@ -67,19 +67,19 @@ func (cfg *ToolConfig) hasChanges() bool {
 		cfg.Icon != nil ||
 		cfg.Title != nil ||
 		cfg.HelpText != nil ||
-		cfg.Capabilities != nil ||
+		len(cfg.Capabilities) > 0 ||
 		cfg.EntitySingle != nil ||
 		cfg.EntityPlural != nil ||
-		cfg.Inputs != nil ||
-		cfg.Response != nil ||
-		cfg.ExternalLinks != nil ||
-		cfg.Sections != nil ||
+		len(cfg.Inputs) > 0 ||
+		len(cfg.Response) > 0 ||
+		len(cfg.ExternalLinks) > 0 ||
+		len(cfg.Sections) > 0 ||
 		cfg.GetEntryAction != nil ||
 		cfg.CreateEntryAction != nil ||
-		cfg.RelatedActions != nil ||
-		cfg.EntryActivityActions != nil ||
+		len(cfg.RelatedActions) > 0 ||
+		len(cfg.EntryActivityActions) > 0 ||
 		cfg.DisplayLayout != nil ||
-		cfg.EmbeddedTools != nil
+		len(cfg.EmbeddedTools) > 0
 }
 
 func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
