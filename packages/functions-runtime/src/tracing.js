@@ -143,13 +143,14 @@ function getCircularReplacer() {
 
 function init() {
   if (process.env.KEEL_TRACING_ENABLED == "true") {
-    const provider = new NodeTracerProvider({
-      resource: envDetectorSync.detect(),
-    });
     const exporter = new OTLPTraceExporter();
     const processor = new BatchSpanProcessor(exporter);
 
-    provider.addSpanProcessor(processor);
+    const provider = new NodeTracerProvider({
+      resource: envDetectorSync.detect(),
+      spanProcessors: [processor],
+    });
+
     provider.register();
   }
 
