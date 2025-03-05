@@ -61,10 +61,10 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 		tool.Name = *cfg.Name
 	}
 	if cfg.Title != nil {
-		tool.Title = &toolsproto.StringTemplate{Template: *cfg.Title}
+		tool.Title = makeStringTemplate(cfg.Title)
 	}
 	if cfg.HelpText != nil {
-		tool.HelpText = &toolsproto.StringTemplate{Template: *cfg.HelpText}
+		tool.HelpText = makeStringTemplate(cfg.HelpText)
 	}
 	if cfg.Icon != nil {
 		tool.Icon = cfg.Icon
@@ -89,8 +89,8 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	}
 	for _, el := range cfg.ExternalLinks {
 		tool.ExternalLinks = append(tool.ExternalLinks, &toolsproto.ExternalLink{
-			Label:            &toolsproto.StringTemplate{Template: el.Label},
-			Href:             &toolsproto.StringTemplate{Template: el.Href},
+			Label:            makeStringTemplate(&el.Label),
+			Href:             makeStringTemplate(&el.Href),
 			Icon:             el.Icon,
 			DisplayOrder:     el.DisplayOrder,
 			VisibleCondition: el.VisibleCondition,
@@ -98,14 +98,9 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	}
 	for _, s := range cfg.Sections {
 		tool.Sections = append(tool.Sections, &toolsproto.Section{
-			Name:  s.Name,
-			Title: &toolsproto.StringTemplate{Template: s.Title},
-			Description: func() *toolsproto.StringTemplate {
-				if s.Description != nil {
-					return &toolsproto.StringTemplate{Template: *s.Description}
-				}
-				return nil
-			}(),
+			Name:             s.Name,
+			Title:            makeStringTemplate(&s.Title),
+			Description:      makeStringTemplate(s.Description),
 			DisplayOrder:     s.DisplayOrder,
 			VisibleCondition: s.VisibleCondition,
 			Visible:          s.Visible,
@@ -178,13 +173,13 @@ func (cfg *InputConfig) applyOn(input *toolsproto.RequestFieldConfig) {
 		input.Visible = *cfg.Visible
 	}
 	if cfg.HelpText != nil {
-		input.HelpText = &toolsproto.StringTemplate{Template: *cfg.HelpText}
+		input.HelpText = makeStringTemplate(cfg.HelpText)
 	}
 	if cfg.Locked != nil {
 		input.Locked = *cfg.Locked
 	}
 	if cfg.Placeholder != nil {
-		input.Placeholder = &toolsproto.StringTemplate{Template: *cfg.Placeholder}
+		input.Placeholder = makeStringTemplate(cfg.Placeholder)
 	}
 	if cfg.VisibleCondition != nil {
 		input.VisibleCondition = cfg.VisibleCondition
@@ -240,7 +235,7 @@ func (cfg ResponseConfig) applyOn(response *toolsproto.ResponseFieldConfig) {
 		response.Visible = *cfg.Visible
 	}
 	if cfg.HelpText != nil {
-		response.HelpText = &toolsproto.StringTemplate{Template: *cfg.HelpText}
+		response.HelpText = makeStringTemplate(cfg.HelpText)
 	}
 	if cfg.ImagePreview != nil {
 		response.ImagePreview = *cfg.ImagePreview
@@ -578,8 +573,9 @@ func (cfg *ToolGroupConfig) applyOn(group *toolsproto.ToolGroup) *toolsproto.Too
 }
 
 func makeStringTemplate(tmpl *string) *toolsproto.StringTemplate {
-	if tmpl == nil {
-		return nil
+	if tmpl != nil {
+		return &toolsproto.StringTemplate{Template: *tmpl}
 	}
-	return &toolsproto.StringTemplate{Template: *tmpl}
+
+	return nil
 }
