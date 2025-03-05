@@ -3,12 +3,12 @@
     {
       "handler": "myHandler",
       "method": "HTTP_METHOD_GET",
-      "pattern": "\"my/route\""
+      "pattern": "/my/route"
     },
     {
       "handler": "otherHandler",
       "method": "HTTP_METHOD_POST",
-      "pattern": "\"some/webhook/:param\""
+      "pattern": "/some/webhook/:param"
     }
   ],
   "apis": [

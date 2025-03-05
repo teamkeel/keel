@@ -35,7 +35,9 @@ func HasFunctions(sch *proto.Schema, cfg *config.ProjectConfig) bool {
 
 	hasSubscribers := len(sch.Subscribers) > 0
 
-	return hasCustomFunctions || hasHooks || hasJobs || hasSubscribers
+	hasRoutes := len(sch.Routes) > 0
+
+	return hasCustomFunctions || hasHooks || hasJobs || hasSubscribers || hasRoutes
 }
 
 // HasTests returns true if there any TypeScript test files in dir or any of it's

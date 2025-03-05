@@ -3,6 +3,7 @@ const { RequestHeaders } = require("./RequestHeaders");
 const { handleRequest } = require("./handleRequest");
 const { handleJob } = require("./handleJob");
 const { handleSubscriber } = require("./handleSubscriber");
+const { handleRoute } = require("./handleRoute");
 const KSUID = require("ksuid");
 const { useDatabase } = require("./database");
 const {
@@ -21,6 +22,7 @@ module.exports = {
   handleRequest,
   handleJob,
   handleSubscriber,
+  handleRoute,
   useDatabase,
   Duration,
   InlineFile,
