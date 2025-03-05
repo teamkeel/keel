@@ -1616,19 +1616,10 @@
           "fieldName": "updatedAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author" },
-          "fieldType": "TYPE_MODEL",
-          "displayName": "Author",
-          "displayOrder": 4,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "author"
-        },
-        {
           "fieldLocation": { "path": "$.results[*].authorId" },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
-          "displayOrder": 5,
+          "displayOrder": 4,
           "visible": true,
           "modelName": "BlogPost",
           "fieldName": "authorId"
@@ -1637,7 +1628,7 @@
           "fieldLocation": { "path": "$.results[*].image" },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
-          "displayOrder": 6,
+          "displayOrder": 5,
           "visible": true,
           "imagePreview": true,
           "modelName": "BlogPost",
@@ -1648,7 +1639,7 @@
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
-          "displayOrder": 7,
+          "displayOrder": 6,
           "visible": true,
           "modelName": "BlogPost",
           "fieldName": "tags"
@@ -1689,19 +1680,10 @@
           "fieldName": "updatedAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].category" },
-          "fieldType": "TYPE_MODEL",
-          "displayName": "Category",
-          "displayOrder": 8,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "category"
-        },
-        {
           "fieldLocation": { "path": "$.results[*].categoryId" },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
-          "displayOrder": 9,
+          "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "getCategory",
@@ -1717,7 +1699,7 @@
           "fieldType": "TYPE_MODEL",
           "repeated": true,
           "displayName": "Comments",
-          "displayOrder": 10,
+          "displayOrder": 8,
           "visible": true,
           "link": {
             "toolId": "listComments",
@@ -1735,7 +1717,7 @@
           "fieldLocation": { "path": "$.results[*].status" },
           "fieldType": "TYPE_ENUM",
           "displayName": "Status",
-          "displayOrder": 11,
+          "displayOrder": 9,
           "visible": true,
           "enumName": "Status",
           "modelName": "BlogPost",
