@@ -90,6 +90,10 @@ func (v *computedQueryGen) VisitOperator(op string) error {
 		operators.LessEquals:    "<=",
 	}[op]
 
+	if v.field.Type.Type == proto.Type_TYPE_STRING && op == operators.Add {
+		sqlOp = "||"
+	}
+
 	if sqlOp == "" {
 		return fmt.Errorf("unsupported operator: %s", op)
 	}
@@ -105,7 +109,7 @@ func (v *computedQueryGen) VisitLiteral(value any) error {
 	case float64:
 		v.sql += fmt.Sprintf("%v", val)
 	case string:
-		v.sql += fmt.Sprintf("\"%v\"", val)
+		v.sql += fmt.Sprintf("'%v'", val)
 	case bool:
 		v.sql += fmt.Sprintf("%t", val)
 	case nil:
