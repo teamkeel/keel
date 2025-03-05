@@ -274,10 +274,19 @@
           "fieldName": "updatedAt"
         },
         {
+          "fieldLocation": { "path": "$.supplier" },
+          "fieldType": "TYPE_MODEL",
+          "displayName": "Supplier",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "supplier"
+        },
+        {
           "fieldLocation": { "path": "$.supplierId" },
           "fieldType": "TYPE_ID",
           "displayName": "Supplier",
-          "displayOrder": 2,
+          "displayOrder": 3,
           "visible": true,
           "modelName": "Product",
           "fieldName": "supplierId"
