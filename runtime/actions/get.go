@@ -63,7 +63,7 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// if we have embedded data, let's resolve it
-	if len(scope.Action.ResponseEmbeds) > 0 {
+	if len(scope.Action.ResponseEmbeds) > 0 && len(res) > 0 {
 		for _, embed := range scope.Action.ResponseEmbeds {
 			// a response embed will be something like: `book.author.country` where book is the model for the current action
 			fragments := strings.Split(embed, ".")
