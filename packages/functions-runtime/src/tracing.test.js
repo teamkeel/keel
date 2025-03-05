@@ -4,20 +4,23 @@ import { NodeTracerProvider, Span } from "@opentelemetry/sdk-trace-node";
 const opentelemetry = require("@opentelemetry/api");
 
 let spanEvents = [];
-const provider = new NodeTracerProvider({});
-provider.addSpanProcessor({
-  forceFlush() {
-    return Promise.resolve();
-  },
-  onStart(span, parentContext) {
-    spanEvents.push({ event: "onStart", span, parentContext });
-  },
-  onEnd(span) {
-    spanEvents.push({ event: "onEnd", span });
-  },
-  shutdown() {
-    return Promise.resolve();
-  },
+const provider = new NodeTracerProvider({
+  spanProcessors: [
+    {
+      forceFlush() {
+        return Promise.resolve();
+      },
+      onStart(span, parentContext) {
+        spanEvents.push({ event: "onStart", span, parentContext });
+      },
+      onEnd(span) {
+        spanEvents.push({ event: "onEnd", span });
+      },
+      shutdown() {
+        return Promise.resolve();
+      },
+    },
+  ],
 });
 provider.register();
 
