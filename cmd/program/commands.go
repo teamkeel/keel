@@ -575,14 +575,7 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 		w.FilterOps(watcher.Write, watcher.Remove)
 
 		ignored := []string{
-<<<<<<< HEAD
 			"node_modules",
-=======
-			"node_modules/",
-			".build/",
-			".git/",
-			"tools.json",
->>>>>>> cd677c5c (feat: in-project tool configuration)
 		}
 
 		w.AddFilterHook(func(info os.FileInfo, fullPath string) error {
