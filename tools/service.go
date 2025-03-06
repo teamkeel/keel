@@ -304,6 +304,8 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 		}
 	}
 
+	NewValidator(s.Schema, tools).validate()
+
 	return tools, nil
 }
 
