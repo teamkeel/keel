@@ -156,6 +156,7 @@ func assertJSON(t *testing.T, expected []byte, actual []byte) {
 	switch diff {
 	case jsondiff.FullMatch:
 		// success
+		return
 	case jsondiff.SupersetMatch, jsondiff.NoMatch:
 		assert.Fail(t, "changes do not match expected", explanation)
 	case jsondiff.FirstArgIsInvalidJson:

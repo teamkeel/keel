@@ -369,15 +369,15 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 			continue
 		}
 
+		if field.ComputedExpression != nil {
+			continue
+		}
+
 		if field.ForeignKeyFieldName != nil {
 			w.Writef("// if providing a value for this field do not also set %s\n", field.ForeignKeyFieldName.Value)
 		}
 		if field.ForeignKeyInfo != nil {
 			w.Writef("// if providing a value for this field do not also set %s\n", strings.TrimSuffix(field.Name, "Id"))
-		}
-
-		if field.ComputedExpression != nil {
-			continue
 		}
 
 		w.Write(field.Name)
@@ -435,6 +435,10 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 	// the generated foreign key field or the actual model field, but not both.
 	for _, field := range model.Fields {
 		if field.ForeignKeyFieldName == nil || field.Optional {
+			continue
+		}
+
+		if field.ComputedExpression != nil {
 			continue
 		}
 

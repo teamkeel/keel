@@ -419,13 +419,18 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				continue
 			}
 
+			col := field.Name
+			if field.ForeignKeyFieldName != nil {
+				col = field.ForeignKeyFieldName.Value
+			}
+
 			if !has {
-				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(model.Name), Identifier(field.Name)))
+				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(model.Name), Identifier(col)))
 				continue
 			}
 
 			if field.Optional == column.NotNull && !field.Optional && field.ComputedExpression != nil {
-				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(model.Name), Identifier(field.Name)))
+				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(model.Name), Identifier(col)))
 
 				if lo.ContainsBy(changes, func(c *DatabaseChange) bool {
 					return c.Model == model.Name && c.Field == field.Name && c.Type == ChangeTypeModified
@@ -688,7 +693,12 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		// Generate SQL statements in dependency order
 		stmts := []string{}
 		for _, field := range sorted {
-			s := fmt.Sprintf("NEW.%s := %s(NEW);\n\t", Identifier(field.Name), fieldsFns[field])
+			col := field.Name
+			if field.ForeignKeyFieldName != nil {
+				col = field.ForeignKeyFieldName.Value
+			}
+
+			s := fmt.Sprintf("NEW.%s := %s(NEW);\n\t", Identifier(col), fieldsFns[field])
 			stmts = append(stmts, s)
 		}
 
