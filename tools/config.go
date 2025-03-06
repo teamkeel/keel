@@ -439,6 +439,9 @@ func (cfgs LinkConfigs) applyOn(links []*toolsproto.ActionLink) []*toolsproto.Ac
 }
 
 func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLink {
+	if cfg == nil {
+		return nil
+	}
 	if cfg.isDeleted() {
 		return nil
 	}
@@ -480,13 +483,12 @@ func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLi
 }
 
 type ToolGroupConfig struct {
-	ID           string      `json:"id,omitempty"`
-	Deleted      *bool       `json:"deleted,omitempty"` // if the generated toolgroup has been deleted
-	Title        *string     `json:"title,omitempty"`
-	DisplayOrder *int32      `json:"display_order,omitempty"`
-	Visible      *bool       `json:"visible,omitempty"`
-	Tools        LinkConfigs `json:"tools,omitempty"`
-	// TODO: ResponseOverrides
+	ID           string               `json:"id,omitempty"`
+	Deleted      *bool                `json:"deleted,omitempty"` // if the generated toolgroup has been deleted
+	Title        *string              `json:"title,omitempty"`
+	DisplayOrder *int32               `json:"display_order,omitempty"`
+	Visible      *bool                `json:"visible,omitempty"`
+	Tools        ToolGroupLinkConfigs `json:"tools,omitempty"`
 }
 type ToolGroupConfigs []*ToolGroupConfig
 
@@ -540,7 +542,7 @@ func (cfg *ToolGroupConfig) applyOn(group *toolsproto.ToolGroup) *toolsproto.Too
 	if cfg.isDeleted() {
 		return nil
 	}
-	// we've added a link
+	// we've added a group
 	if group == nil {
 		return &toolsproto.ToolGroup{
 			Id:    cfg.ID,
@@ -559,9 +561,10 @@ func (cfg *ToolGroupConfig) applyOn(group *toolsproto.ToolGroup) *toolsproto.Too
 			}(),
 			Tools: func() []*toolsproto.ToolGroup_GroupActionLink {
 				tools := []*toolsproto.ToolGroup_GroupActionLink{}
-				for _, linkCfg := range cfg.Tools {
+				for _, toolLink := range cfg.Tools {
 					tools = append(tools, &toolsproto.ToolGroup_GroupActionLink{
-						ActionLink: linkCfg.applyOn(nil),
+						ActionLink:        toolLink.ActionLink.applyOn(nil),
+						ResponseOverrides: toolLink.getResponseOverrides(),
 					})
 				}
 				return tools
@@ -580,22 +583,93 @@ func (cfg *ToolGroupConfig) applyOn(group *toolsproto.ToolGroup) *toolsproto.Too
 	}
 
 	if len(cfg.Tools) > 0 {
-		genLinks := []*toolsproto.ActionLink{}
-		for _, t := range group.GetTools() {
-			genLinks = append(genLinks, t.GetActionLink())
-		}
-
-		newLinks := cfg.Tools.applyOn(genLinks)
-		group.Tools = []*toolsproto.ToolGroup_GroupActionLink{}
-		for _, l := range newLinks {
-			group.Tools = append(group.Tools, &toolsproto.ToolGroup_GroupActionLink{
-				ActionLink: l,
-				// TODO: ResponseOverrides
-			})
-		}
+		group.Tools = cfg.Tools.applyOn(group.Tools)
 	}
 
 	return group
+}
+
+type ToolGroupLinkConfig struct {
+	Deleted           *bool           `json:"deleted,omitempty"`
+	ActionLink        *LinkConfig     `json:"action_link,omitempty"`
+	ResponseOverrides map[string]bool `json:"response_overrides,omitempty"`
+}
+
+type ToolGroupLinkConfigs []*ToolGroupLinkConfig
+
+func (cfg *ToolGroupLinkConfig) hasChanges() bool {
+	return len(cfg.ResponseOverrides) > 0 || cfg.isDeleted() || (cfg.ActionLink != nil && cfg.ActionLink.hasChanges())
+}
+
+func (cfgs ToolGroupLinkConfigs) applyOn(links []*toolsproto.ToolGroup_GroupActionLink) []*toolsproto.ToolGroup_GroupActionLink {
+	newTools := []*toolsproto.ToolGroup_GroupActionLink{}
+
+	// add all configured links and new links. If links are deleted, they are skipped
+	for _, cfg := range cfgs {
+		if configured := cfg.applyOn(toolsproto.FindToolGroupLinkByToolID(links, cfg.ActionLink.ToolID)); configured != nil {
+			newTools = append(newTools, configured)
+		}
+	}
+
+	// carry over links that haven't been configured/deleted
+	for _, l := range links {
+		if cfg := cfgs.find(l.ActionLink.ToolId); cfg == nil {
+			newTools = append(newTools, l)
+		}
+	}
+
+	return newTools
+}
+func (cfgs ToolGroupLinkConfigs) find(toolID string) *ToolGroupLinkConfig {
+	for _, tl := range cfgs {
+		if tl.ActionLink.ToolID == toolID {
+			return tl
+		}
+	}
+
+	return nil
+}
+func (cfg *ToolGroupLinkConfig) isDeleted() bool {
+	if cfg.Deleted != nil {
+		return *cfg.Deleted
+	}
+
+	return false
+}
+
+func (cfg *ToolGroupLinkConfig) getResponseOverrides() []*toolsproto.ResponseOverrides {
+	if cfg == nil {
+		return nil
+	}
+
+	ret := []*toolsproto.ResponseOverrides{}
+	for path, visible := range cfg.ResponseOverrides {
+		ret = append(ret, &toolsproto.ResponseOverrides{
+			FieldLocation: &toolsproto.JsonPath{Path: path},
+			Visible:       visible,
+		})
+	}
+	return ret
+}
+
+func (cfg *ToolGroupLinkConfig) applyOn(link *toolsproto.ToolGroup_GroupActionLink) *toolsproto.ToolGroup_GroupActionLink {
+	if cfg == nil || cfg.isDeleted() {
+		return nil
+	}
+
+	// we've added a tool group link
+	if link == nil {
+		return &toolsproto.ToolGroup_GroupActionLink{
+			ActionLink:        cfg.ActionLink.applyOn(nil),
+			ResponseOverrides: cfg.getResponseOverrides(),
+		}
+	}
+
+	// we've updated a tool group link
+	link.ActionLink = cfg.ActionLink.applyOn(link.ActionLink)
+	link.ResponseOverrides = cfg.getResponseOverrides()
+
+	return link
 }
 
 func makeStringTemplate(tmpl *string) *toolsproto.StringTemplate {

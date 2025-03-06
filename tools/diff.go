@@ -274,9 +274,9 @@ func extractToolGroupConfig(generated, updated *toolsproto.ToolGroup) *ToolGroup
 		}
 	}
 
-	updatedToolLinks := []*toolsproto.ActionLink{}
+	updatedToolLinks := []*toolsproto.ToolGroup_GroupActionLink{}
 	for _, groupLink := range updated.Tools {
-		updatedToolLinks = append(updatedToolLinks, groupLink.GetActionLink())
+		updatedToolLinks = append(updatedToolLinks, groupLink)
 	}
 
 	// we didn't have a group, and now we've added it
@@ -284,24 +284,108 @@ func extractToolGroupConfig(generated, updated *toolsproto.ToolGroup) *ToolGroup
 		return &ToolGroupConfig{
 			ID:           updated.Id,
 			Visible:      &updated.Visible,
-			Tools:        extractLinkConfigs(nil, updatedToolLinks),
+			Tools:        extractToolGroupLinkConfigs(nil, updatedToolLinks),
 			DisplayOrder: &updated.DisplayOrder,
 			Title:        diffStringTemplate(nil, updated.GetTitle()),
 		}
 	}
 
 	// we may have updated the tool group config
-	generatedToolLinks := []*toolsproto.ActionLink{}
+	generatedToolLinks := []*toolsproto.ToolGroup_GroupActionLink{}
 	for _, groupLink := range generated.Tools {
-		generatedToolLinks = append(generatedToolLinks, groupLink.GetActionLink())
+		generatedToolLinks = append(generatedToolLinks, groupLink)
 	}
 
 	cfg := ToolGroupConfig{
 		ID:           generated.Id,
 		Title:        diffStringTemplate(generated.GetTitle(), updated.GetTitle()),
 		DisplayOrder: diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
-		Tools:        extractLinkConfigs(generatedToolLinks, updatedToolLinks),
+		Tools:        extractToolGroupLinkConfigs(generatedToolLinks, updatedToolLinks),
 		Visible:      diffBool(generated.GetVisible(), updated.GetVisible()),
+	}
+
+	if !cfg.hasChanges() {
+		return nil
+	}
+
+	return &cfg
+}
+
+func extractToolGroupLinkConfigs(generated, updated []*toolsproto.ToolGroup_GroupActionLink) ToolGroupLinkConfigs {
+	cfgs := ToolGroupLinkConfigs{}
+
+	// we will use a map to keep track of the generated links that have already been configured
+	availableLinks := map[string]bool{}
+	for _, l := range generated {
+		availableLinks[l.ActionLink.ToolId] = true
+	}
+
+	for _, l := range updated {
+		if available, ok := availableLinks[l.ActionLink.ToolId]; ok && available {
+			// if we have a generated link that hasn't been configured yet (still available), let's use that and diff it with our updated link
+			if cfg := extractToolGroupLinkConfig(toolsproto.FindToolGroupLinkByToolID(generated, l.ActionLink.ToolId), l); cfg != nil {
+				cfgs = append(cfgs, cfg)
+			}
+			// mark it as used
+			availableLinks[l.ActionLink.ToolId] = false
+
+			continue
+		}
+
+		// we don't have an available link, so we will add new ones
+		cfgs = append(cfgs, extractToolGroupLinkConfig(nil, l))
+	}
+
+	// if there are any generated links that are still available, it means we've removed them, so let's add config for that as well
+	for id, available := range availableLinks {
+		if available {
+			cfgs = append(cfgs, extractToolGroupLinkConfig(toolsproto.FindToolGroupLinkByToolID(generated, id), nil))
+		}
+	}
+
+	if len(cfgs) > 0 {
+		return cfgs
+	}
+
+	return nil
+}
+
+func extractToolGroupLinkConfig(generated, updated *toolsproto.ToolGroup_GroupActionLink) *ToolGroupLinkConfig {
+	// we don't have a link and we didn't add a link
+	if generated == nil && updated == nil {
+		return nil
+	}
+	// we have a link and we've removed it
+	if generated != nil && updated == nil {
+		return &ToolGroupLinkConfig{
+			ActionLink: &LinkConfig{ToolID: generated.ActionLink.ToolId},
+			Deleted:    diffBool(false, true),
+		}
+	}
+
+	// we didn't have a link, and now we've added it
+	if generated == nil && updated != nil {
+		return &ToolGroupLinkConfig{
+			ActionLink: extractLinkConfig(nil, updated.ActionLink),
+			ResponseOverrides: func() map[string]bool {
+				m := map[string]bool{}
+				for _, ro := range updated.ResponseOverrides {
+					m[ro.FieldLocation.Path] = ro.Visible
+				}
+				return m
+			}(),
+		}
+	}
+
+	cfg := ToolGroupLinkConfig{
+		ActionLink: extractLinkConfig(generated.ActionLink, updated.ActionLink),
+		ResponseOverrides: func() map[string]bool {
+			m := map[string]bool{}
+			for _, ro := range updated.ResponseOverrides {
+				m[ro.FieldLocation.Path] = ro.Visible
+			}
+			return m
+		}(),
 	}
 
 	if !cfg.hasChanges() {

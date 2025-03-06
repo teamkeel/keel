@@ -93,6 +93,15 @@ func FindLinkByToolID(links []*ActionLink, toolID string) *ActionLink {
 	return nil
 }
 
+func FindToolGroupLinkByToolID(links []*ToolGroup_GroupActionLink, toolID string) *ToolGroup_GroupActionLink {
+	for _, l := range links {
+		if l.ActionLink.ToolId == toolID {
+			return l
+		}
+	}
+	return nil
+}
+
 func FindToolGroupByID(groups []*ToolGroup, id string) *ToolGroup {
 	for _, g := range groups {
 		if g.Id == id {
