@@ -33,6 +33,44 @@ func (tools *Tools) DiffIDs(ids []string) []string {
 	return diffs
 }
 
+// AllActionLinks returns all action links defined in this tool
+func (t *ActionConfig) AllActionLinks() []*ActionLink {
+	links := []*ActionLink{}
+	if t.CreateEntryAction != nil {
+		links = append(links, t.CreateEntryAction)
+	}
+	if t.GetEntryAction != nil {
+		links = append(links, t.GetEntryAction)
+	}
+	links = append(links, t.RelatedActions...)
+	links = append(links, t.EntryActivityActions...)
+
+	for _, in := range t.Inputs {
+		if in.LookupAction != nil {
+			links = append(links, in.LookupAction)
+		}
+		if in.GetEntryAction != nil {
+			links = append(links, in.GetEntryAction)
+		}
+	}
+	for _, out := range t.Response {
+		if out.Link != nil {
+			links = append(links, out.Link)
+		}
+	}
+	for _, tg := range t.GetEmbeddedTools() {
+		for _, tgl := range tg.GetTools() {
+			links = append(links, tgl.GetActionLink())
+		}
+	}
+
+	if t.GetDisplayLayout() != nil {
+		links = append(links, t.GetDisplayLayout().AllActionLinks()...)
+	}
+
+	return links
+}
+
 func (t *ActionConfig) FindInput(location *JsonPath) *RequestFieldConfig {
 	for _, f := range t.GetInputs() {
 		if f.GetFieldLocation().GetPath() == location.GetPath() {
@@ -167,4 +205,27 @@ func (l *ToolGroup_GroupActionLink) GetResponseOverridesMap() map[string]bool {
 		m[ro.GetFieldLocation().GetPath()] = ro.GetVisible()
 	}
 	return m
+}
+
+func (dl *DisplayLayoutConfig) AllActionLinks() []*ActionLink {
+	links := []*ActionLink{}
+	if dl == nil {
+		return nil
+	}
+
+	if dl.GetInboxConfig() != nil {
+		if dl.GetInboxConfig().GetTool != nil {
+			links = append(links, dl.GetInboxConfig().GetTool)
+		}
+	}
+	if dl.GetBoardConfig() != nil {
+		if dl.GetBoardConfig().GetTool != nil {
+			links = append(links, dl.GetBoardConfig().GetTool)
+		}
+		if dl.GetBoardConfig().UpdateAction != nil {
+			links = append(links, dl.GetBoardConfig().UpdateAction)
+		}
+	}
+
+	return links
 }

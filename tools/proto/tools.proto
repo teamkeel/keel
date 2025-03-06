@@ -111,6 +111,12 @@ message ActionConfig {
 	//
 	// Fields are added to sections by having their `section_name` field referencing a section's... name. 
 	repeated Section sections = 25;
+
+	// Any validation errors for this tool
+	repeated ValidationError errors = 26;
+
+	// Any validation errors for this tool or any child elements of this tool (e.g. an action link that has an error)
+	bool has_errors = 27;
 }
 
 message RequestFieldConfig {
@@ -314,6 +320,9 @@ message ActionLink {
 	// A CEL expression used to control the visibility of the action link.
 	// e.g. if expression is not true then the link will be hidden. 
 	optional string visible_condition = 8;
+
+	// Any validation errors if 
+	repeated ValidationError errors = 9;
 }
 
 message ToolGroup {
@@ -477,4 +486,11 @@ message ProgressIndicatorConfig {
 
 	// If this progress indicator should be enabled or not
 	bool enabled = 3;
+}
+
+message ValidationError {
+   // A human friendly error message; e.g.: `The target tool does not exist.`
+   string error = 1;
+   // The field that is invalid: e.g. `tool_id` for a missing link's target tool.
+   string field = 2;
 }
