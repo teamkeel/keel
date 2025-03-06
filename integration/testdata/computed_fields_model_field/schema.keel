@@ -1,0 +1,21 @@
+
+
+model OrderJob {
+    fields {
+        customer Customer @computed(orderJob.order.customer)
+        order Order 
+    }
+}
+
+model Order {
+    fields {
+        customer Customer
+    }
+}
+
+model Customer {
+    fields {
+        name Text
+        orders Order[]
+    }
+}

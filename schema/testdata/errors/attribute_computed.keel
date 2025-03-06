@@ -15,6 +15,9 @@ model Item {
         secret Secret @computed("secret")
         //expect-error:28:39:AttributeExpressionError:@default cannot be used with computed fields
         withDefault Number @default(1) @computed(1 + 1)
+        //expect-error:31:33:AttributeExpressionError:expression expected to resolve to type Thing but it is Text
+        thing Thing @computed("")
+
     }
     actions {
         get getItem(id) {
@@ -29,6 +32,9 @@ model Item {
 model Thing {
     fields {
         total Decimal @computed(1 + 1)
+        //expect-error:22:35:AttributeNotAllowedError:@computed cannot be used on this side of a relationship
+        //expect-error:32:34:AttributeExpressionError:expression expected to resolve to type Item[] but it is Text
+        items Item[] @computed("")
     }
     actions {
         //expect-error:35:40:ActionInputError:computed fields cannot be used as inputs as they are automatically generated

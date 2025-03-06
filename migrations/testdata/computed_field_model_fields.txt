@@ -1,0 +1,128 @@
+===
+
+
+
+model OrderJob {
+    fields {
+        customer Customer @computed(orderJob.order.customer)
+        order Order 
+    }
+}
+
+model Order {
+    fields {
+        customer Customer
+    }
+}
+
+model Customer {
+    fields {
+        name Text
+        orders Order[]
+    }
+}
+
+===
+
+CREATE TABLE "customer" (
+"name" TEXT NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "customer" ADD CONSTRAINT customer_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "identity" (
+"email" TEXT,
+"email_verified" BOOL NOT NULL DEFAULT false,
+"password" TEXT,
+"external_id" TEXT,
+"issuer" TEXT,
+"name" TEXT,
+"given_name" TEXT,
+"family_name" TEXT,
+"middle_name" TEXT,
+"nick_name" TEXT,
+"profile" TEXT,
+"picture" TEXT,
+"website" TEXT,
+"gender" TEXT,
+"zone_info" TEXT,
+"locale" TEXT,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "identity" ADD CONSTRAINT identity_email_issuer_udx UNIQUE ("email", "issuer");
+CREATE TABLE "keel_audit" (
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"table_name" TEXT NOT NULL,
+"op" TEXT NOT NULL,
+"data" jsonb NOT NULL,
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"identity_id" TEXT,
+"trace_id" TEXT,
+"event_processed_at" TIMESTAMPTZ
+);
+ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "order" (
+"customer_id" TEXT NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "order" ADD CONSTRAINT order_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "order_job" (
+"customer_id" TEXT NOT NULL,
+"order_id" TEXT NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "order_job" ADD CONSTRAINT order_job_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "order" ADD FOREIGN KEY ("customer_id") REFERENCES "customer"("id") ON DELETE CASCADE;
+ALTER TABLE "order_job" ADD FOREIGN KEY ("customer_id") REFERENCES "customer"("id") ON DELETE CASCADE;
+ALTER TABLE "order_job" ADD FOREIGN KEY ("order_id") REFERENCES "order"("id") ON DELETE CASCADE;
+CREATE TRIGGER order_job_create AFTER INSERT ON "order_job" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_job_update AFTER UPDATE ON "order_job" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_job_delete AFTER DELETE ON "order_job" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_job_updated_at BEFORE UPDATE ON "order_job" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER order_create AFTER INSERT ON "order" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_update AFTER UPDATE ON "order" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_delete AFTER DELETE ON "order" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_updated_at BEFORE UPDATE ON "order" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER customer_create AFTER INSERT ON "customer" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER customer_update AFTER UPDATE ON "customer" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER customer_delete AFTER DELETE ON "customer" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER customer_updated_at BEFORE UPDATE ON "customer" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_updated_at BEFORE UPDATE ON "identity" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE FUNCTION "order_job__customer__92d925ba__comp"(r "order_job") RETURNS TEXT AS $$ BEGIN
+	RETURN (SELECT "order"."customer_id" FROM "order" WHERE "order"."id" IS NOT DISTINCT FROM r."order_id");
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION "order_job__exec_comp_fns"() RETURNS TRIGGER AS $$ BEGIN
+	NEW."customer_id" := order_job__customer__92d925ba__comp(NEW);
+	RETURN NEW;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER "order_job__comp" BEFORE INSERT OR UPDATE ON "order_job" FOR EACH ROW EXECUTE PROCEDURE "order_job__exec_comp_fns"();
+CREATE OR REPLACE FUNCTION "order__to__order_job__8302a118__comp_dep"() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "order_job" SET id = id WHERE "order_id" IN (NEW.id, OLD.id);
+	RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER "order__to__order_job__8302a118__comp_dep" AFTER INSERT OR DELETE ON "order" FOR EACH ROW EXECUTE PROCEDURE "order__to__order_job__8302a118__comp_dep"();
+CREATE OR REPLACE TRIGGER "order__to__order_job__8302a118__comp_dep_update" AFTER UPDATE ON "order" FOR EACH ROW WHEN(NEW."customer_id" IS DISTINCT FROM OLD."customer_id") EXECUTE PROCEDURE "order__to__order_job__8302a118__comp_dep"();
+UPDATE "order_job" SET id = id;
+ALTER TABLE "order_job" ALTER COLUMN "customer_id" SET NOT NULL;
+
+===
+
+[
+    {"Model":"Customer","Field":"","Type":"ADDED"},
+    {"Model":"Identity","Field":"","Type":"ADDED"},
+    {"Model":"KeelAudit","Field":"","Type":"ADDED"},
+    {"Model":"Order","Field":"","Type":"ADDED"},
+    {"Model":"OrderJob","Field":"","Type":"ADDED"}
+]

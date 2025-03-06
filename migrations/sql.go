@@ -282,6 +282,8 @@ func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *p
 	switch field.Type.Type {
 	case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT, proto.Type_TYPE_BOOL, proto.Type_TYPE_STRING:
 		sqlType = PostgresFieldTypes[field.Type.Type]
+	case proto.Type_TYPE_MODEL:
+		sqlType = "TEXT"
 	default:
 		return "", "", fmt.Errorf("type not supported for computed fields: %s", field.Type.Type)
 	}
