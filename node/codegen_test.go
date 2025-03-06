@@ -42,6 +42,7 @@ model Person {
 		height Decimal
 		bio Markdown
 		file File
+		secret Secret
 		canHoldBreath Duration
 		heightInMetres Decimal @computed(person.height * 0.3048)
 	}
@@ -61,6 +62,7 @@ export interface PersonTable {
 	height: number
 	bio: string
 	file: FileDbRecord
+	secret: string
 	canHoldBreath: runtime.Duration
 	heightInMetres: number
 	id: Generated<string>
@@ -110,6 +112,7 @@ export interface Person {
 	height: number
 	bio: string
 	file: runtime.File
+	secret: string
 	canHoldBreath: runtime.Duration
 	heightInMetres: number
 	id: string
@@ -136,6 +139,8 @@ export type PersonCreateValues = {
 	tags: string[]
 	height: number
 	bio: string
+	file: runtime.InlineFile | runtime.File
+	secret: string
 	file: FileWriteTypes
 	canHoldBreath: runtime.Duration
 	id?: string
@@ -286,6 +291,7 @@ export type PersonAPI = {
 		height: 0,
 		bio: '',
 		file: inputs.profilePhoto,
+		secret: ''
 		canHoldBreath: undefined
 	});
 	%[1]s
