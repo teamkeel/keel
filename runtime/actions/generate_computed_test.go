@@ -197,7 +197,7 @@ var computedTestCases = []computedTestCase{
 		name:        "concating strings",
 		keelSchema:  testSchema,
 		field:       "name Text @computed(\"Product: \" + item.product.name)",
-		expectedSql: `"Product: " || (SELECT "product"."name" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id")`,
+		expectedSql: `'Product: ' || (SELECT "product"."name" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id")`,
 	},
 }
 

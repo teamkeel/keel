@@ -19,7 +19,7 @@ model Item {
         wrongType Decimal @computed(item.description)
         //expect-error:31:34:AttributeExpressionError:unknown identifier 'ctx'
         ctx Boolean @computed(ctx.isAuthenticated)
-        //expect-error:27:50:AttributeNotAllowedError:@computed cannot be used on field of type Identity
+        //expect-error:37:40:AttributeExpressionError:unknown identifier 'ctx'
         identity Identity @computed(ctx.identity)
         //expect-error:33:43:AttributeArgumentError:@computed expressions cannot reference itself
         total Decimal @computed(item.total * 5)
