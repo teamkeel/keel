@@ -160,3 +160,11 @@ func (dl *DisplayLayoutConfig) AsObj() any {
 
 	return d
 }
+
+func (l *ToolGroup_GroupActionLink) GetResponseOverridesMap() map[string]bool {
+	m := map[string]bool{}
+	for _, ro := range l.GetResponseOverrides() {
+		m[ro.GetFieldLocation().GetPath()] = ro.GetVisible()
+	}
+	return m
+}

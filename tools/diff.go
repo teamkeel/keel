@@ -366,26 +366,21 @@ func extractToolGroupLinkConfig(generated, updated *toolsproto.ToolGroup_GroupAc
 	// we didn't have a link, and now we've added it
 	if generated == nil && updated != nil {
 		return &ToolGroupLinkConfig{
-			ActionLink: extractLinkConfig(nil, updated.ActionLink),
-			ResponseOverrides: func() map[string]bool {
-				m := map[string]bool{}
-				for _, ro := range updated.ResponseOverrides {
-					m[ro.FieldLocation.Path] = ro.Visible
-				}
-				return m
-			}(),
+			ActionLink:        extractLinkConfig(nil, updated.ActionLink),
+			ResponseOverrides: updated.GetResponseOverridesMap(),
+		}
+	}
+
+	linkDiff := extractLinkConfig(generated.ActionLink, updated.ActionLink)
+	if linkDiff == nil {
+		linkDiff = &LinkConfig{
+			ToolID: updated.ActionLink.ToolId,
 		}
 	}
 
 	cfg := ToolGroupLinkConfig{
-		ActionLink: extractLinkConfig(generated.ActionLink, updated.ActionLink),
-		ResponseOverrides: func() map[string]bool {
-			m := map[string]bool{}
-			for _, ro := range updated.ResponseOverrides {
-				m[ro.FieldLocation.Path] = ro.Visible
-			}
-			return m
-		}(),
+		ActionLink:        linkDiff,
+		ResponseOverrides: updated.GetResponseOverridesMap(),
 	}
 
 	if !cfg.hasChanges() {

@@ -137,6 +137,13 @@ func (s *Service) storeToProject(cfgs ToolConfigs) error {
 
 	for _, cfg := range cfgs {
 		if !cfg.hasChanges() {
+			// no changes to this tool, so remove any existing config for this tool
+			if err := os.Remove(filepath.Join(s.ProjectDir, toolsDir, cfg.ID+".json")); err != nil {
+				if !errors.Is(err, os.ErrNotExist) {
+					return fmt.Errorf("removing config file: %w", err)
+				}
+			}
+
 			continue
 		}
 
