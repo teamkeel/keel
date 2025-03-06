@@ -27,39 +27,22 @@ const (
 )
 
 type Service struct {
-	Schema     *proto.Schema
-	Config     *config.ProjectConfig
-	ProjectDir string
-}
-
-type ServiceParams struct {
-	ProjectDir string
+	Schema             *proto.Schema
+	Config             *config.ProjectConfig
+	ProjectDir         *string
+	ToolsConfigStorage map[string][]byte
 }
 
 type ServiceOpt func(s *Service)
 
-func NewService(params ServiceParams, opts ...ServiceOpt) (*Service, error) {
-	svc := &Service{
-		ProjectDir: params.ProjectDir,
-	}
+func NewService(opts ...ServiceOpt) *Service {
+	svc := &Service{}
 
 	for _, o := range opts {
 		o(svc)
 	}
 
-	if err := svc.validate(); err != nil {
-		return nil, err
-	}
-
-	return svc, nil
-}
-
-func (s *Service) validate() error {
-	if s.ProjectDir == "" {
-		return errors.New("tools service: project dir required")
-	}
-
-	return nil
+	return svc
 }
 
 func WithSchema(schema *proto.Schema) ServiceOpt {
@@ -74,11 +57,43 @@ func WithConfig(cfg *config.ProjectConfig) ServiceOpt {
 	}
 }
 
-func (s *Service) initToolsFolder() error {
-	path := filepath.Join(s.ProjectDir, toolsDir)
+// WithFileStorage initialises the tools service with file-baased storage enabled in the given project folder
+func WithFileStorage(projectDir string) ServiceOpt {
+	return func(s *Service) {
+		s.ProjectDir = &projectDir
+	}
+}
 
-	if _, err := os.Stat(path); err != nil {
-		err := os.Mkdir(path, os.ModePerm)
+// WithToolsConfig initialises the tools service with in-memory tools storage and with the given user configuration. This
+// option will invalidate any filebased storage that may have been set with `WithFileStorage`
+func WithToolsConfig(store map[string][]byte) ServiceOpt {
+	return func(s *Service) {
+		s.ToolsConfigStorage = store
+		s.ProjectDir = nil
+	}
+}
+
+// storageFolder return the path to the tools config storage folder
+func (s *Service) storageFolder() string {
+	if s.ProjectDir == nil {
+		return ""
+	}
+
+	return filepath.Join(*s.ProjectDir, toolsDir)
+}
+
+// hasFileStorage tells us if this service has been initialised with file storage
+func (s *Service) hasFileStorage() bool {
+	return s.ProjectDir != nil
+}
+
+func (s *Service) initStorageFolder() error {
+	if !s.hasFileStorage() {
+		return nil
+	}
+
+	if _, err := os.Stat(s.storageFolder()); err != nil {
+		err := os.Mkdir(s.storageFolder(), os.ModePerm)
 		if err != nil {
 			return fmt.Errorf("initialising tools dir: %w", err)
 		}
@@ -86,13 +101,17 @@ func (s *Service) initToolsFolder() error {
 	return nil
 }
 
-// loadFromProject will read  the tools configurations from storage.
-func (s *Service) loadFromProject() (ToolConfigs, error) {
-	if err := s.initToolsFolder(); err != nil {
+// loadFromFileStorage will load configs from file storage
+func (s *Service) loadFromFileStorage() (ToolConfigs, error) {
+	if !s.hasFileStorage() {
+		return nil, fmt.Errorf("service does not have file storage enabled")
+	}
+
+	if err := s.initStorageFolder(); err != nil {
 		return nil, fmt.Errorf("initialising tools folder: %w", err)
 	}
 
-	configFiles, err := filepath.Glob(filepath.Join(s.ProjectDir, toolsDir, "*.json"))
+	configFiles, err := filepath.Glob(filepath.Join(s.storageFolder(), "*.json"))
 	if err != nil {
 		return nil, err
 	}
@@ -114,39 +133,83 @@ func (s *Service) loadFromProject() (ToolConfigs, error) {
 	return cfgs, nil
 }
 
-// clearProject will remove all the saved tool configs from the project.
-func (s *Service) clearProject() error {
-	path := filepath.Join(s.ProjectDir, toolsDir)
-
-	err := os.RemoveAll(path)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
-		}
-		return err
+// load will read the tools configurations from storage.
+func (s *Service) load() (ToolConfigs, error) {
+	// if we have file storage enabled, load from file
+	if s.hasFileStorage() {
+		return s.loadFromFileStorage()
 	}
 
+	// otherwise load from internal cache
+	cfgs := ToolConfigs{}
+	for _, fileBytes := range s.ToolsConfigStorage {
+		var cfg ToolConfig
+		if err := json.Unmarshal(fileBytes, &cfg); err != nil {
+			return nil, err
+		}
+		cfgs = append(cfgs, &cfg)
+	}
+
+	return cfgs, nil
+}
+
+// clear will remove all the saved tool configs from the project.
+func (s *Service) clear() error {
+	if s.hasFileStorage() {
+		err := os.RemoveAll(s.storageFolder())
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				return nil
+			}
+			return err
+		}
+		return nil
+	}
+
+	s.ToolsConfigStorage = map[string][]byte{}
 	return nil
 }
 
-// storeToProject will save the given tools configuration to the tools.json file in the project.
-func (s *Service) storeToProject(cfgs ToolConfigs) error {
-	if err := s.initToolsFolder(); err != nil {
-		return fmt.Errorf("initialising tools folder: %w", err)
-	}
-
-	for _, cfg := range cfgs {
-		if !cfg.hasChanges() {
-			// no changes to this tool, so remove any existing config for this tool
-			if err := os.Remove(filepath.Join(s.ProjectDir, toolsDir, cfg.ID+".json")); err != nil {
-				if !errors.Is(err, os.ErrNotExist) {
-					return fmt.Errorf("removing config file: %w", err)
-				}
-			}
-
-			continue
+// store will save the given tools configuration to the tools.json file in the project.
+func (s *Service) store(cfgs ToolConfigs) error {
+	if s.hasFileStorage() {
+		if err := s.initStorageFolder(); err != nil {
+			return fmt.Errorf("initialising tools folder: %w", err)
 		}
 
+		for _, cfg := range cfgs {
+			if !cfg.hasChanges() {
+				// no changes to this tool, so remove any existing config for this tool
+				if err := os.Remove(filepath.Join(s.storageFolder(), cfg.ID+".json")); err != nil {
+					if !errors.Is(err, os.ErrNotExist) {
+						return fmt.Errorf("removing config file: %w", err)
+					}
+				}
+
+				continue
+			}
+
+			b, err := json.Marshal(cfg)
+			if err != nil {
+				return err
+			}
+
+			var dest bytes.Buffer
+			if err := json.Indent(&dest, b, "", "  "); err != nil {
+				return fmt.Errorf("formatting tools config: %w", err)
+			}
+
+			err = os.WriteFile(filepath.Join(s.storageFolder(), cfg.ID+".json"), dest.Bytes(), 0666)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	// we store in memory
+	storage := map[string][]byte{}
+	for _, cfg := range cfgs {
 		b, err := json.Marshal(cfg)
 		if err != nil {
 			return err
@@ -156,19 +219,16 @@ func (s *Service) storeToProject(cfgs ToolConfigs) error {
 		if err := json.Indent(&dest, b, "", "  "); err != nil {
 			return fmt.Errorf("formatting tools config: %w", err)
 		}
-
-		err = os.WriteFile(filepath.Join(s.ProjectDir, toolsDir, cfg.ID+".json"), dest.Bytes(), 0666)
-		if err != nil {
-			return err
-		}
+		storage[cfg.ID+".json"] = dest.Bytes()
 	}
 
+	s.ToolsConfigStorage = storage
 	return nil
 }
 
 // addToProject will add the given tools to the existing project tools config and store them.
 func (s *Service) addToProject(cfgs ...*ToolConfig) error {
-	currentConfigs, err := s.loadFromProject()
+	currentConfigs, err := s.load()
 	if err != nil {
 		return fmt.Errorf("loading tool configs: %w", err)
 	}
@@ -180,7 +240,7 @@ func (s *Service) addToProject(cfgs ...*ToolConfig) error {
 		currentConfigs = append(currentConfigs, toolConfig)
 	}
 
-	if err := s.storeToProject(currentConfigs); err != nil {
+	if err := s.store(currentConfigs); err != nil {
 		return fmt.Errorf("storing tool config to project: %w", err)
 	}
 
@@ -189,7 +249,7 @@ func (s *Service) addToProject(cfgs ...*ToolConfig) error {
 
 // updateToProject will replace the given tools in the stored config.
 func (s *Service) updateToProject(cfgs ...*ToolConfig) error {
-	currentConfigs, err := s.loadFromProject()
+	currentConfigs, err := s.load()
 	if err != nil {
 		return fmt.Errorf("loading tools from config file: %w", err)
 	}
@@ -206,7 +266,7 @@ func (s *Service) updateToProject(cfgs ...*ToolConfig) error {
 		}
 	}
 
-	if err := s.storeToProject(currentConfigs); err != nil {
+	if err := s.store(currentConfigs); err != nil {
 		return fmt.Errorf("storing tools to project: %w", err)
 	}
 
@@ -265,7 +325,7 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 	}
 
 	// load existing configured tools
-	configs, err := s.loadFromProject()
+	configs, err := s.load()
 	if err != nil {
 		return nil, fmt.Errorf("loading tool configs from file: %w", err)
 	}
@@ -309,7 +369,7 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 
 // ResetTools will remove all the saved tool configs and return the schema generated tools.
 func (s *Service) ResetTools(ctx context.Context) (*toolsproto.Tools, error) {
-	if err := s.clearProject(); err != nil {
+	if err := s.clear(); err != nil {
 		return nil, fmt.Errorf("removing saved tools configuration: %w", err)
 	}
 
