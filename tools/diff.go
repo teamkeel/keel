@@ -274,33 +274,23 @@ func extractToolGroupConfig(generated, updated *toolsproto.ToolGroup) *ToolGroup
 		}
 	}
 
-	updatedToolLinks := []*toolsproto.ToolGroup_GroupActionLink{}
-	for _, groupLink := range updated.Tools {
-		updatedToolLinks = append(updatedToolLinks, groupLink)
-	}
-
 	// we didn't have a group, and now we've added it
 	if generated == nil && updated != nil {
 		return &ToolGroupConfig{
 			ID:           updated.Id,
 			Visible:      &updated.Visible,
-			Tools:        extractToolGroupLinkConfigs(nil, updatedToolLinks),
+			Tools:        extractToolGroupLinkConfigs(nil, updated.Tools),
 			DisplayOrder: &updated.DisplayOrder,
 			Title:        diffStringTemplate(nil, updated.GetTitle()),
 		}
 	}
 
 	// we may have updated the tool group config
-	generatedToolLinks := []*toolsproto.ToolGroup_GroupActionLink{}
-	for _, groupLink := range generated.Tools {
-		generatedToolLinks = append(generatedToolLinks, groupLink)
-	}
-
 	cfg := ToolGroupConfig{
 		ID:           generated.Id,
 		Title:        diffStringTemplate(generated.GetTitle(), updated.GetTitle()),
 		DisplayOrder: diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
-		Tools:        extractToolGroupLinkConfigs(generatedToolLinks, updatedToolLinks),
+		Tools:        extractToolGroupLinkConfigs(generated.Tools, updated.Tools),
 		Visible:      diffBool(generated.GetVisible(), updated.GetVisible()),
 	}
 
