@@ -32,6 +32,7 @@ require (
 	github.com/emirpasic/gods v1.18.1
 	github.com/evanw/esbuild v0.25.0
 	github.com/fatih/camelcase v1.0.0
+	github.com/fsnotify/fsnotify v1.8.0
 	github.com/goccy/go-yaml v1.15.13
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/google/cel-go v0.23.2
@@ -50,7 +51,6 @@ require (
 	github.com/otiai10/copy v1.14.1
 	github.com/pulumi/pulumi-aws/sdk/v6 v6.69.0
 	github.com/pulumi/pulumi/sdk/v3 v3.150.0
-	github.com/radovskyb/watcher v1.0.7
 	github.com/relvacode/iso8601 v1.6.0
 	github.com/rs/cors v1.11.1
 	github.com/samber/lo v1.47.0
@@ -122,7 +122,6 @@ require (
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.6.1 // indirect
 	github.com/go-git/go-git/v5 v5.13.1 // indirect
