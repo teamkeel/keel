@@ -502,7 +502,14 @@
                 "title": {
                   "template": "comments"
                 }
-              }
+              },
+              "responseOverrides": [
+                {
+                  "fieldLocation": {
+                    "path": "$.results[*].parentId"
+                  }
+                }
+              ]
             }
           ],
           "visible": true

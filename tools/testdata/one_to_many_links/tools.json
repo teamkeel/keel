@@ -113,7 +113,14 @@
                 "title": {
                   "template": "items"
                 }
-              }
+              },
+              "responseOverrides": [
+                {
+                  "fieldLocation": {
+                    "path": "$.results[*].orderId"
+                  }
+                }
+              ]
             }
           ],
           "visible": true
