@@ -346,6 +346,10 @@ func (g *Generator) generateEmbeddedTools() {
 										},
 									},
 								},
+								ResponseOverrides: []*toolsproto.ResponseOverrides{{
+									FieldLocation: &toolsproto.JsonPath{Path: "$.results[*]." + f.InverseFieldName.Value + "Id"},
+									Visible:       false,
+								}},
 							},
 						},
 						Visible: true,
