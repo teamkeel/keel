@@ -249,5 +249,5 @@ func (s *Server) makeToolsService(ctx context.Context) (*tools.Service, error) {
 		return nil, err
 	}
 
-	return tools.NewService(tools.ServiceParams{ProjectDir: projectDir}, tools.WithConfig(config), tools.WithSchema(schema))
+	return tools.NewService(tools.WithFileStorage(projectDir), tools.WithConfig(config), tools.WithSchema(schema)), nil
 }
