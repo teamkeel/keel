@@ -602,7 +602,6 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 
 			// Skip if any directory component is hidden or is in the ignored list
 			pathParts := strings.Split(filepath.Clean(path), string(filepath.Separator))
-
 			for _, part := range pathParts {
 				if strings.HasPrefix(part, ".") {
 					return filepath.SkipDir
@@ -676,11 +675,23 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 						continue
 					}
 
-					// If the "schemas" directory is added or another directory renamed to "schemas"
-					// then we need to also watch it for changes
-					schemasDir := filepath.Join(absDir, "schemas")
-					if info.IsDir() && filepath.Clean(event.Name) == filepath.Clean(schemasDir) {
-						err = watcher.Add(schemasDir)
+					// If a directory is added or renamed then we need to also watch it for changes to its contents
+					if info.IsDir() {
+						// Skip if any directory component is hidden or is in the ignored list
+						pathParts := strings.Split(filepath.Clean(event.Name), string(filepath.Separator))
+						for _, part := range pathParts {
+							if strings.HasPrefix(part, ".") {
+								continue
+							}
+
+							for _, v := range ignored {
+								if strings.Contains(part, v) {
+									continue
+								}
+							}
+						}
+
+						err = watcher.Add(event.Name)
 						if err != nil {
 							continue
 						}
