@@ -34,9 +34,6 @@ func CasingRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 		},
 		EnterEnum: func(n *parser.EnumNode) {
 			errs.AppendError(checkCasing(n.Name, "enum"))
-			for _, v := range n.Values {
-				errs.AppendError(checkCasing(v.Name, "enum value"))
-			}
 		},
 		EnterMessage: func(n *parser.MessageNode) {
 			errs.AppendError(checkCasing(n.Name, "message"))

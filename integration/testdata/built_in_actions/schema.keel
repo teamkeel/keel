@@ -27,8 +27,9 @@ model Post {
 
 enum Category {
     Technical
-    Food
-    Lifestyle
+    FOOD
+    lifestyle
+    something_123
 }
 
 api Web {

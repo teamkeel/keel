@@ -30,10 +30,11 @@ type Timestamp {
 }
 
 enum Occupation {
-  Astronaut
   Doctor
-  Firefighter
+  FIRE_FIGHTER
+  Officer_1
   Teacher
+  astronaut
 }
 
 scalar Any
