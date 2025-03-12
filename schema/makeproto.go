@@ -1586,12 +1586,18 @@ func (scm *Builder) makeRoutes(decl *parser.DeclarationNode) {
 			method = proto.HttpMethod_HTTP_METHOD_PUT
 		case http.MethodDelete:
 			method = proto.HttpMethod_HTTP_METHOD_DELETE
-		case "ALL":
-			method = proto.HttpMethod_HTTP_METHOD_ALL
 		}
+
+		pattern := route.Pattern
+		pattern = strings.TrimPrefix(pattern, `"`)
+		pattern = strings.TrimSuffix(pattern, `"`)
+		if !strings.HasPrefix(pattern, "/") {
+			pattern = "/" + pattern
+		}
+
 		scm.proto.Routes = append(scm.proto.Routes, &proto.Route{
 			Method:  method,
-			Pattern: route.Pattern,
+			Pattern: pattern,
 			Handler: route.Handler.Value,
 		})
 	}

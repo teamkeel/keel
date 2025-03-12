@@ -445,7 +445,6 @@ enum HttpMethod {
     HTTP_METHOD_POST = 2;
     HTTP_METHOD_PUT = 3;
     HTTP_METHOD_DELETE = 4;
-    HTTP_METHOD_ALL = 5;
 }
 
 message Route {

@@ -78,6 +78,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 
 	writeFunctionHookHelpers(sdk)
 	writeFunctionHookTypes(sdkTypes)
+	writeRouteFunctionTypes(sdkTypes)
 
 	writeTableConfig(sdk, schema.Models)
 	writeAPIFactory(sdk, schema)
@@ -165,6 +166,29 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 			Contents: `{"name": "@teamkeel/sdk"}`,
 		},
 	}
+}
+
+func writeRouteFunctionTypes(w *codegen.Writer) {
+	w.Writeln(`export type RouteFunction = (req: RouteFunctionRequest, ctx: Omit<ContextAPI, "headers" | "response">) => Promise<RouteFunctionResponse>;`)
+
+	w.Writeln("export type RouteFunctionRequest = {")
+	w.Indent()
+	w.Writeln("body: string;")
+	w.Writeln("method: string;")
+	w.Writeln("path: string;")
+	w.Writeln("params: {[key: string]: string | undefined};")
+	w.Writeln("query: string;")
+	w.Writeln("headers: Headers;")
+	w.Dedent()
+	w.Writeln("}")
+
+	w.Writeln("export type RouteFunctionResponse = {")
+	w.Indent()
+	w.Writeln("body: string;")
+	w.Writeln("statusCode?: number;")
+	w.Writeln("headers?: {[key: string]: string};")
+	w.Dedent()
+	w.Writeln("}")
 }
 
 func writeResultInfoInterface(w *codegen.Writer, schema *proto.Schema, action *proto.Action, isClientPackage bool) {

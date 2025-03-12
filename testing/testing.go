@@ -255,22 +255,6 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 
 			switch pathParts[0] {
-			case ActionApiPath, AuthPath:
-				e, err := toLambdaFunctionURLRequest(r)
-				if err != nil {
-					writeJSON(w, http.StatusInternalServerError, err.Error())
-					return
-				}
-				res, err := lambdaHandler.APIHandler(ctx, e)
-				if err != nil {
-					writeJSON(w, http.StatusInternalServerError, err.Error())
-					return
-				}
-				for k, v := range res.Headers {
-					w.Header().Set(k, v)
-				}
-				w.WriteHeader(res.StatusCode)
-				_, _ = w.Write([]byte(res.Body))
 			case JobPath:
 				err := HandleJobExecutorRequest(r, lambdaHandler, awsHandler)
 				if err != nil {
@@ -292,9 +276,23 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 				}
 
 				writeJSON(w, http.StatusOK, map[string]any{})
+				return
 			default:
-				fmt.Println(r.Method, r.URL.Path, "- not found")
-				w.WriteHeader(http.StatusNotFound)
+				e, err := toLambdaFunctionURLRequest(r)
+				if err != nil {
+					writeJSON(w, http.StatusInternalServerError, err.Error())
+					return
+				}
+				res, err := lambdaHandler.APIHandler(ctx, e)
+				if err != nil {
+					writeJSON(w, http.StatusInternalServerError, err.Error())
+					return
+				}
+				for k, v := range res.Headers {
+					w.Header().Set(k, v)
+				}
+				w.WriteHeader(res.StatusCode)
+				_, _ = w.Write([]byte(res.Body))
 			}
 		}),
 	}
@@ -360,6 +358,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Env = append(os.Environ(), []string{
+		fmt.Sprintf("KEEL_TESTING_API_URL=%s", serverURL),
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=%s/%s/json", serverURL, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_JOBS_URL=%s/%s/json", serverURL, JobPath),
 		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=%s/%s/json", serverURL, SubscriberPath),

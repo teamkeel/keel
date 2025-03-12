@@ -2,6 +2,7 @@ package functions
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strings"
 
@@ -46,6 +47,7 @@ const (
 	ActionFunction     FunctionType = "action"
 	JobFunction        FunctionType = "job"
 	SubscriberFunction FunctionType = "subscriber"
+	RouteFunction      FunctionType = "route"
 )
 
 type TriggerType string
@@ -183,6 +185,102 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 	}
 
 	return resp.Result, resp.Meta, nil
+}
+
+type RouteRequest struct {
+	Body   string            `json:"body"`
+	Method string            `json:"method"`
+	Path   string            `json:"path"`
+	Params map[string]string `json:"params"`
+	Query  string            `json:"query"`
+}
+
+type RouteResponse struct {
+	Body       string            `json:"body"`
+	StatusCode int               `json:"statusCode"`
+	Headers    map[string]string `json:"headers"`
+}
+
+func CallRoute(ctx context.Context, handler string, body *RouteRequest) (*RouteResponse, *FunctionsRuntimeMeta, error) {
+	span := trace.SpanFromContext(ctx)
+
+	transport, ok := ctx.Value(contextKey).(Transport)
+	if !ok {
+		return nil, nil, errors.New("no functions client in context")
+	}
+
+	requestHeaders, err := runtimectx.GetRequestHeaders(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	joinedHeaders := map[string]string{}
+	for k, v := range requestHeaders {
+		joinedHeaders[k] = strings.Join(v, ", ")
+	}
+
+	var identity auth.Identity
+	if auth.IsAuthenticated(ctx) {
+		identity, err = auth.GetIdentity(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	secrets := runtimectx.GetSecrets(ctx)
+
+	tracingContext := propagation.MapCarrier{}
+	otel.GetTextMapPropagator().Inject(ctx, tracingContext)
+
+	meta := map[string]any{
+		"headers":  requestHeaders,
+		"identity": identity,
+		"secrets":  secrets,
+		"tracing":  tracingContext,
+	}
+
+	req := &FunctionsRuntimeRequest{
+		ID:     ksuid.New().String(),
+		Method: handler,
+		Type:   RouteFunction,
+		Params: body,
+		Meta:   meta,
+	}
+
+	span.SetAttributes(
+		attribute.String("jsonrpc.id", req.ID),
+		attribute.String("jsonrpc.method", req.Method),
+	)
+
+	resp, err := transport(ctx, req)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return nil, nil, err
+	}
+
+	if resp.Error != nil {
+		span.SetStatus(codes.Error, resp.Error.Message)
+		span.SetAttributes(attribute.Int("error.code", int(resp.Error.Code)))
+		return nil, nil, toRuntimeError(resp.Error)
+	}
+
+	b, err := json.Marshal(resp.Result)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return nil, nil, err
+	}
+
+	var routeResponse RouteResponse
+	err = json.Unmarshal(b, &routeResponse)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return nil, nil, err
+	}
+
+	return &routeResponse, resp.Meta, nil
 }
 
 // CallJob will invoke the job function on the runtime node server.
