@@ -565,6 +565,7 @@ type WatcherMsg struct {
 	Err   error
 	Path  string
 	Event string
+	IsDir bool
 }
 
 func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
@@ -651,19 +652,41 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 						return
 					}
 
-					// Only send events for write and remove operations
-					if event.Op&fsnotify.Write == fsnotify.Write ||
-						event.Op&fsnotify.Remove == fsnotify.Remove {
-						eventType := "Write"
-						if event.Op&fsnotify.Remove == fsnotify.Remove {
-							eventType = "Remove"
-						}
+					var eventType string
+					switch {
+					case event.Op&fsnotify.Write == fsnotify.Write:
+						eventType = "Write"
+					case event.Op&fsnotify.Remove == fsnotify.Remove:
+						eventType = "Remove"
+					case event.Op&fsnotify.Rename == fsnotify.Rename:
+						eventType = "Rename"
+					case event.Op&fsnotify.Create == fsnotify.Create:
+						eventType = "Create"
+					default:
+						continue
+					}
 
-						ch <- WatcherMsg{
-							Path:  event.Name,
-							Event: eventType,
+					ch <- WatcherMsg{
+						Path:  event.Name,
+						Event: eventType,
+					}
+
+					info, err := os.Stat(event.Name)
+					if err != nil {
+						// For a rename, the original file wont exist, so we just exit
+						continue
+					}
+
+					// If the "schemas" directory is added or another directory renamed to "schemas"
+					// then we need to also watch it for changes
+					schemasDir := filepath.Join(absDir, "schemas")
+					if info.IsDir() && filepath.Clean(event.Name) == filepath.Clean(schemasDir) {
+						err = watcher.Add(schemasDir)
+						if err != nil {
+							continue
 						}
 					}
+
 				case err, ok := <-watcher.Errors:
 					if !ok {
 						return
