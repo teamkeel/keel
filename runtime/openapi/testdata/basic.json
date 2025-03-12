@@ -1,6 +1,9 @@
 {
   "openapi": "3.1.0",
-  "info": { "title": "Web", "version": "1" },
+  "info": {
+    "title": "Web",
+    "version": "1"
+  },
   "paths": {
     "/web/json/createCustomer": {
       "post": {
@@ -15,11 +18,34 @@
                   "address": {
                     "$ref": "#/components/schemas/CreateCustomerAddressInput"
                   },
-                  "dateOfBirth": { "type": "string", "format": "date" },
-                  "details": { "type": "string", "format": "markdown" },
-                  "name": { "type": "string" },
-                  "picture": { "type": "string", "format": "data-url" },
-                  "weight": { "type": "number", "format": "float" }
+                  "dateOfBirth": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "details": {
+                    "type": "string",
+                    "format": "markdown"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "occupation": {
+                    "enum": [
+                      "Teacher",
+                      "Doctor",
+                      "FIRE_FIGHTER",
+                      "astronaut",
+                      "Officer_1"
+                    ]
+                  },
+                  "picture": {
+                    "type": "string",
+                    "format": "data-url"
+                  },
+                  "weight": {
+                    "type": "number",
+                    "format": "float"
+                  }
                 },
                 "unevaluatedProperties": false,
                 "required": [
@@ -28,7 +54,8 @@
                   "address",
                   "details",
                   "weight",
-                  "picture"
+                  "picture",
+                  "occupation"
                 ]
               }
             }
@@ -39,7 +66,9 @@
             "description": "createCustomer Response",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Customer" }
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
               }
             }
           },
@@ -49,20 +78,28 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": { "type": "string" },
+                    "code": {
+                      "type": "string"
+                    },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": { "type": "string" },
-                            "field": { "type": "string" }
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
                           }
                         }
                       }
                     },
-                    "message": { "type": "string" }
+                    "message": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -81,13 +118,27 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "after": { "type": "string" },
-                  "before": { "type": "string" },
-                  "first": { "type": "number" },
-                  "last": { "type": "number" },
-                  "limit": { "type": "number" },
-                  "offset": { "type": "number" },
-                  "where": { "$ref": "#/components/schemas/CustomersWhere" }
+                  "after": {
+                    "type": "string"
+                  },
+                  "before": {
+                    "type": "string"
+                  },
+                  "first": {
+                    "type": "number"
+                  },
+                  "last": {
+                    "type": "number"
+                  },
+                  "limit": {
+                    "type": "number"
+                  },
+                  "offset": {
+                    "type": "number"
+                  },
+                  "where": {
+                    "$ref": "#/components/schemas/CustomersWhere"
+                  }
                 },
                 "unevaluatedProperties": false
               }
@@ -103,17 +154,31 @@
                   "properties": {
                     "pageInfo": {
                       "properties": {
-                        "count": { "type": "number" },
-                        "endCursor": { "type": "string" },
-                        "hasNextPage": { "type": "boolean" },
-                        "pageNumber": { "type": "number" },
-                        "startCursor": { "type": "string" },
-                        "totalCount": { "type": "number" }
+                        "count": {
+                          "type": "number"
+                        },
+                        "endCursor": {
+                          "type": "string"
+                        },
+                        "hasNextPage": {
+                          "type": "boolean"
+                        },
+                        "pageNumber": {
+                          "type": "number"
+                        },
+                        "startCursor": {
+                          "type": "string"
+                        },
+                        "totalCount": {
+                          "type": "number"
+                        }
                       }
                     },
                     "results": {
                       "type": "array",
-                      "items": { "$ref": "#/components/schemas/Customer" }
+                      "items": {
+                        "$ref": "#/components/schemas/Customer"
+                      }
                     }
                   }
                 }
@@ -126,20 +191,28 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": { "type": "string" },
+                    "code": {
+                      "type": "string"
+                    },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": { "type": "string" },
-                            "field": { "type": "string" }
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
                           }
                         }
                       }
                     },
-                    "message": { "type": "string" }
+                    "message": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -157,7 +230,11 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": { "id": { "type": "string" } },
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
                 "unevaluatedProperties": false,
                 "required": ["id"]
               }
@@ -169,7 +246,9 @@
             "description": "getCustomer Response",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Customer" }
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
               }
             }
           },
@@ -179,20 +258,28 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": { "type": "string" },
+                    "code": {
+                      "type": "string"
+                    },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": { "type": "string" },
-                            "field": { "type": "string" }
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
                           }
                         }
                       }
                     },
-                    "message": { "type": "string" }
+                    "message": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -229,7 +316,9 @@
             "description": "updateCustomer Response",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Customer" }
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
               }
             }
           },
@@ -239,20 +328,28 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": { "type": "string" },
+                    "code": {
+                      "type": "string"
+                    },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": { "type": "string" },
-                            "field": { "type": "string" }
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
                           }
                         }
                       }
                     },
-                    "message": { "type": "string" }
+                    "message": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -267,33 +364,77 @@
       "CreateCustomerAddressInput": {
         "type": "object",
         "properties": {
-          "addressLine1": { "type": "string" },
-          "town": { "type": "string" }
+          "addressLine1": {
+            "type": "string"
+          },
+          "town": {
+            "type": "string"
+          }
         },
         "unevaluatedProperties": false,
         "required": ["addressLine1", "town"]
       },
       "Customer": {
         "properties": {
-          "addressId": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "dateOfBirth": { "type": "string", "format": "date" },
-          "details": { "type": "string", "format": "markdown" },
-          "id": { "type": "string" },
-          "name": { "type": "string" },
+          "addressId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date"
+          },
+          "details": {
+            "type": "string",
+            "format": "markdown"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "occupation": {
+            "enum": [
+              "Teacher",
+              "Doctor",
+              "FIRE_FIGHTER",
+              "astronaut",
+              "Officer_1"
+            ]
+          },
           "picture": {
             "type": "object",
             "properties": {
-              "contentType": { "type": "string" },
-              "filename": { "type": "string" },
-              "key": { "type": "string" },
-              "size": { "type": "number" },
-              "url": { "type": "string" }
+              "contentType": {
+                "type": "string"
+              },
+              "filename": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "size": {
+                "type": "number"
+              },
+              "url": {
+                "type": "string"
+              }
             },
             "required": ["key", "filename", "contentType", "size", "url"]
           },
-          "updatedAt": { "type": "string", "format": "date-time" },
-          "weight": { "type": "number", "format": "float" }
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "weight": {
+            "type": "number",
+            "format": "float"
+          }
         },
         "required": [
           "name",
@@ -302,6 +443,7 @@
           "details",
           "weight",
           "picture",
+          "occupation",
           "id",
           "createdAt",
           "updatedAt"
@@ -310,7 +452,9 @@
       "CustomersWhere": {
         "type": "object",
         "properties": {
-          "name": { "$ref": "#/components/schemas/StringQueryInput" }
+          "name": {
+            "$ref": "#/components/schemas/StringQueryInput"
+          }
         },
         "unevaluatedProperties": false
       },
@@ -319,38 +463,63 @@
         "oneOf": [
           {
             "type": "object",
-            "properties": { "equals": { "type": ["string", "null"] } },
+            "properties": {
+              "equals": {
+                "type": ["string", "null"]
+              }
+            },
             "required": ["equals"],
             "title": "equals"
           },
           {
             "type": "object",
-            "properties": { "notEquals": { "type": ["string", "null"] } },
+            "properties": {
+              "notEquals": {
+                "type": ["string", "null"]
+              }
+            },
             "required": ["notEquals"],
             "title": "notEquals"
           },
           {
             "type": "object",
-            "properties": { "startsWith": { "type": "string" } },
+            "properties": {
+              "startsWith": {
+                "type": "string"
+              }
+            },
             "required": ["startsWith"],
             "title": "startsWith"
           },
           {
             "type": "object",
-            "properties": { "endsWith": { "type": "string" } },
+            "properties": {
+              "endsWith": {
+                "type": "string"
+              }
+            },
             "required": ["endsWith"],
             "title": "endsWith"
           },
           {
             "type": "object",
-            "properties": { "contains": { "type": "string" } },
+            "properties": {
+              "contains": {
+                "type": "string"
+              }
+            },
             "required": ["contains"],
             "title": "contains"
           },
           {
             "type": "object",
             "properties": {
-              "oneOf": { "type": "array", "items": { "type": "string" } }
+              "oneOf": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             },
             "required": ["oneOf"],
             "title": "oneOf"
@@ -360,17 +529,35 @@
       "UpdateCustomerValues": {
         "type": "object",
         "properties": {
-          "dateOfBirth": { "type": "string", "format": "date" },
-          "details": { "type": "string", "format": "markdown" },
-          "name": { "type": "string" },
-          "picture": { "type": "string", "format": "data-url" },
-          "weight": { "type": "number", "format": "float" }
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date"
+          },
+          "details": {
+            "type": "string",
+            "format": "markdown"
+          },
+          "name": {
+            "type": "string"
+          },
+          "picture": {
+            "type": "string",
+            "format": "data-url"
+          },
+          "weight": {
+            "type": "number",
+            "format": "float"
+          }
         },
         "unevaluatedProperties": false
       },
       "UpdateCustomerWhere": {
         "type": "object",
-        "properties": { "id": { "type": "string" } },
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
         "unevaluatedProperties": false,
         "required": ["id"]
       }

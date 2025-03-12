@@ -8,3 +8,11 @@ enum Planets {
     Uranus
     Neptune
 }
+
+enum BlackHoles {
+    SaggittariusA
+    Ton_618
+    NGC_4468B
+    S5_0014plus81
+    ic_1459
+}

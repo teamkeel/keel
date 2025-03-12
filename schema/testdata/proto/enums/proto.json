@@ -237,6 +237,26 @@
           "name": "Neptune"
         }
       ]
+    },
+    {
+      "name": "BlackHoles",
+      "values": [
+        {
+          "name": "SaggittariusA"
+        },
+        {
+          "name": "Ton_618"
+        },
+        {
+          "name": "NGC_4468B"
+        },
+        {
+          "name": "S5_0014plus81"
+        },
+        {
+          "name": "ic_1459"
+        }
+      ]
     }
   ],
   "messages": [

@@ -12,8 +12,9 @@ model Person {
 enum Occupation {
     Teacher
     Doctor
-    Firefighter
-    Astronaut
+    FIRE_FIGHTER
+    astronaut
+    Officer_1
 }
 
 api Test {
