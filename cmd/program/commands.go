@@ -14,13 +14,12 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
 	_ "embed"
 
 	"github.com/Masterminds/semver/v3"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/radovskyb/watcher"
+	"github.com/fsnotify/fsnotify"
 	"github.com/teamkeel/keel/cmd/cliconfig"
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/cmd/localTraceExporter"
@@ -570,64 +569,135 @@ type WatcherMsg struct {
 
 func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 	return func() tea.Msg {
-		w := watcher.New()
-		w.SetMaxEvents(1)
-		w.FilterOps(watcher.Write, watcher.Remove)
-
-		ignored := []string{
-			"node_modules",
-			"tools",
-		}
-
-		w.AddFilterHook(func(info os.FileInfo, fullPath string) error {
-			// Skip if any directory component is hidden or is in the ignored list
-			pathParts := strings.Split(filepath.Clean(fullPath), string(filepath.Separator))
-			for _, part := range pathParts {
-				if strings.HasPrefix(part, ".") {
-					return watcher.ErrSkip
-				}
-
-				for _, v := range ignored {
-					if strings.Contains(part, v) {
-						return watcher.ErrSkip
-					}
-				}
-			}
-
-			// If there is a filter set then only watch these files
-			if len(filter) > 0 {
-				for _, v := range filter {
-					if !strings.Contains(fullPath, v) {
-						return watcher.ErrSkip
-					}
-				}
-			}
-
-			return nil
-		})
-
-		go func() {
-			for {
-				select {
-				case event := <-w.Event:
-					ch <- WatcherMsg{
-						Path:  event.Path,
-						Event: event.Op.String(),
-					}
-				case <-w.Closed:
-					return
-				}
-			}
-		}()
-
-		err := w.AddRecursive(dir)
+		// Convert relative path to absolute path
+		absDir, err := filepath.Abs(dir)
 		if err != nil {
 			return WatcherMsg{
 				Err: err,
 			}
 		}
 
-		_ = w.Start(time.Millisecond * 100)
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			return WatcherMsg{
+				Err: err,
+			}
+		}
+
+		// List of ignored directory components
+		ignored := []string{
+			"node_modules",
+			"tools",
+		}
+
+		// Walk through the directory tree and add directories to watch
+		err = filepath.Walk(absDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if !info.IsDir() {
+				return nil // Only add directories to the watcher
+			}
+
+			// Skip if any directory component is hidden or is in the ignored list
+			pathParts := strings.Split(filepath.Clean(path), string(filepath.Separator))
+
+			for _, part := range pathParts {
+				if strings.HasPrefix(part, ".") {
+					return filepath.SkipDir
+				}
+
+				for _, v := range ignored {
+					if strings.Contains(part, v) {
+						return filepath.SkipDir
+					}
+				}
+			}
+
+			// If there is a filter set, check if we should watch this directory
+			if len(filter) > 0 {
+				// For filters, we check if any of the files in the directory match
+				// the filter. If not, we skip the directory.
+				shouldWatch := false
+				for _, v := range filter {
+					if strings.Contains(path, v) {
+						shouldWatch = true
+						break
+					}
+				}
+
+				if !shouldWatch {
+					return filepath.SkipDir
+				}
+			}
+
+			// Add the directory to the watcher
+			return watcher.Add(path)
+		})
+
+		if err != nil {
+			return WatcherMsg{
+				Err: err,
+			}
+		}
+
+		// Start watching for events
+		go func() {
+			for {
+				select {
+				case event, ok := <-watcher.Events:
+					if !ok {
+						return
+					}
+
+					var eventType string
+					switch {
+					case event.Op&fsnotify.Write == fsnotify.Write:
+						eventType = "Write"
+					case event.Op&fsnotify.Remove == fsnotify.Remove:
+						eventType = "Remove"
+					case event.Op&fsnotify.Rename == fsnotify.Rename:
+						eventType = "Rename"
+					case event.Op&fsnotify.Create == fsnotify.Create:
+						eventType = "Create"
+					default:
+						continue
+					}
+
+					ch <- WatcherMsg{
+						Path:  event.Name,
+						Event: eventType,
+					}
+
+					info, err := os.Stat(event.Name)
+					if err != nil {
+						// For a rename, the original file wont exist, so we just exit
+						continue
+					}
+
+					// If the "schemas" directory is added or another directory renamed to "schemas"
+					// then we need to also watch it for changes
+					schemasDir := filepath.Join(absDir, "schemas")
+					if info.IsDir() && filepath.Clean(event.Name) == filepath.Clean(schemasDir) {
+						err = watcher.Add(schemasDir)
+						if err != nil {
+							continue
+						}
+					}
+
+				case err, ok := <-watcher.Errors:
+					if !ok {
+						return
+					}
+					ch <- WatcherMsg{
+						Err: err,
+					}
+				}
+			}
+		}()
+
+		// Return nil to indicate successful setup
 		return nil
 	}
 }
