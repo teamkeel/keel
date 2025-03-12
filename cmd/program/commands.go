@@ -565,7 +565,6 @@ type WatcherMsg struct {
 	Err   error
 	Path  string
 	Event string
-	IsDir bool
 }
 
 func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
