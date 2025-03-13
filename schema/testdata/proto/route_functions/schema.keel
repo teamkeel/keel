@@ -1,4 +1,4 @@
 routes {
-    get("my/route", myHandler)
-    post("some/webhook/:param", otherHandler)
+    get("/my/route", myHandler)
+    post("/some/webhook/:param", otherHandler)
 }

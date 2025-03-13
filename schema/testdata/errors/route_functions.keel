@@ -1,4 +1,14 @@
 routes {
     //expect-error:5:8:TypeError:foo is not a valid route type. Valid types are get, post, put, delete and all
-    foo("some/route", myHandler)
+    foo("/some/route", myHandler)
+    //expect-error:9:32:TypeError:a route pattern must start with "/"
+    get("missing/leading/slash", myHandler)
+    //expect-error:31:45:NamingError:a route handler must be named using lowerCamelCase
+    post("/bad/handler/name", MyRouteHandler)
+    //expect-error:9:26:TypeError:route pattern contains invalid characters: " "
+    put("/not valid path", myHandler)
+    //expect-error:9:26:TypeError:route pattern contains invalid characters: "|"
+    put("/not|valid|path", myHandler)
+    //expect-error:9:32:TypeError:route pattern cannot contain query string
+    get("/query-string?foo=bar", myHandler)
 }
