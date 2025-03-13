@@ -122,13 +122,13 @@ test("list action - notEquals with enum", async () => {
   });
   await models.post.create({
     title: "mango",
-    category: Category.Lifestyle,
+    category: Category.something_123,
     subTitle: "mno",
   });
 
   const posts = await actions.listPosts({
     where: {
-      category: { notEquals: Category.Lifestyle },
+      category: { notEquals: Category.something_123 },
     },
   });
 
@@ -223,18 +223,23 @@ test("list action - oneOf enum", async () => {
   });
   await models.post.create({
     title: "mango",
-    category: Category.Lifestyle,
+    category: Category.lifestyle,
     subTitle: "mno",
   });
   await models.post.create({
     title: "orange",
-    category: Category.Food,
+    category: Category.FOOD,
     subTitle: "fog",
+  });
+  await models.post.create({
+    title: "something",
+    category: Category.something_123,
+    subTitle: "som",
   });
 
   const { results } = await actions.listPosts({
     where: {
-      category: { oneOf: [Category.Technical, Category.Lifestyle] },
+      category: { oneOf: [Category.Technical, Category.lifestyle] },
     },
   });
 

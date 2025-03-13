@@ -43,9 +43,9 @@ model Person {
 }
 
 enum Colour {
-    Red
-    Green
-    Blue
+    RED
+    GREEN
+    blue
 }
 
 role Staff {

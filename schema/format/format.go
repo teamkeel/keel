@@ -528,7 +528,7 @@ func printEnum(writer *Writer, enum *parser.EnumNode) {
 		writer.block(func() {
 			for _, v := range enum.Values {
 				writer.comments(v, func() {
-					writer.writeLine(camel(v.Name.Value))
+					writer.writeLine(v.Name.Value)
 				})
 			}
 		})

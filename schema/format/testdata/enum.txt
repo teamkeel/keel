@@ -1,5 +1,6 @@
 enum Colours {
-    Red Blue Green
+    Red Blue Green 
+    V220V ALLCAPS alllower some_underscore
 }
 
 ===
@@ -8,4 +9,8 @@ enum Colours {
     Red
     Blue
     Green
+    V220V
+    ALLCAPS
+    alllower
+    some_underscore
 }
