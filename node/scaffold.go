@@ -14,10 +14,11 @@ import (
 )
 
 const (
-	FUNCTIONS_DIR   = "functions"
-	AUTH_HOOKS_DIR  = "functions/auth"
-	JOBS_DIR        = "jobs"
-	SUBSCRIBERS_DIR = "subscribers"
+	FunctionsDir   = "functions"
+	AuthHooksDir   = "functions/auth"
+	JobsDir        = "jobs"
+	SubscribersDir = "subscribers"
+	RoutesDir      = "routes"
 )
 
 func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (codegen.GeneratedFiles, error) {
@@ -31,31 +32,49 @@ func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (code
 		return nil, err
 	}
 
-	functionsDir := filepath.Join(dir, FUNCTIONS_DIR)
-	if err := ensureDir(functionsDir); err != nil {
-		return nil, err
-	}
-
-	authHooksDir := filepath.Join(dir, AUTH_HOOKS_DIR)
-	if err := ensureDir(authHooksDir); err != nil {
-		return nil, err
-	}
-
-	jobsDir := filepath.Join(dir, JOBS_DIR)
-	if err := ensureDir(jobsDir); err != nil {
-		return nil, err
-	}
-
-	subscribersDir := filepath.Join(dir, SUBSCRIBERS_DIR)
-	if err := ensureDir(subscribersDir); err != nil {
-		return nil, err
-	}
-
-	generatedFiles := codegen.GeneratedFiles{}
-
 	functions := schema.FilterActions(func(op *proto.Action) bool {
 		return op.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 	})
+
+	type Dir struct {
+		path     string
+		required bool
+	}
+
+	dirs := []Dir{
+		{
+			path:     FunctionsDir,
+			required: len(functions) > 0,
+		},
+		{
+			path:     AuthHooksDir,
+			required: len(cfg.Auth.Hooks) > 0,
+		},
+		{
+			path:     JobsDir,
+			required: len(schema.Jobs) > 0,
+		},
+		{
+			path:     SubscribersDir,
+			required: len(schema.Subscribers) > 0,
+		},
+		{
+			path:     RoutesDir,
+			required: len(schema.Routes) > 0,
+		},
+	}
+
+	for _, d := range dirs {
+		if !d.required {
+			continue
+		}
+		err := ensureDir(filepath.Join(dir, d.path))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	generatedFiles := codegen.GeneratedFiles{}
 
 	for _, hook := range cfg.Auth.EnabledHooks() {
 		var contents string
@@ -76,7 +95,7 @@ export default AfterIdentityCreated(async (ctx) => {
 });`
 		}
 
-		path := filepath.Join(AUTH_HOOKS_DIR, fmt.Sprintf("%s.ts", string(hook)))
+		path := filepath.Join(AuthHooksDir, fmt.Sprintf("%s.ts", string(hook)))
 		_, err = os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
@@ -87,7 +106,7 @@ export default AfterIdentityCreated(async (ctx) => {
 	}
 
 	for _, fn := range functions {
-		path := filepath.Join(FUNCTIONS_DIR, fmt.Sprintf("%s.ts", fn.Name))
+		path := filepath.Join(FunctionsDir, fmt.Sprintf("%s.ts", fn.Name))
 		_, err = os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
@@ -98,7 +117,7 @@ export default AfterIdentityCreated(async (ctx) => {
 	}
 
 	for _, job := range schema.Jobs {
-		path := filepath.Join(JOBS_DIR, fmt.Sprintf("%s.ts", casing.ToLowerCamel(job.Name)))
+		path := filepath.Join(JobsDir, fmt.Sprintf("%s.ts", casing.ToLowerCamel(job.Name)))
 		_, err = os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
@@ -109,12 +128,32 @@ export default AfterIdentityCreated(async (ctx) => {
 	}
 
 	for _, subscriber := range schema.Subscribers {
-		path := filepath.Join(SUBSCRIBERS_DIR, fmt.Sprintf("%s.ts", subscriber.Name))
+		path := filepath.Join(SubscribersDir, fmt.Sprintf("%s.ts", subscriber.Name))
 		_, err = os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
 				Contents: writeSubscriberWrapper(subscriber),
+			})
+		}
+	}
+
+	for _, route := range schema.Routes {
+		path := filepath.Join(RoutesDir, fmt.Sprintf("%s.ts", route.Handler))
+		_, err = os.Stat(filepath.Join(dir, path))
+		if os.IsNotExist(err) {
+			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
+				Path: path,
+				Contents: `import { RouteFunction } from "@teamkeel/sdk";
+
+const handler: RouteFunction = async (request, ctx) => {
+  return {
+    body: '',
+  };
+};
+
+export default handler;
+`,
 			})
 		}
 	}
