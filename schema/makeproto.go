@@ -1588,7 +1588,7 @@ func (scm *Builder) makeRoutes(decl *parser.DeclarationNode) {
 			method = proto.HttpMethod_HTTP_METHOD_DELETE
 		}
 
-		pattern := route.Pattern
+		pattern := route.Pattern.Value
 		pattern = strings.TrimPrefix(pattern, `"`)
 		pattern = strings.TrimSuffix(pattern, `"`)
 		if !strings.HasPrefix(pattern, "/") {

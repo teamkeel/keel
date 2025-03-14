@@ -1,0 +1,16 @@
+routes {
+// a comment
+get("/my/route", myHandler)
+post(
+    "/my/post/route",
+    myOtherHandler
+)
+}
+
+===
+
+routes {
+    // a comment
+    get("/my/route", myHandler)
+    post("/my/post/route", myOtherHandler)
+}

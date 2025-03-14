@@ -52,6 +52,8 @@ func Format(ast *parser.AST) string {
 				printMessage(writer, decl.Message)
 			case decl.Job != nil:
 				printJob(writer, decl.Job)
+			case decl.Routes != nil:
+				printRoute(writer, decl.Routes)
 			}
 		})
 	}
@@ -529,6 +531,24 @@ func printEnum(writer *Writer, enum *parser.EnumNode) {
 			for _, v := range enum.Values {
 				writer.comments(v, func() {
 					writer.writeLine(v.Name.Value)
+				})
+			}
+		})
+	})
+}
+
+func printRoute(writer *Writer, routes *parser.RoutesNode) {
+	writer.write("routes")
+	writer.block(func() {
+		writer.comments(routes, func() {
+			for _, route := range routes.Routes {
+				writer.comments(route, func() {
+					writer.write(strings.ToLower(route.Method.Value))
+					writer.write("(")
+					writer.write(route.Pattern.Value)
+					writer.write(", ")
+					writer.write(route.Handler.Value)
+					writer.writeLine(")")
 				})
 			}
 		})

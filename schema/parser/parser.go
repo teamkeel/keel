@@ -189,9 +189,15 @@ type RoutesNode struct {
 type RouteNode struct {
 	node.Node
 
-	Method  NameNode `@@`
-	Pattern string   `"(" @String`
-	Handler NameNode `"," @@ ")"`
+	Method  NameNode          `@@`
+	Pattern StringLiteralNode `"(" @@`
+	Handler NameNode          `"," @@ ")"`
+}
+
+type StringLiteralNode struct {
+	node.Node
+
+	Value string `@String`
 }
 
 // Attributes:
