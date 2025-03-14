@@ -601,12 +601,24 @@ func (cfg *ToolGroupLinkConfig) hasChanges() bool {
 	return len(cfg.ResponseOverrides) > 0 || cfg.isDeleted() || (cfg.ActionLink != nil && cfg.ActionLink.hasChanges())
 }
 
+func (cfg *ToolGroupLinkConfig) getToolLinkID() string {
+	if cfg == nil || cfg.ActionLink == nil {
+		return ""
+	}
+
+	return cfg.ActionLink.ToolID
+}
+
 func (cfgs ToolGroupLinkConfigs) applyOn(links []*toolsproto.ToolGroup_GroupActionLink) []*toolsproto.ToolGroup_GroupActionLink {
 	newTools := []*toolsproto.ToolGroup_GroupActionLink{}
 
 	// add all configured links and new links. If links are deleted, they are skipped
 	for _, cfg := range cfgs {
-		if configured := cfg.applyOn(toolsproto.FindToolGroupLinkByToolID(links, cfg.ActionLink.ToolID)); configured != nil {
+		if cfg.getToolLinkID() == "" {
+			// skip embedding configs with invalid tools links
+			continue
+		}
+		if configured := cfg.applyOn(toolsproto.FindToolGroupLinkByToolID(links, cfg.getToolLinkID())); configured != nil {
 			newTools = append(newTools, configured)
 		}
 	}
@@ -620,9 +632,10 @@ func (cfgs ToolGroupLinkConfigs) applyOn(links []*toolsproto.ToolGroup_GroupActi
 
 	return newTools
 }
+
 func (cfgs ToolGroupLinkConfigs) find(toolID string) *ToolGroupLinkConfig {
 	for _, tl := range cfgs {
-		if tl.ActionLink.ToolID == toolID {
+		if tl.getToolLinkID() == toolID {
 			return tl
 		}
 	}
