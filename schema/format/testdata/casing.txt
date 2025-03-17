@@ -14,6 +14,7 @@ enum colour {
     RED
     GREEN
     blue
+    Rgb_1
 }
 
 role staff {
@@ -43,9 +44,10 @@ model Person {
 }
 
 enum Colour {
-    Red
-    Green
-    Blue
+    RED
+    GREEN
+    blue
+    Rgb_1
 }
 
 role Staff {
