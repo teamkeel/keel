@@ -536,21 +536,3 @@ func printEnum(writer *Writer, enum *parser.EnumNode) {
 		})
 	})
 }
-
-func printRoute(writer *Writer, routes *parser.RoutesNode) {
-	writer.write("routes")
-	writer.block(func() {
-		writer.comments(routes, func() {
-			for _, route := range routes.Routes {
-				writer.comments(route, func() {
-					writer.write(strings.ToLower(route.Method.Value))
-					writer.write("(")
-					writer.write(route.Pattern.Value)
-					writer.write(", ")
-					writer.write(route.Handler.Value)
-					writer.writeLine(")")
-				})
-			}
-		})
-	})
-}
