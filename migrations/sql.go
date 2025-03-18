@@ -37,7 +37,7 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 }
 
 // Matches the type cast on a Postgrs value eg. on "'foo'::text" matches "::text"
-var typeCastRegex = regexp.MustCompile(`::(\w)+$`)
+var typeCastRegex = regexp.MustCompile(`::([\w\s]+)(?:\[\])?$`)
 
 // Identifier converts v into an identifier that can be used
 // for table or column names in Postgres. The value is converted
@@ -198,7 +198,7 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 			return "", err
 		}
 
-		// Strip cast from default value e.g. 'Foo'::text -> 'Foo
+		// Strip cast from default value e.g. 'Foo'::text -> 'Foo'
 		currentDefault := typeCastRegex.ReplaceAllString(column.DefaultValue, "")
 
 		if !column.HasDefault || currentDefault != value {
