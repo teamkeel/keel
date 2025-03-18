@@ -567,6 +567,30 @@ type WatcherMsg struct {
 	Event string
 }
 
+func shouldSkipWatch(path string) bool {
+	// List of ignored directory components
+	ignored := []string{
+		"node_modules",
+		"tools",
+	}
+
+	// Skip if any directory component is hidden or is in the ignored list
+	pathParts := strings.Split(filepath.Clean(path), string(filepath.Separator))
+	for _, part := range pathParts {
+		if strings.HasPrefix(part, ".") {
+			return true
+		}
+
+		for _, v := range ignored {
+			if strings.Contains(part, v) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 	return func() tea.Msg {
 		// Convert relative path to absolute path
@@ -584,12 +608,6 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 			}
 		}
 
-		// List of ignored directory components
-		ignored := []string{
-			"node_modules",
-			"tools",
-		}
-
 		// Walk through the directory tree and add directories to watch
 		err = filepath.Walk(absDir, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -600,18 +618,8 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 				return nil // Only add directories to the watcher
 			}
 
-			// Skip if any directory component is hidden or is in the ignored list
-			pathParts := strings.Split(filepath.Clean(path), string(filepath.Separator))
-			for _, part := range pathParts {
-				if strings.HasPrefix(part, ".") {
-					return filepath.SkipDir
-				}
-
-				for _, v := range ignored {
-					if strings.Contains(part, v) {
-						return filepath.SkipDir
-					}
-				}
+			if shouldSkipWatch(path) {
+				return filepath.SkipDir
 			}
 
 			// If there is a filter set, check if we should watch this directory
@@ -664,39 +672,24 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 						continue
 					}
 
+					if info, err := os.Stat(event.Name); err == nil {
+						// If a directory is added or renamed then we need to also watch it for changes to its contents
+						if info.IsDir() {
+							if shouldSkipWatch(event.Name) {
+								continue
+							}
+
+							err = watcher.Add(event.Name)
+							if err != nil {
+								continue
+							}
+						}
+					}
+
 					ch <- WatcherMsg{
 						Path:  event.Name,
 						Event: eventType,
 					}
-
-					info, err := os.Stat(event.Name)
-					if err != nil {
-						// For a rename, the original file wont exist, so we just exit
-						continue
-					}
-
-					// If a directory is added or renamed then we need to also watch it for changes to its contents
-					if info.IsDir() {
-						// Skip if any directory component is hidden or is in the ignored list
-						pathParts := strings.Split(filepath.Clean(event.Name), string(filepath.Separator))
-						for _, part := range pathParts {
-							if strings.HasPrefix(part, ".") {
-								continue
-							}
-
-							for _, v := range ignored {
-								if strings.Contains(part, v) {
-									continue
-								}
-							}
-						}
-
-						err = watcher.Add(event.Name)
-						if err != nil {
-							continue
-						}
-					}
-
 				case err, ok := <-watcher.Errors:
 					if !ok {
 						return
