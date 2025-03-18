@@ -55,8 +55,18 @@ func (v *Validator) validateTool(t *toolsproto.ActionConfig) bool {
 		hasError = hasError || v.validateToolGroup(tg)
 	}
 
+	// now we validate display layouts
 	if dl := t.GetDisplayLayout(); dl != nil {
 		hasError = hasError || v.validateDisplayLayout(dl)
+	}
+
+	// // validate that the underlying action exists
+	if v.Schema.FindAction(t.ActionName) == nil {
+		t.Errors = append(t.Errors, &toolsproto.ValidationError{
+			Error: fmt.Sprintf("Data source does not exist: %s", t.ActionName),
+			Field: "action_name",
+		})
+		hasError = true
 	}
 
 	if hasError {
