@@ -1445,7 +1445,7 @@ func toActionReturnType(model *proto.Model, action *proto.Action) string {
 
 func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) codegen.GeneratedFiles {
 	w := &codegen.Writer{}
-	w.Writeln(`const { handleRequest, handleJob, handleSubscriber, tracing } = require('@teamkeel/functions-runtime');`)
+	w.Writeln(`const { handleRequest, handleJob, handleSubscriber, handleRoute, tracing } = require('@teamkeel/functions-runtime');`)
 	w.Writeln(`const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } = require('@teamkeel/sdk');`)
 	w.Writeln(`const { createServer } = require("node:http");`)
 	w.Writeln(`const process = require("node:process");`)
@@ -1518,6 +1518,16 @@ func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) 
 	w.Dedent()
 	w.Writeln("}")
 
+	w.Writeln("const routes = {")
+	w.Indent()
+	for _, route := range schema.Routes {
+		name := route.Handler
+		w.Writef(`%s: require("../routes/%s").default,`, name, name)
+		w.Writeln("")
+	}
+	w.Dedent()
+	w.Writeln("}")
+
 	w.Writeln("const actionTypes = {")
 	w.Indent()
 
@@ -1566,6 +1576,12 @@ const listener = async (req, res) => {
 				rpcResponse = await handleSubscriber(json, {
 					subscribers,
 					createSubscriberContextAPI,
+				});
+				break;
+			case "route":
+				rpcResponse = await handleRoute(event, {
+					functions: routes,
+					createContextAPI,
 				});
 				break;
 			default:
