@@ -14,6 +14,7 @@ enum colour {
     RED
     GREEN
     blue
+    Rgb_1
 }
 
 role staff {
@@ -46,6 +47,7 @@ enum Colour {
     RED
     GREEN
     blue
+    Rgb_1
 }
 
 role Staff {
