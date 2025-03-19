@@ -412,7 +412,7 @@ export declare function useDatabase(): Kysely<database>;`
 func TestWriteDevelopmentServer(t *testing.T) {
 	t.Parallel()
 	expected := `
-const { handleRequest, handleJob, handleSubscriber, tracing } = require('@teamkeel/functions-runtime');
+const { handleRequest, handleJob, handleSubscriber, handleRoute, tracing } = require('@teamkeel/functions-runtime');
 const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } = require('@teamkeel/sdk');
 const { createServer } = require("node:http");
 const process = require("node:process");
@@ -429,6 +429,8 @@ const jobs = {
 }
 const subscribers = {
 	checkGrammar: subscriber_checkGrammar,
+}
+const routes = {
 }
 const actionTypes = {
 	createPost: "ACTION_TYPE_CREATE",
