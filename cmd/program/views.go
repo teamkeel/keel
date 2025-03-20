@@ -27,29 +27,48 @@ func renderRun(m *Model) string {
 	}
 
 	b.WriteString("\n")
-	b.WriteString("Running Keel app in directory: ")
-	b.WriteString(colors.White(m.ProjectDir).String())
-	b.WriteString("\n")
 
-	if m.DatabaseConnInfo != nil {
-		b.WriteString("Connect to your database using: ")
-		b.WriteString(colors.Cyan(fmt.Sprintf("psql -Atx \"%s\"", m.DatabaseConnInfo.String())).Highlight().String())
-		b.WriteString("\n")
+	if m.Status == StatusSeedCompleted {
+		if len(m.SeededFiles) == 1 {
+			b.WriteString("✅ Seeded data from 1 file\n")
+		} else {
+			b.WriteString(fmt.Sprintf("✅ Seeded data from %d files\n", len(m.SeededFiles)))
+		}
+		return b.String()
 	}
 
-	if m.LatestVersion != nil {
-		currentVersion, _ := semver.NewVersion(runtime.GetVersion())
-		if currentVersion != nil && currentVersion.LessThan(m.LatestVersion) {
-			b.WriteString("\n")
-			b.WriteString(colors.Red(fmt.Sprintf("There is a new version of Keel available. Please update to v%s by running this command:", m.LatestVersion.String())).String())
-			b.WriteString("\n")
-			b.WriteString(colors.White("$ ").String())
-			b.WriteString(colors.Yellow("npm install -g keel").String())
+	if m.Status == StatusSnapshotCompleted {
+		b.WriteString("✅ Database snapshot saved to ./seed/snapshot.sql\n")
+		return b.String()
+	}
+
+	if m.Mode == ModeRun {
+
+		b.WriteString("Running Keel app in directory: ")
+		b.WriteString(colors.White(m.ProjectDir).String())
+		b.WriteString("\n")
+
+		if m.DatabaseConnInfo != nil {
+			b.WriteString("Connect to your database using: ")
+			b.WriteString(colors.Cyan(fmt.Sprintf("psql -Atx \"%s\"", m.DatabaseConnInfo.String())).Highlight().String())
 			b.WriteString("\n")
 		}
-	}
 
-	b.WriteString("\n")
+		if m.LatestVersion != nil {
+			currentVersion, _ := semver.NewVersion(runtime.GetVersion())
+			if currentVersion != nil && currentVersion.LessThan(m.LatestVersion) {
+				b.WriteString("\n")
+				b.WriteString(colors.Red(fmt.Sprintf("There is a new version of Keel available. Please update to v%s by running this command:", m.LatestVersion.String())).String())
+				b.WriteString("\n")
+				b.WriteString(colors.White("$ ").String())
+				b.WriteString(colors.Yellow("npm install -g keel").String())
+				b.WriteString("\n")
+			}
+		}
+
+		b.WriteString("\n")
+
+	}
 
 	switch m.Status {
 	case StatusSetupDatabase:
@@ -74,9 +93,28 @@ func renderRun(m *Model) string {
 			b.WriteString("❌ Database migrations\n")
 		}
 
+	case StatusSeedData:
+		b.WriteString("✅ Schema\n")
+		b.WriteString("✅ Database Migrations\n")
+		if m.Err == nil {
+			b.WriteString("⏳ Seeding data...\n")
+		} else {
+			b.WriteString("❌ Seed data\n")
+		}
+
 	case StatusUpdateFunctions, StatusStartingFunctions:
 		b.WriteString("✅ Schema\n")
 		b.WriteString("✅ Database Migrations\n")
+
+		if len(m.SeededFiles) > 0 {
+
+			if len(m.SeededFiles) == 1 {
+				b.WriteString("✅ Seeded data from 1 file\n")
+			} else {
+				b.WriteString(fmt.Sprintf("✅ Seeded data from %d files\n", len(m.SeededFiles)))
+			}
+		}
+
 		if m.Err == nil {
 			b.WriteString("⏳ Functions\n")
 		} else {
@@ -86,6 +124,15 @@ func renderRun(m *Model) string {
 	case StatusRunning:
 		b.WriteString("✅ Schema\n")
 		b.WriteString("✅ Database Migrations\n")
+
+		if len(m.SeededFiles) > 0 {
+			if len(m.SeededFiles) == 1 {
+				b.WriteString("✅ Seeded data from 1 file\n")
+			} else {
+				b.WriteString(fmt.Sprintf("✅ Seeded data from %d files\n", len(m.SeededFiles)))
+			}
+		}
+
 		b.WriteString("✅ Functions\n")
 	}
 
@@ -147,11 +194,15 @@ func renderRun(m *Model) string {
 		}
 	}
 
-	b.WriteString("\n")
-	b.WriteString(colors.White("Press ").String())
-	b.WriteString("q")
-	b.WriteString(colors.White(" to quit").String())
-	b.WriteString("\n")
+	if m.Mode == ModeRun {
+
+		b.WriteString("\n")
+		b.WriteString(colors.White("Press ").String())
+		b.WriteString("q")
+		b.WriteString(colors.White(" to quit").String())
+		b.WriteString("\n")
+
+	}
 
 	return b.String()
 }
