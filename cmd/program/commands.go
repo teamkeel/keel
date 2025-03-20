@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	_ "embed"
@@ -259,11 +260,13 @@ func ParsePrivateKey(path string) tea.Cmd {
 type StartDatabaseMsg struct {
 	ConnInfo *db.ConnectionInfo
 	Err      error
+	// If true, a new database was created
+	Created bool
 }
 
 func StartDatabase(reset bool, mode int, projectDirectory string) tea.Cmd {
 	return func() tea.Msg {
-		connInfo, err := database.Start(reset, projectDirectory)
+		connInfo, err, created := database.Start(reset, projectDirectory)
 		if err != nil {
 			return StartDatabaseMsg{
 				Err: err,
@@ -272,6 +275,7 @@ func StartDatabase(reset bool, mode int, projectDirectory string) tea.Cmd {
 
 		return StartDatabaseMsg{
 			ConnInfo: connInfo,
+			Created:  created,
 		}
 	}
 }
@@ -280,7 +284,15 @@ type SetupFunctionsMsg struct {
 	Err error
 }
 
-func SetupFunctions(dir string, nodePackagesPath string, packageManager string) tea.Cmd {
+func SetupFunctions(dir string, nodePackagesPath string, packageManager string, mode int) tea.Cmd {
+
+	// If we're not running we can skip the bootstrap
+	if mode != ModeRun {
+		return func() tea.Msg {
+			return SetupFunctionsMsg{}
+		}
+	}
+
 	return func() tea.Msg {
 		err := node.Bootstrap(
 			dir,
@@ -748,4 +760,112 @@ func RemoveSecret(path, environment, key string) error {
 	})
 
 	return config.RemoveSecret(path, environment, key)
+}
+
+type SeedDataMsg struct {
+	Err         error
+	SeededFiles []string
+}
+
+type SeedDataError struct {
+	Err error
+}
+
+func (a *SeedDataError) Error() string {
+	return a.Err.Error()
+}
+
+func (e *SeedDataError) Unwrap() error {
+	return e.Err
+}
+
+func SeedData(dir string, schema *proto.Schema, database db.Database) tea.Cmd {
+	return func() tea.Msg {
+		m, err := migrations.New(context.Background(), schema, database)
+		if err != nil {
+			return SeedDataMsg{
+				Err: &SeedDataError{
+					Err: err,
+				},
+			}
+		}
+
+		msg := SeedDataMsg{
+			Err: err,
+		}
+
+		seedDir := filepath.Join(dir, "seed")
+
+		if _, err := os.Stat(seedDir); os.IsNotExist(err) {
+			return msg
+		}
+
+		// Get all .sql files from seed directory
+		files, err := filepath.Glob(filepath.Join(seedDir, "*.sql"))
+		if err != nil {
+			return SeedDataMsg{
+				Err: &SeedDataError{
+					Err: err,
+				},
+			}
+		}
+
+		if len(files) == 0 {
+			return msg
+		}
+
+		// Sort files for deterministic seeding
+		sort.Strings(files)
+
+		err = m.ApplySeedData(context.Background(), files)
+		if err != nil {
+			msg.Err = &SeedDataError{
+				Err: err,
+			}
+		}
+
+		msg.SeededFiles = files
+
+		return msg
+	}
+}
+
+type SnapshotDatabaseMsg struct {
+	Err error
+}
+
+func SnapshotDatabase(dir string, schema *proto.Schema, database db.Database) tea.Cmd {
+	return func() tea.Msg {
+		m, err := migrations.New(context.Background(), schema, database)
+		if err != nil {
+			return SnapshotDatabaseMsg{
+				Err: err,
+			}
+		}
+
+		snapshot, err := m.SnapshotDatabase(context.Background())
+		if err != nil {
+			return SnapshotDatabaseMsg{
+				Err: err,
+			}
+		}
+
+		seedDir := filepath.Join(dir, "seed")
+
+		err = os.MkdirAll(seedDir, 0755)
+		if err != nil {
+			return SnapshotDatabaseMsg{
+				Err: err,
+			}
+		}
+
+		err = os.WriteFile(filepath.Join(seedDir, "snapshot.sql"), []byte(snapshot), 0644)
+		if err != nil {
+			return SnapshotDatabaseMsg{
+				Err: err,
+			}
+		}
+
+		return SnapshotDatabaseMsg{}
+	}
 }
