@@ -168,3 +168,26 @@ func (l *ToolGroup_GroupActionLink) GetResponseOverridesMap() map[string]bool {
 	}
 	return m
 }
+
+func (dl *DisplayLayoutConfig) AllActionLinks() []*ActionLink {
+	links := []*ActionLink{}
+	if dl == nil {
+		return nil
+	}
+
+	if dl.GetInboxConfig() != nil {
+		if dl.GetInboxConfig().GetTool != nil {
+			links = append(links, dl.GetInboxConfig().GetTool)
+		}
+	}
+	if dl.GetBoardConfig() != nil {
+		if dl.GetBoardConfig().GetTool != nil {
+			links = append(links, dl.GetBoardConfig().GetTool)
+		}
+		if dl.GetBoardConfig().UpdateAction != nil {
+			links = append(links, dl.GetBoardConfig().UpdateAction)
+		}
+	}
+
+	return links
+}

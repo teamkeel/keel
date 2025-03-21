@@ -111,6 +111,12 @@ message ActionConfig {
 	//
 	// Fields are added to sections by having their `section_name` field referencing a section's... name. 
 	repeated Section sections = 25;
+
+	// Any validation errors for this tool
+	repeated ValidationError errors = 26;
+
+	// Any validation errors for this tool or any child elements of this tool (e.g. an action link that has an error)
+	bool has_errors = 27;
 }
 
 message RequestFieldConfig {
@@ -170,6 +176,12 @@ message RequestFieldConfig {
 	// A CEL expression used to control the visibility of the field.
 	// e.g. if expression is not true then the field will be hidden. 
 	optional string visible_condition = 19;
+
+	// Any validation errors for this field
+	repeated ValidationError errors = 20;
+
+	// Any validation errors for this field or any child elements of it (e.g. an action link that has an error)
+	bool has_errors = 21;
 }
 
 message ResponseFieldConfig {
@@ -226,6 +238,12 @@ message ResponseFieldConfig {
 	// A CEL expression used to control the visibility of the field.
 	// e.g. if expression is not true then the field will be hidden. 
 	optional string visible_condition = 17;
+
+	// Any validation errors for this field
+	repeated ValidationError errors = 18;
+
+	// Any validation errors for this field or any child elements of it (e.g. an action link that has an error)
+	bool has_errors = 19;
 }
 
 // A section represents a grouping of fields.
@@ -314,6 +332,9 @@ message ActionLink {
 	// A CEL expression used to control the visibility of the action link.
 	// e.g. if expression is not true then the link will be hidden. 
 	optional string visible_condition = 8;
+
+	// Any validation errors if 
+	repeated ValidationError errors = 9;
 }
 
 message ToolGroup {
@@ -339,6 +360,12 @@ message ToolGroup {
 	repeated GroupActionLink tools = 4;
 
 	bool visible = 5;
+
+	// Any validation errors for this group
+	repeated ValidationError errors = 7;
+
+	// Any validation errors for this group or any child elements of it (e.g. an action link that has an error)
+	bool has_errors = 8;
 }
 
 message ResponseOverrides {
@@ -394,6 +421,12 @@ message DisplayLayoutConfig {
 	optional BoardViewConfig board_config = 3;
 	optional GridViewConfig grid_config = 4;
 	optional RecordViewConfig record_config = 5;
+
+	// Any validation errors for this display layout
+	repeated ValidationError errors = 6;
+
+	// Any validation errors for this display layout or any child elements of it (e.g. an action link that has an error)
+	bool has_errors = 7;
 }
 
 // An email inbox style display for list views. Each item in a list will be displayed as a row with
@@ -477,4 +510,11 @@ message ProgressIndicatorConfig {
 
 	// If this progress indicator should be enabled or not
 	bool enabled = 3;
+}
+
+message ValidationError {
+   // A human friendly error message; e.g.: `The target tool does not exist.`
+   string error = 1;
+   // The field that is invalid: e.g. `tool_id` for a missing link's target tool.
+   string field = 2;
 }
