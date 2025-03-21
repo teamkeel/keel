@@ -1579,7 +1579,7 @@ const listener = async (req, res) => {
 				});
 				break;
 			case "route":
-				rpcResponse = await handleRoute(event, {
+				rpcResponse = await handleRoute(json, {
 					functions: routes,
 					createContextAPI,
 				});
