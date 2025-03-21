@@ -924,15 +924,6 @@
         },
         {
           "fieldLocation": {
-            "path": "$.results"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "repeated": true,
-          "displayName": "Results",
-          "visible": true
-        },
-        {
-          "fieldLocation": {
             "path": "$.results[*].name"
           },
           "fieldType": "TYPE_STRING",
@@ -1237,15 +1228,6 @@
         },
         {
           "fieldLocation": {
-            "path": "$.results"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "repeated": true,
-          "displayName": "Results",
-          "visible": true
-        },
-        {
-          "fieldLocation": {
             "path": "$.results[*].authorId"
           },
           "fieldType": "TYPE_ID",
@@ -1503,15 +1485,6 @@
           "fieldType": "TYPE_INT",
           "displayName": "Page Number",
           "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "repeated": true,
-          "displayName": "Results",
-          "visible": true
         },
         {
           "fieldLocation": {
@@ -1912,15 +1885,6 @@
           "fieldType": "TYPE_INT",
           "displayName": "Page Number",
           "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "repeated": true,
-          "displayName": "Results",
-          "visible": true
         },
         {
           "fieldLocation": {
