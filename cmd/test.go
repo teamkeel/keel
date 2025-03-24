@@ -57,7 +57,7 @@ var testCmd = &cobra.Command{
 		}
 
 		// add "-test" suffix to the database so it doesn't clash with keel run db
-		connInfo, err, _ := database.Start(true, flagProjectDir+"-test")
+		connInfo, err := database.Start(true, flagProjectDir+"-test")
 		if err != nil {
 			return err
 		}

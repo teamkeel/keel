@@ -53,12 +53,11 @@ import (
 // also to "postgres".
 //
 // The connection info it returns refers to the project-specific database.
-// The bool returned is true if the database was created, false if it already existed.
-func Start(reset bool, projectDirectory string) (*db.ConnectionInfo, error, bool) {
+func Start(reset bool, projectDirectory string) (*db.ConnectionInfo, error) {
 	// We need a dockerClient (proxy) to "drive" Docker using the SDK.
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		return nil, err, false
+		return nil, err
 	}
 
 	// We tell every Postgres container we launch and run, to use a long-lived,
@@ -66,7 +65,7 @@ func Start(reset bool, projectDirectory string) (*db.ConnectionInfo, error, bool
 	// we take this opportunity to create that Volume, if it doesn't already
 	// exist on this host's Docker environment. (i.e. only happens once).
 	if err := createVolumeIfNotExists(dockerClient); err != nil {
-		return nil, err, false
+		return nil, err
 	}
 
 	// Create the container for THIS run.
@@ -74,23 +73,23 @@ func Start(reset bool, projectDirectory string) (*db.ConnectionInfo, error, bool
 	// database - NOT a project-specific database.
 	containerID, serverConnectionInfo, err := createContainer(dockerClient)
 	if err != nil {
-		return nil, err, false
+		return nil, err
 	}
 
 	// Start the container running. (This is where it chooses the port to serve on)
 	if err := startContainer(dockerClient, containerID); err != nil {
-		return nil, err, false
+		return nil, err
 	}
 
 	// Calculate the deterministic and unique, project-specific database name
 	projectDbName, err := generateDatabaseName(projectDirectory)
 	if err != nil {
-		return nil, err, false
+		return nil, err
 	}
 
 	projectDatabaseExists, err := doesDbExist(serverConnectionInfo, projectDbName)
 	if err != nil {
-		return nil, err, false
+		return nil, err
 	}
 
 	createdDb := false
@@ -100,7 +99,7 @@ func Start(reset bool, projectDirectory string) (*db.ConnectionInfo, error, bool
 
 	if projectDatabaseExists && reset {
 		if err := dropDatabase(serverConnectionInfo, projectDbName); err != nil {
-			return nil, err, false
+			return nil, err
 		}
 		projectDatabaseExists = false // We just removed it.
 	}
@@ -110,14 +109,16 @@ func Start(reset bool, projectDirectory string) (*db.ConnectionInfo, error, bool
 	if !projectDatabaseExists {
 		createdDb = true
 		if err := createProjectDatabase(serverConnectionInfo, projectDbName); err != nil {
-			return nil, err, false
+			return nil, err
 		}
 	}
 
 	// We return a project-specific connectionInfo that points to the
 	// project-specific database.
 	projectConnectionInfo := serverConnectionInfo.WithDatabase(projectDbName)
-	return projectConnectionInfo, nil, createdDb
+	projectConnectionInfo.IsNewDatabase = createdDb
+
+	return projectConnectionInfo, nil
 }
 
 // Stop stops the postgres container - having checked first

@@ -260,13 +260,11 @@ func ParsePrivateKey(path string) tea.Cmd {
 type StartDatabaseMsg struct {
 	ConnInfo *db.ConnectionInfo
 	Err      error
-	// If true, a new database was created
-	Created bool
 }
 
 func StartDatabase(reset bool, mode int, projectDirectory string) tea.Cmd {
 	return func() tea.Msg {
-		connInfo, err, created := database.Start(reset, projectDirectory)
+		connInfo, err := database.Start(reset, projectDirectory)
 		if err != nil {
 			return StartDatabaseMsg{
 				Err: err,
@@ -275,7 +273,6 @@ func StartDatabase(reset bool, mode int, projectDirectory string) tea.Cmd {
 
 		return StartDatabaseMsg{
 			ConnInfo: connInfo,
-			Created:  created,
 		}
 	}
 }
@@ -285,7 +282,6 @@ type SetupFunctionsMsg struct {
 }
 
 func SetupFunctions(dir string, nodePackagesPath string, packageManager string, mode int) tea.Cmd {
-
 	// If we're not running we can skip the bootstrap
 	if mode != ModeRun {
 		return func() tea.Msg {

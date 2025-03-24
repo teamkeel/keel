@@ -43,7 +43,6 @@ func renderRun(m *Model) string {
 	}
 
 	if m.Mode == ModeRun {
-
 		b.WriteString("Running Keel app in directory: ")
 		b.WriteString(colors.White(m.ProjectDir).String())
 		b.WriteString("\n")
@@ -67,7 +66,6 @@ func renderRun(m *Model) string {
 		}
 
 		b.WriteString("\n")
-
 	}
 
 	switch m.Status {
@@ -107,7 +105,6 @@ func renderRun(m *Model) string {
 		b.WriteString("✅ Database Migrations\n")
 
 		if len(m.SeededFiles) > 0 {
-
 			if len(m.SeededFiles) == 1 {
 				b.WriteString("✅ Seeded data from 1 file\n")
 			} else {
@@ -195,13 +192,11 @@ func renderRun(m *Model) string {
 	}
 
 	if m.Mode == ModeRun {
-
 		b.WriteString("\n")
 		b.WriteString(colors.White("Press ").String())
 		b.WriteString("q")
 		b.WriteString(colors.White(" to quit").String())
 		b.WriteString("\n")
-
 	}
 
 	return b.String()

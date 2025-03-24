@@ -283,7 +283,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		if msg.Created {
+		if msg.ConnInfo.IsNewDatabase {
 			m.SeedData = true
 		}
 
@@ -391,14 +391,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Status = StatusSnapshotDatabase
 				return m, SnapshotDatabase(m.ProjectDir, m.Schema, m.Database)
 			}
-
 		}
 
 		// If seed data flag is set, run seed data
 		if m.SeedData {
 			// If seed data directory exists, run seed data
 			seedDir := filepath.Join(m.ProjectDir, "seed")
-			if _, err := os.Stat(seedDir); !os.IsNotExist(err) {
+			if _, err := os.Stat(seedDir); err == nil {
 				m.Status = StatusSeedData
 				return m, SeedData(m.ProjectDir, m.Schema, m.Database)
 			}
