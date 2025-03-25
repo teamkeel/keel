@@ -18,6 +18,7 @@ message Schema {
     repeated Subscriber subscribers = 9;
     repeated Event events = 10;
     repeated Route routes = 11;
+    repeated Flow flows = 12;
 }
 
 message Model {
@@ -451,4 +452,12 @@ message Route {
     HttpMethod method = 1;
     string pattern = 2;
     string handler = 3;
+}
+
+message Flow {
+    // The name of the workflow.
+    string name = 1;
+
+    // The inputs defined on the workflow.
+    string input_message_name = 2;
 }
