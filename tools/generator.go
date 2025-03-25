@@ -444,16 +444,6 @@ func (g *Generator) generateResponses() error {
 				}
 				tool.Config.Response = append(tool.Config.Response, resultInfo...)
 			}
-
-			// appent wrapper response for the results
-			tool.Config.Response = append(tool.Config.Response, &toolsproto.ResponseFieldConfig{
-				FieldLocation: &toolsproto.JsonPath{Path: "$.results"},
-				FieldType:     proto.Type_TYPE_OBJECT,
-				Repeated:      true,
-				DisplayName:   "Results",
-				Visible:       true,
-				Scope:         toolsproto.ResponseFieldConfig_DEFAULT,
-			})
 		}
 		fields, err := g.makeResponsesForModel(tool.Model, pathPrefix, tool.Action.GetResponseEmbeds(), tool.SortableFields)
 		if err != nil {
