@@ -175,3 +175,18 @@ func (s *Schema) FindApiNames(modelName, actionName string) []string {
 
 	return names
 }
+
+// FlowNames returns an array with the names of all flows defined in this schema
+func (s *Schema) FlowNames() []string {
+	names := []string{}
+	for _, f := range s.Flows {
+		names = append(names, f.Name)
+	}
+
+	return names
+}
+
+// HasFlows indicates if the schema has any flows defined
+func (s *Schema) HasFlows() bool {
+	return len(s.Flows) > 0
+}
