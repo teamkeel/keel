@@ -44,6 +44,8 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 				scm.makeEnum(decl)
 			case decl.Job != nil:
 				scm.makeJob(decl)
+			case decl.Flow != nil:
+				scm.makeFlow(decl)
 			case decl.Message != nil:
 				// noop
 			case decl.Routes != nil:
@@ -1544,7 +1546,7 @@ func (scm *Builder) makeEnum(decl *parser.DeclarationNode) {
 
 func (scm *Builder) makeJob(decl *parser.DeclarationNode) {
 	parserJob := decl.Job
-	messageName := makeJobMessageName(parserJob.Name.Value)
+	messageName := makeMessageName(parserJob.Name.Value)
 
 	job := &proto.Job{
 		Name: parserJob.Name.Value,
@@ -1601,6 +1603,38 @@ func (scm *Builder) makeRoutes(decl *parser.DeclarationNode) {
 			Handler: route.Handler.Value,
 		})
 	}
+}
+
+func (scm *Builder) makeFlow(decl *parser.DeclarationNode) {
+	parserFlow := decl.Flow
+	messageName := makeMessageName(parserFlow.Name.Value)
+
+	flow := &proto.Flow{
+		Name: parserFlow.Name.Value,
+	}
+
+	message := &proto.Message{
+		Name:   messageName,
+		Fields: []*proto.MessageField{},
+	}
+
+	for _, section := range parserFlow.Sections {
+		switch {
+		case section.Attribute != nil:
+			// TODO: Handle any workflow applicable attributes
+		case section.Inputs != nil:
+			scm.applyFlowInputs(message, section.Inputs)
+		default:
+			panic(fmt.Sprintf("unhandled section when parsing flow '%s'", flow.Name))
+		}
+	}
+
+	if len(message.Fields) > 0 {
+		flow.InputMessageName = message.Name
+		scm.proto.Messages = append(scm.proto.Messages, message)
+	}
+
+	scm.proto.Flows = append(scm.proto.Flows, flow)
 }
 
 func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName string) []*proto.Field {
@@ -2303,6 +2337,26 @@ func (scm *Builder) applyJobInputs(protoMessage *proto.Message, inputs []*parser
 	}
 }
 
+func (scm *Builder) applyFlowInputs(protoMessage *proto.Message, inputs []*parser.FlowInputNode) {
+	for _, input := range inputs {
+		protoField := &proto.MessageField{
+			Name:        input.Name.Value,
+			MessageName: protoMessage.Name,
+			Type: &proto.TypeInfo{
+				Type:     scm.parserTypeToProtoType(input.Type.Value),
+				Repeated: input.Repeated,
+			},
+			Optional: input.Optional,
+		}
+
+		if protoField.Type.Type == proto.Type_TYPE_ENUM {
+			protoField.Type.EnumName = wrapperspb.String(input.Type.Value)
+		}
+
+		protoMessage.Fields = append(protoMessage.Fields, protoField)
+	}
+}
+
 // stripQuotes removes all double quotes from the given string, regardless of where they are.
 func stripQuotes(s string) string {
 	return strings.ReplaceAll(s, `"`, "")
@@ -2331,7 +2385,7 @@ func makeValuesMessageName(opName string) string {
 	return fmt.Sprintf("%sValues", casing.ToCamel(opName))
 }
 
-func makeJobMessageName(opName string) string {
+func makeMessageName(opName string) string {
 	return fmt.Sprintf("%sMessage", casing.ToCamel(opName))
 }
 

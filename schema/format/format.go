@@ -52,6 +52,8 @@ func Format(ast *parser.AST) string {
 				printMessage(writer, decl.Message)
 			case decl.Job != nil:
 				printJob(writer, decl.Job)
+			case decl.Flow != nil:
+				printFlow(writer, decl.Flow)
 			case decl.Routes != nil:
 				printRoute(writer, decl.Routes)
 			}
@@ -121,6 +123,45 @@ func printJob(writer *Writer, job *parser.JobNode) {
 						if len(section.Inputs) > 0 {
 							writer.writeLine("")
 						}
+					case section.Attribute != nil:
+						printAttributes(writer, []*parser.AttributeNode{section.Attribute})
+					}
+				})
+			}
+		})
+	})
+}
+
+func printFlow(writer *Writer, flow *parser.FlowNode) {
+	writer.comments(flow, func() {
+		writer.write("flow %s", camel(flow.Name.Value))
+		writer.block(func() {
+			for _, section := range flow.Sections {
+				writer.comments(section, func() {
+					switch {
+					case len(section.Inputs) > 0:
+						writer.write("inputs")
+						writer.block(func() {
+							for _, input := range section.Inputs {
+								writer.comments(input, func() {
+									// CamelCase input types except for ID
+									inputType := input.Type.Value
+									if inputType != parser.FieldTypeID {
+										inputType = camel(inputType)
+									}
+									writer.write(
+										"%s %s",
+										lowerCamel(input.Name.Value),
+										inputType,
+									)
+									if input.Optional {
+										writer.write("?")
+									}
+									writer.writeLine("")
+								})
+							}
+						},
+						)
 					case section.Attribute != nil:
 						printAttributes(writer, []*parser.AttributeNode{section.Attribute})
 					}
