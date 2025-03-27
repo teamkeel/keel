@@ -2,7 +2,6 @@ CREATE TABLE IF NOT EXISTS keel_flow (
 	"id" text NOT NULL DEFAULT ksuid() PRIMARY KEY,
 	"name" TEXT NOT NULL,
 	"status" TEXT NOT NULL,
-	"type" TEXT NOT NULL,
 	"input" JSONB DEFAULT NULL,
 	"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 	"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
