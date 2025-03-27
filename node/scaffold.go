@@ -1,7 +1,6 @@
 package node
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -22,16 +21,6 @@ const (
 )
 
 func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (codegen.GeneratedFiles, error) {
-	files, err := Generate(context.TODO(), schema, cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	err = files.Write(dir)
-	if err != nil {
-		return nil, err
-	}
-
 	functions := schema.FilterActions(func(op *proto.Action) bool {
 		return op.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 	})
@@ -96,7 +85,7 @@ export default AfterIdentityCreated(async (ctx) => {
 		}
 
 		path := filepath.Join(AuthHooksDir, fmt.Sprintf("%s.ts", string(hook)))
-		_, err = os.Stat(filepath.Join(dir, path))
+		_, err := os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
@@ -107,7 +96,7 @@ export default AfterIdentityCreated(async (ctx) => {
 
 	for _, fn := range functions {
 		path := filepath.Join(FunctionsDir, fmt.Sprintf("%s.ts", fn.Name))
-		_, err = os.Stat(filepath.Join(dir, path))
+		_, err := os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
@@ -118,7 +107,7 @@ export default AfterIdentityCreated(async (ctx) => {
 
 	for _, job := range schema.Jobs {
 		path := filepath.Join(JobsDir, fmt.Sprintf("%s.ts", casing.ToLowerCamel(job.Name)))
-		_, err = os.Stat(filepath.Join(dir, path))
+		_, err := os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
@@ -129,7 +118,7 @@ export default AfterIdentityCreated(async (ctx) => {
 
 	for _, subscriber := range schema.Subscribers {
 		path := filepath.Join(SubscribersDir, fmt.Sprintf("%s.ts", subscriber.Name))
-		_, err = os.Stat(filepath.Join(dir, path))
+		_, err := os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
@@ -140,7 +129,7 @@ export default AfterIdentityCreated(async (ctx) => {
 
 	for _, route := range schema.Routes {
 		path := filepath.Join(RoutesDir, fmt.Sprintf("%s.ts", route.Handler))
-		_, err = os.Stat(filepath.Join(dir, path))
+		_, err := os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path: path,

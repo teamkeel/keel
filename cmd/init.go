@@ -22,8 +22,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/colors"
+	"github.com/teamkeel/keel/deploy"
 	"github.com/teamkeel/keel/node"
-	"github.com/teamkeel/keel/schema"
 )
 
 var initCmd = &cobra.Command{
@@ -358,18 +358,10 @@ func initStepCreateProject(state *InitState) {
 		panic(err)
 	}
 
-	b := schema.Builder{}
-	schema, err := b.MakeFromDirectory(state.targetDir)
-	if err != nil {
-		panic(err)
-	}
-
-	files, err := node.Generate(context.Background(), schema, b.Config, node.WithDevelopmentServer(true))
-	if err != nil {
-		panic(err)
-	}
-
-	err = files.Write(state.targetDir)
+	_, err = deploy.Build(context.Background(), &deploy.BuildArgs{
+		ProjectRoot: state.targetDir,
+		Env:         "development",
+	})
 	if err != nil {
 		panic(err)
 	}
