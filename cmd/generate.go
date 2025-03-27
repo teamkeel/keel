@@ -9,8 +9,8 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/colors"
+	"github.com/teamkeel/keel/deploy"
 	"github.com/teamkeel/keel/node"
-	"github.com/teamkeel/keel/schema"
 )
 
 var generateCmd = &cobra.Command{
@@ -40,18 +40,10 @@ var generateCmd = &cobra.Command{
 			return err
 		}
 
-		b := schema.Builder{}
-		schema, err := b.MakeFromDirectory(flagProjectDir)
-		if err != nil {
-			return err
-		}
-
-		files, err := node.Generate(context.Background(), schema, b.Config, node.WithDevelopmentServer(true))
-		if err != nil {
-			return err
-		}
-
-		err = files.Write(flagProjectDir)
+		buildResult, err := deploy.Build(context.Background(), &deploy.BuildArgs{
+			ProjectRoot: flagProjectDir,
+			Env:         "development",
+		})
 		if err != nil {
 			return err
 		}
@@ -59,7 +51,7 @@ var generateCmd = &cobra.Command{
 		fmt.Println(logPrefix, "Generated @teamkeel/sdk")
 		fmt.Println(logPrefix, "Generated @teamkeel/testing")
 
-		files, err = node.Scaffold(flagProjectDir, schema, b.Config)
+		files, err := node.Scaffold(flagProjectDir, buildResult.Schema, buildResult.Config)
 		if err != nil {
 			return err
 		}
