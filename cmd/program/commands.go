@@ -26,6 +26,7 @@ import (
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/deploy"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
@@ -312,12 +313,10 @@ func (t *TypeScriptError) Error() string {
 
 func UpdateFunctions(schema *proto.Schema, cfg *config.ProjectConfig, dir string) tea.Cmd {
 	return func() tea.Msg {
-		files, err := node.Generate(context.TODO(), schema, cfg, node.WithDevelopmentServer(true))
-		if err != nil {
-			return UpdateFunctionsMsg{Err: err}
-		}
-
-		err = files.Write(dir)
+		_, err := deploy.Build(context.TODO(), &deploy.BuildArgs{
+			ProjectRoot: dir,
+			Env:         "development",
+		})
 		if err != nil {
 			return UpdateFunctionsMsg{Err: err}
 		}
