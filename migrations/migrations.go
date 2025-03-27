@@ -48,6 +48,9 @@ var (
 
 	//go:embed set_updated_at.sql
 	setUpdatedAt string
+
+	//go:embed flows.sql
+	flowsTables string
 )
 
 type DatabaseChange struct {
@@ -123,6 +126,10 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 
 	escapedJSON := db.QuoteLiteral(string(b))
 	sql.WriteString(fmt.Sprintf("INSERT INTO keel_schema (schema) VALUES (%s);", escapedJSON))
+	sql.WriteString("\n")
+
+	// Flows tables
+	sql.WriteString(flowsTables)
 	sql.WriteString("\n")
 
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_refresh_token (token TEXT NOT NULL PRIMARY KEY, identity_id TEXT NOT NULL, created_at TIMESTAMP, expires_at TIMESTAMP);\n")
