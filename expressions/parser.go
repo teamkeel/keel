@@ -28,6 +28,7 @@ func NewParser(options ...Option) (*Parser, error) {
 
 	env, err := cel.NewCustomEnv(
 		standardKeelLibrary(),
+		options.RegisterAggregationFunctions(),
 		cel.ClearMacros(),
 		cel.CustomTypeProvider(typeProvider),
 		cel.EagerlyValidateDeclarations(true),

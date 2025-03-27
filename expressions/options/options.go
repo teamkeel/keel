@@ -458,7 +458,10 @@ func WithFunctions() expressions.Option {
 		p.CelEnv, err = p.CelEnv.Extend(
 			cel.Function(typing.FunctionCount, cel.Overload("count", []*types.Type{typeParamA}, typing.TypeNumber)),
 			cel.Function(typing.FunctionSum, cel.Overload("sum_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionSum, cel.Overload("conditional_sum_decimal", []*types.Type{typing.TypeDecimalArray, types.BoolType}, typing.TypeDecimal)),
+
 			cel.Function(typing.FunctionSum, cel.Overload("sum_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)),
+			cel.Function(typing.FunctionSum, cel.Overload("conditional_sum_number", []*types.Type{typing.TypeNumberArray, types.BoolType}, typing.TypeNumber)),
 			cel.Function(typing.FunctionAvg, cel.Overload("avg_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
 			cel.Function(typing.FunctionAvg, cel.Overload("avg_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)),
 			cel.Function(typing.FunctionMin, cel.Overload("min_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
