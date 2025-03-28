@@ -43,7 +43,7 @@ func GetDependencies(options *bootstrapOptions) (map[string]string, map[string]s
 	deps := map[string]string{
 		"@teamkeel/functions-runtime": functionsRuntimeVersion,
 		"@teamkeel/testing-runtime":   testingRuntimeVersion,
-		"kysely":                      "0.27.4",
+		"kysely":                      "0.27.6",
 		"node-fetch":                  "3.3.2",
 	}
 
