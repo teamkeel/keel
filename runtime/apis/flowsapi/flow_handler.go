@@ -41,7 +41,7 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
 			}
 
-			run, err := flows.Start(ctx, scope, inputs)
+			run, err := flows.StartRun(ctx, scope, inputs)
 			if err != nil {
 				return httpjson.NewErrorResponse(ctx, err, nil)
 			}

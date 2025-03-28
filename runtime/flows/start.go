@@ -10,12 +10,12 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// Start will start the scope's flow with the given input
-func Start(ctx context.Context, scope *Scope, inputs any) (*Run, error) {
+// StartRun will start the scope's flow with the given input
+func StartRun(ctx context.Context, scope *Scope, inputs any) (*Run, error) {
 	if scope.Flow == nil {
 		return nil, fmt.Errorf("invalid flow")
 	}
-	ctx, span := tracer.Start(ctx, "StartFlow")
+	ctx, span := tracer.Start(ctx, "StartRun")
 	defer span.End()
 
 	span.SetAttributes(
