@@ -14,7 +14,7 @@ import (
 
 func FlowHandler(s *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
-		ctx, span := tracer.Start(r.Context(), "Flow")
+		ctx, span := tracer.Start(r.Context(), "FlowsAPI")
 		defer span.End()
 		span.SetAttributes(
 			attribute.String("api.protocol", "HTTP JSON"),
@@ -27,6 +27,7 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 		}) {
 			return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
 		}
+		scope := flows.NewScope(s.FindFlow(flowName), s)
 
 		switch len(pathParts) {
 		case 1:
@@ -40,7 +41,6 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
 			}
 
-			scope := flows.NewScope(s.FindFlow(flowName), s)
 			run, err := flows.Start(ctx, scope, inputs)
 			if err != nil {
 				return httpjson.NewErrorResponse(ctx, err, nil)
@@ -48,9 +48,20 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 
 			return common.NewJsonResponse(http.StatusOK, run, nil)
 		case 2:
-			// TODO:  # Check for progress
-			// GET flows/json/[flowName]/[runID]
-			return common.NewJsonResponse(http.StatusNotImplemented, pathParts, nil)
+			// Check for progress - GET flows/json/[flowName]/[runID]
+			if r.Method != http.MethodGet {
+				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET accepted"), nil)
+			}
+
+			run, err := flows.GetFlowRun(ctx, scope, pathParts[1])
+			if err != nil {
+				return httpjson.NewErrorResponse(ctx, err, nil)
+			}
+			if run == nil {
+				return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+			}
+
+			return common.NewJsonResponse(http.StatusOK, run, nil)
 		case 3:
 			// TODO: # Send step updates
 			// PUT flows/json/[flowName]/[runID]/[stepID]

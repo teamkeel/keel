@@ -11,7 +11,7 @@ import (
 )
 
 // Start will start the scope's flow with the given input
-func Start(ctx context.Context, scope *Scope, inputs any) (*FlowRun, error) {
+func Start(ctx context.Context, scope *Scope, inputs any) (*Run, error) {
 	if scope.Flow == nil {
 		return nil, fmt.Errorf("invalid flow")
 	}
@@ -27,7 +27,7 @@ func Start(ctx context.Context, scope *Scope, inputs any) (*FlowRun, error) {
 		jsonInputs = inputsMap
 	}
 
-	run := FlowRun{
+	run := Run{
 		Status: StatusNew,
 		Input:  &jsonInputs,
 		Name:   scope.Flow.Name,
