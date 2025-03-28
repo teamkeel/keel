@@ -12,7 +12,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-func FlowHandler(p *proto.Schema) common.HandlerFunc {
+func FlowHandler(s *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "Flow")
 		defer span.End()
@@ -22,13 +22,10 @@ func FlowHandler(p *proto.Schema) common.HandlerFunc {
 		pathParts := strings.Split(strings.TrimPrefix(r.URL.Path, "/flows/json/"), "/")
 		flowName := pathParts[0]
 
-		if !slices.ContainsFunc(p.FlowNames(), func(f string) bool {
+		if !slices.ContainsFunc(s.FlowNames(), func(f string) bool {
 			return strings.ToLower(f) == flowName
 		}) {
-			return common.Response{
-				Status: http.StatusNotFound,
-				Body:   []byte("Not found"),
-			}
+			return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
 		}
 
 		switch len(pathParts) {
@@ -43,8 +40,8 @@ func FlowHandler(p *proto.Schema) common.HandlerFunc {
 				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
 			}
 
-			scope := flows.NewScope(ctx, p.FindFlow(flowName), p)
-			run, err := flows.Start(scope, inputs)
+			scope := flows.NewScope(s.FindFlow(flowName), s)
+			run, err := flows.Start(ctx, scope, inputs)
 			if err != nil {
 				return httpjson.NewErrorResponse(ctx, err, nil)
 			}

@@ -1,6 +1,7 @@
 package flows
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/teamkeel/keel/db"
@@ -10,18 +11,17 @@ import (
 )
 
 // Start will start the scope's flow with the given input
-func Start(scope *Scope, inputs any) (*FlowRun, error) {
+func Start(ctx context.Context, scope *Scope, inputs any) (*FlowRun, error) {
 	if scope.Flow == nil {
 		return nil, fmt.Errorf("invalid flow")
 	}
-	ctx, span := tracer.Start(scope.Context, "StartFlow")
+	ctx, span := tracer.Start(ctx, "StartFlow")
 	defer span.End()
 
 	span.SetAttributes(
 		attribute.String("flow", scope.Flow.Name),
 	)
 
-	scope = scope.WithContext(ctx)
 	var jsonInputs JSONB
 	if inputsMap, ok := inputs.(map[string]any); ok {
 		jsonInputs = inputsMap
@@ -33,7 +33,7 @@ func Start(scope *Scope, inputs any) (*FlowRun, error) {
 		Name:   scope.Flow.Name,
 	}
 
-	database, err := db.GetDatabase(scope.Context)
+	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
