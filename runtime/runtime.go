@@ -191,24 +191,19 @@ func NewApiHandler(s *proto.Schema) common.HandlerFunc {
 
 // NewFlowsHandler handles requests to the customer flows
 func NewFlowsHandler(s *proto.Schema) common.HandlerFunc {
-	flowHandler := flowsapi.FlowHandler(s)
+	defaultFlowHandler := flowsapi.FlowHandler(s)
 
-	handlers := map[string]common.HandlerFunc{
+	explicitHandlers := map[string]common.HandlerFunc{
 		"/flows/json": flowsapi.ListFlowsHandler(s),
-	}
-	for _, name := range s.FlowNames() {
-		handlers["/flows/json/"+strings.ToLower(name)] = flowHandler
+		// TODO: "/flows/json/myRuns"
 	}
 
 	return withRequestResponseLogging(func(r *http.Request) common.Response {
 		ctx := r.Context()
 
-		handler, ok := handlers[strings.ToLower(r.URL.Path)]
+		handler, ok := explicitHandlers[strings.ToLower(r.URL.Path)]
 		if !ok {
-			return common.Response{
-				Status: http.StatusNotFound,
-				Body:   []byte("Not found"),
-			}
+			handler = defaultFlowHandler
 		}
 
 		// Collect request headers and add to runtime context
