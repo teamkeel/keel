@@ -189,5 +189,11 @@ func (dl *DisplayLayoutConfig) AllActionLinks() []*ActionLink {
 		}
 	}
 
+	if dl.GetGridConfig() != nil {
+		if dl.GetGridConfig().UpdateAction != nil {
+			links = append(links, dl.GetGridConfig().UpdateAction)
+		}
+	}
+
 	return links
 }
