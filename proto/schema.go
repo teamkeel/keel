@@ -157,6 +157,14 @@ func (s *Schema) FindEventSubscribers(event *Event) []*Subscriber {
 	return subscribers
 }
 
+// FindFlow locates the flow of the given name.
+func (s *Schema) FindFlow(name string) *Flow {
+	flow, _ := lo.Find(s.Flows, func(m *Flow) bool {
+		return m.Name == name
+	})
+	return flow
+}
+
 // FindApiNames finds the api name for the given model and action name.
 func (s *Schema) FindApiNames(modelName, actionName string) []string {
 	names := []string{}

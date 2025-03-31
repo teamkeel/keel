@@ -1,0 +1,11 @@
+flow MyFlow {
+    inputs {
+        name Text
+    }
+}
+
+model Thing {
+    fields {
+        name Text
+    }
+}

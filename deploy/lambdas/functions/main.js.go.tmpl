@@ -4,12 +4,14 @@ const {
   handleJob,
   handleSubscriber,
   handleRoute,
+  handleFlow,
   tracing,
 } = require("@teamkeel/functions-runtime");
 const {
   createContextAPI,
   createJobContextAPI,
   createSubscriberContextAPI,
+  createFlowContextAPI,
   permissionFns,
 } = require("@teamkeel/sdk");
 
@@ -28,6 +30,12 @@ const subscribers = {
 const jobs = {
 {{ range .Jobs }}
   {{ . }}: require("../../jobs/{{ . }}").default,
+{{ end }}
+};
+
+const flows = {
+{{ range .Flows }}
+  {{ . }}: require("../../flows/{{ . }}").default,
 {{ end }}
 };
 
@@ -73,6 +81,12 @@ export async function handler(event) {
         rpcResponse = await handleSubscriber(event, {
           subscribers,
           createSubscriberContextAPI,
+        });
+        break;
+      case "flow":
+        rpcResponse = await handleFlow(event, {
+          flows,
+          createFlowContextAPI,
         });
         break;
       case "route":
