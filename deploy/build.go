@@ -406,6 +406,7 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (
 	functions := map[string]string{}
 	jobs := []string{}
 	subscribers := []string{}
+	flows := []string{}
 	routes := []string{}
 	actionTypes := map[string]string{}
 
@@ -435,6 +436,11 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (
 		subscribers = append(subscribers, subscriberName)
 	}
 
+	for _, flow := range schema.Flows {
+		flowName := strcase.ToLowerCamel(flow.Name)
+		flows = append(flows, flowName)
+	}
+
 	for _, route := range schema.Routes {
 		routes = append(routes, route.Handler)
 	}
@@ -446,6 +452,7 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (
 		"Functions":   functions,
 		"Subscribers": subscribers,
 		"Jobs":        jobs,
+		"Flows":       flows,
 		"Routes":      routes,
 		"ActionTypes": actionTypes,
 	})

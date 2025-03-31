@@ -140,7 +140,12 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 		sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(subscriber.Name))
 		sdk.Writeln("")
 	}
-	sdk.Writeln("")
+
+	for _, flow := range schema.Flows {
+		writeFlowFunctionWrapperType(sdkTypes, flow)
+		sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(flow.Name))
+		sdk.Writeln("")
+	}
 
 	if cfg != nil {
 		for _, h := range cfg.Auth.EnabledHooks() {
@@ -1023,6 +1028,10 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("now(): Date;")
 	w.Dedent()
 	w.Writeln("}")
+
+	// TODO: Definition and implementation for the flow context API
+	w.Writeln("export interface FlowContextAPI {")
+	w.Writeln("}")
 }
 
 func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
@@ -1113,6 +1122,12 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
+	w.Writeln("function createFlowContextAPI() {")
+	w.Indent()
+	w.Writeln("return { };")
+	w.Dedent()
+	w.Writeln("};")
+
 	w.Writeln("function createModelAPI() {")
 	w.Indent()
 	w.Writeln("return {")
@@ -1149,6 +1164,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
 	w.Writeln("module.exports.createJobContextAPI = createJobContextAPI;")
 	w.Writeln("module.exports.createSubscriberContextAPI = createSubscriberContextAPI;")
+	w.Writeln("module.exports.createFlowContextAPI = createFlowContextAPI;")
 }
 
 func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
@@ -1406,6 +1422,24 @@ func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Sub
 	w.Writeln("}>;")
 }
 
+func writeFlowFunctionWrapperType(w *codegen.Writer, flow *proto.Flow) {
+	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(flow.Name))
+
+	inputType := flow.InputMessageName
+
+	if inputType == "" {
+		w.Write("(fn: (ctx: FlowContextAPI) => Promise<void>): Promise<void>")
+	} else {
+		w.Writef("(fn: (ctx: FlowContextAPI, inputs: %s) => Promise<void>): Promise<void>", inputType)
+	}
+
+	w.Writeln("}>;")
+
+	// w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(flow.Name))
+	// w.Writef("(fn: (ctx: FlowContextAPI) => Promise<void>): Promise<void>")
+	// w.Writeln("}>;")
+}
+
 func toActionReturnType(model *proto.Model, action *proto.Action) string {
 	returnType := "Promise<"
 	sdkPrefix := "sdk."
@@ -1445,8 +1479,8 @@ func toActionReturnType(model *proto.Model, action *proto.Action) string {
 
 func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) codegen.GeneratedFiles {
 	w := &codegen.Writer{}
-	w.Writeln(`const { handleRequest, handleJob, handleSubscriber, handleRoute, tracing } = require('@teamkeel/functions-runtime');`)
-	w.Writeln(`const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } = require('@teamkeel/sdk');`)
+	w.Writeln(`const { handleRequest, handleJob, handleSubscriber, handleRoute, handleFlow, tracing } = require('@teamkeel/functions-runtime');`)
+	w.Writeln(`const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, createFlowContextAPI, permissionFns } = require('@teamkeel/sdk');`)
 	w.Writeln(`const { createServer } = require("node:http");`)
 	w.Writeln(`const process = require("node:process");`)
 
@@ -1474,6 +1508,13 @@ func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) 
 		name := subscriber.Name
 		// namespace import to avoid naming clashes
 		w.Writef(`const subscriber_%s = require("../subscribers/%s").default`, name, name)
+		w.Writeln(";")
+	}
+
+	for _, flow := range schema.Flows {
+		name := strcase.ToLowerCamel(flow.Name)
+		// namespace import to avoid naming clashes
+		w.Writef(`const flow_%s = require("../flows/%s").default`, name, name)
 		w.Writeln(";")
 	}
 
@@ -1523,6 +1564,16 @@ func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) 
 	for _, route := range schema.Routes {
 		name := route.Handler
 		w.Writef(`%s: require("../routes/%s").default,`, name, name)
+		w.Writeln("")
+	}
+	w.Dedent()
+	w.Writeln("}")
+
+	w.Writeln("const flows = {")
+	w.Indent()
+	for _, flow := range schema.Flows {
+		name := strcase.ToLowerCamel(flow.Name)
+		w.Writef("%s: flow_%s,", name, name)
 		w.Writeln("")
 	}
 	w.Dedent()
@@ -1584,6 +1635,12 @@ const listener = async (req, res) => {
 					createContextAPI,
 				});
 				break;
+			case "flow":
+				rpcResponse = await handleFlow(json, {
+					flows,
+					createFlowContextAPI,
+				});
+				break;
 			default:
 				res.statusCode = 400;
 				res.end();
@@ -1633,12 +1690,13 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	// with Vitest
 	js.Writeln(`import sdk from "@teamkeel/sdk"`)
 	js.Writeln("const { useDatabase, models } = sdk;")
-	js.Writeln(`import { ActionExecutor, JobExecutor, SubscriberExecutor, sql } from "@teamkeel/testing-runtime";`)
+	js.Writeln(`import { ActionExecutor, JobExecutor, SubscriberExecutor, FlowExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 	js.Writeln("export { models };")
 	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export const jobs = new JobExecutor({});")
 	js.Writeln("export const subscribers = new SubscriberExecutor({});")
+	js.Writeln("export const flows = new FlowExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
 	js.Writeln("const db = useDatabase();")
@@ -1811,6 +1869,34 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		w.Dedent()
 		w.Writeln("}")
 		w.Writeln("export declare const subscribers: SubscriberExecutor;")
+	}
+
+	if len(schema.Flows) > 0 {
+		w.Writeln("declare class FlowExecutor {")
+		w.Indent()
+		for _, flow := range schema.Flows {
+			msg := schema.FindMessage(flow.InputMessageName)
+
+			// Jobs can be without inputs
+			if msg != nil {
+				w.Writef("%s(i", strcase.ToLowerCamel(flow.Name))
+
+				if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+					return f.Optional
+				}) {
+					w.Write("?")
+				}
+
+				w.Writef(`: %s): %s`, flow.InputMessageName, "Promise<void>")
+				w.Writeln(";")
+			} else {
+				w.Writef("%s(): Promise<void>", strcase.ToLowerCamel(flow.Name))
+				w.Writeln(";")
+			}
+		}
+		w.Dedent()
+		w.Writeln("}")
+		w.Writeln("export declare const flows: FlowExecutor;")
 	}
 
 	for _, model := range schema.Models {

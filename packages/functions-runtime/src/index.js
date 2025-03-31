@@ -4,6 +4,7 @@ const { handleRequest } = require("./handleRequest");
 const { handleJob } = require("./handleJob");
 const { handleSubscriber } = require("./handleSubscriber");
 const { handleRoute } = require("./handleRoute");
+const { handleFlow } = require("./handleFlow");
 const KSUID = require("ksuid");
 const { useDatabase } = require("./database");
 const {
@@ -23,6 +24,7 @@ module.exports = {
   handleJob,
   handleSubscriber,
   handleRoute,
+  handleFlow,
   useDatabase,
   Duration,
   InlineFile,
