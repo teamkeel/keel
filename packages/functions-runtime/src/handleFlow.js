@@ -48,16 +48,13 @@ async function handleFlow(request, config) {
 
         const flowFunction = flows[request.method];
 
-        await tryExecuteFlow(
-          { request, db },
-          async () => {
-            // parse request params to convert objects into rich field types (e.g. InlineFile)
-            const inputs = parseInputs(request.params);
+        await tryExecuteFlow({ request, db }, async () => {
+          // parse request params to convert objects into rich field types (e.g. InlineFile)
+          const inputs = parseInputs(request.params);
 
-            // Return the job function to the containing tryExecuteJob block
-            return flowFunction(ctx, inputs);
-          }
-        );
+          // Return the job function to the containing tryExecuteJob block
+          return flowFunction(ctx, inputs);
+        });
 
         return createJSONRPCSuccessResponse(request.id, null);
       } catch (e) {
