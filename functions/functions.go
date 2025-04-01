@@ -395,6 +395,7 @@ func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *ev
 }
 
 // CallFlow will invoke the flow function on the runtime node server.
+// TODO: pass through a flow run ID
 func CallFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) error {
 	span := trace.SpanFromContext(ctx)
 

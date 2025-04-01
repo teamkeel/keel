@@ -5,21 +5,22 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/db"
+	"github.com/teamkeel/keel/proto"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// StartRun will start the scope's flow with the given input
-func StartRun(ctx context.Context, scope *Scope, inputs any) (*Run, error) {
-	if scope.Flow == nil {
+// CreateRun will start the scope's flow with the given input
+func CreateRun(ctx context.Context, flow *proto.Flow, inputs any) (*Run, error) {
+	if flow == nil {
 		return nil, fmt.Errorf("invalid flow")
 	}
-	ctx, span := tracer.Start(ctx, "StartRun")
+	ctx, span := tracer.Start(ctx, "CreateRun")
 	defer span.End()
 
 	span.SetAttributes(
-		attribute.String("flow", scope.Flow.Name),
+		attribute.String("flow", flow.Name),
 	)
 
 	var jsonInputs JSONB
@@ -30,7 +31,7 @@ func StartRun(ctx context.Context, scope *Scope, inputs any) (*Run, error) {
 	run := Run{
 		Status: StatusNew,
 		Input:  &jsonInputs,
-		Name:   scope.Flow.Name,
+		Name:   flow.Name,
 	}
 
 	database, err := db.GetDatabase(ctx)

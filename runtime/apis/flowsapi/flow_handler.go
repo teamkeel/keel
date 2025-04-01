@@ -2,7 +2,6 @@ package flowsapi
 
 import (
 	"net/http"
-	"slices"
 	"strings"
 
 	"github.com/teamkeel/keel/proto"
@@ -20,14 +19,10 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 			attribute.String("api.protocol", "HTTP JSON"),
 		)
 		pathParts := strings.Split(strings.TrimPrefix(r.URL.Path, "/flows/json/"), "/")
-		flowName := pathParts[0]
-
-		if !slices.ContainsFunc(s.FlowNames(), func(f string) bool {
-			return strings.ToLower(f) == flowName
-		}) {
+		flow := s.FindFlow(pathParts[0])
+		if flow == nil {
 			return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
 		}
-		scope := flows.NewScope(s.FindFlow(flowName), s)
 
 		switch len(pathParts) {
 		case 1:
@@ -41,8 +36,12 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
 			}
 
-			run, err := flows.StartRun(ctx, scope, inputs)
+			run, err := flows.CreateRun(ctx, flow, inputs)
 			if err != nil {
+				return httpjson.NewErrorResponse(ctx, err, nil)
+			}
+
+			if err := flows.RunFlow(ctx, run.ID); err != nil {
 				return httpjson.NewErrorResponse(ctx, err, nil)
 			}
 
@@ -53,11 +52,11 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET accepted"), nil)
 			}
 
-			run, err := flows.GetFlowRun(ctx, scope, pathParts[1])
+			run, err := flows.GetFlowRun(ctx, pathParts[1])
 			if err != nil {
 				return httpjson.NewErrorResponse(ctx, err, nil)
 			}
-			if run == nil {
+			if run == nil || run.Name != flow.Name {
 				return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
 			}
 
