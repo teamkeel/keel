@@ -422,7 +422,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// If seeding data, we quit after seeding
 		if m.Mode == ModeSeed {
 			m.Status = StatusSeedCompleted
-			time.Sleep(1 * time.Second)
 			return m, tea.Quit
 		}
 

@@ -289,16 +289,6 @@ func TestSnapshotDatabase(t *testing.T) {
 		require.Contains(t, sql, "COMMIT;")
 	})
 
-	t.Run("includes_all_tables_in_correct_order", func(t *testing.T) {
-		sql, err := migrations.SnapshotDatabase(context.Background())
-		require.NoError(t, err)
-
-		// User table should come before Post table due to foreign key dependency
-		userIndex := strings.Index(sql, "INSERT INTO \"user\"")
-		postIndex := strings.Index(sql, "INSERT INTO \"post\"")
-		require.True(t, userIndex < postIndex)
-	})
-
 	t.Run("excludes_computed_fields", func(t *testing.T) {
 		sql, err := migrations.SnapshotDatabase(context.Background())
 		require.NoError(t, err)

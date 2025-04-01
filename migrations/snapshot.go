@@ -79,17 +79,16 @@ func (h *FileTypeHandler) ToSQL(value interface{}, field *proto.Field) (string, 
 
 	switch v := value.(type) {
 	case map[string]interface{}:
-		// Create ordered map for consistent output
-		orderedMap := make(map[string]interface{})
+		output := make(map[string]interface{})
 		if url, ok := v["url"].(string); ok {
-			orderedMap["url"] = strings.ReplaceAll(url, "'", "''")
+			output["url"] = strings.ReplaceAll(url, "'", "''")
 		} else {
-			orderedMap["url"] = v["url"]
+			output["url"] = v["url"]
 		}
-		orderedMap["contentType"] = v["contentType"]
-		orderedMap["size"] = v["size"]
+		output["contentType"] = v["contentType"]
+		output["size"] = v["size"]
 
-		jsonBytes, err := json.Marshal(orderedMap)
+		jsonBytes, err := json.Marshal(output)
 		if err != nil {
 			return "", fmt.Errorf("error marshaling File: %w", err)
 		}
@@ -136,68 +135,6 @@ func (h *ArrayTypeHandler) ToSQL(value interface{}, field *proto.Field) (string,
 			return arrayExpr, nil
 		}
 		return fmt.Sprintf("'%s'", strings.ReplaceAll(v, "'", "''")), nil
-	case []interface{}:
-		arrayStr := make([]string, len(v))
-		for i, item := range v {
-			switch itemVal := item.(type) {
-			case string:
-				arrayStr[i] = fmt.Sprintf("'%s'", strings.ReplaceAll(itemVal, "'", "''"))
-			case nil:
-				arrayStr[i] = "NULL"
-			case map[string]interface{}:
-				jsonBytes, err := json.Marshal(itemVal)
-				if err != nil {
-					return "", fmt.Errorf("error marshaling JSON for array item: %w", err)
-				}
-				arrayStr[i] = fmt.Sprintf("'%s'", string(jsonBytes))
-			case float64:
-				arrayStr[i] = fmt.Sprintf("'%g'", itemVal)
-			case int:
-				arrayStr[i] = fmt.Sprintf("'%d'", itemVal)
-			case bool:
-				arrayStr[i] = fmt.Sprintf("'%t'", itemVal)
-			default:
-				return "", fmt.Errorf("unsupported array item type: %T", itemVal)
-			}
-		}
-		arrayExpr := fmt.Sprintf("ARRAY[%s]", strings.Join(arrayStr, ", "))
-		if field != nil && field.Type.Repeated {
-			switch field.Type.Type {
-			case proto.Type_TYPE_INT:
-				arrayExpr += "::integer[]"
-			case proto.Type_TYPE_DECIMAL:
-				arrayExpr += "::decimal[]"
-			case proto.Type_TYPE_DATE:
-				arrayExpr += "::date[]"
-			case proto.Type_TYPE_TIMESTAMP:
-				arrayExpr += "::timestamp[]"
-			case proto.Type_TYPE_DURATION:
-				arrayExpr += "::interval[]"
-			}
-		}
-		return arrayExpr, nil
-	case []string:
-		arrayStr := make([]string, len(v))
-		for i, item := range v {
-			arrayStr[i] = fmt.Sprintf("'%s'", strings.ReplaceAll(item, "'", "''"))
-		}
-		arrayExpr := fmt.Sprintf("ARRAY[%s]", strings.Join(arrayStr, ", "))
-		if field != nil && field.Type.Type == proto.Type_TYPE_DURATION {
-			arrayExpr += "::interval[]"
-		}
-		return arrayExpr, nil
-	case []int:
-		arrayStr := make([]string, len(v))
-		for i, item := range v {
-			arrayStr[i] = fmt.Sprintf("'%d'", item)
-		}
-		return fmt.Sprintf("ARRAY[%s]::integer[]", strings.Join(arrayStr, ", ")), nil
-	case []float64:
-		arrayStr := make([]string, len(v))
-		for i, item := range v {
-			arrayStr[i] = fmt.Sprintf("'%g'", item)
-		}
-		return fmt.Sprintf("ARRAY[%s]::decimal[]", strings.Join(arrayStr, ", ")), nil
 	default:
 		return "", fmt.Errorf("unsupported array type: %T", value)
 	}
@@ -211,8 +148,6 @@ func (h *TimeTypeHandler) ToSQL(value interface{}, field *proto.Field) (string, 
 	}
 
 	switch v := value.(type) {
-	case time.Time:
-		return fmt.Sprintf("'%s'::timestamp with time zone", v.Format(time.RFC3339)), nil
 	case string:
 		// Try to parse the string as a time
 		t, err := time.Parse(time.RFC3339, v)
@@ -235,42 +170,8 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 	output.WriteString("BEGIN;\n\n")
 	output.WriteString("SET CONSTRAINTS ALL DEFERRED;\n\n")
 
-	// Get table dependencies to determine order
-	tableDeps := make(map[string][]string)
-	for _, model := range models {
-		modelObj := m.Schema.FindModel(model)
-		for _, field := range modelObj.Fields {
-			if field.Type.Type == proto.Type_TYPE_MODEL && field.ForeignKeyInfo != nil {
-				tableDeps[model] = append(tableDeps[model], field.ForeignKeyInfo.RelatedModelName)
-			}
-		}
-	}
-
-	// Sort models based on dependencies (tables with no dependencies first)
-	sortedModels := make([]string, 0, len(models))
-	visited := make(map[string]bool)
-	var visit func(string)
-	visit = func(model string) {
-		if visited[model] {
-			return
-		}
-		visited[model] = true
-		for _, dep := range tableDeps[model] {
-			visit(dep)
-		}
-		sortedModels = append(sortedModels, model)
-	}
-	for _, model := range models {
-		visit(model)
-	}
-
-	// Reverse the order to get tables with no dependencies first
-	for i, j := 0, len(sortedModels)-1; i < j; i, j = i+1, j-1 {
-		sortedModels[i], sortedModels[j] = sortedModels[j], sortedModels[i]
-	}
-
-	// Add keel_storage table to the end of the list
-	sortedModels = append(sortedModels, "keel_storage")
+	// Add keel_storage table
+	models = append(models, "keel_storage")
 
 	// Register type handlers
 	typeHandlers := map[proto.Type]TypeHandler{
@@ -279,7 +180,7 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 		proto.Type_TYPE_TIMESTAMP: &TimeTypeHandler{},
 	}
 
-	for i, model := range sortedModels {
+	for i, model := range models {
 		table := Identifier(model)
 
 		// Check if keel_storage table exists before querying
@@ -299,6 +200,10 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 			return "", fmt.Errorf("error querying table %s: %w", table, err)
 		}
 
+		if len(result.Rows) == 0 {
+			continue
+		}
+
 		// Get column names, excluding computed fields
 		columns := make([]string, 0)
 		for _, col := range result.Columns {
@@ -311,10 +216,6 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 			if field != nil && field.ComputedExpression == nil {
 				columns = append(columns, col)
 			}
-		}
-
-		if len(result.Rows) == 0 {
-			continue
 		}
 
 		if i > 0 {
@@ -336,11 +237,9 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 				val := row[col]
 
 				// For keel_storage table, use DefaultTypeHandler for all columns
+				// But the data column is binary, so we need to handle it differently
 				if model == "keel_storage" {
-					handler := &DefaultTypeHandler{}
-					// Special handling for the data column which is binary
 					if col == "data" {
-						// For binary data, we need to use the bytea type
 						if val == nil {
 							values[j] = "NULL"
 						} else {
@@ -351,31 +250,27 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 								return "", fmt.Errorf("expected []byte for data column, got %T", val)
 							}
 						}
-						continue
+					} else {
+						// For other keel_storage columns, use DefaultTypeHandler
+						sql, err := (&DefaultTypeHandler{}).ToSQL(val, nil)
+						if err != nil {
+							return "", fmt.Errorf("error converting value for column %s: %w", col, err)
+						}
+						values[j] = sql
 					}
-					sql, err := handler.ToSQL(val, nil)
-					if err != nil {
-						return "", fmt.Errorf("error converting value for column %s: %w", col, err)
-					}
-					values[j] = sql
 					continue
 				}
 
 				field := proto.FindField(m.Schema.Models, model, casing.ToLowerCamel(col))
 
-				// Get the appropriate type handler
 				var handler TypeHandler
+				handler = &DefaultTypeHandler{}
 				if field != nil {
 					if field.Type.Repeated {
 						handler = &ArrayTypeHandler{}
-					} else {
-						handler = typeHandlers[field.Type.Type]
+					} else if h, ok := typeHandlers[field.Type.Type]; ok {
+						handler = h
 					}
-				}
-
-				// If no specific handler, use default
-				if handler == nil {
-					handler = &DefaultTypeHandler{}
 				}
 
 				// Convert value to SQL
