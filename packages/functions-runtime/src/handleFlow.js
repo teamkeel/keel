@@ -24,7 +24,13 @@ async function handleFlow(request, config) {
     return withSpan(request.method, async (span) => {
       let db = null;
 
+      const runId = request.meta?.runId;
+
       try {
+        if (!runId) {
+          throw new Error("no runId provided");
+        }
+
         const { createFlowContextAPI, flows } = config;
 
         if (!(request.method in flows)) {
@@ -38,12 +44,6 @@ async function handleFlow(request, config) {
             JSONRPCErrorCode.MethodNotFound,
             message
           );
-        }
-
-        const runId = request.meta?.runId;
-
-        if (!runId) {
-          throw new Error("no runId provided");
         }
 
         // The ctx argument passed into the flow function.
@@ -79,7 +79,7 @@ async function handleFlow(request, config) {
         // TODO: Send FlowRunUpdated event with run_completed = true
 
         return createJSONRPCSuccessResponse(request.id, {
-          runId: flowRun.id,
+          runId: runId,
           runCompleted: true,
         });
       } catch (e) {
@@ -88,7 +88,7 @@ async function handleFlow(request, config) {
           // TODO: Send FlowRunUpdated event with run_completed = false
 
           return createJSONRPCSuccessResponse(request.id, {
-            runId: flowRun.id,
+            runId: runId,
             runCompleted: false,
           });
         }
