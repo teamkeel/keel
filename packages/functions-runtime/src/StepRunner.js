@@ -34,8 +34,9 @@ class StepRunner {
       .selectAll()
       .executeTakeFirst();
 
+
     if (completed) {
-      return JSON.parse(completed.value);
+      return completed.value;
     }
 
     // The step hasn't yet run successfully, so we need to create a NEW run

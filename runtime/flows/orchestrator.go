@@ -64,17 +64,19 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 		return err
 	}
 
-	switch run.Status {
-	case StatusNew:
-		// this is a new run, set it to running and trigger the flows runtime
-		run, err := UpdateRun(ctx, run.ID, StatusRunning)
-		if err != nil {
-			return err
-		}
+	flow := o.schema.FindFlow(run.Name)
+	if flow == nil {
+		return fmt.Errorf("invalid flow run")
+	}
 
-		flow := o.schema.FindFlow(run.Name)
-		if flow == nil {
-			return fmt.Errorf("invalid flow run")
+	switch run.Status {
+	case StatusNew, StatusRunning:
+		if run.Status == StatusNew {
+			// this is a new run, set it to running and trigger the flows runtime
+			run, err = UpdateRun(ctx, run.ID, StatusRunning)
+			if err != nil {
+				return err
+			}
 		}
 
 		// call the flow runtime to execute this flow run
@@ -108,7 +110,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 		}
 
 		// TODO: handle sqs messages
-	case StatusFailed, StatusCompleted, StatusRunning, StatusWaiting:
+	case StatusFailed, StatusCompleted, StatusWaiting:
 		// Do nothing
 		return nil
 	}
