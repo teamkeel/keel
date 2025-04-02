@@ -33,7 +33,7 @@ func (h *Handler) FlowHandler(ctx context.Context, payload *RunFlowPayload) erro
 		return err
 	}
 
-	err = runtime.NewFlowHandler(h.schema).RunFlow(ctx, payload.Name, payload.Inputs)
+	err = runtime.NewFlowHandler(h.schema).RunFlow(ctx, payload.ID, payload.Name, payload.Inputs)
 	if err != nil {
 		return err
 	}

@@ -336,7 +336,7 @@ func NewFlowHandler(currSchema *proto.Schema) FlowHandler {
 }
 
 // RunJob will run the job function in the runtime.
-func (handler FlowHandler) RunFlow(ctx context.Context, flowName string, input map[string]any) error {
+func (handler FlowHandler) RunFlow(ctx context.Context, id string, flowName string, input map[string]any) error {
 	ctx, span := tracer.Start(ctx, "Run flow")
 	defer span.End()
 
@@ -357,6 +357,7 @@ func (handler FlowHandler) RunFlow(ctx context.Context, flowName string, input m
 	err = functions.CallFlow(
 		ctx,
 		flow,
+		id,
 		input,
 	)
 

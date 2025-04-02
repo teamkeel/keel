@@ -395,8 +395,7 @@ func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *ev
 }
 
 // CallFlow will invoke the flow function on the runtime node server.
-// TODO: pass through a flow run ID
-func CallFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) error {
+func CallFlow(ctx context.Context, flow *proto.Flow, runId string, inputs map[string]any) error {
 	span := trace.SpanFromContext(ctx)
 
 	transport, ok := ctx.Value(contextKey).(Transport)
@@ -410,6 +409,7 @@ func CallFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) erro
 	otel.GetTextMapPropagator().Inject(ctx, tracingContext)
 
 	meta := map[string]any{
+		"runId":   runId,
 		"secrets": secrets,
 		"tracing": tracingContext,
 	}
@@ -422,7 +422,8 @@ func CallFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) erro
 		Meta:   meta,
 	}
 	span.SetAttributes(
-		attribute.String("flow.id", req.ID),
+		attribute.String("request.id", req.ID),
+		attribute.String("run.id", runId),
 		attribute.String("flow.name", flow.Name),
 	)
 

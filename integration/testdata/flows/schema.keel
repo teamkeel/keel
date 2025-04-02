@@ -1,11 +1,13 @@
 flow MyFlow {
     inputs {
         name Text
+        age Number
     }
 }
 
 model Thing {
     fields {
-        name Text
+        name Text?
+        age Number?
     }
 }
