@@ -78,13 +78,19 @@ async function handleFlow(request, config) {
         // If we reach this point, then we know the entire flow completed successfully
         // TODO: Send FlowRunUpdated event with run_completed = true
 
-        return createJSONRPCSuccessResponse(request.id, null);
+        return createJSONRPCSuccessResponse(request.id, {
+          runId: flowRun.id,
+          runCompleted: true,
+        });
       } catch (e) {
         // If the flow is disrupted, then we know that a step either completed successfully or failed
         if (e instanceof FlowDisrupt) {
           // TODO: Send FlowRunUpdated event with run_completed = false
 
-          return createJSONRPCSuccessResponse(request.id, null);
+          return createJSONRPCSuccessResponse(request.id, {
+            runId: flowRun.id,
+            runCompleted: false,
+          });
         }
 
         if (e instanceof Error) {
