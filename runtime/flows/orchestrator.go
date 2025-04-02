@@ -81,7 +81,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 			if err = functions.CallFlow(
 				ctx,
 				flow,
-				*run.Input,
+				run.ID,
 			); err != nil {
 				return err
 			}

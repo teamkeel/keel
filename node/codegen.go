@@ -1031,6 +1031,9 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 
 	// TODO: Definition and implementation for the flow context API
 	w.Writeln("export interface FlowContextAPI {")
+	w.Indent()
+	w.Writeln("step<T>(name: string, fn: () => Promise<T>): Promise<T>;")
+	w.Dedent()
 	w.Writeln("}")
 }
 
@@ -1122,9 +1125,16 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln("function createFlowContextAPI() {")
+	w.Writeln("function createFlowContextAPI({ meta }) {")
 	w.Indent()
-	w.Writeln("return { };")
+	w.Writeln("const step = async (name, fn) => {")
+	w.Indent()
+	w.Writeln("const runner = new runtime.StepRunner(meta.runId);")
+	w.Writeln("return await runner.run(name, fn);")
+	w.Dedent()
+	w.Writeln("};")
+	w.Dedent()
+	w.Writeln("return { step };")
 	w.Dedent()
 	w.Writeln("};")
 

@@ -1,6 +1,6 @@
 const { withDatabase } = require("./database");
 
-function tryExecuteFlow({ db, permitted, request, functionConfig }, cb) {
+function tryExecuteFlow(db, cb) {
   return withDatabase(db, false, async () => {
     return cb();
   });

@@ -336,7 +336,7 @@ func NewFlowHandler(currSchema *proto.Schema) FlowHandler {
 }
 
 // RunJob will run the job function in the runtime.
-func (handler FlowHandler) RunFlow(ctx context.Context, flowName string, input map[string]any) error {
+func (handler FlowHandler) RunFlow(ctx context.Context, id string, flowName string, input map[string]any) error {
 	ctx, span := tracer.Start(ctx, "Run flow")
 	defer span.End()
 
@@ -345,19 +345,20 @@ func (handler FlowHandler) RunFlow(ctx context.Context, flowName string, input m
 		return fmt.Errorf("no flow with the name '%s' exists", flowName)
 	}
 
-	var err error
-	if flow.InputMessageName != "" {
-		message := handler.schema.FindMessage(flow.InputMessageName)
-		input, err = actions.TransformInputs(handler.schema, message, input, true)
-		if err != nil {
-			return err
-		}
-	}
+	// TODO: we need to create the flow in the database
+	// var err error
+	// if flow.InputMessageName != "" {
+	// 	message := handler.schema.FindMessage(flow.InputMessageName)
+	// 	input, err = actions.TransformInputs(handler.schema, message, input, true)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 
-	err = functions.CallFlow(
+	err := functions.CallFlow(
 		ctx,
 		flow,
-		input,
+		id,
 	)
 
 	return err
