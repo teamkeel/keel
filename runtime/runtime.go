@@ -345,16 +345,17 @@ func (handler FlowHandler) RunFlow(ctx context.Context, id string, flowName stri
 		return fmt.Errorf("no flow with the name '%s' exists", flowName)
 	}
 
-	var err error
-	if flow.InputMessageName != "" {
-		message := handler.schema.FindMessage(flow.InputMessageName)
-		input, err = actions.TransformInputs(handler.schema, message, input, true)
-		if err != nil {
-			return err
-		}
-	}
+	// TODO: we need to create the flow in the database
+	// var err error
+	// if flow.InputMessageName != "" {
+	// 	message := handler.schema.FindMessage(flow.InputMessageName)
+	// 	input, err = actions.TransformInputs(handler.schema, message, input, true)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 
-	err = functions.CallFlow(
+	err := functions.CallFlow(
 		ctx,
 		flow,
 		id,
