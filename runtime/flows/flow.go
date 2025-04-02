@@ -5,15 +5,15 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/teamkeel/keel/db"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/flows")
 
 type Status string
 
@@ -78,35 +78,16 @@ func (jsonField *JSONB) Scan(value any) error {
 	return json.Unmarshal(data, &jsonField)
 }
 
-// GetFlowRun returns the flow run with the given runID and within the given's scope's flow.
-// If no flow run found, nil nil is returned
-func GetFlowRun(ctx context.Context, scope *Scope, runID string) (*Run, error) {
-	if scope.Flow == nil {
-		return nil, fmt.Errorf("invalid flow")
-	}
-
-	ctx, span := tracer.Start(ctx, "GetFlowRun")
-	defer span.End()
-
-	span.SetAttributes(
-		attribute.String("flow", scope.Flow.Name),
-		attribute.String("flowRunID", runID),
-	)
-
+// GetFlowRun returns the flow run with the given ID. If no flow run found, nil nil is returned.
+func GetFlowRun(ctx context.Context, runID string) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
 	var run Run
-
-	result := database.GetDB().Preload("Steps").Where("id = ? and name = ?", runID, scope.Flow.Name).First(&run)
+	result := database.GetDB().Preload("Steps").Where("id = ?", runID).First(&run)
 	if result.Error != nil {
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, result.Error.Error())
-
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -115,4 +96,17 @@ func GetFlowRun(ctx context.Context, scope *Scope, runID string) (*Run, error) {
 	}
 
 	return &run, nil
+}
+
+// UpdateRun will update the status of a flow run
+func UpdateRun(ctx context.Context, runID string, status Status) (*Run, error) {
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var run Run
+	result := database.GetDB().Model(&run).Clauses(clause.Returning{}).Where("id = ?", runID).Update("status", status)
+
+	return &run, result.Error
 }
