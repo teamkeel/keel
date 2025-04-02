@@ -358,7 +358,6 @@ func (handler FlowHandler) RunFlow(ctx context.Context, id string, flowName stri
 		ctx,
 		flow,
 		id,
-		input,
 	)
 
 	return err

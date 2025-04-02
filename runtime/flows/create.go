@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/db"
-	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -51,13 +50,6 @@ func CreateRun(ctx context.Context, flow *proto.Flow, inputs any) (*Run, error) 
 
 	span.SetAttributes(attribute.String("flowRunID", run.ID))
 
-	// TODO: this will move to the orchestrator.  For now we are just running the flow synchronously.
-	err = functions.CallFlow(
-		ctx,
-		scope.Flow,
-		run.ID,
-		inputs.(map[string]any),
-	)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
