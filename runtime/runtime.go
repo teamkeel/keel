@@ -355,7 +355,7 @@ func (handler FlowHandler) RunFlow(ctx context.Context, id string, flowName stri
 	// 	}
 	// }
 
-	err := functions.CallFlow(
+	_, _, err := functions.CallFlow(
 		ctx,
 		flow,
 		id,

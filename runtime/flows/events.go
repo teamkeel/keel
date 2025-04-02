@@ -5,6 +5,6 @@ type FlowRunStarted struct {
 }
 
 type FlowRunUpdated struct {
-	RunID        string
-	RunCompleted bool
+	RunID        string `json:"runId"`
+	RunCompleted bool   `json:"runCompleted"`
 }

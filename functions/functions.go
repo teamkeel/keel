@@ -395,12 +395,12 @@ func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *ev
 }
 
 // CallFlow will invoke the flow function on the runtime node server.
-func CallFlow(ctx context.Context, flow *proto.Flow, runId string) error {
+func CallFlow(ctx context.Context, flow *proto.Flow, runId string) (any, *FunctionsRuntimeMeta, error) {
 	span := trace.SpanFromContext(ctx)
 
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {
-		return errors.New("no functions client in context")
+		return nil, nil, errors.New("no functions client in context")
 	}
 
 	secrets := runtimectx.GetSecrets(ctx)
@@ -430,16 +430,16 @@ func CallFlow(ctx context.Context, flow *proto.Flow, runId string) error {
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
-		return err
+		return nil, nil, err
 	}
 
 	if resp.Error != nil {
 		span.SetStatus(codes.Error, resp.Error.Message)
 		span.SetAttributes(attribute.Int("error.code", int(resp.Error.Code)))
-		return toRuntimeError(resp.Error)
+		return nil, nil, toRuntimeError(resp.Error)
 	}
 
-	return nil
+	return resp.Result, resp.Meta, nil
 }
 
 // Parse the error from the functions runtime to the appropriate go runtime error.

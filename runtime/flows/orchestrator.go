@@ -2,6 +2,7 @@ package flows
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/teamkeel/keel/functions"
@@ -78,11 +79,30 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 
 		// call the flow runtime to execute this flow run
 		if o.directInvocation {
-			if err = functions.CallFlow(
+			resp, _, err := functions.CallFlow(
 				ctx,
 				flow,
 				run.ID,
-			); err != nil {
+			)
+			if err != nil {
+				return err
+			}
+
+			b, err := json.Marshal(resp)
+			if err != nil {
+				return err
+			}
+			var ev FlowRunUpdated
+			if err := json.Unmarshal(b, &ev); err != nil {
+				return err
+			}
+
+			if !ev.RunCompleted {
+				return o.orchestrateRun(ctx, ev.RunID)
+			}
+
+			// flow run is completed
+			if _, err := UpdateRun(ctx, run.ID, StatusCompleted); err != nil {
 				return err
 			}
 		}

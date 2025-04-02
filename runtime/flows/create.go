@@ -49,12 +49,5 @@ func CreateRun(ctx context.Context, flow *proto.Flow, inputs any) (*Run, error) 
 	}
 
 	span.SetAttributes(attribute.String("flowRunID", run.ID))
-
-	if err != nil {
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
-	}
-
 	return &run, nil
 }
