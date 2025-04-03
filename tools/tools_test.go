@@ -24,6 +24,10 @@ func TestGenerateTools(t *testing.T) {
 
 	for _, tc := range testCases {
 		testCase := tc
+		if testCase.Name() == "generate_testdata.go" {
+			continue
+		}
+
 		if !testCase.IsDir() {
 			t.Errorf("test data directory should only contain directories - file found: %s", testCase.Name())
 			continue
