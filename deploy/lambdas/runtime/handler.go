@@ -32,6 +32,9 @@ const (
 
 	// Handles both manual and scheduled jobs
 	RuntimeModeJob = "job"
+
+	// Handles flows
+	RuntimeModeFlow = "flow"
 )
 
 type Handler struct {

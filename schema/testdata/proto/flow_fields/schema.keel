@@ -1,0 +1,17 @@
+flow MyWorkflow {
+    inputs {
+        id ID
+        text Text
+        number Number
+        bool Boolean
+        array Text[]
+        enum MyEnum
+        file File
+        duration Duration
+    }
+}
+
+enum MyEnum {
+    One
+    Two
+}

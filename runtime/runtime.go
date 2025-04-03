@@ -16,6 +16,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/apis/authapi"
+	"github.com/teamkeel/keel/runtime/apis/flowsapi"
 	"github.com/teamkeel/keel/runtime/apis/graphql"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/apis/jsonrpc"
@@ -41,10 +42,12 @@ func GetVersion() string {
 
 func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	var apiHandler common.HandlerFunc
+	var flowsHandler common.HandlerFunc
 	var authHandler func(http.ResponseWriter, *http.Request) common.Response
 	var router *httprouter.Router
 	if currSchema != nil {
 		apiHandler = NewApiHandler(currSchema)
+		flowsHandler = NewFlowsHandler(currSchema)
 		authHandler = NewAuthHandler(currSchema)
 		router = NewRouter(currSchema)
 	}
@@ -57,7 +60,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			attribute.String("runtime_version", Version),
 		)
 
-		if apiHandler == nil || authHandler == nil {
+		if apiHandler == nil || authHandler == nil || flowsHandler == nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("cannot serve requests when handlers are not set up"))
 			return
@@ -68,6 +71,8 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		var response common.Response
 		path := r.URL.Path
 		switch {
+		case strings.HasPrefix(path, "/flows"):
+			response = flowsHandler(r)
 		case strings.HasPrefix(path, "/auth"):
 			response = authHandler(w, r)
 		default:
@@ -169,6 +174,36 @@ func NewApiHandler(s *proto.Schema) common.HandlerFunc {
 				Status: http.StatusNotFound,
 				Body:   []byte("Not found"),
 			}
+		}
+
+		// Collect request headers and add to runtime context
+		// These are exposed in custom functions and in expressions
+		headers := map[string][]string{}
+		for k := range r.Header {
+			headers[k] = r.Header.Values(k)
+		}
+		ctx = runtimectx.WithRequestHeaders(ctx, headers)
+		r = r.WithContext(ctx)
+
+		return handler(r)
+	})
+}
+
+// NewFlowsHandler handles requests to the customer flows
+func NewFlowsHandler(s *proto.Schema) common.HandlerFunc {
+	defaultFlowHandler := flowsapi.FlowHandler(s)
+
+	explicitHandlers := map[string]common.HandlerFunc{
+		"/flows/json": flowsapi.ListFlowsHandler(s),
+		// TODO: "/flows/json/myRuns"
+	}
+
+	return withRequestResponseLogging(func(r *http.Request) common.Response {
+		ctx := r.Context()
+
+		handler, ok := explicitHandlers[strings.ToLower(r.URL.Path)]
+		if !ok {
+			handler = defaultFlowHandler
 		}
 
 		// Collect request headers and add to runtime context
@@ -286,6 +321,45 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 		span.RecordError(eventsErr)
 		span.SetStatus(codes.Error, eventsErr.Error())
 	}
+
+	return err
+}
+
+type FlowHandler struct {
+	schema *proto.Schema
+}
+
+func NewFlowHandler(currSchema *proto.Schema) FlowHandler {
+	return FlowHandler{
+		schema: currSchema,
+	}
+}
+
+// RunJob will run the job function in the runtime.
+func (handler FlowHandler) RunFlow(ctx context.Context, id string, flowName string, input map[string]any) error {
+	ctx, span := tracer.Start(ctx, "Run flow")
+	defer span.End()
+
+	flow := handler.schema.FindFlow(strcase.ToCamel(flowName))
+	if flow == nil {
+		return fmt.Errorf("no flow with the name '%s' exists", flowName)
+	}
+
+	// TODO: we need to create the flow in the database
+	// var err error
+	// if flow.InputMessageName != "" {
+	// 	message := handler.schema.FindMessage(flow.InputMessageName)
+	// 	input, err = actions.TransformInputs(handler.schema, message, input, true)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	_, _, err := functions.CallFlow(
+		ctx,
+		flow,
+		id,
+	)
 
 	return err
 }

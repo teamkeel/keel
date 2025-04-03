@@ -46,5 +46,7 @@ func main() {
 		lambda.Start(h.EventHandler)
 	case runtime.RuntimeModeJob:
 		lambda.Start(h.JobHandler)
+	case runtime.RuntimeModeFlow:
+		lambda.Start(h.FlowHandler)
 	}
 }

@@ -40,6 +40,7 @@ const (
 	ActionApiPath   = "testingactionsapi"
 	JobPath         = "testingjobs"
 	SubscriberPath  = "testingsubscribers"
+	FlowsPath       = "testingflows"
 	JobsWebhookPath = "/webhooks/jobs"
 )
 
@@ -277,6 +278,17 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 
 				writeJSON(w, http.StatusOK, map[string]any{})
 				return
+			case FlowsPath:
+				err = HandleFlowExecutorRequest(r.WithContext(ctx), lambdaHandler)
+				if err != nil {
+					response := httpjson.NewErrorResponse(ctx, err, nil)
+					w.WriteHeader(response.Status)
+					_, _ = w.Write(response.Body)
+					return
+				}
+
+				writeJSON(w, http.StatusOK, map[string]any{})
+				return
 			default:
 				e, err := toLambdaFunctionURLRequest(r)
 				if err != nil {
@@ -362,6 +374,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=%s/%s/json", serverURL, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_JOBS_URL=%s/%s/json", serverURL, JobPath),
 		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=%s/%s/json", serverURL, SubscriberPath),
+		fmt.Sprintf("KEEL_TESTING_FLOWS_URL=%s/%s/json", serverURL, FlowsPath),
 		fmt.Sprintf("KEEL_TESTING_CLIENT_API_URL=%s/%s", serverURL, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_AUTH_API_URL=%s/auth", serverURL),
 		"KEEL_DB_CONN_TYPE=pg",
@@ -385,7 +398,7 @@ func writeJSON(w http.ResponseWriter, status int, body any) {
 	_, _ = w.Write(b)
 }
 
-// HandleJobExecutorRequest handles requests the job module in the testing package.
+// HandleJobExecutorRequest handles requests to the job module in the testing package.
 func HandleJobExecutorRequest(r *http.Request, h *runtime.Handler, awsHandler *AWSAPIHandler) error {
 	id := ksuid.New().String()
 	key := fmt.Sprintf("jobs/%s", id)
@@ -421,7 +434,7 @@ func HandleJobExecutorRequest(r *http.Request, h *runtime.Handler, awsHandler *A
 	})
 }
 
-// HandleSubscriberExecutorRequest handles requests the subscriber module in the testing package.
+// HandleSubscriberExecutorRequest handles requests to the subscriber module in the testing package.
 func HandleSubscriberExecutorRequest(r *http.Request, h *runtime.Handler) error {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -450,6 +463,30 @@ func HandleSubscriberExecutorRequest(r *http.Request, h *runtime.Handler) error 
 				Body:      string(b),
 			},
 		},
+	})
+}
+
+// HandleFlowExecutorRequest handles requests to the flow module in the testing package.
+func HandleFlowExecutorRequest(r *http.Request, h *runtime.Handler) error {
+	id := ksuid.New().String()
+
+	name := path.Base(r.URL.Path)
+
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	m := make(map[string]any)
+	err = json.Unmarshal(b, &m)
+	if err != nil {
+		return err
+	}
+
+	return h.FlowHandler(r.Context(), &runtime.RunFlowPayload{
+		ID:     id,
+		Name:   name,
+		Inputs: m,
 	})
 }
 

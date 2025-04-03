@@ -412,8 +412,8 @@ export declare function useDatabase(): Kysely<database>;`
 func TestWriteDevelopmentServer(t *testing.T) {
 	t.Parallel()
 	expected := `
-const { handleRequest, handleJob, handleSubscriber, handleRoute, tracing } = require('@teamkeel/functions-runtime');
-const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } = require('@teamkeel/sdk');
+const { handleRequest, handleJob, handleSubscriber, handleRoute, handleFlow, tracing } = require('@teamkeel/functions-runtime');
+const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, createFlowContextAPI, permissionFns } = require('@teamkeel/sdk');
 const { createServer } = require("node:http");
 const process = require("node:process");
 const function_createPost = require("../functions/createPost").default;
@@ -431,6 +431,8 @@ const subscribers = {
 	checkGrammar: subscriber_checkGrammar,
 }
 const routes = {
+}
+const flows = {
 }
 const actionTypes = {
 	createPost: "ACTION_TYPE_CREATE",
@@ -504,6 +506,13 @@ function createSubscriberContextAPI({ meta }) {
 	};
 	return { env, now, secrets };
 };
+function createFlowContextAPI({ meta }) {
+	const step = async (name, fn) => {
+		const runner = new runtime.StepRunner(meta.runId);
+		return await runner.run(name, fn);
+	};
+	return { step };
+};
 function createModelAPI() {
 	return {
 		person: new runtime.ModelAPI("person", () => ({}), tableConfigMap),
@@ -521,7 +530,8 @@ module.exports.models = models;
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;
 module.exports.createJobContextAPI = createJobContextAPI;
-module.exports.createSubscriberContextAPI = createSubscriberContextAPI;`
+module.exports.createSubscriberContextAPI = createSubscriberContextAPI;
+module.exports.createFlowContextAPI = createFlowContextAPI;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{

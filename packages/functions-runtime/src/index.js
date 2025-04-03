@@ -4,6 +4,7 @@ const { handleRequest } = require("./handleRequest");
 const { handleJob } = require("./handleJob");
 const { handleSubscriber } = require("./handleSubscriber");
 const { handleRoute } = require("./handleRoute");
+const { handleFlow } = require("./handleFlow");
 const KSUID = require("ksuid");
 const { useDatabase } = require("./database");
 const {
@@ -15,6 +16,7 @@ const tracing = require("./tracing");
 const { InlineFile, File } = require("./File");
 const { Duration } = require("./Duration");
 const { ErrorPresets } = require("./errors");
+const { StepRunner } = require("./StepRunner");
 
 module.exports = {
   ModelAPI,
@@ -23,15 +25,18 @@ module.exports = {
   handleJob,
   handleSubscriber,
   handleRoute,
+  handleFlow,
+  KSUID,
   useDatabase,
-  Duration,
-  InlineFile,
-  File,
   Permissions,
   PERMISSION_STATE,
   checkBuiltInPermissions,
   tracing,
+  InlineFile,
+  File,
+  Duration,
   ErrorPresets,
+  StepRunner,
   ksuid() {
     return KSUID.randomSync().string;
   },

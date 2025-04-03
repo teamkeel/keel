@@ -121,6 +121,16 @@ func renderRun(m *Model) string {
 		b.WriteString("Local development console: ")
 		b.WriteString(colors.Blue("https://console.keel.so/local").Highlight().String())
 		b.WriteString("\n")
+		if m.Schema.HasFlows() {
+			addr := fmt.Sprintf("http://localhost:%s", m.Port)
+			if m.CustomHostname != "" {
+				addr = m.CustomHostname
+			}
+
+			b.WriteString("Flows api: ")
+			b.WriteString(colors.Blue(fmt.Sprintf("%s/flows/json", addr)).Highlight().String())
+			b.WriteString("\n")
+		}
 
 		for _, api := range m.Schema.Apis {
 			b.WriteString("\n")

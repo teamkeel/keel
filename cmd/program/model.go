@@ -30,6 +30,7 @@ import (
 	"github.com/teamkeel/keel/rpc/rpc"
 	rpcApi "github.com/teamkeel/keel/rpc/rpcApi"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/flows"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/storage"
@@ -513,6 +514,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ctx, err := events.WithEventHandler(ctx, func(ctx context.Context, subscriber string, event *events.Event, traceparent string) error {
 			return runtime.NewSubscriberHandler(m.Schema).RunSubscriber(ctx, subscriber, event)
 		})
+		if err != nil {
+			m.Err = err
+			return m, tea.Quit
+		}
+
+		// Setting the flows orchestrator
+		ctx, err = flows.WithOrchestrator(ctx, flows.NewOrchestrator(ctx, m.Schema, flows.WithDirectInvocation()))
 		if err != nil {
 			m.Err = err
 			return m, tea.Quit
