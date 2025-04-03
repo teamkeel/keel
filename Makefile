@@ -94,3 +94,6 @@ rpc-api:
 
 proto-tests:
 	nix-shell --command "cd ./schema && go run ./testdata/generate_testdata.go ./testdata/proto"
+proto-tools-tests:
+	cd ./tools && go run ./testdata/generate_testdata.go ./testdata
+
