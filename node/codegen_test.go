@@ -506,8 +506,12 @@ function createSubscriberContextAPI({ meta }) {
 	};
 	return { env, now, secrets };
 };
-function createFlowContextAPI() {
-	return { };
+function createFlowContextAPI({ meta }) {
+	const step = async (name, fn) => {
+		const runner = new runtime.StepRunner(meta.runId);
+		return await runner.run(name, fn);
+	};
+	return { step };
 };
 function createModelAPI() {
 	return {
