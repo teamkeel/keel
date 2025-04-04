@@ -359,7 +359,7 @@
       },
       "entryActivityActions": [
         {
-          "toolId": "delete-category",
+          "toolId": "get-category",
           "data": [
             {
               "key": "$.id",
@@ -371,7 +371,7 @@
           "displayOrder": 1
         },
         {
-          "toolId": "get-category",
+          "toolId": "delete-category",
           "data": [
             {
               "key": "$.id",

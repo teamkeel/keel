@@ -341,7 +341,7 @@
           "displayOrder": 2
         },
         {
-          "toolId": "delete-blog-post",
+          "toolId": "read-comments",
           "data": [
             {
               "key": "$.id",
@@ -353,10 +353,10 @@
           "displayOrder": 3
         },
         {
-          "toolId": "read-comments",
+          "toolId": "update-blog-post",
           "data": [
             {
-              "key": "$.id",
+              "key": "$.where.id",
               "path": {
                 "path": "$.id"
               }
@@ -365,10 +365,10 @@
           "displayOrder": 4
         },
         {
-          "toolId": "update-blog-post",
+          "toolId": "delete-blog-post",
           "data": [
             {
-              "key": "$.where.id",
+              "key": "$.id",
               "path": {
                 "path": "$.id"
               }
@@ -616,7 +616,7 @@
           "displayOrder": 2
         },
         {
-          "toolId": "delete-blog-post",
+          "toolId": "get-blog-post",
           "data": [
             {
               "key": "$.id",
@@ -628,7 +628,7 @@
           "displayOrder": 3
         },
         {
-          "toolId": "get-blog-post",
+          "toolId": "read-comments",
           "data": [
             {
               "key": "$.id",
@@ -640,10 +640,10 @@
           "displayOrder": 4
         },
         {
-          "toolId": "read-comments",
+          "toolId": "update-blog-post",
           "data": [
             {
-              "key": "$.id",
+              "key": "$.where.id",
               "path": {
                 "path": "$.results[*].id"
               }
@@ -652,10 +652,10 @@
           "displayOrder": 5
         },
         {
-          "toolId": "update-blog-post",
+          "toolId": "delete-blog-post",
           "data": [
             {
-              "key": "$.where.id",
+              "key": "$.id",
               "path": {
                 "path": "$.results[*].id"
               }

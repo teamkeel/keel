@@ -241,15 +241,30 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 		}
 
 		// entry activity actions for GET and LIST that have an id response
-
-		// TODO: once go is upgraded to 1.21+, refactor to sort via maps package
 		inputPaths := g.findAllByIDTools(tool.Model.Name, id)
-		toolIds := []string{}
-		for id := range inputPaths {
-			toolIds = append(toolIds, id)
+
+		// now we sort the tools by name But with deletes at the end
+		ids := []string{}
+		for toolID := range inputPaths {
+			ids = append(ids, toolID)
 		}
-		sort.Strings(toolIds)
-		for _, toolID := range toolIds {
+		slices.SortFunc(ids, func(a, b string) int {
+			if strings.HasPrefix(a, "delete") {
+				if strings.HasPrefix(b, "delete") {
+					return 0
+				}
+
+				return 1
+			}
+
+			if strings.HasPrefix(b, "delete") {
+				return -1
+			}
+
+			return strings.Compare(a, b)
+		})
+
+		for _, toolID := range ids {
 			displayOrder++
 			tool.Config.EntryActivityActions = append(tool.Config.EntryActivityActions, &toolsproto.ActionLink{
 				ToolId: toolID,
@@ -826,9 +841,10 @@ func (g *Generator) findListByForeignID(modelName string, inverseFieldName strin
 // tool IDs and the path of the input field; e.g. getPost: $.id. Results will omit the given tool id (ignoreID).
 //
 // GET READ DELETE WRITE etc tools are included if they take in only on input (the ID)
-// UPDATE tools are included if they take in a where.id input alongside other inputs
+// UPDATE tools are included if they take in a where.id input alongside other inputs.
 func (g *Generator) findAllByIDTools(modelName string, ignoreID string) map[string]string {
-	toolIds := map[string]string{}
+	inputPaths := map[string]string{}
+
 	for id, tool := range g.Tools {
 		if id == ignoreID {
 			continue
@@ -839,7 +855,7 @@ func (g *Generator) findAllByIDTools(modelName string, ignoreID string) map[stri
 
 		// if we only have one input, an ID, add and continue
 		if tool.hasOnlyIDInput() {
-			toolIds[id] = tool.getIDInputFieldPath()
+			inputPaths[id] = tool.getIDInputFieldPath()
 			continue
 		}
 
@@ -852,12 +868,13 @@ func (g *Generator) findAllByIDTools(modelName string, ignoreID string) map[stri
 				}
 			}
 			if idInputPath != "" {
-				toolIds[id] = idInputPath
+				inputPaths[id] = idInputPath
 				continue
 			}
 		}
 	}
-	return toolIds
+
+	return inputPaths
 }
 
 // makeCapabilities generates the makeCapabilities/features available for a tool generated for the given action.
