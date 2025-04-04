@@ -65,6 +65,54 @@ func Previous(ctx context.Context, log *AuditLog) (*AuditLog, error) {
 	return fromRow(result.Rows[0])
 }
 
+// ManyPrevious returns the previous log entries for the given data rows.
+func ManyPrevious(ctx context.Context, logs []*AuditLog) ([]*AuditLog, error) {
+	if len(logs) == 0 {
+		return []*AuditLog{}, nil
+	}
+
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	placeholders := make([]string, len(logs))
+	args := make([]any, len(logs)*3)
+
+	for i, log := range logs {
+		placeholders[i] = "(table_name = ? AND data->>'id' = ? AND created_at < ?)"
+		args[i*3] = log.TableName
+		args[i*3+1] = log.Data["id"]
+		args[i*3+2] = log.CreatedAt
+	}
+
+	sql := fmt.Sprintf(`
+		SELECT a.* FROM %s a
+		WHERE (table_name, data->>'id', created_at) IN (
+			SELECT table_name, data->>'id', MAX(created_at)
+			FROM %s
+			WHERE %s	
+			GROUP BY table_name, data->>'id'
+		)
+	`, TableName, TableName, strings.Join(placeholders, " OR "))
+
+	result, err := database.ExecuteQuery(ctx, sql, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]*AuditLog, len(logs))
+	for i, row := range result.Rows {
+		log, err := fromRow(row)
+		if err != nil {
+			return nil, err
+		}
+		res[i] = log
+	}
+
+	return res, nil
+}
+
 // ProcessEventsFromAuditTrail inspects the audit table for logs which need to be
 // turned into events, updates their event_processed_at column, and then returns them.
 func ProcessEventsFromAuditTrail(ctx context.Context, schema *proto.Schema, traceId string) ([]*AuditLog, error) {
