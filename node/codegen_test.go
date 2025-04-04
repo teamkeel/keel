@@ -507,9 +507,9 @@ function createSubscriberContextAPI({ meta }) {
 	return { env, now, secrets };
 };
 function createFlowContextAPI({ meta }) {
-	const step = async (name, fn) => {
+	const step = async (name, fn, opts) => {
 		const runner = new runtime.StepRunner(meta.runId);
-		return await runner.run(name, fn);
+		return await runner.run(name, fn, opts);
 	};
 	return { step };
 };

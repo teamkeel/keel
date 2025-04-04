@@ -71,13 +71,11 @@ async function handleFlow(request, config) {
           // parse request params to convert objects into rich field types (e.g. InlineFile)
           const inputs = parseInputs(flowRun.input);
 
-          // Return the job function to the containing tryExecuteJob block
           return flowFunction(ctx, inputs);
         });
 
         // If we reach this point, then we know the entire flow completed successfully
         // TODO: Send FlowRunUpdated event with run_completed = true
-
         return createJSONRPCSuccessResponse(request.id, {
           runId: runId,
           runCompleted: true,
@@ -86,7 +84,6 @@ async function handleFlow(request, config) {
         // If the flow is disrupted, then we know that a step either completed successfully or failed
         if (e instanceof FlowDisrupt) {
           // TODO: Send FlowRunUpdated event with run_completed = false
-
           return createJSONRPCSuccessResponse(request.id, {
             runId: runId,
             runCompleted: false,
