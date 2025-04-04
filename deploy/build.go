@@ -32,6 +32,9 @@ import (
 //go:embed lambdas/functions/main.js.go.tmpl
 var functionsHandlerTemplate string
 
+//go:embed lambdas/functions/dev-server.js
+var devServer string
+
 type BuildArgs struct {
 	// Absolute path to Keel project
 	ProjectRoot string
@@ -113,6 +116,7 @@ func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
 
 	functionsResult, err := buildFunctions(ctx, &BuildFunctionsArgs{
 		ProjectRoot:     args.ProjectRoot,
+		Env:             args.Env,
 		Schema:          protoSchema,
 		Config:          projectConfig,
 		CollectorConfig: collectorConfig,
@@ -242,6 +246,7 @@ func buildRuntime(args *BuildRuntimeArgs) (*BuildRuntimeResult, error) {
 type BuildFunctionsArgs struct {
 	// Absolute path to Keel project being built
 	ProjectRoot string
+	Env         string
 	Schema      *proto.Schema
 	Config      *config.ProjectConfig
 	// YAML string containing an OTEL collector config
@@ -273,6 +278,13 @@ func buildFunctions(ctx context.Context, args *BuildFunctionsArgs) (*BuildFuncti
 	}
 
 	sdk = append(sdk, functionsHandler)
+
+	if isLocalBuild(args.Env) {
+		sdk = append(sdk, &codegen.GeneratedFile{
+			Path:     ".build/server.js",
+			Contents: devServer,
+		})
+	}
 
 	err = sdk.Write(args.ProjectRoot)
 	if err != nil {
@@ -318,33 +330,35 @@ func buildFunctions(ctx context.Context, args *BuildFunctionsArgs) (*BuildFuncti
 
 	bundledPath := filepath.Join(buildDir, "functions/main-bundled.js")
 
-	t := NewTiming()
-	res := esbuild.Build(esbuild.BuildOptions{
-		EntryPoints:    []string{filepath.Join(buildDir, "functions/main.js")},
-		Outfile:        bundledPath,
-		Bundle:         true,
-		Write:          true,
-		AllowOverwrite: true,
-		Target:         esbuild.ESNext,
-		Platform:       esbuild.PlatformNode,
-		Format:         esbuild.FormatCommonJS,
-		Sourcemap:      esbuild.SourceMapLinked,
-		External:       []string{"pg-native"},
-		Loader: map[string]esbuild.Loader{
-			// TODO: do we need this
-			".node": esbuild.LoaderFile,
-		},
-		MinifyWhitespace:  true,
-		MinifyIdentifiers: true,
-		MinifySyntax:      true,
-		KeepNames:         true,
-	})
-	if len(res.Errors) > 0 {
-		return nil, fmt.Errorf("esbuild error: %s", res.Errors[0].Text)
-	}
+	if !isLocalBuild(args.Env) {
+		t := NewTiming()
+		res := esbuild.Build(esbuild.BuildOptions{
+			EntryPoints:    []string{filepath.Join(buildDir, "functions/main.js")},
+			Outfile:        bundledPath,
+			Bundle:         true,
+			Write:          true,
+			AllowOverwrite: true,
+			Target:         esbuild.ESNext,
+			Platform:       esbuild.PlatformNode,
+			Format:         esbuild.FormatCommonJS,
+			Sourcemap:      esbuild.SourceMapLinked,
+			External:       []string{"pg-native"},
+			Loader: map[string]esbuild.Loader{
+				// TODO: do we need this
+				".node": esbuild.LoaderFile,
+			},
+			MinifyWhitespace:  true,
+			MinifyIdentifiers: true,
+			MinifySyntax:      true,
+			KeepNames:         true,
+		})
+		if len(res.Errors) > 0 {
+			return nil, fmt.Errorf("esbuild error: %s", res.Errors[0].Text)
+		}
 
-	rel, _ := filepath.Rel(args.ProjectRoot, filepath.Join(buildDir, "functions"))
-	log("%s Built functions into %s %s", IconTick, orange(rel), t.Since())
+		rel, _ := filepath.Rel(args.ProjectRoot, filepath.Join(buildDir, "functions"))
+		log("%s Built functions into %s %s", IconTick, orange(rel), t.Since())
+	}
 
 	return &BuildFunctionsResult{
 		Path: filepath.Join(buildDir, "functions"),
