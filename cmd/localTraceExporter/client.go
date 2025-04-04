@@ -17,6 +17,7 @@ package localTraceExporter
 import (
 	"context"
 	"encoding/hex"
+	"maps"
 	"sync"
 	"time"
 
@@ -24,14 +25,13 @@ import (
 	tracepb "go.opentelemetry.io/proto/otlp/trace/v1"
 )
 
-type client struct {
-	mu sync.Mutex
-}
+type client struct{}
 
 // Compile time check *client implements otlptrace.Client.
 var _ otlptrace.Client = (*client)(nil)
 
 var (
+	mu           sync.Mutex
 	traces       = make(map[string][]*tracepb.Span)
 	traceSummary = make(map[string]*TraceSummary)
 )
@@ -56,15 +56,20 @@ func newClient() *client {
 }
 
 func GetTrace(traceID string) []*tracepb.Span {
+	mu.Lock()
+	defer mu.Unlock()
+
 	return traces[traceID]
 }
 
-func AllTraces() map[string][]*tracepb.Span {
-	return traces
-}
-
 func Summary() map[string]*TraceSummary {
-	return traceSummary
+	mu.Lock()
+	defer mu.Unlock()
+
+	cpy := map[string]*TraceSummary{}
+	maps.Copy(traceSummary, cpy)
+
+	return cpy
 }
 
 func (c *client) Start(ctx context.Context) error {
@@ -76,8 +81,8 @@ func (c *client) Stop(ctx context.Context) error {
 }
 
 func (c *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.ResourceSpans) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	mu.Lock()
+	defer mu.Unlock()
 
 	// Unpack all the spans and store in memory by trace ID
 	// This is lossy as we're loosing the resource and service data so we may want to improve this later
@@ -97,6 +102,9 @@ func (c *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.Resourc
 }
 
 func (c *client) updateTraceSummary(traceID string, span *tracepb.Span) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	start := time.Unix(0, int64(span.StartTimeUnixNano))
 	end := time.Unix(0, int64(span.EndTimeUnixNano))
 
