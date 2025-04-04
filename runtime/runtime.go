@@ -329,41 +329,6 @@ type FlowHandler struct {
 	schema *proto.Schema
 }
 
-func NewFlowHandler(currSchema *proto.Schema) FlowHandler {
-	return FlowHandler{
-		schema: currSchema,
-	}
-}
-
-// RunJob will run the job function in the runtime.
-func (handler FlowHandler) RunFlow(ctx context.Context, id string, flowName string, input map[string]any) error {
-	ctx, span := tracer.Start(ctx, "Run flow")
-	defer span.End()
-
-	flow := handler.schema.FindFlow(strcase.ToCamel(flowName))
-	if flow == nil {
-		return fmt.Errorf("no flow with the name '%s' exists", flowName)
-	}
-
-	// TODO: we need to create the flow in the database
-	// var err error
-	// if flow.InputMessageName != "" {
-	// 	message := handler.schema.FindMessage(flow.InputMessageName)
-	// 	input, err = actions.TransformInputs(handler.schema, message, input, true)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-
-	_, _, err := functions.CallFlow(
-		ctx,
-		flow,
-		id,
-	)
-
-	return err
-}
-
 func NewRouter(s *proto.Schema) *httprouter.Router {
 	router := httprouter.New()
 

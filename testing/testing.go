@@ -278,17 +278,17 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 
 				writeJSON(w, http.StatusOK, map[string]any{})
 				return
-			case FlowsPath:
-				err = HandleFlowExecutorRequest(r.WithContext(ctx), lambdaHandler)
-				if err != nil {
-					response := httpjson.NewErrorResponse(ctx, err, nil)
-					w.WriteHeader(response.Status)
-					_, _ = w.Write(response.Body)
-					return
-				}
+			// case FlowsPath:
+			// 	err = HandleFlowExecutorRequest(r.WithContext(ctx), lambdaHandler)
+			// 	if err != nil {
+			// 		response := httpjson.NewErrorResponse(ctx, err, nil)
+			// 		w.WriteHeader(response.Status)
+			// 		_, _ = w.Write(response.Body)
+			// 		return
+			// 	}
 
-				writeJSON(w, http.StatusOK, map[string]any{})
-				return
+			// 	writeJSON(w, http.StatusOK, map[string]any{})
+			// 	return
 			default:
 				e, err := toLambdaFunctionURLRequest(r)
 				if err != nil {
@@ -334,7 +334,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		ConfigPath:     path.Join(opts.Dir, ".build/runtime/config.json"),
 		ProjectName:    opts.TestGroupName,
 		Env:            "test",
-		QueueURL:       "https://testing-sqs-queue.com/123456789/events",
+		EventsQueueURL: "https://testing-sqs-queue.com/123456789/events",
 		FunctionsARN:   functionsARN,
 		BucketName:     bucketName,
 		SecretNames:    lo.Keys(ssmParams),
@@ -466,29 +466,29 @@ func HandleSubscriberExecutorRequest(r *http.Request, h *runtime.Handler) error 
 	})
 }
 
-// HandleFlowExecutorRequest handles requests to the flow module in the testing package.
-func HandleFlowExecutorRequest(r *http.Request, h *runtime.Handler) error {
-	id := ksuid.New().String()
+// // HandleFlowExecutorRequest handles requests to the flow module in the testing package.
+// func HandleFlowExecutorRequest(r *http.Request, h *runtime.Handler) error {
+// 	id := ksuid.New().String()
 
-	name := path.Base(r.URL.Path)
+// 	name := path.Base(r.URL.Path)
 
-	b, err := io.ReadAll(r.Body)
-	if err != nil {
-		return err
-	}
+// 	b, err := io.ReadAll(r.Body)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	m := make(map[string]any)
-	err = json.Unmarshal(b, &m)
-	if err != nil {
-		return err
-	}
+// 	m := make(map[string]any)
+// 	err = json.Unmarshal(b, &m)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return h.FlowHandler(r.Context(), &runtime.RunFlowPayload{
-		ID:     id,
-		Name:   name,
-		Inputs: m,
-	})
-}
+// 	return h.FlowHandler(r.Context(), &runtime.RunFlowPayload{
+// 		ID:     id,
+// 		Name:   name,
+// 		Inputs: m,
+// 	})
+// }
 
 func toLambdaFunctionURLRequest(r *http.Request) (lambdaevents.LambdaFunctionURLRequest, error) {
 	headers := make(map[string]string)

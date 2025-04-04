@@ -17,6 +17,7 @@ import (
 	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/flows"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
@@ -50,6 +51,7 @@ type Handler struct {
 	filesStorage       *S3BucketStore
 	tracer             trace.Tracer
 	tracerProvider     *sdktrace.TracerProvider
+	flowOrchestrator   *flows.Orchestrator
 }
 
 type HandlerArgs struct {
@@ -64,8 +66,10 @@ type HandlerArgs struct {
 	ProjectName string
 	// The env. For local environments will be "development" or "test", for deployed environments it's the user-provided env name.
 	Env string
-	// URL of SQS queue
-	QueueURL string
+	// URL of SQS queue for subscriber events
+	EventsQueueURL string
+	// URL of SQS queue used to trigger orchestrate flows
+	FlowsQueueURL string
 	// Full ARN of functions Lambda.
 	FunctionsARN string
 	// Bucket name used for files and job inputs
@@ -118,7 +122,7 @@ func New(ctx context.Context, args *HandlerArgs) (*Handler, error) {
 		return nil, err
 	}
 
-	eventHandler, err := initEvents(args.QueueURL, args.AWSEndpoint)
+	eventHandler, err := initEvents(args.EventsQueueURL, args.AWSEndpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -138,6 +142,11 @@ func New(ctx context.Context, args *HandlerArgs) (*Handler, error) {
 		return nil, err
 	}
 
+	flowOrchestrator, err := initOrchestrator(ctx, args.FlowsQueueURL, args.AWSEndpoint, s)
+	if err != nil {
+		return nil, err
+	}
+
 	h := &Handler{
 		args:               args,
 		log:                log,
@@ -151,6 +160,7 @@ func New(ctx context.Context, args *HandlerArgs) (*Handler, error) {
 		filesStorage:       files,
 		tracer:             tracer,
 		tracerProvider:     tracerProvider,
+		flowOrchestrator:   flowOrchestrator,
 	}
 
 	return h, nil
@@ -236,6 +246,11 @@ func (h *Handler) buildContext(ctx context.Context) (context.Context, error) {
 	ctx = functions.WithFunctionsTransport(ctx, h.functionsTransport)
 
 	ctx, err := events.WithEventHandler(ctx, h.sqsEventHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, err = flows.WithOrchestrator(ctx, h.flowOrchestrator)
 	if err != nil {
 		return nil, err
 	}
