@@ -12,6 +12,11 @@ const STEP_TYPE = {
   DELAY: "DELAY",
 };
 
+const defaultOpts = {
+  maxRetries: 5,
+  timeoutInMs: 60000,
+};
+
 // This is a special type that is thrown to disrupt the execution of a flow
 class FlowDisrupt {
   constructor() {}
@@ -46,8 +51,8 @@ class StepRunner {
         name: name,
         status: STEP_STATUS.NEW,
         type: STEP_TYPE.FUNCTION,
-        maxRetries: opts?.maxRetries ?? 3,
-        timeoutInMs: opts?.timeoutInMs ?? 500,
+        maxRetries: opts?.maxRetries ?? defaultOpts.maxRetries,
+        timeoutInMs: opts?.timeoutInMs ?? defaultOpts.timeoutInMs,
       })
       .returningAll()
       .executeTakeFirst();
@@ -56,7 +61,7 @@ class StepRunner {
 
     let result = null;
     try {
-      result = await withTimeout(fn(), { timeout: step.timeoutInMs });
+      result = await withTimeout(fn(), step.timeoutInMs );
     } catch (e) {
       outcome = STEP_STATUS.FAILED;
     }
@@ -80,12 +85,10 @@ function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-export function withTimeout(promiseFn, opts) {
-  const timeOut = opts?.timeout ?? 2500;
-
+export function withTimeout(promiseFn, timeout) {
   return Promise.race([
     promiseFn,
-    wait(timeOut).then(() => {
+    wait(timeout).then(() => {
       throw new Error(`flow times out after ${timeout}ms`);
     }),
   ]);
