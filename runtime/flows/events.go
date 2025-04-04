@@ -33,8 +33,7 @@ func (e *FlowRunStarted) ReadPayload(ev *EventWrapper) error {
 		return fmt.Errorf("invalid event type")
 	}
 
-	err := json.Unmarshal([]byte(ev.Payload), e)
-	return fmt.Errorf("failed to unmarshal message body: %w", err)
+	return json.Unmarshal([]byte(ev.Payload), e)
 }
 
 func (e *FlowRunStarted) Wrap() (*EventWrapper, error) {
@@ -62,8 +61,7 @@ func (e *FlowRunUpdated) ReadPayload(ev *EventWrapper) error {
 		return fmt.Errorf("invalid event type")
 	}
 
-	err := json.Unmarshal([]byte(ev.Payload), e)
-	return fmt.Errorf("failed to unmarshal message body: %w", err)
+	return json.Unmarshal([]byte(ev.Payload), e)
 }
 
 func (e *FlowRunUpdated) Wrap() (*EventWrapper, error) {
