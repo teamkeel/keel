@@ -325,10 +325,6 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 	return err
 }
 
-type FlowHandler struct {
-	schema *proto.Schema
-}
-
 func NewRouter(s *proto.Schema) *httprouter.Router {
 	router := httprouter.New()
 

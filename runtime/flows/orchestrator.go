@@ -36,15 +36,8 @@ func GetOrchestrator(ctx context.Context) (*Orchestrator, error) {
 
 type OrchestratorOpt func(o *Orchestrator)
 
-func WithDirectInvocation() OrchestratorOpt {
-	return func(o *Orchestrator) {
-		o.directInvocation = true
-	}
-}
-
 func WithAsyncQueue(queueURL string, client *sqs.Client) OrchestratorOpt {
 	return func(o *Orchestrator) {
-		o.directInvocation = false
 		o.sqsClient = client
 		o.sqsQueueURL = queueURL
 	}
@@ -52,8 +45,6 @@ func WithAsyncQueue(queueURL string, client *sqs.Client) OrchestratorOpt {
 
 type Orchestrator struct {
 	schema *proto.Schema
-	// If this orchestrator should directly invoke the flows runtime
-	directInvocation bool
 	// Client for sqs messages sent to the flows runtime
 	sqsClient *sqs.Client
 	// The Flows runtime queue used to trigger the execution of a flow
@@ -157,8 +148,8 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 // sendEvent sends the given event to the flow runtime's queue or directly invokes the function depending on the
 // orchestrator's settings
 func (o *Orchestrator) sendEvent(ctx context.Context, payload *EventWrapper) error {
-	// if we're bypassing sqs
-	if o.directInvocation {
+	// if a sqs queue hasn't been set, we continue executing
+	if o.sqsClient == nil || o.sqsQueueURL == "" {
 		return o.HandleEvent(ctx, payload)
 	}
 
