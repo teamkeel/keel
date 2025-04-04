@@ -141,6 +141,22 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 		}
 
 		return o.orchestrateRun(ctx, ev.RunID)
+	case EventNameFlowRunStarted:
+		// a new flow has started; create the run and start orchestrating it
+		var ev FlowRunStarted
+		if err := ev.ReadPayload(event); err != nil {
+			return err
+		}
+
+		flow := o.schema.FindFlow(ev.Name)
+		if flow == nil {
+			return fmt.Errorf("unknown flow: %s", ev.Name)
+		}
+		run, err := CreateRun(ctx, flow, ev.Inputs)
+		if err != nil {
+			return err
+		}
+		return o.orchestrateRun(ctx, run.ID)
 	}
 	return nil
 }

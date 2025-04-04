@@ -18,6 +18,37 @@ type EventWrapper struct {
 	Traceparent string `json:"traceparent,omitempty"`
 }
 
+type FlowRunStarted struct {
+	// The name of the flow to run e.g. MySpecialFlow
+	Name   string         `json:"name"`
+	Inputs map[string]any `json:"inputs"`
+}
+
+func (e *FlowRunStarted) ReadPayload(ev *EventWrapper) error {
+	if ev == nil {
+		return fmt.Errorf("invalid event ")
+	}
+
+	if ev.EventName != EventNameFlowRunStarted {
+		return fmt.Errorf("invalid event type")
+	}
+
+	err := json.Unmarshal([]byte(ev.Payload), e)
+	return fmt.Errorf("failed to unmarshal message body: %w", err)
+}
+
+func (e *FlowRunStarted) Wrap() (*EventWrapper, error) {
+	payload, err := json.Marshal(e)
+	if err != nil {
+		return nil, err
+	}
+
+	return &EventWrapper{
+		EventName: EventNameFlowRunStarted,
+		Payload:   string(payload),
+	}, nil
+}
+
 type FlowRunUpdated struct {
 	RunID string `json:"runId"`
 }
