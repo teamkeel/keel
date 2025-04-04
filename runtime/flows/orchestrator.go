@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 )
@@ -34,18 +36,22 @@ func GetOrchestrator(ctx context.Context) (*Orchestrator, error) {
 
 type OrchestratorOpt func(o *Orchestrator)
 
-func WithDirectInvocation() OrchestratorOpt {
+func WithAsyncQueue(queueURL string, client *sqs.Client) OrchestratorOpt {
 	return func(o *Orchestrator) {
-		o.directInvocation = true
+		o.sqsClient = client
+		o.sqsQueueURL = queueURL
 	}
 }
 
 type Orchestrator struct {
-	schema           *proto.Schema
-	directInvocation bool // if this orchestrator should directly invoke the flows runtime
+	schema *proto.Schema
+	// Client for sqs messages sent to the flows runtime
+	sqsClient *sqs.Client
+	// The Flows runtime queue used to trigger the execution of a flow
+	sqsQueueURL string
 }
 
-func NewOrchestrator(ctx context.Context, s *proto.Schema, opts ...OrchestratorOpt) *Orchestrator {
+func NewOrchestrator(s *proto.Schema, opts ...OrchestratorOpt) *Orchestrator {
 	o := &Orchestrator{
 		schema: s,
 	}
@@ -55,6 +61,11 @@ func NewOrchestrator(ctx context.Context, s *proto.Schema, opts ...OrchestratorO
 	}
 
 	return o
+}
+
+type FunctionsResponsePayload struct {
+	RunID        string `json:"runId"`
+	RunCompleted bool   `json:"runCompleted"`
 }
 
 // orchestrateRun will decide based on the db state if the flow should be ran or not
@@ -79,41 +90,95 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 			}
 		}
 
-		// call the flow runtime to execute this flow run
-		if o.directInvocation {
-			resp, _, err := functions.CallFlow(
-				ctx,
-				flow,
-				run.ID,
-			)
-			if err != nil {
-				return err
-			}
-
-			b, err := json.Marshal(resp)
-			if err != nil {
-				return err
-			}
-			var ev FlowRunUpdated
-			if err := json.Unmarshal(b, &ev); err != nil {
-				return err
-			}
-
-			if !ev.RunCompleted {
-				return o.orchestrateRun(ctx, ev.RunID)
-			}
-
-			// flow run is completed
-			if _, err := UpdateRun(ctx, run.ID, StatusCompleted); err != nil {
-				return err
-			}
+		resp, _, err := functions.CallFlow(
+			ctx,
+			flow,
+			run.ID,
+		)
+		if err != nil {
+			return err
 		}
 
-		// TODO: handle sqs messages
-	case StatusFailed, StatusCompleted, StatusWaiting:
+		b, err := json.Marshal(resp)
+		if err != nil {
+			return err
+		}
+		var respBody FunctionsResponsePayload
+		if err := json.Unmarshal(b, &respBody); err != nil {
+			return err
+		}
+
+		if respBody.RunCompleted {
+			_, err = UpdateRun(ctx, run.ID, StatusCompleted)
+			return err
+		}
+
+		payload := FlowRunUpdated{RunID: respBody.RunID}
+		wrap, err := payload.Wrap()
+		if err != nil {
+			return err
+		}
+
+		return o.sendEvent(ctx, wrap)
+	case StatusFailed, StatusCompleted:
 		// Do nothing
 		return nil
+	case StatusWaiting:
+		return fmt.Errorf("not implemented")
 	}
 
 	return nil
+}
+
+// HandleEvent will handle an event received by the orchestrator from the flows runtime; The only events handled at the
+// moment are FlowRunUpdated.
+func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) error {
+	switch event.EventName {
+	case EventNameFlowRunUpdated:
+		var ev FlowRunUpdated
+		if err := ev.ReadPayload(event); err != nil {
+			return err
+		}
+
+		return o.orchestrateRun(ctx, ev.RunID)
+	case EventNameFlowRunStarted:
+		// a new flow has started; create the run and start orchestrating it
+		var ev FlowRunStarted
+		if err := ev.ReadPayload(event); err != nil {
+			return err
+		}
+
+		flow := o.schema.FindFlow(ev.Name)
+		if flow == nil {
+			return fmt.Errorf("unknown flow: %s", ev.Name)
+		}
+		run, err := CreateRun(ctx, flow, ev.Inputs)
+		if err != nil {
+			return err
+		}
+		return o.orchestrateRun(ctx, run.ID)
+	}
+	return nil
+}
+
+// sendEvent sends the given event to the flow runtime's queue or directly invokes the function depending on the
+// orchestrator's settings
+func (o *Orchestrator) sendEvent(ctx context.Context, payload *EventWrapper) error {
+	// if a sqs queue hasn't been set, we continue executing
+	if o.sqsClient == nil || o.sqsQueueURL == "" {
+		return o.HandleEvent(ctx, payload)
+	}
+
+	bodyBytes, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	input := &sqs.SendMessageInput{
+		MessageBody: aws.String(string(bodyBytes)),
+		QueueUrl:    aws.String(o.sqsQueueURL),
+	}
+
+	_, err = o.sqsClient.SendMessage(ctx, input)
+	return err
 }

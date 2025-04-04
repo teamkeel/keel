@@ -25,7 +25,7 @@ type AWSAPIHandler struct {
 	FunctionsURL  string
 	FunctionsARN  string
 	S3Bucket      map[string]*S3Object
-	OnSQSEvent    func(events.SQSEvent)
+	OnSQSEvent    map[string]func(event events.SQSEvent) // map of event handlers for each queueURL
 }
 
 func (h *AWSAPIHandler) HandleHTTP(r *http.Request, w http.ResponseWriter) {
@@ -195,7 +195,8 @@ func (h *AWSAPIHandler) sqsSendMessage(r *http.Request, w http.ResponseWriter) {
 		},
 	}
 
-	h.OnSQSEvent(event)
+	eh := h.OnSQSEvent[*input.QueueUrl]
+	eh(event)
 
 	writeJSON(w, http.StatusOK, nil)
 }
