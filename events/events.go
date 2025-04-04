@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/auditing"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
@@ -123,6 +124,25 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 		return err
 	}
 
+	// Get all 'previous' log entries
+	previousLogs := []*auditing.AuditLog{}
+	if len(auditLogs) > 0 {
+		// Filter out inserts
+		logs := []*auditing.AuditLog{}
+		for _, log := range auditLogs {
+			if log.Op != auditing.Insert {
+				logs = append(logs, log)
+			}
+		}
+
+		if len(logs) > 0 {
+			previousLogs, err = auditing.ManyPrevious(ctx, logs)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	var handlerErrors error
 	for _, log := range auditLogs {
 		eventName, err := eventNameFromAudit(log.TableName, log.Op)
@@ -142,12 +162,11 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 
 		var previous map[string]any
 		if log.Op != auditing.Insert {
-			p, err := auditing.Previous(ctx, log)
-			if err != nil {
-				return err
-			}
+			p, exists := lo.Find(previousLogs, func(l *auditing.AuditLog) bool {
+				return l.TableName == log.TableName && l.Data["id"] == log.Data["id"]
+			})
 
-			if p != nil {
+			if exists {
 				previous = p.Data
 			}
 		}

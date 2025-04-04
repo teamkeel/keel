@@ -33,6 +33,27 @@ model Person {
     )
 }
 
+model Tracker {
+    fields {
+        views Number @default(0)
+        verifiedUpdate Boolean @default(true)
+    }
+    actions {
+        update updateViews(id) with (views) {
+            @set(tracker.verifiedUpdate = false)
+            @permission(expression: true)
+        }
+        write updateTrackers(Any) returns (Any) {
+            @permission(expression: true)
+        }
+    }
+
+    @on(
+        [update],
+        verifyUpdate
+    )
+}
+
 job CreateRandomPersons {
     inputs {
         raiseException Boolean
