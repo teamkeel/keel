@@ -20,10 +20,10 @@
   "dependencies": {
     "@teamkeel/functions-runtime": "^0.406.5",
     "jsonwebtoken": "^9.0.2",
-    "kysely": "~0.27.6",
+    "kysely": "^0.27.6",
     "lodash.ismatch": "^4.4.0",
-    "vite": "^6.2.0",
-    "vitest": "3.0.8"
+    "vite": "^6.2.5",
+    "vitest": "^3.1.1"
   },
   "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee"
 }
