@@ -15,8 +15,8 @@ dependencies:
     specifier: ^3.782.0
     version: 3.782.0
   '@neondatabase/serverless':
-    specifier: ^0.9.5
-    version: 0.9.5
+    specifier: ^1.0.0
+    version: 1.0.0
   '@opentelemetry/api':
     specifier: ^1.9.0
     version: 1.9.0
@@ -956,9 +956,11 @@ packages:
     resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
     dev: true
 
-  /@neondatabase/serverless@0.9.5:
-    resolution: {integrity: sha512-siFas6gItqv6wD/pZnvdu34wEqgG3nSE6zWZdq5j2DEsa+VvX8i/5HXJOo06qrw5axPXn+lGCxeR+NLaSPIXug==}
+  /@neondatabase/serverless@1.0.0:
+    resolution: {integrity: sha512-XWmEeWpBXIoksZSDN74kftfTnXFEGZ3iX8jbANWBc+ag6dsiQuvuR4LgB0WdCOKMb5AQgjqgufc0TgAsZubUYw==}
+    engines: {node: '>=19.0.0'}
     dependencies:
+      '@types/node': 22.14.0
       '@types/pg': 8.11.6
     dev: false
 
