@@ -109,23 +109,28 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 		}
 
 		if respBody.RunCompleted {
-			stepsMap := map[string][]Step{}
-			for _, step := range run.Steps {
-				stepsMap[step.Name] = append(stepsMap[step.Name], step)
-			}
-
-			// Check to see if the retries have been exceeded
-			if len(run.Steps) > 0 {
-				lastStep := run.Steps[len(run.Steps)-1]
-				if lastStep.Status == "FAILED" && len(stepsMap[lastStep.Name]) >= lastStep.MaxRetries {
-					_, err := UpdateRun(ctx, run.ID, StatusFailed)
-					return err
-				}
-			}
-
 			_, err = UpdateRun(ctx, run.ID, StatusCompleted)
 			return err
 		}
+
+		//if !respBody.RunCompleted {
+		stepsMap := map[string][]Step{}
+		for _, step := range run.Steps {
+			stepsMap[step.Name] = append(stepsMap[step.Name], step)
+		}
+
+		// Check to see if the retries have been exceeded
+		if len(run.Steps) > 0 {
+			lastStep := run.Steps[len(run.Steps)-1]
+			if lastStep.Status == "FAILED" && len(stepsMap[lastStep.Name]) >= lastStep.MaxRetries {
+				_, err := UpdateRun(ctx, run.ID, StatusFailed)
+				return err
+			}
+		}
+		// } else {
+		// 	_, err = UpdateRun(ctx, run.ID, StatusCompleted)
+		// 	return err
+		// }
 
 		payload := FlowRunUpdated{RunID: respBody.RunID}
 		wrap, err := payload.Wrap()
