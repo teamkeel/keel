@@ -12,6 +12,11 @@ const STEP_TYPE = {
   DELAY: "DELAY",
 };
 
+const defaultOpts = {
+  maxRetries: 5,
+  timeoutInMs: 60000,
+};
+
 // This is a special type that is thrown to disrupt the execution of a flow
 class FlowDisrupt {
   constructor() {}
@@ -22,9 +27,9 @@ class StepRunner {
     this.runId = runId;
   }
 
-  async run(name, fn) {
+  async run(name, fn, opts) {
     const db = useDatabase();
-
+    console.log(opts);
     // First check if we already have a result for this step
     const completed = await db
       .selectFrom("keel_flow_step")
@@ -33,7 +38,6 @@ class StepRunner {
       .where("status", "=", STEP_STATUS.COMPLETED)
       .selectAll()
       .executeTakeFirst();
-
 
     if (completed) {
       return completed.value;
@@ -47,6 +51,8 @@ class StepRunner {
         name: name,
         status: STEP_STATUS.NEW,
         type: STEP_TYPE.FUNCTION,
+        maxRetries: opts?.maxRetries ?? defaultOpts.maxRetries,
+        timeoutInMs: opts?.timeoutInMs ?? defaultOpts.timeoutInMs,
       })
       .returningAll()
       .executeTakeFirst();
@@ -55,7 +61,7 @@ class StepRunner {
 
     let result = null;
     try {
-      result = await fn();
+      result = await withTimeout(fn(), step.timeoutInMs );
     } catch (e) {
       outcome = STEP_STATUS.FAILED;
     }
@@ -73,6 +79,19 @@ class StepRunner {
 
     throw new FlowDisrupt();
   }
+}
+
+function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+export function withTimeout(promiseFn, timeout) {
+  return Promise.race([
+    promiseFn,
+    wait(timeout).then(() => {
+      throw new Error(`flow times out after ${timeout}ms`);
+    }),
+  ]);
 }
 
 module.exports = { StepRunner, FlowDisrupt };

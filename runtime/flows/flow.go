@@ -48,14 +48,16 @@ func (Run) TableName() string {
 }
 
 type Step struct {
-	ID        string    `json:"id" gorm:"primaryKey;not null;default:null"`
-	Name      string    `json:"name"`
-	RunID     string    `json:"runId"`
-	Status    Status    `json:"status"`
-	Type      StepType  `json:"type"`
-	Value     *JSONB    `json:"value" gorm:"type:jsonb"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	ID          string    `json:"id" gorm:"primaryKey;not null;default:null"`
+	Name        string    `json:"name"`
+	RunID       string    `json:"runId"`
+	Status      Status    `json:"status"`
+	Type        StepType  `json:"type"`
+	Value       *JSONB    `json:"value" gorm:"type:jsonb"`
+	MaxRetries  int       `json:"max_retries"`
+	TimeoutInMs int       `json:"timeout_in_ms"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 func (Step) TableName() string {
