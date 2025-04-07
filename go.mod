@@ -34,7 +34,7 @@ require (
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/goccy/go-yaml v1.15.13
-	github.com/golang-jwt/jwt/v4 v4.5.1
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/cel-go v0.23.2
 	github.com/hashicorp/go-version v1.7.0
 	github.com/iancoleman/strcase v0.3.0
