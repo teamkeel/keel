@@ -29,7 +29,7 @@ class StepRunner {
 
   async run(name, fn, opts) {
     const db = useDatabase();
-    console.log(opts);
+
     // First check if we already have a result for this step
     const completed = await db
       .selectFrom("keel_flow_step")
@@ -61,7 +61,7 @@ class StepRunner {
 
     let result = null;
     try {
-      result = await withTimeout(fn(), step.timeoutInMs );
+      result = await withTimeout(fn(), step.timeoutInMs);
     } catch (e) {
       outcome = STEP_STATUS.FAILED;
     }
@@ -85,7 +85,7 @@ function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-export function withTimeout(promiseFn, timeout) {
+function withTimeout(promiseFn, timeout) {
   return Promise.race([
     promiseFn,
     wait(timeout).then(() => {
@@ -94,4 +94,4 @@ export function withTimeout(promiseFn, timeout) {
   ]);
 }
 
-module.exports = { StepRunner, FlowDisrupt };
+module.exports = { StepRunner, FlowDisrupt, withTimeout };
