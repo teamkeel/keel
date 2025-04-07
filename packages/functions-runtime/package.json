@@ -19,9 +19,9 @@
     "vitest": "3.0.8"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "~3.722.0",
-    "@aws-sdk/credential-providers": "~3.721.0",
-    "@aws-sdk/s3-request-presigner": "~3.722.0",
+    "@aws-sdk/client-s3": "^3.782.0",
+    "@aws-sdk/credential-providers": "^3.782.0",
+    "@aws-sdk/s3-request-presigner": "^3.782.0",
     "@neondatabase/serverless": "^0.9.5",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.57.2",
@@ -31,11 +31,11 @@
     "change-case": "^4.1.2",
     "json-rpc-2.0": "^1.7.0",
     "ksuid": "^3.0.0",
-    "kysely": "~0.27.6",
-    "pg": "^8.13.3",
+    "kysely": "^0.27.6",
+    "pg": "^8.14.1",
     "postgres-interval": "^4.0.2",
     "traceparent": "^1.0.0",
-    "vite": "^6.2.0",
+    "vite": "^6.2.5",
     "ws": "^8.18.1"
   },
   "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee"
