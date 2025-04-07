@@ -31,6 +31,7 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
+	"github.com/teamkeel/keel/runtime/flows"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util"
 )
@@ -219,13 +220,23 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		PathPrefix:    "/aws/",
 		FunctionsARN:  functionsARN,
 		SSMParameters: ssmParams,
-		OnSQSEvent: func(event lambdaevents.SQSEvent) {
-			// TODO: consider doing this in a go routine to make it async
-			// but current tests require it to be sync
-			err := lambdaHandler.EventHandler(ctx, event)
-			if err != nil {
-				fmt.Printf("error from event handler: %s\nevent:%s\n\n", err.Error(), event.Records[0].Body)
-			}
+		// TODO: consider doing this in a go routine to make it async
+		// but current tests require it to be sync
+		OnSQSEvent: map[string]func(lambdaevents.SQSEvent){
+			"https://testing-sqs-queue.com/123456789/events": func(event lambdaevents.SQSEvent) {
+				// TODO: consider doing this in a go routine to make it async
+				// but current tests require it to be sync
+				err := lambdaHandler.EventHandler(ctx, event)
+				if err != nil {
+					fmt.Printf("error from event handler: %s\nevent:%s\n\n", err.Error(), event.Records[0].Body)
+				}
+			},
+			"https://testing-sqs-queue.com/123456789/flows": func(event lambdaevents.SQSEvent) {
+				err := lambdaHandler.FlowHandler(ctx, event)
+				if err != nil {
+					fmt.Printf("error from flow orchestrator: %s\nevent:%s\n\n", err.Error(), event.Records[0].Body)
+				}
+			},
 		},
 	}
 	if functionsServer != nil {
@@ -334,7 +345,8 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		ConfigPath:     path.Join(opts.Dir, ".build/runtime/config.json"),
 		ProjectName:    opts.TestGroupName,
 		Env:            "test",
-		QueueURL:       "https://testing-sqs-queue.com/123456789/events",
+		EventsQueueURL: "https://testing-sqs-queue.com/123456789/events",
+		FlowsQueueURL:  "https://testing-sqs-queue.com/123456789/flows",
 		FunctionsARN:   functionsARN,
 		BucketName:     bucketName,
 		SecretNames:    lo.Keys(ssmParams),
@@ -468,8 +480,6 @@ func HandleSubscriberExecutorRequest(r *http.Request, h *runtime.Handler) error 
 
 // HandleFlowExecutorRequest handles requests to the flow module in the testing package.
 func HandleFlowExecutorRequest(r *http.Request, h *runtime.Handler) error {
-	id := ksuid.New().String()
-
 	name := path.Base(r.URL.Path)
 
 	b, err := io.ReadAll(r.Body)
@@ -483,10 +493,26 @@ func HandleFlowExecutorRequest(r *http.Request, h *runtime.Handler) error {
 		return err
 	}
 
-	return h.FlowHandler(r.Context(), &runtime.RunFlowPayload{
-		ID:     id,
+	ev := flows.FlowRunStarted{
 		Name:   name,
 		Inputs: m,
+	}
+	wrap, err := ev.Wrap()
+	if err != nil {
+		return err
+	}
+	b, err = json.Marshal(wrap)
+	if err != nil {
+		return err
+	}
+
+	return h.FlowHandler(r.Context(), lambdaevents.SQSEvent{
+		Records: []lambdaevents.SQSMessage{
+			{
+				MessageId: "",
+				Body:      string(b),
+			},
+		},
 	})
 }
 
