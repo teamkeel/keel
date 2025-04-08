@@ -250,10 +250,7 @@ func (h *Handler) buildContext(ctx context.Context) (context.Context, error) {
 		return nil, err
 	}
 
-	ctx, err = flows.WithOrchestrator(ctx, h.flowOrchestrator)
-	if err != nil {
-		return nil, err
-	}
+	ctx = flows.WithOrchestrator(ctx, h.flowOrchestrator)
 
 	return ctx, nil
 }
