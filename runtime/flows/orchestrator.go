@@ -16,8 +16,8 @@ type orchestratorContextKey string
 var contextKey orchestratorContextKey = "flowOrchestrator"
 
 // WithOrchestrator sets the given orchestrator in the context
-func WithOrchestrator(ctx context.Context, o *Orchestrator) (context.Context, error) {
-	return context.WithValue(ctx, contextKey, o), nil
+func WithOrchestrator(ctx context.Context, o *Orchestrator) context.Context {
+	return context.WithValue(ctx, contextKey, o)
 }
 
 // HasOrchestrator checks the given context if a flow orchestrator has been set

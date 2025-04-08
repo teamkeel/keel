@@ -520,11 +520,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Setting the flows orchestrator
-		ctx, err = flows.WithOrchestrator(ctx, flows.NewOrchestrator(m.Schema))
-		if err != nil {
-			m.Err = err
-			return m, tea.Quit
-		}
+		ctx = flows.WithOrchestrator(ctx, flows.NewOrchestrator(m.Schema))
 
 		r = msg.r.WithContext(ctx)
 		m.RuntimeHandler.ServeHTTP(msg.w, r)
