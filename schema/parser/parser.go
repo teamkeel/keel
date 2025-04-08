@@ -31,6 +31,7 @@ type DeclarationNode struct {
 	Enum    *EnumNode    `| "enum" @@`
 	Message *MessageNode `| "message" @@`
 	Job     *JobNode     `| "job" @@`
+	Flow    *FlowNode    `| "flow" @@`
 	Routes  *RoutesNode  `| "routes" @@)`
 }
 
@@ -198,6 +199,29 @@ type StringLiteralNode struct {
 	node.Node
 
 	Value string `@String`
+}
+
+type FlowNode struct {
+	node.Node
+
+	Name     NameNode           `@@`
+	Sections []*FlowSectionNode `"{" @@* "}"`
+}
+
+type FlowSectionNode struct {
+	node.Node
+
+	Inputs    []*FlowInputNode `( "inputs" "{" @@* "}"`
+	Attribute *AttributeNode   `| @@ )`
+}
+
+type FlowInputNode struct {
+	node.Node
+
+	Name     NameNode `@@`
+	Type     NameNode `@@`
+	Repeated bool     `( @( "[" "]" )`
+	Optional bool     `| @( "?" ))?`
 }
 
 // Attributes:

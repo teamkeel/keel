@@ -73,8 +73,15 @@ func createProgram(args *NewProgramArgs) pulumi.RunFunc {
 			return err
 		}
 
-		// All events go to this queue
-		queue, err := sqs.NewQueue(ctx, "events", &sqs.QueueArgs{
+		// All events go to this eventQueue
+		eventQueue, err := sqs.NewQueue(ctx, "events", &sqs.QueueArgs{
+			Tags: baseTags,
+		})
+		if err != nil {
+			return err
+		}
+
+		flowsQueue, err := sqs.NewQueue(ctx, "flows", &sqs.QueueArgs{
 			Tags: baseTags,
 		})
 		if err != nil {
@@ -225,7 +232,8 @@ func createProgram(args *NewProgramArgs) pulumi.RunFunc {
 				}),
 				Resources: pulumi.ToStringArrayOutput(
 					[]pulumi.StringOutput{
-						queue.Arn,
+						eventQueue.Arn,
+						flowsQueue.Arn,
 					},
 				),
 			}),
@@ -264,7 +272,8 @@ func createProgram(args *NewProgramArgs) pulumi.RunFunc {
 			"KEEL_SECRETS":           pulumi.String(strings.Join(secretNames, ":")),
 			"KEEL_FILES_BUCKET_NAME": filesBucket.Bucket,
 			"KEEL_FUNCTIONS_ARN":     functions.Arn,
-			"KEEL_QUEUE_URL":         queue.Url,
+			"KEEL_EVENTS_QUEUE_URL":  eventQueue.Url,
+			"KEEL_FLOWS_QUEUE_URL":   flowsQueue.Url,
 			"KEEL_JOBS_WEBHOOK_URL":  pulumi.String(jobsWebhookURL),
 		}
 
@@ -347,8 +356,48 @@ func createProgram(args *NewProgramArgs) pulumi.RunFunc {
 
 			// Connect the subscriber Lambda to the SQS queue
 			_, err = lambda.NewEventSourceMapping(ctx, "subscriber-event-source-mapping", &lambda.EventSourceMappingArgs{
-				EventSourceArn: queue.Arn,
+				EventSourceArn: eventQueue.Arn,
 				FunctionName:   subscriber.Arn,
+				Tags:           baseTags,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		// We avoid creating resources we don't need by only creating the flow orchestrator Lambda
+		// if there are flows defined in the schema
+		var flow *lambda.Function
+
+		if args.Schema.HasFlows() {
+			flow, err = lambda.NewFunction(ctx, "flows", &lambda.FunctionArgs{
+				Runtime:    lambda.RuntimeCustomAL2023,
+				MemorySize: pulumi.IntPtr(2048),
+				Handler:    pulumi.String("main"),
+				LoggingConfig: lambda.FunctionLoggingConfigArgs{
+					LogFormat: pulumi.String("JSON"),
+				},
+
+				Code:   pulumi.NewFileArchive(args.RuntimeLambdaPath),
+				Role:   runtimeRole.Arn,
+				Layers: otelLayer,
+				Tags:   baseTags,
+
+				Environment: lambda.FunctionEnvironmentArgs{
+					Variables: extendStringMap(baseRuntimeEnvVars, pulumi.StringMap{
+						"KEEL_RUNTIME_MODE": pulumi.String(runtime.RuntimeModeFlow),
+						"OTEL_SERVICE_NAME": pulumi.String("flows"),
+					}),
+				},
+			})
+			if err != nil {
+				return fmt.Errorf("error creating orchestrator lambda: %v", err)
+			}
+
+			// Connect the functions Lambda to the SQS queue
+			_, err = lambda.NewEventSourceMapping(ctx, "flows-event-source-mapping", &lambda.EventSourceMappingArgs{
+				EventSourceArn: flowsQueue.Arn,
+				FunctionName:   flow.Arn,
 				Tags:           baseTags,
 			})
 			if err != nil {

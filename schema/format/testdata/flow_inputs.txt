@@ -1,0 +1,19 @@
+flow MyWorkflow {
+    inputs {
+        name      Text
+ Age Number
+ ThingID ID
+ anotherFile File
+    }
+}
+
+===
+
+flow MyWorkflow {
+    inputs {
+        name Text
+        age Number
+        thingId ID
+        anotherFile File
+    }
+}
