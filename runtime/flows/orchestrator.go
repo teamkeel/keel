@@ -74,6 +74,9 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 	if err != nil {
 		return err
 	}
+	if run == nil {
+		return fmt.Errorf("invalid run ID: %s", runID)
+	}
 
 	flow := o.schema.FindFlow(run.Name)
 	if flow == nil {
