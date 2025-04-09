@@ -256,10 +256,14 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	for _, model := range schema.Models {
 		if model.Name != strcase.ToCamel(auditing.TableName) {
 			stmt := createAuditTriggerStmts(existingTriggers, model)
-			statements = append(statements, stmt)
+			if stmt != "" {
+				statements = append(statements, stmt)
+			}
 
 			stmt = createUpdatedAtTriggerStmts(existingTriggers, model)
-			statements = append(statements, stmt)
+			if stmt != "" {
+				statements = append(statements, stmt)
+			}
 		}
 	}
 
@@ -340,12 +344,25 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 		// Drop columns if fields removed from model
 		for _, column := range tableColumns {
+			// Detect a sequence column by seeing if there is _another_ column with the same name plus the sequence suffix.
+			// For sequence columns we don't need to drop the actual column, we just need to drop the __sequence column
+			// and CASCADE will cause the actual column to be removed
+			if slices.ContainsFunc(tableColumns, func(c *ColumnRow) bool {
+				return c.ColumnName == column.ColumnName+sequenceSuffix
+			}) {
+				continue
+			}
+
 			field := proto.FindField(schema.Models, model.Name, casing.ToLowerCamel(column.ColumnName))
 			if field == nil {
 				statements = append(statements, dropColumnStmt(model.Name, column.ColumnName))
+
+				// Remove __sequence suffix if present
+				colName := strings.TrimSuffix(column.ColumnName, sequenceSuffix)
+
 				changes = append(changes, &DatabaseChange{
 					Model: model.Name,
-					Field: casing.ToLowerCamel(column.ColumnName),
+					Field: casing.ToLowerCamel(colName),
 					Type:  ChangeTypeRemoved,
 				})
 			}

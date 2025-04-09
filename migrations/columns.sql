@@ -17,6 +17,7 @@ LEFT JOIN pg_catalog.pg_index i on i.indexrelid = a.attrelid
 WHERE
 	n.nspname = 'public'
 	AND c.relname not in ('keel_schema', 'keel_refresh_token', 'keel_storage', 'keel_auth_code', 'pg_stat_statements_info', 'pg_stat_statements')
+	AND c.relname not like '%__sequence_seq'
 	AND a.attnum > 0
 	AND NOT a.attisdropped
 	AND i.indexrelid is null; -- no indexes

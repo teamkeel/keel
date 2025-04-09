@@ -347,7 +347,13 @@ func FieldGetAttribute(field *parser.FieldNode, name string) *parser.AttributeNo
 }
 
 func FieldIsUnique(field *parser.FieldNode) bool {
-	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
+	attrs := []string{parser.AttributePrimaryKey, parser.AttributeUnique, parser.AttributeSequence}
+	for _, v := range attrs {
+		if FieldHasAttribute(field, v) {
+			return true
+		}
+	}
+	return false
 }
 
 func FieldIsComputed(field *parser.FieldNode) bool {

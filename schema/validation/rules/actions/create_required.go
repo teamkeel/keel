@@ -71,6 +71,7 @@ func isNotNeeded(asts []*parser.AST, model *parser.ModelNode, f *parser.FieldNod
 	case f.Optional,
 		(f.Repeated && !f.IsScalar()),
 		query.FieldHasAttribute(f, parser.AttributeDefault),
+		query.FieldHasAttribute(f, parser.AttributeSequence),
 		query.IsBelongsToModelField(asts, model, f),
 		f.BuiltIn,
 		query.FieldIsComputed(f):
