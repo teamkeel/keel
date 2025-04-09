@@ -28,7 +28,7 @@ model Thing {
 ===
 
 ALTER TABLE "person" ADD COLUMN "favourite_thing_id" TEXT;
-ALTER TABLE "person" ADD FOREIGN KEY ("favourite_thing_id") REFERENCES "thing"("id") ON DELETE SET NULL;
+ALTER TABLE "person" ADD FOREIGN KEY ("favourite_thing_id") REFERENCES "thing"("id") ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
 
 === 
 
