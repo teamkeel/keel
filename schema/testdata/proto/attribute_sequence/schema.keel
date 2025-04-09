@@ -1,0 +1,16 @@
+model Invoice {
+    fields {
+        reference Text @sequence("INV")
+        withStartsAt Text @sequence(
+            "OTHER",
+            1111
+        )
+    }
+
+    actions {
+        // this should be fine as all fields have default values
+        create createInvoice()
+        // this should be fine as reference is a unique field due to @sequence
+        get getInvoice(reference)
+    }
+}

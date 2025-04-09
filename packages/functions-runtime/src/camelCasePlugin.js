@@ -25,6 +25,10 @@ class KeelCamelCasePlugin {
   }
   mapRow(row) {
     return Object.keys(row).reduce((obj, key) => {
+      // Fields using @sequence will have a corresponding __sequence field which we drop as we don't want to return it
+      if (key.endsWith("__sequence")) {
+        return obj;
+      }
       let value = row[key];
       if (Array.isArray(value)) {
         value = value.map((it) =>

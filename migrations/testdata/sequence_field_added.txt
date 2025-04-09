@@ -1,0 +1,21 @@
+model Invoice {}
+
+===
+
+model Invoice {
+    fields {
+        reference Text @sequence("INV-")
+    }
+}
+
+===
+
+ALTER TABLE "invoice" ADD COLUMN "reference__sequence" BIGINT GENERATED ALWAYS AS IDENTITY ( START WITH 1 MINVALUE 1 );
+ALTER TABLE "invoice" ADD COLUMN "reference" TEXT GENERATED ALWAYS AS ('INV-' || LPAD("reference__sequence"::TEXT, 4, '0')) STORED;
+ALTER TABLE "invoice" ADD CONSTRAINT invoice_reference_udx UNIQUE ("reference");
+
+===
+
+[
+    {"Model":"Invoice","Field":"reference","Type":"ADDED"}
+]
