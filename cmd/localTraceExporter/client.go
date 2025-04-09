@@ -67,7 +67,7 @@ func Summary() map[string]*TraceSummary {
 	defer mu.Unlock()
 
 	cpy := map[string]*TraceSummary{}
-	maps.Copy(traceSummary, cpy)
+	maps.Copy(cpy, traceSummary)
 
 	return cpy
 }
@@ -93,55 +93,48 @@ func (c *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.Resourc
 				traceID := hex.EncodeToString(span.TraceId)
 				traces[traceID] = append(traces[traceID], span)
 
-				c.updateTraceSummary(traceID, span)
+				start := time.Unix(0, int64(span.StartTimeUnixNano))
+				end := time.Unix(0, int64(span.EndTimeUnixNano))
+
+				summary, has := traceSummary[traceID]
+				if !has {
+					summary = &TraceSummary{
+						StartTime: start,
+						EndTime:   end,
+						Duration:  end.Sub(start),
+						HasError:  false,
+					}
+				} else {
+					if start.Before(summary.StartTime) {
+						summary.StartTime = start
+					}
+					if end.After(summary.EndTime) {
+						summary.EndTime = end
+					}
+
+					summary.Duration = summary.EndTime.Sub(summary.StartTime)
+				}
+
+				if span.ParentSpanId == nil {
+					summary.RootName = span.Name
+
+					for _, attr := range span.Attributes {
+						if attr.Key == "type" {
+							summary.Type = attr.Value.GetStringValue()
+						}
+					}
+				}
+
+				if span.Status.Code == tracepb.Status_STATUS_CODE_ERROR {
+					summary.HasError = true
+				}
+
+				traceSummary[traceID] = summary
 			}
 		}
 	}
 
 	return nil
-}
-
-func (c *client) updateTraceSummary(traceID string, span *tracepb.Span) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	start := time.Unix(0, int64(span.StartTimeUnixNano))
-	end := time.Unix(0, int64(span.EndTimeUnixNano))
-
-	summary, has := traceSummary[traceID]
-	if !has {
-		summary = &TraceSummary{
-			StartTime: start,
-			EndTime:   end,
-			Duration:  end.Sub(start),
-			HasError:  false,
-		}
-	} else {
-		if start.Before(summary.StartTime) {
-			summary.StartTime = start
-		}
-		if end.After(summary.EndTime) {
-			summary.EndTime = end
-		}
-
-		summary.Duration = summary.EndTime.Sub(summary.StartTime)
-	}
-
-	if span.ParentSpanId == nil {
-		summary.RootName = span.Name
-
-		for _, attr := range span.Attributes {
-			if attr.Key == "type" {
-				summary.Type = attr.Value.GetStringValue()
-			}
-		}
-	}
-
-	if span.Status.Code == tracepb.Status_STATUS_CODE_ERROR {
-		summary.HasError = true
-	}
-
-	traceSummary[traceID] = summary
 }
 
 // MarshalLog is the marshaling function used by the logging system to represent this Client.
