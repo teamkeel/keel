@@ -92,6 +92,8 @@ func Start(reset bool, projectDirectory string) (*db.ConnectionInfo, error) {
 		return nil, err
 	}
 
+	createdDb := false
+
 	// Obey the mandate to clear the project-specific database if requested,
 	// by DROP-ing that database.
 
@@ -105,6 +107,7 @@ func Start(reset bool, projectDirectory string) (*db.ConnectionInfo, error) {
 	// Make sure the project database exists. It may never have existed yet, or we might
 	// have just dropped it to do a reset.
 	if !projectDatabaseExists {
+		createdDb = true
 		if err := createProjectDatabase(serverConnectionInfo, projectDbName); err != nil {
 			return nil, err
 		}
@@ -113,6 +116,8 @@ func Start(reset bool, projectDirectory string) (*db.ConnectionInfo, error) {
 	// We return a project-specific connectionInfo that points to the
 	// project-specific database.
 	projectConnectionInfo := serverConnectionInfo.WithDatabase(projectDbName)
+	projectConnectionInfo.IsNewDatabase = createdDb
+
 	return projectConnectionInfo, nil
 }
 

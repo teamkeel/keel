@@ -171,9 +171,9 @@ func addColumnStmt(schema *proto.Schema, modelName string, field *proto.Field) (
 }
 
 // addForeignKeyConstraintStmt generates a string of this form:
-// ALTER TABLE "thisTable" ADD FOREIGN KEY ("thisColumn") REFERENCES "otherTable"("otherColumn") ON DELETE CASCADE;
+// ALTER TABLE "thisTable" ADD FOREIGN KEY ("thisColumn") REFERENCES "otherTable"("otherColumn") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
 func addForeignKeyConstraintStmt(thisTable string, thisColumn string, otherTable string, otherColumn string, onDelete string) string {
-	return fmt.Sprintf("ALTER TABLE %s ADD FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE %s;",
+	return fmt.Sprintf("ALTER TABLE %s ADD FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE %s DEFERRABLE INITIALLY IMMEDIATE;",
 		thisTable,
 		thisColumn,
 		otherTable,
