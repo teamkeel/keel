@@ -412,6 +412,7 @@ message DisplayLayoutConfig {
 		BOARD = 2;
 		GRID = 3;
 		RECORD = 4;
+		GALLERY = 5;
 	}
 
 	// The type of the view: e.g. Inbox, Board, List, Calendar, Table, Data Grid
@@ -421,6 +422,7 @@ message DisplayLayoutConfig {
 	optional BoardViewConfig board_config = 3;
 	optional GridViewConfig grid_config = 4;
 	optional RecordViewConfig record_config = 5;
+	optional GalleryViewConfig gallery_config = 8;
 
 	// Any validation errors for this display layout
 	repeated ValidationError errors = 6;
@@ -483,6 +485,23 @@ message GridViewConfig {
 	optional ActionLink update_action = 3;
 	// If the inline editing of rows is enabled.
 	bool editable = 4;
+}
+
+// A gallery view for displaying a list of images.
+message GalleryViewConfig {
+	message Image {
+		// The field that contains the image.
+		JsonPath file_field = 1;
+		// The alt text of the image.
+		optional StringTemplate alt = 2;
+	}
+
+	// The primary content 
+	StringTemplate title = 1;
+	// The secondary content
+	optional StringTemplate description = 2; 
+	// The image to be displayed.
+	Image image = 3;
 }
 
 // A display layouts for viewing db records (i.e. a get tool)
