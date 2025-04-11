@@ -88,7 +88,7 @@ func StreamLogs(ctx context.Context, args *StreamLogsArgs) error {
 			g.Go(func() error {
 				e, err := fetchLogs(ctx, logs, name, args)
 				if err != nil {
-					log("%s Error reading logs for %s: %s", IconCross, orange(name), gray(err.Error()))
+					log(ctx, "%s Error reading logs for %s: %s", IconCross, orange(name), gray(err.Error()))
 					return err
 				}
 
@@ -116,7 +116,7 @@ func StreamLogs(ctx context.Context, args *StreamLogsArgs) error {
 		})
 
 		for _, e := range events {
-			log(*e.Message)
+			log(ctx, *e.Message)
 			t := time.Unix(0, (*e.Timestamp * int64(time.Millisecond)))
 			t = t.Add(time.Second)
 			args.StartTime = t

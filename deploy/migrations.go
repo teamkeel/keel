@@ -39,7 +39,7 @@ func runMigrations(ctx context.Context, args *RunMigrationsArgs) error {
 			WithDecryption: aws.Bool(true),
 		})
 		if err != nil {
-			log("%s Error fetching %s secret from SSM: %s", IconCross, orange("DATABASE_URL"), gray(err.Error()))
+			log(ctx, "%s Error fetching %s secret from SSM: %s", IconCross, orange("DATABASE_URL"), gray(err.Error()))
 			return err
 		}
 
@@ -47,14 +47,14 @@ func runMigrations(ctx context.Context, args *RunMigrationsArgs) error {
 	} else {
 		stackOutputs, err := args.Stack.Outputs(ctx)
 		if err != nil {
-			log("%s error getting stack outputs: %s", IconCross, err.Error())
+			log(ctx, "%s error getting stack outputs: %s", IconCross, err.Error())
 			return err
 		}
 
 		outputs := parseStackOutputs(stackOutputs)
 
 		if outputs.DatabaseSecretArn == "" {
-			log("%s no database secret ARN in stack outputs - skipping migrations check", IconPipe)
+			log(ctx, "%s no database secret ARN in stack outputs - skipping migrations check", IconPipe)
 			return nil
 		}
 
@@ -65,20 +65,20 @@ func runMigrations(ctx context.Context, args *RunMigrationsArgs) error {
 			SecretArn: outputs.DatabaseSecretArn,
 		})
 		if err != nil {
-			log("%s Error getting RDS connection string: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s Error getting RDS connection string: %s", IconCross, gray(err.Error()))
 			return err
 		}
 	}
 
 	dbConn, err := db.New(ctx, databaseURL)
 	if err != nil {
-		log("%s Error connecting to the database: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s Error connecting to the database: %s", IconCross, gray(err.Error()))
 		return err
 	}
 
 	m, err := migrations.New(ctx, args.Schema, dbConn)
 	if err != nil {
-		log("%s Error generating database migrations: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s Error generating database migrations: %s", IconCross, gray(err.Error()))
 		return err
 	}
 
@@ -94,16 +94,16 @@ func runMigrations(ctx context.Context, args *RunMigrationsArgs) error {
     The most likely cause of this is that you have added a non-null field to a model for which there are already rows in the database.
     To fix this either make the new field optional (by using '?') or provide a default value using @default.`, message)
 		}
-		log("%s %s: %s", IconCross, message, err.Error())
+		log(ctx, "%s %s: %s", IconCross, message, err.Error())
 		return err
 	}
 
 	if args.DryRun {
 		switch {
 		case len(m.Changes) == 0:
-			log("%s No database schema changes required %s", IconTick, t.Since())
+			log(ctx, "%s No database schema changes required %s", IconTick, t.Since())
 		default:
-			log("%s The following database schema changes will be applied %s", IconTick, t.Since())
+			log(ctx, "%s The following database schema changes will be applied %s", IconTick, t.Since())
 			for _, ch := range m.Changes {
 				message := ch.Model
 				if ch.Field != "" {
@@ -120,7 +120,7 @@ func runMigrations(ctx context.Context, args *RunMigrationsArgs) error {
 					action = gray("(modified)")
 				}
 
-				log("    - %s %s", orange(message), action)
+				log(ctx, "    - %s %s", orange(message), action)
 			}
 		}
 		return nil
@@ -128,9 +128,9 @@ func runMigrations(ctx context.Context, args *RunMigrationsArgs) error {
 
 	switch {
 	case len(m.Changes) == 0:
-		log("%s Database schema is up-to-date %s", IconTick, t.Since())
+		log(ctx, "%s Database schema is up-to-date %s", IconTick, t.Since())
 	default:
-		log("%s %s database schema changes applied %s", IconTick, orange("%d", len(m.Changes)), t.Since())
+		log(ctx, "%s %s database schema changes applied %s", IconTick, orange("%d", len(m.Changes)), t.Since())
 	}
 
 	return nil

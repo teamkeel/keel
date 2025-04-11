@@ -32,6 +32,9 @@ import (
 //go:embed lambdas/functions/main.js.go.tmpl
 var functionsHandlerTemplate string
 
+//go:embed lambdas/functions/dev-server.js
+var devServer string
+
 type BuildArgs struct {
 	// Absolute path to Keel project
 	ProjectRoot string
@@ -53,11 +56,11 @@ type BuildResult struct {
 }
 
 func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
-	heading("Build")
+	heading(ctx, "Build")
 
 	t := NewTiming()
 
-	configFile, err := ResolveKeelConfig(&ResolveKeelConfigArgs{
+	configFile, err := ResolveKeelConfig(ctx, &ResolveKeelConfigArgs{
 		ProjectRoot: args.ProjectRoot,
 		Env:         args.Env,
 	})
@@ -69,14 +72,14 @@ func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
 	builder := schema.Builder{}
 	protoSchema, err := builder.MakeFromDirectory(args.ProjectRoot)
 	if err != nil {
-		log("%s your Keel schema contains errors. Run `keel validate` to see details on these errors", IconCross)
+		log(ctx, "%s your Keel schema contains errors. Run `keel validate` to see details on these errors", IconCross)
 		return nil, err
 	}
 	if args.OnLoadSchema != nil {
 		protoSchema = args.OnLoadSchema(protoSchema)
 	}
 
-	log("%s Found %s schema file(s) %s", IconTick, orange("%d", len(builder.SchemaFiles())), t.Since())
+	log(ctx, "%s Found %s schema file(s) %s", IconTick, orange("%d", len(builder.SchemaFiles())), t.Since())
 
 	// No need to build the collector config file for local builds as we don't run it
 	var collectorConfig *string
@@ -90,11 +93,11 @@ func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
 			return nil, err
 		}
 		if collectorConfig != nil {
-			log("%s Using OpenTelemetry collector config %s", IconTick, t.Since())
+			log(ctx, "%s Using OpenTelemetry collector config %s", IconTick, t.Since())
 		}
 	}
 
-	runtimeResult, err := buildRuntime(&BuildRuntimeArgs{
+	runtimeResult, err := buildRuntime(ctx, &BuildRuntimeArgs{
 		ProjectRoot:      args.ProjectRoot,
 		Env:              args.Env,
 		Schema:           protoSchema,
@@ -109,10 +112,11 @@ func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	log("%s Built runtime into %s %s", IconTick, orange(relPath), t.Since())
+	log(ctx, "%s Built runtime into %s %s", IconTick, orange(relPath), t.Since())
 
 	functionsResult, err := buildFunctions(ctx, &BuildFunctionsArgs{
 		ProjectRoot:     args.ProjectRoot,
+		Env:             args.Env,
 		Schema:          protoSchema,
 		Config:          projectConfig,
 		CollectorConfig: collectorConfig,
@@ -147,37 +151,37 @@ type BuildRuntimeResult struct {
 	Path       string
 }
 
-func buildRuntime(args *BuildRuntimeArgs) (*BuildRuntimeResult, error) {
+func buildRuntime(ctx context.Context, args *BuildRuntimeArgs) (*BuildRuntimeResult, error) {
 	buildDir := filepath.Join(args.ProjectRoot, ".build")
 	schemaPath := filepath.Join(buildDir, "runtime/schema.json")
 	configPath := filepath.Join(buildDir, "runtime/config.json")
 
 	err := os.MkdirAll(filepath.Join(buildDir, "runtime"), os.ModePerm)
 	if err != nil {
-		log("%s error creating .build/runtime directory: %s", err.Error())
+		log(ctx, "%s error creating .build/runtime directory: %s", err.Error())
 		return nil, err
 	}
 
 	schemaJson, err := protojson.Marshal(args.Schema)
 	if err != nil {
-		log("%s error marshalling Keel schema to JSON", IconCross, err.Error())
+		log(ctx, "%s error marshalling Keel schema to JSON", IconCross, err.Error())
 		return nil, err
 	}
 	err = os.WriteFile(schemaPath, schemaJson, os.ModePerm)
 	if err != nil {
-		log("%s error writing schema JSON to build directory: %s", IconCross, err.Error())
+		log(ctx, "%s error writing schema JSON to build directory: %s", IconCross, err.Error())
 		return nil, err
 	}
 
 	// We use JSON here just so the runtime Lambda handler doesn't need to include a YAML parsing lib
 	configJSON, err := json.Marshal(args.Config)
 	if err != nil {
-		log("%s error marshalling Keel config to JSON", IconCross, err.Error())
+		log(ctx, "%s error marshalling Keel config to JSON", IconCross, err.Error())
 		return nil, err
 	}
 	err = os.WriteFile(configPath, configJSON, os.ModePerm)
 	if err != nil {
-		log("%s error writing schema JSON to build directory: %s", IconCross, err.Error())
+		log(ctx, "%s error writing schema JSON to build directory: %s", IconCross, err.Error())
 		return nil, err
 	}
 
@@ -188,7 +192,7 @@ func buildRuntime(args *BuildRuntimeArgs) (*BuildRuntimeResult, error) {
 			t := NewTiming()
 			res, err := http.Get(args.RuntimeBinaryURL)
 			if err != nil {
-				log("%s Error requesting %s: %s", IconCross, args.RuntimeBinaryURL, err.Error())
+				log(ctx, "%s Error requesting %s: %s", IconCross, args.RuntimeBinaryURL, err.Error())
 				return nil, err
 			}
 			if res.StatusCode >= 300 {
@@ -196,15 +200,15 @@ func buildRuntime(args *BuildRuntimeArgs) (*BuildRuntimeResult, error) {
 			}
 			b, err = io.ReadAll(res.Body)
 			if err != nil {
-				log("%s Error reading response from %s: %s", IconCross, args.RuntimeBinaryURL, err.Error())
+				log(ctx, "%s Error reading response from %s: %s", IconCross, args.RuntimeBinaryURL, err.Error())
 				return nil, err
 			}
 			b, err = extractRuntimeBinary(b)
 			if err != nil {
-				log("%s Error extracting runtime binary from archive %s: %s", IconCross, args.RuntimeBinaryURL, err.Error())
+				log(ctx, "%s Error extracting runtime binary from archive %s: %s", IconCross, args.RuntimeBinaryURL, err.Error())
 				return nil, err
 			}
-			log("%s Fetched runtime binary from %s %s", IconTick, orange(args.RuntimeBinaryURL), t.Since())
+			log(ctx, "%s Fetched runtime binary from %s %s", IconTick, orange(args.RuntimeBinaryURL), t.Since())
 		} else {
 			p := args.RuntimeBinaryURL
 			if !filepath.IsAbs(p) {
@@ -212,14 +216,14 @@ func buildRuntime(args *BuildRuntimeArgs) (*BuildRuntimeResult, error) {
 			}
 			b, err = os.ReadFile(p)
 			if err != nil {
-				log("%s Error reading local runtime binary %s: %s", IconCross, p, err.Error())
+				log(ctx, "%s Error reading local runtime binary %s: %s", IconCross, p, err.Error())
 				return nil, err
 			}
 		}
 
 		err = os.WriteFile(filepath.Join(buildDir, "runtime/bootstrap"), b, os.ModePerm)
 		if err != nil {
-			log("%s Error writing runtime binary to build directory: %s", IconCross, err.Error())
+			log(ctx, "%s Error writing runtime binary to build directory: %s", IconCross, err.Error())
 			return nil, err
 		}
 	}
@@ -227,7 +231,7 @@ func buildRuntime(args *BuildRuntimeArgs) (*BuildRuntimeResult, error) {
 	if args.CollectorConfig != nil {
 		err = os.WriteFile(filepath.Join(buildDir, "runtime/collector.yaml"), []byte(*args.CollectorConfig), os.ModePerm)
 		if err != nil {
-			log("%s Error writing collector config to build directory: %s", IconCross, err.Error())
+			log(ctx, "%s Error writing collector config to build directory: %s", IconCross, err.Error())
 			return nil, err
 		}
 	}
@@ -242,6 +246,7 @@ func buildRuntime(args *BuildRuntimeArgs) (*BuildRuntimeResult, error) {
 type BuildFunctionsArgs struct {
 	// Absolute path to Keel project being built
 	ProjectRoot string
+	Env         string
 	Schema      *proto.Schema
 	Config      *config.ProjectConfig
 	// YAML string containing an OTEL collector config
@@ -258,7 +263,7 @@ func buildFunctions(ctx context.Context, args *BuildFunctionsArgs) (*BuildFuncti
 
 	err := os.MkdirAll(filepath.Join(buildDir, "functions"), os.ModePerm)
 	if err != nil {
-		log("%s error creating .build/functions directory: %s", err.Error())
+		log(ctx, "%s error creating .build/functions directory: %s", err.Error())
 		return nil, err
 	}
 
@@ -273,6 +278,13 @@ func buildFunctions(ctx context.Context, args *BuildFunctionsArgs) (*BuildFuncti
 	}
 
 	sdk = append(sdk, functionsHandler)
+
+	if isLocalBuild(args.Env) {
+		sdk = append(sdk, &codegen.GeneratedFile{
+			Path:     ".build/server.js",
+			Contents: devServer,
+		})
+	}
 
 	err = sdk.Write(args.ProjectRoot)
 	if err != nil {
@@ -306,7 +318,7 @@ func buildFunctions(ctx context.Context, args *BuildFunctionsArgs) (*BuildFuncti
 		if err != nil {
 			return nil, err
 		}
-		log("%s Downloaded RDS public key %s", IconTick, t.Since())
+		log(ctx, "%s Downloaded RDS public key %s", IconTick, t.Since())
 	}
 
 	if args.CollectorConfig != nil {
@@ -318,33 +330,35 @@ func buildFunctions(ctx context.Context, args *BuildFunctionsArgs) (*BuildFuncti
 
 	bundledPath := filepath.Join(buildDir, "functions/main-bundled.js")
 
-	t := NewTiming()
-	res := esbuild.Build(esbuild.BuildOptions{
-		EntryPoints:    []string{filepath.Join(buildDir, "functions/main.js")},
-		Outfile:        bundledPath,
-		Bundle:         true,
-		Write:          true,
-		AllowOverwrite: true,
-		Target:         esbuild.ESNext,
-		Platform:       esbuild.PlatformNode,
-		Format:         esbuild.FormatCommonJS,
-		Sourcemap:      esbuild.SourceMapLinked,
-		External:       []string{"pg-native"},
-		Loader: map[string]esbuild.Loader{
-			// TODO: do we need this
-			".node": esbuild.LoaderFile,
-		},
-		MinifyWhitespace:  true,
-		MinifyIdentifiers: true,
-		MinifySyntax:      true,
-		KeepNames:         true,
-	})
-	if len(res.Errors) > 0 {
-		return nil, fmt.Errorf("esbuild error: %s", res.Errors[0].Text)
-	}
+	if !isLocalBuild(args.Env) {
+		t := NewTiming()
+		res := esbuild.Build(esbuild.BuildOptions{
+			EntryPoints:    []string{filepath.Join(buildDir, "functions/main.js")},
+			Outfile:        bundledPath,
+			Bundle:         true,
+			Write:          true,
+			AllowOverwrite: true,
+			Target:         esbuild.ESNext,
+			Platform:       esbuild.PlatformNode,
+			Format:         esbuild.FormatCommonJS,
+			Sourcemap:      esbuild.SourceMapLinked,
+			External:       []string{"pg-native"},
+			Loader: map[string]esbuild.Loader{
+				// TODO: do we need this
+				".node": esbuild.LoaderFile,
+			},
+			MinifyWhitespace:  true,
+			MinifyIdentifiers: true,
+			MinifySyntax:      true,
+			KeepNames:         true,
+		})
+		if len(res.Errors) > 0 {
+			return nil, fmt.Errorf("esbuild error: %s", res.Errors[0].Text)
+		}
 
-	rel, _ := filepath.Rel(args.ProjectRoot, filepath.Join(buildDir, "functions"))
-	log("%s Built functions into %s %s", IconTick, orange(rel), t.Since())
+		rel, _ := filepath.Rel(args.ProjectRoot, filepath.Join(buildDir, "functions"))
+		log(ctx, "%s Built functions into %s %s", IconTick, orange(rel), t.Since())
+	}
 
 	return &BuildFunctionsResult{
 		Path: filepath.Join(buildDir, "functions"),
@@ -394,7 +408,7 @@ func buildCollectorConfig(ctx context.Context, args *BuildCollectorConfigArgs) (
 		"secrets": secrets,
 	})
 	if err != nil {
-		log("%s Error rendering secrets in OTEL collector config: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s Error rendering secrets in OTEL collector config: %s", IconCross, gray(err.Error()))
 		return nil, err
 	}
 

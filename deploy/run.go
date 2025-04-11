@@ -42,19 +42,19 @@ func Run(ctx context.Context, args *RunArgs) error {
 	deploy := projectConfig.Deploy
 	if deploy == nil {
 		err = fmt.Errorf("missing 'deploy' section in Keel config file")
-		log("%s %s", IconCross, err.Error())
+		log(ctx, "%s %s", IconCross, err.Error())
 		return err
 	}
 
 	if args.Action == UpAction {
-		heading("Deploy")
+		heading(ctx, "Deploy")
 	} else {
-		heading("Remove")
+		heading(ctx, "Remove")
 	}
 
 	cfg, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(projectConfig.Deploy.Region))
 	if err != nil {
-		log("%s error loading AWS config", IconCross, err.Error())
+		log(ctx, "%s error loading AWS config", IconCross, err.Error())
 		return err
 	}
 
@@ -63,7 +63,7 @@ func Run(ctx context.Context, args *RunArgs) error {
 		return err
 	}
 
-	log("%s AWS account %s", IconTick, orange(awsIdentity.AccountID))
+	log(ctx, "%s AWS account %s", IconTick, orange(awsIdentity.AccountID))
 
 	if args.Action == UpAction {
 		err = createPrivateKeySecret(ctx, &CreatePrivateKeySecretArgs{
@@ -124,18 +124,18 @@ func Run(ctx context.Context, args *RunArgs) error {
 				if event.ResourcePreEvent.Metadata.Op != apitype.OpSame {
 					pending[urn] = NewTiming()
 					urn := cleanURN(urn)
-					log("%s %s - %s", IconPipe, gray(urn), orange("%s", event.ResourcePreEvent.Metadata.Op))
+					log(ctx, "%s %s - %s", IconPipe, gray(urn), orange("%s", event.ResourcePreEvent.Metadata.Op))
 				}
 			case event.ResOutputsEvent != nil:
 				urn := event.ResOutputsEvent.Metadata.URN
 				if t, ok := pending[urn]; ok {
 					urn := cleanURN(urn)
-					log("%s %s - %s %s", IconPipe, gray(urn), green("done"), t.Since())
+					log(ctx, "%s %s - %s %s", IconPipe, gray(urn), green("done"), t.Since())
 				}
 			default:
 				// for debugging other events...
 				// b, _ := json.Marshal(event)
-				// log("Pulumi event: %s", string(b))
+				// log(ctx, "Pulumi event: %s", string(b))
 			}
 		}
 	}()
@@ -143,25 +143,25 @@ func Run(ctx context.Context, args *RunArgs) error {
 	t := NewTiming()
 
 	if args.Action == RemoveAction {
-		log("%s Removing resources...", IconPipe)
+		log(ctx, "%s Removing resources...", IconPipe)
 		_, err := stack.Destroy(ctx, optdestroy.EventStreams(eventsChannel))
 		if err != nil {
-			log("%s Error removing stack: %s", IconCross, err.Error())
+			log(ctx, "%s Error removing stack: %s", IconCross, err.Error())
 			return err
 		}
 
-		log("%s Stack removed %s", IconTick, t.Since())
+		log(ctx, "%s Stack removed %s", IconTick, t.Since())
 		return nil
 	}
 
-	log("%s Updating resources...", IconPipe)
+	log(ctx, "%s Updating resources...", IconPipe)
 	res, err := stack.Up(ctx, optup.EventStreams(eventsChannel))
 	if err != nil {
-		log("%s error deploying stack: %s", IconCross, err.Error())
+		log(ctx, "%s error deploying stack: %s", IconCross, err.Error())
 		return err
 	}
 
-	log("%s App successfully deployed %s", IconTick, t.Since())
+	log(ctx, "%s App successfully deployed %s", IconTick, t.Since())
 
 	err = runMigrations(ctx, &RunMigrationsArgs{
 		AwsConfig: cfg,
@@ -179,11 +179,11 @@ func Run(ctx context.Context, args *RunArgs) error {
 	url, ok := res.Outputs["apiUrl"].Value.(string)
 	if !ok {
 		err := fmt.Errorf("error getting API url from stack outputs")
-		log("%s %s", IconCross, err.Error())
+		log(ctx, "%s %s", IconCross, err.Error())
 		return err
 	}
 
-	log("%s API URL: %s", IconTick, orange(url))
+	log(ctx, "%s API URL: %s", IconTick, orange(url))
 	return nil
 }
 

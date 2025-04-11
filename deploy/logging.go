@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -15,11 +16,36 @@ var (
 	LogIndent = "  "
 )
 
-func log(format string, a ...any) {
+type LogLevelContextKey string
+
+var logLevelContextKey LogLevelContextKey = "loglevel"
+
+const (
+	LogLevelDefault = iota
+	LogLevelSilent
+)
+
+func WithLogLevel(ctx context.Context, level int) context.Context {
+	return context.WithValue(ctx, logLevelContextKey, level)
+}
+
+func GetLogLevel(ctx context.Context) int {
+	v, ok := ctx.Value(logLevelContextKey).(int)
+	if !ok {
+		return LogLevelDefault
+	}
+	return v
+}
+
+func log(ctx context.Context, format string, a ...any) {
+	if GetLogLevel(ctx) == LogLevelSilent {
+		return
+	}
+
 	fmt.Printf(LogIndent+format+"\n", a...)
 }
 
-func heading(v string) {
+func heading(ctx context.Context, v string) {
 	style := lipgloss.NewStyle().
 		Bold(true).
 		Foreground(lipgloss.Color("15")).
@@ -27,7 +53,7 @@ func heading(v string) {
 		PaddingLeft(1).
 		PaddingRight(1)
 
-	log("\n%s%s  ", LogIndent, style.Render(v))
+	log(ctx, "\n%s%s  ", LogIndent, style.Render(v))
 }
 
 func orange(format string, a ...any) string {
