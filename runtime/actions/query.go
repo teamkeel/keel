@@ -1431,6 +1431,14 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 		}
 
 		col := strcase.ToSnake(f.Name)
+
+		// If this field uses @sequence then drop the __sequence field as we don't want to return that
+		if f.Sequence != nil {
+			for _, row := range rows {
+				delete(row, col+"__sequence")
+			}
+		}
+
 		for _, row := range rows {
 			if val, ok := row[col]; ok && val != nil {
 				if f.Type.Repeated {

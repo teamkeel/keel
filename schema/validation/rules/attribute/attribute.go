@@ -64,6 +64,7 @@ var attributeLocations = map[string][]string{
 		parser.AttributePrimaryKey,
 		parser.AttributeRelation,
 		parser.AttributeComputed,
+		parser.AttributeSequence,
 	},
 	parser.KeywordActions: {
 		parser.AttributeSet,

@@ -144,6 +144,7 @@ const (
 	AttributeEmbed      = "embed"
 	AttributeComputed   = "computed"
 	AttributeFacet      = "facet"
+	AttributeSequence   = "sequence"
 )
 
 const (

@@ -1,0 +1,39 @@
+model Actions {
+    fields {
+        amount Number
+        paid Boolean @default(false)
+        reference Text @sequence("INV-")
+    }
+
+    actions {
+        create createInvoice() with (amount)
+        get getInvoice(reference)
+        update updateInvoice(reference) with (paid)
+        delete deleteInvoice(reference)
+    }
+
+    @permission(
+        actions: [get, create, update, delete],
+        expression: true
+    )
+}
+
+model Functions {
+    fields {
+        amount Number
+        paid Boolean @default(false)
+        reference Text @sequence("ord_")
+    }
+
+    actions {
+        create createInvoiceFunc() with (amount) @function
+        get getInvoiceFunc(reference) @function
+        update updateInvoiceFunc(reference) with (paid) @function
+        delete deleteInvoiceFunc(reference) @function
+    }
+
+    @permission(
+        actions: [get, create, update, delete],
+        expression: true
+    )
+}
