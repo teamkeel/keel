@@ -32,7 +32,7 @@ type StepStatus string
 
 const (
 	StepTypeFunction StepType = "function"
-	StepTypeIO       StepType = "io"
+	StepTypeUI       StepType = "ui"
 	StepTypeWait     StepType = "wait"
 
 	StepStatusPending   StepStatus = "pending"
@@ -61,7 +61,7 @@ func (r *Run) PendingUI() bool {
 	}
 
 	for _, step := range r.Steps {
-		if step.Type == StepTypeIO && step.Status == StepStatusPending {
+		if step.Type == StepTypeUI && step.Status == StepStatusPending {
 			return true
 		}
 	}
@@ -76,7 +76,7 @@ func (r *Run) SetUIComponent(ui *JSONB) {
 	}
 
 	for i, step := range r.Steps {
-		if step.Type == StepTypeIO && step.Status == StepStatusPending {
+		if step.Type == StepTypeUI && step.Status == StepStatusPending {
 			r.Steps[i].UI = ui
 		}
 	}
