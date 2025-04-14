@@ -36,12 +36,8 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
 			}
 
-			run, err := flows.CreateRun(ctx, flow, inputs)
+			run, err := flows.StartFlow(ctx, flow, inputs)
 			if err != nil {
-				return httpjson.NewErrorResponse(ctx, err, nil)
-			}
-
-			if err := flows.RunFlow(ctx, run.ID); err != nil {
 				return httpjson.NewErrorResponse(ctx, err, nil)
 			}
 
@@ -52,7 +48,7 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET accepted"), nil)
 			}
 
-			run, err := flows.GetFlowRun(ctx, pathParts[1])
+			run, err := flows.GetFlowRunState(ctx, pathParts[1])
 			if err != nil {
 				return httpjson.NewErrorResponse(ctx, err, nil)
 			}
