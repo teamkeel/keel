@@ -9,6 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/util"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type orchestratorContextKey string
@@ -186,6 +188,17 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 // sendEvent sends the given event to the flow runtime's queue or directly invokes the function depending on the
 // orchestrator's settings
 func (o *Orchestrator) sendEvent(ctx context.Context, payload *EventWrapper) error {
+	if payload == nil {
+		return fmt.Errorf("invalid event payload")
+	}
+
+	// get the traceparent from context, and pass it through to the event if applicable
+	span := trace.SpanFromContext(ctx)
+	spanContext := span.SpanContext()
+	if traceparent := util.GetTraceparent(spanContext); traceparent != "" {
+		payload.Traceparent = traceparent
+	}
+
 	// if a sqs queue hasn't been set, we continue executing
 	if o.sqsClient == nil || o.sqsQueueURL == "" {
 		return o.HandleEvent(ctx, payload)
