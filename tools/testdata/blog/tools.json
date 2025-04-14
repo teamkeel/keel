@@ -717,10 +717,10 @@
       },
       "entryActivityActions": [
         {
-          "toolId": "delete-post",
+          "toolId": "update-post",
           "data": [
             {
-              "key": "$.id",
+              "key": "$.where.id",
               "path": {
                 "path": "$.id"
               }
@@ -729,10 +729,10 @@
           "displayOrder": 1
         },
         {
-          "toolId": "update-post",
+          "toolId": "delete-post",
           "data": [
             {
-              "key": "$.where.id",
+              "key": "$.id",
               "path": {
                 "path": "$.id"
               }
@@ -924,15 +924,6 @@
         },
         {
           "fieldLocation": {
-            "path": "$.results"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "repeated": true,
-          "displayName": "Results",
-          "visible": true
-        },
-        {
-          "fieldLocation": {
             "path": "$.results[*].name"
           },
           "fieldType": "TYPE_STRING",
@@ -1010,7 +1001,7 @@
       },
       "entryActivityActions": [
         {
-          "toolId": "delete-category",
+          "toolId": "get-category",
           "data": [
             {
               "key": "$.id",
@@ -1022,7 +1013,7 @@
           "displayOrder": 1
         },
         {
-          "toolId": "get-category",
+          "toolId": "delete-category",
           "data": [
             {
               "key": "$.id",
@@ -1234,15 +1225,6 @@
           "fieldType": "TYPE_INT",
           "displayName": "Page Number",
           "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "repeated": true,
-          "displayName": "Results",
-          "visible": true
         },
         {
           "fieldLocation": {
@@ -1506,15 +1488,6 @@
         },
         {
           "fieldLocation": {
-            "path": "$.results"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "repeated": true,
-          "displayName": "Results",
-          "visible": true
-        },
-        {
-          "fieldLocation": {
             "path": "$.results[*].title"
           },
           "fieldType": "TYPE_STRING",
@@ -1724,7 +1697,7 @@
       },
       "entryActivityActions": [
         {
-          "toolId": "delete-post",
+          "toolId": "get-post",
           "data": [
             {
               "key": "$.id",
@@ -1736,10 +1709,10 @@
           "displayOrder": 1
         },
         {
-          "toolId": "get-post",
+          "toolId": "update-post",
           "data": [
             {
-              "key": "$.id",
+              "key": "$.where.id",
               "path": {
                 "path": "$.results[*].id"
               }
@@ -1748,10 +1721,10 @@
           "displayOrder": 2
         },
         {
-          "toolId": "update-post",
+          "toolId": "delete-post",
           "data": [
             {
-              "key": "$.where.id",
+              "key": "$.id",
               "path": {
                 "path": "$.results[*].id"
               }
@@ -1912,15 +1885,6 @@
           "fieldType": "TYPE_INT",
           "displayName": "Page Number",
           "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "repeated": true,
-          "displayName": "Results",
-          "visible": true
         },
         {
           "fieldLocation": {
@@ -2383,7 +2347,7 @@
       },
       "entryActivityActions": [
         {
-          "toolId": "delete-post",
+          "toolId": "get-post",
           "data": [
             {
               "key": "$.id",
@@ -2395,10 +2359,10 @@
           "displayOrder": 1
         },
         {
-          "toolId": "get-post",
+          "toolId": "update-post",
           "data": [
             {
-              "key": "$.id",
+              "key": "$.where.id",
               "path": {
                 "path": "$.results[*].id"
               }
@@ -2407,10 +2371,10 @@
           "displayOrder": 2
         },
         {
-          "toolId": "update-post",
+          "toolId": "delete-post",
           "data": [
             {
-              "key": "$.where.id",
+              "key": "$.id",
               "path": {
                 "path": "$.results[*].id"
               }

@@ -282,15 +282,6 @@
         },
         {
           "fieldLocation": {
-            "path": "$.results"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "repeated": true,
-          "displayName": "Results",
-          "visible": true
-        },
-        {
-          "fieldLocation": {
             "path": "$.results[*].name"
           },
           "fieldType": "TYPE_STRING",
@@ -368,7 +359,7 @@
       },
       "entryActivityActions": [
         {
-          "toolId": "delete-category",
+          "toolId": "get-category",
           "data": [
             {
               "key": "$.id",
@@ -380,7 +371,7 @@
           "displayOrder": 1
         },
         {
-          "toolId": "get-category",
+          "toolId": "delete-category",
           "data": [
             {
               "key": "$.id",

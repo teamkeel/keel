@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -46,6 +47,8 @@ import (
 
 const (
 	ModeRun = iota
+	ModeSeed
+	ModeReset
 )
 
 const (
@@ -55,10 +58,14 @@ const (
 	StatusSetupFunctions
 	StatusLoadSchema
 	StatusRunMigrations
+	StatusSeedData
 	StatusUpdateFunctions
 	StatusStartingFunctions
 	StatusRunning
 	StatusQuitting
+	StatusSeedCompleted
+	StatusSnapshotDatabase
+	StatusSnapshotCompleted
 )
 
 const (
@@ -186,6 +193,9 @@ type Model struct {
 	TestOutput        string
 	Secrets           map[string]string
 	Environment       string
+	SeedData          bool
+	SeededFiles       []string
+	SnapshotDatabase  bool
 
 	// The current latest version of Keel in NPM
 	LatestVersion *semver.Version
@@ -274,6 +284,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
+		if msg.ConnInfo.IsNewDatabase {
+			m.SeedData = true
+		}
+
 		database, err := db.New(context.Background(), m.DatabaseConnInfo.String())
 		if err != nil {
 			m.Err = err
@@ -294,7 +308,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.PrivateKey = msg.PrivateKey
 
 		m.Status = StatusSetupFunctions
-		return m, SetupFunctions(m.ProjectDir, m.NodePackagesPath, m.PackageManager)
+		return m, SetupFunctions(m.ProjectDir, m.NodePackagesPath, m.PackageManager, m.Mode)
 	case SetupFunctionsMsg:
 		m.Err = msg.Err
 
@@ -373,6 +387,24 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
+		if m.Mode == ModeSeed {
+			if m.SnapshotDatabase {
+				m.Status = StatusSnapshotDatabase
+				return m, SnapshotDatabase(m.ProjectDir, m.Schema, m.Database)
+			}
+		}
+
+		// If seed data flag is set, run seed data
+		if m.SeedData {
+			// If seed data directory exists, run seed data
+			seedDir := filepath.Join(m.ProjectDir, "seed")
+			if _, err := os.Stat(seedDir); err == nil {
+				m.Status = StatusSeedData
+				return m, SeedData(m.ProjectDir, m.Schema, m.Database)
+			}
+		}
+
+		// Otherwise carry on as normal
 		if m.Mode == ModeRun && !node.HasFunctions(m.Schema, m.Config) {
 			m.Status = StatusRunning
 			return m, nil
@@ -380,6 +412,37 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.Status = StatusUpdateFunctions
 		return m, UpdateFunctions(m.Schema, m.Config, m.ProjectDir)
+
+	case SeedDataMsg:
+		m.SeededFiles = msg.SeededFiles
+		m.Err = msg.Err
+		if m.Err != nil {
+			return m, nil
+		}
+
+		// If seeding data, we quit after seeding
+		if m.Mode == ModeSeed {
+			m.Status = StatusSeedCompleted
+			return m, tea.Quit
+		}
+
+		if m.Mode == ModeRun && !node.HasFunctions(m.Schema, m.Config) {
+			m.Status = StatusRunning
+			return m, nil
+		}
+
+		m.Status = StatusUpdateFunctions
+		return m, UpdateFunctions(m.Schema, m.Config, m.ProjectDir)
+
+	case SnapshotDatabaseMsg:
+		m.Err = msg.Err
+		if m.Err != nil {
+			return m, nil
+		}
+
+		m.Status = StatusSnapshotCompleted
+		time.Sleep(1 * time.Second)
+		return m, tea.Quit
 
 	case UpdateFunctionsMsg:
 		m.Err = msg.Err
@@ -594,13 +657,9 @@ func (m *Model) View() string {
 		MaxWidth(m.width).
 		MaxHeight(m.height)
 
-	// Mode specific output
-	switch m.Mode {
-	case ModeRun:
-		b.WriteString(renderRun(m))
-	}
+	b.WriteString(renderRun(m))
 
-	if m.Err != nil {
+	if m.Err != nil && m.Status != StatusQuitting {
 		b.WriteString(renderError(m))
 	}
 

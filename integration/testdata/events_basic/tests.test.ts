@@ -87,3 +87,57 @@ test("events from failed custom function with rollback", async () => {
   const persons = await models.person.findMany();
   expect(persons).toHaveLength(0);
 });
+
+test("event previous data", async () => {
+  const t = await models.tracker.create({
+    views: 0,
+  });
+
+  const updated = await actions.updateViews({
+    where: { id: t.id },
+    values: { views: 1 },
+  });
+
+  const get = await models.tracker.findOne({ id: t.id });
+
+  expect(get!.views).toEqual(1);
+  expect(get!.verifiedUpdate).toBeTruthy();
+});
+
+test("event previous data bulk", async () => {
+  await models.tracker.create({
+    views: 3,
+  });
+
+  await models.tracker.create({
+    views: 0,
+  });
+
+  await models.tracker.create({
+    views: 10,
+  });
+
+  await models.tracker.create({
+    views: 8,
+  });
+
+  await models.tracker.create({
+    views: 2,
+  });
+
+  await models.tracker.create({
+    views: 4,
+  });
+
+  await actions.updateTrackers({});
+  await actions.updateTrackers({});
+  await actions.updateTrackers({});
+  await actions.updateTrackers({});
+  await actions.updateTrackers({});
+
+  const trackers = await models.tracker.findMany();
+
+  for (const t of trackers) {
+    expect(t.verifiedUpdate).toBeTruthy();
+  }
+});

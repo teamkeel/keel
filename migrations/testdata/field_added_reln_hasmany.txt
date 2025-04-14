@@ -29,7 +29,7 @@ model Post {
 ===
 
 ALTER TABLE "post" ADD COLUMN "author_id" TEXT NOT NULL;
-ALTER TABLE "post" ADD FOREIGN KEY ("author_id") REFERENCES "account"("id") ON DELETE CASCADE;
+ALTER TABLE "post" ADD FOREIGN KEY ("author_id") REFERENCES "account"("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
 
 === 
 

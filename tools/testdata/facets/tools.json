@@ -284,15 +284,6 @@
         },
         {
           "fieldLocation": {
-            "path": "$.results"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "repeated": true,
-          "displayName": "Results",
-          "visible": true
-        },
-        {
-          "fieldLocation": {
             "path": "$.results[*].price"
           },
           "fieldType": "TYPE_DECIMAL",

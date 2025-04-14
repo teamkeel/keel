@@ -3,11 +3,12 @@ package db
 import "fmt"
 
 type ConnectionInfo struct {
-	Host     string
-	Port     string
-	Username string
-	Password string
-	Database string
+	Host          string
+	Port          string
+	Username      string
+	Password      string
+	Database      string
+	IsNewDatabase bool
 }
 
 func (dbConnInfo *ConnectionInfo) String() string {

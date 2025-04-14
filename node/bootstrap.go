@@ -43,15 +43,15 @@ func GetDependencies(options *bootstrapOptions) (map[string]string, map[string]s
 	deps := map[string]string{
 		"@teamkeel/functions-runtime": functionsRuntimeVersion,
 		"@teamkeel/testing-runtime":   testingRuntimeVersion,
-		"kysely":                      "0.27.4",
+		"kysely":                      "0.27.6",
 		"node-fetch":                  "3.3.2",
 	}
 
 	devDeps := map[string]string{
 		"@types/node": "22.13.5",
 		"tsx":         "4.19.3",
-		"typescript":  "5.7.3",
-		"vitest":      "3.0.8",
+		"typescript":  "5.8.3",
+		"vitest":      "3.1.1",
 	}
 
 	return deps, devDeps
