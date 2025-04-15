@@ -1,13 +1,9 @@
 import { UI } from "./ui";
 
-interface FlowInputs {
-  email: string;
-  name: string;
-  userId: string;
-  [key: string]: any; // Allow for additional inputs
-}
+type FlowInputs = Record<string, any>;
 
-interface StepContext<C extends FlowConfig> {
+interface StepContext<C extends FlowConfig, I extends {}> {
+  inputs: I;
   step: <R = any>(
     name: string,
     fn: (step: { skip(): void }) => Promise<R>
@@ -17,15 +13,9 @@ interface StepContext<C extends FlowConfig> {
   ui: UI<C>;
 }
 
-export type FlowFunction<C extends FlowConfig = {}> = (
-  context: FlowContext<C>
+export type FlowFunction<C extends FlowConfig = {}, I extends {} = never> = (
+  context: StepContext<C, I>
 ) => any;
-
-// Update FlowContext to include stage type parameter
-interface FlowContext<C extends FlowConfig> {
-  ctx: StepContext<C>;
-  inputs: FlowInputs;
-}
 
 export interface FlowConfig {
   stages?: StageConfig[];
@@ -43,40 +33,46 @@ type StageConfig =
     };
 
 // Function overloads
-export function flow<const C extends FlowConfig>(
+export function flow<I extends FlowInputs, const C extends FlowConfig>(
   flowName: string,
   config: C,
-  flow: FlowFunction<C>
-): (inputs: FlowInputs) => any;
-export function flow(
-  flowName: string,
-  flow: FlowFunction
-): (inputs: FlowInputs) => any;
+  flow: FlowFunction<C, I>
+): (inputs: I) => any;
+export function flow<
+  I extends FlowInputs = {},
+  const C extends FlowConfig = {},
+>(flowName: string, flow: FlowFunction<C, I>): (inputs: I) => any;
 
 // ****************************
 // Mock implementation (to be replaced)
 // ****************************
 
-export function flow<C extends FlowConfig>(
+export function flow<
+  I extends FlowInputs = {},
+  const C extends FlowConfig = {},
+>(
   flowName: string,
-  configOrFlow: C,
-  flowFunction?: FlowFunction<C>
+  configOrFlow: C | FlowFunction<C, I>,
+  flowFunction?: FlowFunction<C, I>
 ) {
   const config = typeof configOrFlow === "function" ? undefined : configOrFlow;
   const flow =
     typeof configOrFlow === "function" ? configOrFlow : flowFunction!;
 
-  return async (inputs: FlowInputs) => {
-    const ctx = createStepContext<C>();
-    return flow({ ctx, inputs });
+  return async (inputs: I) => {
+    const ctx = createStepContext<C, I>(inputs);
+    return flow(ctx);
   };
 }
 
-function createStepContext<C extends FlowConfig>(): StepContext<C> {
+function createStepContext<C extends FlowConfig, I extends FlowInputs = {}>(
+  inputs: I
+): StepContext<C, I> {
   return {
+    inputs: {} as I,
     step: <T = any>(
       name: string,
-      fn: (ctx: StepContext<C> & { skip: () => void }) => Promise<T>
+      fn: (ctx: { skip: () => void }) => Promise<T>
     ) => {
       const stepPromise = fn({} as any);
       const stepWithCatch = Object.assign(stepPromise, {

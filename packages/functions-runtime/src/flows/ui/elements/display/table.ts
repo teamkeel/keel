@@ -2,7 +2,7 @@ import {
   BaseUiDisplayResponse,
   DisplayElement,
   DisplayElementImplementation,
-} from "../../..";
+} from "../..";
 
 export type UiElementTable = DisplayElement<{
   data: any[];

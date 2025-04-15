@@ -3,7 +3,7 @@ import {
   BaseUiInputResponse,
   InputElementImplementation,
   InputElementResponse,
-} from "../../..";
+} from "../..";
 
 type ElementDataType = string | number | boolean | Date;
 

@@ -2,7 +2,7 @@ import {
   BaseUiInputResponse,
   InputElementImplementation,
   InputElement,
-} from "../../..";
+} from "../..";
 
 type ElementDataType = number;
 
