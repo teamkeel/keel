@@ -10,6 +10,8 @@ import (
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/util"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -226,6 +228,13 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run) (*FunctionsRespon
 	}
 	var respBody FunctionsResponsePayload
 	if err := json.Unmarshal(b, &respBody); err != nil {
+		return nil, err
+	}
+
+	if respBody.RunID == "" {
+		err := fmt.Errorf("invalid response from flows runtime")
+		span.SetStatus(codes.Error, err.Error())
+		span.SetAttributes(attribute.String("response", string(b)))
 		return nil, err
 	}
 
