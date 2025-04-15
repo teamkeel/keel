@@ -68,11 +68,12 @@ func NewOrchestrator(s *proto.Schema, opts ...OrchestratorOpt) *Orchestrator {
 type FunctionsResponsePayload struct {
 	RunID        string `json:"runId"`
 	RunCompleted bool   `json:"runCompleted"`
+	UI           *JSONB `json:"ui"` // UI component for the current step, if applicable
 }
 
 // orchestrateRun will decide based on the db state if the flow should be ran or not
 func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
-	run, err := GetFlowRun(ctx, runID)
+	run, err := getRun(ctx, runID)
 	if err != nil {
 		return err
 	}
@@ -80,45 +81,27 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 		return fmt.Errorf("invalid run ID: %s", runID)
 	}
 
-	flow := o.schema.FindFlow(run.Name)
-	if flow == nil {
-		return fmt.Errorf("invalid flow run")
-	}
-
 	switch run.Status {
 	case StatusNew, StatusRunning:
 		if run.Status == StatusNew {
 			// this is a new run, set it to running and trigger the flows runtime
-			run, err = UpdateRun(ctx, run.ID, StatusRunning)
+			run, err = updateRun(ctx, run.ID, StatusRunning)
 			if err != nil {
 				return err
 			}
 		}
 
-		resp, _, err := functions.CallFlow(
-			ctx,
-			flow,
-			run.ID,
-		)
+		// call the flow runtime
+		resp, err := o.CallFlow(ctx, run)
 		if err != nil {
 			return err
 		}
 
-		b, err := json.Marshal(resp)
-		if err != nil {
-			return err
-		}
-		var respBody FunctionsResponsePayload
-		if err := json.Unmarshal(b, &respBody); err != nil {
+		if resp.RunCompleted {
+			_, err = updateRun(ctx, run.ID, StatusCompleted)
 			return err
 		}
 
-		if respBody.RunCompleted {
-			_, err = UpdateRun(ctx, run.ID, StatusCompleted)
-			return err
-		}
-
-		//if !respBody.RunCompleted {
 		stepsMap := map[string][]Step{}
 		for _, step := range run.Steps {
 			stepsMap[step.Name] = append(stepsMap[step.Name], step)
@@ -128,16 +111,12 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 		if len(run.Steps) > 0 {
 			lastStep := run.Steps[len(run.Steps)-1]
 			if lastStep.Status == "FAILED" && len(stepsMap[lastStep.Name]) >= lastStep.MaxRetries {
-				_, err := UpdateRun(ctx, run.ID, StatusFailed)
+				_, err := updateRun(ctx, run.ID, StatusFailed)
 				return err
 			}
 		}
-		// } else {
-		// 	_, err = UpdateRun(ctx, run.ID, StatusCompleted)
-		// 	return err
-		// }
 
-		payload := FlowRunUpdated{RunID: respBody.RunID}
+		payload := FlowRunUpdated{RunID: resp.RunID}
 		wrap, err := payload.Wrap()
 		if err != nil {
 			return err
@@ -176,7 +155,7 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 		if flow == nil {
 			return fmt.Errorf("unknown flow: %s", ev.Name)
 		}
-		run, err := CreateRun(ctx, flow, ev.Inputs)
+		run, err := createRun(ctx, flow, ev.Inputs)
 		if err != nil {
 			return err
 		}
@@ -216,4 +195,39 @@ func (o *Orchestrator) sendEvent(ctx context.Context, payload *EventWrapper) err
 
 	_, err = o.sqsClient.SendMessage(ctx, input)
 	return err
+}
+
+// CallFlow is a helper function to call the flows runtime and retrieve the Response Payload
+func (o *Orchestrator) CallFlow(ctx context.Context, run *Run) (*FunctionsResponsePayload, error) {
+	ctx, span := tracer.Start(ctx, "CallFlow")
+	defer span.End()
+
+	if run == nil {
+		return nil, fmt.Errorf("invalid run")
+	}
+
+	flow := o.schema.FindFlow(run.Name)
+	if flow == nil {
+		return nil, fmt.Errorf("invalid flow run")
+	}
+
+	resp, _, err := functions.CallFlow(
+		ctx,
+		flow,
+		run.ID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := json.Marshal(resp)
+	if err != nil {
+		return nil, err
+	}
+	var respBody FunctionsResponsePayload
+	if err := json.Unmarshal(b, &respBody); err != nil {
+		return nil, err
+	}
+
+	return &respBody, nil
 }
