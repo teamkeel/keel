@@ -1033,6 +1033,7 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export interface FlowContextAPI {")
 	w.Indent()
 	w.Writeln("step<T>(name: string, fn: () => Promise<T>, opts?: { maxRetries?: number, timeoutInMs?: number }): Promise<T>;")
+	w.Writeln("ui: runtime.UI<C>;")
 	w.Dedent()
 	w.Writeln("}")
 }
@@ -1133,7 +1134,8 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("return await runner.run(name, fn, opts);")
 	w.Dedent()
 	w.Writeln("};")
-	w.Writeln("return { step };")
+	w.Writeln("const ui = new runtime.UI();")
+	w.Writeln("return { step, ui };")
 	w.Dedent()
 	w.Writeln("};")
 
