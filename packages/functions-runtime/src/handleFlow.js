@@ -10,6 +10,7 @@ const { withSpan } = require("./tracing");
 const { tryExecuteFlow } = require("./tryExecuteFlow");
 const { parseInputs } = require("./parsing");
 const { FlowDisrupt } = require("./StepRunner");
+const { createStepContext } = require("./flows");
 
 async function handleFlow(request, config) {
   // Try to extract trace context from caller
@@ -46,10 +47,12 @@ async function handleFlow(request, config) {
           );
         }
 
-        // The ctx argument passed into the flow function.
-        const ctx = createFlowContextAPI({
-          meta: request.meta,
-        });
+        const ctx = createStepContext(request.meta.runId);
+
+        // // The ctx argument passed into the flow function.
+        // const ctx = createFlowContextAPI({
+        //   meta: request.meta,
+        // });
 
         db = createDatabaseClient({
           connString: request.meta?.secrets?.KEEL_DB_CONN,

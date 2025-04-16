@@ -1134,8 +1134,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("return await runner.run(name, fn, opts);")
 	w.Dedent()
 	w.Writeln("};")
-	w.Writeln("const ui = new runtime.UI();")
-	w.Writeln("return { step, ui };")
+	w.Writeln("return { step };")
 	w.Dedent()
 	w.Writeln("};")
 

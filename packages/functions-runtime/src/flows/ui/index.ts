@@ -1,5 +1,4 @@
 import { FlowConfig } from "..";
-
 import { UiElementSelectOne } from "./elements/select/single";
 import { UiElementInputText } from "./elements/input/text";
 import { UiElementInputNumber } from "./elements/input/number";

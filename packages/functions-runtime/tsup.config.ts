@@ -6,6 +6,7 @@ export default defineConfig({
   dts: true,
   splitting: false,
   sourcemap: true,
+  keepNames: true,
   clean: true,
   target: "node16",
   loader: {
