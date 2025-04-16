@@ -2,6 +2,7 @@ package attributes
 
 import (
 	"encoding/hex"
+	"sync"
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/expressions"
@@ -13,9 +14,13 @@ import (
 )
 
 var permissions = make(map[string]*expressions.Parser)
+var mutex sync.Mutex
 
 // defaultPermission will cache the base CEL environment for a schema
 func defaultPermission(schema []*parser.AST) (*expressions.Parser, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	var contents string
 	for _, s := range schema {
 		contents += s.Raw + "\n"

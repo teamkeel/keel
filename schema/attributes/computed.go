@@ -13,6 +13,9 @@ import (
 var computed = make(map[string]*expressions.Parser)
 
 func defaultComputed(schema []*parser.AST) (*expressions.Parser, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	var contents string
 	for _, s := range schema {
 		contents += s.Raw + "\n"
