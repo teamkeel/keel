@@ -213,7 +213,7 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run) (*FunctionsRespon
 		return nil, fmt.Errorf("invalid flow run")
 	}
 
-	resp, _, err := functions.CallFlow(
+	resp, meta, err := functions.CallFlow(
 		ctx,
 		flow,
 		run.ID,
@@ -231,10 +231,15 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run) (*FunctionsRespon
 		return nil, err
 	}
 
+	if meta != nil {
+		span.SetAttributes(attribute.Int("response.code", meta.Status))
+	}
+
 	if respBody.RunID == "" {
 		err := fmt.Errorf("invalid response from flows runtime")
 		span.SetStatus(codes.Error, err.Error())
-		span.SetAttributes(attribute.String("response", string(b)))
+		span.SetAttributes(attribute.String("response.body", string(b)))
+
 		return nil, err
 	}
 
