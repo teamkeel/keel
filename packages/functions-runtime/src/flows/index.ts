@@ -1,5 +1,8 @@
 import { UI } from "./ui";
 import { useDatabase } from "../database";
+import { textInput } from "./ui/elements/input/text";
+import { numberInput } from "./ui/elements/input/number";
+import { divider } from "./ui/elements/display/divider";
 export { UI };
 import {
   StepCompletedDisrupt,
@@ -172,12 +175,19 @@ export function createStepContext<C extends FlowConfig>(
 
         switch (step.status) {
           case STEP_STATUS.PENDING:
-            throw new UIRenderDisrupt(page);
+            throw new UIRenderDisrupt(step.id, page);
           case STEP_STATUS.COMPLETED:
             return step.data;
           default:
             throw new StepErrorDisrupt("ui step failed");
         }
+      },
+      inputs: {
+        text: textInput,
+        number: numberInput,
+      },
+      display: {
+        divider: divider,
       },
     } as any,
   };

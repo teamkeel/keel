@@ -4,7 +4,7 @@ abstract class FlowDisrupt {
 }
 
 export class UIRenderDisrupt extends FlowDisrupt {
-  constructor(public readonly output: string) {
+  constructor(public readonly stepId: string, public readonly page: string) {
     super();
   }
 }
