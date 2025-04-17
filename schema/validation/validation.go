@@ -73,6 +73,7 @@ var visitorFuncs = []VisitorFunc{
 	SetAttributeExpressionRules,
 	ComputedAttributeRules,
 	ComputedNullableFieldRules,
+	SequenceAttributeRules,
 	Jobs,
 	MessagesRule,
 	ScheduleAttributeRule,

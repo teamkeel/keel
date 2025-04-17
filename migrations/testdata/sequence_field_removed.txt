@@ -1,0 +1,19 @@
+model Invoice {
+    fields {
+        reference Text @sequence("INV-")
+    }
+}
+
+===
+
+model Invoice {}
+
+===
+
+ALTER TABLE "invoice" DROP COLUMN "reference__sequence" CASCADE;
+
+===
+
+[
+    {"Model":"Invoice","Field":"reference","Type":"REMOVED"}
+]

@@ -1,0 +1,43 @@
+model Invoice {
+    fields {
+        //expect-error:23:32:AttributeNotAllowedError:@sequence cannot be used on field of type Number
+        number Number @sequence("INV")
+        //expect-error:22:31:AttributeNotAllowedError:@sequence cannot be used on field of type Boolean
+        bool Boolean @sequence("INV")
+        //expect-error:27:36:AttributeNotAllowedError:@sequence cannot be used on repeated fields
+        references Text[] @sequence("INV")
+        //expect-error:28:37:AttributeArgumentError:missing prefix argument e.g. @sequence("MYPREFIX")
+        missingPreifx Text @sequence
+        //expect-error:38:42:AttributeArgumentError:first argument to @sequence must be a string
+        invalidPrefix Text @sequence(true)
+        //expect-error:41:52:AttributeArgumentError:prefix cannot contain spaces
+        prefixWithSpaces Text @sequence("not valid")
+        invalidStartsAt Text @sequence(
+            "INV",
+            //expect-error:13:23:AttributeArgumentError:second argument to @sequence must be a number
+            notANumber
+        )
+        negativeStartsAt Text @sequence(
+            "INV",
+            //expect-error:13:18:AttributeArgumentError:starting sequence value cannot be negative
+            -1000
+        )
+        withDefault Text {
+            @sequence("INV")
+            //expect-error:13:21:AttributeNotAllowedError:@default cannot be used together with @sequence
+            @default("foo")
+        }
+        withDefaultFirst Text {
+            //expect-error:13:21:AttributeNotAllowedError:@default cannot be used together with @sequence
+            @default("foo")
+            @sequence("INV")
+        }
+        withDefaultAndUnique Text {
+            //expect-error:13:21:AttributeNotAllowedError:@default cannot be used together with @sequence
+            @default("foo")
+            @sequence("INV")
+            //expect-error:13:20:AttributeNotAllowedError:@unique cannot be used together with @sequence
+            @unique
+        }
+    }
+}
