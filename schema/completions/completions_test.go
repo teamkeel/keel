@@ -434,7 +434,7 @@ func TestFieldCompletions(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []string{"@unique", "@default", "@relation", "@computed"},
+			expected: []string{"@unique", "@default", "@relation", "@sequence", "@computed"},
 		},
 		{
 			name: "field-attributes-bare-at",
@@ -443,7 +443,7 @@ func TestFieldCompletions(t *testing.T) {
 					name Text @<Cursor>
 				}
 			}`,
-			expected: []string{"@unique", "@default", "@relation", "@computed"},
+			expected: []string{"@unique", "@default", "@relation", "@sequence", "@computed"},
 		},
 		{
 			name: "field-attributes-whitespace",
@@ -453,7 +453,7 @@ func TestFieldCompletions(t *testing.T) {
 					name Text <Cursor>
 				}
 			}`,
-			expected: []string{"@unique", "@default", "@relation", "@computed"},
+			expected: []string{"@unique", "@default", "@relation", "@sequence", "@computed"},
 		},
 	}
 

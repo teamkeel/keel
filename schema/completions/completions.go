@@ -255,6 +255,7 @@ func getBlockCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, keywo
 			parser.AttributeDefault,
 			parser.AttributeRelation,
 			parser.AttributeComputed,
+			parser.AttributeSequence,
 		})
 	}
 
@@ -325,6 +326,7 @@ func getBlockCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, keywo
 				parser.AttributeDefault,
 				parser.AttributeRelation,
 				parser.AttributeComputed,
+				parser.AttributeSequence,
 			})
 		}
 
