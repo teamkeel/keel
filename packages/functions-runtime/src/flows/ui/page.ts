@@ -5,7 +5,7 @@ import { FlowConfig } from "..";
 
 export type UiPage<C extends FlowConfig> = <
   T extends UIElements,
-  const A extends PageActions[] = [],
+  const A extends PageActions[] = []
 >(options: {
   stage?: ExtractStageKeys<C>;
   title?: string;
@@ -33,8 +33,8 @@ type PageActions =
 type ActionValue<T> = T extends string
   ? T
   : T extends { value: infer V }
-    ? V
-    : never;
+  ? V
+  : never;
 
 // Extract the data from elements and return a key-value object based on the name of the element
 type ExtractFormData<T extends UIElements> = {
@@ -50,7 +50,7 @@ type ExtractStageKeys<T extends FlowConfig> = T extends { stages: infer S }
     ? U extends string
       ? U
       : U extends { key: infer K extends string }
-        ? K
-        : never
+      ? K
+      : never
     : never
   : never;

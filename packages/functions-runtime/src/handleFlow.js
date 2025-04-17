@@ -10,7 +10,11 @@ const { withSpan } = require("./tracing");
 const { tryExecuteFlow } = require("./tryExecuteFlow");
 const { parseInputs } = require("./parsing");
 const { createStepContext } = require("./flows");
-const { StepCompletedDisrupt, StepErrorDisrupt, UIRenderDisrupt } = require("./flows/disrupts");
+const {
+  StepCompletedDisrupt,
+  StepErrorDisrupt,
+  UIRenderDisrupt,
+} = require("./flows/disrupts");
 
 async function handleFlow(request, config) {
   // Try to extract trace context from caller
@@ -78,9 +82,6 @@ async function handleFlow(request, config) {
           runCompleted: true,
         });
       } catch (e) {
-
-        console.log(e);
-
         // The flow is disrupted by a function step completion
         if (e instanceof StepCompletedDisrupt) {
           return createJSONRPCSuccessResponse(request.id, {
@@ -91,15 +92,10 @@ async function handleFlow(request, config) {
 
         // The flow is disrupted by a pending UI step
         if (e instanceof UIRenderDisrupt) {
-          // TODO: Send FlowRunUpdated event with run_completed = false
-          // return createJSONRPCSuccessResponse(request.id, {
-          //   runId: runId,
-          //   ui: e.output,
-          // });
-          return createJSONRPCErrorResponse(request.id, 0,  {
-              runId: runId,
-              ui: e.output,
-            });
+          return createJSONRPCSuccessResponse(request.id, {
+            runId: runId,
+            // TODO: UI output
+          });
         }
 
         if (e instanceof Error) {

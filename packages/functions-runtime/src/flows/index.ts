@@ -1,21 +1,25 @@
 import { UI } from "./ui";
 import { useDatabase } from "../database";
-export { UI }
-import { StepCompletedDisrupt, StepErrorDisrupt, UIRenderDisrupt } from "./disrupts";
+export { UI };
+import {
+  StepCompletedDisrupt,
+  StepErrorDisrupt,
+  UIRenderDisrupt,
+} from "./disrupts";
 
-const enum STEP_STATUS  {
+const enum STEP_STATUS {
   NEW = "NEW",
   RUNNING = "RUNNING",
   PENDING = "PENDING",
   COMPLETED = "COMPLETED",
   FAILED = "FAILED",
-};
+}
 
-const enum  STEP_TYPE  {
+const enum STEP_TYPE {
   FUNCTION = "FUNCTION",
   UI = "UI",
   DELAY = "DELAY",
-};
+}
 
 const defaultOpts = {
   maxRetries: 5,
@@ -25,7 +29,6 @@ const defaultOpts = {
 type FlowInputs = Record<string, any>;
 
 interface StepContext<C extends FlowConfig> {
-  //inputs: I;
   step: <R = any>(
     name: string,
     fn: () => Promise<R>
@@ -54,53 +57,16 @@ type StageConfig =
       initiallyHidden?: boolean;
     };
 
-// Function overloads
-// export function flow<I extends FlowInputs, const C extends FlowConfig>(
-//   flowName: string,
-//   config: C,
-//   flow: FlowFunction<C>
-// ): (inputs: I) => any;
-
-// export function flow<
-//   I extends FlowInputs = {},
-//   const C extends FlowConfig = {},
-// >(flowName: string, flow: FlowFunction<C>): (inputs: I) => any;
-
-// ****************************
-// Mock implementation (to be replaced)
-// ****************************
-
-// export function flow<
-//   const C extends FlowConfig = {},
-// >(
-//   flowName: string,
-//   configOrFlow: C | FlowFunction<C>,
-//   flowFunction?: FlowFunction<C>
-// ) {
-//   const config = typeof configOrFlow === "function" ? undefined : configOrFlow;
-//   const flow =
-//     typeof configOrFlow === "function" ? configOrFlow : flowFunction!;
-
-//   return async (inputs: any) => {
-//     const ctx = createStepContext<C>();
-//     return flow(ctx);
-//   };
-// }
-
 type Opts = {
   maxRetries?: number;
   timeoutInMs?: number;
-}
+};
 
-export function createStepContext<C extends FlowConfig>(runId: string): StepContext<C> {
+export function createStepContext<C extends FlowConfig>(
+  runId: string
+): StepContext<C> {
   return {
-   // inputs: {} as I,
-    step: async <T = any>(
-      name: string,
-      fn: () => Promise<T>,
-      opts?: Opts
-    ) => {
-
+    step: async <T = any>(name: string, fn: () => Promise<T>, opts?: Opts) => {
       const db = useDatabase();
 
       // First check if we already have a result for this step
@@ -132,7 +98,7 @@ export function createStepContext<C extends FlowConfig>(runId: string): StepCont
 
       let result = null;
       try {
-        result = await  withTimeout(fn(), step.timeoutInMs);
+        result = await withTimeout(fn(), step.timeoutInMs);
       } catch (e) {
         await db
           .updateTable("keel_flow_step")
@@ -175,14 +141,12 @@ export function createStepContext<C extends FlowConfig>(runId: string): StepCont
       // return stepWithCatch;
     },
     ui: {
-       page: async (
-        page: any
-      ) => {
+      page: async (page: any) => {
         console.log("options", page);
 
         const db = useDatabase();
 
-         // First check if we already have a result for this step
+        // First check if we already have a result for this step
         let step = await db
           .selectFrom("keel_flow_step")
           .where("run_id", "=", runId)
@@ -192,7 +156,7 @@ export function createStepContext<C extends FlowConfig>(runId: string): StepCont
 
         if (!step) {
           // The step hasn't yet run successfully, so we need to create a NEW run
-           step = await db
+          step = await db
             .insertInto("keel_flow_step")
             .values({
               run_id: runId,
