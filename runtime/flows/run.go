@@ -45,6 +45,13 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs any) (run *Run, err
 		return
 	}
 
+	// load fresh state
+	run, err = getRun(ctx, run.ID)
+	if err != nil {
+		err = fmt.Errorf("retrieving flow run: %w", err)
+		return
+	}
+
 	return run, nil
 }
 

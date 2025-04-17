@@ -104,6 +104,12 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 			return err
 		}
 
+		// reload state from db
+		run, err := getRun(ctx, run.ID)
+		if err != nil {
+			return err
+		}
+
 		stepsMap := map[string][]Step{}
 		for _, step := range run.Steps {
 			stepsMap[step.Name] = append(stepsMap[step.Name], step)
@@ -118,6 +124,12 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 			}
 		}
 
+		// Check to see if we're in a Pending UI step, break orchestration
+		if run.PendingUI() {
+			return nil
+		}
+
+		// Continue running the flow
 		payload := FlowRunUpdated{RunID: resp.RunID}
 		wrap, err := payload.Wrap()
 		if err != nil {
