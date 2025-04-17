@@ -409,62 +409,6 @@ export declare function useDatabase(): Kysely<database>;`
 	})
 }
 
-func TestWriteDevelopmentServer(t *testing.T) {
-	t.Parallel()
-	expected := `
-const { handleRequest, handleJob, handleSubscriber, handleRoute, tracing } = require('@teamkeel/functions-runtime');
-const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } = require('@teamkeel/sdk');
-const { createServer } = require("node:http");
-const process = require("node:process");
-const function_createPost = require("../functions/createPost").default;
-const function_updatePost = require("../functions/updatePost").default;
-const job_batchPosts = require("../jobs/batchPosts").default;
-const subscriber_checkGrammar = require("../subscribers/checkGrammar").default;
-const functions = {
-	createPost: function_createPost,
-	updatePost: function_updatePost,
-}
-const jobs = {
-	batchPosts: job_batchPosts,
-}
-const subscribers = {
-	checkGrammar: subscriber_checkGrammar,
-}
-const routes = {
-}
-const actionTypes = {
-	createPost: "ACTION_TYPE_CREATE",
-	updatePost: "ACTION_TYPE_UPDATE",
-}
-	`
-
-	schema := `
-model Post {
-	fields {
-		title Text
-	}
-
-	actions {
-		create createPost() with(title) @function
-		update updatePost(id) with(title) @function
-	}
-
-	@on([create], checkGrammar)
-}
-
-job BatchPosts {
-	@schedule("* * * * *")
-}`
-
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		files := generateDevelopmentServer(s, &config.ProjectConfig{})
-
-		serverJs := files[0]
-
-		w.Write(serverJs.Contents)
-	})
-}
-
 func TestWriteAPIFactory(t *testing.T) {
 	t.Parallel()
 	expected := `

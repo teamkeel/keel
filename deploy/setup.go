@@ -34,7 +34,7 @@ type AwsIdentityResult struct {
 func getAwsIdentity(ctx context.Context, cfg aws.Config) (*AwsIdentityResult, error) {
 	res, err := sts.NewFromConfig(cfg).GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
 	if err != nil {
-		log("%s error checking AWS auth: %s", IconCross, err.Error())
+		log(ctx, "%s error checking AWS auth: %s", IconCross, err.Error())
 		return nil, err
 	}
 
@@ -47,15 +47,14 @@ func getAwsIdentity(ctx context.Context, cfg aws.Config) (*AwsIdentityResult, er
 type ResolveKeelConfigArgs struct {
 	ProjectRoot string
 	Env         string
-	Silent      bool
 }
 
-func ResolveKeelConfig(args *ResolveKeelConfigArgs) (*config.ConfigFile, error) {
+func ResolveKeelConfig(ctx context.Context, args *ResolveKeelConfigArgs) (*config.ConfigFile, error) {
 	t := NewTiming()
 
 	configFiles, err := config.LoadAll(args.ProjectRoot)
 	if err != nil {
-		log("%s Error loading Keel config files: %s", IconCross, err.Error())
+		log(ctx, "%s Error loading Keel config files: %s", IconCross, err.Error())
 		return nil, err
 	}
 
@@ -86,13 +85,11 @@ func ResolveKeelConfig(args *ResolveKeelConfigArgs) (*config.ConfigFile, error) 
 	}
 
 	if c.Errors != nil {
-		log("%s Errors found in %s\n\n%s", IconCross, c.Filename, c.Errors.Error())
+		log(ctx, "%s Errors found in %s\n\n%s", IconCross, c.Filename, c.Errors.Error())
 		return nil, c.Errors
 	}
 
-	if !args.Silent {
-		log("%s Using %s %s", IconTick, orange(c.Filename), t.Since())
-	}
+	log(ctx, "%s Using %s %s", IconTick, orange(c.Filename), t.Since())
 
 	return c, nil
 }
@@ -131,7 +128,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 		WithDecryption: aws.Bool(true),
 	})
 	if err != nil {
-		log("%s error getting deploy config from SSM: %s", IconCross, err.Error())
+		log(ctx, "%s error getting deploy config from SSM: %s", IconCross, err.Error())
 		return nil, err
 	}
 
@@ -151,7 +148,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 		t := NewTiming()
 		v, err := randomString(hex.EncodeToString)
 		if err != nil {
-			log("%s error generating Pulumi state bucket name: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error generating Pulumi state bucket name: %s", IconCross, gray(err.Error()))
 			return nil, err
 		}
 
@@ -167,7 +164,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 			CreateBucketConfiguration: bucketConfig,
 		})
 		if err != nil {
-			log("%s error creating Pulumi state bucket: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error creating Pulumi state bucket: %s", IconCross, gray(err.Error()))
 			return nil, err
 		}
 
@@ -177,18 +174,18 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 			Type:  ssmtypes.ParameterTypeString,
 		})
 		if err != nil {
-			log("%s error setting Pulumi state bucket name in SSM: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error setting Pulumi state bucket name in SSM: %s", IconCross, gray(err.Error()))
 			return nil, err
 		}
 
-		log("%s Pulumi state bucket created %s", IconTick, t.Since())
+		log(ctx, "%s Pulumi state bucket created %s", IconTick, t.Since())
 	}
 
 	if passphrase == "" {
 		t := NewTiming()
 		value, err := randomString(base64.StdEncoding.EncodeToString)
 		if err != nil {
-			log("%s error generating Pulumi passphrase: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error generating Pulumi passphrase: %s", IconCross, gray(err.Error()))
 			return nil, err
 		}
 
@@ -199,11 +196,11 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 			Type:  ssmtypes.ParameterTypeSecureString,
 		})
 		if err != nil {
-			log("%s error setting Pulumi passphrase in SSM: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error setting Pulumi passphrase in SSM: %s", IconCross, gray(err.Error()))
 			return nil, err
 		}
 
-		log("%s Pulumi passphrase created %s", IconTick, t.Since())
+		log(ctx, "%s Pulumi passphrase created %s", IconTick, t.Since())
 	}
 
 	t := NewTiming()
@@ -211,11 +208,11 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 		SkipVersionCheck: true,
 	})
 	if err != nil {
-		log("%s error installing Pulumi: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error installing Pulumi: %s", IconCross, gray(err.Error()))
 		return nil, err
 	}
 
-	log("%s Pulumi version %s installed %s", IconTick, orange(pulumiCmd.Version().String()), t.Since())
+	log(ctx, "%s Pulumi version %s installed %s", IconTick, orange(pulumiCmd.Version().String()), t.Since())
 
 	result.WorkspaceOptions = []auto.LocalWorkspaceOption{
 		auto.Pulumi(pulumiCmd),
@@ -255,20 +252,20 @@ func createPrivateKeySecret(ctx context.Context, args *CreatePrivateKeySecretArg
 	if err != nil {
 		var ae smithy.APIError
 		if !errors.As(err, &ae) || ae.ErrorCode() != "ParameterNotFound" {
-			log("%s error fetching private key secret from SSM: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error fetching private key secret from SSM: %s", IconCross, gray(err.Error()))
 			return err
 		}
 	}
 
 	if getParamResult != nil && getParamResult.Parameter != nil {
-		log("%s Using existing private key", IconTick)
+		log(ctx, "%s Using existing private key", IconTick)
 		return nil
 	}
 
 	t := NewTiming()
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		log("%s error generating private key: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error generating private key: %s", IconCross, gray(err.Error()))
 		return err
 	}
 
@@ -283,11 +280,11 @@ func createPrivateKeySecret(ctx context.Context, args *CreatePrivateKeySecretArg
 		Type:  ssmtypes.ParameterTypeSecureString,
 	})
 	if err != nil {
-		log("%s error setting private key secret in SSM: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error setting private key secret in SSM: %s", IconCross, gray(err.Error()))
 		return err
 	}
 
-	log("%s New private key created %s", IconTick, t.Since())
+	log(ctx, "%s New private key created %s", IconTick, t.Since())
 	return nil
 }
 
