@@ -49,6 +49,9 @@ jobs:
       - name: Install @teamkeel/functions-runtime deps
         working-directory: ./packages/functions-runtime
         run: pnpm install --frozen-lockfile --production
+      - name: Compile @teamkeel/functions-runtime
+        working-directory: ./packages/functions-runtime
+        run: tsup build
       - name: Install @teamkeel/testing-runtime deps
         working-directory: ./packages/testing-runtime
         run: pnpm install --frozen-lockfile --production
