@@ -94,7 +94,8 @@ async function handleFlow(request, config) {
         if (e instanceof UIRenderDisrupt) {
           return createJSONRPCSuccessResponse(request.id, {
             runId: runId,
-            // TODO: UI output
+            stepId: e.stepId,
+            ui: e.page, // TODO: rename to page?
           });
         }
 
