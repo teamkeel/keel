@@ -9,8 +9,8 @@ const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
 const { tryExecuteFlow } = require("./tryExecuteFlow");
 const { parseInputs } = require("./parsing");
-const { FlowDisrupt } = require("./StepRunner");
 const { createStepContext } = require("./flows");
+const { StepCompletedDisrupt, StepErrorDisrupt, UIRenderDisrupt } = require("./flows/disrupts");
 
 async function handleFlow(request, config) {
   // Try to extract trace context from caller
@@ -32,7 +32,7 @@ async function handleFlow(request, config) {
           throw new Error("no runId provided");
         }
 
-        const { createFlowContextAPI, flows } = config;
+        const { flows } = config;
 
         if (!(request.method in flows)) {
           const message = `no corresponding flow found for '${request.method}'`;
@@ -46,13 +46,6 @@ async function handleFlow(request, config) {
             message
           );
         }
-
-        const ctx = createStepContext(request.meta.runId);
-
-        // // The ctx argument passed into the flow function.
-        // const ctx = createFlowContextAPI({
-        //   meta: request.meta,
-        // });
 
         db = createDatabaseClient({
           connString: request.meta?.secrets?.KEEL_DB_CONN,
@@ -68,6 +61,8 @@ async function handleFlow(request, config) {
           throw new Error("no flow run found");
         }
 
+        const ctx = createStepContext(request.meta.runId);
+
         const flowFunction = flows[request.method];
 
         await tryExecuteFlow(db, async () => {
@@ -78,19 +73,33 @@ async function handleFlow(request, config) {
         });
 
         // If we reach this point, then we know the entire flow completed successfully
-        // TODO: Send FlowRunUpdated event with run_completed = true
         return createJSONRPCSuccessResponse(request.id, {
           runId: runId,
           runCompleted: true,
         });
       } catch (e) {
-        // If the flow is disrupted, then we know that a step either completed successfully or failed
-        if (e instanceof FlowDisrupt) {
-          // TODO: Send FlowRunUpdated event with run_completed = false
+
+        console.log(e);
+
+        // The flow is disrupted by a function step completion
+        if (e instanceof StepCompletedDisrupt) {
           return createJSONRPCSuccessResponse(request.id, {
             runId: runId,
             runCompleted: false,
           });
+        }
+
+        // The flow is disrupted by a pending UI step
+        if (e instanceof UIRenderDisrupt) {
+          // TODO: Send FlowRunUpdated event with run_completed = false
+          // return createJSONRPCSuccessResponse(request.id, {
+          //   runId: runId,
+          //   ui: e.output,
+          // });
+          return createJSONRPCErrorResponse(request.id, 0,  {
+              runId: runId,
+              ui: e.output,
+            });
         }
 
         if (e instanceof Error) {

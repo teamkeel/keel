@@ -1,18 +1,20 @@
 import { UI } from "./ui";
 import { useDatabase } from "../database";
-import { FlowDisrupt } from "../StepRunner";
 export { UI }
+import { StepCompletedDisrupt, StepErrorDisrupt, UIRenderDisrupt } from "./disrupts";
 
-const STEP_STATUS = {
-  NEW: "NEW",
-  COMPLETED: "COMPLETED",
-  FAILED: "FAILED",
+const enum STEP_STATUS  {
+  NEW = "NEW",
+  RUNNING = "RUNNING",
+  PENDING = "PENDING",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
 };
 
-const STEP_TYPE = {
-  FUNCTION: "FUNCTION",
-  IO: "IO",
-  DELAY: "DELAY",
+const enum  STEP_TYPE  {
+  FUNCTION = "FUNCTION",
+  UI = "UI",
+  DELAY = "DELAY",
 };
 
 const defaultOpts = {
@@ -128,28 +130,37 @@ export function createStepContext<C extends FlowConfig>(runId: string): StepCont
         .returningAll()
         .executeTakeFirst();
 
-      let outcome = STEP_STATUS.COMPLETED;
-
       let result = null;
       try {
         result = await  withTimeout(fn(), step.timeoutInMs);
       } catch (e) {
-        outcome = STEP_STATUS.FAILED;
+        await db
+          .updateTable("keel_flow_step")
+          .set({
+            status: STEP_STATUS.FAILED,
+            // TODO: store error message
+          })
+          .where("id", "=", step.id)
+          .returningAll()
+          .executeTakeFirst();
+
+        throw new StepErrorDisrupt("an error occurred");
       }
 
       // Very crudely store the result in the database
       await db
         .updateTable("keel_flow_step")
         .set({
-          status: outcome,
+          status: STEP_STATUS.COMPLETED,
           value: JSON.stringify(result),
         })
         .where("id", "=", step.id)
         .returningAll()
         .executeTakeFirst();
 
-      throw new FlowDisrupt();
+      throw new StepCompletedDisrupt();
 
+      // TODO: Incorporate when we have support error handling
       // const stepPromise = fn({} as any);
       // const stepWithCatch = Object.assign(stepPromise, {
       //   catch: async (errorHandler: (err: Error) => Promise<void> | void) => {
@@ -165,56 +176,44 @@ export function createStepContext<C extends FlowConfig>(runId: string): StepCont
     },
     ui: {
        page: async (
-        options: any
+        page: any
       ) => {
+        console.log("options", page);
 
         const db = useDatabase();
 
          // First check if we already have a result for this step
-        const step = await db
+        let step = await db
           .selectFrom("keel_flow_step")
           .where("run_id", "=", runId)
-          .where("name", "=", options.title)
+          .where("name", "=", page.title)
           .selectAll()
           .executeTakeFirst();
 
-
         if (!step) {
           // The step hasn't yet run successfully, so we need to create a NEW run
-          const step = await db
+           step = await db
             .insertInto("keel_flow_step")
             .values({
               run_id: runId,
-              name: options.title,
-              status: "RUNNING",
-              type: "UI",
+              name: page.title,
+              status: STEP_STATUS.PENDING,
+              type: STEP_TYPE.UI,
               maxRetries: 3,
               timeoutInMs: 1000,
             })
             .returningAll()
             .executeTakeFirst();
-
-          throw options;
         }
-
-        console.log(step);
-
 
         switch (step.status) {
-          case "RUNNING":
-            throw options;
-          case "COMPLETED":
+          case STEP_STATUS.PENDING:
+            throw new UIRenderDisrupt(page);
+          case STEP_STATUS.COMPLETED:
             return step.data;
+          default:
+            throw new StepErrorDisrupt("ui step failed");
         }
-
-
-        //return options;
-          
-        // Get this step from the database and determine next move:
-        //  - If the step is RUNNING and there is no data, then return flow UI structure.  We are still waiting on UI data.
-        //  - If the step is RUNNING and there is data, then run the validation functions. If these all pass, then update the step to COMPLETED.
-        //  - If the step is COMPLETED, then return the data.
-
       },
     } as any,
   };
@@ -232,4 +231,3 @@ function withTimeout<T>(promiseFn: Promise<T>, timeout: number): Promise<T> {
     }),
   ]);
 }
-

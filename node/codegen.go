@@ -1126,18 +1126,6 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln("function createFlowContextAPI({ meta }) {")
-	w.Indent()
-	w.Writeln("const step = async (name, fn, opts) => {")
-	w.Indent()
-	w.Writeln("const runner = new runtime.StepRunner(meta.runId);")
-	w.Writeln("return await runner.run(name, fn, opts);")
-	w.Dedent()
-	w.Writeln("};")
-	w.Writeln("return { step };")
-	w.Dedent()
-	w.Writeln("};")
-
 	w.Writeln("function createModelAPI() {")
 	w.Indent()
 	w.Writeln("return {")
@@ -1174,7 +1162,6 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
 	w.Writeln("module.exports.createJobContextAPI = createJobContextAPI;")
 	w.Writeln("module.exports.createSubscriberContextAPI = createSubscriberContextAPI;")
-	w.Writeln("module.exports.createFlowContextAPI = createFlowContextAPI;")
 }
 
 func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
@@ -1490,7 +1477,7 @@ func toActionReturnType(model *proto.Model, action *proto.Action) string {
 func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) codegen.GeneratedFiles {
 	w := &codegen.Writer{}
 	w.Writeln(`const { handleRequest, handleJob, handleSubscriber, handleRoute, handleFlow, tracing } = require('@teamkeel/functions-runtime');`)
-	w.Writeln(`const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, createFlowContextAPI, permissionFns } = require('@teamkeel/sdk');`)
+	w.Writeln(`const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } = require('@teamkeel/sdk');`)
 	w.Writeln(`const { createServer } = require("node:http");`)
 	w.Writeln(`const process = require("node:process");`)
 
@@ -1648,7 +1635,6 @@ const listener = async (req, res) => {
 			case "flow":
 				rpcResponse = await handleFlow(json, {
 					flows,
-					createFlowContextAPI,
 				});
 				break;
 			default:

@@ -16,7 +16,6 @@ const tracing = require("./tracing");
 const { InlineFile, File } = require("./File");
 const { Duration } = require("./Duration");
 const { ErrorPresets } = require("./errors");
-const { StepRunner } = require("./StepRunner");
 
 module.exports = {
   ModelAPI,
@@ -36,7 +35,6 @@ module.exports = {
   File,
   Duration,
   ErrorPresets,
-  StepRunner,
   ksuid() {
     return KSUID.randomSync().string;
   },

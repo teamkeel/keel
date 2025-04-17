@@ -413,7 +413,7 @@ func TestWriteDevelopmentServer(t *testing.T) {
 	t.Parallel()
 	expected := `
 const { handleRequest, handleJob, handleSubscriber, handleRoute, handleFlow, tracing } = require('@teamkeel/functions-runtime');
-const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, createFlowContextAPI, permissionFns } = require('@teamkeel/sdk');
+const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } = require('@teamkeel/sdk');
 const { createServer } = require("node:http");
 const process = require("node:process");
 const function_createPost = require("../functions/createPost").default;
@@ -506,13 +506,6 @@ function createSubscriberContextAPI({ meta }) {
 	};
 	return { env, now, secrets };
 };
-function createFlowContextAPI({ meta }) {
-	const step = async (name, fn, opts) => {
-		const runner = new runtime.StepRunner(meta.runId);
-		return await runner.run(name, fn, opts);
-	};
-	return { step };
-};
 function createModelAPI() {
 	return {
 		person: new runtime.ModelAPI("person", () => ({}), tableConfigMap),
@@ -530,8 +523,7 @@ module.exports.models = models;
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;
 module.exports.createJobContextAPI = createJobContextAPI;
-module.exports.createSubscriberContextAPI = createSubscriberContextAPI;
-module.exports.createFlowContextAPI = createFlowContextAPI;`
+module.exports.createSubscriberContextAPI = createSubscriberContextAPI;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
