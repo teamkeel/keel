@@ -96,3 +96,48 @@ func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 	run.SetUIComponent(resp.UI)
 	return
 }
+
+// UpdateStep sets the given input on the given pending UI step, updating it's status to COMPLETED. It then returs the
+// updated run state
+func UpdateStep(ctx context.Context, stepID string, inputs any) (run *Run, err error) {
+	ctx, span := tracer.Start(ctx, "UpdateStep")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	var step *Step
+	step, err = setStepUIValues(ctx, stepID, inputs)
+	if err != nil {
+		err = fmt.Errorf("setting ui input on step: %w", err)
+		return
+	}
+
+	// trigger the orchestrator to continue running the flow
+	var o *Orchestrator
+	o, err = GetOrchestrator(ctx)
+	if err != nil {
+		err = fmt.Errorf("retrieving context flow orchestrator: %w", err)
+		return
+	}
+
+	payload := FlowRunUpdated{RunID: step.RunID}
+	wrap, err := payload.Wrap()
+	if err != nil {
+		err = fmt.Errorf("creating FlowRunUpdated event: %w", err)
+		return
+	}
+
+	err = o.SendEvent(ctx, wrap)
+	if err != nil {
+		err = fmt.Errorf("sending FlowRunUpdated event: %w", err)
+		return
+	}
+
+	// return the new run state
+	return GetFlowRunState(ctx, step.RunID)
+}

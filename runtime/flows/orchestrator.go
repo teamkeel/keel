@@ -124,12 +124,10 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 			return err
 		}
 
-		return o.sendEvent(ctx, wrap)
+		return o.SendEvent(ctx, wrap)
 	case StatusFailed, StatusCompleted:
 		// Do nothing
 		return nil
-	case StatusWaiting:
-		return fmt.Errorf("not implemented")
 	}
 
 	return nil
@@ -166,9 +164,9 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 	return nil
 }
 
-// sendEvent sends the given event to the flow runtime's queue or directly invokes the function depending on the
+// SendEvent sends the given event to the flow runtime's queue or directly invokes the function depending on the
 // orchestrator's settings
-func (o *Orchestrator) sendEvent(ctx context.Context, payload *EventWrapper) error {
+func (o *Orchestrator) SendEvent(ctx context.Context, payload *EventWrapper) error {
 	if payload == nil {
 		return fmt.Errorf("invalid event payload")
 	}
