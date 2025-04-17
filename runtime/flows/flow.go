@@ -20,24 +20,22 @@ var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/flows")
 type Status string
 
 const (
-	StatusNew       Status = "new"
-	StatusRunning   Status = "running"
-	StatusWaiting   Status = "waiting"
-	StatusFailed    Status = "failed"
-	StatusCompleted Status = "completed"
+	StatusNew       Status = "NEW"
+	StatusRunning   Status = "RUNNING"
+	StatusFailed    Status = "FAILED"
+	StatusCompleted Status = "COMPLETED"
 )
 
 type StepType string
 type StepStatus string
 
 const (
-	StepTypeFunction StepType = "function"
-	StepTypeUI       StepType = "ui"
-	StepTypeWait     StepType = "wait"
+	StepTypeFunction StepType = "FUNCTION"
+	StepTypeUI       StepType = "UI"
 
-	StepStatusPending   StepStatus = "pending"
-	StepStatusFailed    StepStatus = "Failed"
-	StepStatusCompleted StepStatus = "completed"
+	StepStatusPending   StepStatus = "PENDING"
+	StepStatusFailed    StepStatus = "FAILED"
+	StepStatusCompleted StepStatus = "COMPLETED"
 )
 
 type Run struct {
@@ -80,6 +78,17 @@ func (r *Run) SetUIComponent(ui *JSONB) {
 			r.Steps[i].UI = ui
 		}
 	}
+}
+
+// HasPendingUIStep checks that this run has a pending UI step with the given id
+func (r *Run) HasPendingUIStep(stepID string) bool {
+	for _, step := range r.Steps {
+		if step.ID == stepID {
+			return step.Type == StepTypeUI && step.Status == StepStatusPending
+		}
+	}
+
+	return false
 }
 
 type Step struct {
@@ -177,4 +186,33 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any) (*Run, error) 
 	}
 
 	return &run, nil
+}
+
+// setStepUIValues will set the values for the given pending UI step
+func setStepUIValues(ctx context.Context, stepID string, inputs any) (*Step, error) {
+	var jsonInputs JSONB
+	if inputsMap, ok := inputs.(map[string]any); ok {
+		jsonInputs = inputsMap
+	}
+
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var step Step
+	result := database.GetDB().Model(&step).Clauses(clause.Returning{}).
+		Where("id = ?", stepID).
+		Where("type = ?", StepTypeUI).
+		Where("status = ?", StepStatusPending).
+		Updates(&Step{
+			Value:  &jsonInputs,
+			Status: StepStatusCompleted,
+		})
+
+	if result.Error == nil && result.RowsAffected == 0 {
+		return nil, fmt.Errorf("invalid step")
+	}
+
+	return &step, result.Error
 }

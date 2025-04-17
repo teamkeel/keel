@@ -58,12 +58,27 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 
 			return common.NewJsonResponse(http.StatusOK, run, nil)
 		case 3:
-			// TODO: # Send step updates
-			// PUT flows/json/[flowName]/[runID]/[stepID]
+			if pathParts[2] == "cancel" {
+				// TODO: # Cancel run
+				// POST flows/json/[flowName]/[runID]/cancel
+				return common.NewJsonResponse(http.StatusNotImplemented, pathParts, nil)
+			}
+			// Send step updates: PUT flows/json/[flowName]/[runID]/[stepID]
+			if r.Method != http.MethodPut {
+				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP PUT accepted"), nil)
+			}
 
-			// TODO: # Cancel run
-			// POST flows/json/[flowName]/[runID]/cancel
-			return common.NewJsonResponse(http.StatusNotImplemented, pathParts, nil)
+			inputs, err := common.ParseRequestData(r)
+			if err != nil {
+				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
+			}
+
+			run, err := flows.UpdateStep(ctx, pathParts[2], inputs)
+			if err != nil {
+				return httpjson.NewErrorResponse(ctx, err, nil)
+			}
+
+			return common.NewJsonResponse(http.StatusOK, run, nil)
 		}
 		return common.Response{
 			Status: http.StatusNotFound,
