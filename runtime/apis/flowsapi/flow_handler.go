@@ -2,6 +2,7 @@ package flowsapi
 
 import (
 	"net/http"
+	"path"
 	"strings"
 
 	"github.com/teamkeel/keel/proto"
@@ -15,10 +16,14 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "FlowsAPI")
 		defer span.End()
+
 		span.SetAttributes(
 			attribute.String("api.protocol", "HTTP JSON"),
 		)
-		pathParts := strings.Split(strings.TrimPrefix(r.URL.Path, "/flows/json/"), "/")
+
+		path := path.Clean(r.URL.EscapedPath())
+		pathParts := strings.Split(strings.TrimPrefix(path, "/flows/json/"), "/")
+
 		flow := s.FindFlow(pathParts[0])
 		if flow == nil {
 			return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
