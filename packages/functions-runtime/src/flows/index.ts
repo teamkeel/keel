@@ -113,7 +113,7 @@ export function createStepContext<C extends FlowConfig>(
           .returningAll()
           .executeTakeFirst();
 
-        throw new StepErrorDisrupt("an error occurred");
+        throw new StepErrorDisrupt(e instanceof Error ? e.message : "an error occurred");
       }
 
       // Very crudely store the result in the database
@@ -177,7 +177,7 @@ export function createStepContext<C extends FlowConfig>(
           case STEP_STATUS.PENDING:
             throw new UIRenderDisrupt(step.id, page);
           case STEP_STATUS.COMPLETED:
-            return step.data;
+            return step.value;
           default:
             throw new StepErrorDisrupt("ui step failed");
         }
