@@ -485,7 +485,7 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 	})
 
 	for i, f := range relevantFields {
-		w.Writef("%s?: SortDirection", f.Name)
+		w.Writef("%s?: runtime.SortDirection", f.Name)
 
 		if i < len(relevantFields)-1 {
 			w.Write(",")
@@ -1415,7 +1415,11 @@ func toActionReturnType(model *proto.Model, action *proto.Action) string {
 		// todo: create ID type
 		returnType += "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
-		returnType += action.ResponseMessageName
+		if action.ResponseMessageName == parser.MessageFieldTypeAny {
+			returnType += "any"
+		} else {
+			returnType += action.ResponseMessageName
+		}
 	}
 
 	returnType += ">"
@@ -1549,7 +1553,12 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 				w.Write("?")
 			}
 
-			w.Writef(`: %s): %s`, action.InputMessageName, toActionReturnType(model, action))
+			argType := action.InputMessageName
+			if argType == parser.MessageFieldTypeAny {
+				argType = "any"
+			}
+
+			w.Writef(`: %s): %s`, argType, toActionReturnType(model, action))
 			w.Writeln(";")
 		}
 	}
@@ -1626,7 +1635,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_FILE:
-		return "FileDbRecord"
+		return "runtime.FileDbRecord"
 	default:
 		return toTypeScriptType(t, false, isTestingPackage, false)
 	}
@@ -1647,7 +1656,7 @@ func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPac
 			return "string"
 		} else {
 			if isTestingPackage {
-				return "FileWriteTypes"
+				return "runtime.FileWriteTypes"
 			} else {
 				return "runtime.File"
 			}
@@ -1704,7 +1713,11 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 			ret = t.ModelName.Value
 		}
 	case proto.Type_TYPE_SORT_DIRECTION:
-		ret = "SortDirection"
+		if isClientPackage {
+			ret = "SortDirection"
+		} else {
+			ret = "runtime.SortDirection"
+		}
 	case proto.Type_TYPE_UNION:
 		// Retrieve all the types that can satisfy this union field.
 		messageNames := lo.Map(t.UnionNames, func(s *wrapperspb.StringValue, _ int) string {
@@ -1720,7 +1733,7 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 			ret = "FileResponseObject"
 		} else {
 			if includeCompatibleTypes {
-				ret = "FileWriteTypes"
+				ret = "runtime.FileWriteTypes"
 			} else {
 				ret = "runtime.File"
 			}
