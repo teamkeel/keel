@@ -183,7 +183,7 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 				"target":            "ES2016",
 				"esModuleInterop":   true,
 				"moduleResolution":  "node",
-				"skipLibCheck":      true,
+				"skipLibCheck":      false,
 				"strictNullChecks":  true,
 				"types":             []string{"node"},
 				"allowJs":           true,
