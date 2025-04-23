@@ -65,7 +65,7 @@ async function handleFlow(request, config) {
           throw new Error("no flow run found");
         }
 
-        const ctx = createStepContext(request.meta.runId);
+        const ctx = createStepContext(request.meta.runId, request.meta.data);
 
         const flowFunction = flows[request.method];
 

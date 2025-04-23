@@ -188,32 +188,3 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any) (*Run, error) 
 
 	return &run, nil
 }
-
-// setStepUIValues will set the values for the given pending UI step
-func setStepUIValues(ctx context.Context, stepID string, inputs any) (*Step, error) {
-	var jsonInputs JSONB
-	if inputsMap, ok := inputs.(map[string]any); ok {
-		jsonInputs = inputsMap
-	}
-
-	database, err := db.GetDatabase(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var step Step
-	result := database.GetDB().Model(&step).Clauses(clause.Returning{}).
-		Where("id = ?", stepID).
-		Where("type = ?", StepTypeUI).
-		Where("status = ?", StepStatusPending).
-		Updates(&Step{
-			Value:  &jsonInputs,
-			Status: StepStatusCompleted,
-		})
-
-	if result.Error == nil && result.RowsAffected == 0 {
-		return nil, fmt.Errorf("invalid step")
-	}
-
-	return &step, result.Error
-}
