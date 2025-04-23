@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
+	"strconv"
 	"time"
 
 	"github.com/teamkeel/keel/db"
@@ -126,6 +128,59 @@ func (jsonField *JSONB) Scan(value any) error {
 	return json.Unmarshal(data, &jsonField)
 }
 
+type paginationFields struct {
+	Limit  int
+	After  *string
+	Before *string
+}
+
+// Parse will set the values for the pagination fields from the given map
+func (p *paginationFields) Parse(inputs map[string]any) {
+	for f, v := range inputs {
+		switch f {
+		case "limit":
+			switch val := v.(type) {
+			case int64:
+				p.Limit = int(val)
+			case int:
+				p.Limit = val
+			case float64:
+				p.Limit = int(val)
+			case string:
+				if num, err := strconv.Atoi(val); err == nil {
+					p.Limit = num
+				}
+			}
+		case "after":
+			if val, ok := v.(string); ok {
+				p.After = &val
+			}
+		case "before":
+			if val, ok := v.(string); ok {
+				p.Before = &val
+			}
+		}
+	}
+}
+
+// GetLimit returns a limit of items to be returned. If no limit set in the pagination fields, a default of 10 will be used
+func (p *paginationFields) GetLimit() int {
+	// default to 10
+	if p == nil || p.Limit < 1 {
+		return 10
+	}
+
+	return p.Limit
+}
+
+func (p *paginationFields) IsBackwards() bool {
+	if p.After != nil {
+		return false
+	}
+
+	return true
+}
+
 // getRun returns the flow run with the given ID. If no flow run found, nil nil is returned.
 func getRun(ctx context.Context, runID string) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
@@ -187,4 +242,46 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any) (*Run, error) 
 	}
 
 	return &run, nil
+}
+
+// listRuns will list the flow runs for the given flow using cursor pagination. It defaults to
+func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]*Run, error) {
+	if flow == nil {
+		return nil, fmt.Errorf("invalid flow")
+	}
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var runs []*Run
+
+	q := database.GetDB().Where("name = ?", flow.Name).Limit(page.GetLimit())
+
+	if page != nil {
+		if page.IsBackwards() {
+			q = q.Order("id DESC")
+		} else {
+			q = q.Order("id ASC")
+		}
+
+		if page.Before != nil {
+			q.Where("id < ?", *page.Before)
+		}
+		if page.After != nil {
+			q.Where("id > ?", *page.After)
+		}
+	}
+
+	result := q.Find(&runs)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if !page.IsBackwards() {
+		// we always want to return items backwards (i.e. the most recent at the top)
+		slices.Reverse(runs)
+	}
+
+	return runs, nil
 }

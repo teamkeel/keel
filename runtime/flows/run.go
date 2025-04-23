@@ -55,6 +55,24 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs any) (run *Run, err
 	return run, nil
 }
 
+func ListFlowRuns(ctx context.Context, flow *proto.Flow, inputs map[string]any) (runs []*Run, err error) {
+	ctx, span := tracer.Start(ctx, "ListFlowRuns")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	pf := paginationFields{}
+	pf.Parse(inputs)
+
+	runs, err = listRuns(ctx, flow, &pf)
+	return
+}
+
 // GetFlowRunState retrieves the state of the given flow run. If the run has a pending UI step, the UI component will be
 // injected into the step before returning it
 func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
