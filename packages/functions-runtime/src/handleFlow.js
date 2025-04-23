@@ -28,7 +28,7 @@ async function handleFlow(request, config) {
     // Wrapping span for the whole request
     return withSpan(request.method, async (span) => {
       let db = null;
-
+      let flowConfig = null;
       const runId = request.meta?.runId;
 
       try {
@@ -67,7 +67,8 @@ async function handleFlow(request, config) {
 
         const ctx = createStepContext(request.meta.runId);
 
-        const flowFunction = flows[request.method];
+        const flowFunction = flows[request.method].fn;
+        flowConfig = flows[request.method].config;
 
         await tryExecuteFlow(db, async () => {
           // parse request params to convert objects into rich field types (e.g. InlineFile)
@@ -80,6 +81,7 @@ async function handleFlow(request, config) {
         return createJSONRPCSuccessResponse(request.id, {
           runId: runId,
           runCompleted: true,
+          config: flowConfig,
         });
       } catch (e) {
         // The flow is disrupted by a function step completion
@@ -87,6 +89,7 @@ async function handleFlow(request, config) {
           return createJSONRPCSuccessResponse(request.id, {
             runId: runId,
             runCompleted: false,
+            config: flowConfig,
           });
         }
 
@@ -95,7 +98,8 @@ async function handleFlow(request, config) {
           return createJSONRPCSuccessResponse(request.id, {
             runId: runId,
             stepId: e.stepId,
-            ui: e.page, // TODO: rename to page?
+            config: flowConfig,
+            ui: e.page,
           });
         }
 

@@ -3,7 +3,11 @@ import { useDatabase } from "../database";
 import { textInput } from "./ui/elements/input/text";
 import { numberInput } from "./ui/elements/input/number";
 import { divider } from "./ui/elements/display/divider";
-export { UI };
+import { booleanInput } from "./ui/elements/input/boolean";
+import { markdown } from "./ui/elements/display/markdown";
+import { table } from "./ui/elements/display/table";
+import { selectOne } from "./ui/elements/select/single";
+import { UiPage } from "./ui/page";
 import {
   StepCompletedDisrupt,
   StepErrorDisrupt,
@@ -29,21 +33,16 @@ const defaultOpts = {
   timeoutInMs: 60000,
 };
 
-type FlowInputs = Record<string, any>;
-
-interface StepContext<C extends FlowConfig> {
+export interface StepContext<C extends FlowConfig> {
   step: <R = any>(
     name: string,
-    fn: () => Promise<R>
+    fn: () => Promise<R>,
+    opts?: Opts
   ) => Promise<R> & {
     catch: (errorHandler: (err: Error) => Promise<void> | void) => Promise<any>;
   };
   ui: UI<C>;
 }
-
-export type FlowFunction<C extends FlowConfig = {}> = (
-  context: StepContext<C>
-) => any;
 
 export interface FlowConfig {
   stages?: StageConfig[];
@@ -144,9 +143,7 @@ export function createStepContext<C extends FlowConfig>(
       // return stepWithCatch;
     },
     ui: {
-      page: async (page: any) => {
-        console.log("options", page);
-
+      page: (async (page) => {
         const db = useDatabase();
 
         // First check if we already have a result for this step
@@ -181,15 +178,21 @@ export function createStepContext<C extends FlowConfig>(
           default:
             throw new StepErrorDisrupt("ui step failed");
         }
-      },
+      }) as UiPage<C>,
       inputs: {
-        text: textInput,
-        number: numberInput,
+        text: textInput as any,
+        number: numberInput as any,
+        boolean: booleanInput as any,
       },
       display: {
-        divider: divider,
+        divider: divider as any,
+        markdown: markdown as any,
+        table: table as any,
       },
-    } as any,
+      select: {
+        single: selectOne as any,
+      },
+    },
   };
 }
 
@@ -205,3 +208,5 @@ function withTimeout<T>(promiseFn: Promise<T>, timeout: number): Promise<T> {
     }),
   ]);
 }
+
+export { UI };
