@@ -49,7 +49,8 @@ func (e *FlowRunStarted) Wrap() (*EventWrapper, error) {
 }
 
 type FlowRunUpdated struct {
-	RunID string `json:"runId"`
+	RunID string         `json:"runId"`
+	Data  map[string]any `json:"data"`
 }
 
 func (e *FlowRunUpdated) ReadPayload(ev *EventWrapper) error {

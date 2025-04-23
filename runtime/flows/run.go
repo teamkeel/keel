@@ -40,7 +40,7 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs any) (run *Run, err
 		attribute.String("flowRun.id", run.ID),
 	)
 
-	if err = o.orchestrateRun(ctx, run.ID); err != nil {
+	if err = o.orchestrateRun(ctx, run.ID, nil); err != nil {
 		err = fmt.Errorf("orchestrating flow run: %w", err)
 		return
 	}
@@ -92,8 +92,7 @@ func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 	}
 
 	// retrieving the step component from the flow runtime
-	var resp *FunctionsResponsePayload
-	resp, err = o.CallFlow(ctx, run)
+	resp, err := o.CallFlow(ctx, run, nil)
 	if err != nil {
 		err = fmt.Errorf("retrieving ui component: %w", err)
 		return
@@ -106,7 +105,7 @@ func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 
 // UpdateStep sets the given input on the given pending UI step, updating it's status to COMPLETED. It then returs the
 // updated run state
-func UpdateStep(ctx context.Context, stepID string, inputs any) (run *Run, err error) {
+func UpdateStep(ctx context.Context, runID string, stepID string, inputs map[string]any) (run *Run, err error) {
 	ctx, span := tracer.Start(ctx, "UpdateStep")
 	defer span.End()
 
@@ -117,12 +116,12 @@ func UpdateStep(ctx context.Context, stepID string, inputs any) (run *Run, err e
 		}
 	}()
 
-	var step *Step
-	step, err = setStepUIValues(ctx, stepID, inputs)
-	if err != nil {
-		err = fmt.Errorf("setting ui input on step: %w", err)
-		return
-	}
+	// var step *Step
+	// step, err = setStepUIValues(ctx, stepID, inputs)
+	// if err != nil {
+	// 	err = fmt.Errorf("setting ui input on step: %w", err)
+	// 	return
+	// }
 
 	// trigger the orchestrator to continue running the flow
 	var o *Orchestrator
@@ -132,7 +131,7 @@ func UpdateStep(ctx context.Context, stepID string, inputs any) (run *Run, err e
 		return
 	}
 
-	payload := FlowRunUpdated{RunID: step.RunID}
+	payload := FlowRunUpdated{RunID: runID, Data: inputs}
 	wrap, err := payload.Wrap()
 	if err != nil {
 		err = fmt.Errorf("creating FlowRunUpdated event: %w", err)
@@ -146,5 +145,5 @@ func UpdateStep(ctx context.Context, stepID string, inputs any) (run *Run, err e
 	}
 
 	// return the new run state
-	return GetFlowRunState(ctx, step.RunID)
+	return GetFlowRunState(ctx, runID)
 }

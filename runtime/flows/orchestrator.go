@@ -74,7 +74,7 @@ type FunctionsResponsePayload struct {
 }
 
 // orchestrateRun will decide based on the db state if the flow should be ran or not
-func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
+func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data map[string]any) error {
 	run, err := getRun(ctx, runID)
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 		}
 
 		// call the flow runtime
-		resp, err := o.CallFlow(ctx, run)
+		resp, err := o.CallFlow(ctx, run, data)
 		if err != nil {
 			return err
 		}
@@ -130,7 +130,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 		}
 
 		// Continue running the flow
-		payload := FlowRunUpdated{RunID: resp.RunID}
+		payload := FlowRunUpdated{RunID: resp.RunID, Data: data}
 		wrap, err := payload.Wrap()
 		if err != nil {
 			return err
@@ -155,7 +155,7 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 			return err
 		}
 
-		return o.orchestrateRun(ctx, ev.RunID)
+		return o.orchestrateRun(ctx, ev.RunID, ev.Data)
 	case EventNameFlowRunStarted:
 		// a new flow has started; create the run and start orchestrating it
 		var ev FlowRunStarted
@@ -171,7 +171,7 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 		if err != nil {
 			return err
 		}
-		return o.orchestrateRun(ctx, run.ID)
+		return o.orchestrateRun(ctx, run.ID, nil)
 	}
 	return nil
 }
@@ -210,7 +210,7 @@ func (o *Orchestrator) SendEvent(ctx context.Context, payload *EventWrapper) err
 }
 
 // CallFlow is a helper function to call the flows runtime and retrieve the Response Payload
-func (o *Orchestrator) CallFlow(ctx context.Context, run *Run) (*FunctionsResponsePayload, error) {
+func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, data map[string]any) (*FunctionsResponsePayload, error) {
 	ctx, span := tracer.Start(ctx, "CallFlow")
 	defer span.End()
 
@@ -227,6 +227,7 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run) (*FunctionsRespon
 		ctx,
 		flow,
 		run.ID,
+		data,
 	)
 	if err != nil {
 		return nil, err

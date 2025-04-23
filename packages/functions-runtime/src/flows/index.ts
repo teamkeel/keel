@@ -3,6 +3,7 @@ import { useDatabase } from "../database";
 import { textInput } from "./ui/elements/input/text";
 import { numberInput } from "./ui/elements/input/number";
 import { divider } from "./ui/elements/display/divider";
+import { UiPage } from "./ui/page";
 export { UI };
 import {
   StepCompletedDisrupt,
@@ -66,7 +67,8 @@ type Opts = {
 };
 
 export function createStepContext<C extends FlowConfig>(
-  runId: string
+  runId: string,
+  data: any
 ): StepContext<C> {
   return {
     step: async <T = any>(name: string, fn: () => Promise<T>, opts?: Opts) => {
@@ -145,11 +147,9 @@ export function createStepContext<C extends FlowConfig>(
     },
     ui: {
       page: async (page: any) => {
-        console.log("options", page);
-
         const db = useDatabase();
 
-        // First check if we already have a result for this step
+        // First check if this step exists
         let step = await db
           .selectFrom("keel_flow_step")
           .where("run_id", "=", runId)
@@ -157,8 +157,13 @@ export function createStepContext<C extends FlowConfig>(
           .selectAll()
           .executeTakeFirst();
 
+        // If this step has already been completed, return the values
+        if (step && step.status === STEP_STATUS.COMPLETED) {
+          return step.value;
+        }
+
         if (!step) {
-          // The step hasn't yet run successfully, so we need to create a NEW run
+          // The step hasn't yet run, we create a new the step with state PENDING
           step = await db
             .insertInto("keel_flow_step")
             .values({
@@ -173,13 +178,23 @@ export function createStepContext<C extends FlowConfig>(
             .executeTakeFirst();
         }
 
-        switch (step.status) {
-          case STEP_STATUS.PENDING:
-            throw new UIRenderDisrupt(step.id, page);
-          case STEP_STATUS.COMPLETED:
-            return step.value;
-          default:
-            throw new StepErrorDisrupt("ui step failed");
+        if (data) {
+          // TODO: validate the data!  if not valid, throw a UIRenderDisrupt with errors
+          // If the data has been passed in, persist the data and mark the step as COMPLETED, and return the data
+          await db
+            .updateTable("keel_flow_step")
+            .set({
+              status: STEP_STATUS.COMPLETED,
+              value: JSON.stringify(data),
+            })
+            .where("id", "=", step.id)
+            .returningAll()
+            .executeTakeFirst();
+
+          return data;
+        } else {
+          // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt
+          throw new UIRenderDisrupt(step.id, page);
         }
       },
       inputs: {
