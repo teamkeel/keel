@@ -24,6 +24,7 @@ const (
 	StatusRunning   Status = "RUNNING"
 	StatusFailed    Status = "FAILED"
 	StatusCompleted Status = "COMPLETED"
+	StatusCancelled Status = "CANCELLED"
 )
 
 type StepType string
