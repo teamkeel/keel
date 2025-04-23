@@ -3,7 +3,6 @@ import { useDatabase } from "../database";
 import { textInput } from "./ui/elements/input/text";
 import { numberInput } from "./ui/elements/input/number";
 import { divider } from "./ui/elements/display/divider";
-import { UiPage } from "./ui/page";
 export { UI };
 import {
   StepCompletedDisrupt,
@@ -157,13 +156,13 @@ export function createStepContext<C extends FlowConfig>(
           .selectAll()
           .executeTakeFirst();
 
-        // If this step has already been completed, return the values
+        // If this step has already been completed, return the values. Steps are only ever run to completion once.
         if (step && step.status === STEP_STATUS.COMPLETED) {
           return step.value;
         }
 
         if (!step) {
-          // The step hasn't yet run, we create a new the step with state PENDING
+          // The step hasn't yet run so we create a new the step with state PENDING.
           step = await db
             .insertInto("keel_flow_step")
             .values({
@@ -179,8 +178,9 @@ export function createStepContext<C extends FlowConfig>(
         }
 
         if (data) {
-          // TODO: validate the data!  if not valid, throw a UIRenderDisrupt with errors
-          // If the data has been passed in, persist the data and mark the step as COMPLETED, and return the data
+          // TODO: Validate the data! If not valid, throw a UIRenderDisrupt along with the validation errors.
+
+          // If the data has been passed in and is valid, persist the data and mark the step as COMPLETED, and then return the data.
           await db
             .updateTable("keel_flow_step")
             .set({
@@ -193,7 +193,7 @@ export function createStepContext<C extends FlowConfig>(
 
           return data;
         } else {
-          // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt
+          // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
           throw new UIRenderDisrupt(step.id, page);
         }
       },

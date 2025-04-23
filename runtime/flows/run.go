@@ -116,13 +116,6 @@ func UpdateStep(ctx context.Context, runID string, stepID string, inputs map[str
 		}
 	}()
 
-	// var step *Step
-	// step, err = setStepUIValues(ctx, stepID, inputs)
-	// if err != nil {
-	// 	err = fmt.Errorf("setting ui input on step: %w", err)
-	// 	return
-	// }
-
 	// trigger the orchestrator to continue running the flow
 	var o *Orchestrator
 	o, err = GetOrchestrator(ctx)
