@@ -74,6 +74,11 @@ func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 		return
 	}
 
+	// If no run found, return
+	if run == nil {
+		return
+	}
+
 	span.SetAttributes(
 		attribute.String("flowRun.id", run.ID),
 		attribute.String("flowRun.status", string(run.Status)),
@@ -101,6 +106,49 @@ func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 
 	// setting the ui component on the pending UI step
 	run.SetUIComponent(resp.UI)
+	return
+}
+
+// CancelFlowRun cancels the run with the given ID
+func CancelFlowRun(ctx context.Context, runID string) (run *Run, err error) {
+	ctx, span := tracer.Start(ctx, "CancelFlowRun")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	run, err = getRun(ctx, runID)
+	if err != nil {
+		err = fmt.Errorf("retrieving flow run: %w", err)
+		return
+	}
+
+	if run == nil {
+		// return nil run as it's not found
+		return
+	}
+
+	span.SetAttributes(
+		attribute.String("flowRun.id", run.ID),
+	)
+
+	// if the run cannot be cancelled, just return
+	if run.Status != StatusNew && run.Status != StatusRunning {
+		return
+	}
+
+	run, err = updateRun(ctx, run.ID, StatusCancelled)
+	if err != nil {
+		err = fmt.Errorf("updating flow run: %w", err)
+		return
+	}
+
+	// return fresh state
+	run, err = getRun(ctx, runID)
 	return
 }
 

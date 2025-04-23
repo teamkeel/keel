@@ -137,7 +137,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string) error {
 		}
 
 		return o.SendEvent(ctx, wrap)
-	case StatusFailed, StatusCompleted:
+	case StatusFailed, StatusCompleted, StatusCancelled:
 		// Do nothing
 		return nil
 	}
