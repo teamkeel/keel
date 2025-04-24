@@ -3,6 +3,7 @@ package openapi
 import (
 	"context"
 	"fmt"
+	"maps"
 	"strings"
 
 	"github.com/teamkeel/keel/proto"
@@ -232,6 +233,103 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 					},
 				},
 			}
+		}
+	}
+
+	return spec
+}
+
+// GenerateFlows generates an openAPI schema for the Flows API for the given schema
+func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
+	runResponseSchema := jsonschema.JSONSchema{
+		Type: "object",
+		Properties: map[string]jsonschema.JSONSchema{
+			"id":        {Type: "string"},
+			"status":    {Type: "string"},
+			"name":      {Type: "string"},
+			"createdAt": {Type: "string", Format: "date-time"},
+			"updatedAt": {Type: "string", Format: "date-time"},
+			"steps":     {Type: "array", Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/Step"}},
+		},
+	}
+
+	stepResponseSchema := jsonschema.JSONSchema{
+		Type: "object",
+		Properties: map[string]jsonschema.JSONSchema{
+			"id":            {Type: "string"},
+			"runId":         {Type: "string"},
+			"status":        {Type: "string"},
+			"name":          {Type: "string"},
+			"type":          {Type: "string"},
+			"createdAt":     {Type: "string", Format: "date-time"},
+			"updatedAt":     {Type: "string", Format: "date-time"},
+			"value":         {Type: "object"},
+			"ui":            {Type: "object"},
+			"max_retries":   {Type: "number"},
+			"timeout_in_ms": {Type: "number"},
+		},
+	}
+	spec := OpenAPI{
+		OpenAPI: "3.1.0",
+		Info: InfoObject{
+			Title:   "FlowsAPI",
+			Version: "1",
+		},
+		Paths: map[string]PathItemObject{},
+		Components: &ComponentsObject{
+			Schemas: map[string]jsonschema.JSONSchema{
+				"Run":  runResponseSchema,
+				"Step": stepResponseSchema,
+			},
+		},
+	}
+
+	for _, flow := range schema.Flows {
+		msg := schema.FindMessage(flow.InputMessageName)
+		if msg == nil {
+			continue
+		}
+		inputSchema := jsonschema.JSONSchemaForMessage(ctx, schema, nil, msg, true)
+		endpoint := "flows/json/" + flow.Name
+
+		// Merge components from this request schema into OpenAPI components
+		if inputSchema.Components != nil {
+			maps.Copy(spec.Components.Schemas, inputSchema.Components.Schemas)
+			inputSchema.Components = nil
+		}
+
+		spec.Paths = map[string]PathItemObject{}
+
+		spec.Paths[endpoint] = PathItemObject{
+			Post: &OperationObject{
+				OperationID: &flow.Name,
+				RequestBody: &RequestBodyObject{
+					Description: flow.Name + " Request",
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: inputSchema,
+						},
+					},
+				},
+				Responses: map[string]ResponseObject{
+					"200": {
+						Description: flow.Name + " Response",
+						Content: map[string]MediaTypeObject{
+							"application/json": {
+								Schema: jsonschema.JSONSchema{Ref: "#/components/schemas/Run"},
+							},
+						},
+					},
+					"400": {
+						Description: flow.Name + " Response Errors",
+						Content: map[string]MediaTypeObject{
+							"application/json": {
+								Schema: responseErrorSchema,
+							},
+						},
+					},
+				},
+			},
 		}
 	}
 
