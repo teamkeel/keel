@@ -192,7 +192,8 @@ func (o *Orchestrator) SendEvent(ctx context.Context, payload *EventWrapper) err
 
 	// if a sqs queue hasn't been set, we continue executing
 	if o.sqsClient == nil || o.sqsQueueURL == "" {
-		return o.HandleEvent(ctx, payload)
+		go o.HandleEvent(ctx, payload) //nolint we're "simulating" an async queue
+		return nil
 	}
 
 	bodyBytes, err := json.Marshal(payload)
