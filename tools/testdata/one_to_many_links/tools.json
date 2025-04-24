@@ -4,9 +4,7 @@
       "id": "get-order",
       "name": "Get order",
       "actionName": "getOrder",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Order",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -135,9 +133,7 @@
       "id": "list-line-items",
       "name": "List line items",
       "actionName": "listLineItems",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "LineItem",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -424,9 +420,7 @@
       "id": "list-orders",
       "name": "List orders",
       "actionName": "listOrders",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Order",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -728,9 +722,7 @@
       "id": "request-password-reset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -764,9 +756,7 @@
       "id": "reset-password",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
