@@ -4,9 +4,7 @@
       "id": "create-sale",
       "name": "Create sale",
       "actionName": "createSale",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Sale",
       "actionType": "ACTION_TYPE_CREATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -108,9 +106,7 @@
       "id": "get-product",
       "name": "Get product",
       "actionName": "getProduct",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Product",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -189,9 +185,7 @@
       "id": "list-sales",
       "name": "List sales",
       "actionName": "listSales",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Sale",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -470,9 +464,7 @@
       "id": "request-password-reset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -506,9 +498,7 @@
       "id": "reset-password",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",

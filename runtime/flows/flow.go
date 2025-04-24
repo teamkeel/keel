@@ -174,11 +174,7 @@ func (p *paginationFields) GetLimit() int {
 }
 
 func (p *paginationFields) IsBackwards() bool {
-	if p.After != nil {
-		return false
-	}
-
-	return true
+	return p.After == nil
 }
 
 // getRun returns the flow run with the given ID. If no flow run found, nil nil is returned.

@@ -114,7 +114,9 @@ export function createStepContext<C extends FlowConfig>(
           .returningAll()
           .executeTakeFirst();
 
-        throw new StepErrorDisrupt(e instanceof Error ? e.message : "an error occurred");
+        throw new StepErrorDisrupt(
+          e instanceof Error ? e.message : "an error occurred"
+        );
       }
 
       // Very crudely store the result in the database
