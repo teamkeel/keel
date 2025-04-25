@@ -29,7 +29,7 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs any) (run *Run, err
 		return
 	}
 
-	run, err = createRun(ctx, flow, inputs)
+	run, err = createRun(ctx, flow, inputs, span.SpanContext().TraceID().String())
 	if err != nil {
 		err = fmt.Errorf("creating flow run: %w", err)
 		return

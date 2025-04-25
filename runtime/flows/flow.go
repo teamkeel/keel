@@ -43,6 +43,7 @@ const (
 
 type Run struct {
 	ID        string    `json:"id" gorm:"primaryKey;not null;default:null"`
+	TraceID   string    `json:"traceId"`
 	Status    Status    `json:"status"`
 	Name      string    `json:"name"`
 	Input     *JSONB    `json:"input" gorm:"type:jsonb"`
@@ -211,7 +212,7 @@ func updateRun(ctx context.Context, runID string, status Status) (*Run, error) {
 }
 
 // createRun will create a new flow run with the given input
-func createRun(ctx context.Context, flow *proto.Flow, inputs any) (*Run, error) {
+func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceID string) (*Run, error) {
 	if flow == nil {
 		return nil, fmt.Errorf("invalid flow")
 	}
@@ -222,9 +223,10 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any) (*Run, error) 
 	}
 
 	run := Run{
-		Status: StatusNew,
-		Input:  &jsonInputs,
-		Name:   flow.Name,
+		Status:  StatusNew,
+		Input:   &jsonInputs,
+		Name:    flow.Name,
+		TraceID: traceID,
 	}
 
 	database, err := db.GetDatabase(ctx)
