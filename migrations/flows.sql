@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS keel_flow_run (
 	"id" text NOT NULL DEFAULT ksuid() PRIMARY KEY,
 	"name" TEXT NOT NULL,
+	"trace_id" TEXT,
 	"status" TEXT NOT NULL,
 	"input" JSONB DEFAULT NULL,
 	"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),

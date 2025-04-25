@@ -167,7 +167,9 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 		if flow == nil {
 			return fmt.Errorf("unknown flow: %s", ev.Name)
 		}
-		run, err := createRun(ctx, flow, ev.Inputs)
+
+		traceID := util.ParseTraceparent(event.Traceparent).TraceID().String()
+		run, err := createRun(ctx, flow, ev.Inputs, traceID)
 		if err != nil {
 			return err
 		}
