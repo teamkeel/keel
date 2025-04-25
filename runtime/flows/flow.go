@@ -174,7 +174,7 @@ func (p *paginationFields) GetLimit() int {
 }
 
 func (p *paginationFields) IsBackwards() bool {
-	return p.After == nil
+	return p.Before != nil
 }
 
 // getRun returns the flow run with the given ID. If no flow run found, nil nil is returned.
@@ -256,16 +256,16 @@ func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]
 
 	if page != nil {
 		if page.IsBackwards() {
-			q = q.Order("id DESC")
-		} else {
 			q = q.Order("id ASC")
+		} else {
+			q = q.Order("id DESC")
 		}
 
 		if page.Before != nil {
-			q.Where("id < ?", *page.Before)
+			q.Where("id > ?", *page.Before)
 		}
 		if page.After != nil {
-			q.Where("id > ?", *page.After)
+			q.Where("id < ?", *page.After)
 		}
 	}
 
@@ -274,8 +274,7 @@ func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]
 		return nil, result.Error
 	}
 
-	if !page.IsBackwards() {
-		// we always want to return items backwards (i.e. the most recent at the top)
+	if page.IsBackwards() {
 		slices.Reverse(runs)
 	}
 
