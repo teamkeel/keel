@@ -21,35 +21,14 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-type generateOptions struct {
-	developmentServer bool
-}
-
-// WithDevelopmentServer enables or disables the generation of the development
-// server entry point. By default this is disabled.
-func WithDevelopmentServer(b bool) func(o *generateOptions) {
-	return func(o *generateOptions) {
-		o.developmentServer = b
-	}
-}
-
 // Generate generates and returns a list of objects that represent files to be written
 // to a project. Calling .Write() on the result will cause those files be written to disk.
 // This function should not interact with the file system so it can be used in a backend
 // context.
-func Generate(ctx context.Context, schema *proto.Schema, cfg *config.ProjectConfig, opts ...func(o *generateOptions)) (codegen.GeneratedFiles, error) {
-	options := &generateOptions{}
-	for _, o := range opts {
-		o(options)
-	}
-
+func Generate(ctx context.Context, schema *proto.Schema, cfg *config.ProjectConfig) (codegen.GeneratedFiles, error) {
 	files := generateSdkPackage(schema, cfg)
 	files = append(files, generateTestingPackage(schema)...)
 	files = append(files, generateTestingSetup()...)
-
-	if options.developmentServer {
-		files = append(files, generateDevelopmentServer(schema, cfg)...)
-	}
 
 	return files, nil
 }
@@ -243,7 +222,7 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 			t = fmt.Sprintf("%s[]", t)
 		}
 
-		if field.DefaultValue != nil {
+		if field.DefaultValue != nil || field.Sequence != nil {
 			t = fmt.Sprintf("Generated<%s>", t)
 		}
 
@@ -294,7 +273,7 @@ func writeUpdateValuesType(w *codegen.Writer, model *proto.Model) {
 			continue
 		}
 
-		if field.ComputedExpression != nil {
+		if field.ComputedExpression != nil || field.Sequence != nil {
 			continue
 		}
 
@@ -398,7 +377,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 			continue
 		}
 
-		if field.ComputedExpression != nil {
+		if field.ComputedExpression != nil || field.Sequence != nil {
 			continue
 		}
 
@@ -511,7 +490,7 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 	})
 
 	for i, f := range relevantFields {
-		w.Writef("%s?: SortDirection", f.Name)
+		w.Writef("%s?: runtime.SortDirection", f.Name)
 
 		if i < len(relevantFields)-1 {
 			w.Write(",")
@@ -1467,215 +1446,15 @@ func toActionReturnType(model *proto.Model, action *proto.Action) string {
 		// todo: create ID type
 		returnType += "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
-		returnType += action.ResponseMessageName
+		if action.ResponseMessageName == parser.MessageFieldTypeAny {
+			returnType += "any"
+		} else {
+			returnType += action.ResponseMessageName
+		}
 	}
 
 	returnType += ">"
 	return returnType
-}
-
-func generateDevelopmentServer(schema *proto.Schema, cfg *config.ProjectConfig) codegen.GeneratedFiles {
-	w := &codegen.Writer{}
-	w.Writeln(`const { handleRequest, handleJob, handleSubscriber, handleRoute, handleFlow, tracing } = require('@teamkeel/functions-runtime');`)
-	w.Writeln(`const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } = require('@teamkeel/sdk');`)
-	w.Writeln(`const { createServer } = require("node:http");`)
-	w.Writeln(`const process = require("node:process");`)
-
-	functions := []*proto.Action{}
-	for _, model := range schema.Models {
-		for _, action := range model.Actions {
-			if action.Implementation != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
-				continue
-			}
-			functions = append(functions, action)
-			// namespace import to avoid naming clashes
-			w.Writef(`const function_%s = require("../functions/%s").default`, action.Name, action.Name)
-			w.Writeln(";")
-		}
-	}
-
-	for _, job := range schema.Jobs {
-		name := strcase.ToLowerCamel(job.Name)
-		// namespace import to avoid naming clashes
-		w.Writef(`const job_%s = require("../jobs/%s").default`, name, name)
-		w.Writeln(";")
-	}
-
-	for _, subscriber := range schema.Subscribers {
-		name := subscriber.Name
-		// namespace import to avoid naming clashes
-		w.Writef(`const subscriber_%s = require("../subscribers/%s").default`, name, name)
-		w.Writeln(";")
-	}
-
-	for _, flow := range schema.Flows {
-		name := strcase.ToLowerCamel(flow.Name)
-		// namespace import to avoid naming clashes
-		w.Writef(`const flow_%s = require("../flows/%s").default`, name, name)
-		w.Writeln(";")
-	}
-
-	for _, v := range cfg.Auth.EnabledHooks() {
-		w.Writef(`const function_%s = require("../functions/auth/%s").default`, v, v)
-		w.Writeln(";")
-	}
-
-	w.Writeln("const functions = {")
-	w.Indent()
-
-	for _, fn := range functions {
-		w.Writef("%s: function_%s,", fn.Name, fn.Name)
-		w.Writeln("")
-	}
-
-	for _, v := range cfg.Auth.EnabledHooks() {
-		w.Writef("%s: function_%s", v, v)
-		w.Writeln(",")
-	}
-
-	w.Dedent()
-	w.Writeln("}")
-
-	w.Writeln("const jobs = {")
-	w.Indent()
-	for _, job := range schema.Jobs {
-		name := strcase.ToLowerCamel(job.Name)
-		w.Writef("%s: job_%s,", name, name)
-		w.Writeln("")
-	}
-	w.Dedent()
-	w.Writeln("}")
-
-	w.Writeln("const subscribers = {")
-	w.Indent()
-	for _, subscriber := range schema.Subscribers {
-		name := subscriber.Name
-		w.Writef("%s: subscriber_%s,", name, name)
-		w.Writeln("")
-	}
-	w.Dedent()
-	w.Writeln("}")
-
-	w.Writeln("const routes = {")
-	w.Indent()
-	for _, route := range schema.Routes {
-		name := route.Handler
-		w.Writef(`%s: require("../routes/%s").default,`, name, name)
-		w.Writeln("")
-	}
-	w.Dedent()
-	w.Writeln("}")
-
-	w.Writeln("const flows = {")
-	w.Indent()
-	for _, flow := range schema.Flows {
-		name := strcase.ToLowerCamel(flow.Name)
-		w.Writef("%s: flow_%s,", name, name)
-		w.Writeln("")
-	}
-	w.Dedent()
-	w.Writeln("}")
-
-	w.Writeln("const actionTypes = {")
-	w.Indent()
-
-	for _, fn := range functions {
-		w.Writef("%s: \"%s\",\n", fn.Name, fn.Type.String())
-	}
-
-	w.Dedent()
-	w.Writeln("}")
-
-	w.Writeln(`
-const listener = async (req, res) => {
-	const u = new URL(req.url, "http://" + req.headers.host);
-	if (req.method === "GET" && u.pathname === "/_health") {
-		res.statusCode = 200;
-		res.end();
-		return;
-	}
-
-	try {
-		if (req.method === "POST") {
-			const buffers = [];
-			for await (const chunk of req) {
-				buffers.push(chunk);
-			}
-			const data = Buffer.concat(buffers).toString();
-			const json = JSON.parse(data);
-
-			let rpcResponse = null;
-			switch (json.type) {
-			case "action":
-				rpcResponse = await handleRequest(json, {
-					functions,
-					createContextAPI,
-					actionTypes,
-					permissionFns,
-				});
-				break;
-			case "job":
-				rpcResponse = await handleJob(json, {
-					jobs,
-					createJobContextAPI,
-				});
-				break;
-			case "subscriber":
-				rpcResponse = await handleSubscriber(json, {
-					subscribers,
-					createSubscriberContextAPI,
-				});
-				break;
-			case "route":
-				rpcResponse = await handleRoute(json, {
-					functions: routes,
-					createContextAPI,
-				});
-				break;
-			case "flow":
-				rpcResponse = await handleFlow(json, {
-					flows,
-				});
-				break;
-			default:
-				res.statusCode = 400;
-				res.end();
-			}
-
-			res.statusCode = 200;
-			res.setHeader('Content-Type', 'application/json');
-			res.write(JSON.stringify(rpcResponse));
-			res.end();
-			return;
-		}
-	} catch (e) {
-		console.error("Unexpected Handler Error", e)
-	} finally {
-		if (tracing.forceFlush) {
-			await tracing.forceFlush();
-		}
-	}
-
-	res.statusCode = 400;
-	res.end();
-};
-
-tracing.init();
-
-process.on('unhandledRejection', (reason, promise) => {
-	console.error('Unhandled Promise Rejection', promise, 'Reason:', reason);
-});
-
-const server = createServer(listener);
-const port = (process.env.PORT && parseInt(process.env.PORT, 10)) || 3001;
-server.listen(port);`)
-
-	return []*codegen.GeneratedFile{
-		{
-			Path:     ".build/server.js",
-			Contents: w.String(),
-		},
-	}
 }
 
 func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
@@ -1806,7 +1585,12 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 				w.Write("?")
 			}
 
-			w.Writef(`: %s): %s`, action.InputMessageName, toActionReturnType(model, action))
+			argType := action.InputMessageName
+			if argType == parser.MessageFieldTypeAny {
+				argType = "any"
+			}
+
+			w.Writef(`: %s): %s`, argType, toActionReturnType(model, action))
 			w.Writeln(";")
 		}
 	}
@@ -1911,7 +1695,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_FILE:
-		return "FileDbRecord"
+		return "runtime.FileDbRecord"
 	default:
 		return toTypeScriptType(t, false, isTestingPackage, false)
 	}
@@ -1932,7 +1716,7 @@ func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPac
 			return "string"
 		} else {
 			if isTestingPackage {
-				return "FileWriteTypes"
+				return "runtime.FileWriteTypes"
 			} else {
 				return "runtime.File"
 			}
@@ -1989,7 +1773,11 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 			ret = t.ModelName.Value
 		}
 	case proto.Type_TYPE_SORT_DIRECTION:
-		ret = "SortDirection"
+		if isClientPackage {
+			ret = "SortDirection"
+		} else {
+			ret = "runtime.SortDirection"
+		}
 	case proto.Type_TYPE_UNION:
 		// Retrieve all the types that can satisfy this union field.
 		messageNames := lo.Map(t.UnionNames, func(s *wrapperspb.StringValue, _ int) string {
@@ -2005,7 +1793,7 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 			ret = "FileResponseObject"
 		} else {
 			if includeCompatibleTypes {
-				ret = "FileWriteTypes"
+				ret = "runtime.FileWriteTypes"
 			} else {
 				ret = "runtime.File"
 			}

@@ -60,7 +60,7 @@ export interface PersonTable {
 	tags: string[]
 	height: number
 	bio: string
-	file: FileDbRecord
+	file: runtime.FileDbRecord
 	canHoldBreath: runtime.Duration
 	heightInMetres: number
 	id: Generated<string>
@@ -136,7 +136,7 @@ export type PersonCreateValues = {
 	tags: string[]
 	height: number
 	bio: string
-	file: FileWriteTypes
+	file: runtime.FileWriteTypes
 	canHoldBreath: runtime.Duration
 	id?: string
 	createdAt?: Date
@@ -161,7 +161,7 @@ export type PersonUpdateValues = {
 	tags: string[]
 	height: number
 	bio: string
-	file: FileWriteTypes
+	file: runtime.FileWriteTypes
 	canHoldBreath: runtime.Duration
 	id: string
 	createdAt: Date
@@ -343,17 +343,17 @@ func TestModelAPIFindManyDeclaration(t *testing.T) {
 	t.Parallel()
 	expected := `
 export type PersonOrderBy = {
-	firstName?: SortDirection,
-	lastName?: SortDirection,
-	age?: SortDirection,
-	dateOfBirth?: SortDirection,
-	gender?: SortDirection,
-	hasChildren?: SortDirection,
-	height?: SortDirection,
-	heightInMetres?: SortDirection,
-	id?: SortDirection,
-	createdAt?: SortDirection,
-	updatedAt?: SortDirection
+	firstName?: runtime.SortDirection,
+	lastName?: runtime.SortDirection,
+	age?: runtime.SortDirection,
+	dateOfBirth?: runtime.SortDirection,
+	gender?: runtime.SortDirection,
+	hasChildren?: runtime.SortDirection,
+	height?: runtime.SortDirection,
+	heightInMetres?: runtime.SortDirection,
+	id?: runtime.SortDirection,
+	createdAt?: runtime.SortDirection,
+	updatedAt?: runtime.SortDirection
 }
 
 export interface PersonFindManyParams {
@@ -406,64 +406,6 @@ export declare function useDatabase(): Kysely<database>;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeDatabaseInterface(w, s)
-	})
-}
-
-func TestWriteDevelopmentServer(t *testing.T) {
-	t.Parallel()
-	expected := `
-const { handleRequest, handleJob, handleSubscriber, handleRoute, handleFlow, tracing } = require('@teamkeel/functions-runtime');
-const { createContextAPI, createJobContextAPI, createSubscriberContextAPI, permissionFns } = require('@teamkeel/sdk');
-const { createServer } = require("node:http");
-const process = require("node:process");
-const function_createPost = require("../functions/createPost").default;
-const function_updatePost = require("../functions/updatePost").default;
-const job_batchPosts = require("../jobs/batchPosts").default;
-const subscriber_checkGrammar = require("../subscribers/checkGrammar").default;
-const functions = {
-	createPost: function_createPost,
-	updatePost: function_updatePost,
-}
-const jobs = {
-	batchPosts: job_batchPosts,
-}
-const subscribers = {
-	checkGrammar: subscriber_checkGrammar,
-}
-const routes = {
-}
-const flows = {
-}
-const actionTypes = {
-	createPost: "ACTION_TYPE_CREATE",
-	updatePost: "ACTION_TYPE_UPDATE",
-}
-	`
-
-	schema := `
-model Post {
-	fields {
-		title Text
-	}
-
-	actions {
-		create createPost() with(title) @function
-		update updatePost(id) with(title) @function
-	}
-
-	@on([create], checkGrammar)
-}
-
-job BatchPosts {
-	@schedule("* * * * *")
-}`
-
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		files := generateDevelopmentServer(s, &config.ProjectConfig{})
-
-		serverJs := files[0]
-
-		w.Write(serverJs.Contents)
 	})
 }
 
@@ -1391,10 +1333,10 @@ export interface ListPeopleWhere {
 	favouriteSport: SportQueryInput;
 }
 export interface ListPeopleOrderByName {
-	name: SortDirection;
+	name: runtime.SortDirection;
 }
 export interface ListPeopleOrderByFavouriteSport {
-	favouriteSport: SortDirection;
+	favouriteSport: runtime.SortDirection;
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhere;

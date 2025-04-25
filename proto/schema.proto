@@ -84,6 +84,14 @@ message Field {
     // If computed then this field will contain the expression that will be evaluated to
     // determine the value of the field at runtime.
     Expression computed_expression = 13;
+
+    // If this field is a sequence this contains information about how the sequence value should be generated 
+    Sequence sequence = 14;
+}
+
+message Sequence {
+    string prefix = 1;
+    uint32 starts_at = 2;
 }
 
 message ForeignKeyInfo {
