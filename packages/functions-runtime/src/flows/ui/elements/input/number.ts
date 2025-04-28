@@ -9,7 +9,7 @@ type ElementDataType = number;
 export type UiElementInputNumber = InputElement<
   ElementDataType,
   {
-    placeholder?: string;
+    placeholder?: number;
     min?: number;
     max?: number;
   }
@@ -18,7 +18,7 @@ export type UiElementInputNumber = InputElement<
 // The shape of the response over the API
 export interface UiElementInputNumberApiResponse
   extends BaseUiInputResponse<"ui.input.number", ElementDataType> {
-  placeholder: string;
+  placeholder?: number;
   min?: number;
   max?: number;
 }
@@ -35,7 +35,9 @@ export const numberInput: InputElementImplementation<
       label: options?.label || name,
       defaultValue: options?.defaultValue,
       optional: options?.optional,
-      placeholder: "",
+      placeholder: options?.placeholder,
+      min: options?.min,
+      max: options?.max,
     },
     validate: options?.validate,
     getData: (x: any) => x,

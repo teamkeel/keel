@@ -31,7 +31,6 @@ export const booleanInput: InputElementImplementation<
       label: options?.label || name,
       defaultValue: options?.defaultValue,
       optional: options?.optional,
-      placeholder: "",
       mode: options?.mode || "checkbox",
     },
     validate: options?.validate,
