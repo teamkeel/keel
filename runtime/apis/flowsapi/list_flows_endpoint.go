@@ -9,6 +9,7 @@ import (
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/locale"
+	"github.com/teamkeel/keel/runtime/openapi"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 )
@@ -60,5 +61,22 @@ func ListFlowsHandler(p *proto.Schema) common.HandlerFunc {
 			})
 		}
 		return common.NewJsonResponse(http.StatusOK, map[string]any{"flows": flowsData}, nil)
+	}
+}
+
+func OpenAPISchemaHandler(p *proto.Schema) common.HandlerFunc {
+	return func(r *http.Request) common.Response {
+		ctx, span := tracer.Start(r.Context(), "FlowsAPI")
+		defer span.End()
+		span.SetAttributes(
+			attribute.String("api.protocol", "HTTP JSON"),
+		)
+
+		if r.Method != http.MethodGet {
+			return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET accepted"), nil)
+		}
+
+		sch := openapi.GenerateFlows(ctx, p)
+		return common.NewJsonResponse(http.StatusOK, sch, nil)
 	}
 }

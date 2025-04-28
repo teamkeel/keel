@@ -194,7 +194,8 @@ func NewFlowsHandler(s *proto.Schema) common.HandlerFunc {
 	defaultFlowHandler := flowsapi.FlowHandler(s)
 
 	explicitHandlers := map[string]common.HandlerFunc{
-		"/flows/json": flowsapi.ListFlowsHandler(s),
+		"/flows/json":              flowsapi.ListFlowsHandler(s),
+		"/flows/json/openapi.json": flowsapi.OpenAPISchemaHandler(s),
 		// TODO: "/flows/json/myRuns"
 	}
 

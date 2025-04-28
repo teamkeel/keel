@@ -5,7 +5,7 @@ import { FlowConfig } from "..";
 
 export type UiPage<C extends FlowConfig> = <
   T extends UIElements,
-  const A extends PageActions[] = []
+  A extends PageActions[] = []
 >(options: {
   stage?: ExtractStageKeys<C>;
   title?: string;

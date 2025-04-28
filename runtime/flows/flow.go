@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
+	"strconv"
 	"time"
 
 	"github.com/teamkeel/keel/db"
@@ -41,6 +43,7 @@ const (
 
 type Run struct {
 	ID        string    `json:"id" gorm:"primaryKey;not null;default:null"`
+	TraceID   string    `json:"traceId"`
 	Status    Status    `json:"status"`
 	Name      string    `json:"name"`
 	Input     *JSONB    `json:"input" gorm:"type:jsonb"`
@@ -126,6 +129,55 @@ func (jsonField *JSONB) Scan(value any) error {
 	return json.Unmarshal(data, &jsonField)
 }
 
+type paginationFields struct {
+	Limit  int
+	After  *string
+	Before *string
+}
+
+// Parse will set the values for the pagination fields from the given map
+func (p *paginationFields) Parse(inputs map[string]any) {
+	for f, v := range inputs {
+		switch f {
+		case "limit":
+			switch val := v.(type) {
+			case int64:
+				p.Limit = int(val)
+			case int:
+				p.Limit = val
+			case float64:
+				p.Limit = int(val)
+			case string:
+				if num, err := strconv.Atoi(val); err == nil {
+					p.Limit = num
+				}
+			}
+		case "after":
+			if val, ok := v.(string); ok {
+				p.After = &val
+			}
+		case "before":
+			if val, ok := v.(string); ok {
+				p.Before = &val
+			}
+		}
+	}
+}
+
+// GetLimit returns a limit of items to be returned. If no limit set in the pagination fields, a default of 10 will be used
+func (p *paginationFields) GetLimit() int {
+	// default to 10
+	if p == nil || p.Limit < 1 {
+		return 10
+	}
+
+	return p.Limit
+}
+
+func (p *paginationFields) IsBackwards() bool {
+	return p.Before != nil
+}
+
 // getRun returns the flow run with the given ID. If no flow run found, nil nil is returned.
 func getRun(ctx context.Context, runID string) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
@@ -160,7 +212,7 @@ func updateRun(ctx context.Context, runID string, status Status) (*Run, error) {
 }
 
 // createRun will create a new flow run with the given input
-func createRun(ctx context.Context, flow *proto.Flow, inputs any) (*Run, error) {
+func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceID string) (*Run, error) {
 	if flow == nil {
 		return nil, fmt.Errorf("invalid flow")
 	}
@@ -171,9 +223,10 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any) (*Run, error) 
 	}
 
 	run := Run{
-		Status: StatusNew,
-		Input:  &jsonInputs,
-		Name:   flow.Name,
+		Status:  StatusNew,
+		Input:   &jsonInputs,
+		Name:    flow.Name,
+		TraceID: traceID,
 	}
 
 	database, err := db.GetDatabase(ctx)
@@ -189,31 +242,43 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any) (*Run, error) 
 	return &run, nil
 }
 
-// setStepUIValues will set the values for the given pending UI step
-func setStepUIValues(ctx context.Context, stepID string, inputs any) (*Step, error) {
-	var jsonInputs JSONB
-	if inputsMap, ok := inputs.(map[string]any); ok {
-		jsonInputs = inputsMap
+// listRuns will list the flow runs for the given flow using cursor pagination. It defaults to
+func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]*Run, error) {
+	if flow == nil {
+		return nil, fmt.Errorf("invalid flow")
 	}
-
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var step Step
-	result := database.GetDB().Model(&step).Clauses(clause.Returning{}).
-		Where("id = ?", stepID).
-		Where("type = ?", StepTypeUI).
-		Where("status = ?", StepStatusPending).
-		Updates(&Step{
-			Value:  &jsonInputs,
-			Status: StepStatusCompleted,
-		})
+	var runs []*Run
 
-	if result.Error == nil && result.RowsAffected == 0 {
-		return nil, fmt.Errorf("invalid step")
+	q := database.GetDB().Where("name = ?", flow.Name).Limit(page.GetLimit())
+
+	if page != nil {
+		if page.IsBackwards() {
+			q = q.Order("id ASC")
+		} else {
+			q = q.Order("id DESC")
+		}
+
+		if page.Before != nil {
+			q.Where("id > ?", *page.Before)
+		}
+		if page.After != nil {
+			q.Where("id < ?", *page.After)
+		}
 	}
 
-	return &step, result.Error
+	result := q.Find(&runs)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if page.IsBackwards() {
+		slices.Reverse(runs)
+	}
+
+	return runs, nil
 }

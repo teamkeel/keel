@@ -1,0 +1,13 @@
+flow MyWorkflow {
+    inputs {
+        name Text
+        age Number
+    }
+}
+
+flow AnotherWorkflow {
+    inputs {
+        age Number
+    }
+}
+

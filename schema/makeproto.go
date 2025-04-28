@@ -2194,6 +2194,17 @@ func (scm *Builder) applyFieldAttributes(parserField *parser.FieldNode, protoFie
 		switch fieldAttribute.Name.Value {
 		case parser.AttributeUnique:
 			protoField.Unique = true
+		case parser.AttributeSequence:
+			protoField.Unique = true
+			prefix, _, _ := resolve.ToValue[string](fieldAttribute.Arguments[0].Expression)
+			protoField.Sequence = &proto.Sequence{
+				Prefix:   prefix,
+				StartsAt: 1,
+			}
+			if len(fieldAttribute.Arguments) >= 2 {
+				startsAt, _, _ := resolve.ToValue[int64](fieldAttribute.Arguments[1].Expression)
+				protoField.Sequence.StartsAt = uint32(startsAt)
+			}
 		case parser.AttributePrimaryKey:
 			protoField.PrimaryKey = true
 			protoField.Unique = true

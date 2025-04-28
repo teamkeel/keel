@@ -101,13 +101,13 @@ func ManyPrevious(ctx context.Context, logs []*AuditLog) ([]*AuditLog, error) {
 		return nil, err
 	}
 
-	res := make([]*AuditLog, len(logs))
-	for i, row := range result.Rows {
+	res := []*AuditLog{}
+	for _, row := range result.Rows {
 		log, err := fromRow(row)
 		if err != nil {
 			return nil, err
 		}
-		res[i] = log
+		res = append(res, log)
 	}
 
 	return res, nil

@@ -39,6 +39,10 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 // Matches the type cast on a Postgrs value eg. on "'foo'::text" matches "::text"
 var typeCastRegex = regexp.MustCompile(`::([\w\s]+)(?:\[\])?$`)
 
+// For sequence fields we need an additional column to store the numerical sequence
+// This column is the field name with this suffix added
+var sequenceSuffix = "__sequence"
+
 // Identifier converts v into an identifier that can be used
 // for table or column names in Postgres. The value is converted
 // to snake case and then quoted. The former is done to create
@@ -71,18 +75,20 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 		return field.Type.Type != proto.Type_TYPE_MODEL
 	})
 
-	for i, field := range fields {
+	fieldDefs := []string{}
+
+	for _, field := range fields {
+		if field.Sequence != nil {
+			fieldDefs = append(fieldDefs, sequenceColumnDefinition(field))
+		}
 		stmt, err := fieldDefinition(field)
 		if err != nil {
 			return "", err
 		}
-		output += stmt
-		if i < len(fields)-1 {
-			output += ","
-		}
-		output += "\n"
+		fieldDefs = append(fieldDefs, stmt)
 	}
-	output += ");"
+
+	output += strings.Join(fieldDefs, ",\n") + "\n);"
 	statements = append(statements, output)
 
 	for _, field := range fields {
@@ -155,6 +161,12 @@ func addColumnStmt(schema *proto.Schema, modelName string, field *proto.Field) (
 		return "", err
 	}
 
+	if field.Sequence != nil {
+		statements = append(statements,
+			fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", Identifier(modelName), sequenceColumnDefinition(field)),
+		)
+	}
+
 	statements = append(statements,
 		fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", Identifier(modelName), stmt),
 	)
@@ -168,6 +180,18 @@ func addColumnStmt(schema *proto.Schema, modelName string, field *proto.Field) (
 	}
 
 	return strings.Join(statements, "\n"), nil
+}
+
+func sequenceColumnName(field *proto.Field) string {
+	return Identifier(fmt.Sprintf("%s%s", field.Name, sequenceSuffix))
+}
+
+func sequenceColumnDefinition(field *proto.Field) string {
+	startsAt := field.Sequence.StartsAt
+	return fmt.Sprintf(
+		"%s BIGINT GENERATED ALWAYS AS IDENTITY ( START WITH %d MINVALUE %d )",
+		sequenceColumnName(field), startsAt, startsAt,
+	)
 }
 
 // addForeignKeyConstraintStmt generates a string of this form:
@@ -337,9 +361,13 @@ func fieldDefinition(field *proto.Field) (string, error) {
 
 	output := fmt.Sprintf("%s %s", columnName, fieldType)
 
+	if field.Sequence != nil {
+		output += fmt.Sprintf(" GENERATED ALWAYS AS ('%s' || LPAD(%s::TEXT, 4, '0')) STORED", field.Sequence.Prefix, sequenceColumnName(field))
+	}
+
 	// If computed, then we don't set the NOT NULL constraint yet
 	// This is because we may still need to populate existing rows
-	if !field.Optional && field.ComputedExpression == nil {
+	if !field.Optional && (field.ComputedExpression == nil && field.Sequence == nil) {
 		output += " NOT NULL"
 	}
 

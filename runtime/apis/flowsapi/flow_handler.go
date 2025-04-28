@@ -31,22 +31,31 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 
 		switch len(pathParts) {
 		case 1:
-			// Start flow - POST flows/json/[flowName]
-			if r.Method != http.MethodPost {
-				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP POST accepted"), nil)
+			switch r.Method {
+			case http.MethodPost:
+				// Start flow - POST flows/json/[flowName]
+				inputs, err := common.ParseRequestData(r)
+				if err != nil {
+					return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
+				}
+
+				run, err := flows.StartFlow(ctx, flow, inputs)
+				if err != nil {
+					return httpjson.NewErrorResponse(ctx, err, nil)
+				}
+
+				return common.NewJsonResponse(http.StatusOK, run, nil)
+			case http.MethodGet:
+				// List Flow runs - GET flows/json/[flowName]
+				runs, err := flows.ListFlowRuns(ctx, flow, common.ParseQueryParams(r))
+				if err != nil {
+					return httpjson.NewErrorResponse(ctx, err, nil)
+				}
+
+				return common.NewJsonResponse(http.StatusOK, runs, nil)
 			}
 
-			inputs, err := common.ParseRequestData(r)
-			if err != nil {
-				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
-			}
-
-			run, err := flows.StartFlow(ctx, flow, inputs)
-			if err != nil {
-				return httpjson.NewErrorResponse(ctx, err, nil)
-			}
-
-			return common.NewJsonResponse(http.StatusOK, run, nil)
+			return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP POST or GET accepted"), nil)
 		case 2:
 			// Check for progress - GET flows/json/[flowName]/[runID]
 			if r.Method != http.MethodGet {
@@ -91,7 +100,12 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
 			}
 
-			run, err := flows.UpdateStep(ctx, pathParts[2], inputs)
+			data, ok := inputs.(map[string]any)
+			if !ok {
+				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
+			}
+
+			run, err := flows.UpdateStep(ctx, pathParts[1], pathParts[2], data)
 			if err != nil {
 				return httpjson.NewErrorResponse(ctx, err, nil)
 			}
