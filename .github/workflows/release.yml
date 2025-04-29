@@ -178,6 +178,10 @@ jobs:
       - name: Install ${{ matrix.package }} publish dependencies
         working-directory: ./packages/${{ matrix.package }}
         run: pnpm install --frozen-lockfile
+      - name: Build functions-runtime
+        if: ${{ matrix.package == 'functions-runtime' }}
+        working-directory: ./packages/functions-runtime
+        run: pnpm build
       - name: NPM Publish ${{ matrix.package }}
         uses: JS-DevTools/npm-publish@v2
         with:
