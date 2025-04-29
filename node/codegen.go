@@ -43,7 +43,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
-	sdkTypes.Writeln(`export { InlineFile, File, Duration, FileWriteTypes, SortDirection } from "@teamkeel/functions-runtime"`)
+	sdkTypes.Writeln(`export { InlineFile, File, Duration, FileWriteTypes, SortDirection, FlowConfig } from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln("")
 
 	writePermissions(sdk, schema)
