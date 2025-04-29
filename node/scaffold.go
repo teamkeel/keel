@@ -229,17 +229,17 @@ func writeFlowWrapper(flow *proto.Flow) string {
 		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
 
 // To learn more about flows, visit https://docs.keel.so/flows
-export default %s(async (ctx) => {
+export default %s({ title: "%s" }, async (ctx) => {
 
-});`, flow.Name, flow.Name)
+});`, flow.Name, flow.Name, flow.Name)
 
 	default:
 		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
 
 // To learn more about flows, visit https://docs.keel.so/flows
-export default %s(async (ctx, inputs) => {
+export default %s({ title: "%s" }, async (ctx, inputs) => {
 
-});`, flow.Name, flow.Name)
+});`, flow.Name, flow.Name, flow.Name)
 	}
 }
 

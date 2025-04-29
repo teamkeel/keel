@@ -46,12 +46,18 @@ func TestScaffold(t *testing.T) {
 	job MyJobNoInputs {
 		@permission(roles: [Developer])
 	}
-
 	role Developer {
 		domains {
 			"keel.dev"
 		}
-	}`
+	}
+	flow MyFlow {
+		inputs {
+			name Text
+			age Number
+		}
+	}
+	flow MyFlowWithoutInputs {}`
 
 	cfg := `
 auth:
@@ -190,6 +196,26 @@ export default DoSomethingElse(async (ctx, event) => {
 
 });`,
 			Path: "subscribers/doSomethingElse.ts",
+		},
+		&codegen.GeneratedFile{
+			Contents: `
+import { MyFlow } from '@teamkeel/sdk';
+
+// To learn more about flows, visit https://docs.keel.so/flows
+export default MyFlow({ title: "MyFlow" }, async (ctx, inputs) => {
+
+});`,
+			Path: "flows/myFlow.ts",
+		},
+		&codegen.GeneratedFile{
+			Contents: `
+import { MyFlowWithoutInputs } from '@teamkeel/sdk';
+
+// To learn more about flows, visit https://docs.keel.so/flows
+export default MyFlowWithoutInputs({ title: "MyFlowWithoutInputs" }, async (ctx) => {
+
+});`,
+			Path: "flows/myFlowWithoutInputs.ts",
 		},
 	}
 
