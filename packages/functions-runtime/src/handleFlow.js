@@ -103,7 +103,7 @@ async function handleFlow(request, config) {
             runId: runId,
             stepId: e.stepId,
             config: flowConfig,
-            ui: e.page,
+            ui: e.contents,
           });
         }
 

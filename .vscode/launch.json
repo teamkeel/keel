@@ -130,7 +130,7 @@
             "type": "promptString",
             "id": "cmd",
             "description": "The cmd to run",
-            "default": "test"
+            "default": "run"
         },
         {
             "type": "promptString",
@@ -141,7 +141,7 @@
         {
             "type": "promptString",
             "id": "directory",
-            "default": "integration/testdata/files",
+            "default": "integration/testdata/flows",
             "description": "Path to directory containing keel schema file."
         },
         {
