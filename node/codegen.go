@@ -1391,17 +1391,15 @@ func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Sub
 }
 
 func writeFlowFunctionWrapperType(w *codegen.Writer, flow *proto.Flow) {
-	w.Writef("export declare const %s: {", casing.ToCamel(flow.Name))
-
-	var args string
 	if flow.InputMessageName == "" {
-		args = "config: C, fn: (ctx: runtime.StepContext<C>)"
+		w.Writef("export type %sFlowFunction<C> = (ctx: runtime.StepContext<C>) => Promise<void>;", flow.Name)
 	} else {
-		args = "config: C, fn: (ctx: runtime.StepContext<C>, inputs: " + flow.InputMessageName + ")"
+		w.Writef("export type %sFlowFunction<C> = (ctx: runtime.StepContext<C>, inputs: %s) => Promise<void>;", flow.Name, flow.InputMessageName)
 	}
 
-	w.Writef("<C extends runtime.FlowConfig>(%s => Promise<void>): { %s => Promise<void> }", args, args)
-	w.Writeln("};")
+	w.Writeln("")
+	w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: %sFlowFunction<C>) };", casing.ToCamel(flow.Name), casing.ToCamel(flow.Name))
+	w.Writeln("")
 }
 
 func toActionReturnType(model *proto.Model, action *proto.Action) string {

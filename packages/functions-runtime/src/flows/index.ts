@@ -50,6 +50,11 @@ export interface FlowConfig {
   description?: string;
 }
 
+export type FlowFunction<C extends FlowConfig, I extends any = {}> = (
+  ctx: StepContext<C>,
+  inputs: I
+) => Promise<void>;
+
 type StageConfig =
   | string
   | {

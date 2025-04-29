@@ -199,20 +199,28 @@ export default DoSomethingElse(async (ctx, event) => {
 		},
 		&codegen.GeneratedFile{
 			Contents: `
-import { MyFlow } from '@teamkeel/sdk';
+import { MyFlow, FlowConfig } from '@teamkeel/sdk';
+
+const config: FlowConfig = {
+	// See https://docs.keel.so/flows for options
+};
 
 // To learn more about flows, visit https://docs.keel.so/flows
-export default MyFlow({ title: "MyFlow" }, async (ctx, inputs) => {
+export default MyFlow(config, async (ctx, inputs) => {
 
 });`,
 			Path: "flows/myFlow.ts",
 		},
 		&codegen.GeneratedFile{
 			Contents: `
-import { MyFlowWithoutInputs } from '@teamkeel/sdk';
+import { MyFlowWithoutInputs, FlowConfig } from '@teamkeel/sdk';
+
+const config: FlowConfig = {
+	// See https://docs.keel.so/flows for options
+};
 
 // To learn more about flows, visit https://docs.keel.so/flows
-export default MyFlowWithoutInputs({ title: "MyFlowWithoutInputs" }, async (ctx) => {
+export default MyFlowWithoutInputs(config, async (ctx) => {
 
 });`,
 			Path: "flows/myFlowWithoutInputs.ts",
