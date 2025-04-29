@@ -67,7 +67,8 @@ type Opts = {
 
 export function createStepContext<C extends FlowConfig>(
   runId: string,
-  data: any
+  data: any,
+  spanId: string
 ): StepContext<C> {
   return {
     step: async <T = any>(name: string, fn: () => Promise<T>, opts?: Opts) => {
@@ -108,6 +109,7 @@ export function createStepContext<C extends FlowConfig>(
           .updateTable("keel_flow_step")
           .set({
             status: STEP_STATUS.FAILED,
+            spanId: spanId,
             // TODO: store error message
           })
           .where("id", "=", step.id)
@@ -125,6 +127,7 @@ export function createStepContext<C extends FlowConfig>(
         .set({
           status: STEP_STATUS.COMPLETED,
           value: JSON.stringify(result),
+          spanId: spanId,
         })
         .where("id", "=", step.id)
         .returningAll()
@@ -188,6 +191,7 @@ export function createStepContext<C extends FlowConfig>(
             .set({
               status: STEP_STATUS.COMPLETED,
               value: JSON.stringify(data),
+              spanId: spanId,
             })
             .where("id", "=", step.id)
             .returningAll()
