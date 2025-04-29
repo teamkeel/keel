@@ -29,7 +29,7 @@ export default MyFlow(
 
     const values = await ctx.ui.page({
       title: "Update thing",
-      stage: "Update",
+      stage: "stage1",
       description: "Overwrite the existing data in thing",
       content: [
         ctx.ui.inputs.text("name", {
