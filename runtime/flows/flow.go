@@ -50,6 +50,7 @@ type Run struct {
 	Steps     []Step    `json:"steps"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+	Config    *JSONB    `json:"config" gorm:"-"` // Stages config component, omitted from db operations
 }
 
 func (Run) TableName() string {
