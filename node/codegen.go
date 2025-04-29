@@ -122,7 +122,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 
 	for _, flow := range schema.Flows {
 		writeFlowFunctionWrapperType(sdkTypes, flow)
-		sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(flow.Name))
+		sdk.Writef("module.exports.%s = (config, fn) => { return { config, fn }; };", casing.ToCamel(flow.Name))
 		sdk.Writeln("")
 	}
 
@@ -1007,14 +1007,6 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("now(): Date;")
 	w.Dedent()
 	w.Writeln("}")
-
-	// TODO: Definition and implementation for the flow context API
-	w.Writeln("export interface FlowContextAPI {")
-	w.Indent()
-	w.Writeln("step<T>(name: string, fn: () => Promise<T>, opts?: { maxRetries?: number, timeoutInMs?: number }): Promise<T>;")
-	w.Writeln("ui: runtime.UI<C>;")
-	w.Dedent()
-	w.Writeln("}")
 }
 
 func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
@@ -1399,21 +1391,13 @@ func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Sub
 }
 
 func writeFlowFunctionWrapperType(w *codegen.Writer, flow *proto.Flow) {
-	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(flow.Name))
-
-	inputType := flow.InputMessageName
-
-	if inputType == "" {
-		w.Write("(fn: (ctx: FlowContextAPI) => Promise<void>): Promise<void>")
+	if flow.InputMessageName == "" {
+		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C>) };", flow.Name)
 	} else {
-		w.Writef("(fn: (ctx: FlowContextAPI, inputs: %s) => Promise<void>): Promise<void>", inputType)
+		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, %s>) };", flow.Name, flow.InputMessageName)
 	}
 
-	w.Writeln("}>;")
-
-	// w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(flow.Name))
-	// w.Writef("(fn: (ctx: FlowContextAPI) => Promise<void>): Promise<void>")
-	// w.Writeln("}>;")
+	w.Writeln("")
 }
 
 func toActionReturnType(model *proto.Model, action *proto.Action) string {

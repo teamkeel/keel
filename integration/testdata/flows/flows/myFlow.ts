@@ -1,33 +1,57 @@
 import { MyFlow, models } from "@teamkeel/sdk";
 
-export default MyFlow(async (ctx, inputs) => {
-  const thing = await ctx.step("insert thing", async () => {
-    return await models.thing.create({
-      name: inputs.name,
-    });
-  });
-
-  const values = await ctx.ui.page({
+export default MyFlow(
+  {
     title: "My Flow",
     description: "This is a description",
-    content: [
-      ctx.ui.inputs.text("name", {
-        label: "Name",
-      }),
-      ctx.ui.display.divider(),
-      ctx.ui.inputs.number("age", {
-        label: "Age",
-      }),
-    ],
-  });
-
-  await ctx.step("update thing", async () => {
-    return await models.thing.update(
-      { id: thing.id },
+    stages: [
       {
-        name: values.name,
-        age: values.age,
-      }
-    );
-  });
-});
+        key: "stage1",
+        name: "My stage 1",
+        description: "This is stage 1's description",
+      },
+      {
+        key: "stage2",
+        name: "My stage 2",
+        description: "This is stage 2's description",
+      },
+    ],
+  },
+  async (ctx, inputs) => {
+    const thing = await ctx.step("insert thing", async () => {
+      const thing = await models.thing.create({
+        name: inputs.name,
+        age: inputs.age,
+      });
+
+      return { id: thing.id };
+    });
+
+    const values = await ctx.ui.page({
+      title: "Update thing",
+      stage: "stage1",
+      description: "Overwrite the existing data in thing",
+      content: [
+        ctx.ui.inputs.text("name", {
+          label: "Name",
+          defaultValue: inputs.name,
+        }),
+        ctx.ui.display.divider(),
+        ctx.ui.inputs.number("age", {
+          label: "Age",
+          defaultValue: inputs.age,
+        }),
+      ],
+    });
+
+    await ctx.step("update thing", async () => {
+      return await models.thing.update(
+        { id: thing.id },
+        {
+          name: values.name,
+          age: values.age,
+        }
+      );
+    });
+  }
+);

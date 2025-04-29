@@ -1,153 +1,148 @@
 {
-    "openapi": "3.1.0",
-    "info": {
-        "title": "FlowsAPI",
-        "version": "1"
-    },
-    "paths": {
-        "flows/json/AnotherWorkflow": {
-            "post": {
-                "operationId": "AnotherWorkflow",
-                "requestBody": {
-                    "description": "AnotherWorkflow Request",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "age": {
-                                        "type": "number"
-                                    }
-                                },
-                                "unevaluatedProperties": false,
-                                "required": [
-                                    "age"
-                                ]
-                            }
-                        }
-                    }
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FlowsAPI",
+    "version": "1"
+  },
+  "paths": {
+    "flows/json/AnotherWorkflow": {
+      "post": {
+        "operationId": "AnotherWorkflow",
+        "requestBody": {
+          "description": "AnotherWorkflow Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "age": {
+                    "type": "number"
+                  }
                 },
-                "responses": {
-                    "200": {
-                        "description": "AnotherWorkflow Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Run"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "AnotherWorkflow Response Errors",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                "unevaluatedProperties": false,
+                "required": ["age"]
+              }
             }
-        }
-    },
-    "components": {
-        "schemas": {
-            "Run": {
-                "type": "object",
-                "properties": {
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string"
-                    },
-                    "steps": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Step"
-                        }
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AnotherWorkflow Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
                 }
-            },
-            "Step": {
-                "type": "object",
-                "properties": {
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "max_retries": {
-                        "type": "number"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "runId": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string"
-                    },
-                    "timeout_in_ms": {
-                        "type": "number"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "ui": {
-                        "type": "object"
-                    },
-                    "value": {
-                        "type": "object"
-                    }
-                }
+              }
             }
+          },
+          "400": {
+            "description": "AnotherWorkflow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
+      }
     }
+  },
+  "components": {
+    "schemas": {
+      "Run": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            }
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Step": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string"
+          },
+          "max_retries": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "timeout_in_ms": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ui": {
+            "type": "object"
+          },
+          "value": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
 }

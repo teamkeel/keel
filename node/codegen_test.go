@@ -1924,6 +1924,49 @@ export interface AdHocJobWithInputsMessage {
 	})
 }
 
+func TestWriteFlowWrapperType(t *testing.T) {
+	t.Parallel()
+	schema := `
+flow MyFlow {
+	inputs {
+		name Text
+		age Number
+	}
+}
+flow MyFlowWithoutInputs {}`
+
+	expected := `
+export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, MyFlowMessage>) };
+export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C>) };`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		for _, f := range s.Flows {
+			writeFlowFunctionWrapperType(w, f)
+		}
+	})
+}
+
+func TestWriteFlowInputs(t *testing.T) {
+	t.Parallel()
+	schema := `
+flow MyFlow {
+	inputs {
+		name Text
+		age Number
+	}
+}`
+
+	expected := `
+export interface MyFlowMessage {
+	name: string;
+	age: number;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false, false)
+	})
+}
+
 func TestWriteTestingTypes(t *testing.T) {
 	t.Parallel()
 	schema := `

@@ -226,18 +226,26 @@ func writeFlowWrapper(flow *proto.Flow) string {
 	// wanted when there are some.
 	switch {
 	case flow.InputMessageName == "":
-		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
+		return fmt.Sprintf(`import { %s, FlowConfig } from '@teamkeel/sdk';
+
+const config: FlowConfig = {
+	// See https://docs.keel.so/flows for options
+};
 
 // To learn more about flows, visit https://docs.keel.so/flows
-export default %s(async (ctx) => {
+export default %s(config, async (ctx) => {
 
 });`, flow.Name, flow.Name)
 
 	default:
-		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
+		return fmt.Sprintf(`import { %s, FlowConfig } from '@teamkeel/sdk';
+
+const config: FlowConfig = {
+	// See https://docs.keel.so/flows for options
+};
 
 // To learn more about flows, visit https://docs.keel.so/flows
-export default %s(async (ctx, inputs) => {
+export default %s(config, async (ctx, inputs) => {
 
 });`, flow.Name, flow.Name)
 	}

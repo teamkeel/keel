@@ -64,6 +64,7 @@ export interface InputElementResponse<N extends string, V>
   name: N;
   valueType: V;
 }
+
 export interface DisplayElementResponse extends UIElementBase {
   _type: "display";
 }

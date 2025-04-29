@@ -3,7 +3,11 @@ import { useDatabase } from "../database";
 import { textInput } from "./ui/elements/input/text";
 import { numberInput } from "./ui/elements/input/number";
 import { divider } from "./ui/elements/display/divider";
-export { UI };
+import { booleanInput } from "./ui/elements/input/boolean";
+import { markdown } from "./ui/elements/display/markdown";
+import { table } from "./ui/elements/display/table";
+import { selectOne } from "./ui/elements/select/single";
+import { UiPage } from "./ui/page";
 import {
   StepCompletedDisrupt,
   StepErrorDisrupt,
@@ -29,27 +33,27 @@ const defaultOpts = {
   timeoutInMs: 60000,
 };
 
-type FlowInputs = Record<string, any>;
-
-interface StepContext<C extends FlowConfig> {
+export interface StepContext<C extends FlowConfig> {
   step: <R = any>(
     name: string,
-    fn: () => Promise<R>
+    fn: () => Promise<R>,
+    opts?: Opts
   ) => Promise<R> & {
     catch: (errorHandler: (err: Error) => Promise<void> | void) => Promise<any>;
   };
   ui: UI<C>;
 }
 
-export type FlowFunction<C extends FlowConfig = {}> = (
-  context: StepContext<C>
-) => any;
-
 export interface FlowConfig {
   stages?: StageConfig[];
   title?: string;
   description?: string;
 }
+
+export type FlowFunction<C extends FlowConfig, I extends any = {}> = (
+  ctx: StepContext<C>,
+  inputs: I
+) => Promise<void>;
 
 type StageConfig =
   | string
@@ -150,7 +154,7 @@ export function createStepContext<C extends FlowConfig>(
       // return stepWithCatch;
     },
     ui: {
-      page: async (page: any) => {
+      page: (async (page) => {
         const db = useDatabase();
 
         // First check if this step exists
@@ -202,15 +206,21 @@ export function createStepContext<C extends FlowConfig>(
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
           throw new UIRenderDisrupt(step.id, page);
         }
-      },
+      }) as UiPage<C>,
       inputs: {
-        text: textInput,
-        number: numberInput,
+        text: textInput as any,
+        number: numberInput as any,
+        boolean: booleanInput as any,
       },
       display: {
-        divider: divider,
+        divider: divider as any,
+        markdown: markdown as any,
+        table: table as any,
       },
-    } as any,
+      select: {
+        single: selectOne as any,
+      },
+    },
   };
 }
 
@@ -226,3 +236,5 @@ function withTimeout<T>(promiseFn: Promise<T>, timeout: number): Promise<T> {
     }),
   ]);
 }
+
+export { UI };

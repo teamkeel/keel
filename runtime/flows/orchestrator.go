@@ -70,6 +70,7 @@ func NewOrchestrator(s *proto.Schema, opts ...OrchestratorOpt) *Orchestrator {
 type FunctionsResponsePayload struct {
 	RunID        string `json:"runId"`
 	RunCompleted bool   `json:"runCompleted"`
+	Config       *JSONB `json:"config"`
 	UI           *JSONB `json:"ui"` // UI component for the current step, if applicable
 }
 
