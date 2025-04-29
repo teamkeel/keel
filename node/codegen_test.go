@@ -1936,10 +1936,8 @@ flow MyFlow {
 flow MyFlowWithoutInputs {}`
 
 	expected := `
-export type MyFlowFlowFunction<C> = (ctx: runtime.StepContext<C>, inputs: MyFlowMessage) => Promise<void>;
-export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: MyFlowFlowFunction<C>) };
-export type MyFlowWithoutInputsFlowFunction<C> = (ctx: runtime.StepContext<C>) => Promise<void>;
-export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: MyFlowWithoutInputsFlowFunction<C>) };`
+export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, MyFlowMessage>) };
+export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C>) };`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		for _, f := range s.Flows {
