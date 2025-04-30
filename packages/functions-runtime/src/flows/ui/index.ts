@@ -1,12 +1,57 @@
 import { FlowConfig } from "..";
-import { UiElementSelectOne } from "./elements/select/single";
-import { UiElementInputText } from "./elements/input/text";
-import { UiElementInputNumber } from "./elements/input/number";
-import { UiElementInputBoolean } from "./elements/input/boolean";
-import { UiElementMarkdown } from "./elements/display/markdown";
-import { UiElementTable } from "./elements/display/table";
-import { UiElementDivider } from "./elements/display/divider";
+import {
+  UiElementSelectOne,
+  UiElementSelectOneApiResponse,
+} from "./elements/select/single";
+import {
+  UiElementInputText,
+  UiElementInputTextApiResponse,
+} from "./elements/input/text";
+import {
+  UiElementInputNumber,
+  UiElementInputNumberApiResponse,
+} from "./elements/input/number";
+import {
+  UiElementInputBoolean,
+  UiElementInputBooleanApiResponse,
+} from "./elements/input/boolean";
+import {
+  UiElementMarkdown,
+  UiElementMarkdownApiResponse,
+} from "./elements/display/markdown";
+import {
+  UiElementTable,
+  UiElementTableApiResponse,
+} from "./elements/display/table";
+import {
+  UiElementDivider,
+  UiElementDividerApiResponse,
+} from "./elements/display/divider";
 import { UiPage } from "./page";
+import {
+  UiElementImage,
+  UiElementImageApiResponse,
+} from "./elements/display/image";
+import {
+  UiElementBanner,
+  UiElementBannerApiResponse,
+} from "./elements/display/banner";
+import {
+  UiElementHeader,
+  UiElementHeaderApiResponse,
+} from "./elements/display/header";
+import {
+  UiElementCode,
+  UiElementCodeApiResponse,
+} from "./elements/display/code";
+import {
+  UiElementGrid,
+  UiElementGridApiResponse,
+} from "./elements/display/grid";
+import {
+  UiElementList,
+  UiElementListApiResponse,
+} from "./elements/display/list";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -31,6 +76,12 @@ type UiSelectElements = {
 type UiDisplayElements = {
   divider: UiElementDivider;
   markdown: UiElementMarkdown;
+  header: UiElementHeader;
+  banner: UiElementBanner;
+  image: UiElementImage;
+  code: UiElementCode;
+  grid: UiElementGrid;
+  list: UiElementList;
   table: UiElementTable;
 };
 
@@ -94,6 +145,28 @@ export interface BaseUiInputResponse<K, TData> {
 export interface BaseUiDisplayResponse<K> {
   __type: K;
 }
+
+export type ElementApiResponses = {
+  display: {
+    divider: UiElementDividerApiResponse;
+    markdown: UiElementMarkdownApiResponse;
+    header: UiElementHeaderApiResponse;
+    banner: UiElementBannerApiResponse;
+    image: UiElementImageApiResponse;
+    code: UiElementCodeApiResponse;
+    grid: UiElementGridApiResponse;
+    list: UiElementListApiResponse;
+    table: UiElementTableApiResponse;
+  };
+  input: {
+    text: UiElementInputTextApiResponse;
+    number: UiElementInputNumberApiResponse;
+    boolean: UiElementInputBooleanApiResponse;
+  };
+  select: {
+    single: UiElementSelectOneApiResponse;
+  };
+};
 
 /* ********************
  * Implementations
