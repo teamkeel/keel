@@ -32,7 +32,7 @@ export const booleanInput: InputElementImplementation<
       defaultValue: options?.defaultValue,
       optional: options?.optional,
       mode: options?.mode || "checkbox",
-    },
+    } satisfies UiElementInputBooleanApiResponse,
     validate: options?.validate,
     getData: (x: any) => x,
   };

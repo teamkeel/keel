@@ -41,7 +41,7 @@ export const textInput: InputElementImplementation<
       multiline: options?.multiline,
       maxLength: options?.maxLength,
       minLength: options?.minLength,
-    },
+    } satisfies UiElementInputTextApiResponse,
     validate: options?.validate,
     getData: (x: any) => x,
   };

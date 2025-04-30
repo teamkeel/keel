@@ -36,7 +36,7 @@ type UiDisplayElements = {
 
 // The base input element function. All inputs must be named and can optionally have a config
 export type InputElement<TValueType, TConfig extends any = never> = <
-  N extends string
+  N extends string,
 >(
   name: N,
   options?: BaseInputConfig<TValueType> & TConfig
@@ -102,8 +102,12 @@ export interface BaseUiDisplayResponse<K> {
 export type InputElementImplementation<
   TData,
   TConfig extends (...args: any) => any,
-  TApiResponse
-> = (...args: Parameters<TConfig>) => {
+  TApiResponse,
+> = (
+  ...args: Parameters<TConfig>
+) => InputElementImplementationResponse<TApiResponse, TData>;
+
+export type InputElementImplementationResponse<TApiResponse, TData> = {
   uiConfig: TApiResponse;
   getData: (data: TData) => TData;
   validate?: (data: TData) => Promise<boolean | string>;
@@ -111,7 +115,11 @@ export type InputElementImplementation<
 
 export type DisplayElementImplementation<
   TConfig extends (...args: any) => any,
-  TApiResponse
-> = (...args: Parameters<TConfig>) => {
+  TApiResponse,
+> = (
+  ...args: Parameters<TConfig>
+) => DisplayElementImplementationResponse<TApiResponse>;
+
+export type DisplayElementImplementationResponse<TApiResponse> = {
   uiConfig: TApiResponse;
 };

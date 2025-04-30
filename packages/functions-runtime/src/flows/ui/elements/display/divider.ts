@@ -17,6 +17,6 @@ export const divider: DisplayElementImplementation<
   return {
     uiConfig: {
       __type: "ui.display.divider",
-    },
+    } satisfies UiElementDividerApiResponse,
   };
 };
