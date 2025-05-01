@@ -13,6 +13,7 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 	var field *parser.FieldNode
 	var action *parser.ActionNode
 	var job *parser.JobNode
+	var flow *parser.FlowNode
 
 	return Visitor{
 		EnterAction: func(a *parser.ActionNode) {
@@ -32,6 +33,12 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 		},
 		LeaveJob: func(*parser.JobNode) {
 			job = nil
+		},
+		EnterFlow: func(f *parser.FlowNode) {
+			flow = f
+		},
+		LeaveFlow: func(*parser.FlowNode) {
+			flow = nil
 		},
 		EnterAttribute: func(attribute *parser.AttributeNode) {
 			var template map[string]bool
@@ -109,6 +116,12 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 					}
 
 					hint = `the @permission attribute in jobs can accept either an expression or a roles argument, for e.g. @permission(expression: ctx.isAuthenticated)`
+				} else if flow != nil {
+					template = map[string]bool{
+						"roles": false,
+					}
+
+					hint = `the @permission attribute in flows can accept only a roles argument, for e.g. @permission(roles: [Admin])`
 				} else {
 					template = map[string]bool{
 						"expression": false,

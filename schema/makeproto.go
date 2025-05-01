@@ -1621,7 +1621,7 @@ func (scm *Builder) makeFlow(decl *parser.DeclarationNode) {
 	for _, section := range parserFlow.Sections {
 		switch {
 		case section.Attribute != nil:
-			// TODO: Handle any workflow applicable attributes
+			scm.applyFlowAttribute(flow, section.Attribute)
 		case section.Inputs != nil:
 			scm.applyFlowInputs(message, section.Inputs)
 		default:
@@ -2345,6 +2345,13 @@ func (scm *Builder) applyJobInputs(protoMessage *proto.Message, inputs []*parser
 		}
 
 		protoMessage.Fields = append(protoMessage.Fields, protoField)
+	}
+}
+
+func (scm *Builder) applyFlowAttribute(protoFlow *proto.Flow, attribute *parser.AttributeNode) {
+	switch attribute.Name.Value {
+	case parser.AttributePermission:
+		protoFlow.Permissions = append(protoFlow.Permissions, scm.permissionAttributeToProtoPermission(attribute))
 	}
 }
 

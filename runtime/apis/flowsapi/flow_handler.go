@@ -6,7 +6,9 @@ import (
 	"strings"
 
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/flows"
 	"go.opentelemetry.io/otel/attribute"
@@ -21,12 +23,29 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 			attribute.String("api.protocol", "HTTP JSON"),
 		)
 
+		identity, err := actions.HandleAuthorizationHeader(ctx, s, r.Header)
+		if err != nil {
+			return httpjson.NewErrorResponse(ctx, err, nil)
+		}
+		if identity != nil {
+			ctx = auth.WithIdentity(ctx, identity)
+		}
+
 		path := path.Clean(r.URL.EscapedPath())
 		pathParts := strings.Split(strings.TrimPrefix(path, "/flows/json/"), "/")
 
 		flow := s.FindFlow(pathParts[0])
 		if flow == nil {
 			return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+		}
+
+		// authorise that the user is allowed to access this flow
+		authorised, err := flows.AuthoriseFlow(ctx, s, flow)
+		if err != nil {
+			return httpjson.NewErrorResponse(ctx, err, nil)
+		}
+		if !authorised {
+			return httpjson.NewErrorResponse(ctx, common.NewPermissionError(), nil)
 		}
 
 		switch len(pathParts) {
