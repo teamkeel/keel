@@ -35,8 +35,8 @@ func Generate(ctx context.Context, schema *proto.Schema, cfg *config.ProjectConf
 
 func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen.GeneratedFiles {
 	sdk := &codegen.Writer{}
-	sdk.Writeln(`const { sql, NoResultError } = require("kysely")`)
-	sdk.Writeln(`const runtime = require("@teamkeel/functions-runtime")`)
+	sdk.Writeln(`import { sql, NoResultError } from "kysely"`)
+	sdk.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdk.Writeln("")
 
 	sdkTypes := &codegen.Writer{}
@@ -62,8 +62,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	writeTableConfig(sdk, schema.Models)
 	writeAPIFactory(sdk, schema)
 
-	sdk.Writeln("module.exports.useDatabase = runtime.useDatabase;")
-	sdk.Writeln("module.exports.errors = runtime.ErrorPresets;")
+	sdk.Writeln("export { useDatabase, ErrorPresets as errors, File, InlineFile, Duration } from '@teamkeel/functions-runtime';")
 
 	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
@@ -863,7 +862,7 @@ func writeModelQueryBuilderDeclaration(w *codegen.Writer, model *proto.Model) {
 }
 
 func writeEnumObject(w *codegen.Writer, enum *proto.Enum) {
-	w.Writef("module.exports.%s = {\n", enum.Name)
+	w.Writef("export const %s = {\n", enum.Name)
 	w.Indent()
 	for _, v := range enum.Values {
 		w.Write(v.Name)
@@ -1124,15 +1123,10 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln(`const models = createModelAPI();`)
-	w.Writeln(`module.exports.InlineFile = runtime.InlineFile;`)
-	w.Writeln(`module.exports.File = runtime.File;`)
-	w.Writeln(`module.exports.Duration = runtime.Duration;`)
-	w.Writeln(`module.exports.models = models;`)
-	w.Writeln(`module.exports.permissions = createPermissionApi();`)
-	w.Writeln("module.exports.createContextAPI = createContextAPI;")
-	w.Writeln("module.exports.createJobContextAPI = createJobContextAPI;")
-	w.Writeln("module.exports.createSubscriberContextAPI = createSubscriberContextAPI;")
+	w.Writeln("export const models = createModelAPI();")
+	w.Writeln("export const permissions = createPermissionApi();")
+	w.Writeln("export { createContextAPI, createJobContextAPI, createSubscriberContextAPI };")
+
 }
 
 func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
@@ -1246,7 +1240,7 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 	}[action.Type]
 
 	w.Writeln(fmt.Sprintf(
-		"module.exports.%s = %s({model: models.%s, whereInputs: [%s], valueInputs: [%s]})",
+		"export const %s = %s({model: models.%s, whereInputs: [%s], valueInputs: [%s]})",
 		casing.ToCamel(action.Name),
 		functionName,
 		casing.ToLowerCamel(action.ModelName),
@@ -1447,8 +1441,7 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 
 	// The testing package uses ES modules as it only used in the context of running tests
 	// with Vitest
-	js.Writeln(`import sdk from "@teamkeel/sdk"`)
-	js.Writeln("const { useDatabase, models } = sdk;")
+	js.Writeln(`import { useDatabase, models } from "@teamkeel/sdk"`)
 	js.Writeln(`import { ActionExecutor, JobExecutor, SubscriberExecutor, FlowExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 	js.Writeln("export { models };")

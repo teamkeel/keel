@@ -457,15 +457,10 @@ function createModelAPI() {
 function createPermissionApi() {
 	return new runtime.Permissions();
 };
-const models = createModelAPI();
-module.exports.InlineFile = runtime.InlineFile;
-module.exports.File = runtime.File;
-module.exports.Duration = runtime.Duration;
-module.exports.models = models;
-module.exports.permissions = createPermissionApi();
-module.exports.createContextAPI = createContextAPI;
-module.exports.createJobContextAPI = createJobContextAPI;
-module.exports.createSubscriberContextAPI = createSubscriberContextAPI;`
+export const models = createModelAPI();
+export const permissions = createPermissionApi();
+export { createContextAPI, createJobContextAPI, createSubscriberContextAPI };
+`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
