@@ -1,7 +1,6 @@
 /** @type {import('node:http').Headers} */
 const Headers = require("node:http").Headers;
 
-/** @type {import('./types').RequestHeaders} */
 class RequestHeaders {
   /**
    * @param {{Object.<string, string>}} requestHeaders Map of request headers submitted from the client

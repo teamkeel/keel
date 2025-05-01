@@ -3,7 +3,9 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   entry: ["src/index.ts"],
   format: ["cjs", "esm"],
-  dts: true,
+  dts: {
+    entry: "./src/index.d.ts", // ← overrides inferred declaration generation
+  },
   splitting: false,
   sourcemap: true,
   keepNames: true,
