@@ -49,7 +49,7 @@ wasm:
 
 prettier:
 	npx prettier@3.0.0 --write './integration/**/*.{ts,json,yaml}'
-	npx prettier@3.0.0 --write './packages/**/*.{ts,js,mjs}'
+	npx prettier@3.0.0 --write './packages/**/*.{ts,js,mjs,tsx}'
 	npx prettier@3.0.0 --write './node/templates/**/*.{ts,js,mjs}'
 	npx prettier@3.0.0 --write './packages/**/package.json'
 	npx prettier@3.0.0 --write './schema/testdata/proto/**/*.json'

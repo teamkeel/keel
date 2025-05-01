@@ -10,7 +10,7 @@ const KeelContext = createContext<KeelContextType<any>>({
 
 interface KeelProviderProps<
   T extends new (...args: any[]) => any,
-  U = Omit<ConstructorParameters<T>[0], "endpoint">
+  U = Omit<ConstructorParameters<T>[0], "endpoint">,
 > {
   /**
    * The base URL for the client.
