@@ -48,14 +48,14 @@ wasm:
 	node ./packages/wasm/encodeWasm.js
 
 prettier:
-	npx prettier --write './integration/**/*.{ts,json,yaml}'
-	npx prettier --write './packages/**/*.{ts,js,mjs}'
-	npx prettier --write './node/templates/**/*.{ts,js,mjs}'
-	npx prettier --write './packages/**/package.json'
-	npx prettier --write './schema/testdata/proto/**/*.json'
-	npx prettier --write './runtime/jsonschema/testdata/**/*.json'
-	npx prettier --write './runtime/openapi/testdata/**/*.json'
-	npx prettier --write './tools/testdata/**/*.json'
+	npx prettier@3 --write './integration/**/*.{ts,json,yaml}'
+	npx prettier@3 --write './packages/**/*.{ts,js,mjs}'
+	npx prettier@3 --write './node/templates/**/*.{ts,js,mjs}'
+	npx prettier@3 --write './packages/**/package.json'
+	npx prettier@3 --write './schema/testdata/proto/**/*.json'
+	npx prettier@3 --write './runtime/jsonschema/testdata/**/*.json'
+	npx prettier@3 --write './runtime/openapi/testdata/**/*.json'
+	npx prettier@3 --write './tools/testdata/**/*.json'
 
 install:
 	go mod download
