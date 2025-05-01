@@ -1,4 +1,4 @@
-const { snakeCase } = require("change-case");
+import { snakeCase } from "./casing";
 
 function applyLimit(context, qb, limit) {
   return qb.limit(limit);
@@ -15,8 +15,4 @@ function applyOrderBy(context, qb, tableName, orderBy = {}) {
   return qb;
 }
 
-module.exports = {
-  applyLimit,
-  applyOffset,
-  applyOrderBy,
-};
+export { applyLimit, applyOffset, applyOrderBy };

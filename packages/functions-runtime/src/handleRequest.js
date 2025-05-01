@@ -1,14 +1,14 @@
-const {
+import {
   createJSONRPCErrorResponse,
   createJSONRPCSuccessResponse,
   JSONRPCErrorCode,
-} = require("json-rpc-2.0");
-const { createDatabaseClient } = require("./database");
-const { tryExecuteFunction } = require("./tryExecuteFunction");
-const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
-const opentelemetry = require("@opentelemetry/api");
-const { withSpan } = require("./tracing");
-const { parseInputs, parseOutputs } = require("./parsing");
+} from "json-rpc-2.0";
+import { createDatabaseClient } from "./database";
+import { tryExecuteFunction } from "./tryExecuteFunction";
+import { errorToJSONRPCResponse, RuntimeErrors } from "./errors";
+import * as opentelemetry from "@opentelemetry/api";
+import { withSpan } from "./tracing";
+import { parseInputs, parseOutputs } from "./parsing";
 
 // Generic handler function that is agnostic to runtime environment (local or lambda)
 // to execute a custom function based on the contents of a jsonrpc-2.0 payload object.
@@ -147,7 +147,4 @@ async function handleRequest(request, config) {
   });
 }
 
-module.exports = {
-  handleRequest,
-  RuntimeErrors,
-};
+export { handleRequest, RuntimeErrors };

@@ -1,5 +1,5 @@
-const { CamelCasePlugin } = require("kysely");
-const { isPlainObject, isRichType } = require("./type-utils");
+import { CamelCasePlugin } from "kysely";
+import { isPlainObject, isRichType } from "./type-utils";
 
 // KeelCamelCasePlugin is a wrapper around kysely's CamelCasePlugin. The behaviour is the same apart from the fact that
 // nested objects that are of a rich keel data type, such as Duration, are skipped so that they continue to be
@@ -49,4 +49,4 @@ function canMap(obj, opt) {
   );
 }
 
-module.exports.KeelCamelCasePlugin = KeelCamelCasePlugin;
+export { KeelCamelCasePlugin };

@@ -1,11 +1,11 @@
 import { test, expect, beforeEach } from "vitest";
-const { ModelAPI } = require("./ModelAPI");
-const { PROTO_ACTION_TYPES } = require("./consts");
-const { sql } = require("kysely");
-const { useDatabase, withDatabase } = require("./database");
-const KSUID = require("ksuid");
-const TraceParent = require("traceparent");
-const { withAuditContext } = require("./auditing");
+import { ModelAPI } from "./ModelAPI";
+import { PROTO_ACTION_TYPES } from "./consts";
+import { sql } from "kysely";
+import { useDatabase, withDatabase } from "./database";
+import KSUID from "ksuid";
+import TraceParent from "traceparent";
+import { withAuditContext } from "./auditing";
 
 let personAPI;
 const db = useDatabase();

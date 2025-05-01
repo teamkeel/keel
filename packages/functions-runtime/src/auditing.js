@@ -1,6 +1,6 @@
-const { AsyncLocalStorage } = require("async_hooks");
-const TraceParent = require("traceparent");
-const { sql, SelectionNode } = require("kysely");
+import { AsyncLocalStorage } from "async_hooks";
+import TraceParent from "traceparent";
+import { sql, SelectionNode } from "kysely";
 
 const auditContextStorage = new AsyncLocalStorage();
 
@@ -105,6 +105,4 @@ class AuditContextPlugin {
   }
 }
 
-module.exports.withAuditContext = withAuditContext;
-module.exports.getAuditContext = getAuditContext;
-module.exports.AuditContextPlugin = AuditContextPlugin;
+export { withAuditContext, getAuditContext, AuditContextPlugin };
