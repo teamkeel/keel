@@ -478,6 +478,9 @@ func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLi
 	if cfg.VisibleCondition != nil {
 		link.VisibleCondition = cfg.VisibleCondition
 	}
+	if dm := cfg.getDataMapping(); dm != nil {
+		link.Data = dm
+	}
 
 	return link
 }
