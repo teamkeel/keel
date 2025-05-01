@@ -13,7 +13,7 @@ export class UIRenderDisrupt extends FlowDisrupt {
 }
 
 export class StepErrorDisrupt extends FlowDisrupt {
-  constructor(public readonly errorMessage: string) {
+  constructor(public readonly message: string) {
     super();
   }
 }
