@@ -22,6 +22,6 @@ export const markdown: DisplayElementImplementation<
     uiConfig: {
       __type: "ui.display.markdown",
       content: options?.content || "",
-    },
+    } satisfies UiElementMarkdownApiResponse,
   };
 };

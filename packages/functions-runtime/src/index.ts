@@ -44,3 +44,4 @@ export function ksuid() {
 // Export TS
 export * from "./types";
 export { UI, StepContext, FlowConfig, FlowFunction } from "./flows";
+export { type ElementApiResponses } from "./flows/ui/index";

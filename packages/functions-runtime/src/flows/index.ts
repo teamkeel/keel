@@ -13,6 +13,12 @@ import {
   StepErrorDisrupt,
   UIRenderDisrupt,
 } from "./disrupts";
+import { banner } from "./ui/elements/display/banner";
+import { image } from "./ui/elements/display/image";
+import { code } from "./ui/elements/display/code";
+import { grid } from "./ui/elements/display/grid";
+import { list } from "./ui/elements/display/list";
+import { header } from "./ui/elements/display/header";
 
 const enum STEP_STATUS {
   NEW = "NEW",
@@ -216,6 +222,12 @@ export function createStepContext<C extends FlowConfig>(
         divider: divider as any,
         markdown: markdown as any,
         table: table as any,
+        header: header as any,
+        banner: banner as any,
+        image: image as any,
+        code: code as any,
+        grid: grid as any,
+        list: list as any,
       },
       select: {
         single: selectOne as any,

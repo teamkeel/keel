@@ -12,7 +12,7 @@ type ElementDataType = string | number | boolean | Date;
 // So having to duplicate the types of the inputs
 export type UiElementSelectOne = <
   TValue extends ElementDataType,
-  N extends string
+  N extends string,
 >(
   name: N,
   options?: BaseInputConfig<TValue> & {
@@ -48,7 +48,7 @@ export const selectOne: InputElementImplementation<
       defaultValue: options?.defaultValue,
       optional: options?.optional,
       options: [],
-    },
+    } satisfies UiElementSelectOneApiResponse,
     validate: options?.validate,
     getData: (x: any) => x,
   };
