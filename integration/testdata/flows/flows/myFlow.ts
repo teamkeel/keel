@@ -18,7 +18,8 @@ export default MyFlow(
     ],
   },
   async (ctx, inputs) => {
-    const thing = await ctx.step("insert thing",
+    const thing = await ctx.step(
+      "insert thing",
       { stage: "stage1" },
       async () => {
         const thing = await models.thing.create({

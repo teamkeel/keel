@@ -28,8 +28,8 @@ export const table: DisplayElementImplementation<
   const filteredData = options.columns
     ? options.data.map((item) => {
         return Object.fromEntries(
-          Object.entries(item).filter(([key]) =>
-            options.columns?.includes(key as any)
+          Object.entries(item).filter(
+            ([key]) => options.columns?.includes(key as any)
           )
         );
       })
