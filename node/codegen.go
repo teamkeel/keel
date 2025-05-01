@@ -1126,7 +1126,6 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export const models = createModelAPI();")
 	w.Writeln("export const permissions = createPermissionApi();")
 	w.Writeln("export { createContextAPI, createJobContextAPI, createSubscriberContextAPI };")
-
 }
 
 func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
