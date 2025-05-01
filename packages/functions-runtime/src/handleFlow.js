@@ -107,27 +107,17 @@ async function handleFlow(request, config) {
           });
         }
 
-        if (e instanceof Error) {
-          span.recordException(e);
-          span.setStatus({
-            code: opentelemetry.SpanStatusCode.ERROR,
-            message: e.message,
-          });
-          return errorToJSONRPCResponse(request, e);
-        }
-
-        const message = JSON.stringify(e);
-
+        span.recordException(e);
         span.setStatus({
           code: opentelemetry.SpanStatusCode.ERROR,
-          message: message,
+          message: e.message,
         });
 
-        return createJSONRPCErrorResponse(
-          request.id,
-          RuntimeErrors.UnknownError,
-          message
-        );
+        return createJSONRPCSuccessResponse(request.id, {
+          runId: runId,
+          runCompleted: false,
+          config: flowConfig,
+        });
       } finally {
         if (db) {
           await db.destroy();
