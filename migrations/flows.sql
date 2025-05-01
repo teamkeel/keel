@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS keel_flow_step (
 	"id" text NOT NULL DEFAULT ksuid() PRIMARY KEY,
 	"run_id" text NOT NULL REFERENCES "keel_flow_run" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
 	"name" TEXT NOT NULL,
+	"stage" TEXT NULL,
 	"status" TEXT NOT NULL,
 	"type" TEXT NOT NULL,
 	"value" JSONB DEFAULT NULL,

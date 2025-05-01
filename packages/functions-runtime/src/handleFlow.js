@@ -9,7 +9,7 @@ const opentelemetry = require("@opentelemetry/api");
 const { withSpan } = require("./tracing");
 const { tryExecuteFlow } = require("./tryExecuteFlow");
 const { parseInputs } = require("./parsing");
-const { createStepContext } = require("./flows");
+const { createFlowContext } = require("./flows");
 const {
   StepCompletedDisrupt,
   StepErrorDisrupt,
@@ -65,7 +65,7 @@ async function handleFlow(request, config) {
           throw new Error("no flow run found");
         }
 
-        const ctx = createStepContext(
+        const ctx = createFlowContext(
           request.meta.runId,
           request.meta.data,
           span.spanContext().spanId
