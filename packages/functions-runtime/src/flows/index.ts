@@ -39,16 +39,22 @@ const defaultOpts = {
   timeoutInMs: 60000,
 };
 
-export interface StepContext<C extends FlowConfig> {
-  step: <R = any>(
-    name: string,
-    fn: () => Promise<R>,
-    opts?: Opts
-  ) => Promise<R> & {
-    catch: (errorHandler: (err: Error) => Promise<void> | void) => Promise<any>;
-  };
+export interface FlowContext<C extends FlowConfig> {
+  step: Step<C>;
   ui: UI<C>;
 }
+
+export type Step<C extends FlowConfig> = <R>(
+  name: string,
+  options: {
+    stage?: ExtractStageKeys<C>;
+    maxRetries?: number;
+    timeoutInMs?: number;
+  },
+  fn: () => Promise<R> & {
+    catch: (errorHandler: (err: Error) => Promise<void> | void) => Promise<any>;
+  }
+) => Promise<R>;
 
 export interface FlowConfig {
   stages?: StageConfig[];
@@ -57,9 +63,22 @@ export interface FlowConfig {
 }
 
 export type FlowFunction<C extends FlowConfig, I extends any = {}> = (
-  ctx: StepContext<C>,
+  ctx: FlowContext<C>,
   inputs: I
 ) => Promise<void>;
+
+// Extract the stage keys from the flow config supporting either a string or an object with a key property
+export type ExtractStageKeys<T extends FlowConfig> = T extends {
+  stages: infer S;
+}
+  ? S extends ReadonlyArray<infer U>
+    ? U extends string
+      ? U
+      : U extends { key: infer K extends string }
+      ? K
+      : never
+    : never
+  : never;
 
 type StageConfig =
   | string
@@ -70,18 +89,13 @@ type StageConfig =
       initiallyHidden?: boolean;
     };
 
-type Opts = {
-  maxRetries?: number;
-  timeoutInMs?: number;
-};
-
-export function createStepContext<C extends FlowConfig>(
+export function createFlowContext<C extends FlowConfig>(
   runId: string,
   data: any,
   spanId: string
-): StepContext<C> {
+): FlowContext<C> {
   return {
-    step: async <T = any>(name: string, fn: () => Promise<T>, opts?: Opts) => {
+    step: async (name, options, fn) => {
       const db = useDatabase();
 
       // First check if we already have a result for this step
@@ -103,10 +117,11 @@ export function createStepContext<C extends FlowConfig>(
         .values({
           run_id: runId,
           name: name,
+          stage: options.stage,
           status: STEP_STATUS.NEW,
           type: STEP_TYPE.FUNCTION,
-          maxRetries: opts?.maxRetries ?? defaultOpts.maxRetries,
-          timeoutInMs: opts?.timeoutInMs ?? defaultOpts.timeoutInMs,
+          maxRetries: options?.maxRetries ?? defaultOpts.maxRetries,
+          timeoutInMs: options?.timeoutInMs ?? defaultOpts.timeoutInMs,
         })
         .returningAll()
         .executeTakeFirst();
@@ -160,14 +175,14 @@ export function createStepContext<C extends FlowConfig>(
       // return stepWithCatch;
     },
     ui: {
-      page: (async (page) => {
+      page: (async (name, page) => {
         const db = useDatabase();
 
         // First check if this step exists
         let step = await db
           .selectFrom("keel_flow_step")
           .where("run_id", "=", runId)
-          .where("name", "=", page.title)
+          .where("name", "=", name)
           .selectAll()
           .executeTakeFirst();
 
@@ -182,7 +197,8 @@ export function createStepContext<C extends FlowConfig>(
             .insertInto("keel_flow_step")
             .values({
               run_id: runId,
-              name: page.title,
+              name: name,
+              stage: page.stage,
               status: STEP_STATUS.PENDING,
               type: STEP_TYPE.UI,
               maxRetries: 3,
