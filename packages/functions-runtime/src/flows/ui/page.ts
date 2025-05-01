@@ -1,7 +1,5 @@
-import { InputElementResponse } from ".";
-
-import { UIElements } from ".";
 import { FlowConfig, ExtractStageKeys } from "..";
+import { InputElementResponse, UIElements } from ".";
 
 export type UiPage<C extends FlowConfig> = <
   T extends UIElements,

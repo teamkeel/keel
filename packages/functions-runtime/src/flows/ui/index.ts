@@ -146,7 +146,7 @@ export interface BaseUiDisplayResponse<K> {
   __type: K;
 }
 
-export type ElementApiResponses = {
+export type UIApiResponses = {
   display: {
     divider: UiElementDividerApiResponse;
     markdown: UiElementMarkdownApiResponse;

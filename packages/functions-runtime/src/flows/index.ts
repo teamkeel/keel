@@ -126,6 +126,10 @@ export function createFlowContext<C extends FlowConfig>(
         .returningAll()
         .executeTakeFirst();
 
+      if (!step) {
+        throw new Error("Failed to create step");
+      }
+
       let result = null;
       try {
         result = await withTimeout(fn(), step.timeoutInMs);
@@ -206,6 +210,10 @@ export function createFlowContext<C extends FlowConfig>(
             })
             .returningAll()
             .executeTakeFirst();
+        }
+
+        if (!step) {
+          throw new Error("Failed to create step");
         }
 
         if (data) {
