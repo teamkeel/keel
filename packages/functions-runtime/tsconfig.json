@@ -12,7 +12,8 @@
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "checkJs": false,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "removeComments": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

@@ -1,19 +1,20 @@
-import { InputElementResponse } from ".";
-
-import { UIElements } from ".";
-import { FlowConfig } from "..";
+import { FlowConfig, ExtractStageKeys } from "..";
+import { InputElementResponse, UIElements } from ".";
 
 export type UiPage<C extends FlowConfig> = <
   T extends UIElements,
-  A extends PageActions[] = []
->(options: {
-  stage?: ExtractStageKeys<C>;
-  title?: string;
-  description?: string;
-  content: T;
-  validate?: (data: ExtractFormData<T>) => Promise<true | string>;
-  actions?: A;
-}) => A["length"] extends 0
+  A extends PageActions[] = [],
+>(
+  name: string,
+  options: {
+    stage?: ExtractStageKeys<C>;
+    title?: string;
+    description?: string;
+    content: T;
+    validate?: (data: ExtractFormData<T>) => Promise<true | string>;
+    actions?: A;
+  }
+) => A["length"] extends 0
   ? ExtractFormData<T>
   : { data: ExtractFormData<T>; action: ActionValue<A[number]> };
 
@@ -43,14 +44,3 @@ type ExtractFormData<T extends UIElements> = {
     InputElementResponse<K, any>
   >["valueType"];
 };
-
-// Extract the stage keys from the flow config supporting either a string or an object with a key property
-type ExtractStageKeys<T extends FlowConfig> = T extends { stages: infer S }
-  ? S extends ReadonlyArray<infer U>
-    ? U extends string
-      ? U
-      : U extends { key: infer K extends string }
-      ? K
-      : never
-    : never
-  : never;

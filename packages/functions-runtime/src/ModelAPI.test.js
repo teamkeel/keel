@@ -1,9 +1,9 @@
 import { test, expect, beforeEach, describe } from "vitest";
-const { InlineFile, File } = require("./File");
-const { ModelAPI } = require("./ModelAPI");
-const { sql } = require("kysely");
-const { useDatabase } = require("./database");
-const KSUID = require("ksuid");
+import { InlineFile, File } from "./File";
+import { ModelAPI } from "./ModelAPI";
+import { sql } from "kysely";
+import { useDatabase } from "./database";
+import KSUID from "ksuid";
 
 let personAPI;
 let postAPI;

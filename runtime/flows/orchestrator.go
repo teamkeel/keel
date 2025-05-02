@@ -119,7 +119,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 		// Check to see if the retries have been exceeded
 		if len(run.Steps) > 0 {
 			lastStep := run.Steps[len(run.Steps)-1]
-			if lastStep.Status == "FAILED" && len(stepsMap[lastStep.Name]) >= lastStep.MaxRetries {
+			if lastStep.Status == StepStatusFailed && len(stepsMap[lastStep.Name]) >= lastStep.MaxRetries {
 				_, err := updateRun(ctx, run.ID, StatusFailed)
 				return err
 			}

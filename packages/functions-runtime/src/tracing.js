@@ -1,10 +1,8 @@
-const opentelemetry = require("@opentelemetry/api");
-const { BatchSpanProcessor } = require("@opentelemetry/sdk-trace-base");
-const {
-  OTLPTraceExporter,
-} = require("@opentelemetry/exporter-trace-otlp-proto");
-const { NodeTracerProvider } = require("@opentelemetry/sdk-trace-node");
-const { envDetectorSync } = require("@opentelemetry/resources");
+import * as opentelemetry from "@opentelemetry/api";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
+import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
+import { envDetectorSync } from "@opentelemetry/resources";
 
 async function withSpan(name, fn) {
   return getTracer().startActiveSpan(name, async (span) => {
@@ -175,10 +173,4 @@ function spanNameForModelAPI(modelName, action) {
   return `Database ${modelName}.${action}`;
 }
 
-module.exports = {
-  getTracer,
-  withSpan,
-  init,
-  forceFlush,
-  spanNameForModelAPI,
-};
+export { getTracer, withSpan, init, forceFlush, spanNameForModelAPI };

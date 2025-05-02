@@ -4,7 +4,7 @@ import { handleRequest, RuntimeErrors } from "./handleRequest";
 import { test, expect, beforeEach, describe } from "vitest";
 import { ModelAPI } from "./ModelAPI";
 import { useDatabase } from "./database";
-const { Permissions } = require("./permissions");
+import { Permissions } from "./permissions";
 import { PROTO_ACTION_TYPES } from "./consts";
 import KSUID from "ksuid";
 import { ErrorPresets } from "./errors";

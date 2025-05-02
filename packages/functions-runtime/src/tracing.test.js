@@ -1,7 +1,7 @@
 import { expect, test, beforeEach } from "vitest";
-import tracing from "./tracing";
-import { NodeTracerProvider, Span } from "@opentelemetry/sdk-trace-node";
-const opentelemetry = require("@opentelemetry/api");
+import * as tracing from "./tracing";
+import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
+import * as opentelemetry from "@opentelemetry/api";
 
 let spanEvents = [];
 const provider = new NodeTracerProvider({

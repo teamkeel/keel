@@ -1,4 +1,4 @@
-const { withDatabase } = require("./database");
+import { withDatabase } from "./database";
 
 function tryExecuteFlow(db, cb) {
   return withDatabase(db, false, async () => {
@@ -6,4 +6,4 @@ function tryExecuteFlow(db, cb) {
   });
 }
 
-module.exports.tryExecuteFlow = tryExecuteFlow;
+export { tryExecuteFlow };

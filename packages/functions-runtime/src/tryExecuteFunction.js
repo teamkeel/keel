@@ -1,12 +1,12 @@
-const { withDatabase } = require("./database");
-const { withAuditContext } = require("./auditing");
-const {
+import { withDatabase } from "./database";
+import { withAuditContext } from "./auditing";
+import {
   withPermissions,
   PERMISSION_STATE,
   checkBuiltInPermissions,
-} = require("./permissions");
-const { PermissionError } = require("./errors");
-const { PROTO_ACTION_TYPES } = require("./consts");
+} from "./permissions";
+import { PermissionError } from "./errors";
+import { PROTO_ACTION_TYPES } from "./consts";
 
 // tryExecuteFunction will create a new database transaction around a function call
 // and handle any permissions checks. If a permission check fails, then an Error will be thrown and the catch block will be hit.
@@ -88,4 +88,4 @@ function tryExecuteFunction(
   });
 }
 
-module.exports.tryExecuteFunction = tryExecuteFunction;
+export { tryExecuteFunction };

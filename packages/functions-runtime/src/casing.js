@@ -1,4 +1,4 @@
-const { snakeCase, camelCase } = require("change-case");
+import { snakeCase, camelCase } from "change-case";
 
 function camelCaseObject(obj = {}) {
   const r = {};
@@ -45,7 +45,7 @@ function camelCaseTransform(input, index) {
   return `${firstChar.toUpperCase()}${lowerChars}`;
 }
 
-module.exports = {
+export {
   camelCaseObject,
   snakeCaseObject,
   snakeCase,

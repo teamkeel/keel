@@ -1,20 +1,20 @@
-const {
+import {
   createJSONRPCErrorResponse,
   createJSONRPCSuccessResponse,
   JSONRPCErrorCode,
-} = require("json-rpc-2.0");
-const { createDatabaseClient } = require("./database");
-const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
-const opentelemetry = require("@opentelemetry/api");
-const { withSpan } = require("./tracing");
-const { tryExecuteFlow } = require("./tryExecuteFlow");
-const { parseInputs } = require("./parsing");
-const { createStepContext } = require("./flows");
-const {
+} from "json-rpc-2.0";
+import { createDatabaseClient } from "./database";
+import { errorToJSONRPCResponse, RuntimeErrors } from "./errors";
+import * as opentelemetry from "@opentelemetry/api";
+import { withSpan } from "./tracing";
+import { tryExecuteFlow } from "./tryExecuteFlow";
+import { parseInputs } from "./parsing";
+import { createFlowContext } from "./flows";
+import {
   StepCompletedDisrupt,
   StepErrorDisrupt,
   UIRenderDisrupt,
-} = require("./flows/disrupts");
+} from "./flows/disrupts";
 
 async function handleFlow(request, config) {
   // Try to extract trace context from caller
@@ -65,7 +65,7 @@ async function handleFlow(request, config) {
           throw new Error("no flow run found");
         }
 
-        const ctx = createStepContext(
+        const ctx = createFlowContext(
           request.meta.runId,
           request.meta.data,
           span.spanContext().spanId
@@ -107,27 +107,17 @@ async function handleFlow(request, config) {
           });
         }
 
-        if (e instanceof Error) {
-          span.recordException(e);
-          span.setStatus({
-            code: opentelemetry.SpanStatusCode.ERROR,
-            message: e.message,
-          });
-          return errorToJSONRPCResponse(request, e);
-        }
-
-        const message = JSON.stringify(e);
-
+        span.recordException(e);
         span.setStatus({
           code: opentelemetry.SpanStatusCode.ERROR,
-          message: message,
+          message: e.message,
         });
 
-        return createJSONRPCErrorResponse(
-          request.id,
-          RuntimeErrors.UnknownError,
-          message
-        );
+        return createJSONRPCSuccessResponse(request.id, {
+          runId: runId,
+          runCompleted: false,
+          config: flowConfig,
+        });
       } finally {
         if (db) {
           await db.destroy();
@@ -137,7 +127,4 @@ async function handleFlow(request, config) {
   });
 }
 
-module.exports = {
-  handleFlow,
-  RuntimeErrors,
-};
+export { handleFlow, RuntimeErrors };

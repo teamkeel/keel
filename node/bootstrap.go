@@ -48,10 +48,11 @@ func GetDependencies(options *bootstrapOptions) (map[string]string, map[string]s
 	}
 
 	devDeps := map[string]string{
-		"@types/node": "22.13.5",
-		"tsx":         "4.19.3",
-		"typescript":  "5.8.3",
-		"vitest":      "3.1.1",
+		"@types/node":         "22.13.5",
+		"tsx":                 "4.19.3",
+		"typescript":          "5.8.3",
+		"vitest":              "3.1.1",
+		"vite-tsconfig-paths": "5.1.4",
 	}
 
 	return deps, devDeps

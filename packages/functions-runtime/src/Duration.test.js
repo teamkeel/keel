@@ -1,11 +1,11 @@
 import { test, expect } from "vitest";
-const { Duration } = require("./Duration");
+import { Duration } from "./Duration";
 
 test("fromISOString test", async () => {
   const fullDate = Duration.fromISOString("P1Y2M3DT4H5M6S");
   expect(fullDate.toISOString()).toEqual("P1Y2M3DT4H5M6S");
   expect(fullDate.toPostgres()).toEqual(
-    "1 years 2 months 3 days 4 hours 5 minutes 6 seconds"
+    "1 year 2 months 3 days 4 hours 5 minutes 6 seconds"
   );
   const dateOnly = Duration.fromISOString("P2Y3M4D");
   expect(dateOnly.toISOString()).toEqual("P2Y3M4D");

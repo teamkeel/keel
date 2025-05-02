@@ -18,33 +18,37 @@ export default MyFlow(
     ],
   },
   async (ctx, inputs) => {
-    const thing = await ctx.step("insert thing", async () => {
-      const thing = await models.thing.create({
-        name: inputs.name,
-        age: inputs.age,
-      });
+    const thing = await ctx.step(
+      "insert thing",
+      { stage: "stage1" },
+      async () => {
+        const thing = await models.thing.create({
+          name: inputs.name,
+          age: inputs.age,
+        });
 
-      return { id: thing.id };
+        return { id: thing.id };
+      }
+    );
+
+    const values = await ctx.ui.page("page1", {
+      title: "Update thing",
+      stage: "stage2",
+      description: "Overwrite the existing data in thing",
+      content: [
+        ctx.ui.inputs.text("name", {
+          label: "Name",
+          defaultValue: inputs.name,
+        }),
+        ctx.ui.display.divider(),
+        ctx.ui.inputs.number("age", {
+          label: "Age",
+          defaultValue: inputs.age,
+        }),
+      ],
     });
 
-  const values = await ctx.ui.page({
-    title: "Update thing",
-    stage: "stage1",
-    description: "Overwrite the existing data in thing",
-    content: [
-      ctx.ui.inputs.text("name", {
-        label: "Name",
-        defaultValue: inputs.name,
-      }),
-      ctx.ui.display.divider(),
-      ctx.ui.inputs.number("age", {
-        label: "Age",
-        defaultValue: inputs.age,
-      }),
-    ],
-  });
-
-    await ctx.step("update thing", async () => {
+    await ctx.step("update thing", {}, async () => {
       return await models.thing.update(
         { id: thing.id },
         {

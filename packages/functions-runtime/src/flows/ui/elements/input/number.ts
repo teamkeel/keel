@@ -38,7 +38,7 @@ export const numberInput: InputElementImplementation<
       placeholder: options?.placeholder,
       min: options?.min,
       max: options?.max,
-    },
+    } satisfies UiElementInputNumberApiResponse,
     validate: options?.validate,
     getData: (x: any) => x,
   };
