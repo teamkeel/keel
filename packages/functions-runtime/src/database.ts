@@ -1,9 +1,6 @@
 import { Kysely, PostgresDialect, KyselyConfig } from "kysely";
-import {
-  Pool as NeonPool,
-  PoolClient as NeonPoolClient,
-} from "@neondatabase/serverless";
-import { AsyncLocalStorage } from "async_hooks";
+import * as neon from "@neondatabase/serverless";
+import { AsyncLocalStorage } from "node:async_hooks";
 import { AuditContextPlugin } from "./auditing";
 import { KeelCamelCasePlugin } from "./camelCasePlugin";
 import { Pool, Client, types as pgTypes, PoolConfig, PoolClient } from "pg";
@@ -20,6 +17,11 @@ interface DatabaseContext {
 interface DatabaseClientConfig {
   connString?: string;
 }
+
+const dbInstance = new AsyncLocalStorage<Kysely<any>>();
+
+// used to establish a singleton for our vitest environment
+let vitestDb: Kysely<any> | null = null;
 
 // withDatabase is responsible for setting the correct database client in our AsyncLocalStorage
 // so that the the code in a custom function uses the correct client.
@@ -49,11 +51,6 @@ async function withDatabase<T>(
     });
   });
 }
-
-const dbInstance = new AsyncLocalStorage<Kysely<any>>();
-
-// used to establish a singleton for our vitest environment
-let vitestDb: Kysely<any> | null = null;
 
 // useDatabase will retrieve the database client set by withDatabase from the local storage
 function useDatabase(): Kysely<any> {
@@ -119,8 +116,8 @@ class InstrumentedPool extends Pool {
   }
 }
 
-class InstrumentedNeonServerlessPool extends NeonPool {
-  async connect(...args: any): Promise<NeonPoolClient> {
+class InstrumentedNeonServerlessPool extends neon.Pool {
+  async connect(...args: any): Promise<neon.PoolClient> {
     const _super = super.connect.bind(this);
     return withSpan("Database Connect", function (span: any) {
       span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
@@ -202,23 +199,20 @@ function getDialect(connString?: string): PostgresDialect {
       });
     }
     case "neon": {
-      const neonserverless = require("@neondatabase/serverless");
-
       // Adding a custom type parser for numeric fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
       // 1700 = type for NUMERIC
-      neonserverless.types.setTypeParser(
-        pgTypes.builtins.NUMERIC,
-        (val: string) => parseFloat(val)
+      neon.types.setTypeParser(pgTypes.builtins.NUMERIC, (val: string) =>
+        parseFloat(val)
       );
 
       // Adding a custom type parser for interval fields: see https://kysely.dev/docs/recipes/data-types#configuring-runtime-javascript-types
       // 1186 = type for INTERVAL
-      neonserverless.types.setTypeParser(
+      neon.types.setTypeParser(
         pgTypes.builtins.INTERVAL,
         (val: string) => new Duration(val)
       );
 
-      neonserverless.neonConfig.webSocketConstructor = WebSocket;
+      neon.neonConfig.webSocketConstructor = WebSocket;
 
       const pool = new InstrumentedNeonServerlessPool({
         // If connString is not passed fall back to reading from env var
