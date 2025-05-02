@@ -9,9 +9,9 @@ import (
 
 // AuthoriseFlow will check that the context's identity is authorised to access the given flow in the context of the given schema
 func AuthoriseFlow(ctx context.Context, schema *proto.Schema, flow *proto.Flow) (bool, error) {
-	// if the flow doesn't have any permission rules, authorise
+	// if the flow doesn't have any permission rules, do not authorise
 	if len(flow.Permissions) == 0 {
-		return true, nil
+		return false, nil
 	}
 
 	for _, permission := range flow.Permissions {
