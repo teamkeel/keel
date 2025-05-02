@@ -1,20 +1,16 @@
-const { applyWhereConditions } = require("./applyWhereConditions");
-const {
+import { applyWhereConditions } from "./applyWhereConditions";
+import {
   applyLimit,
   applyOffset,
   applyOrderBy,
-} = require("./applyAdditionalQueryConstraints");
-const { applyJoins } = require("./applyJoins");
-const {
-  camelCaseObject,
-  snakeCaseObject,
-  upperCamelCase,
-} = require("./casing");
-const { useDatabase } = require("./database");
-const { transformRichDataTypes } = require("./parsing");
-const { QueryContext } = require("./QueryContext");
-const tracing = require("./tracing");
-const { DatabaseError } = require("./errors");
+} from "./applyAdditionalQueryConstraints";
+import { applyJoins } from "./applyJoins";
+import { camelCaseObject, snakeCaseObject, upperCamelCase } from "./casing";
+import { useDatabase } from "./database";
+import { transformRichDataTypes } from "./parsing";
+import { QueryContext } from "./QueryContext";
+import * as tracing from "./tracing";
+import { DatabaseError } from "./errors";
 
 class QueryBuilder {
   /**
@@ -181,4 +177,4 @@ class QueryBuilder {
   }
 }
 
-module.exports.QueryBuilder = QueryBuilder;
+export { QueryBuilder };

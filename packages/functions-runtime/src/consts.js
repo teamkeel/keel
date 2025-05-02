@@ -12,4 +12,4 @@ const PROTO_ACTION_TYPES = {
   FLOW: "FLOW_TYPE",
 };
 
-module.exports.PROTO_ACTION_TYPES = PROTO_ACTION_TYPES;
+export { PROTO_ACTION_TYPES };

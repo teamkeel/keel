@@ -2,16 +2,17 @@
   "name": "@teamkeel/functions-runtime",
   "version": "0.0.1",
   "description": "Internal package used by @teamkeel/sdk",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
     }
   },
+  "type": "module",
   "scripts": {
     "test": "vitest run --reporter verbose --pool=threads --poolOptions.threads.singleThread",
     "format": "npx prettier --write src/**/*.js",
@@ -34,7 +35,9 @@
     "vitest": "3.0.8",
     "typescript": "^5.3.0",
     "tsup": "^8.0.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.14",
+    "@types/ws": "^8.18.1"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "~3.722.0",

@@ -1,5 +1,5 @@
 import { test, expect } from "vitest";
-const { TimePeriod } = require("./TimePeriod");
+import { TimePeriod } from "./TimePeriod";
 
 test("shorthands test", async () => {
   const today = TimePeriod.fromExpression("today");

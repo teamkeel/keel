@@ -35,10 +35,9 @@ func TestPermissionFnBuilder(t *testing.T) {
 				}
 			`,
 			expected: `
-const permissionFns = {
+export const permissionFns = {
 	createPost: [],
 }
-module.exports.permissionFns = permissionFns;
 			`,
 		},
 		{
@@ -57,7 +56,7 @@ module.exports.permissionFns = permissionFns;
 				}
 			`,
 			expected: `
-const permissionFns = {
+export const permissionFns = {
 	createPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
@@ -65,7 +64,6 @@ const permissionFns = {
 		},
 	],
 }
-module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
 				SELECT DISTINCT "person"."id" 
@@ -89,7 +87,7 @@ module.exports.permissionFns = permissionFns;
 				}
 			`,
 			expected: `
-const permissionFns = {
+export const permissionFns = {
 	getPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
@@ -97,7 +95,6 @@ const permissionFns = {
 		},
 	],
 }
-module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
 				SELECT DISTINCT "post"."id" 
@@ -122,7 +119,7 @@ module.exports.permissionFns = permissionFns;
 				}
 			`,
 			expected: `
-const permissionFns = {
+export const permissionFns = {
 	updatePost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
@@ -130,7 +127,6 @@ const permissionFns = {
 		},
 	],
 }
-module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
 				SELECT DISTINCT "post"."id" 
@@ -155,7 +151,7 @@ module.exports.permissionFns = permissionFns;
 				}
 			`,
 			expected: `
-const permissionFns = {
+export const permissionFns = {
 	getPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
@@ -163,7 +159,6 @@ const permissionFns = {
 		},
 	],
 }
-module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
 				SELECT DISTINCT "post"."id" 
@@ -188,7 +183,7 @@ module.exports.permissionFns = permissionFns;
 				}
 			`,
 			expected: `
-const permissionFns = {
+export const permissionFns = {
 	updatePost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
@@ -196,7 +191,6 @@ const permissionFns = {
 		},
 	],
 }
-module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
 				SELECT DISTINCT "post"."id" 
@@ -221,7 +215,7 @@ module.exports.permissionFns = permissionFns;
 				}
 			`,
 			expected: `
-const permissionFns = {
+export const permissionFns = {
 	updatePost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
@@ -229,7 +223,6 @@ const permissionFns = {
 		},
 	],
 }
-module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
 				SELECT DISTINCT "post"."id" 
@@ -255,7 +248,7 @@ module.exports.permissionFns = permissionFns;
 				}
 			`,
 			expected: `
-const permissionFns = {
+export const permissionFns = {
 	createPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
@@ -263,7 +256,6 @@ const permissionFns = {
 		},
 	],
 }
-module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
 				SELECT DISTINCT "post"."id" 
@@ -287,7 +279,7 @@ module.exports.permissionFns = permissionFns;
 				}
 			`,
 			expected: `
-const permissionFns = {
+export const permissionFns = {
 	getPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
@@ -295,7 +287,6 @@ const permissionFns = {
 		},
 	],
 }
-module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
 				SELECT DISTINCT "post"."id" 
@@ -319,7 +310,7 @@ module.exports.permissionFns = permissionFns;
 				}
 			`,
 			expected: `
-const permissionFns = {
+export const permissionFns = {
 	getPost: [
 		async (records, ctx, db) => {
 			const { rows } = await sql%s.execute(db);
@@ -327,7 +318,6 @@ const permissionFns = {
 		},
 	],
 }
-module.exports.permissionFns = permissionFns;
 			`,
 			sql: `
 				SELECT DISTINCT "post"."id" 

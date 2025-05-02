@@ -1,13 +1,13 @@
-const {
+import {
   createJSONRPCErrorResponse,
   createJSONRPCSuccessResponse,
   JSONRPCErrorCode,
-} = require("json-rpc-2.0");
-const { createDatabaseClient, withDatabase } = require("./database");
-const { withAuditContext } = require("./auditing");
-const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
-const opentelemetry = require("@opentelemetry/api");
-const { withSpan } = require("./tracing");
+} from "json-rpc-2.0";
+import { createDatabaseClient, withDatabase } from "./database";
+import { withAuditContext } from "./auditing";
+import { errorToJSONRPCResponse, RuntimeErrors } from "./errors";
+import * as opentelemetry from "@opentelemetry/api";
+import { withSpan } from "./tracing";
 
 async function handleRoute(request, config) {
   // Try to extract trace context from caller
@@ -106,7 +106,4 @@ async function handleRoute(request, config) {
   });
 }
 
-module.exports = {
-  handleRoute,
-  RuntimeErrors,
-};
+export { handleRoute, RuntimeErrors };

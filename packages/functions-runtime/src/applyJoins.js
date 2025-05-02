@@ -1,4 +1,4 @@
-const { snakeCase } = require("./casing");
+import { snakeCase } from "./casing";
 
 /**
  * Adds the joins required by the where conditions to the given
@@ -62,6 +62,4 @@ function applyJoins(context, qb, where) {
   return qb;
 }
 
-module.exports = {
-  applyJoins,
-};
+export { applyJoins };
