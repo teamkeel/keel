@@ -29,10 +29,13 @@ export type UiElementSelectOne = <
 // The shape of the response over the API
 export interface UiElementSelectOneApiResponse
   extends BaseUiInputResponse<"ui.select.single", ElementDataType> {
-  options: {
-    label: string;
-    value: string;
-  }[];
+  options: (
+    | {
+        label: string;
+        value: ElementDataType;
+      }
+    | ElementDataType
+  )[];
 }
 
 export const selectOne: InputElementImplementation<
@@ -47,7 +50,7 @@ export const selectOne: InputElementImplementation<
       label: options?.label || name,
       defaultValue: options?.defaultValue,
       optional: options?.optional,
-      options: [],
+      options: options?.options || [],
     } satisfies UiElementSelectOneApiResponse,
     validate: options?.validate,
     getData: (x: any) => x,
