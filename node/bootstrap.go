@@ -274,8 +274,10 @@ func CheckNodeVersion() error {
 		return err
 	}
 
-	nodeVersion := strings.TrimPrefix(string(output), "v")
-	nodeVersion = strings.TrimSuffix(nodeVersion, "\n")
+	// Output will be something like "v22.15.0" with a new line at the end
+	// So trim space and remove "v"
+	nodeVersion := strings.TrimSpace(string(output))
+	nodeVersion = strings.TrimPrefix(nodeVersion, "v")
 
 	validVersionNumber, err := regexp.MatchString(`(\d+)\.(\d+)\.(\d+)`, nodeVersion)
 	if err != nil {
