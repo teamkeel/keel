@@ -94,7 +94,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 			// if the action type is read or write, then the signature of the exported method just takes the function
 			// defined by the user
 			if action.IsArbitraryFunction() {
-				sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(action.Name))
+				sdk.Writef("export const %s = (fn) => fn;", casing.ToCamel(action.Name))
 				sdk.Writeln("")
 			} else {
 				// writes the default implementation of a function. the user can specify hooks which can
@@ -109,25 +109,25 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 
 	for _, job := range schema.Jobs {
 		writeJobFunctionWrapperType(sdkTypes, job)
-		sdk.Writef("module.exports.%s = (fn) => fn;", job.Name)
+		sdk.Writef("export const %s = (fn) => fn;", job.Name)
 		sdk.Writeln("")
 	}
 
 	for _, subscriber := range schema.Subscribers {
 		writeSubscriberFunctionWrapperType(sdkTypes, subscriber)
-		sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(subscriber.Name))
+		sdk.Writef("export const %s = (fn) => fn;", strcase.ToCamel(subscriber.Name))
 		sdk.Writeln("")
 	}
 
 	for _, flow := range schema.Flows {
 		writeFlowFunctionWrapperType(sdkTypes, flow)
-		sdk.Writef("module.exports.%s = (config, fn) => { return { config, fn }; };", casing.ToCamel(flow.Name))
+		sdk.Writef("export const %s = (config, fn) => { return { config, fn }; };", flow.Name)
 		sdk.Writeln("")
 	}
 
 	if cfg != nil {
 		for _, h := range cfg.Auth.EnabledHooks() {
-			sdk.Writef("module.exports.%s = (fn) => fn;", strcase.ToCamel(string(h)))
+			sdk.Writef("export const %s = (fn) => fn;", strcase.ToCamel(string(h)))
 			sdk.Writeln("")
 		}
 	}
