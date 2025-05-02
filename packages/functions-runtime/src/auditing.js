@@ -1,4 +1,4 @@
-import { AsyncLocalStorage } from "async_hooks";
+import { AsyncLocalStorage } from "node:async_hooks";
 import TraceParent from "traceparent";
 import { sql, SelectionNode } from "kysely";
 
