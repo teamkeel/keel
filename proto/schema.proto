@@ -468,4 +468,7 @@ message Flow {
 
     // The inputs defined on the workflow.
     string input_message_name = 2;
+
+    // A permission rule which need to be satisfied in order to run the flow.
+    repeated PermissionRule permissions = 3;
 }

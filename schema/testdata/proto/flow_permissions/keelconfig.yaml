@@ -1,0 +1,3 @@
+environment:
+  - name: FOO
+    value: 'bar'

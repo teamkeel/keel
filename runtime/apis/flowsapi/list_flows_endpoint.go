@@ -8,6 +8,7 @@ import (
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/flows"
 	"github.com/teamkeel/keel/runtime/locale"
 	"github.com/teamkeel/keel/runtime/openapi"
 	"go.opentelemetry.io/otel"
@@ -44,8 +45,13 @@ func ListFlowsHandler(p *proto.Schema) common.HandlerFunc {
 			return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET accepted"), nil)
 		}
 
+		authorisedFlows, err := flows.AuthorisedFlows(ctx, p)
+		if err != nil {
+			return httpjson.NewErrorResponse(ctx, err, nil)
+		}
+
 		flowsData := []map[string]any{}
-		for _, f := range p.Flows {
+		for _, f := range authorisedFlows {
 			inputFields := []map[string]any{}
 			if inputMsg := p.FindMessage(f.InputMessageName); inputMsg != nil {
 				for _, field := range inputMsg.Fields {

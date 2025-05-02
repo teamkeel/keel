@@ -1,0 +1,22 @@
+flow MyFlow1 {
+}
+
+flow MyFlow2 {
+    inputs {
+        name Text
+    }
+
+    @permission(roles: [Admin])
+}
+
+flow MyFlow3 {
+    @permission(roles: [Admin, Developer])
+}
+
+role Admin {
+    domains {
+        "keel.so"
+    }
+}
+
+role Developer {}
