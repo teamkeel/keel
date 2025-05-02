@@ -121,7 +121,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 
 	for _, flow := range schema.Flows {
 		writeFlowFunctionWrapperType(sdkTypes, flow)
-		sdk.Writef("export const %s = (config, fn) => { return { config, fn }; };", flow.Name)
+		sdk.Writef("export const %s = (config, fn) => { return { config, fn }; };", strcase.ToCamel(flow.Name))
 		sdk.Writeln("")
 	}
 

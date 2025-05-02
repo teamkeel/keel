@@ -8,7 +8,7 @@ export default defineConfig({
   sourcemap: true,
   keepNames: true,
   clean: true,
-  target: "node16",
+  target: "node22",
   loader: {
     ".js": "jsx",
   },
