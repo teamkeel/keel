@@ -53,3 +53,11 @@ model ComputedDepends {
         total Decimal @computed(computedDepends.quantity * computedDepends.price)
     }
 }
+
+model ComputedDuration {
+    fields {
+        orderDate Date 
+        deliveryDate Timestamp?
+        leadTime Duration? @computed(computedDuration.deliveryDate - computedDuration.orderDate)
+    }
+}

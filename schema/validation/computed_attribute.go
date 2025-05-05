@@ -35,12 +35,13 @@ func ComputedAttributeRules(asts []*parser.AST, errs *errorhandling.ValidationEr
 				return
 			}
 
-			// Basic types supported with computed fields
+			// Basic field types supported with computed fields
 			supportedTypes := []string{
 				parser.FieldTypeBoolean,
 				parser.FieldTypeNumber,
 				parser.FieldTypeDecimal,
 				parser.FieldTypeText,
+				parser.FieldTypeDuration,
 			}
 
 			// Model fields are also supported

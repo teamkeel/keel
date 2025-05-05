@@ -146,3 +146,11 @@ test("computed fields - with dependencies", async () => {
   expect(updatePrice.totalWithShipping).toEqual(93);
   expect(updatePrice.totalWithDiscount).toEqual(84.2);
 });
+
+test("computed fields - duration", async () => {
+  const item = await models.computedDuration.create({ orderDate: new Date("2025-01-06") });
+  expect(item.leadTime).toBeNull();
+
+  const updatedItem = await models.computedDuration.update({ id: item.id }, { deliveryDate: new Date("2025-01-08T14:30:00Z") });
+  expect(updatedItem.leadTime?.toISOString()).toEqual("P2DT14H30M");
+});
