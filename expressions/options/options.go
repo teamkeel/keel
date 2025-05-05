@@ -48,23 +48,21 @@ var typeCompatibilityMapping = map[string][][]*types.Type{
 	},
 	operators.Less: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		{typing.Date, typing.Timestamp, types.TimestampType, typing.Date},
+		{typing.Date, typing.Timestamp, types.TimestampType},
 		{typing.Duration},
 	},
 	operators.LessEquals: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		{typing.Date, typing.Timestamp, types.TimestampType, typing.Date},
+		{typing.Date, typing.Timestamp, types.TimestampType},
 		{typing.Duration},
 	},
 	operators.Add: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		//{typing.Date, typing.Timestamp, types.TimestampType, typing.Date},
 		{typing.Duration},
 		{types.StringType, typing.Text},
 	},
 	operators.Subtract: {
 		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		//{typing.Date, typing.Timestamp, types.TimestampType, typing.Date},
 		{typing.Duration},
 	},
 	operators.Multiply: {
