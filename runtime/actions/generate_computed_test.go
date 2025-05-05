@@ -20,6 +20,7 @@ model Item {
 		product Product
 		quantity Number
 		isActive Boolean
+		orderStatus OrderStatus
 		#placeholder#
 	}
 }
@@ -35,6 +36,10 @@ model Agent {
 	fields {
 		commission Decimal
 	}
+}
+enum OrderStatus {
+	Pending
+	Delivered
 }`
 
 type computedTestCase struct {
@@ -198,6 +203,12 @@ var computedTestCases = []computedTestCase{
 		keelSchema:  testSchema,
 		field:       "name Text @computed(\"Product: \" + item.product.name)",
 		expectedSql: `'Product: ' || (SELECT "product"."name" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id")`,
+	},
+	{
+		name:        "enums",
+		keelSchema:  testSchema,
+		field:       "isComplete Boolean @computed(item.orderStatus == OrderStatus.Delivered)",
+		expectedSql: `r."order_status" IS NOT DISTINCT FROM 'Delivered'`,
 	},
 }
 
