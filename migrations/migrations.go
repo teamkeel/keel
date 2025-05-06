@@ -547,6 +547,10 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPai
 			for _, ident := range idents {
 				currModel := schema.FindModel(strcase.ToCamel(ident.Fragments[0]))
 
+				if currModel == nil {
+					continue
+				}
+
 				for i, f := range ident.Fragments[1:] {
 					currField := currModel.FindField(f)
 
