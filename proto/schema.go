@@ -147,10 +147,10 @@ func (s *Schema) FindFlow(flowName string) *Flow {
 	for _, f := range s.Flows {
 		if strings.EqualFold(f.Name, flowName) {
 			return f
-    }
-  }
- 
-  return nil
+		}
+	}
+
+	return nil
 }
 
 // FindEnum finds within the schema the enum that has the given name. Returns nil if enum not found.
