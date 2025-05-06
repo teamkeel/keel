@@ -17,7 +17,7 @@ var (
 // and the values a list of functions that can be run to check permissions
 // for a list of records.
 func writePermissions(w *codegen.Writer, schema *proto.Schema) {
-	w.Writeln("const permissionFns = {")
+	w.Writeln("export const permissionFns = {")
 	w.Indent()
 
 	for _, model := range schema.Models {
@@ -90,6 +90,4 @@ func writePermissions(w *codegen.Writer, schema *proto.Schema) {
 
 	w.Dedent()
 	w.Writeln("}")
-
-	w.Writeln("module.exports.permissionFns = permissionFns;")
 }

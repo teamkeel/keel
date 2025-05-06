@@ -85,6 +85,4 @@ function joinAlias(tablePath) {
   return tablePath.join("$");
 }
 
-module.exports = {
-  QueryContext,
-};
+export { QueryContext };

@@ -16,6 +16,7 @@ const (
 	FunctionsDir   = "functions"
 	AuthHooksDir   = "functions/auth"
 	JobsDir        = "jobs"
+	FlowsDir       = "flows"
 	SubscribersDir = "subscribers"
 	RoutesDir      = "routes"
 )
@@ -42,6 +43,10 @@ func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (code
 		{
 			path:     JobsDir,
 			required: len(schema.Jobs) > 0,
+		},
+		{
+			path:     FlowsDir,
+			required: len(schema.Flows) > 0,
 		},
 		{
 			path:     SubscribersDir,
@@ -112,6 +117,17 @@ export default AfterIdentityCreated(async (ctx) => {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
 				Contents: writeJobWrapper(job),
+			})
+		}
+	}
+
+	for _, flow := range schema.Flows {
+		path := filepath.Join(FlowsDir, fmt.Sprintf("%s.ts", casing.ToLowerCamel(flow.Name)))
+		_, err := os.Stat(filepath.Join(dir, path))
+		if os.IsNotExist(err) {
+			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
+				Path:     path,
+				Contents: writeFlowWrapper(flow),
 			})
 		}
 	}
@@ -202,6 +218,36 @@ export default %s(async (ctx) => {
 export default %s(async (ctx, inputs) => {
 
 });`, job.Name, job.Name)
+	}
+}
+
+func writeFlowWrapper(flow *proto.Flow) string {
+	// The "inputs" argument for the function signature is only
+	// wanted when there are some.
+	switch {
+	case flow.InputMessageName == "":
+		return fmt.Sprintf(`import { %s, FlowConfig } from '@teamkeel/sdk';
+
+const config: FlowConfig = {
+	// See https://docs.keel.so/flows for options
+};
+
+// To learn more about flows, visit https://docs.keel.so/flows
+export default %s(config, async (ctx) => {
+
+});`, flow.Name, flow.Name)
+
+	default:
+		return fmt.Sprintf(`import { %s, FlowConfig } from '@teamkeel/sdk';
+
+const config: FlowConfig = {
+	// See https://docs.keel.so/flows for options
+};
+
+// To learn more about flows, visit https://docs.keel.so/flows
+export default %s(config, async (ctx, inputs) => {
+
+});`, flow.Name, flow.Name)
 	}
 }
 

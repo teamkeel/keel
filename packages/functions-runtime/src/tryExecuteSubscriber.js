@@ -1,5 +1,5 @@
-const { withDatabase } = require("./database");
-const { withAuditContext } = require("./auditing");
+import { withDatabase } from "./database";
+import { withAuditContext } from "./auditing";
 
 // tryExecuteSubscriber will create a new database connection and execute the function call.
 function tryExecuteSubscriber({ request, db, functionConfig }, cb) {
@@ -14,4 +14,4 @@ function tryExecuteSubscriber({ request, db, functionConfig }, cb) {
   });
 }
 
-module.exports.tryExecuteSubscriber = tryExecuteSubscriber;
+export { tryExecuteSubscriber };

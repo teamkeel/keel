@@ -73,6 +73,9 @@ type Visitor struct {
 
 	EnterExpression func(e *parser.Expression)
 	LeaveExpression func(e *parser.Expression)
+
+	EnterFlow func(n *parser.FlowNode)
+	LeaveFlow func(n *parser.FlowNode)
 }
 
 type VisitorFunc func([]*parser.AST, *errorhandling.ValidationErrors) Visitor

@@ -1,6 +1,6 @@
-const { sql, Kysely } = require("kysely");
-const { snakeCase } = require("./casing");
-const { TimePeriod } = require("./TimePeriod");
+import { sql } from "kysely";
+import { snakeCase } from "./casing";
+import { TimePeriod } from "./TimePeriod";
 
 const opMapping = {
   startsWith: { op: "like", value: (v) => `${v}%` },
@@ -119,6 +119,4 @@ function applyWhereConditions(context, qb, where = {}) {
   return qb;
 }
 
-module.exports = {
-  applyWhereConditions,
-};
+export { applyWhereConditions };

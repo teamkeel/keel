@@ -22,7 +22,6 @@ export default VerifyUpdate(async (ctx, event) => {
 
     case "tracker.updated":
       if (event.target.data.views != event.target.previousData.views + 1) {
-        console.log("previous data not correct");
         throw new Error("previous data not correct");
       }
 

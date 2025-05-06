@@ -1,29 +1,22 @@
-const { sql } = require("kysely");
-const { useDatabase } = require("./database");
-const {
-  transformRichDataTypes,
-  isReferencingExistingRecord,
-} = require("./parsing");
-const { isPlainObject } = require("./type-utils");
-const { QueryBuilder } = require("./QueryBuilder");
-const { QueryContext } = require("./QueryContext");
-const { applyWhereConditions } = require("./applyWhereConditions");
-const { applyJoins } = require("./applyJoins");
-const { InlineFile, File } = require("./File");
-const { Duration } = require("./Duration");
+import { sql } from "kysely";
+import { useDatabase } from "./database";
+import { transformRichDataTypes, isReferencingExistingRecord } from "./parsing";
+import { isPlainObject } from "./type-utils";
+import { QueryBuilder } from "./QueryBuilder";
+import { QueryContext } from "./QueryContext";
+import { applyWhereConditions } from "./applyWhereConditions";
+import { applyJoins } from "./applyJoins";
+import { InlineFile, File } from "./File";
+import { Duration } from "./Duration";
 
-const {
+import {
   applyLimit,
   applyOffset,
   applyOrderBy,
-} = require("./applyAdditionalQueryConstraints");
-const {
-  camelCaseObject,
-  snakeCaseObject,
-  upperCamelCase,
-} = require("./casing");
-const tracing = require("./tracing");
-const { DatabaseError } = require("./errors");
+} from "./applyAdditionalQueryConstraints";
+import { camelCaseObject, snakeCaseObject, upperCamelCase } from "./casing";
+import * as tracing from "./tracing";
+import { DatabaseError } from "./errors";
 
 /**
  * RelationshipConfig is a simple representation of a model field that
@@ -371,7 +364,4 @@ async function create(conn, tableName, tableConfigs, values) {
   }
 }
 
-module.exports = {
-  ModelAPI,
-  DatabaseError,
-};
+export { ModelAPI, DatabaseError };

@@ -84,6 +84,4 @@ class TimePeriod {
   }
 }
 
-module.exports = {
-  TimePeriod,
-};
+export { TimePeriod };

@@ -1,0 +1,38 @@
+flow MyFlow1 {
+    //expect-error:25:35:AttributeExpressionError:NoRoleName is not a role defined in your schema
+    @permission(roles: [NoRoleName])
+}
+
+flow MyFlow2 {
+    //expect-error:32:42:AttributeExpressionError:NoRoleName is not a role defined in your schema
+    @permission(roles: [Admin, NoRoleName])
+}
+
+flow MyFlow3 {
+    //expect-error:24:29:AttributeExpressionError:expression expected to resolve to type Role[] but it is Role
+    @permission(roles: Admin)
+}
+
+flow MyFlow4 {
+    //expect-error:17:24:AttributeArgumentError:unexpected argument for @permission
+    //expect-error:5:16:AttributeArgumentError:@permission requires either the 'expressions' or 'roles' argument to be provided
+    @permission([Admin])
+}
+
+flow MyFlow5 {
+    //expect-error:17:27:AttributeArgumentError:unexpected argument 'expression' for @permission
+    //expect-error:17:27:AttributeArgumentError:cannot provide 'expression' arguments when using @permission in a flow
+    @permission(expression: true)
+}
+
+flow MyFlow6 {
+    //expect-error:17:27:AttributeArgumentError:unexpected argument 'expression' for @permission
+    //expect-error:17:27:AttributeArgumentError:cannot provide 'expression' arguments when using @permission in a flow
+    @permission(expression: ctx.isAuthenticated, roles: [Admin])
+}
+
+role Admin {
+}
+
+role Developer {
+}

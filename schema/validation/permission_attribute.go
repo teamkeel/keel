@@ -15,6 +15,7 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 	var model *parser.ModelNode
 	var action *parser.ActionNode
 	var job *parser.JobNode
+	var flow *parser.FlowNode
 	var attribute *parser.AttributeNode
 	var arg *parser.AttributeArgumentNode
 
@@ -37,6 +38,12 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 		LeaveJob: func(_ *parser.JobNode) {
 			job = nil
 		},
+		EnterFlow: func(f *parser.FlowNode) {
+			flow = f
+		},
+		LeaveFlow: func(*parser.FlowNode) {
+			flow = nil
+		},
 		EnterAttribute: func(attr *parser.AttributeNode) {
 			attribute = attr
 
@@ -57,13 +64,13 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 				case "actions":
 					hasActions = true
 
-					if action != nil || job != nil {
+					if action != nil || job != nil || flow != nil {
 						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 							errorhandling.AttributeArgumentError,
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf(
 									"cannot provide 'actions' arguments when using @permission in %s",
-									lo.Ternary(action != nil, "an action", "a job"),
+									lo.Ternary(action != nil, "an action", lo.Ternary(flow != nil, "a flow", "a job")),
 								),
 							},
 							arg.Label,
@@ -72,6 +79,18 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 					}
 				case "expression":
 					hasExpression = true
+
+					// flows cannot handle expression permissions
+					if flow != nil {
+						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+							errorhandling.AttributeArgumentError,
+							errorhandling.ErrorDetails{
+								Message: "cannot provide 'expression' arguments when using @permission in a flow",
+							},
+							arg.Label,
+						))
+						continue
+					}
 
 					// Extra check for using row-based expression in a read/write function
 					// Ideally this would be done as part of the expression validation, but
@@ -118,7 +137,7 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 			}
 
 			// Missing actions argument which is required
-			if job == nil && action == nil && !hasActions {
+			if job == nil && action == nil && flow == nil && !hasActions {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{

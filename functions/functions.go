@@ -47,6 +47,7 @@ const (
 	ActionFunction     FunctionType = "action"
 	JobFunction        FunctionType = "job"
 	SubscriberFunction FunctionType = "subscriber"
+	FlowFunction       FunctionType = "flow"
 	RouteFunction      FunctionType = "route"
 )
 
@@ -391,6 +392,55 @@ func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *ev
 	}
 
 	return nil
+}
+
+// CallFlow will invoke the flow function on the runtime node server.
+func CallFlow(ctx context.Context, flow *proto.Flow, runId string, data map[string]any) (any, *FunctionsRuntimeMeta, error) {
+	span := trace.SpanFromContext(ctx)
+
+	transport, ok := ctx.Value(contextKey).(Transport)
+	if !ok {
+		return nil, nil, errors.New("no functions client in context")
+	}
+
+	secrets := runtimectx.GetSecrets(ctx)
+
+	tracingContext := propagation.MapCarrier{}
+	otel.GetTextMapPropagator().Inject(ctx, tracingContext)
+
+	meta := map[string]any{
+		"runId":   runId,
+		"secrets": secrets,
+		"tracing": tracingContext,
+		"data":    data,
+	}
+
+	req := &FunctionsRuntimeRequest{
+		ID:     ksuid.New().String(),
+		Method: strcase.ToLowerCamel(flow.Name),
+		Type:   FlowFunction,
+		Meta:   meta,
+	}
+	span.SetAttributes(
+		attribute.String("request.id", req.ID),
+		attribute.String("run.id", runId),
+		attribute.String("flow.name", flow.Name),
+	)
+
+	resp, err := transport(ctx, req)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return nil, nil, err
+	}
+
+	if resp.Error != nil {
+		span.SetStatus(codes.Error, resp.Error.Message)
+		span.SetAttributes(attribute.Int("error.code", int(resp.Error.Code)))
+		return nil, nil, toRuntimeError(resp.Error)
+	}
+
+	return resp.Result, resp.Meta, nil
 }
 
 // Parse the error from the functions runtime to the appropriate go runtime error.

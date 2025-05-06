@@ -31,6 +31,7 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
+	"github.com/teamkeel/keel/runtime/flows"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util"
 )
@@ -40,6 +41,7 @@ const (
 	ActionApiPath   = "testingactionsapi"
 	JobPath         = "testingjobs"
 	SubscriberPath  = "testingsubscribers"
+	FlowsPath       = "testingflows"
 	JobsWebhookPath = "/webhooks/jobs"
 )
 
@@ -213,13 +215,23 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		PathPrefix:    "/aws/",
 		FunctionsARN:  functionsARN,
 		SSMParameters: ssmParams,
-		OnSQSEvent: func(event lambdaevents.SQSEvent) {
-			// TODO: consider doing this in a go routine to make it async
-			// but current tests require it to be sync
-			err := lambdaHandler.EventHandler(ctx, event)
-			if err != nil {
-				fmt.Printf("error from event handler: %s\nevent:%s\n\n", err.Error(), event.Records[0].Body)
-			}
+		// TODO: consider doing this in a go routine to make it async
+		// but current tests require it to be sync
+		OnSQSEvent: map[string]func(lambdaevents.SQSEvent){
+			"https://testing-sqs-queue.com/123456789/events": func(event lambdaevents.SQSEvent) {
+				// TODO: consider doing this in a go routine to make it async
+				// but current tests require it to be sync
+				err := lambdaHandler.EventHandler(ctx, event)
+				if err != nil {
+					fmt.Printf("error from event handler: %s\nevent:%s\n\n", err.Error(), event.Records[0].Body)
+				}
+			},
+			"https://testing-sqs-queue.com/123456789/flows": func(event lambdaevents.SQSEvent) {
+				err := lambdaHandler.FlowHandler(ctx, event)
+				if err != nil {
+					fmt.Printf("error from flow orchestrator: %s\nevent:%s\n\n", err.Error(), event.Records[0].Body)
+				}
+			},
 		},
 	}
 	if functionsServer != nil {
@@ -263,6 +275,17 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 				return
 			case SubscriberPath:
 				err = HandleSubscriberExecutorRequest(r.WithContext(ctx), lambdaHandler)
+				if err != nil {
+					response := httpjson.NewErrorResponse(ctx, err, nil)
+					w.WriteHeader(response.Status)
+					_, _ = w.Write(response.Body)
+					return
+				}
+
+				writeJSON(w, http.StatusOK, map[string]any{})
+				return
+			case FlowsPath:
+				err = HandleFlowExecutorRequest(r.WithContext(ctx), lambdaHandler)
 				if err != nil {
 					response := httpjson.NewErrorResponse(ctx, err, nil)
 					w.WriteHeader(response.Status)
@@ -317,7 +340,8 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		ConfigPath:     path.Join(opts.Dir, ".build/runtime/config.json"),
 		ProjectName:    opts.TestGroupName,
 		Env:            "test",
-		QueueURL:       "https://testing-sqs-queue.com/123456789/events",
+		EventsQueueURL: "https://testing-sqs-queue.com/123456789/events",
+		FlowsQueueURL:  "https://testing-sqs-queue.com/123456789/flows",
 		FunctionsARN:   functionsARN,
 		BucketName:     bucketName,
 		SecretNames:    lo.Keys(ssmParams),
@@ -357,6 +381,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=%s/%s/json", serverURL, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_JOBS_URL=%s/%s/json", serverURL, JobPath),
 		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=%s/%s/json", serverURL, SubscriberPath),
+		fmt.Sprintf("KEEL_TESTING_FLOWS_URL=%s/%s/json", serverURL, FlowsPath),
 		fmt.Sprintf("KEEL_TESTING_CLIENT_API_URL=%s/%s", serverURL, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_AUTH_API_URL=%s/auth", serverURL),
 		"KEEL_DB_CONN_TYPE=pg",
@@ -380,7 +405,7 @@ func writeJSON(w http.ResponseWriter, status int, body any) {
 	_, _ = w.Write(b)
 }
 
-// HandleJobExecutorRequest handles requests the job module in the testing package.
+// HandleJobExecutorRequest handles requests to the job module in the testing package.
 func HandleJobExecutorRequest(r *http.Request, h *runtime.Handler, awsHandler *AWSAPIHandler) error {
 	id := ksuid.New().String()
 	key := fmt.Sprintf("jobs/%s", id)
@@ -416,7 +441,7 @@ func HandleJobExecutorRequest(r *http.Request, h *runtime.Handler, awsHandler *A
 	})
 }
 
-// HandleSubscriberExecutorRequest handles requests the subscriber module in the testing package.
+// HandleSubscriberExecutorRequest handles requests to the subscriber module in the testing package.
 func HandleSubscriberExecutorRequest(r *http.Request, h *runtime.Handler) error {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -439,6 +464,44 @@ func HandleSubscriberExecutorRequest(r *http.Request, h *runtime.Handler) error 
 	}
 
 	return h.EventHandler(r.Context(), lambdaevents.SQSEvent{
+		Records: []lambdaevents.SQSMessage{
+			{
+				MessageId: "",
+				Body:      string(b),
+			},
+		},
+	})
+}
+
+// HandleFlowExecutorRequest handles requests to the flow module in the testing package.
+func HandleFlowExecutorRequest(r *http.Request, h *runtime.Handler) error {
+	name := path.Base(r.URL.Path)
+
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	m := make(map[string]any)
+	err = json.Unmarshal(b, &m)
+	if err != nil {
+		return err
+	}
+
+	ev := flows.FlowRunStarted{
+		Name:   name,
+		Inputs: m,
+	}
+	wrap, err := ev.Wrap()
+	if err != nil {
+		return err
+	}
+	b, err = json.Marshal(wrap)
+	if err != nil {
+		return err
+	}
+
+	return h.FlowHandler(r.Context(), lambdaevents.SQSEvent{
 		Records: []lambdaevents.SQSMessage{
 			{
 				MessageId: "",

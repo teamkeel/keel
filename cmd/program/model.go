@@ -31,6 +31,7 @@ import (
 	"github.com/teamkeel/keel/rpc/rpc"
 	rpcApi "github.com/teamkeel/keel/rpc/rpcApi"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/flows"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/storage"
@@ -580,6 +581,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Err = err
 			return m, tea.Quit
 		}
+
+		// Setting the flows orchestrator
+		ctx = flows.WithOrchestrator(ctx, flows.NewOrchestrator(m.Schema))
 
 		r = msg.r.WithContext(ctx)
 		m.RuntimeHandler.ServeHTTP(msg.w, r)

@@ -163,7 +163,7 @@ func TryResolveAuthorisationEarly(scope *Scope, inputs map[string]any, permissio
 			canResolve = true
 
 			// Check if this role permission is satisfied.
-			authorised, err = resolveRolePermissionRule(scope.Context, scope.Schema, permission)
+			authorised, err = ResolveRolePermissionRule(scope.Context, scope.Schema, permission)
 			if err != nil {
 				return false, false, err
 			}
@@ -185,9 +185,9 @@ func TryResolveAuthorisationEarly(scope *Scope, inputs map[string]any, permissio
 	return canResolveAll, false, nil
 }
 
-// resolveRolePermissionRule returns true if there is a role-based permission among the
+// ResolveRolePermissionRule returns true if there is a role-based permission among the
 // given list of permissions that passes.
-func resolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permission *proto.PermissionRule) (bool, error) {
+func ResolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permission *proto.PermissionRule) (bool, error) {
 	// If there is no authenticated user, then no role permissions can be satisfied.
 	if !auth.IsAuthenticated(ctx) {
 		return false, nil

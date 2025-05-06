@@ -457,15 +457,10 @@ function createModelAPI() {
 function createPermissionApi() {
 	return new runtime.Permissions();
 };
-const models = createModelAPI();
-module.exports.InlineFile = runtime.InlineFile;
-module.exports.File = runtime.File;
-module.exports.Duration = runtime.Duration;
-module.exports.models = models;
-module.exports.permissions = createPermissionApi();
-module.exports.createContextAPI = createContextAPI;
-module.exports.createJobContextAPI = createJobContextAPI;
-module.exports.createSubscriberContextAPI = createSubscriberContextAPI;`
+export const models = createModelAPI();
+export const permissions = createPermissionApi();
+export { createContextAPI, createJobContextAPI, createSubscriberContextAPI };
+`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
@@ -1917,6 +1912,49 @@ export interface AdHocJobWithInputsMessage {
 	nameField: string;
 	someBool?: boolean;
 	array: string[];
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false, false)
+	})
+}
+
+func TestWriteFlowWrapperType(t *testing.T) {
+	t.Parallel()
+	schema := `
+flow MyFlow {
+	inputs {
+		name Text
+		age Number
+	}
+}
+flow MyFlowWithoutInputs {}`
+
+	expected := `
+export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, MyFlowMessage>) };
+export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C>) };`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		for _, f := range s.Flows {
+			writeFlowFunctionWrapperType(w, f)
+		}
+	})
+}
+
+func TestWriteFlowInputs(t *testing.T) {
+	t.Parallel()
+	schema := `
+flow MyFlow {
+	inputs {
+		name Text
+		age Number
+	}
+}`
+
+	expected := `
+export interface MyFlowMessage {
+	name: string;
+	age: number;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {

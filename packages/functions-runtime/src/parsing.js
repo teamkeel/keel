@@ -1,6 +1,6 @@
-const { Duration } = require("./Duration");
-const { InlineFile, File } = require("./File");
-const { isPlainObject } = require("./type-utils");
+import { Duration } from "./Duration";
+import { InlineFile, File } from "./File";
+import { isPlainObject } from "./type-utils";
 
 // parseInputs takes a set of inputs and creates objects for the ones that are of a complex type.
 //
@@ -105,7 +105,7 @@ function isReferencingExistingRecord(value) {
   return Object.keys(value).length === 1 && value.id;
 }
 
-module.exports = {
+export {
   parseInputs,
   parseOutputs,
   transformRichDataTypes,

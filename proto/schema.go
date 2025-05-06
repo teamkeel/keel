@@ -2,6 +2,7 @@ package proto
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/samber/lo"
 )
@@ -141,6 +142,17 @@ func (s *Schema) FindAction(actionName string) *Action {
 	return actions[0]
 }
 
+// FindFlow finds the flow with the given name. Returns nil if a flow is not found. The matching is case insensitive
+func (s *Schema) FindFlow(flowName string) *Flow {
+	for _, f := range s.Flows {
+		if strings.EqualFold(f.Name, flowName) {
+			return f
+		}
+	}
+
+	return nil
+}
+
 // FindEnum finds within the schema the enum that has the given name. Returns nil if enum not found.
 func (s *Schema) FindEnum(enumName string) *Enum {
 	for _, e := range s.GetEnums() {
@@ -185,4 +197,19 @@ func (s *Schema) FindApiNames(modelName, actionName string) []string {
 	}
 
 	return names
+}
+
+// FlowNames returns an array with the names of all flows defined in this schema
+func (s *Schema) FlowNames() []string {
+	names := []string{}
+	for _, f := range s.Flows {
+		names = append(names, f.Name)
+	}
+
+	return names
+}
+
+// HasFlows indicates if the schema has any flows defined
+func (s *Schema) HasFlows() bool {
+	return len(s.Flows) > 0
 }

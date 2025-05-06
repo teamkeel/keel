@@ -1,7 +1,7 @@
-const { withDatabase } = require("./database");
-const { withAuditContext } = require("./auditing");
-const { withPermissions, PERMISSION_STATE } = require("./permissions");
-const { PermissionError } = require("./errors");
+import { withDatabase } from "./database";
+import { withAuditContext } from "./auditing";
+import { withPermissions, PERMISSION_STATE } from "./permissions";
+import { PermissionError } from "./errors";
 
 // tryExecuteJob will create a new database transaction around a function call
 // and handle any permissions checks. If a permission check fails, then an Error will be thrown and the catch block will be hit.
@@ -26,4 +26,4 @@ function tryExecuteJob({ db, permitted, request, functionConfig }, cb) {
   });
 }
 
-module.exports.tryExecuteJob = tryExecuteJob;
+export { tryExecuteJob };

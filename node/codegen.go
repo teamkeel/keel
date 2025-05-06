@@ -35,15 +35,15 @@ func Generate(ctx context.Context, schema *proto.Schema, cfg *config.ProjectConf
 
 func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen.GeneratedFiles {
 	sdk := &codegen.Writer{}
-	sdk.Writeln(`const { sql, NoResultError } = require("kysely")`)
-	sdk.Writeln(`const runtime = require("@teamkeel/functions-runtime")`)
+	sdk.Writeln(`import { sql, NoResultError } from "kysely"`)
+	sdk.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdk.Writeln("")
 
 	sdkTypes := &codegen.Writer{}
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
-	sdkTypes.Writeln(`export { InlineFile, File, Duration, FileWriteTypes, SortDirection } from "@teamkeel/functions-runtime"`)
+	sdkTypes.Writeln(`export { InlineFile, File, Duration, FileWriteTypes, SortDirection, FlowConfig } from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln("")
 
 	writePermissions(sdk, schema)
@@ -62,8 +62,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	writeTableConfig(sdk, schema.Models)
 	writeAPIFactory(sdk, schema)
 
-	sdk.Writeln("module.exports.useDatabase = runtime.useDatabase;")
-	sdk.Writeln("module.exports.errors = runtime.ErrorPresets;")
+	sdk.Writeln("export { useDatabase, ErrorPresets as errors, File, InlineFile, Duration } from '@teamkeel/functions-runtime';")
 
 	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
@@ -95,7 +94,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 			// if the action type is read or write, then the signature of the exported method just takes the function
 			// defined by the user
 			if action.IsArbitraryFunction() {
-				sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(action.Name))
+				sdk.Writef("export const %s = (fn) => fn;", casing.ToCamel(action.Name))
 				sdk.Writeln("")
 			} else {
 				// writes the default implementation of a function. the user can specify hooks which can
@@ -110,20 +109,25 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 
 	for _, job := range schema.Jobs {
 		writeJobFunctionWrapperType(sdkTypes, job)
-		sdk.Writef("module.exports.%s = (fn) => fn;", job.Name)
+		sdk.Writef("export const %s = (fn) => fn;", job.Name)
 		sdk.Writeln("")
 	}
 
 	for _, subscriber := range schema.Subscribers {
 		writeSubscriberFunctionWrapperType(sdkTypes, subscriber)
-		sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(subscriber.Name))
+		sdk.Writef("export const %s = (fn) => fn;", strcase.ToCamel(subscriber.Name))
 		sdk.Writeln("")
 	}
-	sdk.Writeln("")
+
+	for _, flow := range schema.Flows {
+		writeFlowFunctionWrapperType(sdkTypes, flow)
+		sdk.Writef("export const %s = (config, fn) => { return { config, fn }; };", strcase.ToCamel(flow.Name))
+		sdk.Writeln("")
+	}
 
 	if cfg != nil {
 		for _, h := range cfg.Auth.EnabledHooks() {
-			sdk.Writef("module.exports.%s = (fn) => fn;", strcase.ToCamel(string(h)))
+			sdk.Writef("export const %s = (fn) => fn;", strcase.ToCamel(string(h)))
 			sdk.Writeln("")
 		}
 	}
@@ -858,7 +862,7 @@ func writeModelQueryBuilderDeclaration(w *codegen.Writer, model *proto.Model) {
 }
 
 func writeEnumObject(w *codegen.Writer, enum *proto.Enum) {
-	w.Writef("module.exports.%s = {\n", enum.Name)
+	w.Writef("export const %s = {\n", enum.Name)
 	w.Indent()
 	for _, v := range enum.Values {
 		w.Write(v.Name)
@@ -1119,15 +1123,9 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln(`const models = createModelAPI();`)
-	w.Writeln(`module.exports.InlineFile = runtime.InlineFile;`)
-	w.Writeln(`module.exports.File = runtime.File;`)
-	w.Writeln(`module.exports.Duration = runtime.Duration;`)
-	w.Writeln(`module.exports.models = models;`)
-	w.Writeln(`module.exports.permissions = createPermissionApi();`)
-	w.Writeln("module.exports.createContextAPI = createContextAPI;")
-	w.Writeln("module.exports.createJobContextAPI = createJobContextAPI;")
-	w.Writeln("module.exports.createSubscriberContextAPI = createSubscriberContextAPI;")
+	w.Writeln("export const models = createModelAPI();")
+	w.Writeln("export const permissions = createPermissionApi();")
+	w.Writeln("export { createContextAPI, createJobContextAPI, createSubscriberContextAPI };")
 }
 
 func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
@@ -1241,7 +1239,7 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 	}[action.Type]
 
 	w.Writeln(fmt.Sprintf(
-		"module.exports.%s = %s({model: models.%s, whereInputs: [%s], valueInputs: [%s]})",
+		"export const %s = %s({model: models.%s, whereInputs: [%s], valueInputs: [%s]})",
 		casing.ToCamel(action.Name),
 		functionName,
 		casing.ToLowerCamel(action.ModelName),
@@ -1385,6 +1383,16 @@ func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Sub
 	w.Writeln("}>;")
 }
 
+func writeFlowFunctionWrapperType(w *codegen.Writer, flow *proto.Flow) {
+	if flow.InputMessageName == "" {
+		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C>) };", flow.Name)
+	} else {
+		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, %s>) };", flow.Name, flow.InputMessageName)
+	}
+
+	w.Writeln("")
+}
+
 func toActionReturnType(model *proto.Model, action *proto.Action) string {
 	returnType := "Promise<"
 	sdkPrefix := "sdk."
@@ -1432,14 +1440,14 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 
 	// The testing package uses ES modules as it only used in the context of running tests
 	// with Vitest
-	js.Writeln(`import sdk from "@teamkeel/sdk"`)
-	js.Writeln("const { useDatabase, models } = sdk;")
-	js.Writeln(`import { ActionExecutor, JobExecutor, SubscriberExecutor, sql } from "@teamkeel/testing-runtime";`)
+	js.Writeln(`import { useDatabase, models } from "@teamkeel/sdk"`)
+	js.Writeln(`import { ActionExecutor, JobExecutor, SubscriberExecutor, FlowExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 	js.Writeln("export { models };")
 	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export const jobs = new JobExecutor({});")
 	js.Writeln("export const subscribers = new SubscriberExecutor({});")
+	js.Writeln("export const flows = new FlowExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
 	js.Writeln("const db = useDatabase();")
@@ -1621,6 +1629,34 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		w.Dedent()
 		w.Writeln("}")
 		w.Writeln("export declare const subscribers: SubscriberExecutor;")
+	}
+
+	if len(schema.Flows) > 0 {
+		w.Writeln("declare class FlowExecutor {")
+		w.Indent()
+		for _, flow := range schema.Flows {
+			msg := schema.FindMessage(flow.InputMessageName)
+
+			// Jobs can be without inputs
+			if msg != nil {
+				w.Writef("%s(i", strcase.ToLowerCamel(flow.Name))
+
+				if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+					return f.Optional
+				}) {
+					w.Write("?")
+				}
+
+				w.Writef(`: %s): %s`, flow.InputMessageName, "Promise<void>")
+				w.Writeln(";")
+			} else {
+				w.Writef("%s(): Promise<void>", strcase.ToLowerCamel(flow.Name))
+				w.Writeln(";")
+			}
+		}
+		w.Dedent()
+		w.Writeln("}")
+		w.Writeln("export declare const flows: FlowExecutor;")
 	}
 
 	for _, model := range schema.Models {

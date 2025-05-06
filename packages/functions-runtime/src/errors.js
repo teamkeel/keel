@@ -1,4 +1,4 @@
-const { createJSONRPCErrorResponse } = require("json-rpc-2.0");
+import { createJSONRPCErrorResponse } from "json-rpc-2.0";
 
 const RuntimeErrors = {
   // Catchall error type for unhandled execution errors during custom function
@@ -151,7 +151,7 @@ const parseKeyMessage = (msg) => {
   return [col, value];
 };
 
-module.exports = {
+export {
   errorToJSONRPCResponse,
   RuntimeErrors,
   DatabaseError,
