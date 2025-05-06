@@ -1,5 +1,6 @@
 import { test, expect, beforeEach } from "vitest";
 import { models, resetDatabase } from "@teamkeel/testing";
+import { OrderStatus, PaymentStatus } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
@@ -145,4 +146,24 @@ test("computed fields - with dependencies", async () => {
   expect(updatePrice.total).toEqual(88);
   expect(updatePrice.totalWithShipping).toEqual(93);
   expect(updatePrice.totalWithDiscount).toEqual(84.2);
+});
+
+test("computed fields - enums", async () => {
+  const item = await models.computedEnums.create({
+    orderStatus: OrderStatus.NEW,
+    paymentStatus: PaymentStatus.PAID,
+  });
+  expect(item.isComplete).toBeFalsy();
+
+  const updated = await models.computedEnums.update(
+    { id: item.id },
+    { orderStatus: OrderStatus.SHIPPED, paymentStatus: PaymentStatus.UNPAID }
+  );
+  expect(updated.isComplete).toBeFalsy();
+
+  const updateComplete = await models.computedEnums.update(
+    { id: item.id },
+    { orderStatus: OrderStatus.DELIVERED, paymentStatus: PaymentStatus.PAID }
+  );
+  expect(updateComplete.isComplete).toBeTruthy();
 });

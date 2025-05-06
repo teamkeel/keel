@@ -141,6 +141,17 @@ func (s *Schema) FindAction(actionName string) *Action {
 	return actions[0]
 }
 
+// FindEnum finds within the schema the enum that has the given name. Returns nil if enum not found.
+func (s *Schema) FindEnum(enumName string) *Enum {
+	for _, e := range s.GetEnums() {
+		if e.GetName() == enumName {
+			return e
+		}
+	}
+
+	return nil
+}
+
 // FindJob locates the job of the given name.
 func (s *Schema) FindJob(name string) *Job {
 	job, _ := lo.Find(s.Jobs, func(m *Job) bool {

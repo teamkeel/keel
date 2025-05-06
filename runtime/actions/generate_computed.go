@@ -122,6 +122,29 @@ func (v *computedQueryGen) VisitLiteral(value any) error {
 
 func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 	model := v.schema.FindModel(strcase.ToCamel(ident.Fragments[0]))
+
+	if model == nil {
+		enum := v.schema.FindEnum(ident.Fragments[0])
+		if enum == nil {
+			return fmt.Errorf("model or enum not found: %s", ident.Fragments[0])
+		}
+
+		var value string
+		for _, v := range enum.Values {
+			if v.Name == ident.Fragments[1] {
+				value = v.Name
+				break
+			}
+		}
+
+		if value == "" {
+			return fmt.Errorf("enum value not found: %s", ident.Fragments[1])
+		}
+
+		v.sql += fmt.Sprintf("'%v'", value)
+		return nil
+	}
+
 	field := proto.FindField(v.schema.Models, model.Name, ident.Fragments[1])
 
 	normalised, err := NormalisedFragments(v.schema, ident.Fragments)
