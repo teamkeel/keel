@@ -53,3 +53,23 @@ model ComputedDepends {
         total Decimal @computed(computedDepends.quantity * computedDepends.price)
     }
 }
+
+model ComputedEnums {
+    fields {
+        orderStatus OrderStatus
+        paymentStatus PaymentStatus
+        isComplete Boolean @computed(computedEnums.orderStatus == OrderStatus.DELIVERED && computedEnums.paymentStatus == PaymentStatus.PAID)
+    }
+}
+
+enum OrderStatus {
+    NEW
+    PROCESSING
+    SHIPPED
+    DELIVERED
+}
+
+enum PaymentStatus {
+    PAID
+    UNPAID
+}
