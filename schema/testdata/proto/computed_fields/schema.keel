@@ -12,4 +12,8 @@ model Item {
         quantity Number
         total Decimal @computed(item.price * item.quantity)
     }
+
+    actions {
+        list listItems(price, quantity, total)
+    }
 }

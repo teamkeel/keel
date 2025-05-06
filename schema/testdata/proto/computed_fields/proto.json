@@ -134,6 +134,15 @@
             "useZeroValue": true
           }
         }
+      ],
+      "actions": [
+        {
+          "modelName": "Item",
+          "name": "listItems",
+          "type": "ACTION_TYPE_LIST",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "ListItemsInput"
+        }
       ]
     },
     {
@@ -334,7 +343,12 @@
           "modelName": "Invoice"
         },
         {
-          "modelName": "Item"
+          "modelName": "Item",
+          "modelActions": [
+            {
+              "actionName": "listItems"
+            }
+          ]
         },
         {
           "modelName": "Identity",
@@ -397,6 +411,227 @@
     },
     {
       "name": "ResetPasswordResponse"
+    },
+    {
+      "name": "DecimalQueryInput",
+      "fields": [
+        {
+          "messageName": "DecimalQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "DecimalQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "DecimalQueryInput",
+          "name": "lessThan",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DecimalQueryInput",
+          "name": "lessThanOrEquals",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DecimalQueryInput",
+          "name": "greaterThan",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DecimalQueryInput",
+          "name": "greaterThanOrEquals",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "DecimalQueryInput",
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_DECIMAL",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "IntQueryInput",
+      "fields": [
+        {
+          "messageName": "IntQueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "IntQueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "IntQueryInput",
+          "name": "lessThan",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IntQueryInput",
+          "name": "lessThanOrEquals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IntQueryInput",
+          "name": "greaterThan",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IntQueryInput",
+          "name": "greaterThanOrEquals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "IntQueryInput",
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_INT",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "ListItemsWhere",
+      "fields": [
+        {
+          "messageName": "ListItemsWhere",
+          "name": "price",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "DecimalQueryInput"
+          },
+          "target": ["price"]
+        },
+        {
+          "messageName": "ListItemsWhere",
+          "name": "quantity",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "IntQueryInput"
+          },
+          "target": ["quantity"]
+        },
+        {
+          "messageName": "ListItemsWhere",
+          "name": "total",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "DecimalQueryInput"
+          },
+          "target": ["total"]
+        }
+      ]
+    },
+    {
+      "name": "ListItemsInput",
+      "fields": [
+        {
+          "messageName": "ListItemsInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListItemsWhere"
+          }
+        },
+        {
+          "messageName": "ListItemsInput",
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListItemsInput",
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListItemsInput",
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListItemsInput",
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListItemsInput",
+          "name": "limit",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "ListItemsInput",
+          "name": "offset",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        }
+      ]
     }
   ]
 }
