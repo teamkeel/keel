@@ -10,9 +10,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -49,9 +47,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -197,9 +193,7 @@
   "roles": [
     {
       "name": "Admin",
-      "domains": [
-        "keel.so"
-      ]
+      "domains": ["keel.so"]
     },
     {
       "name": "Developer"
@@ -298,9 +292,7 @@
       "inputMessageName": "MyFlow2Message",
       "permissions": [
         {
-          "roleNames": [
-            "Admin"
-          ]
+          "roleNames": ["Admin"]
         }
       ]
     },
@@ -308,10 +300,7 @@
       "name": "MyFlow3",
       "permissions": [
         {
-          "roleNames": [
-            "Admin",
-            "Developer"
-          ]
+          "roleNames": ["Admin", "Developer"]
         }
       ]
     }

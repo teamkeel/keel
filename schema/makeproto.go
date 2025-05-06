@@ -2371,6 +2371,10 @@ func (scm *Builder) applyFlowInputs(protoMessage *proto.Message, inputs []*parse
 			protoField.Type.EnumName = wrapperspb.String(input.Type.Value)
 		}
 
+		if protoField.Type.Type == proto.Type_TYPE_MODEL {
+			protoField.Type.ModelName = wrapperspb.String(input.Type.Value)
+		}
+
 		protoMessage.Fields = append(protoMessage.Fields, protoField)
 	}
 }

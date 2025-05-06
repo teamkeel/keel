@@ -8,6 +8,7 @@ flow MyWorkflow {
         enum MyEnum
         file File
         duration Duration
+        thing Thing
     }
 }
 
@@ -15,3 +16,5 @@ enum MyEnum {
     One
     Two
 }
+
+model Thing { }
