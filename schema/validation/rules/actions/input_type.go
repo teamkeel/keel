@@ -88,7 +88,7 @@ func validateInputType(
 		}
 
 		field := query.ResolveInputField(asts, input, model)
-		if field != nil && query.FieldHasAttribute(field, parser.AttributeComputed) {
+		if field != nil && (action.Type.Value == parser.ActionTypeCreate || action.Type.Value == parser.ActionTypeUpdate) && query.FieldHasAttribute(field, parser.AttributeComputed) {
 			return errorhandling.NewValidationErrorWithDetails(
 				errorhandling.ActionInputError,
 				errorhandling.ErrorDetails{
