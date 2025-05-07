@@ -12,6 +12,7 @@ import {
   StepCompletedDisrupt,
   StepErrorDisrupt,
   UIRenderDisrupt,
+  ExhuastedRetriesDisrupt,
 } from "./disrupts";
 import { banner } from "./ui/elements/display/banner";
 import { image } from "./ui/elements/display/image";
@@ -121,16 +122,22 @@ export function createFlowContext<C extends FlowConfig>(
       const db = useDatabase();
 
       // First check if we already have a result for this step
-      const completed = await db
+      const past = await db
         .selectFrom("keel_flow_step")
         .where("run_id", "=", runId)
         .where("name", "=", name)
-        .where("status", "=", STEP_STATUS.COMPLETED)
         .selectAll()
-        .executeTakeFirst();
+        .execute();
 
-      if (completed) {
-        return completed.value;
+      // For the complete step, if it exists, just return the value
+      for (const step of past) {
+        if (step.status === STEP_STATUS.COMPLETED) {
+          return step.value;
+        }
+      }
+
+      if (past.length >= (options.maxRetries ?? defaultOpts.maxRetries)) {
+        throw new ExhuastedRetriesDisrupt();
       }
 
       // The step hasn't yet run successfully, so we need to create a NEW run
@@ -142,8 +149,6 @@ export function createFlowContext<C extends FlowConfig>(
           stage: options.stage,
           status: STEP_STATUS.NEW,
           type: STEP_TYPE.FUNCTION,
-          maxRetries: options?.maxRetries ?? defaultOpts.maxRetries,
-          timeoutInMs: options?.timeoutInMs ?? defaultOpts.timeoutInMs,
         })
         .returningAll()
         .executeTakeFirst();
@@ -161,14 +166,28 @@ export function createFlowContext<C extends FlowConfig>(
           .set({
             status: STEP_STATUS.FAILED,
             spanId: spanId,
-            // TODO: store error message
+            error: e instanceof Error ? e.message : "An error occurred",
           })
           .where("id", "=", step.id)
           .returningAll()
           .executeTakeFirst();
 
+        // if (past.length < (options.maxRetries ?? defaultOpts.maxRetries)) {
+        //   await db
+        //     .insertInto("keel_flow_step")
+        //     .values({
+        //       run_id: runId,
+        //       name: name,
+        //       stage: options.stage,
+        //       status: STEP_STATUS.NEW,
+        //       type: STEP_TYPE.FUNCTION,
+        //     })
+        //     .returningAll()
+        //     .executeTakeFirst();
+        // }
+
         throw new StepErrorDisrupt(
-          e instanceof Error ? e.message : "an error occurred"
+          e instanceof Error ? e.message : "An error occurred"
         );
       }
 
@@ -227,8 +246,6 @@ export function createFlowContext<C extends FlowConfig>(
               stage: page.stage,
               status: STEP_STATUS.PENDING,
               type: STEP_TYPE.UI,
-              maxRetries: 3,
-              timeoutInMs: 1000,
             })
             .returningAll()
             .executeTakeFirst();
@@ -290,7 +307,7 @@ function withTimeout<T>(promiseFn: Promise<T>, timeout: number): Promise<T> {
   return Promise.race([
     promiseFn,
     wait(timeout).then(() => {
-      throw new Error(`flow times out after ${timeout}ms`);
+      throw new Error(`Step function timed out after ${timeout}ms`);
     }),
   ]);
 }

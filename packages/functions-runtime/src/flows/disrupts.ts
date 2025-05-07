@@ -23,3 +23,9 @@ export class StepCompletedDisrupt extends FlowDisrupt {
     super();
   }
 }
+
+export class ExhuastedRetriesDisrupt extends FlowDisrupt {
+  constructor() {
+    super();
+  }
+}

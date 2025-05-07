@@ -14,6 +14,7 @@ import {
   StepCompletedDisrupt,
   StepErrorDisrupt,
   UIRenderDisrupt,
+  ExhuastedRetriesDisrupt,
 } from "./flows/disrupts";
 
 async function handleFlow(request, config) {
@@ -112,6 +113,15 @@ async function handleFlow(request, config) {
           code: opentelemetry.SpanStatusCode.ERROR,
           message: e.message,
         });
+
+        // The flow is disrupted by a flow failure
+        if (e instanceof ExhuastedRetriesDisrupt) {
+          return createJSONRPCErrorResponse(
+            request.id,
+            JSONRPCErrorCode.InternalError,
+            "flow failed due to exhausted step retries"
+          );
+        }
 
         return createJSONRPCSuccessResponse(request.id, {
           runId: runId,
