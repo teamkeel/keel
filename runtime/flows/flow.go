@@ -22,11 +22,12 @@ var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/flows")
 type Status string
 
 const (
-	StatusNew       Status = "NEW"
-	StatusRunning   Status = "RUNNING"
-	StatusFailed    Status = "FAILED"
-	StatusCompleted Status = "COMPLETED"
-	StatusCancelled Status = "CANCELLED"
+	StatusNew           Status = "NEW"
+	StatusRunning       Status = "RUNNING"
+	StatusAwaitingInput Status = "AWAITING_INPUT"
+	StatusFailed        Status = "FAILED"
+	StatusCompleted     Status = "COMPLETED"
+	StatusCancelled     Status = "CANCELLED"
 )
 
 type StepType string
@@ -57,9 +58,9 @@ func (Run) TableName() string {
 	return "keel_flow_run"
 }
 
-// PendingUI tells us if the current run is waiting for UI input
-func (r *Run) PendingUI() bool {
-	if r == nil || r.Status != StatusRunning {
+// HasPendingUIStep tells us if the current run is waiting for UI input
+func (r *Run) HasPendingUIStep() bool {
+	if r == nil || (r.Status != StatusAwaitingInput && r.Status != StatusRunning) {
 		return false
 	}
 
@@ -74,7 +75,7 @@ func (r *Run) PendingUI() bool {
 
 // SetUIComponent will set the given UI component on the first pending UI step of the flow
 func (r *Run) SetUIComponent(ui *JSONB) {
-	if r.Status != StatusRunning {
+	if !r.HasPendingUIStep() {
 		return
 	}
 
@@ -83,17 +84,6 @@ func (r *Run) SetUIComponent(ui *JSONB) {
 			r.Steps[i].UI = ui
 		}
 	}
-}
-
-// HasPendingUIStep checks that this run has a pending UI step with the given id
-func (r *Run) HasPendingUIStep(stepID string) bool {
-	for _, step := range r.Steps {
-		if step.ID == stepID {
-			return step.Type == StepTypeUI && step.Status == StepStatusPending
-		}
-	}
-
-	return false
 }
 
 type Step struct {

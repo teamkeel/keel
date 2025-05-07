@@ -103,7 +103,7 @@ func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 	)
 
 	// if we're not waiting for a UI step, return
-	if !run.PendingUI() {
+	if !run.HasPendingUIStep() {
 		return
 	}
 
