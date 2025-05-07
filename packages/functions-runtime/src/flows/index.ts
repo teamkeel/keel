@@ -92,8 +92,8 @@ export type ExtractStageKeys<T extends FlowConfig> = T extends {
     ? U extends string
       ? U
       : U extends { key: infer K extends string }
-      ? K
-      : never
+        ? K
+        : never
     : never
   : never;
 
@@ -205,6 +205,7 @@ export function createFlowContext<C extends FlowConfig>(
           stage: options.stage,
           status: STEP_STATUS.NEW,
           type: STEP_TYPE.FUNCTION,
+          startTime: new Date(),
         })
         .returningAll()
         .executeTakeFirst();
@@ -251,6 +252,7 @@ export function createFlowContext<C extends FlowConfig>(
               stage: page.stage,
               status: STEP_STATUS.PENDING,
               type: STEP_TYPE.UI,
+              startTime: new Date(),
             })
             .returningAll()
             .executeTakeFirst();

@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS keel_flow_step (
 	"value" JSONB DEFAULT NULL,
 	"error" TEXT DEFAULT NULL,
 	"span_id" TEXT,
+	"start_time" TIMESTAMPTZ,
+	"end_time" TIMESTAMPTZ,
 	"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 	"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
