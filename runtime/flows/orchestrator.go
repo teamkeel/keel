@@ -97,6 +97,8 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 		// call the flow runtime
 		resp, err := o.CallFlow(ctx, run, data)
 		if err != nil {
+			_, _ = updateRun(ctx, run.ID, StatusFailed)
+
 			return err
 		}
 
@@ -111,27 +113,13 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 			return err
 		}
 
-		stepsMap := map[string][]Step{}
-		for _, step := range run.Steps {
-			stepsMap[step.Name] = append(stepsMap[step.Name], step)
-		}
-
-		// Check to see if the retries have been exceeded
-		if len(run.Steps) > 0 {
-			lastStep := run.Steps[len(run.Steps)-1]
-			if lastStep.Status == StepStatusFailed && len(stepsMap[lastStep.Name]) >= lastStep.MaxRetries {
-				_, err := updateRun(ctx, run.ID, StatusFailed)
-				return err
-			}
-		}
-
 		// Check to see if we're in a Pending UI step, break orchestration
 		if run.PendingUI() {
 			return nil
 		}
 
 		// Continue running the flow
-		payload := FlowRunUpdated{RunID: resp.RunID, Data: data}
+		payload := FlowRunUpdated{RunID: resp.RunID}
 		wrap, err := payload.Wrap()
 		if err != nil {
 			return err
